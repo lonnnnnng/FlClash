@@ -112,6 +112,10 @@ class VpnService : SystemVpnService(), ManagedService {
         }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP_SERVICE) {
+            stop()
+            return START_NOT_STICKY
+        }
         notifyVpnStartRequested()
         return runCatching {
             // 作者 long：前台服务 Intent 只是启动入口，必须在回调内建立 TUN，

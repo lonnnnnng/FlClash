@@ -13,6 +13,10 @@ class ProxyService : Service(), ManagedService {
     private val binder = LocalBinder()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP_SERVICE) {
+            stop()
+            return START_NOT_STICKY
+        }
         return runCatching {
             // 作者 long：startForegroundService() 只负责拉起进程，必须在这里进入模块启动链并及时发布前台通知。
             start()

@@ -97,8 +97,16 @@ class AndroidProxyServiceController(
     }
 
     override fun stop() {
-        context.stopService(Intent(context, ProxyService::class.java))
-        context.stopService(Intent(context, VpnService::class.java))
+        // 作者 long：VpnService 由系统保持绑定，必须先发送停止 action 让其关闭 TUN，
+        // 再停止服务组件；只调用 stopService 会留下 tun0 和系统 VPN 路由。
+        stopServiceWithCleanup(ProxyService::class.java)
+        stopServiceWithCleanup(VpnService::class.java)
+    }
+
+    private fun stopServiceWithCleanup(serviceClass: Class<out android.app.Service>) {
+        val stopIntent = Intent(context, serviceClass).setAction(ACTION_STOP_SERVICE)
+        runCatching { context.startService(stopIntent) }
+        context.stopService(Intent(context, serviceClass))
     }
 
     private companion object {
