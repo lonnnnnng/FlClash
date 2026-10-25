@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-25（北京时间）
 >
-> 当前基线：`kotlin` 分支；本轮 N1 功能代码基于已推送提交 `9c0a9af5`
+> 当前基线：`kotlin` 分支；本轮 N1 真机修复基于已推送提交 `a4dc153c`
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -47,7 +47,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | 本轮 N1 代码已完成自动化验证，提交 `9c0a9af5` 已推送至 `origin/kotlin` |
+| 远端关系 | 本轮 N1 真机修复已提交 `a4dc153c` 并推送至 `origin/kotlin` |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -59,7 +59,7 @@
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 代理组读取、`DIRECT` 测速 `160 ms`、Selector 切换成功、核心停止成功 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -185,7 +185,7 @@ flowchart LR
 
 ### 7.1 真实连接链路
 
-状态：`PARTIAL`，代码启动链已完成，真机 TUN 和真实流量仍是下一步最高优先级。
+状态：`PARTIAL`，代码启动链和 TUN 生命周期已打通，权限边界、真实代理请求和网络切换仍需补齐。
 
 当前已有：
 
@@ -200,14 +200,24 @@ flowchart LR
 - `AndroidProxyServiceController` 已统一启动 ProxyService、VpnService，并等待 VPN 状态或 15 秒超时。
 - `MainActivity` 已接入 `VpnService.prepare()` 和 Activity Result 授权回调。
 - 启动失败会停止服务、清理监听器，管理器不会把失败报告为 `RUNNING`。
+- 停止时向绑定中的 `VpnService` 发送显式 stop action，再停止服务组件，避免系统绑定导致 TUN 残留。
 - 服务层和管理器新增失败回滚测试；当前总计 73 项 Kotlin 单元测试通过。
+
+本轮真机验收记录（2026-10-25，设备 `wsvwypiz7xwslvl7`，Android 16 / API 36）：
+
+- 使用远程订阅 `clash.theconsole.top` 启动成功，UI 显示“核心运行中”。
+- `dumpsys activity services` 观察到 `VpnService` 和 `ProxyService` 均为前台服务。
+- `ip route` 观察到 `198.18.0.0/30 dev tun0`，Mihomo 日志出现从 `198.18.0.1` 发出的 TCP/UDP TUN 流量。
+- 设备内 `curl -I http://1.1.1.1` 返回 `HTTP/1.1 301 Moved Permanently`，证明启用 TUN 时设备网络请求仍可完成；尚未将该请求与选定代理节点做可归因的端到端关联。
+- 点击停止后 UI 显示“核心已停止”，服务记录、`tun0`、`198.18.0.0/30` 路由均消失；`dumpsys connectivity` 未留下 KClash VPN 网络。
+- 旧本地测试配置曾被核心拒绝，错误为 `proxy DIRECT is the duplicate name`；该失败状态正确回显，未作为成功证据。
 
 当前缺失：
 
 - `ServiceConfig.vpnOptions` 仍是首阶段默认配置，尚未从 Mihomo 配置/Android 设置真实映射 mixed-port、tun stack 和路由覆盖项。
-- TUN 建立成功后的真实流量闭环。
-- 停止、重启、进程恢复和系统撤销 VPN 的统一状态处理。
-- 真机授权、`dumpsys connectivity`、前台通知和无残留 TUN 的验收证据。
+- 首次安装后的 VPN 授权弹窗、拒绝路径和系统撤销路径尚未在本轮干净安装中重测；当前设备保留了既有 VPN 授权。
+- 尚未完成“指定代理组/节点 → 新发请求 → Mihomo 连接日志或 API 可归因”的真实代理请求闭环。
+- 尚未覆盖 Wi-Fi/移动网络切换、后台恢复、进程重建和系统撤销 VPN。
 
 完成门槛：
 
@@ -346,7 +356,7 @@ flowchart LR
 
 - Compose UI tests。
 - Instrumented tests。
-- VPN 权限和 TUN 真机测试。
+- VPN 权限、TUN 停止清理和 `dumpsys connectivity` 真机测试已有首轮证据；干净安装授权、网络切换和代理请求归因仍待完成。
 - 连接、请求、DNS、日志端到端测试。
 - `lint`、R8、Release 构建和 APK 签名检查。
 - 新 release keystore。
