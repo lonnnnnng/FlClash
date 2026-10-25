@@ -121,6 +121,7 @@ dependencies {
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
     implementation(libs.kotlinx.coroutines.android)
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

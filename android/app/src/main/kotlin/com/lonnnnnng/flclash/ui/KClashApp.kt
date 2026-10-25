@@ -109,6 +109,25 @@ fun KClashApp(
         }
     }
 
+    val qrCodePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        coroutineScope.launch {
+            runCatching {
+                val values = com.lonnnnnng.flclash.data.QrCodeImageImporter.decode(context, uri)
+                values.asSequence()
+                    .mapNotNull(com.lonnnnnng.flclash.data.DeepLinkProfileParser::parseProfileUrl)
+                    .firstOrNull()
+                    ?: error("二维码中没有可导入的配置链接")
+            }.onSuccess { url ->
+                profilesViewModel.addRemote(url, "")
+            }.onFailure { error ->
+                snackbarHostState.showSnackbar(error.message ?: "二维码解析失败")
+            }
+        }
+    }
+
     LaunchedEffect(profilesViewModel) {
         profilesViewModel.errors.collect { message ->
             snackbarHostState.showSnackbar(message)
@@ -247,6 +266,10 @@ fun KClashApp(
             onPickFile = {
                 showAddDialog = false
                 filePicker.launch(arrayOf("*/*"))
+            },
+            onPickQrCode = {
+                showAddDialog = false
+                qrCodePicker.launch("image/*")
             },
             onAddRemote = { label, url ->
                 showAddDialog = false
@@ -1030,6 +1053,7 @@ private fun AddProfileDialog(
     busy: Boolean,
     onDismiss: () -> Unit,
     onPickFile: () -> Unit,
+    onPickQrCode: () -> Unit,
     onAddRemote: (label: String, url: String) -> Unit,
     onAddCustom: (label: String) -> Unit,
 ) {
@@ -1041,6 +1065,9 @@ private fun AddProfileDialog(
         title = { Text(if (customMode) "创建自定义配置" else "添加订阅") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(onClick = onPickQrCode, enabled = !busy) {
+                    Text("从二维码图片导入")
+                }
                 OutlinedButton(onClick = onPickFile, enabled = !busy) {
                     Text("从文件导入 YAML")
                 }

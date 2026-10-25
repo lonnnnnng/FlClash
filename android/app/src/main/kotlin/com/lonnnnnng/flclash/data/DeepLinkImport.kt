@@ -3,6 +3,16 @@ package com.lonnnnnng.flclash.data
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import android.content.Context
+import android.net.Uri
+import com.google.android.gms.tasks.Task
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 data class DeepLinkProfileImport(
     val url: String,
@@ -36,6 +46,12 @@ object DeepLinkProfileParser {
         return uri.scheme?.lowercase() in supportedSchemes
     }
 
+    fun parseProfileUrl(raw: String): String? {
+        val text = raw.trim()
+        if (isHttpUrl(text)) return text
+        return parse(text)?.url
+    }
+
     private fun isHttpUrl(value: String): Boolean {
         val uri = runCatching { URI(value) }.getOrNull() ?: return false
         return uri.scheme?.lowercase() in setOf("http", "https") &&
@@ -62,4 +78,35 @@ object DeepLinkProfileParser {
     private const val INSTALL_CONFIG_HOST = "install-config"
     private const val URL_PARAMETER = "url"
     private const val LABEL_PARAMETER = "name"
+}
+
+/**
+ * 作者 long：相册二维码只读取 QR 格式，并把所有候选文本交给统一链接解析器，
+ * 这样二维码、Deep Link 和手工订阅入口最终都走同一个 ProfileRepository 写入边界。
+ */
+object QrCodeImageImporter {
+    suspend fun decode(context: Context, uri: Uri): List<String> {
+        val image = InputImage.fromFilePath(context, uri)
+        val options = BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+        val scanner = BarcodeScanning.getClient(options)
+        return try {
+            scanner.process(image).await().mapNotNull { it.rawValue?.trim() }
+        } finally {
+            scanner.close()
+        }
+    }
+}
+
+private suspend fun <T> Task<T>.await(): T = suspendCancellableCoroutine { continuation ->
+    addOnSuccessListener { value ->
+        if (continuation.isActive) continuation.resume(value)
+    }
+    addOnFailureListener { error ->
+        if (continuation.isActive) continuation.resumeWithException(error)
+    }
+    addOnCanceledListener {
+        if (continuation.isActive) continuation.cancel()
+    }
 }

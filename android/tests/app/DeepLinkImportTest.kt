@@ -44,4 +44,22 @@ class DeepLinkImportTest {
         assertNull(DeepLinkProfileParser.parse("kclash://install-config?url=not-a-url"))
         assertNull(DeepLinkProfileParser.parse("kclash://install-config?url=https%3A%2F%2F"))
     }
+
+    @Test
+    fun `accepts direct http profile urls from qr content`() {
+        assertEquals(
+            "https://example.com/profile.yaml",
+            DeepLinkProfileParser.parseProfileUrl("  https://example.com/profile.yaml  "),
+        )
+    }
+
+    @Test
+    fun `normalizes deep link qr content through the same parser`() {
+        assertEquals(
+            "https://example.com/profile.yaml",
+            DeepLinkProfileParser.parseProfileUrl(
+                "clash://install-config?url=https%3A%2F%2Fexample.com%2Fprofile.yaml",
+            ),
+        )
+    }
 }
