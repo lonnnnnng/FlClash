@@ -87,19 +87,21 @@ clash://install-config?url=<URL-encoded subscription link>
 ```
 
 **Automate on Android.** Tasker, MacroDroid and similar apps can start, stop or toggle the proxy by starting an
-activity with one of these actions:
+activity with one of these KClash actions:
 
 ```text
-com.follow.clash.action.START
-com.follow.clash.action.STOP
-com.follow.clash.action.TOGGLE
+com.lonnnnnng.flclash.action.START
+com.lonnnnnng.flclash.action.STOP
+com.lonnnnnng.flclash.action.TOGGLE
 ```
 
 From a computer, the same works over adb:
 
 ```bash
-adb shell am start -a com.follow.clash.action.TOGGLE
+adb shell am start -a com.lonnnnnng.flclash.action.TOGGLE
 ```
+
+KClash accepts only these three actions without a data URI or extra arguments. Starting still follows Android's VPN consent flow.
 
 ## Build from source
 

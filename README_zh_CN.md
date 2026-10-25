@@ -81,19 +81,21 @@ FlClash 要在免责声明被接受后才会启动核心。在容器等无人点
 clash://install-config?url=<经过 URL 编码的订阅链接>
 ```
 
-**Android 自动化。** Tasker、MacroDroid 等应用可以用下面的 Action 启动 Activity，从而启动、停止或切换代理：
+**Android 自动化。** Tasker、MacroDroid 等应用可以用下面的 KClash Action 启动 Activity，从而启动、停止或切换代理：
 
 ```text
-com.follow.clash.action.START
-com.follow.clash.action.STOP
-com.follow.clash.action.TOGGLE
+com.lonnnnnng.flclash.action.START
+com.lonnnnnng.flclash.action.STOP
+com.lonnnnnng.flclash.action.TOGGLE
 ```
 
 在电脑上也可以通过 adb 触发：
 
 ```bash
-adb shell am start -a com.follow.clash.action.TOGGLE
+adb shell am start -a com.lonnnnnng.flclash.action.TOGGLE
 ```
+
+KClash 只接受这三个不带 URI 和额外参数的 Action；启动核心时仍遵循 Android 系统 VPN 授权流程。
 
 ## 从源码构建
 

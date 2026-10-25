@@ -47,6 +47,24 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:theme="@style/Theme.KClash.QuickAction" />
+        <activity
+            android:name=".ExternalActionActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:theme="@style/Theme.KClash.QuickAction">
+            <intent-filter>
+                <action android:name="com.lonnnnnng.flclash.action.START" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.lonnnnnng.flclash.action.STOP" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.lonnnnnng.flclash.action.TOGGLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <service
             android:name=".KClashTileService"
             android:exported="true"
