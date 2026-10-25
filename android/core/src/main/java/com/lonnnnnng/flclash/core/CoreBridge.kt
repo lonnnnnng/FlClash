@@ -51,9 +51,79 @@ class CoreBridge {
         }
     }
 
+    suspend fun getProxyGroups(): ProxyGroupsSnapshot {
+        val response = invoke("getProxies", JSONObject())
+        return parseProxyGroupsResponse(response.optJSONObject("result"))
+    }
+
+    suspend fun changeProxy(groupName: String, proxyName: String): Boolean {
+        val response = invoke(
+            method = "changeProxy",
+            arguments = JSONObject()
+                .put("group-name", groupName)
+                .put("proxy-name", proxyName),
+        )
+        return parseChangeProxyResponse(response.optJSONObject("result"))
+    }
+
     fun startListener() = Core.startListener()
 
     fun stopListener() = Core.stopListener()
+
+    internal fun parseProxyGroupsResponse(result: JSONObject?): ProxyGroupsSnapshot {
+        requireNotNull(result) { "核心代理组响应缺少 result" }
+        val proxies = result.optJSONObject("proxies") ?: JSONObject()
+        val names = result.optJSONArray("all").toStringList()
+        val payloads = buildMap {
+            names.forEach { groupName ->
+                val raw = proxies.optJSONObject(groupName) ?: return@forEach
+                put(
+                    groupName,
+                    ProxyGroupPayload(
+                        name = raw.optString("name", groupName),
+                        type = raw.optString("type", "Unknown"),
+                        now = raw.optNullableString("now"),
+                        all = raw.optJSONArray("all").toStringList(),
+                        hidden = raw.optBoolean("hidden", false),
+                    ),
+                )
+            }
+        }
+        return parseProxyGroupsPayload(names, payloads)
+    }
+
+    internal fun parseProxyGroupsPayload(
+        names: List<String>,
+        payloads: Map<String, ProxyGroupPayload>,
+    ): ProxyGroupsSnapshot {
+        val groups = names.mapNotNull { groupName ->
+            val payload = payloads[groupName] ?: return@mapNotNull null
+            ProxyGroupInfo(
+                name = payload.name,
+                type = payload.type,
+                now = payload.now,
+                all = payload.all,
+                hidden = payload.hidden,
+            )
+        }
+        return ProxyGroupsSnapshot(groups)
+    }
+
+    internal fun parseChangeProxyResponse(result: JSONObject?): Boolean {
+        requireNotNull(result) { "核心代理切换响应缺少 result" }
+        return parseChangeProxyPayload(
+            message = result.optString("message", ""),
+            changed = result.optBoolean("changed", false),
+        )
+    }
+
+    internal fun parseChangeProxyPayload(message: String?, changed: Boolean): Boolean {
+        val message = message.orEmpty()
+        if (message.isNotBlank()) {
+            throw CoreBridgeException("change_proxy_failed", message)
+        }
+        return changed
+    }
 
     private suspend fun invoke(method: String, arguments: Any): JSONObject =
         suspendCancellableCoroutine { continuation ->
@@ -98,6 +168,43 @@ class CoreBridge {
     companion object {
         const val DEFAULT_TEST_URL = "https://www.gstatic.com/generate_204"
     }
+}
+
+data class ProxyGroupsSnapshot(
+    val groups: List<ProxyGroupInfo>,
+)
+
+data class ProxyGroupInfo(
+    val name: String,
+    val type: String,
+    val now: String?,
+    val all: List<String>,
+    val hidden: Boolean,
+) {
+    val isSelector: Boolean
+        get() = type.equals("Selector", ignoreCase = true)
+}
+
+data class ProxyGroupPayload(
+    val name: String,
+    val type: String,
+    val now: String?,
+    val all: List<String>,
+    val hidden: Boolean,
+)
+
+private fun org.json.JSONArray?.toStringList(): List<String> {
+    if (this == null) return emptyList()
+    return buildList(length()) {
+        for (index in 0 until length()) {
+            optString(index).takeIf { it.isNotBlank() }?.let(::add)
+        }
+    }
+}
+
+private fun JSONObject.optNullableString(name: String): String? {
+    if (isNull(name)) return null
+    return optString(name).takeIf { it.isNotBlank() }
 }
 
 class CoreBridgeException(

@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import com.lonnnnnng.flclash.ui.KClashApp
 import com.lonnnnnng.flclash.ui.MainViewModel
 import com.lonnnnnng.flclash.ui.ProfilesViewModel
+import com.lonnnnnng.flclash.ui.ProxyGroupsViewModel
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -15,13 +16,14 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
     private val profilesViewModel: ProfilesViewModel by viewModels()
+    private val proxyGroupsViewModel: ProxyGroupsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             KClashTheme {
-                KClashApp(viewModel, profilesViewModel)
+                KClashApp(viewModel, profilesViewModel, proxyGroupsViewModel)
             }
         }
     }

@@ -55,10 +55,12 @@ import kotlinx.coroutines.launch
 fun KClashApp(
     runtimeViewModel: MainViewModel,
     profilesViewModel: ProfilesViewModel,
+    proxyGroupsViewModel: ProxyGroupsViewModel,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
+    val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -103,6 +105,12 @@ fun KClashApp(
         }
     }
 
+    LaunchedEffect(proxyGroupsViewModel) {
+        proxyGroupsViewModel.errors.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
     Scaffold(
         topBar = { TopAppBar(title = { Text("KClash") }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -122,6 +130,14 @@ fun KClashApp(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item { RuntimeCard(runtimeState, runtimeViewModel::toggleRuntime) }
+            item {
+                ProxyGroupsCard(
+                    state = proxyGroupsState,
+                    runtimeState = runtimeState,
+                    onRefresh = proxyGroupsViewModel::refresh,
+                    onSelect = proxyGroupsViewModel::selectProxy,
+                )
+            }
             item {
                 Text(
                     text = "配置",
@@ -222,6 +238,107 @@ fun KClashApp(
                 onSave = profilesViewModel::saveEditor,
             )
         }
+    }
+}
+
+@Composable
+private fun ProxyGroupsCard(
+    state: ProxyGroupsUiState,
+    runtimeState: CoreRuntimeStatus,
+    onRefresh: () -> Unit,
+    onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
+) {
+    var groupPendingSelection by remember { mutableStateOf<com.lonnnnnng.flclash.core.ProxyGroupInfo?>(null) }
+    val canRefresh = runtimeState == CoreRuntimeStatus.RUNNING &&
+        !state.isLoading &&
+        state.switchingGroup == null
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("代理组", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                if (state.isLoading) {
+                    CircularProgressIndicator()
+                } else {
+                    TextButton(onClick = onRefresh, enabled = canRefresh) { Text("刷新") }
+                }
+            }
+            if (state.groups.isEmpty() && !state.isLoading) {
+                Text(
+                    if (runtimeState == CoreRuntimeStatus.RUNNING) {
+                        "当前配置没有可展示的代理组。"
+                    } else {
+                        "启动核心后加载代理组。"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                state.groups.forEach { group ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { if (group.isSelector && group.all.isNotEmpty()) groupPendingSelection = group },
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(group.name, style = MaterialTheme.typography.titleSmall)
+                                    Text(
+                                        "${group.type} · 当前：${group.now ?: "未选择"}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                if (group.isSelector) {
+                                    TextButton(
+                                        onClick = { groupPendingSelection = group },
+                                        enabled = state.switchingGroup == null,
+                                    ) { Text("切换") }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    groupPendingSelection?.let { group ->
+        AlertDialog(
+            onDismissRequest = { if (state.switchingGroup == null) groupPendingSelection = null },
+            title = { Text("切换 ${group.name}") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    group.all.forEach { proxyName ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(
+                                selected = proxyName == group.now,
+                                onClick = {
+                                    onSelect(group, proxyName)
+                                    groupPendingSelection = null
+                                },
+                                enabled = state.switchingGroup == null,
+                            )
+                            Text(proxyName, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { groupPendingSelection = null },
+                    enabled = state.switchingGroup == null,
+                ) { Text("关闭") }
+            },
+        )
     }
 }
 

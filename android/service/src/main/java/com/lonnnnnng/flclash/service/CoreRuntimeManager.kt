@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.service
 
 import android.os.Build
+import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.service.models.NotificationParams
 import java.io.File
 import java.io.IOException
@@ -80,6 +81,23 @@ class CoreRuntimeManager(
             mutableState.value = CoreRuntimeStatus.FAILED
         }
     }
+
+    suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = transitionLock.withLock {
+        runCatching {
+            check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
+            bridge.getProxyGroups()
+        }
+    }
+
+    suspend fun changeProxy(groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> =
+        transitionLock.withLock {
+            runCatching {
+                check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
+                bridge.changeProxy(groupName, proxyName)
+                // 作者 long：切换结果以核心重新返回的当前选择为准，避免 UI 只更新本地猜测而与 Mihomo 状态漂移。
+                bridge.getProxyGroups()
+            }
+        }
 
     private suspend fun ensureInitialized() {
         if (initialized.get()) return

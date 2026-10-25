@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import java.io.File
 
 data class ActiveProfile(
@@ -52,6 +53,10 @@ interface CoreRuntimeBridge {
 
     suspend fun setupConfig()
 
+    suspend fun getProxyGroups(): ProxyGroupsSnapshot
+
+    suspend fun changeProxy(groupName: String, proxyName: String): Boolean
+
     fun startListener()
 
     fun stopListener()
@@ -66,6 +71,11 @@ class NativeCoreRuntimeBridge(
     override suspend fun validateConfig(path: String) = coreBridge.validateConfig(path)
 
     override suspend fun setupConfig() = coreBridge.setupConfig()
+
+    override suspend fun getProxyGroups(): ProxyGroupsSnapshot = coreBridge.getProxyGroups()
+
+    override suspend fun changeProxy(groupName: String, proxyName: String): Boolean =
+        coreBridge.changeProxy(groupName, proxyName)
 
     override fun startListener() = coreBridge.startListener()
 

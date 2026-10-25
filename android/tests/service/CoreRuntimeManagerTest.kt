@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.service
 
 import java.io.File
+import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -75,6 +76,25 @@ class CoreRuntimeManagerTest {
         assertFalse(controller.started)
     }
 
+    @Test
+    fun `proxy switch failure is returned without hiding the core error`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge(proxyChangeError = IllegalStateException("节点不可用"))
+        val manager = manager(
+            profile = ActiveProfile(9, "可用配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+        manager.startProxy().getOrThrow()
+
+        val result = manager.changeProxy("Proxy", "香港-01")
+
+        assertTrue(result.isFailure)
+        assertEquals("节点不可用", result.exceptionOrNull()?.message)
+        assertEquals(0, bridge.proxyGroupsReads)
+    }
+
     private fun manager(
         profile: ActiveProfile?,
         homeDir: File,
@@ -93,9 +113,11 @@ class CoreRuntimeManagerTest {
 
     private class FakeBridge(
         private val validationError: Throwable? = null,
+        private val proxyChangeError: Throwable? = null,
     ) : CoreRuntimeBridge {
         val events = mutableListOf<String>()
         var listenerStarted = false
+        var proxyGroupsReads = 0
 
         override suspend fun initialize(homeDir: String, sdkVersion: Int) {
             events += "initialize"
@@ -108,6 +130,16 @@ class CoreRuntimeManagerTest {
 
         override suspend fun setupConfig() {
             events += "setup"
+        }
+
+        override suspend fun getProxyGroups(): ProxyGroupsSnapshot {
+            proxyGroupsReads++
+            return ProxyGroupsSnapshot(emptyList())
+        }
+
+        override suspend fun changeProxy(groupName: String, proxyName: String): Boolean {
+            proxyChangeError?.let { throw it }
+            return true
         }
 
         override fun startListener() {
