@@ -22,6 +22,6 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 
 当前已完成的 Android 手机功能切片包括：Profiles 的新 Room 模型、远程订阅下载和订阅用量解析、文件导入、基础 YAML 编辑、配置文件原子写入、当前配置持久化、Mihomo 配置校验与应用、代理组读取、Selector 节点切换以及 Selector 对话框中的单节点手动延迟测试。基础切片统一经过 `CoreRuntimeManager`，并在 Compose 页面通过 StateFlow 渲染。
 
-仍未完成的产品能力包括：VPN/TUN 权限与启动链、连接状态和流量仪表盘、连接列表、请求列表、DNS 查询、日志查看、Quick Settings、按应用代理、电池优化引导、配置高级编辑器（规则/代理/代理组/脚本/覆写分区）、二维码真机验收、完整主题与响应式布局，以及发布签名和 Release 流程。二维码图片选择、QR 识别和链接导入代码已完成，Deep Link 基础导入、冷启动、重复导入和错误反馈回归已经完成。现有 `service` 中的 TUN 和通知代码属于可复用的 Android 基础设施，但尚未全部接入新的 Kotlin 页面和 `CoreRuntimeManager` 业务链路。
+仍未完成的产品能力包括：VPN/TUN 权限与启动链、连接状态和流量仪表盘、连接列表、请求列表、DNS 查询、日志查看、Quick Settings、按应用代理、电池优化引导、配置高级编辑器（规则/代理/代理组/脚本/覆写分区）、完整主题与响应式布局，以及发布签名和 Release 流程。二维码图片选择、QR 识别、两条授权路径真机导入和重复导入错误反馈已完成，Deep Link 基础导入、冷启动、重复导入和错误反馈回归已经完成。现有 `service` 中的 TUN 和通知代码属于可复用的 Android 基础设施，但尚未全部接入新的 Kotlin 页面和 `CoreRuntimeManager` 业务链路。
 
 后续按“先建立真实代理连接，再补观测和平台入口，最后做 Flutter 行为与视觉收敛”的顺序推进；Flutter 代码只作为行为参考，不作为 Kotlin 运行时依赖。

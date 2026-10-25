@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 作者 long：仅放行当前授权验收订阅的 HTTP 入口，其他域名仍保持 Android 默认明文流量限制。 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">clash.tkbond.us</domain>
+    </domain-config>
+</network-security-config>

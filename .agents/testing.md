@@ -55,8 +55,9 @@
 
 ## DNS 与核心日志观测切片实测记录
 
-- `./gradlew test :app:assembleDebug --no-daemon`：通过；当前 Debug 单元测试共 90 项，失败 0，错误 0，跳过 0。
-- 二维码导入切片新增直接 HTTP(S) 链接和四种 KClash Deep Link 的统一解析测试；真机二维码图片导入仍待在当前两条授权路径范围内验收。
+- `./gradlew test :app:assembleDebug --no-daemon`：通过；当前 Debug 单元测试共 91 项，失败 0，错误 0，跳过 0。
+- 二维码导入切片新增直接 HTTP(S) 链接和四种 KClash Deep Link 的统一解析测试；Redmi 真机已分别导入两条授权路径的二维码，第二条 HTTP 301→HTTPS 重定向已通过本地回归测试和真机复验。
+- 真机重复导入第二条二维码显示“该订阅已经添加”；验收后删除两个测试 Profile，设备恢复“还没有配置”空态。
 - 新增 Core Bridge DNS 事件字段解析测试，以及 MainViewModel 的 DNS/日志有界历史测试；DNS 和日志历史分别限制为最近 1000 条，并支持用户主动清空。
 - `CoreRuntimeManager` 已把 Go Mihomo `startLog/stopLog` 纳入启动、停止和失败回滚；真机启动核心后 DNS 卡片出现 4 条查询、日志卡片出现 3 条日志，并显示“查看全部/清空”。
 - Debug APK 安装到 `wsvwypiz7xwslvl7` 后，停止态首页实际显示“DNS 查询”和“核心日志”卡片；两张卡片均显示启动核心提示，应用启动未出现 `FATAL EXCEPTION`。

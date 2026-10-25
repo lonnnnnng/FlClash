@@ -56,7 +56,7 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 90 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 91 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
@@ -140,7 +140,7 @@ flowchart LR
 - 远程订阅手动同步。
 - 核心运行期间阻止配置选择和编辑，避免运行输入与用户编辑内容分裂。
 
-未纳入 M1 完成定义的内容：高级分区编辑、备份恢复和完整自动更新调度；Deep Link 基础导入及本轮冷启动、重复导入和错误反馈回归已完成。二维码图片导入已完成代码和单元测试，真机验收仍待进行。
+未纳入 M1 完成定义的内容：高级分区编辑、备份恢复和完整自动更新调度；Deep Link 基础导入及本轮冷启动、重复导入和错误反馈回归已完成。二维码图片导入已完成代码、单元测试和当前两条授权路径真机验收。
 
 ### M2：Mihomo 配置校验与应用 — `DONE-VERIFIED`
 
@@ -203,7 +203,7 @@ flowchart LR
 - `MainActivity` 已接入 `VpnService.prepare()` 和 Activity Result 授权回调。
 - 启动失败会停止服务、清理监听器，管理器不会把失败报告为 `RUNNING`。
 - 停止时向绑定中的 `VpnService` 发送显式 stop action，再停止服务组件，避免系统绑定导致 TUN 残留。
-- 服务层和管理器新增失败回滚测试；当前总计 90 项 Kotlin 单元测试通过。
+- 服务层和管理器新增失败回滚测试；当前总计 91 项 Kotlin 单元测试通过。
 
 本轮真机验收记录（2026-10-25，设备 `wsvwypiz7xwslvl7`，Android 16 / API 36）：
 
@@ -258,7 +258,7 @@ flowchart LR
 
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
-- `./gradlew test :app:assembleDebug --no-daemon` 通过；90 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
+- `./gradlew test :app:assembleDebug --no-daemon` 通过；91 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
 - Debug APK 安装成功；启动核心后首页实际收到 DNS 查询（4 条）和核心日志（3 条），卡片出现“查看全部/清空”操作；停止态观测卡片恢复启动核心提示。
 - 停止后 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务均已清理。
 - 本轮仅使用当前工作区根目录 `AGENTS.md` 列出的两条用户授权路径；设备内两次请求均在 20 秒超时并返回 HTTP `000`，未形成非零连接和流量归因证据。
@@ -289,7 +289,9 @@ flowchart LR
 - `:app:assembleDebug` 通过，APK 只包含 `arm64-v8a` 的原生库。
 - 通过 `kclash://install-config` 触发当前授权订阅导入，设备 UI 显示远程订阅及用量信息；随后删除该测试 Profile，恢复空配置状态。
 - 强制停止应用后再通过 `kclash://install-config` 冷启动导入成功；再次发送同一链接显示“该订阅已经添加”，没有创建重复 Profile。
-- 二维码解析分支已通过 JVM 单元测试和 Debug 构建；尚未在授权真机上用二维码图片完成导入验收。
+- 二维码解析分支已通过 JVM 单元测试和 Debug 构建；两条当前授权路径均已通过二维码图片在真机导入，第一条显示订阅用量，第二条显示 `clash-1220f4ac` 远程订阅。
+- 第二条路径首次暴露 HTTP 301 跨协议重定向缺口，已限制放行 `clash.tkbond.us` 的明文入口并由订阅客户端手动跟随 HTTP/HTTPS 重定向；新增本地 301→200 回归测试。
+- 第二条二维码重复导入显示“该订阅已经添加”；验收结束后两个测试 Profile 均通过应用内删除，设备恢复“还没有配置”空态。
 
 待完成：
 
@@ -384,7 +386,7 @@ flowchart LR
 
 当前已有：
 
-- 90 项 Kotlin 单元测试。
+- 91 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示。
@@ -454,7 +456,7 @@ flowchart LR
 
 建议范围：
 
-1. 二维码真机验收和导入体验完善。
+1. 二维码导入回归和体验完善。
 2. 高级配置分区编辑。
 3. URLTest/Fallback 完整语义。
 4. 批量测速、搜索、缓存和结果失效。
