@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-25（北京时间）
 >
-> 当前基线：`kotlin` 分支，HEAD `ba9ecefa`
+> 当前基线：`kotlin` 分支，HEAD `df7486c2`
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -47,7 +47,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | 本地比 `origin/kotlin` 超前 2 个提交；本轮未推送 |
+| 远端关系 | 本地 `kotlin` 与 `origin/kotlin` 已同步，无未推送提交 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
