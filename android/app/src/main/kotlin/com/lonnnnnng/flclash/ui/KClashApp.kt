@@ -64,6 +64,8 @@ fun KClashApp(
     proxyGroupsViewModel: ProxyGroupsViewModel,
     onStartRuntime: () -> Unit,
     onStopRuntime: () -> Unit,
+    batteryOptimizationIgnored: Boolean,
+    onRequestBatteryOptimization: () -> Unit,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
@@ -177,6 +179,12 @@ fun KClashApp(
                 RuntimeStatsCard(
                     state = runtimeStats,
                     runtimeState = runtimeState,
+                )
+            }
+            item {
+                BatteryOptimizationCard(
+                    ignored = batteryOptimizationIgnored,
+                    onRequest = onRequestBatteryOptimization,
                 )
             }
             item {
@@ -484,6 +492,32 @@ private fun delayLabel(delay: ProxyDelayUiState?): String = when {
     // 作者 long：保留 Mihomo 的超时/失败语义，让用户区分网络超时和普通测试失败。
     delay.value == CoreBridge.DELAY_TIMED_OUT -> "超时"
     else -> "失败"
+}
+
+@Composable
+private fun BatteryOptimizationCard(
+    ignored: Boolean,
+    onRequest: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("后台运行", style = MaterialTheme.typography.titleMedium)
+            Text(
+                if (ignored) {
+                    "电池优化已忽略，系统不会主动限制 KClash 的后台 VPN 服务。"
+                } else {
+                    "建议关闭电池优化，避免系统在后台暂停 KClash 的 VPN 服务。"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (!ignored) {
+                OutlinedButton(onClick = onRequest) {
+                    Text("打开电池优化设置")
+                }
+            }
+        }
+    }
 }
 
 @Composable

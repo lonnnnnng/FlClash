@@ -12,6 +12,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.lonnnnnng.flclash.ui.KClashApp
 import com.lonnnnnng.flclash.ui.MainViewModel
 import com.lonnnnnng.flclash.ui.ProfilesViewModel
@@ -39,11 +42,13 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission(),
     ) { }
 
+    private var batteryOptimizationIgnored by mutableStateOf(false)
     private var initialDeepLinkHandled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
         setContent {
             KClashTheme {
                 KClashApp(
@@ -52,6 +57,8 @@ class MainActivity : ComponentActivity() {
                     proxyGroupsViewModel = proxyGroupsViewModel,
                     onStartRuntime = ::requestRuntimeStart,
                     onStopRuntime = viewModel::stopRuntime,
+                    batteryOptimizationIgnored = batteryOptimizationIgnored,
+                    onRequestBatteryOptimization = ::requestBatteryOptimization,
                 )
             }
         }
@@ -73,10 +80,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
         if (!initialDeepLinkHandled) {
             initialDeepLinkHandled = true
             // 作者 long：等 Compose 建立错误收集器后再消费首个链接，避免无效 Deep Link 的提示在首帧前丢失。
             window.decorView.post { handleDeepLink(intent) }
+        }
+    }
+
+    private fun requestBatteryOptimization() {
+        if (!BatteryOptimization.openSettings(this)) {
+            viewModel.reportError("无法打开电池优化设置")
         }
     }
 

@@ -119,4 +119,5 @@
 - Tile 组件由 `android.permission.BIND_QUICK_SETTINGS_TILE` 保护；`dumpsys package` 显示 `android.service.quicksettings.action.QS_TILE` resolver 指向 `.KClashTileService`，没有出现 `SecurityException` 或 `FATAL EXCEPTION`。
 - 通过 `adb -s wsvwypiz7xwslvl7 shell am start -a` 分别发送 `com.lonnnnnng.flclash.action.START`、`STOP`、`TOGGLE` 验证外部 Action：`START` 建立两个前台服务、`tun0` 和 `198.18.0.0/30` 路由，`STOP` 清理，`TOGGLE` 可往返切换。
 - 外部入口 `ExternalActionActivity` 只接受固定 action；使用 `--es unexpected value` 发送额外参数时直接结束，服务和路由保持停止；验收后删除测试 Profile，首页恢复“还没有配置”。
+- 首页“后台运行”卡片显示“建议关闭电池优化”；点击“打开电池优化设置”后，真机进入 `com.android.settings/.fuelgauge.RequestIgnoreBatteryOptimizations`，系统对话框显示 KClash 和“允许”按钮。按返回取消后回到首页，状态仍为未忽略。
 - 验收 Profile 已通过应用内删除，首页显示“还没有配置”；未发现 `FATAL EXCEPTION`。
