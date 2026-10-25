@@ -12,6 +12,8 @@
 
 **个人 fork**：`lonnnnnng/FlClash`，承载 Kotlin 主线的远程开发和发布分支。
 
+**Android 手机范围**：Kotlin 主线首发面向 Android 手机的竖屏和横屏体验，包含 Flutter Android 端已有的网络代理和配置管理能力；Android TV、平板、车机和桌面平台不属于首发验收范围。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
