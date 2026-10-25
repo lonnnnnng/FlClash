@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.ProfileType
+import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,6 +26,7 @@ data class ProfilesUiState(
 @HiltViewModel
 class ProfilesViewModel @Inject constructor(
     private val repository: ProfileRepository,
+    private val runtimeManager: CoreRuntimeManager,
 ) : ViewModel() {
     private val busy = MutableStateFlow(false)
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -39,7 +41,13 @@ class ProfilesViewModel @Inject constructor(
 
     val errors = mutableErrors.asSharedFlow()
 
-    fun select(id: Long) = launchAction { repository.selectProfile(id) }
+    fun select(id: Long) {
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再切换配置")
+            return
+        }
+        launchAction { repository.selectProfile(id) }
+    }
 
     fun addRemote(url: String, label: String) = launchAction {
         repository.addRemoteProfile(url, label)

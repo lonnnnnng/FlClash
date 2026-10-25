@@ -6,7 +6,15 @@ import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.HttpSubscriptionClient
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.SubscriptionClient
+import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.service.ActiveProfileProvider
+import com.lonnnnnng.flclash.service.AndroidProxyServiceController
+import com.lonnnnnng.flclash.service.CoreRuntimeBridge
+import com.lonnnnnng.flclash.service.CoreRuntimePaths
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
+import com.lonnnnnng.flclash.service.NativeCoreRuntimeBridge
+import com.lonnnnnng.flclash.service.ProxyServiceController
+import java.io.File
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,6 +46,33 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCoreRuntimeManager(@ApplicationContext context: Context): CoreRuntimeManager =
-        CoreRuntimeManager(context)
+    fun provideActiveProfileProvider(repository: ProfileRepository): ActiveProfileProvider = repository
+
+    @Provides
+    @Singleton
+    fun provideCoreRuntimeBridge(coreBridge: CoreBridge): CoreRuntimeBridge =
+        NativeCoreRuntimeBridge(coreBridge)
+
+    @Provides
+    @Singleton
+    fun provideCoreRuntimePaths(@ApplicationContext context: Context): CoreRuntimePaths =
+        CoreRuntimePaths(File(context.filesDir, "mihomo"))
+
+    @Provides
+    @Singleton
+    fun provideProxyServiceController(@ApplicationContext context: Context): ProxyServiceController =
+        AndroidProxyServiceController(context)
+
+    @Provides
+    @Singleton
+    fun provideCoreBridge(): CoreBridge = CoreBridge()
+
+    @Provides
+    @Singleton
+    fun provideCoreRuntimeManager(
+        paths: CoreRuntimePaths,
+        profileProvider: ActiveProfileProvider,
+        bridge: CoreRuntimeBridge,
+        serviceController: ProxyServiceController,
+    ): CoreRuntimeManager = CoreRuntimeManager(paths, profileProvider, bridge, serviceController)
 }

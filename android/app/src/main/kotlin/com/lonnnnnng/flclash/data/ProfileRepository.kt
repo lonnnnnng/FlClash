@@ -2,6 +2,8 @@ package com.lonnnnnng.flclash.data
 
 import android.content.Context
 import androidx.room.withTransaction
+import com.lonnnnnng.flclash.service.ActiveProfile
+import com.lonnnnnng.flclash.service.ActiveProfileProvider
 import java.io.File
 import java.io.IOException
 import java.util.UUID
@@ -19,7 +21,7 @@ class ProfileRepository(
     context: Context,
     private val database: KClashDatabase,
     private val subscriptionClient: SubscriptionClient,
-) {
+) : ActiveProfileProvider {
     private val appContext = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val profileDao = database.profiles()
@@ -149,6 +151,18 @@ class ProfileRepository(
     }
 
     fun profileFile(id: Long): File = File(File(appContext.filesDir, PROFILES_DIRECTORY), "$id.yaml")
+
+    override suspend fun activeProfile(): ActiveProfile = withContext(Dispatchers.IO) {
+        val id = mutableCurrentProfileId.value
+        val profile = id?.let { profileDao.getById(it)?.toDomain() }
+            ?: profileDao.getAll().firstOrNull()?.toDomain()
+        requireNotNull(profile) { "没有可用配置" }
+        ActiveProfile(
+            id = profile.id,
+            label = profile.realLabel,
+            filePath = profileFile(profile.id).path,
+        )
+    }
 
     private suspend fun ensureCurrentProfile(id: Long) {
         if (mutableCurrentProfileId.value == null) selectProfile(id)

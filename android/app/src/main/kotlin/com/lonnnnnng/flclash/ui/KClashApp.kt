@@ -61,6 +61,12 @@ fun KClashApp(
         }
     }
 
+    LaunchedEffect(runtimeViewModel) {
+        runtimeViewModel.errors.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
     Scaffold(
         topBar = { TopAppBar(title = { Text("KClash") }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },

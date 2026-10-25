@@ -1,10 +1,9 @@
 package com.lonnnnnng.flclash.service
 
-import android.content.Context
-import android.content.Intent
-import androidx.core.content.ContextCompat
-import com.lonnnnnng.flclash.core.Core
+import android.os.Build
 import com.lonnnnnng.flclash.service.models.NotificationParams
+import java.io.File
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -26,9 +25,13 @@ enum class CoreRuntimeStatus(
  * 作者 long：所有页面和服务共用这一条核心生命周期，避免启动请求在 UI、VPN 服务之间产生两个事实来源。
  */
 class CoreRuntimeManager(
-    private val context: Context,
+    private val paths: CoreRuntimePaths,
+    private val profileProvider: ActiveProfileProvider,
+    private val bridge: CoreRuntimeBridge,
+    private val serviceController: ProxyServiceController,
 ) {
     private val transitionLock = Mutex()
+    private val initialized = AtomicBoolean(false)
     private val listenerStarted = AtomicBoolean(false)
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.STOPPED)
 
@@ -40,15 +43,20 @@ class CoreRuntimeManager(
         }
         mutableState.value = CoreRuntimeStatus.STARTING
         runCatching {
+            val profile = requireNotNull(profileProvider.activeProfile()) { "请先添加可用配置" }
+            ensureInitialized()
+            stageConfig(profile.filePath)
+            // 作者 long：Mihomo 解析失败时会回退到内置空配置，所以必须先独立校验文件，
+            // 只有校验通过后才允许调用 setupConfig，避免把回退状态报告成可用代理。
+            bridge.validateConfig(paths.configFile.path)
+            bridge.setupConfig()
             ServiceConfig.updateNotificationParams(
                 NotificationParams(title = "KClash", showStopAction = false),
             )
-            ContextCompat.startForegroundService(
-                context,
-                Intent(context, ProxyService::class.java),
-            )
-            if (listenerStarted.compareAndSet(false, true)) {
-                Core.startListener()
+            serviceController.start()
+            if (!listenerStarted.get()) {
+                bridge.startListener()
+                listenerStarted.set(true)
             }
             mutableState.value = CoreRuntimeStatus.RUNNING
         }.onFailure {
@@ -62,14 +70,48 @@ class CoreRuntimeManager(
         }
         mutableState.value = CoreRuntimeStatus.STOPPING
         runCatching {
-            context.stopService(Intent(context, ProxyService::class.java))
-            context.stopService(Intent(context, VpnService::class.java))
-            if (listenerStarted.compareAndSet(true, false)) {
-                Core.stopListener()
+            serviceController.stop()
+            if (listenerStarted.get()) {
+                bridge.stopListener()
+                listenerStarted.set(false)
             }
             mutableState.value = CoreRuntimeStatus.STOPPED
         }.onFailure {
             mutableState.value = CoreRuntimeStatus.FAILED
+        }
+    }
+
+    private suspend fun ensureInitialized() {
+        if (initialized.get()) return
+        paths.homeDir.mkdirs()
+        if (initialized.compareAndSet(false, true)) {
+            runCatching {
+                bridge.initialize(paths.homeDir.path, Build.VERSION.SDK_INT)
+            }.onFailure {
+                initialized.set(false)
+            }.getOrThrow()
+        }
+    }
+
+    private fun stageConfig(sourcePath: String) {
+        val source = File(sourcePath)
+        require(source.isFile) { "配置文件不存在：${source.path}" }
+        paths.homeDir.mkdirs()
+        val temporary = File(paths.homeDir, ".${paths.configFile.name}.tmp")
+        try {
+            source.inputStream().use { input ->
+                temporary.outputStream().use { output -> input.copyTo(output) }
+            }
+            if (!temporary.renameTo(paths.configFile)) {
+                paths.configFile.outputStream().use { output ->
+                    temporary.inputStream().use { input -> input.copyTo(output) }
+                }
+                if (!temporary.delete()) {
+                    throw IOException("无法清理核心配置临时文件")
+                }
+            }
+        } finally {
+            if (temporary.exists()) temporary.delete()
         }
     }
 }

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -12,13 +14,19 @@ class MainViewModel @Inject constructor(
     private val runtimeManager: CoreRuntimeManager,
 ) : ViewModel() {
     val runtimeState = runtimeManager.state
+    private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
+
+    val errors = mutableErrors.asSharedFlow()
 
     fun toggleRuntime() {
         viewModelScope.launch {
-            if (runtimeManager.state.value.isRunning) {
+            val result = if (runtimeManager.state.value.isRunning) {
                 runtimeManager.stop()
             } else {
                 runtimeManager.startProxy()
+            }
+            result.onFailure { error ->
+                mutableErrors.emit(error.message ?: "核心操作失败")
             }
         }
     }
