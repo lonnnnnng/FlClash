@@ -16,15 +16,21 @@ class ProfileTypeConverters {
 }
 
 /**
- * 作者 long：Room 只管理 KClash 自己的模型；第二版迁移只为第一阶段已经存在的 KClash 数据补充
- * profiles 表，不读取 Flutter/Drift 的历史数据库。
+ * 作者 long：Room 只管理 KClash 自己的模型；诊断事件和 Profiles 都属于 Kotlin 应用自己的数据，
+ * 不读取 Flutter/Drift 的历史数据库。
  */
-@Database(entities = [AppPreferenceEntity::class, ProfileEntity::class], version = 2, exportSchema = false)
+@Database(
+    entities = [AppPreferenceEntity::class, ProfileEntity::class, RuntimeDiagnosticEntity::class],
+    version = 3,
+    exportSchema = false,
+)
 @TypeConverters(ProfileTypeConverters::class)
 abstract class KClashDatabase : RoomDatabase() {
     abstract fun appPreferences(): AppPreferenceDao
 
     abstract fun profiles(): ProfileDao
+
+    abstract fun runtimeDiagnostics(): RuntimeDiagnosticDao
 
     companion object {
         val MIGRATION_1_2: Migration = object : Migration(1, 2) {
@@ -57,6 +63,25 @@ abstract class KClashDatabase : RoomDatabase() {
                     """.trimIndent(),
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_profiles_url ON profiles(url)")
+            }
+        }
+
+        val MIGRATION_2_3: Migration = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS runtime_diagnostic_events (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        kind TEXT NOT NULL,
+                        detail TEXT NOT NULL,
+                        timestampMillis INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_runtime_diagnostic_events_timestampMillis " +
+                        "ON runtime_diagnostic_events(timestampMillis)",
+                )
             }
         }
     }

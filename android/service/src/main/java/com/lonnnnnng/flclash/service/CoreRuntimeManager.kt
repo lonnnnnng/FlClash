@@ -39,7 +39,12 @@ class CoreRuntimeManager(
     private val serviceController: ProxyServiceController,
     private val vpnOptionsProvider: VpnOptionsProvider,
     private val runtimeResumeStore: RuntimeResumeStore,
+    private val runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
 ) {
+    init {
+        RuntimeDiagnosticHistory.configure(runtimeDiagnosticStore)
+    }
+
     private val transitionLock = Mutex()
     private val initialized = AtomicBoolean(false)
     private val listenerStarted = AtomicBoolean(false)
@@ -52,6 +57,18 @@ class CoreRuntimeManager(
     val events: Flow<CoreEvent> = bridge.events
     val eventFlowStats = bridge.eventFlowStats
     val diagnosticEvents = RuntimeDiagnosticHistory.events
+
+    suspend fun restoreDiagnosticHistory(markNextStartAsRestart: Boolean): List<RuntimeDiagnosticEvent> {
+        val restored = RuntimeDiagnosticHistory.restore()
+        if (markNextStartAsRestart && restored.any { event ->
+                event.kind == RuntimeDiagnosticKind.CORE_STARTED ||
+                    event.kind == RuntimeDiagnosticKind.CORE_RESTARTED
+            }
+        ) {
+            hasSuccessfulRun = true
+        }
+        return restored
+    }
 
     suspend fun startProxy(): Result<Unit> = transitionLock.withLock {
         if (mutableState.value == CoreRuntimeStatus.RUNNING) {
@@ -85,7 +102,7 @@ class CoreRuntimeManager(
                 listenerStarted.set(true)
             }
             mutableState.value = CoreRuntimeStatus.RUNNING
-            RuntimeDiagnosticHistory.record(
+            RuntimeDiagnosticHistory.recordAndFlush(
                 if (hasSuccessfulRun) {
                     RuntimeDiagnosticKind.CORE_RESTARTED
                 } else {
@@ -114,6 +131,8 @@ class CoreRuntimeManager(
                 RuntimeDiagnosticKind.CORE_FAILED,
                 error::class.simpleName ?: "核心启动失败",
             )
+        }.also { result ->
+            if (result.isFailure) RuntimeDiagnosticHistory.flush()
         }
     }
 
@@ -139,13 +158,15 @@ class CoreRuntimeManager(
                 logListenerStarted.set(false)
             }
             mutableState.value = CoreRuntimeStatus.STOPPED
-            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.CORE_STOPPED, "核心已停止")
+            RuntimeDiagnosticHistory.recordAndFlush(RuntimeDiagnosticKind.CORE_STOPPED, "核心已停止")
         }.onFailure { error ->
             mutableState.value = CoreRuntimeStatus.FAILED
             RuntimeDiagnosticHistory.record(
                 RuntimeDiagnosticKind.CORE_FAILED,
                 error::class.simpleName ?: "核心停止失败",
             )
+        }.also { result ->
+            if (result.isFailure) RuntimeDiagnosticHistory.flush()
         }
     }
 
@@ -167,7 +188,7 @@ class CoreRuntimeManager(
             serviceController.stop()
             stopListeners()
             mutableState.value = CoreRuntimeStatus.FAILED
-            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.VPN_REVOKED, "系统撤销 VPN")
+            RuntimeDiagnosticHistory.recordAndFlush(RuntimeDiagnosticKind.VPN_REVOKED, "系统撤销 VPN")
         }.onFailure { error ->
             stopListeners()
             mutableState.value = CoreRuntimeStatus.FAILED
@@ -175,6 +196,8 @@ class CoreRuntimeManager(
                 RuntimeDiagnosticKind.CORE_FAILED,
                 error::class.simpleName ?: "VPN 撤销收口失败",
             )
+        }.also { result ->
+            if (result.isFailure) RuntimeDiagnosticHistory.flush()
         }
     }
 

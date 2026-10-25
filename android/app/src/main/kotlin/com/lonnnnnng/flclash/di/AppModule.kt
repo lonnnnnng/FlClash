@@ -6,6 +6,7 @@ import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.HttpSubscriptionClient
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
+import com.lonnnnnng.flclash.data.RoomRuntimeDiagnosticStore
 import com.lonnnnnng.flclash.data.SubscriptionClient
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.service.ActiveProfileProvider
@@ -16,6 +17,7 @@ import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.NativeCoreRuntimeBridge
 import com.lonnnnnng.flclash.service.ProxyServiceController
 import com.lonnnnnng.flclash.service.RuntimeResumeStore
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticStore
 import com.lonnnnnng.flclash.service.DefaultVpnOptionsProvider
 import com.lonnnnnng.flclash.service.VpnOptionsProvider
 import java.io.File
@@ -34,6 +36,7 @@ object AppModule {
     fun provideDatabase(@ApplicationContext context: Context): KClashDatabase =
         Room.databaseBuilder(context, KClashDatabase::class.java, "kclash.db")
             .addMigrations(KClashDatabase.MIGRATION_1_2)
+            .addMigrations(KClashDatabase.MIGRATION_2_3)
             .build()
 
     @Provides
@@ -78,6 +81,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideRuntimeDiagnosticStore(database: KClashDatabase): RuntimeDiagnosticStore =
+        RoomRuntimeDiagnosticStore(database.runtimeDiagnostics())
+
+    @Provides
+    @Singleton
     fun provideCoreBridge(): CoreBridge = CoreBridge()
 
     @Provides
@@ -89,6 +97,7 @@ object AppModule {
         serviceController: ProxyServiceController,
         vpnOptionsProvider: VpnOptionsProvider,
         runtimeResumeStore: RuntimeResumeStore,
+        runtimeDiagnosticStore: RuntimeDiagnosticStore,
     ): CoreRuntimeManager = CoreRuntimeManager(
         paths = paths,
         profileProvider = profileProvider,
@@ -96,5 +105,6 @@ object AppModule {
         serviceController = serviceController,
         vpnOptionsProvider = vpnOptionsProvider,
         runtimeResumeStore = runtimeResumeStore,
+        runtimeDiagnosticStore = runtimeDiagnosticStore,
     )
 }

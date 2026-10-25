@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-26（北京时间）
 >
-> 当前基线：`kotlin` 分支；本轮进程重建恢复切片已完成代码、自动化和真机验收，路线图更新后推送至 `origin/kotlin`
+> 当前基线：`kotlin` 分支；本轮 Room 诊断持久化边界切片已完成代码、自动化和真机 instrumentation 验收，路线图随本轮提交同步更新
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -56,7 +56,7 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 109 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 115 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
@@ -241,7 +241,7 @@ flowchart LR
 
 ### 7.2 连接、流量和运行观测
 
-状态：`PARTIAL`，流量、连接数、活动连接、Requests、DNS 和核心日志的基础观测与真实请求归因已验证，详情级交互已支持搜索、筛选、自动跟随和脱敏导出，事件流已具备有界背压和健康统计；页面退出后的轮询收敛、真实高负载压力和长期跨进程关联仍待完成。
+状态：`PARTIAL`，流量、连接数、活动连接、Requests、DNS 和核心日志的基础观测与真实请求归因已验证，详情级交互已支持搜索、筛选、自动跟随和脱敏导出，事件流已具备有界背压和健康统计，运行诊断历史已接入 Room 并覆盖固定上限；页面退出后的轮询收敛、真实高负载压力和进程重建后的完整诊断关联仍待完成。
 
 当前已有：
 
@@ -263,8 +263,7 @@ flowchart LR
 
 - 核心日志更细的故障诊断交互。
 - 页面退出后停止不必要的轮询。
-- 真实高负载下的事件流压力验收和跨进程诊断历史关联。
-- 页面退出后停止不必要的轮询。
+- 真实高负载下的事件流压力验收和进程重建后的完整诊断历史关联。
 
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
@@ -489,7 +488,7 @@ flowchart LR
 
 目标：让真机问题可以在应用内定位，而不是只能依赖 logcat。
 
-当前进度：DNS/日志 Bridge、列表、清空、内容筛选、日志级别筛选、脱敏导出、诊断会话证据包和核心/网络/DNS 运行诊断记录已完成代码、单元测试和 Redmi 真机闭环；下一步补充更细故障诊断交互和核心重启后的跨进程诊断关联。
+当前进度：DNS/日志 Bridge、列表、清空、内容筛选、日志级别筛选、脱敏导出、诊断会话证据包和核心/网络/DNS 运行诊断记录已完成代码、单元测试和 Redmi 真机闭环；Room 持久化边界和生命周期锚点已完成自动化与真机 instrumentation 验证，下一步补充更细故障诊断交互、进程重建后的端到端诊断关联和数据库迁移验收。
 
 建议范围：
 
@@ -527,7 +526,16 @@ flowchart LR
 - 最终 Debug APK 安装到 `wsvwypiz7xwslvl7`（Redmi Note 8 Pro，Android 16/API 36），仅包含 `arm64-v8a`，SHA-256 为 `a5fa9f91db26b3fd5a7e1c1e930f17774f5da19939b1d6b6db297a4f51870ab4`。
 - 使用第二条当前授权路径启动后首次 probe 出现一次真实网络失败；停止并重启核心后重试返回 HTTP 200，UI 显示“诊断会话：通过 · 运行 7 · 请求 2 · DNS 6 · 日志 2”。最终导出证据中的 `[event_flow]` 为 `parsed_batches=14`、`parsed_events=17`、`emitted_events=17`、`dropped_events=0`、`truncated_events=0`。
 - 核心持续运行 40 秒后，PID `26899`、两个前台服务、`tun0` 和 `198.18.0.0/30` 路由保持，未发现应用 `FATAL EXCEPTION`。停止核心后服务和路由清理，测试 Profile 已删除并恢复“还没有配置”。
-- 本切片已完成有界事件流和证据统计；真实高负载压力、页面退出轮询生命周期和跨进程诊断历史关联仍列为后续工作。
+- 本切片已完成有界事件流和证据统计；真实高负载压力、页面退出轮询生命周期和进程重建后的完整诊断历史关联仍列为后续工作。
+
+### 2026-10-26：运行诊断 Room 持久化边界切片
+
+- `KClashDatabase` 升至 version 3，新增 `runtime_diagnostic_events` 表和 `MIGRATION_2_3`；`RoomRuntimeDiagnosticStore` 接入 `RuntimeDiagnosticHistory`，应用进程启动时先恢复有界历史，再决定是否把下一次核心启动标记为 `CORE_RESTARTED`。
+- DAO trim 改为按自增 ID 保留最新 200 条，修复原实现插入 201 条时会多保留 1 条的边界错误；核心启动、停止和 VPN 撤销的生命周期锚点在方法返回前等待持久化，失败路径也会等待队列清空。
+- 新增 JVM 断言，验证诊断历史与持久化存储的顺序一致，以及恢复历史后下一次自动启动记录为重启；`./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 通过，115 项 Kotlin 单元测试通过，失败 0、错误 0、跳过 0。
+- 新增 Android instrumentation DAO 测试，使用当前连接的 Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）内存 Room 数据库插入 201 条并验证只保留最新 200 条，同时验证恢复顺序；`:app:connectedDebugAndroidTest` 通过，2 项测试通过。
+- Debug APK 构建通过，原生库仍仅包含 `arm64-v8a`，SHA-256 为 `dbcede6b6262d353b049309decc6e076f549980f5c7d9346d6bc13249d52590e`。
+- 本切片仍未完成：version 2→3 的真实迁移升级测试、应用被系统杀死后的端到端 UI 诊断历史关联、长时间/高负载下异步网络事件的最终落盘保证，以及页面退出后的轮询收敛。
 
 ### N4：Profiles 和代理组 parity
 

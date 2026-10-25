@@ -84,6 +84,8 @@ android {
     sourceSets {
         // 作者 long：AGP 9 的内置 Kotlin 只从 Kotlin 源集读取这些跨目录单元测试。
         getByName("test").kotlin.srcDirs("../tests/app")
+        // 作者 long：Room DAO 只有在 Android SQLite 实现上才能验证，单独接入真机 instrumentation 源集。
+        getByName("androidTest").kotlin.srcDirs("../tests/instrumented")
     }
 
     packaging {
@@ -124,4 +126,8 @@ dependencies {
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidxTestCoreLib)
+    androidTestImplementation(libs.androidxTestRunnerLib)
+    androidTestImplementation(libs.androidxTestExtJunitLib)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }

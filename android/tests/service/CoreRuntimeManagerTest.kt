@@ -237,11 +237,13 @@ class CoreRuntimeManagerTest {
     @Test
     fun `core lifecycle records start stop and restart evidence`() = runTest {
         val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val store = FakeRuntimeDiagnosticStore()
         val manager = manager(
             profile = ActiveProfile(18, "生命周期配置", source.path),
             homeDir = temporaryFolder.newFolder("core"),
             bridge = FakeBridge(),
             controller = FakeServiceController(),
+            runtimeDiagnosticStore = store,
         )
 
         manager.startProxy().getOrThrow()
@@ -254,6 +256,35 @@ class CoreRuntimeManagerTest {
                 RuntimeDiagnosticKind.CORE_STOPPED,
                 RuntimeDiagnosticKind.CORE_RESTARTED,
             ),
+            RuntimeDiagnosticHistory.events.value.map { it.kind },
+        )
+        assertEquals(
+            RuntimeDiagnosticHistory.events.value.map { it.kind },
+            store.events.map { it.kind },
+        )
+    }
+
+    @Test
+    fun `restored running history marks the next automatic start as restart`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val store = FakeRuntimeDiagnosticStore(
+            mutableListOf(
+                RuntimeDiagnosticEvent(RuntimeDiagnosticKind.CORE_STARTED, "旧进程启动", 1L),
+            ),
+        )
+        val manager = manager(
+            profile = ActiveProfile(19, "重建配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = FakeBridge(),
+            controller = FakeServiceController(),
+            runtimeDiagnosticStore = store,
+        )
+
+        manager.restoreDiagnosticHistory(markNextStartAsRestart = true)
+        manager.startProxy().getOrThrow()
+
+        assertEquals(
+            listOf(RuntimeDiagnosticKind.CORE_STARTED, RuntimeDiagnosticKind.CORE_RESTARTED),
             RuntimeDiagnosticHistory.events.value.map { it.kind },
         )
     }
@@ -356,6 +387,7 @@ class CoreRuntimeManagerTest {
         bridge: FakeBridge,
         controller: FakeServiceController,
         runtimeResumeStore: FakeRuntimeResumeStore = FakeRuntimeResumeStore(),
+        runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
     ): CoreRuntimeManager {
         return CoreRuntimeManager(
             paths = CoreRuntimePaths(homeDir),
@@ -366,6 +398,7 @@ class CoreRuntimeManagerTest {
             serviceController = controller,
             vpnOptionsProvider = DefaultVpnOptionsProvider(),
             runtimeResumeStore = runtimeResumeStore,
+            runtimeDiagnosticStore = runtimeDiagnosticStore,
         )
     }
 
@@ -376,6 +409,20 @@ class CoreRuntimeManagerTest {
 
         override suspend fun setShouldResume(value: Boolean) {
             shouldResume = value
+        }
+    }
+
+    private class FakeRuntimeDiagnosticStore(
+        var events: MutableList<RuntimeDiagnosticEvent> = mutableListOf(),
+    ) : RuntimeDiagnosticStore {
+        override suspend fun loadRecent(limit: Int): List<RuntimeDiagnosticEvent> = events.takeLast(limit)
+
+        override suspend fun append(event: RuntimeDiagnosticEvent, limit: Int) {
+            events = (events + event).takeLast(limit).toMutableList()
+        }
+
+        override suspend fun clear() {
+            events.clear()
         }
     }
 

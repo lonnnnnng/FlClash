@@ -32,7 +32,11 @@ class KClashApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         applicationScope.launch {
-            if (!runtimeResumeStore.shouldResume()) return@launch
+            val shouldResume = runtimeResumeStore.shouldResume()
+            // 作者 long：先恢复上一轮诊断时间线，再决定是否自动重启核心；这样进程重建后的
+            // CORE_RESTARTED 会紧接在崩溃前事件之后，而不是从空历史重新开始。
+            runtimeManager.restoreDiagnosticHistory(markNextStartAsRestart = shouldResume)
+            if (!shouldResume) return@launch
             // 作者 long：没有可交互的 Activity 时不能弹 VPN 授权页；授权失效则保留意图，等用户回到页面后重新授权。
             if (VpnService.prepare(this@KClashApplication) != null) return@launch
             runtimeManager.startProxy()
