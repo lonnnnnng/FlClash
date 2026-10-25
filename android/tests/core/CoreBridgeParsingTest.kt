@@ -191,4 +191,42 @@ class CoreBridgeParsingTest {
         assertEquals("error", log.level)
         assertEquals("failed", log.payload)
     }
+
+    @Test
+    fun `event parser maps dns query details`() {
+        val events = bridge.parseEvents(
+            """
+            {
+              "method":"message",
+              "arguments":[
+                {
+                  "type":"dns",
+                  "data":{
+                    "domain":"api.example.com",
+                    "type":"A",
+                    "initiator":"com.example.app",
+                    "upstream":"https://dns.example/query",
+                    "cached":true,
+                    "answers":["203.0.113.7","203.0.113.8"],
+                    "rcode":"NOERROR",
+                    "error":"",
+                    "delay":18,
+                    "time":"2026-10-25T11:00:00Z"
+                  }
+                }
+              ]
+            }
+            """.trimIndent().toByteArray(),
+        )
+
+        val query = (events.single() as CoreEvent.Dns).query
+        assertEquals("api.example.com", query.domain)
+        assertEquals("A", query.type)
+        assertEquals("com.example.app", query.initiator)
+        assertEquals("https://dns.example/query", query.upstream)
+        assertTrue(query.cached)
+        assertEquals(listOf("203.0.113.7", "203.0.113.8"), query.answers)
+        assertEquals("NOERROR", query.rcode)
+        assertEquals(18L, query.delay)
+    }
 }

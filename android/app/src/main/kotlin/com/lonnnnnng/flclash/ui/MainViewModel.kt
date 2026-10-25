@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
@@ -36,10 +37,18 @@ class MainViewModel @Inject constructor(
     private val mutableRequests = MutableStateFlow(RequestsUiState())
     val requests = mutableRequests.asStateFlow()
 
+    private val mutableDns = MutableStateFlow(DnsUiState())
+    val dns = mutableDns.asStateFlow()
+
+    private val mutableLogs = MutableStateFlow(LogsUiState())
+    val logs = mutableLogs.asStateFlow()
+
     init {
         viewModelScope.launch {
             runtimeManager.events.collect { event ->
                 mutableRequests.update { current -> current.apply(event) }
+                mutableDns.update { current -> current.apply(event) }
+                mutableLogs.update { current -> current.apply(event) }
             }
         }
         viewModelScope.launch {
@@ -48,6 +57,8 @@ class MainViewModel @Inject constructor(
                     mutableStats.value = RuntimeStatsUiState()
                     mutableConnections.value = ConnectionsUiState()
                     mutableRequests.value = RequestsUiState()
+                    mutableDns.value = DnsUiState()
+                    mutableLogs.value = LogsUiState()
                     return@collectLatest
                 }
                 while (isActive) {
@@ -77,6 +88,14 @@ class MainViewModel @Inject constructor(
 
     fun reportError(message: String) {
         mutableErrors.tryEmit(message)
+    }
+
+    fun clearDns() {
+        mutableDns.value = DnsUiState()
+    }
+
+    fun clearLogs() {
+        mutableLogs.value = LogsUiState()
     }
 
     fun toggleRuntime() {
@@ -175,4 +194,30 @@ data class RequestsUiState(
     }
 }
 
+data class DnsUiState(
+    val queries: List<CoreDnsQuery> = emptyList(),
+) {
+    /**
+     * 作者 long：DNS 查询是高频事件，只保留最近 1000 条，避免长时间运行时把每次解析都永久留在内存中。
+     */
+    internal fun apply(event: CoreEvent): DnsUiState = when (event) {
+        is CoreEvent.Dns -> copy(queries = (queries + event.query).takeLast(MAX_DNS_HISTORY))
+        else -> this
+    }
+}
+
+data class LogsUiState(
+    val entries: List<CoreEvent.Log> = emptyList(),
+) {
+    /**
+     * 作者 long：日志需要保留故障上下文但不能无限增长；清空由用户显式触发，便于围绕一次问题重新收集证据。
+     */
+    internal fun apply(event: CoreEvent): LogsUiState = when (event) {
+        is CoreEvent.Log -> copy(entries = (entries + event).takeLast(MAX_LOG_HISTORY))
+        else -> this
+    }
+}
+
 private const val MAX_REQUEST_HISTORY = 2_000
+private const val MAX_DNS_HISTORY = 1_000
+private const val MAX_LOG_HISTORY = 1_000

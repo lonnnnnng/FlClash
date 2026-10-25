@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.ui
 
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreConnectionMetadata
+import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreTrafficUpdate
 import org.junit.Assert.assertEquals
@@ -35,6 +36,30 @@ class MainViewModelTest {
         assertEquals("request-2005", state.requests.last().id)
     }
 
+    @Test
+    fun `dns history keeps the newest queries`() {
+        val state = (1..1_005).fold(DnsUiState()) { current, index ->
+            current.apply(CoreEvent.Dns(dnsQuery("example-$index.com")))
+        }
+
+        assertEquals(1_000, state.queries.size)
+        assertEquals("example-6.com", state.queries.first().domain)
+        assertEquals("example-1005.com", state.queries.last().domain)
+    }
+
+    @Test
+    fun `log state stores log events and ignores other event types`() {
+        val log = CoreEvent.Log(
+            level = "error",
+            payload = "连接失败",
+            timestampMillis = 1L,
+        )
+
+        val state = LogsUiState().apply(log).apply(CoreEvent.Request(connection("request-1")))
+
+        assertEquals(listOf(log), state.entries)
+    }
+
     private fun connection(id: String) = CoreConnection(
         id = id,
         upload = 0,
@@ -57,5 +82,18 @@ class MainViewModelTest {
         chains = listOf("DIRECT"),
         rule = "MATCH",
         rulePayload = "",
+    )
+
+    private fun dnsQuery(domain: String) = CoreDnsQuery(
+        domain = domain,
+        type = "A",
+        initiator = "com.example.app",
+        upstream = "198.18.0.2",
+        cached = false,
+        answers = listOf("203.0.113.7"),
+        rcode = "NOERROR",
+        error = "",
+        delay = 12L,
+        time = "2026-10-25T11:00:00Z",
     )
 }

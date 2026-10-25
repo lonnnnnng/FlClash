@@ -51,6 +51,8 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreDnsQuery
+import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import kotlinx.coroutines.launch
 
@@ -67,6 +69,8 @@ fun KClashApp(
     val runtimeStats by runtimeViewModel.stats.collectAsState()
     val runtimeConnections by runtimeViewModel.connections.collectAsState()
     val runtimeRequests by runtimeViewModel.requests.collectAsState()
+    val runtimeDns by runtimeViewModel.dns.collectAsState()
+    val runtimeLogs by runtimeViewModel.logs.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
@@ -75,6 +79,8 @@ fun KClashApp(
     val coroutineScope = rememberCoroutineScope()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
+    var showDns by rememberSaveable { mutableStateOf(false) }
+    var showLogs by rememberSaveable { mutableStateOf(false) }
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
 
     val filePicker = rememberLauncherForActivityResult(
@@ -163,6 +169,22 @@ fun KClashApp(
                     state = runtimeRequests,
                     runtimeState = runtimeState,
                     onShowAll = { showRequests = true },
+                )
+            }
+            item {
+                DnsCard(
+                    state = runtimeDns,
+                    runtimeState = runtimeState,
+                    onShowAll = { showDns = true },
+                    onClear = runtimeViewModel::clearDns,
+                )
+            }
+            item {
+                LogsCard(
+                    state = runtimeLogs,
+                    runtimeState = runtimeState,
+                    onShowAll = { showLogs = true },
+                    onClear = runtimeViewModel::clearLogs,
                 )
             }
             item {
@@ -261,6 +283,22 @@ fun KClashApp(
         RequestsDialog(
             state = runtimeRequests,
             onDismiss = { showRequests = false },
+        )
+    }
+
+    if (showDns) {
+        DnsDialog(
+            state = runtimeDns,
+            onDismiss = { showDns = false },
+            onClear = runtimeViewModel::clearDns,
+        )
+    }
+
+    if (showLogs) {
+        LogsDialog(
+            state = runtimeLogs,
+            onDismiss = { showLogs = false },
+            onClear = runtimeViewModel::clearLogs,
         )
     }
 
@@ -641,8 +679,211 @@ private fun RequestsDialog(
     )
 }
 
+@Composable
+private fun DnsCard(
+    state: DnsUiState,
+    runtimeState: CoreRuntimeStatus,
+    onShowAll: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "DNS 查询${if (runtimeState.isRunning) "（${state.queries.size}）" else ""}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (state.queries.isNotEmpty()) {
+                    TextButton(onClick = onShowAll) { Text("查看全部") }
+                    TextButton(onClick = onClear) { Text("清空") }
+                }
+            }
+            when {
+                !runtimeState.isRunning -> Text(
+                    "启动核心后显示 DNS 查询记录。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                state.queries.isEmpty() -> Text(
+                    "等待核心上报 DNS 查询事件。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                else -> state.queries.takeLast(MAX_OBSERVATION_ROWS).asReversed().forEach { query ->
+                    DnsQueryRow(query)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DnsQueryRow(query: CoreDnsQuery) {
+    val domain = query.domain.ifBlank { "未知域名" }
+    val details = listOf(query.type, query.rcode, query.upstream)
+        .filter { it.isNotBlank() }
+        .joinToString(" · ")
+    val result = when {
+        query.error.isNotBlank() -> "失败：${query.error}"
+        query.answers.isNotEmpty() -> query.answers.joinToString(", ")
+        else -> "无结果"
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(domain, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(
+            listOf(details, result).filter { it.isNotBlank() }.joinToString(" · "),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (query.error.isNotBlank()) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (query.delay > 0L) {
+            Text(
+                "耗时 ${query.delay} ms",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DnsDialog(
+    state: DnsUiState,
+    onDismiss: () -> Unit,
+    onClear: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("DNS 查询（${state.queries.size}）") },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 480.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(state.queries.asReversed()) { query ->
+                    DnsQueryRow(query)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+        dismissButton = {
+            TextButton(onClick = onClear, enabled = state.queries.isNotEmpty()) { Text("清空") }
+        },
+    )
+}
+
+@Composable
+private fun LogsCard(
+    state: LogsUiState,
+    runtimeState: CoreRuntimeStatus,
+    onShowAll: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "核心日志${if (runtimeState.isRunning) "（${state.entries.size}）" else ""}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (state.entries.isNotEmpty()) {
+                    TextButton(onClick = onShowAll) { Text("查看全部") }
+                    TextButton(onClick = onClear) { Text("清空") }
+                }
+            }
+            when {
+                !runtimeState.isRunning -> Text(
+                    "启动核心后显示 Mihomo 日志。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                state.entries.isEmpty() -> Text(
+                    "等待核心上报日志事件。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                else -> state.entries.takeLast(MAX_OBSERVATION_ROWS).asReversed().forEach { entry ->
+                    LogRow(entry)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LogRow(entry: CoreEvent.Log) {
+    val level = entry.level.ifBlank { "info" }.uppercase()
+    val color = if (entry.level.equals("error", ignoreCase = true)) {
+        MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(level, style = MaterialTheme.typography.labelMedium, color = color)
+        Text(
+            entry.payload.ifBlank { "（空日志）" },
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            DateUtils.getRelativeTimeSpanString(entry.timestampMillis).toString(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun LogsDialog(
+    state: LogsUiState,
+    onDismiss: () -> Unit,
+    onClear: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("核心日志（${state.entries.size}）") },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 480.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(state.entries.asReversed()) { entry ->
+                    LogRow(entry)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+        dismissButton = {
+            TextButton(onClick = onClear, enabled = state.entries.isNotEmpty()) { Text("清空") }
+        },
+    )
+}
+
 private const val MAX_CONNECTIONS_ON_HOME = 5
 private const val MAX_REQUESTS_ON_HOME = 5
+private const val MAX_OBSERVATION_ROWS = 5
 
 @Composable
 private fun ProfileCard(
