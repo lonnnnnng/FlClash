@@ -126,4 +126,69 @@ class CoreBridgeParsingTest {
         assertEquals(listOf("GLOBAL", "香港-01"), parsed.chains)
         assertEquals("MATCH", parsed.rule)
     }
+
+    @Test
+    fun `event batch maps request and traffic update messages`() {
+        val events = bridge.parseEvents(
+            """
+            {
+              "method":"message",
+              "arguments":[
+                {
+                  "type":"request",
+                  "data":{
+                    "id":"request-1",
+                    "upload":4,
+                    "download":8,
+                    "start":"2026-10-25T11:00:00Z",
+                    "metadata":{
+                      "network":"tcp",
+                      "host":"example.com",
+                      "destinationIP":"203.0.113.7",
+                      "destinationPort":"443",
+                      "process":"com.example.app"
+                    },
+                    "chains":["GLOBAL","DIRECT"],
+                    "rule":"DOMAIN-SUFFIX",
+                    "rulePayload":"example.com"
+                  }
+                },
+                {
+                  "type":"requestTraffic",
+                  "data":[{"id":"request-1","upload":40,"download":80}]
+                }
+              ]
+            }
+            """.trimIndent().toByteArray(),
+        )
+
+        assertEquals(2, events.size)
+        val request = (events[0] as CoreEvent.Request).connection
+        assertEquals("request-1", request.id)
+        assertEquals("example.com", request.metadata.host)
+        assertEquals("DOMAIN-SUFFIX", request.rule)
+        val traffic = (events[1] as CoreEvent.RequestTraffic).updates.single()
+        assertEquals(CoreTrafficUpdate("request-1", 40, 80), traffic)
+    }
+
+    @Test
+    fun `event parser drops malformed and unknown events without failing the batch`() {
+        val events = bridge.parseEvents(
+            """
+            {
+              "method":"message",
+              "arguments":[
+                {"type":"unknown","data":{}},
+                {"type":"request","data":"invalid"},
+                {"type":"log","data":{"LogLevel":3,"Payload":"failed"}}
+              ]
+            }
+            """.trimIndent().toByteArray(),
+        )
+
+        assertEquals(1, events.size)
+        val log = events.single() as CoreEvent.Log
+        assertEquals("error", log.level)
+        assertEquals("failed", log.payload)
+    }
 }

@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.service
 import android.os.Build
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -13,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asStateFlow
 
 enum class CoreRuntimeStatus(
@@ -39,9 +41,11 @@ class CoreRuntimeManager(
     private val transitionLock = Mutex()
     private val initialized = AtomicBoolean(false)
     private val listenerStarted = AtomicBoolean(false)
+    private val eventListenerStarted = AtomicBoolean(false)
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.STOPPED)
 
     val state = mutableState.asStateFlow()
+    val events: Flow<CoreEvent> = bridge.events
 
     suspend fun startProxy(): Result<Unit> = transitionLock.withLock {
         if (mutableState.value == CoreRuntimeStatus.RUNNING) {
@@ -56,6 +60,9 @@ class CoreRuntimeManager(
             // 只有校验通过后才允许调用 setupConfig，避免把回退状态报告成可用代理。
             bridge.validateConfig(paths.configFile.path)
             bridge.setupConfig()
+            if (eventListenerStarted.compareAndSet(false, true)) {
+                bridge.startEventListener()
+            }
             ServiceConfig.updateNotificationParams(
                 NotificationParams(title = "KClash", showStopAction = false),
             )
@@ -72,6 +79,10 @@ class CoreRuntimeManager(
                 runCatching { bridge.stopListener() }
                 listenerStarted.set(false)
             }
+            if (eventListenerStarted.get()) {
+                runCatching { bridge.stopEventListener() }
+                eventListenerStarted.set(false)
+            }
             mutableState.value = CoreRuntimeStatus.FAILED
         }
     }
@@ -86,6 +97,10 @@ class CoreRuntimeManager(
             if (listenerStarted.get()) {
                 bridge.stopListener()
                 listenerStarted.set(false)
+            }
+            if (eventListenerStarted.get()) {
+                bridge.stopEventListener()
+                eventListenerStarted.set(false)
             }
             mutableState.value = CoreRuntimeStatus.STOPPED
         }.onFailure {

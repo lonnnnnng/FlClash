@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.service
 
 import java.io.File
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.core.CoreTraffic
@@ -13,6 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.flow.emptyFlow
 
 class CoreRuntimeManagerTest {
     @get:Rule
@@ -35,7 +37,7 @@ class CoreRuntimeManagerTest {
 
         assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
         assertEquals("mixed-port: 7890\n", File(homeDir, "config.yaml").readText())
-        assertEquals(listOf("initialize", "validate", "setup", "listener-start"), bridge.events)
+        assertEquals(listOf("initialize", "validate", "setup", "listener-start"), bridge.calls)
         assertEquals(listOf("service-start"), controller.events)
         assertTrue(controller.started)
         assertEquals("mips", controller.receivedOptions?.stack)
@@ -77,7 +79,7 @@ class CoreRuntimeManagerTest {
 
         assertTrue(result.isFailure)
         assertEquals(CoreRuntimeStatus.FAILED, manager.state.value)
-        assertEquals(emptyList<String>(), bridge.events)
+        assertEquals(emptyList<String>(), bridge.calls)
         assertFalse(controller.started)
     }
 
@@ -159,6 +161,24 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
+    fun `core event listener follows runtime lifecycle`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge()
+        val manager = manager(
+            profile = ActiveProfile(13, "事件配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+
+        manager.startProxy().getOrThrow()
+        assertTrue(bridge.eventListenerStarted)
+
+        manager.stop().getOrThrow()
+        assertFalse(bridge.eventListenerStarted)
+    }
+
+    @Test
     fun `vpn start failure never reports running and cleans the service`() = runTest {
         val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
         val bridge = FakeBridge()
@@ -202,21 +222,23 @@ class CoreRuntimeManagerTest {
         private val proxyChangeError: Throwable? = null,
         private val delayError: Throwable? = null,
     ) : CoreRuntimeBridge {
-        val events = mutableListOf<String>()
+        override val events = emptyFlow<CoreEvent>()
+        val calls = mutableListOf<String>()
         var listenerStarted = false
+        var eventListenerStarted = false
         var proxyGroupsReads = 0
 
         override suspend fun initialize(homeDir: String, sdkVersion: Int) {
-            events += "initialize"
+            calls += "initialize"
         }
 
         override suspend fun validateConfig(path: String) {
-            events += "validate"
+            calls += "validate"
             validationError?.let { throw it }
         }
 
         override suspend fun setupConfig() {
-            events += "setup"
+            calls += "setup"
         }
 
         override suspend fun getProxyGroups(): ProxyGroupsSnapshot {
@@ -242,13 +264,21 @@ class CoreRuntimeManagerTest {
 
         override suspend fun getConnections(): List<CoreConnection> = emptyList()
 
+        override fun startEventListener() {
+            eventListenerStarted = true
+        }
+
+        override fun stopEventListener() {
+            eventListenerStarted = false
+        }
+
         override fun startListener() {
-            events += "listener-start"
+            calls += "listener-start"
             listenerStarted = true
         }
 
         override fun stopListener() {
-            events += "listener-stop"
+            calls += "listener-stop"
             listenerStarted = false
         }
     }

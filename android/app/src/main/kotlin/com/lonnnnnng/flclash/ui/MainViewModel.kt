@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -31,12 +33,21 @@ class MainViewModel @Inject constructor(
     private val mutableConnections = MutableStateFlow(ConnectionsUiState())
     val connections = mutableConnections.asStateFlow()
 
+    private val mutableRequests = MutableStateFlow(RequestsUiState())
+    val requests = mutableRequests.asStateFlow()
+
     init {
+        viewModelScope.launch {
+            runtimeManager.events.collect { event ->
+                mutableRequests.update { current -> current.apply(event) }
+            }
+        }
         viewModelScope.launch {
             runtimeState.collectLatest { state ->
                 if (!state.isRunning) {
                     mutableStats.value = RuntimeStatsUiState()
                     mutableConnections.value = ConnectionsUiState()
+                    mutableRequests.value = RequestsUiState()
                     return@collectLatest
                 }
                 while (isActive) {
@@ -133,3 +144,35 @@ data class ConnectionsUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
 )
+
+data class RequestsUiState(
+    val requests: List<CoreConnection> = emptyList(),
+) {
+    /**
+     * 作者 long：请求事件按连接 ID 增量更新，保留最近 2000 条历史，
+     * 这样流量事件不会重复插入记录，也不会让长时间运行的手机应用无限增长内存。
+     */
+    internal fun apply(event: CoreEvent): RequestsUiState = when (event) {
+        is CoreEvent.Request -> {
+            val replaced = requests.indexOfFirst { it.id == event.connection.id }
+            val next = if (replaced >= 0) {
+                requests.toMutableList().apply { set(replaced, event.connection) }
+            } else {
+                (requests + event.connection).takeLast(MAX_REQUEST_HISTORY)
+            }
+            copy(requests = next)
+        }
+
+        is CoreEvent.RequestTraffic -> copy(
+            requests = requests.map { request ->
+                event.updates.firstOrNull { it.id == request.id }?.let { update ->
+                    request.copy(upload = update.upload, download = update.download)
+                } ?: request
+            },
+        )
+
+        else -> this
+    }
+}
+
+private const val MAX_REQUEST_HISTORY = 2_000

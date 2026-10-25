@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -15,6 +16,7 @@ import com.lonnnnnng.flclash.service.ServiceConfig
 import com.lonnnnnng.flclash.service.VpnRuntimeState
 import java.io.File
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withTimeout
 
 data class ActiveProfile(
@@ -124,6 +126,8 @@ data class CoreRuntimePaths(
 }
 
 interface CoreRuntimeBridge {
+    val events: Flow<CoreEvent>
+
     suspend fun initialize(homeDir: String, sdkVersion: Int)
 
     suspend fun validateConfig(path: String)
@@ -144,6 +148,10 @@ interface CoreRuntimeBridge {
 
     suspend fun getConnections(): List<CoreConnection>
 
+    fun startEventListener()
+
+    fun stopEventListener()
+
     fun startListener()
 
     fun stopListener()
@@ -152,6 +160,9 @@ interface CoreRuntimeBridge {
 class NativeCoreRuntimeBridge(
     private val coreBridge: CoreBridge,
 ) : CoreRuntimeBridge {
+    override val events: Flow<CoreEvent>
+        get() = coreBridge.events
+
     override suspend fun initialize(homeDir: String, sdkVersion: Int) =
         coreBridge.initialize(homeDir, sdkVersion)
 
@@ -174,6 +185,10 @@ class NativeCoreRuntimeBridge(
     override suspend fun getConnectionCount(): Int = coreBridge.getConnectionCount()
 
     override suspend fun getConnections(): List<CoreConnection> = coreBridge.getConnections()
+
+    override fun startEventListener() = coreBridge.startEventListener()
+
+    override fun stopEventListener() = coreBridge.stopEventListener()
 
     override fun startListener() = coreBridge.startListener()
 

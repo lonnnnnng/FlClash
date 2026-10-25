@@ -277,6 +277,7 @@ androidComponents {
 
 dependencies {
     implementation(files(bindCore.flatMap { it.classesJar }))
+    implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)
 }

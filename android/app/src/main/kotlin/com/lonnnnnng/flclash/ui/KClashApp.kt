@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -65,6 +66,7 @@ fun KClashApp(
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
     val runtimeConnections by runtimeViewModel.connections.collectAsState()
+    val runtimeRequests by runtimeViewModel.requests.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
@@ -72,6 +74,7 @@ fun KClashApp(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var showRequests by rememberSaveable { mutableStateOf(false) }
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
 
     val filePicker = rememberLauncherForActivityResult(
@@ -153,6 +156,13 @@ fun KClashApp(
                 ConnectionsCard(
                     state = runtimeConnections,
                     runtimeState = runtimeState,
+                )
+            }
+            item {
+                RequestsCard(
+                    state = runtimeRequests,
+                    runtimeState = runtimeState,
+                    onShowAll = { showRequests = true },
                 )
             }
             item {
@@ -244,6 +254,13 @@ fun KClashApp(
             dismissButton = {
                 TextButton(onClick = { profilePendingDeletion = null }) { Text("取消") }
             },
+        )
+    }
+
+    if (showRequests) {
+        RequestsDialog(
+            state = runtimeRequests,
+            onDismiss = { showRequests = false },
         )
     }
 
@@ -558,7 +575,74 @@ private fun ConnectionRow(connection: CoreConnection) {
     }
 }
 
+@Composable
+private fun RequestsCard(
+    state: RequestsUiState,
+    runtimeState: CoreRuntimeStatus,
+    onShowAll: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "请求记录${if (runtimeState.isRunning) "（${state.requests.size}）" else ""}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (state.requests.isNotEmpty()) {
+                    TextButton(onClick = onShowAll) { Text("查看全部") }
+                }
+            }
+            when {
+                !runtimeState.isRunning -> Text(
+                    "启动核心后显示请求、目标和规则命中信息。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                state.requests.isEmpty() -> Text(
+                    "等待核心上报请求事件。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                else -> state.requests.takeLast(MAX_REQUESTS_ON_HOME).asReversed().forEach { request ->
+                    ConnectionRow(request)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RequestsDialog(
+    state: RequestsUiState,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("请求记录（${state.requests.size}）") },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 480.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(state.requests.asReversed(), key = { it.id }) { request ->
+                    ConnectionRow(request)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+    )
+}
+
 private const val MAX_CONNECTIONS_ON_HOME = 5
+private const val MAX_REQUESTS_ON_HOME = 5
 
 @Composable
 private fun ProfileCard(

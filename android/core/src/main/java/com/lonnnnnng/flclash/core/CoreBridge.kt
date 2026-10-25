@@ -1,6 +1,11 @@
 package com.lonnnnnng.flclash.core
 
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import java.util.UUID
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONObject
 import kotlin.coroutines.resume
@@ -11,6 +16,14 @@ import kotlin.coroutines.resumeWithException
  * 这样服务层不会在页面或生命周期代码里拼接原始方法名，也不会把错误响应误当成成功。
  */
 class CoreBridge {
+    private val mutableEvents = MutableSharedFlow<CoreEvent>(extraBufferCapacity = EVENT_BUFFER_SIZE)
+
+    /**
+     * 作者 long：核心事件从 gomobile 回调线程进入共享流，页面只订阅领域事件，
+     * 避免把 JSON 解码和回调线程边界泄露到 ViewModel 或 Compose。
+     */
+    val events: SharedFlow<CoreEvent> = mutableEvents.asSharedFlow()
+
     suspend fun initialize(homeDir: String, sdkVersion: Int) {
         val response = invoke(
             method = "initClash",
@@ -96,6 +109,14 @@ class CoreBridge {
 
     suspend fun getConnections(): List<CoreConnection> =
         parseConnectionsResponse(invoke("getConnections", JSONObject()).optJSONObject("result"))
+
+    fun startEventListener() {
+        Core.updateEventListener { bytes ->
+            parseEvents(bytes).forEach { mutableEvents.tryEmit(it) }
+        }
+    }
+
+    fun stopEventListener() = Core.updateEventListener(null)
 
     fun startListener() = Core.startListener()
 
@@ -242,6 +263,121 @@ class CoreBridge {
         rulePayload = payload.rulePayload,
     )
 
+    private fun parseConnectionJson(raw: JsonObject): CoreConnection {
+        val metadata = raw.objectValue("metadata") ?: JsonObject()
+        return parseConnectionPayload(
+            CoreConnectionPayload(
+                id = raw.string("id"),
+                upload = raw.long("upload"),
+                download = raw.long("download"),
+                start = raw.string("start"),
+                metadata = CoreConnectionMetadata(
+                    network = metadata.string("network"),
+                    sourceIp = metadata.string("sourceIP"),
+                    sourcePort = metadata.string("sourcePort"),
+                    destinationIp = metadata.string("destinationIP"),
+                    destinationPort = metadata.string("destinationPort"),
+                    host = metadata.string("host"),
+                    process = metadata.string("process"),
+                    processPath = metadata.string("processPath"),
+                    remoteDestination = metadata.string("remoteDestination"),
+                    uid = metadata.long("uid").coerceAtLeast(0L),
+                    specialProxy = metadata.string("specialProxy"),
+                    specialRules = metadata.string("specialRules"),
+                ),
+                chains = raw.array("chains").stringList(),
+                rule = raw.string("rule"),
+                rulePayload = raw.string("rulePayload"),
+            ),
+        )
+    }
+
+    /**
+     * 作者 long：Go 核心把多个事件放进 `message.arguments` 批次；未知或损坏的事件只丢弃
+     * 当前条目，不能让一次异常事件阻断后续请求和流量事件。
+     */
+    internal fun parseEvents(bytes: ByteArray): List<CoreEvent> {
+        val envelope = runCatching {
+            JsonParser.parseString(bytes.decodeToString()).asJsonObject
+        }.getOrNull() ?: return emptyList()
+        if (envelope.string("method") != "message") return emptyList()
+        val arguments = envelope.array("arguments") ?: return emptyList()
+        return buildList(arguments.size()) {
+            arguments.forEach { element ->
+                if (!element.isJsonObject) return@forEach
+                parseEvent(element.asJsonObject)?.let(::add)
+            }
+        }
+    }
+
+    private fun parseEvent(raw: JsonObject): CoreEvent? {
+        val type = raw.string("type")
+        return runCatching {
+            when (type) {
+                "request" -> {
+                    val data = raw.objectValue("data") ?: return@runCatching null
+                    CoreEvent.Request(parseConnectionJson(data))
+                }
+                "requestTraffic" -> {
+                    val data = raw.array("data") ?: return@runCatching null
+                    CoreEvent.RequestTraffic(
+                        buildList(data.size()) {
+                            data.forEach { element ->
+                                if (!element.isJsonObject) return@forEach
+                                val item = element.asJsonObject
+                                add(
+                                    CoreTrafficUpdate(
+                                        id = item.string("id"),
+                                        upload = item.long("upload").coerceAtLeast(0L),
+                                        download = item.long("download").coerceAtLeast(0L),
+                                    ),
+                                )
+                            }
+                        },
+                    )
+                }
+                "log" -> {
+                    val data = raw.objectValue("data") ?: return@runCatching null
+                    CoreEvent.Log(
+                        level = parseLogLevel(data["LogLevel"]),
+                        payload = data.string("Payload"),
+                        timestampMillis = System.currentTimeMillis(),
+                    )
+                }
+                "dns" -> {
+                    val data = raw.objectValue("data") ?: return@runCatching null
+                    CoreEvent.Dns(
+                        CoreDnsQuery(
+                            domain = data.string("domain"),
+                            type = data.string("type"),
+                            initiator = data.string("initiator"),
+                            upstream = data.string("upstream"),
+                            cached = data.bool("cached"),
+                            answers = data.array("answers").stringList(),
+                            rcode = data.string("rcode"),
+                            error = data.string("error"),
+                            delay = data.long("delay").coerceAtLeast(0L),
+                            time = data.string("time"),
+                        ),
+                    )
+                }
+                else -> null
+            }
+        }.getOrNull()
+    }
+
+    private fun parseLogLevel(value: com.google.gson.JsonElement?): String = when {
+        value?.isJsonPrimitive == true && value.asJsonPrimitive.isNumber -> when (value.asInt) {
+            0 -> "debug"
+            1 -> "info"
+            2 -> "warning"
+            3 -> "error"
+            4 -> "silent"
+            else -> "unknown"
+        }
+        else -> value?.takeUnless { it.isJsonNull }?.asString?.lowercase().orEmpty().ifBlank { "info" }
+    }
+
     private suspend fun invoke(method: String, arguments: Any): JSONObject =
         suspendCancellableCoroutine { continuation ->
             val request = JSONObject()
@@ -283,12 +419,46 @@ class CoreBridge {
         }
 
     companion object {
+        private const val EVENT_BUFFER_SIZE = 256
         const val DEFAULT_TEST_URL = "https://www.gstatic.com/generate_204"
         const val DEFAULT_DELAY_TIMEOUT_MS = 8_000L
         const val DELAY_TIMED_OUT = -1
         const val DELAY_FAILED = -2
     }
 }
+
+sealed interface CoreEvent {
+    data class Request(val connection: CoreConnection) : CoreEvent
+
+    data class RequestTraffic(val updates: List<CoreTrafficUpdate>) : CoreEvent
+
+    data class Log(
+        val level: String,
+        val payload: String,
+        val timestampMillis: Long,
+    ) : CoreEvent
+
+    data class Dns(val query: CoreDnsQuery) : CoreEvent
+}
+
+data class CoreTrafficUpdate(
+    val id: String,
+    val upload: Long,
+    val download: Long,
+)
+
+data class CoreDnsQuery(
+    val domain: String,
+    val type: String,
+    val initiator: String,
+    val upstream: String,
+    val cached: Boolean,
+    val answers: List<String>,
+    val rcode: String,
+    val error: String,
+    val delay: Long,
+    val time: String,
+)
 
 data class ProxyGroupsSnapshot(
     val groups: List<ProxyGroupInfo>,
@@ -377,6 +547,32 @@ private fun org.json.JSONArray?.toStringList(): List<String> {
         }
     }
 }
+
+private fun JsonObject.string(name: String): String =
+    get(name)?.takeUnless { it.isJsonNull }?.let { element ->
+        runCatching { element.asString }.getOrNull()
+    }.orEmpty()
+
+private fun JsonObject.long(name: String): Long =
+    get(name)?.takeUnless { it.isJsonNull }?.let { element ->
+        runCatching { element.asLong }.getOrNull()
+    } ?: 0L
+
+private fun JsonObject.bool(name: String): Boolean =
+    get(name)?.takeUnless { it.isJsonNull }?.let { element ->
+        runCatching { element.asBoolean }.getOrNull()
+    } ?: false
+
+private fun JsonObject.objectValue(name: String): JsonObject? =
+    get(name)?.takeIf { it.isJsonObject }?.asJsonObject
+
+private fun JsonObject.array(name: String): com.google.gson.JsonArray? =
+    get(name)?.takeIf { it.isJsonArray }?.asJsonArray
+
+private fun com.google.gson.JsonArray?.stringList(): List<String> =
+    this?.mapNotNull { element ->
+        element.takeUnless { it.isJsonNull }?.let { runCatching { it.asString }.getOrNull() }
+    }.orEmpty()
 
 private fun JSONObject.optNullableString(name: String): String? {
     if (isNull(name)) return null
