@@ -34,6 +34,8 @@
 
 **ABI 范围**：KClash 的开发、测试和发布都只构建 `arm64-v8a`；不维护 `armeabi-v7a`、`x86_64` 或其他 ABI。
 
+**验收真机**：当前连接的 ARM64 Android 真机作为 KClash 的权威验收设备；本轮核验为 Redmi Note 8 Pro、Android 16/API 36，实际 serial 每次操作前重新读取。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
