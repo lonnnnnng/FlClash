@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-25（北京时间）
 >
-> 当前基线：`kotlin` 分支；本轮 N2 活动连接切片 `e0407568` 已推送至 `origin/kotlin`
+> 当前基线：`kotlin` 分支；本轮 Requests 事件观测切片 `08cfc5c5` 已提交，路线图更新后推送至 `origin/kotlin`
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -48,7 +48,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | 本轮 N2 活动连接切片已提交 `e0407568` 并推送至 `origin/kotlin` |
+| 远端关系 | 本轮 Requests 事件观测切片已提交 `08cfc5c5`，路线图更新后推送至 `origin/kotlin` |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -56,11 +56,11 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 76 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 81 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、活动连接空态、Requests 空态和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -232,7 +232,7 @@ flowchart LR
 
 ### 7.2 连接、流量和运行观测
 
-状态：`PARTIAL`，流量、连接数和活动连接基础观测已接入，请求、DNS 和日志仍未接入。
+状态：`PARTIAL`，流量、连接数、活动连接和 Requests 事件基础观测已接入，DNS 和日志仍未接入，真实非空请求归因仍待完成。
 
 当前已有：
 
@@ -241,21 +241,24 @@ flowchart LR
 - `MainViewModel` 在运行期间每秒轮询统计，停止或进入错误时清理/回显状态。
 - Compose 首页已提供运行统计卡片，展示上传、下载、连接数和累计流量，并覆盖停止态、加载态和错误态。
 - `CoreBridge`、`CoreRuntimeManager` 和 `MainViewModel` 已接入 Mihomo `getConnections`，首页显示活动连接数量、目标、进程、代理链、规则和上下行计数。
+- `CoreBridge` 已接入 `updateEventListener()`，解析 Go 核心的 `message.arguments` 批次，并将 `request`、`requestTraffic` 事件转换为 Kotlin 领域事件。
+- `CoreRuntimeManager` 在核心运行期间安装事件监听器，停止或启动失败时释放监听器；事件流不经过 Compose 或 gomobile 生成类型。
+- `MainViewModel` 已维护最近 2000 条 Requests 历史，并按连接 ID 合并上下行流量更新；首页提供请求空态、最近记录和完整记录对话框。
 
 仍需补齐的 Bridge / Repository / UI：
 
-- 请求列表和规则命中信息。
 - DNS 查询列表。
 - 核心日志流、过滤和清空。
-- 轮询或事件订阅的生命周期管理。
+- Requests 页面搜索、过滤、自动滚动和详情交互。
+- 事件流背压、历史清理和轮询生命周期的进一步收敛。
 - 页面退出后停止不必要的轮询。
 
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
-- `./gradlew test :app:assembleDebug --no-daemon` 通过；76 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
-- Debug APK 安装成功；核心启动后首页显示“运行统计”和“活动连接（0）”卡片，停止核心后活动连接卡片恢复为停止态提示。
+- `./gradlew test :app:assembleDebug --no-daemon` 通过；81 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
+- Debug APK 安装成功；核心启动后首页显示“运行统计”“活动连接（0）”和“请求记录（0）”卡片，停止核心后观测卡片恢复停止态提示。
 - 停止后 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务均已清理。
-- 设备请求返回 HTTP 301，但本轮通过 shell/浏览器发起的请求未在卡片中形成非零连接和流量计数；真实请求归因仍不能标记完成。
+- 本轮仅使用仓库根目录 `AGENTS.md` 列出的两条用户授权路径；设备内两次请求均在 20 秒超时并返回 HTTP `000`，未形成非零连接和流量归因证据。
 
 完成门槛：
 
