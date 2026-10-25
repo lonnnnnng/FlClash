@@ -207,7 +207,7 @@ flowchart LR
 
 本轮真机验收记录（2026-10-25，设备 `wsvwypiz7xwslvl7`，Android 16 / API 36）：
 
-- 使用远程订阅 `clash.theconsole.top` 启动成功，UI 显示“核心运行中”。
+- 使用当时可用的远程订阅启动成功，UI 显示“核心运行中”；该历史地址已从当前真机验收清单移除，后续只使用仓库根目录 `AGENTS.md` 列出的两条授权路径。
 - `dumpsys activity services` 观察到 `VpnService` 和 `ProxyService` 均为前台服务。
 - `ip route` 观察到 `198.18.0.0/30 dev tun0`，Mihomo 日志出现从 `198.18.0.1` 发出的 TCP/UDP TUN 流量。
 - 设备内 `curl -I http://1.1.1.1` 返回 `HTTP/1.1 301 Moved Permanently`，证明启用 TUN 时设备网络请求仍可完成；尚未将该请求与选定代理节点做可归因的端到端关联。
