@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.service
 
 import android.os.Build
 import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.service.models.NotificationParams
@@ -122,6 +123,17 @@ class CoreRuntimeManager(
         }
     }
 
+    suspend fun getStats(): Result<CoreRuntimeStats> = transitionLock.withLock {
+        runCatching {
+            check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
+            CoreRuntimeStats(
+                traffic = bridge.getTraffic(),
+                totalTraffic = bridge.getTotalTraffic(),
+                connectionCount = bridge.getConnectionCount(),
+            )
+        }
+    }
+
     private suspend fun ensureInitialized() {
         if (initialized.get()) return
         paths.homeDir.mkdirs()
@@ -156,3 +168,9 @@ class CoreRuntimeManager(
         }
     }
 }
+
+data class CoreRuntimeStats(
+    val traffic: CoreTraffic,
+    val totalTraffic: CoreTraffic,
+    val connectionCount: Int,
+)

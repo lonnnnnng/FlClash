@@ -82,4 +82,12 @@ class CoreBridgeParsingTest {
     fun `empty delay result means no concurrent slot result`() {
         assertEquals(null, bridge.parseDelayPayload(null))
     }
+
+    @Test
+    fun `traffic response clamps malformed negative counters`() {
+        assertEquals(
+            CoreTraffic(up = 0, down = 12),
+            bridge.parseTrafficPayload(up = -5, down = 12),
+        )
+    }
 }

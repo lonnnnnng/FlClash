@@ -56,11 +56,11 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 73 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 75 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -92,7 +92,7 @@ flowchart LR
     M1 --> M2[M2 Mihomo 配置应用\nDONE-VERIFIED]
     M2 --> M3[M3 代理组与单节点测速\nDONE-VERIFIED]
     M3 --> M4[M4 真实 VPN/TUN 连接\nPARTIAL]
-    M4 --> M5[M5 运行观测\nPLANNED]
+    M4 --> M5[M5 运行观测\nPARTIAL]
     M4 --> M6[M6 Profiles 高级能力\nPLANNED]
     M5 --> M7[M7 Android 平台入口\nPLANNED]
     M6 --> M8[M8 UI/UX 完整对齐\nPLANNED]
@@ -203,7 +203,7 @@ flowchart LR
 - `MainActivity` 已接入 `VpnService.prepare()` 和 Activity Result 授权回调。
 - 启动失败会停止服务、清理监听器，管理器不会把失败报告为 `RUNNING`。
 - 停止时向绑定中的 `VpnService` 发送显式 stop action，再停止服务组件，避免系统绑定导致 TUN 残留。
-- 服务层和管理器新增失败回滚测试；当前总计 73 项 Kotlin 单元测试通过。
+- 服务层和管理器新增失败回滚测试；当前总计 75 项 Kotlin 单元测试通过。
 
 本轮真机验收记录（2026-10-25，设备 `wsvwypiz7xwslvl7`，Android 16 / API 36）：
 
@@ -232,18 +232,30 @@ flowchart LR
 
 ### 7.2 连接、流量和运行观测
 
-状态：`PLANNED`，依赖 M4。
+状态：`PARTIAL`，流量和连接数基础观测已接入，连接明细、请求、DNS 和日志仍未接入。
 
-需要补齐的 Bridge / Repository / UI：
+当前已有：
 
-- 当前下载、上传速度。
-- 总流量和连接数。
+- `CoreBridge` 已映射 Mihomo `getTraffic`、`getTotalTraffic` 和 `getConnectionCount`，并对负数计数做边界归一化。
+- `CoreRuntimeManager` 只在核心运行状态下读取三类统计，避免停止状态访问已释放的核心。
+- `MainViewModel` 在运行期间每秒轮询统计，停止或进入错误时清理/回显状态。
+- Compose 首页已提供运行统计卡片，展示上传、下载、连接数和累计流量，并覆盖停止态、加载态和错误态。
+
+仍需补齐的 Bridge / Repository / UI：
+
 - 活跃连接列表。
 - 请求列表和规则命中信息。
 - DNS 查询列表。
 - 核心日志流、过滤和清空。
 - 轮询或事件订阅的生命周期管理。
 - 页面退出后停止不必要的轮询。
+
+本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
+
+- `./gradlew test :app:assembleDebug --no-daemon` 通过；75 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
+- Debug APK 安装成功；核心启动后首页显示“运行统计”卡片及上传、下载、连接和累计流量字段，停止核心后恢复为“启动核心后显示实时流量和连接数”。
+- 停止后 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务均已清理。
+- 设备请求返回 HTTP 301，但本轮通过 shell/浏览器发起的请求未在卡片中形成非零连接和流量计数；真实请求归因仍不能标记完成。
 
 完成门槛：
 
@@ -351,7 +363,7 @@ flowchart LR
 
 当前已有：
 
-- 73 项 Kotlin 单元测试。
+- 75 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - Redmi 真机启动、停止、代理组和测速验证。
 
@@ -503,7 +515,7 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 | VPN/TUN 尚未接入新生命周期 | 当前只能证明核心和代理组工作，不能证明系统流量被接管 | 立即处理，作为 N1 |
 | 旧 service 基础设施与新 Runtime Manager 并存 | 可能出现状态来源分裂或重复启动 | N1 统一服务边界 |
 | UI 仍是单屏基础骨架 | 与 Flutter 完整体验差距大 | M4 后按页面切片重构 |
-| 观测 API 尚未接入 | 网络故障难以在应用内解释 | M5/N2-N3 |
+| 观测 API 目前只覆盖流量统计 | 连接、请求、DNS 和日志仍无法在应用内解释 | M5/N2-N3 |
 | 高级配置和导入入口缺失 | 用户无法完成完整配置管理 | M6/N4 |
 | 没有 UI/Instrumented 测试 | 回归风险集中在真机阶段 | M9/N6 前建立 |
 | 没有 release keystore | 目前只能做 Debug/预发布验证 | 发布前创建，不提前提交秘密 |

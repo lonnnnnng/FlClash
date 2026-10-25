@@ -85,6 +85,15 @@ class CoreBridge {
         return parseDelayResponse(response.optJSONObject("result"))
     }
 
+    suspend fun getTraffic(): CoreTraffic =
+        parseTrafficResponse(invoke("getTraffic", false).optJSONObject("result"))
+
+    suspend fun getTotalTraffic(): CoreTraffic =
+        parseTrafficResponse(invoke("getTotalTraffic", false).optJSONObject("result"))
+
+    suspend fun getConnectionCount(): Int =
+        invoke("getConnectionCount", JSONObject()).optInt("result", 0).coerceAtLeast(0)
+
     fun startListener() = Core.startListener()
 
     fun stopListener() = Core.stopListener()
@@ -165,6 +174,19 @@ class CoreBridge {
             value = payload.value ?: DELAY_FAILED,
         )
     }
+
+    internal fun parseTrafficResponse(result: JSONObject?): CoreTraffic {
+        requireNotNull(result) { "核心流量响应缺少 result" }
+        return parseTrafficPayload(
+            up = result.optLong("up", 0L),
+            down = result.optLong("down", 0L),
+        )
+    }
+
+    internal fun parseTrafficPayload(up: Long, down: Long): CoreTraffic = CoreTraffic(
+        up = up.coerceAtLeast(0L),
+        down = down.coerceAtLeast(0L),
+    )
 
     private suspend fun invoke(method: String, arguments: Any): JSONObject =
         suspendCancellableCoroutine { continuation ->
@@ -249,6 +271,11 @@ data class ProxyDelayPayload(
     val url: String?,
     val name: String?,
     val value: Int?,
+)
+
+data class CoreTraffic(
+    val up: Long,
+    val down: Long,
 )
 
 private fun org.json.JSONArray?.toStringList(): List<String> {

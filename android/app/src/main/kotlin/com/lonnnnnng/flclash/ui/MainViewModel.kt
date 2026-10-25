@@ -3,10 +3,16 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
+import com.lonnnnnng.flclash.core.CoreTraffic
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -17,6 +23,24 @@ class MainViewModel @Inject constructor(
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
     val errors = mutableErrors.asSharedFlow()
+
+    private val mutableStats = MutableStateFlow(RuntimeStatsUiState())
+    val stats = mutableStats.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            runtimeState.collectLatest { state ->
+                if (!state.isRunning) {
+                    mutableStats.value = RuntimeStatsUiState()
+                    return@collectLatest
+                }
+                while (isActive) {
+                    refreshStats()
+                    delay(STATS_REFRESH_MILLIS)
+                }
+            }
+        }
+    }
 
     fun startRuntime() {
         viewModelScope.launch {
@@ -50,4 +74,35 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    private suspend fun refreshStats() {
+        mutableStats.value = mutableStats.value.copy(isLoading = true, error = null)
+        runtimeManager.getStats()
+            .onSuccess { value ->
+                mutableStats.value = RuntimeStatsUiState(
+                    traffic = value.traffic,
+                    totalTraffic = value.totalTraffic,
+                    connectionCount = value.connectionCount,
+                )
+            }
+            .onFailure { error ->
+                // 作者 long：统计轮询失败不能把运行状态改成停止；只在卡片上保留可解释错误，下一轮继续恢复。
+                mutableStats.value = mutableStats.value.copy(
+                    isLoading = false,
+                    error = error.message ?: "读取运行统计失败",
+                )
+            }
+    }
+
+    companion object {
+        private const val STATS_REFRESH_MILLIS = 1_000L
+    }
 }
+
+data class RuntimeStatsUiState(
+    val traffic: CoreTraffic = CoreTraffic(0L, 0L),
+    val totalTraffic: CoreTraffic = CoreTraffic(0L, 0L),
+    val connectionCount: Int = 0,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+)

@@ -62,6 +62,7 @@ fun KClashApp(
     onStopRuntime: () -> Unit,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
+    val runtimeStats by runtimeViewModel.stats.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
@@ -138,6 +139,12 @@ fun KClashApp(
                     state = runtimeState,
                     onStart = onStartRuntime,
                     onStop = onStopRuntime,
+                )
+            }
+            item {
+                RuntimeStatsCard(
+                    state = runtimeStats,
+                    runtimeState = runtimeState,
                 )
             }
             item {
@@ -411,6 +418,60 @@ private fun RuntimeCard(
         }
     }
 }
+
+@Composable
+private fun RuntimeStatsCard(
+    state: RuntimeStatsUiState,
+    runtimeState: CoreRuntimeStatus,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("运行统计", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                if (state.isLoading && runtimeState.isRunning) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                }
+            }
+            if (!runtimeState.isRunning) {
+                Text(
+                    "启动核心后显示实时流量和连接数。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else if (state.error != null) {
+                Text(
+                    state.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            } else {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    StatValue("上传", formatRate(state.traffic.up))
+                    StatValue("下载", formatRate(state.traffic.down))
+                    StatValue("连接", state.connectionCount.toString())
+                }
+                Text(
+                    "累计：↑ ${formatBytes(state.totalTraffic.up)}  ·  ↓ ${formatBytes(state.totalTraffic.down)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatValue(label: String, value: String) {
+    Column {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, style = MaterialTheme.typography.titleSmall)
+    }
+}
+
+private fun formatRate(bytes: Long): String = "${formatBytes(bytes)}/s"
 
 @Composable
 private fun ProfileCard(

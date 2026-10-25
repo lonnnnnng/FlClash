@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.service
 import java.io.File
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
+import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.models.VpnOptions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -133,6 +134,29 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
+    fun `runtime stats are read from the core only while running`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val manager = manager(
+            profile = ActiveProfile(12, "统计配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = FakeBridge(),
+            controller = FakeServiceController(),
+        )
+
+        assertTrue(manager.getStats().isFailure)
+        manager.startProxy().getOrThrow()
+
+        assertEquals(
+            CoreRuntimeStats(
+                traffic = CoreTraffic(12, 34),
+                totalTraffic = CoreTraffic(120, 340),
+                connectionCount = 2,
+            ),
+            manager.getStats().getOrThrow(),
+        )
+    }
+
+    @Test
     fun `vpn start failure never reports running and cleans the service`() = runTest {
         val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
         val bridge = FakeBridge()
@@ -207,6 +231,12 @@ class CoreRuntimeManagerTest {
             delayError?.let { throw it }
             return ProxyDelay(testUrl, proxyName, 123)
         }
+
+        override suspend fun getTraffic(): CoreTraffic = CoreTraffic(up = 12, down = 34)
+
+        override suspend fun getTotalTraffic(): CoreTraffic = CoreTraffic(up = 120, down = 340)
+
+        override suspend fun getConnectionCount(): Int = 2
 
         override fun startListener() {
             events += "listener-start"
