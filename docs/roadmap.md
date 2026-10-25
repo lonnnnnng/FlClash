@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-25（北京时间）
 >
-> 当前基线：`kotlin` 分支；本轮 N1 功能代码基于 `e37e01b2`
+> 当前基线：`kotlin` 分支；本轮 N1 功能代码基于已推送提交 `9c0a9af5`
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -47,7 +47,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | 本轮 N1 代码已完成自动化验证，提交和推送待本轮收尾 |
+| 远端关系 | 本轮 N1 代码已完成自动化验证，提交 `9c0a9af5` 已推送至 `origin/kotlin` |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -338,7 +338,7 @@ flowchart LR
 
 当前已有：
 
-- 71 项 Kotlin 单元测试。
+- 73 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - Redmi 真机启动、停止、代理组和测速验证。
 
