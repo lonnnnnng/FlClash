@@ -16,6 +16,8 @@
 
 **Android 原生仓库**：Kotlin 主线的仓库根目录直接承载 Android Gradle 工程；Flutter 代码不作为 Kotlin 主线的运行时依赖，只通过上游分支提供行为参考。
 
+**Mihomo 核心**：负责代理协议、路由、DNS、TUN、配置解析和运行时连接的 Go 引擎；Kotlin 主线复用它的 Android 构建产物，应用层通过 Repository/API 使用核心能力。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
