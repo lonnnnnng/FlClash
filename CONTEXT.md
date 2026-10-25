@@ -38,6 +38,8 @@
 
 **KClash 签名身份**：发布阶段创建独立的 release keystore；签名文件和秘密不进入仓库，也不复用 FlClash 的签名材料。
 
+**核心协议**：Kotlin Bridge 与 Go Mihomo 之间沿用现有 method/event 语义和 JSON envelope；上层通过类型安全 Kotlin API 使用它，不在页面中传递原始方法字符串。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
