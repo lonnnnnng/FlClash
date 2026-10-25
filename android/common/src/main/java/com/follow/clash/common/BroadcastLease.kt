@@ -1,4 +1,4 @@
-package com.follow.clash.common
+package com.lonnnnnng.flclash.common
 
 import java.util.concurrent.atomic.AtomicBoolean
 

@@ -1,4 +1,4 @@
-package com.follow.clash.common
+package com.lonnnnnng.flclash.common
 
 import android.annotation.SuppressLint
 import android.app.Notification

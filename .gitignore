@@ -51,6 +51,7 @@ docs/
 
 
 # Android Studio will place build artifacts here
+/.gradle/
 /android/app/debug
 /android/app/profile
 /android/app/release

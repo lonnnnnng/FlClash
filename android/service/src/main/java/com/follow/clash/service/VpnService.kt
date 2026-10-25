@@ -1,4 +1,4 @@
-package com.follow.clash.service
+package com.lonnnnnng.flclash.service
 
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -8,18 +8,18 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.core.content.getSystemService
-import com.follow.clash.common.AccessControlMode
-import com.follow.clash.common.GlobalState
-import com.follow.clash.common.R as CommonR
-import com.follow.clash.core.Core
-import com.follow.clash.service.models.CIDR
-import com.follow.clash.service.models.VpnOptions
-import com.follow.clash.service.models.getIpv4RouteAddress
-import com.follow.clash.service.models.getIpv6RouteAddress
-import com.follow.clash.service.models.toCIDR
-import com.follow.clash.service.models.tunMtu
-import com.follow.clash.service.models.tunOptions
-import com.follow.clash.service.modules.ServiceModules
+import com.lonnnnnng.flclash.common.AccessControlMode
+import com.lonnnnnng.flclash.common.GlobalState
+import com.lonnnnnng.flclash.common.R as CommonR
+import com.lonnnnnng.flclash.core.Core
+import com.lonnnnnng.flclash.service.models.CIDR
+import com.lonnnnnng.flclash.service.models.VpnOptions
+import com.lonnnnnng.flclash.service.models.getIpv4RouteAddress
+import com.lonnnnnng.flclash.service.models.getIpv6RouteAddress
+import com.lonnnnnng.flclash.service.models.toCIDR
+import com.lonnnnnng.flclash.service.models.tunMtu
+import com.lonnnnnng.flclash.service.models.tunOptions
+import com.lonnnnnng.flclash.service.modules.ServiceModules
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import android.net.VpnService as SystemVpnService
@@ -111,7 +111,7 @@ class VpnService : SystemVpnService(), ManagedService {
         }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Android starts always-on VPN through this callback instead of FlClash's bound-service
+        // Android starts always-on VPN through this callback instead of KClash's bound-service
         // path. Notify the app layer so it can restore Core and fully initialize the VPN service.
         notifyVpnStartRequested()
         return super.onStartCommand(intent, flags, startId)

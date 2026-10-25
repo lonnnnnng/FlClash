@@ -1,4 +1,4 @@
-package com.follow.clash.common
+package com.lonnnnnng.flclash.common
 
 /**
  * Only the newest request is ever pending: [replace] settles the request it

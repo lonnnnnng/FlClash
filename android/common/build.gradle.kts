@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.follow.clash.common"
+    namespace = "com.lonnnnnng.flclash.common"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
@@ -18,8 +18,8 @@ android {
     }
 
     sourceSets {
-        // Unit tests live under android/tests/ instead of each module's src/test.
-        getByName("test").java.setSrcDirs(listOf("../tests/common"))
+        // 作者 long：公共状态测试必须继续复用仓库级测试目录，避免包名迁移后静默变成 NO-SOURCE。
+        getByName("test").kotlin.srcDirs("../tests/common")
     }
 }
 
@@ -32,5 +32,6 @@ kotlin {
 dependencies {
     implementation(libs.androidx.core)
     implementation(libs.gson)
+    implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)
 }

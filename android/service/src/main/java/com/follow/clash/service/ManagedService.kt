@@ -1,11 +1,11 @@
-package com.follow.clash.service
+package com.lonnnnnng.flclash.service
 
 import android.app.Service
 import android.content.ComponentCallbacks2
-import com.follow.clash.common.BroadcastAction
-import com.follow.clash.common.GlobalState
-import com.follow.clash.common.sendBroadcast
-import com.follow.clash.core.Core
+import com.lonnnnnng.flclash.common.BroadcastAction
+import com.lonnnnnng.flclash.common.GlobalState
+import com.lonnnnnng.flclash.common.sendBroadcast
+import com.lonnnnnng.flclash.core.Core
 
 interface ManagedService {
     fun start()

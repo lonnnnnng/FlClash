@@ -17,3 +17,11 @@
 ## Failure handling
 
 真实设备动作失败时保留失败 Run 和审计事实，先检查 logcat、服务状态、权限和核心事件，再决定修复或重试；不能用历史成功覆盖当前失败。
+
+## 第一阶段实测记录
+
+- `:common:testDebugUnitTest`：30 项通过。
+- `:service:testDebugUnitTest`：26 项通过。
+- `:app:testDebugUnitTest`：当前无新 app 单元测试，任务为 `NO-SOURCE`。
+- `:app:assembleDebug`：成功，APK 只包含 `arm64-v8a` 的 `libclash.so`。
+- 真机 `wsvwypiz7xwslvl7`：启动 Activity、启动 ProxyService 前台通知、停止 ProxyService 均已验证；启动期和停止期没有 `FATAL EXCEPTION`。

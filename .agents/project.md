@@ -18,4 +18,6 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 
 ## 当前迁移阶段
 
-本分支已完成 Git 边界、产品范围和架构决策记录；现有 Flutter 工程和 Android 模块尚未完成根目录原生化。结构迁移前先保留 Go 核心、Android Service、必要资源和协议定义，逐步替换 Flutter 壳。
+第一阶段根目录原生化已落地：根目录使用 Gradle Wrapper，`app`、`core`、`service`、`common` 通过 Android Gradle 工程组装；Compose、Hilt、Room、StateFlow 和 `CoreRuntimeManager` 已接入，Go Mihomo 只生成 `arm64-v8a` AAR。Debug APK 已在 Redmi Note 8 Pro（API 36）安装并完成启动、前台服务启动/停止和界面检查。
+
+后续按功能切片逐步补齐 Profiles/订阅、配置编辑、代理组、延迟测试、连接、请求、DNS、日志、Quick Settings、Deep Link、按应用代理和 VPN/TUN；Flutter 代码只作为行为参考，不作为 Kotlin 运行时依赖。

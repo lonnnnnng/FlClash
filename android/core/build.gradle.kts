@@ -11,7 +11,7 @@ plugins {
 }
 
 android {
-    namespace = "com.follow.clash.core"
+    namespace = "com.lonnnnnng.flclash.core"
     compileSdk = libs.versions.compileSdk.get().toInt()
     ndkVersion = libs.versions.ndkVersion.get()
 
@@ -33,11 +33,11 @@ kotlin {
 }
 
 val gomobileTargetByPlatform =
-    linkedMapOf("android-arm" to "android/arm", "android-arm64" to "android/arm64", "android-x64" to "android/amd64")
+    linkedMapOf("android-arm64" to "android/arm64")
 val gomobileTargets =
     (rootProject.findProperty("target-platform") as String?)
         ?.split(",")
-        ?.map { gomobileTargetByPlatform[it.trim()] ?: throw GradleException("No Core for Flutter target platform $it") }
+        ?.map { gomobileTargetByPlatform[it.trim()] ?: throw GradleException("No Core for Android target platform $it") }
         ?: gomobileTargetByPlatform.values.toList()
 
 val isWindows = System.getProperty("os.name").startsWith("Windows")
@@ -58,13 +58,13 @@ val goExecutablePath =
             ?: throw GradleException("The Android Core is built with gomobile, which needs Go on PATH")
     }
 
-val goModule = rootProject.layout.projectDirectory.dir("../core")
+val goModule = rootProject.layout.projectDirectory.dir("core")
 
 // gomobile names the library gojni, both as the file it builds and in go.Seq's System.loadLibrary, and has no option to change it.
 val coreLibraryName = "clash"
 
 val buildConfig =
-    providers.fileContents(rootProject.layout.projectDirectory.file("../build_config.yaml")).asText.map { text ->
+    providers.fileContents(rootProject.layout.projectDirectory.file("build_config.yaml")).asText.map { text ->
         text.lines()
             .mapNotNull { Regex("""^(\w+):\s*(.*?)\s*$""").find(it)?.destructured }
             .associate { (key, value) -> key to value.trim('"', '\'') }
@@ -150,7 +150,7 @@ abstract class GomobileBind : DefaultTask() {
                 "bind",
                 "-target=${targets.get().joinToString(",")}",
                 "-androidapi=${androidApi.get()}",
-                "-javapkg=com.follow.clash.core",
+                "-javapkg=com.lonnnnnng.flclash.core",
                 "-tags=${tags.get()}",
                 "-ldflags=${ldflags.get()} -X=runtime.godebugDefault=${godebug.toString().trim()}",
                 "-o",

@@ -3,7 +3,9 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    id("dev.flutter.flutter-gradle-plugin")
+    id("com.android.legacy-kapt")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.dagger.hilt.android")
 }
 
 val localProperties = Properties().apply {
@@ -23,21 +25,30 @@ val hasReleaseSigning = releaseStoreFile.exists() &&
     releaseKeyPassword != null
 
 android {
-    namespace = "com.follow.clash"
+    namespace = "com.lonnnnnng.flclash"
     compileSdk = libs.versions.compileSdk.get().toInt()
     ndkVersion = libs.versions.ndkVersion.get()
+
+    defaultConfig {
+        applicationId = "com.lonnnnnng.flclash"
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = 1
+        versionName = "0.1.0"
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    defaultConfig {
-        applicationId = "com.follow.clash"
-        minSdk = flutter.minSdkVersion
-        targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+    buildFeatures {
+        compose = true
+        buildConfig = true
     }
 
     signingConfigs {
@@ -51,28 +62,18 @@ android {
         }
     }
 
-    packaging {
-        jniLibs {
-            useLegacyPackaging = true
-        }
-    }
-
     buildTypes {
         debug {
             isMinifyEnabled = false
-            applicationIdSuffix = ".dev"
         }
-
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            if (hasReleaseSigning) {
-                signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
             } else {
-                signingConfig = signingConfigs.getByName("debug")
-                applicationIdSuffix = ".dev"
+                signingConfigs.getByName("debug")
             }
-
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -81,8 +82,12 @@ android {
     }
 
     sourceSets {
-        // Unit tests live under android/tests/ instead of each module's src/test.
-        getByName("test").java.setSrcDirs(listOf("../tests/app"))
+        // 作者 long：AGP 9 的内置 Kotlin 只从 Kotlin 源集读取这些跨目录单元测试。
+        getByName("test").kotlin.srcDirs("../tests/app")
+    }
+
+    packaging {
+        jniLibs.useLegacyPackaging = true
     }
 }
 
@@ -92,19 +97,30 @@ kotlin {
     }
 }
 
-flutter {
-    source = "../.."
+hilt {
+    enableAggregatingTask = true
 }
 
 dependencies {
     implementation(project(":service"))
     implementation(project(":common"))
     implementation(project(":core"))
+    implementation(libs.androidx.core)
     implementation(libs.core.splashscreen)
-    implementation(libs.gson)
-    implementation(libs.smali.dexlib2) {
-        exclude(group = "com.google.guava", module = "guava")
-    }
+    implementation(libs.activity.compose)
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(platform(libs.compose.bom))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    kapt(libs.room.compiler)
+    implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

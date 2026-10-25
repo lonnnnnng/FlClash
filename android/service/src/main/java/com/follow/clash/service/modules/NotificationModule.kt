@@ -1,4 +1,4 @@
-package com.follow.clash.service.modules
+package com.lonnnnnng.flclash.service.modules
 
 import android.app.Notification.FOREGROUND_SERVICE_IMMEDIATE
 import android.app.Service
@@ -8,19 +8,19 @@ import android.os.Build
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-import com.follow.clash.common.Components
-import com.follow.clash.common.GlobalState
-import com.follow.clash.common.QuickAction
-import com.follow.clash.common.ensureNotificationChannel
-import com.follow.clash.common.quickIntent
-import com.follow.clash.common.receiveBroadcastFlow
-import com.follow.clash.common.startForeground
-import com.follow.clash.common.toPendingIntent
-import com.follow.clash.core.Core
-import com.follow.clash.service.R
-import com.follow.clash.service.ServiceConfig
-import com.follow.clash.service.models.NotificationParams
-import com.follow.clash.service.models.getSpeedTrafficText
+import com.lonnnnnng.flclash.common.Components
+import com.lonnnnnng.flclash.common.GlobalState
+import com.lonnnnnng.flclash.common.QuickAction
+import com.lonnnnnng.flclash.common.ensureNotificationChannel
+import com.lonnnnnng.flclash.common.quickIntent
+import com.lonnnnnng.flclash.common.receiveBroadcastFlow
+import com.lonnnnnng.flclash.common.startForeground
+import com.lonnnnnng.flclash.common.toPendingIntent
+import com.lonnnnnng.flclash.core.Core
+import com.lonnnnnng.flclash.service.R
+import com.lonnnnnng.flclash.service.ServiceConfig
+import com.lonnnnnng.flclash.service.models.NotificationParams
+import com.lonnnnnng.flclash.service.models.getSpeedTrafficText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -95,7 +95,7 @@ internal class NotificationModule(
             GlobalState.NOTIFICATION_CHANNEL,
         ).apply {
             setSmallIcon(R.drawable.ic_service)
-            setContentTitle("FlClash")
+            setContentTitle("KClash")
             setContentIntent(intent.toPendingIntent)
             setPriority(NotificationCompat.PRIORITY_LOW)
             setCategory(NotificationCompat.CATEGORY_SERVICE)

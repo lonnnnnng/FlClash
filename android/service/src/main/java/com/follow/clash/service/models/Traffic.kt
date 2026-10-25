@@ -1,7 +1,7 @@
-package com.follow.clash.service.models
+package com.lonnnnnng.flclash.service.models
 
-import com.follow.clash.common.GlobalState
-import com.follow.clash.core.Core
+import com.lonnnnnng.flclash.common.GlobalState
+import com.lonnnnnng.flclash.core.Core
 import com.google.gson.Gson
 
 private val gson = Gson()

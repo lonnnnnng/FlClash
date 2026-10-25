@@ -1,4 +1,4 @@
-package com.follow.clash.service
+package com.lonnnnnng.flclash.service
 
 import android.net.ConnectivityManager
 import android.net.LinkProperties
@@ -11,8 +11,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import androidx.core.content.getSystemService
-import com.follow.clash.common.GlobalState
-import com.follow.clash.core.Core
+import com.lonnnnnng.flclash.common.GlobalState
+import com.lonnnnnng.flclash.core.Core
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress

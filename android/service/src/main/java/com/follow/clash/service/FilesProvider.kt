@@ -1,4 +1,4 @@
-package com.follow.clash.service
+package com.lonnnnnng.flclash.service
 
 import android.database.Cursor
 import android.database.MatrixCursor
@@ -6,7 +6,7 @@ import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import android.provider.DocumentsProvider
-import com.follow.clash.common.R as CommonR
+import com.lonnnnnng.flclash.common.R as CommonR
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException

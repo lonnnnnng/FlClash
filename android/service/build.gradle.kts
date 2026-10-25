@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.follow.clash.service"
+    namespace = "com.lonnnnnng.flclash.service"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
@@ -18,8 +18,8 @@ android {
     }
 
     sourceSets {
-        // Unit tests live under android/tests/ instead of each module's src/test.
-        getByName("test").java.setSrcDirs(listOf("../tests/service"))
+        // 作者 long：服务层测试覆盖 VPN 配置和流量格式化，必须显式接入 Kotlin 测试源集。
+        getByName("test").kotlin.srcDirs("../tests/service")
     }
 }
 
@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":common"))
     implementation(libs.gson)
     implementation(libs.androidx.core)
+    implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

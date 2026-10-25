@@ -1,7 +1,7 @@
-package com.follow.clash.service
+package com.lonnnnnng.flclash.service
 
-import com.follow.clash.service.models.NotificationParams
-import com.follow.clash.service.models.VpnOptions
+import com.lonnnnnng.flclash.service.models.NotificationParams
+import com.lonnnnnng.flclash.service.models.VpnOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

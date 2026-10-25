@@ -1,8 +1,8 @@
-package com.follow.clash.core
+package com.lonnnnnng.flclash.core
 
-import com.follow.clash.core.mobile.Mobile
-import com.follow.clash.core.mobile.ResultHandler
-import com.follow.clash.core.mobile.TunHandler
+import com.lonnnnnng.flclash.core.mobile.Mobile
+import com.lonnnnnng.flclash.core.mobile.ResultHandler
+import com.lonnnnnng.flclash.core.mobile.TunHandler
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URI
