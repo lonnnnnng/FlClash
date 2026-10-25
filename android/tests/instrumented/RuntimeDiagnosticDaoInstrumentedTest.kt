@@ -1,6 +1,9 @@
 package com.lonnnnnng.flclash.data
 
 import androidx.room.Room
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteOpenHelper
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
@@ -73,4 +76,55 @@ class RuntimeDiagnosticDaoInstrumentedTest {
             restored.map { it.kind },
         )
     }
+
+    @Test
+    fun migration2To3CreatesDiagnosticTableAndTimestampIndex() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val databaseName = "runtime-diagnostic-migration-test.db"
+        context.deleteDatabase(databaseName)
+
+        val versionTwo = createSqliteHelper(context, databaseName, version = 2) {
+            // 作者 long：v2 只需要一个可打开的旧 schema，迁移本身只新增诊断表，不依赖旧表数据。
+        }
+        versionTwo.writableDatabase.close()
+        versionTwo.close()
+
+        val versionThree = createSqliteHelper(context, databaseName, version = 3) { database ->
+            KClashDatabase.MIGRATION_2_3.migrate(database)
+        }
+        val upgraded = versionThree.writableDatabase
+
+        assertEquals(1, upgraded.query(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'runtime_diagnostic_events'",
+        ).use { cursor -> if (cursor.moveToFirst()) 1 else 0 })
+        assertEquals(1, upgraded.query(
+            "SELECT name FROM sqlite_master WHERE type = 'index' " +
+                "AND name = 'index_runtime_diagnostic_events_timestampMillis'",
+        ).use { cursor -> if (cursor.moveToFirst()) 1 else 0 })
+
+        versionThree.close()
+        context.deleteDatabase(databaseName)
+    }
+
+    private fun createSqliteHelper(
+        context: android.content.Context,
+        name: String,
+        version: Int,
+        onUpgrade: (SupportSQLiteDatabase) -> Unit,
+    ): SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(
+        SupportSQLiteOpenHelper.Configuration.builder(context)
+            .name(name)
+            .callback(object : SupportSQLiteOpenHelper.Callback(version) {
+                override fun onCreate(db: SupportSQLiteDatabase) = Unit
+
+                override fun onUpgrade(
+                    db: SupportSQLiteDatabase,
+                    oldVersion: Int,
+                    newVersion: Int,
+                ) {
+                    onUpgrade(db)
+                }
+            })
+            .build(),
+    )
 }
