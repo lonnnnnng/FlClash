@@ -1,6 +1,10 @@
 package com.lonnnnnng.flclash.ui
 
+import android.content.ContentResolver
 import android.text.format.DateUtils
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,9 +36,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,8 +59,36 @@ fun KClashApp(
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
+
+    val filePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val result = runCatching {
+            val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                ?: error("无法读取所选配置文件")
+            require(bytes.isNotEmpty()) { "配置文件为空" }
+            val displayName = queryDisplayName(context.contentResolver, uri)
+            val label = displayName
+                ?.substringBeforeLast('.', displayName)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: "本地配置"
+            label to bytes
+        }
+        result.onSuccess { (label, bytes) ->
+            // 作者 long：导入后立即复制到应用目录，避免外部文档提供者撤回 URI 后配置无法再次启动。
+            profilesViewModel.addFile(label, bytes)
+        }.onFailure { error ->
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(error.message ?: "导入配置失败")
+            }
+        }
+    }
 
     LaunchedEffect(profilesViewModel) {
         profilesViewModel.errors.collect { message ->
@@ -133,6 +168,10 @@ fun KClashApp(
         AddProfileDialog(
             busy = profilesState.isBusy,
             onDismiss = { showAddDialog = false },
+            onPickFile = {
+                showAddDialog = false
+                filePicker.launch(arrayOf("*/*"))
+            },
             onAddRemote = { label, url ->
                 showAddDialog = false
                 profilesViewModel.addRemote(url, label)
@@ -267,10 +306,27 @@ private fun formatBytes(bytes: Long): String {
     return "%.1f%s".format(value, units[index])
 }
 
+private fun queryDisplayName(contentResolver: ContentResolver, uri: android.net.Uri): String? {
+    return contentResolver.query(
+        uri,
+        arrayOf(OpenableColumns.DISPLAY_NAME),
+        null,
+        null,
+        null,
+    )?.use { cursor ->
+        if (cursor.moveToFirst()) {
+            cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+        } else {
+            null
+        }
+    }
+}
+
 @Composable
 private fun AddProfileDialog(
     busy: Boolean,
     onDismiss: () -> Unit,
+    onPickFile: () -> Unit,
     onAddRemote: (label: String, url: String) -> Unit,
     onAddCustom: (label: String) -> Unit,
 ) {
@@ -282,6 +338,9 @@ private fun AddProfileDialog(
         title = { Text(if (customMode) "创建自定义配置" else "添加订阅") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(onClick = onPickFile, enabled = !busy) {
+                    Text("从文件导入 YAML")
+                }
                 OutlinedTextField(
                     value = label,
                     onValueChange = { label = it },

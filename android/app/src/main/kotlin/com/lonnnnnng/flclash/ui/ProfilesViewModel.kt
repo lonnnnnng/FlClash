@@ -53,6 +53,10 @@ class ProfilesViewModel @Inject constructor(
         repository.addRemoteProfile(url, label)
     }
 
+    fun addFile(label: String, bytes: ByteArray) = launchAction {
+        repository.addFileProfile(label, bytes)
+    }
+
     fun addCustom(label: String) = launchAction {
         repository.addCustomProfile(label)
     }
