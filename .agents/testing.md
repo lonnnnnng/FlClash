@@ -22,6 +22,13 @@
 
 - `:common:testDebugUnitTest`：30 项通过。
 - `:service:testDebugUnitTest`：26 项通过。
-- `:app:testDebugUnitTest`：当前无新 app 单元测试，任务为 `NO-SOURCE`。
+- `:app:testDebugUnitTest`：第一阶段骨架时为 `NO-SOURCE`，Profiles 切片后新增 4 项单元测试并通过。
 - `:app:assembleDebug`：成功，APK 只包含 `arm64-v8a` 的 `libclash.so`。
 - 真机 `wsvwypiz7xwslvl7`：启动 Activity、启动 ProxyService 前台通知、停止 ProxyService 均已验证；启动期和停止期没有 `FATAL EXCEPTION`。
+
+## Profiles 切片实测记录
+
+- `:app:testDebugUnitTest`：4 项 Profile/订阅信息单元测试通过。
+- `:app:assembleDebug`：成功，安装包仍只包含 `arm64-v8a` 原生库。
+- 真机 `wsvwypiz7xwslvl7`：创建自定义配置后重启应用，配置仍显示且保持选中；核心启动/停止链路仍可用，前台服务 `startForegroundCount=1`、`isForeground=true`，未发现 `FATAL EXCEPTION`。
+- 真机 `wsvwypiz7xwslvl7`：使用公开测试订阅地址完成 HTTP 导入，列表显示远程订阅；重复导入收到“该订阅已经添加”，随后删除测试订阅并恢复空状态。

@@ -3,6 +3,9 @@ package com.lonnnnnng.flclash.di
 import android.content.Context
 import androidx.room.Room
 import com.lonnnnnng.flclash.data.KClashDatabase
+import com.lonnnnnng.flclash.data.HttpSubscriptionClient
+import com.lonnnnnng.flclash.data.ProfileRepository
+import com.lonnnnnng.flclash.data.SubscriptionClient
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import dagger.Module
 import dagger.Provides
@@ -17,7 +20,21 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): KClashDatabase =
-        Room.databaseBuilder(context, KClashDatabase::class.java, "kclash.db").build()
+        Room.databaseBuilder(context, KClashDatabase::class.java, "kclash.db")
+            .addMigrations(KClashDatabase.MIGRATION_1_2)
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideSubscriptionClient(): SubscriptionClient = HttpSubscriptionClient()
+
+    @Provides
+    @Singleton
+    fun provideProfileRepository(
+        @ApplicationContext context: Context,
+        database: KClashDatabase,
+        subscriptionClient: SubscriptionClient,
+    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient)
 
     @Provides
     @Singleton

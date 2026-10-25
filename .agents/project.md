@@ -21,3 +21,5 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 第一阶段根目录原生化已落地：根目录使用 Gradle Wrapper，`app`、`core`、`service`、`common` 通过 Android Gradle 工程组装；Compose、Hilt、Room、StateFlow 和 `CoreRuntimeManager` 已接入，Go Mihomo 只生成 `arm64-v8a` AAR。Debug APK 已在 Redmi Note 8 Pro（API 36）安装并完成启动、前台服务启动/停止和界面检查。
 
 后续按功能切片逐步补齐 Profiles/订阅、配置编辑、代理组、延迟测试、连接、请求、DNS、日志、Quick Settings、Deep Link、按应用代理和 VPN/TUN；Flutter 代码只作为行为参考，不作为 Kotlin 运行时依赖。
+
+当前功能切片已落地 Profiles 的新 Room 模型、远程订阅下载、订阅用量解析、配置文件原子写入、当前配置持久化和 Compose 列表交互。Mihomo 配置校验、配置应用、文件选择器、二维码导入和自定义配置编辑器仍待后续切片接入。
