@@ -118,6 +118,18 @@ class CoreBridge {
 
     fun stopEventListener() = Core.updateEventListener(null)
 
+    /**
+     * 作者 long：Go 核心的日志泵必须显式启动；仅注册事件回调不会订阅 Mihomo 日志，
+     * 否则日志卡片会一直保持空态，无法解释真实请求失败原因。
+     */
+    suspend fun startLog() {
+        invoke("startLog", JSONObject())
+    }
+
+    suspend fun stopLog() {
+        invoke("stopLog", JSONObject())
+    }
+
     fun startListener() = Core.startListener()
 
     fun stopListener() = Core.stopListener()

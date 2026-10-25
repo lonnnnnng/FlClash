@@ -42,6 +42,7 @@ class CoreRuntimeManager(
     private val initialized = AtomicBoolean(false)
     private val listenerStarted = AtomicBoolean(false)
     private val eventListenerStarted = AtomicBoolean(false)
+    private val logListenerStarted = AtomicBoolean(false)
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.STOPPED)
 
     val state = mutableState.asStateFlow()
@@ -63,6 +64,9 @@ class CoreRuntimeManager(
             if (eventListenerStarted.compareAndSet(false, true)) {
                 bridge.startEventListener()
             }
+            if (logListenerStarted.compareAndSet(false, true)) {
+                bridge.startLog()
+            }
             ServiceConfig.updateNotificationParams(
                 NotificationParams(title = "KClash", showStopAction = false),
             )
@@ -83,6 +87,10 @@ class CoreRuntimeManager(
                 runCatching { bridge.stopEventListener() }
                 eventListenerStarted.set(false)
             }
+            if (logListenerStarted.get()) {
+                runCatching { bridge.stopLog() }
+                logListenerStarted.set(false)
+            }
             mutableState.value = CoreRuntimeStatus.FAILED
         }
     }
@@ -101,6 +109,10 @@ class CoreRuntimeManager(
             if (eventListenerStarted.get()) {
                 bridge.stopEventListener()
                 eventListenerStarted.set(false)
+            }
+            if (logListenerStarted.get()) {
+                bridge.stopLog()
+                logListenerStarted.set(false)
             }
             mutableState.value = CoreRuntimeStatus.STOPPED
         }.onFailure {

@@ -37,7 +37,7 @@ class CoreRuntimeManagerTest {
 
         assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
         assertEquals("mixed-port: 7890\n", File(homeDir, "config.yaml").readText())
-        assertEquals(listOf("initialize", "validate", "setup", "listener-start"), bridge.calls)
+        assertEquals(listOf("initialize", "validate", "setup", "log-start", "listener-start"), bridge.calls)
         assertEquals(listOf("service-start"), controller.events)
         assertTrue(controller.started)
         assertEquals("mips", controller.receivedOptions?.stack)
@@ -173,9 +173,11 @@ class CoreRuntimeManagerTest {
 
         manager.startProxy().getOrThrow()
         assertTrue(bridge.eventListenerStarted)
+        assertTrue(bridge.logListenerStarted)
 
         manager.stop().getOrThrow()
         assertFalse(bridge.eventListenerStarted)
+        assertFalse(bridge.logListenerStarted)
     }
 
     @Test
@@ -226,6 +228,7 @@ class CoreRuntimeManagerTest {
         val calls = mutableListOf<String>()
         var listenerStarted = false
         var eventListenerStarted = false
+        var logListenerStarted = false
         var proxyGroupsReads = 0
 
         override suspend fun initialize(homeDir: String, sdkVersion: Int) {
@@ -270,6 +273,16 @@ class CoreRuntimeManagerTest {
 
         override fun stopEventListener() {
             eventListenerStarted = false
+        }
+
+        override suspend fun startLog() {
+            calls += "log-start"
+            logListenerStarted = true
+        }
+
+        override suspend fun stopLog() {
+            calls += "log-stop"
+            logListenerStarted = false
         }
 
         override fun startListener() {

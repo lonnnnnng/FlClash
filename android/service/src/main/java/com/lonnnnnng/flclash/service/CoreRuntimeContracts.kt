@@ -152,6 +152,10 @@ interface CoreRuntimeBridge {
 
     fun stopEventListener()
 
+    suspend fun startLog()
+
+    suspend fun stopLog()
+
     fun startListener()
 
     fun stopListener()
@@ -189,6 +193,10 @@ class NativeCoreRuntimeBridge(
     override fun startEventListener() = coreBridge.startEventListener()
 
     override fun stopEventListener() = coreBridge.stopEventListener()
+
+    override suspend fun startLog() = coreBridge.startLog()
+
+    override suspend fun stopLog() = coreBridge.stopLog()
 
     override fun startListener() = coreBridge.startListener()
 
