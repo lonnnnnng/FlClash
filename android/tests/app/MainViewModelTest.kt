@@ -4,6 +4,7 @@ import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreConnectionMetadata
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTrafficUpdate
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
@@ -157,6 +158,24 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `diagnostic session captures event flow health only while running`() {
+        val stats = CoreEventFlowStats(
+            parsedBatches = 3,
+            parsedEvents = 12,
+            emittedEvents = 10,
+            droppedEvents = 2,
+            truncatedEvents = 1,
+            lastEventAtMillis = 7L,
+        )
+        val running = DiagnosticSessionUiState(status = DiagnosticSessionStatus.RUNNING)
+        val captured = running.withEventFlowStats(stats)
+        val finished = captured.copy(status = DiagnosticSessionStatus.PASS)
+
+        assertEquals(stats, captured.eventFlowStats)
+        assertEquals(finished, finished.withEventFlowStats(CoreEventFlowStats()))
+    }
+
+    @Test
     fun `diagnostic assertion requires status and route`() {
         val result = CoreProbeResult(
             statusCode = 403,
@@ -204,6 +223,14 @@ class MainViewModelTest {
                     5L,
                 ),
             ),
+            eventFlowStats = CoreEventFlowStats(
+                parsedBatches = 2,
+                parsedEvents = 4,
+                emittedEvents = 3,
+                droppedEvents = 1,
+                truncatedEvents = 0,
+                lastEventAtMillis = 6L,
+            ),
         )
 
         val exported = formatDiagnosticForExport(session)
@@ -214,6 +241,8 @@ class MainViewModelTest {
         assertEquals(true, exported.contains("[dns]"))
         assertEquals(true, exported.contains("[logs]"))
         assertEquals(true, exported.contains("[runtime]"))
+        assertEquals(true, exported.contains("[event_flow]"))
+        assertEquals(true, exported.contains("dropped_events\t1"))
         assertEquals(true, exported.contains("DNS_UPDATED"))
         assertEquals(true, exported.contains("[REDACTED_SECRET]"))
         assertEquals(false, exported.contains("secret-value"))

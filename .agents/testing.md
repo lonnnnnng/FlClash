@@ -148,3 +148,12 @@
 - 核心运行期间执行 Wi‑Fi 关闭 8 秒、重新开启并等待网络恢复；`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由保持，恢复后 probe 仍成功，UI 显示运行事件 8 条。
 - 通过 `DocumentsUI` 保存的最新诊断文件约 2 KB、33 行，包含 `CORE_STARTED`、`DNS_UPDATED`、`NETWORK_LOST`、`NETWORK_AVAILABLE`、`NETWORK_SWITCHED` 及 `[requests]`/`[dns]`/`[logs]` 分区，未命中测试秘密值。
 - 第一条路径在 Wi‑Fi 恢复后的两次 probe 返回 EOF，应用正确显示失败态并保留失败证据；随后使用第二条授权路径完成成功复验。两个测试 Profile 已删除，设备恢复空配置状态。
+
+## 事件流背压与长期运行治理切片实测记录
+
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；工程共 113 项 Kotlin 单元测试失败 0、错误 0、跳过 0。
+- `CoreBridge` 事件流使用固定 256 条缓冲、非阻塞 `tryEmit`，单批解析上限为 512 条；单元测试覆盖批次截断、无订阅者丢弃、活动订阅者成功投递和诊断导出统计。
+- 最终 Debug APK 安装到 `wsvwypiz7xwslvl7`（Redmi Note 8 Pro，Android 16/API 36），只包含 `arm64-v8a`，SHA-256 为 `a5fa9f91db26b3fd5a7e1c1e930f17774f5da19939b1d6b6db297a4f51870ab4`。
+- 使用第二条当前授权路径启动后首次 probe 出现一次真实网络失败；停止并重启核心后重试返回 HTTP 200，UI 显示“诊断会话：通过 · 运行 7 · 请求 2 · DNS 6 · 日志 2”。最终导出文件 `[event_flow]` 记录 `parsed_batches=14`、`parsed_events=17`、`emitted_events=17`、`dropped_events=0`、`truncated_events=0`。
+- 核心持续运行 40 秒后 PID `26899`、两个前台服务、`tun0` 和 `198.18.0.0/30` 路由保持，未发现应用 `FATAL EXCEPTION`。停止后服务和路由清理，测试 Profile 已删除并恢复“还没有配置”。
+- 本轮尚未覆盖真实高负载事件压力、页面退出后的轮询生命周期和跨进程诊断历史关联。

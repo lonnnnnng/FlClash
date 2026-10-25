@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.service
 import java.io.File
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -17,6 +18,8 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class CoreRuntimeManagerTest {
     @get:Rule
@@ -382,6 +385,8 @@ class CoreRuntimeManagerTest {
         private val delayError: Throwable? = null,
     ) : CoreRuntimeBridge {
         override val events = emptyFlow<CoreEvent>()
+        private val mutableEventFlowStats = MutableStateFlow(CoreEventFlowStats())
+        override val eventFlowStats = mutableEventFlowStats.asStateFlow()
         val calls = mutableListOf<String>()
         var listenerStarted = false
         var eventListenerStarted = false

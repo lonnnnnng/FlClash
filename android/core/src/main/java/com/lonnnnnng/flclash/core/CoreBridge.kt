@@ -3,9 +3,14 @@ package com.lonnnnnng.flclash.core
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.util.UUID
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONObject
 import kotlin.coroutines.resume
@@ -16,13 +21,24 @@ import kotlin.coroutines.resumeWithException
  * 这样服务层不会在页面或生命周期代码里拼接原始方法名，也不会把错误响应误当成成功。
  */
 class CoreBridge {
-    private val mutableEvents = MutableSharedFlow<CoreEvent>(extraBufferCapacity = EVENT_BUFFER_SIZE)
+    /**
+     * 作者 long：Go 回调线程不能等待 Compose 或服务层消费事件，因此使用固定容量并显式保持挂起策略，
+     * 再通过非阻塞 tryEmit 在缓冲满时丢弃最新事件；这样返回值可以准确统计丢弃数量。
+     */
+    private val mutableEvents = MutableSharedFlow<CoreEvent>(
+        replay = 0,
+        extraBufferCapacity = EVENT_BUFFER_SIZE,
+        onBufferOverflow = BufferOverflow.SUSPEND,
+    )
+    private val mutableEventFlowStats = MutableStateFlow(CoreEventFlowStats())
 
     /**
      * 作者 long：核心事件从 gomobile 回调线程进入共享流，页面只订阅领域事件，
      * 避免把 JSON 解码和回调线程边界泄露到 ViewModel 或 Compose。
      */
     val events: SharedFlow<CoreEvent> = mutableEvents.asSharedFlow()
+
+    val eventFlowStats: StateFlow<CoreEventFlowStats> = mutableEventFlowStats.asStateFlow()
 
     suspend fun initialize(homeDir: String, sdkVersion: Int) {
         val response = invoke(
@@ -132,12 +148,47 @@ class CoreBridge {
         parseConnectionsResponse(invoke("getConnections", JSONObject()).optJSONObject("result"))
 
     fun startEventListener() {
+        resetEventFlowStats()
         Core.updateEventListener { bytes ->
-            parseEvents(bytes).forEach { mutableEvents.tryEmit(it) }
+            dispatchEvents(bytes)
         }
     }
 
     fun stopEventListener() = Core.updateEventListener(null)
+
+    /**
+     * 作者 long：事件流健康统计按一次核心运行会话重新计数，避免上一次运行的丢弃量污染当前诊断证据。
+     */
+    internal fun resetEventFlowStats() {
+        mutableEventFlowStats.value = CoreEventFlowStats()
+    }
+
+    /**
+     * 作者 long：将单个 Go 回调批次限制在固定大小内，并逐条使用 tryEmit；任何解析成功但未进入
+     * 有界共享流的事件都计为丢弃，调用方不会因高频日志或请求事件阻塞核心线程。
+     */
+    internal fun dispatchEvents(bytes: ByteArray) {
+        val batch = parseEventBatch(bytes) ?: return
+        val now = System.currentTimeMillis()
+        mutableEventFlowStats.update { current ->
+            current.copy(
+                parsedBatches = current.parsedBatches + 1,
+                parsedEvents = current.parsedEvents + batch.events.size,
+                truncatedEvents = current.truncatedEvents + batch.truncatedEvents,
+                lastEventAtMillis = if (batch.events.isEmpty()) current.lastEventAtMillis else now,
+            )
+        }
+        batch.events.forEach { event ->
+            val accepted = mutableEvents.subscriptionCount.value > 0 && mutableEvents.tryEmit(event)
+            mutableEventFlowStats.update { current ->
+                if (accepted) {
+                    current.copy(emittedEvents = current.emittedEvents + 1)
+                } else {
+                    current.copy(droppedEvents = current.droppedEvents + 1)
+                }
+            }
+        }
+    }
 
     /**
      * 作者 long：Go 核心的日志泵必须显式启动；仅注册事件回调不会订阅 Mihomo 日志，
@@ -361,17 +412,34 @@ class CoreBridge {
      * 当前条目，不能让一次异常事件阻断后续请求和流量事件。
      */
     internal fun parseEvents(bytes: ByteArray): List<CoreEvent> {
+        return parseEventBatch(bytes)?.events.orEmpty()
+    }
+
+    private fun parseEventBatch(bytes: ByteArray): ParsedEventBatch? {
         val envelope = runCatching {
             JsonParser.parseString(bytes.decodeToString()).asJsonObject
-        }.getOrNull() ?: return emptyList()
-        if (envelope.string("method") != "message") return emptyList()
-        val arguments = envelope.array("arguments") ?: return emptyList()
-        return buildList(arguments.size()) {
-            arguments.forEach { element ->
-                if (!element.isJsonObject) return@forEach
-                parseEvent(element.asJsonObject)?.let(::add)
+        }.getOrNull() ?: return null
+        if (envelope.string("method") != "message") return null
+        val arguments = envelope.array("arguments") ?: return null
+        val limit = minOf(arguments.size(), MAX_EVENTS_PER_BATCH)
+        var nestedTruncatedEvents = 0
+        val events = buildList(limit) {
+            for (index in 0 until limit) {
+                val element = arguments[index]
+                if (!element.isJsonObject) continue
+                val raw = element.asJsonObject
+                if (raw.string("type") == "requestTraffic") {
+                    val updates = raw.array("data")
+                    nestedTruncatedEvents += (updates?.size()?.minus(MAX_TRAFFIC_UPDATES_PER_EVENT) ?: 0)
+                        .coerceAtLeast(0)
+                }
+                parseEvent(raw)?.let(::add)
             }
         }
+        return ParsedEventBatch(
+            events = events,
+            truncatedEvents = (arguments.size() - limit).coerceAtLeast(0) + nestedTruncatedEvents,
+        )
     }
 
     private fun parseEvent(raw: JsonObject): CoreEvent? {
@@ -384,10 +452,12 @@ class CoreBridge {
                 }
                 "requestTraffic" -> {
                     val data = raw.array("data") ?: return@runCatching null
+                    val limit = minOf(data.size(), MAX_TRAFFIC_UPDATES_PER_EVENT)
                     CoreEvent.RequestTraffic(
-                        buildList(data.size()) {
-                            data.forEach { element ->
-                                if (!element.isJsonObject) return@forEach
+                        buildList(limit) {
+                            for (index in 0 until limit) {
+                                val element = data[index]
+                                if (!element.isJsonObject) continue
                                 val item = element.asJsonObject
                                 add(
                                     CoreTrafficUpdate(
@@ -483,7 +553,9 @@ class CoreBridge {
         }
 
     companion object {
-        private const val EVENT_BUFFER_SIZE = 256
+        internal const val EVENT_BUFFER_SIZE = 256
+        internal const val MAX_EVENTS_PER_BATCH = 512
+        private const val MAX_TRAFFIC_UPDATES_PER_EVENT = 256
         const val DEFAULT_TEST_URL = "https://www.gstatic.com/generate_204"
         const val DEFAULT_DELAY_TIMEOUT_MS = 8_000L
         const val DEFAULT_PROBE_TIMEOUT_MS = 20_000L
@@ -491,6 +563,20 @@ class CoreBridge {
         const val DELAY_FAILED = -2
     }
 }
+
+private data class ParsedEventBatch(
+    val events: List<CoreEvent>,
+    val truncatedEvents: Int,
+)
+
+data class CoreEventFlowStats(
+    val parsedBatches: Long = 0L,
+    val parsedEvents: Long = 0L,
+    val emittedEvents: Long = 0L,
+    val droppedEvents: Long = 0L,
+    val truncatedEvents: Long = 0L,
+    val lastEventAtMillis: Long = 0L,
+)
 
 sealed interface CoreEvent {
     data class Request(val connection: CoreConnection) : CoreEvent

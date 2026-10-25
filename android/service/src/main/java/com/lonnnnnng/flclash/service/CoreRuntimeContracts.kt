@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
@@ -18,6 +19,7 @@ import com.lonnnnnng.flclash.service.VpnRuntimeState
 import java.io.File
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withTimeout
 
 data class ActiveProfile(
@@ -137,6 +139,7 @@ data class CoreRuntimePaths(
 
 interface CoreRuntimeBridge {
     val events: Flow<CoreEvent>
+    val eventFlowStats: StateFlow<CoreEventFlowStats>
 
     suspend fun initialize(homeDir: String, sdkVersion: Int)
 
@@ -178,6 +181,9 @@ class NativeCoreRuntimeBridge(
 ) : CoreRuntimeBridge {
     override val events: Flow<CoreEvent>
         get() = coreBridge.events
+
+    override val eventFlowStats: StateFlow<CoreEventFlowStats>
+        get() = coreBridge.eventFlowStats
 
     override suspend fun initialize(homeDir: String, sdkVersion: Int) =
         coreBridge.initialize(homeDir, sdkVersion)

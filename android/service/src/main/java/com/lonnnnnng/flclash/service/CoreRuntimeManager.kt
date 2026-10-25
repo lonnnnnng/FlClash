@@ -50,6 +50,7 @@ class CoreRuntimeManager(
 
     val state = mutableState.asStateFlow()
     val events: Flow<CoreEvent> = bridge.events
+    val eventFlowStats = bridge.eventFlowStats
     val diagnosticEvents = RuntimeDiagnosticHistory.events
 
     suspend fun startProxy(): Result<Unit> = transitionLock.withLock {

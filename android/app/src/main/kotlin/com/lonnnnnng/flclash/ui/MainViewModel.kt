@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
@@ -67,6 +68,11 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            runtimeManager.eventFlowStats.collect { stats ->
+                mutableDiagnostic.update { current -> current.withEventFlowStats(stats) }
+            }
+        }
+        viewModelScope.launch {
             runtimeState.collectLatest { state ->
                 if (!state.isRunning) {
                     mutableStats.value = RuntimeStatsUiState()
@@ -126,6 +132,7 @@ class MainViewModel @Inject constructor(
             targetUrl = target,
             startedAtMillis = startedAt,
             runtimeEvents = runtimeManager.diagnosticEvents.value.takeLast(MAX_DIAGNOSTIC_ITEMS),
+            eventFlowStats = runtimeManager.eventFlowStats.value,
         )
         viewModelScope.launch {
             mutableProbe.value = ProbeUiState(targetUrl = target, isLoading = true)
@@ -421,6 +428,7 @@ data class DiagnosticSessionUiState(
     val dns: List<CoreDnsQuery> = emptyList(),
     val logs: List<CoreEvent.Log> = emptyList(),
     val runtimeEvents: List<RuntimeDiagnosticEvent> = emptyList(),
+    val eventFlowStats: CoreEventFlowStats = CoreEventFlowStats(),
 ) {
     /**
      * 作者 long：证据包只接收会话运行窗口内到达的事件，并单独设置较小上限，避免一次诊断把长期观测历史整体复制进内存。
@@ -456,6 +464,9 @@ data class DiagnosticSessionUiState(
         } else {
             this
         }
+
+    internal fun withEventFlowStats(stats: CoreEventFlowStats): DiagnosticSessionUiState =
+        if (status == DiagnosticSessionStatus.RUNNING) copy(eventFlowStats = stats) else this
 }
 
 internal fun diagnosticFailureReason(result: CoreProbeResult): String? = when {
@@ -484,6 +495,13 @@ internal fun formatDiagnosticForExport(session: DiagnosticSessionUiState): Strin
     session.runtimeEvents.forEach { event ->
         appendLine("${event.timestampMillis}\t${event.kind}\t${redactSensitiveLogText(event.detail)}")
     }
+    appendLine("[event_flow]")
+    appendLine("parsed_batches\t${session.eventFlowStats.parsedBatches}")
+    appendLine("parsed_events\t${session.eventFlowStats.parsedEvents}")
+    appendLine("emitted_events\t${session.eventFlowStats.emittedEvents}")
+    appendLine("dropped_events\t${session.eventFlowStats.droppedEvents}")
+    appendLine("truncated_events\t${session.eventFlowStats.truncatedEvents}")
+    appendLine("last_event_at\t${session.eventFlowStats.lastEventAtMillis}")
     appendLine("[requests]")
     session.requests.forEach { request ->
         appendLine(

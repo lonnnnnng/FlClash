@@ -5,6 +5,12 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 
 class CoreBridgeParsingTest {
     private val bridge = CoreBridge()
@@ -257,5 +263,67 @@ class CoreBridgeParsingTest {
         assertEquals(listOf("203.0.113.7", "203.0.113.8"), query.answers)
         assertEquals("NOERROR", query.rcode)
         assertEquals(18L, query.delay)
+    }
+
+    @Test
+    fun `event dispatch uses a bounded batch and records undelivered events`() {
+        val payload = buildString {
+            append("{\"method\":\"message\",\"arguments\":[")
+            repeat(CoreBridge.MAX_EVENTS_PER_BATCH + 1) { index ->
+                if (index > 0) append(',')
+                append("{\"type\":\"log\",\"data\":{\"LogLevel\":1,\"Payload\":\"event-$index\"}}")
+            }
+            append("]}")
+        }.toByteArray()
+
+        bridge.dispatchEvents(payload)
+
+        val stats = bridge.eventFlowStats.value
+        assertEquals(1L, stats.parsedBatches)
+        assertEquals(CoreBridge.MAX_EVENTS_PER_BATCH.toLong(), stats.parsedEvents)
+        assertEquals(0L, stats.emittedEvents)
+        assertEquals(CoreBridge.MAX_EVENTS_PER_BATCH.toLong(), stats.droppedEvents)
+        assertEquals(1L, stats.truncatedEvents)
+        assertTrue(stats.lastEventAtMillis > 0L)
+        assertEquals(CoreBridge.MAX_EVENTS_PER_BATCH, bridge.parseEvents(payload).size)
+    }
+
+    @Test
+    fun `event dispatch records events accepted by an active subscriber`() = runBlocking {
+        val received = Channel<CoreEvent>(Channel.UNLIMITED)
+        val collector = launch {
+            bridge.events.collect { received.send(it) }
+        }
+        yield()
+
+        bridge.dispatchEvents(
+            """{"method":"message","arguments":[{"type":"log","data":{"LogLevel":1,"Payload":"ok"}}]}"""
+                .toByteArray(),
+        )
+
+        assertTrue(received.receive() is CoreEvent.Log)
+        assertEquals(1L, bridge.eventFlowStats.value.emittedEvents)
+        assertEquals(0L, bridge.eventFlowStats.value.droppedEvents)
+        collector.cancel()
+    }
+
+    @Test
+    fun `event dispatch counts newest events dropped when the subscriber cannot keep up`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val collector = launch {
+            bridge.events.collect { gate.await() }
+        }
+        yield()
+        val payload =
+            """{"method":"message","arguments":[{"type":"log","data":{"LogLevel":1,"Payload":"busy"}}]}"""
+                .toByteArray()
+
+        repeat(CoreBridge.EVENT_BUFFER_SIZE + 32) { bridge.dispatchEvents(payload) }
+
+        val stats = bridge.eventFlowStats.value
+        assertEquals((CoreBridge.EVENT_BUFFER_SIZE + 32).toLong(), stats.parsedEvents)
+        assertTrue(stats.droppedEvents > 0L)
+        assertEquals(stats.parsedEvents, stats.emittedEvents + stats.droppedEvents)
+        collector.cancel()
     }
 }
