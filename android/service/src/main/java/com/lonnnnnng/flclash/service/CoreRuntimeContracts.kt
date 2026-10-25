@@ -41,6 +41,15 @@ interface VpnOptionsProvider {
 }
 
 /**
+ * 作者 long：运行意图必须跨越应用进程重建保存，才能区分“系统杀进程后恢复”和“用户主动停止”。
+ */
+interface RuntimeResumeStore {
+    suspend fun shouldResume(): Boolean
+
+    suspend fun setShouldResume(value: Boolean)
+}
+
+/**
  * 作者 long：在设置页面接入前先使用与 Flutter 默认值一致的手机 TUN 配置，
  * 同时关闭系统 HTTP 代理，避免订阅配置的 mixed-port 尚未解析时把流量送到错误端口。
  */

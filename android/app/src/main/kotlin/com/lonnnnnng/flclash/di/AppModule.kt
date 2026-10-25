@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.HttpSubscriptionClient
 import com.lonnnnnng.flclash.data.ProfileRepository
+import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
 import com.lonnnnnng.flclash.data.SubscriptionClient
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.service.ActiveProfileProvider
@@ -14,6 +15,7 @@ import com.lonnnnnng.flclash.service.CoreRuntimePaths
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.NativeCoreRuntimeBridge
 import com.lonnnnnng.flclash.service.ProxyServiceController
+import com.lonnnnnng.flclash.service.RuntimeResumeStore
 import com.lonnnnnng.flclash.service.DefaultVpnOptionsProvider
 import com.lonnnnnng.flclash.service.VpnOptionsProvider
 import java.io.File
@@ -71,6 +73,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideRuntimeResumeStore(database: KClashDatabase): RuntimeResumeStore =
+        RoomRuntimeResumeStore(database.appPreferences())
+
+    @Provides
+    @Singleton
     fun provideCoreBridge(): CoreBridge = CoreBridge()
 
     @Provides
@@ -81,11 +88,13 @@ object AppModule {
         bridge: CoreRuntimeBridge,
         serviceController: ProxyServiceController,
         vpnOptionsProvider: VpnOptionsProvider,
+        runtimeResumeStore: RuntimeResumeStore,
     ): CoreRuntimeManager = CoreRuntimeManager(
         paths = paths,
         profileProvider = profileProvider,
         bridge = bridge,
         serviceController = serviceController,
         vpnOptionsProvider = vpnOptionsProvider,
+        runtimeResumeStore = runtimeResumeStore,
     )
 }

@@ -27,11 +27,13 @@ class CoreRuntimeManagerTest {
         val homeDir = temporaryFolder.newFolder("core")
         val bridge = FakeBridge()
         val controller = FakeServiceController()
+        val resumeStore = FakeRuntimeResumeStore()
         val manager = manager(
             profile = ActiveProfile(7, "测试配置", source.path),
             homeDir = homeDir,
             bridge = bridge,
             controller = controller,
+            runtimeResumeStore = resumeStore,
         )
 
         manager.startProxy().getOrThrow()
@@ -42,6 +44,7 @@ class CoreRuntimeManagerTest {
         assertEquals(listOf("service-start"), controller.events)
         assertTrue(controller.started)
         assertEquals("mips", controller.receivedOptions?.stack)
+        assertTrue(resumeStore.shouldResume)
     }
 
     @Test
@@ -50,11 +53,13 @@ class CoreRuntimeManagerTest {
         val homeDir = temporaryFolder.newFolder("core")
         val bridge = FakeBridge(validationError = IllegalArgumentException("配置格式错误"))
         val controller = FakeServiceController()
+        val resumeStore = FakeRuntimeResumeStore()
         val manager = manager(
             profile = ActiveProfile(8, "错误配置", source.path),
             homeDir = homeDir,
             bridge = bridge,
             controller = controller,
+            runtimeResumeStore = resumeStore,
         )
 
         val result = manager.startProxy()
@@ -63,17 +68,20 @@ class CoreRuntimeManagerTest {
         assertEquals(CoreRuntimeStatus.FAILED, manager.state.value)
         assertFalse(controller.started)
         assertFalse(bridge.listenerStarted)
+        assertFalse(resumeStore.shouldResume)
     }
 
     @Test
     fun `missing profile fails before core initialization`() = runTest {
         val bridge = FakeBridge()
         val controller = FakeServiceController()
+        val resumeStore = FakeRuntimeResumeStore()
         val manager = manager(
             profile = null,
             homeDir = temporaryFolder.newFolder("core"),
             bridge = bridge,
             controller = controller,
+            runtimeResumeStore = resumeStore,
         )
 
         val result = manager.startProxy()
@@ -82,6 +90,7 @@ class CoreRuntimeManagerTest {
         assertEquals(CoreRuntimeStatus.FAILED, manager.state.value)
         assertEquals(emptyList<String>(), bridge.calls)
         assertFalse(controller.started)
+        assertFalse(resumeStore.shouldResume)
     }
 
     @Test
@@ -197,11 +206,13 @@ class CoreRuntimeManagerTest {
     fun `core event listener follows runtime lifecycle`() = runTest {
         val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
         val bridge = FakeBridge()
+        val resumeStore = FakeRuntimeResumeStore()
         val manager = manager(
             profile = ActiveProfile(13, "事件配置", source.path),
             homeDir = temporaryFolder.newFolder("core"),
             bridge = bridge,
             controller = FakeServiceController(),
+            runtimeResumeStore = resumeStore,
         )
 
         manager.startProxy().getOrThrow()
@@ -211,6 +222,7 @@ class CoreRuntimeManagerTest {
         manager.stop().getOrThrow()
         assertFalse(bridge.eventListenerStarted)
         assertFalse(bridge.logListenerStarted)
+        assertFalse(resumeStore.shouldResume)
     }
 
     @Test
@@ -220,11 +232,13 @@ class CoreRuntimeManagerTest {
         val controller = FakeServiceController(
             startError = IllegalStateException("VPN 权限未授予"),
         )
+        val resumeStore = FakeRuntimeResumeStore()
         val manager = manager(
             profile = ActiveProfile(11, "VPN 失败", source.path),
             homeDir = temporaryFolder.newFolder("core"),
             bridge = bridge,
             controller = controller,
+            runtimeResumeStore = resumeStore,
         )
 
         val result = manager.startProxy()
@@ -233,6 +247,7 @@ class CoreRuntimeManagerTest {
         assertEquals(CoreRuntimeStatus.FAILED, manager.state.value)
         assertEquals(listOf("service-start", "service-stop"), controller.events)
         assertFalse(bridge.listenerStarted)
+        assertFalse(resumeStore.shouldResume)
     }
 
     @Test
@@ -240,11 +255,13 @@ class CoreRuntimeManagerTest {
         val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
         val bridge = FakeBridge()
         val controller = FakeServiceController()
+        val resumeStore = FakeRuntimeResumeStore()
         val manager = manager(
             profile = ActiveProfile(15, "撤销配置", source.path),
             homeDir = temporaryFolder.newFolder("core"),
             bridge = bridge,
             controller = controller,
+            runtimeResumeStore = resumeStore,
         )
 
         manager.startProxy().getOrThrow()
@@ -255,6 +272,7 @@ class CoreRuntimeManagerTest {
         assertFalse(bridge.listenerStarted)
         assertFalse(bridge.eventListenerStarted)
         assertFalse(bridge.logListenerStarted)
+        assertFalse(resumeStore.shouldResume)
     }
 
     @Test
@@ -304,6 +322,7 @@ class CoreRuntimeManagerTest {
         homeDir: File,
         bridge: FakeBridge,
         controller: FakeServiceController,
+        runtimeResumeStore: FakeRuntimeResumeStore = FakeRuntimeResumeStore(),
     ): CoreRuntimeManager {
         return CoreRuntimeManager(
             paths = CoreRuntimePaths(homeDir),
@@ -313,7 +332,18 @@ class CoreRuntimeManagerTest {
             bridge = bridge,
             serviceController = controller,
             vpnOptionsProvider = DefaultVpnOptionsProvider(),
+            runtimeResumeStore = runtimeResumeStore,
         )
+    }
+
+    private class FakeRuntimeResumeStore : RuntimeResumeStore {
+        var shouldResume = false
+
+        override suspend fun shouldResume(): Boolean = shouldResume
+
+        override suspend fun setShouldResume(value: Boolean) {
+            shouldResume = value
+        }
     }
 
     private class FakeBridge(

@@ -38,6 +38,7 @@ class CoreRuntimeManager(
     private val bridge: CoreRuntimeBridge,
     private val serviceController: ProxyServiceController,
     private val vpnOptionsProvider: VpnOptionsProvider,
+    private val runtimeResumeStore: RuntimeResumeStore,
 ) {
     private val transitionLock = Mutex()
     private val initialized = AtomicBoolean(false)
@@ -56,6 +57,8 @@ class CoreRuntimeManager(
         mutableState.value = CoreRuntimeStatus.STARTING
         runCatching {
             val profile = requireNotNull(profileProvider.activeProfile()) { "请先添加可用配置" }
+            // 作者 long：先记录恢复意图，再进行配置和服务启动，进程若在启动中断开也能由 Application 重试。
+            runtimeResumeStore.setShouldResume(true)
             ensureInitialized()
             stageConfig(profile.filePath)
             // 作者 long：Mihomo 解析失败时会回退到内置空配置，所以必须先独立校验文件，
@@ -92,16 +95,19 @@ class CoreRuntimeManager(
                 runCatching { bridge.stopLog() }
                 logListenerStarted.set(false)
             }
+            runCatching { runtimeResumeStore.setShouldResume(false) }
             mutableState.value = CoreRuntimeStatus.FAILED
         }
     }
 
     suspend fun stop(): Result<Unit> = transitionLock.withLock {
-        if (mutableState.value == CoreRuntimeStatus.STOPPED) {
-            return@withLock Result.success(Unit)
-        }
-        mutableState.value = CoreRuntimeStatus.STOPPING
         runCatching {
+            // 作者 long：显式停止必须先清除恢复意图，避免下一次 Application 启动把用户停止误判成系统重建。
+            runtimeResumeStore.setShouldResume(false)
+            if (mutableState.value == CoreRuntimeStatus.STOPPED) {
+                return@runCatching Unit
+            }
+            mutableState.value = CoreRuntimeStatus.STOPPING
             serviceController.stop()
             if (listenerStarted.get()) {
                 bridge.stopListener()
@@ -126,13 +132,14 @@ class CoreRuntimeManager(
      * ProxyService 的生命周期收口，避免 UI 仍显示运行中或下一次启动遇到旧监听器。
      */
     suspend fun handleVpnRevoked(): Result<Unit> = transitionLock.withLock {
-        if (mutableState.value == CoreRuntimeStatus.STOPPED ||
-            mutableState.value == CoreRuntimeStatus.FAILED
-        ) {
-            return@withLock Result.success(Unit)
-        }
-        mutableState.value = CoreRuntimeStatus.STOPPING
         runCatching {
+            runtimeResumeStore.setShouldResume(false)
+            if (mutableState.value == CoreRuntimeStatus.STOPPED ||
+                mutableState.value == CoreRuntimeStatus.FAILED
+            ) {
+                return@runCatching Unit
+            }
+            mutableState.value = CoreRuntimeStatus.STOPPING
             // onRevoke 已经释放 VpnService；重复发送停止 action 是幂等收口，
             // 同时确保仍存活的 ProxyService 和前台通知也被关闭。
             serviceController.stop()

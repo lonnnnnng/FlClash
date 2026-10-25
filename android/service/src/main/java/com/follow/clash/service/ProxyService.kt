@@ -13,7 +13,11 @@ class ProxyService : Service(), ManagedService {
     private val binder = LocalBinder()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP_SERVICE) {
+        if (intent == null) {
+            // 作者 long：系统重建 START_STICKY 服务时会传入 null Intent；由 Application 先恢复核心状态，避免服务抢跑到半初始化的进程内配置。
+            return START_NOT_STICKY
+        }
+        if (intent.action == ACTION_STOP_SERVICE) {
             stop()
             return START_NOT_STICKY
         }

@@ -112,7 +112,11 @@ class VpnService : SystemVpnService(), ManagedService {
         }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP_SERVICE) {
+        if (intent == null) {
+            // 作者 long：系统重建 START_STICKY 服务时会传入 null Intent；必须等待 Application 恢复 VpnOptions 后再由 Runtime Manager 显式启动。
+            return START_NOT_STICKY
+        }
+        if (intent.action == ACTION_STOP_SERVICE) {
             stop()
             return START_NOT_STICKY
         }
