@@ -146,6 +146,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        // 作者 long：只有首页 Activity 对用户可见时才读取运行统计和连接，后台运行的核心不应被 UI 轮询拖住。
+        viewModel.setObservationVisible(true)
+    }
+
+    override fun onStop() {
+        // 作者 long：先关闭轮询闸门再进入后台，避免生命周期切换期间继续启动下一轮 JNI 读取。
+        viewModel.setObservationVisible(false)
+        super.onStop()
+    }
+
     private fun requestBatteryOptimization() {
         if (!BatteryOptimization.openSettings(this)) {
             viewModel.reportError("无法打开电池优化设置")

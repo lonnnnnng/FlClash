@@ -9,6 +9,7 @@ import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
+import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.delay
@@ -54,6 +56,7 @@ class MainViewModel @Inject constructor(
     val diagnosticState = mutableDiagnostic.asStateFlow()
     private val mutableDiagnosticHistory = MutableStateFlow<List<RuntimeDiagnosticEvent>>(emptyList())
     val diagnosticHistory = mutableDiagnosticHistory.asStateFlow()
+    private val observationVisible = MutableStateFlow(false)
     private var diagnosticSequence = 0L
 
     init {
@@ -78,24 +81,35 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            runtimeState.collectLatest { state ->
-                if (!state.isRunning) {
-                    mutableStats.value = RuntimeStatsUiState()
-                    mutableConnections.value = ConnectionsUiState()
-                    mutableRequests.value = RequestsUiState()
-                    mutableDns.value = DnsUiState()
-                    mutableLogs.value = LogsUiState()
-                    mutableProbe.value = ProbeUiState()
-                    mutableDiagnostic.value = DiagnosticSessionUiState()
+            combine(runtimeState, observationVisible) { state, visible -> state to visible }
+                .collectLatest { (state, visible) ->
+                    if (!shouldPollRuntimeObservation(state, visible)) {
+                        if (!state.isRunning) {
+                            mutableStats.value = RuntimeStatsUiState()
+                            mutableConnections.value = ConnectionsUiState()
+                            mutableRequests.value = RequestsUiState()
+                            mutableDns.value = DnsUiState()
+                            mutableLogs.value = LogsUiState()
+                            mutableProbe.value = ProbeUiState()
+                            mutableDiagnostic.value = DiagnosticSessionUiState()
+                        }
                     return@collectLatest
+                    }
+                    while (isActive) {
+                        refreshStats()
+                        refreshConnections()
+                        delay(STATS_REFRESH_MILLIS)
+                    }
                 }
-                while (isActive) {
-                    refreshStats()
-                    refreshConnections()
-                    delay(STATS_REFRESH_MILLIS)
-                }
-            }
         }
+    }
+
+    /**
+     * 作者 long：核心可以在后台继续运行，但首页离开可见状态后不应继续每秒读取观测数据，
+     * 否则系统重建或用户切换页面时会留下无意义的 JNI/锁等待；回到前台再立即恢复一次轮询。
+     */
+    fun setObservationVisible(visible: Boolean) {
+        observationVisible.value = visible
     }
 
     fun startRuntime() {
@@ -250,6 +264,11 @@ class MainViewModel @Inject constructor(
         private const val DIAGNOSTIC_SETTLE_MILLIS = 750L
     }
 }
+
+internal fun shouldPollRuntimeObservation(
+    state: CoreRuntimeStatus,
+    observationVisible: Boolean,
+): Boolean = state == CoreRuntimeStatus.RUNNING && observationVisible
 
 data class RuntimeStatsUiState(
     val traffic: CoreTraffic = CoreTraffic(0L, 0L),

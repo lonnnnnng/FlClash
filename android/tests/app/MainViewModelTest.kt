@@ -7,12 +7,23 @@ import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTrafficUpdate
+import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MainViewModelTest {
+    @Test
+    fun `runtime observation only polls while the page is visible and core is running`() {
+        assertTrue(shouldPollRuntimeObservation(CoreRuntimeStatus.RUNNING, true))
+        assertFalse(shouldPollRuntimeObservation(CoreRuntimeStatus.RUNNING, false))
+        assertFalse(shouldPollRuntimeObservation(CoreRuntimeStatus.STOPPED, true))
+        assertFalse(shouldPollRuntimeObservation(CoreRuntimeStatus.FAILED, true))
+    }
+
     @Test
     fun `request traffic updates the matching history item`() {
         val request = connection("request-1")
