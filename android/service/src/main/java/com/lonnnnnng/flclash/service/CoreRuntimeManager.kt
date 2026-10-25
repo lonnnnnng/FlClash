@@ -72,7 +72,8 @@ class CoreRuntimeManager(
                 bridge.startLog()
             }
             ServiceConfig.updateNotificationParams(
-                NotificationParams(title = "KClash", showStopAction = false),
+                // 作者 long：核心在后台运行时必须保留停止入口，用户无需重新打开首页即可释放 VPN 和 TUN。
+                NotificationParams(title = "KClash", showStopAction = true),
             )
             val vpnOptions = vpnOptionsProvider.current()
             serviceController.start(vpnOptions)

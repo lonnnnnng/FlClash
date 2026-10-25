@@ -39,7 +39,15 @@
                 <data android:scheme="kclash" />
                 <data android:host="install-config" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+        <activity
+            android:name=".QuickActionActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.KClash.QuickAction" />
         <receiver
             android:name=".ServiceBroadcastReceiver"
             android:exported="false"

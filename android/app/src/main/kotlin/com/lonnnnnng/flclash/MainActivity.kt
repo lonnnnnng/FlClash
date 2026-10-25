@@ -1,8 +1,11 @@
 package com.lonnnnnng.flclash
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +35,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { }
+
     private var initialDeepLinkHandled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +54,20 @@ class MainActivity : ComponentActivity() {
                     onStopRuntime = viewModel::stopRuntime,
                 )
             }
+        }
+        requestNotificationPermissionIfNeeded()
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        // 作者 long：Android 13 以后通知是运行时权限；前台服务仍可启动，但没有授权时用户看不到 STOP 入口。
+        window.decorView.post {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 

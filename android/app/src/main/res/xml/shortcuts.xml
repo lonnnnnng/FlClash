@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_start"
+        android:shortcutId="start"
+        android:shortcutLongLabel="@string/shortcut_start_long"
+        android:shortcutShortLabel="@string/shortcut_start">
+        <intent
+            android:action="com.lonnnnnng.flclash.action.START"
+            android:targetClass="com.lonnnnnng.flclash.QuickActionActivity"
+            android:targetPackage="com.lonnnnnng.flclash" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_stop"
+        android:shortcutId="stop"
+        android:shortcutLongLabel="@string/shortcut_stop_long"
+        android:shortcutShortLabel="@string/shortcut_stop">
+        <intent
+            android:action="com.lonnnnnng.flclash.action.STOP"
+            android:targetClass="com.lonnnnnng.flclash.QuickActionActivity"
+            android:targetPackage="com.lonnnnnng.flclash" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_toggle"
+        android:shortcutId="toggle"
+        android:shortcutLongLabel="@string/shortcut_toggle_long"
+        android:shortcutShortLabel="@string/shortcut_toggle">
+        <intent
+            android:action="com.lonnnnnng.flclash.action.TOGGLE"
+            android:targetClass="com.lonnnnnng.flclash.QuickActionActivity"
+            android:targetPackage="com.lonnnnnng.flclash" />
+    </shortcut>
+</shortcuts>

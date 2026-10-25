@@ -106,3 +106,12 @@
 - 通过 `adb shell cmd activity crash com.lonnnnnng.flclash` 触发应用进程退出；4 秒后出现新 PID `16637`。20 秒后两个前台服务、`tun0` 和 `198.18.0.0/30` 路由仍存在，重新打开 KClash 首页仍显示“核心运行中”。
 - 代码通过 Room `RuntimeResumeStore` 保存运行意图；`KClashApplication` 在授权有效时复用 `CoreRuntimeManager.startProxy()` 恢复核心；服务收到系统重建的 `null Intent` 时不抢跑，避免进程内 `VpnOptions` 尚未恢复的竞态。
 - 停止核心后服务、TUN 和路由均清理；测试 Profile 通过应用内删除，设备恢复“还没有配置”空态。`cmd activity crash` 产生的强制崩溃仅用于验收触发，不作为应用自身异常证据。
+
+## Android 平台入口切片实测记录
+
+- `./gradlew test :app:assembleDebug --no-daemon`：通过；工程 Kotlin 单元测试 98 项，失败 0、错误 0、跳过 0；APK 仅包含 `arm64-v8a` 的 `libclash.so`。
+- Android 13+ 通知权限已在 `MainActivity` 进入时申请；前台通知显示 STOP 操作，通知动作和桌面快捷入口均通过受保护的 `QuickActionActivity` 复用 `CoreRuntimeManager`。
+- 安装 Debug APK 后，`adb -s wsvwypiz7xwslvl7 shell cmd shortcut get-shortcuts --user 0 --flags 15 com.lonnnnnng.flclash` 返回 `start`、`stop`、`toggle` 三个静态快捷方式；启动器长按 KClash 图标显示三个对应中文入口。
+- 真机 `wsvwypiz7xwslvl7`（Redmi Note 8 Pro，Android 16/API 36）从启动器点击“启动 KClash 核心”后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由出现；点击“停止 KClash 核心”后全部清理。
+- 从启动器两次点击“切换 KClash 核心运行状态”，分别验证启动和停止；停止后 `dumpsys activity services` 无 KClash 服务，`ip route` 无 `tun0` 路由。
+- 验收 Profile 已通过应用内删除，首页显示“还没有配置”；未发现 `FATAL EXCEPTION`。

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KClash</string>
+    <string name="shortcut_start">启动核心</string>
+    <string name="shortcut_start_long">启动 KClash 核心</string>
+    <string name="shortcut_stop">停止核心</string>
+    <string name="shortcut_stop_long">停止 KClash 核心</string>
+    <string name="shortcut_toggle">切换核心</string>
+    <string name="shortcut_toggle_long">切换 KClash 核心运行状态</string>
 </resources>

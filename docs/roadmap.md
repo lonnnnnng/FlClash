@@ -60,7 +60,7 @@
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、活动连接/Requests/DNS/日志非空记录、Deep Link 订阅导入、进程重建恢复和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、活动连接/Requests/DNS/日志非空记录、Deep Link 订阅导入、进程重建恢复、通知栏 STOP、桌面快捷入口和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -94,7 +94,7 @@ flowchart LR
     M3 --> M4[M4 真实 VPN/TUN 连接\nPARTIAL]
     M4 --> M5[M5 运行观测\nPARTIAL]
     M4 --> M6[M6 Profiles 高级能力\nPLANNED]
-    M5 --> M7[M7 Android 平台入口\nPLANNED]
+    M5 --> M7[M7 Android 平台入口\nPARTIAL]
     M6 --> M8[M8 UI/UX 完整对齐\nPLANNED]
     M7 --> M8
     M5 --> M9[M9 质量、签名与发布\nPLANNED]
@@ -347,17 +347,32 @@ flowchart LR
 
 ### 7.5 Android 平台入口
 
-状态：`PLANNED`。
+状态：`PARTIAL`。
+
+已完成：
+
+- 前台通知保留 STOP 操作；通知动作通过受保护的 `QuickActionActivity` 进入 `CoreRuntimeManager.stop()`。
+- Android 13+ 首次进入 `MainActivity` 时申请 `POST_NOTIFICATIONS`，避免用户看不到前台服务和停止入口。
+- 桌面静态快捷方式提供启动、停止、切换三个入口；三个入口均通过同一个 `QuickActionActivity` 进入 `CoreRuntimeManager`。
+- `QuickActionActivity` 使用 `VpnService.prepare()` 处理启动入口的系统授权边界；自身不导出，快捷入口使用显式组件调用。
+- AndroidManifest、快捷方式 Intent 和组件导出边界已完成基础安全核对。
+
+本轮验收证据（2026-10-26，设备 `wsvwypiz7xwslvl7`，Android 16 / API 36）：
+
+- `./gradlew test :app:assembleDebug --no-daemon`：通过；工程 Kotlin 单元测试 98 项，失败 0、错误 0、跳过 0；APK 仅包含 `arm64-v8a` 原生库。
+- 安装 Debug APK 后，系统 `cmd shortcut get-shortcuts` 返回 `start`、`stop`、`toggle` 三个静态快捷方式；启动器长按 KClash 图标显示“启动 KClash 核心”“停止 KClash 核心”“切换 KClash 核心运行状态”。
+- 从启动器点击“启动 KClash 核心”后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由出现；点击“停止 KClash 核心”后服务和路由均清理。
+- 从启动器两次点击“切换 KClash 核心运行状态”，分别验证启动和停止；停止后设备恢复无 KClash 服务、无 `tun0` 的状态。
+- 验收 Profile 已通过应用内删除，首页恢复“还没有配置”。
 
 待完成：
 
 - Quick Settings Tile：启动、停止、切换。
-- 通知栏操作与运行状态同步。
 - Tasker/MacroDroid 等外部 Action。
 - 按应用代理的应用选择器。
 - 电池优化白名单引导。
-- Always-on VPN 和系统撤销回调。
-- Android 组件导出、Intent 和权限安全审计。
+- Always-on VPN 的完整配置和系统设置兼容。
+- Android 组件导出、Intent 和权限的完整自动化审计。
 
 完成门槛：
 
