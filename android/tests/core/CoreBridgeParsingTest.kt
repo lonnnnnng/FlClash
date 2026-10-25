@@ -20,6 +20,7 @@ class CoreBridgeParsingTest {
                     now = "自动",
                     all = listOf("自动", "直连"),
                     hidden = false,
+                    testUrl = "https://example.com",
                 ),
                 "媒体" to ProxyGroupPayload(
                     name = "媒体",
@@ -34,6 +35,7 @@ class CoreBridgeParsingTest {
         assertEquals(listOf("GLOBAL", "媒体"), result.groups.map { it.name })
         assertEquals(listOf("自动", "直连"), result.groups.first().all)
         assertTrue(result.groups.first().isSelector)
+        assertEquals("https://example.com", result.groups.first().testUrl)
         assertFalse(result.groups[1].isSelector)
         assertEquals("香港-01", result.groups[1].now)
     }
@@ -52,5 +54,32 @@ class CoreBridgeParsingTest {
 
         assertEquals("change_proxy_failed", error.code)
         assertEquals("节点不存在", error.message)
+    }
+
+    @Test
+    fun `delay payload preserves success timeout and failure values`() {
+        assertEquals(
+            ProxyDelay(url = "https://example.com", name = "香港-01", value = 123),
+            bridge.parseDelayPayload(
+                ProxyDelayPayload(
+                    url = "https://example.com",
+                    name = "香港-01",
+                    value = 123,
+                ),
+            ),
+        )
+        assertEquals(
+            -1,
+            bridge.parseDelayPayload(ProxyDelayPayload("", "香港-01", -1))?.value,
+        )
+        assertEquals(
+            -2,
+            bridge.parseDelayPayload(ProxyDelayPayload("", "香港-01", -2))?.value,
+        )
+    }
+
+    @Test
+    fun `empty delay result means no concurrent slot result`() {
+        assertEquals(null, bridge.parseDelayPayload(null))
     }
 }

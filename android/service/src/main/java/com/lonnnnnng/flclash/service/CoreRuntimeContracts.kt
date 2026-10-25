@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import java.io.File
 
@@ -57,6 +58,8 @@ interface CoreRuntimeBridge {
 
     suspend fun changeProxy(groupName: String, proxyName: String): Boolean
 
+    suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay?
+
     fun startListener()
 
     fun stopListener()
@@ -76,6 +79,9 @@ class NativeCoreRuntimeBridge(
 
     override suspend fun changeProxy(groupName: String, proxyName: String): Boolean =
         coreBridge.changeProxy(groupName, proxyName)
+
+    override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay? =
+        coreBridge.testDelay(proxyName, testUrl, timeoutMs)
 
     override fun startListener() = coreBridge.startListener()
 

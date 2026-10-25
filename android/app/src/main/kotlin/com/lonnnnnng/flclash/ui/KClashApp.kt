@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileType
+import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import kotlinx.coroutines.launch
 
@@ -136,6 +138,7 @@ fun KClashApp(
                     runtimeState = runtimeState,
                     onRefresh = proxyGroupsViewModel::refresh,
                     onSelect = proxyGroupsViewModel::selectProxy,
+                    onTestDelay = proxyGroupsViewModel::testDelay,
                 )
             }
             item {
@@ -247,6 +250,7 @@ private fun ProxyGroupsCard(
     runtimeState: CoreRuntimeStatus,
     onRefresh: () -> Unit,
     onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
+    onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
 ) {
     var groupPendingSelection by remember { mutableStateOf<com.lonnnnnng.flclash.core.ProxyGroupInfo?>(null) }
     val canRefresh = runtimeState == CoreRuntimeStatus.RUNNING &&
@@ -315,6 +319,7 @@ private fun ProxyGroupsCard(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     group.all.forEach { proxyName ->
+                        val delay = state.delayState(group, proxyName)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -327,7 +332,25 @@ private fun ProxyGroupsCard(
                                 },
                                 enabled = state.switchingGroup == null,
                             )
-                            Text(proxyName, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(
+                                proxyName,
+                                modifier = Modifier.weight(1f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            TextButton(
+                                onClick = { onTestDelay(group, proxyName) },
+                                enabled = state.switchingGroup == null && delay?.isTesting != true,
+                            ) {
+                                if (delay?.isTesting == true) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                    )
+                                } else {
+                                    Text(delayLabel(delay))
+                                }
+                            }
                         }
                     }
                 }
@@ -340,6 +363,16 @@ private fun ProxyGroupsCard(
             },
         )
     }
+}
+
+private fun delayLabel(delay: ProxyDelayUiState?): String = when {
+    delay == null -> "测速"
+    delay.isTesting -> "测速中"
+    delay.value == null -> "无结果"
+    delay.value > 0 -> "${delay.value} ms"
+    // 作者 long：保留 Mihomo 的超时/失败语义，让用户区分网络超时和普通测试失败。
+    delay.value == CoreBridge.DELAY_TIMED_OUT -> "超时"
+    else -> "失败"
 }
 
 @Composable

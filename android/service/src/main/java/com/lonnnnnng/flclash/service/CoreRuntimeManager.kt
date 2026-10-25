@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash.service
 
 import android.os.Build
+import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.service.models.NotificationParams
 import java.io.File
@@ -98,6 +100,20 @@ class CoreRuntimeManager(
                 bridge.getProxyGroups()
             }
         }
+
+    /**
+     * 作者 long：测速与启动、停止、代理切换共用生命周期锁，避免核心正在切换配置时读取到半成品结果。
+     */
+    suspend fun testDelay(
+        proxyName: String,
+        testUrl: String = CoreBridge.DEFAULT_TEST_URL,
+        timeoutMs: Long = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+    ): Result<ProxyDelay?> = transitionLock.withLock {
+        runCatching {
+            check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
+            bridge.testDelay(proxyName, testUrl, timeoutMs)
+        }
+    }
 
     private suspend fun ensureInitialized() {
         if (initialized.get()) return

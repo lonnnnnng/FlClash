@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.service
 
 import java.io.File
+import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -95,6 +96,40 @@ class CoreRuntimeManagerTest {
         assertEquals(0, bridge.proxyGroupsReads)
     }
 
+    @Test
+    fun `delay test fails while core is stopped`() = runTest {
+        val bridge = FakeBridge()
+        val manager = manager(
+            profile = null,
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+
+        val result = manager.testDelay("香港-01", "https://example.com", 8_000)
+
+        assertTrue(result.isFailure)
+        assertEquals("请先启动核心", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `delay bridge failure is returned without fabricating a result`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge(delayError = IllegalStateException("测速失败"))
+        val manager = manager(
+            profile = ActiveProfile(10, "可用配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+        manager.startProxy().getOrThrow()
+
+        val result = manager.testDelay("香港-01", "https://example.com", 8_000)
+
+        assertTrue(result.isFailure)
+        assertEquals("测速失败", result.exceptionOrNull()?.message)
+    }
+
     private fun manager(
         profile: ActiveProfile?,
         homeDir: File,
@@ -114,6 +149,7 @@ class CoreRuntimeManagerTest {
     private class FakeBridge(
         private val validationError: Throwable? = null,
         private val proxyChangeError: Throwable? = null,
+        private val delayError: Throwable? = null,
     ) : CoreRuntimeBridge {
         val events = mutableListOf<String>()
         var listenerStarted = false
@@ -140,6 +176,11 @@ class CoreRuntimeManagerTest {
         override suspend fun changeProxy(groupName: String, proxyName: String): Boolean {
             proxyChangeError?.let { throw it }
             return true
+        }
+
+        override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay? {
+            delayError?.let { throw it }
+            return ProxyDelay(testUrl, proxyName, 123)
         }
 
         override fun startListener() {

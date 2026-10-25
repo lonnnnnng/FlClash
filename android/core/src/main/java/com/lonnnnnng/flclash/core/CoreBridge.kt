@@ -66,6 +66,25 @@ class CoreBridge {
         return parseChangeProxyResponse(response.optJSONObject("result"))
     }
 
+    /**
+     * 作者 long：测速使用核心当前已应用的代理名称和代理组测试地址，
+     * 返回空值时表示核心没有拿到并发槽位，不能把它伪装成节点失败。
+     */
+    suspend fun testDelay(
+        proxyName: String,
+        testUrl: String = DEFAULT_TEST_URL,
+        timeoutMs: Long = DEFAULT_DELAY_TIMEOUT_MS,
+    ): ProxyDelay? {
+        val response = invoke(
+            method = "asyncTestDelay",
+            arguments = JSONObject()
+                .put("proxy-name", proxyName)
+                .put("test-url", testUrl)
+                .put("timeout", timeoutMs),
+        )
+        return parseDelayResponse(response.optJSONObject("result"))
+    }
+
     fun startListener() = Core.startListener()
 
     fun stopListener() = Core.stopListener()
@@ -85,6 +104,7 @@ class CoreBridge {
                         now = raw.optNullableString("now"),
                         all = raw.optJSONArray("all").toStringList(),
                         hidden = raw.optBoolean("hidden", false),
+                        testUrl = raw.optNullableString("testUrl"),
                     ),
                 )
             }
@@ -104,6 +124,7 @@ class CoreBridge {
                 now = payload.now,
                 all = payload.all,
                 hidden = payload.hidden,
+                testUrl = payload.testUrl,
             )
         }
         return ProxyGroupsSnapshot(groups)
@@ -123,6 +144,26 @@ class CoreBridge {
             throw CoreBridgeException("change_proxy_failed", message)
         }
         return changed
+    }
+
+    internal fun parseDelayResponse(result: JSONObject?): ProxyDelay? {
+        if (result == null) return null
+        return parseDelayPayload(
+            ProxyDelayPayload(
+                url = result.optNullableString("url"),
+                name = result.optNullableString("name"),
+                value = result.optIntOrNull("value"),
+            ),
+        )
+    }
+
+    internal fun parseDelayPayload(payload: ProxyDelayPayload?): ProxyDelay? {
+        if (payload == null) return null
+        return ProxyDelay(
+            url = payload.url.orEmpty(),
+            name = payload.name.orEmpty(),
+            value = payload.value ?: DELAY_FAILED,
+        )
     }
 
     private suspend fun invoke(method: String, arguments: Any): JSONObject =
@@ -167,6 +208,9 @@ class CoreBridge {
 
     companion object {
         const val DEFAULT_TEST_URL = "https://www.gstatic.com/generate_204"
+        const val DEFAULT_DELAY_TIMEOUT_MS = 8_000L
+        const val DELAY_TIMED_OUT = -1
+        const val DELAY_FAILED = -2
     }
 }
 
@@ -180,6 +224,7 @@ data class ProxyGroupInfo(
     val now: String?,
     val all: List<String>,
     val hidden: Boolean,
+    val testUrl: String? = null,
 ) {
     val isSelector: Boolean
         get() = type.equals("Selector", ignoreCase = true)
@@ -191,6 +236,19 @@ data class ProxyGroupPayload(
     val now: String?,
     val all: List<String>,
     val hidden: Boolean,
+    val testUrl: String? = null,
+)
+
+data class ProxyDelay(
+    val url: String,
+    val name: String,
+    val value: Int,
+)
+
+data class ProxyDelayPayload(
+    val url: String?,
+    val name: String?,
+    val value: Int?,
 )
 
 private fun org.json.JSONArray?.toStringList(): List<String> {
@@ -205,6 +263,11 @@ private fun org.json.JSONArray?.toStringList(): List<String> {
 private fun JSONObject.optNullableString(name: String): String? {
     if (isNull(name)) return null
     return optString(name).takeIf { it.isNotBlank() }
+}
+
+private fun JSONObject.optIntOrNull(name: String): Int? {
+    if (!has(name) || isNull(name)) return null
+    return optInt(name)
 }
 
 class CoreBridgeException(

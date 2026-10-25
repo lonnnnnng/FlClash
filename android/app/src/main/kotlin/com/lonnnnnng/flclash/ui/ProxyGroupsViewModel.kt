@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
@@ -14,13 +15,31 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ProxyGroupsUiState(
     val groups: List<ProxyGroupInfo> = emptyList(),
     val isLoading: Boolean = false,
     val switchingGroup: String? = null,
+    val delayResults: Map<ProxyDelayKey, ProxyDelayUiState> = emptyMap(),
 )
+
+data class ProxyDelayKey(
+    val groupName: String,
+    val proxyName: String,
+    val testUrl: String,
+)
+
+data class ProxyDelayUiState(
+    val isTesting: Boolean = false,
+    val value: Int? = null,
+)
+
+fun ProxyGroupsUiState.delayState(
+    group: ProxyGroupInfo,
+    proxyName: String,
+): ProxyDelayUiState? = delayResults[ProxyDelayKey(group.name, proxyName, group.testUrl.orDefaultTestUrl())]
 
 @HiltViewModel
 class ProxyGroupsViewModel @Inject constructor(
@@ -73,4 +92,40 @@ class ProxyGroupsViewModel @Inject constructor(
                 }
         }
     }
+
+    /**
+     * 作者 long：结果键包含代理组、节点和测试地址，避免同名节点在不同代理组之间串用延迟结果。
+     */
+    fun testDelay(group: ProxyGroupInfo, proxyName: String) {
+        val key = ProxyDelayKey(group.name, proxyName, group.testUrl.orDefaultTestUrl())
+        if (mutableState.value.delayResults[key]?.isTesting == true) return
+        mutableState.update {
+            it.copy(delayResults = it.delayResults + (key to ProxyDelayUiState(isTesting = true)))
+        }
+        viewModelScope.launch {
+            runtimeManager.testDelay(proxyName, key.testUrl)
+                .onSuccess { result ->
+                    mutableState.update { state ->
+                        state.copy(
+                            delayResults = state.delayResults + (
+                                key to ProxyDelayUiState(value = result?.value)
+                                ),
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    mutableState.update { state ->
+                        state.copy(
+                            delayResults = state.delayResults + (
+                                key to ProxyDelayUiState(value = CoreBridge.DELAY_FAILED)
+                                ),
+                        )
+                    }
+                    mutableErrors.emit(error.message ?: "测速失败")
+                }
+        }
+    }
 }
+
+private fun String?.orDefaultTestUrl(): String =
+    this?.takeIf { it.isNotBlank() } ?: CoreBridge.DEFAULT_TEST_URL
