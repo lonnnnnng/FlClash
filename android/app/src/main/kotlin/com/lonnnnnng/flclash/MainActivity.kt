@@ -16,9 +16,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.lonnnnnng.flclash.ui.KClashApp
+import com.lonnnnnng.flclash.ui.DiagnosticSessionUiState
+import com.lonnnnnng.flclash.ui.DiagnosticSessionStatus
 import com.lonnnnnng.flclash.ui.MainViewModel
 import com.lonnnnnng.flclash.ui.ProfilesViewModel
 import com.lonnnnnng.flclash.ui.ProxyGroupsViewModel
+import com.lonnnnnng.flclash.ui.formatDiagnosticForExport
 import com.lonnnnnng.flclash.ui.formatLogsForExport
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import com.lonnnnnng.flclash.data.DeepLinkProfileParser
@@ -59,8 +62,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val diagnosticExportLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain"),
+    ) { uri ->
+        val session = pendingDiagnosticExport
+        pendingDiagnosticExport = null
+        if (uri == null || session == null) return@registerForActivityResult
+        runCatching {
+            contentResolver.openOutputStream(uri)?.use { output ->
+                output.write(formatDiagnosticForExport(session).toByteArray(Charsets.UTF_8))
+            } ?: error("无法打开诊断导出文件")
+        }.onFailure { error ->
+            viewModel.reportError(error.message ?: "导出诊断证据失败")
+        }
+    }
+
     private var batteryOptimizationIgnored by mutableStateOf(false)
     private var pendingLogExport: List<CoreEvent.Log> = emptyList()
+    private var pendingDiagnosticExport: DiagnosticSessionUiState? = null
     private var initialDeepLinkHandled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +97,7 @@ class MainActivity : ComponentActivity() {
                     batteryOptimizationIgnored = batteryOptimizationIgnored,
                     onRequestBatteryOptimization = ::requestBatteryOptimization,
                     onExportLogs = ::requestLogExport,
+                    onExportDiagnostic = ::requestDiagnosticExport,
                 )
             }
         }
@@ -121,6 +141,16 @@ class MainActivity : ComponentActivity() {
         // 作者 long：先保存本次用户打开导出器时的快照，避免文件选择期间新日志改变导出内容。
         pendingLogExport = entries
         logExportLauncher.launch("kclash-logs-${System.currentTimeMillis()}.txt")
+    }
+
+    private fun requestDiagnosticExport(session: DiagnosticSessionUiState) {
+        if (session.status == DiagnosticSessionStatus.IDLE) {
+            viewModel.reportError("没有可导出的诊断会话")
+            return
+        }
+        // 作者 long：保存一次诊断会话快照，文件选择期间继续到达的事件属于下一次会话，避免证据包边界漂移。
+        pendingDiagnosticExport = session
+        diagnosticExportLauncher.launch("kclash-diagnostic-${session.sessionId}.txt")
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -56,11 +56,11 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 102 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 105 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复、通知栏 STOP、桌面快捷入口、Quick Settings Tile 和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、诊断会话证据包导出、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复、通知栏 STOP、桌面快捷入口、Quick Settings Tile 和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -474,7 +474,7 @@ flowchart LR
 
 目标：用户能确认代理正在工作，并能解释网络行为。
 
-当前进度：Bridge、运行统计、活动连接、Requests、DNS、基础日志和“真实请求诊断”已完成首轮真机闭环；观测详情搜索、日志级别筛选和自动跟随已在 2026-10-26 完成代码、单元测试和 Redmi 真机闭环，下一步集中在自动化端到端断言和长期运行治理。
+当前进度：Bridge、运行统计、活动连接、Requests、DNS、基础日志和“真实请求诊断”已完成首轮真机闭环；观测详情搜索、日志级别筛选、自动跟随和诊断会话证据包已在 2026-10-26 完成代码、单元测试和 Redmi 真机闭环，下一步集中在自动化端到端断言和长期运行治理。
 
 建议范围：
 
@@ -488,7 +488,7 @@ flowchart LR
 
 目标：让真机问题可以在应用内定位，而不是只能依赖 logcat。
 
-当前进度：DNS/日志 Bridge、列表、清空、内容筛选、日志级别筛选和脱敏导出已完成代码、单元测试和 Redmi 真机闭环；下一步补充更细故障诊断交互和网络/核心重启诊断记录。
+当前进度：DNS/日志 Bridge、列表、清空、内容筛选、日志级别筛选、脱敏导出和诊断会话证据包已完成代码、单元测试和 Redmi 真机闭环；下一步补充更细故障诊断交互和网络/核心重启诊断记录。
 
 建议范围：
 
@@ -496,6 +496,15 @@ flowchart LR
 2. 日志导出、过滤、清空和更细的故障诊断边界。
 3. 统一错误码和用户可见错误文案。
 4. 网络切换、DNS 变化和核心重启的诊断记录。
+
+### 2026-10-26：诊断会话证据包切片
+
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 通过；工程共 105 项 Kotlin 单元测试，失败 0、错误 0、跳过 0。
+- Debug APK 安装到 `wsvwypiz7xwslvl7`（Redmi Note 8 Pro，Android 16/API 36）；APK 内原生库仅包含 `arm64-v8a`。
+- 使用当前工作区根目录 `AGENTS.md` 中的第一条授权路径导入远程 Profile；启动后首页显示“核心运行中”，`VpnService`/`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均存在。
+- 点击“测试当前路由”后，首页显示“诊断会话：通过 · 请求 11 · DNS 6 · 日志 12”，断言为“HTTP 状态、代理链和核心归因均有效”，本次 HTTP 状态为 403。
+- 通过 Android `DocumentsUI` 导出 `kclash-diagnostic-1.txt`；设备侧确认文件约 3 KB、41 行，包含表头和 `[requests]`/`[dns]`/`[logs]` 分区，存在脱敏标记，未命中测试秘密值。
+- 通过外部 STOP Action 停止核心后，前台服务、`tun0` 和 `198.18.0.0/30` 路由均清理；应用内删除测试 Profile 后回到“还没有配置”，未发现 `FATAL EXCEPTION`。
 
 ### N4：Profiles 和代理组 parity
 

@@ -47,12 +47,17 @@ class MainViewModel @Inject constructor(
     private val mutableProbe = MutableStateFlow(ProbeUiState())
     val probeState = mutableProbe.asStateFlow()
 
+    private val mutableDiagnostic = MutableStateFlow(DiagnosticSessionUiState())
+    val diagnosticState = mutableDiagnostic.asStateFlow()
+    private var diagnosticSequence = 0L
+
     init {
         viewModelScope.launch {
             runtimeManager.events.collect { event ->
                 mutableRequests.update { current -> current.apply(event) }
                 mutableDns.update { current -> current.apply(event) }
                 mutableLogs.update { current -> current.apply(event) }
+                mutableDiagnostic.update { current -> current.withEvent(event) }
             }
         }
         viewModelScope.launch {
@@ -64,6 +69,7 @@ class MainViewModel @Inject constructor(
                     mutableDns.value = DnsUiState()
                     mutableLogs.value = LogsUiState()
                     mutableProbe.value = ProbeUiState()
+                    mutableDiagnostic.value = DiagnosticSessionUiState()
                     return@collectLatest
                 }
                 while (isActive) {
@@ -106,6 +112,14 @@ class MainViewModel @Inject constructor(
     fun probe(url: String) {
         val target = url.trim()
         if (target.isBlank() || mutableProbe.value.isLoading) return
+        val sessionId = ++diagnosticSequence
+        val startedAt = System.currentTimeMillis()
+        mutableDiagnostic.value = DiagnosticSessionUiState(
+            status = DiagnosticSessionStatus.RUNNING,
+            sessionId = sessionId,
+            targetUrl = target,
+            startedAtMillis = startedAt,
+        )
         viewModelScope.launch {
             mutableProbe.value = ProbeUiState(targetUrl = target, isLoading = true)
             runtimeManager.probe(target)
@@ -124,12 +138,17 @@ class MainViewModel @Inject constructor(
 
                         else -> ProbeUiState(targetUrl = target, result = result)
                     }
+                    // 作者 long：核心刚返回 probe 结果时，关联的 request/DNS/log 事件可能仍在事件流中排队，
+                    // 留出短暂收敛窗口后再给出会话断言，避免把尚未到达的证据误判为空。
+                    delay(DIAGNOSTIC_SETTLE_MILLIS)
+                    finishDiagnosticSession(sessionId, result, null)
                 }
                 .onFailure { error ->
                     mutableProbe.value = ProbeUiState(
                         targetUrl = target,
                         error = error.message ?: "真实请求诊断失败",
                     )
+                    finishDiagnosticSession(sessionId, null, error.message ?: "真实请求诊断失败")
                 }
         }
     }
@@ -181,8 +200,35 @@ class MainViewModel @Inject constructor(
             }
     }
 
+    private fun finishDiagnosticSession(
+        sessionId: Long,
+        result: CoreProbeResult?,
+        error: String?,
+    ) {
+        if (mutableDiagnostic.value.sessionId != sessionId) return
+        val failure = if (result == null && error == null) {
+            "核心未返回诊断结果"
+        } else {
+            error ?: result?.let(::diagnosticFailureReason)
+        }
+        mutableDiagnostic.update { current ->
+            current.copy(
+                status = if (result != null && failure == null) {
+                    DiagnosticSessionStatus.PASS
+                } else {
+                    DiagnosticSessionStatus.FAIL
+                },
+                result = result,
+                error = failure,
+                assertion = failure ?: "HTTP 状态、代理链和核心归因均有效",
+                finishedAtMillis = System.currentTimeMillis(),
+            )
+        }
+    }
+
     companion object {
         private const val STATS_REFRESH_MILLIS = 1_000L
+        private const val DIAGNOSTIC_SETTLE_MILLIS = 750L
     }
 }
 
@@ -335,7 +381,7 @@ private fun redactSensitiveLogText(value: String): String = value
     .replace(SENSITIVE_JSON_VALUE, "$1[REDACTED_SECRET]$2")
 
 private val SENSITIVE_QUERY_PARAMETER = Regex(
-    "(?i)([?&](?:token|access_token|api_key|key|secret|password|url)=)[^\\s&]+",
+    "(?i)(^|[?&\\s])((?:token|access_token|api_key|key|secret|password|url)=)[^\\s&]+",
 )
 private val SENSITIVE_JSON_VALUE = Regex(
     "(?i)(\\\"(?:token|access_token|api_key|key|secret|password|url)\\\"\\s*:\\s*\\\")[^\\\"]*(\\\")",
@@ -348,9 +394,108 @@ data class ProbeUiState(
     val error: String? = null,
 )
 
+enum class DiagnosticSessionStatus {
+    IDLE,
+    RUNNING,
+    PASS,
+    FAIL,
+}
+
+data class DiagnosticSessionUiState(
+    val status: DiagnosticSessionStatus = DiagnosticSessionStatus.IDLE,
+    val sessionId: Long = 0L,
+    val targetUrl: String? = null,
+    val startedAtMillis: Long? = null,
+    val finishedAtMillis: Long? = null,
+    val result: CoreProbeResult? = null,
+    val error: String? = null,
+    val assertion: String? = null,
+    val requests: List<CoreConnection> = emptyList(),
+    val dns: List<CoreDnsQuery> = emptyList(),
+    val logs: List<CoreEvent.Log> = emptyList(),
+) {
+    /**
+     * 作者 long：证据包只接收会话运行窗口内到达的事件，并单独设置较小上限，避免一次诊断把长期观测历史整体复制进内存。
+     */
+    internal fun withEvent(event: CoreEvent): DiagnosticSessionUiState = when {
+        status != DiagnosticSessionStatus.RUNNING -> this
+        event is CoreEvent.Request -> {
+            val index = requests.indexOfFirst { it.id == event.connection.id }
+            val next = if (index >= 0) {
+                requests.toMutableList().apply { set(index, event.connection) }
+            } else {
+                (requests + event.connection).takeLast(MAX_DIAGNOSTIC_ITEMS)
+            }
+            copy(requests = next)
+        }
+
+        event is CoreEvent.RequestTraffic -> copy(
+            requests = requests.map { request ->
+                event.updates.firstOrNull { it.id == request.id }?.let { update ->
+                    request.copy(upload = update.upload, download = update.download)
+                } ?: request
+            },
+        )
+
+        event is CoreEvent.Dns -> copy(dns = (dns + event.query).takeLast(MAX_DIAGNOSTIC_ITEMS))
+        event is CoreEvent.Log -> copy(logs = (logs + event).takeLast(MAX_DIAGNOSTIC_ITEMS))
+        else -> this
+    }
+}
+
+internal fun diagnosticFailureReason(result: CoreProbeResult): String? = when {
+    result.error.isNotBlank() -> result.message.ifBlank { result.error }
+    result.statusCode <= 0 -> "未收到 HTTP 状态"
+    result.chains.isEmpty() -> "核心未返回代理链"
+    else -> null
+}
+
+/**
+ * 作者 long：诊断证据包与普通日志导出使用相同脱敏边界，既保留请求归因信息，也不把订阅凭据带出应用。
+ */
+internal fun formatDiagnosticForExport(session: DiagnosticSessionUiState): String = buildString {
+    appendLine("KClash diagnostic session")
+    appendLine("session_id\t${session.sessionId}")
+    appendLine("status\t${session.status}")
+    appendLine("target\t${redactSensitiveLogText(session.targetUrl.orEmpty())}")
+    session.result?.let { result ->
+        appendLine("probe\tHTTP ${result.statusCode}\t${result.delay} ms")
+        appendLine("route\t${redactSensitiveLogText(result.chains.joinToString(" → "))}")
+        appendLine("rule\t${redactSensitiveLogText(result.rule)}\t${redactSensitiveLogText(result.rulePayload)}")
+        appendLine("probe_error\t${redactSensitiveLogText(result.error)}")
+    }
+    appendLine("assertion\t${redactSensitiveLogText(session.assertion.orEmpty())}")
+    appendLine("[requests]")
+    session.requests.forEach { request ->
+        appendLine(
+            listOf(
+                request.metadata.host,
+                request.metadata.destinationIp,
+                request.metadata.destinationPort,
+                request.chains.joinToString(" → "),
+                request.rule,
+                request.upload.toString(),
+                request.download.toString(),
+            ).joinToString("\t") { redactSensitiveLogText(it) },
+        )
+    }
+    appendLine("[dns]")
+    session.dns.forEach { query ->
+        appendLine(
+            listOf(query.domain, query.upstream, query.rcode, query.error, query.answers.joinToString(","))
+                .joinToString("\t") { redactSensitiveLogText(it) },
+        )
+    }
+    appendLine("[logs]")
+    session.logs.forEach { entry ->
+        appendLine("${entry.timestampMillis}\t${entry.level}\t${redactSensitiveLogText(entry.payload).replace('\n', ' ')}")
+    }
+}
+
 private const val MAX_REQUEST_HISTORY = 2_000
 private const val MAX_DNS_HISTORY = 1_000
 private const val MAX_LOG_HISTORY = 1_000
+private const val MAX_DIAGNOSTIC_ITEMS = 100
 
 private fun List<String>.containsIgnoreCase(needle: String): Boolean =
     any { it.contains(needle, ignoreCase = true) }

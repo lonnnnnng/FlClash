@@ -122,6 +122,14 @@
 - 首页“后台运行”卡片显示“建议关闭电池优化”；点击“打开电池优化设置”后，真机进入 `com.android.settings/.fuelgauge.RequestIgnoreBatteryOptimizations`，系统对话框显示 KClash 和“允许”按钮。按返回取消后回到首页，状态仍为未忽略。
 - 验收 Profile 已通过应用内删除，首页显示“还没有配置”；未发现 `FATAL EXCEPTION`。
 
+## 诊断会话证据包切片实测记录
+
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；工程共 105 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Debug APK 只包含 `arm64-v8a`。
+- 真机 `wsvwypiz7xwslvl7`（Redmi Note 8 Pro，Android 16/API 36）使用当前工作区根目录 `AGENTS.md` 第一条授权路径冷启动导入远程 Profile，启动后 `VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均出现。
+- 点击“测试当前路由”后首页显示“诊断会话：通过 · 请求 11 · DNS 6 · 日志 12”，诊断结果为 HTTP 403，断言显示“HTTP 状态、代理链和核心归因均有效”。
+- 通过 Android `DocumentsUI` 保存 `kclash-diagnostic-1.txt`；设备侧检查到约 3 KB、41 行，包含诊断表头及 `[requests]`、`[dns]`、`[logs]` 三个分区，存在脱敏标记且未命中测试秘密值。
+- 使用 STOP Action 停止后确认前台服务、`tun0` 和 `198.18.0.0/30` 路由清理；应用内删除测试 Profile 后首页恢复“还没有配置”，未发现 `FATAL EXCEPTION`。
+
 ## 观测详情交互切片实测记录
 
 - 新增 Requests、DNS 和核心日志详情筛选函数测试 3 项，以及日志导出脱敏测试 1 项；`./gradlew :app:testDebugUnitTest :app:compileDebugKotlin --no-daemon` 通过，工程总计 102 项 Kotlin 单元测试通过。

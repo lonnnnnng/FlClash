@@ -70,6 +70,7 @@ fun KClashApp(
     batteryOptimizationIgnored: Boolean,
     onRequestBatteryOptimization: () -> Unit,
     onExportLogs: (List<CoreEvent.Log>) -> Unit,
+    onExportDiagnostic: (DiagnosticSessionUiState) -> Unit,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
@@ -78,6 +79,7 @@ fun KClashApp(
     val runtimeDns by runtimeViewModel.dns.collectAsState()
     val runtimeLogs by runtimeViewModel.logs.collectAsState()
     val runtimeProbe by runtimeViewModel.probeState.collectAsState()
+    val diagnosticState by runtimeViewModel.diagnosticState.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
@@ -194,9 +196,11 @@ fun KClashApp(
             item {
                 ProbeCard(
                     state = runtimeProbe,
+                    diagnostic = diagnosticState,
                     runtimeState = runtimeState,
                     profile = selectedProfile,
                     onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
+                    onExportDiagnostic = onExportDiagnostic,
                 )
             }
             item {
@@ -612,9 +616,11 @@ private fun formatRate(bytes: Long): String = "${formatBytes(bytes)}/s"
 @Composable
 private fun ProbeCard(
     state: ProbeUiState,
+    diagnostic: DiagnosticSessionUiState,
     runtimeState: CoreRuntimeStatus,
     profile: Profile?,
     onProbe: () -> Unit,
+    onExportDiagnostic: (DiagnosticSessionUiState) -> Unit,
 ) {
     val hasRemoteTarget = profile?.type == ProfileType.URL && profile.url.isNotBlank()
     val canProbe = runtimeState.isRunning && hasRemoteTarget && !state.isLoading
@@ -655,6 +661,39 @@ private fun ProbeCard(
             }
             Button(onClick = onProbe, enabled = canProbe) {
                 Text(if (state.isLoading) "诊断中…" else "测试当前路由")
+            }
+            when (diagnostic.status) {
+                DiagnosticSessionStatus.RUNNING -> Text(
+                    "诊断会话：采集中…",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                DiagnosticSessionStatus.PASS,
+                DiagnosticSessionStatus.FAIL -> {
+                    val statusLabel = if (diagnostic.status == DiagnosticSessionStatus.PASS) "通过" else "失败"
+                    Text(
+                        "诊断会话：$statusLabel · 请求 ${diagnostic.requests.size} · DNS ${diagnostic.dns.size} · 日志 ${diagnostic.logs.size}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (diagnostic.status == DiagnosticSessionStatus.PASS) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        },
+                    )
+                    diagnostic.assertion?.let { assertion ->
+                        Text(
+                            assertion,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    TextButton(onClick = { onExportDiagnostic(diagnostic) }) {
+                        Text("导出诊断证据")
+                    }
+                }
+
+                DiagnosticSessionStatus.IDLE -> Unit
             }
             state.error?.let { error ->
                 Text(

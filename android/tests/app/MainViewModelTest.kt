@@ -4,6 +4,7 @@ import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreConnectionMetadata
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTrafficUpdate
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -118,6 +119,78 @@ class MainViewModelTest {
         assertEquals(false, exported.contains("secret-value"))
         assertEquals(false, exported.contains("p@ss"))
         assertEquals(true, exported.contains("x=1"))
+    }
+
+    @Test
+    fun `diagnostic session captures events only while running`() {
+        val running = DiagnosticSessionUiState(
+            status = DiagnosticSessionStatus.RUNNING,
+            sessionId = 7L,
+        )
+        val captured = running
+            .withEvent(CoreEvent.Request(connection("request-1")))
+            .withEvent(CoreEvent.Dns(dnsQuery("probe.example.com")))
+            .withEvent(CoreEvent.Log("info", "probe complete", 3L))
+        val finished = captured.copy(status = DiagnosticSessionStatus.PASS)
+
+        assertEquals(1, captured.requests.size)
+        assertEquals(1, captured.dns.size)
+        assertEquals(1, captured.logs.size)
+        assertEquals(finished, finished.withEvent(CoreEvent.Log("info", "late", 4L)))
+    }
+
+    @Test
+    fun `diagnostic assertion requires status and route`() {
+        val result = CoreProbeResult(
+            statusCode = 403,
+            delay = 120L,
+            url = "https://example.test",
+            chains = listOf("GLOBAL", "DIRECT"),
+            rule = "MATCH",
+            rulePayload = "",
+            error = "",
+            message = "",
+            coreEpoch = 1L,
+            routeVersion = 2L,
+        )
+        val noRoute = result.copy(chains = emptyList())
+
+        assertEquals(null, diagnosticFailureReason(result))
+        assertEquals("核心未返回代理链", diagnosticFailureReason(noRoute))
+    }
+
+    @Test
+    fun `diagnostic export contains probe and related evidence without token`() {
+        val session = DiagnosticSessionUiState(
+            status = DiagnosticSessionStatus.PASS,
+            sessionId = 9L,
+            targetUrl = "https://example.test/config?token=secret-value",
+            result = CoreProbeResult(
+                statusCode = 200,
+                delay = 80L,
+                url = "https://example.test/config",
+                chains = listOf("GLOBAL", "DIRECT"),
+                rule = "MATCH",
+                rulePayload = "",
+                error = "",
+                message = "",
+                coreEpoch = 1L,
+                routeVersion = 2L,
+            ),
+            requests = listOf(connection("request-1")),
+            dns = listOf(dnsQuery("probe.example.com")),
+            logs = listOf(CoreEvent.Log("info", "token=secret-value", 4L)),
+        )
+
+        val exported = formatDiagnosticForExport(session)
+
+        assertEquals(true, exported.contains("KClash diagnostic session"))
+        assertEquals(true, exported.contains("HTTP 200"))
+        assertEquals(true, exported.contains("[requests]"))
+        assertEquals(true, exported.contains("[dns]"))
+        assertEquals(true, exported.contains("[logs]"))
+        assertEquals(true, exported.contains("[REDACTED_SECRET]"))
+        assertEquals(false, exported.contains("secret-value"))
     }
 
     private fun connection(id: String) = CoreConnection(
