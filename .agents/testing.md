@@ -139,3 +139,12 @@
 - 真机 `wsvwypiz7xwslvl7` 安装 Debug APK 后，使用当前授权清单第一条路径启动核心，首页收到活动连接 1 条、请求 4 条、DNS 查询 13 条和核心日志 8 条；三类详情对话框均显示搜索框，日志切换“错误”后显示 `0/8` 和“没有匹配的核心日志”。
 - 真机通过 Android `DocumentsUI` 保存 `kclash-logs-*.txt` 到 `Download/kclash-qr`；文件大小 1634 bytes、17 行，前两行为导出标题和列名，设备侧检查到 61 个脱敏标记。
 - 使用 `adb -s wsvwypiz7xwslvl7 shell am start -a com.lonnnnnng.flclash.action.STOP` 停止后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均清理；测试 Profile 已删除，首页恢复“还没有配置”，未发现 `FATAL EXCEPTION`。
+
+## 运行诊断事件记录切片实测记录
+
+- 新增固定上限 200 条的运行诊断历史，覆盖核心启动/重启/停止/失败、VPN 撤销、网络可用/丢失/切换和 DNS 变化；诊断证据包新增 `[runtime]` 分区。
+- 新增 4 项单元测试；`./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 通过，工程总计 109 项 Kotlin 单元测试失败 0、错误 0、跳过 0。
+- 真机 `wsvwypiz7xwslvl7` 使用第二条当前授权路径启动后 probe 成功，HTTP 200，UI 显示运行事件 3 条、Requests 2 条、DNS 8 条、Logs 2 条。
+- 核心运行期间执行 Wi‑Fi 关闭 8 秒、重新开启并等待网络恢复；`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由保持，恢复后 probe 仍成功，UI 显示运行事件 8 条。
+- 通过 `DocumentsUI` 保存的最新诊断文件约 2 KB、33 行，包含 `CORE_STARTED`、`DNS_UPDATED`、`NETWORK_LOST`、`NETWORK_AVAILABLE`、`NETWORK_SWITCHED` 及 `[requests]`/`[dns]`/`[logs]` 分区，未命中测试秘密值。
+- 第一条路径在 Wi‑Fi 恢复后的两次 probe 返回 EOF，应用正确显示失败态并保留失败证据；随后使用第二条授权路径完成成功复验。两个测试 Profile 已删除，设备恢复空配置状态。

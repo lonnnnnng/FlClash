@@ -6,6 +6,8 @@ import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTrafficUpdate
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -140,6 +142,21 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `diagnostic session captures runtime history only while running`() {
+        val event = RuntimeDiagnosticEvent(
+            kind = RuntimeDiagnosticKind.NETWORK_SWITCHED,
+            detail = "底层网络已切换",
+            timestampMillis = 7L,
+        )
+        val running = DiagnosticSessionUiState(status = DiagnosticSessionStatus.RUNNING)
+        val captured = running.withRuntimeEvents(listOf(event))
+        val finished = captured.copy(status = DiagnosticSessionStatus.PASS)
+
+        assertEquals(listOf(event), captured.runtimeEvents)
+        assertEquals(finished, finished.withRuntimeEvents(emptyList()))
+    }
+
+    @Test
     fun `diagnostic assertion requires status and route`() {
         val result = CoreProbeResult(
             statusCode = 403,
@@ -180,6 +197,13 @@ class MainViewModelTest {
             requests = listOf(connection("request-1")),
             dns = listOf(dnsQuery("probe.example.com")),
             logs = listOf(CoreEvent.Log("info", "token=secret-value", 4L)),
+            runtimeEvents = listOf(
+                RuntimeDiagnosticEvent(
+                    RuntimeDiagnosticKind.DNS_UPDATED,
+                    "DNS 服务器数量：2",
+                    5L,
+                ),
+            ),
         )
 
         val exported = formatDiagnosticForExport(session)
@@ -189,6 +213,8 @@ class MainViewModelTest {
         assertEquals(true, exported.contains("[requests]"))
         assertEquals(true, exported.contains("[dns]"))
         assertEquals(true, exported.contains("[logs]"))
+        assertEquals(true, exported.contains("[runtime]"))
+        assertEquals(true, exported.contains("DNS_UPDATED"))
         assertEquals(true, exported.contains("[REDACTED_SECRET]"))
         assertEquals(false, exported.contains("secret-value"))
     }

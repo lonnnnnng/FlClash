@@ -13,6 +13,8 @@ import android.os.HandlerThread
 import androidx.core.content.getSystemService
 import com.lonnnnnng.flclash.common.GlobalState
 import com.lonnnnnng.flclash.core.Core
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticHistory
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
@@ -53,12 +55,17 @@ object NetworkObserver {
     private val callback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             networkInfos[network] = NetworkInfo()
+            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_AVAILABLE, "底层网络可用")
             scheduleUpdateDns()
         }
 
         override fun onLosing(network: Network, maxMsToLive: Int) {
             val info = networkInfos[network] ?: return
             info.losingUntilMillis = System.currentTimeMillis() + maxMsToLive
+            RuntimeDiagnosticHistory.record(
+                RuntimeDiagnosticKind.NETWORK_LOSING,
+                "底层网络即将丢失（${maxMsToLive}ms）",
+            )
             scheduleUpdateDns()
             if (maxMsToLive > 0) {
                 handler.postDelayed({
@@ -71,6 +78,7 @@ object NetworkObserver {
 
         override fun onLost(network: Network) {
             networkInfos.remove(network)
+            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_LOST, "底层网络已丢失")
             scheduleUpdateDns()
         }
 
@@ -143,12 +151,17 @@ object NetworkObserver {
         if (dnsList != currentDnsList) {
             currentDnsList = dnsList
             Core.updateDNS(dnsList.joinToString(","))
+            RuntimeDiagnosticHistory.record(
+                RuntimeDiagnosticKind.DNS_UPDATED,
+                "DNS 服务器数量：${dnsList.size}",
+            )
         }
         val network = preferred?.key ?: return
         // Sockets protected onto the network we left stay bound to it; closing
         // them makes apps reconnect now instead of after a TCP timeout.
         if (currentNetwork != null && currentNetwork != network) {
             Core.resetNetwork()
+            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_SWITCHED, "底层网络已切换")
         }
         currentNetwork = network
     }

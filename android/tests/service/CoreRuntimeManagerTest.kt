@@ -11,6 +11,7 @@ import com.lonnnnnng.flclash.service.models.VpnOptions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -20,6 +21,11 @@ import kotlinx.coroutines.flow.emptyFlow
 class CoreRuntimeManagerTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
+
+    @Before
+    fun clearDiagnosticHistory() {
+        RuntimeDiagnosticHistory.clear()
+    }
 
     @Test
     fun `valid profile is staged and applied before listener starts`() = runTest {
@@ -223,6 +229,30 @@ class CoreRuntimeManagerTest {
         assertFalse(bridge.eventListenerStarted)
         assertFalse(bridge.logListenerStarted)
         assertFalse(resumeStore.shouldResume)
+    }
+
+    @Test
+    fun `core lifecycle records start stop and restart evidence`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val manager = manager(
+            profile = ActiveProfile(18, "生命周期配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = FakeBridge(),
+            controller = FakeServiceController(),
+        )
+
+        manager.startProxy().getOrThrow()
+        manager.stop().getOrThrow()
+        manager.startProxy().getOrThrow()
+
+        assertEquals(
+            listOf(
+                RuntimeDiagnosticKind.CORE_STARTED,
+                RuntimeDiagnosticKind.CORE_STOPPED,
+                RuntimeDiagnosticKind.CORE_RESTARTED,
+            ),
+            RuntimeDiagnosticHistory.events.value.map { it.kind },
+        )
     }
 
     @Test

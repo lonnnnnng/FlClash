@@ -8,6 +8,7 @@ import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -58,6 +59,11 @@ class MainViewModel @Inject constructor(
                 mutableDns.update { current -> current.apply(event) }
                 mutableLogs.update { current -> current.apply(event) }
                 mutableDiagnostic.update { current -> current.withEvent(event) }
+            }
+        }
+        viewModelScope.launch {
+            runtimeManager.diagnosticEvents.collect { events ->
+                mutableDiagnostic.update { current -> current.withRuntimeEvents(events) }
             }
         }
         viewModelScope.launch {
@@ -119,6 +125,7 @@ class MainViewModel @Inject constructor(
             sessionId = sessionId,
             targetUrl = target,
             startedAtMillis = startedAt,
+            runtimeEvents = runtimeManager.diagnosticEvents.value.takeLast(MAX_DIAGNOSTIC_ITEMS),
         )
         viewModelScope.launch {
             mutableProbe.value = ProbeUiState(targetUrl = target, isLoading = true)
@@ -413,6 +420,7 @@ data class DiagnosticSessionUiState(
     val requests: List<CoreConnection> = emptyList(),
     val dns: List<CoreDnsQuery> = emptyList(),
     val logs: List<CoreEvent.Log> = emptyList(),
+    val runtimeEvents: List<RuntimeDiagnosticEvent> = emptyList(),
 ) {
     /**
      * 作者 long：证据包只接收会话运行窗口内到达的事件，并单独设置较小上限，避免一次诊断把长期观测历史整体复制进内存。
@@ -441,6 +449,13 @@ data class DiagnosticSessionUiState(
         event is CoreEvent.Log -> copy(logs = (logs + event).takeLast(MAX_DIAGNOSTIC_ITEMS))
         else -> this
     }
+
+    internal fun withRuntimeEvents(events: List<RuntimeDiagnosticEvent>): DiagnosticSessionUiState =
+        if (status == DiagnosticSessionStatus.RUNNING) {
+            copy(runtimeEvents = events.takeLast(MAX_DIAGNOSTIC_ITEMS))
+        } else {
+            this
+        }
 }
 
 internal fun diagnosticFailureReason(result: CoreProbeResult): String? = when {
@@ -465,6 +480,10 @@ internal fun formatDiagnosticForExport(session: DiagnosticSessionUiState): Strin
         appendLine("probe_error\t${redactSensitiveLogText(result.error)}")
     }
     appendLine("assertion\t${redactSensitiveLogText(session.assertion.orEmpty())}")
+    appendLine("[runtime]")
+    session.runtimeEvents.forEach { event ->
+        appendLine("${event.timestampMillis}\t${event.kind}\t${redactSensitiveLogText(event.detail)}")
+    }
     appendLine("[requests]")
     session.requests.forEach { request ->
         appendLine(

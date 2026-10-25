@@ -46,9 +46,11 @@ class CoreRuntimeManager(
     private val eventListenerStarted = AtomicBoolean(false)
     private val logListenerStarted = AtomicBoolean(false)
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.STOPPED)
+    private var hasSuccessfulRun = false
 
     val state = mutableState.asStateFlow()
     val events: Flow<CoreEvent> = bridge.events
+    val diagnosticEvents = RuntimeDiagnosticHistory.events
 
     suspend fun startProxy(): Result<Unit> = transitionLock.withLock {
         if (mutableState.value == CoreRuntimeStatus.RUNNING) {
@@ -82,7 +84,16 @@ class CoreRuntimeManager(
                 listenerStarted.set(true)
             }
             mutableState.value = CoreRuntimeStatus.RUNNING
-        }.onFailure {
+            RuntimeDiagnosticHistory.record(
+                if (hasSuccessfulRun) {
+                    RuntimeDiagnosticKind.CORE_RESTARTED
+                } else {
+                    RuntimeDiagnosticKind.CORE_STARTED
+                },
+                if (hasSuccessfulRun) "核心重新启动" else "核心启动成功",
+            )
+            hasSuccessfulRun = true
+        }.onFailure { error ->
             runCatching { serviceController.stop() }
             if (listenerStarted.get()) {
                 runCatching { bridge.stopListener() }
@@ -98,6 +109,10 @@ class CoreRuntimeManager(
             }
             runCatching { runtimeResumeStore.setShouldResume(false) }
             mutableState.value = CoreRuntimeStatus.FAILED
+            RuntimeDiagnosticHistory.record(
+                RuntimeDiagnosticKind.CORE_FAILED,
+                error::class.simpleName ?: "核心启动失败",
+            )
         }
     }
 
@@ -123,8 +138,13 @@ class CoreRuntimeManager(
                 logListenerStarted.set(false)
             }
             mutableState.value = CoreRuntimeStatus.STOPPED
-        }.onFailure {
+            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.CORE_STOPPED, "核心已停止")
+        }.onFailure { error ->
             mutableState.value = CoreRuntimeStatus.FAILED
+            RuntimeDiagnosticHistory.record(
+                RuntimeDiagnosticKind.CORE_FAILED,
+                error::class.simpleName ?: "核心停止失败",
+            )
         }
     }
 
@@ -146,9 +166,14 @@ class CoreRuntimeManager(
             serviceController.stop()
             stopListeners()
             mutableState.value = CoreRuntimeStatus.FAILED
-        }.onFailure {
+            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.VPN_REVOKED, "系统撤销 VPN")
+        }.onFailure { error ->
             stopListeners()
             mutableState.value = CoreRuntimeStatus.FAILED
+            RuntimeDiagnosticHistory.record(
+                RuntimeDiagnosticKind.CORE_FAILED,
+                error::class.simpleName ?: "VPN 撤销收口失败",
+            )
         }
     }
 

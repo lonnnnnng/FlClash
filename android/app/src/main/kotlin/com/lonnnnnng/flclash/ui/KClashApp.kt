@@ -673,7 +673,7 @@ private fun ProbeCard(
                 DiagnosticSessionStatus.FAIL -> {
                     val statusLabel = if (diagnostic.status == DiagnosticSessionStatus.PASS) "通过" else "失败"
                     Text(
-                        "诊断会话：$statusLabel · 请求 ${diagnostic.requests.size} · DNS ${diagnostic.dns.size} · 日志 ${diagnostic.logs.size}",
+                        "诊断会话：$statusLabel · 运行 ${diagnostic.runtimeEvents.size} · 请求 ${diagnostic.requests.size} · DNS ${diagnostic.dns.size} · 日志 ${diagnostic.logs.size}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = if (diagnostic.status == DiagnosticSessionStatus.PASS) {
                             MaterialTheme.colorScheme.primary
