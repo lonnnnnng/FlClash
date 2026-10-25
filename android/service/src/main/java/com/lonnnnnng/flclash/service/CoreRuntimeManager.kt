@@ -141,6 +141,9 @@ class CoreRuntimeManager(
             // 作者 long：显式停止必须先清除恢复意图，避免下一次 Application 启动把用户停止误判成系统重建。
             runtimeResumeStore.setShouldResume(false)
             if (mutableState.value == CoreRuntimeStatus.STOPPED) {
+                // 作者 long：即使核心状态已经先被服务回调置为停止，也要等待网络诊断尾巴落盘，
+                // 避免用户连续点击停止或系统重复回调时丢掉最后一条事件。
+                RuntimeDiagnosticHistory.flush()
                 return@runCatching Unit
             }
             mutableState.value = CoreRuntimeStatus.STOPPING

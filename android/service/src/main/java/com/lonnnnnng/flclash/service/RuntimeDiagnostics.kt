@@ -7,7 +7,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -122,9 +121,14 @@ object RuntimeDiagnosticHistory {
      */
     suspend fun flush() {
         while (true) {
-            val jobs = synchronized(lock) { persistenceJobs.toList() }
-            if (jobs.isEmpty()) return
-            jobs.joinAll()
+            // 作者 long：先抓取当前写入尾巴并等待，再确认尾巴没有被新的网络回调替换；
+            // 单纯检查 jobs 为空会在回调恰好入队的窗口提前返回，导致进程重建丢最后事件。
+            val barrier = synchronized(lock) { persistenceTail }
+            barrier?.join()
+            val stable = synchronized(lock) {
+                barrier === persistenceTail && persistenceJobs.none { it.isActive }
+            }
+            if (stable) return
         }
     }
 

@@ -33,6 +33,7 @@ private data class NetworkInfo(
 object NetworkObserver {
 
     private val networkInfos = ConcurrentHashMap<Network, NetworkInfo>()
+    private val lifecycleLock = Any()
     private val connectivity by lazy {
         GlobalState.application.getSystemService<ConnectivityManager>()
     }
@@ -41,6 +42,7 @@ object NetworkObserver {
     }
     private var currentDnsList = listOf<String>()
     private var currentNetwork: Network? = null
+    @Volatile
     private var started = false
 
     private val request = NetworkRequest.Builder().apply {
@@ -54,37 +56,49 @@ object NetworkObserver {
 
     private val callback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            networkInfos[network] = NetworkInfo()
-            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_AVAILABLE, "底层网络可用")
-            scheduleUpdateDns()
+            synchronized(lifecycleLock) {
+                if (!started) return
+                networkInfos[network] = NetworkInfo()
+                RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_AVAILABLE, "底层网络可用")
+                scheduleUpdateDns()
+            }
         }
 
         override fun onLosing(network: Network, maxMsToLive: Int) {
-            val info = networkInfos[network] ?: return
-            info.losingUntilMillis = System.currentTimeMillis() + maxMsToLive
-            RuntimeDiagnosticHistory.record(
-                RuntimeDiagnosticKind.NETWORK_LOSING,
-                "底层网络即将丢失（${maxMsToLive}ms）",
-            )
-            scheduleUpdateDns()
-            if (maxMsToLive > 0) {
-                handler.postDelayed({
-                    if (networkInfos.containsKey(network)) {
-                        updateDns()
-                    }
-                }, maxMsToLive.toLong() + 50)
+            synchronized(lifecycleLock) {
+                if (!started) return
+                val info = networkInfos[network] ?: return
+                info.losingUntilMillis = System.currentTimeMillis() + maxMsToLive
+                RuntimeDiagnosticHistory.record(
+                    RuntimeDiagnosticKind.NETWORK_LOSING,
+                    "底层网络即将丢失（${maxMsToLive}ms）",
+                )
+                scheduleUpdateDns()
+                if (maxMsToLive > 0) {
+                    handler.postDelayed({
+                        if (started && networkInfos.containsKey(network)) {
+                            updateDns()
+                        }
+                    }, maxMsToLive.toLong() + 50)
+                }
             }
         }
 
         override fun onLost(network: Network) {
-            networkInfos.remove(network)
-            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_LOST, "底层网络已丢失")
-            scheduleUpdateDns()
+            synchronized(lifecycleLock) {
+                if (!started) return
+                networkInfos.remove(network)
+                RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_LOST, "底层网络已丢失")
+                scheduleUpdateDns()
+            }
         }
 
         override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
-            networkInfos[network]?.dnsList = linkProperties.dnsServers
-            scheduleUpdateDns()
+            synchronized(lifecycleLock) {
+                if (!started) return
+                networkInfos[network]?.dnsList = linkProperties.dnsServers
+                scheduleUpdateDns()
+            }
         }
     }
 
@@ -97,27 +111,35 @@ object NetworkObserver {
         handler.postDelayed(updateDnsTask, DNS_UPDATE_DELAY_MILLIS)
     }
 
-    @Synchronized
     fun start() {
-        if (started) return
-        runCatching { requireNotNull(connectivity).registerNetworkCallback(request, callback) }
-            .onSuccess { started = true }
-            .onFailure { error -> GlobalState.log("Unable to observe networks: $error") }
+        synchronized(lifecycleLock) {
+            if (started) return
+            started = true
+            runCatching { requireNotNull(connectivity).registerNetworkCallback(request, callback) }
+                .onFailure { error ->
+                    started = false
+                    networkInfos.clear()
+                    GlobalState.log("Unable to observe networks: $error")
+                }
+        }
     }
 
-    @Synchronized
     fun stop() {
-        if (!started) return
-        runCatching { requireNotNull(connectivity).unregisterNetworkCallback(callback) }
-            .onFailure { error -> GlobalState.log("Unable to stop network observer: $error") }
-        started = false
-        networkInfos.clear()
-        currentDnsList = emptyList()
-        currentNetwork = null
-        // 作者 long：核心停止后清掉旧网络的 DNS 和连接，避免下一次启动继续复用
-        // 已失效网络的缓存或 socket，尤其是 Wi-Fi/移动网络切换后的旧链路。
-        Core.updateDNS("")
-        Core.resetNetwork()
+        synchronized(lifecycleLock) {
+            if (!started) return
+            // 作者 long：先关闭回调闸门并取消延迟任务，再注销系统回调，避免停止后尾部网络事件重新进入诊断队列。
+            started = false
+            handler.removeCallbacksAndMessages(null)
+            runCatching { requireNotNull(connectivity).unregisterNetworkCallback(callback) }
+                .onFailure { error -> GlobalState.log("Unable to stop network observer: $error") }
+            networkInfos.clear()
+            currentDnsList = emptyList()
+            currentNetwork = null
+            // 作者 long：核心停止后清掉旧网络的 DNS 和连接，避免下一次启动继续复用
+            // 已失效网络的缓存或 socket，尤其是 Wi-Fi/移动网络切换后的旧链路。
+            Core.updateDNS("")
+            Core.resetNetwork()
+        }
     }
 
     private fun networkPriority(entry: Map.Entry<Network, NetworkInfo>): Int {
@@ -139,32 +161,35 @@ object NetworkObserver {
         } + entry.value.priorityPenalty
     }
 
-    @Synchronized
     private fun updateDns() {
-        val preferred = networkInfos.entries.minByOrNull(::networkPriority)
-        val dnsList = preferred
-            ?.value
-            ?.dnsList
-            .orEmpty()
-            .map { address -> address.asSocketAddressText(DNS_PORT) }
-            .distinct()
-        if (dnsList != currentDnsList) {
-            currentDnsList = dnsList
-            Core.updateDNS(dnsList.joinToString(","))
-            RuntimeDiagnosticHistory.record(
-                RuntimeDiagnosticKind.DNS_UPDATED,
-                "DNS 服务器数量：${dnsList.size}",
-            )
+        synchronized(lifecycleLock) {
+            if (!started) return
+            val preferred = networkInfos.entries.minByOrNull(::networkPriority)
+            val dnsList = preferred
+                ?.value
+                ?.dnsList
+                .orEmpty()
+                .map { address -> address.asSocketAddressText(DNS_PORT) }
+                .distinct()
+            if (dnsList != currentDnsList) {
+                currentDnsList = dnsList
+                Core.updateDNS(dnsList.joinToString(","))
+                RuntimeDiagnosticHistory.record(
+                    RuntimeDiagnosticKind.DNS_UPDATED,
+                    "DNS 服务器数量：${dnsList.size}",
+                )
+            }
+            val network = preferred?.key ?: return
+            // Sockets protected onto the network we left stay bound to it; closing
+            // them makes apps reconnect now instead of after a TCP timeout.
+            if (currentNetwork != null && currentNetwork != network) {
+                Core.resetNetwork()
+                RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_SWITCHED, "底层网络已切换")
+            }
+            currentNetwork = network
         }
-        val network = preferred?.key ?: return
-        // Sockets protected onto the network we left stay bound to it; closing
-        // them makes apps reconnect now instead of after a TCP timeout.
-        if (currentNetwork != null && currentNetwork != network) {
-            Core.resetNetwork()
-            RuntimeDiagnosticHistory.record(RuntimeDiagnosticKind.NETWORK_SWITCHED, "底层网络已切换")
-        }
-        currentNetwork = network
     }
+
 }
 
 private const val DNS_PORT = 53
