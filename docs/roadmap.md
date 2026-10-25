@@ -60,7 +60,7 @@
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、活动连接/Requests/DNS/日志空态和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、活动连接/Requests/DNS/日志空态、Deep Link 订阅导入和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -140,7 +140,7 @@ flowchart LR
 - 远程订阅手动同步。
 - 核心运行期间阻止配置选择和编辑，避免运行输入与用户编辑内容分裂。
 
-未纳入 M1 完成定义的内容：高级分区编辑、二维码导入、备份恢复、完整自动更新调度、Deep Link 实际导入。
+未纳入 M1 完成定义的内容：高级分区编辑、二维码导入、备份恢复和完整自动更新调度；Deep Link 基础导入已在 Profiles 高级能力切片完成，冷启动、重复导入和错误反馈回归仍待补齐。
 
 ### M2：Mihomo 配置校验与应用 — `DONE-VERIFIED`
 
@@ -263,6 +263,7 @@ flowchart LR
 - 停止后 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务均已清理。
 - 本轮仅使用当前工作区根目录 `AGENTS.md` 列出的两条用户授权路径；设备内两次请求均在 20 秒超时并返回 HTTP `000`，未形成非零连接和流量归因证据。
 - 本轮真机已产生启动阶段的 DNS/日志事件，但两条授权路径请求均未产生非空 Requests 事件；因此只将 DNS/日志基础闭环标记为已接入，不将真实端到端观测标记为完成。
+- Deep Link 切片真机导入使用当前授权清单中的第一条路径；该次导入成功并显示订阅用量，测试 Profile 已在验收后删除。
 
 完成门槛：
 
@@ -274,9 +275,21 @@ flowchart LR
 
 状态：`PARTIAL`，基础能力已完成，完整 Flutter parity 未开始。
 
+已完成本轮切片：
+
+- `clash://install-config`、`clashmeta://install-config`、`flclash://install-config` 和 `kclash://install-config` 的 Android 入口声明。
+- Deep Link `url` 参数 URL 解码、HTTP/HTTPS 校验和可选名称解析。
+- Deep Link 导入复用 `ProfilesViewModel.addRemote`，不在 Activity 中重复下载或写入 Profile。
+- 无效 Scheme、Host、目标协议或缺失参数会通过现有 Snackbar 错误流提示，不能创建半成品 Profile。
+
+本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
+
+- `:app:testDebugUnitTest` 通过，新增 Deep Link 解析用例覆盖编码 URL、四种协议、非法 Host、非 HTTP(S) 目标和缺失参数。
+- `:app:assembleDebug` 通过，APK 只包含 `arm64-v8a` 的原生库。
+- 通过 `kclash://install-config` 触发当前授权订阅导入，设备 UI 显示远程订阅及用量信息；随后删除该测试 Profile，恢复空配置状态。
+
 待完成：
 
-- `clash://install-config`、`clashmeta://install-config`、`kclash://install-config` 的实际解析和导入。
 - 二维码读取和订阅导入。
 - YAML 编辑器语法体验、搜索、定位、错误行提示和大文件性能。
 - Rules 分区编辑。
@@ -325,7 +338,6 @@ flowchart LR
 
 - Quick Settings Tile：启动、停止、切换。
 - 通知栏操作与运行状态同步。
-- Deep Link 导入。
 - Tasker/MacroDroid 等外部 Action。
 - 按应用代理的应用选择器。
 - 电池优化白名单引导。
@@ -440,7 +452,7 @@ flowchart LR
 
 建议范围：
 
-1. Deep Link 和二维码导入。
+1. 二维码导入，并补齐 Deep Link 的冷启动、重复导入和错误反馈回归。
 2. 高级配置分区编辑。
 3. URLTest/Fallback 完整语义。
 4. 批量测速、搜索、缓存和结果失效。
@@ -521,7 +533,7 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 | 风险 | 影响 | 处理顺序 |
 | --- | --- | --- |
 | 真实代理请求归因和网络切换尚未完成 | 仍不能证明指定代理组后的请求、连接、DNS 和日志属于同一条端到端链路 | N1/N2 真机切片 |
-| 外部入口尚未全部接入 Runtime Manager | Quick Settings、Deep Link 等入口可能形成第二套启停路径 | N5 固化统一服务边界 |
+| 外部入口尚未全部接入 Runtime Manager | Quick Settings 等入口仍可能形成第二套启停路径；Deep Link 只负责导入 Profile，不启动核心 | N5 固化统一服务边界 |
 | UI 仍是单屏基础骨架 | 与 Flutter 完整体验差距大 | M4 后按页面切片重构 |
 | 观测目前只有基础事件和卡片 | 真实非空归因、搜索过滤、详情、导出和背压策略仍不足 | N2/N3 |
 | 高级配置和导入入口缺失 | 用户无法完成完整配置管理 | M6/N4 |

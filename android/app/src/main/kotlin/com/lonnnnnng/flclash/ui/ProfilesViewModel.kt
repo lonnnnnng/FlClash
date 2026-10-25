@@ -70,6 +70,10 @@ class ProfilesViewModel @Inject constructor(
         repository.addCustomProfile(label)
     }
 
+    fun reportError(message: String) {
+        mutableErrors.tryEmit(message)
+    }
+
     fun openEditor(profile: Profile) {
         if (runtimeManager.state.value.isRunning) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑配置")
