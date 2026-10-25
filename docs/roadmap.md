@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-25（北京时间）
 >
-> 当前基线：`kotlin` 分支；本轮 DNS 与核心日志观测切片 `2eed2073` 已提交，路线图更新后推送至 `origin/kotlin`
+> 当前基线：`kotlin` 分支；本轮核心日志泵生命周期切片 `6139accf` 已提交，路线图更新后推送至 `origin/kotlin`
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -48,7 +48,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | 本轮 DNS 与核心日志观测切片已提交 `2eed2073`，路线图更新后推送至 `origin/kotlin` |
+| 远端关系 | 本轮核心日志泵生命周期切片已提交 `6139accf`，路线图更新后推送至 `origin/kotlin` |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -243,7 +243,7 @@ flowchart LR
 - `CoreBridge`、`CoreRuntimeManager` 和 `MainViewModel` 已接入 Mihomo `getConnections`，首页显示活动连接数量、目标、进程、代理链、规则和上下行计数。
 - `CoreBridge` 已接入 `updateEventListener()`，解析 Go 核心的 `message.arguments` 批次，并将 `request`、`requestTraffic` 事件转换为 Kotlin 领域事件。
 - `CoreBridge` 已将 `dns`、`log` 事件转换为稳定的 Kotlin `CoreDnsQuery` 和 `CoreEvent.Log`，并覆盖 DNS 字段、日志级别和损坏事件丢弃测试。
-- `CoreRuntimeManager` 在核心运行期间安装事件监听器，停止或启动失败时释放监听器；事件流不经过 Compose 或 gomobile 生成类型。
+- `CoreRuntimeManager` 在核心运行期间安装事件监听器和 Mihomo 日志泵，停止或启动失败时成对释放；事件流不经过 Compose 或 gomobile 生成类型。
 - `MainViewModel` 已维护最近 2000 条 Requests 历史，并按连接 ID 合并上下行流量更新；首页提供请求空态、最近记录和完整记录对话框。
 - `MainViewModel` 已维护最近 1000 条 DNS 查询和核心日志，停止核心时清空运行观测，并提供用户主动清空入口。
 - Compose 首页已提供 DNS 查询和核心日志卡片、最近记录和完整记录对话框，覆盖停止态、空态和错误日志颜色提示。
@@ -259,10 +259,10 @@ flowchart LR
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
 - `./gradlew test :app:assembleDebug --no-daemon` 通过；84 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
-- Debug APK 安装成功；停止态首页实际显示“运行统计”“活动连接”“请求记录”“DNS 查询”和“核心日志”卡片，所有观测卡片均显示启动核心提示。
+- Debug APK 安装成功；启动核心后首页实际收到 DNS 查询（4 条）和核心日志（3 条），卡片出现“查看全部/清空”操作；停止态观测卡片恢复启动核心提示。
 - 停止后 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务均已清理。
 - 本轮仅使用当前工作区根目录 `AGENTS.md` 列出的两条用户授权路径；设备内两次请求均在 20 秒超时并返回 HTTP `000`，未形成非零连接和流量归因证据。
-- 本轮真机未产生非空 DNS/日志事件；因此只将 DNS/日志基础闭环标记为已接入，不将真实端到端观测标记为完成。
+- 本轮真机已产生启动阶段的 DNS/日志事件，但两条授权路径请求均未产生非空 Requests 事件；因此只将 DNS/日志基础闭环标记为已接入，不将真实端到端观测标记为完成。
 
 完成门槛：
 
