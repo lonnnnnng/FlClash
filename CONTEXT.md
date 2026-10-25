@@ -30,6 +30,8 @@
 
 **KClash**：Kotlin Android 应用的显示名称和产品身份，使用独立包名 `com.lonnnnnng.flclash`，与 Flutter `FlClash` 并行存在。
 
+**Android 支持下限**：KClash 支持 Android API 24（Android 7.0）及以上；更高的 target/compile 版本需要在迁移时结合实际工具链和发布要求核对。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
