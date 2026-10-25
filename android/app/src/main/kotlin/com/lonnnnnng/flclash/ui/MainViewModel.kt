@@ -534,6 +534,25 @@ internal fun formatDiagnosticForExport(session: DiagnosticSessionUiState): Strin
     }
 }
 
+/**
+ * 作者 long：运行诊断历史是跨进程恢复的生命周期证据，导出时保留时间线和原始枚举值，
+ * 同时复用日志导出的脱敏边界，避免网络回调详情中的临时凭据离开应用数据目录。
+ */
+internal fun formatRuntimeDiagnosticHistoryForExport(
+    events: List<RuntimeDiagnosticEvent>,
+): String = buildString {
+    appendLine("KClash runtime diagnostic history")
+    appendLine("event_count\t${events.size}")
+    appendLine("timestamp_millis\tkind\tdetail")
+    events.forEach { event ->
+        append(event.timestampMillis)
+            .append('\t')
+            .append(event.kind)
+            .append('\t')
+            .appendLine(redactSensitiveLogText(event.detail).replace('\n', ' '))
+    }
+}
+
 private const val MAX_REQUEST_HISTORY = 2_000
 private const val MAX_DNS_HISTORY = 1_000
 private const val MAX_LOG_HISTORY = 1_000

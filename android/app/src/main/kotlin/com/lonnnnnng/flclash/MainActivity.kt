@@ -23,9 +23,11 @@ import com.lonnnnnng.flclash.ui.ProfilesViewModel
 import com.lonnnnnng.flclash.ui.ProxyGroupsViewModel
 import com.lonnnnnng.flclash.ui.formatDiagnosticForExport
 import com.lonnnnnng.flclash.ui.formatLogsForExport
+import com.lonnnnnng.flclash.ui.formatRuntimeDiagnosticHistoryForExport
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import com.lonnnnnng.flclash.data.DeepLinkProfileParser
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -77,9 +79,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val diagnosticHistoryExportLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain"),
+    ) { uri ->
+        val events = pendingDiagnosticHistoryExport
+        pendingDiagnosticHistoryExport = emptyList()
+        if (uri == null || events.isEmpty()) return@registerForActivityResult
+        runCatching {
+            contentResolver.openOutputStream(uri)?.use { output ->
+                output.write(formatRuntimeDiagnosticHistoryForExport(events).toByteArray(Charsets.UTF_8))
+            } ?: error("无法打开运行诊断历史导出文件")
+        }.onFailure { error ->
+            viewModel.reportError(error.message ?: "导出运行诊断历史失败")
+        }
+    }
+
     private var batteryOptimizationIgnored by mutableStateOf(false)
     private var pendingLogExport: List<CoreEvent.Log> = emptyList()
     private var pendingDiagnosticExport: DiagnosticSessionUiState? = null
+    private var pendingDiagnosticHistoryExport: List<RuntimeDiagnosticEvent> = emptyList()
     private var initialDeepLinkHandled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,6 +116,7 @@ class MainActivity : ComponentActivity() {
                     onRequestBatteryOptimization = ::requestBatteryOptimization,
                     onExportLogs = ::requestLogExport,
                     onExportDiagnostic = ::requestDiagnosticExport,
+                    onExportDiagnosticHistory = ::requestDiagnosticHistoryExport,
                 )
             }
         }
@@ -151,6 +170,16 @@ class MainActivity : ComponentActivity() {
         // 作者 long：保存一次诊断会话快照，文件选择期间继续到达的事件属于下一次会话，避免证据包边界漂移。
         pendingDiagnosticExport = session
         diagnosticExportLauncher.launch("kclash-diagnostic-${session.sessionId}.txt")
+    }
+
+    private fun requestDiagnosticHistoryExport(events: List<RuntimeDiagnosticEvent>) {
+        if (events.isEmpty()) {
+            viewModel.reportError("没有可导出的运行诊断历史")
+            return
+        }
+        // 作者 long：先冻结历史快照，文件选择期间新事件属于后续时间线，避免导出内容前后不一致。
+        pendingDiagnosticHistoryExport = events.toList()
+        diagnosticHistoryExportLauncher.launch("kclash-runtime-diagnostics-${System.currentTimeMillis()}.txt")
     }
 
     override fun onNewIntent(intent: Intent) {

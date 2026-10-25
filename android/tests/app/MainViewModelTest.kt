@@ -264,6 +264,33 @@ class MainViewModelTest {
         assertEquals(false, exported.contains("secret-value"))
     }
 
+    @Test
+    fun `runtime diagnostic history export keeps timeline and redacts details`() {
+        val exported = formatRuntimeDiagnosticHistoryForExport(
+            listOf(
+                RuntimeDiagnosticEvent(
+                    kind = RuntimeDiagnosticKind.CORE_STARTED,
+                    detail = "启动 https://example.test/config?token=secret-value",
+                    timestampMillis = 10L,
+                ),
+                RuntimeDiagnosticEvent(
+                    kind = RuntimeDiagnosticKind.NETWORK_LOST,
+                    detail = "底层网络丢失\npassword=p@ss",
+                    timestampMillis = 20L,
+                ),
+            ),
+        )
+
+        assertEquals(true, exported.startsWith("KClash runtime diagnostic history\n"))
+        assertEquals(true, exported.contains("event_count\t2"))
+        assertEquals(true, exported.contains("10\tCORE_STARTED\t"))
+        assertEquals(true, exported.contains("20\tNETWORK_LOST\t"))
+        assertEquals(true, exported.contains("[REDACTED_SECRET]"))
+        assertEquals(false, exported.contains("secret-value"))
+        assertEquals(false, exported.contains("p@ss"))
+        assertEquals(false, exported.contains("\npassword="))
+    }
+
     private fun connection(id: String) = CoreConnection(
         id = id,
         upload = 0,

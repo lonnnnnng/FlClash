@@ -73,6 +73,7 @@ fun KClashApp(
     onRequestBatteryOptimization: () -> Unit,
     onExportLogs: (List<CoreEvent.Log>) -> Unit,
     onExportDiagnostic: (DiagnosticSessionUiState) -> Unit,
+    onExportDiagnosticHistory: (List<RuntimeDiagnosticEvent>) -> Unit,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
@@ -94,6 +95,7 @@ fun KClashApp(
     var showRequests by rememberSaveable { mutableStateOf(false) }
     var showDns by rememberSaveable { mutableStateOf(false) }
     var showLogs by rememberSaveable { mutableStateOf(false) }
+    var showDiagnosticHistory by rememberSaveable { mutableStateOf(false) }
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
 
     val filePicker = rememberLauncherForActivityResult(
@@ -205,6 +207,8 @@ fun KClashApp(
                     profile = selectedProfile,
                     onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
                     onExportDiagnostic = onExportDiagnostic,
+                    onShowDiagnosticHistory = { showDiagnosticHistory = true },
+                    onExportDiagnosticHistory = onExportDiagnosticHistory,
                 )
             }
             item {
@@ -354,6 +358,14 @@ fun KClashApp(
             onDismiss = { showLogs = false },
             onClear = runtimeViewModel::clearLogs,
             onExport = { onExportLogs(runtimeLogs.entries) },
+        )
+    }
+
+    if (showDiagnosticHistory) {
+        RuntimeDiagnosticHistoryDialog(
+            events = diagnosticHistory,
+            onDismiss = { showDiagnosticHistory = false },
+            onExport = { onExportDiagnosticHistory(diagnosticHistory) },
         )
     }
 
@@ -626,6 +638,8 @@ private fun ProbeCard(
     profile: Profile?,
     onProbe: () -> Unit,
     onExportDiagnostic: (DiagnosticSessionUiState) -> Unit,
+    onShowDiagnosticHistory: () -> Unit,
+    onExportDiagnosticHistory: (List<RuntimeDiagnosticEvent>) -> Unit,
 ) {
     val hasRemoteTarget = profile?.type == ProfileType.URL && profile.url.isNotBlank()
     val canProbe = runtimeState.isRunning && hasRemoteTarget && !state.isLoading
@@ -698,7 +712,18 @@ private fun ProbeCard(
                     }
                 }
 
-                DiagnosticSessionStatus.IDLE -> RuntimeDiagnosticHistorySummary(diagnosticHistory)
+                DiagnosticSessionStatus.IDLE -> RuntimeDiagnosticHistorySummary(
+                    events = diagnosticHistory,
+                    onShowAll = onShowDiagnosticHistory,
+                    onExport = { onExportDiagnosticHistory(diagnosticHistory) },
+                )
+            }
+            if (diagnostic.status != DiagnosticSessionStatus.IDLE && diagnosticHistory.isNotEmpty()) {
+                RuntimeDiagnosticHistoryActions(
+                    events = diagnosticHistory,
+                    onShowAll = onShowDiagnosticHistory,
+                    onExport = { onExportDiagnosticHistory(diagnosticHistory) },
+                )
             }
             state.error?.let { error ->
                 Text(
@@ -732,7 +757,11 @@ private fun ProbeCard(
 }
 
 @Composable
-private fun RuntimeDiagnosticHistorySummary(events: List<RuntimeDiagnosticEvent>) {
+private fun RuntimeDiagnosticHistorySummary(
+    events: List<RuntimeDiagnosticEvent>,
+    onShowAll: () -> Unit,
+    onExport: () -> Unit,
+) {
     if (events.isEmpty()) {
         Text(
             "尚未记录运行诊断事件。",
@@ -746,6 +775,7 @@ private fun RuntimeDiagnosticHistorySummary(events: List<RuntimeDiagnosticEvent>
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.primary,
     )
+    RuntimeDiagnosticHistoryActions(events, onShowAll, onExport)
     runtimeDiagnosticHistoryRows(events).forEach { event ->
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
@@ -770,6 +800,77 @@ private fun RuntimeDiagnosticHistorySummary(events: List<RuntimeDiagnosticEvent>
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Composable
+private fun RuntimeDiagnosticHistoryActions(
+    events: List<RuntimeDiagnosticEvent>,
+    onShowAll: () -> Unit,
+    onExport: () -> Unit,
+) {
+    if (events.isEmpty()) return
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        TextButton(onClick = onShowAll) { Text("查看全部") }
+        TextButton(onClick = onExport) { Text("导出") }
+    }
+}
+
+@Composable
+private fun RuntimeDiagnosticHistoryDialog(
+    events: List<RuntimeDiagnosticEvent>,
+    onDismiss: () -> Unit,
+    onExport: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("运行诊断历史（${events.size}）") },
+        text = {
+            if (events.isEmpty()) {
+                Text(
+                    "尚未记录运行诊断事件。",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 480.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(
+                        items = events.asReversed(),
+                        key = { "${it.timestampMillis}|${it.kind}|${it.detail}" },
+                    ) { event ->
+                        RuntimeDiagnosticHistoryRow(event)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+        dismissButton = {
+            TextButton(onClick = onExport, enabled = events.isNotEmpty()) { Text("导出") }
+        },
+    )
+}
+
+@Composable
+private fun RuntimeDiagnosticHistoryRow(event: RuntimeDiagnosticEvent) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            runtimeDiagnosticLabel(event.kind) + "（${event.kind}）",
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Text(
+            event.detail.ifBlank { "（无详细信息）" },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            DateUtils.getRelativeTimeSpanString(event.timestampMillis).toString(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
