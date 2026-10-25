@@ -36,6 +36,8 @@
 
 **验收真机**：当前连接的 ARM64 Android 真机作为 KClash 的权威验收设备；本轮核验为 Redmi Note 8 Pro、Android 16/API 36，实际 serial 每次操作前重新读取。
 
+**KClash 签名身份**：发布阶段创建独立的 release keystore；签名文件和秘密不进入仓库，也不复用 FlClash 的签名材料。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
