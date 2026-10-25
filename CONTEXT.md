@@ -14,6 +14,8 @@
 
 **Android 手机范围**：Kotlin 主线首发面向 Android 手机的竖屏和横屏体验，包含 Flutter Android 端已有的网络代理和配置管理能力；Android TV、平板、车机和桌面平台不属于首发验收范围。
 
+**Android 原生仓库**：Kotlin 主线的仓库根目录直接承载 Android Gradle 工程；Flutter 代码不作为 Kotlin 主线的运行时依赖，只通过上游分支提供行为参考。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
