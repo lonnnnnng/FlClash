@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import kotlinx.coroutines.launch
 
@@ -63,6 +64,7 @@ fun KClashApp(
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
+    val runtimeConnections by runtimeViewModel.connections.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
@@ -144,6 +146,12 @@ fun KClashApp(
             item {
                 RuntimeStatsCard(
                     state = runtimeStats,
+                    runtimeState = runtimeState,
+                )
+            }
+            item {
+                ConnectionsCard(
+                    state = runtimeConnections,
                     runtimeState = runtimeState,
                 )
             }
@@ -472,6 +480,85 @@ private fun StatValue(label: String, value: String) {
 }
 
 private fun formatRate(bytes: Long): String = "${formatBytes(bytes)}/s"
+
+@Composable
+private fun ConnectionsCard(
+    state: ConnectionsUiState,
+    runtimeState: CoreRuntimeStatus,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "活动连接${if (runtimeState.isRunning) "（${state.connections.size}）" else ""}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (state.isLoading && runtimeState.isRunning) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                }
+            }
+            when {
+                !runtimeState.isRunning -> Text(
+                    "启动核心后显示当前活动连接。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                state.error != null -> Text(
+                    state.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+
+                state.connections.isEmpty() -> Text(
+                    "当前没有活动连接。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                else -> state.connections.take(MAX_CONNECTIONS_ON_HOME).forEach { connection ->
+                    ConnectionRow(connection)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConnectionRow(connection: CoreConnection) {
+    val metadata = connection.metadata
+    val title = metadata.host.ifBlank {
+        metadata.destinationIp.ifBlank { metadata.remoteDestination.ifBlank { "未知目标" } }
+    }
+    val endpoint = listOf(metadata.destinationIp, metadata.destinationPort)
+        .filter { it.isNotBlank() }
+        .joinToString(":")
+    val chain = connection.chains.joinToString(" → ")
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(
+            listOf(metadata.network.uppercase(), endpoint, metadata.process, chain)
+                .filter { it.isNotBlank() }
+                .joinToString(" · "),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            "↑ ${formatBytes(connection.upload)} · ↓ ${formatBytes(connection.download)}" +
+                if (connection.rule.isNotBlank()) " · ${connection.rule}" else "",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private const val MAX_CONNECTIONS_ON_HOME = 5
 
 @Composable
 private fun ProfileCard(

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -141,6 +142,8 @@ interface CoreRuntimeBridge {
 
     suspend fun getConnectionCount(): Int
 
+    suspend fun getConnections(): List<CoreConnection>
+
     fun startListener()
 
     fun stopListener()
@@ -169,6 +172,8 @@ class NativeCoreRuntimeBridge(
     override suspend fun getTotalTraffic(): CoreTraffic = coreBridge.getTotalTraffic()
 
     override suspend fun getConnectionCount(): Int = coreBridge.getConnectionCount()
+
+    override suspend fun getConnections(): List<CoreConnection> = coreBridge.getConnections()
 
     override fun startListener() = coreBridge.startListener()
 

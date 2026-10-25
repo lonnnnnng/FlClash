@@ -90,4 +90,40 @@ class CoreBridgeParsingTest {
             bridge.parseTrafficPayload(up = -5, down = 12),
         )
     }
+
+    @Test
+    fun `connections response maps tracker metadata and clamps counters`() {
+        val parsed = bridge.parseConnectionPayload(
+            CoreConnectionPayload(
+                id = "connection-1",
+                upload = -4,
+                download = 128,
+                start = "2026-10-25T11:00:00Z",
+                metadata = CoreConnectionMetadata(
+                    network = "tcp",
+                    sourceIp = "",
+                    sourcePort = "",
+                    destinationIp = "203.0.113.7",
+                    destinationPort = "443",
+                    host = "example.com",
+                    process = "com.example.app",
+                    processPath = "",
+                    remoteDestination = "",
+                    uid = 12345,
+                    specialProxy = "",
+                    specialRules = "",
+                ),
+                chains = listOf("GLOBAL", "香港-01"),
+                rule = "MATCH",
+                rulePayload = "香港",
+            ),
+        )
+
+        assertEquals("connection-1", parsed.id)
+        assertEquals(CoreTraffic(0, 128), CoreTraffic(parsed.upload, parsed.download))
+        assertEquals("example.com", parsed.metadata.host)
+        assertEquals("443", parsed.metadata.destinationPort)
+        assertEquals(listOf("GLOBAL", "香港-01"), parsed.chains)
+        assertEquals("MATCH", parsed.rule)
+    }
 }

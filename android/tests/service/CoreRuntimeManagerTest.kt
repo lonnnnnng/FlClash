@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.service
 
 import java.io.File
+import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.core.CoreTraffic
@@ -154,6 +155,7 @@ class CoreRuntimeManagerTest {
             ),
             manager.getStats().getOrThrow(),
         )
+        assertTrue(manager.getConnections().isSuccess)
     }
 
     @Test
@@ -237,6 +239,8 @@ class CoreRuntimeManagerTest {
         override suspend fun getTotalTraffic(): CoreTraffic = CoreTraffic(up = 120, down = 340)
 
         override suspend fun getConnectionCount(): Int = 2
+
+        override suspend fun getConnections(): List<CoreConnection> = emptyList()
 
         override fun startListener() {
             events += "listener-start"

@@ -94,6 +94,9 @@ class CoreBridge {
     suspend fun getConnectionCount(): Int =
         invoke("getConnectionCount", JSONObject()).optInt("result", 0).coerceAtLeast(0)
 
+    suspend fun getConnections(): List<CoreConnection> =
+        parseConnectionsResponse(invoke("getConnections", JSONObject()).optJSONObject("result"))
+
     fun startListener() = Core.startListener()
 
     fun stopListener() = Core.stopListener()
@@ -188,6 +191,57 @@ class CoreBridge {
         down = down.coerceAtLeast(0L),
     )
 
+    internal fun parseConnectionsResponse(result: JSONObject?): List<CoreConnection> {
+        requireNotNull(result) { "核心连接响应缺少 result" }
+        val connections = result.optJSONArray("connections") ?: return emptyList()
+        return buildList(connections.length()) {
+            for (index in 0 until connections.length()) {
+                val raw = connections.optJSONObject(index) ?: continue
+                add(parseConnectionPayload(raw))
+            }
+        }
+    }
+
+    internal fun parseConnectionPayload(raw: JSONObject): CoreConnection {
+        val metadata = raw.optJSONObject("metadata") ?: JSONObject()
+        return parseConnectionPayload(
+            CoreConnectionPayload(
+                id = raw.optString("id"),
+                upload = raw.optLong("upload", 0L),
+                download = raw.optLong("download", 0L),
+                start = raw.optString("start"),
+                metadata = CoreConnectionMetadata(
+                network = metadata.optString("network"),
+                sourceIp = metadata.optString("sourceIP"),
+                sourcePort = metadata.optPort("sourcePort"),
+                destinationIp = metadata.optString("destinationIP"),
+                destinationPort = metadata.optPort("destinationPort"),
+                host = metadata.optString("host"),
+                process = metadata.optString("process"),
+                processPath = metadata.optString("processPath"),
+                remoteDestination = metadata.optString("remoteDestination"),
+                uid = metadata.optLong("uid", 0L).coerceAtLeast(0L),
+                specialProxy = metadata.optString("specialProxy"),
+                specialRules = metadata.optString("specialRules"),
+                ),
+                chains = raw.optJSONArray("chains").toStringList(),
+                rule = raw.optString("rule"),
+                rulePayload = raw.optString("rulePayload"),
+            ),
+        )
+    }
+
+    internal fun parseConnectionPayload(payload: CoreConnectionPayload): CoreConnection = CoreConnection(
+        id = payload.id,
+        upload = payload.upload.coerceAtLeast(0L),
+        download = payload.download.coerceAtLeast(0L),
+        start = payload.start,
+        metadata = payload.metadata,
+        chains = payload.chains,
+        rule = payload.rule,
+        rulePayload = payload.rulePayload,
+    )
+
     private suspend fun invoke(method: String, arguments: Any): JSONObject =
         suspendCancellableCoroutine { continuation ->
             val request = JSONObject()
@@ -278,6 +332,43 @@ data class CoreTraffic(
     val down: Long,
 )
 
+data class CoreConnection(
+    val id: String,
+    val upload: Long,
+    val download: Long,
+    val start: String,
+    val metadata: CoreConnectionMetadata,
+    val chains: List<String>,
+    val rule: String,
+    val rulePayload: String,
+)
+
+data class CoreConnectionPayload(
+    val id: String,
+    val upload: Long,
+    val download: Long,
+    val start: String,
+    val metadata: CoreConnectionMetadata,
+    val chains: List<String>,
+    val rule: String,
+    val rulePayload: String,
+)
+
+data class CoreConnectionMetadata(
+    val network: String,
+    val sourceIp: String,
+    val sourcePort: String,
+    val destinationIp: String,
+    val destinationPort: String,
+    val host: String,
+    val process: String,
+    val processPath: String,
+    val remoteDestination: String,
+    val uid: Long,
+    val specialProxy: String,
+    val specialRules: String,
+)
+
 private fun org.json.JSONArray?.toStringList(): List<String> {
     if (this == null) return emptyList()
     return buildList(length()) {
@@ -295,6 +386,11 @@ private fun JSONObject.optNullableString(name: String): String? {
 private fun JSONObject.optIntOrNull(name: String): Int? {
     if (!has(name) || isNull(name)) return null
     return optInt(name)
+}
+
+private fun JSONObject.optPort(name: String): String {
+    if (!has(name) || isNull(name)) return ""
+    return optString(name).takeIf { it.isNotBlank() } ?: optInt(name).toString()
 }
 
 class CoreBridgeException(

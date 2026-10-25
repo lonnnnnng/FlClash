@@ -2,8 +2,9 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lonnnnnng.flclash.service.CoreRuntimeManager
+import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreTraffic
+import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,15 +28,20 @@ class MainViewModel @Inject constructor(
     private val mutableStats = MutableStateFlow(RuntimeStatsUiState())
     val stats = mutableStats.asStateFlow()
 
+    private val mutableConnections = MutableStateFlow(ConnectionsUiState())
+    val connections = mutableConnections.asStateFlow()
+
     init {
         viewModelScope.launch {
             runtimeState.collectLatest { state ->
                 if (!state.isRunning) {
                     mutableStats.value = RuntimeStatsUiState()
+                    mutableConnections.value = ConnectionsUiState()
                     return@collectLatest
                 }
                 while (isActive) {
                     refreshStats()
+                    refreshConnections()
                     delay(STATS_REFRESH_MILLIS)
                 }
             }
@@ -94,6 +100,21 @@ class MainViewModel @Inject constructor(
             }
     }
 
+    private suspend fun refreshConnections() {
+        mutableConnections.value = mutableConnections.value.copy(isLoading = true, error = null)
+        runtimeManager.getConnections()
+            .onSuccess { value ->
+                mutableConnections.value = ConnectionsUiState(connections = value)
+            }
+            .onFailure { error ->
+                // 作者 long：连接列表读取失败只影响观测卡片，不得把核心运行状态误判为停止。
+                mutableConnections.value = mutableConnections.value.copy(
+                    isLoading = false,
+                    error = error.message ?: "读取活动连接失败",
+                )
+            }
+    }
+
     companion object {
         private const val STATS_REFRESH_MILLIS = 1_000L
     }
@@ -103,6 +124,12 @@ data class RuntimeStatsUiState(
     val traffic: CoreTraffic = CoreTraffic(0L, 0L),
     val totalTraffic: CoreTraffic = CoreTraffic(0L, 0L),
     val connectionCount: Int = 0,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+)
+
+data class ConnectionsUiState(
+    val connections: List<CoreConnection> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
 )

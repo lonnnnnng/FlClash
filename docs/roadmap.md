@@ -56,7 +56,7 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 75 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 76 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
@@ -203,7 +203,7 @@ flowchart LR
 - `MainActivity` 已接入 `VpnService.prepare()` 和 Activity Result 授权回调。
 - 启动失败会停止服务、清理监听器，管理器不会把失败报告为 `RUNNING`。
 - 停止时向绑定中的 `VpnService` 发送显式 stop action，再停止服务组件，避免系统绑定导致 TUN 残留。
-- 服务层和管理器新增失败回滚测试；当前总计 75 项 Kotlin 单元测试通过。
+- 服务层和管理器新增失败回滚测试；当前总计 76 项 Kotlin 单元测试通过。
 
 本轮真机验收记录（2026-10-25，设备 `wsvwypiz7xwslvl7`，Android 16 / API 36）：
 
@@ -232,7 +232,7 @@ flowchart LR
 
 ### 7.2 连接、流量和运行观测
 
-状态：`PARTIAL`，流量和连接数基础观测已接入，连接明细、请求、DNS 和日志仍未接入。
+状态：`PARTIAL`，流量、连接数和活动连接基础观测已接入，请求、DNS 和日志仍未接入。
 
 当前已有：
 
@@ -240,10 +240,10 @@ flowchart LR
 - `CoreRuntimeManager` 只在核心运行状态下读取三类统计，避免停止状态访问已释放的核心。
 - `MainViewModel` 在运行期间每秒轮询统计，停止或进入错误时清理/回显状态。
 - Compose 首页已提供运行统计卡片，展示上传、下载、连接数和累计流量，并覆盖停止态、加载态和错误态。
+- `CoreBridge`、`CoreRuntimeManager` 和 `MainViewModel` 已接入 Mihomo `getConnections`，首页显示活动连接数量、目标、进程、代理链、规则和上下行计数。
 
 仍需补齐的 Bridge / Repository / UI：
 
-- 活跃连接列表。
 - 请求列表和规则命中信息。
 - DNS 查询列表。
 - 核心日志流、过滤和清空。
@@ -252,8 +252,8 @@ flowchart LR
 
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
-- `./gradlew test :app:assembleDebug --no-daemon` 通过；75 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
-- Debug APK 安装成功；核心启动后首页显示“运行统计”卡片及上传、下载、连接和累计流量字段，停止核心后恢复为“启动核心后显示实时流量和连接数”。
+- `./gradlew test :app:assembleDebug --no-daemon` 通过；76 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
+- Debug APK 安装成功；核心启动后首页显示“运行统计”和“活动连接（0）”卡片，停止核心后活动连接卡片恢复为停止态提示。
 - 停止后 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务均已清理。
 - 设备请求返回 HTTP 301，但本轮通过 shell/浏览器发起的请求未在卡片中形成非零连接和流量计数；真实请求归因仍不能标记完成。
 
@@ -363,7 +363,7 @@ flowchart LR
 
 当前已有：
 
-- 75 项 Kotlin 单元测试。
+- 76 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - Redmi 真机启动、停止、代理组和测速验证。
 

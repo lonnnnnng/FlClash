@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.service
 
 import android.os.Build
 import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -131,6 +132,13 @@ class CoreRuntimeManager(
                 totalTraffic = bridge.getTotalTraffic(),
                 connectionCount = bridge.getConnectionCount(),
             )
+        }
+    }
+
+    suspend fun getConnections(): Result<List<CoreConnection>> = transitionLock.withLock {
+        runCatching {
+            check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
+            bridge.getConnections()
         }
     }
 
