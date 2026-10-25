@@ -164,3 +164,10 @@
 - 先执行 1 轮、再追加 3 轮，每轮 64 个并发 HTTP 请求，共 256 个压力请求；首页首轮后显示请求记录 74 条、DNS 查询 133 条，累计流量约为上行 198.2 KB、下行 4.2 MB。
 - 最新诊断证据包 `[event_flow]` 为 `parsed_batches=79`、`parsed_events=1525`、`emitted_events=1525`、`dropped_events=0`、`truncated_events=0`，高负载下未发生事件丢弃或截断。
 - 压力期间进程、两个前台服务、`tun0` 和 `198.18.0.0/30` 路由均保持，未发现 KClash `FATAL EXCEPTION`；外部 STOP 后服务和 TUN 清理，Profile 删除后恢复空配置。
+
+## 诊断卡片事件流健康摘要切片实测记录
+
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；工程共 120 项 Kotlin 单元测试失败 0、错误 0、跳过 0。
+- 诊断卡片新增事件流健康摘要，正常状态显示解析、投递、丢弃和截断数量；丢弃或截断大于 0 时显示证据可能不完整的错误提示。
+- Debug APK 安装到真机 `wsvwypiz7xwslvl7` 后，使用当前工作区根目录 `AGENTS.md` 第一条授权路径启动核心，并通过 Mihomo 本地 mixed port 产生 32 个并发请求；首页显示 `事件流：解析 170 · 投递 170 · 丢弃 0 · 截断 0`，未出现不完整提示。
+- STOP 后 `VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均清理，测试 Profile 删除后恢复空配置。

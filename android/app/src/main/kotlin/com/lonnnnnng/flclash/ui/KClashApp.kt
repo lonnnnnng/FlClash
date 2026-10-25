@@ -55,6 +55,7 @@ import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
@@ -682,11 +683,14 @@ private fun ProbeCard(
                 Text(if (state.isLoading) "诊断中…" else "测试当前路由")
             }
             when (diagnostic.status) {
-                DiagnosticSessionStatus.RUNNING -> Text(
-                    "诊断会话：采集中…",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                DiagnosticSessionStatus.RUNNING -> {
+                    Text(
+                        "诊断会话：采集中…",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    DiagnosticEventFlowSummary(diagnostic.eventFlowStats)
+                }
 
                 DiagnosticSessionStatus.PASS,
                 DiagnosticSessionStatus.FAIL -> {
@@ -707,6 +711,7 @@ private fun ProbeCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    DiagnosticEventFlowSummary(diagnostic.eventFlowStats)
                     TextButton(onClick = { onExportDiagnostic(diagnostic) }) {
                         Text("导出诊断证据")
                     }
@@ -753,6 +758,25 @@ private fun ProbeCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DiagnosticEventFlowSummary(stats: CoreEventFlowStats) {
+    // 作者 long：把事件管线的丢弃边界直接放在诊断结果旁，避免用户把不完整证据误认为真实网络没有事件。
+    if (stats.parsedEvents <= 0L) return
+    val hasLoss = diagnosticEventFlowHasLoss(stats)
+    Text(
+        formatDiagnosticEventFlowStats(stats),
+        style = MaterialTheme.typography.bodySmall,
+        color = if (hasLoss) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    if (hasLoss) {
+        Text(
+            "事件流存在丢弃或截断，诊断证据可能不完整。",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+        )
     }
 }
 

@@ -223,6 +223,22 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `diagnostic event flow summary exposes loss boundaries`() {
+        val healthy = CoreEventFlowStats(
+            parsedEvents = 1525,
+            emittedEvents = 1525,
+        )
+        val lossy = healthy.copy(droppedEvents = 2, truncatedEvents = 1)
+
+        assertEquals(
+            "事件流：解析 1525 · 投递 1525 · 丢弃 0 · 截断 0",
+            formatDiagnosticEventFlowStats(healthy),
+        )
+        assertFalse(diagnosticEventFlowHasLoss(healthy))
+        assertTrue(diagnosticEventFlowHasLoss(lossy))
+    }
+
+    @Test
     fun `diagnostic export contains probe and related evidence without token`() {
         val session = DiagnosticSessionUiState(
             status = DiagnosticSessionStatus.PASS,

@@ -501,6 +501,15 @@ internal fun diagnosticFailureReason(result: CoreProbeResult): String? = when {
 }
 
 /**
+ * 作者 long：诊断卡片和导出文件使用同一组事件流边界计数，让用户能区分“没有请求事件”和“事件被丢弃”。
+ */
+internal fun formatDiagnosticEventFlowStats(stats: CoreEventFlowStats): String =
+    "事件流：解析 ${stats.parsedEvents} · 投递 ${stats.emittedEvents} · 丢弃 ${stats.droppedEvents} · 截断 ${stats.truncatedEvents}"
+
+internal fun diagnosticEventFlowHasLoss(stats: CoreEventFlowStats): Boolean =
+    stats.droppedEvents > 0L || stats.truncatedEvents > 0L
+
+/**
  * 作者 long：诊断证据包与普通日志导出使用相同脱敏边界，既保留请求归因信息，也不把订阅凭据带出应用。
  */
 internal fun formatDiagnosticForExport(session: DiagnosticSessionUiState): String = buildString {
