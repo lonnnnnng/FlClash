@@ -210,12 +210,13 @@ flowchart LR
 - `ip route` 观察到 `198.18.0.0/30 dev tun0`，Mihomo 日志出现从 `198.18.0.1` 发出的 TCP/UDP TUN 流量。
 - 设备内 `curl -I http://1.1.1.1` 返回 `HTTP/1.1 301 Moved Permanently`，证明启用 TUN 时设备网络请求仍可完成；尚未将该请求与选定代理节点做可归因的端到端关联。
 - 点击停止后 UI 显示“核心已停止”，服务记录、`tun0`、`198.18.0.0/30` 路由均消失；`dumpsys connectivity` 未留下 KClash VPN 网络。
+- 临时将 `ACTIVATE_VPN` 设为 deny 后重新启动，系统显示 KClash VPN 授权对话框；点击“取消”后 UI 回到“核心已停止”，显示“VPN 权限未授予”，且未留下前台服务、`tun0` 或 VPN 路由；随后已恢复 `ACTIVATE_VPN: allow`。
 - 旧本地测试配置曾被核心拒绝，错误为 `proxy DIRECT is the duplicate name`；该失败状态正确回显，未作为成功证据。
 
 当前缺失：
 
 - `ServiceConfig.vpnOptions` 仍是首阶段默认配置，尚未从 Mihomo 配置/Android 设置真实映射 mixed-port、tun stack 和路由覆盖项。
-- 首次安装后的 VPN 授权弹窗、拒绝路径和系统撤销路径尚未在本轮干净安装中重测；当前设备保留了既有 VPN 授权。
+- 首次安装或清除数据后的 VPN 授权弹窗，以及系统在运行期间主动撤销 VPN 的路径，尚未在本轮干净状态中重测；临时拒绝授权后的失败回滚路径已验证，当前设备保留了既有 VPN 授权。
 - 尚未完成“指定代理组/节点 → 新发请求 → Mihomo 连接日志或 API 可归因”的真实代理请求闭环。
 - 尚未覆盖 Wi-Fi/移动网络切换、后台恢复、进程重建和系统撤销 VPN。
 
