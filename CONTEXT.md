@@ -26,6 +26,8 @@
 
 **核心运行管理器**：Service 模块中唯一负责 Mihomo 核心生命周期和运行状态的组件；VpnService 只负责 TUN，ProxyService 只负责本地代理模式，两者不各自创建核心实例。
 
+**应用依赖注入**：由 Hilt 管理 Application、Activity、Service 和 ViewModel 的依赖生命周期；Repository、UseCase、核心 Bridge 和数据源通过构造函数注入。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
