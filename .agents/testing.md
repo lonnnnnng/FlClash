@@ -157,3 +157,10 @@
 - 使用第二条当前授权路径启动后首次 probe 出现一次真实网络失败；停止并重启核心后重试返回 HTTP 200，UI 显示“诊断会话：通过 · 运行 7 · 请求 2 · DNS 6 · 日志 2”。最终导出文件 `[event_flow]` 记录 `parsed_batches=14`、`parsed_events=17`、`emitted_events=17`、`dropped_events=0`、`truncated_events=0`。
 - 核心持续运行 40 秒后 PID `26899`、两个前台服务、`tun0` 和 `198.18.0.0/30` 路由保持，未发现应用 `FATAL EXCEPTION`。停止后服务和路由清理，测试 Profile 已删除并恢复“还没有配置”。
 - 本轮尚未覆盖真实高负载事件压力、页面退出后的轮询生命周期和跨进程诊断历史关联。
+
+## 真实高负载事件流压力验收记录
+
+- 真机 `wsvwypiz7xwslvl7` 使用当前工作区根目录 `AGENTS.md` 第一条授权路径启动核心；压力请求通过 Mihomo 本地 mixed port `127.0.0.1:7890` 发出，确保请求进入核心事件管线。
+- 先执行 1 轮、再追加 3 轮，每轮 64 个并发 HTTP 请求，共 256 个压力请求；首页首轮后显示请求记录 74 条、DNS 查询 133 条，累计流量约为上行 198.2 KB、下行 4.2 MB。
+- 最新诊断证据包 `[event_flow]` 为 `parsed_batches=79`、`parsed_events=1525`、`emitted_events=1525`、`dropped_events=0`、`truncated_events=0`，高负载下未发生事件丢弃或截断。
+- 压力期间进程、两个前台服务、`tun0` 和 `198.18.0.0/30` 路由均保持，未发现 KClash `FATAL EXCEPTION`；外部 STOP 后服务和 TUN 清理，Profile 删除后恢复空配置。
