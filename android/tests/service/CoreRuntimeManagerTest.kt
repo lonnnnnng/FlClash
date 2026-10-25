@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.service
 import java.io.File
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.core.CoreTraffic
@@ -137,6 +138,38 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
+    fun `probe result keeps the core route attribution`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val manager = manager(
+            profile = ActiveProfile(14, "诊断配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = FakeBridge(),
+            controller = FakeServiceController(),
+        )
+        manager.startProxy().getOrThrow()
+
+        val result = manager.probe("https://example.com").getOrThrow()
+
+        assertEquals(listOf("GLOBAL", "FR-1-01"), result?.chains)
+        assertEquals("DOMAIN-SUFFIX", result?.rule)
+    }
+
+    @Test
+    fun `probe fails while core is stopped`() = runTest {
+        val manager = manager(
+            profile = null,
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = FakeBridge(),
+            controller = FakeServiceController(),
+        )
+
+        val result = manager.probe("https://example.com")
+
+        assertTrue(result.isFailure)
+        assertEquals("请先启动核心", result.exceptionOrNull()?.message)
+    }
+
+    @Test
     fun `runtime stats are read from the core only while running`() = runTest {
         val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
         val manager = manager(
@@ -258,6 +291,20 @@ class CoreRuntimeManagerTest {
             delayError?.let { throw it }
             return ProxyDelay(testUrl, proxyName, 123)
         }
+
+        override suspend fun probe(url: String, proxyName: String, timeoutMs: Long): CoreProbeResult =
+            CoreProbeResult(
+                statusCode = 200,
+                delay = 123,
+                url = url,
+                chains = listOf("GLOBAL", "FR-1-01"),
+                rule = "DOMAIN-SUFFIX",
+                rulePayload = "example.com",
+                error = "",
+                message = "",
+                coreEpoch = 1,
+                routeVersion = 2,
+            )
 
         override suspend fun getTraffic(): CoreTraffic = CoreTraffic(up = 12, down = 34)
 

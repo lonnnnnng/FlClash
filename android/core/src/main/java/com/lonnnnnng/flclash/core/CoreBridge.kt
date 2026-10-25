@@ -98,6 +98,27 @@ class CoreBridge {
         return parseDelayResponse(response.optJSONObject("result"))
     }
 
+    suspend fun probe(
+        url: String,
+        proxyName: String = "",
+        timeoutMs: Long = DEFAULT_PROBE_TIMEOUT_MS,
+    ): CoreProbeResult? {
+        require(url.startsWith("http://") || url.startsWith("https://")) {
+            "真实请求诊断只支持 HTTP/HTTPS 地址"
+        }
+        val response = invoke(
+            method = "probe",
+            arguments = JSONObject()
+                .put("url", url)
+                .put("proxy-name", proxyName)
+                .put("headers", JSONObject())
+                .put("timeout", timeoutMs)
+                // 作者 long：诊断只需要状态、延迟和路由归因，不读取订阅响应正文，避免把配置内容带入 UI 或日志。
+                .put("max-body", 0),
+        )
+        return parseProbeResponse(response.optJSONObject("result"))
+    }
+
     suspend fun getTraffic(): CoreTraffic =
         parseTrafficResponse(invoke("getTraffic", false).optJSONObject("result"))
 
@@ -210,6 +231,37 @@ class CoreBridge {
             value = payload.value ?: DELAY_FAILED,
         )
     }
+
+    internal fun parseProbeResponse(result: JSONObject?): CoreProbeResult? {
+        if (result == null) return null
+        return parseProbePayload(
+            CoreProbePayload(
+                statusCode = result.optInt("status-code", 0),
+                delay = result.optLong("delay", 0L),
+                url = result.optString("url"),
+                chains = result.optJSONArray("chains").toStringList(),
+                rule = result.optString("rule"),
+                rulePayload = result.optString("rule-payload"),
+                error = result.optString("error"),
+                message = result.optString("message"),
+                coreEpoch = result.optLong("core-epoch", 0L),
+                routeVersion = result.optLong("route-version", 0L),
+            ),
+        )
+    }
+
+    internal fun parseProbePayload(payload: CoreProbePayload): CoreProbeResult = CoreProbeResult(
+        statusCode = payload.statusCode.coerceAtLeast(0),
+        delay = payload.delay.coerceAtLeast(0L),
+        url = payload.url,
+        chains = payload.chains,
+        rule = payload.rule,
+        rulePayload = payload.rulePayload,
+        error = payload.error,
+        message = payload.message,
+        coreEpoch = payload.coreEpoch.coerceAtLeast(0L),
+        routeVersion = payload.routeVersion.coerceAtLeast(0L),
+    )
 
     internal fun parseTrafficResponse(result: JSONObject?): CoreTraffic {
         requireNotNull(result) { "核心流量响应缺少 result" }
@@ -434,6 +486,7 @@ class CoreBridge {
         private const val EVENT_BUFFER_SIZE = 256
         const val DEFAULT_TEST_URL = "https://www.gstatic.com/generate_204"
         const val DEFAULT_DELAY_TIMEOUT_MS = 8_000L
+        const val DEFAULT_PROBE_TIMEOUT_MS = 20_000L
         const val DELAY_TIMED_OUT = -1
         const val DELAY_FAILED = -2
     }
@@ -507,6 +560,32 @@ data class ProxyDelayPayload(
     val url: String?,
     val name: String?,
     val value: Int?,
+)
+
+data class CoreProbePayload(
+    val statusCode: Int,
+    val delay: Long,
+    val url: String,
+    val chains: List<String>,
+    val rule: String,
+    val rulePayload: String,
+    val error: String,
+    val message: String,
+    val coreEpoch: Long,
+    val routeVersion: Long,
+)
+
+data class CoreProbeResult(
+    val statusCode: Int,
+    val delay: Long,
+    val url: String,
+    val chains: List<String>,
+    val rule: String,
+    val rulePayload: String,
+    val error: String,
+    val message: String,
+    val coreEpoch: Long,
+    val routeVersion: Long,
 )
 
 data class CoreTraffic(

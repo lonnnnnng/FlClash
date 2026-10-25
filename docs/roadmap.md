@@ -48,7 +48,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | 本轮核心日志泵生命周期切片已提交 `6139accf`，路线图更新后推送至 `origin/kotlin` |
+| 远端关系 | `kotlin` 是长期主线，`origin/kotlin` 与当前本地切片保持同步；Flutter 变更继续由 `upstream` 追踪 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -56,11 +56,11 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 91 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 95 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、活动连接/Requests/DNS/日志空态、Deep Link 订阅导入和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、活动连接/Requests/DNS/日志非空记录、Deep Link 订阅导入和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -186,7 +186,7 @@ flowchart LR
 
 ### 7.1 真实连接链路
 
-状态：`PARTIAL`，代码启动链和 TUN 生命周期已打通，权限边界、真实代理请求和网络切换仍需补齐。
+状态：`PARTIAL`，代码启动链、TUN 生命周期和两条授权路径的真实请求诊断已打通；网络切换、后台恢复和系统撤销 VPN 仍需补齐。
 
 当前已有：
 
@@ -203,7 +203,7 @@ flowchart LR
 - `MainActivity` 已接入 `VpnService.prepare()` 和 Activity Result 授权回调。
 - 启动失败会停止服务、清理监听器，管理器不会把失败报告为 `RUNNING`。
 - 停止时向绑定中的 `VpnService` 发送显式 stop action，再停止服务组件，避免系统绑定导致 TUN 残留。
-- 服务层和管理器新增失败回滚测试；当前总计 91 项 Kotlin 单元测试通过。
+- 服务层和管理器新增失败回滚测试；当前总计 95 项 Kotlin 单元测试通过。
 
 本轮真机验收记录（2026-10-25，设备 `wsvwypiz7xwslvl7`，Android 16 / API 36）：
 
@@ -219,7 +219,7 @@ flowchart LR
 
 - `ServiceConfig.vpnOptions` 仍是首阶段默认配置，尚未从 Mihomo 配置/Android 设置真实映射 mixed-port、tun stack 和路由覆盖项。
 - 首次安装或清除数据后的 VPN 授权弹窗，以及系统在运行期间主动撤销 VPN 的路径，尚未在本轮干净状态中重测；临时拒绝授权后的失败回滚路径已验证，当前设备保留了既有 VPN 授权。
-- 尚未完成“指定代理组/节点 → 新发请求 → Mihomo 连接日志或 API 可归因”的真实代理请求闭环。
+- 已完成“当前代理组/节点 → 受控真实请求 → HTTP 状态、代理链、规则、Requests、DNS、Logs 和累计流量”的首轮真机归因闭环；活动连接在第二条授权路径的 7.4 秒请求中捕获到 1 条。
 - 尚未覆盖 Wi-Fi/移动网络切换、后台恢复、进程重建和系统撤销 VPN。
 
 完成门槛：
@@ -232,7 +232,7 @@ flowchart LR
 
 ### 7.2 连接、流量和运行观测
 
-状态：`PARTIAL`，流量、连接数、活动连接、Requests、DNS 和核心日志的基础观测已接入，真实非空请求归因与详情级交互仍待完成。
+状态：`PARTIAL`，流量、连接数、活动连接、Requests、DNS 和核心日志的基础观测与真实请求归因已验证，详情级交互和长期运行治理仍待完成。
 
 当前已有：
 
@@ -247,6 +247,7 @@ flowchart LR
 - `MainViewModel` 已维护最近 2000 条 Requests 历史，并按连接 ID 合并上下行流量更新；首页提供请求空态、最近记录和完整记录对话框。
 - `MainViewModel` 已维护最近 1000 条 DNS 查询和核心日志，停止核心时清空运行观测，并提供用户主动清空入口。
 - Compose 首页已提供 DNS 查询和核心日志卡片、最近记录和完整记录对话框，覆盖停止态、空态和错误日志颜色提示。
+- `CoreBridge.probe`、`CoreRuntimeManager.probe` 和首页“真实请求诊断”卡片已接入；结果包含 HTTP 状态、耗时、最终 URL、代理链、规则和核心路由版本，且不保留响应正文。
 
 仍需补齐的 Bridge / Repository / UI：
 
@@ -258,11 +259,12 @@ flowchart LR
 
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
-- `./gradlew test :app:assembleDebug --no-daemon` 通过；91 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
+- `./gradlew test :app:assembleDebug --no-daemon` 通过；95 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
 - Debug APK 安装成功；启动核心后首页实际收到 DNS 查询（4 条）和核心日志（3 条），卡片出现“查看全部/清空”操作；停止态观测卡片恢复启动核心提示。
 - 停止后 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务均已清理。
-- 本轮仅使用当前工作区根目录 `AGENTS.md` 列出的两条用户授权路径；设备内两次请求均在 20 秒超时并返回 HTTP `000`，未形成非零连接和流量归因证据。
-- 本轮真机已产生启动阶段的 DNS/日志事件，但两条授权路径请求均未产生非空 Requests 事件；因此只将 DNS/日志基础闭环标记为已接入，不将真实端到端观测标记为完成。
+- 本轮只使用当前工作区根目录 `AGENTS.md` 列出的两条用户授权路径；第一条诊断返回 HTTP 403 / 1.6 秒，第二条诊断返回 HTTP 200 / 7.4 秒。
+- 第一条路径 UI 显示真实代理链和 `Match` 规则，请求记录达到 10 条、累计流量非零；第二条路径 UI 捕获活动连接 1 条、请求记录 17 条、DNS 查询 26 条、核心日志 31 条、累计流量非零。
+- 两条路径均在停止后清理 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务；测试 Profile 均通过应用内删除，设备恢复空配置状态。
 - Deep Link 切片真机导入使用当前授权清单中的第一条路径；该次导入成功并显示订阅用量，测试 Profile 已在验收后删除。
 
 完成门槛：
@@ -386,17 +388,17 @@ flowchart LR
 
 当前已有：
 
-- 91 项 Kotlin 单元测试。
+- 95 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - Redmi 真机启动、停止、代理组和测速验证。
-- Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示。
+- Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
 待完成：
 
 - Compose UI tests。
 - Instrumented tests。
-- VPN 权限、TUN 停止清理和 `dumpsys connectivity` 真机测试已有首轮证据；干净安装授权、网络切换和代理请求归因仍待完成。
-- 连接、请求、DNS、日志端到端测试。
+- VPN 权限、TUN 停止清理和 `dumpsys connectivity` 真机测试已有首轮证据；网络切换、后台恢复和系统撤销 VPN 仍待完成。
+- 连接、请求、DNS、日志端到端测试的自动化脚本和稳定断言。
 - `lint`、R8、Release 构建和 APK 签名检查。
 - 新 release keystore。
 - GitHub Actions arm64 构建。
@@ -430,6 +432,8 @@ flowchart LR
 ### N2：真实流量和核心观测
 
 目标：用户能确认代理正在工作，并能解释网络行为。
+
+当前进度：Bridge、运行统计、活动连接、Requests、DNS、基础日志和“真实请求诊断”已完成首轮真机闭环；下一步集中在观测详情交互、自动化端到端断言和长期运行治理。
 
 建议范围：
 
@@ -536,10 +540,10 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 
 | 风险 | 影响 | 处理顺序 |
 | --- | --- | --- |
-| 真实代理请求归因和网络切换尚未完成 | 仍不能证明指定代理组后的请求、连接、DNS 和日志属于同一条端到端链路 | N1/N2 真机切片 |
+| 网络切换、后台恢复和系统撤销 VPN 尚未完成 | 真实请求归因已在两条授权路径验证，但连续网络变化和进程生命周期仍可能留下悬挂隧道 | N1 真机切片 |
 | 外部入口尚未全部接入 Runtime Manager | Quick Settings 等入口仍可能形成第二套启停路径；Deep Link 只负责导入 Profile，不启动核心 | N5 固化统一服务边界 |
 | UI 仍是单屏基础骨架 | 与 Flutter 完整体验差距大 | M4 后按页面切片重构 |
-| 观测目前只有基础事件和卡片 | 真实非空归因、搜索过滤、详情、导出和背压策略仍不足 | N2/N3 |
+| 观测目前只有基础事件和卡片 | 真实非空归因已验证，但搜索过滤、详情、导出、自动滚动和背压策略仍不足 | N2/N3 |
 | 高级配置和导入入口缺失 | 用户无法完成完整配置管理 | M6/N4 |
 | 没有 UI/Instrumented 测试 | 回归风险集中在真机阶段 | M9/N6 前建立 |
 | 没有 release keystore | 目前只能做 Debug/预发布验证 | 发布前创建，不提前提交秘密 |

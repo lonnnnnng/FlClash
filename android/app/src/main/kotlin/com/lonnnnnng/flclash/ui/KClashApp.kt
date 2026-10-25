@@ -71,12 +71,14 @@ fun KClashApp(
     val runtimeRequests by runtimeViewModel.requests.collectAsState()
     val runtimeDns by runtimeViewModel.dns.collectAsState()
     val runtimeLogs by runtimeViewModel.logs.collectAsState()
+    val runtimeProbe by runtimeViewModel.probeState.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val selectedProfile = profilesState.profiles.firstOrNull { it.id == profilesState.currentProfileId }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
     var showDns by rememberSaveable { mutableStateOf(false) }
@@ -175,6 +177,14 @@ fun KClashApp(
                 RuntimeStatsCard(
                     state = runtimeStats,
                     runtimeState = runtimeState,
+                )
+            }
+            item {
+                ProbeCard(
+                    state = runtimeProbe,
+                    runtimeState = runtimeState,
+                    profile = selectedProfile,
+                    onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
                 )
             }
             item {
@@ -558,6 +568,84 @@ private fun StatValue(label: String, value: String) {
 }
 
 private fun formatRate(bytes: Long): String = "${formatBytes(bytes)}/s"
+
+@Composable
+private fun ProbeCard(
+    state: ProbeUiState,
+    runtimeState: CoreRuntimeStatus,
+    profile: Profile?,
+    onProbe: () -> Unit,
+) {
+    val hasRemoteTarget = profile?.type == ProfileType.URL && profile.url.isNotBlank()
+    val canProbe = runtimeState.isRunning && hasRemoteTarget && !state.isLoading
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "真实请求诊断",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (state.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                }
+            }
+            when {
+                !runtimeState.isRunning -> Text(
+                    "启动核心后，可使用当前远程订阅地址发起一次可控请求。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                !hasRemoteTarget -> Text(
+                    "请选择远程订阅配置；自定义配置没有授权诊断地址。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (hasRemoteTarget) {
+                Text(
+                    "目标：${profile.realLabel}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Button(onClick = onProbe, enabled = canProbe) {
+                Text(if (state.isLoading) "诊断中…" else "测试当前路由")
+            }
+            state.error?.let { error ->
+                Text(
+                    "失败：$error",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            state.result?.let { result ->
+                val status = if (result.statusCode > 0) "HTTP ${result.statusCode}" else "未收到 HTTP 状态"
+                val route = result.chains.joinToString(" → ").ifBlank { "未返回路由链" }
+                Text(
+                    "$status · ${result.delay} ms",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    "路由：$route",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (result.rule.isNotBlank()) {
+                    Text(
+                        "规则：${result.rule}${result.rulePayload.takeIf { it.isNotBlank() }?.let { " / $it" } ?: ""}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun ConnectionsCard(

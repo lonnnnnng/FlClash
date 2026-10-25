@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,6 +44,9 @@ class MainViewModel @Inject constructor(
     private val mutableLogs = MutableStateFlow(LogsUiState())
     val logs = mutableLogs.asStateFlow()
 
+    private val mutableProbe = MutableStateFlow(ProbeUiState())
+    val probeState = mutableProbe.asStateFlow()
+
     init {
         viewModelScope.launch {
             runtimeManager.events.collect { event ->
@@ -59,6 +63,7 @@ class MainViewModel @Inject constructor(
                     mutableRequests.value = RequestsUiState()
                     mutableDns.value = DnsUiState()
                     mutableLogs.value = LogsUiState()
+                    mutableProbe.value = ProbeUiState()
                     return@collectLatest
                 }
                 while (isActive) {
@@ -96,6 +101,37 @@ class MainViewModel @Inject constructor(
 
     fun clearLogs() {
         mutableLogs.value = LogsUiState()
+    }
+
+    fun probe(url: String) {
+        val target = url.trim()
+        if (target.isBlank() || mutableProbe.value.isLoading) return
+        viewModelScope.launch {
+            mutableProbe.value = ProbeUiState(targetUrl = target, isLoading = true)
+            runtimeManager.probe(target)
+                .onSuccess { result ->
+                    mutableProbe.value = when {
+                        result == null -> ProbeUiState(
+                            targetUrl = target,
+                            error = "核心未返回诊断结果",
+                        )
+
+                        result.error.isNotBlank() -> ProbeUiState(
+                            targetUrl = target,
+                            result = result,
+                            error = result.message.ifBlank { result.error },
+                        )
+
+                        else -> ProbeUiState(targetUrl = target, result = result)
+                    }
+                }
+                .onFailure { error ->
+                    mutableProbe.value = ProbeUiState(
+                        targetUrl = target,
+                        error = error.message ?: "真实请求诊断失败",
+                    )
+                }
+        }
     }
 
     fun toggleRuntime() {
@@ -217,6 +253,13 @@ data class LogsUiState(
         else -> this
     }
 }
+
+data class ProbeUiState(
+    val targetUrl: String? = null,
+    val isLoading: Boolean = false,
+    val result: CoreProbeResult? = null,
+    val error: String? = null,
+)
 
 private const val MAX_REQUEST_HISTORY = 2_000
 private const val MAX_DNS_HISTORY = 1_000

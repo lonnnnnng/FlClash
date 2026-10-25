@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -140,6 +141,8 @@ interface CoreRuntimeBridge {
 
     suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay?
 
+    suspend fun probe(url: String, proxyName: String, timeoutMs: Long): CoreProbeResult?
+
     suspend fun getTraffic(): CoreTraffic
 
     suspend fun getTotalTraffic(): CoreTraffic
@@ -181,6 +184,9 @@ class NativeCoreRuntimeBridge(
 
     override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay? =
         coreBridge.testDelay(proxyName, testUrl, timeoutMs)
+
+    override suspend fun probe(url: String, proxyName: String, timeoutMs: Long): CoreProbeResult? =
+        coreBridge.probe(url, proxyName, timeoutMs)
 
     override suspend fun getTraffic(): CoreTraffic = coreBridge.getTraffic()
 

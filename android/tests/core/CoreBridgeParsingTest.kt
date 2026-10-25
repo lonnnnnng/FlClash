@@ -84,6 +84,35 @@ class CoreBridgeParsingTest {
     }
 
     @Test
+    fun `probe response preserves status delay and route attribution`() {
+        val payload = CoreProbePayload(
+            statusCode = 200,
+            delay = 145,
+            url = "https://example.com/final",
+            chains = listOf("GLOBAL", "FR-1-01"),
+            rule = "DOMAIN-SUFFIX",
+            rulePayload = "example.com",
+            error = "",
+            message = "",
+            coreEpoch = 7,
+            routeVersion = 9,
+        )
+        val parsedPayload = bridge.parseProbePayload(payload)
+
+        assertEquals(200, parsedPayload.statusCode)
+        assertEquals(145L, parsedPayload.delay)
+        assertEquals(listOf("GLOBAL", "FR-1-01"), parsedPayload.chains)
+        assertEquals("DOMAIN-SUFFIX", parsedPayload.rule)
+        assertEquals(7L, parsedPayload.coreEpoch)
+        assertEquals(9L, parsedPayload.routeVersion)
+    }
+
+    @Test
+    fun `empty probe result means core returned no slot`() {
+        assertEquals(null, bridge.parseProbeResponse(null))
+    }
+
+    @Test
     fun `traffic response clamps malformed negative counters`() {
         assertEquals(
             CoreTraffic(up = 0, down = 12),

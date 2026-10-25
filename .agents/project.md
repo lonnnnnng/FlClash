@@ -20,8 +20,8 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 
 第一阶段根目录原生化已落地：根目录使用 Gradle Wrapper，`app`、`core`、`service`、`common` 通过 Android Gradle 工程组装；Compose、Hilt、Room、StateFlow 和 `CoreRuntimeManager` 已接入，Go Mihomo 只生成 `arm64-v8a` AAR。Debug APK 已在 Redmi Note 8 Pro（API 36）安装并完成启动、前台服务启动/停止和界面检查。
 
-当前已完成的 Android 手机功能切片包括：Profiles 的新 Room 模型、远程订阅下载和订阅用量解析、文件导入、基础 YAML 编辑、配置文件原子写入、当前配置持久化、Mihomo 配置校验与应用、代理组读取、Selector 节点切换以及 Selector 对话框中的单节点手动延迟测试。基础切片统一经过 `CoreRuntimeManager`，并在 Compose 页面通过 StateFlow 渲染。
+当前已完成的 Android 手机功能切片包括：Profiles 的新 Room 模型、远程订阅下载和订阅用量解析、文件导入、基础 YAML 编辑、配置文件原子写入、当前配置持久化、Mihomo 配置校验与应用、代理组读取、Selector 节点切换以及 Selector 对话框中的单节点手动延迟测试；VPN/TUN 启停、运行统计、活动连接、请求、DNS、日志和真实请求诊断也已经统一经过 `CoreRuntimeManager`，并在 Compose 页面通过 StateFlow 渲染。
 
-仍未完成的产品能力包括：VPN/TUN 权限与启动链、连接状态和流量仪表盘、连接列表、请求列表、DNS 查询、日志查看、Quick Settings、按应用代理、电池优化引导、配置高级编辑器（规则/代理/代理组/脚本/覆写分区）、完整主题与响应式布局，以及发布签名和 Release 流程。二维码图片选择、QR 识别、两条授权路径真机导入和重复导入错误反馈已完成，Deep Link 基础导入、冷启动、重复导入和错误反馈回归已经完成。现有 `service` 中的 TUN 和通知代码属于可复用的 Android 基础设施，但尚未全部接入新的 Kotlin 页面和 `CoreRuntimeManager` 业务链路。
+仍未完成的产品能力包括：网络切换、后台恢复、系统撤销 VPN、Quick Settings、按应用代理、电池优化引导、配置高级编辑器（规则/代理/代理组/脚本/覆写分区）、完整主题与响应式布局，以及发布签名和 Release 流程。二维码图片选择、QR 识别、两条授权路径真机导入和重复导入错误反馈已完成，Deep Link 基础导入、冷启动、重复导入和错误反馈回归已经完成。现有观测卡片已经能展示真实请求诊断的 HTTP 状态、延迟、代理链和规则归因；详情搜索、过滤、导出、自动滚动和完整页面导航仍待补齐。
 
 后续按“先建立真实代理连接，再补观测和平台入口，最后做 Flutter 行为与视觉收敛”的顺序推进；Flutter 代码只作为行为参考，不作为 Kotlin 运行时依赖。

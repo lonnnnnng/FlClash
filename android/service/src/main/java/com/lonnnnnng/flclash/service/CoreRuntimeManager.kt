@@ -4,6 +4,7 @@ import android.os.Build
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -148,6 +149,18 @@ class CoreRuntimeManager(
         runCatching {
             check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
             bridge.testDelay(proxyName, testUrl, timeoutMs)
+        }
+    }
+
+    suspend fun probe(
+        url: String,
+        proxyName: String = "",
+        timeoutMs: Long = CoreBridge.DEFAULT_PROBE_TIMEOUT_MS,
+    ): Result<CoreProbeResult?> = transitionLock.withLock {
+        runCatching {
+            check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
+            // 作者 long：诊断请求必须和代理切换、启停串行，避免核心路由版本变化时把结果归因到另一份配置。
+            bridge.probe(url, proxyName, timeoutMs)
         }
     }
 

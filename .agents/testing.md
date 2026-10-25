@@ -70,3 +70,12 @@
 - 真机 `wsvwypiz7xwslvl7`：通过 `kclash://install-config` 触发第一条当前授权订阅路径导入，UI 显示远程订阅和订阅用量；验收后删除该测试 Profile，设备恢复空配置状态。
 - 无效 Deep Link 真机提示“配置 Deep Link 无效”，未创建 Profile，未发现 `FATAL EXCEPTION`。
 - 强制停止应用后通过同一 `kclash://install-config` 冷启动导入成功；再次发送同一链接显示“该订阅已经添加”，未产生重复 Profile；验收后删除测试 Profile，恢复空配置状态。
+
+## 真实请求诊断切片实测记录
+
+- `./gradlew test :app:assembleDebug --no-daemon`：通过；当前 Debug 单元测试共 95 项，失败 0，错误 0，跳过 0。
+- 新增 `probe` Bridge 和 `CoreRuntimeManager` 诊断入口，返回 HTTP 状态、耗时、最终 URL、代理链、规则和核心路由版本；诊断不读取订阅响应正文，避免配置内容进入 UI 或日志。
+- 首页新增“真实请求诊断”卡片，诊断目标只取当前选中的远程 Profile；自定义 Profile 不提供诊断目标。
+- 真机 `wsvwypiz7xwslvl7`：使用当前 `AGENTS.md` 授权清单中的第一条路径，启动 TUN 后诊断返回真实 HTTP 403 和 1.6 秒延迟；UI 显示完整代理链和 `Match` 规则，请求记录达到 10 条，累计流量出现非零值，随后停止清理 `tun0`、VPN 路由和前台服务。
+- 同一真机使用第二条授权路径冷启动导入并诊断成功，返回 HTTP 200 和 7.4 秒延迟；UI 显示 `proxy_1 → 自动选择 → 主节点`，运行期间捕获活动连接 1 条、请求记录 17 条、DNS 查询 26 条、核心日志 31 条，累计流量达到非零值。
+- 第二条路径停止后确认 `198.18.0.0/30` 路由、`tun0`、`VpnService` 和 `ProxyService` 均已清理；两个测试 Profile 均通过应用内删除，设备恢复“还没有配置”空态。
