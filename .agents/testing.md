@@ -92,3 +92,9 @@
 
 - 真机 `wsvwypiz7xwslvl7` 使用当前第一条授权路径启动成功后，通过 Home 键进入后台并等待 10 秒；期间 `VpnService`、`ProxyService` 均保持前台服务，`tun0` 和 `198.18.0.0/30` 路由持续存在。
 - 重新打开 KClash 后首页仍显示“核心运行中”，运行统计和 DNS 卡片恢复正常，DNS 事件继续到达；随后停止并删除测试 Profile，设备恢复空配置状态。
+
+## Wi‑Fi 中断恢复切片实测记录
+
+- 真机 `wsvwypiz7xwslvl7`（Android 16/API 36）使用当前第一条授权路径启动核心后执行 `svc wifi disable`，等待 7 秒确认底层 Wi‑Fi 网络消失；VPN `UnderlyingNetworks` 变为空，但 `VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由仍保持，应用进程未退出。
+- 执行 `svc wifi enable` 后，Wi‑Fi 接口恢复并绑定新的网络句柄；VPN、两个前台服务和 TUN 路由保持，Mihomo 日志出现 DNS 更新，设备内通过 TUN 的 `ping 1.1.1.1` 成功。
+- 本轮蜂窝数据未注册且不可用，因此只记录 Wi‑Fi 断开恢复证据，不将 Wi‑Fi↔移动网络切换标记为完成；测试 Profile 已通过应用内删除，设备回到“还没有配置”空态。
