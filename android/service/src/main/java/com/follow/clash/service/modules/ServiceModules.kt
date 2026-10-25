@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.service.modules
 
 import android.app.Service
+import com.lonnnnnng.flclash.service.NetworkObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,6 +23,7 @@ internal class ServiceModules(private val service: Service) {
 
         val nextScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val nextModules = listOf(
+            NetworkObserverModule,
             NotificationModule(service, nextScope),
         )
         val startedModules = mutableListOf<ServiceModule>()
@@ -54,4 +56,14 @@ internal class ServiceModules(private val service: Service) {
             runCatching { module.stop() }
         }
     }
+}
+
+/**
+ * 作者 long：网络观察必须和前台服务同生命周期，才能把当前底层网络的 DNS
+ * 及时交给 Mihomo，并在停止时释放 ConnectivityManager 回调。
+ */
+private object NetworkObserverModule : ServiceModule {
+    override fun start() = NetworkObserver.start()
+
+    override fun stop() = NetworkObserver.stop()
 }

@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-25（北京时间）
 >
-> 当前基线：`kotlin` 分支；本轮 N1 真机修复基于已推送提交 `a4dc153c`
+> 当前基线：`kotlin` 分支；本轮 N1 真机修复及网络观察生命周期修复已推送至 `origin/kotlin`
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -28,6 +28,7 @@
 | ABI | 只构建、测试和发布 `arm64-v8a` |
 | 验收设备 | Redmi Note 8 Pro，serial 每次操作前重新读取 |
 | 当前验收设备 | `wsvwypiz7xwslvl7`，Android 16 / API 36 |
+| 真机验收订阅 | 只使用仓库根目录 `AGENTS.md` 中列出的两条用户授权测试路径 |
 | 发布签名 | 发布阶段创建新的独立 keystore，不复用 Flutter 签名 |
 | 核心 | Go Mihomo，Android 应用通过 Kotlin Bridge 使用 |
 
@@ -193,6 +194,7 @@ flowchart LR
 - TUN 地址、路由、DNS、IPv6 和访问控制参数模型。
 - `Core.startTun` / `Core.stopTun` 调用。
 - 网络观察和 DNS 更新基础设施。
+- `NetworkObserver` 已纳入 `ProxyService`/`VpnService` 的模块生命周期；停止服务时注销 Connectivity 回调、清空 DNS/网络缓存并重置 Mihomo 网络连接。
 - 前台 `ProxyService` 通知模块。
 - `ServiceConfig` 发布 `STOPPED / STARTING / CONNECTED / FAILED` VPN 状态和失败原因。
 - `VpnService.onStartCommand()` 已进入真实 `start()`，成功建立 TUN 后才发布 `CONNECTED`。

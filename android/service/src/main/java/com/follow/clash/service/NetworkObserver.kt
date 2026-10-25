@@ -97,6 +97,21 @@ object NetworkObserver {
             .onFailure { error -> GlobalState.log("Unable to observe networks: $error") }
     }
 
+    @Synchronized
+    fun stop() {
+        if (!started) return
+        runCatching { requireNotNull(connectivity).unregisterNetworkCallback(callback) }
+            .onFailure { error -> GlobalState.log("Unable to stop network observer: $error") }
+        started = false
+        networkInfos.clear()
+        currentDnsList = emptyList()
+        currentNetwork = null
+        // 作者 long：核心停止后清掉旧网络的 DNS 和连接，避免下一次启动继续复用
+        // 已失效网络的缓存或 socket，尤其是 Wi-Fi/移动网络切换后的旧链路。
+        Core.updateDNS("")
+        Core.resetNetwork()
+    }
+
     private fun networkPriority(entry: Map.Entry<Network, NetworkInfo>): Int {
         val capabilities = connectivity?.getNetworkCapabilities(entry.key)
         return when {
