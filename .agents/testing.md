@@ -110,8 +110,11 @@
 ## Android 平台入口切片实测记录
 
 - `./gradlew test :app:assembleDebug --no-daemon`：通过；工程 Kotlin 单元测试 98 项，失败 0、错误 0、跳过 0；APK 仅包含 `arm64-v8a` 的 `libclash.so`。
+- `./gradlew :app:lintDebug --no-daemon`：通过；错误 0，保留 24 条非阻断警告供后续 UI/发布治理处理。
 - Android 13+ 通知权限已在 `MainActivity` 进入时申请；前台通知显示 STOP 操作，通知动作和桌面快捷入口均通过受保护的 `QuickActionActivity` 复用 `CoreRuntimeManager`。
 - 安装 Debug APK 后，`adb -s wsvwypiz7xwslvl7 shell cmd shortcut get-shortcuts --user 0 --flags 15 com.lonnnnnng.flclash` 返回 `start`、`stop`、`toggle` 三个静态快捷方式；启动器长按 KClash 图标显示三个对应中文入口。
 - 真机 `wsvwypiz7xwslvl7`（Redmi Note 8 Pro，Android 16/API 36）从启动器点击“启动 KClash 核心”后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由出现；点击“停止 KClash 核心”后全部清理。
 - 从启动器两次点击“切换 KClash 核心运行状态”，分别验证启动和停止；停止后 `dumpsys activity services` 无 KClash 服务，`ip route` 无 `tun0` 路由。
+- 通过 `adb -s wsvwypiz7xwslvl7 shell cmd statusbar add-tile com.lonnnnnng.flclash/.KClashTileService` 将 Tile 加入系统快捷设置；点击 Tile 启动核心后，系统面板无障碍描述为“`KClash：核心运行中`”。再次点击 Tile 停止核心后，面板描述为“`KClash：核心已停止`”。
+- Tile 组件由 `android.permission.BIND_QUICK_SETTINGS_TILE` 保护；`dumpsys package` 显示 `android.service.quicksettings.action.QS_TILE` resolver 指向 `.KClashTileService`，没有出现 `SecurityException` 或 `FATAL EXCEPTION`。
 - 验收 Profile 已通过应用内删除，首页显示“还没有配置”；未发现 `FATAL EXCEPTION`。

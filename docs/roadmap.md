@@ -60,7 +60,7 @@
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、活动连接/Requests/DNS/日志非空记录、Deep Link 订阅导入、进程重建恢复、通知栏 STOP、桌面快捷入口和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、活动连接/Requests/DNS/日志非空记录、Deep Link 订阅导入、进程重建恢复、通知栏 STOP、桌面快捷入口、Quick Settings Tile 和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -354,6 +354,7 @@ flowchart LR
 - 前台通知保留 STOP 操作；通知动作通过受保护的 `QuickActionActivity` 进入 `CoreRuntimeManager.stop()`。
 - Android 13+ 首次进入 `MainActivity` 时申请 `POST_NOTIFICATIONS`，避免用户看不到前台服务和停止入口。
 - 桌面静态快捷方式提供启动、停止、切换三个入口；三个入口均通过同一个 `QuickActionActivity` 进入 `CoreRuntimeManager`。
+- Quick Settings Tile 提供启动/停止切换入口；Tile 状态由 `CoreRuntimeManager.state` 映射，点击通过 `QuickActionActivity` 折叠系统面板并复用 `TOGGLE`。
 - `QuickActionActivity` 使用 `VpnService.prepare()` 处理启动入口的系统授权边界；自身不导出，快捷入口使用显式组件调用。
 - AndroidManifest、快捷方式 Intent 和组件导出边界已完成基础安全核对。
 
@@ -363,11 +364,11 @@ flowchart LR
 - 安装 Debug APK 后，系统 `cmd shortcut get-shortcuts` 返回 `start`、`stop`、`toggle` 三个静态快捷方式；启动器长按 KClash 图标显示“启动 KClash 核心”“停止 KClash 核心”“切换 KClash 核心运行状态”。
 - 从启动器点击“启动 KClash 核心”后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由出现；点击“停止 KClash 核心”后服务和路由均清理。
 - 从启动器两次点击“切换 KClash 核心运行状态”，分别验证启动和停止；停止后设备恢复无 KClash 服务、无 `tun0` 的状态。
+- 通过 `adb -s wsvwypiz7xwslvl7 shell cmd statusbar add-tile com.lonnnnnng.flclash/.KClashTileService` 将 Tile 加入系统快捷设置；点击后启动核心，系统面板无障碍描述为“`KClash：核心运行中`”。再次点击后服务、`tun0` 和路由清理，面板描述变为“`KClash：核心已停止`”。
 - 验收 Profile 已通过应用内删除，首页恢复“还没有配置”。
 
 待完成：
 
-- Quick Settings Tile：启动、停止、切换。
 - Tasker/MacroDroid 等外部 Action。
 - 按应用代理的应用选择器。
 - 电池优化白名单引导。
@@ -414,6 +415,7 @@ flowchart LR
 
 - 98 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
+- `:app:lintDebug` 已通过；当前仍有 24 条非阻断警告，错误为 0。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
@@ -423,7 +425,7 @@ flowchart LR
 - Instrumented tests。
 - VPN 权限、TUN 停止清理、后台恢复、系统撤销 VPN、Wi‑Fi 断开恢复、进程重建和 `dumpsys connectivity` 真机测试已有证据；Wi‑Fi↔移动网络切换仍待完成。
 - 连接、请求、DNS、日志端到端测试的自动化脚本和稳定断言。
-- `lint`、R8、Release 构建和 APK 签名检查。
+- R8、Release 构建和 APK 签名检查。
 - 新 release keystore。
 - GitHub Actions arm64 构建。
 - Release 页面、更新日志、SHA-256 和回滚材料。
