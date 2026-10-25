@@ -28,6 +28,8 @@
 
 **应用依赖注入**：由 Hilt 管理 Application、Activity、Service 和 ViewModel 的依赖生命周期；Repository、UseCase、核心 Bridge 和数据源通过构造函数注入。
 
+**KClash**：Kotlin Android 应用的显示名称和产品身份，使用独立包名 `com.lonnnnnng.flclash`，与 Flutter `FlClash` 并行存在。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
