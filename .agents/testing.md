@@ -121,3 +121,11 @@
 - 外部入口 `ExternalActionActivity` 只接受固定 action；使用 `--es unexpected value` 发送额外参数时直接结束，服务和路由保持停止；验收后删除测试 Profile，首页恢复“还没有配置”。
 - 首页“后台运行”卡片显示“建议关闭电池优化”；点击“打开电池优化设置”后，真机进入 `com.android.settings/.fuelgauge.RequestIgnoreBatteryOptimizations`，系统对话框显示 KClash 和“允许”按钮。按返回取消后回到首页，状态仍为未忽略。
 - 验收 Profile 已通过应用内删除，首页显示“还没有配置”；未发现 `FATAL EXCEPTION`。
+
+## 观测详情交互切片实测记录
+
+- 新增 Requests、DNS 和核心日志详情筛选函数单元测试 3 项；`./gradlew :app:testDebugUnitTest :app:compileDebugKotlin --no-daemon` 通过，工程总计 101 项 Kotlin 单元测试通过。
+- Requests 详情支持按目标、进程、代理链和规则搜索；DNS 详情支持按域名、上游、答案和错误搜索；核心日志详情支持内容搜索及“全部/错误/警告”级别筛选。
+- 三类详情列表默认跟随最新事件；用户滚动查看历史后保持当前位置，筛选条件变化时回到最新匹配项。
+- 真机 `wsvwypiz7xwslvl7` 安装 Debug APK 后，使用当前授权清单第一条路径启动核心，首页收到活动连接 1 条、请求 4 条、DNS 查询 13 条和核心日志 8 条；三类详情对话框均显示搜索框，日志切换“错误”后显示 `0/8` 和“没有匹配的核心日志”。
+- 使用 `adb -s wsvwypiz7xwslvl7 shell am start -a com.lonnnnnng.flclash.action.STOP` 停止后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均清理；测试 Profile 已删除，首页恢复“还没有配置”，未发现 `FATAL EXCEPTION`。

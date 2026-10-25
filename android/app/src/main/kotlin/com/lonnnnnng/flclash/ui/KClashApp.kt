@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -40,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
@@ -54,6 +56,7 @@ import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -805,17 +808,30 @@ private fun RequestsDialog(
     state: RequestsUiState,
     onDismiss: () -> Unit,
 ) {
+    var query by rememberSaveable { mutableStateOf("") }
+    val filtered = filterRequests(state.requests, query)
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("请求记录（${state.requests.size}）") },
         text = {
-            LazyColumn(
-                modifier = Modifier.heightIn(max = 480.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(state.requests.asReversed(), key = { it.id }) { request ->
-                    ConnectionRow(request)
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ObservationSearchField(
+                    value = query,
+                    onValueChange = { query = it },
+                    label = "搜索目标、进程、代理链或规则",
+                )
+                Text(
+                    "显示 ${filtered.size}/${state.requests.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                ObservationList(
+                    items = filtered.asReversed(),
+                    filterKey = query,
+                    emptyText = "没有匹配的请求记录。",
+                    itemKey = { it.id },
+                    row = ::ConnectionRow,
+                )
             }
         },
         confirmButton = {
@@ -908,17 +924,30 @@ private fun DnsDialog(
     onDismiss: () -> Unit,
     onClear: () -> Unit,
 ) {
+    var query by rememberSaveable { mutableStateOf("") }
+    val filtered = filterDnsQueries(state.queries, query)
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("DNS 查询（${state.queries.size}）") },
         text = {
-            LazyColumn(
-                modifier = Modifier.heightIn(max = 480.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(state.queries.asReversed()) { query ->
-                    DnsQueryRow(query)
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ObservationSearchField(
+                    value = query,
+                    onValueChange = { query = it },
+                    label = "搜索域名、上游、答案或错误",
+                )
+                Text(
+                    "显示 ${filtered.size}/${state.queries.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                ObservationList(
+                    items = filtered.asReversed(),
+                    filterKey = query,
+                    emptyText = "没有匹配的 DNS 查询。",
+                    itemKey = { "${it.time}|${it.domain}|${it.initiator}" },
+                    row = ::DnsQueryRow,
+                )
             }
         },
         confirmButton = {
@@ -1004,17 +1033,42 @@ private fun LogsDialog(
     onDismiss: () -> Unit,
     onClear: () -> Unit,
 ) {
+    var query by rememberSaveable { mutableStateOf("") }
+    var levelFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    val filtered = filterLogs(state.entries, query, levelFilter)
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("核心日志（${state.entries.size}）") },
         text = {
-            LazyColumn(
-                modifier = Modifier.heightIn(max = 480.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(state.entries.asReversed()) { entry ->
-                    LogRow(entry)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ObservationSearchField(
+                    value = query,
+                    onValueChange = { query = it },
+                    label = "搜索日志级别或内容",
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    listOf(
+                        "全部" to null,
+                        "错误" to "error",
+                        "警告" to "warn",
+                    ).forEach { (label, value) ->
+                        TextButton(onClick = { levelFilter = value }) {
+                            Text(if (levelFilter == value) "✓ $label" else label)
+                        }
+                    }
                 }
+                Text(
+                    "显示 ${filtered.size}/${state.entries.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                ObservationList(
+                    items = filtered.asReversed(),
+                    filterKey = "$query|${levelFilter.orEmpty()}",
+                    emptyText = "没有匹配的核心日志。",
+                    itemKey = { "${it.timestampMillis}|${it.level}|${it.payload}" },
+                    row = ::LogRow,
+                )
             }
         },
         confirmButton = {
@@ -1024,6 +1078,69 @@ private fun LogsDialog(
             TextButton(onClick = onClear, enabled = state.entries.isNotEmpty()) { Text("清空") }
         },
     )
+}
+
+@Composable
+private fun ObservationSearchField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.fillMaxWidth(),
+        label = { Text(label) },
+        singleLine = true,
+    )
+}
+
+/**
+ * 作者 long：详情页默认跟随最新事件，但用户向上翻阅历史后必须保持当前位置，避免高频日志把阅读位置抢回顶部。
+ */
+@Composable
+private fun <T> ObservationList(
+    items: List<T>,
+    filterKey: Any?,
+    emptyText: String,
+    itemKey: (T) -> Any,
+    row: @Composable (T) -> Unit,
+) {
+    val listState = rememberLazyListState()
+    var followLatest by rememberSaveable { mutableStateOf(true) }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .collectLatest { firstVisibleItem ->
+                followLatest = firstVisibleItem <= 1
+            }
+    }
+    LaunchedEffect(filterKey) {
+        followLatest = true
+        listState.scrollToItem(0)
+    }
+    val newestKey = items.firstOrNull()?.let(itemKey)
+    LaunchedEffect(newestKey) {
+        if (followLatest && items.isNotEmpty()) {
+            listState.animateScrollToItem(0)
+        }
+    }
+
+    if (items.isEmpty()) {
+        Text(
+            emptyText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    } else {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.heightIn(max = 480.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(items, key = itemKey) { item -> row(item) }
+        }
+    }
 }
 
 private const val MAX_CONNECTIONS_ON_HOME = 5

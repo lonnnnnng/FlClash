@@ -230,6 +230,32 @@ data class RequestsUiState(
     }
 }
 
+/**
+ * 作者 long：详情对话框只允许搜索用户可识别的网络字段，避免把 Kotlin 对象的内部格式暴露给 UI，
+ * 同时让请求、DNS 和日志使用同一套大小写不敏感的筛选语义。
+ */
+internal fun filterRequests(
+    requests: List<CoreConnection>,
+    query: String,
+): List<CoreConnection> {
+    val needle = query.trim()
+    if (needle.isEmpty()) return requests
+    return requests.filter { request ->
+        listOf(
+            request.id,
+            request.metadata.network,
+            request.metadata.host,
+            request.metadata.destinationIp,
+            request.metadata.destinationPort,
+            request.metadata.process,
+            request.metadata.remoteDestination,
+            request.chains.joinToString(" "),
+            request.rule,
+            request.rulePayload,
+        ).containsIgnoreCase(needle)
+    }
+}
+
 data class DnsUiState(
     val queries: List<CoreDnsQuery> = emptyList(),
 ) {
@@ -239,6 +265,25 @@ data class DnsUiState(
     internal fun apply(event: CoreEvent): DnsUiState = when (event) {
         is CoreEvent.Dns -> copy(queries = (queries + event.query).takeLast(MAX_DNS_HISTORY))
         else -> this
+    }
+}
+
+internal fun filterDnsQueries(
+    queries: List<CoreDnsQuery>,
+    query: String,
+): List<CoreDnsQuery> {
+    val needle = query.trim()
+    if (needle.isEmpty()) return queries
+    return queries.filter { dns ->
+        listOf(
+            dns.domain,
+            dns.type,
+            dns.initiator,
+            dns.upstream,
+            dns.answers.joinToString(" "),
+            dns.rcode,
+            dns.error,
+        ).containsIgnoreCase(needle)
     }
 }
 
@@ -254,6 +299,20 @@ data class LogsUiState(
     }
 }
 
+internal fun filterLogs(
+    entries: List<CoreEvent.Log>,
+    query: String,
+    level: String?,
+): List<CoreEvent.Log> {
+    val needle = query.trim()
+    return entries.filter { entry ->
+        val levelMatches = level.isNullOrBlank() || entry.level.equals(level, ignoreCase = true)
+        val textMatches = needle.isEmpty() ||
+            listOf(entry.level, entry.payload).containsIgnoreCase(needle)
+        levelMatches && textMatches
+    }
+}
+
 data class ProbeUiState(
     val targetUrl: String? = null,
     val isLoading: Boolean = false,
@@ -264,3 +323,6 @@ data class ProbeUiState(
 private const val MAX_REQUEST_HISTORY = 2_000
 private const val MAX_DNS_HISTORY = 1_000
 private const val MAX_LOG_HISTORY = 1_000
+
+private fun List<String>.containsIgnoreCase(needle: String): Boolean =
+    any { it.contains(needle, ignoreCase = true) }

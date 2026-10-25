@@ -60,6 +60,48 @@ class MainViewModelTest {
         assertEquals(listOf(log), state.entries)
     }
 
+    @Test
+    fun `request filter searches host process chain and rule`() {
+        val first = connection("request-1")
+        val second = connection("request-2").copy(
+            metadata = first.metadata.copy(
+                host = "api.example.net",
+                process = "com.example.browser",
+            ),
+            chains = listOf("Proxy-A", "DIRECT"),
+            rule = "DOMAIN-SUFFIX",
+        )
+
+        assertEquals(listOf(second), filterRequests(listOf(first, second), "browser"))
+        assertEquals(listOf(second), filterRequests(listOf(first, second), "proxy-a"))
+        assertEquals(listOf(second), filterRequests(listOf(first, second), "domain-suffix"))
+    }
+
+    @Test
+    fun `dns filter searches domain upstream answers and error`() {
+        val first = dnsQuery("example.com")
+        val second = first.copy(
+            domain = "blocked.example.net",
+            upstream = "https://dns.example.net",
+            answers = emptyList(),
+            error = "timeout",
+        )
+
+        assertEquals(listOf(second), filterDnsQueries(listOf(first, second), "dns.example.net"))
+        assertEquals(listOf(second), filterDnsQueries(listOf(first, second), "timeout"))
+        assertEquals(listOf(first, second), filterDnsQueries(listOf(first, second), ""))
+    }
+
+    @Test
+    fun `log filter combines level and case insensitive text`() {
+        val error = CoreEvent.Log("error", "连接失败", 1L)
+        val info = CoreEvent.Log("info", "代理已连接", 2L)
+
+        assertEquals(listOf(error), filterLogs(listOf(error, info), "失败", "ERROR"))
+        assertEquals(listOf(info), filterLogs(listOf(error, info), "代理", null))
+        assertEquals(emptyList<CoreEvent.Log>(), filterLogs(listOf(error, info), "代理", "error"))
+    }
+
     private fun connection(id: String) = CoreConnection(
         id = id,
         upload = 0,
