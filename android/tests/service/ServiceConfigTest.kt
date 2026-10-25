@@ -51,6 +51,17 @@ class ServiceConfigTest {
     }
 
     @Test
+    fun `vpn state starts stopped and publishes failure reason`() {
+        ServiceConfig.updateVpnState(VpnRuntimeState.STOPPED)
+        assertEquals(VpnRuntimeState.STOPPED, ServiceConfig.vpnState.value)
+
+        ServiceConfig.updateVpnState(VpnRuntimeState.FAILED, "建立 TUN 失败")
+
+        assertEquals(VpnRuntimeState.FAILED, ServiceConfig.vpnState.value)
+        assertEquals("建立 TUN 失败", ServiceConfig.vpnError.value)
+    }
+
+    @Test
     fun `updateNotificationParams emits through the state flow`() = runTest {
         val params = NotificationParams(
             title = "Profile",

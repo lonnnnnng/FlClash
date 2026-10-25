@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-25（北京时间）
 >
-> 当前基线：`kotlin` 分支，HEAD `df7486c2`
+> 当前基线：`kotlin` 分支；本轮 N1 功能代码基于 `e37e01b2`
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -47,7 +47,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | 本地 `kotlin` 与 `origin/kotlin` 已同步，无未推送提交 |
+| 远端关系 | 本轮 N1 代码已完成自动化验证，提交和推送待本轮收尾 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -55,7 +55,7 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 71 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 73 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
@@ -90,7 +90,7 @@ flowchart LR
     M0[M0 决策与骨架\nDONE-VERIFIED] --> M1[M1 配置与 Profiles 基础\nDONE-VERIFIED]
     M1 --> M2[M2 Mihomo 配置应用\nDONE-VERIFIED]
     M2 --> M3[M3 代理组与单节点测速\nDONE-VERIFIED]
-    M3 --> M4[M4 真实 VPN/TUN 连接\nPLANNED]
+    M3 --> M4[M4 真实 VPN/TUN 连接\nPARTIAL]
     M4 --> M5[M5 运行观测\nPLANNED]
     M4 --> M6[M6 Profiles 高级能力\nPLANNED]
     M5 --> M7[M7 Android 平台入口\nPLANNED]
@@ -185,7 +185,7 @@ flowchart LR
 
 ### 7.1 真实连接链路
 
-状态：`PLANNED`，下一优先级最高。
+状态：`PARTIAL`，代码启动链已完成，真机 TUN 和真实流量仍是下一步最高优先级。
 
 当前已有：
 
@@ -194,15 +194,20 @@ flowchart LR
 - `Core.startTun` / `Core.stopTun` 调用。
 - 网络观察和 DNS 更新基础设施。
 - 前台 `ProxyService` 通知模块。
+- `ServiceConfig` 发布 `STOPPED / STARTING / CONNECTED / FAILED` VPN 状态和失败原因。
+- `VpnService.onStartCommand()` 已进入真实 `start()`，成功建立 TUN 后才发布 `CONNECTED`。
+- `DefaultVpnOptionsProvider` 已提供 Android 手机首阶段默认 TUN 配置，并由 `CoreRuntimeManager` 注入。
+- `AndroidProxyServiceController` 已统一启动 ProxyService、VpnService，并等待 VPN 状态或 15 秒超时。
+- `MainActivity` 已接入 `VpnService.prepare()` 和 Activity Result 授权回调。
+- 启动失败会停止服务、清理监听器，管理器不会把失败报告为 `RUNNING`。
+- 服务层和管理器新增失败回滚测试；当前总计 73 项 Kotlin 单元测试通过。
 
 当前缺失：
 
-- `VpnService.prepare()` 权限申请和用户拒绝处理。
-- `CoreRuntimeManager` 到 `VpnService` 的统一启动链。
-- `ServiceConfig.vpnOptions` 的真实来源和配置映射。
-- 核心、代理服务、VPN 服务的状态合并。
+- `ServiceConfig.vpnOptions` 仍是首阶段默认配置，尚未从 Mihomo 配置/Android 设置真实映射 mixed-port、tun stack 和路由覆盖项。
 - TUN 建立成功后的真实流量闭环。
 - 停止、重启、进程恢复和系统撤销 VPN 的统一状态处理。
+- 真机授权、`dumpsys connectivity`、前台通知和无残留 TUN 的验收证据。
 
 完成门槛：
 

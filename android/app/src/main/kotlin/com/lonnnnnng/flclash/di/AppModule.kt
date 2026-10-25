@@ -14,6 +14,8 @@ import com.lonnnnnng.flclash.service.CoreRuntimePaths
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.NativeCoreRuntimeBridge
 import com.lonnnnnng.flclash.service.ProxyServiceController
+import com.lonnnnnng.flclash.service.DefaultVpnOptionsProvider
+import com.lonnnnnng.flclash.service.VpnOptionsProvider
 import java.io.File
 import dagger.Module
 import dagger.Provides
@@ -65,6 +67,10 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideVpnOptionsProvider(): VpnOptionsProvider = DefaultVpnOptionsProvider()
+
+    @Provides
+    @Singleton
     fun provideCoreBridge(): CoreBridge = CoreBridge()
 
     @Provides
@@ -74,5 +80,12 @@ object AppModule {
         profileProvider: ActiveProfileProvider,
         bridge: CoreRuntimeBridge,
         serviceController: ProxyServiceController,
-    ): CoreRuntimeManager = CoreRuntimeManager(paths, profileProvider, bridge, serviceController)
+        vpnOptionsProvider: VpnOptionsProvider,
+    ): CoreRuntimeManager = CoreRuntimeManager(
+        paths = paths,
+        profileProvider = profileProvider,
+        bridge = bridge,
+        serviceController = serviceController,
+        vpnOptionsProvider = vpnOptionsProvider,
+    )
 }

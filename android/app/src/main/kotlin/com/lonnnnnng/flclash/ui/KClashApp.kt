@@ -58,6 +58,8 @@ fun KClashApp(
     runtimeViewModel: MainViewModel,
     profilesViewModel: ProfilesViewModel,
     proxyGroupsViewModel: ProxyGroupsViewModel,
+    onStartRuntime: () -> Unit,
+    onStopRuntime: () -> Unit,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
@@ -131,7 +133,13 @@ fun KClashApp(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item { RuntimeCard(runtimeState, runtimeViewModel::toggleRuntime) }
+            item {
+                RuntimeCard(
+                    state = runtimeState,
+                    onStart = onStartRuntime,
+                    onStop = onStopRuntime,
+                )
+            }
             item {
                 ProxyGroupsCard(
                     state = proxyGroupsState,
@@ -376,7 +384,11 @@ private fun delayLabel(delay: ProxyDelayUiState?): String = when {
 }
 
 @Composable
-private fun RuntimeCard(state: CoreRuntimeStatus, onToggle: () -> Unit) {
+private fun RuntimeCard(
+    state: CoreRuntimeStatus,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -392,7 +404,7 @@ private fun RuntimeCard(state: CoreRuntimeStatus, onToggle: () -> Unit) {
             if (state == CoreRuntimeStatus.STARTING || state == CoreRuntimeStatus.STOPPING) {
                 CircularProgressIndicator()
             } else {
-                Button(onClick = onToggle) {
+                Button(onClick = if (state.isRunning) onStop else onStart) {
                     Text(if (state.isRunning) "停止核心" else "启动核心")
                 }
             }

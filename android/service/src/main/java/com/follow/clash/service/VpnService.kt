@@ -34,6 +34,7 @@ class VpnService : SystemVpnService(), ManagedService {
         try {
             cleanup()
         } finally {
+            ServiceConfig.updateVpnState(VpnRuntimeState.STOPPED)
             super.onDestroy()
         }
     }
@@ -111,10 +112,17 @@ class VpnService : SystemVpnService(), ManagedService {
         }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Android starts always-on VPN through this callback instead of KClash's bound-service
-        // path. Notify the app layer so it can restore Core and fully initialize the VPN service.
         notifyVpnStartRequested()
-        return super.onStartCommand(intent, flags, startId)
+        return runCatching {
+            // 作者 long：前台服务 Intent 只是启动入口，必须在回调内建立 TUN，
+            // 否则调用方会永远等不到可用的 VPN 状态。
+            start()
+            START_STICKY
+        }.getOrElse { error ->
+            GlobalState.log("VPN service start failed: $error")
+            stopSelf(startId)
+            START_NOT_STICKY
+        }
     }
 
     override fun onRevoke() {
@@ -256,11 +264,17 @@ class VpnService : SystemVpnService(), ManagedService {
     }
 
     override fun start() {
+        ServiceConfig.updateVpnState(VpnRuntimeState.STARTING)
         try {
             modules.start()
             handleStart(requireNotNull(ServiceConfig.vpnOptions) { "VPN options are missing" })
+            ServiceConfig.updateVpnState(VpnRuntimeState.CONNECTED)
         } catch (error: Exception) {
-            stop()
+            ServiceConfig.updateVpnState(
+                VpnRuntimeState.FAILED,
+                error.message ?: "VPN 服务启动失败",
+            )
+            runCatching { cleanup() }
             throw error
         }
     }
@@ -269,6 +283,7 @@ class VpnService : SystemVpnService(), ManagedService {
         try {
             cleanup()
         } finally {
+            ServiceConfig.updateVpnState(VpnRuntimeState.STOPPED)
             stopSelf()
         }
     }

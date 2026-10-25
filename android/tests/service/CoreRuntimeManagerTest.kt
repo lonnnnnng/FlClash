@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.service
 import java.io.File
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
+import com.lonnnnnng.flclash.service.models.VpnOptions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -35,6 +36,7 @@ class CoreRuntimeManagerTest {
         assertEquals(listOf("initialize", "validate", "setup", "listener-start"), bridge.events)
         assertEquals(listOf("service-start"), controller.events)
         assertTrue(controller.started)
+        assertEquals("mips", controller.receivedOptions?.stack)
     }
 
     @Test
@@ -130,6 +132,28 @@ class CoreRuntimeManagerTest {
         assertEquals("测速失败", result.exceptionOrNull()?.message)
     }
 
+    @Test
+    fun `vpn start failure never reports running and cleans the service`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge()
+        val controller = FakeServiceController(
+            startError = IllegalStateException("VPN 权限未授予"),
+        )
+        val manager = manager(
+            profile = ActiveProfile(11, "VPN 失败", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = controller,
+        )
+
+        val result = manager.startProxy()
+
+        assertTrue(result.isFailure)
+        assertEquals(CoreRuntimeStatus.FAILED, manager.state.value)
+        assertEquals(listOf("service-start", "service-stop"), controller.events)
+        assertFalse(bridge.listenerStarted)
+    }
+
     private fun manager(
         profile: ActiveProfile?,
         homeDir: File,
@@ -143,6 +167,7 @@ class CoreRuntimeManagerTest {
             },
             bridge = bridge,
             serviceController = controller,
+            vpnOptionsProvider = DefaultVpnOptionsProvider(),
         )
     }
 
@@ -194,13 +219,19 @@ class CoreRuntimeManagerTest {
         }
     }
 
-    private class FakeServiceController : ProxyServiceController {
+    private class FakeServiceController(
+        private val startError: Throwable? = null,
+    ) : ProxyServiceController {
         val events = mutableListOf<String>()
         var started = false
+        var receivedOptions: VpnOptions? = null
 
-        override fun start() {
+        override suspend fun start(options: VpnOptions) {
             events += "service-start"
+            receivedOptions = options
+            startError?.let { throw it }
             started = true
+            ServiceConfig.updateVpnState(VpnRuntimeState.CONNECTED)
         }
 
         override fun stop() {

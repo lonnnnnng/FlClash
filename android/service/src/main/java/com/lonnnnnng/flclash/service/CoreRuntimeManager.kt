@@ -32,6 +32,7 @@ class CoreRuntimeManager(
     private val profileProvider: ActiveProfileProvider,
     private val bridge: CoreRuntimeBridge,
     private val serviceController: ProxyServiceController,
+    private val vpnOptionsProvider: VpnOptionsProvider,
 ) {
     private val transitionLock = Mutex()
     private val initialized = AtomicBoolean(false)
@@ -56,13 +57,19 @@ class CoreRuntimeManager(
             ServiceConfig.updateNotificationParams(
                 NotificationParams(title = "KClash", showStopAction = false),
             )
-            serviceController.start()
+            val vpnOptions = vpnOptionsProvider.current()
+            serviceController.start(vpnOptions)
             if (!listenerStarted.get()) {
                 bridge.startListener()
                 listenerStarted.set(true)
             }
             mutableState.value = CoreRuntimeStatus.RUNNING
         }.onFailure {
+            runCatching { serviceController.stop() }
+            if (listenerStarted.get()) {
+                runCatching { bridge.stopListener() }
+                listenerStarted.set(false)
+            }
             mutableState.value = CoreRuntimeStatus.FAILED
         }
     }

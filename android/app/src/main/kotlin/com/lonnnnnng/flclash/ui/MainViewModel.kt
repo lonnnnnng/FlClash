@@ -18,6 +18,26 @@ class MainViewModel @Inject constructor(
 
     val errors = mutableErrors.asSharedFlow()
 
+    fun startRuntime() {
+        viewModelScope.launch {
+            runtimeManager.startProxy().onFailure { error ->
+                mutableErrors.emit(error.message ?: "核心启动失败")
+            }
+        }
+    }
+
+    fun stopRuntime() {
+        viewModelScope.launch {
+            runtimeManager.stop().onFailure { error ->
+                mutableErrors.emit(error.message ?: "核心停止失败")
+            }
+        }
+    }
+
+    fun reportError(message: String) {
+        mutableErrors.tryEmit(message)
+    }
+
     fun toggleRuntime() {
         viewModelScope.launch {
             val result = if (runtimeManager.state.value.isRunning) {
