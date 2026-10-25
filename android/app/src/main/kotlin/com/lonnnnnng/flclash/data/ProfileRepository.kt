@@ -116,6 +116,22 @@ class ProfileRepository(
         profile
     }
 
+    suspend fun readLocalProfileContent(id: Long): String = withContext(Dispatchers.IO) {
+        val profile = requireNotNull(profileDao.getById(id)) { "配置不存在" }
+        require(profile.type != ProfileType.URL) { "远程订阅不能直接编辑" }
+        profileFile(id).takeIf(File::isFile)?.readText(Charsets.UTF_8).orEmpty()
+    }
+
+    suspend fun updateLocalProfileContent(id: Long, content: String): Profile = withContext(Dispatchers.IO) {
+        require(content.isNotBlank()) { "配置内容不能为空" }
+        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+        require(current.type != ProfileType.URL) { "远程订阅不能直接编辑" }
+        replaceFileAtomically(id, content.toByteArray(Charsets.UTF_8))
+        val updated = current.copy(lastUpdateAt = System.currentTimeMillis())
+        profileDao.update(updated.toEntity())
+        updated
+    }
+
     suspend fun updateRemoteProfile(id: Long): Profile = withContext(Dispatchers.IO) {
         val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
         require(current.type == ProfileType.URL) { "只有订阅配置支持更新" }

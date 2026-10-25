@@ -1,8 +1,8 @@
 package com.lonnnnnng.flclash.ui
 
 import android.content.ContentResolver
-import android.text.format.DateUtils
 import android.provider.OpenableColumns
+import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -58,6 +58,7 @@ fun KClashApp(
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
+    val editorState by profilesViewModel.editorState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -155,6 +156,7 @@ fun KClashApp(
                         selected = profile.id == profilesState.currentProfileId,
                         busy = profilesState.isBusy,
                         onSelect = { profilesViewModel.select(profile.id) },
+                        onEdit = { profilesViewModel.openEditor(profile) },
                         onUpdate = { profilesViewModel.update(profile) },
                         onDelete = { profilePendingDeletion = profile },
                     )
@@ -202,6 +204,25 @@ fun KClashApp(
             },
         )
     }
+
+    editorState.profile?.let { profile ->
+        if (editorState.isLoading) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("读取配置") },
+                text = { CircularProgressIndicator() },
+                confirmButton = {},
+            )
+        } else {
+            ProfileEditorDialog(
+                profile = profile,
+                initialContent = editorState.content,
+                saving = editorState.isSaving,
+                onDismiss = profilesViewModel::closeEditor,
+                onSave = profilesViewModel::saveEditor,
+            )
+        }
+    }
 }
 
 @Composable
@@ -235,6 +256,7 @@ private fun ProfileCard(
     selected: Boolean,
     busy: Boolean,
     onSelect: () -> Unit,
+    onEdit: () -> Unit,
     onUpdate: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -272,6 +294,9 @@ private fun ProfileCard(
                     .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.End,
             ) {
+                if (profile.type != ProfileType.URL) {
+                    TextButton(onClick = onEdit, enabled = !busy) { Text("编辑") }
+                }
                 if (profile.type == ProfileType.URL) {
                     TextButton(onClick = onUpdate, enabled = !busy) { Text("同步") }
                 }
@@ -279,6 +304,49 @@ private fun ProfileCard(
             }
         }
     }
+}
+
+@Composable
+private fun ProfileEditorDialog(
+    profile: Profile,
+    initialContent: String,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var content by rememberSaveable(profile.id) { mutableStateOf(initialContent) }
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("编辑 ${profile.realLabel}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "保存后会替换 KClash 本地配置文件，核心启动时仍会再次校验 YAML。",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 12,
+                    maxLines = 20,
+                    enabled = !saving,
+                    label = { Text("YAML") },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(content) },
+                enabled = !saving && content.isNotBlank(),
+            ) {
+                if (saving) CircularProgressIndicator() else Text("保存")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
 }
 
 private fun profileSubtitle(profile: Profile): String {
