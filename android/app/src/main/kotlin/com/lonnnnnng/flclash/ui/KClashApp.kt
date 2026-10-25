@@ -69,6 +69,7 @@ fun KClashApp(
     onStopRuntime: () -> Unit,
     batteryOptimizationIgnored: Boolean,
     onRequestBatteryOptimization: () -> Unit,
+    onExportLogs: (List<CoreEvent.Log>) -> Unit,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
@@ -225,6 +226,7 @@ fun KClashApp(
                     runtimeState = runtimeState,
                     onShowAll = { showLogs = true },
                     onClear = runtimeViewModel::clearLogs,
+                    onExport = { onExportLogs(runtimeLogs.entries) },
                 )
             }
             item {
@@ -343,6 +345,7 @@ fun KClashApp(
             state = runtimeLogs,
             onDismiss = { showLogs = false },
             onClear = runtimeViewModel::clearLogs,
+            onExport = { onExportLogs(runtimeLogs.entries) },
         )
     }
 
@@ -965,6 +968,7 @@ private fun LogsCard(
     runtimeState: CoreRuntimeStatus,
     onShowAll: () -> Unit,
     onClear: () -> Unit,
+    onExport: () -> Unit,
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -980,6 +984,7 @@ private fun LogsCard(
                 if (state.entries.isNotEmpty()) {
                     TextButton(onClick = onShowAll) { Text("查看全部") }
                     TextButton(onClick = onClear) { Text("清空") }
+                    TextButton(onClick = onExport) { Text("导出") }
                 }
             }
             when {
@@ -1032,6 +1037,7 @@ private fun LogsDialog(
     state: LogsUiState,
     onDismiss: () -> Unit,
     onClear: () -> Unit,
+    onExport: () -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var levelFilter by rememberSaveable { mutableStateOf<String?>(null) }
@@ -1075,7 +1081,10 @@ private fun LogsDialog(
             TextButton(onClick = onDismiss) { Text("关闭") }
         },
         dismissButton = {
-            TextButton(onClick = onClear, enabled = state.entries.isNotEmpty()) { Text("清空") }
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = onClear, enabled = state.entries.isNotEmpty()) { Text("清空") }
+                TextButton(onClick = onExport, enabled = state.entries.isNotEmpty()) { Text("导出") }
+            }
         },
     )
 }

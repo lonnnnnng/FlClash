@@ -19,8 +19,10 @@ import com.lonnnnnng.flclash.ui.KClashApp
 import com.lonnnnnng.flclash.ui.MainViewModel
 import com.lonnnnnng.flclash.ui.ProfilesViewModel
 import com.lonnnnnng.flclash.ui.ProxyGroupsViewModel
+import com.lonnnnnng.flclash.ui.formatLogsForExport
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import com.lonnnnnng.flclash.data.DeepLinkProfileParser
+import com.lonnnnnng.flclash.core.CoreEvent
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -42,7 +44,23 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission(),
     ) { }
 
+    private val logExportLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain"),
+    ) { uri ->
+        val entries = pendingLogExport
+        pendingLogExport = emptyList()
+        if (uri == null || entries.isEmpty()) return@registerForActivityResult
+        runCatching {
+            contentResolver.openOutputStream(uri)?.use { output ->
+                output.write(formatLogsForExport(entries).toByteArray(Charsets.UTF_8))
+            } ?: error("无法打开导出文件")
+        }.onFailure { error ->
+            viewModel.reportError(error.message ?: "导出核心日志失败")
+        }
+    }
+
     private var batteryOptimizationIgnored by mutableStateOf(false)
+    private var pendingLogExport: List<CoreEvent.Log> = emptyList()
     private var initialDeepLinkHandled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +77,7 @@ class MainActivity : ComponentActivity() {
                     onStopRuntime = viewModel::stopRuntime,
                     batteryOptimizationIgnored = batteryOptimizationIgnored,
                     onRequestBatteryOptimization = ::requestBatteryOptimization,
+                    onExportLogs = ::requestLogExport,
                 )
             }
         }
@@ -92,6 +111,16 @@ class MainActivity : ComponentActivity() {
         if (!BatteryOptimization.openSettings(this)) {
             viewModel.reportError("无法打开电池优化设置")
         }
+    }
+
+    private fun requestLogExport(entries: List<CoreEvent.Log>) {
+        if (entries.isEmpty()) {
+            viewModel.reportError("没有可导出的核心日志")
+            return
+        }
+        // 作者 long：先保存本次用户打开导出器时的快照，避免文件选择期间新日志改变导出内容。
+        pendingLogExport = entries
+        logExportLauncher.launch("kclash-logs-${System.currentTimeMillis()}.txt")
     }
 
     override fun onNewIntent(intent: Intent) {

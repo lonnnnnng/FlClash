@@ -56,7 +56,7 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 101 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 102 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
@@ -241,7 +241,7 @@ flowchart LR
 
 ### 7.2 连接、流量和运行观测
 
-状态：`PARTIAL`，流量、连接数、活动连接、Requests、DNS 和核心日志的基础观测与真实请求归因已验证，详情级交互和长期运行治理仍待完成。
+状态：`PARTIAL`，流量、连接数、活动连接、Requests、DNS 和核心日志的基础观测与真实请求归因已验证，详情级交互已支持搜索、筛选、自动跟随和脱敏导出，长期运行治理仍待完成。
 
 当前已有：
 
@@ -256,11 +256,12 @@ flowchart LR
 - `MainViewModel` 已维护最近 2000 条 Requests 历史，并按连接 ID 合并上下行流量更新；首页提供请求空态、最近记录和完整记录对话框。
 - `MainViewModel` 已维护最近 1000 条 DNS 查询和核心日志，停止核心时清空运行观测，并提供用户主动清空入口。
 - Compose 首页已提供 DNS 查询和核心日志卡片、最近记录和完整记录对话框，覆盖停止态、空态和错误日志颜色提示。
+- 核心日志详情和首页卡片提供系统文件导出；导出前遮蔽 URL 查询参数、JSON 凭据字段和常见 token/key/secret/password/url 值。
 - `CoreBridge.probe`、`CoreRuntimeManager.probe` 和首页“真实请求诊断”卡片已接入；结果包含 HTTP 状态、耗时、最终 URL、代理链、规则和核心路由版本，且不保留响应正文。
 
 仍需补齐的 Bridge / Repository / UI：
 
-- 核心日志导出和更细的故障诊断交互。
+- 核心日志更细的故障诊断交互。
 - 事件流背压、历史清理和轮询生命周期的进一步收敛。
 - 页面退出后停止不必要的轮询。
 
@@ -279,8 +280,10 @@ flowchart LR
 - Requests 详情对话框支持按目标、进程、代理链和规则大小写不敏感搜索，并显示过滤后数量；DNS 详情对话框支持按域名、上游、答案和错误搜索。
 - 核心日志详情对话框支持内容搜索和“全部/错误/警告”级别筛选；筛选无匹配时显示明确空态，不隐藏原始记录总数。
 - 三类详情列表共用自动跟随最新事件的滚动行为；用户向上翻阅历史后保持当前位置，改变筛选条件时回到最新匹配项。
-- 新增 3 项筛选语义单元测试；`./gradlew :app:testDebugUnitTest :app:compileDebugKotlin --no-daemon` 通过，工程总计 101 项 Kotlin 单元测试通过。
+- 新增 3 项筛选语义和 1 项日志导出脱敏单元测试；`./gradlew :app:testDebugUnitTest :app:compileDebugKotlin --no-daemon` 通过，工程总计 102 项 Kotlin 单元测试通过。
 - 安装 Debug APK 后启动第一条当前授权路径，首页捕获活动连接 1 条、请求 4 条、DNS 查询 13 条和核心日志 8 条；打开三类详情对话框分别看到搜索框，其中日志点击“错误”后显示 `0/8` 和“没有匹配的核心日志”。
+- 核心日志详情和首页卡片新增系统文件导出；导出文件使用 UTF‑8 表格文本格式，URL 查询参数、JSON 凭据字段和常见 token/key/secret/password/url 值统一替换为 `[REDACTED_SECRET]`。
+- 真机通过 Android `DocumentsUI` 保存 `kclash-logs-*.txt` 到 `Download/kclash-qr`；文件大小 1634 bytes、17 行，前两行为导出标题和列名，设备侧检查到 61 个脱敏标记，未把原始凭据写入导出文件。
 - 通过 `adb -s wsvwypiz7xwslvl7 shell am start -a com.lonnnnnng.flclash.action.STOP` 停止核心，确认 `VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由清理；随后应用内删除测试 Profile，首页恢复“还没有配置”，未发现 `FATAL EXCEPTION`。
 
 完成门槛：
@@ -485,6 +488,8 @@ flowchart LR
 
 目标：让真机问题可以在应用内定位，而不是只能依赖 logcat。
 
+当前进度：DNS/日志 Bridge、列表、清空、内容筛选、日志级别筛选和脱敏导出已完成代码、单元测试和 Redmi 真机闭环；下一步补充更细故障诊断交互和网络/核心重启诊断记录。
+
 建议范围：
 
 1. DNS 查询 Bridge 和列表。
@@ -581,7 +586,7 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 | Wi‑Fi↔移动网络切换尚未完成 | Wi‑Fi 断开恢复、真实请求归因、后台恢复、进程重建和系统撤销清理已验证，但蜂窝切换仍可能留下悬挂隧道 | N1 真机切片 |
 | 外部入口尚未全部接入 Runtime Manager | Quick Settings 等入口仍可能形成第二套启停路径；Deep Link 只负责导入 Profile，不启动核心 | N5 固化统一服务边界 |
 | UI 仍是单屏基础骨架 | 与 Flutter 完整体验差距大 | M4 后按页面切片重构 |
-| 观测目前只有基础事件和卡片 | 搜索过滤、详情和自动跟随已验证，但导出、背压策略和长期运行治理仍不足 | N2/N3 |
+| 观测目前只有基础事件和卡片 | 搜索过滤、详情、自动跟随和脱敏导出已验证，但更细故障诊断、背压策略和长期运行治理仍不足 | N2/N3 |
 | 高级配置和导入入口缺失 | 用户无法完成完整配置管理 | M6/N4 |
 | 没有 UI/Instrumented 测试 | 回归风险集中在真机阶段 | M9/N6 前建立 |
 | 没有 release keystore | 目前只能做 Debug/预发布验证 | 发布前创建，不提前提交秘密 |

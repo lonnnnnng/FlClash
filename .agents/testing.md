@@ -124,8 +124,10 @@
 
 ## 观测详情交互切片实测记录
 
-- 新增 Requests、DNS 和核心日志详情筛选函数单元测试 3 项；`./gradlew :app:testDebugUnitTest :app:compileDebugKotlin --no-daemon` 通过，工程总计 101 项 Kotlin 单元测试通过。
+- 新增 Requests、DNS 和核心日志详情筛选函数测试 3 项，以及日志导出脱敏测试 1 项；`./gradlew :app:testDebugUnitTest :app:compileDebugKotlin --no-daemon` 通过，工程总计 102 项 Kotlin 单元测试通过。
 - Requests 详情支持按目标、进程、代理链和规则搜索；DNS 详情支持按域名、上游、答案和错误搜索；核心日志详情支持内容搜索及“全部/错误/警告”级别筛选。
 - 三类详情列表默认跟随最新事件；用户滚动查看历史后保持当前位置，筛选条件变化时回到最新匹配项。
+- 核心日志详情和首页卡片提供系统文件导出；导出使用 UTF‑8 表格文本，URL 查询参数、JSON 凭据字段和常见 token/key/secret/password/url 值统一替换为 `[REDACTED_SECRET]`。
 - 真机 `wsvwypiz7xwslvl7` 安装 Debug APK 后，使用当前授权清单第一条路径启动核心，首页收到活动连接 1 条、请求 4 条、DNS 查询 13 条和核心日志 8 条；三类详情对话框均显示搜索框，日志切换“错误”后显示 `0/8` 和“没有匹配的核心日志”。
+- 真机通过 Android `DocumentsUI` 保存 `kclash-logs-*.txt` 到 `Download/kclash-qr`；文件大小 1634 bytes、17 行，前两行为导出标题和列名，设备侧检查到 61 个脱敏标记。
 - 使用 `adb -s wsvwypiz7xwslvl7 shell am start -a com.lonnnnnng.flclash.action.STOP` 停止后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均清理；测试 Profile 已删除，首页恢复“还没有配置”，未发现 `FATAL EXCEPTION`。

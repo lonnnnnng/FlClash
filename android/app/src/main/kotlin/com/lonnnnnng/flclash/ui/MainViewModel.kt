@@ -313,6 +313,34 @@ internal fun filterLogs(
     }
 }
 
+/**
+ * 作者 long：导出日志用于诊断时必须保留时间、级别和正文上下文，同时先遮蔽 URL 参数与常见凭据字段，
+ * 避免用户把订阅 Token 或临时认证信息带出应用数据目录。
+ */
+internal fun formatLogsForExport(entries: List<CoreEvent.Log>): String = buildString {
+    appendLine("KClash core logs")
+    appendLine("timestamp_millis\tlevel\tmessage")
+    entries.forEach { entry ->
+        val safePayload = redactSensitiveLogText(entry.payload).replace('\n', ' ')
+        append(entry.timestampMillis)
+            .append('\t')
+            .append(entry.level.ifBlank { "info" })
+            .append('\t')
+            .appendLine(safePayload)
+    }
+}
+
+private fun redactSensitiveLogText(value: String): String = value
+    .replace(SENSITIVE_QUERY_PARAMETER, "$1[REDACTED_SECRET]")
+    .replace(SENSITIVE_JSON_VALUE, "$1[REDACTED_SECRET]$2")
+
+private val SENSITIVE_QUERY_PARAMETER = Regex(
+    "(?i)([?&](?:token|access_token|api_key|key|secret|password|url)=)[^\\s&]+",
+)
+private val SENSITIVE_JSON_VALUE = Regex(
+    "(?i)(\\\"(?:token|access_token|api_key|key|secret|password|url)\\\"\\s*:\\s*\\\")[^\\\"]*(\\\")",
+)
+
 data class ProbeUiState(
     val targetUrl: String? = null,
     val isLoading: Boolean = false,

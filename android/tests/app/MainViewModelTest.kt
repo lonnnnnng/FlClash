@@ -102,6 +102,24 @@ class MainViewModelTest {
         assertEquals(emptyList<CoreEvent.Log>(), filterLogs(listOf(error, info), "代理", "error"))
     }
 
+    @Test
+    fun `log export redacts credentials and keeps diagnostic columns`() {
+        val log = CoreEvent.Log(
+            level = "warn",
+            payload = "request https://example.test/path?token=secret-value&x=1 {\"password\":\"p@ss\"}",
+            timestampMillis = 42L,
+        )
+
+        val exported = formatLogsForExport(listOf(log))
+
+        assertEquals(true, exported.startsWith("KClash core logs\n"))
+        assertEquals(true, exported.contains("42\twarn\t"))
+        assertEquals(true, exported.contains("[REDACTED_SECRET]"))
+        assertEquals(false, exported.contains("secret-value"))
+        assertEquals(false, exported.contains("p@ss"))
+        assertEquals(true, exported.contains("x=1"))
+    }
+
     private fun connection(id: String) = CoreConnection(
         id = id,
         upload = 0,
