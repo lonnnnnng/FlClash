@@ -32,6 +32,8 @@
 
 **Android 支持下限**：KClash 支持 Android API 24（Android 7.0）及以上；更高的 target/compile 版本需要在迁移时结合实际工具链和发布要求核对。
 
+**ABI 范围**：KClash 的开发、测试和发布都只构建 `arm64-v8a`；不维护 `armeabi-v7a`、`x86_64` 或其他 ABI。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？
