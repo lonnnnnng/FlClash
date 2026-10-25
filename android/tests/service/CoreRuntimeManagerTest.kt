@@ -235,6 +235,70 @@ class CoreRuntimeManagerTest {
         assertFalse(bridge.listenerStarted)
     }
 
+    @Test
+    fun `vpn revoke stops services and marks a running runtime failed`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge()
+        val controller = FakeServiceController()
+        val manager = manager(
+            profile = ActiveProfile(15, "撤销配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = controller,
+        )
+
+        manager.startProxy().getOrThrow()
+        manager.handleVpnRevoked().getOrThrow()
+
+        assertEquals(CoreRuntimeStatus.FAILED, manager.state.value)
+        assertEquals(listOf("service-start", "service-stop"), controller.events)
+        assertFalse(bridge.listenerStarted)
+        assertFalse(bridge.eventListenerStarted)
+        assertFalse(bridge.logListenerStarted)
+    }
+
+    @Test
+    fun `repeated vpn revoke is idempotent`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val controller = FakeServiceController()
+        val manager = manager(
+            profile = ActiveProfile(16, "重复撤销", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = FakeBridge(),
+            controller = controller,
+        )
+
+        manager.startProxy().getOrThrow()
+        manager.handleVpnRevoked().getOrThrow()
+        manager.handleVpnRevoked().getOrThrow()
+
+        assertEquals(CoreRuntimeStatus.FAILED, manager.state.value)
+        assertEquals(listOf("service-start", "service-stop"), controller.events)
+    }
+
+    @Test
+    fun `runtime can restart after vpn revoke`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge()
+        val controller = FakeServiceController()
+        val manager = manager(
+            profile = ActiveProfile(17, "撤销后重启", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = controller,
+        )
+
+        manager.startProxy().getOrThrow()
+        manager.handleVpnRevoked().getOrThrow()
+        manager.startProxy().getOrThrow()
+
+        assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
+        assertEquals(2, controller.events.count { it == "service-start" })
+        assertTrue(bridge.listenerStarted)
+        assertTrue(bridge.eventListenerStarted)
+        assertTrue(bridge.logListenerStarted)
+    }
+
     private fun manager(
         profile: ActiveProfile?,
         homeDir: File,

@@ -56,7 +56,7 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 95 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 98 项通过，失败 0，错误 0，跳过 0 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
@@ -186,7 +186,7 @@ flowchart LR
 
 ### 7.1 真实连接链路
 
-状态：`PARTIAL`，代码启动链、TUN 生命周期和两条授权路径的真实请求诊断已打通；网络切换、后台恢复和系统撤销 VPN 仍需补齐。
+状态：`PARTIAL`，代码启动链、TUN 生命周期、系统撤销 VPN 和两条授权路径的真实请求诊断已打通；网络切换、后台恢复和进程重建仍需补齐。
 
 当前已有：
 
@@ -203,7 +203,7 @@ flowchart LR
 - `MainActivity` 已接入 `VpnService.prepare()` 和 Activity Result 授权回调。
 - 启动失败会停止服务、清理监听器，管理器不会把失败报告为 `RUNNING`。
 - 停止时向绑定中的 `VpnService` 发送显式 stop action，再停止服务组件，避免系统绑定导致 TUN 残留。
-- 服务层和管理器新增失败回滚测试；当前总计 95 项 Kotlin 单元测试通过。
+- 服务层和管理器新增失败回滚、系统撤销和撤销后重启测试；当前总计 98 项 Kotlin 单元测试通过。
 
 本轮真机验收记录（2026-10-25，设备 `wsvwypiz7xwslvl7`，Android 16 / API 36）：
 
@@ -214,13 +214,15 @@ flowchart LR
 - 点击停止后 UI 显示“核心已停止”，服务记录、`tun0`、`198.18.0.0/30` 路由均消失；`dumpsys connectivity` 未留下 KClash VPN 网络。
 - 临时将 `ACTIVATE_VPN` 设为 deny 后重新启动，系统显示 KClash VPN 授权对话框；点击“取消”后 UI 回到“核心已停止”，显示“VPN 权限未授予”，且未留下前台服务、`tun0` 或 VPN 路由；随后已恢复 `ACTIVATE_VPN: allow`。
 - 旧本地测试配置曾被核心拒绝，错误为 `proxy DIRECT is the duplicate name`；该失败状态正确回显，未作为成功证据。
+- 使用第二条当前授权路径启动后，通过系统“设置 → VPN → KClash → 断开连接”触发真实系统撤销；`VpnService.onRevoke()` 清理 TUN 并通知应用内 `ServiceBroadcastReceiver`，首页回到“核心启动失败”。
+- 系统撤销后 `VpnService`、`ProxyService`、`tun0`、`198.18.0.0/30` 路由和 KClash VPN 网络均消失；同一 Profile 再次点击“启动核心”成功恢复运行，随后停止并删除 Profile，设备回到“还没有配置”空态。
 
 当前缺失：
 
 - `ServiceConfig.vpnOptions` 仍是首阶段默认配置，尚未从 Mihomo 配置/Android 设置真实映射 mixed-port、tun stack 和路由覆盖项。
-- 首次安装或清除数据后的 VPN 授权弹窗，以及系统在运行期间主动撤销 VPN 的路径，尚未在本轮干净状态中重测；临时拒绝授权后的失败回滚路径已验证，当前设备保留了既有 VPN 授权。
+- 首次安装或清除数据后的 VPN 授权弹窗尚未在本轮干净状态中重测；临时拒绝授权后的失败回滚路径和运行期间系统撤销 VPN 的路径已验证。
 - 已完成“当前代理组/节点 → 受控真实请求 → HTTP 状态、代理链、规则、Requests、DNS、Logs 和累计流量”的首轮真机归因闭环；活动连接在第二条授权路径的 7.4 秒请求中捕获到 1 条。
-- 尚未覆盖 Wi-Fi/移动网络切换、后台恢复、进程重建和系统撤销 VPN。
+- 尚未覆盖 Wi-Fi/移动网络切换、后台恢复和进程重建。
 
 完成门槛：
 
@@ -259,7 +261,7 @@ flowchart LR
 
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
-- `./gradlew test :app:assembleDebug --no-daemon` 通过；95 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
+- `./gradlew test :app:assembleDebug --no-daemon` 通过；98 项 Kotlin 单元测试通过，失败 0，错误 0，跳过 0。
 - Debug APK 安装成功；启动核心后首页实际收到 DNS 查询（4 条）和核心日志（3 条），卡片出现“查看全部/清空”操作；停止态观测卡片恢复启动核心提示。
 - 停止后 `tun0`、`198.18.0.0/30` 路由和 KClash 前台服务均已清理。
 - 本轮只使用当前工作区根目录 `AGENTS.md` 列出的两条用户授权路径；第一条诊断返回 HTTP 403 / 1.6 秒，第二条诊断返回 HTTP 200 / 7.4 秒。
@@ -388,7 +390,7 @@ flowchart LR
 
 当前已有：
 
-- 95 项 Kotlin 单元测试。
+- 98 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
@@ -397,7 +399,7 @@ flowchart LR
 
 - Compose UI tests。
 - Instrumented tests。
-- VPN 权限、TUN 停止清理和 `dumpsys connectivity` 真机测试已有首轮证据；网络切换、后台恢复和系统撤销 VPN 仍待完成。
+- VPN 权限、TUN 停止清理、系统撤销 VPN 和 `dumpsys connectivity` 真机测试已有证据；网络切换、后台恢复和进程重建仍待完成。
 - 连接、请求、DNS、日志端到端测试的自动化脚本和稳定断言。
 - `lint`、R8、Release 构建和 APK 签名检查。
 - 新 release keystore。
@@ -540,7 +542,7 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 
 | 风险 | 影响 | 处理顺序 |
 | --- | --- | --- |
-| 网络切换、后台恢复和系统撤销 VPN 尚未完成 | 真实请求归因已在两条授权路径验证，但连续网络变化和进程生命周期仍可能留下悬挂隧道 | N1 真机切片 |
+| 网络切换、后台恢复和进程重建尚未完成 | 真实请求归因和系统撤销清理已验证，但连续网络变化和进程生命周期仍可能留下悬挂隧道 | N1 真机切片 |
 | 外部入口尚未全部接入 Runtime Manager | Quick Settings 等入口仍可能形成第二套启停路径；Deep Link 只负责导入 Profile，不启动核心 | N5 固化统一服务边界 |
 | UI 仍是单屏基础骨架 | 与 Flutter 完整体验差距大 | M4 后按页面切片重构 |
 | 观测目前只有基础事件和卡片 | 真实非空归因已验证，但搜索过滤、详情、导出、自动滚动和背压策略仍不足 | N2/N3 |

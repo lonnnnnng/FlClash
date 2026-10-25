@@ -121,6 +121,29 @@ class CoreRuntimeManager(
         }
     }
 
+    /**
+     * 作者 long：系统撤销 VPN 时，VpnService 只能释放平台 TUN；这里补齐应用层核心和
+     * ProxyService 的生命周期收口，避免 UI 仍显示运行中或下一次启动遇到旧监听器。
+     */
+    suspend fun handleVpnRevoked(): Result<Unit> = transitionLock.withLock {
+        if (mutableState.value == CoreRuntimeStatus.STOPPED ||
+            mutableState.value == CoreRuntimeStatus.FAILED
+        ) {
+            return@withLock Result.success(Unit)
+        }
+        mutableState.value = CoreRuntimeStatus.STOPPING
+        runCatching {
+            // onRevoke 已经释放 VpnService；重复发送停止 action 是幂等收口，
+            // 同时确保仍存活的 ProxyService 和前台通知也被关闭。
+            serviceController.stop()
+            stopListeners()
+            mutableState.value = CoreRuntimeStatus.FAILED
+        }.onFailure {
+            stopListeners()
+            mutableState.value = CoreRuntimeStatus.FAILED
+        }
+    }
+
     suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = transitionLock.withLock {
         runCatching {
             check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
@@ -191,6 +214,21 @@ class CoreRuntimeManager(
             }.onFailure {
                 initialized.set(false)
             }.getOrThrow()
+        }
+    }
+
+    private suspend fun stopListeners() {
+        if (listenerStarted.get()) {
+            runCatching { bridge.stopListener() }
+            listenerStarted.set(false)
+        }
+        if (eventListenerStarted.get()) {
+            runCatching { bridge.stopEventListener() }
+            eventListenerStarted.set(false)
+        }
+        if (logListenerStarted.get()) {
+            runCatching { bridge.stopLog() }
+            logListenerStarted.set(false)
         }
     }
 

@@ -40,5 +40,9 @@
                 <data android:host="install-config" />
             </intent-filter>
         </activity>
+        <receiver
+            android:name=".ServiceBroadcastReceiver"
+            android:exported="false"
+            android:permission="${applicationId}.permission.RECEIVE_BROADCASTS" />
     </application>
 </manifest>
