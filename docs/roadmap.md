@@ -140,7 +140,7 @@ flowchart LR
 - 远程订阅手动同步。
 - 核心运行期间阻止配置选择和编辑，避免运行输入与用户编辑内容分裂。
 
-未纳入 M1 完成定义的内容：高级分区编辑、二维码导入、备份恢复和完整自动更新调度；Deep Link 基础导入已在 Profiles 高级能力切片完成，冷启动、重复导入和错误反馈回归仍待补齐。
+未纳入 M1 完成定义的内容：高级分区编辑、二维码导入、备份恢复和完整自动更新调度；Deep Link 基础导入及本轮冷启动、重复导入和错误反馈回归已完成。
 
 ### M2：Mihomo 配置校验与应用 — `DONE-VERIFIED`
 
@@ -287,6 +287,7 @@ flowchart LR
 - `:app:testDebugUnitTest` 通过，新增 Deep Link 解析用例覆盖编码 URL、四种协议、非法 Host、非 HTTP(S) 目标和缺失参数。
 - `:app:assembleDebug` 通过，APK 只包含 `arm64-v8a` 的原生库。
 - 通过 `kclash://install-config` 触发当前授权订阅导入，设备 UI 显示远程订阅及用量信息；随后删除该测试 Profile，恢复空配置状态。
+- 强制停止应用后再通过 `kclash://install-config` 冷启动导入成功；再次发送同一链接显示“该订阅已经添加”，没有创建重复 Profile。
 
 待完成：
 
@@ -452,7 +453,7 @@ flowchart LR
 
 建议范围：
 
-1. 二维码导入，并补齐 Deep Link 的冷启动、重复导入和错误反馈回归。
+1. 二维码导入。
 2. 高级配置分区编辑。
 3. URLTest/Fallback 完整语义。
 4. 批量测速、搜索、缓存和结果失效。
