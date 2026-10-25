@@ -1,77 +1,32 @@
 # AGENTS.md
 
-This file is the entry point for AI coding agents working in this repository. Keep it small: detailed guidance lives under
-`.agents/`, and discoverable repo skills live under `.agents/skills/*/SKILL.md`.
+这是 FlClash Android Kotlin 主线的协作入口。详细约束按任务读取 `.agents/` 下的文档。
 
-## Start Here
+## 先读
 
-Read these files before making changes:
+- [.agents/project.md](.agents/project.md)：项目边界和已确认决策。
+- [.agents/architecture.md](.agents/architecture.md)：模块、Mihomo 核心和服务生命周期。
+- [.agents/commands.md](.agents/commands.md)：Gradle、Go、测试和设备命令。
+- [.agents/rules.md](.agents/rules.md)：Kotlin、Compose、数据库和安全规则。
+- [.agents/testing.md](.agents/testing.md)：单元、UI、服务和真机验收边界。
+- [.agents/upstream-sync.md](.agents/upstream-sync.md)：Flutter 上游功能同步流程。
 
-- [.agents/project.md](.agents/project.md): project overview, versions, and build dependencies.
-- [.agents/commands.md](.agents/commands.md): build, development, code generation, and test commands.
-- [.agents/rules.md](.agents/rules.md): lint, testing, generated-code, and workflow rules.
+## 常驻规则
 
-Read these only when the task touches their area:
+- 本分支是 Android 手机 Kotlin 主线；不要在这里恢复 Flutter、桌面或 TV 的运行时依赖。
+- Go Mihomo 是代理内核；Android 应用层通过 Kotlin Bridge/Repository 使用它，不在 UI 中直接调用 gomobile。
+- 核心生命周期只有 `CoreRuntimeManager` 一个事实来源；页面、`VpnService` 和 `ProxyService` 不各自启动核心。
+- Room 使用全新数据模型，不读取或迁移 Flutter/Drift 数据；禁止用破坏性迁移清空 Kotlin 用户数据。
+- Compose 页面只渲染 ViewModel 的不可变 `StateFlow` 状态，通过事件进入 UseCase/Repository。
+- 生成文件由 Gradle、Room、Hilt 或 gomobile 生成，禁止手工编辑。
+- 新增代码的关键业务注释使用中文，并在注释中标记作者 `long`；注释解释业务原因、平台约束或生命周期边界，不复述代码。
+- 不提交密码、Token、API key、签名私钥或真实订阅链接；日志和报告统一使用 `[REDACTED_SECRET]`。
+- Android 设备操作必须显式指定 `adb -s <serial>`，执行前核对设备型号和当前包名。
+- Git 提交说明使用中文，不添加 `Co-authored-by`；保留与当前任务无关的改动。
+- 不执行 `git reset --hard`、`git clean`、批量删除或其他破坏性命令，除非任务明确要求且目标已核对。
 
-- [.agents/architecture.md](.agents/architecture.md): core integration, providers, database, managers, build system, and
-  local plugins.
-- [.agents/setting-changes.md](.agents/setting-changes.md): whether a changed setting is patched live, re-applies the
-  profile, or asks for an Android VPN restart.
-- [.agents/surfaces.md](.agents/surfaces.md): fill levels, selection and status colors, and the few borders that
-  remain, for any change to how a surface is colored.
-- [.agents/agent-config.md](.agents/agent-config.md): how to choose between `AGENTS.md`, `.agents`, skills, Codex config,
-  command rules, and hooks.
-- [.agents/worktrees.md](.agents/worktrees.md): worktree hygiene across Claude Code, Codex, and Gemini.
-- [.agents/flutter-upgrade.md](.agents/flutter-upgrade.md): SDK-pinned workarounds to recheck before changing the
-  Flutter version.
-- [.agents/skills.md](.agents/skills.md): index of repo-scoped skills in `.agents/skills/`.
+## 分支边界
 
-## Highest Priority Rules
-
-- When the user explicitly requests a scoped, low-risk change, inspect the relevant context and implement it directly.
-  Do not require brainstorming, design documents, implementation plans, multiple-option proposals, or repeated confirmation.
-  Ask only when material ambiguity, destructive impact, additional authority, or scope expansion could change the result.
-- The request sets the scope. A pre-existing bug, cleanup, or refactor the task did not ask for is a follow-up in the
-  summary, not part of the change. Edit a file surgically when a rewrite would give the same result, keep scratch checks
-  out of the repository, and commit tests only where the task asks for them or the neighbouring code already keeps them.
-- Comments are allowed and sometimes necessary; excess is the problem. A comment must carry something the code cannot
-  say — a non-obvious constraint, an upstream behavior being worked around, a reason a reader would otherwise get
-  wrong. Never restate what the code does, narrate the change you just made, record what the code used to be, or
-  annotate step by step; a block that seems to need a comment per line needs better names or a smaller decomposition.
-  Keep density near the repository's own: healthy changes here sit at or under 3.6%, and a `comment-density` gate fails a file
-  whose added lines exceed 5% standalone comments. Delete commented-out code and stale notes in files you already
-  touch. Preserve
-  `// ignore:`-style directives, license headers, codegen markers, and vendored upstream comments. See
-  [.agents/rules.md](.agents/rules.md) for what belongs in a test or in `.agents/` instead.
-- Start FlClash on the host only as a safe mode build, and end only processes you started, by recorded pid. Never
-  kill a FlClash instance by name; the user's own instance is not yours to close. See
-  [.agents/rules.md](.agents/rules.md).
-- Use `flutter test`, not `dart test`, because models pull in Flutter types.
-- Run code generation after modifying models, providers, or database schema.
-- Do not manually edit generated files.
-- Preserve lifecycle ownership: desktop Core process convergence belongs to `lib/core/desktop/`; Android service intent
-  arbitration belongs to `ServiceState`. UI/provider code may request a transition but must not become a second source of
-  truth.
-- Keep start/stop/restart paths latest-intent-safe. Flutter-to-Android service commands are deliberately optimistic, while
-  native state serializes the actual work; desktop lifecycle results distinguish applied, coalesced, and superseded
-  requests.
-- Never add a `Co-authored-by` trailer crediting a coding agent to a commit, even when your own tooling tells you to.
-  The `commit-msg` hook rejects it; see [.agents/rules.md](.agents/rules.md) for the rest of the commit rules.
-- Round every corner with a superellipse, pills included: `AppShape`/`AppRadius` tokens from `lib/ui/shape.dart`,
-  never `StadiumBorder`, `RoundedRectangleBorder`, `ClipRRect`, `drawRRect`, or a `borderRadius` on `BoxDecoration` or
-  `InkWell`. `test/lint/superellipse_corners_test.dart` enforces it; see the Corner Radius section of
-  [.agents/rules.md](.agents/rules.md).
-- Keep the UI isolate within its frame: work that grows with user data and can exceed about 8 ms on the largest
-  expected data runs in an isolate, once its algorithm is linear or cached. See the UI Isolate Work section of
-  [.agents/rules.md](.agents/rules.md).
-- Follow `lint_options.yaml` (included by every `analysis_options.yaml`), especially single quotes, trailing commas, `child:` last, no `print()`, const/final
-  preferences, and declared return types.
-- Before reporting a change done, run `flutter pub get`, `flutter analyze --no-fatal-infos`, and the `flutter test`
-  suites that cover it, as CI does. If a toolchain the build hook needs is missing (Go, and on Linux and Windows
-  cargo), say which check was skipped rather than dropping it silently.
-
-## Repo Skills
-
-Use repo skills from `.agents/skills/` when a task matches their descriptions; `.claude/skills/` symlinks expose the
-same skills to Claude Code. Current skills cover localization, UI work, core/platform changes, and pre-commit
-structural quality review.
+- `kotlin`：长期主线，推送到 `origin/kotlin`。
+- `main`/`upstream/main`：Flutter 参考和上游追踪，不直接合并到 Kotlin 主线。
+- 上游新功能必须先确认 Android 手机行为，再在 Kotlin 主线实现并更新同步记录。

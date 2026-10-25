@@ -1,104 +1,21 @@
 # Project Context
 
-FlClash is a multi-platform proxy client based on ClashMeta (mihomo), built with Flutter. It supports Android, Windows, macOS, and Linux, using Material You from `material_ui` as the base with Apple's Human Interface interaction conventions layered on top.
+FlClash Kotlin 是面向 Android 手机的原生客户端，复用 Go Mihomo 代理核心，使用 Jetpack Compose 重建 Flutter 参考实现的 Android 体验。Kotlin 分支是长期主线，Flutter 代码只在 `main`/`upstream` 分支保留。
 
-## Version Notes
+## 已确认边界
 
-- Flutter stays on the 3.47.x line. Release CI pins 3.47.6 and is the source
-  of truth for release builds; `.fvmrc` and local SDKs may sit on another 3.47
-  patch. The editor in `plugins/code_forge` came from `code_forge` 10.14.0, which
-  needs Dart 3.13.2, so the CI pin cannot go below Flutter 3.47.2.
-- Before moving the pin, walk `flutter-upgrade.md`: it lists the workarounds tied to
-  the current SDK, such as Impeller disabled on the Intel macOS release build.
-- The Dart SDK lower bound in `pubspec.yaml` sets the package language
-  version. `flutter analyze` excludes `lib/**/generated/**`, so a raise is
-  proven by `flutter test`, which parses the generated code, not by analyze.
+- 首发设备：Android 手机，覆盖竖屏和横屏；Android TV、平板、车机和桌面平台暂不验收。
+- UI：Compose + Material 3，自定义 Design System 对齐 Flutter 的颜色、字体、间距、形状和交互。
+- 状态：单 Activity、Navigation Compose、ViewModel、StateFlow 和单向数据流。
+- 数据：Room 全新 schema，不兼容 Flutter/Drift 数据；只维护 Kotlin 自身的未来迁移。
+- 依赖：Hilt 管理 Application、Activity、Service、ViewModel、Repository 和 UseCase 的生命周期。
+- 核心：Go Mihomo 继续负责代理协议、路由、DNS、TUN、配置解析和运行时连接。
+- 服务：`CoreRuntimeManager` 统一核心生命周期，`VpnService` 只负责 TUN，`ProxyService` 只负责本地代理模式。
 
-## Forked Dependencies
+## 功能基线
 
-One `pubspec.yaml` dependency is pinned to a fork by commit SHA. The fork lives
-under `chen08209`, the same account that owns this repository, so it is
-maintained in-house rather than tracked from a third party: advancing a pin is a
-local decision, and there is no external maintainer to wait on for the patch
-itself. What the fork still waits on is the *upstream* fix that would let the pin
-be dropped entirely, recorded below.
+Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配置编辑、代理组、延迟测试、连接、请求、DNS、日志、Quick Settings、Deep Link、按应用代理、电池优化和 VPN/TUN 能力。桌面托盘、窗口、全局热键和桌面 Helper 不进入首发范围。
 
-Each entry records what the fork changes and what has to be true before it can go
-back to the published package, so a future upgrade does not have to rediscover it.
-Re-verify a fork by diffing its pub cache checkout against the published version
-of the same number:
+## 当前迁移阶段
 
-```bash
-diff -ru ~/.pub-cache/hosted/pub.dev/<name>-<version> ~/.pub-cache/git/<name>-<sha>
-```
-
-The `window_manager` fork (`chen08209/window_manager`, tag `v0.5.1-flclash.3`)
-was replaced by the in-repo `plugins/window` package; the behaviors it carried
-(work-area maximize with a hidden title bar on Windows, geometry restore on
-re-map on Linux, corner preference, terminate and activate events) live there
-now, see the window plugin section of `architecture.md`.
-
-`launch_at_startup` — `chen08209/launch_at_startup`, version 0.5.1.
-
-- Migrates `win32_registry` from `^2.0.0` to `^3.0.3`, which is a breaking rename
-  across the whole Windows implementation (`Registry.openPath` → `CURRENT_USER.open`,
-  `createValue` → `setValue`, `getStringValue` → `getString`).
-- This one is not optional while it lasts: FlClash depends on `win32_registry: ^3.0.3`
-  directly, and upstream's `^2.0.0` constraint cannot co-resolve with it.
-- Drop the fork when upstream publishes a release that accepts `win32_registry` 3.x.
-
-The `yaml_writer` fork (`chen08209/yaml_writer`) was replaced by
-`lib/common/yaml_writer.dart`. Its key quoting let keys such as `!a`, `'a` or
-`0x1F` reach the Core's yaml.v3 as a parse error or a non-string; a merge key
-`<<` stays plain on purpose, because `package:yaml` keeps it as an ordinary key
-and the Core applies the merge.
-
-The `code_forge` fork (`chen08209/code_forge`) is frozen: its Dart code now lives
-in the in-repo `plugins/code_forge` package and its Rust code in the `editor/`
-module of `plugins/rust_api`, both trimmed to what FlClash uses.
-`plugins/code_forge/README.md` records what was kept and what was removed;
-upstream's MIT notice stays in `plugins/code_forge/LICENSE`.
-
-## Dependency Ceilings
-
-`flutter pub outdated` lists only upstream-held entries, so treat them as
-resolved-until-the-ceiling-moves rather than as debt:
-
-- `intl` is intentionally unbounded (`any`) and `material_color_utilities` is
-  resolved by the Flutter SDK; neither is a bound this repository sets.
-
-The `riverpod` set, `build_runner`, `drift_dev` and `intl_utils` resolve to their
-latest releases. Two are held back:
-
-- `freezed` 4.0.2 needs `analyzer` 14, while `intl_utils` 2.8.16 still requires
-  `analyzer` ^13. It moves once `intl_utils` accepts analyzer 14.
-- `test` 1.32.0 needs `test_api` 0.7.14, and `flutter_test` on Flutter 3.47 pins
-  0.7.12. It moves with the SDK.
-
-When an upgrade fails version solving, record the blocker here with
-what has to change upstream before the pin can move, so the next
-`flutter pub outdated` run does not rediscover it.
-
-`_initDynamicColor` in `lib/bootstrap.dart` reads the `dynamic_color` method
-channel directly and decodes the palette list into a `TonalPalette`, instead of
-going through `DynamicColorPlugin.getCorePalette()` and its deprecated
-`CorePalette` return type. Everything downstream sees `DynamicColorSeeds`, so a
-non-deprecated plugin accessor changes only that one function.
-
-## Build Dependencies
-
-Linux:
-
-```bash
-sudo apt-get install libayatana-appindicator3-dev
-```
-
-Windows:
-
-- GCC and Inno Setup.
-
-macOS:
-
-```bash
-npm install -g appdmg
-```
+本分支已完成 Git 边界、产品范围和架构决策记录；现有 Flutter 工程和 Android 模块尚未完成根目录原生化。结构迁移前先保留 Go 核心、Android Service、必要资源和协议定义，逐步替换 Flutter 壳。

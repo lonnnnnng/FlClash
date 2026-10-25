@@ -1,5 +1,3 @@
 # Worktrees
 
-Claude Code, Codex, and Gemini each create git worktrees. `tool/worktrees.sh list` shows every worktree with its
-owning tool and whether it holds uncommitted work; `tool/worktrees.sh prune` removes the clean ones and keeps
-dirty ones unless `--force` is passed. `.claude/worktrees/` is ignored by git; `.claude/settings.json` is tracked.
+使用 worktree 前先确认当前分支、工作树和未提交改动。不同任务不得共享同一工作树的未提交文件；结束后只清理自己创建且已确认干净的 worktree，不使用 `git clean` 代替核对。
