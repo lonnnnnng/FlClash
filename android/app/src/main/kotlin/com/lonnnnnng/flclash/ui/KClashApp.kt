@@ -56,6 +56,8 @@ import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -80,6 +82,7 @@ fun KClashApp(
     val runtimeLogs by runtimeViewModel.logs.collectAsState()
     val runtimeProbe by runtimeViewModel.probeState.collectAsState()
     val diagnosticState by runtimeViewModel.diagnosticState.collectAsState()
+    val diagnosticHistory by runtimeViewModel.diagnosticHistory.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
@@ -197,6 +200,7 @@ fun KClashApp(
                 ProbeCard(
                     state = runtimeProbe,
                     diagnostic = diagnosticState,
+                    diagnosticHistory = diagnosticHistory,
                     runtimeState = runtimeState,
                     profile = selectedProfile,
                     onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
@@ -617,6 +621,7 @@ private fun formatRate(bytes: Long): String = "${formatBytes(bytes)}/s"
 private fun ProbeCard(
     state: ProbeUiState,
     diagnostic: DiagnosticSessionUiState,
+    diagnosticHistory: List<RuntimeDiagnosticEvent>,
     runtimeState: CoreRuntimeStatus,
     profile: Profile?,
     onProbe: () -> Unit,
@@ -693,7 +698,7 @@ private fun ProbeCard(
                     }
                 }
 
-                DiagnosticSessionStatus.IDLE -> Unit
+                DiagnosticSessionStatus.IDLE -> RuntimeDiagnosticHistorySummary(diagnosticHistory)
             }
             state.error?.let { error ->
                 Text(
@@ -725,6 +730,51 @@ private fun ProbeCard(
         }
     }
 }
+
+@Composable
+private fun RuntimeDiagnosticHistorySummary(events: List<RuntimeDiagnosticEvent>) {
+    if (events.isEmpty()) {
+        Text(
+            "尚未记录运行诊断事件。",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        return
+    }
+    Text(
+        "恢复历史：${events.size} 条",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.primary,
+    )
+    runtimeDiagnosticHistoryRows(events).forEach { event ->
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                runtimeDiagnosticLabel(event.kind) +
+                    if (event.kind == RuntimeDiagnosticKind.CORE_RESTARTED) {
+                        "（CORE_RESTARTED）"
+                    } else {
+                        ""
+                    },
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Text(
+                event.detail,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                DateUtils.getRelativeTimeSpanString(event.timestampMillis).toString(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+internal fun runtimeDiagnosticHistoryRows(events: List<RuntimeDiagnosticEvent>): List<RuntimeDiagnosticEvent> =
+    events.takeLast(MAX_RUNTIME_HISTORY_ROWS).asReversed()
 
 @Composable
 private fun ConnectionsCard(
@@ -1194,6 +1244,7 @@ private fun <T> ObservationList(
 private const val MAX_CONNECTIONS_ON_HOME = 5
 private const val MAX_REQUESTS_ON_HOME = 5
 private const val MAX_OBSERVATION_ROWS = 5
+private const val MAX_RUNTIME_HISTORY_ROWS = 3
 
 @Composable
 private fun ProfileCard(

@@ -10,6 +10,7 @@ import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
+import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -51,6 +52,8 @@ class MainViewModel @Inject constructor(
 
     private val mutableDiagnostic = MutableStateFlow(DiagnosticSessionUiState())
     val diagnosticState = mutableDiagnostic.asStateFlow()
+    private val mutableDiagnosticHistory = MutableStateFlow<List<RuntimeDiagnosticEvent>>(emptyList())
+    val diagnosticHistory = mutableDiagnosticHistory.asStateFlow()
     private var diagnosticSequence = 0L
 
     init {
@@ -64,6 +67,8 @@ class MainViewModel @Inject constructor(
         }
         viewModelScope.launch {
             runtimeManager.diagnosticEvents.collect { events ->
+                // 作者 long：持久化历史独立于一次 probe 会话，进程重建后即使核心暂未运行也要能在首页显示。
+                mutableDiagnosticHistory.value = events.takeLast(MAX_RUNTIME_DIAGNOSTIC_HISTORY)
                 mutableDiagnostic.update { current -> current.withRuntimeEvents(events) }
             }
         }
@@ -533,6 +538,20 @@ private const val MAX_REQUEST_HISTORY = 2_000
 private const val MAX_DNS_HISTORY = 1_000
 private const val MAX_LOG_HISTORY = 1_000
 private const val MAX_DIAGNOSTIC_ITEMS = 100
+private const val MAX_RUNTIME_DIAGNOSTIC_HISTORY = 200
+
+internal fun runtimeDiagnosticLabel(kind: RuntimeDiagnosticKind): String = when (kind) {
+    RuntimeDiagnosticKind.CORE_STARTED -> "核心启动"
+    RuntimeDiagnosticKind.CORE_RESTARTED -> "核心重启"
+    RuntimeDiagnosticKind.CORE_STOPPED -> "核心停止"
+    RuntimeDiagnosticKind.CORE_FAILED -> "核心失败"
+    RuntimeDiagnosticKind.VPN_REVOKED -> "VPN 被系统撤销"
+    RuntimeDiagnosticKind.NETWORK_AVAILABLE -> "底层网络可用"
+    RuntimeDiagnosticKind.NETWORK_LOSING -> "底层网络即将丢失"
+    RuntimeDiagnosticKind.NETWORK_LOST -> "底层网络丢失"
+    RuntimeDiagnosticKind.NETWORK_SWITCHED -> "底层网络已切换"
+    RuntimeDiagnosticKind.DNS_UPDATED -> "DNS 已更新"
+}
 
 private fun List<String>.containsIgnoreCase(needle: String): Boolean =
     any { it.contains(needle, ignoreCase = true) }

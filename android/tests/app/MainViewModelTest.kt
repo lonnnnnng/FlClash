@@ -176,6 +176,22 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `runtime diagnostic history shows newest events first and labels restarts`() {
+        val events = listOf(
+            RuntimeDiagnosticEvent(RuntimeDiagnosticKind.NETWORK_LOST, "断网", 1L),
+            RuntimeDiagnosticEvent(RuntimeDiagnosticKind.DNS_UPDATED, "DNS 更新", 2L),
+            RuntimeDiagnosticEvent(RuntimeDiagnosticKind.CORE_STARTED, "启动", 3L),
+            RuntimeDiagnosticEvent(RuntimeDiagnosticKind.CORE_RESTARTED, "重启", 4L),
+        )
+
+        assertEquals(
+            listOf(RuntimeDiagnosticKind.CORE_RESTARTED, RuntimeDiagnosticKind.CORE_STARTED, RuntimeDiagnosticKind.DNS_UPDATED),
+            runtimeDiagnosticHistoryRows(events).map { it.kind },
+        )
+        assertEquals("核心重启", runtimeDiagnosticLabel(RuntimeDiagnosticKind.CORE_RESTARTED))
+    }
+
+    @Test
     fun `diagnostic assertion requires status and route`() {
         val result = CoreProbeResult(
             statusCode = 403,
