@@ -87,3 +87,8 @@
 - 真机 `wsvwypiz7xwslvl7` 使用当前第二条授权路径启动成功；系统设置页显示 `KClash / 已连接`，`VpnService`、`ProxyService` 均为前台服务，存在 `tun0` 和 `198.18.0.0/30` 路由。
 - 在系统设置页点击 `KClash / 断开连接` 后，首页显示“核心启动失败”；`VpnService`、`ProxyService`、`tun0`、`198.18.0.0/30` 路由和 KClash VPN 网络均已消失。
 - 在失败态再次点击“启动核心”成功恢复运行；随后停止并删除测试 Profile，设备恢复“还没有配置”空态。
+
+## 后台恢复生命周期切片实测记录
+
+- 真机 `wsvwypiz7xwslvl7` 使用当前第一条授权路径启动成功后，通过 Home 键进入后台并等待 10 秒；期间 `VpnService`、`ProxyService` 均保持前台服务，`tun0` 和 `198.18.0.0/30` 路由持续存在。
+- 重新打开 KClash 后首页仍显示“核心运行中”，运行统计和 DNS 卡片恢复正常，DNS 事件继续到达；随后停止并删除测试 Profile，设备恢复空配置状态。
