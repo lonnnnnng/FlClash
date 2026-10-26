@@ -106,6 +106,35 @@ class RuntimeDiagnosticDaoInstrumentedTest {
         context.deleteDatabase(databaseName)
     }
 
+    @Test
+    fun migration3To4CreatesScriptTableAndOrderIndex() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val databaseName = "script-migration-test.db"
+        context.deleteDatabase(databaseName)
+
+        val versionThree = createSqliteHelper(context, databaseName, version = 3) {
+            // 作者 long：v3 只需要一个可打开的旧 schema，迁移本身只新增脚本资源表。
+        }
+        versionThree.writableDatabase.close()
+        versionThree.close()
+
+        val versionFour = createSqliteHelper(context, databaseName, version = 4) { database ->
+            KClashDatabase.MIGRATION_3_4.migrate(database)
+        }
+        val upgraded = versionFour.writableDatabase
+
+        assertEquals(1, upgraded.query(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'scripts'",
+        ).use { cursor -> if (cursor.moveToFirst()) 1 else 0 })
+        assertEquals(1, upgraded.query(
+            "SELECT name FROM sqlite_master WHERE type = 'index' " +
+                "AND name = 'index_scripts_orderIndex'",
+        ).use { cursor -> if (cursor.moveToFirst()) 1 else 0 })
+
+        versionFour.close()
+        context.deleteDatabase(databaseName)
+    }
+
     private fun createSqliteHelper(
         context: android.content.Context,
         name: String,

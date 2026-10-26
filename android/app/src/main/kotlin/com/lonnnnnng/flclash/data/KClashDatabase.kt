@@ -20,8 +20,13 @@ class ProfileTypeConverters {
  * 不读取 Flutter/Drift 的历史数据库。
  */
 @Database(
-    entities = [AppPreferenceEntity::class, ProfileEntity::class, RuntimeDiagnosticEntity::class],
-    version = 3,
+    entities = [
+        AppPreferenceEntity::class,
+        ProfileEntity::class,
+        RuntimeDiagnosticEntity::class,
+        ScriptEntity::class,
+    ],
+    version = 4,
     exportSchema = false,
 )
 @TypeConverters(ProfileTypeConverters::class)
@@ -31,6 +36,8 @@ abstract class KClashDatabase : RoomDatabase() {
     abstract fun profiles(): ProfileDao
 
     abstract fun runtimeDiagnostics(): RuntimeDiagnosticDao
+
+    abstract fun scripts(): ScriptDao
 
     companion object {
         val MIGRATION_1_2: Migration = object : Migration(1, 2) {
@@ -82,6 +89,24 @@ abstract class KClashDatabase : RoomDatabase() {
                     "CREATE INDEX IF NOT EXISTS index_runtime_diagnostic_events_timestampMillis " +
                         "ON runtime_diagnostic_events(timestampMillis)",
                 )
+            }
+        }
+
+        val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS scripts (
+                        id INTEGER NOT NULL,
+                        label TEXT NOT NULL,
+                        url TEXT NOT NULL,
+                        lastUpdateAt INTEGER,
+                        orderIndex INTEGER NOT NULL,
+                        PRIMARY KEY(id)
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_scripts_orderIndex ON scripts(orderIndex)")
             }
         }
     }

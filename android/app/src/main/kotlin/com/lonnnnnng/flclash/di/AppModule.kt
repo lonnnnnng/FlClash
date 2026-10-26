@@ -6,6 +6,8 @@ import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.HttpSubscriptionClient
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.ProfileStore
+import com.lonnnnnng.flclash.data.ScriptRepository
+import com.lonnnnnng.flclash.data.ScriptStore
 import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
 import com.lonnnnnng.flclash.data.RoomRuntimeDiagnosticStore
 import com.lonnnnnng.flclash.data.SubscriptionClient
@@ -39,6 +41,7 @@ object AppModule {
         Room.databaseBuilder(context, KClashDatabase::class.java, "kclash.db")
             .addMigrations(KClashDatabase.MIGRATION_1_2)
             .addMigrations(KClashDatabase.MIGRATION_2_3)
+            .addMigrations(KClashDatabase.MIGRATION_3_4)
             .build()
 
     @Provides
@@ -56,6 +59,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideProfileStore(repository: ProfileRepository): ProfileStore = repository
+
+    @Provides
+    @Singleton
+    fun provideScriptRepository(
+        @ApplicationContext context: Context,
+        database: KClashDatabase,
+    ): ScriptRepository = ScriptRepository(context, database)
+
+    @Provides
+    @Singleton
+    fun provideScriptStore(repository: ScriptRepository): ScriptStore = repository
 
     @Provides
     @Singleton

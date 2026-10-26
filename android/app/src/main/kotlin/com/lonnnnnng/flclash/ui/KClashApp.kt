@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileProvidersEditor
 import com.lonnnnnng.flclash.data.ProfileType
+import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
@@ -94,6 +95,7 @@ fun KClashApp(
     runtimeViewModel: MainViewModel,
     profilesViewModel: ProfilesViewModel,
     proxyGroupsViewModel: ProxyGroupsViewModel,
+    scriptsViewModel: ScriptsViewModel,
     onStartRuntime: () -> Unit,
     onStopRuntime: () -> Unit,
     batteryOptimizationIgnored: Boolean,
@@ -118,6 +120,8 @@ fun KClashApp(
     val proxyGroupsEditorState by profilesViewModel.proxyGroupsEditorState.collectAsState()
     val providersEditorState by profilesViewModel.providersEditorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
+    val scriptsState by scriptsViewModel.state.collectAsState()
+    val scriptEditorState by scriptsViewModel.editorState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -127,6 +131,7 @@ fun KClashApp(
     var showDns by rememberSaveable { mutableStateOf(false) }
     var showLogs by rememberSaveable { mutableStateOf(false) }
     var showDiagnosticHistory by rememberSaveable { mutableStateOf(false) }
+    var showScriptsDialog by rememberSaveable { mutableStateOf(false) }
     var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
     val selectedDestination = MainDestination.values()[selectedDestinationIndex]
 
@@ -189,6 +194,12 @@ fun KClashApp(
 
     LaunchedEffect(proxyGroupsViewModel) {
         proxyGroupsViewModel.errors.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    LaunchedEffect(scriptsViewModel) {
+        scriptsViewModel.errors.collect { message ->
             snackbarHostState.showSnackbar(message)
         }
     }
@@ -317,6 +328,7 @@ fun KClashApp(
                         onSaveProviders = profilesViewModel::saveProviders,
                         onSaveProvidersWithOverrides = profilesViewModel::saveProviders,
                         onReorderProfiles = profilesViewModel::reorder,
+                        onOpenScripts = { showScriptsDialog = true },
                     )
                 }
 
@@ -386,6 +398,42 @@ fun KClashApp(
             onDismiss = { showDiagnosticHistory = false },
             onExport = { onExportDiagnosticHistory(diagnosticHistory) },
         )
+    }
+
+    if (showScriptsDialog) {
+        ScriptsLibraryDialog(
+            state = scriptsState,
+            onDismiss = { showScriptsDialog = false },
+            onCreate = {
+                showScriptsDialog = false
+                scriptsViewModel.openNewEditor()
+            },
+            onEdit = { script ->
+                showScriptsDialog = false
+                scriptsViewModel.openEditor(script)
+            },
+            onDelete = scriptsViewModel::delete,
+            onReorder = scriptsViewModel::reorder,
+        )
+    }
+
+    scriptEditorState.let { editor ->
+        if (editor.isOpen) {
+            if (editor.isLoading) {
+                AlertDialog(
+                    onDismissRequest = {},
+                    title = { Text("读取脚本") },
+                    text = { CircularProgressIndicator() },
+                    confirmButton = {},
+                )
+            } else {
+                ScriptEditorDialog(
+                    state = editor,
+                    onDismiss = scriptsViewModel::closeEditor,
+                    onSave = scriptsViewModel::save,
+                )
+            }
+        }
     }
 
 }
@@ -513,6 +561,7 @@ internal fun ProfilesPanel(
     onSaveProviders: (proxyProviders: String, ruleProviders: String) -> Unit = { _, _ -> },
     onSaveProvidersWithOverrides: ((String, String, Map<String, ProxyProviderOverride>) -> Unit)? = null,
     onReorderProfiles: (List<Long>) -> Unit = {},
+    onOpenScripts: () -> Unit = {},
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
@@ -535,6 +584,7 @@ internal fun ProfilesPanel(
                     enabled = canMutateProfiles,
                 ) { Text("排序") }
             }
+            TextButton(onClick = onOpenScripts, enabled = !state.isBusy) { Text("脚本") }
         }
         if (state.profiles.isEmpty()) {
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -1809,6 +1859,159 @@ internal fun ProfileReorderDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
+}
+
+/**
+ * 作者 long：先提供本地脚本资源的可见管理边界，脚本正文和元数据都通过 ViewModel 回写，
+ * 但不在本轮伪装成已经接入 Mihomo 执行链，避免用户误以为保存后会改变代理配置。
+ */
+@Composable
+internal fun ScriptsLibraryDialog(
+    state: ScriptsUiState,
+    onDismiss: () -> Unit,
+    onCreate: () -> Unit,
+    onEdit: (Script) -> Unit,
+    onDelete: (Script) -> Unit,
+    onReorder: (List<Long>) -> Unit,
+) {
+    var pendingDelete by remember { mutableStateOf<Script?>(null) }
+    var orderedScripts by remember(state.scripts.map(Script::id)) {
+        mutableStateOf(state.scripts)
+    }
+
+    fun move(index: Int, offset: Int) {
+        val target = index + offset
+        if (target !in orderedScripts.indices) return
+        val next = orderedScripts.toMutableList()
+        val item = next.removeAt(index)
+        next.add(target, item)
+        orderedScripts = next
+        onReorder(next.map(Script::id))
+    }
+
+    AlertDialog(
+        onDismissRequest = { if (!state.isBusy) onDismiss() },
+        title = { Text("脚本库") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "当前仅管理本地脚本文件；Profile 绑定和 Mihomo 执行将在后续切片接入。",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                if (orderedScripts.isEmpty()) {
+                    Text("还没有脚本", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.heightIn(max = 420.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(orderedScripts, key = { it.id }) { script ->
+                            val index = orderedScripts.indexOfFirst { it.id == script.id }
+                            Card(modifier = Modifier.fillMaxWidth()) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(script.label, style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        "${index + 1}. ${script.fileName}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Row(horizontalArrangement = Arrangement.End) {
+                                        TextButton(
+                                            onClick = { move(index, -1) },
+                                            enabled = !state.isBusy && index > 0,
+                                        ) { Text("上移") }
+                                        TextButton(
+                                            onClick = { move(index, 1) },
+                                            enabled = !state.isBusy && index < orderedScripts.lastIndex,
+                                        ) { Text("下移") }
+                                        TextButton(
+                                            onClick = { onEdit(script) },
+                                            enabled = !state.isBusy,
+                                        ) { Text("编辑") }
+                                        TextButton(
+                                            onClick = { pendingDelete = script },
+                                            enabled = !state.isBusy,
+                                        ) { Text("删除") }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onCreate, enabled = !state.isBusy) { Text("新建脚本") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !state.isBusy) { Text("关闭") }
+        },
+    )
+
+    pendingDelete?.let { script ->
+        AlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text("删除脚本") },
+            text = { Text("确定删除“${script.label}”及其本地文件吗？") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingDelete = null
+                        onDelete(script)
+                    },
+                    enabled = !state.isBusy,
+                ) { Text("删除") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) { Text("取消") }
+            },
+        )
+    }
+}
+
+@Composable
+internal fun ScriptEditorDialog(
+    state: ScriptEditorUiState,
+    onDismiss: () -> Unit,
+    onSave: (label: String, content: String) -> Unit,
+) {
+    var label by remember(state.script?.id, state.isOpen) { mutableStateOf(state.label) }
+    var content by remember(state.script?.id, state.isOpen) { mutableStateOf(state.content) }
+    AlertDialog(
+        onDismissRequest = { if (!state.isSaving) onDismiss() },
+        title = { Text(if (state.script == null) "新建脚本" else "编辑脚本") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = label,
+                    onValueChange = { label = it },
+                    enabled = !state.isSaving,
+                    label = { Text("脚本名称") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    enabled = !state.isSaving,
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 14,
+                    maxLines = 22,
+                    label = { Text("JavaScript") },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(label, content) },
+                enabled = !state.isSaving && label.isNotBlank() && content.isNotBlank(),
+            ) {
+                if (state.isSaving) CircularProgressIndicator() else Text("保存")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !state.isSaving) { Text("取消") }
         },
     )
 }

@@ -335,3 +335,11 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；26 项 instrumentation 测试失败 0、错误 0、跳过 0，新增排序 Compose 与 Room 流程均通过；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`d1f4098ea916501f595988ca9e398397defb4286d409b37fbd98366be160465e`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动。
+
+## Scripts 本地资源管理切片实测记录（2026-10-27）
+
+- 新增 `ScriptsViewModelTest` 3 项、`ScriptsUiInstrumentedTest` 2 项、`ScriptsRepositoryInstrumentedTest` 1 项，并为 `RuntimeDiagnosticDaoInstrumentedTest` 增加 Room 3→4 migration 用例；覆盖脚本新建、读取、编辑、删除、排序、名称去重、核心运行保护、UI 回调和脚本表迁移。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 155 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；30 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 5 项、Compose 25 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`b3f1e148bbe18e7a23db29cb689104678b8bd8ef73bd15cccc715c0fdfd5ff97`；APK 原生库全部位于 `lib/arm64-v8a/`。
+- 本切片只验证本地脚本资源管理，没有访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN、核心启动或 JavaScript 执行；Profile 绑定、远程同步和 Mihomo 执行仍待后续切片。

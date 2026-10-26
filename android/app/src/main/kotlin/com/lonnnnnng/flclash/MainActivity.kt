@@ -21,6 +21,7 @@ import com.lonnnnnng.flclash.ui.DiagnosticSessionStatus
 import com.lonnnnnng.flclash.ui.MainViewModel
 import com.lonnnnnng.flclash.ui.ProfilesViewModel
 import com.lonnnnnng.flclash.ui.ProxyGroupsViewModel
+import com.lonnnnnng.flclash.ui.ScriptsViewModel
 import com.lonnnnnng.flclash.ui.formatDiagnosticForExport
 import com.lonnnnnng.flclash.ui.formatLogsForExport
 import com.lonnnnnng.flclash.ui.formatRuntimeDiagnosticHistoryForExport
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
     private val profilesViewModel: ProfilesViewModel by viewModels()
     private val proxyGroupsViewModel: ProxyGroupsViewModel by viewModels()
+    private val scriptsViewModel: ScriptsViewModel by viewModels()
     private val vpnConsentLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
@@ -110,6 +112,7 @@ class MainActivity : ComponentActivity() {
                     runtimeViewModel = viewModel,
                     profilesViewModel = profilesViewModel,
                     proxyGroupsViewModel = proxyGroupsViewModel,
+                    scriptsViewModel = scriptsViewModel,
                     onStartRuntime = ::requestRuntimeStart,
                     onStopRuntime = viewModel::stopRuntime,
                     batteryOptimizationIgnored = batteryOptimizationIgnored,
