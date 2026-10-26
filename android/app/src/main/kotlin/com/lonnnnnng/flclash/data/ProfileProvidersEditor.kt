@@ -18,6 +18,14 @@ object ProfileProvidersEditor {
         ruleProviders = extractSection(yaml, "rule-providers"),
     )
 
+    /**
+     * 作者 long：字段化覆盖只展示配置里真实存在的代理 Provider，避免用户给已经删除的
+     * Provider 保存一份永远不会被核心读取的孤立覆盖。
+     */
+    fun proxyProviderNames(editorText: String): List<String> = runCatching {
+        parseEntries(editorText, "proxy-providers").map { normalizeKey(it.first()) }
+    }.getOrDefault(emptyList())
+
     fun replace(yaml: String, sections: Sections): String {
         var updated = yaml
         listOf(

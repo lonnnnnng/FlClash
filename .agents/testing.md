@@ -33,6 +33,15 @@
 - 真机 `wsvwypiz7xwslvl7`：创建自定义配置后重启应用，配置仍显示且保持选中；核心启动/停止链路仍可用，前台服务 `startForegroundCount=1`、`isForeground=true`，未发现 `FATAL EXCEPTION`。
 - 真机 `wsvwypiz7xwslvl7`：使用公开测试订阅地址完成 HTTP 导入，列表显示远程订阅；重复导入收到“该订阅已经添加”，随后删除测试订阅并恢复空状态。
 
+## Provider 字段化覆盖切片实测记录（2026-10-27）
+
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 150 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；24 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 4 项、Compose 20 项。
+- 服务层测试确认 Provider 覆盖 JSON 往返、`health-check`/`override` 局部合并和未知字段保留；`CoreRuntimeManager` 测试确认启动暂存配置包含字段化覆盖。
+- Compose instrumentation 确认 Provider 列表可打开字段化对话框，填写 interval/timeout 后先保存子表单，再由父 Provider 编辑器回传覆盖 map。
+- Debug APK SHA-256：`d7204a8f51af8eddb376d7152a0bfed0dcafb65c2497d4ecea8c4fee4fffb0fd`；设备为 Redmi Note 8 Pro（Android 16/API 36），APK 仅包含 `arm64-v8a` 原生库。
+- 本轮未访问当前工作区 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动。
+
 ## 代理组与单节点测速切片实测记录
 
 - `./gradlew test :app:assembleDebug --no-daemon`：通过；当前 Debug 单元测试共 71 项，失败 0，错误 0，跳过 0。
@@ -316,4 +325,4 @@
 - `ProfileProvidersEditor` 覆盖双 map 提取/替换、包装粘贴、空 map、嵌套 map、重复名称、scalar 条目和边界注释保留；ViewModel 在核心运行期间继续禁止打开和保存 Provider。
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 146 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；22 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 19 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
-- Debug APK SHA-256：`bb581765f3e47ca991d4187ef5da79501ef8a2c36bf2bdd5d302e6360f32f4a5`；APK 原生库全部位于 `lib/arm64-v8a/`，本轮未访问当前 `AGENTS.md` 列出的真实订阅路径。Flutter 字段化 proxy provider override 表单仍待后续切片。
+- Debug APK SHA-256：`bb581765f3e47ca991d4187ef5da79501ef8a2c36bf2bdd5d302e6360f32f4a5`；APK 原生库全部位于 `lib/arm64-v8a/`，本轮未访问当前 `AGENTS.md` 列出的真实订阅路径。字段化 proxy provider override 另见下方 2026-10-27 验收记录。

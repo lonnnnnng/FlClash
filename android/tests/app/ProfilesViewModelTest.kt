@@ -4,6 +4,8 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
+import com.lonnnnnng.flclash.service.ProfileProviderOverrides
+import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -234,6 +236,36 @@ class ProfilesViewModelTest {
     }
 
     @Test
+    fun `custom providers editor persists typed proxy provider overrides`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(16L, "字段 Provider")
+        val store = FakeProfileStore(profile).apply {
+            content = "proxy-providers:\n  cloud:\n    type: http\n"
+        }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openProvidersEditor(profile)
+        advanceUntilIdle()
+        viewModel.saveProviders(
+            proxyProviders = "cloud:\n  type: http",
+            ruleProviders = "",
+            proxyProviderOverrides = mapOf(
+                "cloud" to ProxyProviderOverride(timeout = 2_000, udp = false),
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals(
+            mapOf("cloud" to ProxyProviderOverride(timeout = 2_000, udp = false)),
+            ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).proxyProviders,
+        )
+        assertNull(viewModel.providersEditorState.value.profile)
+    }
+
+    @Test
     fun `custom providers editor keeps dialog open when a provider is malformed`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(15L, "非法 Provider")
@@ -270,6 +302,7 @@ private class FakeProfileStore(
     var deleteCalls = 0
     var content = ""
     var updatedContent: String? = null
+    var updatedOverridesJson: String? = null
 
     override suspend fun selectProfile(id: Long?) = Unit
 
@@ -288,6 +321,11 @@ private class FakeProfileStore(
         updatedContent = content
         this.content = content
         return profile
+    }
+
+    override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile {
+        updatedOverridesJson = overridesJson
+        return profile.copy(overridesJson = overridesJson)
     }
 
     override suspend fun updateRemoteProfile(id: Long): Profile =

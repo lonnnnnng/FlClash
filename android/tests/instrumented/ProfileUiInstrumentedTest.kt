@@ -3,10 +3,13 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -154,6 +157,42 @@ class ProfileUiInstrumentedTest {
 
         assertEquals("cloud:\n  type: http", savedProxy)
         assertEquals("ads:\n  type: http", savedRule)
+    }
+
+    @Test
+    fun providerOverrideDialogEditsTypedFieldsBeforeParentSave() {
+        var savedOverrides: Map<String, ProxyProviderOverride>? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfileProvidersEditorDialog(
+                    profile = Profile.custom(17L, "字段化 Provider"),
+                    initialProxyProviders = "cloud:\n  type: http",
+                    initialRuleProviders = "",
+                    saving = false,
+                    onDismiss = {},
+                    onSave = { _, _ -> },
+                    onSaveWithOverrides = { _, _, overrides -> savedOverrides = overrides },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("编辑字段").performClick()
+        composeRule.onNodeWithText("Provider 覆盖 · cloud").assertIsDisplayed()
+        composeRule.onNodeWithText("间隔（秒）").performTextInput("300")
+        composeRule.onNodeWithText("超时（毫秒）").performTextInput("5000")
+
+        val saveButtons = composeRule.onAllNodesWithText("保存")
+        saveButtons[saveButtons.fetchSemanticsNodes().lastIndex].performClick()
+        assertTrue(
+            composeRule.onAllNodesWithText("Provider 覆盖 · cloud")
+                .fetchSemanticsNodes().isEmpty(),
+        )
+        composeRule.onAllNodesWithText("保存")[0].performClick()
+
+        assertEquals(
+            mapOf("cloud" to ProxyProviderOverride(interval = 300, timeout = 5_000)),
+            savedOverrides,
+        )
     }
 
     @Test

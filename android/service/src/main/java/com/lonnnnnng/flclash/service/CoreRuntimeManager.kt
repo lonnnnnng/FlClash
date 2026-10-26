@@ -85,7 +85,7 @@ class CoreRuntimeManager(
             // 作者 long：先记录恢复意图，再进行配置和服务启动，进程若在启动中断开也能由 Application 重试。
             runtimeResumeStore.setShouldResume(true)
             ensureInitialized()
-            stageConfig(profile.filePath)
+            stageConfig(profile)
             // 作者 long：Mihomo 解析失败时会回退到内置空配置，所以必须先独立校验文件，
             // 只有校验通过后才允许调用 setupConfig，避免把回退状态报告成可用代理。
             bridge.validateConfig(paths.configFile.path)
@@ -297,15 +297,18 @@ class CoreRuntimeManager(
         }
     }
 
-    private fun stageConfig(sourcePath: String) {
-        val source = File(sourcePath)
+    private fun stageConfig(profile: ActiveProfile) {
+        val source = File(profile.filePath)
         require(source.isFile) { "配置文件不存在：${source.path}" }
         paths.homeDir.mkdirs()
         val temporary = File(paths.homeDir, ".${paths.configFile.name}.tmp")
+        val sourceContent = source.readText(Charsets.UTF_8)
+        val effectiveContent = ProfileProviderOverrideApplier.apply(
+            sourceContent,
+            ProfileProviderOverrides.fromJsonString(profile.overridesJson),
+        )
         try {
-            source.inputStream().use { input ->
-                temporary.outputStream().use { output -> input.copyTo(output) }
-            }
+            temporary.writeText(effectiveContent, Charsets.UTF_8)
             if (!temporary.renameTo(paths.configFile)) {
                 paths.configFile.outputStream().use { output ->
                     temporary.inputStream().use { input -> input.copyTo(output) }

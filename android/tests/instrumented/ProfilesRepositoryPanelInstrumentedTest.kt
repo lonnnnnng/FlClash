@@ -16,6 +16,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.ProfileRepository
+import com.lonnnnnng.flclash.service.ProfileProviderOverrides
+import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.data.SubscriptionClient
 import com.lonnnnnng.flclash.data.SubscriptionDownload
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
@@ -167,6 +169,37 @@ class ProfilesRepositoryPanelInstrumentedTest {
         assertEquals(0, runBlocking { database.profiles().getAll().size })
         assertEquals(null, repository.currentProfileId.value)
         assertFalse(repository.profileFile(createdProfile.id).exists())
+    }
+
+    @Test
+    fun repositoryPersistsProviderOverridesForActiveProfile() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context = context,
+            database = database,
+            subscriptionClient = object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload =
+                    error("该持久化流程不访问远程订阅")
+            },
+        )
+
+        val profile = runBlocking { repository.addCustomProfile("Provider 持久化") }
+        val overrides = ProfileProviderOverrides(
+            mapOf("cloud" to ProxyProviderOverride(timeout = 2_000, udp = false)),
+        )
+        runBlocking { repository.updateProfileOverrides(profile.id, overrides.toJsonString()) }
+
+        assertEquals(
+            overrides.proxyProviders,
+            ProfileProviderOverrides.fromJsonString(
+                runBlocking { database.profiles().getById(profile.id)?.overridesJson },
+            ).proxyProviders,
+        )
+        assertEquals(overrides.toJsonString(), runBlocking { repository.activeProfile().overridesJson })
     }
 }
 

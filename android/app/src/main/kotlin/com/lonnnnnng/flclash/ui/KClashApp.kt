@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -56,6 +57,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.ProfileProvidersEditor
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
@@ -65,6 +67,7 @@ import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
+import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -312,6 +315,7 @@ fun KClashApp(
                         onOpenProvidersEditor = profilesViewModel::openProvidersEditor,
                         onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
                         onSaveProviders = profilesViewModel::saveProviders,
+                        onSaveProvidersWithOverrides = profilesViewModel::saveProviders,
                     )
                 }
 
@@ -506,6 +510,7 @@ internal fun ProfilesPanel(
     onOpenProvidersEditor: (profile: Profile) -> Unit = {},
     onCloseProvidersEditor: () -> Unit = {},
     onSaveProviders: (proxyProviders: String, ruleProviders: String) -> Unit = { _, _ -> },
+    onSaveProvidersWithOverrides: ((String, String, Map<String, ProxyProviderOverride>) -> Unit)? = null,
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
@@ -671,9 +676,11 @@ internal fun ProfilesPanel(
                 profile = profile,
                 initialProxyProviders = providersEditorState.proxyProviders,
                 initialRuleProviders = providersEditorState.ruleProviders,
+                initialProxyProviderOverrides = providersEditorState.proxyProviderOverrides,
                 saving = providersEditorState.isSaving,
                 onDismiss = onCloseProvidersEditor,
                 onSave = onSaveProviders,
+                onSaveWithOverrides = onSaveProvidersWithOverrides,
             )
         }
     }
@@ -1964,15 +1971,24 @@ internal fun ProfileProvidersEditorDialog(
     profile: Profile,
     initialProxyProviders: String,
     initialRuleProviders: String,
+    initialProxyProviderOverrides: Map<String, ProxyProviderOverride> = emptyMap(),
     saving: Boolean,
     onDismiss: () -> Unit,
     onSave: (proxyProviders: String, ruleProviders: String) -> Unit,
+    onSaveWithOverrides: ((String, String, Map<String, ProxyProviderOverride>) -> Unit)? = null,
 ) {
     var proxyProviders by rememberSaveable(profile.id, "proxyProviders") {
         mutableStateOf(initialProxyProviders)
     }
     var ruleProviders by rememberSaveable(profile.id, "ruleProviders") {
         mutableStateOf(initialRuleProviders)
+    }
+    var proxyProviderOverrides by remember(profile.id, initialProxyProviderOverrides) {
+        mutableStateOf(initialProxyProviderOverrides.toMap())
+    }
+    var editingProvider by remember { mutableStateOf<String?>(null) }
+    val providerNames = remember(proxyProviders) {
+        ProfileProvidersEditor.proxyProviderNames(proxyProviders)
     }
     AlertDialog(
         onDismissRequest = { if (!saving) onDismiss() },
@@ -2001,11 +2017,49 @@ internal fun ProfileProvidersEditorDialog(
                     enabled = !saving,
                     label = { Text("rule-providers") },
                 )
+                Text(
+                    "字段化代理 Provider 覆盖",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                if (providerNames.isEmpty()) {
+                    Text(
+                        "先在 proxy-providers 中定义 Provider，才能配置健康检查和节点覆盖。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    providerNames.forEach { name ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(name)
+                                Text(
+                                    providerOverrideSummary(proxyProviderOverrides[name]),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            TextButton(
+                                onClick = { editingProvider = name },
+                                enabled = !saving,
+                            ) { Text("编辑字段") }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { onSave(proxyProviders, ruleProviders) },
+                onClick = {
+                    val filtered = proxyProviderOverrides.filterKeys(providerNames::contains)
+                    if (onSaveWithOverrides != null) {
+                        onSaveWithOverrides(proxyProviders, ruleProviders, filtered)
+                    } else {
+                        onSave(proxyProviders, ruleProviders)
+                    }
+                },
                 enabled = !saving,
             ) {
                 if (saving) CircularProgressIndicator() else Text("保存")
@@ -2015,6 +2069,229 @@ internal fun ProfileProvidersEditorDialog(
             TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
         },
     )
+    editingProvider?.let { name ->
+        ProfileProxyProviderOverrideDialog(
+            providerName = name,
+            initial = proxyProviderOverrides[name] ?: ProxyProviderOverride(),
+            saving = saving,
+            onDismiss = { editingProvider = null },
+            onSave = { updated ->
+                proxyProviderOverrides = if (updated.isEmpty) {
+                    proxyProviderOverrides - name
+                } else {
+                    proxyProviderOverrides + (name to updated)
+                }
+                editingProvider = null
+            },
+        )
+    }
+}
+
+/**
+ * 作者 long：每个字段保留“未设置”和“显式设置”两种状态，避免把用户清空的覆盖误写成
+ * Mihomo 默认值；布尔字段通过左侧开关控制是否写入，右侧按钮切换 true/false。
+ */
+@Composable
+internal fun ProfileProxyProviderOverrideDialog(
+    providerName: String,
+    initial: ProxyProviderOverride,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (ProxyProviderOverride) -> Unit,
+) {
+    var url by remember(providerName, initial) { mutableStateOf(initial.url.orEmpty()) }
+    var interval by remember(providerName, initial) { mutableStateOf(initial.interval?.toString().orEmpty()) }
+    var timeout by remember(providerName, initial) { mutableStateOf(initial.timeout?.toString().orEmpty()) }
+    var expectedStatus by remember(providerName, initial) { mutableStateOf(initial.expectedStatus.orEmpty()) }
+    var additionalPrefix by remember(providerName, initial) { mutableStateOf(initial.additionalPrefix.orEmpty()) }
+    var additionalSuffix by remember(providerName, initial) { mutableStateOf(initial.additionalSuffix.orEmpty()) }
+    var lazySet by remember(providerName, initial) { mutableStateOf(initial.lazy != null) }
+    var lazyValue by remember(providerName, initial) { mutableStateOf(initial.lazy ?: true) }
+    var udpSet by remember(providerName, initial) { mutableStateOf(initial.udp != null) }
+    var udpValue by remember(providerName, initial) { mutableStateOf(initial.udp ?: true) }
+    var skipCertSet by remember(providerName, initial) { mutableStateOf(initial.skipCertVerify != null) }
+    var skipCertValue by remember(providerName, initial) { mutableStateOf(initial.skipCertVerify ?: true) }
+    var ipVersion by remember(providerName, initial) { mutableStateOf(initial.ipVersion) }
+    var error by remember(providerName) { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("Provider 覆盖 · $providerName") },
+        text = {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 520.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item { Text("健康检查", style = MaterialTheme.typography.titleSmall) }
+                item {
+                    OutlinedTextField(
+                        value = url,
+                        onValueChange = { url = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !saving,
+                        label = { Text("URL") },
+                    )
+                }
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = interval,
+                            onValueChange = { interval = it },
+                            modifier = Modifier.weight(1f),
+                            enabled = !saving,
+                            label = { Text("间隔（秒）") },
+                        )
+                        OutlinedTextField(
+                            value = timeout,
+                            onValueChange = { timeout = it },
+                            modifier = Modifier.weight(1f),
+                            enabled = !saving,
+                            label = { Text("超时（毫秒）") },
+                        )
+                    }
+                }
+                item {
+                    OutlinedTextField(
+                        value = expectedStatus,
+                        onValueChange = { expectedStatus = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !saving,
+                        label = { Text("期望状态") },
+                    )
+                }
+                item {
+                    BooleanOverrideRow(
+                        label = "lazy",
+                        enabled = lazySet,
+                        value = lazyValue,
+                        onEnabledChange = { lazySet = it },
+                        onValueChange = { lazyValue = it },
+                    )
+                }
+                item { Text("名称", style = MaterialTheme.typography.titleSmall) }
+                item {
+                    OutlinedTextField(
+                        value = additionalPrefix,
+                        onValueChange = { additionalPrefix = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !saving,
+                        label = { Text("前缀") },
+                    )
+                }
+                item {
+                    OutlinedTextField(
+                        value = additionalSuffix,
+                        onValueChange = { additionalSuffix = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !saving,
+                        label = { Text("后缀") },
+                    )
+                }
+                item { Text("连接", style = MaterialTheme.typography.titleSmall) }
+                item {
+                    BooleanOverrideRow(
+                        label = "UDP",
+                        enabled = udpSet,
+                        value = udpValue,
+                        onEnabledChange = { udpSet = it },
+                        onValueChange = { udpValue = it },
+                    )
+                }
+                item {
+                    BooleanOverrideRow(
+                        label = "跳过证书校验",
+                        enabled = skipCertSet,
+                        value = skipCertValue,
+                        onEnabledChange = { skipCertSet = it },
+                        onValueChange = { skipCertValue = it },
+                    )
+                }
+                item {
+                    Text("IP 版本")
+                    listOf(null to "未设置", "ipv4" to "IPv4", "ipv6" to "IPv6", "dual" to "双栈")
+                        .forEach { (value, label) ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = ipVersion == value,
+                                    onClick = { ipVersion = value },
+                                )
+                                Text(label)
+                            }
+                        }
+                }
+                error?.let { message ->
+                    item { Text(message, color = MaterialTheme.colorScheme.error) }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val parsedInterval = interval.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
+                    val parsedTimeout = timeout.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
+                    if (interval.isNotBlank() && (parsedInterval == null || parsedInterval <= 0)) {
+                        error = "间隔必须是正整数"
+                        return@TextButton
+                    }
+                    if (timeout.isNotBlank() && (parsedTimeout == null || parsedTimeout <= 0)) {
+                        error = "超时必须是正整数"
+                        return@TextButton
+                    }
+                    onSave(
+                        ProxyProviderOverride(
+                            url = url.trim().takeIf { it.isNotEmpty() },
+                            interval = parsedInterval,
+                            timeout = parsedTimeout,
+                            lazy = lazySet.takeIf { it }?.let { lazyValue },
+                            expectedStatus = expectedStatus.trim().takeIf { it.isNotEmpty() },
+                            additionalPrefix = additionalPrefix.takeIf { it.isNotEmpty() },
+                            additionalSuffix = additionalSuffix.takeIf { it.isNotEmpty() },
+                            udp = udpSet.takeIf { it }?.let { udpValue },
+                            skipCertVerify = skipCertSet.takeIf { it }?.let { skipCertValue },
+                            ipVersion = ipVersion,
+                        ),
+                    )
+                },
+                enabled = !saving,
+            ) { Text("保存") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
+}
+
+@Composable
+private fun BooleanOverrideRow(
+    label: String,
+    enabled: Boolean,
+    value: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+    onValueChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(checked = enabled, onCheckedChange = onEnabledChange)
+        Text(label, modifier = Modifier.weight(1f))
+        if (enabled) {
+            TextButton(onClick = { onValueChange(!value) }) { Text(value.toString()) }
+        }
+    }
+}
+
+private fun providerOverrideSummary(override: ProxyProviderOverride?): String {
+    if (override == null || override.isEmpty) return "未设置覆盖"
+    val fields = buildList {
+        if (override.url != null || override.expectedStatus != null) add("健康检查")
+        if (override.interval != null || override.timeout != null || override.lazy != null) add("周期")
+        if (override.additionalPrefix != null || override.additionalSuffix != null) add("名称")
+        if (override.udp != null || override.skipCertVerify != null || override.ipVersion != null) add("连接")
+    }
+    return "已设置：${fields.joinToString("、")}"
 }
 
 private fun profileSubtitle(profile: Profile): String {

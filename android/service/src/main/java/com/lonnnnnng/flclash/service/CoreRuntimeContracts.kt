@@ -26,6 +26,7 @@ data class ActiveProfile(
     val id: Long,
     val label: String,
     val filePath: String,
+    val overridesJson: String = "{}",
 )
 
 interface ActiveProfileProvider {

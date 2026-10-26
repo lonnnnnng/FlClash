@@ -32,13 +32,30 @@ class CoreRuntimeManagerTest {
 
     @Test
     fun `valid profile is staged and applied before listener starts`() = runTest {
-        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val source = temporaryFolder.newFile("profile.yaml").apply {
+            writeText(
+                """
+                    mixed-port: 7890
+                    proxy-providers:
+                      cloud:
+                        type: http
+                        url: https://example.com/cloud
+                """.trimIndent() + "\n",
+            )
+        }
         val homeDir = temporaryFolder.newFolder("core")
         val bridge = FakeBridge()
         val controller = FakeServiceController()
         val resumeStore = FakeRuntimeResumeStore()
         val manager = manager(
-            profile = ActiveProfile(7, "测试配置", source.path),
+            profile = ActiveProfile(
+                id = 7,
+                label = "测试配置",
+                filePath = source.path,
+                overridesJson = ProfileProviderOverrides(
+                    mapOf("cloud" to ProxyProviderOverride(timeout = 2_000)),
+                ).toJsonString(),
+            ),
             homeDir = homeDir,
             bridge = bridge,
             controller = controller,
@@ -48,7 +65,19 @@ class CoreRuntimeManagerTest {
         manager.startProxy().getOrThrow()
 
         assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
-        assertEquals("mixed-port: 7890\n", File(homeDir, "config.yaml").readText())
+        assertEquals(
+            """
+                mixed-port: 7890
+                proxy-providers:
+                  cloud:
+                    type: http
+                    url: https://example.com/cloud
+                    health-check:
+                      enable: true
+                      timeout: 2000
+            """.trimIndent() + "\n",
+            File(homeDir, "config.yaml").readText(),
+        )
         assertEquals(listOf("initialize", "validate", "setup", "log-start", "listener-start"), bridge.calls)
         assertEquals(listOf("service-start"), controller.events)
         assertTrue(controller.started)

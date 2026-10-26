@@ -11,6 +11,8 @@ import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
+import com.lonnnnnng.flclash.service.ProfileProviderOverrides
+import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -64,6 +66,7 @@ data class ProfileProvidersEditorUiState(
     val sourceContent: String = "",
     val proxyProviders: String = "",
     val ruleProviders: String = "",
+    val proxyProviderOverrides: Map<String, ProxyProviderOverride> = emptyMap(),
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
 )
@@ -327,6 +330,9 @@ class ProfilesViewModel @Inject constructor(
                     sourceContent = content,
                     proxyProviders = sections.proxyProviders,
                     ruleProviders = sections.ruleProviders,
+                    proxyProviderOverrides = ProfileProviderOverrides
+                        .fromJsonString(profile.overridesJson)
+                        .proxyProviders,
                 )
             }.onFailure { error ->
                 mutableProvidersEditor.value = ProfileProvidersEditorUiState()
@@ -340,6 +346,18 @@ class ProfilesViewModel @Inject constructor(
     }
 
     fun saveProviders(proxyProviders: String, ruleProviders: String) {
+        saveProviders(
+            proxyProviders,
+            ruleProviders,
+            mutableProvidersEditor.value.proxyProviderOverrides,
+        )
+    }
+
+    fun saveProviders(
+        proxyProviders: String,
+        ruleProviders: String,
+        proxyProviderOverrides: Map<String, ProxyProviderOverride>,
+    ) {
         val state = mutableProvidersEditor.value
         val profile = state.profile ?: return
         if (runtimeManager.state.value.isRunning) {
@@ -351,6 +369,7 @@ class ProfilesViewModel @Inject constructor(
                 isSaving = true,
                 proxyProviders = proxyProviders,
                 ruleProviders = ruleProviders,
+                proxyProviderOverrides = proxyProviderOverrides,
             )
             runCatching {
                 val updatedContent = ProfileProvidersEditor.replace(
@@ -358,6 +377,10 @@ class ProfilesViewModel @Inject constructor(
                     ProfileProvidersEditor.Sections(proxyProviders, ruleProviders),
                 )
                 repository.updateLocalProfileContent(profile.id, updatedContent)
+                repository.updateProfileOverrides(
+                    profile.id,
+                    ProfileProviderOverrides(proxyProviderOverrides).toJsonString(),
+                )
             }.onSuccess {
                 closeProvidersEditor()
             }.onFailure { error ->

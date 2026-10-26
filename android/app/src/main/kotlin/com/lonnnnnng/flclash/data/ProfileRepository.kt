@@ -27,6 +27,9 @@ interface ProfileStore {
     suspend fun addCustomProfile(label: String): Profile
     suspend fun readLocalProfileContent(id: Long): String
     suspend fun updateLocalProfileContent(id: Long, content: String): Profile
+    suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
+        profiles.value.firstOrNull { it.id == id }
+            ?: error("配置不存在")
     suspend fun updateRemoteProfile(id: Long): Profile
     suspend fun deleteProfile(id: Long)
     suspend fun reorder(ids: List<Long>)
@@ -147,6 +150,14 @@ class ProfileRepository(
         updated
     }
 
+    override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
+        withContext(Dispatchers.IO) {
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            val updated = current.copy(overridesJson = overridesJson)
+            profileDao.update(updated.toEntity())
+            updated
+        }
+
     override suspend fun updateRemoteProfile(id: Long): Profile = withContext(Dispatchers.IO) {
         val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
         require(current.type == ProfileType.URL) { "只有订阅配置支持更新" }
@@ -192,6 +203,7 @@ class ProfileRepository(
             id = profile.id,
             label = profile.realLabel,
             filePath = profileFile(profile.id).path,
+            overridesJson = profile.overridesJson,
         )
     }
 
