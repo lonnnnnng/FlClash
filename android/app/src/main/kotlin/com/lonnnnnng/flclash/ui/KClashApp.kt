@@ -6,6 +6,7 @@ import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +34,8 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Tab
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -73,6 +76,13 @@ private enum class MainDestination(
     PROFILES("配置", "▤"),
     PROXY("代理", "↔"),
     CONNECTIONS("连接", "⇄"),
+    OBSERVATIONS("观测", "◌"),
+}
+
+private enum class ObservationTab(val label: String) {
+    REQUESTS("请求"),
+    DNS("DNS"),
+    LOGS("日志"),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -250,30 +260,6 @@ fun KClashApp(
                             onExportDiagnosticHistory = onExportDiagnosticHistory,
                         )
                     }
-                    item {
-                        RequestsCard(
-                            state = runtimeRequests,
-                            runtimeState = runtimeState,
-                            onShowAll = { showRequests = true },
-                        )
-                    }
-                    item {
-                        DnsCard(
-                            state = runtimeDns,
-                            runtimeState = runtimeState,
-                            onShowAll = { showDns = true },
-                            onClear = runtimeViewModel::clearDns,
-                        )
-                    }
-                    item {
-                        LogsCard(
-                            state = runtimeLogs,
-                            runtimeState = runtimeState,
-                            onShowAll = { showLogs = true },
-                            onClear = runtimeViewModel::clearLogs,
-                            onExport = { onExportLogs(runtimeLogs.entries) },
-                        )
-                    }
                 }
 
                 MainDestination.PROFILES -> item {
@@ -323,6 +309,21 @@ fun KClashApp(
                     ConnectionsCard(
                         state = runtimeConnections,
                         runtimeState = runtimeState,
+                    )
+                }
+
+                MainDestination.OBSERVATIONS -> item {
+                    ObservationPage(
+                        requests = runtimeRequests,
+                        dns = runtimeDns,
+                        logs = runtimeLogs,
+                        runtimeState = runtimeState,
+                        onShowRequests = { showRequests = true },
+                        onShowDns = { showDns = true },
+                        onClearDns = runtimeViewModel::clearDns,
+                        onShowLogs = { showLogs = true },
+                        onClearLogs = runtimeViewModel::clearLogs,
+                        onExportLogs = { onExportLogs(runtimeLogs.entries) },
                     )
                 }
             }
@@ -381,6 +382,68 @@ private fun MainNavigationBar(
                 icon = { Text(destination.symbol) },
                 label = { Text(destination.label) },
             )
+        }
+    }
+}
+
+/**
+ * 作者 long：Requests、DNS 和日志都属于运行观测，但各自有独立的筛选和空态；用页签分组可以在手机上保留
+ * 清晰入口，避免把七个目的地同时压缩到底部导航栏，同时继续复用同一份 StateFlow 观测数据。
+ */
+@Composable
+private fun ObservationPage(
+    requests: RequestsUiState,
+    dns: DnsUiState,
+    logs: LogsUiState,
+    runtimeState: CoreRuntimeStatus,
+    onShowRequests: () -> Unit,
+    onShowDns: () -> Unit,
+    onClearDns: () -> Unit,
+    onShowLogs: () -> Unit,
+    onClearLogs: () -> Unit,
+    onExportLogs: () -> Unit,
+) {
+    var selectedTabIndex by rememberSaveable { mutableStateOf(ObservationTab.REQUESTS.ordinal) }
+    val selectedTab = ObservationTab.values()[selectedTabIndex]
+
+    Column {
+        PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+            ObservationTab.values().forEach { tab ->
+                Tab(
+                    selected = tab == selectedTab,
+                    onClick = { selectedTabIndex = tab.ordinal },
+                    text = { Text(tab.label) },
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+                .testTag("page_${selectedTab.name.lowercase()}"),
+        ) {
+            when (selectedTab) {
+                ObservationTab.REQUESTS -> RequestsCard(
+                    state = requests,
+                    runtimeState = runtimeState,
+                    onShowAll = onShowRequests,
+                )
+
+                ObservationTab.DNS -> DnsCard(
+                    state = dns,
+                    runtimeState = runtimeState,
+                    onShowAll = onShowDns,
+                    onClear = onClearDns,
+                )
+
+                ObservationTab.LOGS -> LogsCard(
+                    state = logs,
+                    runtimeState = runtimeState,
+                    onShowAll = onShowLogs,
+                    onClear = onClearLogs,
+                    onExport = onExportLogs,
+                )
+            }
         }
     }
 }

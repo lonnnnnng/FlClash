@@ -14,7 +14,7 @@ import org.junit.runner.RunWith
 
 /**
  * 作者 long：主页面宿主测试必须从真实 MainActivity 进入，确认 Hilt、ViewModel、主题和 Compose 根页面
- * 已经连成可交互入口；测试只打开添加配置弹窗，不触发订阅网络、VPN 授权或核心启动。
+ * 已经连成可交互入口，并覆盖手机主导航与观测页签；测试不触发订阅网络、VPN 授权或核心启动。
  */
 @RunWith(AndroidJUnit4::class)
 class MainActivityInstrumentedTest {
@@ -36,7 +36,7 @@ class MainActivityInstrumentedTest {
     }
 
     @Test
-    fun mainActivityNavigatesBetweenDashboardAndProfiles() {
+    fun mainActivityNavigatesAcrossPrimaryAndObservationDestinations() {
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
         composeRule.onNodeWithText("配置").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
@@ -49,6 +49,17 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("连接").performClick()
         composeRule.onNodeWithTag("page_connections").assertIsDisplayed()
         composeRule.onNodeWithText("活动连接").assertIsDisplayed()
+        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
+        composeRule.onNodeWithTag("page_requests").assertIsDisplayed()
+        composeRule.onNodeWithText("DNS").performClick()
+        composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
+        composeRule.onNodeWithText("DNS 查询").assertIsDisplayed()
+        composeRule.onNodeWithText("日志").performClick()
+        composeRule.onNodeWithTag("page_logs").assertIsDisplayed()
+        composeRule.onNodeWithText("核心日志").assertIsDisplayed()
         composeRule.onNodeWithText("首页").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }

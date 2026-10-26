@@ -273,4 +273,13 @@
 - `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；18 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 15 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`ea2d5d51753a1ca78b2bed38da70e892491d6703dcbae7b0e7f5e62d51444b6c`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
-- 当前已完成首页、配置、代理、连接四个目的地；Requests、DNS、Logs 独立页面仍待扩展。
+- 当前已完成首页、配置、代理、连接、观测五个目的地；观测页包含 Requests、DNS、Logs 三个页签，完整页面级交互仍待扩展。
+
+## 主页面导航与观测页签验收记录
+
+- `MainActivityInstrumentedTest` 从真实 Activity 覆盖首页 → 配置 → 首页 → 代理 → 连接 → 首页 → 观测 → DNS → 日志 → 首页，并断言五个顶层目的地和观测页三个页签的页面标记与标题可见。
+- 观测页复用现有 `MainViewModel` 的 Requests、DNS、Logs `StateFlow`、筛选详情对话框、清空和日志导出回调；首页不再重复渲染三张观测卡片。
+- `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32（另有 2 条 Hint）。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；18 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 15 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256 为 `831e4a42211ac80d58195a1cc85461ef2147b554d7530a54ae114bda87e27247`，APK 仅包含 `lib/arm64-v8a/libclash.so`。
+- 本轮未访问真实订阅路径、VPN 或核心启动；真机验收仍只允许当前工作区根目录 `AGENTS.md` 中的两条授权路径。
