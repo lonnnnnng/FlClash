@@ -71,6 +71,8 @@ private enum class MainDestination(
 ) {
     DASHBOARD("首页", "⌂"),
     PROFILES("配置", "▤"),
+    PROXY("代理", "↔"),
+    CONNECTIONS("连接", "⇄"),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -178,7 +180,7 @@ fun KClashApp(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(if (selectedDestination == MainDestination.DASHBOARD) "KClash" else "配置")
+                    Text(if (selectedDestination == MainDestination.DASHBOARD) "KClash" else selectedDestination.label)
                 },
             )
         },
@@ -211,13 +213,7 @@ fun KClashApp(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
-                .testTag(
-                    if (selectedDestination == MainDestination.DASHBOARD) {
-                        "page_dashboard"
-                    } else {
-                        "page_profiles"
-                    },
-                ),
+                .testTag("page_${selectedDestination.name.lowercase()}"),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             when (selectedDestination) {
@@ -255,12 +251,6 @@ fun KClashApp(
                         )
                     }
                     item {
-                        ConnectionsCard(
-                            state = runtimeConnections,
-                            runtimeState = runtimeState,
-                        )
-                    }
-                    item {
                         RequestsCard(
                             state = runtimeRequests,
                             runtimeState = runtimeState,
@@ -282,15 +272,6 @@ fun KClashApp(
                             onShowAll = { showLogs = true },
                             onClear = runtimeViewModel::clearLogs,
                             onExport = { onExportLogs(runtimeLogs.entries) },
-                        )
-                    }
-                    item {
-                        ProxyGroupsCard(
-                            state = proxyGroupsState,
-                            runtimeState = runtimeState,
-                            onRefresh = proxyGroupsViewModel::refresh,
-                            onSelect = proxyGroupsViewModel::selectProxy,
-                            onTestDelay = proxyGroupsViewModel::testDelay,
                         )
                     }
                 }
@@ -325,6 +306,23 @@ fun KClashApp(
                         onCloseEditor = profilesViewModel::closeEditor,
                         onSaveEditor = profilesViewModel::saveEditor,
                         onDelete = profilesViewModel::delete,
+                    )
+                }
+
+                MainDestination.PROXY -> item {
+                    ProxyGroupsCard(
+                        state = proxyGroupsState,
+                        runtimeState = runtimeState,
+                        onRefresh = proxyGroupsViewModel::refresh,
+                        onSelect = proxyGroupsViewModel::selectProxy,
+                        onTestDelay = proxyGroupsViewModel::testDelay,
+                    )
+                }
+
+                MainDestination.CONNECTIONS -> item {
+                    ConnectionsCard(
+                        state = runtimeConnections,
+                        runtimeState = runtimeState,
                     )
                 }
             }

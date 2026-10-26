@@ -43,5 +43,13 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("首页").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
         composeRule.onNodeWithText("核心状态").assertIsDisplayed()
+        composeRule.onNodeWithText("代理").performClick()
+        composeRule.onNodeWithTag("page_proxy").assertIsDisplayed()
+        composeRule.onNodeWithText("代理组").assertIsDisplayed()
+        composeRule.onNodeWithText("连接").performClick()
+        composeRule.onNodeWithTag("page_connections").assertIsDisplayed()
+        composeRule.onNodeWithText("活动连接").assertIsDisplayed()
+        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }
 }

@@ -264,4 +264,13 @@
 - `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；18 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 15 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`b63bb174641fd1cc5f4d9bf034090362f58be66db85cdade15f029832d0895ba`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
-- 当前只完成首页/配置两目的地，Requests、DNS、Logs、Connections 和 Proxy 独立页面仍待扩展。
+- 该切片完成首页/配置两目的地；后续切片继续扩展 Connections、Proxy、Requests、DNS 和 Logs 独立页面。
+
+## 代理与连接独立页面验收记录
+
+- `MainDestination` 新增“代理”和“连接”两个目的地；代理组卡片迁移到代理页，活动连接卡片迁移到连接页，首页运行观测和其他卡片保持不变。
+- `MainActivityInstrumentedTest` 覆盖真实宿主：首页 → 配置 → 首页 → 代理 → 连接 → 首页，并断言代理组、活动连接和首页核心状态可见；本轮未访问真实订阅、VPN 或核心启动。
+- `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；18 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 15 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`ea2d5d51753a1ca78b2bed38da70e892491d6703dcbae7b0e7f5e62d51444b6c`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
+- 当前已完成首页、配置、代理、连接四个目的地；Requests、DNS、Logs 独立页面仍待扩展。
