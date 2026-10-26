@@ -210,3 +210,12 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；10 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 7 项。
 - Debug APK SHA-256：`6c49a2fda426abead03c433e6f3c2d09e3c3bdba5c2bf31de938f497e82ef485`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
 - 下一步建立隔离的 Repository/ViewModel 测试宿主，覆盖自定义 Profile 创建、列表刷新、编辑保存和删除确认的真实状态流。
+
+## Profiles Repository/ViewModel 隔离测试验收记录
+
+- 新增 `ProfileStore` 接口，生产 `ProfileRepository` 继续实现 Room、文件和订阅操作；新增 `CoreRuntimeStatusProvider` 后，`ProfilesViewModel` 可以在测试中使用 fake 数据源和 fake 运行态。
+- 新增 2 项单元测试：核心运行中删除 Profile 时只发送阻止错误且 Repository 删除次数为 0；核心停止后删除操作委托到 Repository。
+- `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；10 项 instrumentation 测试失败 0、错误 0、跳过 0。
+- Debug APK SHA-256：`f643a0893d3c56cab68ac045e167f3def0422ad71c3a8273ab69742090e354b4`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
+- 当前仍未声称完整页面 E2E 已完成；下一步把 fake Store 接入页面宿主，验证列表、编辑器和删除确认之间的组合状态流。

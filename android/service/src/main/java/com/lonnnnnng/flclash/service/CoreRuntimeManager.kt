@@ -16,6 +16,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 enum class CoreRuntimeStatus(
@@ -29,6 +30,10 @@ enum class CoreRuntimeStatus(
     FAILED("核心启动失败", false),
 }
 
+interface CoreRuntimeStatusProvider {
+    val state: StateFlow<CoreRuntimeStatus>
+}
+
 /**
  * 作者 long：所有页面和服务共用这一条核心生命周期，避免启动请求在 UI、VPN 服务之间产生两个事实来源。
  */
@@ -40,7 +45,7 @@ class CoreRuntimeManager(
     private val vpnOptionsProvider: VpnOptionsProvider,
     private val runtimeResumeStore: RuntimeResumeStore,
     private val runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
-) {
+) : CoreRuntimeStatusProvider {
     init {
         RuntimeDiagnosticHistory.configure(runtimeDiagnosticStore)
     }
@@ -53,7 +58,7 @@ class CoreRuntimeManager(
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.STOPPED)
     private var hasSuccessfulRun = false
 
-    val state = mutableState.asStateFlow()
+    override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
     val events: Flow<CoreEvent> = bridge.events
     val eventFlowStats = bridge.eventFlowStats
     val diagnosticEvents = RuntimeDiagnosticHistory.events

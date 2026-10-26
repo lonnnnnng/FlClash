@@ -17,11 +17,26 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+interface ProfileStore {
+    val profiles: StateFlow<List<Profile>>
+    val currentProfileId: StateFlow<Long?>
+
+    suspend fun selectProfile(id: Long?)
+    suspend fun addRemoteProfile(url: String, label: String = ""): Profile
+    suspend fun addFileProfile(label: String, bytes: ByteArray): Profile
+    suspend fun addCustomProfile(label: String): Profile
+    suspend fun readLocalProfileContent(id: Long): String
+    suspend fun updateLocalProfileContent(id: Long, content: String): Profile
+    suspend fun updateRemoteProfile(id: Long): Profile
+    suspend fun deleteProfile(id: Long)
+    suspend fun reorder(ids: List<Long>)
+}
+
 class ProfileRepository(
     context: Context,
     private val database: KClashDatabase,
     private val subscriptionClient: SubscriptionClient,
-) : ActiveProfileProvider {
+) : ActiveProfileProvider, ProfileStore {
     private val appContext = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val profileDao = database.profiles()
@@ -29,8 +44,8 @@ class ProfileRepository(
     private val mutableProfiles = MutableStateFlow<List<Profile>>(emptyList())
     private val mutableCurrentProfileId = MutableStateFlow<Long?>(null)
 
-    val profiles: StateFlow<List<Profile>> = mutableProfiles.asStateFlow()
-    val currentProfileId: StateFlow<Long?> = mutableCurrentProfileId.asStateFlow()
+    override val profiles: StateFlow<List<Profile>> = mutableProfiles.asStateFlow()
+    override val currentProfileId: StateFlow<Long?> = mutableCurrentProfileId.asStateFlow()
 
     init {
         scope.launch {
@@ -47,13 +62,13 @@ class ProfileRepository(
         }
     }
 
-    suspend fun selectProfile(id: Long?) {
+    override suspend fun selectProfile(id: Long?) {
         val valid = id?.takeIf { candidate -> profileDao.getById(candidate) != null }
         mutableCurrentProfileId.value = valid
         persistCurrentProfile(valid)
     }
 
-    suspend fun addRemoteProfile(url: String, label: String = ""): Profile = withContext(Dispatchers.IO) {
+    override suspend fun addRemoteProfile(url: String, label: String): Profile = withContext(Dispatchers.IO) {
         val normalizedUrl = url.trim()
         require(normalizedUrl.isNotEmpty()) { "订阅链接不能为空" }
         require(mutableProfiles.value.none { it.url == normalizedUrl }) { "该订阅已经添加" }
@@ -78,7 +93,7 @@ class ProfileRepository(
         profile
     }
 
-    suspend fun addFileProfile(label: String, bytes: ByteArray): Profile = withContext(Dispatchers.IO) {
+    override suspend fun addFileProfile(label: String, bytes: ByteArray): Profile = withContext(Dispatchers.IO) {
         require(bytes.isNotEmpty()) { "配置文件为空" }
         val id = newId()
         val profile = Profile(
@@ -103,7 +118,7 @@ class ProfileRepository(
         profile
     }
 
-    suspend fun addCustomProfile(label: String): Profile = withContext(Dispatchers.IO) {
+    override suspend fun addCustomProfile(label: String): Profile = withContext(Dispatchers.IO) {
         val profile = Profile.custom(newId(), label.trim().ifEmpty { "未命名配置" }).copy(
             orderIndex = mutableProfiles.value.size,
         )
@@ -116,13 +131,13 @@ class ProfileRepository(
         profile
     }
 
-    suspend fun readLocalProfileContent(id: Long): String = withContext(Dispatchers.IO) {
+    override suspend fun readLocalProfileContent(id: Long): String = withContext(Dispatchers.IO) {
         val profile = requireNotNull(profileDao.getById(id)) { "配置不存在" }
         require(profile.type != ProfileType.URL) { "远程订阅不能直接编辑" }
         profileFile(id).takeIf(File::isFile)?.readText(Charsets.UTF_8).orEmpty()
     }
 
-    suspend fun updateLocalProfileContent(id: Long, content: String): Profile = withContext(Dispatchers.IO) {
+    override suspend fun updateLocalProfileContent(id: Long, content: String): Profile = withContext(Dispatchers.IO) {
         require(content.isNotBlank()) { "配置内容不能为空" }
         val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
         require(current.type != ProfileType.URL) { "远程订阅不能直接编辑" }
@@ -132,7 +147,7 @@ class ProfileRepository(
         updated
     }
 
-    suspend fun updateRemoteProfile(id: Long): Profile = withContext(Dispatchers.IO) {
+    override suspend fun updateRemoteProfile(id: Long): Profile = withContext(Dispatchers.IO) {
         val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
         require(current.type == ProfileType.URL) { "只有订阅配置支持更新" }
         val downloaded = subscriptionClient.download(current.url)
@@ -147,7 +162,7 @@ class ProfileRepository(
         updated
     }
 
-    suspend fun deleteProfile(id: Long) = withContext(Dispatchers.IO) {
+    override suspend fun deleteProfile(id: Long) = withContext(Dispatchers.IO) {
         val profile = profileDao.getById(id) ?: return@withContext
         database.withTransaction {
             profileDao.delete(profile)
@@ -160,7 +175,7 @@ class ProfileRepository(
         }
     }
 
-    suspend fun reorder(ids: List<Long>) = withContext(Dispatchers.IO) {
+    override suspend fun reorder(ids: List<Long>) = withContext(Dispatchers.IO) {
         database.withTransaction {
             ids.forEachIndexed { index, id -> profileDao.updateOrder(id, index) }
         }

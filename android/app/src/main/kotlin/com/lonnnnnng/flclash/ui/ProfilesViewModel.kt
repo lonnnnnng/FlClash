@@ -3,10 +3,10 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Profile
-import com.lonnnnnng.flclash.data.ProfileRepository
+import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
-import com.lonnnnnng.flclash.service.CoreRuntimeManager
+import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,8 +42,8 @@ internal fun isProfileMutationBlocked(runtimeStatus: CoreRuntimeStatus): Boolean
 
 @HiltViewModel
 class ProfilesViewModel @Inject constructor(
-    private val repository: ProfileRepository,
-    private val runtimeManager: CoreRuntimeManager,
+    private val repository: ProfileStore,
+    private val runtimeManager: CoreRuntimeStatusProvider,
 ) : ViewModel() {
     private val busy = MutableStateFlow(false)
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)

@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.HttpSubscriptionClient
 import com.lonnnnnng.flclash.data.ProfileRepository
+import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
 import com.lonnnnnng.flclash.data.RoomRuntimeDiagnosticStore
 import com.lonnnnnng.flclash.data.SubscriptionClient
@@ -14,6 +15,7 @@ import com.lonnnnnng.flclash.service.AndroidProxyServiceController
 import com.lonnnnnng.flclash.service.CoreRuntimeBridge
 import com.lonnnnnng.flclash.service.CoreRuntimePaths
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
+import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.service.NativeCoreRuntimeBridge
 import com.lonnnnnng.flclash.service.ProxyServiceController
 import com.lonnnnnng.flclash.service.RuntimeResumeStore
@@ -50,6 +52,10 @@ object AppModule {
         database: KClashDatabase,
         subscriptionClient: SubscriptionClient,
     ): ProfileRepository = ProfileRepository(context, database, subscriptionClient)
+
+    @Provides
+    @Singleton
+    fun provideProfileStore(repository: ProfileRepository): ProfileStore = repository
 
     @Provides
     @Singleton
@@ -107,4 +113,8 @@ object AppModule {
         runtimeResumeStore = runtimeResumeStore,
         runtimeDiagnosticStore = runtimeDiagnosticStore,
     )
+
+    @Provides
+    @Singleton
+    fun provideCoreRuntimeStatusProvider(manager: CoreRuntimeManager): CoreRuntimeStatusProvider = manager
 }
