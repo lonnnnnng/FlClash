@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileProxyGroupsEditor
 import com.lonnnnnng.flclash.data.ProfileProxiesEditor
+import com.lonnnnnng.flclash.data.ProfileProvidersEditor
 import com.lonnnnnng.flclash.data.ProfileRulesEditor
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileType
@@ -58,6 +59,15 @@ data class ProfileProxyGroupsEditorUiState(
     val isSaving: Boolean = false,
 )
 
+data class ProfileProvidersEditorUiState(
+    val profile: Profile? = null,
+    val sourceContent: String = "",
+    val proxyProviders: String = "",
+    val ruleProviders: String = "",
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+)
+
 internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
 
 /**
@@ -78,6 +88,7 @@ class ProfilesViewModel @Inject constructor(
     private val mutableRulesEditor = MutableStateFlow(ProfileRulesEditorUiState())
     private val mutableProxiesEditor = MutableStateFlow(ProfileProxiesEditorUiState())
     private val mutableProxyGroupsEditor = MutableStateFlow(ProfileProxyGroupsEditorUiState())
+    private val mutableProvidersEditor = MutableStateFlow(ProfileProvidersEditorUiState())
 
     val state: StateFlow<ProfilesUiState> = combine(
         repository.profiles,
@@ -92,6 +103,7 @@ class ProfilesViewModel @Inject constructor(
     val rulesEditorState: StateFlow<ProfileRulesEditorUiState> = mutableRulesEditor
     val proxiesEditorState: StateFlow<ProfileProxiesEditorUiState> = mutableProxiesEditor
     val proxyGroupsEditorState: StateFlow<ProfileProxyGroupsEditorUiState> = mutableProxyGroupsEditor
+    val providersEditorState: StateFlow<ProfileProvidersEditorUiState> = mutableProvidersEditor
 
     fun select(id: Long) {
         if (runtimeManager.state.value.isRunning) {
@@ -291,6 +303,66 @@ class ProfilesViewModel @Inject constructor(
             }.onFailure { error ->
                 mutableProxyGroupsEditor.value = mutableProxyGroupsEditor.value.copy(isSaving = false, groups = groups)
                 mutableErrors.emit(error.message ?: "保存代理组失败")
+            }
+        }
+    }
+
+    fun openProvidersEditor(profile: Profile) {
+        if (profile.type != ProfileType.CUSTOM) {
+            mutableErrors.tryEmit("高级 Provider 编辑仅支持自定义配置")
+            return
+        }
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 Provider")
+            return
+        }
+        viewModelScope.launch {
+            mutableProvidersEditor.value = ProfileProvidersEditorUiState(profile = profile, isLoading = true)
+            runCatching {
+                val content = repository.readLocalProfileContent(profile.id)
+                content to ProfileProvidersEditor.extract(content)
+            }.onSuccess { (content, sections) ->
+                mutableProvidersEditor.value = ProfileProvidersEditorUiState(
+                    profile = profile,
+                    sourceContent = content,
+                    proxyProviders = sections.proxyProviders,
+                    ruleProviders = sections.ruleProviders,
+                )
+            }.onFailure { error ->
+                mutableProvidersEditor.value = ProfileProvidersEditorUiState()
+                mutableErrors.emit(error.message ?: "无法读取 Provider 配置")
+            }
+        }
+    }
+
+    fun closeProvidersEditor() {
+        mutableProvidersEditor.value = ProfileProvidersEditorUiState()
+    }
+
+    fun saveProviders(proxyProviders: String, ruleProviders: String) {
+        val state = mutableProvidersEditor.value
+        val profile = state.profile ?: return
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存 Provider")
+            return
+        }
+        viewModelScope.launch {
+            mutableProvidersEditor.value = state.copy(
+                isSaving = true,
+                proxyProviders = proxyProviders,
+                ruleProviders = ruleProviders,
+            )
+            runCatching {
+                val updatedContent = ProfileProvidersEditor.replace(
+                    state.sourceContent,
+                    ProfileProvidersEditor.Sections(proxyProviders, ruleProviders),
+                )
+                repository.updateLocalProfileContent(profile.id, updatedContent)
+            }.onSuccess {
+                closeProvidersEditor()
+            }.onFailure { error ->
+                mutableProvidersEditor.value = mutableProvidersEditor.value.copy(isSaving = false)
+                mutableErrors.emit(error.message ?: "保存 Provider 失败")
             }
         }
     }

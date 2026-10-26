@@ -205,6 +205,54 @@ class ProfilesViewModelTest {
         assertNull(store.updatedContent)
         assertEquals(profile.id, viewModel.proxyGroupsEditorState.value.profile?.id)
     }
+
+    @Test
+    fun `custom providers editor reads and saves both provider sections`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(14L, "Provider 配置")
+        val store = FakeProfileStore(profile).apply {
+            content = "mixed-port: 7890\nproxy-providers:\n  old:\n    type: http\nrules:\n  - MATCH,DIRECT\n"
+        }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openProvidersEditor(profile)
+        advanceUntilIdle()
+        assertEquals("old:\n  type: http", viewModel.providersEditorState.value.proxyProviders)
+        assertEquals("", viewModel.providersEditorState.value.ruleProviders)
+
+        viewModel.saveProviders("new:\n  type: file\n  path: ./new.yaml", "ads:\n  type: http")
+        advanceUntilIdle()
+
+        assertEquals(
+            "mixed-port: 7890\nproxy-providers:\n  new:\n    type: file\n    path: ./new.yaml\nrules:\n  - MATCH,DIRECT\nrule-providers:\n  ads:\n    type: http\n",
+            store.updatedContent,
+        )
+        assertNull(viewModel.providersEditorState.value.profile)
+    }
+
+    @Test
+    fun `custom providers editor keeps dialog open when a provider is malformed`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(15L, "非法 Provider")
+        val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+        viewModel.openProvidersEditor(profile)
+        advanceUntilIdle()
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.saveProviders("cloud: http", "")
+        advanceUntilIdle()
+
+        assertEquals("第 1 行 Provider 条目必须使用嵌套 map", error.await())
+        assertNull(store.updatedContent)
+        assertEquals(profile.id, viewModel.providersEditorState.value.profile?.id)
+    }
 }
 
 private class FakeRuntimeStatusProvider(

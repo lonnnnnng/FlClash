@@ -130,6 +130,33 @@ class ProfileUiInstrumentedTest {
     }
 
     @Test
+    fun providersEditorShowsBothProviderMapsAndForwardsSave() {
+        var savedProxy: String? = null
+        var savedRule: String? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfileProvidersEditorDialog(
+                    profile = Profile.custom(16L, "Provider 配置"),
+                    initialProxyProviders = "cloud:\n  type: http",
+                    initialRuleProviders = "ads:\n  type: http",
+                    saving = false,
+                    onDismiss = {},
+                    onSave = { proxy, rule ->
+                        savedProxy = proxy
+                        savedRule = rule
+                    },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Provider · Provider 配置").assertIsDisplayed()
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals("cloud:\n  type: http", savedProxy)
+        assertEquals("ads:\n  type: http", savedRule)
+    }
+
+    @Test
     fun profileMutationButtonsDisableWhileCoreIsRunning() {
         composeRule.setContent {
             KClashTheme {
@@ -146,6 +173,7 @@ class ProfileUiInstrumentedTest {
         }
 
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
+        composeRule.onNodeWithText("Provider").assertIsNotEnabled()
         composeRule.onNodeWithText("代理组").assertIsNotEnabled()
         composeRule.onNodeWithText("高级").assertIsNotEnabled()
         composeRule.onNodeWithText("代理").assertIsNotEnabled()

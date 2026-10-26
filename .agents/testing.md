@@ -309,3 +309,11 @@
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 140 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；21 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 18 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`0117572215f4a96342cd70c0c962eb67897b8f2756409de5378ffa5fcb241e41`；APK 仅包含 `lib/arm64-v8a/libclash.so`、`libandroidx.graphics.path.so` 和 `libbarhopper_v3.so`，未访问当前 `AGENTS.md` 列出的真实订阅路径。
+
+## 自定义 Profile Providers 分区编辑验收记录
+
+- 自定义 Profile 卡片新增“Provider”入口；编辑器分别维护 `proxy-providers` 与 `rule-providers` 顶层 map，只回写对应区块，保留其他 YAML 字段；远程订阅 Profile 不开放该入口。
+- `ProfileProvidersEditor` 覆盖双 map 提取/替换、包装粘贴、空 map、嵌套 map、重复名称、scalar 条目和边界注释保留；ViewModel 在核心运行期间继续禁止打开和保存 Provider。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 146 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；22 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 19 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`bb581765f3e47ca991d4187ef5da79501ef8a2c36bf2bdd5d302e6360f32f4a5`；APK 原生库全部位于 `lib/arm64-v8a/`，本轮未访问当前 `AGENTS.md` 列出的真实订阅路径。Flutter 字段化 proxy provider override 表单仍待后续切片。

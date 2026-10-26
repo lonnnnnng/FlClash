@@ -56,8 +56,8 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 140 项通过，失败 0，错误 0，跳过 0 |
-| Compose/Room instrumentation | 21 项通过，失败 0，错误 0，跳过 0；Room 3 项，Compose 18 项 |
+| 单元测试 | 146 项通过，失败 0，错误 0，跳过 0 |
+| Compose/Room instrumentation | 22 项通过，失败 0，错误 0，跳过 0；Room 3 项，Compose 19 项 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
@@ -306,6 +306,7 @@ flowchart LR
 - 自定义 Profile 新增 Rules 分区快速编辑入口；编辑器逐行校验规则类型和动作，拒绝 `SUB-RULE`，保存时只替换顶层 `rules` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 新增 Proxies 分区快速编辑入口；编辑器按 YAML 列表校验代理名称和类型，拒绝重复名称和非列表结构，保存时只替换顶层 `proxies` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 新增 Proxy Groups 分区快速编辑入口；编辑器按 YAML 列表校验代理组名称和 Flutter 支持的类型，拒绝 `relay`、重复名称和非列表结构，保存时只替换顶层 `proxy-groups` 区块并保留边界注释与其他 YAML 字段。
+- 自定义 Profile 新增 Providers 分区快速编辑入口；分别编辑顶层 `proxy-providers`/`rule-providers` map，校验嵌套 map、非空字段和唯一名称，保存时局部替换并保留边界注释与其他 YAML 字段。
 
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
@@ -320,7 +321,7 @@ flowchart LR
 待完成：
 
 - YAML 编辑器语法体验、搜索、定位、错误行提示和大文件性能。
-- Providers 分区编辑。
+- Providers 的字段化 proxy provider override 表单（健康检查、前缀/后缀、UDP、证书校验、IP 版本）。
 - Scripts、Overrides、Dialers 等高级配置。
 - 订阅自动更新调度、失败重试和通知。
 - Profile 排序 UI。
@@ -426,10 +427,10 @@ flowchart LR
 
 当前已有：
 
-- 140 项 Kotlin 单元测试。
+- 146 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - `:app:lintDebug` 已通过；当前有 32 条非阻断 Warning、2 条 Hint，错误为 0。
-- 21 项 instrumentation 测试，其中 Room 3 项、Compose 18 项（诊断卡片 4 项、Profiles 12 项、MainActivity 宿主 2 项）。
+- 22 项 instrumentation 测试，其中 Room 3 项、Compose 19 项（诊断卡片 4 项、Profiles 13 项、MainActivity 宿主 2 项）。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
@@ -743,7 +744,18 @@ flowchart LR
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 140 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；21 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 18 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256 为 `0117572215f4a96342cd70c0c962eb67897b8f2756409de5378ffa5fcb241e41`，仅包含 `lib/arm64-v8a` 原生库。
-- 本轮未访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动；7.4 的 URLTest/Fallback 运行时语义、批量测速、搜索和缓存仍未完成。下一步进入 Providers、Scripts、Overrides/Dialers 分区，并继续补 Profile 排序、备份恢复、订阅自动更新和完整页面级 E2E。
+- 本轮未访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动；7.4 的 URLTest/Fallback 运行时语义、批量测速、搜索和缓存仍未完成。下一步补齐 Providers 的字段化 proxy provider override 表单，再进入 Scripts、Overrides/Dialers 分区，并继续补 Profile 排序、备份恢复、订阅自动更新和完整页面级 E2E。
+
+### 2026-10-27：自定义 Profile Providers 分区编辑切片
+
+- 新增 `ProfileProvidersEditor` 纯 Kotlin Provider map 处理器：分别提取和替换顶层 `proxy-providers`、`rule-providers`，没有区块时追加，空编辑内容写为 `{}`，其他端口、代理组、规则和 DNS 字段保持原文。
+- 自定义 Profile 卡片新增“Provider”入口和双 map YAML 编辑对话框；支持带 `proxy-providers:`/`rule-providers:` 包装的粘贴内容，校验嵌套 map、非空配置、重复名称和错误的 scalar 条目，远程订阅 Profile 不开放该入口。
+- `ProfilesViewModel` 新增 Provider 编辑 `StateFlow`、打开/关闭/保存事件；核心运行期间与其他高级分区编辑使用同一运行态保护，非法 Provider 保存失败时保留编辑内容和对话框。
+- 新增 4 项 `ProfileProvidersEditor` 单元测试、2 项 `ProfilesViewModel` 单元测试和 1 项 Compose Provider 编辑测试；覆盖双 map 提取/替换、包装粘贴、空 map、边界注释和非法结构。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 146 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；22 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 19 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256 为 `bb581765f3e47ca991d4187ef5da79501ef8a2c36bf2bdd5d302e6360f32f4a5`，仅包含 `lib/arm64-v8a` 原生库。
+- 本轮未访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动；Flutter 的字段化 proxy provider override（健康检查、前缀/后缀、UDP、证书校验、IP 版本）仍未实现，下一步先补该表单，再推进 Scripts、Overrides/Dialers 和页面级 E2E。
 
 ### N4：Profiles 和代理组 parity
 

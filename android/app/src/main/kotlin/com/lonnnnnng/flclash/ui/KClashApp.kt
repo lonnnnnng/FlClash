@@ -113,6 +113,7 @@ fun KClashApp(
     val rulesEditorState by profilesViewModel.rulesEditorState.collectAsState()
     val proxiesEditorState by profilesViewModel.proxiesEditorState.collectAsState()
     val proxyGroupsEditorState by profilesViewModel.proxyGroupsEditorState.collectAsState()
+    val providersEditorState by profilesViewModel.providersEditorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -307,6 +308,10 @@ fun KClashApp(
                         onOpenProxyGroupsEditor = profilesViewModel::openProxyGroupsEditor,
                         onCloseProxyGroupsEditor = profilesViewModel::closeProxyGroupsEditor,
                         onSaveProxyGroups = profilesViewModel::saveProxyGroups,
+                        providersEditorState = providersEditorState,
+                        onOpenProvidersEditor = profilesViewModel::openProvidersEditor,
+                        onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
+                        onSaveProviders = profilesViewModel::saveProviders,
                     )
                 }
 
@@ -497,6 +502,10 @@ internal fun ProfilesPanel(
     onOpenProxyGroupsEditor: (profile: Profile) -> Unit = {},
     onCloseProxyGroupsEditor: () -> Unit = {},
     onSaveProxyGroups: (groups: String) -> Unit = {},
+    providersEditorState: ProfileProvidersEditorUiState = ProfileProvidersEditorUiState(),
+    onOpenProvidersEditor: (profile: Profile) -> Unit = {},
+    onCloseProvidersEditor: () -> Unit = {},
+    onSaveProviders: (proxyProviders: String, ruleProviders: String) -> Unit = { _, _ -> },
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
@@ -536,6 +545,7 @@ internal fun ProfilesPanel(
                     onOpenRulesEditor = { onOpenRulesEditor(profile) },
                     onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
                     onOpenProxyGroupsEditor = { onOpenProxyGroupsEditor(profile) },
+                    onOpenProvidersEditor = { onOpenProvidersEditor(profile) },
                 )
             }
         }
@@ -644,6 +654,26 @@ internal fun ProfilesPanel(
                 saving = proxyGroupsEditorState.isSaving,
                 onDismiss = onCloseProxyGroupsEditor,
                 onSave = onSaveProxyGroups,
+            )
+        }
+    }
+
+    providersEditorState.profile?.let { profile ->
+        if (providersEditorState.isLoading) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("读取 Provider") },
+                text = { CircularProgressIndicator() },
+                confirmButton = {},
+            )
+        } else {
+            ProfileProvidersEditorDialog(
+                profile = profile,
+                initialProxyProviders = providersEditorState.proxyProviders,
+                initialRuleProviders = providersEditorState.ruleProviders,
+                saving = providersEditorState.isSaving,
+                onDismiss = onCloseProvidersEditor,
+                onSave = onSaveProviders,
             )
         }
     }
@@ -1687,6 +1717,7 @@ internal fun ProfileCard(
     onOpenRulesEditor: () -> Unit = {},
     onOpenProxiesEditor: () -> Unit = {},
     onOpenProxyGroupsEditor: () -> Unit = {},
+    onOpenProvidersEditor: () -> Unit = {},
 ) {
     Card(modifier = Modifier.fillMaxWidth(), onClick = onSelect) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -1729,6 +1760,7 @@ internal fun ProfileCard(
                     TextButton(onClick = onUpdate, enabled = canMutate) { Text("同步") }
                 }
                 if (profile.type == ProfileType.CUSTOM) {
+                    TextButton(onClick = onOpenProvidersEditor, enabled = canMutate) { Text("Provider") }
                     TextButton(onClick = onOpenProxyGroupsEditor, enabled = canMutate) { Text("代理组") }
                     TextButton(onClick = onOpenProxiesEditor, enabled = canMutate) { Text("代理") }
                     TextButton(onClick = onOpenRulesEditor, enabled = canMutate) { Text("高级") }
@@ -1912,6 +1944,68 @@ internal fun ProfileProxyGroupsEditorDialog(
         confirmButton = {
             TextButton(
                 onClick = { onSave(groups) },
+                enabled = !saving,
+            ) {
+                if (saving) CircularProgressIndicator() else Text("保存")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
+}
+
+/**
+ * 作者 long：Provider 编辑器把 proxy-providers 和 rule-providers 分成两个 map 输入区，
+ * 让用户能局部调整远程资源定义，同时由 ViewModel 负责结构校验和原子回写。
+ */
+@Composable
+internal fun ProfileProvidersEditorDialog(
+    profile: Profile,
+    initialProxyProviders: String,
+    initialRuleProviders: String,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (proxyProviders: String, ruleProviders: String) -> Unit,
+) {
+    var proxyProviders by rememberSaveable(profile.id, "proxyProviders") {
+        mutableStateOf(initialProxyProviders)
+    }
+    var ruleProviders by rememberSaveable(profile.id, "ruleProviders") {
+        mutableStateOf(initialRuleProviders)
+    }
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("Provider · ${profile.realLabel}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "每个条目使用 providerName: 开始，并在下一层填写 type、url、path 等字段；两个区块分别对应代理和规则 Provider。",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OutlinedTextField(
+                    value = proxyProviders,
+                    onValueChange = { proxyProviders = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 6,
+                    maxLines = 12,
+                    enabled = !saving,
+                    label = { Text("proxy-providers") },
+                )
+                OutlinedTextField(
+                    value = ruleProviders,
+                    onValueChange = { ruleProviders = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 6,
+                    maxLines = 12,
+                    enabled = !saving,
+                    label = { Text("rule-providers") },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(proxyProviders, ruleProviders) },
                 enabled = !saving,
             ) {
                 if (saving) CircularProgressIndicator() else Text("保存")
