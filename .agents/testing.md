@@ -219,3 +219,12 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；10 项 instrumentation 测试失败 0、错误 0、跳过 0。
 - Debug APK SHA-256：`f643a0893d3c56cab68ac045e167f3def0422ad71c3a8273ab69742090e354b4`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
 - 当前仍未声称完整页面 E2E 已完成；下一步把 fake Store 接入页面宿主，验证列表、编辑器和删除确认之间的组合状态流。
+
+## Profiles 页面宿主组合状态流验收记录
+
+- 新增 `ProfilesPanel` Compose 宿主，统一承载 Profiles 空态、添加配置弹窗、列表、删除确认和编辑器状态；真实文件/二维码选择器仍由 `KClashApp` 负责注入。
+- `ProfilesPanelInstrumentedTest` 新增 4 项 Compose 断言：自定义配置创建后列表出现、编辑保存回传 YAML 并关闭编辑器、删除确认支持取消和确认、核心运行期间编辑/删除入口不可用。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；14 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 11 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。本轮未访问真实订阅路径。
+- Debug APK SHA-256：`7a06c6032100a848c2aefe79fecaad909ee6744cd1f94fb843b19be42680854a`；APK 仅包含 `lib/arm64-v8a` 原生库。
+- 该切片只验证可替换状态驱动的页面组合，不等同于真实 Repository/ViewModel 页面 E2E；下一步接入 fake Store 驱动的真实 `ProfilesViewModel` 宿主。

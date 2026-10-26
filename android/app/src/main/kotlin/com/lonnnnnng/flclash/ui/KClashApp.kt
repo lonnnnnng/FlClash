@@ -92,13 +92,11 @@ fun KClashApp(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val selectedProfile = profilesState.profiles.firstOrNull { it.id == profilesState.currentProfileId }
-    val canMutateProfiles = !profilesState.isBusy && !runtimeState.isRunning
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
     var showDns by rememberSaveable { mutableStateOf(false) }
     var showLogs by rememberSaveable { mutableStateOf(false) }
     var showDiagnosticHistory by rememberSaveable { mutableStateOf(false) }
-    var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
 
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -253,90 +251,39 @@ fun KClashApp(
                 )
             }
             item {
-                Text(
-                    text = "配置",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 8.dp),
+                ProfilesPanel(
+                    state = profilesState,
+                    editorState = editorState,
+                    runtimeState = runtimeState,
+                    showAddDialog = showAddDialog,
+                    onShowAddDialog = { showAddDialog = true },
+                    onDismissAddDialog = { showAddDialog = false },
+                    onPickFile = {
+                        showAddDialog = false
+                        filePicker.launch(arrayOf("*/*"))
+                    },
+                    onPickQrCode = {
+                        showAddDialog = false
+                        qrCodePicker.launch("image/*")
+                    },
+                    onAddRemote = { label, url ->
+                        showAddDialog = false
+                        profilesViewModel.addRemote(url, label)
+                    },
+                    onAddCustom = { label ->
+                        showAddDialog = false
+                        profilesViewModel.addCustom(label)
+                    },
+                    onSelect = profilesViewModel::select,
+                    onEdit = profilesViewModel::openEditor,
+                    onUpdate = profilesViewModel::update,
+                    onCloseEditor = profilesViewModel::closeEditor,
+                    onSaveEditor = profilesViewModel::saveEditor,
+                    onDelete = profilesViewModel::delete,
                 )
-            }
-            if (profilesState.profiles.isEmpty()) {
-                item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Text("还没有配置")
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                "添加订阅或创建自定义配置后，配置会保存在 KClash 独立数据目录中。",
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Button(onClick = { showAddDialog = true }) {
-                                Text("添加配置")
-                            }
-                        }
-                    }
-                }
-            } else {
-                items(profilesState.profiles, key = { it.id }) { profile ->
-                    ProfileCard(
-                        profile = profile,
-                        selected = profile.id == profilesState.currentProfileId,
-                        canMutate = canMutateProfiles,
-                        onSelect = { profilesViewModel.select(profile.id) },
-                        onEdit = { profilesViewModel.openEditor(profile) },
-                        onUpdate = { profilesViewModel.update(profile) },
-                        onDelete = { profilePendingDeletion = profile },
-                    )
-                }
             }
             item { Spacer(Modifier.height(88.dp)) }
         }
-    }
-
-    if (showAddDialog) {
-        AddProfileDialog(
-            busy = profilesState.isBusy,
-            onDismiss = { showAddDialog = false },
-            onPickFile = {
-                showAddDialog = false
-                filePicker.launch(arrayOf("*/*"))
-            },
-            onPickQrCode = {
-                showAddDialog = false
-                qrCodePicker.launch("image/*")
-            },
-            onAddRemote = { label, url ->
-                showAddDialog = false
-                profilesViewModel.addRemote(url, label)
-            },
-            onAddCustom = { label ->
-                showAddDialog = false
-                profilesViewModel.addCustom(label)
-            },
-        )
-    }
-
-    profilePendingDeletion?.let { profile ->
-        AlertDialog(
-            onDismissRequest = { profilePendingDeletion = null },
-            title = { Text("删除配置") },
-            text = { Text("确定删除“${profile.realLabel}”吗？本地配置文件也会一并删除。") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        profilePendingDeletion = null
-                        profilesViewModel.delete(profile)
-                    },
-                    enabled = canMutateProfiles,
-                ) { Text("删除") }
-            },
-            dismissButton = {
-                TextButton(onClick = { profilePendingDeletion = null }) { Text("取消") }
-            },
-        )
     }
 
     if (showRequests) {
@@ -371,6 +318,102 @@ fun KClashApp(
         )
     }
 
+}
+
+/**
+ * 作者 long：把 Profiles 的状态、确认弹窗和编辑弹窗收口到独立宿主，
+ * 让页面可以用替换的数据源验证创建、编辑和删除之间的组合状态，而不启动真实核心。
+ */
+@Composable
+internal fun ProfilesPanel(
+    state: ProfilesUiState,
+    editorState: ProfileEditorUiState,
+    runtimeState: CoreRuntimeStatus,
+    showAddDialog: Boolean,
+    onShowAddDialog: () -> Unit,
+    onDismissAddDialog: () -> Unit,
+    onPickFile: () -> Unit,
+    onPickQrCode: () -> Unit,
+    onAddRemote: (label: String, url: String) -> Unit,
+    onAddCustom: (label: String) -> Unit,
+    onSelect: (id: Long) -> Unit,
+    onEdit: (profile: Profile) -> Unit,
+    onUpdate: (profile: Profile) -> Unit,
+    onCloseEditor: () -> Unit,
+    onSaveEditor: (content: String) -> Unit,
+    onDelete: (profile: Profile) -> Unit,
+) {
+    val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
+    var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "配置",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        if (state.profiles.isEmpty()) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text("还没有配置")
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "添加订阅或创建自定义配置后，配置会保存在 KClash 独立数据目录中。",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Button(onClick = onShowAddDialog) { Text("添加配置") }
+                }
+            }
+        } else {
+            state.profiles.forEach { profile ->
+                ProfileCard(
+                    profile = profile,
+                    selected = profile.id == state.currentProfileId,
+                    canMutate = canMutateProfiles,
+                    onSelect = { onSelect(profile.id) },
+                    onEdit = { onEdit(profile) },
+                    onUpdate = { onUpdate(profile) },
+                    onDelete = { profilePendingDeletion = profile },
+                )
+            }
+        }
+    }
+
+    if (showAddDialog) {
+        AddProfileDialog(
+            busy = state.isBusy,
+            onDismiss = onDismissAddDialog,
+            onPickFile = onPickFile,
+            onPickQrCode = onPickQrCode,
+            onAddRemote = onAddRemote,
+            onAddCustom = onAddCustom,
+        )
+    }
+
+    profilePendingDeletion?.let { profile ->
+        AlertDialog(
+            onDismissRequest = { profilePendingDeletion = null },
+            title = { Text("删除配置") },
+            text = { Text("确定删除“${profile.realLabel}”吗？本地配置文件也会一并删除。") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        profilePendingDeletion = null
+                        onDelete(profile)
+                    },
+                    enabled = canMutateProfiles,
+                ) { Text("删除") }
+            },
+            dismissButton = {
+                TextButton(onClick = { profilePendingDeletion = null }) { Text("取消") }
+            },
+        )
+    }
+
     editorState.profile?.let { profile ->
         if (editorState.isLoading) {
             AlertDialog(
@@ -384,8 +427,8 @@ fun KClashApp(
                 profile = profile,
                 initialContent = editorState.content,
                 saving = editorState.isSaving,
-                onDismiss = profilesViewModel::closeEditor,
-                onSave = profilesViewModel::saveEditor,
+                onDismiss = onCloseEditor,
+                onSave = onSaveEditor,
             )
         }
     }

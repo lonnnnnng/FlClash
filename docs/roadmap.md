@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-27（北京时间）
 >
-> 当前基线：`kotlin` 分支；本轮稳定诊断故障归因已完成 JVM、Compose instrumentation 和 Redmi 真机验收
+> 当前基线：`kotlin` 分支；Profiles 页面宿主组合状态流已完成 JVM、Compose instrumentation 和 Redmi 真机验收
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -57,7 +57,7 @@
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
 | 单元测试 | 124 项通过，失败 0，错误 0，跳过 0 |
-| Compose/Room instrumentation | 10 项通过，失败 0，错误 0，跳过 0；Room 3 项，Compose 7 项 |
+| Compose/Room instrumentation | 14 项通过，失败 0，错误 0，跳过 0；Room 3 项，Compose 11 项 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
@@ -429,7 +429,7 @@ flowchart LR
 - 124 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - `:app:lintDebug` 已通过；当前仍有 31 条非阻断警告，错误为 0。
-- 10 项 instrumentation 测试，其中 Room 3 项、Compose 7 项（诊断卡片 4 项、Profiles 3 项）。
+- 14 项 instrumentation 测试，其中 Room 3 项、Compose 11 项（诊断卡片 4 项、Profiles 7 项）。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
@@ -642,6 +642,15 @@ flowchart LR
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过：10 项 instrumentation 测试失败 0、错误 0、跳过 0。
 - Debug APK SHA-256 为 `f643a0893d3c56cab68ac045e167f3def0422ad71c3a8273ab69742090e354b4`，仅包含 `lib/arm64-v8a/libclash.so`。
 - 本切片完成了隔离测试边界；下一步把 fake Store 接入 Profiles 页面宿主，覆盖创建→列表刷新→编辑保存→删除确认的组合状态流。
+
+### 2026-10-27：Profiles 页面宿主组合状态流切片
+
+- 新增 `ProfilesPanel` Compose 宿主，将配置标题、空态、添加配置弹窗、Profile 列表、删除确认和编辑器状态统一收口；文件选择器、二维码选择器和真实 `ProfilesViewModel` 回调仍由 `KClashApp` 持有。
+- 新增 `ProfilesPanelInstrumentedTest` 4 项 Compose instrumentation，覆盖自定义配置创建后列表刷新、编辑保存关闭并回传 YAML、删除确认取消/确认，以及核心运行期间编辑和删除入口禁用。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 通过：124 项 Kotlin 单元测试失败 0、错误 0、跳过 0；Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过：14 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 11 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。本轮未访问真实订阅路径。
+- Debug APK SHA-256 为 `7a06c6032100a848c2aefe79fecaad909ee6744cd1f94fb843b19be42680854a`，仅包含 `lib/arm64-v8a` 原生库。
+- 本切片完成页面宿主的组合状态回归，但仍未声称真实 Repository/ViewModel 页面 E2E 已完成；下一步建立 fake Store 驱动的真实 `ProfilesViewModel` 宿主，随后继续 N4 的高级配置编辑、排序、备份恢复和订阅自动更新。
 
 ### N4：Profiles 和代理组 parity
 
