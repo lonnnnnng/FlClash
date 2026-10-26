@@ -711,6 +711,7 @@ private fun ProbeCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    DiagnosticFindingSummary(diagnostic)
                     DiagnosticEventFlowSummary(diagnostic.eventFlowStats)
                     TextButton(onClick = { onExportDiagnostic(diagnostic) }) {
                         Text("导出诊断证据")
@@ -764,8 +765,8 @@ private fun ProbeCard(
 @Composable
 internal fun DiagnosticEventFlowSummary(stats: CoreEventFlowStats) {
     // 作者 long：把事件管线的丢弃边界直接放在诊断结果旁，避免用户把不完整证据误认为真实网络没有事件。
-    if (stats.parsedEvents <= 0L) return
     val hasLoss = diagnosticEventFlowHasLoss(stats)
+    if (stats.parsedEvents <= 0L && !hasLoss) return
     Text(
         formatDiagnosticEventFlowStats(stats),
         style = MaterialTheme.typography.bodySmall,
@@ -777,6 +778,50 @@ internal fun DiagnosticEventFlowSummary(stats: CoreEventFlowStats) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,
         )
+    }
+}
+
+@Composable
+internal fun DiagnosticFindingSummary(session: DiagnosticSessionUiState) {
+    val finding = diagnosticFinding(session)
+    val isError = when (finding.code) {
+        DiagnosticFindingCode.CORE_ERROR,
+        DiagnosticFindingCode.NO_RESULT,
+        DiagnosticFindingCode.NO_HTTP_STATUS,
+        DiagnosticFindingCode.NO_ROUTE,
+        DiagnosticFindingCode.EVENT_EVIDENCE_LOSS,
+        -> true
+        DiagnosticFindingCode.IDLE,
+        DiagnosticFindingCode.RUNNING,
+        DiagnosticFindingCode.HTTP_RESPONSE,
+        -> false
+    }
+    var showRawDetail by rememberSaveable(session.sessionId, finding.rawDetail) {
+        mutableStateOf(false)
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            "诊断归因：${finding.title}（${finding.code}）",
+            style = MaterialTheme.typography.bodySmall,
+            color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            "下一步建议：${finding.suggestion}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        finding.rawDetail?.takeIf { it.isNotBlank() }?.let { rawDetail ->
+            TextButton(onClick = { showRawDetail = !showRawDetail }) {
+                Text(if (showRawDetail) "收起原始详情" else "查看原始详情")
+            }
+            if (showRawDetail) {
+                Text(
+                    "原始详情：${redactDiagnosticDetail(rawDetail)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

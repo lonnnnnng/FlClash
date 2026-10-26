@@ -180,3 +180,15 @@
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；120 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；5 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 2 项。
 - Debug APK `android/app/build/outputs/apk/debug/app-debug.apk` SHA-256 为 `b30f2e8bb91605c8a87b2294c4c98e2f741c2ebab65a28dc12aa62b54a90cb44`，设备为 Redmi Note 8 Pro（Android 16/API 36），APK 仅包含 `arm64-v8a` 原生库。
+
+## 稳定诊断故障归因验收记录
+
+- 新增稳定 `DiagnosticFindingCode`，覆盖 `HTTP_RESPONSE`、`CORE_ERROR`、`NO_RESULT`、`NO_HTTP_STATUS`、`NO_ROUTE` 和 `EVENT_EVIDENCE_LOSS`；核心错误优先于 HTTP 状态，具备代理链时 HTTP 403/200 均保留为可归因的 HTTP 响应。
+- 首页诊断卡片新增归因标题、下一步建议和可展开的脱敏原始详情；诊断导出新增开始/结束时间、归因码、标题、建议和脱敏详情。解析事件为 0 但存在丢弃/截断时，仍显示事件证据不完整警告。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；121 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；7 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 4 项。
+- 真机设备：Redmi Note 8 Pro，serial `wsvwypiz7xwslvl7`，Android 16/API 36，ABI `arm64-v8a`。本轮仅使用当前工作区根目录 `AGENTS.md` 列出的两条授权路径，不在记录中重复真实 URL 或 Token。
+- 第一条授权路径真实返回 HTTP 403；UI 显示 `HTTP_RESPONSE`，并说明 403 是目标服务业务状态，不代表传输链路失败；事件流解析/投递为 `64/64`，丢弃/截断为 `0/0`。
+- 第二条授权路径真实返回 HTTP 200；UI 显示 `HTTP_RESPONSE`，当前代理链可以归因；事件流解析/投递为 `50/50`，丢弃/截断为 `0/0`。
+- 两个测试 Profile 均通过应用内删除，首页恢复“还没有配置”；`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均清理，未发现 `FATAL EXCEPTION`。
+- Debug APK SHA-256：`c60e7ac24dd9a34d8275998bb6c95486146f95d7bad50774fe389f5d76704561`；APK 仅包含 `lib/arm64-v8a/libclash.so`。

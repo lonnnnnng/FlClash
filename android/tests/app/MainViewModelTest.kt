@@ -220,6 +220,54 @@ class MainViewModelTest {
 
         assertEquals(null, diagnosticFailureReason(result))
         assertEquals("核心未返回代理链", diagnosticFailureReason(noRoute))
+        assertEquals(
+            DiagnosticFindingCode.HTTP_RESPONSE,
+            diagnosticFindingCode(result, null, CoreEventFlowStats()),
+        )
+        assertEquals(
+            DiagnosticFindingCode.NO_ROUTE,
+            diagnosticFindingCode(noRoute, null, CoreEventFlowStats()),
+        )
+    }
+
+    @Test
+    fun `diagnostic finding keeps error precedence and classifies status boundaries`() {
+        val result = CoreProbeResult(
+            statusCode = 403,
+            delay = 120L,
+            url = "https://example.test",
+            chains = listOf("GLOBAL", "DIRECT"),
+            rule = "MATCH",
+            rulePayload = "",
+            error = "核心连接失败",
+            message = "核心返回错误",
+            coreEpoch = 1L,
+            routeVersion = 2L,
+        )
+        val noStatus = result.copy(error = "", message = "", statusCode = 0)
+        val lossy = CoreEventFlowStats(droppedEvents = 1)
+
+        assertEquals(
+            DiagnosticFindingCode.CORE_ERROR,
+            diagnosticFindingCode(result, null, CoreEventFlowStats()),
+        )
+        assertEquals(
+            DiagnosticFindingCode.NO_HTTP_STATUS,
+            diagnosticFindingCode(noStatus, null, CoreEventFlowStats()),
+        )
+        assertEquals(
+            DiagnosticFindingCode.EVENT_EVIDENCE_LOSS,
+            diagnosticFindingCode(result.copy(error = "", message = ""), null, lossy),
+        )
+        assertEquals(
+            "已收到 HTTP 403；这是目标服务返回的业务状态，不代表传输链路失败。可核对订阅权限或目标地址。",
+            diagnosticFinding(
+                DiagnosticSessionUiState(
+                    status = DiagnosticSessionStatus.PASS,
+                    result = result.copy(error = "", message = ""),
+                ),
+            ).suggestion,
+        )
     }
 
     @Test
@@ -280,6 +328,8 @@ class MainViewModelTest {
 
         assertEquals(true, exported.contains("KClash diagnostic session"))
         assertEquals(true, exported.contains("HTTP 200"))
+        assertEquals(true, exported.contains("finding_code\tEVENT_EVIDENCE_LOSS"))
+        assertEquals(true, exported.contains("finding_suggestion\t事件流存在丢弃或截断"))
         assertEquals(true, exported.contains("[requests]"))
         assertEquals(true, exported.contains("[dns]"))
         assertEquals(true, exported.contains("[logs]"))

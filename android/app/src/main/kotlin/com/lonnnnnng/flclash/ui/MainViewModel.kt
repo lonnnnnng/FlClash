@@ -439,6 +439,21 @@ enum class DiagnosticSessionStatus {
     FAIL,
 }
 
+/**
+ * 作者 long：归因码必须跨 UI 和导出保持稳定，HTTP 非 2xx 只表示目标服务返回了业务状态，
+ * 不能因为 403/5xx 就把已经具备 HTTP 状态和代理链的传输证据误报成链路失败。
+ */
+enum class DiagnosticFindingCode {
+    IDLE,
+    RUNNING,
+    HTTP_RESPONSE,
+    CORE_ERROR,
+    NO_RESULT,
+    NO_HTTP_STATUS,
+    NO_ROUTE,
+    EVENT_EVIDENCE_LOSS,
+}
+
 data class DiagnosticSessionUiState(
     val status: DiagnosticSessionStatus = DiagnosticSessionStatus.IDLE,
     val sessionId: Long = 0L,
@@ -500,6 +515,72 @@ internal fun diagnosticFailureReason(result: CoreProbeResult): String? = when {
     else -> null
 }
 
+internal data class DiagnosticFinding(
+    val code: DiagnosticFindingCode,
+    val title: String,
+    val suggestion: String,
+    val rawDetail: String?,
+)
+
+internal fun diagnosticFindingCode(
+    result: CoreProbeResult?,
+    error: String?,
+    eventFlowStats: CoreEventFlowStats,
+): DiagnosticFindingCode = when {
+    result?.error?.isNotBlank() == true -> DiagnosticFindingCode.CORE_ERROR
+    result != null && result.statusCode <= 0 -> DiagnosticFindingCode.NO_HTTP_STATUS
+    result != null && result.chains.isEmpty() -> DiagnosticFindingCode.NO_ROUTE
+    result != null && !error.isNullOrBlank() -> DiagnosticFindingCode.CORE_ERROR
+    result == null && !error.isNullOrBlank() -> DiagnosticFindingCode.CORE_ERROR
+    result == null -> DiagnosticFindingCode.NO_RESULT
+    diagnosticEventFlowHasLoss(eventFlowStats) -> DiagnosticFindingCode.EVENT_EVIDENCE_LOSS
+    else -> DiagnosticFindingCode.HTTP_RESPONSE
+}
+
+internal fun diagnosticFinding(session: DiagnosticSessionUiState): DiagnosticFinding {
+    val code = when (session.status) {
+        DiagnosticSessionStatus.IDLE -> DiagnosticFindingCode.IDLE
+        DiagnosticSessionStatus.RUNNING -> DiagnosticFindingCode.RUNNING
+        DiagnosticSessionStatus.PASS,
+        DiagnosticSessionStatus.FAIL,
+        -> diagnosticFindingCode(session.result, session.error, session.eventFlowStats)
+    }
+    val result = session.result
+    val rawDetail = session.error?.takeIf { it.isNotBlank() }
+        ?: result?.message?.takeIf { it.isNotBlank() }
+        ?: result?.error?.takeIf { it.isNotBlank() }
+    val title = when (code) {
+        DiagnosticFindingCode.IDLE -> "尚未开始诊断"
+        DiagnosticFindingCode.RUNNING -> "正在采集诊断证据"
+        DiagnosticFindingCode.HTTP_RESPONSE -> "HTTP 响应已收到"
+        DiagnosticFindingCode.CORE_ERROR -> "核心诊断调用失败"
+        DiagnosticFindingCode.NO_RESULT -> "未返回诊断结果"
+        DiagnosticFindingCode.NO_HTTP_STATUS -> "未收到 HTTP 状态"
+        DiagnosticFindingCode.NO_ROUTE -> "未返回代理链"
+        DiagnosticFindingCode.EVENT_EVIDENCE_LOSS -> "诊断事件证据不完整"
+    }
+    val suggestion = when (code) {
+        DiagnosticFindingCode.IDLE -> "启动核心并选择远程订阅后，可以测试当前路由。"
+        DiagnosticFindingCode.RUNNING -> "等待请求、DNS 和核心日志事件收敛。"
+        DiagnosticFindingCode.HTTP_RESPONSE -> {
+            val statusCode = result?.statusCode ?: 0
+            if (statusCode in 200..299) {
+                "已收到目标响应，当前代理链可以归因。"
+            } else {
+                "已收到 HTTP $statusCode；这是目标服务返回的业务状态，不代表传输链路失败。可核对订阅权限或目标地址。"
+            }
+        }
+        DiagnosticFindingCode.CORE_ERROR -> "查看核心日志，确认配置、网络和核心状态后重试。"
+        DiagnosticFindingCode.NO_RESULT -> "确认核心仍在运行后重新测试当前路由。"
+        DiagnosticFindingCode.NO_HTTP_STATUS -> "检查目标地址、网络和 DNS；确认核心日志没有连接错误后重试。"
+        DiagnosticFindingCode.NO_ROUTE -> "检查当前配置和代理组是否已生效，再重新测试当前路由。"
+        DiagnosticFindingCode.EVENT_EVIDENCE_LOSS -> "事件流存在丢弃或截断；导出证据并降低并发后重试。"
+    }
+    return DiagnosticFinding(code, title, suggestion, rawDetail)
+}
+
+internal fun redactDiagnosticDetail(value: String): String = redactSensitiveLogText(value)
+
 /**
  * 作者 long：诊断卡片和导出文件使用同一组事件流边界计数，让用户能区分“没有请求事件”和“事件被丢弃”。
  */
@@ -513,9 +594,15 @@ internal fun diagnosticEventFlowHasLoss(stats: CoreEventFlowStats): Boolean =
  * 作者 long：诊断证据包与普通日志导出使用相同脱敏边界，既保留请求归因信息，也不把订阅凭据带出应用。
  */
 internal fun formatDiagnosticForExport(session: DiagnosticSessionUiState): String = buildString {
+    val finding = diagnosticFinding(session)
     appendLine("KClash diagnostic session")
     appendLine("session_id\t${session.sessionId}")
     appendLine("status\t${session.status}")
+    appendLine("started_at_millis\t${session.startedAtMillis ?: ""}")
+    appendLine("finished_at_millis\t${session.finishedAtMillis ?: ""}")
+    appendLine("finding_code\t${finding.code}")
+    appendLine("finding_title\t${redactSensitiveLogText(finding.title)}")
+    appendLine("finding_suggestion\t${redactSensitiveLogText(finding.suggestion)}")
     appendLine("target\t${redactSensitiveLogText(session.targetUrl.orEmpty())}")
     session.result?.let { result ->
         appendLine("probe\tHTTP ${result.statusCode}\t${result.delay} ms")
@@ -524,6 +611,7 @@ internal fun formatDiagnosticForExport(session: DiagnosticSessionUiState): Strin
         appendLine("probe_error\t${redactSensitiveLogText(result.error)}")
     }
     appendLine("assertion\t${redactSensitiveLogText(session.assertion.orEmpty())}")
+    appendLine("finding_detail\t${redactSensitiveLogText(finding.rawDetail.orEmpty())}")
     appendLine("[runtime]")
     session.runtimeEvents.forEach { event ->
         appendLine("${event.timestampMillis}\t${event.kind}\t${redactSensitiveLogText(event.detail)}")
