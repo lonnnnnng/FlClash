@@ -412,6 +412,21 @@ class ProfilesViewModel @Inject constructor(
         launchAction { repository.updateRemoteProfile(profile.id) }
     }
 
+    fun reorder(ids: List<Long>) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        val currentIds = repository.profiles.value.map(Profile::id)
+        val requested = ids
+            .filter { it in currentIds }
+            .distinct()
+        val orderedIds = requested + currentIds.filterNot { it in requested }
+        if (orderedIds.isEmpty()) return
+        // 作者 long：把弹窗中的局部顺序补齐为当前最新 Profile 列表，避免排序期间新增订阅后丢失新条目。
+        launchAction { repository.reorder(orderedIds) }
+    }
+
     fun delete(profile: Profile) {
         if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)

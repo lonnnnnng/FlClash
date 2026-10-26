@@ -66,6 +66,46 @@ class ProfilesPanelInstrumentedTest {
     }
 
     @Test
+    fun reorderDialogMovesProfileBeforeSaving() {
+        val profiles = listOf(
+            Profile.custom(105L, "第一项"),
+            Profile.custom(106L, "第二项"),
+            Profile.custom(107L, "第三项"),
+        )
+        var savedOrder: List<Long>? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfilesPanel(
+                    state = ProfilesUiState(profiles = profiles, currentProfileId = profiles.first().id),
+                    editorState = ProfileEditorUiState(),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    showAddDialog = false,
+                    onShowAddDialog = {},
+                    onDismissAddDialog = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                    onSelect = {},
+                    onEdit = {},
+                    onUpdate = {},
+                    onCloseEditor = {},
+                    onSaveEditor = {},
+                    onDelete = {},
+                    onReorderProfiles = { savedOrder = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("排序").performClick()
+        composeRule.onNodeWithText("排序配置").assertIsDisplayed()
+        composeRule.onAllNodesWithText("下移")[0].performClick()
+        composeRule.onNodeWithText("保存排序").performClick()
+
+        assertEquals(listOf(106L, 105L, 107L), savedOrder)
+    }
+
+    @Test
     fun editSaveClosesEditorAndReturnsContentToHost() {
         val profile = Profile.custom(102L, "编辑配置")
         var editorState by mutableStateOf(ProfileEditorUiState())
@@ -175,6 +215,7 @@ class ProfilesPanelInstrumentedTest {
         }
 
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
+        composeRule.onNodeWithText("排序").assertIsNotEnabled()
         composeRule.onNodeWithText("删除").assertIsNotEnabled()
     }
 }

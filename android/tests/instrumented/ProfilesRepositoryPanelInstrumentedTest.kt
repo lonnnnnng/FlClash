@@ -201,6 +201,42 @@ class ProfilesRepositoryPanelInstrumentedTest {
         )
         assertEquals(overrides.toJsonString(), runBlocking { repository.activeProfile().overridesJson })
     }
+
+    @Test
+    fun repositoryReordersProfilesAndKeepsCurrentSelection() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context = context,
+            database = database,
+            subscriptionClient = object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload =
+                    error("该排序流程不访问远程订阅")
+            },
+        )
+
+        val first = runBlocking { repository.addCustomProfile("第一项") }
+        val second = runBlocking { repository.addCustomProfile("第二项") }
+        val third = runBlocking { repository.addCustomProfile("第三项") }
+        composeRule.waitUntil(5_000) { repository.profiles.value.size == 3 }
+
+        runBlocking {
+            repository.selectProfile(second.id)
+            repository.reorder(listOf(third.id, first.id))
+        }
+        composeRule.waitUntil(5_000) {
+            repository.profiles.value.map { it.id } == listOf(third.id, first.id, second.id)
+        }
+
+        assertEquals(second.id, repository.currentProfileId.value)
+        assertEquals(
+            listOf(third.id, first.id, second.id),
+            runBlocking { database.profiles().getAll().map { it.id } },
+        )
+    }
 }
 
 private class RepositoryPanelRuntimeStatusProvider(

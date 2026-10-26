@@ -188,7 +188,12 @@ class ProfileRepository(
 
     override suspend fun reorder(ids: List<Long>) = withContext(Dispatchers.IO) {
         database.withTransaction {
-            ids.forEachIndexed { index, id -> profileDao.updateOrder(id, index) }
+            val existingIds = profileDao.getAll().map(ProfileEntity::id)
+            val requested = ids
+                .filter { it in existingIds }
+                .distinct()
+            val orderedIds = requested + existingIds.filterNot { it in requested }
+            orderedIds.forEachIndexed { index, id -> profileDao.updateOrder(id, index) }
         }
     }
 

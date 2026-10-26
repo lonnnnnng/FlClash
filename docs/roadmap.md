@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-27（北京时间）
 >
-> 当前基线：`kotlin` 分支；首页/配置/代理/连接/观测导航、Profiles ViewModel、内存 Room、Compose instrumentation 和 Redmi 真机验收均已完成首轮切片
+> 当前基线：`kotlin` 分支；首页/配置/代理/连接/观测导航、Profiles ViewModel、Profile 排序、内存 Room、Compose instrumentation 和 Redmi 真机验收均已完成首轮切片
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -309,6 +309,7 @@ flowchart LR
 - 自定义 Profile 新增 Providers 分区快速编辑入口；分别编辑顶层 `proxy-providers`/`rule-providers` map，校验嵌套 map、非空字段和唯一名称，保存时局部替换并保留边界注释与其他 YAML 字段。
 - 自定义 Profile 的代理 Provider 新增字段化覆盖表单；支持健康检查 URL、间隔、超时、lazy、期望状态、名称前缀/后缀、UDP、跳过证书校验和 IP 版本，并将覆盖按 Provider 名称持久化到 Kotlin 自有 `overridesJson`。
 - Provider 覆盖只作用于核心启动时生成的暂存 YAML，原始 Profile 文件保持不变；已有 `health-check`/`override` 子字段会局部合并并保留未覆盖字段，避免编辑覆盖后丢失用户配置。
+- Profile 列表新增排序入口；排序弹窗先维护内存草稿，保存后才通过 ViewModel 和 Room 事务写回 `orderIndex`，核心运行期间禁止排序。
 
 本轮自动化与真机证据（2026-10-25，设备 `wsvwypiz7xwslvl7`）：
 
@@ -320,12 +321,21 @@ flowchart LR
 - 第二条路径首次暴露 HTTP 301 跨协议重定向缺口，已限制放行 `clash.tkbond.us` 的明文入口并由订阅客户端手动跟随 HTTP/HTTPS 重定向；新增本地 301→200 回归测试。
 - 第二条二维码重复导入显示“该订阅已经添加”；验收结束后两个测试 Profile 均通过应用内删除，设备恢复“还没有配置”空态。
 
+### 2026-10-27：Profile 排序切片
+
+- 配置页新增“排序”入口和排序弹窗；每行提供“上移/下移”，保存前只修改内存草稿，取消或返回不会持久化中间顺序。
+- `ProfilesViewModel.reorder` 复用核心运行态修改保护，并将弹窗顺序与最新 Profile 列表合并，避免排序期间新增配置被遗漏。
+- `ProfileRepository.reorder` 在 Room 事务内过滤未知/重复 ID、补齐遗漏 Profile 并重新编号 `orderIndex`，当前选中 Profile 只跟随 ID 不因排序改变。
+- 新增 2 项 `ProfilesViewModel` JVM 测试、1 项排序 Compose 测试和 1 项真实 Repository/Room 排序持久化测试。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 152 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；26 项 instrumentation 测试失败 0、错误 0、跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK `android/app/build/outputs/apk/debug/app-debug.apk` SHA-256 为 `d1f4098ea916501f595988ca9e398397defb4286d409b37fbd98366be160465e`，APK 原生库仅包含 `lib/arm64-v8a/`；本轮未访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动。
+
 待完成：
 
 - YAML 编辑器语法体验、搜索、定位、错误行提示和大文件性能。
 - Scripts、Overrides、Dialers 等高级配置。
 - 订阅自动更新调度、失败重试和通知。
-- Profile 排序 UI。
 - 备份和恢复。
 - Profile 级别的当前代理组选择、展开状态和其他 Flutter 行为数据。
 
@@ -767,7 +777,7 @@ flowchart LR
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 150 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；24 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 4 项、Compose 20 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256 为 `d7204a8f51af8eddb376d7152a0bfed0dcafb65c2497d4ecea8c4fee4fffb0fd`，仅包含 `lib/arm64-v8a` 原生库；本轮未访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动。
-- 本切片完成 Providers 字段化 override 的持久化、UI 和核心应用闭环；下一步进入 Scripts、Overrides/Dialers，或按 N4 顺序补 Profile 排序、备份恢复和订阅自动更新，并继续补完整页面级 E2E。
+- 本切片完成 Providers 字段化 override 的持久化、UI 和核心应用闭环；下一步进入 Scripts、Overrides/Dialers，再补备份恢复和订阅自动更新，并继续补完整页面级 E2E。
 
 ### N4：Profiles 和代理组 parity
 
@@ -779,7 +789,9 @@ flowchart LR
 2. 高级配置分区编辑。
 3. URLTest/Fallback 完整语义。
 4. 批量测速、搜索、缓存和结果失效。
-5. 订阅自动更新、备份恢复和 Profile 排序。
+5. 订阅自动更新和备份恢复。
+
+本轮已完成 Profile 排序；后续优先推进 Scripts、Overrides/Dialers，再补订阅自动更新和备份恢复。
 
 ### N5：平台入口和系统集成
 

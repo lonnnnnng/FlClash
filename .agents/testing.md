@@ -326,3 +326,12 @@
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 146 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；22 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 19 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`bb581765f3e47ca991d4187ef5da79501ef8a2c36bf2bdd5d302e6360f32f4a5`；APK 原生库全部位于 `lib/arm64-v8a/`，本轮未访问当前 `AGENTS.md` 列出的真实订阅路径。字段化 proxy provider override 另见下方 2026-10-27 验收记录。
+
+## Profile 排序验收记录
+
+- 配置页新增“排序”入口和“排序配置”弹窗；上下移动只调整内存草稿，点击“保存排序”后才写回 Profile 顺序，取消不会产生持久化变更。
+- `ProfilesViewModel` 测试覆盖排序委托、遗漏 Profile 补齐和核心运行期间拒绝排序；Repository/Room 测试覆盖事务内 `orderIndex` 重排及当前 Profile 选择保持不变。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 152 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；26 项 instrumentation 测试失败 0、错误 0、跳过 0，新增排序 Compose 与 Room 流程均通过；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`d1f4098ea916501f595988ca9e398397defb4286d409b37fbd98366be160465e`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动。

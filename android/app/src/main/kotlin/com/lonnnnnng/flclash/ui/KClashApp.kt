@@ -316,6 +316,7 @@ fun KClashApp(
                         onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
                         onSaveProviders = profilesViewModel::saveProviders,
                         onSaveProvidersWithOverrides = profilesViewModel::saveProviders,
+                        onReorderProfiles = profilesViewModel::reorder,
                     )
                 }
 
@@ -511,16 +512,30 @@ internal fun ProfilesPanel(
     onCloseProvidersEditor: () -> Unit = {},
     onSaveProviders: (proxyProviders: String, ruleProviders: String) -> Unit = { _, _ -> },
     onSaveProvidersWithOverrides: ((String, String, Map<String, ProxyProviderOverride>) -> Unit)? = null,
+    onReorderProfiles: (List<Long>) -> Unit = {},
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
+    var showReorderDialog by remember { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(
-            text = "配置",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 8.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = "配置",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            if (state.profiles.isNotEmpty()) {
+                TextButton(
+                    onClick = { showReorderDialog = true },
+                    enabled = canMutateProfiles,
+                ) { Text("排序") }
+            }
+        }
         if (state.profiles.isEmpty()) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
@@ -583,6 +598,18 @@ internal fun ProfilesPanel(
             },
             dismissButton = {
                 TextButton(onClick = { profilePendingDeletion = null }) { Text("取消") }
+            },
+        )
+    }
+
+    if (showReorderDialog) {
+        ProfileReorderDialog(
+            profiles = state.profiles,
+            saving = state.isBusy,
+            onDismiss = { if (!state.isBusy) showReorderDialog = false },
+            onSave = { ids ->
+                showReorderDialog = false
+                onReorderProfiles(ids)
             },
         )
     }
@@ -1711,6 +1738,80 @@ private const val MAX_CONNECTIONS_ON_HOME = 5
 private const val MAX_REQUESTS_ON_HOME = 5
 private const val MAX_OBSERVATION_ROWS = 5
 private const val MAX_RUNTIME_HISTORY_ROWS = 3
+
+/**
+ * 作者 long：排序先在弹窗内形成草稿，只有点击保存才写入 Room，避免用户拖动或调整过程中
+ * 反复改变当前 Profile 的持久化顺序；上下移动按钮同时保留了无障碍和小屏设备的可操作性。
+ */
+@Composable
+internal fun ProfileReorderDialog(
+    profiles: List<Profile>,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (List<Long>) -> Unit,
+) {
+    var orderedProfiles by remember(profiles.map(Profile::id)) {
+        mutableStateOf(profiles)
+    }
+
+    fun move(index: Int, offset: Int) {
+        val target = index + offset
+        if (target !in orderedProfiles.indices) return
+        val next = orderedProfiles.toMutableList()
+        val item = next.removeAt(index)
+        next.add(target, item)
+        orderedProfiles = next
+    }
+
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("排序配置") },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 420.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(orderedProfiles, key = { it.id }) { profile ->
+                    val index = orderedProfiles.indexOfFirst { it.id == profile.id }
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, top = 4.dp, end = 4.dp, bottom = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "${index + 1}. ${profile.realLabel}",
+                                modifier = Modifier.weight(1f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            TextButton(
+                                onClick = { move(index, -1) },
+                                enabled = !saving && index > 0,
+                            ) { Text("上移") }
+                            TextButton(
+                                onClick = { move(index, 1) },
+                                enabled = !saving && index < orderedProfiles.lastIndex,
+                            ) { Text("下移") }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(orderedProfiles.map(Profile::id)) },
+                enabled = !saving,
+            ) {
+                if (saving) CircularProgressIndicator() else Text("保存排序")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
+}
 
 @Composable
 internal fun ProfileCard(

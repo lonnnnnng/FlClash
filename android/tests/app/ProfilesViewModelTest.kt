@@ -68,6 +68,43 @@ class ProfilesViewModelTest {
     }
 
     @Test
+    fun `reorder delegates the requested order and keeps omitted profiles`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val first = Profile.custom(20L, "第一项")
+        val second = Profile.custom(21L, "第二项")
+        val third = Profile.custom(22L, "第三项")
+        val store = FakeProfileStore(first, listOf(second, third))
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.reorder(listOf(third.id, first.id))
+        advanceUntilIdle()
+
+        assertEquals(listOf(third.id, first.id, second.id), store.reorderedIds)
+    }
+
+    @Test
+    fun `reorder is rejected while core is running`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val first = Profile.custom(23L, "运行中第一项")
+        val second = Profile.custom(24L, "运行中第二项")
+        val store = FakeProfileStore(first, listOf(second))
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING),
+        )
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.reorder(listOf(second.id, first.id))
+
+        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, error.await())
+        advanceUntilIdle()
+        assertNull(store.reorderedIds)
+    }
+
+    @Test
     fun `custom rules editor reads and saves only the rules section`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(3L, "规则配置")
@@ -296,10 +333,12 @@ private class FakeRuntimeStatusProvider(
 
 private class FakeProfileStore(
     private val profile: Profile,
+    extraProfiles: List<Profile> = emptyList(),
 ) : ProfileStore {
-    override val profiles = MutableStateFlow(listOf(profile))
+    override val profiles = MutableStateFlow(listOf(profile) + extraProfiles)
     override val currentProfileId = MutableStateFlow<Long?>(profile.id)
     var deleteCalls = 0
+    var reorderedIds: List<Long>? = null
     var content = ""
     var updatedContent: String? = null
     var updatedOverridesJson: String? = null
@@ -335,5 +374,7 @@ private class FakeProfileStore(
         deleteCalls++
     }
 
-    override suspend fun reorder(ids: List<Long>) = Unit
+    override suspend fun reorder(ids: List<Long>) {
+        reorderedIds = ids
+    }
 }
