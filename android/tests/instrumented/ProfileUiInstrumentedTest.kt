@@ -109,6 +109,27 @@ class ProfileUiInstrumentedTest {
     }
 
     @Test
+    fun proxyGroupsEditorShowsCustomProfileGroupsAndForwardsSave() {
+        var saved: String? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfileProxyGroupsEditorDialog(
+                    profile = Profile.custom(13L, "代理组配置"),
+                    initialGroups = "- name: Auto\n  type: url-test",
+                    saving = false,
+                    onDismiss = {},
+                    onSave = { saved = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("代理组 · 代理组配置").assertIsDisplayed()
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals("- name: Auto\n  type: url-test", saved)
+    }
+
+    @Test
     fun profileMutationButtonsDisableWhileCoreIsRunning() {
         composeRule.setContent {
             KClashTheme {
@@ -125,6 +146,7 @@ class ProfileUiInstrumentedTest {
         }
 
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
+        composeRule.onNodeWithText("代理组").assertIsNotEnabled()
         composeRule.onNodeWithText("高级").assertIsNotEnabled()
         composeRule.onNodeWithText("代理").assertIsNotEnabled()
         composeRule.onNodeWithText("删除").assertIsNotEnabled()

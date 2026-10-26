@@ -158,6 +158,53 @@ class ProfilesViewModelTest {
         assertNull(store.updatedContent)
         assertEquals(profile.id, viewModel.proxiesEditorState.value.profile?.id)
     }
+
+    @Test
+    fun `custom proxy groups editor reads and saves only the proxy groups section`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(7L, "代理组配置")
+        val store = FakeProfileStore(profile).apply {
+            content = "mixed-port: 7890\nproxy-groups:\n  - name: Old\n    type: select\nrules:\n  - MATCH,DIRECT\n"
+        }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openProxyGroupsEditor(profile)
+        advanceUntilIdle()
+        assertEquals("- name: Old\n  type: select", viewModel.proxyGroupsEditorState.value.groups)
+
+        viewModel.saveProxyGroups("- name: Auto\n  type: url-test")
+        advanceUntilIdle()
+
+        assertEquals(
+            "mixed-port: 7890\nproxy-groups:\n  - name: Auto\n    type: url-test\nrules:\n  - MATCH,DIRECT\n",
+            store.updatedContent,
+        )
+        assertNull(viewModel.proxyGroupsEditorState.value.profile)
+    }
+
+    @Test
+    fun `custom proxy groups editor keeps dialog open when a group is invalid`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(8L, "非法代理组")
+        val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+        viewModel.openProxyGroupsEditor(profile)
+        advanceUntilIdle()
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.saveProxyGroups("- name: Auto\n  type: random")
+        advanceUntilIdle()
+
+        assertEquals("第 1 个代理组 type 不受支持：random", error.await())
+        assertNull(store.updatedContent)
+        assertEquals(profile.id, viewModel.proxyGroupsEditorState.value.profile?.id)
+    }
 }
 
 private class FakeRuntimeStatusProvider(

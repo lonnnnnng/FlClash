@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.ProfileProxyGroupsEditor
 import com.lonnnnnng.flclash.data.ProfileProxiesEditor
 import com.lonnnnnng.flclash.data.ProfileRulesEditor
 import com.lonnnnnng.flclash.data.ProfileStore
@@ -49,6 +50,14 @@ data class ProfileProxiesEditorUiState(
     val isSaving: Boolean = false,
 )
 
+data class ProfileProxyGroupsEditorUiState(
+    val profile: Profile? = null,
+    val sourceContent: String = "",
+    val groups: String = "",
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+)
+
 internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
 
 /**
@@ -68,6 +77,7 @@ class ProfilesViewModel @Inject constructor(
     private val mutableEditor = MutableStateFlow(ProfileEditorUiState())
     private val mutableRulesEditor = MutableStateFlow(ProfileRulesEditorUiState())
     private val mutableProxiesEditor = MutableStateFlow(ProfileProxiesEditorUiState())
+    private val mutableProxyGroupsEditor = MutableStateFlow(ProfileProxyGroupsEditorUiState())
 
     val state: StateFlow<ProfilesUiState> = combine(
         repository.profiles,
@@ -81,6 +91,7 @@ class ProfilesViewModel @Inject constructor(
     val editorState: StateFlow<ProfileEditorUiState> = mutableEditor
     val rulesEditorState: StateFlow<ProfileRulesEditorUiState> = mutableRulesEditor
     val proxiesEditorState: StateFlow<ProfileProxiesEditorUiState> = mutableProxiesEditor
+    val proxyGroupsEditorState: StateFlow<ProfileProxyGroupsEditorUiState> = mutableProxyGroupsEditor
 
     fun select(id: Long) {
         if (runtimeManager.state.value.isRunning) {
@@ -228,6 +239,58 @@ class ProfilesViewModel @Inject constructor(
             }.onFailure { error ->
                 mutableProxiesEditor.value = mutableProxiesEditor.value.copy(isSaving = false, proxies = proxies)
                 mutableErrors.emit(error.message ?: "保存代理失败")
+            }
+        }
+    }
+
+    fun openProxyGroupsEditor(profile: Profile) {
+        if (profile.type != ProfileType.CUSTOM) {
+            mutableErrors.tryEmit("高级代理组编辑仅支持自定义配置")
+            return
+        }
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑代理组")
+            return
+        }
+        viewModelScope.launch {
+            mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(profile = profile, isLoading = true)
+            runCatching {
+                val content = repository.readLocalProfileContent(profile.id)
+                content to ProfileProxyGroupsEditor.extractGroups(content)
+            }.onSuccess { (content, groups) ->
+                mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(
+                    profile = profile,
+                    sourceContent = content,
+                    groups = groups,
+                )
+            }.onFailure { error ->
+                mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState()
+                mutableErrors.emit(error.message ?: "无法读取代理组配置")
+            }
+        }
+    }
+
+    fun closeProxyGroupsEditor() {
+        mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState()
+    }
+
+    fun saveProxyGroups(groups: String) {
+        val state = mutableProxyGroupsEditor.value
+        val profile = state.profile ?: return
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存代理组")
+            return
+        }
+        viewModelScope.launch {
+            mutableProxyGroupsEditor.value = state.copy(isSaving = true)
+            runCatching {
+                val updatedContent = ProfileProxyGroupsEditor.replaceGroups(state.sourceContent, groups)
+                repository.updateLocalProfileContent(profile.id, updatedContent)
+            }.onSuccess {
+                closeProxyGroupsEditor()
+            }.onFailure { error ->
+                mutableProxyGroupsEditor.value = mutableProxyGroupsEditor.value.copy(isSaving = false, groups = groups)
+                mutableErrors.emit(error.message ?: "保存代理组失败")
             }
         }
     }

@@ -301,3 +301,11 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；20 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 17 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256 为 `194a18d914f28ba340a3feb3a37dbfcc970ad34a06c63279c406173f0e7a8f74`，APK 仅包含 `lib/arm64-v8a/libclash.so`。
 - 真机流程使用真实 Room、应用文件目录和 `ProfilesViewModel`，创建自定义 Profile 后依次写回 `rules:` 和 `proxies:` 区块；本轮未访问真实订阅路径、VPN 或核心启动。
+
+## 自定义 Profile Proxy Groups 分区编辑验收记录
+
+- 自定义 Profile 卡片新增“代理组”入口；代理组编辑器只回写顶层 `proxy-groups` 区块，保留端口、代理、规则、DNS 和其他未编辑字段；远程订阅 Profile 不开放该入口。
+- `ProfileProxyGroupsEditor` 覆盖现有区块提取、无区块追加、空列表、`proxy-groups:` 包装粘贴、Flutter 支持的四种代理组类型、引号/行尾注释、重复名称、`relay` 和非列表结构校验；ViewModel 在核心运行期间继续禁止打开和保存代理组。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 140 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；21 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 18 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`0117572215f4a96342cd70c0c962eb67897b8f2756409de5378ffa5fcb241e41`；APK 仅包含 `lib/arm64-v8a/libclash.so`、`libandroidx.graphics.path.so` 和 `libbarhopper_v3.so`，未访问当前 `AGENTS.md` 列出的真实订阅路径。
