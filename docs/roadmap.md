@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-10-27（北京时间）
 >
-> 当前基线：`kotlin` 分支；Profiles 页面已完成 ViewModel、内存 Room、Compose instrumentation 和 Redmi 真机验收
+> 当前基线：`kotlin` 分支；首页/配置导航、Profiles ViewModel、内存 Room、Compose instrumentation 和 Redmi 真机验收均已完成首轮切片
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -57,7 +57,7 @@
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
 | 单元测试 | 124 项通过，失败 0，错误 0，跳过 0 |
-| Compose/Room instrumentation | 17 项通过，失败 0，错误 0，跳过 0；Room 3 项，Compose 14 项 |
+| Compose/Room instrumentation | 18 项通过，失败 0，错误 0，跳过 0；Room 3 项，Compose 15 项 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
@@ -401,7 +401,7 @@ flowchart LR
 当前已有：
 
 - Compose + Material 3 基础主题。
-- 单屏配置、核心状态和代理组交互。
+- 首页/配置两个手机目的地、核心状态和代理组交互。
 - Edge-to-edge 基础设置。
 
 待完成：
@@ -429,7 +429,7 @@ flowchart LR
 - 124 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
 - `:app:lintDebug` 已通过；当前仍有 31 条非阻断警告，错误为 0。
-- 17 项 instrumentation 测试，其中 Room 3 项、Compose 14 项（诊断卡片 4 项、Profiles 9 项、MainActivity 宿主 1 项）。
+- 18 项 instrumentation 测试，其中 Room 3 项、Compose 15 项（诊断卡片 4 项、Profiles 9 项、MainActivity 宿主 2 项）。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
@@ -679,6 +679,17 @@ flowchart LR
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过：17 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 14 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。本轮未访问真实订阅路径。
 - Debug APK SHA-256 为 `7a06c6032100a848c2aefe79fecaad909ee6744cd1f94fb843b19be42680854a`，仅包含 `lib/arm64-v8a` 原生库。
 - 本切片完成真实 Activity 宿主入口回归；下一步进入完整页面导航覆盖和 N4 高级配置分区编辑。
+
+### 2026-10-27：首页与配置页导航切片
+
+- 在现有单 Activity/Compose 结构上增加轻量目的地状态和 Material 3 `NavigationBar`，先建立“首页”和“配置”两个稳定手机入口。
+- 首页继续承载运行状态、统计、诊断、连接、请求、DNS、日志和代理组卡片；配置页承载现有 Profiles 宿主，核心生命周期和 ViewModel 数据源不变。
+- 悬浮“添加配置”入口会先切换到配置页再打开弹窗，离开配置页时关闭添加弹窗，避免跨页面残留 UI 状态。
+- 新增真实 `MainActivity` 导航回归：首页 → 配置 → 首页，并使用页面测试标记断言目的地切换；本轮未访问真实订阅路径、VPN 或核心启动。
+- `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon` 通过；Kotlin 单元测试 124 项通过，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过：18 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 15 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256 为 `b63bb174641fd1cc5f4d9bf034090362f58be66db85cdade15f029832d0895ba`，仅包含 `lib/arm64-v8a` 原生库。
+- 本切片完成 Dashboard/Profiles 的第一阶段可达导航；下一步扩展 Requests、DNS、Logs、Connections 和 Proxy 的独立页面入口，再进入 N4 高级配置分区编辑。
 
 ### N4：Profiles 和代理组 parity
 

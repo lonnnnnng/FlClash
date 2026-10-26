@@ -255,3 +255,13 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；17 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 14 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。本轮未访问真实订阅路径。
 - Debug APK SHA-256：`7a06c6032100a848c2aefe79fecaad909ee6744cd1f94fb843b19be42680854a`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
 - 主页面 Activity 宿主已具备自动化入口；下一步补完整导航页面级断言，再进入 N4 高级配置分区编辑。
+
+## 首页与配置页导航验收记录
+
+- 新增轻量 `MainDestination` 状态和 Material 3 `NavigationBar`，首页继续承载运行观测卡片，配置页承载 `ProfilesPanel`；不引入第二套核心生命周期或数据源。
+- 悬浮“添加配置”会先切换到配置页再打开弹窗，离开配置页时关闭添加弹窗，避免页面切换后保留跨页弹窗。
+- `MainActivityInstrumentedTest` 新增真实宿主往返断言：`page_dashboard` → 点击“配置” → `page_profiles` → 点击“首页” → `page_dashboard`，未触发真实订阅、VPN 或核心启动。
+- `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；18 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 15 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`b63bb174641fd1cc5f4d9bf034090362f58be66db85cdade15f029832d0895ba`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
+- 当前只完成首页/配置两目的地，Requests、DNS、Logs、Connections 和 Proxy 独立页面仍待扩展。

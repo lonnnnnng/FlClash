@@ -25,6 +25,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -47,6 +49,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
@@ -61,6 +64,14 @@ import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
+private enum class MainDestination(
+    val label: String,
+    val symbol: String,
+) {
+    DASHBOARD("首页", "⌂"),
+    PROFILES("配置", "▤"),
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,6 +108,8 @@ fun KClashApp(
     var showDns by rememberSaveable { mutableStateOf(false) }
     var showLogs by rememberSaveable { mutableStateOf(false) }
     var showDiagnosticHistory by rememberSaveable { mutableStateOf(false) }
+    var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
+    val selectedDestination = MainDestination.values()[selectedDestinationIndex]
 
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -162,13 +175,34 @@ fun KClashApp(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("KClash") }) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(if (selectedDestination == MainDestination.DASHBOARD) "KClash" else "配置")
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            MainNavigationBar(
+                selectedDestination = selectedDestination,
+                onDestinationSelected = { destination ->
+                    selectedDestinationIndex = destination.ordinal
+                    if (destination != MainDestination.PROFILES) {
+                        // 作者 long：离开配置页时关闭添加弹窗，避免弹窗覆盖首页并让返回后的页面状态不明确。
+                        showAddDialog = false
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = { Text("添加配置") },
                 icon = {},
-                onClick = { showAddDialog = true },
+                onClick = {
+                    selectedDestinationIndex = MainDestination.PROFILES.ordinal
+                    showAddDialog = true
+                },
             )
         },
     ) { paddingValues ->
@@ -176,111 +210,123 @@ fun KClashApp(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .testTag(
+                    if (selectedDestination == MainDestination.DASHBOARD) {
+                        "page_dashboard"
+                    } else {
+                        "page_profiles"
+                    },
+                ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item {
-                RuntimeCard(
-                    state = runtimeState,
-                    onStart = onStartRuntime,
-                    onStop = onStopRuntime,
-                )
-            }
-            item {
-                RuntimeStatsCard(
-                    state = runtimeStats,
-                    runtimeState = runtimeState,
-                )
-            }
-            item {
-                BatteryOptimizationCard(
-                    ignored = batteryOptimizationIgnored,
-                    onRequest = onRequestBatteryOptimization,
-                )
-            }
-            item {
-                ProbeCard(
-                    state = runtimeProbe,
-                    diagnostic = diagnosticState,
-                    diagnosticHistory = diagnosticHistory,
-                    runtimeState = runtimeState,
-                    profile = selectedProfile,
-                    onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
-                    onExportDiagnostic = onExportDiagnostic,
-                    onShowDiagnosticHistory = { showDiagnosticHistory = true },
-                    onExportDiagnosticHistory = onExportDiagnosticHistory,
-                )
-            }
-            item {
-                ConnectionsCard(
-                    state = runtimeConnections,
-                    runtimeState = runtimeState,
-                )
-            }
-            item {
-                RequestsCard(
-                    state = runtimeRequests,
-                    runtimeState = runtimeState,
-                    onShowAll = { showRequests = true },
-                )
-            }
-            item {
-                DnsCard(
-                    state = runtimeDns,
-                    runtimeState = runtimeState,
-                    onShowAll = { showDns = true },
-                    onClear = runtimeViewModel::clearDns,
-                )
-            }
-            item {
-                LogsCard(
-                    state = runtimeLogs,
-                    runtimeState = runtimeState,
-                    onShowAll = { showLogs = true },
-                    onClear = runtimeViewModel::clearLogs,
-                    onExport = { onExportLogs(runtimeLogs.entries) },
-                )
-            }
-            item {
-                ProxyGroupsCard(
-                    state = proxyGroupsState,
-                    runtimeState = runtimeState,
-                    onRefresh = proxyGroupsViewModel::refresh,
-                    onSelect = proxyGroupsViewModel::selectProxy,
-                    onTestDelay = proxyGroupsViewModel::testDelay,
-                )
-            }
-            item {
-                ProfilesPanel(
-                    state = profilesState,
-                    editorState = editorState,
-                    runtimeState = runtimeState,
-                    showAddDialog = showAddDialog,
-                    onShowAddDialog = { showAddDialog = true },
-                    onDismissAddDialog = { showAddDialog = false },
-                    onPickFile = {
-                        showAddDialog = false
-                        filePicker.launch(arrayOf("*/*"))
-                    },
-                    onPickQrCode = {
-                        showAddDialog = false
-                        qrCodePicker.launch("image/*")
-                    },
-                    onAddRemote = { label, url ->
-                        showAddDialog = false
-                        profilesViewModel.addRemote(url, label)
-                    },
-                    onAddCustom = { label ->
-                        showAddDialog = false
-                        profilesViewModel.addCustom(label)
-                    },
-                    onSelect = profilesViewModel::select,
-                    onEdit = profilesViewModel::openEditor,
-                    onUpdate = profilesViewModel::update,
-                    onCloseEditor = profilesViewModel::closeEditor,
-                    onSaveEditor = profilesViewModel::saveEditor,
-                    onDelete = profilesViewModel::delete,
-                )
+            when (selectedDestination) {
+                MainDestination.DASHBOARD -> {
+                    item {
+                        RuntimeCard(
+                            state = runtimeState,
+                            onStart = onStartRuntime,
+                            onStop = onStopRuntime,
+                        )
+                    }
+                    item {
+                        RuntimeStatsCard(
+                            state = runtimeStats,
+                            runtimeState = runtimeState,
+                        )
+                    }
+                    item {
+                        BatteryOptimizationCard(
+                            ignored = batteryOptimizationIgnored,
+                            onRequest = onRequestBatteryOptimization,
+                        )
+                    }
+                    item {
+                        ProbeCard(
+                            state = runtimeProbe,
+                            diagnostic = diagnosticState,
+                            diagnosticHistory = diagnosticHistory,
+                            runtimeState = runtimeState,
+                            profile = selectedProfile,
+                            onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
+                            onExportDiagnostic = onExportDiagnostic,
+                            onShowDiagnosticHistory = { showDiagnosticHistory = true },
+                            onExportDiagnosticHistory = onExportDiagnosticHistory,
+                        )
+                    }
+                    item {
+                        ConnectionsCard(
+                            state = runtimeConnections,
+                            runtimeState = runtimeState,
+                        )
+                    }
+                    item {
+                        RequestsCard(
+                            state = runtimeRequests,
+                            runtimeState = runtimeState,
+                            onShowAll = { showRequests = true },
+                        )
+                    }
+                    item {
+                        DnsCard(
+                            state = runtimeDns,
+                            runtimeState = runtimeState,
+                            onShowAll = { showDns = true },
+                            onClear = runtimeViewModel::clearDns,
+                        )
+                    }
+                    item {
+                        LogsCard(
+                            state = runtimeLogs,
+                            runtimeState = runtimeState,
+                            onShowAll = { showLogs = true },
+                            onClear = runtimeViewModel::clearLogs,
+                            onExport = { onExportLogs(runtimeLogs.entries) },
+                        )
+                    }
+                    item {
+                        ProxyGroupsCard(
+                            state = proxyGroupsState,
+                            runtimeState = runtimeState,
+                            onRefresh = proxyGroupsViewModel::refresh,
+                            onSelect = proxyGroupsViewModel::selectProxy,
+                            onTestDelay = proxyGroupsViewModel::testDelay,
+                        )
+                    }
+                }
+
+                MainDestination.PROFILES -> item {
+                    ProfilesPanel(
+                        state = profilesState,
+                        editorState = editorState,
+                        runtimeState = runtimeState,
+                        showAddDialog = showAddDialog,
+                        onShowAddDialog = { showAddDialog = true },
+                        onDismissAddDialog = { showAddDialog = false },
+                        onPickFile = {
+                            showAddDialog = false
+                            filePicker.launch(arrayOf("*/*"))
+                        },
+                        onPickQrCode = {
+                            showAddDialog = false
+                            qrCodePicker.launch("image/*")
+                        },
+                        onAddRemote = { label, url ->
+                            showAddDialog = false
+                            profilesViewModel.addRemote(url, label)
+                        },
+                        onAddCustom = { label ->
+                            showAddDialog = false
+                            profilesViewModel.addCustom(label)
+                        },
+                        onSelect = profilesViewModel::select,
+                        onEdit = profilesViewModel::openEditor,
+                        onUpdate = profilesViewModel::update,
+                        onCloseEditor = profilesViewModel::closeEditor,
+                        onSaveEditor = profilesViewModel::saveEditor,
+                        onDelete = profilesViewModel::delete,
+                    )
+                }
             }
             item { Spacer(Modifier.height(88.dp)) }
         }
@@ -318,6 +364,27 @@ fun KClashApp(
         )
     }
 
+}
+
+/**
+ * 作者 long：先把首页和配置页建立成稳定的手机入口，后续新增代理组、请求和日志独立页面时只扩展目的地，
+ * 不让每个页面自行创建核心或观测状态。
+ */
+@Composable
+private fun MainNavigationBar(
+    selectedDestination: MainDestination,
+    onDestinationSelected: (MainDestination) -> Unit,
+) {
+    NavigationBar {
+        MainDestination.values().forEach { destination ->
+            NavigationBarItem(
+                selected = destination == selectedDestination,
+                onClick = { onDestinationSelected(destination) },
+                icon = { Text(destination.symbol) },
+                label = { Text(destination.label) },
+            )
+        }
+    }
 }
 
 /**

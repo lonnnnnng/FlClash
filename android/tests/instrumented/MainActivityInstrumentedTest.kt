@@ -3,7 +3,9 @@ package com.lonnnnnng.flclash
 import android.Manifest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import org.junit.Rule
@@ -31,5 +33,15 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("启动核心").assertIsDisplayed()
         // 作者 long：ExtendedFloatingActionButton 的文本会被父节点合并，入口断言必须查看未合并语义树。
         composeRule.onNodeWithText("添加配置", useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun mainActivityNavigatesBetweenDashboardAndProfiles() {
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
+        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+        composeRule.onNodeWithText("核心状态").assertIsDisplayed()
     }
 }
