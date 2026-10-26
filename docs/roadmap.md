@@ -56,7 +56,7 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 121 项通过，失败 0，错误 0，跳过 0 |
+| 单元测试 | 122 项通过，失败 0，错误 0，跳过 0 |
 | Compose/Room instrumentation | 7 项通过，失败 0，错误 0，跳过 0；Room 3 项，诊断卡片 Compose 4 项 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
@@ -425,16 +425,16 @@ flowchart LR
 
 当前已有：
 
-- 98 项 Kotlin 单元测试。
+- 122 项 Kotlin 单元测试。
 - Debug APK 构建和 arm64 产物检查。
-- `:app:lintDebug` 已通过；当前仍有 24 条非阻断警告，错误为 0。
+- `:app:lintDebug` 已通过；当前仍有 31 条非阻断警告，错误为 0。
+- 7 项 instrumentation 测试，其中 Room 3 项、诊断卡片 Compose 4 项。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
 待完成：
 
-- Compose UI tests。
-- Instrumented tests。
+- 完整页面级 Compose/Instrumentation 测试，当前已有事件流摘要、诊断归因和 Room DAO 覆盖。
 - VPN 权限、TUN 停止清理、后台恢复、系统撤销 VPN、Wi‑Fi 断开恢复、进程重建和 `dumpsys connectivity` 真机测试已有证据；Wi‑Fi↔移动网络切换仍待完成。
 - 连接、请求、DNS、日志端到端测试的自动化脚本和稳定断言。
 - R8、Release 构建和 APK 签名检查。
@@ -458,14 +458,11 @@ flowchart LR
 
 当前进度：VPN 授权、TUN 生命周期、后台恢复、系统撤销、Wi‑Fi 断开恢复和进程重建已经完成真机闭环；下一项只剩在具备蜂窝网络条件的设备上验证 Wi‑Fi↔移动网络切换。
 
-建议范围：
+收尾范围：
 
-1. 定义连接模式和连接状态模型。
-2. 将 `VpnService.prepare()` 接入 Activity 和 ViewModel。
-3. 将 `VpnOptions` 从配置/设置映射到 `ServiceConfig`。
-4. 由 `CoreRuntimeManager` 统一启动 ProxyService 和 VpnService。
-5. 处理授权、拒绝、撤销、重复启动和停止清理。
-6. 在真实设备验证 TUN、路由、DNS 和代理请求。
+1. 在具备已注册蜂窝数据的设备上验证 Wi‑Fi↔移动网络切换。
+2. 记录切换期间 `UnderlyingNetworks`、TUN、路由、前台服务和真实请求的连续性。
+3. 若切换失败，保留失败 Run，修复网络绑定或服务收口后再复验。
 
 不在 N1 混入：Connections、Requests、DNS 页面和 UI 大改版。
 
@@ -616,6 +613,15 @@ flowchart LR
 - Debug APK `android/app/build/outputs/apk/debug/app-debug.apk` SHA-256 为 `c60e7ac24dd9a34d8275998bb6c95486146f95d7bad50774fe389f5d76704561`，仅包含 `arm64-v8a` 原生库。
 - 本切片已完成；下一步转入完整页面级端到端断言、N1 蜂窝网络切换补测和 N4 Profiles 高级能力。
 
+### 2026-10-27：运行期间 Profile 变更保护切片
+
+- `ProfilesViewModel.delete` 现在与切换、编辑、保存使用同一运行态边界；核心运行期间拒绝删除 Profile，并通过统一错误事件提示“核心运行中，请先停止核心后再修改配置”。
+- Compose Profile 卡片和删除确认按钮在核心运行期间直接禁用，避免用户进入会改变当前核心文件或选择的操作；ViewModel 仍保留守卫，防止其他入口绕过 UI。
+- 新增 `isProfileMutationBlocked` 单元测试，覆盖 `STOPPED`、`STARTING`、`RUNNING` 和 `FAILED` 状态；`./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 通过：122 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过：7 项 instrumentation 测试失败 0、错误 0、跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- 本切片完成了代码和自动化验证；运行中删除 Profile 的真实 UI 流程纳入下一条页面级 Compose/Instrumentation E2E 切片，当前未将其标记为真机完成。
+- 下一步进入 Profiles 自定义配置创建→列表展示→编辑保存的页面级 E2E 测试隔离，随后继续 N4 高级配置能力。
+
 ### N4：Profiles 和代理组 parity
 
 目标：补齐 Flutter Android 用户已经拥有的配置和代理组工作流。
@@ -632,14 +638,12 @@ flowchart LR
 
 目标：让 KClash 在 Android 系统层面可持续运行。
 
-建议范围：
+收尾范围：
 
-1. Quick Settings。
-2. 通知栏操作。
-3. 外部 Action。
-4. 按应用代理。
-5. 电池优化和 Always-on VPN。
-6. Intent、组件导出和权限审计。
+1. Tasker/MacroDroid 实际应用回归。
+2. 按应用代理的应用选择器。
+3. Always-on VPN 的完整配置和系统设置兼容。
+4. Android 组件导出、Intent 和权限的完整自动化审计。
 
 ### N6：UI/UX 收敛和发布
 
@@ -703,7 +707,7 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 | 风险 | 影响 | 处理顺序 |
 | --- | --- | --- |
 | Wi‑Fi↔移动网络切换尚未完成 | Wi‑Fi 断开恢复、真实请求归因、后台恢复、进程重建和系统撤销清理已验证，但蜂窝切换仍可能留下悬挂隧道 | N1 真机切片 |
-| 外部入口尚未全部接入 Runtime Manager | Quick Settings 等入口仍可能形成第二套启停路径；Deep Link 只负责导入 Profile，不启动核心 | N5 固化统一服务边界 |
+| 平台入口仍有系统级收尾项 | Quick Settings、通知、桌面快捷方式和固定外部 Action 已统一进入 Runtime Manager；Tasker/MacroDroid、按应用代理和 Always-on VPN 仍未完成 | N5 |
 | UI 仍是单屏基础骨架 | 与 Flutter 完整体验差距大 | M4 后按页面切片重构 |
 | 观测治理仍有后续缺口 | 搜索过滤、详情、自动跟随、脱敏导出、有界背压、事件流健康统计、运行诊断历史详情/导出、稳定故障归因、异步事件停止边界、页面退出轮询收敛和真实高负载压力已验证，但完整页面级端到端断言仍不足 | N2/N3 |
 | 高级配置和导入入口缺失 | 用户无法完成完整配置管理 | M6/N4 |

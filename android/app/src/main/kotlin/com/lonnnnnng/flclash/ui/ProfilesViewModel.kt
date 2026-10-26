@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.ProfileType
+import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -29,6 +30,15 @@ data class ProfileEditorUiState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
 )
+
+internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
+
+/**
+ * 作者 long：核心运行期间配置文件已经被 Mihomo 打开，阻止会改变文件或当前选择的操作，
+ * 避免删除/编辑后运行中的核心继续持有失效路径，导致页面状态与实际代理配置分裂。
+ */
+internal fun isProfileMutationBlocked(runtimeStatus: CoreRuntimeStatus): Boolean =
+    runtimeStatus.isRunning
 
 @HiltViewModel
 class ProfilesViewModel @Inject constructor(
@@ -118,7 +128,13 @@ class ProfilesViewModel @Inject constructor(
         launchAction { repository.updateRemoteProfile(profile.id) }
     }
 
-    fun delete(profile: Profile) = launchAction { repository.deleteProfile(profile.id) }
+    fun delete(profile: Profile) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        launchAction { repository.deleteProfile(profile.id) }
+    }
 
     private fun launchAction(action: suspend () -> Unit) {
         viewModelScope.launch {

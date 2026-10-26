@@ -1,11 +1,24 @@
 package com.lonnnnnng.flclash.data
 
+import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import com.lonnnnnng.flclash.ui.PROFILE_MUTATION_BLOCKED_MESSAGE
+import com.lonnnnnng.flclash.ui.isProfileMutationBlocked
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ProfileTest {
+    @Test
+    fun `profile mutation is blocked only while core is running`() {
+        assertFalse(isProfileMutationBlocked(CoreRuntimeStatus.STOPPED))
+        assertFalse(isProfileMutationBlocked(CoreRuntimeStatus.STARTING))
+        assertTrue(isProfileMutationBlocked(CoreRuntimeStatus.RUNNING))
+        assertFalse(isProfileMutationBlocked(CoreRuntimeStatus.FAILED))
+        assertEquals("核心运行中，请先停止核心后再修改配置", PROFILE_MUTATION_BLOCKED_MESSAGE)
+    }
+
     @Test
     fun `subscription userinfo is case insensitive and truncates decimals`() {
         val info = SubscriptionInfo.parseHeader(

@@ -192,3 +192,12 @@
 - 第二条授权路径真实返回 HTTP 200；UI 显示 `HTTP_RESPONSE`，当前代理链可以归因；事件流解析/投递为 `50/50`，丢弃/截断为 `0/0`。
 - 两个测试 Profile 均通过应用内删除，首页恢复“还没有配置”；`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均清理，未发现 `FATAL EXCEPTION`。
 - Debug APK SHA-256：`c60e7ac24dd9a34d8275998bb6c95486146f95d7bad50774fe389f5d76704561`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
+
+## 运行期间 Profile 变更保护验收记录
+
+- `ProfilesViewModel.delete` 增加运行态守卫；核心运行期间拒绝删除配置，错误事件为“核心运行中，请先停止核心后再修改配置”。
+- Compose Profile 卡片和删除确认按钮使用同一 `canMutateProfiles` 条件；核心运行期间编辑、同步和删除入口直接禁用，ViewModel 层仍保留最终守卫。
+- 新增 `ProfileTest` 运行态边界断言，覆盖停止、启动中、运行中和失败状态。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；122 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；7 项 instrumentation 测试失败 0、错误 0、跳过 0。
+- 本轮未执行真实订阅路径；下一条页面级 E2E 将使用无网络自定义 Profile 流程验证创建、编辑、删除确认及运行期间禁用边界。

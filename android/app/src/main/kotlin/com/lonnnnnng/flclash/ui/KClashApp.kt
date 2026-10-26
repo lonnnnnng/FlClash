@@ -92,6 +92,7 @@ fun KClashApp(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val selectedProfile = profilesState.profiles.firstOrNull { it.id == profilesState.currentProfileId }
+    val canMutateProfiles = !profilesState.isBusy && !runtimeState.isRunning
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
     var showDns by rememberSaveable { mutableStateOf(false) }
@@ -283,7 +284,7 @@ fun KClashApp(
                     ProfileCard(
                         profile = profile,
                         selected = profile.id == profilesState.currentProfileId,
-                        busy = profilesState.isBusy,
+                        canMutate = canMutateProfiles,
                         onSelect = { profilesViewModel.select(profile.id) },
                         onEdit = { profilesViewModel.openEditor(profile) },
                         onUpdate = { profilesViewModel.update(profile) },
@@ -329,7 +330,7 @@ fun KClashApp(
                         profilePendingDeletion = null
                         profilesViewModel.delete(profile)
                     },
-                    enabled = !profilesState.isBusy,
+                    enabled = canMutateProfiles,
                 ) { Text("删除") }
             },
             dismissButton = {
@@ -1420,7 +1421,7 @@ private const val MAX_RUNTIME_HISTORY_ROWS = 3
 private fun ProfileCard(
     profile: Profile,
     selected: Boolean,
-    busy: Boolean,
+    canMutate: Boolean,
     onSelect: () -> Unit,
     onEdit: () -> Unit,
     onUpdate: () -> Unit,
@@ -1461,12 +1462,12 @@ private fun ProfileCard(
                 horizontalArrangement = Arrangement.End,
             ) {
                 if (profile.type != ProfileType.URL) {
-                    TextButton(onClick = onEdit, enabled = !busy) { Text("编辑") }
+                    TextButton(onClick = onEdit, enabled = canMutate) { Text("编辑") }
                 }
                 if (profile.type == ProfileType.URL) {
-                    TextButton(onClick = onUpdate, enabled = !busy) { Text("同步") }
+                    TextButton(onClick = onUpdate, enabled = canMutate) { Text("同步") }
                 }
-                TextButton(onClick = onDelete, enabled = !busy) { Text("删除") }
+                TextButton(onClick = onDelete, enabled = canMutate) { Text("删除") }
             }
         }
     }
