@@ -228,3 +228,12 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；14 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 11 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。本轮未访问真实订阅路径。
 - Debug APK SHA-256：`7a06c6032100a848c2aefe79fecaad909ee6744cd1f94fb843b19be42680854a`；APK 仅包含 `lib/arm64-v8a` 原生库。
 - 该切片只验证可替换状态驱动的页面组合，不等同于真实 Repository/ViewModel 页面 E2E；下一步接入 fake Store 驱动的真实 `ProfilesViewModel` 宿主。
+
+## ProfilesViewModel 页面状态流验收记录
+
+- 新增 `ProfilesViewModelPanelInstrumentedTest`，使用真实 `ProfilesViewModel`，仅替换 `ProfileStore` 和 `CoreRuntimeStatusProvider`，不启动 Room、网络订阅或 VPN 核心。
+- 真机 Compose 流程通过：创建自定义 Profile、等待 StateFlow 列表刷新、打开编辑器并异步读取 YAML、保存 `mixed-port: 7890`、确认删除并回到空态；fake Store 同时确认保存内容、Profile 列表和当前 Profile 选择均正确收敛。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；15 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 12 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。本轮未访问真实订阅路径。
+- Debug APK SHA-256：`7a06c6032100a848c2aefe79fecaad909ee6744cd1f94fb843b19be42680854a`；APK 仅包含 `lib/arm64-v8a` 原生库。
+- 该切片验证的是真实 ViewModel 加可替换 Store 的页面状态流；真实 `ProfileRepository`/Room 页面 E2E 和主页面导航仍待后续补齐。
