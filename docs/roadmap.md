@@ -2,9 +2,9 @@
 
 > 文档类型：产品迁移路线图、功能矩阵、依赖图和验收门槛
 >
-> 最后核对：2026-10-26（北京时间）
+> 最后核对：2026-10-27（北京时间）
 >
-> 当前基线：`kotlin` 分支；本轮诊断卡片事件流健康摘要已完成代码、自动化测试和真机验收
+> 当前基线：`kotlin` 分支；本轮诊断卡片事件流健康摘要已完成 JVM、Compose instrumentation 和 Redmi 真机验收
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -57,10 +57,11 @@
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
 | 单元测试 | 120 项通过，失败 0，错误 0，跳过 0 |
+| Compose/Room instrumentation | 5 项通过，失败 0，错误 0，跳过 0；Room 3 项，诊断卡片 Compose 2 项 |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内只包含 `lib/arm64-v8a/libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile 和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -241,7 +242,7 @@ flowchart LR
 
 ### 7.2 连接、流量和运行观测
 
-状态：`PARTIAL`，流量、连接数、活动连接、Requests、DNS 和核心日志的基础观测与真实请求归因已验证，详情级交互已支持搜索、筛选、自动跟随和脱敏导出，事件流已具备有界背压和健康统计，运行诊断历史已接入 Room、在进程重建后直接展示恢复事件，并支持完整详情查看和独立脱敏导出；真实高负载压力验收已完成，后续集中在自动化端到端断言和更细故障诊断交互。
+状态：`PARTIAL`，流量、连接数、活动连接、Requests、DNS 和核心日志的基础观测与真实请求归因已验证，详情级交互已支持搜索、筛选、自动跟随和脱敏导出，事件流已具备有界背压和健康统计，运行诊断历史已接入 Room、在进程重建后直接展示恢复事件，并支持完整详情查看和独立脱敏导出；真实高负载压力验收和事件流摘要 Compose instrumentation 已完成，后续集中在更细故障诊断交互和完整页面级端到端覆盖。
 
 当前已有：
 
@@ -472,7 +473,7 @@ flowchart LR
 
 目标：用户能确认代理正在工作，并能解释网络行为。
 
-当前进度：Bridge、运行统计、活动连接、Requests、DNS、基础日志和“真实请求诊断”已完成首轮真机闭环；观测详情搜索、日志级别筛选、自动跟随、诊断会话证据包、有界运行诊断事件历史、事件流背压统计、诊断卡片事件流健康摘要、异步事件停止边界、页面退出轮询收敛和真实高负载压力验收已在 2026-10-26 完成代码、单元测试和 Redmi 真机闭环，下一步集中在自动化端到端断言。
+当前进度：Bridge、运行统计、活动连接、Requests、DNS、基础日志和“真实请求诊断”已完成首轮真机闭环；观测详情搜索、日志级别筛选、自动跟随、诊断会话证据包、有界运行诊断事件历史、事件流背压统计、诊断卡片事件流健康摘要、异步事件停止边界、页面退出轮询收敛、真实高负载压力验收和事件流摘要 Compose instrumentation 断言已完成代码、自动化测试和 Redmi 真机闭环，下一步集中在更细故障诊断交互。
 
 建议范围：
 
@@ -593,6 +594,16 @@ flowchart LR
 - 压力回归期间 `VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由保持；通过 STOP Action 停止后服务和路由清理，Profile 删除后首页恢复“还没有配置”。
 - 本切片已完成；下一步转入观测功能的自动化端到端断言和更细故障诊断交互。
 
+### 2026-10-27：诊断卡片事件流摘要 Compose instrumentation 切片
+
+- `DiagnosticEventFlowSummary` 对外开放给 AndroidTest 源集；新增健康计数和丢弃/截断警告的 Compose UI 断言，分别覆盖 `解析 170 · 投递 170 · 丢弃 0 · 截断 0` 与不完整证据提示。
+- 修复 AndroidTest 协程 ServiceLoader 边界：Debug 应用合并 Android/测试协程服务条目，AndroidTest 显式使用 `kotlinx-coroutines-android`，避免测试运行时找不到异常处理器；该测试依赖只进入 Debug，不进入 Release。
+- Android 16/API 36 移除了 Espresso 旧版反射使用的 `InputManager.getInstance()`；AndroidTest 固定 `espresso-core:3.7.0`，改用 `Context.getSystemService()` 路径，并将 Compose 测试迁移到 `junit4.v2.createComposeRule`。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 通过：120 项 Kotlin 单元测试失败 0、错误 0、跳过 0；Lint 错误 0，保留 31 条 Warning。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过：5 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 2 项；设备为 `wsvwypiz7xwslvl7`（Redmi Note 8 Pro，Android 16/API 36）。
+- Debug APK `android/app/build/outputs/apk/debug/app-debug.apk` SHA-256 为 `b30f2e8bb91605c8a87b2294c4c98e2f741c2ebab65a28dc12aa62b54a90cb44`，仅包含 `arm64-v8a` 原生库。
+- 本切片已完成；下一步进入更细故障诊断交互和更完整的页面级端到端覆盖。
+
 ### N4：Profiles 和代理组 parity
 
 目标：补齐 Flutter Android 用户已经拥有的配置和代理组工作流。
@@ -684,7 +695,7 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 | UI 仍是单屏基础骨架 | 与 Flutter 完整体验差距大 | M4 后按页面切片重构 |
 | 观测治理仍有后续缺口 | 搜索过滤、详情、自动跟随、脱敏导出、有界背压、事件流健康统计、运行诊断历史详情/导出、异步事件停止边界、页面退出轮询收敛和真实高负载压力已验证，但更细故障诊断和自动化端到端断言仍不足 | N2/N3 |
 | 高级配置和导入入口缺失 | 用户无法完成完整配置管理 | M6/N4 |
-| 没有 UI/Instrumented 测试 | 回归风险集中在真机阶段 | M9/N6 前建立 |
+| UI/Instrumented 覆盖仍有限 | 当前已覆盖事件流摘要和 Room，完整导航、配置编辑、代理组和端到端页面回归仍不足 | M9/N6 前继续扩展 |
 | 没有 release keystore | 目前只能做 Debug/预发布验证 | 发布前创建，不提前提交秘密 |
 | 上游持续变化 | Flutter 行为会继续漂移 | 每次同步更新矩阵和验收记录 |
 

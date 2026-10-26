@@ -171,3 +171,12 @@
 - 诊断卡片新增事件流健康摘要，正常状态显示解析、投递、丢弃和截断数量；丢弃或截断大于 0 时显示证据可能不完整的错误提示。
 - Debug APK 安装到真机 `wsvwypiz7xwslvl7` 后，使用当前工作区根目录 `AGENTS.md` 第一条授权路径启动核心，并通过 Mihomo 本地 mixed port 产生 32 个并发请求；首页显示 `事件流：解析 170 · 投递 170 · 丢弃 0 · 截断 0`，未出现不完整提示。
 - STOP 后 `VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均清理，测试 Profile 删除后恢复空配置。
+
+## 诊断卡片事件流摘要 Compose instrumentation 验收记录
+
+- `DiagnosticEventFlowSummaryInstrumentedTest` 新增 2 项 Compose UI 断言：健康统计显示完整四项计数且不显示不完整警告；丢弃/截断统计显示不完整证据警告。
+- AndroidTest 运行时修复了协程 ServiceLoader 边界：Debug 应用合并 Android 与测试协程服务注册，AndroidTest 补充 Android 协程运行时；测试依赖只进入 Debug APK，Release 不携带该测试工件。
+- Android 16/API 36 的 Espresso 旧版会反射 `InputManager.getInstance()` 并失败；AndroidTest 使用 `androidx.test.espresso:espresso-core:3.7.0`，Compose 测试迁移到 `androidx.compose.ui.test.junit4.v2.createComposeRule`。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；120 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；5 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 2 项。
+- Debug APK `android/app/build/outputs/apk/debug/app-debug.apk` SHA-256 为 `b30f2e8bb91605c8a87b2294c4c98e2f741c2ebab65a28dc12aa62b54a90cb44`，设备为 Redmi Note 8 Pro（Android 16/API 36），APK 仅包含 `arm64-v8a` 原生库。

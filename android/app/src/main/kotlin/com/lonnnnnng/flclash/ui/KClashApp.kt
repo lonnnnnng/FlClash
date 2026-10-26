@@ -762,7 +762,7 @@ private fun ProbeCard(
 }
 
 @Composable
-private fun DiagnosticEventFlowSummary(stats: CoreEventFlowStats) {
+internal fun DiagnosticEventFlowSummary(stats: CoreEventFlowStats) {
     // 作者 long：把事件管线的丢弃边界直接放在诊断结果旁，避免用户把不完整证据误认为真实网络没有事件。
     if (stats.parsedEvents <= 0L) return
     val hasLoss = diagnosticEventFlowHasLoss(stats)

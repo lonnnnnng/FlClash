@@ -86,10 +86,15 @@ android {
         getByName("test").kotlin.srcDirs("../tests/app")
         // 作者 long：Room DAO 只有在 Android SQLite 实现上才能验证，单独接入真机 instrumentation 源集。
         getByName("androidTest").kotlin.srcDirs("../tests/instrumented")
+        // 作者 long：Compose 测试运行在独立 APK 中，必须把 Android 与测试协程的 ServiceLoader 条目一起打入该 APK。
+        getByName("androidTest").resources.srcDirs("../tests/instrumented/resources")
     }
 
     packaging {
         jniLibs.useLegacyPackaging = true
+        // 作者 long：Compose instrumentation 会同时加载 Android 协程实现和测试调度器，合并 ServiceLoader 条目才能让两套实现都可见。
+        resources.merges += "/META-INF/services/kotlinx.coroutines.CoroutineExceptionHandler"
+        resources.merges += "/META-INF/services/kotlinx.coroutines.internal.MainDispatcherFactory"
     }
 }
 
@@ -117,6 +122,9 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    // 作者 long：Compose instrumentation 的测试协程需要和 Debug 应用共享 ServiceLoader 平台 handler，Release 不携带测试工件。
+    debugImplementation(libs.kotlinx.coroutines.test)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.room.runtime)
@@ -129,5 +137,9 @@ dependencies {
     androidTestImplementation(libs.androidxTestCoreLib)
     androidTestImplementation(libs.androidxTestRunnerLib)
     androidTestImplementation(libs.androidxTestExtJunitLib)
-    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.kotlinx.coroutines.android)
+    // 作者 long：Android 16 已移除旧版 InputManager.getInstance()，Espresso 3.7.0 改用 Context.getSystemService()。
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 }
