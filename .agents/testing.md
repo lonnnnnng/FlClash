@@ -246,3 +246,12 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；16 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 13 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。本轮未访问真实订阅路径。
 - Debug APK SHA-256：`7a06c6032100a848c2aefe79fecaad909ee6744cd1f94fb843b19be42680854a`；APK 仅包含 `lib/arm64-v8a` 原生库。
 - Profiles 真实 Repository/Room 状态流已覆盖；Android 主页面导航和 Activity 宿主仍待后续补齐。
+
+## MainActivity 宿主入口验收记录
+
+- 新增 `MainActivityInstrumentedTest`，从真实 `MainActivity` 进入首页，验证 Hilt、ViewModel、Material 主题和 Compose 根页面已连接到可交互宿主。
+- 测试通过 `GrantPermissionRule` 授予 `POST_NOTIFICATIONS`，避免 Android 13+ 首次权限对话框遮挡页面断言；不触发订阅网络、VPN 授权或核心启动。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；124 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；17 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 14 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。本轮未访问真实订阅路径。
+- Debug APK SHA-256：`7a06c6032100a848c2aefe79fecaad909ee6744cd1f94fb843b19be42680854a`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
+- 主页面 Activity 宿主已具备自动化入口；下一步补完整导航页面级断言，再进入 N4 高级配置分区编辑。

@@ -137,6 +137,8 @@ dependencies {
     androidTestImplementation(libs.androidxTestCoreLib)
     androidTestImplementation(libs.androidxTestRunnerLib)
     androidTestImplementation(libs.androidxTestExtJunitLib)
+    // 作者 long：Activity 宿主测试需要在 Android 13+ 启动前授予通知权限，避免权限对话框遮挡 Compose 页面断言。
+    androidTestImplementation("androidx.test:rules:1.7.0")
     androidTestImplementation(libs.kotlinx.coroutines.android)
     // 作者 long：Android 16 已移除旧版 InputManager.getInstance()，Espresso 3.7.0 改用 Context.getSystemService()。
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
