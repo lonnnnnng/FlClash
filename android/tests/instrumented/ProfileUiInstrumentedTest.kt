@@ -88,6 +88,27 @@ class ProfileUiInstrumentedTest {
     }
 
     @Test
+    fun proxiesEditorShowsCustomProfileProxiesAndForwardsSave() {
+        var saved: String? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfileProxiesEditorDialog(
+                    profile = Profile.custom(12L, "代理配置"),
+                    initialProxies = "- name: node\n  type: vmess",
+                    saving = false,
+                    onDismiss = {},
+                    onSave = { saved = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("代理 · 代理配置").assertIsDisplayed()
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals("- name: node\n  type: vmess", saved)
+    }
+
+    @Test
     fun profileMutationButtonsDisableWhileCoreIsRunning() {
         composeRule.setContent {
             KClashTheme {
@@ -105,6 +126,7 @@ class ProfileUiInstrumentedTest {
 
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
         composeRule.onNodeWithText("高级").assertIsNotEnabled()
+        composeRule.onNodeWithText("代理").assertIsNotEnabled()
         composeRule.onNodeWithText("删除").assertIsNotEnabled()
     }
 }

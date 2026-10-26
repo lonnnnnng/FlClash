@@ -111,6 +111,7 @@ fun KClashApp(
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val rulesEditorState by profilesViewModel.rulesEditorState.collectAsState()
+    val proxiesEditorState by profilesViewModel.proxiesEditorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -297,6 +298,10 @@ fun KClashApp(
                         onOpenRulesEditor = profilesViewModel::openRulesEditor,
                         onCloseRulesEditor = profilesViewModel::closeRulesEditor,
                         onSaveRules = profilesViewModel::saveRules,
+                        proxiesEditorState = proxiesEditorState,
+                        onOpenProxiesEditor = profilesViewModel::openProxiesEditor,
+                        onCloseProxiesEditor = profilesViewModel::closeProxiesEditor,
+                        onSaveProxies = profilesViewModel::saveProxies,
                     )
                 }
 
@@ -479,6 +484,10 @@ internal fun ProfilesPanel(
     onOpenRulesEditor: (profile: Profile) -> Unit = {},
     onCloseRulesEditor: () -> Unit = {},
     onSaveRules: (rules: String) -> Unit = {},
+    proxiesEditorState: ProfileProxiesEditorUiState = ProfileProxiesEditorUiState(),
+    onOpenProxiesEditor: (profile: Profile) -> Unit = {},
+    onCloseProxiesEditor: () -> Unit = {},
+    onSaveProxies: (proxies: String) -> Unit = {},
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
@@ -516,6 +525,7 @@ internal fun ProfilesPanel(
                     onUpdate = { onUpdate(profile) },
                     onDelete = { profilePendingDeletion = profile },
                     onOpenRulesEditor = { onOpenRulesEditor(profile) },
+                    onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
                 )
             }
         }
@@ -586,6 +596,25 @@ internal fun ProfilesPanel(
                 saving = rulesEditorState.isSaving,
                 onDismiss = onCloseRulesEditor,
                 onSave = onSaveRules,
+            )
+        }
+    }
+
+    proxiesEditorState.profile?.let { profile ->
+        if (proxiesEditorState.isLoading) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("读取代理") },
+                text = { CircularProgressIndicator() },
+                confirmButton = {},
+            )
+        } else {
+            ProfileProxiesEditorDialog(
+                profile = profile,
+                initialProxies = proxiesEditorState.proxies,
+                saving = proxiesEditorState.isSaving,
+                onDismiss = onCloseProxiesEditor,
+                onSave = onSaveProxies,
             )
         }
     }
@@ -1627,6 +1656,7 @@ internal fun ProfileCard(
     onUpdate: () -> Unit,
     onDelete: () -> Unit,
     onOpenRulesEditor: () -> Unit = {},
+    onOpenProxiesEditor: () -> Unit = {},
 ) {
     Card(modifier = Modifier.fillMaxWidth(), onClick = onSelect) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -1669,6 +1699,7 @@ internal fun ProfileCard(
                     TextButton(onClick = onUpdate, enabled = canMutate) { Text("同步") }
                 }
                 if (profile.type == ProfileType.CUSTOM) {
+                    TextButton(onClick = onOpenProxiesEditor, enabled = canMutate) { Text("代理") }
                     TextButton(onClick = onOpenRulesEditor, enabled = canMutate) { Text("高级") }
                 }
                 TextButton(onClick = onDelete, enabled = canMutate) { Text("删除") }
@@ -1756,6 +1787,53 @@ internal fun ProfileRulesEditorDialog(
         confirmButton = {
             TextButton(
                 onClick = { onSave(rules) },
+                enabled = !saving,
+            ) {
+                if (saving) CircularProgressIndicator() else Text("保存")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
+}
+
+/**
+ * 作者 long：代理编辑器只负责代理列表的 YAML 片段，保存时由 ViewModel 校验并回写原始 Profile，
+ * 让用户可以先调整节点而不影响同一份配置中的规则、DNS 和端口设置。
+ */
+@Composable
+internal fun ProfileProxiesEditorDialog(
+    profile: Profile,
+    initialProxies: String,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var proxies by rememberSaveable(profile.id) { mutableStateOf(initialProxies) }
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("代理 · ${profile.realLabel}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "每个代理以 - name 和 type 开始，后续字段保持两格缩进；可粘贴 proxies: 区块内容。",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OutlinedTextField(
+                    value = proxies,
+                    onValueChange = { proxies = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 12,
+                    maxLines = 20,
+                    enabled = !saving,
+                    label = { Text("代理 YAML") },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(proxies) },
                 enabled = !saving,
             ) {
                 if (saving) CircularProgressIndicator() else Text("保存")

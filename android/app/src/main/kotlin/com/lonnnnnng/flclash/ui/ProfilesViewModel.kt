@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.ProfileProxiesEditor
 import com.lonnnnnng.flclash.data.ProfileRulesEditor
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileType
@@ -40,6 +41,14 @@ data class ProfileRulesEditorUiState(
     val isSaving: Boolean = false,
 )
 
+data class ProfileProxiesEditorUiState(
+    val profile: Profile? = null,
+    val sourceContent: String = "",
+    val proxies: String = "",
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+)
+
 internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
 
 /**
@@ -58,6 +67,7 @@ class ProfilesViewModel @Inject constructor(
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private val mutableEditor = MutableStateFlow(ProfileEditorUiState())
     private val mutableRulesEditor = MutableStateFlow(ProfileRulesEditorUiState())
+    private val mutableProxiesEditor = MutableStateFlow(ProfileProxiesEditorUiState())
 
     val state: StateFlow<ProfilesUiState> = combine(
         repository.profiles,
@@ -70,6 +80,7 @@ class ProfilesViewModel @Inject constructor(
     val errors = mutableErrors.asSharedFlow()
     val editorState: StateFlow<ProfileEditorUiState> = mutableEditor
     val rulesEditorState: StateFlow<ProfileRulesEditorUiState> = mutableRulesEditor
+    val proxiesEditorState: StateFlow<ProfileProxiesEditorUiState> = mutableProxiesEditor
 
     fun select(id: Long) {
         if (runtimeManager.state.value.isRunning) {
@@ -165,6 +176,58 @@ class ProfilesViewModel @Inject constructor(
             }.onFailure { error ->
                 mutableRulesEditor.value = mutableRulesEditor.value.copy(isSaving = false, rules = rules)
                 mutableErrors.emit(error.message ?: "保存规则失败")
+            }
+        }
+    }
+
+    fun openProxiesEditor(profile: Profile) {
+        if (profile.type != ProfileType.CUSTOM) {
+            mutableErrors.tryEmit("高级代理编辑仅支持自定义配置")
+            return
+        }
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑代理")
+            return
+        }
+        viewModelScope.launch {
+            mutableProxiesEditor.value = ProfileProxiesEditorUiState(profile = profile, isLoading = true)
+            runCatching {
+                val content = repository.readLocalProfileContent(profile.id)
+                content to ProfileProxiesEditor.extractProxies(content)
+            }.onSuccess { (content, proxies) ->
+                mutableProxiesEditor.value = ProfileProxiesEditorUiState(
+                    profile = profile,
+                    sourceContent = content,
+                    proxies = proxies,
+                )
+            }.onFailure { error ->
+                mutableProxiesEditor.value = ProfileProxiesEditorUiState()
+                mutableErrors.emit(error.message ?: "无法读取代理配置")
+            }
+        }
+    }
+
+    fun closeProxiesEditor() {
+        mutableProxiesEditor.value = ProfileProxiesEditorUiState()
+    }
+
+    fun saveProxies(proxies: String) {
+        val state = mutableProxiesEditor.value
+        val profile = state.profile ?: return
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存代理")
+            return
+        }
+        viewModelScope.launch {
+            mutableProxiesEditor.value = state.copy(isSaving = true)
+            runCatching {
+                val updatedContent = ProfileProxiesEditor.replaceProxies(state.sourceContent, proxies)
+                repository.updateLocalProfileContent(profile.id, updatedContent)
+            }.onSuccess {
+                closeProxiesEditor()
+            }.onFailure { error ->
+                mutableProxiesEditor.value = mutableProxiesEditor.value.copy(isSaving = false, proxies = proxies)
+                mutableErrors.emit(error.message ?: "保存代理失败")
             }
         }
     }

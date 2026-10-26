@@ -111,6 +111,53 @@ class ProfilesViewModelTest {
         assertNull(store.updatedContent)
         assertEquals(profile.id, viewModel.rulesEditorState.value.profile?.id)
     }
+
+    @Test
+    fun `custom proxies editor reads and saves only the proxies section`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(5L, "代理配置")
+        val store = FakeProfileStore(profile).apply {
+            content = "mixed-port: 7890\nproxies:\n  - name: old\n    type: vmess\nrules:\n  - MATCH,DIRECT\n"
+        }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openProxiesEditor(profile)
+        advanceUntilIdle()
+        assertEquals("- name: old\n  type: vmess", viewModel.proxiesEditorState.value.proxies)
+
+        viewModel.saveProxies("- name: new\n  type: trojan")
+        advanceUntilIdle()
+
+        assertEquals(
+            "mixed-port: 7890\nproxies:\n  - name: new\n    type: trojan\nrules:\n  - MATCH,DIRECT\n",
+            store.updatedContent,
+        )
+        assertNull(viewModel.proxiesEditorState.value.profile)
+    }
+
+    @Test
+    fun `custom proxies editor keeps dialog open when a proxy is invalid`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(6L, "非法代理")
+        val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+        viewModel.openProxiesEditor(profile)
+        advanceUntilIdle()
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.saveProxies("- name: only-name")
+        advanceUntilIdle()
+
+        assertEquals("第 1 个代理缺少 type", error.await())
+        assertNull(store.updatedContent)
+        assertEquals(profile.id, viewModel.proxiesEditorState.value.profile?.id)
+    }
 }
 
 private class FakeRuntimeStatusProvider(

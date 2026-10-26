@@ -93,6 +93,10 @@ class ProfilesRepositoryPanelInstrumentedTest {
                     onOpenRulesEditor = viewModel::openRulesEditor,
                     onCloseRulesEditor = viewModel::closeRulesEditor,
                     onSaveRules = viewModel::saveRules,
+                    proxiesEditorState = viewModel.proxiesEditorState.collectAsState().value,
+                    onOpenProxiesEditor = viewModel::openProxiesEditor,
+                    onCloseProxiesEditor = viewModel::closeProxiesEditor,
+                    onSaveProxies = viewModel::saveProxies,
                 )
             }
         }
@@ -136,6 +140,20 @@ class ProfilesRepositoryPanelInstrumentedTest {
         }
         assertEquals(
             "mixed-port: 7890\nrules:\n  - DOMAIN,example.com,DIRECT\n",
+            runBlocking { repository.readLocalProfileContent(createdProfile.id) },
+        )
+
+        composeRule.onNodeWithText("代理").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("代理 · 未命名配置").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("代理 YAML").performTextInput("- name: node\n  type: vmess")
+        composeRule.onNodeWithText("保存").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("代理 · 未命名配置").fetchSemanticsNodes().isEmpty()
+        }
+        assertEquals(
+            "mixed-port: 7890\nrules:\n  - DOMAIN,example.com,DIRECT\nproxies:\n  - name: node\n    type: vmess\n",
             runBlocking { repository.readLocalProfileContent(createdProfile.id) },
         )
 
