@@ -1418,7 +1418,7 @@ private const val MAX_OBSERVATION_ROWS = 5
 private const val MAX_RUNTIME_HISTORY_ROWS = 3
 
 @Composable
-private fun ProfileCard(
+internal fun ProfileCard(
     profile: Profile,
     selected: Boolean,
     canMutate: Boolean,
@@ -1474,7 +1474,7 @@ private fun ProfileCard(
 }
 
 @Composable
-private fun ProfileEditorDialog(
+internal fun ProfileEditorDialog(
     profile: Profile,
     initialContent: String,
     saving: Boolean,
@@ -1558,7 +1558,7 @@ private fun queryDisplayName(contentResolver: ContentResolver, uri: android.net.
 }
 
 @Composable
-private fun AddProfileDialog(
+internal fun AddProfileDialog(
     busy: Boolean,
     onDismiss: () -> Unit,
     onPickFile: () -> Unit,

@@ -201,3 +201,12 @@
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；122 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；7 项 instrumentation 测试失败 0、错误 0、跳过 0。
 - 本轮未执行真实订阅路径；下一条页面级 E2E 将使用无网络自定义 Profile 流程验证创建、编辑、删除确认及运行期间禁用边界。
+
+## Profiles 组件级 Compose 回归验收记录
+
+- `ProfileUiInstrumentedTest` 新增 3 项 Compose 断言：自定义配置模式切换并触发保存回调、编辑对话框显示配置名称并保存初始 YAML、核心运行期间编辑和删除按钮均不可用。
+- 为 AndroidTest 暴露 `ProfileCard`、`ProfileEditorDialog` 和 `AddProfileDialog` 的内部 Compose 入口；真实业务状态仍由 `ProfilesViewModel` 和 `ProfileRepository` 提供，测试不访问网络或真实订阅路径。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；122 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 31。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；10 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 7 项。
+- Debug APK SHA-256：`6c49a2fda426abead03c433e6f3c2d09e3c3bdba5c2bf31de938f497e82ef485`；APK 仅包含 `lib/arm64-v8a/libclash.so`。
+- 下一步建立隔离的 Repository/ViewModel 测试宿主，覆盖自定义 Profile 创建、列表刷新、编辑保存和删除确认的真实状态流。
