@@ -283,3 +283,12 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；18 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 15 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256 为 `831e4a42211ac80d58195a1cc85461ef2147b554d7530a54ae114bda87e27247`，APK 仅包含 `lib/arm64-v8a/libclash.so`。
 - 本轮未访问真实订阅路径、VPN 或核心启动；真机验收仍只允许当前工作区根目录 `AGENTS.md` 中的两条授权路径。
+
+## 自定义 Profile Rules 分区编辑验收记录
+
+- 自定义 Profile 卡片新增“高级”入口；规则编辑器按每行一条 Clash 规则编辑，只回写顶层 `rules` 区块，保留端口、DNS 和其他未编辑 YAML 字段；远程订阅 Profile 不开放该入口。
+- `ProfileRulesEditor` 覆盖规则区块提取、无区块追加、原始 YAML 其余字段保留、规则类型/动作校验和 `SUB-RULE` 拒绝；ViewModel 在核心运行期间继续禁止打开和保存规则。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 129 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；19 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 3 项、Compose 16 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256 为 `f7398958c0e01e6a6e3d1ee736cdc2e0928c77e85b6b5303dd2de328a0ae628c`，APK 仅包含 `lib/arm64-v8a/libclash.so`。
+- 真机流程使用真实 Room、应用文件目录和 `ProfilesViewModel`，创建自定义 Profile 后编辑 `DOMAIN,example.com,DIRECT`，确认文件写回 `rules:` 区块；本轮未访问真实订阅路径、VPN 或核心启动。

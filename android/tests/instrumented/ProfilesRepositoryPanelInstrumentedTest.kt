@@ -63,6 +63,7 @@ class ProfilesRepositoryPanelInstrumentedTest {
         composeRule.setContent {
             val state by viewModel.state.collectAsState()
             val editorState by viewModel.editorState.collectAsState()
+            val rulesEditorState by viewModel.rulesEditorState.collectAsState()
             val runtimeState by runtime.state.collectAsState()
             KClashTheme {
                 ProfilesPanel(
@@ -88,6 +89,10 @@ class ProfilesRepositoryPanelInstrumentedTest {
                     onCloseEditor = viewModel::closeEditor,
                     onSaveEditor = viewModel::saveEditor,
                     onDelete = viewModel::delete,
+                    rulesEditorState = rulesEditorState,
+                    onOpenRulesEditor = viewModel::openRulesEditor,
+                    onCloseRulesEditor = viewModel::closeRulesEditor,
+                    onSaveRules = viewModel::saveRules,
                 )
             }
         }
@@ -119,6 +124,20 @@ class ProfilesRepositoryPanelInstrumentedTest {
         assertEquals(createdProfile.id, runBlocking {
             database.profiles().getById(createdProfile.id)?.id
         })
+
+        composeRule.onNodeWithText("高级").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("规则 YAML").performTextInput("DOMAIN,example.com,DIRECT")
+        composeRule.onNodeWithText("保存").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isEmpty()
+        }
+        assertEquals(
+            "mixed-port: 7890\nrules:\n  - DOMAIN,example.com,DIRECT\n",
+            runBlocking { repository.readLocalProfileContent(createdProfile.id) },
+        )
 
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“未命名配置”吗？本地配置文件也会一并删除。").assertIsDisplayed()

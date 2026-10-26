@@ -67,6 +67,27 @@ class ProfileUiInstrumentedTest {
     }
 
     @Test
+    fun rulesEditorShowsCustomProfileRulesAndForwardsSave() {
+        var saved: String? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfileRulesEditorDialog(
+                    profile = Profile.custom(11L, "规则配置"),
+                    initialRules = "DOMAIN,example.com,DIRECT",
+                    saving = false,
+                    onDismiss = {},
+                    onSave = { saved = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("规则 · 规则配置").assertIsDisplayed()
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals("DOMAIN,example.com,DIRECT", saved)
+    }
+
+    @Test
     fun profileMutationButtonsDisableWhileCoreIsRunning() {
         composeRule.setContent {
             KClashTheme {
@@ -83,6 +104,7 @@ class ProfileUiInstrumentedTest {
         }
 
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
+        composeRule.onNodeWithText("高级").assertIsNotEnabled()
         composeRule.onNodeWithText("删除").assertIsNotEnabled()
     }
 }

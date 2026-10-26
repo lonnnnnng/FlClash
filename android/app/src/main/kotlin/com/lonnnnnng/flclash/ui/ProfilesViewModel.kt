@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.ProfileRulesEditor
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
@@ -31,6 +32,14 @@ data class ProfileEditorUiState(
     val isSaving: Boolean = false,
 )
 
+data class ProfileRulesEditorUiState(
+    val profile: Profile? = null,
+    val sourceContent: String = "",
+    val rules: String = "",
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+)
+
 internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
 
 /**
@@ -48,6 +57,7 @@ class ProfilesViewModel @Inject constructor(
     private val busy = MutableStateFlow(false)
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private val mutableEditor = MutableStateFlow(ProfileEditorUiState())
+    private val mutableRulesEditor = MutableStateFlow(ProfileRulesEditorUiState())
 
     val state: StateFlow<ProfilesUiState> = combine(
         repository.profiles,
@@ -59,6 +69,7 @@ class ProfilesViewModel @Inject constructor(
 
     val errors = mutableErrors.asSharedFlow()
     val editorState: StateFlow<ProfileEditorUiState> = mutableEditor
+    val rulesEditorState: StateFlow<ProfileRulesEditorUiState> = mutableRulesEditor
 
     fun select(id: Long) {
         if (runtimeManager.state.value.isRunning) {
@@ -104,6 +115,58 @@ class ProfilesViewModel @Inject constructor(
 
     fun closeEditor() {
         mutableEditor.value = ProfileEditorUiState()
+    }
+
+    fun openRulesEditor(profile: Profile) {
+        if (profile.type != ProfileType.CUSTOM) {
+            mutableErrors.tryEmit("高级规则编辑仅支持自定义配置")
+            return
+        }
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑规则")
+            return
+        }
+        viewModelScope.launch {
+            mutableRulesEditor.value = ProfileRulesEditorUiState(profile = profile, isLoading = true)
+            runCatching {
+                val content = repository.readLocalProfileContent(profile.id)
+                content to ProfileRulesEditor.extractRules(content)
+            }.onSuccess { (content, rules) ->
+                mutableRulesEditor.value = ProfileRulesEditorUiState(
+                    profile = profile,
+                    sourceContent = content,
+                    rules = rules,
+                )
+            }.onFailure { error ->
+                mutableRulesEditor.value = ProfileRulesEditorUiState()
+                mutableErrors.emit(error.message ?: "无法读取规则配置")
+            }
+        }
+    }
+
+    fun closeRulesEditor() {
+        mutableRulesEditor.value = ProfileRulesEditorUiState()
+    }
+
+    fun saveRules(rules: String) {
+        val state = mutableRulesEditor.value
+        val profile = state.profile ?: return
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存规则")
+            return
+        }
+        viewModelScope.launch {
+            mutableRulesEditor.value = state.copy(isSaving = true)
+            runCatching {
+                val updatedContent = ProfileRulesEditor.replaceRules(state.sourceContent, rules)
+                repository.updateLocalProfileContent(profile.id, updatedContent)
+            }.onSuccess {
+                closeRulesEditor()
+            }.onFailure { error ->
+                mutableRulesEditor.value = mutableRulesEditor.value.copy(isSaving = false, rules = rules)
+                mutableErrors.emit(error.message ?: "保存规则失败")
+            }
+        }
     }
 
     fun saveEditor(content: String) {

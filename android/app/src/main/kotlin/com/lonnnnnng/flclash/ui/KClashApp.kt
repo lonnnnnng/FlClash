@@ -110,6 +110,7 @@ fun KClashApp(
     val diagnosticHistory by runtimeViewModel.diagnosticHistory.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
+    val rulesEditorState by profilesViewModel.rulesEditorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -292,6 +293,10 @@ fun KClashApp(
                         onCloseEditor = profilesViewModel::closeEditor,
                         onSaveEditor = profilesViewModel::saveEditor,
                         onDelete = profilesViewModel::delete,
+                        rulesEditorState = rulesEditorState,
+                        onOpenRulesEditor = profilesViewModel::openRulesEditor,
+                        onCloseRulesEditor = profilesViewModel::closeRulesEditor,
+                        onSaveRules = profilesViewModel::saveRules,
                     )
                 }
 
@@ -470,6 +475,10 @@ internal fun ProfilesPanel(
     onCloseEditor: () -> Unit,
     onSaveEditor: (content: String) -> Unit,
     onDelete: (profile: Profile) -> Unit,
+    rulesEditorState: ProfileRulesEditorUiState = ProfileRulesEditorUiState(),
+    onOpenRulesEditor: (profile: Profile) -> Unit = {},
+    onCloseRulesEditor: () -> Unit = {},
+    onSaveRules: (rules: String) -> Unit = {},
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
@@ -506,6 +515,7 @@ internal fun ProfilesPanel(
                     onEdit = { onEdit(profile) },
                     onUpdate = { onUpdate(profile) },
                     onDelete = { profilePendingDeletion = profile },
+                    onOpenRulesEditor = { onOpenRulesEditor(profile) },
                 )
             }
         }
@@ -557,6 +567,25 @@ internal fun ProfilesPanel(
                 saving = editorState.isSaving,
                 onDismiss = onCloseEditor,
                 onSave = onSaveEditor,
+            )
+        }
+    }
+
+    rulesEditorState.profile?.let { profile ->
+        if (rulesEditorState.isLoading) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("读取规则") },
+                text = { CircularProgressIndicator() },
+                confirmButton = {},
+            )
+        } else {
+            ProfileRulesEditorDialog(
+                profile = profile,
+                initialRules = rulesEditorState.rules,
+                saving = rulesEditorState.isSaving,
+                onDismiss = onCloseRulesEditor,
+                onSave = onSaveRules,
             )
         }
     }
@@ -1597,6 +1626,7 @@ internal fun ProfileCard(
     onEdit: () -> Unit,
     onUpdate: () -> Unit,
     onDelete: () -> Unit,
+    onOpenRulesEditor: () -> Unit = {},
 ) {
     Card(modifier = Modifier.fillMaxWidth(), onClick = onSelect) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -1638,6 +1668,9 @@ internal fun ProfileCard(
                 if (profile.type == ProfileType.URL) {
                     TextButton(onClick = onUpdate, enabled = canMutate) { Text("同步") }
                 }
+                if (profile.type == ProfileType.CUSTOM) {
+                    TextButton(onClick = onOpenRulesEditor, enabled = canMutate) { Text("高级") }
+                }
                 TextButton(onClick = onDelete, enabled = canMutate) { Text("删除") }
             }
         }
@@ -1677,6 +1710,53 @@ internal fun ProfileEditorDialog(
             TextButton(
                 onClick = { onSave(content) },
                 enabled = !saving && content.isNotBlank(),
+            ) {
+                if (saving) CircularProgressIndicator() else Text("保存")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
+}
+
+/**
+ * 作者 long：规则编辑器只回写顶层规则区块，保留自定义 Profile 中未编辑的端口、代理和 DNS 字段，
+ * 让用户可以逐步完善配置而不必承担整份 YAML 重排的风险。
+ */
+@Composable
+internal fun ProfileRulesEditorDialog(
+    profile: Profile,
+    initialRules: String,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var rules by rememberSaveable(profile.id) { mutableStateOf(initialRules) }
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("规则 · ${profile.realLabel}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "每行一条规则，例如 DOMAIN-SUFFIX,example.com,DIRECT；SUB-RULE 需要先展开后保存。",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OutlinedTextField(
+                    value = rules,
+                    onValueChange = { rules = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 10,
+                    maxLines = 18,
+                    enabled = !saving,
+                    label = { Text("规则 YAML") },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(rules) },
+                enabled = !saving,
             ) {
                 if (saving) CircularProgressIndicator() else Text("保存")
             }
