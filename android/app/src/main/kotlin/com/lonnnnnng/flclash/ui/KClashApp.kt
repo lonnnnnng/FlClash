@@ -855,7 +855,7 @@ internal fun ProfilesPanel(
 }
 
 @Composable
-private fun ProxyGroupsCard(
+internal fun ProxyGroupsCard(
     state: ProxyGroupsUiState,
     runtimeState: CoreRuntimeStatus,
     onRefresh: () -> Unit,
@@ -896,7 +896,7 @@ private fun ProxyGroupsCard(
                 state.groups.forEach { group ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { if (group.isSelector && group.all.isNotEmpty()) groupPendingSelection = group },
+                        onClick = { if (group.isSelectable && group.all.isNotEmpty()) groupPendingSelection = group },
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -908,11 +908,11 @@ private fun ProxyGroupsCard(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                                if (group.isSelector) {
+                                if (group.isSelectable) {
                                     TextButton(
                                         onClick = { groupPendingSelection = group },
                                         enabled = state.switchingGroup == null,
-                                    ) { Text("切换") }
+                                    ) { Text(if (group.isComputed) "选择" else "切换") }
                                 }
                             }
                         }
@@ -925,9 +925,16 @@ private fun ProxyGroupsCard(
     groupPendingSelection?.let { group ->
         AlertDialog(
             onDismissRequest = { if (state.switchingGroup == null) groupPendingSelection = null },
-            title = { Text("切换 ${group.name}") },
+            title = { Text("${if (group.isComputed) "选择" else "切换"} ${group.name}") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (group.isComputed) {
+                        Text(
+                            "点击当前节点可恢复自动选择",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     group.all.forEach { proxyName ->
                         val delay = state.delayState(group, proxyName)
                         Row(

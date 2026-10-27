@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.core.CoreBridge
+import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
@@ -41,6 +42,38 @@ fun ProxyGroupsUiState.delayState(
     proxyName: String,
 ): ProxyDelayUiState? = delayResults[ProxyDelayKey(group.name, proxyName, group.testUrl.orDefaultTestUrl())]
 
+/**
+ * 作者 long：Mihomo 的 URLTest/Fallback 自动测速事件只携带测试地址和叶子节点名称，
+ * 因此要把同一结果分发到当前页面中所有匹配的代理组，保持不同测试地址之间的结果隔离。
+ */
+internal fun ProxyGroupsUiState.applyDelayEvent(event: CoreEvent.Delay): ProxyGroupsUiState {
+    val updates = groups
+        .filter { group ->
+            group.testUrl.orDefaultTestUrl() == event.result.url && event.result.name in group.all
+        }
+        .associate { group ->
+            ProxyDelayKey(group.name, event.result.name, event.result.url) to
+                ProxyDelayUiState(value = event.result.value)
+        }
+    return if (updates.isEmpty()) this else copy(delayResults = delayResults + updates)
+}
+
+internal fun computedSelectionTarget(group: ProxyGroupInfo, proxyName: String): String? {
+    if (!group.isSelectable || proxyName !in group.all) return null
+    if (!group.isComputed && proxyName == group.now) return null
+    return if (group.isComputed && proxyName == group.now) "" else proxyName
+}
+
+private fun retainDelayResults(
+    groups: List<ProxyGroupInfo>,
+    values: Map<ProxyDelayKey, ProxyDelayUiState>,
+): Map<ProxyDelayKey, ProxyDelayUiState> {
+    val valid = groups.flatMap { group ->
+        group.all.map { proxy -> ProxyDelayKey(group.name, proxy, group.testUrl.orDefaultTestUrl()) }
+    }.toSet()
+    return values.filterKeys(valid::contains)
+}
+
 @HiltViewModel
 class ProxyGroupsViewModel @Inject constructor(
     private val runtimeManager: CoreRuntimeManager,
@@ -62,6 +95,13 @@ class ProxyGroupsViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            runtimeManager.events.collect { event ->
+                if (event is CoreEvent.Delay) {
+                    mutableState.update { it.applyDelayEvent(event) }
+                }
+            }
+        }
     }
 
     fun refresh() {
@@ -69,7 +109,13 @@ class ProxyGroupsViewModel @Inject constructor(
             mutableState.value = mutableState.value.copy(isLoading = true)
             runtimeManager.getProxyGroups()
                 .onSuccess { snapshot ->
-                    mutableState.value = ProxyGroupsUiState(groups = snapshot.groups)
+                    mutableState.value = ProxyGroupsUiState(
+                        groups = snapshot.groups,
+                        delayResults = retainDelayResults(
+                            snapshot.groups,
+                            mutableState.value.delayResults,
+                        ),
+                    )
                 }
                 .onFailure { error ->
                     mutableState.value = ProxyGroupsUiState()
@@ -79,10 +125,10 @@ class ProxyGroupsViewModel @Inject constructor(
     }
 
     fun selectProxy(group: ProxyGroupInfo, proxyName: String) {
-        if (!group.isSelector || proxyName == group.now) return
+        val target = computedSelectionTarget(group, proxyName) ?: return
         viewModelScope.launch {
             mutableState.value = mutableState.value.copy(switchingGroup = group.name)
-            runtimeManager.changeProxy(group.name, proxyName)
+            runtimeManager.changeProxy(group.name, target)
                 .onSuccess { snapshot ->
                     mutableState.value = ProxyGroupsUiState(groups = snapshot.groups)
                 }

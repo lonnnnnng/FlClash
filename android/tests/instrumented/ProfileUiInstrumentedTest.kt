@@ -15,6 +15,8 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.service.ProfileDnsOverrides
+import com.lonnnnnng.flclash.core.ProxyGroupInfo
+import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -187,6 +189,36 @@ class ProfileUiInstrumentedTest {
 
         assertEquals("cloud:\n  type: http", savedProxy)
         assertEquals("ads:\n  type: http", savedRule)
+    }
+
+    @Test
+    fun computedProxyGroupShowsAutomaticSelectionAction() {
+        composeRule.setContent {
+            KClashTheme {
+                ProxyGroupsCard(
+                    state = ProxyGroupsUiState(
+                        groups = listOf(
+                            ProxyGroupInfo(
+                                name = "Auto",
+                                type = "URLTest",
+                                now = "node-a",
+                                all = listOf("node-a", "node-b"),
+                                hidden = false,
+                                testUrl = "https://example.com",
+                            ),
+                        ),
+                    ),
+                    runtimeState = CoreRuntimeStatus.RUNNING,
+                    onRefresh = {},
+                    onSelect = { _, _ -> },
+                    onTestDelay = { _, _ -> },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Auto").performClick()
+        composeRule.onNodeWithText("选择 Auto").assertIsDisplayed()
+        composeRule.onNodeWithText("点击当前节点可恢复自动选择").assertIsDisplayed()
     }
 
     @Test

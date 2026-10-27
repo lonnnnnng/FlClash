@@ -43,7 +43,13 @@ class CoreBridgeParsingTest {
         assertTrue(result.groups.first().isSelector)
         assertEquals("https://example.com", result.groups.first().testUrl)
         assertFalse(result.groups[1].isSelector)
+        assertTrue(result.groups[1].isComputed)
+        assertTrue(result.groups[1].isSelectable)
         assertEquals("香港-01", result.groups[1].now)
+
+        val fallback = result.groups[1].copy(type = "Fallback")
+        assertTrue(fallback.isComputed)
+        assertTrue(fallback.isSelectable)
     }
 
     @Test
@@ -263,6 +269,29 @@ class CoreBridgeParsingTest {
         assertEquals(listOf("203.0.113.7", "203.0.113.8"), query.answers)
         assertEquals("NOERROR", query.rcode)
         assertEquals(18L, query.delay)
+    }
+
+    @Test
+    fun `event parser maps automatic proxy delay messages`() {
+        val events = bridge.parseEvents(
+            """
+            {
+              "method":"message",
+              "arguments":[
+                {"type":"delay","data":{"url":"https://example.com","name":"香港-01","value":123}},
+                {"type":"delay","data":{"url":"https://example.com","name":"香港-02","value":-1}}
+              ]
+            }
+            """.trimIndent().toByteArray(),
+        )
+
+        assertEquals(
+            listOf(
+                CoreEvent.Delay(ProxyDelay("https://example.com", "香港-01", 123)),
+                CoreEvent.Delay(ProxyDelay("https://example.com", "香港-02", -1)),
+            ),
+            events,
+        )
     }
 
     @Test

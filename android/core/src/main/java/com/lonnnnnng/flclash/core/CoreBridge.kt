@@ -495,6 +495,18 @@ class CoreBridge {
                         ),
                     )
                 }
+                "delay" -> {
+                    val data = raw.objectValue("data") ?: return@runCatching null
+                    CoreEvent.Delay(
+                        ProxyDelay(
+                            url = data.string("url"),
+                            name = data.string("name"),
+                            value = data.long("value")
+                                .coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())
+                                .toInt(),
+                        ),
+                    )
+                }
                 else -> null
             }
         }.getOrNull()
@@ -590,6 +602,8 @@ sealed interface CoreEvent {
     ) : CoreEvent
 
     data class Dns(val query: CoreDnsQuery) : CoreEvent
+
+    data class Delay(val result: ProxyDelay) : CoreEvent
 }
 
 data class CoreTrafficUpdate(
@@ -625,6 +639,17 @@ data class ProxyGroupInfo(
 ) {
     val isSelector: Boolean
         get() = type.equals("Selector", ignoreCase = true)
+
+    /**
+     * 作者 long：URLTest/Fallback 由 Mihomo 自动计算当前节点，但 Flutter 仍允许用户临时指定或清除该选择；
+     * 把两类 computed 组单独建模，避免 UI 把它们误当成只能手动切换的 Selector。
+     */
+    val isComputed: Boolean
+        get() = type.equals("URLTest", ignoreCase = true) ||
+            type.equals("Fallback", ignoreCase = true)
+
+    val isSelectable: Boolean
+        get() = isSelector || isComputed
 }
 
 data class ProxyGroupPayload(
