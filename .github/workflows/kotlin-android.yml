@@ -1,0 +1,71 @@
+name: KClash Android Kotlin
+
+on:
+  push:
+    branches:
+      - kotlin
+  pull_request:
+    branches:
+      - kotlin
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify Kotlin Android arm64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.1'
+          cache: true
+          cache-dependency-path: core/go.sum
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        shell: bash
+        run: |
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "ndk;28.2.13676358"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Verify tests, R8 and arm64 Release package
+        run: |
+          ./gradlew test :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease \
+            --no-daemon -Ptarget-platform=android-arm64
+
+      - name: Verify unsigned Release artifact
+        shell: bash
+        run: |
+          apk=android/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -f "$apk"
+          unzip -Z1 "$apk" | awk -F/ '$1 == "lib" {print}' | tee /tmp/kclash-libs.txt
+          test "$(awk -F/ '$1 == "lib" {print $2}' /tmp/kclash-libs.txt | sort -u | tr -d ' ' | wc -l)" -eq 1
+          test "$(awk -F/ '$1 == "lib" {print $2}' /tmp/kclash-libs.txt | sort -u | tr -d ' ')" = "arm64-v8a"
+          sha256sum "$apk" | tee android/app/build/outputs/apk/release/SHA256SUMS
+
+      - name: Upload unsigned Release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kclash-android-arm64-release-unsigned
+          path: |
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
+            android/app/build/outputs/apk/release/SHA256SUMS
+          if-no-files-found: error

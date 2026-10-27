@@ -10,7 +10,7 @@ git status --short --branch
 git remote -v
 ```
 
-根目录 Android 工程完成迁移并生成 wrapper 后，常用检查为：
+根目录 Kotlin Android 工程使用仓库根目录 Wrapper；常用检查为：
 
 ```zsh
 ./gradlew :app:assembleDebug
@@ -19,7 +19,13 @@ git remote -v
 ./gradlew connectedDebugAndroidTest
 ```
 
-当前迁移阶段若 wrapper 仍位于旧目录，先读取实际文件和 CI 配置再决定命令；不要假设 `./gradlew` 已经存在。
+Release 预发布检查（没有独立签名身份时输出未签名 APK）：
+
+```zsh
+./gradlew :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64
+```
+
+`.github/workflows/kotlin-android.yml` 使用同一根目录 Wrapper，负责 Kotlin 主线的 arm64 单元测试、Debug/Release 构建、R8、Lint 和未签名 Release 产物检查；Flutter 发布 workflow 不作为 Kotlin 主线的构建入口。
 
 ## Go core
 

@@ -1029,6 +1029,14 @@ flowchart LR
 - 本轮未创建或保存 keystore，未安装未签名 Release APK 到真机；正式发布仍需独立签名、CI Kotlin Release 产物和签名后真机验收。
 - 当前切片状态：`DONE-UNIT`；R8/Release 预发布构建已验证，签名和远端发布流程仍保持未完成。
 
+### 2026-10-28：Kotlin 主线 Android CI 验证入口
+
+- 新增 `.github/workflows/kotlin-android.yml`，仅对 `kotlin` 分支的 push、Pull Request 和手动触发执行，不改变 Flutter 参考分支的既有发布 workflow。
+- CI 使用仓库根目录 Gradle Wrapper、Java 17、Go 1.27.1、Android API 37、Build Tools 36.0.0 和 NDK 28.2.13676358，执行 JVM 测试、Debug/Release 构建、R8、Debug/Release Lint，并固定 `-Ptarget-platform=android-arm64`。
+- CI 对未签名 Release APK 检查包存在、原生库 ABI 只有 `arm64-v8a`，并上传 APK 与 SHA-256 文件；没有签名 Secret 时不会伪造正式发布资产。
+- 本地 `actionlint .github/workflows/kotlin-android.yml` 通过；本轮未触发远端 GitHub Actions，远端 runner 的 SDK/NDK 下载和构建结果待 push 后观察。
+- 当前切片状态：`DONE-UNIT`；Kotlin 主线已有独立可审计的 Android CI 入口，正式签名、Release 页面和远端发布资产仍待发布阶段。
+
 ### N4：Profiles 和代理组 parity
 
 目标：补齐 Flutter Android 用户已经拥有的配置和代理组工作流。
@@ -1122,7 +1130,7 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 | 高级配置仍未形成完整闭环 | Scripts、Provider Overrides、DNS Overrides 和 Dialers 已完成首轮切片；WebDAV/云端备份尚无 Kotlin 实现，需先确定安全凭据存储和冲突语义 | M6/N4 |
 | UI/Instrumented 覆盖仍有限 | 当前已覆盖主导航、观测页签、事件流摘要和 Room，但完整页面交互、配置编辑、代理组和端到端回归仍不足 | M9/N6 前继续扩展 |
 | 没有 release keystore | 已可做未签名 R8/Release 预发布验证，但不能安装或发布正式包 | 发布前创建，不提前提交秘密 |
-| CI 仍以 Flutter 发布流水线为主 | 现有 tag 流程不会产出 Kotlin `assembleRelease` arm64 APK | 发布前切换/新增 Kotlin arm64 构建、签名和资产上传流程 |
+| CI 仍以 Flutter 发布流水线为主 | Kotlin 主线已有独立验证 workflow，但现有 tag 流程仍不会产出 Kotlin `assembleRelease` arm64 正式 APK | 发布前接入 Kotlin tag 构建、签名和资产上传流程 |
 | 上游持续变化 | Flutter 行为会继续漂移 | 每次同步更新矩阵和验收记录 |
 
 ### 2026-10-28：真机验收路径约束更新
