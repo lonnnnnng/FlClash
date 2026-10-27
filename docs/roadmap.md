@@ -61,7 +61,7 @@
 | Debug 构建 | `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK SHA-256 为 `e9650d902f59269a39dfd388056ab6867251f2480871444d436895b7b536197a`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、进程重建后的选择 UI 恢复、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -962,7 +962,14 @@ flowchart LR
 - 在真实“节点选择”组中将当前节点从自动选择切换为 `DIRECT`；UI 显示 `Selector · 当前：DIRECT`，重新读取核心后仍保持 `DIRECT`。
 - 停止核心并再次启动后，代理页继续显示 `Selector · 当前：DIRECT`，证明选择映射在核心停止/启动之间保持；本轮未进行应用进程被杀后的页面恢复断言。
 - 最终停止核心，确认前台服务、`tun0` 和 `198.18.0.0/30` 路由清理；删除测试 Profile 后配置页恢复“还没有配置”，未发现 KClash `FATAL EXCEPTION`。
-- 当前切片状态：`DONE-VERIFIED`；剩余工作为进程重建后的选择 UI 恢复、嵌套组平面有效叶子展示和更完整的 Activity 端到端覆盖。
+- 当前切片状态：`DONE-VERIFIED`；剩余工作为嵌套组平面有效叶子展示和更完整的 Activity 端到端覆盖。
+
+### 2026-10-28：进程重建后的代理选择 UI 恢复
+
+- 使用工作区根目录 `1.yaml` 导入 Profile，启动真实 Mihomo 后将“节点选择”组固定为 `DIRECT`。
+- 记录旧应用 PID 后执行 `adb -s wsvwypiz7xwslvl7 shell cmd activity crash com.lonnnnnng.flclash`；设备出现新 PID，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由持续存在。
+- 重新打开 KClash 的代理页后，`GLOBAL` 和“节点选择”均显示 `Selector · 当前：DIRECT`；未发现 KClash `FATAL EXCEPTION`。
+- 最终停止核心、确认服务和路由清理，并删除测试 Profile，配置页恢复“还没有配置”；当前切片状态：`DONE-VERIFIED`。
 
 ### N4：Profiles 和代理组 parity
 

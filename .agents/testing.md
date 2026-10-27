@@ -461,3 +461,10 @@
 - 在真实“节点选择”组中从自动选择切换到 `DIRECT`，UI 显示 `Selector · 当前：DIRECT`，核心刷新后仍保持；停止核心并再次启动后仍显示 `DIRECT`，完成选择映射的核心重启保持回归。
 - 最终停止核心并确认服务、TUN 和路由清理；应用内删除测试 Profile，配置页恢复“还没有配置”；未发现 KClash `FATAL EXCEPTION`。
 - 本轮未覆盖应用进程被杀后的选择 UI 恢复，也未覆盖嵌套组平面有效叶子展示；Flutter 参考不采用子组 drill-down 导航。
+
+## 进程重建后的代理选择 UI 恢复验收记录（2026-10-28）
+
+- 使用工作区根目录 `1.yaml` 导入并启动真实 Profile，将“节点选择”组固定为 `DIRECT`。
+- 记录旧 PID 后执行 `adb -s wsvwypiz7xwslvl7 shell cmd activity crash com.lonnnnnng.flclash`；设备出现新 PID，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由保持。
+- 重新打开 KClash 代理页后，`GLOBAL` 和“节点选择”均显示 `Selector · 当前：DIRECT`；未发现 KClash `FATAL EXCEPTION`。
+- 最终停止核心并确认服务、TUN 和路由清理，删除测试 Profile 后配置页恢复“还没有配置”。嵌套组平面有效叶子展示仍待后续补齐，Flutter 参考不采用子组 drill-down 导航。
