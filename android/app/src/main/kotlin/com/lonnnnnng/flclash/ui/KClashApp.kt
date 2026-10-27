@@ -66,6 +66,7 @@ import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
@@ -119,6 +120,7 @@ fun KClashApp(
     val proxiesEditorState by profilesViewModel.proxiesEditorState.collectAsState()
     val proxyGroupsEditorState by profilesViewModel.proxyGroupsEditorState.collectAsState()
     val providersEditorState by profilesViewModel.providersEditorState.collectAsState()
+    val dnsEditorState by profilesViewModel.dnsEditorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val scriptsState by scriptsViewModel.state.collectAsState()
     val scriptEditorState by scriptsViewModel.editorState.collectAsState()
@@ -328,6 +330,10 @@ fun KClashApp(
                         onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
                         onSaveProviders = profilesViewModel::saveProviders,
                         onSaveProvidersWithOverrides = profilesViewModel::saveProviders,
+                        dnsEditorState = dnsEditorState,
+                        onOpenDnsEditor = profilesViewModel::openDnsEditor,
+                        onCloseDnsEditor = profilesViewModel::closeDnsEditor,
+                        onSaveDns = profilesViewModel::saveDns,
                         onReorderProfiles = profilesViewModel::reorder,
                         scripts = scriptsState.scripts,
                         onBindScript = profilesViewModel::bindScript,
@@ -579,6 +585,10 @@ internal fun ProfilesPanel(
     onCloseProvidersEditor: () -> Unit = {},
     onSaveProviders: (proxyProviders: String, ruleProviders: String) -> Unit = { _, _ -> },
     onSaveProvidersWithOverrides: ((String, String, Map<String, ProxyProviderOverride>) -> Unit)? = null,
+    dnsEditorState: ProfileDnsEditorUiState = ProfileDnsEditorUiState(),
+    onOpenDnsEditor: (profile: Profile) -> Unit = {},
+    onCloseDnsEditor: () -> Unit = {},
+    onSaveDns: (ProfileDnsOverrides) -> Unit = {},
     onReorderProfiles: (List<Long>) -> Unit = {},
     scripts: List<Script> = emptyList(),
     onBindScript: (Profile, Long?) -> Unit = { _, _ -> },
@@ -638,6 +648,7 @@ internal fun ProfilesPanel(
                     onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
                     onOpenProxyGroupsEditor = { onOpenProxyGroupsEditor(profile) },
                     onOpenProvidersEditor = { onOpenProvidersEditor(profile) },
+                    onOpenDnsEditor = { onOpenDnsEditor(profile) },
                     onOpenScriptBinding = { scriptBindingProfileId = profile.id },
                 )
             }
@@ -799,6 +810,16 @@ internal fun ProfilesPanel(
                 onSaveWithOverrides = onSaveProvidersWithOverrides,
             )
         }
+    }
+
+    dnsEditorState.profile?.let { profile ->
+        ProfileDnsOverrideDialog(
+            profile = profile,
+            initial = dnsEditorState.overrides,
+            saving = dnsEditorState.isSaving,
+            onDismiss = onCloseDnsEditor,
+            onSave = onSaveDns,
+        )
     }
 }
 
@@ -2122,6 +2143,7 @@ internal fun ProfileCard(
     onOpenProxiesEditor: () -> Unit = {},
     onOpenProxyGroupsEditor: () -> Unit = {},
     onOpenProvidersEditor: () -> Unit = {},
+    onOpenDnsEditor: () -> Unit = {},
     onOpenScriptBinding: () -> Unit = {},
 ) {
     Card(modifier = Modifier.fillMaxWidth(), onClick = onSelect) {
@@ -2166,6 +2188,7 @@ internal fun ProfileCard(
                 }
                 if (profile.type == ProfileType.CUSTOM) {
                     TextButton(onClick = onOpenProvidersEditor, enabled = canMutate) { Text("Provider") }
+                    TextButton(onClick = onOpenDnsEditor, enabled = canMutate) { Text("DNS") }
                     TextButton(onClick = onOpenProxyGroupsEditor, enabled = canMutate) { Text("代理组") }
                     TextButton(onClick = onOpenProxiesEditor, enabled = canMutate) { Text("代理") }
                     TextButton(onClick = onOpenRulesEditor, enabled = canMutate) { Text("高级") }
@@ -2560,6 +2583,198 @@ internal fun ProfileProvidersEditorDialog(
             },
         )
     }
+}
+
+/**
+ * 作者 long：DNS 覆盖使用字段化表单保存到 Profile 元数据，启动时才合并到暂存 YAML；
+ * 列表字段按“一行一个服务器”编辑，避免用户在配置正文里同时维护两份 DNS 状态。
+ */
+@Composable
+internal fun ProfileDnsOverrideDialog(
+    profile: Profile,
+    initial: ProfileDnsOverrides,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (ProfileDnsOverrides) -> Unit,
+) {
+    var enableSet by remember(profile.id, initial) { mutableStateOf(initial.enable != null) }
+    var enableValue by remember(profile.id, initial) { mutableStateOf(initial.enable ?: true) }
+    var ipv6Set by remember(profile.id, initial) { mutableStateOf(initial.ipv6 != null) }
+    var ipv6Value by remember(profile.id, initial) { mutableStateOf(initial.ipv6 ?: false) }
+    var respectRulesSet by remember(profile.id, initial) { mutableStateOf(initial.respectRules != null) }
+    var respectRulesValue by remember(profile.id, initial) { mutableStateOf(initial.respectRules ?: false) }
+    var preferH3Set by remember(profile.id, initial) { mutableStateOf(initial.preferH3 != null) }
+    var preferH3Value by remember(profile.id, initial) { mutableStateOf(initial.preferH3 ?: false) }
+    var useHostsSet by remember(profile.id, initial) { mutableStateOf(initial.useHosts != null) }
+    var useHostsValue by remember(profile.id, initial) { mutableStateOf(initial.useHosts ?: true) }
+    var useSystemHostsSet by remember(profile.id, initial) { mutableStateOf(initial.useSystemHosts != null) }
+    var useSystemHostsValue by remember(profile.id, initial) { mutableStateOf(initial.useSystemHosts ?: true) }
+    var listen by remember(profile.id, initial) { mutableStateOf(initial.listen.orEmpty()) }
+    var enhancedMode by remember(profile.id, initial) { mutableStateOf(initial.enhancedMode.orEmpty()) }
+    var fakeIpRange by remember(profile.id, initial) { mutableStateOf(initial.fakeIpRange.orEmpty()) }
+    var nameserver by remember(profile.id, initial) { mutableStateOf(initial.nameserver.orEmpty().joinToString("\n")) }
+    var fallback by remember(profile.id, initial) { mutableStateOf(initial.fallback.orEmpty().joinToString("\n")) }
+    var defaultNameserver by remember(profile.id, initial) { mutableStateOf(initial.defaultNameserver.orEmpty().joinToString("\n")) }
+    var proxyServerNameserver by remember(profile.id, initial) { mutableStateOf(initial.proxyServerNameserver.orEmpty().joinToString("\n")) }
+    var directNameserver by remember(profile.id, initial) { mutableStateOf(initial.directNameserver.orEmpty().joinToString("\n")) }
+    var fakeIpFilter by remember(profile.id, initial) { mutableStateOf(initial.fakeIpFilter.orEmpty().joinToString("\n")) }
+
+    fun lines(value: String): List<String>? = value.lineSequence()
+        .map(String::trim)
+        .filter(String::isNotEmpty)
+        .toList()
+        .takeIf { it.isNotEmpty() }
+
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("DNS 覆盖 · ${profile.realLabel}") },
+        text = {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 560.dp)
+                    .testTag("profile-dns-override-list"),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item {
+                    Text(
+                        "只保存已勾选或填写的字段；未设置字段继续使用配置文件中的 DNS 值。",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                item {
+                    BooleanOverrideRow(
+                        label = "启用 DNS",
+                        enabled = enableSet,
+                        value = enableValue,
+                        onEnabledChange = { enableSet = it },
+                        onValueChange = { enableValue = it },
+                    )
+                }
+                item {
+                    OutlinedTextField(
+                        value = listen,
+                        onValueChange = { listen = it },
+                        enabled = !saving,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("监听地址") },
+                    )
+                }
+                item {
+                    OutlinedTextField(
+                        value = enhancedMode,
+                        onValueChange = { enhancedMode = it },
+                        enabled = !saving,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("增强模式（redir-host / fake-ip / hosts）") },
+                    )
+                }
+                item {
+                    OutlinedTextField(
+                        value = fakeIpRange,
+                        onValueChange = { fakeIpRange = it },
+                        enabled = !saving,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Fake-IP 地址段") },
+                    )
+                }
+                item {
+                    BooleanOverrideRow(
+                        label = "IPv6",
+                        enabled = ipv6Set,
+                        value = ipv6Value,
+                        onEnabledChange = { ipv6Set = it },
+                        onValueChange = { ipv6Value = it },
+                    )
+                }
+                item {
+                    BooleanOverrideRow(
+                        label = "遵循规则",
+                        enabled = respectRulesSet,
+                        value = respectRulesValue,
+                        onEnabledChange = { respectRulesSet = it },
+                        onValueChange = { respectRulesValue = it },
+                    )
+                }
+                item {
+                    BooleanOverrideRow(
+                        label = "优先 H3",
+                        enabled = preferH3Set,
+                        value = preferH3Value,
+                        onEnabledChange = { preferH3Set = it },
+                        onValueChange = { preferH3Value = it },
+                    )
+                }
+                item {
+                    BooleanOverrideRow(
+                        label = "使用 hosts",
+                        enabled = useHostsSet,
+                        value = useHostsValue,
+                        onEnabledChange = { useHostsSet = it },
+                        onValueChange = { useHostsValue = it },
+                    )
+                }
+                item {
+                    BooleanOverrideRow(
+                        label = "使用系统 hosts",
+                        enabled = useSystemHostsSet,
+                        value = useSystemHostsValue,
+                        onEnabledChange = { useSystemHostsSet = it },
+                        onValueChange = { useSystemHostsValue = it },
+                    )
+                }
+                item { Text("每行一个 DNS 服务器", style = MaterialTheme.typography.titleSmall) }
+                item { dnsListField("默认 DNS", defaultNameserver) { defaultNameserver = it } }
+                item { dnsListField("Nameserver", nameserver) { nameserver = it } }
+                item { dnsListField("Fallback", fallback) { fallback = it } }
+                item { dnsListField("代理服务器 DNS", proxyServerNameserver) { proxyServerNameserver = it } }
+                item { dnsListField("直连 DNS", directNameserver) { directNameserver = it } }
+                item { dnsListField("Fake-IP 过滤", fakeIpFilter) { fakeIpFilter = it } }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onSave(
+                        ProfileDnsOverrides(
+                            enable = enableSet.takeIf { it }?.let { enableValue },
+                            listen = listen.trim().takeIf { it.isNotEmpty() },
+                            ipv6 = ipv6Set.takeIf { it }?.let { ipv6Value },
+                            respectRules = respectRulesSet.takeIf { it }?.let { respectRulesValue },
+                            preferH3 = preferH3Set.takeIf { it }?.let { preferH3Value },
+                            useHosts = useHostsSet.takeIf { it }?.let { useHostsValue },
+                            useSystemHosts = useSystemHostsSet.takeIf { it }?.let { useSystemHostsValue },
+                            enhancedMode = enhancedMode.trim().takeIf { it.isNotEmpty() },
+                            fakeIpRange = fakeIpRange.trim().takeIf { it.isNotEmpty() },
+                            nameserver = lines(nameserver),
+                            fallback = lines(fallback),
+                            defaultNameserver = lines(defaultNameserver),
+                            proxyServerNameserver = lines(proxyServerNameserver),
+                            directNameserver = lines(directNameserver),
+                            fakeIpFilter = lines(fakeIpFilter),
+                        ),
+                    )
+                },
+                enabled = !saving,
+            ) { if (saving) CircularProgressIndicator() else Text("保存") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
+}
+
+@Composable
+private fun dnsListField(label: String, value: String, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        enabled = true,
+        modifier = Modifier.fillMaxWidth(),
+        minLines = 2,
+        maxLines = 5,
+        label = { Text(label) },
+    )
 }
 
 /**

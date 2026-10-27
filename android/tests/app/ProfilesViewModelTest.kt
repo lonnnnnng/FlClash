@@ -5,6 +5,7 @@ import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
+import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -339,6 +340,37 @@ class ProfilesViewModelTest {
             ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).proxyProviders,
         )
         assertNull(viewModel.providersEditorState.value.profile)
+    }
+
+    @Test
+    fun `custom dns editor persists fields without dropping provider overrides`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(17L, "DNS 配置").copy(
+            overridesJson = ProfileProviderOverrides(
+                proxyProviders = mapOf("cloud" to ProxyProviderOverride(timeout = 2_000)),
+            ).toJsonString(),
+        )
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openDnsEditor(profile)
+        viewModel.saveDns(
+            ProfileDnsOverrides(
+                enable = true,
+                enhancedMode = "fake-ip",
+                nameserver = listOf("https://doh.example/dns-query"),
+            ),
+        )
+        advanceUntilIdle()
+
+        val decoded = ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson)
+        assertEquals(ProxyProviderOverride(timeout = 2_000), decoded.proxyProviders["cloud"])
+        assertEquals("fake-ip", decoded.dns.enhancedMode)
+        assertEquals(listOf("https://doh.example/dns-query"), decoded.dns.nameserver)
+        assertNull(viewModel.dnsEditorState.value.profile)
     }
 
     @Test

@@ -6,6 +6,23 @@ import org.junit.Test
 
 class ProfileProviderOverridesTest {
     @Test
+    fun `json round trip keeps dns override fields`() {
+        val source = ProfileProviderOverrides(
+            dns = ProfileDnsOverrides(
+                enable = true,
+                listen = "0.0.0.0:1053",
+                ipv6 = false,
+                enhancedMode = "fake-ip",
+                nameserver = listOf("https://doh.example/dns-query"),
+                fallback = listOf("tls://1.1.1.1:853"),
+                fakeIpFilter = listOf("localhost", "*.lan"),
+            ),
+        )
+
+        assertEquals(source, ProfileProviderOverrides.fromJsonString(source.toJsonString()))
+    }
+
+    @Test
     fun `json round trip keeps all supported fields`() {
         val source = ProfileProviderOverrides(
             proxyProviders = mapOf(
@@ -125,5 +142,48 @@ class ProfileProviderOverridesTest {
         assertTrue(actual.contains("timeout: 2000"))
         assertTrue(actual.contains("udp: false"))
         assertTrue(actual.contains("custom-field: keep"))
+    }
+
+    @Test
+    fun `applies dns overrides to staged yaml and keeps unknown fields`() {
+        val source = """
+            mixed-port: 7890
+            dns:
+              enable: false
+              nameserver:
+                - https://old.example/dns-query
+              custom-field: keep
+            rules:
+              - MATCH,DIRECT
+        """.trimIndent() + "\n"
+
+        val actual = ProfileProviderOverrideApplier.apply(
+            source,
+            ProfileProviderOverrides(
+                dns = ProfileDnsOverrides(
+                    enable = true,
+                    enhancedMode = "fake-ip",
+                    nameserver = listOf("https://doh.example/dns-query", "tls://1.1.1.1:853"),
+                ),
+            ),
+        )
+
+        assertTrue(actual.contains("enable: true"))
+        assertTrue(actual.contains("enhanced-mode: fake-ip"))
+        assertTrue(actual.contains("- https://doh.example/dns-query"))
+        assertTrue(actual.contains("custom-field: keep"))
+        assertTrue(actual.contains("rules:\n  - MATCH,DIRECT"))
+    }
+
+    @Test
+    fun `appends dns section when profile has no dns block`() {
+        val actual = ProfileProviderOverrideApplier.apply(
+            "mixed-port: 7890\n",
+            ProfileProviderOverrides(
+                dns = ProfileDnsOverrides(nameserver = listOf("https://doh.example/dns-query")),
+            ),
+        )
+
+        assertTrue(actual.endsWith("dns:\n  nameserver:\n    - https://doh.example/dns-query\n"))
     }
 }

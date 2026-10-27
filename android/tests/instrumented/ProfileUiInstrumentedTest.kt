@@ -4,13 +4,17 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.hasText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
+import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -222,6 +226,32 @@ class ProfileUiInstrumentedTest {
     }
 
     @Test
+    fun dnsOverrideDialogForwardsTypedFields() {
+        var saved: ProfileDnsOverrides? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfileDnsOverrideDialog(
+                    profile = Profile.custom(19L, "DNS 配置"),
+                    initial = ProfileDnsOverrides(),
+                    saving = false,
+                    onDismiss = {},
+                    onSave = { saved = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("DNS 覆盖 · DNS 配置").assertIsDisplayed()
+        composeRule.onNodeWithText("增强模式（redir-host / fake-ip / hosts）").performTextInput("fake-ip")
+        composeRule.onNodeWithTag("profile-dns-override-list")
+            .performScrollToNode(hasText("Nameserver"))
+        composeRule.onNodeWithText("Nameserver").performTextInput("https://doh.example/dns-query")
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals("fake-ip", saved?.enhancedMode)
+        assertEquals(listOf("https://doh.example/dns-query"), saved?.nameserver)
+    }
+
+    @Test
     fun profileMutationButtonsDisableWhileCoreIsRunning() {
         composeRule.setContent {
             KClashTheme {
@@ -239,6 +269,7 @@ class ProfileUiInstrumentedTest {
 
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
         composeRule.onNodeWithText("Provider").assertIsNotEnabled()
+        composeRule.onNodeWithText("DNS").assertIsNotEnabled()
         composeRule.onNodeWithText("代理组").assertIsNotEnabled()
         composeRule.onNodeWithText("高级").assertIsNotEnabled()
         composeRule.onNodeWithText("代理").assertIsNotEnabled()

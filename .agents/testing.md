@@ -18,6 +18,14 @@
 
 真实设备动作失败时保留失败 Run 和审计事实，先检查 logcat、服务状态、权限和核心事件，再决定修复或重试；不能用历史成功覆盖当前失败。
 
+## DNS Overrides 切片实测记录（2026-10-27）
+
+- `./gradlew :service:testDebugUnitTest :app:testDebugUnitTest --no-daemon`：通过；DNS JSON 往返、暂存 YAML 合并、未知字段保留、Provider/DNS 共存和运行态保护测试通过。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 168 项 JVM 单元测试失败 0、错误 0、跳过 0，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：最终通过；40 项 instrumentation 失败 0、错误 0、跳过 0，其中 Room 6 项、Compose 30 项、WebView JavaScript 4 项。
+- Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）已验证 DNS 对话框字段回调和真实 Room/Repository 持久化；本轮未访问真实订阅路径、VPN 或核心启动。
+- Debug APK SHA-256：`2ee8c4bdd81fffd2018f1595fe64b95cd7d3022a4f25f9149b5ae901b5bafd9e`；原生库仅包含 `lib/arm64-v8a/`。
+
 ## 第一阶段实测记录
 
 - `:common:testDebugUnitTest`：30 项通过。

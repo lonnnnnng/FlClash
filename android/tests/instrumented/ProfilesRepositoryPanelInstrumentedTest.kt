@@ -18,6 +18,7 @@ import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.ScriptRepository
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
+import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.data.SubscriptionClient
 import com.lonnnnnng.flclash.data.SubscriptionDownload
@@ -201,6 +202,41 @@ class ProfilesRepositoryPanelInstrumentedTest {
             ).proxyProviders,
         )
         assertEquals(overrides.toJsonString(), runBlocking { repository.activeProfile().overridesJson })
+    }
+
+    @Test
+    fun repositoryPersistsDnsOverridesAlongsideProviderOverrides() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context = context,
+            database = database,
+            subscriptionClient = object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload =
+                    error("该 DNS 持久化流程不访问远程订阅")
+            },
+        )
+
+        val profile = runBlocking { repository.addCustomProfile("DNS 持久化") }
+        val overrides = ProfileProviderOverrides(
+            proxyProviders = mapOf("cloud" to ProxyProviderOverride(timeout = 2_000)),
+            dns = ProfileDnsOverrides(
+                enable = true,
+                enhancedMode = "fake-ip",
+                nameserver = listOf("https://doh.example/dns-query"),
+            ),
+        )
+        runBlocking { repository.updateProfileOverrides(profile.id, overrides.toJsonString()) }
+
+        val decoded = ProfileProviderOverrides.fromJsonString(
+            runBlocking { repository.activeProfile().overridesJson },
+        )
+        assertEquals(overrides.proxyProviders, decoded.proxyProviders)
+        assertEquals(overrides.dns, decoded.dns)
+        database.close()
     }
 
     @Test

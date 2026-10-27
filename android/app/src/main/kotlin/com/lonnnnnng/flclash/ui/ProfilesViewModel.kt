@@ -11,6 +11,7 @@ import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
+import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -71,6 +72,13 @@ data class ProfileProvidersEditorUiState(
     val isSaving: Boolean = false,
 )
 
+data class ProfileDnsEditorUiState(
+    val profile: Profile? = null,
+    val overrides: ProfileDnsOverrides = ProfileDnsOverrides(),
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+)
+
 internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
 
 /**
@@ -92,6 +100,7 @@ class ProfilesViewModel @Inject constructor(
     private val mutableProxiesEditor = MutableStateFlow(ProfileProxiesEditorUiState())
     private val mutableProxyGroupsEditor = MutableStateFlow(ProfileProxyGroupsEditorUiState())
     private val mutableProvidersEditor = MutableStateFlow(ProfileProvidersEditorUiState())
+    private val mutableDnsEditor = MutableStateFlow(ProfileDnsEditorUiState())
 
     val state: StateFlow<ProfilesUiState> = combine(
         repository.profiles,
@@ -107,6 +116,7 @@ class ProfilesViewModel @Inject constructor(
     val proxiesEditorState: StateFlow<ProfileProxiesEditorUiState> = mutableProxiesEditor
     val proxyGroupsEditorState: StateFlow<ProfileProxyGroupsEditorUiState> = mutableProxyGroupsEditor
     val providersEditorState: StateFlow<ProfileProvidersEditorUiState> = mutableProvidersEditor
+    val dnsEditorState: StateFlow<ProfileDnsEditorUiState> = mutableDnsEditor
 
     fun select(id: Long) {
         if (runtimeManager.state.value.isRunning) {
@@ -379,13 +389,59 @@ class ProfilesViewModel @Inject constructor(
                 repository.updateLocalProfileContent(profile.id, updatedContent)
                 repository.updateProfileOverrides(
                     profile.id,
-                    ProfileProviderOverrides(proxyProviderOverrides).toJsonString(),
+                    ProfileProviderOverrides(
+                        proxyProviders = proxyProviderOverrides,
+                        dns = ProfileProviderOverrides.fromJsonString(profile.overridesJson).dns,
+                    ).toJsonString(),
                 )
             }.onSuccess {
                 closeProvidersEditor()
             }.onFailure { error ->
                 mutableProvidersEditor.value = mutableProvidersEditor.value.copy(isSaving = false)
                 mutableErrors.emit(error.message ?: "保存 Provider 失败")
+            }
+        }
+    }
+
+    fun openDnsEditor(profile: Profile) {
+        if (profile.type != ProfileType.CUSTOM) {
+            mutableErrors.tryEmit("高级 DNS 编辑仅支持自定义配置")
+            return
+        }
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 DNS")
+            return
+        }
+        mutableDnsEditor.value = ProfileDnsEditorUiState(
+            profile = profile,
+            overrides = ProfileProviderOverrides.fromJsonString(profile.overridesJson).dns,
+        )
+    }
+
+    fun closeDnsEditor() {
+        mutableDnsEditor.value = ProfileDnsEditorUiState()
+    }
+
+    fun saveDns(overrides: ProfileDnsOverrides) {
+        val state = mutableDnsEditor.value
+        val profile = state.profile ?: return
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存 DNS")
+            return
+        }
+        viewModelScope.launch {
+            mutableDnsEditor.value = state.copy(overrides = overrides, isSaving = true)
+            runCatching {
+                val current = ProfileProviderOverrides.fromJsonString(profile.overridesJson)
+                repository.updateProfileOverrides(
+                    profile.id,
+                    current.copy(dns = overrides).toJsonString(),
+                )
+            }.onSuccess {
+                closeDnsEditor()
+            }.onFailure { error ->
+                mutableDnsEditor.value = mutableDnsEditor.value.copy(isSaving = false, overrides = overrides)
+                mutableErrors.emit(error.message ?: "保存 DNS 失败")
             }
         }
     }
