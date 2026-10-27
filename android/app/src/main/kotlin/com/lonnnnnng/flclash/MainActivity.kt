@@ -27,12 +27,19 @@ import com.lonnnnnng.flclash.ui.formatLogsForExport
 import com.lonnnnnng.flclash.ui.formatRuntimeDiagnosticHistoryForExport
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import com.lonnnnnng.flclash.data.DeepLinkProfileParser
+import com.lonnnnnng.flclash.data.BackupRepository
+import com.lonnnnnng.flclash.data.BackupRestoreScope
+import com.lonnnnnng.flclash.data.BackupRestoreStrategy
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var backupRepository: BackupRepository
     private val viewModel: MainViewModel by viewModels()
     private val profilesViewModel: ProfilesViewModel by viewModels()
     private val proxyGroupsViewModel: ProxyGroupsViewModel by viewModels()
@@ -96,10 +103,44 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val backupExportLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/zip"),
+    ) { uri ->
+        val archive = pendingBackupExport
+        pendingBackupExport = null
+        if (uri == null || archive == null) return@registerForActivityResult
+        runCatching {
+            contentResolver.openOutputStream(uri)?.use { output -> output.write(archive) }
+                ?: error("无法打开备份导出文件")
+        }.onFailure { error -> viewModel.reportError(error.message ?: "导出备份失败") }
+    }
+
+    private val backupImportLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        val request = pendingBackupRestore
+        pendingBackupRestore = null
+        if (uri == null || request == null) return@registerForActivityResult
+        lifecycleScope.launch {
+            runCatching {
+                val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    ?: error("无法读取备份文件")
+                backupRepository.restore(bytes, request.first, request.second)
+                profilesViewModel.refreshSelection()
+            }.onSuccess {
+                viewModel.reportError("备份恢复完成")
+            }.onFailure { error ->
+                viewModel.reportError(error.message ?: "恢复备份失败")
+            }
+        }
+    }
+
     private var batteryOptimizationIgnored by mutableStateOf(false)
     private var pendingLogExport: List<CoreEvent.Log> = emptyList()
     private var pendingDiagnosticExport: DiagnosticSessionUiState? = null
     private var pendingDiagnosticHistoryExport: List<RuntimeDiagnosticEvent> = emptyList()
+    private var pendingBackupExport: ByteArray? = null
+    private var pendingBackupRestore: Pair<BackupRestoreScope, BackupRestoreStrategy>? = null
     private var initialDeepLinkHandled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,6 +161,8 @@ class MainActivity : ComponentActivity() {
                     onExportLogs = ::requestLogExport,
                     onExportDiagnostic = ::requestDiagnosticExport,
                     onExportDiagnosticHistory = ::requestDiagnosticHistoryExport,
+                    onExportBackup = ::requestBackupExport,
+                    onImportBackup = ::requestBackupImport,
                 )
             }
         }
@@ -195,6 +238,22 @@ class MainActivity : ComponentActivity() {
         // 作者 long：先冻结历史快照，文件选择期间新事件属于后续时间线，避免导出内容前后不一致。
         pendingDiagnosticHistoryExport = events.toList()
         diagnosticHistoryExportLauncher.launch("kclash-runtime-diagnostics-${System.currentTimeMillis()}.txt")
+    }
+
+    private fun requestBackupExport() {
+        lifecycleScope.launch {
+            runCatching { backupRepository.createArchive() }
+                .onSuccess { archive ->
+                    pendingBackupExport = archive
+                    backupExportLauncher.launch("kclash-backup-${System.currentTimeMillis()}.zip")
+                }
+                .onFailure { error -> viewModel.reportError(error.message ?: "导出备份失败") }
+        }
+    }
+
+    private fun requestBackupImport(scope: BackupRestoreScope, strategy: BackupRestoreStrategy) {
+        pendingBackupRestore = scope to strategy
+        backupImportLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
     }
 
     override fun onNewIntent(intent: Intent) {

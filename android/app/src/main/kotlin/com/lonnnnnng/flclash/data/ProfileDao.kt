@@ -33,4 +33,7 @@ interface ProfileDao {
 
     @Query("UPDATE profiles SET scriptId = NULL WHERE scriptId = :scriptId")
     suspend fun clearScriptBinding(scriptId: Long)
+
+    @Query("DELETE FROM profiles")
+    suspend fun deleteAll()
 }

@@ -106,6 +106,43 @@ class ProfilesPanelInstrumentedTest {
     }
 
     @Test
+    fun backupAndRestoreControlsExposeOptions() {
+        var exportCount = 0
+        var restoreCount = 0
+        composeRule.setContent {
+            KClashTheme {
+                ProfilesPanel(
+                    state = ProfilesUiState(),
+                    editorState = ProfileEditorUiState(),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    showAddDialog = false,
+                    onShowAddDialog = {},
+                    onDismissAddDialog = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                    onSelect = {},
+                    onEdit = {},
+                    onUpdate = {},
+                    onCloseEditor = {},
+                    onSaveEditor = {},
+                    onDelete = {},
+                    onExportBackup = { exportCount++ },
+                    onImportBackup = { _, _ -> restoreCount++ },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("backup_export").performClick()
+        composeRule.onNodeWithTag("backup_restore").performClick()
+        composeRule.onNodeWithText("恢复备份").assertIsDisplayed()
+        composeRule.onNodeWithText("选择备份文件").performClick()
+        assertEquals(1, exportCount)
+        assertEquals(1, restoreCount)
+    }
+
+    @Test
     fun reorderDialogMovesProfileBeforeSaving() {
         val profiles = listOf(
             Profile.custom(105L, "第一项"),

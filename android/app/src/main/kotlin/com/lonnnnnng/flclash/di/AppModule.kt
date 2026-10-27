@@ -7,6 +7,7 @@ import com.lonnnnnng.flclash.data.HttpSubscriptionClient
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileConfigValidator
+import com.lonnnnnng.flclash.data.BackupRepository
 import com.lonnnnnng.flclash.data.RemoteProfileUpdater
 import com.lonnnnnng.flclash.data.YamlProfileConfigValidator
 import com.lonnnnnng.flclash.data.ScriptRepository
@@ -73,6 +74,13 @@ object AppModule {
     @Provides
     @Singleton
     fun provideProfileStore(repository: ProfileRepository): ProfileStore = repository
+
+    @Provides
+    @Singleton
+    fun provideBackupRepository(
+        @ApplicationContext context: Context,
+        database: KClashDatabase,
+    ): BackupRepository = BackupRepository(database, context.filesDir)
 
     @Provides
     @Singleton

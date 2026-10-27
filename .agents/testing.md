@@ -425,3 +425,22 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）48 项 instrumentation 失败 0、错误 0、跳过 0，包含自动更新开关页面回归。
 - 设备调度检查已确认 WorkManager 任务、网络约束、`BATTERY_NOT_LOW` 和 30 分钟指数退避均存在；本轮未使用真实在线订阅路径执行自动更新回归。
 - 真实在线验收后续只允许使用工作区根目录 `AGENTS.md` 中保留的两条授权路径；本轮不在日志或文档中重复 URL 和 Token。
+
+### 真实授权路径回归补充（2026-10-28）
+
+- 设备：Redmi Note 8 Pro，serial `wsvwypiz7xwslvl7`，Android 16/API 36；执行前重新确认设备在线。
+- 第二条授权路径：通过 `kclash://install-config` 导入成功，配置卡片显示远程订阅；手动同步成功，验证了明文 HTTP 入口到 HTTPS 的重定向链路。
+- 第一条授权路径：通过 `kclash://install-config` 导入成功，配置卡片显示订阅用量；手动同步成功。
+- 两个远程 Profile 均完成自动更新开关 `on → off → on` 回归；开关只改变元数据，不立即下载，最终状态恢复为开启。
+- `dumpsys jobscheduler` 仍显示 `SubscriptionAutoUpdateWorker`、网络约束、`BATTERY_NOT_LOW` 和 30 分钟指数退避。新 Profile 尚未达到默认 24 小时到期条件，因此未把周期 Worker 的自动下载声称为已验证。
+- 验收后通过应用内删除两个测试 Profile，配置页恢复“还没有配置”；未发现 KClash `FATAL EXCEPTION`。日志与文档未回显 URL、Token 或订阅正文。
+
+### 本地备份/恢复首片实测记录（2026-10-28）
+
+- 备份 ZIP 只保存 Kotlin 应用可重新生成的用户数据：`manifest.json`、Profiles/Scripts Room 元数据、当前 Profile 选择，以及 `profiles/<id>.yaml`、`scripts/<id>.js`；不保存运行恢复意图、运行诊断历史、Mihomo 临时目录、缓存或 Geo 数据。
+- `BackupRepositoryInstrumentedTest` 3 项通过，覆盖全部数据往返、兼容恢复保留未包含行、仅恢复配置文件清除脚本绑定，以及非法路径/未知版本在改动文件前拒绝。
+- `ProfilesPanelInstrumentedTest` 新增备份/恢复入口测试；完整 instrumentation 通过 52 项，失败 0、错误 0、跳过 0。
+- Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）真机创建自定义 Profile，通过 Android `DocumentsUI` 导出 ZIP 到 Download；恢复对话框确认“恢复全部数据 + 兼容”，选择导出的 ZIP 后显示“备份恢复完成”。随后重复使用“恢复全部数据 + 覆盖”策略，仍显示完成且 Profile 保留。
+- 验收结束后通过应用内删除测试 Profile，配置页恢复“还没有配置”；未发现 `AndroidRuntime` 崩溃。当前本地 SAF 闭环已验证，WebDAV/云端同步不在本切片范围。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；App 88 项、Service 68 项、Core 18 项、Common 30 项，共 204 项 JVM 单元测试失败 0、错误 0、跳过 0；Lint 错误 0。
+- Debug APK SHA-256：`06fb04e98b7d21fecb4bc2aa2511138b16b11a12944ee07fb93ee9953d17eac4`；APK 原生库全部位于 `lib/arm64-v8a/`。

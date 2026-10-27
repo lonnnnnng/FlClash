@@ -63,6 +63,8 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileProvidersEditor
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.data.Script
+import com.lonnnnnng.flclash.data.BackupRestoreScope
+import com.lonnnnnng.flclash.data.BackupRestoreStrategy
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
@@ -107,6 +109,8 @@ fun KClashApp(
     onExportLogs: (List<CoreEvent.Log>) -> Unit,
     onExportDiagnostic: (DiagnosticSessionUiState) -> Unit,
     onExportDiagnosticHistory: (List<RuntimeDiagnosticEvent>) -> Unit,
+    onExportBackup: () -> Unit,
+    onImportBackup: (BackupRestoreScope, BackupRestoreStrategy) -> Unit,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
@@ -347,6 +351,8 @@ fun KClashApp(
                         scripts = scriptsState.scripts,
                         onBindScript = profilesViewModel::bindScript,
                         onOpenScripts = { showScriptsDialog = true },
+                        onExportBackup = onExportBackup,
+                        onImportBackup = onImportBackup,
                     )
                 }
 
@@ -608,11 +614,14 @@ internal fun ProfilesPanel(
     scripts: List<Script> = emptyList(),
     onBindScript: (Profile, Long?) -> Unit = { _, _ -> },
     onOpenScripts: () -> Unit = {},
+    onExportBackup: () -> Unit = {},
+    onImportBackup: (BackupRestoreScope, BackupRestoreStrategy) -> Unit = { _, _ -> },
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
     var showReorderDialog by remember { mutableStateOf(false) }
     var scriptBindingProfileId by remember { mutableStateOf<Long?>(null) }
+    var showBackupRestoreDialog by remember { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
@@ -623,7 +632,9 @@ internal fun ProfilesPanel(
             Text(
                 text = "配置",
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .weight(1f),
             )
             if (state.profiles.isNotEmpty()) {
                 TextButton(
@@ -632,6 +643,16 @@ internal fun ProfilesPanel(
                 ) { Text("排序") }
             }
             TextButton(onClick = onOpenScripts, enabled = !state.isBusy) { Text("脚本") }
+            TextButton(
+                onClick = onExportBackup,
+                enabled = !state.isBusy,
+                modifier = Modifier.testTag("backup_export"),
+            ) { Text("备份") }
+            TextButton(
+                onClick = { showBackupRestoreDialog = true },
+                enabled = canMutateProfiles,
+                modifier = Modifier.testTag("backup_restore"),
+            ) { Text("恢复") }
         }
         if (state.profiles.isEmpty()) {
             Card(modifier = Modifier.fillMaxWidth()) {
@@ -711,6 +732,16 @@ internal fun ProfilesPanel(
             onSave = { ids ->
                 showReorderDialog = false
                 onReorderProfiles(ids)
+            },
+        )
+    }
+
+    if (showBackupRestoreDialog) {
+        BackupRestoreOptionsDialog(
+            onDismiss = { showBackupRestoreDialog = false },
+            onConfirm = { scope, strategy ->
+                showBackupRestoreDialog = false
+                onImportBackup(scope, strategy)
             },
         )
     }
@@ -856,6 +887,67 @@ internal fun ProfilesPanel(
                 onSave = onSaveDialers,
             )
         }
+    }
+}
+
+@Composable
+internal fun BackupRestoreOptionsDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (BackupRestoreScope, BackupRestoreStrategy) -> Unit,
+) {
+    var scope by remember { mutableStateOf(BackupRestoreScope.ALL_DATA) }
+    var strategy by remember { mutableStateOf(BackupRestoreStrategy.COMPATIBLE) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("恢复备份") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("恢复范围", style = MaterialTheme.typography.titleSmall)
+                BackupOptionRow(
+                    selected = scope == BackupRestoreScope.PROFILES_ONLY,
+                    label = "仅恢复配置文件",
+                    onClick = { scope = BackupRestoreScope.PROFILES_ONLY },
+                )
+                BackupOptionRow(
+                    selected = scope == BackupRestoreScope.ALL_DATA,
+                    label = "恢复全部数据",
+                    onClick = { scope = BackupRestoreScope.ALL_DATA },
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("已有数据", style = MaterialTheme.typography.titleSmall)
+                BackupOptionRow(
+                    selected = strategy == BackupRestoreStrategy.COMPATIBLE,
+                    label = "兼容：保留未包含的数据",
+                    onClick = { strategy = BackupRestoreStrategy.COMPATIBLE },
+                )
+                BackupOptionRow(
+                    selected = strategy == BackupRestoreStrategy.OVERRIDE,
+                    label = "覆盖：替换当前数据",
+                    onClick = { strategy = BackupRestoreStrategy.OVERRIDE },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(scope, strategy) }) { Text("选择备份文件") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+    )
+}
+
+@Composable
+private fun BackupOptionRow(
+    selected: Boolean,
+    label: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("backup_option_$label"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        TextButton(onClick = onClick) { Text(label) }
     }
 }
 

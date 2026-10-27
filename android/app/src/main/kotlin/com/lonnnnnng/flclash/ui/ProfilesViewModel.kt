@@ -557,6 +557,10 @@ class ProfilesViewModel @Inject constructor(
         }
     }
 
+    fun refreshSelection() {
+        viewModelScope.launch { repository.refreshCurrentProfile() }
+    }
+
     fun bindScript(profile: Profile, scriptId: Long?) {
         if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)

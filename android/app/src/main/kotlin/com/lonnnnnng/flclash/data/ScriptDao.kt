@@ -30,4 +30,7 @@ interface ScriptDao {
 
     @Query("UPDATE scripts SET orderIndex = :orderIndex WHERE id = :id")
     suspend fun updateOrder(id: Long, orderIndex: Int)
+
+    @Query("DELETE FROM scripts")
+    suspend fun deleteAll()
 }

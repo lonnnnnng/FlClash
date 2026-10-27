@@ -32,6 +32,7 @@ interface ProfileStore {
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
     suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile
+    suspend fun refreshCurrentProfile() = Unit
     suspend fun updateProfileAutoUpdate(
         id: Long,
         enabled: Boolean,
@@ -80,6 +81,14 @@ class ProfileRepository(
 
     override suspend fun selectProfile(id: Long?) {
         val valid = id?.takeIf { candidate -> profileDao.getById(candidate) != null }
+        mutableCurrentProfileId.value = valid
+        persistCurrentProfile(valid)
+    }
+
+    override suspend fun refreshCurrentProfile() = withContext(Dispatchers.IO) {
+        val restored = preferenceDao.get(CURRENT_PROFILE_KEY)?.toLongOrNull()
+        val valid = restored?.takeIf { profileDao.getById(it) != null }
+            ?: profileDao.getAll().firstOrNull()?.id
         mutableCurrentProfileId.value = valid
         persistCurrentProfile(valid)
     }

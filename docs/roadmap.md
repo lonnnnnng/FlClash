@@ -57,11 +57,11 @@
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
 | 单元测试 | 204 项通过，失败 0，错误 0，跳过 0 |
-| Instrumentation | 48 项通过，失败 0，错误 0，跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36） |
-| Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
+| Instrumentation | 52 项通过，失败 0，错误 0，跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36） |
+| Debug 构建 | `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
-| Debug 原生库 | APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言和停止清理均已在 `wsvwypiz7xwslvl7` 验证 |
+| Debug 原生库 | APK SHA-256 为 `06fb04e98b7d21fecb4bc2aa2511138b16b11a12944ee07fb93ee9953d17eac4`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、Selector 状态、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -141,7 +141,7 @@ flowchart LR
 - 远程订阅手动同步。
 - 核心运行期间阻止配置选择和编辑，避免运行输入与用户编辑内容分裂。
 
-未纳入 M1 完成定义的内容：高级分区编辑和备份恢复；订阅自动更新已完成代码、自动化验证和调度证据，但真实在线更新回归仍待使用当前两条授权路径补齐。Deep Link 基础导入及本轮冷启动、重复导入和错误反馈回归已完成。二维码图片导入已完成代码、单元测试和当前两条授权路径真机验收。
+未纳入 M1 完成定义的内容：高级分区编辑；本地备份/恢复已完成首片，WebDAV、云端同步和完整页面级 E2E 仍待后续。订阅自动更新已完成代码、自动化验证、调度证据和当前两条授权路径的真实导入/同步回归，但周期任务等待到期后的真实自动下载仍未验证。Deep Link 基础导入及本轮冷启动、重复导入和错误反馈回归已完成。二维码图片导入已完成代码、单元测试和当前两条授权路径真机验收。
 
 ### M2：Mihomo 配置校验与应用 — `DONE-VERIFIED`
 
@@ -375,9 +375,8 @@ flowchart LR
 待完成：
 
 - YAML 编辑器语法体验、搜索、定位、错误行提示和大文件性能。
-- 备份恢复和完整页面级 E2E。
+- 完整页面级 E2E；本地 SAF 备份恢复首片已完成，WebDAV/云端同步仍待评估。
 - 真实在线订阅更新回归；自动更新调度、失败重试、失败摘要和通知已完成代码与自动化验证。
-- 备份和恢复。
 - Profile 级别的代理组展开状态和其他 Flutter 行为数据。
 
 完成门槛：
@@ -927,8 +926,21 @@ flowchart LR
 - 新增自动更新调度、到期筛选、YAML 校验、旧文件保留、失败摘要和取消传播测试；`./gradlew test --no-daemon` 通过，全工程 204 项 JVM 单元测试失败 0、错误 0、跳过 0。
 - `./gradlew :app:assembleDebug :app:lintDebug --no-daemon` 通过，Lint 错误 0；Debug APK SHA-256 为 `89a4f6641ac608406b989bfe9337e597e484beda24260dacd0ad26312c6ca56f`，APK 内原生库仅位于 `lib/arm64-v8a/`。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon` 通过；Redmi Note 8 Pro（Android 16/API 36）48 项 instrumentation 失败 0、错误 0、跳过 0，包含远程 Profile 自动更新开关页面回归。
-- 设备 `dumpsys jobscheduler` 已确认唯一 WorkManager 任务存在，包含网络、`BATTERY_NOT_LOW` 和 30 分钟指数退避约束；本轮尚未使用两条授权真实在线路径执行真实订阅更新回归。
-- 当前切片状态：`DONE-UNIT`。自动更新代码、失败保护和设备调度证据已完成；真实在线订阅更新、备份恢复和完整页面级 E2E 仍待后续切片。
+- 设备 `dumpsys jobscheduler` 已确认唯一 WorkManager 任务存在，包含网络、`BATTERY_NOT_LOW` 和 30 分钟指数退避约束。
+- 真机真实在线回归已完成：第二条授权路径完成 Deep Link 导入、HTTP→HTTPS 重定向和手动同步；第一条授权路径完成 Deep Link 导入、订阅用量展示和手动同步；两个远程 Profile 的自动更新开关均完成 `on → off → on` 回归。验收期间未记录 URL、Token 或订阅正文，结束后两个测试 Profile 均已删除，设备恢复空配置状态。
+- 由于新导入 Profile 的更新时间尚未达到 24 小时自动更新间隔，本轮验证的是真实下载链路、手动同步、开关持久化和 WorkManager 调度，未等待周期任务自动下载。当前切片状态：`DONE-VERIFIED`；下一步进入本地备份/恢复。
+
+### 2026-10-28：本地备份/恢复首片
+
+- 新增本地 SAF ZIP 导出/导入；归档包含 `manifest.json`、Profile/脚本 Room 元数据、当前 Profile 选择，以及 `profiles/<id>.yaml`、`scripts/<id>.js` 正文文件。
+- 恢复支持“仅恢复配置文件 / 恢复全部数据”和“兼容 / 覆盖”两种维度；仅恢复配置文件时清除脚本绑定，避免归档不含脚本却留下悬挂引用；覆盖恢复会清理归档未包含的旧文件。
+- Repository 在写入前执行版本、未知条目、重复条目、路径穿越、条目大小、行记录和文件完整性校验，并通过 staging、快照和回滚保护 Room 与应用私有文件的一致性。
+- 不备份 `runtime_should_resume`、运行诊断历史、Mihomo 临时目录、缓存和 Geo 数据；本切片只支持 Android 本地 SAF，不接 WebDAV 或云端同步。
+- 新增 `BackupRepositoryInstrumentedTest` 3 项，覆盖全部数据往返、兼容恢复、配置文件恢复清除脚本绑定、非法路径和未知版本拒绝；Profiles Compose 测试覆盖备份/恢复入口与选项对话框。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；App 88 项、Service 68 项、Core 18 项、Common 30 项，共 204 项 JVM 单元测试失败 0、错误 0、跳过 0；Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）52 项 instrumentation 失败 0、错误 0、跳过 0。
+- 真机已创建自定义 Profile，通过 DocumentsUI 将 ZIP 导出到 Download；随后使用“恢复全部数据 + 兼容”和“恢复全部数据 + 覆盖”分别导入，均显示“备份恢复完成”，Profile 仍可见；最后删除测试 Profile，配置页恢复“还没有配置”。
+- Debug APK SHA-256 为 `06fb04e98b7d21fecb4bc2aa2511138b16b11a12944ee07fb93ee9953d17eac4`，APK 内原生库仍仅位于 `lib/arm64-v8a/`；当前切片状态：`DONE-VERIFIED`。
 
 ### N4：Profiles 和代理组 parity
 
@@ -940,9 +952,9 @@ flowchart LR
 2. 高级配置分区编辑。
 3. URLTest/Fallback 完整语义。
 4. 批量测速、搜索、缓存和结果失效。
-5. 订阅自动更新和备份恢复。
+5. 订阅自动更新和本地 SAF 备份恢复（已完成；WebDAV/云端同步待评估）。
 
-本轮已完成 Profile 排序、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义、选择映射的 Room/Runtime/ViewModel 持久化闭环，以及订阅自动更新的代码和设备调度证据；下一步使用两条授权路径补做真实在线订阅更新回归，再推进备份恢复、代理选择真机 E2E 与完整页面级交互。
+本轮已完成 Profile 排序、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义、选择映射的 Room/Runtime/ViewModel 持久化闭环、订阅自动更新代码/设备调度/两条授权路径真实导入同步回归，以及本地 SAF 备份恢复首片；下一步补代理选择真机 E2E、WebDAV/云端备份评估和完整页面级交互。
 
 ### N5：平台入口和系统集成
 
