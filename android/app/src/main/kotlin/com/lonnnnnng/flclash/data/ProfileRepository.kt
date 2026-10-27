@@ -28,6 +28,10 @@ interface ProfileStore {
     suspend fun addCustomProfile(label: String): Profile
     suspend fun readLocalProfileContent(id: Long): String
     suspend fun updateLocalProfileContent(id: Long, content: String): Profile
+    suspend fun updateProfileLabel(id: Long, label: String): Profile =
+        profiles.value.firstOrNull { it.id == id }
+            ?.copy(label = label.trim())
+            ?: error("配置不存在")
     suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
@@ -168,6 +172,17 @@ class ProfileRepository(
         require(current.type != ProfileType.URL) { "远程订阅不能直接编辑" }
         replaceFileAtomically(id, content.toByteArray(Charsets.UTF_8))
         val updated = current.copy(lastUpdateAt = System.currentTimeMillis())
+        profileDao.update(updated.toEntity())
+        updated
+    }
+
+    override suspend fun updateProfileLabel(id: Long, label: String): Profile = withContext(Dispatchers.IO) {
+        val normalized = label.trim()
+        require(normalized.isNotEmpty()) { "配置名称不能为空" }
+        require(normalized.length <= MAX_PROFILE_LABEL_LENGTH) { "配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符" }
+        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+        val updated = current.copy(label = normalized)
+        // 作者 long：名称只属于 Room 元数据，独立更新不会重写 YAML 或触发订阅下载，避免改名影响正在使用的配置内容。
         profileDao.update(updated.toEntity())
         updated
     }
@@ -373,5 +388,6 @@ class ProfileRepository(
         const val SCRIPTS_DIRECTORY = "scripts"
         const val MIN_AUTO_UPDATE_INTERVAL_MILLIS = 15 * 60 * 1_000L
         const val MAX_UPDATE_ERROR_LENGTH = 240
+        const val MAX_PROFILE_LABEL_LENGTH = 64
     }
 }

@@ -87,6 +87,42 @@ class ProfilesViewModelTest {
     }
 
     @Test
+    fun `rename trims and persists profile label`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(4L, "旧名称")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.rename(profile, "  新名称  ")
+        advanceUntilIdle()
+
+        assertEquals("新名称", store.profiles.value.single().label)
+        assertEquals("新名称", store.updatedLabel)
+    }
+
+    @Test
+    fun `rename is rejected while core is running`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(5L, "运行中名称")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING),
+        )
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.rename(profile, "新名称")
+
+        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, error.await())
+        advanceUntilIdle()
+        assertNull(store.updatedLabel)
+        assertEquals("运行中名称", store.profiles.value.single().label)
+    }
+
+    @Test
     fun `reorder delegates the requested order and keeps omitted profiles`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val first = Profile.custom(20L, "第一项")
@@ -509,6 +545,7 @@ private class FakeProfileStore(
     var reorderedIds: List<Long>? = null
     var content = ""
     var updatedContent: String? = null
+    var updatedLabel: String? = null
     var updatedOverridesJson: String? = null
     var autoUpdateChanges = mutableListOf<Pair<Long, Boolean>>()
     val scriptBindingUpdates = mutableListOf<Long?>()
@@ -530,6 +567,13 @@ private class FakeProfileStore(
         updatedContent = content
         this.content = content
         return profile
+    }
+
+    override suspend fun updateProfileLabel(id: Long, label: String): Profile {
+        updatedLabel = label
+        val updated = profile.copy(label = label)
+        profiles.value = profiles.value.map { if (it.id == id) updated else it }
+        return updated
     }
 
     override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile {

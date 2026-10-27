@@ -11,6 +11,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
@@ -103,6 +105,48 @@ class ProfilesPanelInstrumentedTest {
 
         assertEquals(false, changedTo)
         composeRule.onNodeWithText("远程订阅").assertIsDisplayed()
+    }
+
+    @Test
+    fun renameDialogWritesTheTrimmedLabelBackToThePanel() {
+        val profile = Profile.custom(110L, "旧名称")
+        var profiles by mutableStateOf(listOf(profile))
+        var renamed: String? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfilesPanel(
+                    state = ProfilesUiState(profiles = profiles, currentProfileId = profile.id),
+                    editorState = ProfileEditorUiState(),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    showAddDialog = false,
+                    onShowAddDialog = {},
+                    onDismissAddDialog = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                    onSelect = {},
+                    onEdit = {},
+                    onRename = { selected, label ->
+                        renamed = label
+                        profiles = listOf(selected.copy(label = label))
+                    },
+                    onUpdate = {},
+                    onCloseEditor = {},
+                    onSaveEditor = {},
+                    onDelete = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("profile_rename_${profile.id}").performClick()
+        composeRule.onNodeWithText("重命名配置").assertIsDisplayed()
+        composeRule.onNodeWithText("名称").performTextClearance()
+        composeRule.onNodeWithText("名称").performTextInput("  新名称  ")
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals("新名称", renamed)
+        composeRule.onNodeWithText("新名称").assertIsDisplayed()
     }
 
     @Test
@@ -339,6 +383,7 @@ class ProfilesPanelInstrumentedTest {
 
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
         composeRule.onNodeWithText("排序").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_rename_${profile.id}").assertIsNotEnabled()
         composeRule.onNodeWithText("删除").assertIsNotEnabled()
     }
 }

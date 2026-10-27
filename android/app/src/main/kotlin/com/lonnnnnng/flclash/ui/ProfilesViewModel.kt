@@ -557,6 +557,20 @@ class ProfilesViewModel @Inject constructor(
         }
     }
 
+    fun rename(profile: Profile, label: String) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        val normalized = label.trim()
+        if (normalized.isEmpty()) {
+            mutableErrors.tryEmit("配置名称不能为空")
+            return
+        }
+        // 作者 long：名称编辑只更新 Profile 元数据，核心运行期间拒绝写入，保证卡片标题与当前运行配置一致。
+        launchAction { repository.updateProfileLabel(profile.id, normalized) }
+    }
+
     fun refreshSelection() {
         viewModelScope.launch { repository.refreshCurrentProfile() }
     }

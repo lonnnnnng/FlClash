@@ -408,6 +408,34 @@ class ProfilesRepositoryPanelInstrumentedTest {
     }
 
     @Test
+    fun repositoryPersistsTrimmedProfileLabelAndRejectsBlank() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context = context,
+            database = database,
+            subscriptionClient = object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload =
+                    error("改名流程不访问远程订阅")
+            },
+        )
+        val profile = runBlocking { repository.addCustomProfile("旧名称") }
+
+        val updated = runBlocking { repository.updateProfileLabel(profile.id, "  新名称  ") }
+
+        assertEquals("新名称", updated.label)
+        assertEquals("新名称", runBlocking { database.profiles().getById(profile.id)?.label })
+        val blank = runCatching {
+            runBlocking { repository.updateProfileLabel(profile.id, "   ") }
+        }.exceptionOrNull()
+        assertTrue(blank is IllegalArgumentException)
+        assertEquals("新名称", runBlocking { database.profiles().getById(profile.id)?.label })
+    }
+
+    @Test
     fun repositoryReordersProfilesAndKeepsCurrentSelection() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val database = Room.inMemoryDatabaseBuilder(

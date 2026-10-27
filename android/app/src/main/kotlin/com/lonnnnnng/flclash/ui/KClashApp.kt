@@ -328,6 +328,7 @@ fun KClashApp(
                         },
                         onSelect = profilesViewModel::select,
                         onEdit = profilesViewModel::openEditor,
+                        onRename = profilesViewModel::rename,
                         onUpdate = profilesViewModel::update,
                         onSetAutoUpdate = profilesViewModel::setAutoUpdate,
                         onCloseEditor = profilesViewModel::closeEditor,
@@ -602,6 +603,7 @@ internal fun ProfilesPanel(
     onAddCustom: (label: String) -> Unit,
     onSelect: (id: Long) -> Unit,
     onEdit: (profile: Profile) -> Unit,
+    onRename: (profile: Profile, label: String) -> Unit = { _, _ -> },
     onUpdate: (profile: Profile) -> Unit,
     onSetAutoUpdate: (profile: Profile, enabled: Boolean) -> Unit = { _, _ -> },
     onCloseEditor: () -> Unit,
@@ -648,6 +650,7 @@ internal fun ProfilesPanel(
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
+    var profilePendingRename by remember { mutableStateOf<Profile?>(null) }
     var showReorderDialog by remember { mutableStateOf(false) }
     var scriptBindingProfileId by remember { mutableStateOf<Long?>(null) }
     var showBackupRestoreDialog by remember { mutableStateOf(false) }
@@ -715,6 +718,7 @@ internal fun ProfilesPanel(
                     canMutate = canMutateProfiles,
                     onSelect = { onSelect(profile.id) },
                     onEdit = { onEdit(profile) },
+                    onRename = { profilePendingRename = profile },
                     onUpdate = { onUpdate(profile) },
                     onSetAutoUpdate = { enabled -> onSetAutoUpdate(profile, enabled) },
                     onDelete = { profilePendingDeletion = profile },
@@ -757,6 +761,18 @@ internal fun ProfilesPanel(
             },
             dismissButton = {
                 TextButton(onClick = { profilePendingDeletion = null }) { Text("取消") }
+            },
+        )
+    }
+
+    profilePendingRename?.let { profile ->
+        ProfileRenameDialog(
+            profile = profile,
+            saving = state.isBusy,
+            onDismiss = { if (!state.isBusy) profilePendingRename = null },
+            onSave = { label ->
+                profilePendingRename = null
+                onRename(profile, label)
             },
         )
     }
@@ -2577,6 +2593,7 @@ internal fun ProfileCard(
     canMutate: Boolean,
     onSelect: () -> Unit,
     onEdit: () -> Unit,
+    onRename: () -> Unit = {},
     onUpdate: () -> Unit,
     onSetAutoUpdate: (Boolean) -> Unit = {},
     onDelete: () -> Unit,
@@ -2656,6 +2673,11 @@ internal fun ProfileCard(
                 if (profile.type == ProfileType.URL) {
                     TextButton(onClick = onUpdate, enabled = canMutate) { Text("同步") }
                 }
+                TextButton(
+                    onClick = onRename,
+                    enabled = canMutate,
+                    modifier = Modifier.testTag("profile_rename_${profile.id}"),
+                ) { Text("重命名") }
                 if (profile.type == ProfileType.CUSTOM) {
                     TextButton(onClick = onOpenProvidersEditor, enabled = canMutate) { Text("Provider") }
                     TextButton(onClick = onOpenDnsEditor, enabled = canMutate) { Text("DNS") }
@@ -2674,6 +2696,43 @@ internal fun ProfileCard(
             }
         }
     }
+}
+
+@Composable
+internal fun ProfileRenameDialog(
+    profile: Profile,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var label by rememberSaveable(profile.id) { mutableStateOf(profile.label) }
+    val normalized = label.trim()
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("重命名配置") },
+        text = {
+            OutlinedTextField(
+                value = label,
+                onValueChange = { label = it.take(64) },
+                enabled = !saving,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("名称") },
+                supportingText = { Text("名称不能为空，最多 64 个字符") },
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(normalized) },
+                enabled = !saving && normalized.isNotEmpty() && normalized != profile.label,
+            ) {
+                if (saving) CircularProgressIndicator() else Text("保存")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
 }
 
 /**
