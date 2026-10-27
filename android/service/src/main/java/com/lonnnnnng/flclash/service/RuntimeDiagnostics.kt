@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash.service
 
+import com.lonnnnnng.flclash.core.CoreBridgeException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.CoroutineScope
@@ -151,3 +152,27 @@ object RuntimeDiagnosticHistory {
         }
     }
 }
+
+/**
+ * 作者 long：核心启动失败需要同时保留 Mihomo 错误码和原始原因，
+ * 但诊断会跨进程写入 Room，因此先遮蔽 URL 参数和常见凭据字段，避免错误文本带出订阅秘密。
+ */
+internal fun formatRuntimeFailure(error: Throwable): String {
+    val detail = if (error is CoreBridgeException) {
+        "${error.code}: ${error.message}"
+    } else {
+        error.message ?: error::class.simpleName.orEmpty()
+    }
+    return redactRuntimeDiagnosticText(detail.ifBlank { "核心运行失败" })
+}
+
+private fun redactRuntimeDiagnosticText(value: String): String = value
+    .replace(RUNTIME_SENSITIVE_QUERY_PARAMETER, "$1[REDACTED_SECRET]")
+    .replace(RUNTIME_SENSITIVE_JSON_VALUE, "$1[REDACTED_SECRET]$2")
+
+private val RUNTIME_SENSITIVE_QUERY_PARAMETER = Regex(
+    "(?i)(^|[?&\\s])((?:token|access_token|api_key|key|secret|password|url)=)[^\\s&]+",
+)
+private val RUNTIME_SENSITIVE_JSON_VALUE = Regex(
+    "(?i)(\\\"(?:token|access_token|api_key|key|secret|password|url)\\\"\\s*:\\s*\\\")[^\\\"]*(\\\")",
+)

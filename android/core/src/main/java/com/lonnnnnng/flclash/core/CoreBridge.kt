@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.core
 
 import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import com.google.gson.JsonParser
 import java.util.UUID
 import kotlinx.coroutines.channels.BufferOverflow
@@ -54,10 +55,7 @@ class CoreBridge {
 
     suspend fun validateConfig(path: String) {
         val response = invoke("validateConfig", path)
-        val message = response.optString("result", "")
-        if (message.isNotBlank()) {
-            throw CoreBridgeException("invalid_config", message)
-        }
+        parseMessageResult(response.optString("result", ""), "invalid_config")
     }
 
     suspend fun setupConfig(
@@ -74,10 +72,7 @@ class CoreBridge {
                 .put("test-url", testUrl)
                 .put("skip-cert-verify", skipCertVerify),
         )
-        val message = response.optString("result", "")
-        if (message.isNotBlank()) {
-            throw CoreBridgeException("apply_config_failed", message)
-        }
+        parseMessageResult(response.optString("result", ""), "apply_config_failed")
     }
 
     suspend fun getProxyGroups(): ProxyGroupsSnapshot {
@@ -261,6 +256,46 @@ class CoreBridge {
             throw CoreBridgeException("change_proxy_failed", message)
         }
         return changed
+    }
+
+    /**
+     * 作者 long：Go 的 withMessage 协议用空字符串表示成功，非空字符串承载 Mihomo 原始错误；
+     * 统一在 Bridge 边界转换，确保配置校验和应用不会把具体行号、字段名等诊断信息丢掉。
+     */
+    internal fun parseMessageResult(message: String?, code: String) {
+        val message = message.orEmpty()
+        if (message.isNotBlank()) {
+            throw CoreBridgeException(code, message)
+        }
+    }
+
+    /**
+     * 作者 long：旧版或异常 Go bridge 可能把 error 编码成字符串而不是对象，
+     * 这里保留任意 JSON 错误的文本，避免随后被误报成“缺少 result”而遮住核心原因。
+     */
+    internal fun parseErrorResponse(response: JSONObject): CoreBridgeException? {
+        if (!response.has("error") || response.isNull("error")) return null
+        val rawError = response.get("error")
+        val payload = when (rawError) {
+            is JSONObject -> JsonParser.parseString(rawError.toString())
+            is String -> JsonPrimitive(rawError)
+            else -> JsonParser.parseString(rawError.toString())
+        }
+        return parseErrorPayload(payload)
+    }
+
+    internal fun parseErrorPayload(error: com.google.gson.JsonElement): CoreBridgeException {
+        if (error.isJsonObject) {
+            val payload = error.asJsonObject
+            return CoreBridgeException(
+                code = payload.get("code")?.takeUnless { it.isJsonNull }?.asString ?: "core_error",
+                message = payload.get("message")?.takeUnless { it.isJsonNull }?.asString ?: "核心调用失败",
+            )
+        }
+        return CoreBridgeException(
+            code = "core_error",
+            message = error.toString().removeSurrounding("\"").ifBlank { "核心调用失败" },
+        )
     }
 
     internal fun parseDelayResponse(result: JSONObject?): ProxyDelay? {
@@ -543,14 +578,9 @@ class CoreBridge {
                         )
                         return@invokeMethod
                     }
-                    val error = response.optJSONObject("error")
+                    val error = parseErrorResponse(response)
                     if (error != null) {
-                        continuation.resumeWithException(
-                            CoreBridgeException(
-                                code = error.optString("code", "core_error"),
-                                message = error.optString("message", "核心调用失败"),
-                            ),
-                        )
+                        continuation.resumeWithException(error)
                     } else if (!response.has("result")) {
                         continuation.resumeWithException(
                             CoreBridgeException("missing_core_result", "核心响应缺少 result 字段"),

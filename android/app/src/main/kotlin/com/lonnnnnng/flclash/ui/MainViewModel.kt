@@ -115,7 +115,7 @@ class MainViewModel @Inject constructor(
     fun startRuntime() {
         viewModelScope.launch {
             runtimeManager.startProxy().onFailure { error ->
-                mutableErrors.emit(error.message ?: "核心启动失败")
+                mutableErrors.emit(redactSensitiveLogText(error.message ?: "核心启动失败"))
             }
         }
     }
@@ -123,7 +123,7 @@ class MainViewModel @Inject constructor(
     fun stopRuntime() {
         viewModelScope.launch {
             runtimeManager.stop().onFailure { error ->
-                mutableErrors.emit(error.message ?: "核心停止失败")
+                mutableErrors.emit(redactSensitiveLogText(error.message ?: "核心停止失败"))
             }
         }
     }

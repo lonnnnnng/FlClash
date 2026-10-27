@@ -162,6 +162,7 @@ class AndroidProxyServiceController(
 
 data class CoreRuntimePaths(
     val homeDir: File,
+    val prepare: suspend () -> Unit = {},
 ) {
     val configFile: File
         get() = File(homeDir, "config.yaml")

@@ -92,7 +92,28 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCoreRuntimePaths(@ApplicationContext context: Context): CoreRuntimePaths =
-        CoreRuntimePaths(File(context.filesDir, "mihomo"))
+        CoreRuntimePaths(
+            homeDir = File(context.filesDir, "mihomo"),
+            prepare = {
+                val homeDir = File(context.filesDir, "mihomo").apply { mkdirs() }
+                // 作者 long：每个资源先写入同目录临时文件再替换，进程被系统中断时不会留下半个数据库，
+                // 已存在的完整资源保持不动，后续启动仍可在后台按核心协议更新。
+                CORE_BUNDLED_DATA.forEach { name ->
+                    val target = File(homeDir, name)
+                    if (target.isFile && target.length() > 0L) return@forEach
+                    val temporary = File(homeDir, ".${name}.tmp")
+                    context.assets.open(name).use { input ->
+                        temporary.outputStream().use { output -> input.copyTo(output) }
+                    }
+                    if (!temporary.renameTo(target)) {
+                        target.outputStream().use { output ->
+                            temporary.inputStream().use { input -> input.copyTo(output) }
+                        }
+                        check(temporary.delete()) { "无法清理核心资源临时文件：$name" }
+                    }
+                }
+            },
+        )
 
     @Provides
     @Singleton
@@ -147,4 +168,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCoreRuntimeStatusProvider(manager: CoreRuntimeManager): CoreRuntimeStatusProvider = manager
+
+    private val CORE_BUNDLED_DATA = listOf(
+        "ASN.mmdb",
+        "GEOIP.dat",
+        "GEOIP.metadb",
+        "GEOSITE.dat",
+    )
 }

@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.service
 
 import java.io.File
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreBridgeException
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.core.CoreProbeResult
@@ -85,6 +86,25 @@ class CoreRuntimeManagerTest {
         assertTrue(controller.started)
         assertEquals("mips", controller.receivedOptions?.stack)
         assertTrue(resumeStore.shouldResume)
+    }
+
+    @Test
+    fun `core preparation runs before native initialization`() = runTest {
+        val source = temporaryFolder.newFile("prepare-profile.yaml").apply {
+            writeText("mixed-port: 7890\n")
+        }
+        var prepared = false
+        val manager = manager(
+            profile = ActiveProfile(24, "离线核心资源", source.path),
+            homeDir = temporaryFolder.newFolder("prepared-core"),
+            bridge = FakeBridge(),
+            controller = FakeServiceController(),
+            prepareCore = { prepared = true },
+        )
+
+        manager.startProxy().getOrThrow()
+
+        assertTrue(prepared)
     }
 
     @Test
@@ -218,6 +238,40 @@ class CoreRuntimeManagerTest {
         assertFalse(controller.started)
         assertFalse(bridge.listenerStarted)
         assertFalse(resumeStore.shouldResume)
+    }
+
+    @Test
+    fun `core failure diagnostics keep code and redact raw core message`() = runTest {
+        val source = temporaryFolder.newFile("invalid-with-detail.yaml").apply {
+            writeText("broken\n")
+        }
+        val diagnosticStore = FakeRuntimeDiagnosticStore()
+        val bridge = FakeBridge(
+            validationError = CoreBridgeException(
+                code = "invalid_config",
+                message = "line 7: token=secret is not allowed",
+            ),
+        )
+        val manager = manager(
+            profile = ActiveProfile(23, "错误配置详情", source.path),
+            homeDir = temporaryFolder.newFolder("detail-core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+            runtimeDiagnosticStore = diagnosticStore,
+        )
+
+        val result = manager.startProxy()
+
+        assertTrue(result.isFailure)
+        assertEquals(
+            "line 7: token=secret is not allowed",
+            result.exceptionOrNull()?.message,
+        )
+        assertEquals(
+            "invalid_config: line 7: [REDACTED_SECRET] is not allowed",
+            diagnosticStore.events.single().detail,
+        )
+        assertEquals(listOf("initialize", "validate"), bridge.calls)
     }
 
     @Test
@@ -576,9 +630,10 @@ class CoreRuntimeManagerTest {
         runtimeResumeStore: FakeRuntimeResumeStore = FakeRuntimeResumeStore(),
         runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
         profileScriptEvaluator: ProfileScriptEvaluator = MissingProfileScriptEvaluator,
+        prepareCore: suspend () -> Unit = {},
     ): CoreRuntimeManager {
         return CoreRuntimeManager(
-            paths = CoreRuntimePaths(homeDir),
+            paths = CoreRuntimePaths(homeDir, prepare = prepareCore),
             profileProvider = object : ActiveProfileProvider {
                 override suspend fun activeProfile(): ActiveProfile? = profile
             },

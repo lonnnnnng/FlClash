@@ -142,7 +142,7 @@ class CoreRuntimeManager(
             mutableState.value = CoreRuntimeStatus.FAILED
             RuntimeDiagnosticHistory.record(
                 RuntimeDiagnosticKind.CORE_FAILED,
-                error::class.simpleName ?: "核心启动失败",
+                formatRuntimeFailure(error),
             )
         }.also { result ->
             if (result.isFailure) RuntimeDiagnosticHistory.flush()
@@ -179,7 +179,7 @@ class CoreRuntimeManager(
             mutableState.value = CoreRuntimeStatus.FAILED
             RuntimeDiagnosticHistory.record(
                 RuntimeDiagnosticKind.CORE_FAILED,
-                error::class.simpleName ?: "核心停止失败",
+                formatRuntimeFailure(error),
             )
         }.also { result ->
             if (result.isFailure) RuntimeDiagnosticHistory.flush()
@@ -210,7 +210,7 @@ class CoreRuntimeManager(
             mutableState.value = CoreRuntimeStatus.FAILED
             RuntimeDiagnosticHistory.record(
                 RuntimeDiagnosticKind.CORE_FAILED,
-                error::class.simpleName ?: "VPN 撤销收口失败",
+                formatRuntimeFailure(error),
             )
         }.also { result ->
             if (result.isFailure) RuntimeDiagnosticHistory.flush()
@@ -323,6 +323,9 @@ class CoreRuntimeManager(
         paths.homeDir.mkdirs()
         if (initialized.compareAndSet(false, true)) {
             runCatching {
+                // 作者 long：Mihomo 的 geo-auto-update 会在首次解析配置时下载 GeoIP 数据；
+                // 先把 APK 内置数据放入核心目录，避免 Android 首次启动因底层网络尚未可用而回退到无代理默认配置。
+                paths.prepare()
                 bridge.initialize(paths.homeDir.path, Build.VERSION.SDK_INT)
             }.onFailure {
                 initialized.set(false)

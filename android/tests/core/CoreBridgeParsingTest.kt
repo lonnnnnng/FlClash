@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
+import com.google.gson.JsonParser
 
 class CoreBridgeParsingTest {
     private val bridge = CoreBridge()
@@ -66,6 +67,32 @@ class CoreBridgeParsingTest {
 
         assertEquals("change_proxy_failed", error.code)
         assertEquals("节点不存在", error.message)
+    }
+
+    @Test
+    fun `message response keeps raw core validation text`() {
+        val error = assertThrows(CoreBridgeException::class.java) {
+            bridge.parseMessageResult(
+                message = "line 7: unknown field token=secret",
+                code = "invalid_config",
+            )
+        }
+
+        assertEquals("invalid_config", error.code)
+        assertEquals("line 7: unknown field token=secret", error.message)
+    }
+
+    @Test
+    fun `error response preserves structured and scalar bridge errors`() {
+        val structured = bridge.parseErrorPayload(
+            JsonParser.parseString("{\"code\":\"apply_failed\",\"message\":\"bad field\"}"),
+        )
+        assertEquals("apply_failed", structured?.code)
+        assertEquals("bad field", structured?.message)
+
+        val scalar = bridge.parseErrorPayload(JsonParser.parseString("\"mihomo failed\""))
+        assertEquals("core_error", scalar?.code)
+        assertEquals("mihomo failed", scalar?.message)
     }
 
     @Test

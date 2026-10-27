@@ -388,3 +388,14 @@
 - Debug APK SHA-256：`b45853f58175a89a089e886bca3a51dbc301ee51d8b7c5bd07bdf193c8354d37`；APK 原生库全部位于 `lib/arm64-v8a/`。
 - 真机使用 `adb -s wsvwypiz7xwslvl7` 导入并选中工作区 `1.yaml`，通过系统 VPN 授权后等待约 1 分钟，KClash 最终显示“核心启动失败”，运行诊断记录为 `CoreBridgeException`；未发现 `VpnService`、`ProxyService`、`tun0` 或 `198.18.0.0/30` 路由。
 - 本轮未访问当前工作区 `AGENTS.md` 列出的两条真实在线路径；由于本地 `1.yaml` 核心启动失败，未形成代理页“批量测速”结果和停止清理的真机证据。具体 Mihomo 原始错误待下一轮从设备端补取，不能用本轮失败前的历史成功记录覆盖。
+
+## Geo 数据修复与代理组批量测速真机验收记录（2026-10-28）
+
+- `1.yaml` 的首次核心启动失败根因是 `geodata-mode`/`geo-auto-update` 触发 GeoIP 下载超时；Android APK 现已内置 `ASN.mmdb`、`GEOIP.dat`、`GEOIP.metadb` 和 `GEOSITE.dat`，核心初始化前复制到 `files/mihomo`。
+- `./gradlew test :app:lintDebug :app:assembleDebug --no-daemon`：通过；Lint 错误 0；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过，43 项 instrumentation 测试失败 0、错误 0、跳过 0。
+- 最终 Debug APK SHA-256：`ac8c1c856ac7b0cfcfd5a750ab48152dd3112eeb2f7ed88edfc932a9a01e01dc`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 设备：Redmi Note 8 Pro，Android 16/API 36，serial `wsvwypiz7xwslvl7`；本轮只使用工作区 `1.yaml`，未访问两条授权真实在线路径。
+- 启动后 UI 显示“核心运行中”，服务状态包含 `VpnService`、`ProxyService`，网络状态包含 `tun0` 和 `198.18.0.0/30`；代理页展示 `GLOBAL`、`节点选择`、`URLTest` 等代理组。
+- 点击 `GLOBAL` 的“批量测速”后，选择弹窗显示多个成功结果（254 ms、312 ms、314 ms、324 ms、325 ms、331 ms、359 ms），无结果节点保留“测速”状态；批量任务完成后未把取消或失败误报为成功。
+- 点击“停止核心”后 UI 显示“核心已停止”；再次检查未发现 `VpnService`、`ProxyService`、`tun0` 或 `198.18.0.0/30` 路由。
+- 结论：核心启动、代理组展示、批量测速和停止清理已形成真机证据；后续继续完整递归选择、订阅自动更新、备份恢复和发布收尾。

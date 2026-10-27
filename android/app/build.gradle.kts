@@ -82,6 +82,9 @@ android {
     }
 
     sourceSets {
+        // 作者 long：Flutter 参考工程已有的 GeoIP/GeoSite 数据作为 Android 首次启动的离线核心资源，
+        // 避免 geo-auto-update 在 VPN 尚未建立前依赖外网下载而阻断配置应用。
+        getByName("main").assets.srcDir(rootProject.file("assets/data"))
         // 作者 long：AGP 9 的内置 Kotlin 只从 Kotlin 源集读取这些跨目录单元测试。
         getByName("test").kotlin.srcDirs("../tests/app")
         // 作者 long：Room DAO 只有在 Android SQLite 实现上才能验证，单独接入真机 instrumentation 源集。
