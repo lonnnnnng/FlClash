@@ -995,7 +995,9 @@ internal fun ProxyGroupsCard(
             } else {
                 state.groups.forEach { group ->
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("proxy_group_${group.name}"),
                         onClick = { if (group.isSelectable && group.all.isNotEmpty()) groupPendingSelection = group },
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
@@ -1012,6 +1014,7 @@ internal fun ProxyGroupsCard(
                                     TextButton(
                                         onClick = { groupPendingSelection = group },
                                         enabled = state.switchingGroup == null && state.batchTestingGroup == null,
+                                        modifier = Modifier.testTag("proxy_group_select_${group.name}"),
                                     ) { Text(if (group.isComputed) "选择" else "切换") }
                                 }
                                 TextButton(
@@ -1020,6 +1023,7 @@ internal fun ProxyGroupsCard(
                                         state.switchingGroup == null &&
                                         state.batchTestingGroup == null &&
                                         group.all.isNotEmpty(),
+                                    modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
                                 ) {
                                     if (state.batchTestingGroup == group.name) {
                                         CircularProgressIndicator(
@@ -1054,7 +1058,9 @@ internal fun ProxyGroupsCard(
                     OutlinedTextField(
                         value = proxyQuery,
                         onValueChange = { proxyQuery = it },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("proxy_group_search"),
                         label = { Text("搜索节点") },
                         singleLine = true,
                     )
@@ -1069,7 +1075,8 @@ internal fun ProxyGroupsCard(
                     visibleProxies.forEach { proxyName ->
                         val delay = state.delayState(group, proxyName)
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(
@@ -1079,6 +1086,7 @@ internal fun ProxyGroupsCard(
                                     groupPendingSelection = null
                                 },
                                 enabled = state.switchingGroup == null && state.batchTestingGroup == null,
+                                modifier = Modifier.testTag("proxy_node_${group.name}_$proxyName"),
                             )
                             Text(
                                 proxyName,
@@ -1091,6 +1099,7 @@ internal fun ProxyGroupsCard(
                                 enabled = state.switchingGroup == null &&
                                     state.batchTestingGroup == null &&
                                     delay?.isTesting != true,
+                                modifier = Modifier.testTag("proxy_node_delay_${group.name}_$proxyName"),
                             ) {
                                 if (delay?.isTesting == true) {
                                     CircularProgressIndicator(
@@ -1109,6 +1118,7 @@ internal fun ProxyGroupsCard(
                 TextButton(
                     onClick = { groupPendingSelection = null },
                     enabled = state.switchingGroup == null && state.batchTestingGroup == null,
+                    modifier = Modifier.testTag("proxy_group_close_${group.name}"),
                 ) { Text("关闭") }
             },
         )

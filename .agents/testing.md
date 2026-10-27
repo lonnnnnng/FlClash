@@ -444,3 +444,12 @@
 - 验收结束后通过应用内删除测试 Profile，配置页恢复“还没有配置”；未发现 `AndroidRuntime` 崩溃。当前本地 SAF 闭环已验证，WebDAV/云端同步不在本切片范围。
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；App 88 项、Service 68 项、Core 18 项、Common 30 项，共 204 项 JVM 单元测试失败 0、错误 0、跳过 0；Lint 错误 0。
 - Debug APK SHA-256：`06fb04e98b7d21fecb4bc2aa2511138b16b11a12944ee07fb93ee9953d17eac4`；APK 原生库全部位于 `lib/arm64-v8a/`。
+
+## 代理选择 ViewModel 页面状态流真机验收记录（2026-10-28）
+
+- `ProxyGroupsCard` 的代理组、搜索、节点选择、单节点测速、批量测速和关闭入口均增加稳定 Compose `testTag`；代理节点 tag 只挂在可点击的 `RadioButton`，避免 Row 与子控件重复匹配。
+- `ProxyGroupsViewModelPanelInstrumentedTest` 使用真实 `ProxyGroupsViewModel`，通过 fake `ProfileStore` 和 fake `ProxyGroupsRuntime` 验证 computed 组固定节点、点击当前节点恢复自动选择、成功切换持久化映射和失败切换保留旧映射。
+- 定向命令通过：`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.ProxyGroupsViewModelPanelInstrumentedTest --no-daemon`。
+- 全量命令通过：`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`；54 项 instrumentation 失败 0、错误 0、跳过 0。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 通过；Debug APK SHA-256：`e9650d902f59269a39dfd388056ab6867251f2480871444d436895b7b536197a`，原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问真实订阅路径、未启动真实 Mihomo 核心；主 Activity + 真核心代理切换、嵌套代理组 UI 导航和进程重建后的选择恢复仍待后续验收。
