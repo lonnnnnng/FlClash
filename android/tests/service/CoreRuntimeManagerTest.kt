@@ -86,6 +86,73 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
+    fun `bound profile script transforms staged config before provider overrides`() = runTest {
+        val source = temporaryFolder.newFile("profile-script.yaml").apply {
+            writeText("mixed-port: 7890\n")
+        }
+        val script = temporaryFolder.newFile("profile.js").apply {
+            writeText("function main(config) { return config }")
+        }
+        val homeDir = temporaryFolder.newFolder("script-core")
+        val bridge = FakeBridge()
+        val controller = FakeServiceController()
+        val manager = manager(
+            profile = ActiveProfile(
+                id = 21,
+                label = "脚本配置",
+                filePath = source.path,
+                scriptPath = script.path,
+            ),
+            homeDir = homeDir,
+            bridge = bridge,
+            controller = controller,
+            profileScriptEvaluator = object : ProfileScriptEvaluator {
+                override suspend fun evaluate(script: String, configJson: String): String =
+                    "{\"mixed-port\":7891,\"proxy-providers\":{}}"
+            },
+        )
+
+        manager.startProxy().getOrThrow()
+
+        assertTrue(File(homeDir, "config.yaml").readText().contains("mixed-port: 7891"))
+        assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
+    }
+
+    @Test
+    fun `script failure prevents core setup and service start`() = runTest {
+        val source = temporaryFolder.newFile("script-failure.yaml").apply {
+            writeText("mixed-port: 7890\n")
+        }
+        val script = temporaryFolder.newFile("broken.js").apply {
+            writeText("function main(config) { throw new Error('broken') }")
+        }
+        val bridge = FakeBridge()
+        val controller = FakeServiceController()
+        val manager = manager(
+            profile = ActiveProfile(
+                id = 22,
+                label = "失败脚本",
+                filePath = source.path,
+                scriptPath = script.path,
+            ),
+            homeDir = temporaryFolder.newFolder("failure-core"),
+            bridge = bridge,
+            controller = controller,
+            profileScriptEvaluator = object : ProfileScriptEvaluator {
+                override suspend fun evaluate(script: String, configJson: String): String =
+                    error("脚本执行失败")
+            },
+        )
+
+        val result = manager.startProxy()
+
+        assertTrue(result.isFailure)
+        assertEquals(CoreRuntimeStatus.FAILED, manager.state.value)
+        assertFalse(controller.started)
+        assertEquals(listOf("initialize"), bridge.calls)
+    }
+
+    @Test
     fun `invalid profile never starts service or reports running`() = runTest {
         val source = temporaryFolder.newFile("invalid.yaml").apply { writeText("broken") }
         val homeDir = temporaryFolder.newFolder("core")
@@ -417,6 +484,7 @@ class CoreRuntimeManagerTest {
         controller: FakeServiceController,
         runtimeResumeStore: FakeRuntimeResumeStore = FakeRuntimeResumeStore(),
         runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
+        profileScriptEvaluator: ProfileScriptEvaluator = MissingProfileScriptEvaluator,
     ): CoreRuntimeManager {
         return CoreRuntimeManager(
             paths = CoreRuntimePaths(homeDir),
@@ -428,6 +496,7 @@ class CoreRuntimeManagerTest {
             vpnOptionsProvider = DefaultVpnOptionsProvider(),
             runtimeResumeStore = runtimeResumeStore,
             runtimeDiagnosticStore = runtimeDiagnosticStore,
+            profileScriptEvaluator = profileScriptEvaluator,
         )
     }
 

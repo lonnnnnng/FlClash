@@ -7,6 +7,7 @@ coreKtx = "1.19.1"
 coreSplashscreen = "1.2.0"
 gson = "2.14.0"
 smaliDexlib2 = "3.0.10"
+snakeYaml = "2.3"
 junit = "4.13.2"
 kotlinxCoroutines = "1.11.0"
 composeBom = "2026.09.00"
@@ -37,3 +38,4 @@ androidxTestCoreLib = { module = "androidx.test:core", version.ref = "androidxTe
 androidxTestRunnerLib = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
 androidxTestExtJunitLib = { module = "androidx.test.ext:junit", version.ref = "androidxTestExtJunit" }
 smali-dexlib2 = { module = "com.android.tools.smali:smali-dexlib2", version.ref = "smaliDexlib2" }
+snake-yaml = { module = "org.yaml:snakeyaml", version.ref = "snakeYaml" }

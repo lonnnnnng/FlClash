@@ -216,6 +216,8 @@ class ProfileRepository(
 
     fun profileFile(id: Long): File = File(File(appContext.filesDir, PROFILES_DIRECTORY), "$id.yaml")
 
+    private fun scriptFile(id: Long): File = File(File(appContext.filesDir, SCRIPTS_DIRECTORY), "$id.js")
+
     override suspend fun activeProfile(): ActiveProfile = withContext(Dispatchers.IO) {
         val id = mutableCurrentProfileId.value
         val profile = id?.let { profileDao.getById(it)?.toDomain() }
@@ -226,6 +228,12 @@ class ProfileRepository(
             label = profile.realLabel,
             filePath = profileFile(profile.id).path,
             overridesJson = profile.overridesJson,
+            scriptPath = profile.scriptId?.let { scriptId ->
+                requireNotNull(database.scripts().getById(scriptId)) { "绑定脚本不存在" }
+                scriptFile(scriptId).also { file ->
+                    require(file.isFile) { "绑定脚本正文不存在" }
+                }.path
+            },
         )
     }
 
@@ -265,5 +273,6 @@ class ProfileRepository(
     private companion object {
         const val CURRENT_PROFILE_KEY = "current_profile_id"
         const val PROFILES_DIRECTORY = "profiles"
+        const val SCRIPTS_DIRECTORY = "scripts"
     }
 }

@@ -1903,8 +1903,8 @@ internal fun ProfileReorderDialog(
 }
 
 /**
- * 作者 long：脚本正文、元数据和 Profile 绑定都通过 ViewModel 回写，
- * 但不把尚未接入的 Mihomo JavaScript 执行链伪装成已生效，避免用户误以为保存后会改变代理配置。
+ * 作者 long：脚本正文、元数据和 Profile 绑定都通过 ViewModel 回写；核心启动时再由服务层
+ * 在暂存配置上执行绑定脚本，原始 Profile 文件始终保持可编辑和可回退。
  */
 @Composable
 internal fun ScriptsLibraryDialog(
@@ -1938,7 +1938,7 @@ internal fun ScriptsLibraryDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "当前支持本地脚本文件和 Profile 绑定；Mihomo JavaScript 执行将在后续切片接入。",
+                    "支持本地或远程脚本、Profile 绑定；核心启动时会在暂存配置上执行 JavaScript。",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 if (orderedScripts.isEmpty()) {
@@ -2183,8 +2183,8 @@ internal fun ProfileCard(
 }
 
 /**
- * 作者 long：绑定弹窗只保存 Profile 与脚本资源的关系，不宣称脚本已经进入 Mihomo 执行链，
- * 让用户可以先复刻 Flutter 的选择行为，同时把执行和失败回滚留给后续切片。
+ * 作者 long：绑定弹窗只修改 Profile 与脚本资源的关系；真正执行发生在核心启动的暂存配置阶段，
+ * 这样切换绑定不会改写原始 YAML，也不会在核心运行期间改变输入。
  */
 @Composable
 internal fun ProfileScriptBindingDialog(
@@ -2201,7 +2201,7 @@ internal fun ProfileScriptBindingDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "当前只保存绑定关系，Profile 绑定后的 JavaScript 执行将在后续切片接入。",
+                    "保存绑定关系后，下一次核心启动会在暂存配置上执行该 JavaScript。",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 if (scripts.isEmpty()) {

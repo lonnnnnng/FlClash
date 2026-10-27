@@ -360,3 +360,13 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：修复一次新增 Repository 测试的 Room collector 清理竞态后完整通过；34 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 6 项、Compose 28 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`5410232c37fd920234021ca3eb98fdcf6ea96cb9c75a0ecd39cb1141a338a385`；APK 原生库仅包含 `lib/arm64-v8a/libclash.so`。
 - 本轮未访问当前工作区 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动；远程脚本资源管理不等于 JavaScript 执行，执行边界仍待单独切片。
+
+## Scripts JavaScript 执行边界切片实测记录（2026-10-27）
+
+- 服务层新增 `ProfileScriptEvaluator`、`ProfileScriptApplier` 和安全 YAML/JSON 转换边界；绑定脚本只作用于核心启动的暂存配置，失败时不会调用 `setupConfig()`，原始 Profile YAML 保持不变。
+- Android App 使用独立 WebView/V8 执行现代 JavaScript，关闭网络、文件和内容访问；支持顶层 `const main`、对象展开、可选链、`Map`/`Set` 和 Promise，脚本正文限制 2 MiB，配置转换限制 8 MiB，执行超时为 10 秒。
+- 新增 JVM 测试覆盖脚本成功、`undefined`/`null` 回退、缺少 `main`、非对象返回、Promise rejection、未收敛 Promise 和 Profile 脚本文件缺失；真机 WebView instrumentation 覆盖现代语法、Promise rejection、缺少入口和 10 秒超时。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 164 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0，Warning 保持原有非阻断级别。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；38 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 6 项、Compose 28 项、WebView JavaScript 4 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`701e61753fedc0978697adccf28812e11f2496bfb84f3f0476e070ee549e95e6`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问当前工作区 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动；下一步转入 Overrides/Dialers 高级配置分区。

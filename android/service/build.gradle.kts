@@ -33,6 +33,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":common"))
     implementation(libs.gson)
+    implementation(libs.snake.yaml)
     implementation(libs.androidx.core)
     implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)

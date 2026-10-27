@@ -45,6 +45,7 @@ class CoreRuntimeManager(
     private val vpnOptionsProvider: VpnOptionsProvider,
     private val runtimeResumeStore: RuntimeResumeStore,
     private val runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
+    private val profileScriptEvaluator: ProfileScriptEvaluator = MissingProfileScriptEvaluator,
 ) : CoreRuntimeStatusProvider {
     init {
         RuntimeDiagnosticHistory.configure(runtimeDiagnosticStore)
@@ -56,6 +57,7 @@ class CoreRuntimeManager(
     private val eventListenerStarted = AtomicBoolean(false)
     private val logListenerStarted = AtomicBoolean(false)
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.STOPPED)
+    private val profileScriptApplier = ProfileScriptApplier(profileScriptEvaluator)
     private var hasSuccessfulRun = false
 
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
@@ -297,14 +299,17 @@ class CoreRuntimeManager(
         }
     }
 
-    private fun stageConfig(profile: ActiveProfile) {
+    private suspend fun stageConfig(profile: ActiveProfile) {
         val source = File(profile.filePath)
         require(source.isFile) { "配置文件不存在：${source.path}" }
         paths.homeDir.mkdirs()
         val temporary = File(paths.homeDir, ".${paths.configFile.name}.tmp")
         val sourceContent = source.readText(Charsets.UTF_8)
+        // 作者 long：Flutter 先把绑定脚本应用到原始配置，再合并 Provider 覆盖；
+        // 这样脚本可以读取和生成 proxy-providers，而最终覆盖仍只作用于本次核心暂存文件。
+        val scriptedContent = profileScriptApplier.apply(sourceContent, profile.scriptPath)
         val effectiveContent = ProfileProviderOverrideApplier.apply(
-            sourceContent,
+            scriptedContent,
             ProfileProviderOverrides.fromJsonString(profile.overridesJson),
         )
         try {

@@ -10,6 +10,7 @@ import com.lonnnnnng.flclash.data.ScriptRepository
 import com.lonnnnnng.flclash.data.ScriptStore
 import com.lonnnnnng.flclash.data.HttpScriptClient
 import com.lonnnnnng.flclash.data.ScriptClient
+import com.lonnnnnng.flclash.data.WebViewProfileScriptEvaluator
 import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
 import com.lonnnnnng.flclash.data.RoomRuntimeDiagnosticStore
 import com.lonnnnnng.flclash.data.SubscriptionClient
@@ -25,6 +26,7 @@ import com.lonnnnnng.flclash.service.ProxyServiceController
 import com.lonnnnnng.flclash.service.RuntimeResumeStore
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticStore
 import com.lonnnnnng.flclash.service.DefaultVpnOptionsProvider
+import com.lonnnnnng.flclash.service.ProfileScriptEvaluator
 import com.lonnnnnng.flclash.service.VpnOptionsProvider
 import java.io.File
 import dagger.Module
@@ -103,6 +105,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideProfileScriptEvaluator(@ApplicationContext context: Context): ProfileScriptEvaluator =
+        WebViewProfileScriptEvaluator(context)
+
+    @Provides
+    @Singleton
     fun provideRuntimeResumeStore(database: KClashDatabase): RuntimeResumeStore =
         RoomRuntimeResumeStore(database.appPreferences())
 
@@ -125,6 +132,7 @@ object AppModule {
         vpnOptionsProvider: VpnOptionsProvider,
         runtimeResumeStore: RuntimeResumeStore,
         runtimeDiagnosticStore: RuntimeDiagnosticStore,
+        profileScriptEvaluator: ProfileScriptEvaluator,
     ): CoreRuntimeManager = CoreRuntimeManager(
         paths = paths,
         profileProvider = profileProvider,
@@ -133,6 +141,7 @@ object AppModule {
         vpnOptionsProvider = vpnOptionsProvider,
         runtimeResumeStore = runtimeResumeStore,
         runtimeDiagnosticStore = runtimeDiagnosticStore,
+        profileScriptEvaluator = profileScriptEvaluator,
     )
 
     @Provides

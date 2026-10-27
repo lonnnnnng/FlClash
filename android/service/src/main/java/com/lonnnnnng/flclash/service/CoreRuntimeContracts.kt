@@ -27,10 +27,28 @@ data class ActiveProfile(
     val label: String,
     val filePath: String,
     val overridesJson: String = "{}",
+    val scriptPath: String? = null,
 )
 
 interface ActiveProfileProvider {
     suspend fun activeProfile(): ActiveProfile?
+}
+
+/**
+ * 作者 long：脚本执行器放在服务层契约中，核心生命周期不依赖具体 JavaScript 运行时；
+ * Android 应用层可以注入 WebView，JVM 测试则可以注入确定性的 fake 实现。
+ */
+interface ProfileScriptEvaluator {
+    suspend fun evaluate(script: String, configJson: String): String
+}
+
+/**
+ * 作者 long：没有注入真实执行器时必须直接失败，不能把已绑定脚本静默当作未绑定，
+ * 否则用户会看到核心启动成功但脚本修改没有生效。
+ */
+object MissingProfileScriptEvaluator : ProfileScriptEvaluator {
+    override suspend fun evaluate(script: String, configJson: String): String =
+        error("KClash 尚未配置 JavaScript 执行器")
 }
 
 interface ProxyServiceController {
