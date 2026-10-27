@@ -24,6 +24,22 @@ val hasReleaseSigning = releaseStoreFile.exists() &&
     releaseKeyAlias != null &&
     releaseKeyPassword != null
 
+val defaultVersionCode = 1
+val defaultVersionName = "0.1.0"
+val requestedVersionCode = providers.gradleProperty("kclashVersionCode")
+    .orNull
+    ?.toIntOrNull()
+    ?.also { require(it > 0) { "kclashVersionCode must be greater than zero" } }
+    ?: defaultVersionCode
+val requestedVersionName = providers.gradleProperty("kclashVersionName")
+    .orNull
+    ?.also {
+        require(Regex("\\d+\\.\\d+\\.\\d+").matches(it)) {
+            "kclashVersionName must use MAJOR.MINOR.PATCH format"
+        }
+    }
+    ?: defaultVersionName
+
 android {
     namespace = "com.lonnnnnng.flclash"
     compileSdk = libs.versions.compileSdk.get().toInt()
@@ -33,8 +49,8 @@ android {
         applicationId = "com.lonnnnnng.flclash"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = requestedVersionCode
+        versionName = requestedVersionName
         ndk {
             abiFilters += "arm64-v8a"
         }

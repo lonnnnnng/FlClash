@@ -514,3 +514,11 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）64 项 instrumentation 失败 0、错误 0、跳过 0；定向 WebDAV 回环测试 1 项同样通过。
 - Debug APK SHA-256：`9fb9fd03ab640f0b06b2a65a3aa0a22d25af9add7c90759e401bc826bb097bc0`；Release 未签名 APK SHA-256：`56b8004fdd2ddc9723ba149d95a76a03c30c97598757c38ce238a9322e9bb836`；两者原生库均仅包含 `lib/arm64-v8a/`。
 - 本轮没有使用外部 WebDAV 账号或真实订阅路径；外部授权 WebDAV 服务的网络环境回归仍待具备授权条件后单独执行。
+
+## Kotlin arm64 Tag/手动预发布构建验收记录（2026-10-28）
+
+- `.github/workflows/kotlin-android.yml` 新增 `kclash-v*` Tag 触发和手动 `version_name`/`version_code` 输入；旧 Flutter `v*` Tag 流程不被该入口接管。
+- Tag 使用 `kclash-vMAJOR.MINOR.PATCH`，默认将版本名注入 Gradle，并按 `major * 1000000 + minor * 1000 + patch` 生成版本号；手动构建可显式覆盖两个版本字段。
+- `actionlint .github/workflows/kotlin-android.yml` 通过；本地 `./gradlew test :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64 -PkclashVersionName=0.1.0 -PkclashVersionCode=1000` 通过。
+- 未签名 Release APK 为 `android/app/build/outputs/apk/release/app-release-unsigned.apk`；`apkanalyzer` 核对包名 `com.lonnnnnng.flclash`、版本名 `0.1.0`、版本号 `1000`，原生库仅包含 `lib/arm64-v8a/`。
+- 本地 APK SHA-256：`a186c2bff429696a562c97ebe17f47867630328a4e7fd2fbe873954d1b389c61`。本轮没有创建签名身份、安装未签名 Release、访问外部 WebDAV 或访问真实订阅路径；远端 GitHub Actions 尚未触发观察。

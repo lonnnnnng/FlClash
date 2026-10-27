@@ -4,18 +4,32 @@ on:
   push:
     branches:
       - kotlin
+    tags:
+      - 'kclash-v*'
   pull_request:
     branches:
       - kotlin
   workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Android versionName (MAJOR.MINOR.PATCH); empty uses the project default'
+        required: false
+        type: string
+      version_code:
+        description: 'Android versionCode; empty uses the project default'
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   verify:
-    name: Verify Kotlin Android arm64
+    name: Verify KClash Android arm64
     runs-on: ubuntu-latest
+    env:
+      MANUAL_VERSION_NAME: ${{ inputs.version_name }}
+      MANUAL_VERSION_CODE: ${{ inputs.version_code }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,10 +60,48 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Resolve build version
+        id: metadata
+        shell: bash
+        run: |
+          version_name="${MANUAL_VERSION_NAME:-}"
+          version_code="${MANUAL_VERSION_CODE:-}"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            version_name="${GITHUB_REF_NAME#kclash-v}"
+            if [[ ! "$version_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "KClash tags must use kclash-vMAJOR.MINOR.PATCH" >&2
+              exit 1
+            fi
+            if [[ -z "$version_code" ]]; then
+              IFS='.' read -r major minor patch <<< "$version_name"
+              version_code=$((major * 1000000 + minor * 1000 + patch))
+            fi
+          fi
+          version_name="${version_name:-0.1.0}"
+          version_code="${version_code:-1}"
+          if [[ ! "$version_code" =~ ^[1-9][0-9]*$ ]]; then
+            echo "version_code must be a positive integer" >&2
+            exit 1
+          fi
+          echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
+          echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Kotlin arm64 build"
+            echo "- versionName: \`$version_name\`"
+            echo "- versionCode: \`$version_code\`"
+            if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+              echo '- trigger: Kotlin tag (unsigned artifact only)'
+            else
+              echo "- trigger: $GITHUB_EVENT_NAME"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Verify tests, R8 and arm64 Release package
         run: |
           ./gradlew test :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease \
-            --no-daemon -Ptarget-platform=android-arm64
+            --no-daemon -Ptarget-platform=android-arm64 \
+            -PkclashVersionName="${{ steps.metadata.outputs.version_name }}" \
+            -PkclashVersionCode="${{ steps.metadata.outputs.version_code }}"
 
       - name: Verify unsigned Release artifact
         shell: bash
@@ -59,12 +111,15 @@ jobs:
           unzip -Z1 "$apk" | awk -F/ '$1 == "lib" {print}' | tee /tmp/kclash-libs.txt
           test "$(awk -F/ '$1 == "lib" {print $2}' /tmp/kclash-libs.txt | sort -u | tr -d ' ' | wc -l)" -eq 1
           test "$(awk -F/ '$1 == "lib" {print $2}' /tmp/kclash-libs.txt | sort -u | tr -d ' ')" = "arm64-v8a"
+          test "$(apkanalyzer manifest application-id "$apk")" = "com.lonnnnnng.flclash"
+          test "$(apkanalyzer manifest version-name "$apk")" = "${{ steps.metadata.outputs.version_name }}"
+          test "$(apkanalyzer manifest version-code "$apk")" = "${{ steps.metadata.outputs.version_code }}"
           sha256sum "$apk" | tee android/app/build/outputs/apk/release/SHA256SUMS
 
       - name: Upload unsigned Release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kclash-android-arm64-release-unsigned
+          name: kclash-android-arm64-${{ steps.metadata.outputs.version_name }}-unsigned
           path: |
             android/app/build/outputs/apk/release/app-release-unsigned.apk
             android/app/build/outputs/apk/release/SHA256SUMS
