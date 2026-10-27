@@ -8,6 +8,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -121,6 +123,7 @@ fun KClashApp(
     val proxyGroupsEditorState by profilesViewModel.proxyGroupsEditorState.collectAsState()
     val providersEditorState by profilesViewModel.providersEditorState.collectAsState()
     val dnsEditorState by profilesViewModel.dnsEditorState.collectAsState()
+    val dialersEditorState by profilesViewModel.dialersEditorState.collectAsState()
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val scriptsState by scriptsViewModel.state.collectAsState()
     val scriptEditorState by scriptsViewModel.editorState.collectAsState()
@@ -334,6 +337,10 @@ fun KClashApp(
                         onOpenDnsEditor = profilesViewModel::openDnsEditor,
                         onCloseDnsEditor = profilesViewModel::closeDnsEditor,
                         onSaveDns = profilesViewModel::saveDns,
+                        dialersEditorState = dialersEditorState,
+                        onOpenDialersEditor = profilesViewModel::openDialersEditor,
+                        onCloseDialersEditor = profilesViewModel::closeDialersEditor,
+                        onSaveDialers = profilesViewModel::saveDialers,
                         onReorderProfiles = profilesViewModel::reorder,
                         scripts = scriptsState.scripts,
                         onBindScript = profilesViewModel::bindScript,
@@ -589,6 +596,10 @@ internal fun ProfilesPanel(
     onOpenDnsEditor: (profile: Profile) -> Unit = {},
     onCloseDnsEditor: () -> Unit = {},
     onSaveDns: (ProfileDnsOverrides) -> Unit = {},
+    dialersEditorState: ProfileDialersEditorUiState = ProfileDialersEditorUiState(),
+    onOpenDialersEditor: (Profile) -> Unit = {},
+    onCloseDialersEditor: () -> Unit = {},
+    onSaveDialers: (String) -> Unit = {},
     onReorderProfiles: (List<Long>) -> Unit = {},
     scripts: List<Script> = emptyList(),
     onBindScript: (Profile, Long?) -> Unit = { _, _ -> },
@@ -649,6 +660,7 @@ internal fun ProfilesPanel(
                     onOpenProxyGroupsEditor = { onOpenProxyGroupsEditor(profile) },
                     onOpenProvidersEditor = { onOpenProvidersEditor(profile) },
                     onOpenDnsEditor = { onOpenDnsEditor(profile) },
+                    onOpenDialersEditor = { onOpenDialersEditor(profile) },
                     onOpenScriptBinding = { scriptBindingProfileId = profile.id },
                 )
             }
@@ -820,6 +832,25 @@ internal fun ProfilesPanel(
             onDismiss = onCloseDnsEditor,
             onSave = onSaveDns,
         )
+    }
+
+    dialersEditorState.profile?.let { profile ->
+        if (dialersEditorState.isLoading) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("读取 Dialers") },
+                text = { CircularProgressIndicator() },
+                confirmButton = {},
+            )
+        } else {
+            ProfileDialersEditorDialog(
+                profile = profile,
+                initialDialers = dialersEditorState.dialers,
+                saving = dialersEditorState.isSaving,
+                onDismiss = onCloseDialersEditor,
+                onSave = onSaveDialers,
+            )
+        }
     }
 }
 
@@ -2130,6 +2161,7 @@ internal fun ScriptEditorDialog(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ProfileCard(
     profile: Profile,
@@ -2144,6 +2176,7 @@ internal fun ProfileCard(
     onOpenProxyGroupsEditor: () -> Unit = {},
     onOpenProvidersEditor: () -> Unit = {},
     onOpenDnsEditor: () -> Unit = {},
+    onOpenDialersEditor: () -> Unit = {},
     onOpenScriptBinding: () -> Unit = {},
 ) {
     Card(modifier = Modifier.fillMaxWidth(), onClick = onSelect) {
@@ -2174,11 +2207,13 @@ internal fun ProfileCard(
                     modifier = Modifier.padding(start = 48.dp),
                 )
             }
-            Row(
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.End,
+                verticalArrangement = Arrangement.spacedBy(0.dp),
+                maxItemsInEachRow = 3,
             ) {
                 if (profile.type != ProfileType.URL) {
                     TextButton(onClick = onEdit, enabled = canMutate) { Text("编辑") }
@@ -2189,6 +2224,7 @@ internal fun ProfileCard(
                 if (profile.type == ProfileType.CUSTOM) {
                     TextButton(onClick = onOpenProvidersEditor, enabled = canMutate) { Text("Provider") }
                     TextButton(onClick = onOpenDnsEditor, enabled = canMutate) { Text("DNS") }
+                    TextButton(onClick = onOpenDialersEditor, enabled = canMutate) { Text("Dialers") }
                     TextButton(onClick = onOpenProxyGroupsEditor, enabled = canMutate) { Text("代理组") }
                     TextButton(onClick = onOpenProxiesEditor, enabled = canMutate) { Text("代理") }
                     TextButton(onClick = onOpenRulesEditor, enabled = canMutate) { Text("高级") }
@@ -2757,6 +2793,50 @@ internal fun ProfileDnsOverrideDialog(
                 },
                 enabled = !saving,
             ) { if (saving) CircularProgressIndicator() else Text("保存") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+        },
+    )
+}
+
+/**
+ * 作者 long：Dialers 对话框只维护代理到出站目标的映射；保存时写入 Profile 元数据，
+ * 核心启动阶段才注入 `dialer-proxy`，因此取消编辑不会污染原始 YAML。
+ */
+@Composable
+internal fun ProfileDialersEditorDialog(
+    profile: Profile,
+    initialDialers: String,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var dialers by remember(profile.id, initialDialers) { mutableStateOf(initialDialers) }
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("Dialers · ${profile.realLabel}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "每行填写一个代理到目标的映射；清空全部内容会移除暂存配置中的 dialer-proxy。",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                OutlinedTextField(
+                    value = dialers,
+                    onValueChange = { dialers = it },
+                    enabled = !saving,
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 8,
+                    maxLines = 14,
+                    label = { Text("代理名 -> 目标名") },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(dialers) }, enabled = !saving) {
+                if (saving) CircularProgressIndicator() else Text("保存")
+            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }

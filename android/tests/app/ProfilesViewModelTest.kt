@@ -23,6 +23,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -371,6 +372,85 @@ class ProfilesViewModelTest {
         assertEquals("fake-ip", decoded.dns.enhancedMode)
         assertEquals(listOf("https://doh.example/dns-query"), decoded.dns.nameserver)
         assertNull(viewModel.dnsEditorState.value.profile)
+    }
+
+    @Test
+    fun `custom dialers editor reads and persists mappings without changing yaml`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(18L, "Dialers 配置")
+        val original = """
+            mixed-port: 7890
+            proxies:
+              - name: node-a
+                type: vmess
+            proxy-groups:
+              - name: Relay
+                type: select
+                proxies:
+                  - node-a
+        """.trimIndent() + "\n"
+        val store = FakeProfileStore(profile).apply { content = original }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openDialersEditor(profile)
+        advanceUntilIdle()
+        assertEquals("", viewModel.dialersEditorState.value.dialers)
+
+        viewModel.saveDialers("node-a -> Relay")
+        advanceUntilIdle()
+
+        assertEquals(original, store.content)
+        assertEquals(
+            mapOf("node-a" to "Relay"),
+            ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).dialers,
+        )
+        assertNull(viewModel.dialersEditorState.value.profile)
+    }
+
+    @Test
+    fun `custom dialers editor keeps dialog open when mapping is malformed`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(19L, "非法 Dialers")
+        val store = FakeProfileStore(profile).apply { content = "proxies:\n  - name: node-a\n    type: vmess\n" }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+        viewModel.openDialersEditor(profile)
+        advanceUntilIdle()
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.saveDialers("node-a")
+        advanceUntilIdle()
+
+        assertTrue(error.await().contains("格式"))
+        assertNull(store.updatedOverridesJson)
+        assertEquals(profile.id, viewModel.dialersEditorState.value.profile?.id)
+    }
+
+    @Test
+    fun `saving providers keeps previously stored dialers`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val overrides = ProfileProviderOverrides(dialers = mapOf("node-a" to "Relay"))
+        val profile = Profile.custom(20L, "共存覆盖").copy(overridesJson = overrides.toJsonString())
+        val store = FakeProfileStore(profile).apply { content = "proxy-providers:\n  cloud:\n    type: http\n" }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openProvidersEditor(profile)
+        advanceUntilIdle()
+        viewModel.saveProviders("cloud:\n  type: http", "")
+        advanceUntilIdle()
+
+        assertEquals(
+            mapOf("node-a" to "Relay"),
+            ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).dialers,
+        )
     }
 
     @Test

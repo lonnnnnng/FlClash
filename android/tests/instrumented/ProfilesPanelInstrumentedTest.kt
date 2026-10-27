@@ -150,6 +150,52 @@ class ProfilesPanelInstrumentedTest {
     }
 
     @Test
+    fun dialersEditorReturnsMappingToHostAndCanBeDismissedAfterSave() {
+        val profile = Profile.custom(108L, "Dialers 配置")
+        var editorState by mutableStateOf(
+            ProfileDialersEditorUiState(
+                profile = profile,
+                dialers = "node-a -> Relay",
+            ),
+        )
+        var savedDialers: String? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfilesPanel(
+                    state = ProfilesUiState(profiles = listOf(profile), currentProfileId = profile.id),
+                    editorState = ProfileEditorUiState(),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    showAddDialog = false,
+                    onShowAddDialog = {},
+                    onDismissAddDialog = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                    onSelect = {},
+                    onEdit = {},
+                    onUpdate = {},
+                    onCloseEditor = {},
+                    onSaveEditor = {},
+                    onDelete = {},
+                    dialersEditorState = editorState,
+                    onCloseDialersEditor = { editorState = ProfileDialersEditorUiState() },
+                    onSaveDialers = {
+                        savedDialers = it
+                        editorState = ProfileDialersEditorUiState()
+                    },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Dialers · Dialers 配置").assertIsDisplayed()
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals("node-a -> Relay", savedDialers)
+        composeRule.onNodeWithText("Dialers · Dialers 配置").assertDoesNotExist()
+    }
+
+    @Test
     fun deleteConfirmationSupportsCancelAndConfirmedRemoval() {
         val profile = Profile.custom(103L, "待删除配置")
         var profiles by mutableStateOf(listOf(profile))

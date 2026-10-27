@@ -86,6 +86,48 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
+    fun `dialer overrides are included in staged config before validation`() = runTest {
+        val source = temporaryFolder.newFile("dialer-profile.yaml").apply {
+            writeText(
+                """
+                    mixed-port: 7890
+                    proxies:
+                      - name: node-a
+                        type: vmess
+                      - name: node-b
+                        type: trojan
+                    proxy-groups:
+                      - name: Relay
+                        type: select
+                        proxies:
+                          - node-b
+                """.trimIndent() + "\n",
+            )
+        }
+        val homeDir = temporaryFolder.newFolder("dialer-core")
+        val bridge = FakeBridge()
+        val manager = manager(
+            profile = ActiveProfile(
+                id = 8,
+                label = "Dialers 配置",
+                filePath = source.path,
+                overridesJson = ProfileProviderOverrides(
+                    dialers = mapOf("node-a" to "Relay"),
+                ).toJsonString(),
+            ),
+            homeDir = homeDir,
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+
+        manager.startProxy().getOrThrow()
+
+        val staged = File(homeDir, "config.yaml").readText()
+        assertTrue(staged.contains("dialer-proxy: Relay"))
+        assertEquals(listOf("initialize", "validate", "setup", "log-start", "listener-start"), bridge.calls)
+    }
+
+    @Test
     fun `bound profile script transforms staged config before provider overrides`() = runTest {
         val source = temporaryFolder.newFile("profile-script.yaml").apply {
             writeText("mixed-port: 7890\n")

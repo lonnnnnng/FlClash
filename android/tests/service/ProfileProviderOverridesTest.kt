@@ -23,6 +23,15 @@ class ProfileProviderOverridesTest {
     }
 
     @Test
+    fun `json round trip keeps dialer overrides including explicit empty map`() {
+        val source = ProfileProviderOverrides(dialers = mapOf("node-a" to "Relay"))
+        assertEquals(source, ProfileProviderOverrides.fromJsonString(source.toJsonString()))
+
+        val cleared = ProfileProviderOverrides(dialers = emptyMap())
+        assertEquals(cleared, ProfileProviderOverrides.fromJsonString(cleared.toJsonString()))
+    }
+
+    @Test
     fun `json round trip keeps all supported fields`() {
         val source = ProfileProviderOverrides(
             proxyProviders = mapOf(
@@ -185,5 +194,89 @@ class ProfileProviderOverridesTest {
         )
 
         assertTrue(actual.endsWith("dns:\n  nameserver:\n    - https://doh.example/dns-query\n"))
+    }
+
+    @Test
+    fun `applies dialer overrides to proxies and preserves unrelated yaml`() {
+        val source = """
+            mixed-port: 7890
+            proxies:
+              - name: node-a
+                type: vmess
+                server: old.example
+                dialer-proxy: old-target
+              - name: node-b
+                type: trojan
+            proxy-groups:
+              - name: Relay
+                type: select
+                proxies:
+                  - node-b
+            rules:
+              - MATCH,DIRECT
+        """.trimIndent() + "\n"
+
+        val actual = ProfileDialerOverrideApplier.apply(
+            source,
+            mapOf("node-a" to "Relay"),
+        )
+
+        assertTrue(actual.contains("server: old.example"))
+        assertTrue(actual.contains("dialer-proxy: Relay"))
+        assertTrue(!actual.contains("dialer-proxy: old-target"))
+        assertTrue(actual.contains("node-b"))
+        assertTrue(actual.contains("rules:\n  - MATCH,DIRECT"))
+    }
+
+    @Test
+    fun `empty dialer override removes existing fields and rejects missing or circular targets`() {
+        val source = """
+            proxies:
+              - name: node-a
+                type: vmess
+                dialer-proxy: node-b
+              - name: node-b
+                type: vmess
+        """.trimIndent() + "\n"
+
+        val cleared = ProfileDialerOverrideApplier.apply(source, emptyMap())
+        assertTrue(!cleared.contains("dialer-proxy:"))
+
+        val missing = runCatching {
+            ProfileDialerOverrideApplier.apply(source, mapOf("node-a" to "missing"))
+        }.exceptionOrNull()
+        assertTrue(missing is IllegalArgumentException)
+
+        val circular = runCatching {
+            ProfileDialerOverrideApplier.apply(
+                source,
+                mapOf("node-a" to "node-b", "node-b" to "node-a"),
+            )
+        }.exceptionOrNull()
+        assertTrue(circular is IllegalArgumentException)
+    }
+
+    @Test
+    fun `dialer loop detection normalizes quoted inline proxy group members`() {
+        val source = """
+            proxies:
+              - name: node-a
+                type: vmess
+              - name: node-b
+                type: vmess
+            proxy-groups:
+              - name: Relay Group
+                type: select
+                proxies: ["node-b"]
+        """.trimIndent() + "\n"
+
+        val circular = runCatching {
+            ProfileDialerOverrideApplier.apply(
+                source,
+                mapOf("node-a" to "Relay Group", "node-b" to "node-a"),
+            )
+        }.exceptionOrNull()
+
+        assertTrue(circular is IllegalArgumentException)
     }
 }

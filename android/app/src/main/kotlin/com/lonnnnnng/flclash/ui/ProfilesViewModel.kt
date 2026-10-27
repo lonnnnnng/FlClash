@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.ProfileDialerEditor
 import com.lonnnnnng.flclash.data.ProfileProxyGroupsEditor
 import com.lonnnnnng.flclash.data.ProfileProxiesEditor
 import com.lonnnnnng.flclash.data.ProfileProvidersEditor
@@ -79,6 +80,14 @@ data class ProfileDnsEditorUiState(
     val isSaving: Boolean = false,
 )
 
+data class ProfileDialersEditorUiState(
+    val profile: Profile? = null,
+    val sourceContent: String = "",
+    val dialers: String = "",
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+)
+
 internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
 
 /**
@@ -101,6 +110,7 @@ class ProfilesViewModel @Inject constructor(
     private val mutableProxyGroupsEditor = MutableStateFlow(ProfileProxyGroupsEditorUiState())
     private val mutableProvidersEditor = MutableStateFlow(ProfileProvidersEditorUiState())
     private val mutableDnsEditor = MutableStateFlow(ProfileDnsEditorUiState())
+    private val mutableDialersEditor = MutableStateFlow(ProfileDialersEditorUiState())
 
     val state: StateFlow<ProfilesUiState> = combine(
         repository.profiles,
@@ -117,6 +127,7 @@ class ProfilesViewModel @Inject constructor(
     val proxyGroupsEditorState: StateFlow<ProfileProxyGroupsEditorUiState> = mutableProxyGroupsEditor
     val providersEditorState: StateFlow<ProfileProvidersEditorUiState> = mutableProvidersEditor
     val dnsEditorState: StateFlow<ProfileDnsEditorUiState> = mutableDnsEditor
+    val dialersEditorState: StateFlow<ProfileDialersEditorUiState> = mutableDialersEditor
 
     fun select(id: Long) {
         if (runtimeManager.state.value.isRunning) {
@@ -392,6 +403,9 @@ class ProfilesViewModel @Inject constructor(
                     ProfileProviderOverrides(
                         proxyProviders = proxyProviderOverrides,
                         dns = ProfileProviderOverrides.fromJsonString(profile.overridesJson).dns,
+                        // 作者 long：Provider、DNS 和 Dialers 共用一份覆盖元数据；保存任一分区时必须保留其他分区，
+                        // 否则用户刚配置的出站链路会在下一次编辑 Provider 后静默消失。
+                        dialers = ProfileProviderOverrides.fromJsonString(profile.overridesJson).dialers,
                     ).toJsonString(),
                 )
             }.onSuccess {
@@ -442,6 +456,65 @@ class ProfilesViewModel @Inject constructor(
             }.onFailure { error ->
                 mutableDnsEditor.value = mutableDnsEditor.value.copy(isSaving = false, overrides = overrides)
                 mutableErrors.emit(error.message ?: "保存 DNS 失败")
+            }
+        }
+    }
+
+    fun openDialersEditor(profile: Profile) {
+        if (profile.type != ProfileType.CUSTOM) {
+            mutableErrors.tryEmit("Dialers 编辑仅支持自定义配置")
+            return
+        }
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 Dialers")
+            return
+        }
+        viewModelScope.launch {
+            mutableDialersEditor.value = ProfileDialersEditorUiState(profile = profile, isLoading = true)
+            runCatching {
+                val content = repository.readLocalProfileContent(profile.id)
+                val stored = ProfileProviderOverrides.fromJsonString(profile.overridesJson).dialers
+                content to ProfileDialerEditor.renderDialers(
+                    if (stored != null) stored else ProfileDialerEditor.extractDialers(content),
+                )
+            }.onSuccess { (content, dialers) ->
+                mutableDialersEditor.value = ProfileDialersEditorUiState(
+                    profile = profile,
+                    sourceContent = content,
+                    dialers = dialers,
+                )
+            }.onFailure { error ->
+                mutableDialersEditor.value = ProfileDialersEditorUiState()
+                mutableErrors.emit(error.message ?: "无法读取 Dialers 配置")
+            }
+        }
+    }
+
+    fun closeDialersEditor() {
+        mutableDialersEditor.value = ProfileDialersEditorUiState()
+    }
+
+    fun saveDialers(dialers: String) {
+        val state = mutableDialersEditor.value
+        val profile = state.profile ?: return
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存 Dialers")
+            return
+        }
+        viewModelScope.launch {
+            mutableDialersEditor.value = state.copy(dialers = dialers, isSaving = true)
+            runCatching {
+                val current = ProfileProviderOverrides.fromJsonString(profile.overridesJson)
+                val mapping = ProfileDialerEditor.parseDialers(dialers)
+                repository.updateProfileOverrides(
+                    profile.id,
+                    current.copy(dialers = mapping).toJsonString(),
+                )
+            }.onSuccess {
+                closeDialersEditor()
+            }.onFailure { error ->
+                mutableDialersEditor.value = mutableDialersEditor.value.copy(isSaving = false)
+                mutableErrors.emit(error.message ?: "保存 Dialers 失败")
             }
         }
     }

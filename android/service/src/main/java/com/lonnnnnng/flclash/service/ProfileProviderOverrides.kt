@@ -127,6 +127,8 @@ data class ProfileDnsOverrides(
 data class ProfileProviderOverrides(
     val proxyProviders: Map<String, ProxyProviderOverride> = emptyMap(),
     val dns: ProfileDnsOverrides = ProfileDnsOverrides(),
+    /** null 表示未设置；空 map 表示用户明确清空全部 Dialers。 */
+    val dialers: Map<String, String>? = null,
 ) {
     fun toJsonString(): String = JsonObject().apply {
         add("proxy-providers", JsonObject().apply {
@@ -135,28 +137,33 @@ data class ProfileProviderOverrides(
             }
         })
         if (!dns.isEmpty) add("dns", dns.toJson())
+        dialers?.let { values ->
+            add("dialers", JsonObject().apply {
+                values.forEach { (proxy, target) ->
+                    if (proxy.isNotBlank() && target.isNotBlank()) addProperty(proxy, target)
+                }
+            })
+        }
     }.let(Gson()::toJson)
 
     companion object {
         fun fromJsonString(raw: String?): ProfileProviderOverrides {
             if (raw.isNullOrBlank()) return ProfileProviderOverrides()
             return runCatching {
-                val providers = JsonParser.parseString(raw).asJsonObject
-                    .getAsJsonObject("proxy-providers")
-                    ?: return@runCatching ProfileProviderOverrides()
+                val root = JsonParser.parseString(raw).asJsonObject
+                val providers = root.getAsJsonObject("proxy-providers")
                 val values = buildMap {
-                    providers.entrySet().forEach { (name, element) ->
+                    providers?.entrySet()?.forEach { (name, element) ->
                         val value = element.takeIf { it.isJsonObject }?.asJsonObject
                             ?: return@forEach
                         val override = ProxyProviderOverride.fromJson(value)
                         if (!override.isEmpty) put(name, override)
                     }
                 }
-                val dns = JsonParser.parseString(raw).asJsonObject
-                    .getAsJsonObject("dns")
+                val dns = root.getAsJsonObject("dns")
                     ?.let(ProfileDnsOverrides::fromJson)
                     ?: ProfileDnsOverrides()
-                ProfileProviderOverrides(values, dns)
+                ProfileProviderOverrides(values, dns, root.optStringMapOrNull("dialers"))
             }.getOrDefault(ProfileProviderOverrides())
         }
     }
@@ -172,6 +179,7 @@ object ProfileProviderOverrideApplier {
         if (overrides.proxyProviders.isNotEmpty()) {
             updated = applyProxyProviders(updated, overrides.proxyProviders)
         }
+        updated = ProfileDialerOverrideApplier.apply(updated, overrides.dialers)
         return ProfileDnsOverrideApplier.apply(updated, overrides.dns)
     }
 
@@ -335,6 +343,155 @@ object ProfileProviderOverrideApplier {
 }
 
 /**
+ * 作者 long：Dialer 覆盖是一份按代理名称索引的完整映射；应用到核心暂存 YAML 时先清掉旧字段，
+ * 再写入当前映射，允许用户通过保存空映射明确移除所有 dialer-proxy，而不改写原始 Profile。
+ */
+object ProfileDialerOverrideApplier {
+    fun apply(yaml: String, dialers: Map<String, String>?): String {
+        if (dialers == null) return yaml
+        val lines = yaml.replace("\r\n", "\n").replace('\r', '\n')
+            .split('\n').toMutableList().apply {
+                if (lastOrNull().isNullOrEmpty()) removeAt(lastIndex)
+            }
+        val sectionStart = lines.indexOfFirst { topLevelKey(it) == "proxies" }
+        if (sectionStart < 0) {
+            require(dialers.isEmpty()) { "配置缺少 proxies，无法应用 Dialers" }
+            return yaml
+        }
+        val sectionEnd = findTopLevelEnd(lines, sectionStart)
+        val entries = entryRanges(lines, sectionStart + 1, sectionEnd)
+        val names = entries.mapNotNull { entryName(lines, it.first, it.second) }.toSet()
+        require(dialers.keys.all { it in names }) {
+            "Dialer 代理不存在：${dialers.keys.firstOrNull { it !in names }.orEmpty()}"
+        }
+        require(dialers.values.all { it.isNotBlank() }) { "Dialer 目标不能为空" }
+        val groupNames = topLevelListNames(lines, "proxy-groups")
+        val knownTargets = names + groupNames
+        require(dialers.values.all { it in knownTargets }) {
+            "Dialer 目标不存在：${dialers.values.firstOrNull { it !in knownTargets }.orEmpty()}"
+        }
+        require(!hasDialerLoop(dialers, groupMembers(lines))) { "Dialer 存在循环依赖" }
+
+        entries.asReversed().forEach { (start, end) ->
+            val name = entryName(lines, start, end)
+            val kept = lines.subList(start, end).filterNot { nestedKey(it) == "dialer-proxy" }
+            lines.subList(start, end).clear()
+            lines.addAll(start, kept)
+            val target = name?.let(dialers::get) ?: return@forEach
+            val insertAt = start + kept.size
+            lines.add(insertAt, "    dialer-proxy: ${yamlScalar(target)}")
+        }
+        return lines.joinToString("\n") + "\n"
+    }
+
+    private fun hasDialerLoop(
+        dialers: Map<String, String>,
+        groups: Map<String, List<String>>,
+    ): Boolean {
+        fun reaches(current: String, target: String, seen: Set<String>): Boolean {
+            if (current == target) return true
+            if (current in seen) return false
+            val nextSeen = seen + current
+            val next = buildList {
+                dialers[current]?.let { add(it) }
+                addAll(groups[current].orEmpty())
+            }
+            return next.any { reaches(it, target, nextSeen) }
+        }
+        return dialers.any { (proxy, target) -> proxy == target || reaches(target, proxy, emptySet()) }
+    }
+
+    private fun groupMembers(lines: List<String>): Map<String, List<String>> {
+        val start = lines.indexOfFirst { topLevelKey(it) == "proxy-groups" }
+        if (start < 0) return emptyMap()
+        val end = findTopLevelEnd(lines, start)
+        return entryRanges(lines, start + 1, end).mapNotNull { (entryStart, entryEnd) ->
+            val name = entryName(lines, entryStart, entryEnd) ?: return@mapNotNull null
+            val members = mutableListOf<String>()
+            var list = false
+            for (index in entryStart until entryEnd) {
+                val key = nestedKey(lines[index])
+                if (key == "proxies") {
+                    list = true
+                    val inline = lines[index].substringAfter(':').trim()
+                    if (inline.startsWith("[")) {
+                        members += inline.removePrefix("[").removeSuffix("]")
+                            .split(',')
+                            .map { yamlScalarValue(it) }
+                            .filter(String::isNotEmpty)
+                        list = false
+                    }
+                } else if (list && lines[index].trimStart().startsWith("-")) {
+                    members += yamlScalarValue(lines[index].substringAfter('-').trim())
+                } else if (list && lines[index].isNotBlank() && leadingSpaces(lines[index]) <= 4) {
+                    list = false
+                }
+            }
+            name to members
+        }.toMap()
+    }
+
+    private fun topLevelListNames(lines: List<String>, section: String): Set<String> {
+        val start = lines.indexOfFirst { topLevelKey(it) == section }
+        if (start < 0) return emptySet()
+        val end = findTopLevelEnd(lines, start)
+        return entryRanges(lines, start + 1, end).mapNotNull { entryName(lines, it.first, it.second) }.toSet()
+    }
+
+    private fun entryRanges(lines: List<String>, from: Int, to: Int): List<Pair<Int, Int>> {
+        val starts = (from until to).filter { leadingSpaces(lines[it]) == 2 && lines[it].trimStart().startsWith("-") }
+        return starts.mapIndexed { index, start -> start to (starts.getOrNull(index + 1) ?: to) }
+    }
+
+    private fun entryName(lines: List<String>, start: Int, end: Int): String? {
+        for (index in start until end) {
+            val line = lines[index]
+            val candidate = line.trim().removePrefix("-").trimStart()
+            val key = when {
+                candidate.startsWith("name:") -> candidate.substringAfter(':').trim()
+                leadingSpaces(line) >= 4 && nestedKey(line) == "name" -> line.substringAfter(':').trim()
+                else -> null
+            }
+            if (key != null) return yamlScalarValue(key)
+        }
+        return null
+    }
+
+    private fun findTopLevelEnd(lines: List<String>, start: Int): Int =
+        (start + 1 until lines.size).firstOrNull { topLevelKey(lines[it]) != null } ?: lines.size
+
+    private fun topLevelKey(line: String): String? {
+        if (line.isBlank() || line.first().isWhitespace()) return null
+        val colon = line.indexOf(':')
+        return line.substring(0, colon.coerceAtLeast(0)).trim()
+            .takeIf { colon > 0 && it.matches(Regex("[A-Za-z0-9_-]+")) }
+    }
+
+    private fun nestedKey(line: String): String? {
+        if (leadingSpaces(line) < 4) return null
+        val colon = line.indexOf(':')
+        return line.substring(0, colon.coerceAtLeast(0)).trim()
+            .takeIf { colon > 0 && it.matches(Regex("[A-Za-z0-9_-]+")) }
+    }
+
+    private fun leadingSpaces(line: String): Int = line.takeWhile { it == ' ' }.length
+
+    private fun yamlScalarValue(raw: String): String {
+        val value = raw.trim()
+        return if (value.length >= 2 && value.first() == value.last() &&
+            (value.first() == '\'' || value.first() == '"')
+        ) {
+            value.substring(1, value.length - 1)
+        } else value
+    }
+
+    private fun yamlScalar(value: String): String =
+        if (value.any { it.isWhitespace() || it == '#' || it == ':' }) {
+            "'${value.replace("'", "''")}'"
+        } else value
+}
+
+/**
  * 作者 long：DNS 覆盖只修改暂存 YAML 的顶层 dns 区块，未知字段和原始配置文件保持不变；
  * 列表使用块序列写回，避免服务器 URL 中的冒号被误解析成 map。
  */
@@ -479,3 +636,8 @@ private fun JsonObject.addStringArray(name: String, values: List<String>) {
         values.forEach { add(it) }
     })
 }
+
+private fun JsonObject.optStringMapOrNull(name: String): Map<String, String>? =
+    get(name)?.takeIf { it.isJsonObject }?.asJsonObject?.entrySet()?.mapNotNull { (key, value) ->
+        value.takeIf { it.isJsonPrimitive }?.asString?.trim()?.takeIf { it.isNotEmpty() }?.let { key to it }
+    }?.toMap()
