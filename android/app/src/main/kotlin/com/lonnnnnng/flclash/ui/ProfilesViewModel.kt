@@ -412,6 +412,15 @@ class ProfilesViewModel @Inject constructor(
         launchAction { repository.updateRemoteProfile(profile.id) }
     }
 
+    fun bindScript(profile: Profile, scriptId: Long?) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        // 作者 long：绑定只改变 Profile 的元数据，不执行脚本；执行链路完成前必须保持显式的无副作用边界。
+        launchAction { repository.updateProfileScript(profile.id, scriptId) }
+    }
+
     fun reorder(ids: List<Long>) {
         if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)

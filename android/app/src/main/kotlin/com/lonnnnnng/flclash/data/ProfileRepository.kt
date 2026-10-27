@@ -30,6 +30,9 @@ interface ProfileStore {
     suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
+    suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
+        profiles.value.firstOrNull { it.id == id }
+            ?: error("配置不存在")
     suspend fun updateRemoteProfile(id: Long): Profile
     suspend fun deleteProfile(id: Long)
     suspend fun reorder(ids: List<Long>)
@@ -156,6 +159,20 @@ class ProfileRepository(
             val updated = current.copy(overridesJson = overridesJson)
             profileDao.update(updated.toEntity())
             updated
+        }
+
+    override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
+        withContext(Dispatchers.IO) {
+            database.withTransaction {
+                // 作者 long：校验脚本存在与写入 Profile 必须原子完成，避免脚本删除并发时留下悬挂绑定。
+                val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                if (scriptId != null) {
+                    requireNotNull(database.scripts().getById(scriptId)) { "脚本不存在" }
+                }
+                val updated = current.copy(scriptId = scriptId)
+                profileDao.update(updated.toEntity())
+                updated
+            }
         }
 
     override suspend fun updateRemoteProfile(id: Long): Profile = withContext(Dispatchers.IO) {

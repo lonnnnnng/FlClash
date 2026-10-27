@@ -105,6 +105,45 @@ class ProfilesViewModelTest {
     }
 
     @Test
+    fun `script binding persists and can be cleared`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(25L, "脚本配置")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.bindScript(profile, 901L)
+        advanceUntilIdle()
+        assertEquals(listOf<Long?>(901L), store.scriptBindingUpdates)
+        assertEquals(901L, store.profiles.value.single().scriptId)
+
+        viewModel.bindScript(store.profiles.value.single(), null)
+        advanceUntilIdle()
+        assertEquals(listOf<Long?>(901L, null), store.scriptBindingUpdates)
+        assertNull(store.profiles.value.single().scriptId)
+    }
+
+    @Test
+    fun `script binding is rejected while core is running`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(26L, "运行中脚本配置")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING),
+        )
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.bindScript(profile, 902L)
+
+        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, error.await())
+        advanceUntilIdle()
+        assertEquals(emptyList<Long?>(), store.scriptBindingUpdates)
+    }
+
+    @Test
     fun `custom rules editor reads and saves only the rules section`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(3L, "规则配置")
@@ -342,6 +381,7 @@ private class FakeProfileStore(
     var content = ""
     var updatedContent: String? = null
     var updatedOverridesJson: String? = null
+    val scriptBindingUpdates = mutableListOf<Long?>()
 
     override suspend fun selectProfile(id: Long?) = Unit
 
@@ -365,6 +405,13 @@ private class FakeProfileStore(
     override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile {
         updatedOverridesJson = overridesJson
         return profile.copy(overridesJson = overridesJson)
+    }
+
+    override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile {
+        scriptBindingUpdates += scriptId
+        val updated = profile.copy(scriptId = scriptId)
+        profiles.value = profiles.value.map { if (it.id == id) updated else it }
+        return updated
     }
 
     override suspend fun updateRemoteProfile(id: Long): Profile =

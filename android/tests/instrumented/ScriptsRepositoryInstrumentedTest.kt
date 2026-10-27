@@ -4,6 +4,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.lonnnnnng.flclash.data.Profile
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -51,10 +52,14 @@ class ScriptsRepositoryInstrumentedTest {
             runBlocking { database.scripts().getAll().map { it.id } },
         )
 
+        val boundProfile = Profile.custom(801L, "已绑定配置").copy(scriptId = first.id)
+        runBlocking { database.profiles().insert(boundProfile.toEntity()) }
+
         runBlocking { repository.delete(first.id) }
         composeRule.waitUntil(5_000) { repository.scripts.value.map { it.id } == listOf(second.id) }
         assertFalse(repository.scriptFile(first.id).exists())
         assertTrue(repository.scriptFile(second.id).isFile)
+        assertEquals(null, runBlocking { database.profiles().getById(boundProfile.id)?.scriptId })
         database.close()
     }
 }

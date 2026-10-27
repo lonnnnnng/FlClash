@@ -343,3 +343,12 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；30 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 5 项、Compose 25 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`b3f1e148bbe18e7a23db29cb689104678b8bd8ef73bd15cccc715c0fdfd5ff97`；APK 原生库全部位于 `lib/arm64-v8a/`。
 - 本切片只验证本地脚本资源管理，没有访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN、核心启动或 JavaScript 执行；Profile 绑定、远程同步和 Mihomo 执行仍待后续切片。
+
+## Scripts Profile 绑定切片实测记录（2026-10-27）
+
+- `ProfilesViewModel` 新增绑定/解绑入口，核心运行期间拒绝 Profile 脚本关系变更；`ProfileRepository` 校验脚本存在后写入 `scriptId`。
+- 配置页新增 Profile 脚本绑定弹窗；脚本删除使用 Room 事务清除关联 Profile，再删除元数据和应用私有正文文件。
+- `./gradlew :app:testDebugUnitTest --no-daemon --rerun-tasks`：通过；全工程 157 项 Kotlin 单元测试失败 0、错误 0、跳过 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；32 项 instrumentation 失败 0、错误 0、跳过 0，其中 Room 6 项、Compose 26 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`4dfa7e1632017ec276b4a68df2d7ba878d50f3ee2dd8894bbca1c356f5bb5150`；APK 原生库仅包含 `lib/arm64-v8a/libandroidx.graphics.path.so`、`lib/arm64-v8a/libbarhopper_v3.so` 和 `lib/arm64-v8a/libclash.so`。
+- 本轮只验证绑定、解绑、删除清理和核心运行保护，没有访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN、核心启动或 JavaScript 执行。

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.assertEquals
@@ -67,6 +68,31 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithText("保存").performClick()
 
         assertEquals("mixed-port: 7890", saved)
+    }
+
+    @Test
+    fun profileScriptBindingShowsOptionsAndForwardsSelection() {
+        var selectedScriptId: Long? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfileScriptBindingDialog(
+                    profile = Profile.custom(18L, "脚本绑定配置"),
+                    scripts = listOf(
+                        Script(701L, "请求改写"),
+                        Script(702L, "备用脚本"),
+                    ),
+                    saving = false,
+                    onDismiss = {},
+                    onSelect = { selectedScriptId = it },
+                    onOpenScripts = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("脚本 · 脚本绑定配置").assertIsDisplayed()
+        composeRule.onNodeWithText("请求改写").performClick()
+
+        assertEquals(701L, selectedScriptId)
     }
 
     @Test
@@ -216,6 +242,7 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithText("代理组").assertIsNotEnabled()
         composeRule.onNodeWithText("高级").assertIsNotEnabled()
         composeRule.onNodeWithText("代理").assertIsNotEnabled()
+        composeRule.onNodeWithText("脚本").assertIsNotEnabled()
         composeRule.onNodeWithText("删除").assertIsNotEnabled()
     }
 }

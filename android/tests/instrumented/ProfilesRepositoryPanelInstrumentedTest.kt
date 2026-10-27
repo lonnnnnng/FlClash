@@ -16,6 +16,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.ProfileRepository
+import com.lonnnnnng.flclash.data.ScriptRepository
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.data.SubscriptionClient
@@ -200,6 +201,44 @@ class ProfilesRepositoryPanelInstrumentedTest {
             ).proxyProviders,
         )
         assertEquals(overrides.toJsonString(), runBlocking { repository.activeProfile().overridesJson })
+    }
+
+    @Test
+    fun repositoryPersistsAndValidatesProfileScriptBinding() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context = context,
+            database = database,
+            subscriptionClient = object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload =
+                    error("该绑定流程不访问远程订阅")
+            },
+        )
+        val script = runBlocking {
+            ScriptRepository(context, database).create("绑定脚本", "const main = (config) => config;")
+        }
+        val profile = runBlocking { repository.addCustomProfile("脚本配置") }
+
+        runBlocking { repository.updateProfileScript(profile.id, script.id) }
+        assertEquals(
+            script.id,
+            runBlocking { database.profiles().getById(profile.id)?.scriptId },
+        )
+
+        val missing = runCatching {
+            runBlocking { repository.updateProfileScript(profile.id, 999_999L) }
+        }.exceptionOrNull()
+        assertTrue(missing is IllegalArgumentException)
+
+        runBlocking { repository.updateProfileScript(profile.id, null) }
+        assertEquals(
+            null,
+            runBlocking { database.profiles().getById(profile.id)?.scriptId },
+        )
     }
 
     @Test

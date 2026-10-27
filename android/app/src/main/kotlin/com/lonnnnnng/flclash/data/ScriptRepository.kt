@@ -92,6 +92,8 @@ class ScriptRepository(
     override suspend fun delete(id: Long) = withContext(Dispatchers.IO) {
         val current = scriptDao.getById(id) ?: return@withContext
         database.withTransaction {
+            // 作者 long：删除脚本时同步清掉 Profile 的绑定，避免未来执行链读取到已经不存在的正文文件。
+            database.profiles().clearScriptBinding(id)
             scriptDao.delete(current)
             scriptFile(id).delete()
             Unit

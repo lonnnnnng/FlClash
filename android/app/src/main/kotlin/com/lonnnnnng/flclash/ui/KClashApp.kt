@@ -328,6 +328,8 @@ fun KClashApp(
                         onSaveProviders = profilesViewModel::saveProviders,
                         onSaveProvidersWithOverrides = profilesViewModel::saveProviders,
                         onReorderProfiles = profilesViewModel::reorder,
+                        scripts = scriptsState.scripts,
+                        onBindScript = profilesViewModel::bindScript,
                         onOpenScripts = { showScriptsDialog = true },
                     )
                 }
@@ -561,11 +563,14 @@ internal fun ProfilesPanel(
     onSaveProviders: (proxyProviders: String, ruleProviders: String) -> Unit = { _, _ -> },
     onSaveProvidersWithOverrides: ((String, String, Map<String, ProxyProviderOverride>) -> Unit)? = null,
     onReorderProfiles: (List<Long>) -> Unit = {},
+    scripts: List<Script> = emptyList(),
+    onBindScript: (Profile, Long?) -> Unit = { _, _ -> },
     onOpenScripts: () -> Unit = {},
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
     var showReorderDialog by remember { mutableStateOf(false) }
+    var scriptBindingProfileId by remember { mutableStateOf<Long?>(null) }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
@@ -616,6 +621,7 @@ internal fun ProfilesPanel(
                     onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
                     onOpenProxyGroupsEditor = { onOpenProxyGroupsEditor(profile) },
                     onOpenProvidersEditor = { onOpenProvidersEditor(profile) },
+                    onOpenScriptBinding = { scriptBindingProfileId = profile.id },
                 )
             }
         }
@@ -662,6 +668,22 @@ internal fun ProfilesPanel(
                 onReorderProfiles(ids)
             },
         )
+    }
+
+    scriptBindingProfileId?.let { profileId ->
+        state.profiles.firstOrNull { it.id == profileId }?.let { profile ->
+            ProfileScriptBindingDialog(
+                profile = profile,
+                scripts = scripts,
+                saving = state.isBusy,
+                onDismiss = { if (!state.isBusy) scriptBindingProfileId = null },
+                onSelect = { scriptId -> onBindScript(profile, scriptId) },
+                onOpenScripts = {
+                    scriptBindingProfileId = null
+                    onOpenScripts()
+                },
+            )
+        }
     }
 
     editorState.profile?.let { profile ->
@@ -1864,8 +1886,8 @@ internal fun ProfileReorderDialog(
 }
 
 /**
- * 作者 long：先提供本地脚本资源的可见管理边界，脚本正文和元数据都通过 ViewModel 回写，
- * 但不在本轮伪装成已经接入 Mihomo 执行链，避免用户误以为保存后会改变代理配置。
+ * 作者 long：脚本正文、元数据和 Profile 绑定都通过 ViewModel 回写，
+ * 但不把尚未接入的 Mihomo JavaScript 执行链伪装成已生效，避免用户误以为保存后会改变代理配置。
  */
 @Composable
 internal fun ScriptsLibraryDialog(
@@ -1897,7 +1919,7 @@ internal fun ScriptsLibraryDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "当前仅管理本地脚本文件；Profile 绑定和 Mihomo 执行将在后续切片接入。",
+                    "当前支持本地脚本文件和 Profile 绑定；Mihomo JavaScript 执行将在后续切片接入。",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 if (orderedScripts.isEmpty()) {
@@ -2029,6 +2051,7 @@ internal fun ProfileCard(
     onOpenProxiesEditor: () -> Unit = {},
     onOpenProxyGroupsEditor: () -> Unit = {},
     onOpenProvidersEditor: () -> Unit = {},
+    onOpenScriptBinding: () -> Unit = {},
 ) {
     Card(modifier = Modifier.fillMaxWidth(), onClick = onSelect) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -2076,10 +2099,87 @@ internal fun ProfileCard(
                     TextButton(onClick = onOpenProxiesEditor, enabled = canMutate) { Text("代理") }
                     TextButton(onClick = onOpenRulesEditor, enabled = canMutate) { Text("高级") }
                 }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(onClick = onOpenScriptBinding, enabled = canMutate) { Text("脚本") }
                 TextButton(onClick = onDelete, enabled = canMutate) { Text("删除") }
             }
         }
     }
+}
+
+/**
+ * 作者 long：绑定弹窗只保存 Profile 与脚本资源的关系，不宣称脚本已经进入 Mihomo 执行链，
+ * 让用户可以先复刻 Flutter 的选择行为，同时把执行和失败回滚留给后续切片。
+ */
+@Composable
+internal fun ProfileScriptBindingDialog(
+    profile: Profile,
+    scripts: List<Script>,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSelect: (Long?) -> Unit,
+    onOpenScripts: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("脚本 · ${profile.realLabel}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "当前只保存绑定关系，Profile 绑定后的 JavaScript 执行将在后续切片接入。",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                if (scripts.isEmpty()) {
+                    Text(
+                        "还没有脚本，请先在脚本库中新建脚本。",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.heightIn(max = 360.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        item {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = profile.scriptId == null,
+                                    onClick = { onSelect(null) },
+                                    enabled = !saving,
+                                )
+                                TextButton(
+                                    onClick = { onSelect(null) },
+                                    enabled = !saving,
+                                ) { Text("不绑定脚本") }
+                            }
+                        }
+                        items(scripts, key = { it.id }) { script ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = profile.scriptId == script.id,
+                                    onClick = { onSelect(script.id) },
+                                    enabled = !saving,
+                                )
+                                TextButton(
+                                    onClick = { onSelect(script.id) },
+                                    enabled = !saving,
+                                ) { Text(script.label) }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onOpenScripts, enabled = !saving) { Text("脚本库") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !saving) { Text("关闭") }
+        },
+    )
 }
 
 @Composable

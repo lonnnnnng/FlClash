@@ -30,4 +30,7 @@ interface ProfileDao {
 
     @Query("UPDATE profiles SET orderIndex = :orderIndex WHERE id = :id")
     suspend fun updateOrder(id: Long, orderIndex: Int)
+
+    @Query("UPDATE profiles SET scriptId = NULL WHERE scriptId = :scriptId")
+    suspend fun clearScriptBinding(scriptId: Long)
 }
