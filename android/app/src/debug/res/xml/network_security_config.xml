@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 作者 long：仅 Debug 真机回归通过 adb reverse 访问本机 WebDAV，Release 继续沿用生产明文限制。 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">clash.tkbond.us</domain>
+    </domain-config>
+</network-security-config>

@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.data
 
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.net.SocketTimeoutException
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,6 +15,25 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 const val DEFAULT_WEBDAV_FILE_NAME = "backup.zip"
+
+enum class WebDavFailureKind {
+    AUTHENTICATION,
+    PERMISSION,
+    NOT_FOUND,
+    OFFLINE,
+    TIMEOUT,
+    SERVER,
+}
+
+/**
+ * 作者 long：WebDAV 的网络错误需要在 UI 中给出可执行的下一步，不能把 OkHttp 或底层 socket
+ * 的英文异常直接展示给用户；技术原因保留在 cause 中，避免把账号、地址和实现细节拼进提示。
+ */
+class WebDavException(
+    val kind: WebDavFailureKind,
+    message: String,
+    cause: Throwable? = null,
+) : IOException(message, cause)
 
 /**
  * WebDAV 远程备份连接描述。密码只在内存中短暂存在，由配置页从 Android Keystore 凭据存储读取，
@@ -124,7 +144,12 @@ class HttpWebDavClient(
                 .header("Accept", "application/zip, application/octet-stream")
             basicAuthorization(endpoint)?.let { requestBuilder.header("Authorization", it) }
 
-            httpClient.newCall(requestBuilder.build()).execute().use { response ->
+            val response = try {
+                httpClient.newCall(requestBuilder.build()).execute()
+            } catch (error: IOException) {
+                throw networkFailure(error)
+            }
+            response.use { response ->
                 if (response.code in REDIRECT_CODES) {
                     if (attempt == MAX_REDIRECTS) throw IOException("WebDAV 重定向次数过多")
                     val location = response.header("Location")
@@ -135,9 +160,12 @@ class HttpWebDavClient(
                     current = next
                     return@repeat
                 }
-                if (!accepted(response.code)) throw IOException("WebDAV 服务器返回 HTTP ${response.code}")
+                if (!accepted(response.code)) throw httpFailure(response.code)
                 if (!readBody) return null
-                val responseBody = response.body ?: throw IOException("WebDAV 下载没有返回内容")
+                val responseBody = response.body ?: throw WebDavException(
+                    WebDavFailureKind.SERVER,
+                    "WebDAV 服务器返回空响应",
+                )
                 val declaredLength = responseBody.contentLength()
                 if (declaredLength > MAX_ARCHIVE_BYTES) {
                     throw IOException("远程备份超过 64 MiB 限制")
@@ -146,6 +174,46 @@ class HttpWebDavClient(
             }
         }
         throw IOException("WebDAV 重定向次数过多")
+    }
+
+    private fun httpFailure(code: Int): WebDavException = when {
+        code == 401 -> WebDavException(
+            WebDavFailureKind.AUTHENTICATION,
+            "WebDAV 认证失败，请检查账号和密码",
+        )
+        code == 403 -> WebDavException(
+            WebDavFailureKind.PERMISSION,
+            "WebDAV 访问被拒绝，请检查账号权限和目录权限",
+        )
+        code == 404 -> WebDavException(
+            WebDavFailureKind.NOT_FOUND,
+            "WebDAV 文件或目录不存在，请检查地址和文件名",
+        )
+        code == 408 || code == 429 -> WebDavException(
+            WebDavFailureKind.SERVER,
+            "WebDAV 服务暂时不可用，请稍后重试",
+        )
+        code in 500..599 -> WebDavException(
+            WebDavFailureKind.SERVER,
+            "WebDAV 服务器暂时不可用，请稍后重试",
+        )
+        else -> WebDavException(
+            WebDavFailureKind.SERVER,
+            "WebDAV 服务器返回 HTTP $code",
+        )
+    }
+
+    private fun networkFailure(error: IOException): WebDavException = when (error) {
+        is SocketTimeoutException -> WebDavException(
+            WebDavFailureKind.TIMEOUT,
+            "WebDAV 请求超时，请检查网络或服务器响应",
+            error,
+        )
+        else -> WebDavException(
+            WebDavFailureKind.OFFLINE,
+            "无法连接 WebDAV 服务器，请检查地址和网络",
+            error,
+        )
     }
 
     private fun basicAuthorization(endpoint: WebDavEndpoint): String? {

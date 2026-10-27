@@ -2,11 +2,14 @@ package com.lonnnnnng.flclash.data
 
 import com.sun.net.httpserver.HttpServer
 import java.net.InetSocketAddress
+import java.net.SocketTimeoutException
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -105,6 +108,68 @@ class WebDavClientTest {
             client.download(WebDavEndpoint("http://127.0.0.1/", "../backup.zip"))
         }.exceptionOrNull()
         assertTrue(error is IllegalArgumentException)
+    }
+
+    @Test
+    fun `maps authentication and permission failures without exposing credentials`() = runBlocking {
+        val server = server { exchange ->
+            when (exchange.requestURI.path) {
+                "/auth/" -> respond(exchange, 401)
+                "/permission/" -> respond(exchange, 403)
+                else -> respond(exchange, 404)
+            }
+        }
+        try {
+            val client = HttpWebDavClient()
+            val authError = runCatching {
+                client.probe(WebDavEndpoint(
+                    baseUrl = "http://127.0.0.1:${server.address.port}/auth/",
+                    fileName = "backup.zip",
+                    username = "alice",
+                    password = "do-not-leak",
+                ))
+            }.exceptionOrNull()
+            assertTrue(authError is WebDavException)
+            assertEquals(WebDavFailureKind.AUTHENTICATION, (authError as WebDavException).kind)
+            assertTrue(authError.message.orEmpty().contains("认证失败"))
+            assertFalse(authError.message.orEmpty().contains("do-not-leak"))
+
+            val permissionError = runCatching {
+                client.probe(WebDavEndpoint(
+                    baseUrl = "http://127.0.0.1:${server.address.port}/permission/",
+                    fileName = "backup.zip",
+                    username = "alice",
+                    password = "do-not-leak",
+                ))
+            }.exceptionOrNull()
+            assertEquals(WebDavFailureKind.PERMISSION, (permissionError as WebDavException).kind)
+            assertTrue(permissionError.message.orEmpty().contains("访问被拒绝"))
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    @Test
+    fun `maps offline and timeout failures to actionable messages`() = runBlocking {
+        val server = server { exchange -> respond(exchange, 200) }
+        val port = server.address.port
+        server.stop(0)
+        val offlineError = runCatching {
+            HttpWebDavClient().probe(WebDavEndpoint("http://127.0.0.1:$port/", "backup.zip"))
+        }.exceptionOrNull()
+        assertEquals(WebDavFailureKind.OFFLINE, (offlineError as WebDavException).kind)
+        assertTrue(offlineError.message.orEmpty().contains("无法连接"))
+
+        val timeoutClient = HttpWebDavClient(
+            OkHttpClient.Builder()
+                .addInterceptor { throw SocketTimeoutException("simulated timeout") }
+                .build(),
+        )
+        val timeoutError = runCatching {
+            timeoutClient.probe(WebDavEndpoint("https://dav.example.test/", "backup.zip"))
+        }.exceptionOrNull()
+        assertEquals(WebDavFailureKind.TIMEOUT, (timeoutError as WebDavException).kind)
+        assertTrue(timeoutError.message.orEmpty().contains("超时"))
     }
 
     private fun endpoint(server: HttpServer, username: String, password: String) = WebDavEndpoint(

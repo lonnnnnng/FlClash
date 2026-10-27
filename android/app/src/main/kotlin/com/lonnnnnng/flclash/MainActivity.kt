@@ -287,8 +287,9 @@ class MainActivity : ComponentActivity() {
 
     private fun probeWebDav(credentials: WebDavCredentials) {
         launchWebDavOperation("WebDAV 连接成功") {
-            webDavBackupRepository.saveCredentials(credentials)
             webDavBackupRepository.probe(credentials)
+            // 作者 long：先完成认证和目录探测，再替换 Keystore 中的凭据；失败时保留上一份可用配置。
+            webDavBackupRepository.saveCredentials(credentials)
             webDavCredentials = credentials
         }
     }
@@ -299,8 +300,9 @@ class MainActivity : ComponentActivity() {
             return
         }
         launchWebDavOperation("WebDAV 备份已上传并覆盖远程文件") {
-            webDavBackupRepository.saveCredentials(credentials)
             webDavBackupRepository.upload(credentials, scope)
+            // 作者 long：远程覆盖成功后才保存新账号，避免认证失败把原本可用的凭据替换掉。
+            webDavBackupRepository.saveCredentials(credentials)
             webDavCredentials = credentials
         }
     }
@@ -315,8 +317,9 @@ class MainActivity : ComponentActivity() {
             return
         }
         launchWebDavOperation("WebDAV 备份下载并恢复完成") {
-            webDavBackupRepository.saveCredentials(credentials)
             webDavBackupRepository.downloadAndRestore(credentials, scope, strategy)
+            // 作者 long：下载和本地恢复都成功后才提交新凭据，远程归档损坏时不改变本地登录配置。
+            webDavBackupRepository.saveCredentials(credentials)
             webDavCredentials = credentials
             profilesViewModel.refreshSelection()
         }

@@ -503,3 +503,14 @@
 - 定向观测详情测试通过；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过，完整 instrumentation 57 项失败 0、错误 0、跳过 0。
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 204 项 JVM 单元测试失败 0、错误 0、跳过 0，Lint 错误 0。
 - Debug APK SHA-256：`37087d7cd5016bf952439d8ea07f55c7fd6e4e653767c70a9eac2349f7e5bb71`；APK 原生库仅包含 `lib/arm64-v8a/`。
+
+## WebDAV 认证、离线反馈与真机回环验收记录（2026-10-28）
+
+- `HttpWebDavClient` 新增 `WebDavFailureKind`/`WebDavException`：401 映射为认证失败，403 映射为权限拒绝，404 映射为路径或文件不存在，连接拒绝/未知主机映射为离线，socket 超时映射为请求超时；提示不包含账号、密码或底层地址细节。
+- `MainActivity` 的 probe、上传和下载恢复均改为网络/本地恢复成功后再保存新凭据；认证失败、远端归档损坏或离线时保留原有 Keystore 凭据。
+- `WebDavClientTest` 共 6 项通过，新增 401/403、连接拒绝和超时提示断言；错误消息不回显测试密码。
+- Debug 资源仅对 `localhost` 放行明文流量，Release 继续使用生产网络安全配置；新增 `WebDavNetworkInstrumentedTest` 在 Redmi 真机进程内启动临时 WebDAV 服务，真实完成 `OPTIONS → MKCOL → PUT → GET`，错误密码 401 和服务关闭后的离线映射。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 210 项 JVM 测试失败 0、错误 0、跳过 0，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）64 项 instrumentation 失败 0、错误 0、跳过 0；定向 WebDAV 回环测试 1 项同样通过。
+- Debug APK SHA-256：`9fb9fd03ab640f0b06b2a65a3aa0a22d25af9add7c90759e401bc826bb097bc0`；Release 未签名 APK SHA-256：`56b8004fdd2ddc9723ba149d95a76a03c30c97598757c38ce238a9322e9bb836`；两者原生库均仅包含 `lib/arm64-v8a/`。
+- 本轮没有使用外部 WebDAV 账号或真实订阅路径；外部授权 WebDAV 服务的网络环境回归仍待具备授权条件后单独执行。
