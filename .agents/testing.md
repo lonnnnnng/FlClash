@@ -382,7 +382,7 @@
 ## 代理组批量测速切片实测记录（2026-10-28）
 
 - `CoreRuntimeManager.testDelayBatch()` 使用生命周期锁和默认 32 并发上限；`ProxyGroupsViewModel` 支持嵌套代理组递归展开、循环保护、请求去重、逐节点结果回写和批量期间的 UI 操作保护。
-- `./gradlew :app:testDebugUnitTest --no-daemon`：通过；App 77 项、Service 64 项、Core 16 项、Common 30 项，共 187 项 JVM 测试失败 0、错误 0、跳过 0。
+- `./gradlew test --no-daemon`：通过；App 77 项、Service 64 项、Core 16 项、Common 30 项，共 187 项 JVM 测试失败 0、错误 0、跳过 0。
 - `./gradlew :app:lintDebug --no-daemon`：通过，Lint 错误 0。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；43 项 instrumentation 测试失败 0、错误 0、跳过 0，设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`b45853f58175a89a089e886bca3a51dbc301ee51d8b7c5bd07bdf193c8354d37`；APK 原生库全部位于 `lib/arm64-v8a/`。
