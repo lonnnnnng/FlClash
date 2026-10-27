@@ -219,6 +219,9 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithText("Auto").performClick()
         composeRule.onNodeWithText("选择 Auto").assertIsDisplayed()
         composeRule.onNodeWithText("点击当前节点可恢复自动选择").assertIsDisplayed()
+        composeRule.onNodeWithText("搜索节点").performTextInput("node-b")
+        assertEquals(2, composeRule.onAllNodesWithText("node-b").fetchSemanticsNodes().size)
+        assertTrue(composeRule.onAllNodesWithText("node-a").fetchSemanticsNodes().isEmpty())
     }
 
     @Test

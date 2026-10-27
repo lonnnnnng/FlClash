@@ -863,6 +863,7 @@ internal fun ProxyGroupsCard(
     onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
 ) {
     var groupPendingSelection by remember { mutableStateOf<com.lonnnnnng.flclash.core.ProxyGroupInfo?>(null) }
+    var proxyQuery by remember(groupPendingSelection?.name) { mutableStateOf("") }
     val canRefresh = runtimeState == CoreRuntimeStatus.RUNNING &&
         !state.isLoading &&
         state.switchingGroup == null
@@ -935,7 +936,22 @@ internal fun ProxyGroupsCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    group.all.forEach { proxyName ->
+                    OutlinedTextField(
+                        value = proxyQuery,
+                        onValueChange = { proxyQuery = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("搜索节点") },
+                        singleLine = true,
+                    )
+                    val visibleProxies = filterProxyMembers(group, proxyQuery)
+                    if (visibleProxies.isEmpty()) {
+                        Text(
+                            "没有匹配的节点",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    visibleProxies.forEach { proxyName ->
                         val delay = state.delayState(group, proxyName)
                         Row(
                             modifier = Modifier.fillMaxWidth(),

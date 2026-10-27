@@ -35,12 +35,22 @@ data class ProxyDelayKey(
 data class ProxyDelayUiState(
     val isTesting: Boolean = false,
     val value: Int? = null,
+    val updatedAtMillis: Long = 0L,
 )
 
 fun ProxyGroupsUiState.delayState(
     group: ProxyGroupInfo,
     proxyName: String,
+    nowMillis: Long = System.currentTimeMillis(),
 ): ProxyDelayUiState? = delayResults[ProxyDelayKey(group.name, proxyName, group.testUrl.orDefaultTestUrl())]
+    ?.takeIf { it.isTesting || it.updatedAtMillis == 0L || nowMillis - it.updatedAtMillis <= DELAY_RESULT_TTL_MS }
+
+internal fun filterProxyMembers(group: ProxyGroupInfo, query: String): List<String> {
+    val normalized = query.trim()
+    return if (normalized.isEmpty()) group.all else group.all.filter { it.contains(normalized, ignoreCase = true) }
+}
+
+internal const val DELAY_RESULT_TTL_MS = 45_000L
 
 /**
  * 作者 long：Mihomo 的 URLTest/Fallback 自动测速事件只携带测试地址和叶子节点名称，
@@ -53,7 +63,10 @@ internal fun ProxyGroupsUiState.applyDelayEvent(event: CoreEvent.Delay): ProxyGr
         }
         .associate { group ->
             ProxyDelayKey(group.name, event.result.name, event.result.url) to
-                ProxyDelayUiState(value = event.result.value)
+                ProxyDelayUiState(
+                    value = event.result.value,
+                    updatedAtMillis = System.currentTimeMillis(),
+                )
         }
     return if (updates.isEmpty()) this else copy(delayResults = delayResults + updates)
 }
@@ -67,11 +80,14 @@ internal fun computedSelectionTarget(group: ProxyGroupInfo, proxyName: String): 
 private fun retainDelayResults(
     groups: List<ProxyGroupInfo>,
     values: Map<ProxyDelayKey, ProxyDelayUiState>,
+    nowMillis: Long = System.currentTimeMillis(),
 ): Map<ProxyDelayKey, ProxyDelayUiState> {
     val valid = groups.flatMap { group ->
         group.all.map { proxy -> ProxyDelayKey(group.name, proxy, group.testUrl.orDefaultTestUrl()) }
     }.toSet()
-    return values.filterKeys(valid::contains)
+    return values
+        .filterKeys(valid::contains)
+        .filterValues { it.isTesting || it.updatedAtMillis == 0L || nowMillis - it.updatedAtMillis <= DELAY_RESULT_TTL_MS }
 }
 
 @HiltViewModel
@@ -130,7 +146,13 @@ class ProxyGroupsViewModel @Inject constructor(
             mutableState.value = mutableState.value.copy(switchingGroup = group.name)
             runtimeManager.changeProxy(group.name, target)
                 .onSuccess { snapshot ->
-                    mutableState.value = ProxyGroupsUiState(groups = snapshot.groups)
+                    mutableState.value = ProxyGroupsUiState(
+                        groups = snapshot.groups,
+                        delayResults = retainDelayResults(
+                            snapshot.groups,
+                            mutableState.value.delayResults,
+                        ),
+                    )
                 }
                 .onFailure { error ->
                     mutableState.value = mutableState.value.copy(switchingGroup = null)
@@ -154,7 +176,10 @@ class ProxyGroupsViewModel @Inject constructor(
                     mutableState.update { state ->
                         state.copy(
                             delayResults = state.delayResults + (
-                                key to ProxyDelayUiState(value = result?.value)
+                                key to ProxyDelayUiState(
+                                    value = result?.value,
+                                    updatedAtMillis = System.currentTimeMillis(),
+                                )
                                 ),
                         )
                     }
@@ -163,7 +188,10 @@ class ProxyGroupsViewModel @Inject constructor(
                     mutableState.update { state ->
                         state.copy(
                             delayResults = state.delayResults + (
-                                key to ProxyDelayUiState(value = CoreBridge.DELAY_FAILED)
+                                key to ProxyDelayUiState(
+                                    value = CoreBridge.DELAY_FAILED,
+                                    updatedAtMillis = System.currentTimeMillis(),
+                                )
                                 ),
                         )
                     }

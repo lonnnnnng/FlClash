@@ -52,4 +52,33 @@ class ProxyGroupsViewModelTest {
         assertEquals(188, updated.delayResults.values.single().value)
         assertTrue(updated.delayResults.keys.single().groupName == "Auto")
     }
+
+    @Test
+    fun `proxy search filters members without changing group order`() {
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "URLTest",
+            now = "Tokyo-01",
+            all = listOf("Tokyo-01", "Hong Kong-01", "Tokyo-02"),
+            hidden = false,
+        )
+
+        assertEquals(listOf("Tokyo-01", "Tokyo-02"), filterProxyMembers(group, "tokyo"))
+        assertEquals(group.all, filterProxyMembers(group, "  "))
+    }
+
+    @Test
+    fun `delay result expires after cache ttl`() {
+        val group = ProxyGroupInfo("Auto", "URLTest", "node-a", listOf("node-a"), false, "https://one")
+        val state = ProxyGroupsUiState(
+            groups = listOf(group),
+            delayResults = mapOf(
+                ProxyDelayKey("Auto", "node-a", "https://one") to
+                    ProxyDelayUiState(value = 188, updatedAtMillis = 1_000L),
+            ),
+        )
+
+        assertEquals(null, state.delayState(group, "node-a", nowMillis = 1_000L + DELAY_RESULT_TTL_MS + 1L))
+        assertEquals(188, state.delayState(group, "node-a", nowMillis = 1_000L + DELAY_RESULT_TTL_MS)?.value)
+    }
 }

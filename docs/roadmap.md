@@ -392,14 +392,13 @@ flowchart LR
 
 待完成：
 
-- URLTest/Fallback 的当前节点和自动选择语义。
+- URLTest/Fallback 的完整递归选择和自动选择语义仍待补齐；当前节点/自动恢复基础交互已完成。
 - `fixed`、`now`、`selectedMap` 等核心状态映射。
 - 单组批量测速。
-- 按搜索文本筛选节点。
 - 超时节点隐藏和失败节点回滚策略。
 - Tab/List 两种布局。
 - 展开、折叠、滚动定位。
-- 延迟结果缓存和按测试 URL 失效。
+- 延迟结果的跨进程持久化缓存。
 - 代理组选择状态写回 Profile。
 
 完成门槛：
@@ -867,6 +866,16 @@ flowchart LR
 - 已按真机约束把工作区 `1.yaml` 送入设备文件选择器并确认文件可见，但设备在交互期间被无关前台应用反复抢占，未形成可信的 KClash 核心启动、代理页 computed 组展示、自动测速结果或 VPN/TUN 清理证据；本轮未访问两条授权真实在线路径。
 - 当前切片只完成 computed 组基础交互和事件映射；完整递归选择、组级批量测速、搜索过滤、结果缓存失效、订阅自动更新和备份恢复仍未完成。
 
+### 2026-10-27：代理组搜索与延迟结果缓存失效切片
+
+- 代理组选择对话框新增大小写不敏感的节点搜索；搜索只过滤当前组成员，不改变组顺序，空结果显示明确空态。
+- 延迟结果增加 45 秒 TTL；读取和代理组刷新时清理过期或已失效的结果，按组名、节点名和测试 URL 继续隔离，避免旧测速结果覆盖新状态。
+- 新增 2 项 `ProxyGroupsViewModel` JVM 测试和 1 项 Compose instrumentation 测试，覆盖搜索过滤、空白搜索、TTL 边界和 computed 组搜索展示。
+- `./gradlew :app:testDebugUnitTest :app:connectedDebugAndroidTest --no-daemon`：通过；185 项 JVM 单元测试失败 0、错误 0、跳过 0；43 项 instrumentation 测试失败 0、错误 0、跳过 0，设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- `./gradlew :app:lintDebug --no-daemon`：通过；Lint 错误 0、Warning 34、Hint 2，均为既有非阻断问题。
+- Debug APK SHA-256 为 `e96bbeb58bcd272646e1c82dc2fe9bdd7d4c35192a6335736c12fd46abbe4f4d`，APK 内原生库仅位于 `lib/arm64-v8a/`。
+- 本轮未访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动；单组批量测速、完整递归选择、跨进程缓存持久化、订阅自动更新和备份恢复仍未完成。
+
 ### N4：Profiles 和代理组 parity
 
 目标：补齐 Flutter Android 用户已经拥有的配置和代理组工作流。
@@ -879,7 +888,7 @@ flowchart LR
 4. 批量测速、搜索、缓存和结果失效。
 5. 订阅自动更新和备份恢复。
 
-本轮已完成 Profile 排序、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers 以及 URLTest/Fallback computed 组基础交互和自动测速事件映射；下一步先补 `1.yaml` 真机运行证据，再推进组级批量测速、搜索/缓存失效，最后补订阅自动更新和备份恢复。
+本轮已完成 Profile 排序、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射，以及代理组搜索和延迟结果基础失效；下一步先补 `1.yaml` 真机运行证据，再推进组级批量测速和完整递归选择，最后补订阅自动更新和备份恢复。
 
 ### N5：平台入口和系统集成
 
