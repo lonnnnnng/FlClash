@@ -132,6 +132,7 @@ fun KClashApp(
     var showLogs by rememberSaveable { mutableStateOf(false) }
     var showDiagnosticHistory by rememberSaveable { mutableStateOf(false) }
     var showScriptsDialog by rememberSaveable { mutableStateOf(false) }
+    var showRemoteScriptDialog by rememberSaveable { mutableStateOf(false) }
     var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
     val selectedDestination = MainDestination.values()[selectedDestinationIndex]
 
@@ -416,6 +417,22 @@ fun KClashApp(
             },
             onDelete = scriptsViewModel::delete,
             onReorder = scriptsViewModel::reorder,
+            onImportRemote = {
+                showScriptsDialog = false
+                showRemoteScriptDialog = true
+            },
+            onSync = scriptsViewModel::sync,
+        )
+    }
+
+    if (showRemoteScriptDialog) {
+        ScriptRemoteDialog(
+            busy = scriptsState.isBusy,
+            onDismiss = { if (!scriptsState.isBusy) showRemoteScriptDialog = false },
+            onImport = { label, url ->
+                showRemoteScriptDialog = false
+                scriptsViewModel.importRemote(label, url)
+            },
         )
     }
 
@@ -1897,6 +1914,8 @@ internal fun ScriptsLibraryDialog(
     onEdit: (Script) -> Unit,
     onDelete: (Script) -> Unit,
     onReorder: (List<Long>) -> Unit,
+    onImportRemote: () -> Unit = {},
+    onSync: (Script) -> Unit = {},
 ) {
     var pendingDelete by remember { mutableStateOf<Script?>(null) }
     var orderedScripts by remember(state.scripts.map(Script::id)) {
@@ -1952,6 +1971,12 @@ internal fun ScriptsLibraryDialog(
                                             onClick = { onEdit(script) },
                                             enabled = !state.isBusy,
                                         ) { Text("编辑") }
+                                        if (script.url.isNotBlank()) {
+                                            TextButton(
+                                                onClick = { onSync(script) },
+                                                enabled = !state.isBusy,
+                                            ) { Text("同步") }
+                                        }
                                         TextButton(
                                             onClick = { pendingDelete = script },
                                             enabled = !state.isBusy,
@@ -1965,7 +1990,10 @@ internal fun ScriptsLibraryDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onCreate, enabled = !state.isBusy) { Text("新建脚本") }
+            Row {
+                TextButton(onClick = onImportRemote, enabled = !state.isBusy) { Text("导入远程脚本") }
+                TextButton(onClick = onCreate, enabled = !state.isBusy) { Text("新建脚本") }
+            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !state.isBusy) { Text("关闭") }
@@ -1991,6 +2019,49 @@ internal fun ScriptsLibraryDialog(
             },
         )
     }
+}
+
+@Composable
+internal fun ScriptRemoteDialog(
+    busy: Boolean,
+    onDismiss: () -> Unit,
+    onImport: (label: String, url: String) -> Unit,
+) {
+    var label by rememberSaveable { mutableStateOf("") }
+    var url by rememberSaveable { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = { if (!busy) onDismiss() },
+        title = { Text("导入远程脚本") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = label,
+                    onValueChange = { label = it },
+                    enabled = !busy,
+                    label = { Text("脚本名称（可选）") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = url,
+                    onValueChange = { url = it },
+                    enabled = !busy,
+                    label = { Text("HTTP(S) 脚本地址") },
+                    singleLine = true,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onImport(label, url) },
+                enabled = !busy && url.isNotBlank(),
+            ) {
+                if (busy) CircularProgressIndicator() else Text("导入")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !busy) { Text("取消") }
+        },
+    )
 }
 
 @Composable

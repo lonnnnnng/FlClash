@@ -352,3 +352,11 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；32 项 instrumentation 失败 0、错误 0、跳过 0，其中 Room 6 项、Compose 26 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`4dfa7e1632017ec276b4a68df2d7ba878d50f3ee2dd8894bbca1c356f5bb5150`；APK 原生库仅包含 `lib/arm64-v8a/libandroidx.graphics.path.so`、`lib/arm64-v8a/libbarhopper_v3.so` 和 `lib/arm64-v8a/libclash.so`。
 - 本轮只验证绑定、解绑、删除清理和核心运行保护，没有访问当前 `AGENTS.md` 列出的两条真实订阅路径、VPN、核心启动或 JavaScript 执行。
+
+## Scripts 远程导入与手动同步切片实测记录（2026-10-27）
+
+- 脚本库支持 HTTP/HTTPS 远程导入和手动同步；下载正文写入应用私有脚本目录，远程 URL、名称去重，正文限制 2 MiB，手动同步使用原子替换并保留旧正文直到新正文下载完成。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 158 项 Kotlin 单元测试失败 0、错误 0、跳过 0，Lint 错误 0、Warning 32、Hint 2。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：修复一次新增 Repository 测试的 Room collector 清理竞态后完整通过；34 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 6 项、Compose 28 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`5410232c37fd920234021ca3eb98fdcf6ea96cb9c75a0ecd39cb1141a338a385`；APK 原生库仅包含 `lib/arm64-v8a/libclash.so`。
+- 本轮未访问当前工作区 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动；远程脚本资源管理不等于 JavaScript 执行，执行边界仍待单独切片。

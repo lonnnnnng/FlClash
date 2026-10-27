@@ -5,6 +5,8 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.ScriptClient
+import com.lonnnnnng.flclash.data.ScriptDownload
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -61,5 +63,49 @@ class ScriptsRepositoryInstrumentedTest {
         assertTrue(repository.scriptFile(second.id).isFile)
         assertEquals(null, runBlocking { database.profiles().getById(boundProfile.id)?.scriptId })
         database.close()
+    }
+
+    @Test
+    fun repositoryImportsAndSyncsRemoteScriptAtomically() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val client = FakeScriptClient()
+        val repository = ScriptRepository(context, database, client)
+
+        val script = runBlocking {
+            repository.createRemote("远程脚本", "http://127.0.0.1/script.js")
+        }
+        assertEquals("const main = (config) => config;", runBlocking { repository.readContent(script.id) })
+        assertEquals(
+            "http://127.0.0.1/script.js",
+            runBlocking { database.scripts().getById(script.id)?.url },
+        )
+
+        val synced = runBlocking { repository.sync(script.id) }
+        // 作者 long：先等 Room 观察流处理完同步写入，再关闭内存库，避免 collector 仍在读连接池时被测试清理关闭。
+        composeRule.waitUntil(5_000) {
+            repository.scripts.value.singleOrNull()?.lastUpdateAt == synced.lastUpdateAt
+        }
+        assertEquals("const main = (config) => ({...config, synced: true});", runBlocking {
+            repository.readContent(script.id)
+        })
+        database.close()
+    }
+}
+
+private class FakeScriptClient : ScriptClient {
+    private var count = 0
+
+    override suspend fun download(url: String): ScriptDownload {
+        count += 1
+        val content = if (count == 1) {
+            "const main = (config) => config;"
+        } else {
+            "const main = (config) => ({...config, synced: true});"
+        }
+        return ScriptDownload(content.toByteArray(), "远程脚本")
     }
 }

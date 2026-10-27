@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.withTransaction
 import java.io.File
 import java.io.IOException
+import java.net.URL
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,9 +21,13 @@ interface ScriptStore {
 
     suspend fun create(label: String, content: String): Script
 
+    suspend fun createRemote(label: String, url: String): Script
+
     suspend fun readContent(id: Long): String
 
     suspend fun update(id: Long, label: String, content: String): Script
+
+    suspend fun sync(id: Long): Script
 
     suspend fun delete(id: Long)
 
@@ -32,6 +37,7 @@ interface ScriptStore {
 class ScriptRepository(
     context: Context,
     private val database: KClashDatabase,
+    private val scriptClient: ScriptClient = HttpScriptClient(),
 ) : ScriptStore {
     private val appContext = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -67,6 +73,29 @@ class ScriptRepository(
         script
     }
 
+    override suspend fun createRemote(label: String, url: String): Script = withContext(Dispatchers.IO) {
+        val normalizedUrl = normalizeUrl(url)
+        require(mutableScripts.value.none { it.url == normalizedUrl }) { "该远程脚本已经添加" }
+        val downloaded = scriptClient.download(normalizedUrl)
+        val normalizedContent = normalizeContent(downloaded.bytes.toString(Charsets.UTF_8))
+        val normalizedLabel = normalizeLabel(label.ifBlank { downloaded.suggestedLabel ?: suggestedLabel(normalizedUrl) })
+        require(mutableScripts.value.none { it.label == normalizedLabel }) { "脚本名称已经存在" }
+        val script = Script(
+            id = newId(),
+            label = normalizedLabel,
+            url = normalizedUrl,
+            lastUpdateAt = System.currentTimeMillis(),
+            orderIndex = mutableScripts.value.size,
+        )
+        replaceFileAtomically(script.id, normalizedContent)
+        runCatching { scriptDao.insert(script.toEntity()) }
+            .onFailure {
+                scriptFile(script.id).delete()
+                throw it
+            }
+        script
+    }
+
     override suspend fun readContent(id: Long): String = withContext(Dispatchers.IO) {
         requireNotNull(scriptDao.getById(id)) { "脚本不存在" }
         scriptFile(id).takeIf(File::isFile)?.readText(Charsets.UTF_8).orEmpty()
@@ -88,6 +117,18 @@ class ScriptRepository(
             scriptDao.update(updated.toEntity())
             updated
         }
+
+    override suspend fun sync(id: Long): Script = withContext(Dispatchers.IO) {
+        val current = requireNotNull(scriptDao.getById(id)) { "脚本不存在" }.toDomain()
+        val url = current.url.takeIf { it.isNotBlank() }
+            ?: throw IllegalArgumentException("本地脚本没有远程地址")
+        val downloaded = scriptClient.download(url)
+        val normalizedContent = normalizeContent(downloaded.bytes.toString(Charsets.UTF_8))
+        replaceFileAtomically(id, normalizedContent)
+        val updated = current.copy(lastUpdateAt = System.currentTimeMillis())
+        scriptDao.update(updated.toEntity())
+        updated
+    }
 
     override suspend fun delete(id: Long) = withContext(Dispatchers.IO) {
         val current = scriptDao.getById(id) ?: return@withContext
@@ -132,6 +173,22 @@ class ScriptRepository(
     private fun normalizeContent(content: String): String = content.trim().also {
         require(it.isNotEmpty()) { "脚本内容不能为空" }
     }
+
+    private fun normalizeUrl(url: String): String = url.trim().also {
+        require(it.isNotEmpty()) { "脚本地址不能为空" }
+        val parsed = runCatching { URL(it) }.getOrElse {
+            throw IllegalArgumentException("脚本地址格式无效", it)
+        }
+        require(parsed.protocol == "http" || parsed.protocol == "https") {
+            "仅支持 HTTP/HTTPS 脚本地址"
+        }
+    }
+
+    private fun suggestedLabel(url: String): String =
+        runCatching { URL(url).path.substringAfterLast('/').substringBeforeLast('.') }
+            .getOrNull()
+            ?.takeIf { it.isNotBlank() }
+            ?: "远程脚本"
 
     private fun newId(): Long = UUID.randomUUID().mostSignificantBits and Long.MAX_VALUE
 

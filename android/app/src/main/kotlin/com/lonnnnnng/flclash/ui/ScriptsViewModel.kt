@@ -106,6 +106,16 @@ class ScriptsViewModel @Inject constructor(
         }
     }
 
+    fun importRemote(label: String, url: String) {
+        if (isBlocked()) return
+        launchAction { repository.createRemote(label, url) }
+    }
+
+    fun sync(script: Script) {
+        if (isBlocked()) return
+        launchAction { repository.sync(script.id) }
+    }
+
     fun delete(script: Script) {
         if (isBlocked()) return
         launchAction { repository.delete(script.id) }

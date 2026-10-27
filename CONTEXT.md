@@ -72,6 +72,8 @@
 
 **平台运行入口**：通知栏 STOP、桌面启动/停止/切换快捷方式、Quick Settings Tile 和外部 Action 都通过 `CoreRuntimeManager` 改变核心状态；电池优化引导读取系统真实授权状态，Tasker/MacroDroid 实际应用回归仍待补齐。
 
+**远程脚本**：带有 HTTP(S) 地址的脚本资源；KClash 将下载正文保存到应用私有脚本目录，手动同步使用原子替换并保留上一次可读正文，远程资源管理不代表 JavaScript 已执行。
+
 ## 示例对话
 
 开发者：上游新增了一个代理组能力，应该直接合并到 Kotlin 主线吗？

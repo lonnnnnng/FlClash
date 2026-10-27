@@ -79,6 +79,23 @@ class ScriptsViewModelTest {
         assertFalse(viewModel.editorState.value.isOpen)
         assertTrue(store.scripts.value.isEmpty())
     }
+
+    @Test
+    fun `remote script import and sync delegate to the store`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val store = FakeScriptStore()
+        val viewModel = ScriptsViewModel(store, FakeScriptRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+
+        viewModel.importRemote("远程脚本", "http://127.0.0.1/script.js")
+        advanceUntilIdle()
+        val imported = store.scripts.value.single()
+        assertEquals("http://127.0.0.1/script.js", imported.url)
+        assertEquals("remote", store.contents[imported.id])
+
+        viewModel.sync(imported)
+        advanceUntilIdle()
+        assertEquals("synced", store.contents[imported.id])
+    }
 }
 
 private class FakeScriptRuntimeStatusProvider(
@@ -107,12 +124,27 @@ private class FakeScriptStore(
         return script
     }
 
+    override suspend fun createRemote(label: String, url: String): Script {
+        val script = Script(nextId++, label, url, lastUpdateAt = 1L, orderIndex = mutableScripts.value.size)
+        contents[script.id] = "remote"
+        mutableScripts.value = mutableScripts.value + script
+        return script
+    }
+
     override suspend fun readContent(id: Long): String = contents[id] ?: error("脚本内容不存在")
 
     override suspend fun update(id: Long, label: String, content: String): Script {
         val current = mutableScripts.value.single { it.id == id }
         contents[id] = content
         val updated = current.copy(label = label, lastUpdateAt = 2L)
+        mutableScripts.value = mutableScripts.value.map { if (it.id == id) updated else it }
+        return updated
+    }
+
+    override suspend fun sync(id: Long): Script {
+        val current = mutableScripts.value.single { it.id == id }
+        contents[id] = "synced"
+        val updated = current.copy(lastUpdateAt = 3L)
         mutableScripts.value = mutableScripts.value.map { if (it.id == id) updated else it }
         return updated
     }

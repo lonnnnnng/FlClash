@@ -8,6 +8,8 @@ import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ScriptRepository
 import com.lonnnnnng.flclash.data.ScriptStore
+import com.lonnnnnng.flclash.data.HttpScriptClient
+import com.lonnnnnng.flclash.data.ScriptClient
 import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
 import com.lonnnnnng.flclash.data.RoomRuntimeDiagnosticStore
 import com.lonnnnnng.flclash.data.SubscriptionClient
@@ -65,7 +67,12 @@ object AppModule {
     fun provideScriptRepository(
         @ApplicationContext context: Context,
         database: KClashDatabase,
-    ): ScriptRepository = ScriptRepository(context, database)
+        scriptClient: ScriptClient,
+    ): ScriptRepository = ScriptRepository(context, database, scriptClient)
+
+    @Provides
+    @Singleton
+    fun provideScriptClient(): ScriptClient = HttpScriptClient()
 
     @Provides
     @Singleton

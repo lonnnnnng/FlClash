@@ -77,4 +77,24 @@ class ScriptsUiInstrumentedTest {
         assertEquals("更新脚本", saved?.first)
         assertEquals("const main = (config) => config;", saved?.second)
     }
+
+    @Test
+    fun remoteDialogForwardsUrlAndOptionalLabel() {
+        var imported: Pair<String, String>? = null
+        composeRule.setContent {
+            KClashTheme {
+                ScriptRemoteDialog(
+                    busy = false,
+                    onDismiss = {},
+                    onImport = { label, url -> imported = label to url },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("脚本名称（可选）").performTextInput("远程脚本")
+        composeRule.onNodeWithText("HTTP(S) 脚本地址").performTextInput("http://127.0.0.1/script.js")
+        composeRule.onNodeWithText("导入").performClick()
+
+        assertEquals("远程脚本" to "http://127.0.0.1/script.js", imported)
+    }
 }
