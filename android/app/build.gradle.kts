@@ -133,6 +133,7 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.gson)
+    implementation(libs.okhttp)
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
