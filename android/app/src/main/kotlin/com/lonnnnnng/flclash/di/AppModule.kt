@@ -6,6 +6,9 @@ import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.HttpSubscriptionClient
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.ProfileStore
+import com.lonnnnnng.flclash.data.ProfileConfigValidator
+import com.lonnnnnng.flclash.data.RemoteProfileUpdater
+import com.lonnnnnng.flclash.data.YamlProfileConfigValidator
 import com.lonnnnnng.flclash.data.ScriptRepository
 import com.lonnnnnng.flclash.data.ScriptStore
 import com.lonnnnnng.flclash.data.HttpScriptClient
@@ -47,6 +50,7 @@ object AppModule {
             .addMigrations(KClashDatabase.MIGRATION_1_2)
             .addMigrations(KClashDatabase.MIGRATION_2_3)
             .addMigrations(KClashDatabase.MIGRATION_3_4)
+            .addMigrations(KClashDatabase.MIGRATION_4_5)
             .build()
 
     @Provides
@@ -55,15 +59,24 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideProfileConfigValidator(): ProfileConfigValidator = YamlProfileConfigValidator()
+
+    @Provides
+    @Singleton
     fun provideProfileRepository(
         @ApplicationContext context: Context,
         database: KClashDatabase,
         subscriptionClient: SubscriptionClient,
-    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient)
+        configValidator: ProfileConfigValidator,
+    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient, configValidator)
 
     @Provides
     @Singleton
     fun provideProfileStore(repository: ProfileRepository): ProfileStore = repository
+
+    @Provides
+    @Singleton
+    fun provideRemoteProfileUpdater(repository: ProfileRepository): RemoteProfileUpdater = repository
 
     @Provides
     @Singleton

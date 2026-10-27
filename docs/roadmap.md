@@ -2,7 +2,7 @@
 
 > 文档类型：产品迁移路线图、功能矩阵、依赖图和验收门槛
 >
-> 最后核对：2026-10-27（北京时间）
+> 最后核对：2026-10-28（北京时间）
 >
 > 当前基线：`kotlin` 分支；首页/配置/代理/连接/观测导航、Profiles ViewModel、Profile 排序、Scripts 本地资源管理、远程脚本导入/手动同步、Profile 绑定与 JavaScript 执行边界、内存 Room、Compose instrumentation 和 Redmi 真机验收均已完成首轮切片
 
@@ -56,8 +56,8 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 196 项通过，失败 0，错误 0，跳过 0 |
-| Instrumentation | 43 项通过，失败 0，错误 0，跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36） |
+| 单元测试 | 204 项通过，失败 0，错误 0，跳过 0 |
+| Instrumentation | 48 项通过，失败 0，错误 0，跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36） |
 | Debug 构建 | `./gradlew test :app:assembleDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
 | Debug 原生库 | APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
@@ -141,7 +141,7 @@ flowchart LR
 - 远程订阅手动同步。
 - 核心运行期间阻止配置选择和编辑，避免运行输入与用户编辑内容分裂。
 
-未纳入 M1 完成定义的内容：高级分区编辑、备份恢复和完整自动更新调度；Deep Link 基础导入及本轮冷启动、重复导入和错误反馈回归已完成。二维码图片导入已完成代码、单元测试和当前两条授权路径真机验收。
+未纳入 M1 完成定义的内容：高级分区编辑和备份恢复；订阅自动更新已完成代码、自动化验证和调度证据，但真实在线更新回归仍待使用当前两条授权路径补齐。Deep Link 基础导入及本轮冷启动、重复导入和错误反馈回归已完成。二维码图片导入已完成代码、单元测试和当前两条授权路径真机验收。
 
 ### M2：Mihomo 配置校验与应用 — `DONE-VERIFIED`
 
@@ -375,8 +375,8 @@ flowchart LR
 待完成：
 
 - YAML 编辑器语法体验、搜索、定位、错误行提示和大文件性能。
-- Dialers 等高级配置；脚本自动更新调度、备份恢复和完整页面级 E2E。
-- 订阅自动更新调度、失败重试和通知。
+- 备份恢复和完整页面级 E2E。
+- 真实在线订阅更新回归；自动更新调度、失败重试、失败摘要和通知已完成代码与自动化验证。
 - 备份和恢复。
 - Profile 级别的代理组展开状态和其他 Flutter 行为数据。
 
@@ -917,6 +917,19 @@ flowchart LR
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）44 项 instrumentation 测试失败 0、错误 0、跳过 0，其中包含真实 Room 选择映射和 `activeProfile()` 恢复流程。
 - 本轮未访问两条授权真实在线路径，未进行真实核心代理组点击和进程重建后的页面级选择回归，因此切片状态保持 `DONE-UNIT`；下一步推进订阅自动更新，再补代理选择真机 E2E、嵌套代理组 UI 导航和备份恢复。
 
+### 2026-10-28：订阅自动更新闭环切片
+
+- 接入 WorkManager 2.10.1，应用启动时注册唯一周期任务 `kclash-subscription-auto-update`；任务每 20 分钟检查一次，使用网络和非低电量约束，并采用初始 30 分钟的指数退避。
+- `RemoteProfileUpdater` 按 Profile 的 `autoUpdate` 和 `autoUpdateIntervalMillis` 筛选到期远程 Profile，默认最小间隔为 15 分钟；单次最多重试 3 次，取消异常继续向上传播，不把任务取消误记为失败。
+- 订阅下载完成后先通过 `YamlProfileConfigValidator` 和安全 YAML 编解码校验，校验成功后才原子替换 Profile 文件；失败时保留旧 YAML，并把最多 240 字符的失败摘要写入 `lastUpdateError`。
+- Room schema 升级到 v5，新增 `profiles.lastUpdateError` 和 `MIGRATION_4_5`；自动更新成功会清除失败摘要。
+- 配置页远程 Profile 新增“自动更新”开关和最近一次自动更新失败原因，`ProfilesViewModel.setAutoUpdate()` 已接入，Worker 通过 Hilt EntryPoint 获取更新器。
+- 新增自动更新调度、到期筛选、YAML 校验、旧文件保留、失败摘要和取消传播测试；`./gradlew test --no-daemon` 通过，全工程 204 项 JVM 单元测试失败 0、错误 0、跳过 0。
+- `./gradlew :app:assembleDebug :app:lintDebug --no-daemon` 通过，Lint 错误 0；Debug APK SHA-256 为 `89a4f6641ac608406b989bfe9337e597e484beda24260dacd0ad26312c6ca56f`，APK 内原生库仅位于 `lib/arm64-v8a/`。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon` 通过；Redmi Note 8 Pro（Android 16/API 36）48 项 instrumentation 失败 0、错误 0、跳过 0，包含远程 Profile 自动更新开关页面回归。
+- 设备 `dumpsys jobscheduler` 已确认唯一 WorkManager 任务存在，包含网络、`BATTERY_NOT_LOW` 和 30 分钟指数退避约束；本轮尚未使用两条授权真实在线路径执行真实订阅更新回归。
+- 当前切片状态：`DONE-UNIT`。自动更新代码、失败保护和设备调度证据已完成；真实在线订阅更新、备份恢复和完整页面级 E2E 仍待后续切片。
+
 ### N4：Profiles 和代理组 parity
 
 目标：补齐 Flutter Android 用户已经拥有的配置和代理组工作流。
@@ -929,7 +942,7 @@ flowchart LR
 4. 批量测速、搜索、缓存和结果失效。
 5. 订阅自动更新和备份恢复。
 
-本轮已完成 Profile 排序、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义以及选择映射的 Room/Runtime/ViewModel 持久化闭环；下一步推进订阅自动更新和备份恢复，再补代理选择真机 E2E 与完整页面级交互。
+本轮已完成 Profile 排序、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义、选择映射的 Room/Runtime/ViewModel 持久化闭环，以及订阅自动更新的代码和设备调度证据；下一步使用两条授权路径补做真实在线订阅更新回归，再推进备份恢复、代理选择真机 E2E 与完整页面级交互。
 
 ### N5：平台入口和系统集成
 

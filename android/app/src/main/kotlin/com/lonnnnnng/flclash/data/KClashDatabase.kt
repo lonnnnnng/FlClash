@@ -26,7 +26,7 @@ class ProfileTypeConverters {
         RuntimeDiagnosticEntity::class,
         ScriptEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = false,
 )
 @TypeConverters(ProfileTypeConverters::class)
@@ -107,6 +107,13 @@ abstract class KClashDatabase : RoomDatabase() {
                     """.trimIndent(),
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_scripts_orderIndex ON scripts(orderIndex)")
+            }
+        }
+
+        val MIGRATION_4_5: Migration = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 作者 long：自动更新失败只记录可脱敏的错误摘要，不能覆盖上一份有效配置文件。
+                db.execSQL("ALTER TABLE profiles ADD COLUMN lastUpdateError TEXT")
             }
         }
     }

@@ -63,6 +63,7 @@ data class ProfileEntity(
     val url: String,
     val ageSecretKey: String,
     val lastUpdateAt: Long?,
+    val lastUpdateError: String?,
     val autoUpdate: Boolean,
     val autoUpdateIntervalMillis: Long,
     val uploadBytes: Long,
@@ -97,6 +98,7 @@ data class Profile(
     val scriptId: Long? = null,
     val matchTarget: String? = null,
     val overridesJson: String = "{}",
+    val lastUpdateError: String? = null,
 ) {
     val realLabel: String
         get() = label.trim().ifEmpty { defaultLabel }
@@ -114,6 +116,7 @@ data class Profile(
         url = url,
         ageSecretKey = ageSecretKey,
         lastUpdateAt = lastUpdateAt,
+        lastUpdateError = lastUpdateError,
         autoUpdate = autoUpdate,
         autoUpdateIntervalMillis = autoUpdateIntervalMillis,
         uploadBytes = subscriptionInfo?.upload ?: 0,
@@ -186,6 +189,7 @@ fun ProfileEntity.toDomain(): Profile = Profile(
     url = url,
     ageSecretKey = ageSecretKey,
     lastUpdateAt = lastUpdateAt,
+    lastUpdateError = lastUpdateError,
     autoUpdate = autoUpdate,
     autoUpdateIntervalMillis = autoUpdateIntervalMillis,
     subscriptionInfo = if (uploadBytes == 0L && downloadBytes == 0L && totalBytes == 0L && expireAtSeconds == 0L) {

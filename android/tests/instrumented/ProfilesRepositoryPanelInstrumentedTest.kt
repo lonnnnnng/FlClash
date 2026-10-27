@@ -23,6 +23,7 @@ import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.data.SubscriptionClient
 import com.lonnnnnng.flclash.data.SubscriptionDownload
+import com.lonnnnnng.flclash.data.SubscriptionInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
@@ -230,6 +231,76 @@ class ProfilesRepositoryPanelInstrumentedTest {
             decodeSelectedMap(runBlocking { database.profiles().getById(profile.id)?.selectedMapJson }),
         )
         assertEquals(selectedMap, runBlocking { repository.activeProfile().selectedMap })
+    }
+
+    @Test
+    fun subscriptionUpdateValidatesBeforeReplacingAndRecordsFailure() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val client = object : SubscriptionClient {
+            var bytes = "mixed-port: 7890\n".toByteArray()
+
+            override suspend fun download(url: String): SubscriptionDownload = SubscriptionDownload(
+                bytes = bytes,
+                suggestedLabel = "远程配置",
+                subscriptionInfo = SubscriptionInfo(),
+            )
+        }
+        val repository = ProfileRepository(context, database, client)
+        val profile = runBlocking {
+            repository.addRemoteProfile("https://example.test/subscription")
+        }
+
+        client.bytes = "<html>订阅服务暂时不可用</html>".toByteArray()
+        val failure = runCatching { runBlocking { repository.updateRemoteProfile(profile.id) } }.exceptionOrNull()
+
+        assertTrue(failure is IllegalArgumentException)
+        assertEquals("mixed-port: 7890\n", repository.profileFile(profile.id).readText())
+        assertTrue(
+            runBlocking { database.profiles().getById(profile.id)?.lastUpdateError }
+                ?.contains("YAML") == true,
+        )
+
+        client.bytes = "mixed-port: 7891\n".toByteArray()
+        val updated = runBlocking { repository.updateRemoteProfile(profile.id) }
+        assertEquals("mixed-port: 7891\n", repository.profileFile(profile.id).readText())
+        assertEquals(null, updated.lastUpdateError)
+        assertEquals(null, runBlocking { database.profiles().getById(profile.id)?.lastUpdateError })
+    }
+
+    @Test
+    fun dueRemoteProfilesAreUpdatedByRepositoryBatch() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context,
+            database,
+            object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload = SubscriptionDownload(
+                    bytes = "mixed-port: 7892\n".toByteArray(),
+                    suggestedLabel = null,
+                    subscriptionInfo = SubscriptionInfo(),
+                )
+            },
+        )
+        val profile = runBlocking {
+            repository.addRemoteProfile("https://example.test/due")
+        }
+        val stale = runBlocking { database.profiles().getById(profile.id) }!!.copy(lastUpdateAt = 0L)
+        runBlocking { database.profiles().update(stale) }
+
+        val result = runBlocking { repository.updateDueProfiles(nowMillis = 86_400_000L) }
+
+        assertEquals(1, result.attempted)
+        assertEquals(1, result.succeeded)
+        assertTrue(result.failures.isEmpty())
+        assertEquals("mixed-port: 7892\n", repository.profileFile(profile.id).readText())
     }
 
     @Test

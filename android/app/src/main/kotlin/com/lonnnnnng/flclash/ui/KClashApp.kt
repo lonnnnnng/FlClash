@@ -37,6 +37,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
@@ -313,6 +314,7 @@ fun KClashApp(
                         onSelect = profilesViewModel::select,
                         onEdit = profilesViewModel::openEditor,
                         onUpdate = profilesViewModel::update,
+                        onSetAutoUpdate = profilesViewModel::setAutoUpdate,
                         onCloseEditor = profilesViewModel::closeEditor,
                         onSaveEditor = profilesViewModel::saveEditor,
                         onDelete = profilesViewModel::delete,
@@ -573,6 +575,7 @@ internal fun ProfilesPanel(
     onSelect: (id: Long) -> Unit,
     onEdit: (profile: Profile) -> Unit,
     onUpdate: (profile: Profile) -> Unit,
+    onSetAutoUpdate: (profile: Profile, enabled: Boolean) -> Unit = { _, _ -> },
     onCloseEditor: () -> Unit,
     onSaveEditor: (content: String) -> Unit,
     onDelete: (profile: Profile) -> Unit,
@@ -655,6 +658,7 @@ internal fun ProfilesPanel(
                     onSelect = { onSelect(profile.id) },
                     onEdit = { onEdit(profile) },
                     onUpdate = { onUpdate(profile) },
+                    onSetAutoUpdate = { enabled -> onSetAutoUpdate(profile, enabled) },
                     onDelete = { profilePendingDeletion = profile },
                     onOpenRulesEditor = { onOpenRulesEditor(profile) },
                     onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
@@ -2214,6 +2218,7 @@ internal fun ProfileCard(
     onSelect: () -> Unit,
     onEdit: () -> Unit,
     onUpdate: () -> Unit,
+    onSetAutoUpdate: (Boolean) -> Unit = {},
     onDelete: () -> Unit,
     onOpenRulesEditor: () -> Unit = {},
     onOpenProxiesEditor: () -> Unit = {},
@@ -2250,6 +2255,32 @@ internal fun ProfileCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 48.dp),
                 )
+            }
+            if (profile.type == ProfileType.URL) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 48.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("自动更新", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = profile.autoUpdate,
+                        onCheckedChange = onSetAutoUpdate,
+                        enabled = canMutate,
+                        modifier = Modifier.testTag("profile_auto_update_${profile.id}"),
+                    )
+                }
+                profile.lastUpdateError?.let { error ->
+                    Text(
+                        text = "自动更新失败：$error",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(start = 48.dp),
+                    )
+                }
             }
             FlowRow(
                 modifier = Modifier

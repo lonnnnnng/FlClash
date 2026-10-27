@@ -414,3 +414,14 @@
 - `./gradlew :app:assembleDebug :app:lintDebug --no-daemon`：通过；Lint 错误 0；Debug APK SHA-256 为 `cc424209df0cf562d30a7746bde2596a74eb5b4352d940f85ed2ef81f3aa8dce`，原生库仅包含 `lib/arm64-v8a/`。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）44 项 instrumentation 测试失败 0、错误 0、跳过 0，新增真实 Room 选择映射持久化和 `activeProfile()` 恢复断言通过。
 - 本轮未访问当前 `AGENTS.md` 列出的两条真实在线路径，也未进行真实核心代理组点击；页面级真机选择和进程重建后的 UI 恢复仍待后续验收。
+
+## 订阅自动更新闭环验收记录（2026-10-28）
+
+- 新增 WorkManager 唯一周期任务 `kclash-subscription-auto-update`：20 分钟周期、网络约束、`BATTERY_NOT_LOW` 约束、初始 30 分钟指数退避和最多 3 次重试。
+- `RemoteProfileUpdater` 只处理开启 `autoUpdate` 且已到期的远程 Profile；下载结果先通过 `YamlProfileConfigValidator`，校验成功后才替换文件，失败时保留旧 YAML 并写入截断后的 `lastUpdateError`。
+- Room schema 从 v4 升级到 v5，新增 `profiles.lastUpdateError`；成功更新清除失败摘要。配置页新增远程 Profile 自动更新开关和失败原因展示。
+- `./gradlew test --no-daemon`：通过；App 88 项、Service 68 项、Core 18 项、Common 30 项，共 204 项 JVM 单元测试失败 0、错误 0、跳过 0。
+- `./gradlew :app:assembleDebug :app:lintDebug --no-daemon`：通过；Lint 错误 0；Debug APK SHA-256 为 `89a4f6641ac608406b989bfe9337e597e484beda24260dacd0ad26312c6ca56f`，APK 原生库仅位于 `lib/arm64-v8a/`。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）48 项 instrumentation 失败 0、错误 0、跳过 0，包含自动更新开关页面回归。
+- 设备调度检查已确认 WorkManager 任务、网络约束、`BATTERY_NOT_LOW` 和 30 分钟指数退避均存在；本轮未使用真实在线订阅路径执行自动更新回归。
+- 真实在线验收后续只允许使用工作区根目录 `AGENTS.md` 中保留的两条授权路径；本轮不在日志或文档中重复 URL 和 Token。

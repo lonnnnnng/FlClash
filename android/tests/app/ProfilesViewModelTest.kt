@@ -70,6 +70,23 @@ class ProfilesViewModelTest {
     }
 
     @Test
+    fun `remote profile auto update toggle persists metadata`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(3L, "https://example.test/subscription")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.setAutoUpdate(profile, false)
+        advanceUntilIdle()
+
+        assertEquals(listOf(profile.id to false), store.autoUpdateChanges)
+        assertEquals(false, store.profiles.value.single().autoUpdate)
+    }
+
+    @Test
     fun `reorder delegates the requested order and keeps omitted profiles`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val first = Profile.custom(20L, "第一项")
@@ -493,6 +510,7 @@ private class FakeProfileStore(
     var content = ""
     var updatedContent: String? = null
     var updatedOverridesJson: String? = null
+    var autoUpdateChanges = mutableListOf<Pair<Long, Boolean>>()
     val scriptBindingUpdates = mutableListOf<Long?>()
 
     override suspend fun selectProfile(id: Long?) = Unit
@@ -521,6 +539,17 @@ private class FakeProfileStore(
 
     override suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile =
         profile.copy(selectedMapJson = com.lonnnnnng.flclash.data.encodeSelectedMap(selectedMap))
+
+    override suspend fun updateProfileAutoUpdate(
+        id: Long,
+        enabled: Boolean,
+        intervalMillis: Long,
+    ): Profile {
+        autoUpdateChanges += id to enabled
+        val updated = profile.copy(autoUpdate = enabled, autoUpdateIntervalMillis = intervalMillis)
+        profiles.value = profiles.value.map { if (it.id == id) updated else it }
+        return updated
+    }
 
     override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile {
         scriptBindingUpdates += scriptId

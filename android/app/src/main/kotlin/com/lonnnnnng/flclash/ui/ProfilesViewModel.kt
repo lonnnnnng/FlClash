@@ -541,6 +541,22 @@ class ProfilesViewModel @Inject constructor(
         launchAction { repository.updateRemoteProfile(profile.id) }
     }
 
+    fun setAutoUpdate(profile: Profile, enabled: Boolean) {
+        if (profile.type != ProfileType.URL) return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        // 作者 long：开关只修改自动同步元数据，不立即下载；后台 Worker 会按保存的间隔筛选到期订阅。
+        launchAction {
+            repository.updateProfileAutoUpdate(
+                id = profile.id,
+                enabled = enabled,
+                intervalMillis = profile.autoUpdateIntervalMillis,
+            )
+        }
+    }
+
     fun bindScript(profile: Profile, scriptId: Long?) {
         if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)

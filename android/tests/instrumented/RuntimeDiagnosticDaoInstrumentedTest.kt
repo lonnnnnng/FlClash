@@ -11,6 +11,7 @@ import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -132,6 +133,35 @@ class RuntimeDiagnosticDaoInstrumentedTest {
         ).use { cursor -> if (cursor.moveToFirst()) 1 else 0 })
 
         versionFour.close()
+        context.deleteDatabase(databaseName)
+    }
+
+    @Test
+    fun migration4To5AddsSubscriptionUpdateErrorColumn() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val databaseName = "profile-update-error-migration-test.db"
+        context.deleteDatabase(databaseName)
+
+        val versionFour = createSqliteHelper(context, databaseName, version = 4) { }
+        versionFour.writableDatabase.execSQL(
+            "CREATE TABLE profiles (id INTEGER NOT NULL PRIMARY KEY, lastUpdateAt INTEGER)",
+        )
+        versionFour.writableDatabase.close()
+        versionFour.close()
+
+        val versionFive = createSqliteHelper(context, databaseName, version = 5) { database ->
+            KClashDatabase.MIGRATION_4_5.migrate(database)
+        }
+        val upgraded = versionFive.writableDatabase
+        val columns = upgraded.query("PRAGMA table_info(profiles)").use { cursor ->
+            buildList {
+                val nameIndex = cursor.getColumnIndexOrThrow("name")
+                while (cursor.moveToNext()) add(cursor.getString(nameIndex))
+            }
+        }
+
+        assertTrue(columns.contains("lastUpdateError"))
+        versionFive.close()
         context.deleteDatabase(databaseName)
     }
 

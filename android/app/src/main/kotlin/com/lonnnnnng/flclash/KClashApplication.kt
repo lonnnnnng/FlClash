@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.net.VpnService
 import com.lonnnnnng.flclash.common.GlobalState
+import com.lonnnnnng.flclash.data.SubscriptionAutoUpdateScheduler
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.RuntimeResumeStore
 import dagger.hilt.android.HiltAndroidApp
@@ -31,6 +32,7 @@ class KClashApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        SubscriptionAutoUpdateScheduler.schedule(this)
         applicationScope.launch {
             val shouldResume = runtimeResumeStore.shouldResume()
             // 作者 long：先恢复上一轮诊断时间线，再决定是否自动重启核心；这样进程重建后的

@@ -7,6 +7,7 @@ import com.lonnnnnng.flclash.service.ActiveProfileProvider
 import java.io.File
 import java.io.IOException
 import java.util.UUID
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -31,6 +32,13 @@ interface ProfileStore {
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
     suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile
+    suspend fun updateProfileAutoUpdate(
+        id: Long,
+        enabled: Boolean,
+        intervalMillis: Long = Profile.DEFAULT_UPDATE_INTERVAL_MILLIS,
+    ): Profile = profiles.value.firstOrNull { it.id == id }
+        ?.copy(autoUpdate = enabled, autoUpdateIntervalMillis = intervalMillis)
+        ?: error("配置不存在")
     suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
@@ -43,7 +51,8 @@ class ProfileRepository(
     context: Context,
     private val database: KClashDatabase,
     private val subscriptionClient: SubscriptionClient,
-) : ActiveProfileProvider, ProfileStore {
+    private val configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
+) : ActiveProfileProvider, ProfileStore, RemoteProfileUpdater {
     private val appContext = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val profileDao = database.profiles()
@@ -170,6 +179,21 @@ class ProfileRepository(
             updated
         }
 
+    override suspend fun updateProfileAutoUpdate(
+        id: Long,
+        enabled: Boolean,
+        intervalMillis: Long,
+    ): Profile = withContext(Dispatchers.IO) {
+        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+        require(current.type == ProfileType.URL) { "只有订阅配置支持自动更新" }
+        val updated = current.copy(
+            autoUpdate = enabled,
+            autoUpdateIntervalMillis = intervalMillis.coerceAtLeast(MIN_AUTO_UPDATE_INTERVAL_MILLIS),
+        )
+        profileDao.update(updated.toEntity())
+        updated
+    }
+
     override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
         withContext(Dispatchers.IO) {
             database.withTransaction {
@@ -187,16 +211,61 @@ class ProfileRepository(
     override suspend fun updateRemoteProfile(id: Long): Profile = withContext(Dispatchers.IO) {
         val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
         require(current.type == ProfileType.URL) { "只有订阅配置支持更新" }
-        val downloaded = subscriptionClient.download(current.url)
-        val latest = requireNotNull(profileDao.getById(id)).toDomain()
-        replaceFileAtomically(id, downloaded.bytes)
-        val updated = latest.copy(
-            label = latest.label.ifBlank { downloaded.suggestedLabel.orEmpty() },
-            lastUpdateAt = System.currentTimeMillis(),
-            subscriptionInfo = downloaded.subscriptionInfo.takeIf { it != SubscriptionInfo() },
+        try {
+            val downloaded = subscriptionClient.download(current.url)
+            // 作者 long：下载内容必须先通过 YAML 根对象校验，之后才允许替换旧文件，
+            // 这样网络返回 HTML、空内容或损坏配置时不会破坏上一份可运行订阅。
+            configValidator.validate(downloaded.bytes)
+            val latest = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            replaceFileAtomically(id, downloaded.bytes)
+            val updated = latest.copy(
+                label = latest.label.ifBlank { downloaded.suggestedLabel.orEmpty() },
+                lastUpdateAt = System.currentTimeMillis(),
+                lastUpdateError = null,
+                subscriptionInfo = downloaded.subscriptionInfo.takeIf { it != SubscriptionInfo() },
+            )
+            profileDao.update(updated.toEntity())
+            updated
+        } catch (error: Throwable) {
+            if (error is CancellationException) throw error
+            recordRemoteUpdateFailure(id, error)
+            throw error
+        }
+    }
+
+    override suspend fun updateDueProfiles(nowMillis: Long): AutoUpdateResult = withContext(Dispatchers.IO) {
+        val due = profileDao.getAll()
+            .map(ProfileEntity::toDomain)
+            .filter { profile ->
+                profile.type == ProfileType.URL &&
+                    profile.autoUpdate &&
+                    isAutoUpdateDue(profile, nowMillis)
+            }
+        var succeeded = 0
+        val failures = buildList {
+            due.forEach { profile ->
+                try {
+                    updateRemoteProfile(profile.id)
+                    succeeded++
+                } catch (error: CancellationException) {
+                    // 作者 long：Worker 被系统停止时必须把取消继续向上传递，不能把生命周期取消伪装成订阅失败。
+                    throw error
+                } catch (error: Throwable) {
+                    add(
+                        AutoUpdateFailure(
+                            profileId = profile.id,
+                            label = profile.realLabel,
+                            message = error.message ?: "订阅更新失败",
+                        ),
+                    )
+                }
+            }
+        }
+        AutoUpdateResult(
+            attempted = due.size,
+            succeeded = succeeded,
+            failures = failures,
         )
-        profileDao.update(updated.toEntity())
-        updated
     }
 
     override suspend fun deleteProfile(id: Long) = withContext(Dispatchers.IO) {
@@ -278,11 +347,22 @@ class ProfileRepository(
         }
     }
 
+    private suspend fun recordRemoteUpdateFailure(id: Long, error: Throwable) {
+        runCatching {
+            val latest = profileDao.getById(id)?.toDomain() ?: return@runCatching
+            val message = error.message.orEmpty().trim().take(MAX_UPDATE_ERROR_LENGTH)
+                .ifBlank { "订阅更新失败" }
+            profileDao.update(latest.copy(lastUpdateError = message).toEntity())
+        }
+    }
+
     private fun newId(): Long = UUID.randomUUID().mostSignificantBits and Long.MAX_VALUE
 
     private companion object {
         const val CURRENT_PROFILE_KEY = "current_profile_id"
         const val PROFILES_DIRECTORY = "profiles"
         const val SCRIPTS_DIRECTORY = "scripts"
+        const val MIN_AUTO_UPDATE_INTERVAL_MILLIS = 15 * 60 * 1_000L
+        const val MAX_UPDATE_ERROR_LENGTH = 240
     }
 }

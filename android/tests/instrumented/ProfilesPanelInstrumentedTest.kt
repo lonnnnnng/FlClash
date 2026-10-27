@@ -8,6 +8,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -63,6 +64,45 @@ class ProfilesPanelInstrumentedTest {
 
         composeRule.onNodeWithText("未命名配置").assertIsDisplayed()
         composeRule.onNodeWithText("自定义配置").assertIsDisplayed()
+    }
+
+    @Test
+    fun remoteProfileAutoUpdateSwitchForwardsStateChange() {
+        val profile = Profile.remote(109L, "https://example.test/subscription", "远程订阅")
+        var profiles by mutableStateOf(listOf(profile))
+        var changedTo: Boolean? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfilesPanel(
+                    state = ProfilesUiState(profiles = profiles, currentProfileId = profile.id),
+                    editorState = ProfileEditorUiState(),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    showAddDialog = false,
+                    onShowAddDialog = {},
+                    onDismissAddDialog = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                    onSelect = {},
+                    onEdit = {},
+                    onUpdate = {},
+                    onSetAutoUpdate = { selected, enabled ->
+                        changedTo = enabled
+                        profiles = listOf(selected.copy(autoUpdate = enabled))
+                    },
+                    onCloseEditor = {},
+                    onSaveEditor = {},
+                    onDelete = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("自动更新").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_auto_update_${profile.id}").performClick()
+
+        assertEquals(false, changedTo)
+        composeRule.onNodeWithText("远程订阅").assertIsDisplayed()
     }
 
     @Test
