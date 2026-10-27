@@ -15,6 +15,11 @@ import com.lonnnnnng.flclash.data.ScriptStore
 import com.lonnnnnng.flclash.data.HttpScriptClient
 import com.lonnnnnng.flclash.data.ScriptClient
 import com.lonnnnnng.flclash.data.WebViewProfileScriptEvaluator
+import com.lonnnnnng.flclash.data.AndroidWebDavCredentialStore
+import com.lonnnnnng.flclash.data.WebDavCredentialStore
+import com.lonnnnnng.flclash.data.WebDavBackupRepository
+import com.lonnnnnng.flclash.data.WebDavClient
+import com.lonnnnnng.flclash.data.HttpWebDavClient
 import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
 import com.lonnnnnng.flclash.data.RoomRuntimeDiagnosticStore
 import com.lonnnnnng.flclash.data.SubscriptionClient
@@ -81,6 +86,27 @@ object AppModule {
         @ApplicationContext context: Context,
         database: KClashDatabase,
     ): BackupRepository = BackupRepository(database, context.filesDir)
+
+    @Provides
+    @Singleton
+    fun provideWebDavCredentialStore(@ApplicationContext context: Context): WebDavCredentialStore =
+        AndroidWebDavCredentialStore(context)
+
+    @Provides
+    @Singleton
+    fun provideWebDavClient(): WebDavClient = HttpWebDavClient()
+
+    @Provides
+    @Singleton
+    fun provideWebDavBackupRepository(
+        backupRepository: BackupRepository,
+        webDavClient: WebDavClient,
+        credentialStore: WebDavCredentialStore,
+    ): WebDavBackupRepository = WebDavBackupRepository(
+        backupRepository = backupRepository,
+        webDavClient = webDavClient,
+        credentialStore = credentialStore,
+    )
 
     @Provides
     @Singleton

@@ -445,6 +445,16 @@
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；App 88 项、Service 68 项、Core 18 项、Common 30 项，共 204 项 JVM 单元测试失败 0、错误 0、跳过 0；Lint 错误 0。
 - Debug APK SHA-256：`06fb04e98b7d21fecb4bc2aa2511138b16b11a12944ee07fb93ee9953d17eac4`；APK 原生库全部位于 `lib/arm64-v8a/`。
 
+### WebDAV 凭据、配置 UI 与备份仓库接入首片实测记录（2026-10-28）
+
+- WebDAV 凭据使用 Android Keystore 的 AES-GCM 密钥加密后写入独立偏好文件；instrumentation 验证密文不包含地址、账号或密码明文，清除操作会删除全部存储项。
+- 配置页新增 WebDAV 地址、账号、密码、远程文件名、连接测试、上传覆盖确认、下载恢复策略和清除凭据入口；核心运行期间上传/恢复被拒绝。
+- `WebDavBackupRepository` 复用现有 ZIP 备份/恢复逻辑；instrumentation 使用真实 Room 和应用文件目录验证 Profile 文件上传后下载、覆盖恢复以及凭据不进入归档。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 JVM 测试失败 0、错误 0，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）63 项 instrumentation 失败 0、错误 0、跳过 0。
+- Debug APK SHA-256：`eec8512c7e5a81f2373bb7d76401256738d416285f53ca454aeff5c708d0e3a9`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未使用真实 WebDAV 账号或外部 WebDAV 服务；协议层继续由 JVM 本地 HTTP 服务测试覆盖，真实服务认证失败/离线回归仍待后续授权条件。
+
 ## 代理选择 ViewModel 页面状态流真机验收记录（2026-10-28）
 
 - `ProxyGroupsCard` 的代理组、搜索、节点选择、单节点测速、批量测速和关闭入口均增加稳定 Compose `testTag`；代理节点 tag 只挂在可点击的 `RadioButton`，避免 Row 与子控件重复匹配。

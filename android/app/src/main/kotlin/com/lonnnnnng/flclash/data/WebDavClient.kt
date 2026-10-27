@@ -13,16 +13,21 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
+const val DEFAULT_WEBDAV_FILE_NAME = "backup.zip"
+
 /**
- * WebDAV 远程备份连接描述。密码只在内存中短暂存在，后续接入设置页面时必须由安全存储提供，
- * 不能直接复用普通 Room 偏好表，也不能把该对象写入日志或备份归档。
+ * WebDAV 远程备份连接描述。密码只在内存中短暂存在，由配置页从 Android Keystore 凭据存储读取，
+ * 不能直接写入普通 Room 偏好表、日志或备份归档。
  */
 data class WebDavEndpoint(
     val baseUrl: String,
     val fileName: String,
     val username: String? = null,
     val password: String? = null,
-)
+) {
+    override fun toString(): String =
+        "WebDavEndpoint(fileName=$fileName, hasCredentials=${!username.isNullOrEmpty()})"
+}
 
 interface WebDavClient {
     suspend fun probe(endpoint: WebDavEndpoint)

@@ -43,6 +43,7 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,6 +66,7 @@ import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.data.BackupRestoreScope
 import com.lonnnnnng.flclash.data.BackupRestoreStrategy
+import com.lonnnnnng.flclash.data.WebDavCredentials
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
@@ -111,6 +113,13 @@ fun KClashApp(
     onExportDiagnosticHistory: (List<RuntimeDiagnosticEvent>) -> Unit,
     onExportBackup: () -> Unit,
     onImportBackup: (BackupRestoreScope, BackupRestoreStrategy) -> Unit,
+    webDavCredentials: WebDavCredentials? = null,
+    webDavBusy: Boolean = false,
+    onSaveWebDavCredentials: (WebDavCredentials) -> Unit = {},
+    onClearWebDavCredentials: () -> Unit = {},
+    onProbeWebDav: (WebDavCredentials) -> Unit = {},
+    onUploadWebDav: (WebDavCredentials, BackupRestoreScope) -> Unit = { _, _ -> },
+    onDownloadWebDav: (WebDavCredentials, BackupRestoreScope, BackupRestoreStrategy) -> Unit = { _, _, _ -> },
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
@@ -355,6 +364,13 @@ fun KClashApp(
                         onOpenScripts = { showScriptsDialog = true },
                         onExportBackup = onExportBackup,
                         onImportBackup = onImportBackup,
+                        webDavCredentials = webDavCredentials,
+                        webDavBusy = webDavBusy,
+                        onSaveWebDavCredentials = onSaveWebDavCredentials,
+                        onClearWebDavCredentials = onClearWebDavCredentials,
+                        onProbeWebDav = onProbeWebDav,
+                        onUploadWebDav = onUploadWebDav,
+                        onDownloadWebDav = onDownloadWebDav,
                     )
                 }
 
@@ -622,12 +638,22 @@ internal fun ProfilesPanel(
     onOpenScripts: () -> Unit = {},
     onExportBackup: () -> Unit = {},
     onImportBackup: (BackupRestoreScope, BackupRestoreStrategy) -> Unit = { _, _ -> },
+    webDavCredentials: WebDavCredentials? = null,
+    webDavBusy: Boolean = false,
+    onSaveWebDavCredentials: (WebDavCredentials) -> Unit = {},
+    onClearWebDavCredentials: () -> Unit = {},
+    onProbeWebDav: (WebDavCredentials) -> Unit = {},
+    onUploadWebDav: (WebDavCredentials, BackupRestoreScope) -> Unit = { _, _ -> },
+    onDownloadWebDav: (WebDavCredentials, BackupRestoreScope, BackupRestoreStrategy) -> Unit = { _, _, _ -> },
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
     var showReorderDialog by remember { mutableStateOf(false) }
     var scriptBindingProfileId by remember { mutableStateOf<Long?>(null) }
     var showBackupRestoreDialog by remember { mutableStateOf(false) }
+    var showWebDavDialog by remember { mutableStateOf(false) }
+    var showWebDavRestoreDialog by remember { mutableStateOf(false) }
+    var pendingWebDavCredentials by remember { mutableStateOf<WebDavCredentials?>(null) }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
@@ -649,6 +675,11 @@ internal fun ProfilesPanel(
                 ) { Text("排序") }
             }
             TextButton(onClick = onOpenScripts, enabled = !state.isBusy) { Text("脚本") }
+            TextButton(
+                onClick = { showWebDavDialog = true },
+                enabled = !state.isBusy,
+                modifier = Modifier.testTag("webdav_open"),
+            ) { Text("WebDAV") }
             TextButton(
                 onClick = onExportBackup,
                 enabled = !state.isBusy,
@@ -748,6 +779,43 @@ internal fun ProfilesPanel(
             onConfirm = { scope, strategy ->
                 showBackupRestoreDialog = false
                 onImportBackup(scope, strategy)
+            },
+        )
+    }
+
+    if (showWebDavDialog) {
+        WebDavBackupDialog(
+            initial = webDavCredentials,
+            busy = webDavBusy,
+            onDismiss = { if (!webDavBusy) showWebDavDialog = false },
+            onSave = onSaveWebDavCredentials,
+            onClear = {
+                onClearWebDavCredentials()
+                showWebDavDialog = false
+            },
+            onProbe = onProbeWebDav,
+            onUpload = onUploadWebDav,
+            onDownload = { credentials ->
+                pendingWebDavCredentials = credentials
+                showWebDavDialog = false
+                showWebDavRestoreDialog = true
+            },
+        )
+    }
+
+    if (showWebDavRestoreDialog) {
+        BackupRestoreOptionsDialog(
+            title = "从 WebDAV 恢复",
+            confirmLabel = "下载并恢复",
+            onDismiss = {
+                showWebDavRestoreDialog = false
+                pendingWebDavCredentials = null
+            },
+            onConfirm = { scope, strategy ->
+                val credentials = pendingWebDavCredentials
+                showWebDavRestoreDialog = false
+                pendingWebDavCredentials = null
+                if (credentials != null) onDownloadWebDav(credentials, scope, strategy)
             },
         )
     }
@@ -898,6 +966,8 @@ internal fun ProfilesPanel(
 
 @Composable
 internal fun BackupRestoreOptionsDialog(
+    title: String = "恢复备份",
+    confirmLabel: String = "选择备份文件",
     onDismiss: () -> Unit,
     onConfirm: (BackupRestoreScope, BackupRestoreStrategy) -> Unit,
 ) {
@@ -905,7 +975,7 @@ internal fun BackupRestoreOptionsDialog(
     var strategy by remember { mutableStateOf(BackupRestoreStrategy.COMPATIBLE) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("恢复备份") },
+        title = { Text(title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("恢复范围", style = MaterialTheme.typography.titleSmall)
@@ -934,7 +1004,7 @@ internal fun BackupRestoreOptionsDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(scope, strategy) }) { Text("选择备份文件") }
+            TextButton(onClick = { onConfirm(scope, strategy) }) { Text(confirmLabel) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
     )
@@ -955,6 +1025,182 @@ private fun BackupOptionRow(
         RadioButton(selected = selected, onClick = onClick)
         TextButton(onClick = onClick) { Text(label) }
     }
+}
+
+/**
+ * 作者 long：WebDAV 配置把手动覆盖、下载恢复和本地凭据保存放在同一个明确入口，
+ * 用户可以先测试连接再上传；下载恢复仍需选择兼容或覆盖策略，不自动改写本地数据。
+ */
+@Composable
+internal fun WebDavBackupDialog(
+    initial: WebDavCredentials?,
+    busy: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (WebDavCredentials) -> Unit,
+    onClear: () -> Unit,
+    onProbe: (WebDavCredentials) -> Unit,
+    onUpload: (WebDavCredentials, BackupRestoreScope) -> Unit,
+    onDownload: (WebDavCredentials) -> Unit,
+) {
+    var baseUrl by remember(initial) { mutableStateOf(initial?.baseUrl.orEmpty()) }
+    var username by remember(initial) { mutableStateOf(initial?.username.orEmpty()) }
+    var password by remember(initial) { mutableStateOf(initial?.password.orEmpty()) }
+    var fileName by remember(initial) {
+        mutableStateOf(initial?.fileName ?: com.lonnnnnng.flclash.data.DEFAULT_WEBDAV_FILE_NAME)
+    }
+    var uploadScope by remember { mutableStateOf(BackupRestoreScope.ALL_DATA) }
+    var confirmUpload by remember { mutableStateOf(false) }
+
+    fun currentCredentials() = WebDavCredentials(
+        baseUrl = baseUrl.trim(),
+        username = username.trim(),
+        password = password,
+        fileName = fileName.trim(),
+    )
+
+    val hasRequiredInput = baseUrl.isNotBlank() && username.isNotBlank() && password.isNotEmpty()
+
+    AlertDialog(
+        onDismissRequest = { if (!busy) onDismiss() },
+        title = { Text("WebDAV 备份") },
+        text = {
+            Column(
+                modifier = Modifier.heightIn(max = 520.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    "凭据使用 Android Keystore 加密保存。上传会覆盖远程同名文件，下载后仍需确认恢复策略。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    value = baseUrl,
+                    onValueChange = { baseUrl = it },
+                    enabled = !busy,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("webdav_base_url"),
+                    label = { Text("WebDAV 地址") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    enabled = !busy,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("webdav_username"),
+                    label = { Text("账号") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    enabled = !busy,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("webdav_password"),
+                    label = { Text("密码") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = fileName,
+                    onValueChange = { fileName = it },
+                    enabled = !busy,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("webdav_file_name"),
+                    label = { Text("远程文件名") },
+                    singleLine = true,
+                )
+                Text("上传范围", style = MaterialTheme.typography.titleSmall)
+                BackupOptionRow(
+                    selected = uploadScope == BackupRestoreScope.PROFILES_ONLY,
+                    label = "仅配置文件",
+                    onClick = { if (!busy) uploadScope = BackupRestoreScope.PROFILES_ONLY },
+                )
+                BackupOptionRow(
+                    selected = uploadScope == BackupRestoreScope.ALL_DATA,
+                    label = "全部数据",
+                    onClick = { if (!busy) uploadScope = BackupRestoreScope.ALL_DATA },
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = { onProbe(currentCredentials()) },
+                        enabled = !busy && hasRequiredInput,
+                        modifier = Modifier.testTag("webdav_probe"),
+                    ) { Text("测试连接") }
+                    OutlinedButton(
+                        onClick = { confirmUpload = true },
+                        enabled = !busy && hasRequiredInput,
+                        modifier = Modifier.testTag("webdav_upload"),
+                    ) { Text("上传") }
+                    OutlinedButton(
+                        onClick = { onDownload(currentCredentials()) },
+                        enabled = !busy && hasRequiredInput,
+                        modifier = Modifier.testTag("webdav_download"),
+                    ) { Text("下载恢复") }
+                }
+                if (initial != null) {
+                    TextButton(
+                        onClick = onClear,
+                        enabled = !busy,
+                        modifier = Modifier.testTag("webdav_clear"),
+                    ) { Text("清除已保存凭据") }
+                }
+                if (busy) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.size(8.dp))
+                        Text("正在处理 WebDAV 请求…")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(currentCredentials()) },
+                enabled = !busy && hasRequiredInput,
+                modifier = Modifier.testTag("webdav_save"),
+            ) { Text("保存") }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !busy,
+                modifier = Modifier.testTag("webdav_cancel"),
+            ) { Text("取消") }
+        },
+    )
+
+    if (confirmUpload) {
+        AlertDialog(
+            onDismissRequest = { if (!busy) confirmUpload = false },
+            title = { Text("覆盖远程备份？") },
+            text = { Text("上传会替换远程文件“${fileName.trim()}”，不会与远程内容合并。") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmUpload = false
+                        onUpload(currentCredentials(), uploadScope)
+                    },
+                    enabled = !busy,
+                    modifier = Modifier.testTag("webdav_upload_confirm"),
+                ) { Text("确认覆盖") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { confirmUpload = false },
+                    enabled = !busy,
+                ) { Text("取消") }
+            },
+        )
+    }
+
 }
 
 @Composable

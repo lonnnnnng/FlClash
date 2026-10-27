@@ -30,6 +30,8 @@ import com.lonnnnnng.flclash.data.DeepLinkProfileParser
 import com.lonnnnnng.flclash.data.BackupRepository
 import com.lonnnnnng.flclash.data.BackupRestoreScope
 import com.lonnnnnng.flclash.data.BackupRestoreStrategy
+import com.lonnnnnng.flclash.data.WebDavBackupRepository
+import com.lonnnnnng.flclash.data.WebDavCredentials
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,6 +42,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var backupRepository: BackupRepository
+    @Inject lateinit var webDavBackupRepository: WebDavBackupRepository
     private val viewModel: MainViewModel by viewModels()
     private val profilesViewModel: ProfilesViewModel by viewModels()
     private val proxyGroupsViewModel: ProxyGroupsViewModel by viewModels()
@@ -141,12 +144,17 @@ class MainActivity : ComponentActivity() {
     private var pendingDiagnosticHistoryExport: List<RuntimeDiagnosticEvent> = emptyList()
     private var pendingBackupExport: ByteArray? = null
     private var pendingBackupRestore: Pair<BackupRestoreScope, BackupRestoreStrategy>? = null
+    private var webDavCredentials by mutableStateOf<WebDavCredentials?>(null)
+    private var webDavBusy by mutableStateOf(false)
     private var initialDeepLinkHandled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
+        webDavCredentials = runCatching { webDavBackupRepository.readCredentials() }
+            .onFailure { error -> viewModel.reportError(error.message ?: "无法读取 WebDAV 凭据") }
+            .getOrNull()
         setContent {
             KClashTheme {
                 KClashApp(
@@ -163,6 +171,13 @@ class MainActivity : ComponentActivity() {
                     onExportDiagnosticHistory = ::requestDiagnosticHistoryExport,
                     onExportBackup = ::requestBackupExport,
                     onImportBackup = ::requestBackupImport,
+                    webDavCredentials = webDavCredentials,
+                    webDavBusy = webDavBusy,
+                    onSaveWebDavCredentials = ::saveWebDavCredentials,
+                    onClearWebDavCredentials = ::clearWebDavCredentials,
+                    onProbeWebDav = ::probeWebDav,
+                    onUploadWebDav = ::uploadWebDav,
+                    onDownloadWebDav = ::downloadWebDav,
                 )
             }
         }
@@ -254,6 +269,68 @@ class MainActivity : ComponentActivity() {
     private fun requestBackupImport(scope: BackupRestoreScope, strategy: BackupRestoreStrategy) {
         pendingBackupRestore = scope to strategy
         backupImportLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
+    }
+
+    private fun saveWebDavCredentials(credentials: WebDavCredentials) {
+        launchWebDavOperation("WebDAV 凭据已保存") {
+            webDavBackupRepository.saveCredentials(credentials)
+            webDavCredentials = credentials
+        }
+    }
+
+    private fun clearWebDavCredentials() {
+        launchWebDavOperation("WebDAV 凭据已清除") {
+            webDavBackupRepository.clearCredentials()
+            webDavCredentials = null
+        }
+    }
+
+    private fun probeWebDav(credentials: WebDavCredentials) {
+        launchWebDavOperation("WebDAV 连接成功") {
+            webDavBackupRepository.saveCredentials(credentials)
+            webDavBackupRepository.probe(credentials)
+            webDavCredentials = credentials
+        }
+    }
+
+    private fun uploadWebDav(credentials: WebDavCredentials, scope: BackupRestoreScope) {
+        if (viewModel.runtimeState.value.isRunning) {
+            viewModel.reportError("核心运行中，请先停止核心后再备份")
+            return
+        }
+        launchWebDavOperation("WebDAV 备份已上传并覆盖远程文件") {
+            webDavBackupRepository.saveCredentials(credentials)
+            webDavBackupRepository.upload(credentials, scope)
+            webDavCredentials = credentials
+        }
+    }
+
+    private fun downloadWebDav(
+        credentials: WebDavCredentials,
+        scope: BackupRestoreScope,
+        strategy: BackupRestoreStrategy,
+    ) {
+        if (viewModel.runtimeState.value.isRunning) {
+            viewModel.reportError("核心运行中，请先停止核心后再恢复备份")
+            return
+        }
+        launchWebDavOperation("WebDAV 备份下载并恢复完成") {
+            webDavBackupRepository.saveCredentials(credentials)
+            webDavBackupRepository.downloadAndRestore(credentials, scope, strategy)
+            webDavCredentials = credentials
+            profilesViewModel.refreshSelection()
+        }
+    }
+
+    private fun launchWebDavOperation(successMessage: String, action: suspend () -> Unit) {
+        if (webDavBusy) return
+        webDavBusy = true
+        lifecycleScope.launch {
+            runCatching { action() }
+                .onSuccess { viewModel.reportError(successMessage) }
+                .onFailure { error -> viewModel.reportError(error.message ?: "WebDAV 操作失败") }
+                .also { webDavBusy = false }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
