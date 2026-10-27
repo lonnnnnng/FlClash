@@ -2,10 +2,12 @@ package com.lonnnnnng.flclash
 
 import android.Manifest
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import org.junit.Rule
@@ -60,6 +62,41 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("日志").performClick()
         composeRule.onNodeWithTag("page_logs").assertIsDisplayed()
         composeRule.onNodeWithText("核心日志").assertIsDisplayed()
+        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+    }
+
+    @Test
+    fun mainActivityCompletesCustomProfileLifecycleThroughRealViewModels() {
+        val label = "Activity E2E 配置"
+
+        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
+        composeRule.onNodeWithText("添加配置").performClick()
+        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
+        composeRule.onNodeWithText("创建自定义配置").performClick()
+        composeRule.onNodeWithText("保存").performClick()
+
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890")
+        composeRule.onNodeWithText("保存").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+        }
+
+        composeRule.onNodeWithText("删除").performClick()
+        composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
+        composeRule.onAllNodesWithText("删除")[1].performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("还没有配置").fetchSemanticsNodes().isNotEmpty()
+        }
+
         composeRule.onNodeWithText("首页").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }

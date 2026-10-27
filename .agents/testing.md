@@ -477,3 +477,11 @@
 - 定向 `ProxyGroupsViewModelPanelInstrumentedTest` 通过；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过，55 项 instrumentation 失败 0、错误 0、跳过 0。
 - Debug APK SHA-256：`5261eb708a63d992a4fac1680221705a2ae58d49aba637461bfb2eaf23c814e9`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问两条真实在线路径、未启动真实 Mihomo 核心；真机只用于 instrumentation，设备为 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）。
+
+## 主 Activity 配置生命周期 E2E 首片（2026-10-28）
+
+- `MainActivityInstrumentedTest` 新增真实 Activity 状态流：进入配置页，创建自定义 Profile，编辑 YAML 写入 `mixed-port: 7890`，删除确认并删除 Profile，返回首页。
+- 流程使用真实 Hilt、Room、`ProfilesViewModel` 和应用私有文件目录；未访问真实在线路径、未申请 VPN、未启动 Mihomo 核心，结束后设备恢复“还没有配置”空态。
+- 定向 `MainActivityInstrumentedTest` 通过；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过，完整 instrumentation 56 项失败 0、错误 0、跳过 0。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 204 项 JVM 单元测试失败 0、错误 0、跳过 0，Lint 错误 0。
+- Debug APK SHA-256：`5261eb708a63d992a4fac1680221705a2ae58d49aba637461bfb2eaf23c814e9`；APK 原生库仅包含 `lib/arm64-v8a/`。
