@@ -485,3 +485,11 @@
 - 定向 `MainActivityInstrumentedTest` 通过；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过，完整 instrumentation 56 项失败 0、错误 0、跳过 0。
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 204 项 JVM 单元测试失败 0、错误 0、跳过 0，Lint 错误 0。
 - Debug APK SHA-256：`5261eb708a63d992a4fac1680221705a2ae58d49aba637461bfb2eaf23c814e9`；APK 原生库仅包含 `lib/arm64-v8a/`。
+
+## 观测详情页签交互回归（2026-10-28）
+
+- `ObservationDetailsInstrumentedTest` 从真实 `ObservationPage` 页签宿主打开 Requests、DNS、Logs 详情，分别验证请求字段搜索、DNS 字段搜索、日志级别筛选和关闭回调。
+- `ObservationPage`、`RequestsDialog`、`DnsDialog`、`LogsDialog` 调整为模块内可测试入口；测试使用固定状态，不访问真实在线路径、VPN 或 Mihomo 核心。
+- 定向观测详情测试通过；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过，完整 instrumentation 57 项失败 0、错误 0、跳过 0。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 204 项 JVM 单元测试失败 0、错误 0、跳过 0，Lint 错误 0。
+- Debug APK SHA-256：`37087d7cd5016bf952439d8ea07f55c7fd6e4e653767c70a9eac2349f7e5bb71`；APK 原生库仅包含 `lib/arm64-v8a/`。

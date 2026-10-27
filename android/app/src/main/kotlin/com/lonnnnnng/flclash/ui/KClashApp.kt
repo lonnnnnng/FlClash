@@ -505,7 +505,7 @@ private fun MainNavigationBar(
  * 清晰入口，避免把七个目的地同时压缩到底部导航栏，同时继续复用同一份 StateFlow 观测数据。
  */
 @Composable
-private fun ObservationPage(
+internal fun ObservationPage(
     requests: RequestsUiState,
     dns: DnsUiState,
     logs: LogsUiState,
@@ -1686,7 +1686,7 @@ private fun RequestsCard(
 }
 
 @Composable
-private fun RequestsDialog(
+internal fun RequestsDialog(
     state: RequestsUiState,
     onDismiss: () -> Unit,
 ) {
@@ -1801,7 +1801,7 @@ private fun DnsQueryRow(query: CoreDnsQuery) {
 }
 
 @Composable
-private fun DnsDialog(
+internal fun DnsDialog(
     state: DnsUiState,
     onDismiss: () -> Unit,
     onClear: () -> Unit,
@@ -1912,7 +1912,7 @@ private fun LogRow(entry: CoreEvent.Log) {
 }
 
 @Composable
-private fun LogsDialog(
+internal fun LogsDialog(
     state: LogsUiState,
     onDismiss: () -> Unit,
     onClear: () -> Unit,
