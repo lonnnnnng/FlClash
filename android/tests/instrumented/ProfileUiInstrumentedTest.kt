@@ -193,6 +193,7 @@ class ProfileUiInstrumentedTest {
 
     @Test
     fun computedProxyGroupShowsAutomaticSelectionAction() {
+        var batchGroup: String? = null
         composeRule.setContent {
             KClashTheme {
                 ProxyGroupsCard(
@@ -212,10 +213,13 @@ class ProfileUiInstrumentedTest {
                     onRefresh = {},
                     onSelect = { _, _ -> },
                     onTestDelay = { _, _ -> },
+                    onTestGroupDelay = { group -> batchGroup = group.name },
                 )
             }
         }
 
+        composeRule.onNodeWithText("批量测速").performClick()
+        assertEquals("Auto", batchGroup)
         composeRule.onNodeWithText("Auto").performClick()
         composeRule.onNodeWithText("选择 Auto").assertIsDisplayed()
         composeRule.onNodeWithText("点击当前节点可恢复自动选择").assertIsDisplayed()

@@ -12,7 +12,13 @@ import com.lonnnnnng.flclash.service.models.NotificationParams
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
@@ -242,6 +248,46 @@ class CoreRuntimeManager(
         }
     }
 
+    /**
+     * 作者 long：组级测速必须保持核心生命周期互斥，但单个 asyncTestDelay 可以并发发送；
+     * 因此锁覆盖整个批次而不是每一项，既避免停止/切换打断配置，又不把批量测速退化为串行循环。
+     */
+    suspend fun testDelayBatch(
+        requests: List<ProxyDelayRequest>,
+        timeoutMs: Long = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+        maxConcurrent: Int = DEFAULT_DELAY_BATCH_CONCURRENCY,
+    ): Result<List<ProxyDelayBatchResult>> = transitionLock.withLock {
+        try {
+            check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
+            require(timeoutMs > 0) { "测速超时必须大于 0" }
+            require(maxConcurrent > 0) { "批量测速并发数必须大于 0" }
+            if (requests.isEmpty()) return@withLock Result.success(emptyList())
+            val permits = Semaphore(maxConcurrent)
+            Result.success(coroutineScope {
+                requests.map { request ->
+                    async {
+                        permits.withPermit {
+                            try {
+                                ProxyDelayBatchResult(
+                                    request = request,
+                                    result = bridge.testDelay(request.proxyName, request.testUrl, timeoutMs),
+                                )
+                            } catch (error: CancellationException) {
+                                throw error
+                            } catch (error: Throwable) {
+                                ProxyDelayBatchResult(request = request, result = null, error = error)
+                            }
+                        }
+                    }
+                }.awaitAll()
+            })
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            Result.failure(error)
+        }
+    }
+
     suspend fun probe(
         url: String,
         proxyName: String = "",
@@ -325,6 +371,10 @@ class CoreRuntimeManager(
         } finally {
             if (temporary.exists()) temporary.delete()
         }
+    }
+
+    private companion object {
+        const val DEFAULT_DELAY_BATCH_CONCURRENCY = 32
     }
 }
 

@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
+import com.lonnnnnng.flclash.service.ProxyDelayRequest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -80,5 +81,39 @@ class ProxyGroupsViewModelTest {
 
         assertEquals(null, state.delayState(group, "node-a", nowMillis = 1_000L + DELAY_RESULT_TTL_MS + 1L))
         assertEquals(188, state.delayState(group, "node-a", nowMillis = 1_000L + DELAY_RESULT_TTL_MS)?.value)
+    }
+
+    @Test
+    fun `batch delay targets resolve nested groups and deduplicate leaf requests`() {
+        val nested = ProxyGroupInfo(
+            name = "Relay",
+            type = "Selector",
+            now = "node-a",
+            all = listOf("node-a", "node-b"),
+            hidden = false,
+            testUrl = "https://nested",
+        )
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "URLTest",
+            now = "node-a",
+            all = listOf("Relay", "Relay"),
+            hidden = false,
+            testUrl = "https://outer",
+        )
+
+        assertEquals(
+            listOf(ProxyDelayTarget("Relay", ProxyDelayRequest("node-a", "https://nested"))),
+            resolveDelayTargets(group, listOf(group, nested)),
+        )
+    }
+
+    @Test
+    fun `batch delay target cycle is ignored instead of recursing forever`() {
+        val first = ProxyGroupInfo("First", "Selector", "Second", listOf("Second"), false)
+        val second = ProxyGroupInfo("Second", "Selector", "First", listOf("First"), false)
+        val group = ProxyGroupInfo("Auto", "URLTest", null, listOf("First"), false)
+
+        assertTrue(resolveDelayTargets(group, listOf(group, first, second)).isEmpty())
     }
 }

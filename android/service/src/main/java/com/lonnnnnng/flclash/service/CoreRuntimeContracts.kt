@@ -30,6 +30,17 @@ data class ActiveProfile(
     val scriptPath: String? = null,
 )
 
+data class ProxyDelayRequest(
+    val proxyName: String,
+    val testUrl: String,
+)
+
+data class ProxyDelayBatchResult(
+    val request: ProxyDelayRequest,
+    val result: ProxyDelay?,
+    val error: Throwable? = null,
+)
+
 interface ActiveProfileProvider {
     suspend fun activeProfile(): ActiveProfile?
 }

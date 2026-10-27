@@ -378,3 +378,13 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；38 项 instrumentation 测试失败 0、错误 0、跳过 0，其中 Room 6 项、Compose 28 项、WebView JavaScript 4 项；设备为 Redmi Note 8 Pro（Android 16/API 36）。
 - Debug APK SHA-256：`701e61753fedc0978697adccf28812e11f2496bfb84f3f0476e070ee549e95e6`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问当前工作区 `AGENTS.md` 列出的两条真实订阅路径、VPN 或核心启动；下一步转入 Overrides/Dialers 高级配置分区。
+
+## 代理组批量测速切片实测记录（2026-10-28）
+
+- `CoreRuntimeManager.testDelayBatch()` 使用生命周期锁和默认 32 并发上限；`ProxyGroupsViewModel` 支持嵌套代理组递归展开、循环保护、请求去重、逐节点结果回写和批量期间的 UI 操作保护。
+- `./gradlew :app:testDebugUnitTest --no-daemon`：通过；App 77 项、Service 64 项、Core 16 项、Common 30 项，共 187 项 JVM 测试失败 0、错误 0、跳过 0。
+- `./gradlew :app:lintDebug --no-daemon`：通过，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`：通过；43 项 instrumentation 测试失败 0、错误 0、跳过 0，设备为 Redmi Note 8 Pro（Android 16/API 36）。
+- Debug APK SHA-256：`b45853f58175a89a089e886bca3a51dbc301ee51d8b7c5bd07bdf193c8354d37`；APK 原生库全部位于 `lib/arm64-v8a/`。
+- 真机使用 `adb -s wsvwypiz7xwslvl7` 导入并选中工作区 `1.yaml`，通过系统 VPN 授权后等待约 1 分钟，KClash 最终显示“核心启动失败”，运行诊断记录为 `CoreBridgeException`；未发现 `VpnService`、`ProxyService`、`tun0` 或 `198.18.0.0/30` 路由。
+- 本轮未访问当前工作区 `AGENTS.md` 列出的两条真实在线路径；由于本地 `1.yaml` 核心启动失败，未形成代理页“批量测速”结果和停止清理的真机证据。具体 Mihomo 原始错误待下一轮从设备端补取，不能用本轮失败前的历史成功记录覆盖。

@@ -355,6 +355,7 @@ fun KClashApp(
                         onRefresh = proxyGroupsViewModel::refresh,
                         onSelect = proxyGroupsViewModel::selectProxy,
                         onTestDelay = proxyGroupsViewModel::testDelay,
+                        onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
                     )
                 }
 
@@ -861,12 +862,14 @@ internal fun ProxyGroupsCard(
     onRefresh: () -> Unit,
     onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
+    onTestGroupDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo) -> Unit,
 ) {
     var groupPendingSelection by remember { mutableStateOf<com.lonnnnnng.flclash.core.ProxyGroupInfo?>(null) }
     var proxyQuery by remember(groupPendingSelection?.name) { mutableStateOf("") }
     val canRefresh = runtimeState == CoreRuntimeStatus.RUNNING &&
         !state.isLoading &&
-        state.switchingGroup == null
+        state.switchingGroup == null &&
+        state.batchTestingGroup == null
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -912,8 +915,24 @@ internal fun ProxyGroupsCard(
                                 if (group.isSelectable) {
                                     TextButton(
                                         onClick = { groupPendingSelection = group },
-                                        enabled = state.switchingGroup == null,
+                                        enabled = state.switchingGroup == null && state.batchTestingGroup == null,
                                     ) { Text(if (group.isComputed) "选择" else "切换") }
+                                }
+                                TextButton(
+                                    onClick = { onTestGroupDelay(group) },
+                                    enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                                        state.switchingGroup == null &&
+                                        state.batchTestingGroup == null &&
+                                        group.all.isNotEmpty(),
+                                ) {
+                                    if (state.batchTestingGroup == group.name) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp,
+                                        )
+                                    } else {
+                                        Text("批量测速")
+                                    }
                                 }
                             }
                         }
@@ -963,7 +982,7 @@ internal fun ProxyGroupsCard(
                                     onSelect(group, proxyName)
                                     groupPendingSelection = null
                                 },
-                                enabled = state.switchingGroup == null,
+                                enabled = state.switchingGroup == null && state.batchTestingGroup == null,
                             )
                             Text(
                                 proxyName,
@@ -973,7 +992,9 @@ internal fun ProxyGroupsCard(
                             )
                             TextButton(
                                 onClick = { onTestDelay(group, proxyName) },
-                                enabled = state.switchingGroup == null && delay?.isTesting != true,
+                                enabled = state.switchingGroup == null &&
+                                    state.batchTestingGroup == null &&
+                                    delay?.isTesting != true,
                             ) {
                                 if (delay?.isTesting == true) {
                                     CircularProgressIndicator(
@@ -991,7 +1012,7 @@ internal fun ProxyGroupsCard(
             confirmButton = {
                 TextButton(
                     onClick = { groupPendingSelection = null },
-                    enabled = state.switchingGroup == null,
+                    enabled = state.switchingGroup == null && state.batchTestingGroup == null,
                 ) { Text("关闭") }
             },
         )

@@ -9,8 +9,10 @@ import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.models.VpnOptions
+import kotlinx.coroutines.CancellationException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -294,6 +296,53 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
+    fun `batch delay keeps successful values and individual failures`() = runTest {
+        val source = temporaryFolder.newFile("batch-delay-profile.yaml").apply {
+            writeText("mixed-port: 7890\n")
+        }
+        val bridge = FakeBridge(delayErrors = setOf("node-b"))
+        val manager = manager(
+            profile = ActiveProfile(11, "批量测速", source.path),
+            homeDir = temporaryFolder.newFolder("batch-delay-core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+        manager.startProxy().getOrThrow()
+
+        val results = manager.testDelayBatch(
+            requests = listOf(
+                ProxyDelayRequest("node-a", "https://one"),
+                ProxyDelayRequest("node-b", "https://one"),
+            ),
+            maxConcurrent = 2,
+        ).getOrThrow()
+
+        assertEquals(123, results[0].result?.value)
+        assertEquals("测速失败", results[1].error?.message)
+    }
+
+    @Test
+    fun `batch delay propagates cancellation instead of returning failure`() = runTest {
+        val source = temporaryFolder.newFile("batch-delay-cancel-profile.yaml").apply {
+            writeText("mixed-port: 7890\n")
+        }
+        val manager = manager(
+            profile = ActiveProfile(12, "批量测速取消", source.path),
+            homeDir = temporaryFolder.newFolder("batch-delay-cancel-core"),
+            bridge = FakeBridge(delayError = CancellationException("已取消")),
+            controller = FakeServiceController(),
+        )
+        manager.startProxy().getOrThrow()
+
+        val error = assertThrows(CancellationException::class.java) {
+            kotlinx.coroutines.runBlocking {
+                manager.testDelayBatch(listOf(ProxyDelayRequest("node-a", "https://one"))).getOrThrow()
+            }
+        }
+        assertEquals("已取消", error.message)
+    }
+
+    @Test
     fun `probe result keeps the core route attribution`() = runTest {
         val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
         val manager = manager(
@@ -570,6 +619,7 @@ class CoreRuntimeManagerTest {
         private val validationError: Throwable? = null,
         private val proxyChangeError: Throwable? = null,
         private val delayError: Throwable? = null,
+        private val delayErrors: Set<String> = emptySet(),
     ) : CoreRuntimeBridge {
         override val events = emptyFlow<CoreEvent>()
         private val mutableEventFlowStats = MutableStateFlow(CoreEventFlowStats())
@@ -605,6 +655,7 @@ class CoreRuntimeManagerTest {
 
         override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay? {
             delayError?.let { throw it }
+            if (proxyName in delayErrors) throw IllegalStateException("测速失败")
             return ProxyDelay(testUrl, proxyName, 123)
         }
 
