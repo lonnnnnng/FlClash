@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash
 
 import android.Manifest
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -64,6 +65,25 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("核心日志").assertIsDisplayed()
         composeRule.onNodeWithText("首页").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+    }
+
+    @Test
+    fun mainActivityRetainsObservationTabAcrossPrimaryNavigationAndRecreation() {
+        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithText("DNS").performClick()
+        composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
+
+        composeRule.onNodeWithText("代理").performClick()
+        composeRule.onNodeWithTag("page_proxy").assertIsDisplayed()
+        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
+
+        // 作者 long：Activity 重建会重新创建页面组合，只有主页面的可保存导航状态才能恢复用户正在查看的页签。
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("page_dns").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
     }
 
     @Test

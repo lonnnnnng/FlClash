@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -51,12 +52,15 @@ class ObservationDetailsInstrumentedTest {
         var dialog by mutableStateOf<ObservationDialog?>(null)
 
         composeRule.setContent {
+            var selectedTabIndex by remember { mutableStateOf(0) }
             KClashTheme {
                 ObservationPage(
                     requests = requests,
                     dns = dns,
                     logs = logs,
                     runtimeState = CoreRuntimeStatus.RUNNING,
+                    selectedTabIndex = selectedTabIndex,
+                    onSelectedTabChange = { selectedTabIndex = it },
                     onShowRequests = { dialog = ObservationDialog.REQUESTS },
                     onShowDns = { dialog = ObservationDialog.DNS },
                     onClearDns = {},

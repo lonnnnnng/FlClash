@@ -144,6 +144,8 @@ fun KClashApp(
     var showScriptsDialog by rememberSaveable { mutableStateOf(false) }
     var showRemoteScriptDialog by rememberSaveable { mutableStateOf(false) }
     var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
+    // 作者 long：观测页会随顶层导航离开组合，页签状态必须提升到主页面保存，避免用户返回观测时丢失当前页签。
+    var selectedObservationTabIndex by rememberSaveable { mutableStateOf(ObservationTab.REQUESTS.ordinal) }
     val selectedDestination = MainDestination.values()[selectedDestinationIndex]
 
     val filePicker = rememberLauncherForActivityResult(
@@ -380,6 +382,8 @@ fun KClashApp(
                         dns = runtimeDns,
                         logs = runtimeLogs,
                         runtimeState = runtimeState,
+                        selectedTabIndex = selectedObservationTabIndex,
+                        onSelectedTabChange = { selectedObservationTabIndex = it },
                         onShowRequests = { showRequests = true },
                         onShowDns = { showDns = true },
                         onClearDns = runtimeViewModel::clearDns,
@@ -510,6 +514,8 @@ internal fun ObservationPage(
     dns: DnsUiState,
     logs: LogsUiState,
     runtimeState: CoreRuntimeStatus,
+    selectedTabIndex: Int,
+    onSelectedTabChange: (Int) -> Unit,
     onShowRequests: () -> Unit,
     onShowDns: () -> Unit,
     onClearDns: () -> Unit,
@@ -517,15 +523,15 @@ internal fun ObservationPage(
     onClearLogs: () -> Unit,
     onExportLogs: () -> Unit,
 ) {
-    var selectedTabIndex by rememberSaveable { mutableStateOf(ObservationTab.REQUESTS.ordinal) }
-    val selectedTab = ObservationTab.values()[selectedTabIndex]
+    val safeSelectedTabIndex = selectedTabIndex.coerceIn(0, ObservationTab.values().lastIndex)
+    val selectedTab = ObservationTab.values()[safeSelectedTabIndex]
 
     Column {
-        PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+        PrimaryTabRow(selectedTabIndex = safeSelectedTabIndex) {
             ObservationTab.values().forEach { tab ->
                 Tab(
                     selected = tab == selectedTab,
-                    onClick = { selectedTabIndex = tab.ordinal },
+                    onClick = { onSelectedTabChange(tab.ordinal) },
                     text = { Text(tab.label) },
                 )
             }
