@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -121,6 +123,54 @@ class ProxyGroupsViewModelPanelInstrumentedTest {
         assertTrue(viewModel.state.value.selectedMap.isEmpty())
         assertTrue(store.selectedMap().isEmpty())
         assertEquals("node-b", runtime.lastTarget)
+    }
+
+    @Test
+    fun nestedProxyGroupSummaryShowsResolvedLeafNode() {
+        val outer = ProxyGroupInfo(
+            name = "Outer",
+            type = "URLTest",
+            now = "Middle",
+            all = listOf("Middle"),
+            hidden = false,
+            testUrl = "https://example.com",
+        )
+        val middle = ProxyGroupInfo(
+            name = "Middle",
+            type = "Selector",
+            now = "Leaf",
+            all = listOf("Leaf"),
+            hidden = false,
+        )
+        val leaf = ProxyGroupInfo(
+            name = "Leaf",
+            type = "Selector",
+            now = "node-c",
+            all = listOf("node-c"),
+            hidden = false,
+        )
+        val store = FakeProxyPanelProfileStore()
+        val runtime = FakeProxyPanelRuntime(ProxyGroupsSnapshot(listOf(outer, middle, leaf)))
+        val viewModel = ProxyGroupsViewModel(runtime, store)
+
+        composeRule.setContent {
+            val state by viewModel.state.collectAsState()
+            KClashTheme {
+                ProxyGroupsCard(
+                    state = state,
+                    runtimeState = CoreRuntimeStatus.RUNNING,
+                    onRefresh = viewModel::refresh,
+                    onSelect = viewModel::selectProxy,
+                    onTestDelay = viewModel::testDelay,
+                    onTestGroupDelay = viewModel::testDelayGroup,
+                )
+            }
+        }
+
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_group_Outer").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("URLTest · 当前：node-c").assertIsDisplayed()
     }
 
     private fun autoGroup() = ProxyGroupInfo(

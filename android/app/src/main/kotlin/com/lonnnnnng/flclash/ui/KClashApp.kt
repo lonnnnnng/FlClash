@@ -1004,8 +1004,14 @@ internal fun ProxyGroupsCard(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(group.name, style = MaterialTheme.typography.titleSmall)
+                                    // 作者 long：Flutter 在嵌套代理组卡片中展示最终叶子节点，避免用户只能看到中间组名。
+                                    val displayedProxy = resolveSelectedProxy(
+                                        group = group,
+                                        groups = state.groups,
+                                        selectedMap = state.selectedMap,
+                                    ).leafName ?: selectedProxyName(group, state.selectedMap)
                                     Text(
-                                        "${group.type} · 当前：${selectedProxyName(group, state.selectedMap) ?: "未选择"}",
+                                        "${group.type} · 当前：${displayedProxy ?: "未选择"}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )

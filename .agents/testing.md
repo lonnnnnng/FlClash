@@ -468,3 +468,12 @@
 - 记录旧 PID 后执行 `adb -s wsvwypiz7xwslvl7 shell cmd activity crash com.lonnnnnng.flclash`；设备出现新 PID，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由保持。
 - 重新打开 KClash 代理页后，`GLOBAL` 和“节点选择”均显示 `Selector · 当前：DIRECT`；未发现 KClash `FATAL EXCEPTION`。
 - 最终停止核心并确认服务、TUN 和路由清理，删除测试 Profile 后配置页恢复“还没有配置”。嵌套组平面有效叶子展示仍待后续补齐，Flutter 参考不采用子组 drill-down 导航。
+
+## 嵌套代理组平面叶子展示验收记录（2026-10-28）
+
+- `ProxyGroupsCard` 代理组摘要复用 `resolveSelectedProxy()`，沿三层嵌套组递归解析最终叶子节点；循环或不可解析时回退到当前组名称，页面保持 Flutter 参考的平面列表，不增加子组 drill-down 导航。
+- `ProxyGroupsViewModelPanelInstrumentedTest` 新增三层 `Outer → Middle → Leaf → node-c` Compose 状态流断言，确认 UI 显示 `URLTest · 当前：node-c`。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon`：通过；全工程 204 项 JVM 单元测试失败 0、错误 0、跳过 0，Lint 错误 0。
+- 定向 `ProxyGroupsViewModelPanelInstrumentedTest` 通过；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon` 通过，55 项 instrumentation 失败 0、错误 0、跳过 0。
+- Debug APK SHA-256：`5261eb708a63d992a4fac1680221705a2ae58d49aba637461bfb2eaf23c814e9`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未启动真实 Mihomo 核心；真机只用于 instrumentation，设备为 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）。
