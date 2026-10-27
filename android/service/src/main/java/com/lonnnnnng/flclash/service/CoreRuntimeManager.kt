@@ -52,7 +52,7 @@ class CoreRuntimeManager(
     private val runtimeResumeStore: RuntimeResumeStore,
     private val runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
     private val profileScriptEvaluator: ProfileScriptEvaluator = MissingProfileScriptEvaluator,
-) : CoreRuntimeStatusProvider {
+) : ProxyGroupsRuntime {
     init {
         RuntimeDiagnosticHistory.configure(runtimeDiagnosticStore)
     }
@@ -67,7 +67,7 @@ class CoreRuntimeManager(
     private var hasSuccessfulRun = false
 
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
-    val events: Flow<CoreEvent> = bridge.events
+    override val events: Flow<CoreEvent> = bridge.events
     val eventFlowStats = bridge.eventFlowStats
     val diagnosticEvents = RuntimeDiagnosticHistory.events
 
@@ -97,7 +97,7 @@ class CoreRuntimeManager(
             // 作者 long：Mihomo 解析失败时会回退到内置空配置，所以必须先独立校验文件，
             // 只有校验通过后才允许调用 setupConfig，避免把回退状态报告成可用代理。
             bridge.validateConfig(paths.configFile.path)
-            bridge.setupConfig()
+            bridge.setupConfig(profile.selectedMap)
             if (eventListenerStarted.compareAndSet(false, true)) {
                 bridge.startEventListener()
             }
@@ -217,14 +217,14 @@ class CoreRuntimeManager(
         }
     }
 
-    suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = transitionLock.withLock {
+    override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = transitionLock.withLock {
         runCatching {
             check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
             bridge.getProxyGroups()
         }
     }
 
-    suspend fun changeProxy(groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> =
+    override suspend fun changeProxy(groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> =
         transitionLock.withLock {
             runCatching {
                 check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
@@ -237,10 +237,10 @@ class CoreRuntimeManager(
     /**
      * 作者 long：测速与启动、停止、代理切换共用生命周期锁，避免核心正在切换配置时读取到半成品结果。
      */
-    suspend fun testDelay(
+    override suspend fun testDelay(
         proxyName: String,
-        testUrl: String = CoreBridge.DEFAULT_TEST_URL,
-        timeoutMs: Long = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+        testUrl: String,
+        timeoutMs: Long,
     ): Result<ProxyDelay?> = transitionLock.withLock {
         runCatching {
             check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
@@ -252,10 +252,10 @@ class CoreRuntimeManager(
      * 作者 long：组级测速必须保持核心生命周期互斥，但单个 asyncTestDelay 可以并发发送；
      * 因此锁覆盖整个批次而不是每一项，既避免停止/切换打断配置，又不把批量测速退化为串行循环。
      */
-    suspend fun testDelayBatch(
+    override suspend fun testDelayBatch(
         requests: List<ProxyDelayRequest>,
-        timeoutMs: Long = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
-        maxConcurrent: Int = DEFAULT_DELAY_BATCH_CONCURRENCY,
+        timeoutMs: Long,
+        maxConcurrent: Int,
     ): Result<List<ProxyDelayBatchResult>> = transitionLock.withLock {
         try {
             check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }

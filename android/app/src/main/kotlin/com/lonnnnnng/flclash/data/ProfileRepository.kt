@@ -30,6 +30,7 @@ interface ProfileStore {
     suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
+    suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile
     suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
@@ -161,6 +162,14 @@ class ProfileRepository(
             updated
         }
 
+    override suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile =
+        withContext(Dispatchers.IO) {
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            val updated = current.copy(selectedMapJson = encodeSelectedMap(selectedMap))
+            profileDao.update(updated.toEntity())
+            updated
+        }
+
     override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
         withContext(Dispatchers.IO) {
             database.withTransaction {
@@ -227,6 +236,7 @@ class ProfileRepository(
             id = profile.id,
             label = profile.realLabel,
             filePath = profileFile(profile.id).path,
+            selectedMap = decodeSelectedMap(profile.selectedMapJson),
             overridesJson = profile.overridesJson,
             scriptPath = profile.scriptId?.let { scriptId ->
                 requireNotNull(database.scripts().getById(scriptId)) { "绑定脚本不存在" }

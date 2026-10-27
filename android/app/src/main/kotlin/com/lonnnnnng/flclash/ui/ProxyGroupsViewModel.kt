@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
-import com.lonnnnnng.flclash.service.CoreRuntimeManager
+import com.lonnnnnng.flclash.data.ProfileStore
+import com.lonnnnnng.flclash.data.decodeSelectedMap
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import com.lonnnnnng.flclash.service.ProxyGroupsRuntime
 import com.lonnnnnng.flclash.service.ProxyDelayRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -189,7 +191,8 @@ private fun retainDelayResults(
 
 @HiltViewModel
 class ProxyGroupsViewModel @Inject constructor(
-    private val runtimeManager: CoreRuntimeManager,
+    private val runtimeManager: ProxyGroupsRuntime,
+    private val profileStore: ProfileStore,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(ProxyGroupsUiState())
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -227,7 +230,7 @@ class ProxyGroupsViewModel @Inject constructor(
                 .onSuccess { snapshot ->
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
-                        selectedMap = mutableState.value.selectedMap,
+                        selectedMap = currentProfileSelectedMap(),
                         batchTestingGroup = mutableState.value.batchTestingGroup,
                         delayResults = retainDelayResults(
                             snapshot.groups,
@@ -244,19 +247,31 @@ class ProxyGroupsViewModel @Inject constructor(
 
     fun selectProxy(group: ProxyGroupInfo, proxyName: String) {
         if (mutableState.value.batchTestingGroup != null) return
-        val target = computedSelectionTarget(group, proxyName, mutableState.value.selectedMap) ?: return
+        val stateBeforeSwitch = mutableState.value
+        val target = computedSelectionTarget(group, proxyName, stateBeforeSwitch.selectedMap) ?: return
+        val updatedMap = updateSelectedMap(
+            current = stateBeforeSwitch.selectedMap,
+            group = group,
+            proxyName = proxyName,
+            target = target,
+        )
         viewModelScope.launch {
             mutableState.value = mutableState.value.copy(switchingGroup = group.name)
             runtimeManager.changeProxy(group.name, target)
                 .onSuccess { snapshot ->
+                    val profileId = profileStore.currentProfileId.value
+                    runCatching {
+                        if (profileId != null) {
+                            profileStore.updateProfileSelectedMap(profileId, updatedMap)
+                        }
+                    }.onFailure { error ->
+                        // 作者 long：核心切换已经成功时仍显示真实核心状态，但明确提示持久化失败，
+                        // 避免用户误以为进程重建后仍会恢复本次选择。
+                        mutableErrors.emit(error.message ?: "保存代理选择失败")
+                    }
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
-                        selectedMap = updateSelectedMap(
-                            current = mutableState.value.selectedMap,
-                            group = group,
-                            proxyName = proxyName,
-                            target = target,
-                        ),
+                        selectedMap = updatedMap,
                         delayResults = retainDelayResults(
                             snapshot.groups,
                             mutableState.value.delayResults,
@@ -270,7 +285,7 @@ class ProxyGroupsViewModel @Inject constructor(
         }
     }
 
-    private fun updateSelectedMap(
+    internal fun updateSelectedMap(
         current: Map<String, String>,
         group: ProxyGroupInfo,
         proxyName: String,
@@ -278,6 +293,12 @@ class ProxyGroupsViewModel @Inject constructor(
     ): Map<String, String> = current.toMutableMap().apply {
         if (group.isComputed && target.isEmpty()) remove(group.name) else put(group.name, proxyName)
     }
+
+    private fun currentProfileSelectedMap(): Map<String, String> =
+        profileStore.currentProfileId.value
+            ?.let { id -> profileStore.profiles.value.firstOrNull { it.id == id } }
+            ?.let { decodeSelectedMap(it.selectedMapJson) }
+            .orEmpty()
 
     /**
      * 作者 long：结果键包含代理组、节点和测试地址，避免同名节点在不同代理组之间串用延迟结果。

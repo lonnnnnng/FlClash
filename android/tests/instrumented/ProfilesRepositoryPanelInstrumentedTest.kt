@@ -17,6 +17,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.ProfileRepository
 import com.lonnnnnng.flclash.data.ScriptRepository
+import com.lonnnnnng.flclash.data.decodeSelectedMap
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
 import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
@@ -202,6 +203,33 @@ class ProfilesRepositoryPanelInstrumentedTest {
             ).proxyProviders,
         )
         assertEquals(overrides.toJsonString(), runBlocking { repository.activeProfile().overridesJson })
+    }
+
+    @Test
+    fun repositoryPersistsSelectedProxyMapForRuntimeResume() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context = context,
+            database = database,
+            subscriptionClient = object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload =
+                    error("该选择持久化流程不访问远程订阅")
+            },
+        )
+        val profile = runBlocking { repository.addCustomProfile("选择恢复") }
+        val selectedMap = mapOf("GLOBAL" to "节点选择", "节点选择" to "Tokyo-01")
+
+        runBlocking { repository.updateProfileSelectedMap(profile.id, selectedMap) }
+
+        assertEquals(
+            selectedMap,
+            decodeSelectedMap(runBlocking { database.profiles().getById(profile.id)?.selectedMapJson }),
+        )
+        assertEquals(selectedMap, runBlocking { repository.activeProfile().selectedMap })
     }
 
     @Test

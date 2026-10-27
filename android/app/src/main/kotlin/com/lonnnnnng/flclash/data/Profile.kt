@@ -3,6 +3,8 @@ package com.lonnnnnng.flclash.data
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.net.URI
 
 enum class ProfileType {
@@ -158,6 +160,24 @@ data class Profile(
         )
     }
 }
+
+private val selectedMapType = object : TypeToken<Map<String, String>>() {}.type
+
+/**
+ * 作者 long：代理组选择只保存组名到节点名的稳定映射；损坏或旧版本留下的 JSON 必须回退为空映射，
+ * 这样不会阻止配置启动，也不会把任意 JSON 结构带入 Mihomo 的 setupConfig 协议。
+ */
+fun decodeSelectedMap(raw: String?): Map<String, String> = runCatching {
+    Gson().fromJson<Map<String, String>>(raw.orEmpty(), selectedMapType)
+        .orEmpty()
+        .filter { (group, proxy) -> group.isNotBlank() && proxy.isNotBlank() }
+}.getOrDefault(emptyMap())
+
+fun encodeSelectedMap(selectedMap: Map<String, String>): String = Gson().toJson(
+    selectedMap
+        .filter { (group, proxy) -> group.isNotBlank() && proxy.isNotBlank() }
+        .toSortedMap(),
+)
 
 fun ProfileEntity.toDomain(): Profile = Profile(
     id = id,

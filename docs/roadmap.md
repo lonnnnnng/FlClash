@@ -378,7 +378,7 @@ flowchart LR
 - Dialers 等高级配置；脚本自动更新调度、备份恢复和完整页面级 E2E。
 - 订阅自动更新调度、失败重试和通知。
 - 备份和恢复。
-- Profile 级别的当前代理组选择、展开状态和其他 Flutter 行为数据。
+- Profile 级别的代理组展开状态和其他 Flutter 行为数据。
 
 完成门槛：
 
@@ -393,13 +393,10 @@ flowchart LR
 待完成：
 
 - URLTest/Fallback 的完整递归选择和自动选择语义仍待补齐；当前节点/自动恢复基础交互已完成。
-- `fixed`、`now`、`selectedMap` 等核心状态映射。
-- 单组批量测速。
+- 代理组选择的完整递归 UI 导航、展开状态和 Tab/List 双布局。
 - 超时节点隐藏和失败节点回滚策略。
-- Tab/List 两种布局。
 - 展开、折叠、滚动定位。
 - 延迟结果的跨进程持久化缓存。
-- 代理组选择状态写回 Profile。
 
 完成门槛：
 
@@ -906,7 +903,19 @@ flowchart LR
 - computed 组点击语义与 Flutter 对齐：没有用户固定值时点击当前自动节点会固定该节点；再次点击已固定节点发送空目标恢复自动选择；Selector 仍按当前选择拒绝无意义的重复切换。
 - 代理页卡片和选择对话框改为显示有效选择，补充 `fixed` 解析、三层递归、环路保护、computed pin/auto toggle 和失效选择回退的 JVM 测试。
 - `./gradlew :core:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug --no-daemon --rerun-tasks`：通过；Core/App JVM 测试失败 0、错误 0。
-- 当前切片状态：`DONE-UNIT`。真实选择写回 Profile、启动时持久化 `selectedMap`、嵌套代理组 UI 导航/展开、Tab/List 布局和跨进程延迟缓存仍未完成，下一步继续补选择持久化闭环。
+- 当前切片状态：`DONE-UNIT`。递归选择语义已完成；嵌套代理组 UI 导航/展开、Tab/List 布局和跨进程延迟缓存仍未完成，下一步继续补订阅自动更新。
+
+### 2026-10-28：代理组选择持久化闭环切片
+
+- Profile 新增稳定的 `selectedMapJson` 编解码边界：只保留“代理组名 → 节点名”非空映射，损坏 JSON 回退空映射，写入时按键排序保证结果稳定。
+- `ProfileStore`/`ProfileRepository` 新增选择映射更新接口；`activeProfile()` 将解析后的 `selectedMap` 传入服务层，Room 重建后仍能恢复当前 Profile 的代理组选择。
+- `ActiveProfile`、`CoreRuntimeManager` 和 `CoreRuntimeBridge` 贯通选择映射；核心启动在校验配置后调用 `setupConfig(selectedMap)`，Mihomo 可在启动阶段恢复用户固定选择。
+- `ProxyGroupsViewModel` 读取当前 Profile 的持久化映射；代理切换成功后写回 Room，核心切换失败时不修改旧映射；通过 `ProxyGroupsRuntime` 契约隔离 ViewModel，便于验证成功/失败状态收敛。
+- 新增选择映射 JSON 单元测试、Runtime 启动参数测试、ViewModel 成功写回/失败保留测试，以及真实 Room/Repository `activeProfile()` 恢复测试。
+- `./gradlew test --no-daemon`：通过；App 84 项、Service 68 项、Core 18 项、Common 30 项，共 200 项 JVM 测试失败 0、错误 0、跳过 0。
+- `./gradlew :app:assembleDebug :app:lintDebug --no-daemon`：通过；Lint 错误 0，Debug APK SHA-256 为 `cc424209df0cf562d30a7746bde2596a74eb5b4352d940f85ed2ef81f3aa8dce`，原生库仅包含 `lib/arm64-v8a/`。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）44 项 instrumentation 测试失败 0、错误 0、跳过 0，其中包含真实 Room 选择映射和 `activeProfile()` 恢复流程。
+- 本轮未访问两条授权真实在线路径，未进行真实核心代理组点击和进程重建后的页面级选择回归，因此切片状态保持 `DONE-UNIT`；下一步推进订阅自动更新，再补代理选择真机 E2E、嵌套代理组 UI 导航和备份恢复。
 
 ### N4：Profiles 和代理组 parity
 
@@ -920,7 +929,7 @@ flowchart LR
 4. 批量测速、搜索、缓存和结果失效。
 5. 订阅自动更新和备份恢复。
 
-本轮已完成 Profile 排序、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环，以及递归选择语义的代码和 JVM 验证；下一步补选择写回 Profile/启动恢复，再推进订阅自动更新和备份恢复。
+本轮已完成 Profile 排序、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义以及选择映射的 Room/Runtime/ViewModel 持久化闭环；下一步推进订阅自动更新和备份恢复，再补代理选择真机 E2E 与完整页面级交互。
 
 ### N5：平台入口和系统集成
 

@@ -21,6 +21,7 @@ import com.lonnnnnng.flclash.service.CoreRuntimeBridge
 import com.lonnnnnng.flclash.service.CoreRuntimePaths
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
+import com.lonnnnnng.flclash.service.ProxyGroupsRuntime
 import com.lonnnnnng.flclash.service.NativeCoreRuntimeBridge
 import com.lonnnnnng.flclash.service.ProxyServiceController
 import com.lonnnnnng.flclash.service.RuntimeResumeStore
@@ -168,6 +169,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCoreRuntimeStatusProvider(manager: CoreRuntimeManager): CoreRuntimeStatusProvider = manager
+
+    @Provides
+    @Singleton
+    fun provideProxyGroupsRuntime(manager: CoreRuntimeManager): ProxyGroupsRuntime = manager
 
     private val CORE_BUNDLED_DATA = listOf(
         "ASN.mmdb",

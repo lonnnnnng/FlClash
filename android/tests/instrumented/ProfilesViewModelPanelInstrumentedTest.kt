@@ -150,6 +150,11 @@ private class FakePanelProfileStore : ProfileStore {
         return updated
     }
 
+    override suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile =
+        mutableProfiles.value.single { it.id == id }.copy(
+            selectedMapJson = com.lonnnnnng.flclash.data.encodeSelectedMap(selectedMap),
+        )
+
     override suspend fun updateRemoteProfile(id: Long): Profile =
         error("该页面流程不更新远程订阅")
 

@@ -519,6 +519,9 @@ private class FakeProfileStore(
         return profile.copy(overridesJson = overridesJson)
     }
 
+    override suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile =
+        profile.copy(selectedMapJson = com.lonnnnnng.flclash.data.encodeSelectedMap(selectedMap))
+
     override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile {
         scriptBindingUpdates += scriptId
         val updated = profile.copy(scriptId = scriptId)

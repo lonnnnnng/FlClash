@@ -405,3 +405,12 @@
 - Bridge 解析并保留 Mihomo URLTest/Fallback 的 `fixed` 字段；选择状态按用户固定值、`fixed`、核心 `now` 的顺序计算。
 - JVM 测试覆盖 computed 组首次点击当前自动节点固定、再次点击已固定节点恢复自动、三层嵌套选择解析、自循环/环路终止和固定值回退；`./gradlew :core:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug --no-daemon --rerun-tasks` 通过。
 - 本切片未访问真实在线路径，也未重新安装真机 APK；真实选择写回 Profile、进程重建恢复和嵌套代理组 UI 导航仍待后续切片。
+
+## 代理组选择持久化闭环验收记录（2026-10-28）
+
+- `ProfileStore`/`ProfileRepository` 新增 `selectedMap` 更新接口；`activeProfile()` 将 Room 中的映射解析后传入 `ActiveProfile`，`CoreRuntimeManager.startProxy()` 在 `setupConfig` 时传给 Mihomo。
+- `ProxyGroupsViewModel` 成功切换后写回当前 Profile，核心切换失败时保留旧映射；ViewModel 通过可替换的 `ProxyGroupsRuntime` 契约覆盖成功和失败状态。
+- `./gradlew test --no-daemon`：通过；全工程 200 项 JVM 测试失败 0、错误 0、跳过 0（App 84、Service 68、Core 18、Common 30）。
+- `./gradlew :app:assembleDebug :app:lintDebug --no-daemon`：通过；Lint 错误 0；Debug APK SHA-256 为 `cc424209df0cf562d30a7746bde2596a74eb5b4352d940f85ed2ef81f3aa8dce`，原生库仅包含 `lib/arm64-v8a/`。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew connectedDebugAndroidTest --no-daemon`：通过；Redmi Note 8 Pro（Android 16/API 36）44 项 instrumentation 测试失败 0、错误 0、跳过 0，新增真实 Room 选择映射持久化和 `activeProfile()` 恢复断言通过。
+- 本轮未访问当前 `AGENTS.md` 列出的两条真实在线路径，也未进行真实核心代理组点击；页面级真机选择和进程重建后的 UI 恢复仍待后续验收。

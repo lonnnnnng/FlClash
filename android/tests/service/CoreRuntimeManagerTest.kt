@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.service
 
 import java.io.File
+import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreBridgeException
 import com.lonnnnnng.flclash.core.CoreEvent
@@ -55,6 +56,7 @@ class CoreRuntimeManagerTest {
                 id = 7,
                 label = "测试配置",
                 filePath = source.path,
+                selectedMap = mapOf("GLOBAL" to "node-a"),
                 overridesJson = ProfileProviderOverrides(
                     mapOf("cloud" to ProxyProviderOverride(timeout = 2_000)),
                 ).toJsonString(),
@@ -82,6 +84,7 @@ class CoreRuntimeManagerTest {
             File(homeDir, "config.yaml").readText(),
         )
         assertEquals(listOf("initialize", "validate", "setup", "log-start", "listener-start"), bridge.calls)
+        assertEquals(mapOf("GLOBAL" to "node-a"), bridge.setupSelectedMap)
         assertEquals(listOf("service-start"), controller.events)
         assertTrue(controller.started)
         assertEquals("mips", controller.receivedOptions?.stack)
@@ -368,6 +371,7 @@ class CoreRuntimeManagerTest {
                 ProxyDelayRequest("node-a", "https://one"),
                 ProxyDelayRequest("node-b", "https://one"),
             ),
+            timeoutMs = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
             maxConcurrent = 2,
         ).getOrThrow()
 
@@ -390,7 +394,11 @@ class CoreRuntimeManagerTest {
 
         val error = assertThrows(CancellationException::class.java) {
             kotlinx.coroutines.runBlocking {
-                manager.testDelayBatch(listOf(ProxyDelayRequest("node-a", "https://one"))).getOrThrow()
+                manager.testDelayBatch(
+                    requests = listOf(ProxyDelayRequest("node-a", "https://one")),
+                    timeoutMs = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+                    maxConcurrent = 32,
+                ).getOrThrow()
             }
         }
         assertEquals("已取消", error.message)
@@ -684,6 +692,7 @@ class CoreRuntimeManagerTest {
         var eventListenerStarted = false
         var logListenerStarted = false
         var proxyGroupsReads = 0
+        var setupSelectedMap: Map<String, String> = emptyMap()
 
         override suspend fun initialize(homeDir: String, sdkVersion: Int) {
             calls += "initialize"
@@ -694,8 +703,9 @@ class CoreRuntimeManagerTest {
             validationError?.let { throw it }
         }
 
-        override suspend fun setupConfig() {
+        override suspend fun setupConfig(selectedMap: Map<String, String>) {
             calls += "setup"
+            setupSelectedMap = selectedMap
         }
 
         override suspend fun getProxyGroups(): ProxyGroupsSnapshot {

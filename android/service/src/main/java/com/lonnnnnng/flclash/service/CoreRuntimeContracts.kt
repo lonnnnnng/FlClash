@@ -26,6 +26,7 @@ data class ActiveProfile(
     val id: Long,
     val label: String,
     val filePath: String,
+    val selectedMap: Map<String, String> = emptyMap(),
     val overridesJson: String = "{}",
     val scriptPath: String? = null,
 )
@@ -168,6 +169,26 @@ data class CoreRuntimePaths(
         get() = File(homeDir, "config.yaml")
 }
 
+interface ProxyGroupsRuntime : CoreRuntimeStatusProvider {
+    val events: Flow<CoreEvent>
+
+    suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot>
+
+    suspend fun changeProxy(groupName: String, proxyName: String): Result<ProxyGroupsSnapshot>
+
+    suspend fun testDelay(
+        proxyName: String,
+        testUrl: String,
+        timeoutMs: Long = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+    ): Result<ProxyDelay?>
+
+    suspend fun testDelayBatch(
+        requests: List<ProxyDelayRequest>,
+        timeoutMs: Long = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+        maxConcurrent: Int = 32,
+    ): Result<List<ProxyDelayBatchResult>>
+}
+
 interface CoreRuntimeBridge {
     val events: Flow<CoreEvent>
     val eventFlowStats: StateFlow<CoreEventFlowStats>
@@ -176,7 +197,7 @@ interface CoreRuntimeBridge {
 
     suspend fun validateConfig(path: String)
 
-    suspend fun setupConfig()
+    suspend fun setupConfig(selectedMap: Map<String, String> = emptyMap())
 
     suspend fun getProxyGroups(): ProxyGroupsSnapshot
 
@@ -221,7 +242,7 @@ class NativeCoreRuntimeBridge(
 
     override suspend fun validateConfig(path: String) = coreBridge.validateConfig(path)
 
-    override suspend fun setupConfig() = coreBridge.setupConfig()
+    override suspend fun setupConfig(selectedMap: Map<String, String>) = coreBridge.setupConfig(selectedMap)
 
     override suspend fun getProxyGroups(): ProxyGroupsSnapshot = coreBridge.getProxyGroups()
 
