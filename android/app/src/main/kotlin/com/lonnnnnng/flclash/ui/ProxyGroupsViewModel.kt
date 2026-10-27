@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 
 data class ProxyGroupsUiState(
     val groups: List<ProxyGroupInfo> = emptyList(),
+    val selectedMap: Map<String, String> = emptyMap(),
     val isLoading: Boolean = false,
     val switchingGroup: String? = null,
     val batchTestingGroup: String? = null,
@@ -74,10 +75,51 @@ internal fun ProxyGroupsUiState.applyDelayEvent(event: CoreEvent.Delay): ProxyGr
     return if (updates.isEmpty()) this else copy(delayResults = delayResults + updates)
 }
 
-internal fun computedSelectionTarget(group: ProxyGroupInfo, proxyName: String): String? {
+internal fun computedSelectionTarget(
+    group: ProxyGroupInfo,
+    proxyName: String,
+    selectedMap: Map<String, String> = emptyMap(),
+): String? {
     if (!group.isSelectable || proxyName !in group.all) return null
-    if (!group.isComputed && proxyName == group.now) return null
-    return if (group.isComputed && proxyName == group.now) "" else proxyName
+    if (!group.isComputed && proxyName == (selectedMap[group.name] ?: group.now)) return null
+    // 作者 long：computed 组的核心 `now` 是自动测速结果，selectedMap 才表示用户是否主动固定节点；
+    // 点击自动节点第一次应固定它，再次点击同一固定节点才恢复自动选择。
+    return if (group.isComputed && proxyName == selectedMap[group.name]) "" else proxyName
+}
+
+internal fun selectedProxyName(
+    group: ProxyGroupInfo,
+    selectedMap: Map<String, String> = emptyMap(),
+): String? = selectedMap[group.name]
+    ?.takeIf { it in group.all }
+    ?: group.fixed?.takeIf { it in group.all }
+    ?: group.now?.takeIf { it in group.all }
+
+internal data class ProxySelectionResolution(
+    val leafName: String?,
+    val path: List<String>,
+    val cycleDetected: Boolean = false,
+)
+
+/**
+ * 作者 long：代理组成员可以继续指向其他代理组，页面显示和后续请求必须沿用户选择递归到叶子节点；
+ * visited 集合保证异常配置中的自循环/环路只返回不可用结果，不会递归耗尽页面线程。
+ */
+internal fun resolveSelectedProxy(
+    group: ProxyGroupInfo,
+    groups: List<ProxyGroupInfo>,
+    selectedMap: Map<String, String> = emptyMap(),
+): ProxySelectionResolution {
+    fun visit(current: ProxyGroupInfo, visiting: Set<String>, path: List<String>): ProxySelectionResolution {
+        if (current.name in visiting) return ProxySelectionResolution(null, path, cycleDetected = true)
+        val currentPath = path + current.name
+        val selected = selectedProxyName(current, selectedMap)
+            ?: return ProxySelectionResolution(null, currentPath)
+        val nested = groups.firstOrNull { it.name == selected }
+            ?: return ProxySelectionResolution(selected, currentPath + selected)
+        return visit(nested, visiting + current.name, currentPath)
+    }
+    return visit(group, emptySet(), emptyList())
 }
 
 internal data class ProxyDelayTarget(
@@ -185,6 +227,7 @@ class ProxyGroupsViewModel @Inject constructor(
                 .onSuccess { snapshot ->
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
+                        selectedMap = mutableState.value.selectedMap,
                         batchTestingGroup = mutableState.value.batchTestingGroup,
                         delayResults = retainDelayResults(
                             snapshot.groups,
@@ -201,13 +244,19 @@ class ProxyGroupsViewModel @Inject constructor(
 
     fun selectProxy(group: ProxyGroupInfo, proxyName: String) {
         if (mutableState.value.batchTestingGroup != null) return
-        val target = computedSelectionTarget(group, proxyName) ?: return
+        val target = computedSelectionTarget(group, proxyName, mutableState.value.selectedMap) ?: return
         viewModelScope.launch {
             mutableState.value = mutableState.value.copy(switchingGroup = group.name)
             runtimeManager.changeProxy(group.name, target)
                 .onSuccess { snapshot ->
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
+                        selectedMap = updateSelectedMap(
+                            current = mutableState.value.selectedMap,
+                            group = group,
+                            proxyName = proxyName,
+                            target = target,
+                        ),
                         delayResults = retainDelayResults(
                             snapshot.groups,
                             mutableState.value.delayResults,
@@ -219,6 +268,15 @@ class ProxyGroupsViewModel @Inject constructor(
                     mutableErrors.emit(error.message ?: "切换代理失败")
                 }
         }
+    }
+
+    private fun updateSelectedMap(
+        current: Map<String, String>,
+        group: ProxyGroupInfo,
+        proxyName: String,
+        target: String,
+    ): Map<String, String> = current.toMutableMap().apply {
+        if (group.isComputed && target.isEmpty()) remove(group.name) else put(group.name, proxyName)
     }
 
     /**

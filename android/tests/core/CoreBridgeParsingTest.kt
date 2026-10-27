@@ -33,6 +33,7 @@ class CoreBridgeParsingTest {
                     name = "媒体",
                     type = "URLTest",
                     now = "香港-01",
+                    fixed = "香港-01",
                     all = listOf("香港-01"),
                     hidden = false,
                 ),
@@ -47,6 +48,7 @@ class CoreBridgeParsingTest {
         assertTrue(result.groups[1].isComputed)
         assertTrue(result.groups[1].isSelectable)
         assertEquals("香港-01", result.groups[1].now)
+        assertEquals("香港-01", result.groups[1].fixed)
 
         val fallback = result.groups[1].copy(type = "Fallback")
         assertTrue(fallback.isComputed)

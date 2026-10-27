@@ -21,7 +21,8 @@ class ProxyGroupsViewModelTest {
         )
 
         assertEquals("node-b", computedSelectionTarget(group, "node-b"))
-        assertEquals("", computedSelectionTarget(group, "node-a"))
+        assertEquals("node-a", computedSelectionTarget(group, "node-a"))
+        assertEquals("", computedSelectionTarget(group, "node-a", mapOf("Auto" to "node-a")))
     }
 
     @Test
@@ -115,5 +116,44 @@ class ProxyGroupsViewModelTest {
         val group = ProxyGroupInfo("Auto", "URLTest", null, listOf("First"), false)
 
         assertTrue(resolveDelayTargets(group, listOf(group, first, second)).isEmpty())
+    }
+
+    @Test
+    fun `selection resolver follows three nested groups and selected map`() {
+        val leaf = ProxyGroupInfo("Leaf", "Selector", "node-c", listOf("node-c"), false)
+        val middle = ProxyGroupInfo("Middle", "Selector", "Leaf", listOf("Leaf"), false)
+        val outer = ProxyGroupInfo("Outer", "URLTest", "Middle", listOf("Middle"), false)
+
+        val resolved = resolveSelectedProxy(outer, listOf(outer, middle, leaf))
+
+        assertEquals("node-c", resolved.leafName)
+        assertEquals(listOf("Outer", "Middle", "Leaf", "node-c"), resolved.path)
+        assertTrue(!resolved.cycleDetected)
+    }
+
+    @Test
+    fun `selection resolver rejects nested cycles`() {
+        val first = ProxyGroupInfo("First", "Selector", "Second", listOf("Second"), false)
+        val second = ProxyGroupInfo("Second", "Selector", "First", listOf("First"), false)
+
+        val resolved = resolveSelectedProxy(first, listOf(first, second))
+
+        assertEquals(null, resolved.leafName)
+        assertTrue(resolved.cycleDetected)
+    }
+
+    @Test
+    fun `computed selected name prefers explicit pin then fixed then automatic now`() {
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "URLTest",
+            now = "auto-node",
+            fixed = "fixed-node",
+            all = listOf("auto-node", "fixed-node", "pinned-node"),
+            hidden = false,
+        )
+
+        assertEquals("fixed-node", selectedProxyName(group))
+        assertEquals("pinned-node", selectedProxyName(group, mapOf("Auto" to "pinned-node")))
     }
 }

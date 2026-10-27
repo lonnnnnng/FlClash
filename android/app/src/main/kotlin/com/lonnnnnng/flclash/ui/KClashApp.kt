@@ -907,7 +907,7 @@ internal fun ProxyGroupsCard(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(group.name, style = MaterialTheme.typography.titleSmall)
                                     Text(
-                                        "${group.type} · 当前：${group.now ?: "未选择"}",
+                                        "${group.type} · 当前：${selectedProxyName(group, state.selectedMap) ?: "未选择"}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -977,7 +977,7 @@ internal fun ProxyGroupsCard(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(
-                                selected = proxyName == group.now,
+                                selected = proxyName == selectedProxyName(group, state.selectedMap),
                                 onClick = {
                                     onSelect(group, proxyName)
                                     groupPendingSelection = null

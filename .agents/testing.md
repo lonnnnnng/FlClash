@@ -399,3 +399,9 @@
 - 点击 `GLOBAL` 的“批量测速”后，选择弹窗显示多个成功结果（254 ms、312 ms、314 ms、324 ms、325 ms、331 ms、359 ms），无结果节点保留“测速”状态；批量任务完成后未把取消或失败误报为成功。
 - 点击“停止核心”后 UI 显示“核心已停止”；再次检查未发现 `VpnService`、`ProxyService`、`tun0` 或 `198.18.0.0/30` 路由。
 - 结论：核心启动、代理组展示、批量测速和停止清理已形成真机证据；后续继续完整递归选择、订阅自动更新、备份恢复和发布收尾。
+
+## 代理组递归选择语义代码验收记录（2026-10-28）
+
+- Bridge 解析并保留 Mihomo URLTest/Fallback 的 `fixed` 字段；选择状态按用户固定值、`fixed`、核心 `now` 的顺序计算。
+- JVM 测试覆盖 computed 组首次点击当前自动节点固定、再次点击已固定节点恢复自动、三层嵌套选择解析、自循环/环路终止和固定值回退；`./gradlew :core:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug --no-daemon --rerun-tasks` 通过。
+- 本切片未访问真实在线路径，也未重新安装真机 APK；真实选择写回 Profile、进程重建恢复和嵌套代理组 UI 导航仍待后续切片。

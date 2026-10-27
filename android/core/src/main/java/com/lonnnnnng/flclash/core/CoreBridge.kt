@@ -214,6 +214,7 @@ class CoreBridge {
                         name = raw.optString("name", groupName),
                         type = raw.optString("type", "Unknown"),
                         now = raw.optNullableString("now"),
+                        fixed = raw.optNullableString("fixed"),
                         all = raw.optJSONArray("all").toStringList(),
                         hidden = raw.optBoolean("hidden", false),
                         testUrl = raw.optNullableString("testUrl"),
@@ -234,6 +235,7 @@ class CoreBridge {
                 name = payload.name,
                 type = payload.type,
                 now = payload.now,
+                fixed = payload.fixed,
                 all = payload.all,
                 hidden = payload.hidden,
                 testUrl = payload.testUrl,
@@ -666,6 +668,7 @@ data class ProxyGroupInfo(
     val all: List<String>,
     val hidden: Boolean,
     val testUrl: String? = null,
+    val fixed: String? = null,
 ) {
     val isSelector: Boolean
         get() = type.equals("Selector", ignoreCase = true)
@@ -689,6 +692,7 @@ data class ProxyGroupPayload(
     val all: List<String>,
     val hidden: Boolean,
     val testUrl: String? = null,
+    val fixed: String? = null,
 )
 
 data class ProxyDelay(
