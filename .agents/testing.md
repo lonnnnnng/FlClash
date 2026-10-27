@@ -452,4 +452,12 @@
 - 定向命令通过：`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.ProxyGroupsViewModelPanelInstrumentedTest --no-daemon`。
 - 全量命令通过：`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon`；54 项 instrumentation 失败 0、错误 0、跳过 0。
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 通过；Debug APK SHA-256：`e9650d902f59269a39dfd388056ab6867251f2480871444d436895b7b536197a`，原生库仅包含 `lib/arm64-v8a/`。
-- 本轮未访问真实订阅路径、未启动真实 Mihomo 核心；主 Activity + 真核心代理切换、嵌套代理组 UI 导航和进程重建后的选择恢复仍待后续验收。
+- 本轮未访问真实订阅路径、未启动真实 Mihomo 核心；主 Activity + 真核心代理切换、嵌套组平面有效叶子展示和进程重建后的选择恢复仍待后续验收。Flutter 参考不采用子组 drill-down 导航。
+
+## 真实核心代理选择与重启保持验收记录（2026-10-28）
+
+- 使用工作区根目录 `1.yaml` 通过 Android 文件选择器导入本地 Profile；本轮未访问两条真实在线订阅路径。
+- Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）启动后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由均存在；代理页读取到真实 `GLOBAL`、Selector 和 URLTest 组。
+- 在真实“节点选择”组中从自动选择切换到 `DIRECT`，UI 显示 `Selector · 当前：DIRECT`，核心刷新后仍保持；停止核心并再次启动后仍显示 `DIRECT`，完成选择映射的核心重启保持回归。
+- 最终停止核心并确认服务、TUN 和路由清理；应用内删除测试 Profile，配置页恢复“还没有配置”；未发现 KClash `FATAL EXCEPTION`。
+- 本轮未覆盖应用进程被杀后的选择 UI 恢复，也未覆盖嵌套组平面有效叶子展示；Flutter 参考不采用子组 drill-down 导航。
