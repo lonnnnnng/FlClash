@@ -532,6 +532,18 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ComponentContractInstrumentedTest`：通过，1 项 instrumentation 失败 0、错误 0。
 - 本轮不访问真实订阅、不启动 VPN、不启动 Mihomo 核心，也不执行 Tasker/MacroDroid 实际应用回归；真实在线验收继续严格限定为工作区根目录 `AGENTS.md` 中的两条用户授权路径，本地配置继续只使用工作区根目录 `1.yaml`。
 
+## 按应用代理选择器和包名过滤首片验收记录（2026-10-28）
+
+- 新增 `RoomAccessControlSettingsStore`，使用 `app_preferences` 保存独立于 Profile YAML 的按应用代理设置；`DefaultVpnOptionsProvider` 读取后清洗空包名、重复项并排序，服务层继续通过 Android `VpnService.Builder` 的允许/拒绝包名 API 应用过滤。
+- 首页按应用代理卡片支持启用/停用、白名单/黑名单、应用名/包名搜索、全选/清除当前结果、已安装启动器应用勾选和保存；核心运行中所有编辑入口锁定。
+- Manifest 仅声明 `MAIN + LAUNCHER` 查询范围，没有申请 `QUERY_ALL_PACKAGES`。
+- `DefaultVpnOptionsProviderTest`：通过，验证包名列表清洗和模式保留。
+- `AccessControlPanelInstrumentedTest`：通过 2 项，验证搜索、选择黑名单包和核心运行中锁定。
+- `AccessControlSettingsStoreInstrumentedTest`：通过 1 项，验证真实 Android SQLite 保存/恢复和清洗结果。
+- `./gradlew :service:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Debug APK 原生库仅包含 `lib/arm64-v8a/`。
+- Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）安装 Debug APK 后，首页显示“按应用代理”，读取到设备已安装应用；实际启用黑名单、选择一个应用并保存，强制重启 KClash 后仍显示“已选 1 个”。
+- 本轮未启动 VPN、未访问两条真实在线路径、未执行 Tasker/MacroDroid 实际应用回归；真实核心流量过滤效果和完整 Flutter Access 页面 parity 仍待后续切片。
+
 ## Profile 名称重命名闭环验收记录（2026-10-28）
 
 - `ProfileRepository.updateProfileLabel` 对名称执行裁剪、非空和 64 字符上限校验，只更新 Room 元数据，不改写 YAML；`ProfilesViewModel.rename` 在核心运行期间拒绝改名，并复用统一错误提示。

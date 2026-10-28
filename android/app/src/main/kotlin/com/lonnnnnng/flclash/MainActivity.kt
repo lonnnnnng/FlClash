@@ -20,6 +20,7 @@ import com.lonnnnnng.flclash.ui.DiagnosticSessionUiState
 import com.lonnnnnng.flclash.ui.DiagnosticSessionStatus
 import com.lonnnnnng.flclash.ui.MainViewModel
 import com.lonnnnnng.flclash.ui.ProfilesViewModel
+import com.lonnnnnng.flclash.ui.AccessControlViewModel
 import com.lonnnnnng.flclash.ui.ProxyGroupsViewModel
 import com.lonnnnnng.flclash.ui.ScriptsViewModel
 import com.lonnnnnng.flclash.ui.formatDiagnosticForExport
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var webDavBackupRepository: WebDavBackupRepository
     private val viewModel: MainViewModel by viewModels()
     private val profilesViewModel: ProfilesViewModel by viewModels()
+    private val accessControlViewModel: AccessControlViewModel by viewModels()
     private val proxyGroupsViewModel: ProxyGroupsViewModel by viewModels()
     private val scriptsViewModel: ScriptsViewModel by viewModels()
     private val vpnConsentLauncher = registerForActivityResult(
@@ -160,6 +162,7 @@ class MainActivity : ComponentActivity() {
                 KClashApp(
                     runtimeViewModel = viewModel,
                     profilesViewModel = profilesViewModel,
+                    accessControlViewModel = accessControlViewModel,
                     proxyGroupsViewModel = proxyGroupsViewModel,
                     scriptsViewModel = scriptsViewModel,
                     onStartRuntime = ::requestRuntimeStart,

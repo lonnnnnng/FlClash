@@ -74,6 +74,27 @@ interface VpnOptionsProvider {
 }
 
 /**
+ * 作者 long：按应用代理设置由 Android 应用层持久化，但服务层只依赖这个窄接口，
+ * 这样启动核心时可以读取最新选择，同时避免 service 模块反向依赖 Room 或 Compose。
+ */
+interface AccessControlSettingsProvider {
+    suspend fun current(): AccessControlProps
+
+    suspend fun save(value: AccessControlProps)
+}
+
+object DisabledAccessControlSettingsProvider : AccessControlSettingsProvider {
+    override suspend fun current(): AccessControlProps = AccessControlProps(
+        enable = false,
+        mode = AccessControlMode.ACCEPT_SELECTED,
+        acceptList = emptyList(),
+        rejectList = emptyList(),
+    )
+
+    override suspend fun save(value: AccessControlProps) = Unit
+}
+
+/**
  * 作者 long：运行意图必须跨越应用进程重建保存，才能区分“系统杀进程后恢复”和“用户主动停止”。
  */
 interface RuntimeResumeStore {
@@ -86,18 +107,16 @@ interface RuntimeResumeStore {
  * 作者 long：在设置页面接入前先使用与 Flutter 默认值一致的手机 TUN 配置，
  * 同时关闭系统 HTTP 代理，避免订阅配置的 mixed-port 尚未解析时把流量送到错误端口。
  */
-class DefaultVpnOptionsProvider : VpnOptionsProvider {
+class DefaultVpnOptionsProvider(
+    private val accessControlSettingsProvider: AccessControlSettingsProvider =
+        DisabledAccessControlSettingsProvider,
+) : VpnOptionsProvider {
     override suspend fun current() = VpnOptions(
         enable = true,
         port = DEFAULT_MIXED_PORT,
         ipv6 = false,
         dnsHijacking = false,
-        accessControlProps = AccessControlProps(
-            enable = false,
-            mode = AccessControlMode.ACCEPT_SELECTED,
-            acceptList = emptyList(),
-            rejectList = emptyList(),
-        ),
+        accessControlProps = accessControlSettingsProvider.current().sanitized(),
         allowBypass = true,
         systemProxy = false,
         bypassDomain = emptyList(),
@@ -108,6 +127,11 @@ class DefaultVpnOptionsProvider : VpnOptionsProvider {
     private companion object {
         const val DEFAULT_MIXED_PORT = 7890
     }
+
+    private fun AccessControlProps.sanitized(): AccessControlProps = copy(
+        acceptList = acceptList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
+        rejectList = rejectList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
+    )
 }
 
 class AndroidProxyServiceController(

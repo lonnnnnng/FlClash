@@ -77,6 +77,7 @@ import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
+import com.lonnnnnng.flclash.common.AccessControlMode
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -102,6 +103,7 @@ private enum class ObservationTab(val label: String) {
 fun KClashApp(
     runtimeViewModel: MainViewModel,
     profilesViewModel: ProfilesViewModel,
+    accessControlViewModel: AccessControlViewModel,
     proxyGroupsViewModel: ProxyGroupsViewModel,
     scriptsViewModel: ScriptsViewModel,
     onStartRuntime: () -> Unit,
@@ -141,6 +143,7 @@ fun KClashApp(
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val scriptsState by scriptsViewModel.state.collectAsState()
     val scriptEditorState by scriptsViewModel.editorState.collectAsState()
+    val accessControlState by accessControlViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -285,6 +288,19 @@ fun KClashApp(
                         BatteryOptimizationCard(
                             ignored = batteryOptimizationIgnored,
                             onRequest = onRequestBatteryOptimization,
+                        )
+                    }
+                    item {
+                        AccessControlCard(
+                            state = accessControlState,
+                            runtimeState = runtimeState,
+                            onEnabledChange = accessControlViewModel::setEnabled,
+                            onModeChange = accessControlViewModel::setMode,
+                            onSearchChange = accessControlViewModel::setSearchQuery,
+                            onTogglePackage = accessControlViewModel::togglePackage,
+                            onSelectVisible = accessControlViewModel::selectVisibleApps,
+                            onClearVisible = accessControlViewModel::clearVisibleApps,
+                            onSave = accessControlViewModel::save,
                         )
                     }
                     item {
@@ -1430,6 +1446,136 @@ private fun BatteryOptimizationCard(
                 OutlinedButton(onClick = onRequest) {
                     Text("打开电池优化设置")
                 }
+            }
+        }
+    }
+}
+
+/**
+ * 作者 long：按应用代理直接复用 Android VpnService 的 allow/deny 列表，
+ * 页面只负责选择包名并显式保存，避免用户在核心运行中修改已建立的 TUN 路由。
+ */
+@Composable
+internal fun AccessControlCard(
+    state: AccessControlUiState,
+    runtimeState: CoreRuntimeStatus,
+    onEnabledChange: (Boolean) -> Unit,
+    onModeChange: (AccessControlMode) -> Unit,
+    onSearchChange: (String) -> Unit,
+    onTogglePackage: (String) -> Unit,
+    onSelectVisible: () -> Unit,
+    onClearVisible: () -> Unit,
+    onSave: () -> Unit,
+) {
+    val canEdit = !runtimeState.isRunning && !state.isLoading && !state.isSaving
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("access_control_card"),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("按应用代理", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        if (state.settings.enable) {
+                            "${if (state.settings.mode == AccessControlMode.ACCEPT_SELECTED) "仅代理选中应用" else "代理除选中应用外的其他应用"} · 已选 ${state.selectedCount} 个"
+                        } else {
+                            "未启用，VPN 会代理所有应用"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = state.settings.enable,
+                    onCheckedChange = onEnabledChange,
+                    enabled = canEdit,
+                    modifier = Modifier.testTag("access_control_enabled"),
+                )
+            }
+            if (state.error != null) {
+                Text(state.error, color = MaterialTheme.colorScheme.error)
+            }
+            if (state.isLoading) {
+                Text("正在读取已安装应用…")
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { onModeChange(AccessControlMode.ACCEPT_SELECTED) },
+                        enabled = canEdit,
+                        modifier = Modifier.testTag("access_control_mode_allow"),
+                    ) { Text("白名单") }
+                    OutlinedButton(
+                        onClick = { onModeChange(AccessControlMode.REJECT_SELECTED) },
+                        enabled = canEdit,
+                        modifier = Modifier.testTag("access_control_mode_deny"),
+                    ) { Text("黑名单") }
+                }
+                OutlinedTextField(
+                    value = state.searchQuery,
+                    onValueChange = onSearchChange,
+                    enabled = canEdit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("access_control_search"),
+                    singleLine = true,
+                    label = { Text("搜索应用或包名") },
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = onSelectVisible, enabled = canEdit) { Text("全选当前结果") }
+                    TextButton(onClick = onClearVisible, enabled = canEdit) { Text("清除当前结果") }
+                }
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 280.dp)
+                        .testTag("access_control_app_list"),
+                ) {
+                    items(state.visibleApps, key = { it.packageName }) { app ->
+                        val checked = app.packageName in currentPackageList(state.settings)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = checked,
+                                onCheckedChange = { onTogglePackage(app.packageName) },
+                                enabled = canEdit,
+                                modifier = Modifier.testTag("access_control_app_${app.packageName}"),
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(app.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(
+                                    app.packageName,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                    }
+                }
+                Button(
+                    onClick = onSave,
+                    enabled = canEdit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("access_control_save"),
+                ) {
+                    if (state.isSaving) CircularProgressIndicator(modifier = Modifier.size(18.dp)) else Text("保存按应用代理")
+                }
+            }
+            if (runtimeState.isRunning) {
+                Text(
+                    "核心运行中，按应用代理设置已锁定；停止核心后才能修改。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }

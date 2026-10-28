@@ -9,6 +9,15 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
+    <!-- 作者 long：按应用代理只需要展示用户可从启动器打开的应用，声明这个查询范围即可，
+         不申请 QUERY_ALL_PACKAGES，避免把无关安装信息暴露给应用。 -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application
         android:name=".KClashApplication"
         android:allowBackup="false"

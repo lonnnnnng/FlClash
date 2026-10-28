@@ -86,3 +86,28 @@ class ServiceConfigTest {
         assertNotSame(first, ServiceConfig.notificationParams.value)
     }
 }
+
+class DefaultVpnOptionsProviderTest {
+    @Test
+    fun `current options include sanitized access control selection`() = runTest {
+        val provider = DefaultVpnOptionsProvider(
+            object : AccessControlSettingsProvider {
+                override suspend fun current() = AccessControlProps(
+                    enable = true,
+                    mode = AccessControlMode.ACCEPT_SELECTED,
+                    acceptList = listOf("com.z", "", "com.z", "com.a"),
+                    rejectList = listOf("com.unused"),
+                )
+
+                override suspend fun save(value: AccessControlProps) = Unit
+            },
+        )
+
+        val options = provider.current()
+
+        assertEquals(true, options.accessControlProps.enable)
+        assertEquals(AccessControlMode.ACCEPT_SELECTED, options.accessControlProps.mode)
+        assertEquals(listOf("com.a", "com.z"), options.accessControlProps.acceptList)
+        assertEquals(listOf("com.unused"), options.accessControlProps.rejectList)
+    }
+}

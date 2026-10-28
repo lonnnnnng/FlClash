@@ -22,6 +22,7 @@ import com.lonnnnnng.flclash.data.WebDavClient
 import com.lonnnnnng.flclash.data.HttpWebDavClient
 import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
 import com.lonnnnnng.flclash.data.RoomRuntimeDiagnosticStore
+import com.lonnnnnng.flclash.data.RoomAccessControlSettingsStore
 import com.lonnnnnng.flclash.data.SubscriptionClient
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.service.ActiveProfileProvider
@@ -38,6 +39,7 @@ import com.lonnnnnng.flclash.service.RuntimeDiagnosticStore
 import com.lonnnnnng.flclash.service.DefaultVpnOptionsProvider
 import com.lonnnnnng.flclash.service.ProfileScriptEvaluator
 import com.lonnnnnng.flclash.service.VpnOptionsProvider
+import com.lonnnnnng.flclash.service.AccessControlSettingsProvider
 import java.io.File
 import dagger.Module
 import dagger.Provides
@@ -170,7 +172,20 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideVpnOptionsProvider(): VpnOptionsProvider = DefaultVpnOptionsProvider()
+    fun provideAccessControlSettingsStore(database: KClashDatabase): RoomAccessControlSettingsStore =
+        RoomAccessControlSettingsStore(database.appPreferences())
+
+    @Provides
+    @Singleton
+    fun provideAccessControlSettingsProvider(
+        store: RoomAccessControlSettingsStore,
+    ): AccessControlSettingsProvider = store
+
+    @Provides
+    @Singleton
+    fun provideVpnOptionsProvider(
+        accessControlSettingsProvider: AccessControlSettingsProvider,
+    ): VpnOptionsProvider = DefaultVpnOptionsProvider(accessControlSettingsProvider)
 
     @Provides
     @Singleton
