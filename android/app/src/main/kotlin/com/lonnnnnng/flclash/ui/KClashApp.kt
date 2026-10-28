@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -32,6 +33,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -64,7 +66,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
@@ -89,6 +94,11 @@ import com.lonnnnnng.flclash.common.AccessSortType
 import com.lonnnnnng.flclash.AlwaysOnVpnState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Deselect
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SelectAll
 
 private enum class MainDestination(
     val label: String,
@@ -1647,25 +1657,32 @@ internal fun AccessControlCard(
                 IconButton(
                     onClick = { searchExpanded = !searchExpanded },
                     enabled = canEdit,
-                    modifier = Modifier.testTag("access_control_search_toggle"),
-                ) {
-                    Text(
-                        if (searchExpanded) "×" else "⌕",
-                        modifier = Modifier.semantics {
+                    modifier = Modifier
+                        .testTag("access_control_search_toggle")
+                        .semantics {
+                            role = Role.Button
                             contentDescription = if (searchExpanded) "关闭搜索" else "搜索应用"
                         },
+                ) {
+                    Icon(
+                        imageVector = if (searchExpanded) Icons.Outlined.Close else Icons.Outlined.Search,
+                        contentDescription = null,
                     )
                 }
                 IconButton(
                     onClick = onToggleVisible,
                     enabled = contentCanEdit && hasVisibleApps,
-                    modifier = Modifier.testTag("access_control_toggle_visible"),
-                ) {
-                    Text(
-                        if (state.allVisibleAppsSelected) "☑" else "☐",
-                        modifier = Modifier.semantics {
+                    modifier = Modifier
+                        .testTag("access_control_toggle_visible")
+                        .semantics {
+                            role = Role.Button
                             contentDescription = if (state.allVisibleAppsSelected) "取消全选当前结果" else "全选当前结果"
+                            stateDescription = if (state.allVisibleAppsSelected) "已全选" else "未全选"
                         },
+                ) {
+                    Icon(
+                        imageVector = if (state.allVisibleAppsSelected) Icons.Outlined.Deselect else Icons.Outlined.SelectAll,
+                        contentDescription = null,
                     )
                 }
                 Switch(
@@ -1782,7 +1799,7 @@ internal fun AccessControlCard(
                             modifier = Modifier.testTag("access_control_mode_deny"),
                         ) { Text("黑名单") }
                     }
-                    if (searchExpanded) {
+                    AnimatedVisibility(visible = searchExpanded) {
                         OutlinedTextField(
                             value = state.searchQuery,
                             onValueChange = onSearchChange,
