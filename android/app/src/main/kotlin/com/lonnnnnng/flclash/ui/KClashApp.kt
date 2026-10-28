@@ -96,7 +96,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Deselect
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SelectAll
 
@@ -115,6 +117,13 @@ private enum class ObservationTab(val label: String) {
     REQUESTS("请求"),
     DNS("DNS"),
     LOGS("日志"),
+}
+
+private enum class AccessMenuLayer {
+    NONE,
+    MAIN,
+    SETTINGS,
+    ACTIONS,
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1615,6 +1624,7 @@ private fun AlwaysOnVpnCard(
  * 作者 long：按应用代理直接复用 Android VpnService 的 allow/deny 列表，
  * 页面只负责选择包名并显式保存，避免用户在核心运行中修改已建立的 TUN 路由。
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun AccessControlCard(
     state: AccessControlUiState,
@@ -1640,7 +1650,7 @@ internal fun AccessControlCard(
     val hasVisibleApps = visibleApps.isNotEmpty()
     val actionsCanEdit = canEdit && !state.isSmartSelecting
     var searchExpanded by rememberSaveable { mutableStateOf(false) }
-    var actionMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    var accessMenuLayer by remember { mutableStateOf(AccessMenuLayer.NONE) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1650,54 +1660,290 @@ internal fun AccessControlCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("按应用代理", style = MaterialTheme.typography.titleMedium)
-                }
-                IconButton(
-                    onClick = { searchExpanded = !searchExpanded },
-                    enabled = canEdit,
-                    modifier = Modifier
-                        .testTag("access_control_search_toggle")
-                        .semantics {
-                            role = Role.Button
-                            contentDescription = if (searchExpanded) "关闭搜索" else "搜索应用"
-                        },
-                ) {
-                    Icon(
-                        imageVector = if (searchExpanded) Icons.Outlined.Close else Icons.Outlined.Search,
-                        contentDescription = null,
-                    )
-                }
-                IconButton(
-                    onClick = onToggleVisible,
-                    enabled = contentCanEdit && hasVisibleApps,
-                    modifier = Modifier
-                        .testTag("access_control_toggle_visible")
-                        .semantics {
-                            role = Role.Button
-                            contentDescription = if (state.allVisibleAppsSelected) "取消全选当前结果" else "全选当前结果"
-                            stateDescription = if (state.allVisibleAppsSelected) "已全选" else "未全选"
-                        },
-                ) {
-                    Icon(
-                        imageVector = if (state.allVisibleAppsSelected) Icons.Outlined.Deselect else Icons.Outlined.SelectAll,
-                        contentDescription = null,
-                    )
-                }
-                Switch(
-                    checked = state.settings.enable,
-                    onCheckedChange = onEnabledChange,
-                    enabled = canEdit,
-                    modifier = Modifier.testTag("access_control_enabled"),
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                itemVerticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "按应用代理",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(
+                        onClick = { searchExpanded = !searchExpanded },
+                        enabled = canEdit,
+                        modifier = Modifier
+                            .testTag("access_control_search_toggle")
+                            .semantics {
+                                role = Role.Button
+                                contentDescription = if (searchExpanded) "关闭搜索" else "搜索应用"
+                            },
+                    ) {
+                        Icon(
+                            imageVector = if (searchExpanded) Icons.Outlined.Close else Icons.Outlined.Search,
+                            contentDescription = null,
+                        )
+                    }
+                    IconButton(
+                        onClick = onToggleVisible,
+                        enabled = contentCanEdit && hasVisibleApps,
+                        modifier = Modifier
+                            .testTag("access_control_toggle_visible")
+                            .semantics {
+                                role = Role.Button
+                                contentDescription = if (state.allVisibleAppsSelected) "取消全选当前结果" else "全选当前结果"
+                                stateDescription = if (state.allVisibleAppsSelected) "已全选" else "未全选"
+                            },
+                    ) {
+                        Icon(
+                            imageVector = if (state.allVisibleAppsSelected) Icons.Outlined.Deselect else Icons.Outlined.SelectAll,
+                            contentDescription = null,
+                        )
+                    }
+                    if (state.hasUnsavedChanges) {
+                        IconButton(
+                            onClick = onSave,
+                            enabled = canEdit,
+                            modifier = Modifier
+                                .testTag("access_control_topbar_save")
+                                .semantics {
+                                    role = Role.Button
+                                    contentDescription = "保存按应用代理"
+                                },
+                        ) {
+                            Icon(Icons.Outlined.Check, contentDescription = null)
+                        }
+                    }
+                    Box {
+                        IconButton(
+                            onClick = { accessMenuLayer = AccessMenuLayer.MAIN },
+                            enabled = actionsCanEdit,
+                            modifier = Modifier
+                                .testTag("access_control_topbar_actions")
+                                .semantics {
+                                    role = Role.Button
+                                    contentDescription = "更多操作"
+                                },
+                        ) {
+                            Icon(Icons.Outlined.MoreVert, contentDescription = null)
+                        }
+                        DropdownMenu(
+                            expanded = accessMenuLayer == AccessMenuLayer.MAIN,
+                            onDismissRequest = { accessMenuLayer = AccessMenuLayer.NONE },
+                            modifier = Modifier.testTag("access_control_menu_main"),
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("开启") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onEnabledChange(true)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (state.settings.enable) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "当前状态") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_enable"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("关闭") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onEnabledChange(false)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (!state.settings.enable) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "当前状态") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_disable"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("设置") },
+                                onClick = { accessMenuLayer = AccessMenuLayer.SETTINGS },
+                                enabled = canEdit,
+                                modifier = Modifier.testTag("access_control_menu_settings"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("操作") },
+                                onClick = { accessMenuLayer = AccessMenuLayer.ACTIONS },
+                                enabled = actionsCanEdit,
+                                modifier = Modifier.testTag("access_control_menu_actions"),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = accessMenuLayer == AccessMenuLayer.SETTINGS,
+                            onDismissRequest = { accessMenuLayer = AccessMenuLayer.NONE },
+                            modifier = Modifier.testTag("access_control_menu_settings_panel"),
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("返回") },
+                                onClick = { accessMenuLayer = AccessMenuLayer.MAIN },
+                                modifier = Modifier.testTag("access_control_menu_settings_back"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("白名单") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onModeChange(AccessControlMode.ACCEPT_SELECTED)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (state.settings.mode == AccessControlMode.ACCEPT_SELECTED) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "当前模式") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_mode_allow"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("黑名单") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onModeChange(AccessControlMode.REJECT_SELECTED)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (state.settings.mode == AccessControlMode.REJECT_SELECTED) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "当前模式") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_mode_deny"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("默认排序") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onSortChange(AccessSortType.NONE)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (state.settings.sort == AccessSortType.NONE) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "当前排序") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_sort_none"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("按名称") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onSortChange(AccessSortType.NAME)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (state.settings.sort == AccessSortType.NAME) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "当前排序") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_sort_name"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("按更新时间") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onSortChange(AccessSortType.TIME)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (state.settings.sort == AccessSortType.TIME) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "当前排序") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_sort_time"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("显示系统应用") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onFilterSystemAppsChange(!state.settings.isFilterSystemApp)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (!state.settings.isFilterSystemApp) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "已显示") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_system_apps"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("显示无网络应用") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onFilterNonInternetAppsChange(!state.settings.isFilterNonInternetApp)
+                                },
+                                enabled = canEdit,
+                                trailingIcon = if (!state.settings.isFilterNonInternetApp) {
+                                    { Icon(Icons.Outlined.Check, contentDescription = "已显示") }
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.testTag("access_control_menu_no_network_apps"),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = accessMenuLayer == AccessMenuLayer.ACTIONS,
+                            onDismissRequest = { accessMenuLayer = AccessMenuLayer.NONE },
+                            modifier = Modifier.testTag("access_control_menu_actions_panel"),
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("返回") },
+                                onClick = { accessMenuLayer = AccessMenuLayer.MAIN },
+                                modifier = Modifier.testTag("access_control_menu_actions_back"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("智能选择") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onSmartSelect()
+                                },
+                                enabled = contentCanEdit && state.apps.isNotEmpty(),
+                                modifier = Modifier.testTag("access_control_menu_smart_select"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("导出剪贴板") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onExportToClipboard()
+                                },
+                                enabled = actionsCanEdit,
+                                modifier = Modifier.testTag("access_control_clipboard_export"),
+                            )
+                            DropdownMenuItem(
+                                text = { Text("剪贴板导入") },
+                                onClick = {
+                                    accessMenuLayer = AccessMenuLayer.NONE
+                                    onImportFromClipboard()
+                                },
+                                enabled = actionsCanEdit,
+                                modifier = Modifier.testTag("access_control_clipboard_import"),
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = state.settings.enable,
+                        onCheckedChange = onEnabledChange,
+                        enabled = canEdit,
+                        modifier = Modifier.testTag("access_control_enabled"),
+                    )
+                }
             }
-            Row(
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("access_control_status"),
-                verticalAlignment = Alignment.CenterVertically,
+                itemVerticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
                     if (state.settings.enable) "▣" else "ⓘ",
@@ -1715,6 +1961,8 @@ internal fun AccessControlCard(
                     },
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodySmall,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 if (state.settings.enable) {
                     Text(
@@ -1746,7 +1994,10 @@ internal fun AccessControlCard(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text("排序方式", style = MaterialTheme.typography.labelLarge)
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
                         TextButton(
                             onClick = { onSortChange(AccessSortType.NONE) },
                             enabled = contentCanEdit,
@@ -1763,9 +2014,10 @@ internal fun AccessControlCard(
                             modifier = Modifier.testTag("access_control_sort_time"),
                         ) { Text("更新时间") }
                     }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    FlowRow(
+                        itemVerticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Switch(
                             checked = state.settings.isFilterSystemApp,
@@ -1775,9 +2027,10 @@ internal fun AccessControlCard(
                         )
                         Text("过滤系统应用")
                     }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    FlowRow(
+                        itemVerticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Switch(
                             checked = state.settings.isFilterNonInternetApp,
@@ -1787,7 +2040,11 @@ internal fun AccessControlCard(
                         )
                         Text("过滤无网络应用")
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
                         OutlinedButton(
                             onClick = { onModeChange(AccessControlMode.ACCEPT_SELECTED) },
                             enabled = contentCanEdit,
@@ -1811,7 +2068,11 @@ internal fun AccessControlCard(
                             label = { Text("搜索应用或包名") },
                         )
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
                         TextButton(
                             onClick = onSmartSelect,
                             enabled = contentCanEdit && state.apps.isNotEmpty(),
@@ -1828,31 +2089,10 @@ internal fun AccessControlCard(
                         }
                         Box {
                             TextButton(
-                                onClick = { actionMenuExpanded = true },
+                                onClick = { accessMenuLayer = AccessMenuLayer.ACTIONS },
                                 enabled = actionsCanEdit,
                                 modifier = Modifier.testTag("access_control_actions"),
                             ) { Text("更多操作") }
-                            DropdownMenu(
-                                expanded = actionMenuExpanded,
-                                onDismissRequest = { actionMenuExpanded = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("导出剪贴板") },
-                                    onClick = {
-                                        actionMenuExpanded = false
-                                        onExportToClipboard()
-                                    },
-                                    modifier = Modifier.testTag("access_control_clipboard_export"),
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("剪贴板导入") },
-                                    onClick = {
-                                        actionMenuExpanded = false
-                                        onImportFromClipboard()
-                                    },
-                                    modifier = Modifier.testTag("access_control_clipboard_import"),
-                                )
-                            }
                         }
                         TextButton(
                             onClick = onSelectVisible,

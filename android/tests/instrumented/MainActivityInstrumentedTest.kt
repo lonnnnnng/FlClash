@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash
 
 import android.Manifest
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -8,9 +10,12 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -200,6 +205,138 @@ class MainActivityInstrumentedTest {
         }
         composeRule.onNodeWithTag("access_control_save").performClick()
         composeRule.waitForIdle()
+    }
+
+    @Test
+    fun mainActivityPersistsDirectAccessSelectionAcrossRecreation() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val candidatePackage = findSelectableLauncherPackage(context)
+        check(candidatePackage != null) { "设备没有可用于按应用代理 E2E 的非系统网络应用" }
+
+        val dashboard = composeRule.onNodeWithTag("page_dashboard")
+        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_search_toggle")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        val clipboard = checkNotNull(context.getSystemService(ClipboardManager::class.java))
+        composeRule.onNodeWithTag("access_control_actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_clipboard_export").performClick()
+        composeRule.waitForIdle()
+        val originalText = clipboard.primaryClip
+            ?.takeIf { it.itemCount > 0 }
+            ?.getItemAt(0)
+            ?.coerceToText(context)
+            ?.toString()
+            .orEmpty()
+
+        val enabledSwitch = composeRule.onNodeWithTag("access_control_enabled")
+        val wasEnabled = runCatching {
+            enabledSwitch.assertIsOn()
+            true
+        }.getOrDefault(false)
+        if (!wasEnabled) {
+            enabledSwitch.performClick()
+        }
+
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        composeRule.onNodeWithTag("access_control_search").performTextInput(candidatePackage)
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_app_$candidatePackage")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        val appNode = composeRule.onNodeWithTag("access_control_app_$candidatePackage")
+        val wasSelected = runCatching {
+            appNode.assertIsOn()
+            true
+        }.getOrDefault(false)
+        appNode.performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_topbar_save").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("access_control_topbar_save").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("保存按应用代理").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        // 作者 long：真实宿主重建后重新读取 Room 设置，才能证明页面编辑不是只停留在内存 StateFlow。
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("page_dashboard").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("access_control_card"))
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_search_toggle")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.waitUntil(15_000) {
+            composeRule.onAllNodesWithTag("access_control_app_$candidatePackage")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // 重建后不再次输入搜索，直接读取完整应用列表，避免把搜索动画时序混入 Room 恢复断言。
+        val restoredNode = composeRule.onNodeWithTag("access_control_app_$candidatePackage")
+        if (wasSelected) {
+            assertEquals(
+                ToggleableState.Off,
+                restoredNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
+            )
+        } else {
+            restoredNode.assertIsOn()
+        }
+
+        // 恢复测试前的应用选择；原本关闭时通过“放弃更改”回到持久化基线，避免关闭态保存入口被禁用造成污染。
+        clipboard.setPrimaryClip(ClipData.newPlainText("Access E2E restore", originalText))
+        composeRule.onNodeWithTag("access_control_actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_clipboard_import").performClick()
+        if (!wasEnabled) {
+            composeRule.onNodeWithTag("access_control_enabled").performClick()
+            composeRule.onNodeWithText("观测").performClick()
+            composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+            composeRule.onNodeWithText("放弃更改").performClick()
+            composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
+            composeRule.onNodeWithText("首页").performClick()
+        } else {
+            composeRule.onNodeWithTag("access_control_save").performClick()
+            composeRule.waitForIdle()
+        }
+    }
+
+    @Test
+    fun mainActivityReflowsAccessCardAfterRotation() {
+        val dashboard = composeRule.onNodeWithTag("page_dashboard")
+        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_card").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        try {
+            composeRule.activityRule.scenario.onActivity { activity ->
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            }
+            composeRule.waitUntil(5_000) {
+                var landscape = false
+                composeRule.activityRule.scenario.onActivity { activity ->
+                    landscape = activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                }
+                landscape
+            }
+            composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("access_control_card"))
+            composeRule.onNodeWithTag("access_control_card").assertIsDisplayed()
+            composeRule.onNodeWithTag("access_control_search_toggle").assertIsDisplayed()
+            composeRule.onNodeWithTag("access_control_enabled").assertIsDisplayed()
+        } finally {
+            composeRule.activityRule.scenario.onActivity { activity ->
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+            composeRule.waitForIdle()
+        }
     }
 
     @Test

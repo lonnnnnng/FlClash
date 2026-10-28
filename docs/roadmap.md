@@ -57,12 +57,12 @@
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
 | 单元测试 | 220 项通过，失败 0，错误 0，跳过 0 |
-| Instrumentation | 78 项通过，失败 0，错误 0，跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36） |
+| Instrumentation | 既有全量基线 82 项通过；本轮新增 Access 定向 10 项通过，失败 0，错误 0；本轮全量 83 项重跑受设备前台外部应用干扰，未计入通过基线；设备为 Redmi Note 8 Pro（Android 16/API 36） |
 | Debug 构建 | `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
-| Debug 原生库 | APK SHA-256 为 `0b2f79ab4046962228463336411a050a52c14fab8900d9666367faf0b2a62c0c`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
+| Debug 原生库 | APK SHA-256 为 `acaf5a9dee122262c41e901976e50608cbcfe4fb71a471072f766bc9d2b249a2`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
 | Release 构建 | `./gradlew :app:assembleRelease :app:lintRelease --no-daemon` 已通过；当前输出为未签名预发布 APK，尚未创建独立 release keystore |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、进程重建后的选择 UI 恢复、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、代理选择 Activity 页面宿主选择与自动恢复、主 Activity 顶层导航与观测页签跨页面/重建状态保持、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、Always-on VPN 系统设置引导卡片、Access 页面级剪贴板导入/导出 E2E、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
+| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、进程重建后的选择 UI 恢复、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、代理选择 Activity 页面宿主选择与自动恢复、主 Activity 顶层导航与观测页签跨页面/重建状态保持、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、Always-on VPN 系统设置引导卡片、Access 页面级剪贴板导入/导出 E2E、Access 直接选择保存后 Room 重建恢复、横屏重排、1.5 倍字体可达性、系统字体 1.3 回归、Access 顶栏脏状态保存、菜单层级定向回归和入口、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
 
 ## 4. 目标架构图
 
@@ -436,7 +436,7 @@ flowchart LR
 待完成：
 
 - Tasker/MacroDroid 实际应用回归（当前已完成 ADB/Intent 契约验证）。
-- 完整 Flutter Access 页面 parity（选择器、持久化、服务参数、真实核心流量回归、关闭状态遮罩/一键开启、排序和系统/无网络过滤、智能选择、剪贴板导入/导出首片、Access 卡片顶栏搜索/全选入口已完成；完整页面视觉交互仍待补齐）。
+- 完整 Flutter Access 页面 parity（选择器、持久化、服务参数、真实核心流量回归、关闭状态遮罩/一键开启、排序和系统/无网络过滤、智能选择、剪贴板导入/导出首片、Access 卡片顶栏搜索/全选入口、窄屏 FlowRow、横屏重排、1.5 倍字体可达性、保存后重建恢复和顶栏脏状态保存/菜单层级首片已完成；Flutter 顶栏完整搜索态、动态系统字体矩阵、截图级视觉回归和全量设备稳定回归仍待补齐）。
 - Always-on VPN 的完整配置和系统设置兼容。
 - Android 组件导出、Intent 和权限的完整自动化审计。
 
@@ -455,6 +455,7 @@ flowchart LR
 - Compose + Material 3 基础主题。
 - 首页、配置、代理、连接、观测五个手机目的地；观测页包含 Requests、DNS、Logs 三个页签，核心状态和代理组交互。
 - Edge-to-edge 基础设置。
+- Access 卡片首轮响应式收敛：标题/状态/排序/筛选区域可换行，已完成横屏重排和 1.5 倍字体 Compose 可达性回归；真实宿主保存后重建可恢复 Room 设置；脏状态下提供标题栏保存、Flutter 风格主菜单/设置/操作层级，正文操作入口保留为小屏备用。
 
 待完成：
 
@@ -462,8 +463,8 @@ flowchart LR
 - Dashboard、Profiles、Proxy、Connection、Observations 页面及其 Requests、DNS、Logs 页签的完整交互对齐。
 - Material You 动态颜色、浅色/深色主题。
 - Flutter 连续圆角、底部面板、弹层和交互节奏。
-- 横屏布局和小屏滚动策略。
-- 无障碍语义、内容描述、触控区域和大字体。
+- 横屏布局和小屏滚动策略的全页面覆盖。
+- 无障碍语义、内容描述、触控区域和系统动态字体矩阵的全页面覆盖。
 - 截图基线和 Compose screenshot regression。
 
 完成门槛：
@@ -478,16 +479,16 @@ flowchart LR
 
 当前已有：
 
-- 157 项 Kotlin 单元测试。
+- 220 项 JVM 单元测试，失败 0、错误 0。
 - Debug APK 构建和 arm64 产物检查。
 - `:app:lintDebug` 已通过；当前有 32 条非阻断 Warning、2 条 Hint，错误为 0。
-- 32 项 instrumentation 测试，其中 Room 6 项、Compose 26 项（诊断卡片 4 项、Profiles 17 项、Scripts 2 项、MainActivity 宿主 2 项）。
+- 83 项 instrumentation 测试；本轮新增顶栏菜单层级定向用例，定向 Access 类 10 项通过；全量重跑受设备前台外部应用干扰，未计入通过基线。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
 待完成：
 
-- 完整页面级 Compose/Instrumentation 测试，当前已有事件流摘要、诊断归因和 Room DAO 覆盖。
+- 完整页面级 Compose/Instrumentation 测试，当前已新增 Access 真实宿主直接选择→保存→重建恢复、横屏重排、大字号可达性和顶栏保存/菜单层级回归；本轮定向 Access 10 项通过，全量 83 项因设备外部应用抢占前台出现 `No compose hierarchies found`，观测、Profiles 高级编辑和代理组仍需继续补齐。
 - VPN 权限、TUN 停止清理、后台恢复、系统撤销 VPN、Wi‑Fi 断开恢复、进程重建和 `dumpsys connectivity` 真机测试已有证据；Wi‑Fi↔移动网络切换仍待完成。
 - 连接、请求、DNS、日志端到端测试的自动化脚本和稳定断言。
 - R8、Release 构建和 APK 签名检查。
@@ -1316,6 +1317,39 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - `adb devices -l` 确认 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）；定向 `AccessControlPanelInstrumentedTest` 通过；全量 `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，78 项失败 0、错误 0、跳过 0。
 - Debug APK SHA-256 为 `0b2f79ab4046962228463336411a050a52c14fab8900d9666367faf0b2a62c0c`，APK 内原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。Access 完整页面视觉交互、动态字体/横竖屏专项验收和页面级 E2E 仍待后续切片。
+
+### 2026-10-29：Access 操作区窄屏响应式收敛
+
+- Access 标题栏将搜索、全选和开关控件放入带 8dp 间距的稳定操作组；正文“智能选择 / 更多操作 / 全选当前结果 / 清除当前结果”改用 `FlowRow`，窄屏或大字号时允许按行换行，不再依赖单行横向空间。
+- 该调整只改变布局，不改变按应用代理状态、核心运行锁定、关闭状态遮罩或批量操作语义；小屏仍保留正文文字入口，避免只依赖图标操作。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0、跳过 0，Lint 错误 0。
+- `adb devices -l` 确认 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）；全量 `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，78 项失败 0、错误 0、跳过 0。Gradle 结束时 logcat reader 报告 stream closed，但 XML 结果仍为成功且无失败/错误。
+- Debug APK SHA-256 为 `037ee1ee15296c6de91c8255e40cd1dec0f3ec69af789777cd68f255b3691904`，APK 内原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。下一步补动态字体/横竖屏专项验收和 Access 页面级 E2E。
+
+### 2026-10-29：Access 动态字体、横屏与真实宿主重建验收
+
+- Access 标题、状态说明、排序和系统/无网络筛选行改为可换行布局；状态说明限制为两行并使用省略号，避免大字号把选中数量或开启入口挤出卡片。
+- `AccessControlPanelInstrumentedTest.largeFontScaleKeepsAccessControlActionsReachable` 在 `LocalDensity(fontScale = 1.5f)` 下确认搜索、更多操作、批量入口、保存和应用选择节点仍存在。
+- `MainActivityInstrumentedTest.mainActivityPersistsDirectAccessSelectionAcrossRecreation` 从真实 MainActivity 选择设备上的非系统网络应用，保存后重建 Activity，重新读取 Room 设置并断言选择状态保持；测试结束恢复原始剪贴板和按应用代理状态。
+- `MainActivityInstrumentedTest.mainActivityReflowsAccessCardAfterRotation` 在 Redmi 真机切换横屏并恢复竖屏，确认 Access 卡片、搜索入口和开关仍可见；Manifest 的 `configChanges` 保持同一 Activity 生命周期。
+- 设备系统字体临时设置为 `1.3` 后运行 `MainActivityInstrumentedTest`：8 项失败 0、错误 0、跳过 0；验收结束已恢复系统字体 `1.0`，未留下设备设置副作用。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过；Redmi Note 8 Pro（Android 16/API 36）81 项失败 0、错误 0、跳过 0。XML 结果文件为 `android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml`。
+- Debug APK SHA-256 为 `fd85cf82d0447e5c92ccd02d59a54441938339c97025a28ccb1c8572741c9142`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。下一步收敛 Flutter 顶栏保存/菜单层级、更多系统字体档位和截图级视觉回归。
+
+### 2026-10-29：Access Flutter 顶栏菜单层级首片
+
+- 顶栏“更多操作”按 Flutter 结构拆为主菜单、设置层和操作层：主菜单提供开启/关闭、设置和操作；设置层提供白名单/黑名单、默认/名称/更新时间排序及系统/无网络应用显示开关；操作层提供智能选择、剪贴板导入和导出。
+- 正文“更多操作”保留为直接进入操作层的文字入口，保证小屏和无障碍路径不依赖顶栏图标；所有菜单项沿用核心运行、读取中、保存中和智能选择中的既有锁定边界。
+- `AccessControlPanelInstrumentedTest.topBarMenuMatchesFlutterAccessControlHierarchy` 覆盖主菜单进入设置/操作层、模式切换、排序、来源显示开关、智能选择和关闭入口；定向 Access 类 10 项失败 0、错误 0、跳过 0。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0。
+- `./gradlew :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Lint 错误 0。
+- `adb devices -l` 确认 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`）；定向 `connectedDebugAndroidTest` 复跑通过，10 项失败 0、错误 0、跳过 0。
+- 全量 instrumentation 两次重跑均未通过：83 项中分别出现 2 项和 4 项 `No compose hierarchies found in the app`；logcat 显示设备测试期间前台被外部应用 `com.duanju.player` 抢占，导致 Activity 被暂停/销毁。该结果按设备前台干扰记录，不作为本轮代码失败证据；全量回归需在设备前台稳定后重跑。
+- Debug APK SHA-256 为 `acaf5a9dee122262c41e901976e50608cbcfe4fb71a471072f766bc9d2b249a2`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`（定向真机证据），全量回归待设备稳定后补验。下一步进入 Flutter `searchInBar` 完整搜索态、更多系统字体档位和截图级视觉回归。
 
 ## 12. 路线图维护规则
 

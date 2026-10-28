@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -12,6 +13,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.common.AccessControlMode
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
@@ -172,6 +175,121 @@ class AccessControlPanelInstrumentedTest {
 
         assertEquals(1, exported)
         assertEquals(1, imported)
+    }
+
+    @Test
+    fun dirtyAccessControlShowsTopBarSaveAndMenuActions() {
+        var saved = 0
+        var exported = 0
+        composeRule.setContent {
+            KClashTheme {
+                AccessControlCard(
+                    state = AccessControlUiState(
+                        settings = AccessControlProps(
+                            enable = true,
+                            mode = AccessControlMode.REJECT_SELECTED,
+                            rejectList = listOf("com.example.mail"),
+                        ),
+                        persistedSettings = AccessControlProps(
+                            enable = true,
+                            mode = AccessControlMode.REJECT_SELECTED,
+                            rejectList = emptyList(),
+                        ),
+                        apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
+                        isLoading = false,
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    onEnabledChange = {},
+                    onModeChange = {},
+                    onSortChange = {},
+                    onFilterSystemAppsChange = {},
+                    onFilterNonInternetAppsChange = {},
+                    onSearchChange = {},
+                    onTogglePackage = {},
+                    onSelectVisible = {},
+                    onClearVisible = {},
+                    onToggleVisible = {},
+                    onSmartSelect = {},
+                    onExportToClipboard = { exported++ },
+                    onImportFromClipboard = {},
+                    onSave = { saved++ },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("access_control_topbar_save").assertIsEnabled().performClick()
+        composeRule.onNodeWithTag("access_control_topbar_actions").performClick()
+        composeRule.onNodeWithTag("access_control_menu_actions").performClick()
+        composeRule.onNodeWithTag("access_control_clipboard_export").performClick()
+
+        assertEquals(1, saved)
+        assertEquals(1, exported)
+    }
+
+    @Test
+    fun topBarMenuMatchesFlutterAccessControlHierarchy() {
+        var enabled = true
+        var mode = AccessControlMode.REJECT_SELECTED
+        var sort = com.lonnnnnng.flclash.common.AccessSortType.NONE
+        var filterSystemApps = true
+        var filterNonInternetApps = true
+        var smartSelected = 0
+        composeRule.setContent {
+            KClashTheme {
+                AccessControlCard(
+                    state = AccessControlUiState(
+                        settings = AccessControlProps(
+                            enable = enabled,
+                            mode = mode,
+                            sort = sort,
+                            isFilterSystemApp = filterSystemApps,
+                            isFilterNonInternetApp = filterNonInternetApps,
+                        ),
+                        apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
+                        isLoading = false,
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    onEnabledChange = { enabled = it },
+                    onModeChange = { mode = it },
+                    onSortChange = { sort = it },
+                    onFilterSystemAppsChange = { filterSystemApps = it },
+                    onFilterNonInternetAppsChange = { filterNonInternetApps = it },
+                    onSearchChange = {},
+                    onTogglePackage = {},
+                    onSelectVisible = {},
+                    onClearVisible = {},
+                    onToggleVisible = {},
+                    onSmartSelect = { smartSelected++ },
+                    onExportToClipboard = {},
+                    onImportFromClipboard = {},
+                    onSave = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("access_control_topbar_actions").performClick()
+        composeRule.onNodeWithTag("access_control_menu_settings").performClick()
+        composeRule.onNodeWithTag("access_control_menu_mode_allow").performClick()
+        assertEquals(AccessControlMode.ACCEPT_SELECTED, mode)
+
+        composeRule.onNodeWithTag("access_control_topbar_actions").performClick()
+        composeRule.onNodeWithTag("access_control_menu_settings").performClick()
+        composeRule.onNodeWithTag("access_control_menu_sort_name").performClick()
+        assertEquals(com.lonnnnnng.flclash.common.AccessSortType.NAME, sort)
+
+        composeRule.onNodeWithTag("access_control_topbar_actions").performClick()
+        composeRule.onNodeWithTag("access_control_menu_settings").performClick()
+        composeRule.onNodeWithTag("access_control_menu_system_apps").performClick()
+        assertEquals(false, filterSystemApps)
+
+        composeRule.onNodeWithTag("access_control_topbar_actions").performClick()
+        composeRule.onNodeWithTag("access_control_menu_actions").performClick()
+        composeRule.onNodeWithTag("access_control_menu_smart_select").performClick()
+        assertEquals(1, smartSelected)
+
+        composeRule.onNodeWithTag("access_control_topbar_actions").performClick()
+        composeRule.onNodeWithTag("access_control_menu_disable").performClick()
+        assertEquals(false, enabled)
     }
 
     @Test
@@ -375,5 +493,55 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_discard_changes").performClick()
         assertEquals(1, exitCount)
         composeRule.onNodeWithText("按应用代理有未保存的修改").assertDoesNotExist()
+    }
+
+    @Test
+    fun largeFontScaleKeepsAccessControlActionsReachable() {
+        val apps = listOf(InstalledAppInfo("com.example.mail", "一个较长的示例邮件应用名称"))
+        composeRule.setContent {
+            val baseDensity = LocalDensity.current
+            CompositionLocalProvider(
+                // 作者 long：用 1.5 倍字体模拟系统大字号，验证操作入口能换行且不依赖横向挤压。
+                LocalDensity provides Density(baseDensity.density, fontScale = 1.5f),
+            ) {
+                KClashTheme {
+                    AccessControlCard(
+                        state = AccessControlUiState(
+                            settings = AccessControlProps(
+                                enable = true,
+                                mode = AccessControlMode.REJECT_SELECTED,
+                                rejectList = emptyList(),
+                            ),
+                            apps = apps,
+                            isLoading = false,
+                        ),
+                        runtimeState = CoreRuntimeStatus.STOPPED,
+                        onEnabledChange = {},
+                        onModeChange = {},
+                        onSortChange = {},
+                        onFilterSystemAppsChange = {},
+                        onFilterNonInternetAppsChange = {},
+                        onSearchChange = {},
+                        onTogglePackage = {},
+                        onSelectVisible = {},
+                        onClearVisible = {},
+                        onToggleVisible = {},
+                        onSmartSelect = {},
+                        onExportToClipboard = {},
+                        onImportFromClipboard = {},
+                        onSave = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag("access_control_card").assertExists()
+        composeRule.onNodeWithTag("access_control_search_toggle").assertExists().performClick()
+        composeRule.onNodeWithTag("access_control_search").assertExists()
+        composeRule.onNodeWithTag("access_control_actions").assertExists()
+        composeRule.onNodeWithTag("access_control_select_visible").assertExists()
+        composeRule.onNodeWithTag("access_control_clear_visible").assertExists()
+        composeRule.onNodeWithTag("access_control_save").assertExists()
+        composeRule.onNodeWithTag("access_control_app_com.example.mail").assertExists()
     }
 }

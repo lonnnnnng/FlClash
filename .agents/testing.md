@@ -644,6 +644,18 @@
 - Debug APK SHA-256：`f29442a76b6e4fee0e96a29374bbc6a135ffd1aadc11db3f45100b8554efa125`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。
 
+## Access Flutter 顶栏菜单层级首片验收记录（2026-10-29）
+
+- 顶栏“更多操作”按 Flutter 结构拆为主菜单、设置层和操作层：主菜单提供开启/关闭、设置和操作；设置层提供白名单/黑名单、默认/名称/更新时间排序及系统/无网络应用显示开关；操作层提供智能选择、剪贴板导入和导出。
+- 正文“更多操作”保留为直接进入操作层的文字入口，保证小屏和无障碍路径不依赖顶栏图标；所有菜单项沿用核心运行、读取中、保存中和智能选择中的既有锁定边界。
+- `AccessControlPanelInstrumentedTest.topBarMenuMatchesFlutterAccessControlHierarchy` 覆盖主菜单进入设置/操作层、模式切换、排序、来源显示开关、智能选择和关闭入口；定向 Access 类 10 项失败 0、错误 0、跳过 0。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0。
+- `./gradlew :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Lint 错误 0。
+- `adb devices -l` 确认 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`）；定向 `connectedDebugAndroidTest` 复跑通过，10 项失败 0、错误 0、跳过 0。
+- 全量 instrumentation 两次重跑均未通过：83 项中分别出现 2 项和 4 项 `No compose hierarchies found in the app`；logcat 显示设备测试期间前台被外部应用 `com.duanju.player` 抢占，导致 Activity 被暂停/销毁。该结果按设备前台干扰记录，不作为本轮代码失败证据；全量回归需在设备前台稳定后重跑。
+- Debug APK SHA-256：`acaf5a9dee122262c41e901976e50608cbcfe4fb71a471072f766bc9d2b249a2`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`（定向真机证据），全量回归待设备稳定后补验。
+
 ## Access 顶栏图标和无障碍视觉收敛验收记录（2026-10-29）
 
 - 搜索、全选/取消全选和关闭搜索改用 Material 3 矢量图标，移除 Unicode 结构性图标；按钮保留原有 48dp 触控区域，并暴露动作名称、按钮角色和全选状态描述。
@@ -653,3 +665,24 @@
 - `adb devices -l` 确认 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）；定向 Access 测试通过；全量 `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，78 项失败 0、错误 0、跳过 0。
 - Debug APK SHA-256：`0b2f79ab4046962228463336411a050a52c14fab8900d9666367faf0b2a62c0c`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。
+
+## Access 操作区窄屏响应式收敛验收记录（2026-10-29）
+
+- 标题栏搜索、全选和开关控件使用 8dp 间距稳定排列；正文智能选择、更多操作、全选和清除入口改为 `FlowRow`，允许在窄屏或大字号下换行并保留文字操作入口。
+- 该切片只调整 Compose 布局，不改变核心运行锁定、关闭遮罩、批量选择和未保存状态语义。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0、跳过 0，Lint 错误 0。
+- `adb devices -l` 确认 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）；全量 `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，78 项失败 0、错误 0、跳过 0。Gradle 结束时 logcat reader 报告 stream closed，但 XML 结果无失败、错误或跳过。
+- Debug APK SHA-256：`037ee1ee15296c6de91c8255e40cd1dec0f3ec69af789777cd68f255b3691904`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。
+
+## Access 动态字体、横屏与真实宿主重建验收记录（2026-10-29）
+
+- Access 标题、状态说明、排序和系统/无网络筛选行改为可换行布局；状态说明最多显示两行并省略超长内容，避免大字号挤压操作入口。
+- `AccessControlPanelInstrumentedTest.largeFontScaleKeepsAccessControlActionsReachable` 使用 `LocalDensity(fontScale = 1.5f)`，确认搜索、更多操作、批量操作、保存和应用选择入口均可达。
+- `MainActivityInstrumentedTest.mainActivityPersistsDirectAccessSelectionAcrossRecreation` 在真实 MainActivity 中直接选择设备上的非系统网络应用，保存后重建 Activity，重新读取 Room 设置并确认选择状态保持；测试结束恢复原设置。
+- `MainActivityInstrumentedTest.mainActivityReflowsAccessCardAfterRotation` 在 Redmi Note 8 Pro 真机切换横屏并恢复竖屏，确认 Access 卡片、搜索入口和开关仍可见。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0，Lint 错误 0。
+- `adb devices -l` 确认 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI 列表包含 `arm64-v8a`）；全量 `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，81 项失败 0、错误 0、跳过 0；XML 结果：`android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml`。
+- 设备系统字体临时设置为 `1.3` 后运行 `MainActivityInstrumentedTest`：8 项失败 0、错误 0、跳过 0；验收结束恢复系统字体 `1.0`。
+- Debug APK SHA-256：`fd85cf82d0447e5c92ccd02d59a54441938339c97025a28ccb1c8572741c9142`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。
