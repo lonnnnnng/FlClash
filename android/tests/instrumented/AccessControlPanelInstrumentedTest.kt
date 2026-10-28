@@ -13,6 +13,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -24,6 +26,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.ByteArrayOutputStream
+import java.security.MessageDigest
 
 /**
  * 作者 long：按应用代理的 Compose 宿主用固定应用清单验证白名单/黑名单和搜索选择，
@@ -597,5 +601,53 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_clear_visible").assertExists()
         composeRule.onNodeWithTag("access_control_save").assertExists()
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertExists()
+    }
+
+    @Test
+    fun defaultAccessControlCardMatchesScreenshotBaseline() {
+        composeRule.setContent {
+            KClashTheme {
+                AccessControlCard(
+                    state = AccessControlUiState(
+                        settings = AccessControlProps(
+                            enable = true,
+                            mode = AccessControlMode.REJECT_SELECTED,
+                            rejectList = emptyList(),
+                        ),
+                        apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
+                        isLoading = false,
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    onEnabledChange = {},
+                    onModeChange = {},
+                    onSortChange = {},
+                    onFilterSystemAppsChange = {},
+                    onFilterNonInternetAppsChange = {},
+                    onSearchChange = {},
+                    onTogglePackage = {},
+                    onSelectVisible = {},
+                    onClearVisible = {},
+                    onToggleVisible = {},
+                    onSmartSelect = {},
+                    onExportToClipboard = {},
+                    onImportFromClipboard = {},
+                    onSave = {},
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+        val bitmap = composeRule
+            .onNodeWithTag("access_control_card")
+            .captureToImage()
+            .asAndroidBitmap()
+        val png = ByteArrayOutputStream().also { output ->
+            check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+        }.toByteArray()
+        val digest = MessageDigest.getInstance("SHA-256").digest(png)
+            .joinToString("") { byte -> "%02x".format(byte) }
+
+        // 作者 long：基线哈希锁定默认 Access 卡片的像素输出，布局或主题变化必须显式更新视觉证据。
+        assertEquals("74d0dc07b35597f6e6f19905ae4047108290ae8bb6c8a5275c7976237e8236e3", digest)
     }
 }
