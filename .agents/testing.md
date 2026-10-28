@@ -523,6 +523,15 @@
 - 未签名 Release APK 为 `android/app/build/outputs/apk/release/app-release-unsigned.apk`；`apkanalyzer` 核对包名 `com.lonnnnnng.flclash`、版本名 `0.1.0`、版本号 `1000`，原生库仅包含 `lib/arm64-v8a/`。
 - 本地 APK SHA-256：`a186c2bff429696a562c97ebe17f47867630328a4e7fd2fbe873954d1b389c61`。本轮没有创建签名身份、安装未签名 Release、访问外部 WebDAV 或访问真实订阅路径；远端 GitHub Actions 尚未触发观察。
 
+## 外部 Action 契约和组件导出审计验收记录（2026-10-28）
+
+- `ExternalActionContract` 只接受固定的 `START`、`STOP`、`TOGGLE` Action，并拒绝 URI、Extras、空 Action 和未知 Action；`EnumsTest` 覆盖合法与非法输入。
+- `ComponentContractInstrumentedTest` 直接通过打包后的 `PackageManager` 验证 `ExternalActionActivity.exported == true`、`QuickActionActivity.exported == false`、`KClashTileService.exported == true`、Quick Settings 绑定权限、三个 Action filter 和 MainActivity shortcuts metadata。
+- `./gradlew :common:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Debug APK SHA-256 为 `0c1061785b952493cc7919e4cfaa389ce77361aaf284e87cd7f6b6d3ae0a7f10`，原生库仅包含 `lib/arm64-v8a/`。
+- 真机重新核对 `adb devices -l` 和 `getprop`：Redmi Note 8 Pro，serial `wsvwypiz7xwslvl7`，Android 16/API 36，ABI `arm64-v8a`。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ComponentContractInstrumentedTest`：通过，1 项 instrumentation 失败 0、错误 0。
+- 本轮不访问真实订阅、不启动 VPN、不启动 Mihomo 核心，也不执行 Tasker/MacroDroid 实际应用回归；真实在线验收继续严格限定为工作区根目录 `AGENTS.md` 中的两条用户授权路径，本地配置继续只使用工作区根目录 `1.yaml`。
+
 ## Profile 名称重命名闭环验收记录（2026-10-28）
 
 - `ProfileRepository.updateProfileLabel` 对名称执行裁剪、非空和 64 字符上限校验，只更新 Room 元数据，不改写 YAML；`ProfilesViewModel.rename` 在核心运行期间拒绝改名，并复用统一错误提示。

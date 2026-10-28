@@ -3,8 +3,7 @@ package com.lonnnnnng.flclash
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import com.lonnnnnng.flclash.common.QuickAction
-import com.lonnnnnng.flclash.common.action
+import com.lonnnnnng.flclash.common.ExternalActionContract
 
 /**
  * 作者 long：Tasker/MacroDroid 需要一个公开的 Action 合约，但核心生命周期仍由内部入口统一处理。
@@ -18,8 +17,12 @@ class ExternalActionActivity : ComponentActivity() {
             return
         }
         val action = incomingIntent.action
-        val isSupported = QuickAction.entries.any { it.action == action }
-        if (!isSupported || incomingIntent.data != null || incomingIntent.extras?.isEmpty == false) {
+        if (!ExternalActionContract.accepts(
+                action = action,
+                hasData = incomingIntent.data != null,
+                hasExtras = incomingIntent.extras?.isEmpty == false,
+            )
+        ) {
             finish()
             return
         }

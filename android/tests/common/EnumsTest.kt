@@ -44,4 +44,22 @@ class EnumsTest {
             BroadcastAction.entries.map { it.name },
         )
     }
+
+    @Test
+    fun `external action contract accepts only fixed actions without data or extras`() {
+        QuickAction.entries.forEach { action ->
+            assertEquals(
+                true,
+                ExternalActionContract.accepts(
+                    action = "${Components.PACKAGE_NAME}.action.${action.name}",
+                    hasData = false,
+                    hasExtras = false,
+                ),
+            )
+        }
+        assertEquals(false, ExternalActionContract.accepts("${Components.PACKAGE_NAME}.action.UNKNOWN", false, false))
+        assertEquals(false, ExternalActionContract.accepts("${Components.PACKAGE_NAME}.action.START", true, false))
+        assertEquals(false, ExternalActionContract.accepts("${Components.PACKAGE_NAME}.action.START", false, true))
+        assertEquals(false, ExternalActionContract.accepts(null, false, false))
+    }
 }
