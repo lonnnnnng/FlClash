@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.hasTestTag
@@ -205,6 +206,41 @@ class MainActivityInstrumentedTest {
         }
         composeRule.onNodeWithTag("access_control_save").performClick()
         composeRule.waitForIdle()
+    }
+
+    @Test
+    fun mainActivityRestoresAccessListAfterSearchNoResults() {
+        val dashboard = composeRule.onNodeWithTag("page_dashboard")
+        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        composeRule.waitUntil(15_000) {
+            composeRule.onAllNodesWithTag("access_control_app_list")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        composeRule.onNodeWithTag("access_control_search")
+            .performTextInput("__flclash_no_match__")
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_no_results")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithTag("access_control_no_results").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_app_list").assertDoesNotExist()
+        composeRule.onNodeWithTag("access_control_select_visible").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_clear_visible").assertIsNotEnabled()
+
+        // 作者 long：关闭搜索必须同时清空查询，确保真实宿主不会把无结果状态留在下一次进入页面。
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_app_list")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithTag("access_control_search").assertDoesNotExist()
+        composeRule.onNodeWithTag("access_control_no_results").assertDoesNotExist()
+        composeRule.onNodeWithTag("access_control_app_list").assertIsDisplayed()
     }
 
     @Test
