@@ -33,6 +33,7 @@ class MainActivityInstrumentedTest {
     fun mainActivityRendersHomeAndProfileEntry() {
         composeRule.onNodeWithText("KClash").assertIsDisplayed()
         composeRule.onNodeWithText("核心状态").assertIsDisplayed()
+        composeRule.onNodeWithTag("always_on_vpn_card").assertIsDisplayed()
         composeRule.onNodeWithText("启动核心").assertIsDisplayed()
         // 作者 long：ExtendedFloatingActionButton 的文本会被父节点合并，入口断言必须查看未合并语义树。
         composeRule.onNodeWithText("添加配置", useUnmergedTree = true).assertIsDisplayed()

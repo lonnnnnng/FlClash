@@ -80,6 +80,7 @@ import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.common.AccessControlMode
 import com.lonnnnnng.flclash.common.AccessSortType
+import com.lonnnnnng.flclash.AlwaysOnVpnState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -111,7 +112,9 @@ fun KClashApp(
     onStartRuntime: () -> Unit,
     onStopRuntime: () -> Unit,
     batteryOptimizationIgnored: Boolean,
+    alwaysOnVpnState: AlwaysOnVpnState,
     onRequestBatteryOptimization: () -> Unit,
+    onRequestAlwaysOnVpn: () -> Unit,
     onExportLogs: (List<CoreEvent.Log>) -> Unit,
     onExportDiagnostic: (DiagnosticSessionUiState) -> Unit,
     onExportDiagnosticHistory: (List<RuntimeDiagnosticEvent>) -> Unit,
@@ -290,6 +293,12 @@ fun KClashApp(
                         BatteryOptimizationCard(
                             ignored = batteryOptimizationIgnored,
                             onRequest = onRequestBatteryOptimization,
+                        )
+                    }
+                    item {
+                        AlwaysOnVpnCard(
+                            state = alwaysOnVpnState,
+                            onRequest = onRequestAlwaysOnVpn,
                         )
                     }
                     item {
@@ -1451,6 +1460,41 @@ private fun BatteryOptimizationCard(
                 OutlinedButton(onClick = onRequest) {
                     Text("打开电池优化设置")
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AlwaysOnVpnCard(
+    state: AlwaysOnVpnState,
+    onRequest: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("always_on_vpn_card"),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("系统 Always-on VPN", style = MaterialTheme.typography.titleMedium)
+            Text(
+                when (state) {
+                    AlwaysOnVpnState.KCLASH_ENABLED -> "KClash 已被系统设置为 Always-on VPN。"
+                    AlwaysOnVpnState.OTHER_APP_ENABLED -> "系统 Always-on VPN 当前由其他应用接管。"
+                    AlwaysOnVpnState.UNKNOWN -> "无法读取系统 Always-on VPN 状态，请在系统 VPN 设置中确认。"
+                    AlwaysOnVpnState.DISABLED -> "未启用 Always-on VPN；可在系统 VPN 设置中选择 KClash。"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (state != AlwaysOnVpnState.KCLASH_ENABLED) {
+                OutlinedButton(
+                    onClick = onRequest,
+                    modifier = Modifier.testTag("always_on_vpn_open_settings"),
+                ) { Text("打开系统 VPN 设置") }
             }
         }
     }

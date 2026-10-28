@@ -141,6 +141,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private var batteryOptimizationIgnored by mutableStateOf(false)
+    private var alwaysOnVpnState by mutableStateOf(AlwaysOnVpnState.UNKNOWN)
     private var pendingLogExport: List<CoreEvent.Log> = emptyList()
     private var pendingDiagnosticExport: DiagnosticSessionUiState? = null
     private var pendingDiagnosticHistoryExport: List<RuntimeDiagnosticEvent> = emptyList()
@@ -154,6 +155,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
+        alwaysOnVpnState = AlwaysOnVpn.state(this)
         webDavCredentials = runCatching { webDavBackupRepository.readCredentials() }
             .onFailure { error -> viewModel.reportError(error.message ?: "无法读取 WebDAV 凭据") }
             .getOrNull()
@@ -168,7 +170,9 @@ class MainActivity : ComponentActivity() {
                     onStartRuntime = ::requestRuntimeStart,
                     onStopRuntime = viewModel::stopRuntime,
                     batteryOptimizationIgnored = batteryOptimizationIgnored,
+                    alwaysOnVpnState = alwaysOnVpnState,
                     onRequestBatteryOptimization = ::requestBatteryOptimization,
+                    onRequestAlwaysOnVpn = ::requestAlwaysOnVpn,
                     onExportLogs = ::requestLogExport,
                     onExportDiagnostic = ::requestDiagnosticExport,
                     onExportDiagnosticHistory = ::requestDiagnosticHistoryExport,
@@ -203,6 +207,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
+        alwaysOnVpnState = AlwaysOnVpn.state(this)
         if (!initialDeepLinkHandled) {
             initialDeepLinkHandled = true
             // 作者 long：等 Compose 建立错误收集器后再消费首个链接，避免无效 Deep Link 的提示在首帧前丢失。
@@ -225,6 +230,12 @@ class MainActivity : ComponentActivity() {
     private fun requestBatteryOptimization() {
         if (!BatteryOptimization.openSettings(this)) {
             viewModel.reportError("无法打开电池优化设置")
+        }
+    }
+
+    private fun requestAlwaysOnVpn() {
+        if (!AlwaysOnVpn.openSettings(this)) {
+            viewModel.reportError("无法打开系统 VPN 设置")
         }
     }
 

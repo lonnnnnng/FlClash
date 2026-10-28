@@ -578,3 +578,14 @@
 - `./gradlew :common:testDebugUnitTest :service:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 216 项失败 0、错误 0，Lint 错误 0。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过；Redmi Note 8 Pro（Android 16/API 36）72 项失败 0、错误 0、跳过 0。
 - 本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心；只验证应用元数据、列表状态和 Room 设置兼容。
+
+## Always-on VPN 系统设置引导首片验收记录（2026-10-28）
+
+- 首页新增“系统 Always-on VPN”卡片，提供 `Settings.ACTION_VPN_SETTINGS` 系统设置引导；`MainActivity` 在创建和恢复时刷新平台状态。
+- 当前公开 Android SDK 对普通应用无法稳定回读 OEM 的 Always-on/lockdown 勾选状态，`AlwaysOnVpn.state()` 保守返回 `UNKNOWN`；本轮不把 VPN 已连接、进程存活或 TUN 存在当作 Always-on 已开启证据。
+- `MainActivityInstrumentedTest` 新增卡片显示断言；定向主 Activity 测试通过，4 项失败 0、错误 0、跳过 0。
+- `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 216 项失败 0、错误 0，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.MainActivityInstrumentedTest`：通过；全量 `connectedDebugAndroidTest` 同样通过，72 项失败 0、错误 0、跳过 0。
+- Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`）已完成页面验收；本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心。
+- Debug APK SHA-256：`3d03f836f80e752c0cb3c13fb5a6f388be4c84e4bf5eb078c27c05d1d37a7fec`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 当前切片状态：`DONE-VERIFIED`（系统设置引导首片）；Always-on 状态回读、OEM 兼容性和完整系统行为回归仍待后续。
