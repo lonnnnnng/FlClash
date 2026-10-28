@@ -57,6 +57,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -1468,6 +1469,7 @@ internal fun AccessControlCard(
     onSave: () -> Unit,
 ) {
     val canEdit = !runtimeState.isRunning && !state.isLoading && !state.isSaving
+    val contentCanEdit = canEdit && state.settings.enable
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1480,15 +1482,6 @@ internal fun AccessControlCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("按应用代理", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        if (state.settings.enable) {
-                            "${if (state.settings.mode == AccessControlMode.ACCEPT_SELECTED) "仅代理选中应用" else "代理除选中应用外的其他应用"} · 已选 ${state.selectedCount} 个"
-                        } else {
-                            "未启用，VPN 会代理所有应用"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
                 Switch(
                     checked = state.settings.enable,
@@ -1497,77 +1490,125 @@ internal fun AccessControlCard(
                     modifier = Modifier.testTag("access_control_enabled"),
                 )
             }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("access_control_status"),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    if (state.settings.enable) "▣" else "ⓘ",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    if (state.settings.enable) {
+                        if (state.settings.mode == AccessControlMode.ACCEPT_SELECTED) {
+                            "只允许选中应用进入 VPN"
+                        } else {
+                            "选中应用将会被排除在 VPN 之外"
+                        }
+                    } else {
+                        "应用访问控制已关闭"
+                    },
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                if (state.settings.enable) {
+                    Text(
+                        "已选 ${state.selectedCount}",
+                        modifier = Modifier.testTag("access_control_selected_count"),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                } else {
+                    Button(
+                        onClick = { onEnabledChange(true) },
+                        enabled = canEdit,
+                        modifier = Modifier.testTag("access_control_turn_on"),
+                    ) { Text("开启") }
+                }
+            }
             if (state.error != null) {
                 Text(state.error, color = MaterialTheme.colorScheme.error)
             }
             if (state.isLoading) {
                 Text("正在读取已安装应用…")
             } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
-                        onClick = { onModeChange(AccessControlMode.ACCEPT_SELECTED) },
-                        enabled = canEdit,
-                        modifier = Modifier.testTag("access_control_mode_allow"),
-                    ) { Text("白名单") }
-                    OutlinedButton(
-                        onClick = { onModeChange(AccessControlMode.REJECT_SELECTED) },
-                        enabled = canEdit,
-                        modifier = Modifier.testTag("access_control_mode_deny"),
-                    ) { Text("黑名单") }
-                }
-                OutlinedTextField(
-                    value = state.searchQuery,
-                    onValueChange = onSearchChange,
-                    enabled = canEdit,
+                // 作者 long：关闭按应用代理时保留配置内容但加上视觉遮罩并锁定入口，
+                // 让用户能看见当前选择，避免误以为关闭会清空设置；重新开启后立即恢复编辑。
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .testTag("access_control_search"),
-                    singleLine = true,
-                    label = { Text("搜索应用或包名") },
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = onSelectVisible, enabled = canEdit) { Text("全选当前结果") }
-                    TextButton(onClick = onClearVisible, enabled = canEdit) { Text("清除当前结果") }
-                }
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 280.dp)
-                        .testTag("access_control_app_list"),
+                        .alpha(if (state.settings.enable) 1f else 0.55f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(state.visibleApps, key = { it.packageName }) { app ->
-                        val checked = app.packageName in currentPackageList(state.settings)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Checkbox(
-                                checked = checked,
-                                onCheckedChange = { onTogglePackage(app.packageName) },
-                                enabled = canEdit,
-                                modifier = Modifier.testTag("access_control_app_${app.packageName}"),
-                            )
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(app.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text(
-                                    app.packageName,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = { onModeChange(AccessControlMode.ACCEPT_SELECTED) },
+                            enabled = contentCanEdit,
+                            modifier = Modifier.testTag("access_control_mode_allow"),
+                        ) { Text("白名单") }
+                        OutlinedButton(
+                            onClick = { onModeChange(AccessControlMode.REJECT_SELECTED) },
+                            enabled = contentCanEdit,
+                            modifier = Modifier.testTag("access_control_mode_deny"),
+                        ) { Text("黑名单") }
+                    }
+                    OutlinedTextField(
+                        value = state.searchQuery,
+                        onValueChange = onSearchChange,
+                        enabled = contentCanEdit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("access_control_search"),
+                        singleLine = true,
+                        label = { Text("搜索应用或包名") },
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = onSelectVisible, enabled = contentCanEdit) { Text("全选当前结果") }
+                        TextButton(onClick = onClearVisible, enabled = contentCanEdit) { Text("清除当前结果") }
+                    }
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 280.dp)
+                            .testTag("access_control_app_list"),
+                    ) {
+                        items(state.visibleApps, key = { it.packageName }) { app ->
+                            val checked = app.packageName in currentPackageList(state.settings)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Checkbox(
+                                    checked = checked,
+                                    onCheckedChange = { onTogglePackage(app.packageName) },
+                                    enabled = contentCanEdit,
+                                    modifier = Modifier.testTag("access_control_app_${app.packageName}"),
                                 )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(app.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Text(
+                                        app.packageName,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
                             }
                         }
                     }
-                }
-                Button(
-                    onClick = onSave,
-                    enabled = canEdit,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("access_control_save"),
-                ) {
-                    if (state.isSaving) CircularProgressIndicator(modifier = Modifier.size(18.dp)) else Text("保存按应用代理")
+                    Button(
+                        onClick = onSave,
+                        enabled = contentCanEdit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("access_control_save"),
+                    ) {
+                        if (state.isSaving) CircularProgressIndicator(modifier = Modifier.size(18.dp)) else Text("保存按应用代理")
+                    }
                 }
             }
             if (runtimeState.isRunning) {

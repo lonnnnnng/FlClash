@@ -560,3 +560,13 @@
 - 两次运行均确认 `VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 存在；通过外部 STOP Action 停止后服务、TUN 和路由均清理。验收结束已把按应用代理恢复为停用状态。
 - Debug APK SHA-256：`6ef4a706396aed8272f69afea2cbf2d28c1497c2c1591c43188e3dbf7531a387`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未执行 Tasker/MacroDroid 实际应用回归；完整 Flutter Access 页面 parity 和 Always-on VPN 仍待 N5 后续切片。
+
+
+## Access 页面关闭状态与一键开启 parity 首片验收记录（2026-10-28）
+
+- `AccessControlCard` 在按应用代理关闭时显示“应用访问控制已关闭”，并提供“开启”按钮；模式、搜索、全选/清除、应用勾选和保存入口均处于禁用状态，已有选择内容保留并以视觉遮罩呈现。
+- 点击“开启”后恢复编辑入口，并显示当前白名单/黑名单说明和已选数量；核心运行时仍优先保持全卡片锁定。
+- 定向 `AccessControlPanelInstrumentedTest` 通过，4 项失败 0、错误 0；首次编译仅因测试库不提供 `assertDoesNotExist` 导入，改用项目现有兼容断言后通过。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，Redmi Note 8 Pro（Android 16/API 36）全量 instrumentation 71 项失败 0、错误 0、跳过 0。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 测试失败 0、错误 0，Lint 错误 0。
+- 本轮未访问两条真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心；该记录只覆盖 UI parity 和控件状态。

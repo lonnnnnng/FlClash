@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -102,5 +104,53 @@ class AccessControlPanelInstrumentedTest {
 
         composeRule.onNodeWithTag("access_control_enabled").assertIsDisplayed()
         composeRule.onNodeWithText("核心运行中，按应用代理设置已锁定；停止核心后才能修改。").assertIsDisplayed()
+    }
+
+    @Test
+    fun disabledAccessControlMasksEditingAndOneTapEnables() {
+        val apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件"))
+        var state by mutableStateOf(
+            AccessControlUiState(
+                settings = AccessControlProps(
+                    enable = false,
+                    mode = AccessControlMode.REJECT_SELECTED,
+                    acceptList = emptyList(),
+                    rejectList = emptyList(),
+                ),
+                apps = apps,
+                isLoading = false,
+            ),
+        )
+        composeRule.setContent {
+            KClashTheme {
+                AccessControlCard(
+                    state = state,
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    onEnabledChange = { state = state.copy(settings = state.settings.copy(enable = it)) },
+                    onModeChange = { state = state.copy(settings = state.settings.copy(mode = it)) },
+                    onSearchChange = { state = state.copy(searchQuery = it) },
+                    onTogglePackage = {},
+                    onSelectVisible = {},
+                    onClearVisible = {},
+                    onSave = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("应用访问控制已关闭").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_mode_allow").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_search").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_save").assertIsNotEnabled()
+
+        composeRule.onNodeWithTag("access_control_turn_on").performClick()
+
+        assertEquals(true, state.settings.enable)
+        composeRule.onNodeWithTag("access_control_turn_on").assertDoesNotExist()
+        composeRule.onNodeWithText("选中应用将会被排除在 VPN 之外").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_mode_allow").assertIsEnabled()
+        composeRule.onNodeWithTag("access_control_search").assertIsEnabled()
+        composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsEnabled()
+        composeRule.onNodeWithTag("access_control_save").assertIsEnabled()
     }
 }
