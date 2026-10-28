@@ -23,6 +23,8 @@ import com.lonnnnnng.flclash.data.HttpWebDavClient
 import com.lonnnnnng.flclash.data.RoomRuntimeResumeStore
 import com.lonnnnnng.flclash.data.RoomRuntimeDiagnosticStore
 import com.lonnnnnng.flclash.data.RoomAccessControlSettingsStore
+import com.lonnnnnng.flclash.data.AndroidClipboardGateway
+import com.lonnnnnng.flclash.data.ClipboardGateway
 import com.lonnnnnng.flclash.data.SubscriptionClient
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.service.ActiveProfileProvider
@@ -180,6 +182,12 @@ object AppModule {
     fun provideAccessControlSettingsProvider(
         store: RoomAccessControlSettingsStore,
     ): AccessControlSettingsProvider = store
+
+    @Provides
+    @Singleton
+    fun provideClipboardGateway(
+        gateway: AndroidClipboardGateway,
+    ): ClipboardGateway = gateway
 
     @Provides
     @Singleton

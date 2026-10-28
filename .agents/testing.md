@@ -600,3 +600,16 @@
 - Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`）完成页面控件验收；本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心。
 - Debug APK SHA-256：`a872797f40816bab48c78d2f49de7c65d88faa0e8dba96f8864a2244f86c3ea0`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 当前切片状态：`DONE-VERIFIED`（Access 智能选择首片）；剪贴板导入/导出、完整 Flutter 视觉交互和页面级 E2E 仍待后续。
+
+## Access 剪贴板导入/导出首片验收记录（2026-10-28）
+
+- 新增 `ClipboardGateway` 与 Android 系统剪贴板适配器；Access 导出当前模式列表为换行纯文本，导入按换行拆分并按首次出现顺序去重，只替换当前白名单或黑名单，空剪贴板保持原状态。
+- 导入只更新页面 StateFlow，不自动写 Room；“更多操作”菜单在 Access 关闭时可用，核心运行、保存中和智能选择期间锁定，失败通过错误/ Snackbar 通道反馈。
+- `AccessControlViewModelTest` 覆盖当前模式导出、换行解析、重复项去重和非当前模式保留；`AccessControlPanelInstrumentedTest` 覆盖菜单导入/导出回调及关闭状态入口可用性。
+- `./gradlew test --no-daemon -Ptarget-platform=android-arm64`：通过；工程 JVM 测试 219 项失败 0、错误 0、跳过 0。
+- `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Lint 错误 0。
+- 定向真机首次重跑出现 2 项 Compose 时序失败（搜索结果尚未稳定、测试进程暂时失去 Compose hierarchy），logcat 未出现 `FATAL EXCEPTION`；在交互断言前加入 `waitForIdle()` 后同一设备复验通过。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest`：通过，4 项失败 0、错误 0；全量 instrumentation 73 项失败 0、错误 0、跳过 0。
+- Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`）完成 Compose 菜单验收；本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心。
+- Debug APK SHA-256：`a27e7c52a5727b7bea79c4a48b3f8a5502e96eb3d36bbba8e28d79b5f25530f9`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 当前切片状态：`DONE-VERIFIED`（Access 剪贴板导入/导出首片）；完整 Flutter 视觉交互和页面级 E2E 仍待后续。

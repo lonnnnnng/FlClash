@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.common.AccessControlMode
 import com.lonnnnnng.flclash.common.AccessSortType
+import com.lonnnnnng.flclash.data.ClipboardGateway
 import com.lonnnnnng.flclash.service.AccessControlSettingsProvider
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.service.models.AccessControlProps
@@ -103,6 +104,23 @@ fun AccessControlProps.withCurrentPackageList(packages: Collection<String>): Acc
     }
 }
 
+/**
+ * 作者 long：剪贴板导入要保持 Flutter 的原始文本语义，不能复用页面勾选时的排序和空值清洗，
+ * 否则用户从其他客户端复制的换行列表会在导入瞬间被改写；保存时再进入现有设置清洗边界。
+ */
+fun parseAccessClipboardList(text: String): List<String> = text.split('\n').distinct()
+
+fun serializeAccessClipboardList(settings: AccessControlProps): String =
+    currentPackageList(settings).joinToString("\n")
+
+fun AccessControlProps.withImportedCurrentPackageList(packages: Collection<String>): AccessControlProps {
+    val imported = packages.toList().distinct()
+    return when (mode) {
+        AccessControlMode.ACCEPT_SELECTED -> copy(acceptList = imported)
+        AccessControlMode.REJECT_SELECTED -> copy(rejectList = imported)
+    }
+}
+
 data class SmartSelectionResult(
     val acceptList: List<String>,
     val rejectList: List<String>,
@@ -124,6 +142,7 @@ class AccessControlViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settingsProvider: AccessControlSettingsProvider,
     private val runtimeManager: CoreRuntimeStatusProvider,
+    private val clipboardGateway: ClipboardGateway,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(AccessControlUiState())
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -237,6 +256,32 @@ class AccessControlViewModel @Inject constructor(
         }
     }
 
+    fun exportToClipboard() {
+        if (!canEditClipboard()) return
+        runCatching {
+            clipboardGateway.writeText(serializeAccessClipboardList(mutableState.value.settings))
+        }.onFailure { error ->
+            reportClipboardError("导出剪贴板失败", error)
+        }
+    }
+
+    fun importFromClipboard() {
+        if (!canEditClipboard()) return
+        runCatching { clipboardGateway.readText() }
+            .onSuccess { text ->
+                if (text == null) return@onSuccess
+                mutableState.value = mutableState.value.copy(
+                    settings = mutableState.value.settings.withImportedCurrentPackageList(
+                        parseAccessClipboardList(text),
+                    ),
+                    error = null,
+                )
+            }
+            .onFailure { error ->
+                reportClipboardError("从剪贴板导入失败", error)
+            }
+    }
+
     fun save() {
         if (runtimeManager.state.value.isRunning) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再修改按应用代理")
@@ -267,6 +312,22 @@ class AccessControlViewModel @Inject constructor(
             return
         }
         mutableState.value = mutableState.value.copy(settings = mutableState.value.settings.update())
+    }
+
+    private fun canEditClipboard(): Boolean {
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再修改按应用代理")
+            return false
+        }
+        return !mutableState.value.isLoading &&
+            !mutableState.value.isSaving &&
+            !mutableState.value.isSmartSelecting
+    }
+
+    private fun reportClipboardError(prefix: String, error: Throwable) {
+        val message = error.message?.takeIf { it.isNotBlank() }?.let { "$prefix：$it" } ?: prefix
+        mutableState.value = mutableState.value.copy(error = message)
+        mutableErrors.tryEmit(message)
     }
 
     private fun AccessControlProps.sanitize(): AccessControlProps = copy(

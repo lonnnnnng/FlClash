@@ -26,6 +26,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -234,6 +236,12 @@ fun KClashApp(
         }
     }
 
+    LaunchedEffect(accessControlViewModel) {
+        accessControlViewModel.errors.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -315,6 +323,8 @@ fun KClashApp(
                             onSelectVisible = accessControlViewModel::selectVisibleApps,
                             onClearVisible = accessControlViewModel::clearVisibleApps,
                             onSmartSelect = accessControlViewModel::smartSelectApps,
+                            onExportToClipboard = accessControlViewModel::exportToClipboard,
+                            onImportFromClipboard = accessControlViewModel::importFromClipboard,
                             onSave = accessControlViewModel::save,
                         )
                     }
@@ -1519,10 +1529,14 @@ internal fun AccessControlCard(
     onSelectVisible: () -> Unit,
     onClearVisible: () -> Unit,
     onSmartSelect: () -> Unit,
+    onExportToClipboard: () -> Unit,
+    onImportFromClipboard: () -> Unit,
     onSave: () -> Unit,
 ) {
     val canEdit = !runtimeState.isRunning && !state.isLoading && !state.isSaving
     val contentCanEdit = canEdit && state.settings.enable && !state.isSmartSelecting
+    val actionsCanEdit = canEdit && !state.isSmartSelecting
+    var actionMenuExpanded by rememberSaveable { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1673,6 +1687,34 @@ internal fun AccessControlCard(
                                 )
                             } else {
                                 Text("智能选择")
+                            }
+                        }
+                        Box {
+                            TextButton(
+                                onClick = { actionMenuExpanded = true },
+                                enabled = actionsCanEdit,
+                                modifier = Modifier.testTag("access_control_actions"),
+                            ) { Text("更多操作") }
+                            DropdownMenu(
+                                expanded = actionMenuExpanded,
+                                onDismissRequest = { actionMenuExpanded = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("导出剪贴板") },
+                                    onClick = {
+                                        actionMenuExpanded = false
+                                        onExportToClipboard()
+                                    },
+                                    modifier = Modifier.testTag("access_control_clipboard_export"),
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("剪贴板导入") },
+                                    onClick = {
+                                        actionMenuExpanded = false
+                                        onImportFromClipboard()
+                                    },
+                                    modifier = Modifier.testTag("access_control_clipboard_import"),
+                                )
                             }
                         }
                         TextButton(onClick = onSelectVisible, enabled = contentCanEdit) { Text("全选当前结果") }

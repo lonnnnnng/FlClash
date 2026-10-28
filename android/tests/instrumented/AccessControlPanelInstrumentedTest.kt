@@ -67,12 +67,15 @@ class AccessControlPanelInstrumentedTest {
                     onSelectVisible = {},
                     onClearVisible = {},
                     onSmartSelect = {},
+                    onExportToClipboard = {},
+                    onImportFromClipboard = {},
                     onSave = {},
                 )
             }
         }
 
         composeRule.onNodeWithTag("access_control_search").performTextInput("视频")
+        composeRule.waitForIdle()
         composeRule.onNodeWithText("示例视频").assertIsDisplayed()
         composeRule.onNodeWithTag("access_control_app_com.example.video").performClick()
 
@@ -106,6 +109,8 @@ class AccessControlPanelInstrumentedTest {
                     onSelectVisible = {},
                     onClearVisible = {},
                     onSmartSelect = {},
+                    onExportToClipboard = {},
+                    onImportFromClipboard = {},
                     onSave = {},
                 )
             }
@@ -113,6 +118,54 @@ class AccessControlPanelInstrumentedTest {
 
         composeRule.onNodeWithTag("access_control_enabled").assertIsDisplayed()
         composeRule.onNodeWithText("核心运行中，按应用代理设置已锁定；停止核心后才能修改。").assertIsDisplayed()
+    }
+
+    @Test
+    fun clipboardActionsInvokeCallbacks() {
+        val apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件"))
+        var exported = 0
+        var imported = 0
+        composeRule.setContent {
+            KClashTheme {
+                AccessControlCard(
+                    state = AccessControlUiState(
+                        settings = AccessControlProps(
+                            enable = true,
+                            mode = AccessControlMode.REJECT_SELECTED,
+                            rejectList = listOf("com.example.mail"),
+                        ),
+                        apps = apps,
+                        isLoading = false,
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    onEnabledChange = {},
+                    onModeChange = {},
+                    onSortChange = {},
+                    onFilterSystemAppsChange = {},
+                    onFilterNonInternetAppsChange = {},
+                    onSearchChange = {},
+                    onTogglePackage = {},
+                    onSelectVisible = {},
+                    onClearVisible = {},
+                    onSmartSelect = {},
+                    onExportToClipboard = { exported++ },
+                    onImportFromClipboard = { imported++ },
+                    onSave = {},
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_clipboard_export").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_clipboard_import").performClick()
+
+        assertEquals(1, exported)
+        assertEquals(1, imported)
     }
 
     @Test
@@ -145,6 +198,8 @@ class AccessControlPanelInstrumentedTest {
                     onSelectVisible = {},
                     onClearVisible = {},
                     onSmartSelect = {},
+                    onExportToClipboard = {},
+                    onImportFromClipboard = {},
                     onSave = {},
                 )
             }
@@ -157,6 +212,7 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_filter_no_network").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_search").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_smart_select").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_actions").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_save").assertIsNotEnabled()
 

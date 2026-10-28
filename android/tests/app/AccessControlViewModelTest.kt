@@ -35,6 +35,38 @@ class AccessControlViewModelTest {
     }
 
     @Test
+    fun `clipboard export follows the active mode and newline format`() {
+        val settings = AccessControlProps(
+            enable = true,
+            mode = AccessControlMode.ACCEPT_SELECTED,
+            acceptList = listOf("com.example.first", "com.example.second"),
+            rejectList = listOf("com.example.hidden"),
+        )
+
+        assertEquals(
+            "com.example.first\ncom.example.second",
+            serializeAccessClipboardList(settings),
+        )
+    }
+
+    @Test
+    fun `clipboard import replaces only active mode and preserves first occurrence order`() {
+        val settings = AccessControlProps(
+            enable = true,
+            mode = AccessControlMode.REJECT_SELECTED,
+            acceptList = listOf("com.example.keep"),
+            rejectList = listOf("com.example.old"),
+        )
+
+        val imported = parseAccessClipboardList("com.example.a\n\ncom.example.a\ncom.example.b")
+        assertEquals(listOf("com.example.a", "", "com.example.b"), imported)
+        assertEquals(
+            settings.copy(rejectList = listOf("com.example.a", "", "com.example.b")),
+            settings.withImportedCurrentPackageList(imported),
+        )
+    }
+
+    @Test
     fun `visible apps filter system and no network entries before name sorting`() {
         val state = AccessControlUiState(
             settings = AccessControlProps(
