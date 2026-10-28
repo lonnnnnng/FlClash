@@ -2611,11 +2611,15 @@ internal fun runtimeDiagnosticHistoryRows(events: List<RuntimeDiagnosticEvent>):
     events.takeLast(MAX_RUNTIME_HISTORY_ROWS).asReversed()
 
 @Composable
-private fun ConnectionsCard(
+internal fun ConnectionsCard(
     state: ConnectionsUiState,
     runtimeState: CoreRuntimeStatus,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("connections_card"),
+    ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -2649,8 +2653,10 @@ private fun ConnectionsCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
-                else -> state.connections.take(MAX_CONNECTIONS_ON_HOME).forEach { connection ->
-                    ConnectionRow(connection)
+                else -> state.connections.take(MAX_CONNECTIONS_ON_HOME).forEachIndexed { index, connection ->
+                    Column(modifier = Modifier.testTag("connections_row_$index")) {
+                        ConnectionRow(connection)
+                    }
                 }
             }
         }
