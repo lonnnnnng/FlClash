@@ -1,14 +1,18 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreConnectionMetadata
@@ -19,6 +23,8 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.ByteArrayOutputStream
+import java.security.MessageDigest
 
 /**
  * 作者 long：观测页详情必须从真实页签宿主打开，再验证筛选和关闭回调，避免只测试独立过滤函数而漏掉
@@ -93,6 +99,81 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithText("错误").performClick()
         composeRule.onNodeWithText("显示 1/2").assertIsDisplayed()
         composeRule.onNodeWithText("关闭").performClick()
+    }
+
+    @Test
+    fun observationPageScreenshotMatrixMatchesBaseline() {
+        val request = connection("request-visual", "api.example.test")
+        val dnsQuery = dnsQuery("api.example.test", "1.1.1.1")
+        // 作者 long：固定历史时间让相对时间文案在每次回归中保持一致，避免基线随测试运行时钟漂移。
+        val log = CoreEvent.Log("warning", "上游响应较慢", 0L)
+        var selectedTabIndex by mutableIntStateOf(0)
+        var runtimeState by mutableStateOf(CoreRuntimeStatus.STOPPED)
+
+        composeRule.setContent {
+            // 作者 long：固定三种用户可见状态，避免把网络时序、设备安装包或 Room 数据混入视觉基线。
+            KClashTheme {
+                ObservationPage(
+                    requests = if (runtimeState.isRunning) RequestsUiState(listOf(request)) else RequestsUiState(),
+                    dns = if (runtimeState.isRunning) DnsUiState(listOf(dnsQuery)) else DnsUiState(),
+                    logs = if (runtimeState.isRunning) LogsUiState(listOf(log)) else LogsUiState(),
+                    runtimeState = runtimeState,
+                    selectedTabIndex = selectedTabIndex,
+                    onSelectedTabChange = { selectedTabIndex = it },
+                    onShowRequests = {},
+                    onShowDns = {},
+                    onClearDns = {},
+                    onShowLogs = {},
+                    onClearLogs = {},
+                    onExportLogs = {},
+                )
+            }
+        }
+
+        fun captureHash(tag: String): String {
+            composeRule.waitForIdle()
+            val bitmap = composeRule
+                .onNodeWithTag(tag)
+                .captureToImage()
+                .asAndroidBitmap()
+            val png = ByteArrayOutputStream().also { output ->
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+            }.toByteArray()
+            return MessageDigest.getInstance("SHA-256").digest(png)
+                .joinToString("") { byte -> "%02x".format(byte) }
+        }
+
+        val expected = mapOf(
+            "requests_stopped_empty" to "2c301cde81cb2132e7460d041ed0ec81df0d28812fe0b418ebc99eafc9bbef41",
+            "requests_running_non_empty" to "51acd93dd9bca5e9a3998ba377acbfc017d8a0ccc3b2750c8e083a96bba23540",
+            "dns_stopped_empty" to "f181db667a12f9db0c1cf764816b7c56b139d96792d08d80695ee5b158fdf7e4",
+            "dns_running_non_empty" to "3a544d24ed1a6924f9c902f1cbb85be8fa7415bee5610b990951ffff40abce44",
+            "logs_stopped_empty" to "8ef07b0b6abd266258b74000eafa2b252426a5b999af49a5cf704866ea1624d3",
+            "logs_running_non_empty" to "c5094b6641af25dcf7aac38c1c4d6461321ea7d2a0dbe568daab5fb06f87f495",
+        )
+        val actual = buildMap {
+            put("requests_stopped_empty", captureHash("observation_page"))
+            runtimeState = CoreRuntimeStatus.RUNNING
+            put("requests_running_non_empty", captureHash("observation_page"))
+            runtimeState = CoreRuntimeStatus.STOPPED
+            selectedTabIndex = 1
+            put("dns_stopped_empty", captureHash("observation_page"))
+            runtimeState = CoreRuntimeStatus.RUNNING
+            put("dns_running_non_empty", captureHash("observation_page"))
+            runtimeState = CoreRuntimeStatus.STOPPED
+            selectedTabIndex = 2
+            put("logs_stopped_empty", captureHash("observation_page"))
+            runtimeState = CoreRuntimeStatus.RUNNING
+            put("logs_running_non_empty", captureHash("observation_page"))
+        }
+
+        val mismatches = expected.mapNotNull { (state, expectedHash) ->
+            val actualHash = actual.getValue(state)
+            if (actualHash == expectedHash) null else "$state expected=$expectedHash actual=$actualHash"
+        }
+        if (mismatches.isNotEmpty()) {
+            error("observation screenshot baseline mismatch: ${mismatches.joinToString("; ")}")
+        }
     }
 
     private fun connection(id: String, host: String) = CoreConnection(

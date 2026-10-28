@@ -693,7 +693,7 @@ internal fun ObservationPage(
     val safeSelectedTabIndex = selectedTabIndex.coerceIn(0, ObservationTab.values().lastIndex)
     val selectedTab = ObservationTab.values()[safeSelectedTabIndex]
 
-    Column {
+    Column(modifier = Modifier.testTag("observation_page")) {
         PrimaryTabRow(selectedTabIndex = safeSelectedTabIndex) {
             ObservationTab.values().forEach { tab ->
                 Tab(
