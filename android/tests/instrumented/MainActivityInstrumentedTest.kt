@@ -1,18 +1,28 @@
 package com.lonnnnnng.flclash
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ApplicationInfo
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Assert.assertEquals
 import org.junit.runner.RunWith
 
 /**
@@ -121,4 +131,94 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("首页").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }
+
+    @Test
+    fun mainActivityCompletesAccessClipboardLifecycleThroughRealViewModels() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val candidatePackage = findSelectableLauncherPackage(context)
+        check(candidatePackage != null) { "设备没有可用于按应用代理 E2E 的非系统网络应用" }
+
+        val dashboard = composeRule.onNodeWithTag("page_dashboard")
+        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_search")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        val enabledSwitch = composeRule.onNodeWithTag("access_control_enabled")
+        val wasEnabled = runCatching {
+            enabledSwitch.assertIsOn()
+            true
+        }.getOrDefault(false)
+        if (!wasEnabled) {
+            enabledSwitch.performClick()
+            composeRule.waitForIdle()
+        }
+
+        val clipboard = checkNotNull(context.getSystemService(ClipboardManager::class.java))
+        composeRule.onNodeWithTag("access_control_actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_clipboard_export").performClick()
+        composeRule.waitForIdle()
+        val originalText = clipboard.primaryClip
+            ?.takeIf { it.itemCount > 0 }
+            ?.getItemAt(0)
+            ?.coerceToText(context)
+            ?.toString()
+            .orEmpty()
+
+        clipboard.setPrimaryClip(ClipData.newPlainText("Access E2E", candidatePackage))
+        composeRule.onNodeWithTag("access_control_actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_clipboard_import").performClick()
+        composeRule.onNodeWithTag("access_control_search").performTextInput(candidatePackage)
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_app_$candidatePackage")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithTag("access_control_app_$candidatePackage").assertIsOn()
+
+        composeRule.onNodeWithTag("access_control_actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_clipboard_export").performClick()
+        composeRule.waitForIdle()
+        assertEquals(candidatePackage, clipboard.primaryClip
+            ?.takeIf { it.itemCount > 0 }
+            ?.getItemAt(0)
+            ?.coerceToText(context)
+            ?.toString())
+
+        clipboard.setPrimaryClip(ClipData.newPlainText("Access E2E restore", originalText))
+        composeRule.onNodeWithTag("access_control_actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("access_control_clipboard_import").performClick()
+        if (!wasEnabled) {
+            enabledSwitch.performClick()
+        }
+        composeRule.onNodeWithTag("access_control_save").performClick()
+        composeRule.waitForIdle()
+    }
+}
+
+private fun findSelectableLauncherPackage(context: Context): String? {
+    val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+    return context.packageManager
+        .queryIntentActivities(launcherIntent, 0)
+        .asSequence()
+        .mapNotNull { it.activityInfo?.packageName }
+        .distinct()
+        .filter { it != context.packageName }
+        .firstOrNull { packageName ->
+            val appInfo = runCatching { context.packageManager.getApplicationInfo(packageName, 0) }
+                .getOrNull()
+                ?: return@firstOrNull false
+            val isSystem = appInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
+            val hasInternet = context.packageManager.checkPermission(
+                Manifest.permission.INTERNET,
+                packageName,
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            !isSystem && hasInternet
+        }
 }

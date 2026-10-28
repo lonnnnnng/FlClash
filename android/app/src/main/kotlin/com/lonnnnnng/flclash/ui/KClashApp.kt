@@ -1535,6 +1535,8 @@ internal fun AccessControlCard(
 ) {
     val canEdit = !runtimeState.isRunning && !state.isLoading && !state.isSaving
     val contentCanEdit = canEdit && state.settings.enable && !state.isSmartSelecting
+    val visibleApps = state.visibleApps
+    val hasVisibleApps = visibleApps.isNotEmpty()
     val actionsCanEdit = canEdit && !state.isSmartSelecting
     var actionMenuExpanded by rememberSaveable { mutableStateOf(false) }
     Card(
@@ -1677,7 +1679,7 @@ internal fun AccessControlCard(
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
                             onClick = onSmartSelect,
-                            enabled = contentCanEdit,
+                            enabled = contentCanEdit && state.apps.isNotEmpty(),
                             modifier = Modifier.testTag("access_control_smart_select"),
                         ) {
                             if (state.isSmartSelecting) {
@@ -1717,36 +1719,70 @@ internal fun AccessControlCard(
                                 )
                             }
                         }
-                        TextButton(onClick = onSelectVisible, enabled = contentCanEdit) { Text("全选当前结果") }
-                        TextButton(onClick = onClearVisible, enabled = contentCanEdit) { Text("清除当前结果") }
+                        TextButton(
+                            onClick = onSelectVisible,
+                            enabled = contentCanEdit && hasVisibleApps,
+                            modifier = Modifier.testTag("access_control_select_visible"),
+                        ) { Text("全选当前结果") }
+                        TextButton(
+                            onClick = onClearVisible,
+                            enabled = contentCanEdit && hasVisibleApps,
+                            modifier = Modifier.testTag("access_control_clear_visible"),
+                        ) { Text("清除当前结果") }
                     }
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 280.dp)
-                            .testTag("access_control_app_list"),
-                    ) {
-                        items(state.visibleApps, key = { it.packageName }) { app ->
-                            val checked = app.packageName in currentPackageList(state.settings)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Checkbox(
-                                    checked = checked,
-                                    onCheckedChange = { onTogglePackage(app.packageName) },
-                                    enabled = contentCanEdit,
-                                    modifier = Modifier.testTag("access_control_app_${app.packageName}"),
-                                )
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(app.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    Text(
-                                        app.packageName,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
+                    if (state.apps.isEmpty()) {
+                        // 作者 long：空清单表示设备当前没有可识别的启动器应用，必须给出明确原因，
+                        // 避免用户把一个空 LazyColumn 误认为加载失败或权限没有生效。
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("access_control_empty_state"),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Text("没有可用于按应用代理的已安装应用")
+                            Text(
+                                "请先安装一个可启动的应用，再返回此页面重新读取。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    } else if (!hasVisibleApps) {
+                        Text(
+                            "没有匹配的应用",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("access_control_no_results"),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 280.dp)
+                                .testTag("access_control_app_list"),
+                        ) {
+                            items(visibleApps, key = { it.packageName }) { app ->
+                                val checked = app.packageName in currentPackageList(state.settings)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Checkbox(
+                                        checked = checked,
+                                        onCheckedChange = { onTogglePackage(app.packageName) },
+                                        enabled = contentCanEdit,
+                                        modifier = Modifier.testTag("access_control_app_${app.packageName}"),
                                     )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(app.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text(
+                                            app.packageName,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                    }
                                 }
                             }
                         }

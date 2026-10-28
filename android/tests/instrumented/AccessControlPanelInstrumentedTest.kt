@@ -230,4 +230,44 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_save").assertIsEnabled()
     }
+
+    @Test
+    fun emptyInstalledAppListShowsActionableStatusAndDisablesBatchSelection() {
+        composeRule.setContent {
+            KClashTheme {
+                AccessControlCard(
+                    state = AccessControlUiState(
+                        settings = AccessControlProps(
+                            enable = true,
+                            mode = AccessControlMode.REJECT_SELECTED,
+                            rejectList = emptyList(),
+                        ),
+                        apps = emptyList(),
+                        isLoading = false,
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    onEnabledChange = {},
+                    onModeChange = {},
+                    onSortChange = {},
+                    onFilterSystemAppsChange = {},
+                    onFilterNonInternetAppsChange = {},
+                    onSearchChange = {},
+                    onTogglePackage = {},
+                    onSelectVisible = {},
+                    onClearVisible = {},
+                    onSmartSelect = {},
+                    onExportToClipboard = {},
+                    onImportFromClipboard = {},
+                    onSave = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("access_control_empty_state").assertIsDisplayed()
+        composeRule.onNodeWithText("没有可用于按应用代理的已安装应用").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_select_visible").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_clear_visible").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_smart_select").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_app_list").assertDoesNotExist()
+    }
 }

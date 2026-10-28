@@ -613,3 +613,13 @@
 - Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`）完成 Compose 菜单验收；本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心。
 - Debug APK SHA-256：`a27e7c52a5727b7bea79c4a48b3f8a5502e96eb3d36bbba8e28d79b5f25530f9`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 当前切片状态：`DONE-VERIFIED`（Access 剪贴板导入/导出首片）；完整 Flutter 视觉交互和页面级 E2E 仍待后续。
+
+## Access 安装应用空状态首片验收记录（2026-10-28）
+
+- `AccessControlCard` 区分设备没有可识别启动器应用与当前筛选无匹配结果：前者显示“没有可用于按应用代理的已安装应用”及重新读取提示，后者显示“没有匹配的应用”。
+- 空清单或空筛选结果时，`全选当前结果`、`清除当前结果` 和 `智能选择` 禁用；剪贴板菜单和保存入口保持原有可用性，用户仍可恢复或保存配置。
+- 新增 `AccessControlPanelInstrumentedTest.emptyInstalledAppListShowsActionableStatusAndDisablesBatchSelection`，验证空状态、批量入口禁用和 `LazyColumn` 不存在。
+- `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin :app:testDebugUnitTest --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 219 项失败 0、错误 0、跳过 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过；Redmi Note 8 Pro（Android 16/API 36）75 项失败 0、错误 0、跳过 0。
+- `./gradlew :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Debug APK SHA-256：`e63b5a3637f53dcef5fb5bf59f01d942e679c06a1de31ade4082db0a28f8f4d8`，原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心；完整 Access 视觉交互和返回未保存确认仍待后续切片。
