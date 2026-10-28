@@ -1567,11 +1567,15 @@ private fun delayLabel(delay: ProxyDelayUiState?): String = when {
 }
 
 @Composable
-private fun BatteryOptimizationCard(
+internal fun BatteryOptimizationCard(
     ignored: Boolean,
     onRequest: () -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("dashboard_battery_card"),
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("后台运行", style = MaterialTheme.typography.titleMedium)
             Text(
@@ -1593,7 +1597,7 @@ private fun BatteryOptimizationCard(
 }
 
 @Composable
-private fun AlwaysOnVpnCard(
+internal fun AlwaysOnVpnCard(
     state: AlwaysOnVpnState,
     onRequest: () -> Unit,
 ) {
@@ -2196,12 +2200,16 @@ internal fun AccessControlCard(
 }
 
 @Composable
-private fun RuntimeCard(
+internal fun RuntimeCard(
     state: CoreRuntimeStatus,
     onStart: () -> Unit,
     onStop: () -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("dashboard_runtime_card"),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -2225,11 +2233,15 @@ private fun RuntimeCard(
 }
 
 @Composable
-private fun RuntimeStatsCard(
+internal fun RuntimeStatsCard(
     state: RuntimeStatsUiState,
     runtimeState: CoreRuntimeStatus,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("dashboard_stats_card"),
+    ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -2279,7 +2291,7 @@ private fun StatValue(label: String, value: String) {
 private fun formatRate(bytes: Long): String = "${formatBytes(bytes)}/s"
 
 @Composable
-private fun ProbeCard(
+internal fun ProbeCard(
     state: ProbeUiState,
     diagnostic: DiagnosticSessionUiState,
     diagnosticHistory: List<RuntimeDiagnosticEvent>,
@@ -2292,7 +2304,11 @@ private fun ProbeCard(
 ) {
     val hasRemoteTarget = profile?.type == ProfileType.URL && profile.url.isNotBlank()
     val canProbe = runtimeState.isRunning && hasRemoteTarget && !state.isLoading
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("dashboard_probe_card"),
+    ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
