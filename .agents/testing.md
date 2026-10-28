@@ -746,3 +746,11 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest#accessControlCardFontScaleScreenshotMatrixMatchesBaseline`：通过，1 项失败 0、错误 0、跳过 0。
 - Debug APK SHA-256：`0607455c385ab0cd173863786c9fb95f5543e625c5271952e5f8a7f9411b0b39`；设备系统字体已恢复 `1.0`、保持竖屏，`com.duanju.player` 已恢复启用。
 - 本轮未访问两条真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。
+
+
+## 全量 instrumentation 稳定复验记录（2026-10-29）
+
+- 测试前临时执行 `adb -s wsvwypiz7xwslvl7 shell pm disable-user --user 0 com.duanju.player`，排除已知前台抢占干扰。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，87 项 instrumentation 失败 0、错误 0、跳过 0。
+- XML 结果文件：`android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml`；Debug APK SHA-256：`0607455c385ab0cd173863786c9fb95f5543e625c5271952e5f8a7f9411b0b39`。
+- 验收结束已恢复 `com.duanju.player`，设备系统字体 `1.0`、方向为竖屏；本轮未访问两条真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心。
