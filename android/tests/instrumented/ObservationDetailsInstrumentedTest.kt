@@ -106,6 +106,52 @@ class ObservationDetailsInstrumentedTest {
     }
 
     @Test
+    fun observationPageClearsDnsAndLogsIndependentlyAndExportsLogs() {
+        val request = connection("request-actions", "api.example.test")
+        val dnsQuery = dnsQuery("api.example.test", "1.1.1.1")
+        val log = CoreEvent.Log("warning", "上游响应较慢", 0L)
+        var dnsState by mutableStateOf(DnsUiState(listOf(dnsQuery)))
+        var logsState by mutableStateOf(LogsUiState(listOf(log)))
+        var exportedLogs: List<CoreEvent.Log>? = null
+
+        composeRule.setContent {
+            var selectedTabIndex by remember { mutableStateOf(0) }
+            KClashTheme {
+                ObservationPage(
+                    requests = RequestsUiState(listOf(request)),
+                    dns = dnsState,
+                    logs = logsState,
+                    runtimeState = CoreRuntimeStatus.RUNNING,
+                    selectedTabIndex = selectedTabIndex,
+                    onSelectedTabChange = { selectedTabIndex = it },
+                    onShowRequests = {},
+                    onShowDns = {},
+                    onClearDns = { dnsState = DnsUiState() },
+                    onShowLogs = {},
+                    onClearLogs = { logsState = LogsUiState() },
+                    onExportLogs = { exportedLogs = logsState.entries },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("DNS").performClick()
+        composeRule.onNodeWithText("api.example.test").assertIsDisplayed()
+        composeRule.onNodeWithText("清空").performClick()
+        composeRule.onNodeWithText("等待核心上报 DNS 查询事件。").assertIsDisplayed()
+
+        composeRule.onNodeWithText("日志").performClick()
+        composeRule.onNodeWithText("上游响应较慢").assertIsDisplayed()
+        composeRule.onNodeWithText("导出").performClick()
+        assertEquals(listOf(log), exportedLogs)
+        composeRule.onNodeWithText("清空").performClick()
+        composeRule.onNodeWithText("等待核心上报日志事件。").assertIsDisplayed()
+
+        // 作者 long：清空 DNS/日志只能影响各自 StateFlow，Requests 记录仍应保持可见，避免一次清理误删其他观测数据。
+        composeRule.onNodeWithText("请求").performClick()
+        composeRule.onNodeWithText("api.example.test").assertIsDisplayed()
+    }
+
+    @Test
     fun observationPageScreenshotMatrixMatchesBaseline() {
         val request = connection("request-visual", "api.example.test")
         val dnsQuery = dnsQuery("api.example.test", "1.1.1.1")
