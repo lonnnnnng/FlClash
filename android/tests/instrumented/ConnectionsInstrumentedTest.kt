@@ -5,6 +5,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,5 +53,38 @@ class ConnectionsInstrumentedTest {
         if (mismatches.isNotEmpty()) {
             error("connections screenshot baseline mismatch: ${mismatches.joinToString("; ")}")
         }
+    }
+
+    @Test
+    fun connectionsRunningStateFontScaleMatrixMatchesBaseline() {
+        fun captureHash(): String {
+            composeRule.waitForIdle()
+            val bitmap = composeRule
+                .onNodeWithTag("connections_page")
+                .captureToImage()
+                .asAndroidBitmap()
+            val png = ByteArrayOutputStream().also { output ->
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+            }.toByteArray()
+            return MessageDigest.getInstance("SHA-256").digest(png)
+                .joinToString("") { byte -> "%02x".format(byte) }
+        }
+
+        composeRule.activity.runOnUiThread {
+            composeRule.activity.showRunningScenario()
+            composeRule.activity.setFontScale(1.3f)
+        }
+        val font13Hash = captureHash()
+
+        composeRule.activity.runOnUiThread {
+            composeRule.activity.setFontScale(2.0f)
+        }
+        val font20Hash = captureHash()
+
+        assertEquals(
+            "fontScale=1.3 sha256=978584c42dd91dcf17266075137c0f759630207c1faeae1e4776da8f01379c66\n" +
+                "fontScale=2.0 sha256=74f7977c07aa092c18e1a61db68232bdc0b9934f1d6b9b5486e147da5ac0659e",
+            "fontScale=1.3 sha256=$font13Hash\nfontScale=2.0 sha256=$font20Hash",
+        )
     }
 }

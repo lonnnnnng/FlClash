@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreConnectionMetadata
@@ -26,6 +29,7 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
  */
 class ConnectionsTestActivity : ComponentActivity() {
     private var scenario by mutableStateOf(ConnectionsScenario.STOPPED)
+    private var fontScaleValue by mutableStateOf(1f)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,19 +44,25 @@ class ConnectionsTestActivity : ComponentActivity() {
                     connections = listOf(sampleConnection()),
                 )
             }
-            KClashTheme {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp)
-                        .testTag("connections_page"),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    ConnectionsCard(
-                        state = state,
-                        runtimeState = runtimeState,
-                    )
+            val baseDensity = LocalDensity.current
+            CompositionLocalProvider(
+                // 作者 long：字体矩阵只改变文字缩放，不改变设备密度，确保连接详情的换行差异可重复。
+                LocalDensity provides Density(baseDensity.density, fontScale = fontScaleValue),
+            ) {
+                KClashTheme {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp)
+                            .testTag("connections_page"),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        ConnectionsCard(
+                            state = state,
+                            runtimeState = runtimeState,
+                        )
+                    }
                 }
             }
         }
@@ -60,6 +70,10 @@ class ConnectionsTestActivity : ComponentActivity() {
 
     fun showRunningScenario() {
         scenario = ConnectionsScenario.RUNNING
+    }
+
+    fun setFontScale(value: Float) {
+        fontScaleValue = value
     }
 
     private fun sampleConnection() = CoreConnection(
