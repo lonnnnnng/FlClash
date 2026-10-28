@@ -64,6 +64,14 @@ data class AccessControlUiState(
             return visibleApps.count { it.packageName in selected }
         }
 
+    // 作者 long：顶栏全选图标必须只反映当前搜索、排序和来源过滤后的可见集合，避免把隐藏应用误判为已全选。
+    val allVisibleAppsSelected: Boolean
+        get() {
+            if (visibleApps.isEmpty()) return false
+            val selected = currentPackageList(settings).toSet()
+            return visibleApps.all { it.packageName in selected }
+        }
+
     val hasUnsavedChanges: Boolean
         get() = normalizeAccessControlSettings(settings) != normalizeAccessControlSettings(persistedSettings)
 }
@@ -229,6 +237,21 @@ class AccessControlViewModel @Inject constructor(
     fun clearVisibleApps() {
         updateSettings {
             withCurrentPackageList(currentPackageList(this).toSet() - mutableState.value.visibleApps.map { it.packageName }.toSet())
+        }
+    }
+
+    // 作者 long：Flutter 的顶栏批量选择只修改当前可见应用，保留过滤条件之外的既有选择。
+    fun toggleVisibleApps() {
+        updateSettings {
+            val visiblePackages = mutableState.value.visibleApps.map { it.packageName }.toSet()
+            if (visiblePackages.isEmpty()) return@updateSettings this
+            val selected = currentPackageList(this).toMutableSet()
+            if (selected.containsAll(visiblePackages)) {
+                selected.removeAll(visiblePackages)
+            } else {
+                selected.addAll(visiblePackages)
+            }
+            withCurrentPackageList(selected)
         }
     }
 

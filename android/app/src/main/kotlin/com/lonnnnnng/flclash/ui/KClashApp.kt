@@ -31,6 +31,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -62,6 +63,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
@@ -376,6 +379,7 @@ fun KClashApp(
                             onTogglePackage = accessControlViewModel::togglePackage,
                             onSelectVisible = accessControlViewModel::selectVisibleApps,
                             onClearVisible = accessControlViewModel::clearVisibleApps,
+                            onToggleVisible = accessControlViewModel::toggleVisibleApps,
                             onSmartSelect = accessControlViewModel::smartSelectApps,
                             onExportToClipboard = accessControlViewModel::exportToClipboard,
                             onImportFromClipboard = accessControlViewModel::importFromClipboard,
@@ -1614,6 +1618,7 @@ internal fun AccessControlCard(
     onTogglePackage: (String) -> Unit,
     onSelectVisible: () -> Unit,
     onClearVisible: () -> Unit,
+    onToggleVisible: () -> Unit,
     onSmartSelect: () -> Unit,
     onExportToClipboard: () -> Unit,
     onImportFromClipboard: () -> Unit,
@@ -1624,6 +1629,7 @@ internal fun AccessControlCard(
     val visibleApps = state.visibleApps
     val hasVisibleApps = visibleApps.isNotEmpty()
     val actionsCanEdit = canEdit && !state.isSmartSelecting
+    var searchExpanded by rememberSaveable { mutableStateOf(false) }
     var actionMenuExpanded by rememberSaveable { mutableStateOf(false) }
     Card(
         modifier = Modifier
@@ -1637,6 +1643,30 @@ internal fun AccessControlCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("按应用代理", style = MaterialTheme.typography.titleMedium)
+                }
+                IconButton(
+                    onClick = { searchExpanded = !searchExpanded },
+                    enabled = canEdit,
+                    modifier = Modifier.testTag("access_control_search_toggle"),
+                ) {
+                    Text(
+                        if (searchExpanded) "×" else "⌕",
+                        modifier = Modifier.semantics {
+                            contentDescription = if (searchExpanded) "关闭搜索" else "搜索应用"
+                        },
+                    )
+                }
+                IconButton(
+                    onClick = onToggleVisible,
+                    enabled = contentCanEdit && hasVisibleApps,
+                    modifier = Modifier.testTag("access_control_toggle_visible"),
+                ) {
+                    Text(
+                        if (state.allVisibleAppsSelected) "☑" else "☐",
+                        modifier = Modifier.semantics {
+                            contentDescription = if (state.allVisibleAppsSelected) "取消全选当前结果" else "全选当前结果"
+                        },
+                    )
                 }
                 Switch(
                     checked = state.settings.enable,
@@ -1752,16 +1782,18 @@ internal fun AccessControlCard(
                             modifier = Modifier.testTag("access_control_mode_deny"),
                         ) { Text("黑名单") }
                     }
-                    OutlinedTextField(
-                        value = state.searchQuery,
-                        onValueChange = onSearchChange,
-                        enabled = contentCanEdit,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("access_control_search"),
-                        singleLine = true,
-                        label = { Text("搜索应用或包名") },
-                    )
+                    if (searchExpanded) {
+                        OutlinedTextField(
+                            value = state.searchQuery,
+                            onValueChange = onSearchChange,
+                            enabled = canEdit,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("access_control_search"),
+                            singleLine = true,
+                            label = { Text("搜索应用或包名") },
+                        )
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
                             onClick = onSmartSelect,

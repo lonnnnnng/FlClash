@@ -633,3 +633,13 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过；Redmi Note 8 Pro（Android 16/API 36）77 项失败 0、错误 0、跳过 0。
 - Debug APK SHA-256：`738a2bbdb9e717d85a0106397ea6742bd65777da472758fd0d2b7bad39790395`，原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心；顶栏搜索/全选和完整视觉交互仍待后续。
+
+## Access 卡片顶栏搜索与全选入口验收记录（2026-10-29）
+
+- Access 卡片标题栏新增搜索入口和“全选当前结果 / 取消全选当前结果”入口；全选依据当前搜索、排序和来源过滤后的可见应用集合执行，搜索入口展开后显示应用名/包名输入框。
+- 关闭按应用代理时保留搜索入口可用，搜索框展开后可查看已保留选择；模式、筛选、应用勾选、批量操作和保存仍按关闭状态规则锁定。原正文批量按钮继续保留，作为小屏和无障碍备用入口。
+- `AccessControlPanelInstrumentedTest` 新增 `topBarToggleSelectsAndClearsVisibleApps`，并同步验证关闭状态搜索入口展开；已有搜索、剪贴板、空状态和未保存确认测试均通过。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0、跳过 0，Lint 错误 0。
+- `adb devices -l` 确认目标为 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，78 项 instrumentation 失败 0、错误 0、跳过 0。
+- Debug APK SHA-256：`f29442a76b6e4fee0e96a29374bbc6a135ffd1aadc11db3f45100b8554efa125`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`。

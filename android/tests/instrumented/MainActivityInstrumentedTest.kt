@@ -141,7 +141,7 @@ class MainActivityInstrumentedTest {
         val dashboard = composeRule.onNodeWithTag("page_dashboard")
         dashboard.performScrollToNode(hasTestTag("access_control_card"))
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("access_control_search")
+            composeRule.onAllNodesWithTag("access_control_search_toggle")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
@@ -172,6 +172,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("access_control_actions").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("access_control_clipboard_import").performClick()
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
         composeRule.onNodeWithTag("access_control_search").performTextInput(candidatePackage)
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithTag("access_control_app_$candidatePackage")
@@ -206,7 +207,7 @@ class MainActivityInstrumentedTest {
         val dashboard = composeRule.onNodeWithTag("page_dashboard")
         dashboard.performScrollToNode(hasTestTag("access_control_card"))
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("access_control_search")
+            composeRule.onAllNodesWithTag("access_control_search_toggle")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }

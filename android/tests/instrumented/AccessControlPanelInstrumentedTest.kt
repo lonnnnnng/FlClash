@@ -66,6 +66,7 @@ class AccessControlPanelInstrumentedTest {
                     },
                     onSelectVisible = {},
                     onClearVisible = {},
+                    onToggleVisible = {},
                     onSmartSelect = {},
                     onExportToClipboard = {},
                     onImportFromClipboard = {},
@@ -74,6 +75,7 @@ class AccessControlPanelInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
         composeRule.onNodeWithTag("access_control_search").performTextInput("视频")
         composeRule.waitForIdle()
         composeRule.onNodeWithText("示例视频").assertIsDisplayed()
@@ -108,6 +110,7 @@ class AccessControlPanelInstrumentedTest {
                     onTogglePackage = {},
                     onSelectVisible = {},
                     onClearVisible = {},
+                    onToggleVisible = {},
                     onSmartSelect = {},
                     onExportToClipboard = {},
                     onImportFromClipboard = {},
@@ -147,6 +150,7 @@ class AccessControlPanelInstrumentedTest {
                     onTogglePackage = {},
                     onSelectVisible = {},
                     onClearVisible = {},
+                    onToggleVisible = {},
                     onSmartSelect = {},
                     onExportToClipboard = { exported++ },
                     onImportFromClipboard = { imported++ },
@@ -197,6 +201,7 @@ class AccessControlPanelInstrumentedTest {
                     onTogglePackage = {},
                     onSelectVisible = {},
                     onClearVisible = {},
+                    onToggleVisible = {},
                     onSmartSelect = {},
                     onExportToClipboard = {},
                     onImportFromClipboard = {},
@@ -210,11 +215,14 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_sort_name").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_filter_system").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_filter_no_network").assertIsNotEnabled()
-        composeRule.onNodeWithTag("access_control_search").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_search_toggle").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_smart_select").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_actions").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_save").assertIsNotEnabled()
+
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        composeRule.onNodeWithTag("access_control_search").assertIsEnabled()
 
         composeRule.onNodeWithTag("access_control_turn_on").performClick()
 
@@ -229,6 +237,57 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_smart_select").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_save").assertIsEnabled()
+    }
+
+    @Test
+    fun topBarToggleSelectsAndClearsVisibleApps() {
+        val apps = listOf(
+            InstalledAppInfo("com.example.mail", "示例邮件"),
+            InstalledAppInfo("com.example.video", "示例视频"),
+        )
+        var state by mutableStateOf(
+            AccessControlUiState(
+                settings = AccessControlProps(
+                    enable = true,
+                    mode = AccessControlMode.REJECT_SELECTED,
+                    rejectList = emptyList(),
+                ),
+                apps = apps,
+                isLoading = false,
+            ),
+        )
+        composeRule.setContent {
+            KClashTheme {
+                AccessControlCard(
+                    state = state,
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    onEnabledChange = {},
+                    onModeChange = {},
+                    onSortChange = {},
+                    onFilterSystemAppsChange = {},
+                    onFilterNonInternetAppsChange = {},
+                    onSearchChange = { state = state.copy(searchQuery = it) },
+                    onTogglePackage = {},
+                    onSelectVisible = {},
+                    onClearVisible = {},
+                    onToggleVisible = {
+                        val visible = state.visibleApps.map { it.packageName }.toSet()
+                        val selected = currentPackageList(state.settings).toMutableSet()
+                        if (selected.containsAll(visible)) selected.removeAll(visible) else selected.addAll(visible)
+                        state = state.copy(settings = state.settings.withCurrentPackageList(selected))
+                    },
+                    onSmartSelect = {},
+                    onExportToClipboard = {},
+                    onImportFromClipboard = {},
+                    onSave = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
+        assertEquals(setOf("com.example.mail", "com.example.video"), currentPackageList(state.settings).toSet())
+        composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
+        assertEquals(emptySet<String>(), currentPackageList(state.settings).toSet())
     }
 
     @Test
@@ -255,6 +314,7 @@ class AccessControlPanelInstrumentedTest {
                     onTogglePackage = {},
                     onSelectVisible = {},
                     onClearVisible = {},
+                    onToggleVisible = {},
                     onSmartSelect = {},
                     onExportToClipboard = {},
                     onImportFromClipboard = {},
