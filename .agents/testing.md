@@ -542,7 +542,7 @@
 - `AccessControlSettingsStoreInstrumentedTest`：通过 1 项，验证真实 Android SQLite 保存/恢复和清洗结果。
 - `./gradlew :service:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Debug APK 原生库仅包含 `lib/arm64-v8a/`。
 - Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）安装 Debug APK 后，首页显示“按应用代理”，读取到设备已安装应用；实际启用黑名单、选择一个应用并保存，强制重启 KClash 后仍显示“已选 1 个”。
-- 本轮未启动 VPN、未访问两条真实在线路径、未执行 Tasker/MacroDroid 实际应用回归；真实核心流量过滤效果和完整 Flutter Access 页面 parity 仍待后续切片。
+- 本轮未启动 VPN、未访问两条真实在线路径、未执行 Tasker/MacroDroid 实际应用回归；完整 Flutter Access 页面 parity、Tasker/MacroDroid 和 Always-on VPN 仍待后续切片。
 
 ## Profile 名称重命名闭环验收记录（2026-10-28）
 
@@ -551,3 +551,12 @@
 - `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；当前 JVM 单元测试 212 项，失败 0、错误 0；Lint 错误 0。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.ProfilesPanelInstrumentedTest`：通过，9 项 instrumentation 失败 0；`ProfilesRepositoryPanelInstrumentedTest`：通过，10 项失败 0，覆盖 Compose 页面回写和真实 Room 持久化。
 - Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）仅用于本地页面和 Room 验收；本轮未访问外部 WebDAV、真实订阅路径、VPN 或 Mihomo 核心。Debug APK SHA-256：`81c32daebc44d7ef888acbe60b71114e00d2cb481c8da209743b782d513281f4`，原生库仅包含 `lib/arm64-v8a/`。
+
+## 按应用代理真实核心流量过滤回归验收记录（2026-10-28）
+
+- 使用工作区根目录 `1.yaml` 导入并启动真实 Mihomo；设备为 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`），本轮只使用第二条用户授权路径发起受控请求。
+- 停止核心后启用黑名单，选择 `com.mmbox.xbrowser` 并启动 VPN；受控请求期间 `adb -s wsvwypiz7xwslvl7 shell dumpsys netstats --uid 10785` 只有 `wlan0` 的该 UID 统计，没有该 UID 的 `tun0` 记录，证明被拒绝包绕过 TUN。
+- 停止核心后切换白名单并重新选择 `com.mmbox.xbrowser`，再次发起同一受控请求；`dumpsys netstats --uid 10785` 出现 `tun0` 统计（约 15 KB 入站、7.8 KB 出站），证明允许包进入 TUN。
+- 两次运行均确认 `VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 存在；通过外部 STOP Action 停止后服务、TUN 和路由均清理。验收结束已把按应用代理恢复为停用状态。
+- Debug APK SHA-256：`6ef4a706396aed8272f69afea2cbf2d28c1497c2c1591c43188e3dbf7531a387`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未执行 Tasker/MacroDroid 实际应用回归；完整 Flutter Access 页面 parity 和 Always-on VPN 仍待 N5 后续切片。
