@@ -653,7 +653,7 @@ class AccessControlPanelInstrumentedTest {
 
     @Test
     fun accessControlCardFontScaleScreenshotMatrixMatchesBaseline() {
-        var fontScale by mutableStateOf(1.5f)
+        var fontScale by mutableStateOf(1.3f)
         composeRule.setContent {
             val baseDensity = LocalDensity.current
             CompositionLocalProvider(
@@ -705,13 +705,16 @@ class AccessControlPanelInstrumentedTest {
         }
 
         val expected = mapOf(
+            1.3f to "7e230a41dc0e03e5220a47c5df55a90d8668fed02fbd0359e55a308849b2fc71",
             1.5f to "8f13a4b9e236f2ea6997f4828486d06d532766f4dfcd751cf791866adf85b0c8",
+            1.8f to "3e18033ee22e687cf7cf39a2f945f4fb7bb97c9fbb54745fe1590a574cfa15d7",
             2.0f to "e4ab4b4d3136c0dd017f4e47030a1b8aef8448c71e8df92953373329a5a3b0f5",
         )
         val actualHashes = mutableMapOf<Float, String>()
-        actualHashes[1.5f] = captureHash()
-        fontScale = 2.0f
-        actualHashes[2.0f] = captureHash()
+        expected.keys.forEachIndexed { index, scale ->
+            if (index > 0) fontScale = scale
+            actualHashes[scale] = captureHash()
+        }
         val mismatches = buildList {
             expected.forEach { (scale, expectedHash) ->
                 val actualHash = actualHashes.getValue(scale)
