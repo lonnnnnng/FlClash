@@ -650,4 +650,78 @@ class AccessControlPanelInstrumentedTest {
         // 作者 long：基线哈希锁定默认 Access 卡片的像素输出，布局或主题变化必须显式更新视觉证据。
         assertEquals("74d0dc07b35597f6e6f19905ae4047108290ae8bb6c8a5275c7976237e8236e3", digest)
     }
+
+    @Test
+    fun accessControlCardFontScaleScreenshotMatrixMatchesBaseline() {
+        var fontScale by mutableStateOf(1.5f)
+        composeRule.setContent {
+            val baseDensity = LocalDensity.current
+            CompositionLocalProvider(
+                // 作者 long：在同一内容树内切换字体档位，避免重复 setContent 破坏 Compose 测试宿主。
+                LocalDensity provides Density(baseDensity.density, fontScale = fontScale),
+            ) {
+                KClashTheme {
+                    AccessControlCard(
+                        state = AccessControlUiState(
+                            settings = AccessControlProps(
+                                enable = true,
+                                mode = AccessControlMode.REJECT_SELECTED,
+                                rejectList = emptyList(),
+                            ),
+                            apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
+                            isLoading = false,
+                        ),
+                        runtimeState = CoreRuntimeStatus.STOPPED,
+                        onEnabledChange = {},
+                        onModeChange = {},
+                        onSortChange = {},
+                        onFilterSystemAppsChange = {},
+                        onFilterNonInternetAppsChange = {},
+                        onSearchChange = {},
+                        onTogglePackage = {},
+                        onSelectVisible = {},
+                        onClearVisible = {},
+                        onToggleVisible = {},
+                        onSmartSelect = {},
+                        onExportToClipboard = {},
+                        onImportFromClipboard = {},
+                        onSave = {},
+                    )
+                }
+            }
+        }
+
+        fun captureHash(): String {
+            composeRule.waitForIdle()
+            val bitmap = composeRule
+                .onNodeWithTag("access_control_card")
+                .captureToImage()
+                .asAndroidBitmap()
+            val png = ByteArrayOutputStream().also { output ->
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+            }.toByteArray()
+            return MessageDigest.getInstance("SHA-256").digest(png)
+                .joinToString("") { byte -> "%02x".format(byte) }
+        }
+
+        val expected = mapOf(
+            1.5f to "8f13a4b9e236f2ea6997f4828486d06d532766f4dfcd751cf791866adf85b0c8",
+            2.0f to "e4ab4b4d3136c0dd017f4e47030a1b8aef8448c71e8df92953373329a5a3b0f5",
+        )
+        val actualHashes = mutableMapOf<Float, String>()
+        actualHashes[1.5f] = captureHash()
+        fontScale = 2.0f
+        actualHashes[2.0f] = captureHash()
+        val mismatches = buildList {
+            expected.forEach { (scale, expectedHash) ->
+                val actualHash = actualHashes.getValue(scale)
+                if (actualHash != expectedHash) {
+                    add("fontScale=$scale expected=$expectedHash actual=$actualHash")
+                }
+            }
+        }
+        if (mismatches.isNotEmpty()) {
+            error("font screenshot baseline mismatch: ${mismatches.joinToString("; ")}")
+        }
+    }
 }
