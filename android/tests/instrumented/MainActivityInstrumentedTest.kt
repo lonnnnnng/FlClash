@@ -14,6 +14,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -369,6 +370,55 @@ class MainActivityInstrumentedTest {
             composeRule.onAllNodesWithText("Provider · $label").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText(provider).assertIsDisplayed()
+        composeRule.onNodeWithText("取消").performClick()
+
+        composeRule.onNodeWithText("删除").performClick()
+        composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
+        val deleteButtons = composeRule.onAllNodesWithText("删除")
+        deleteButtons[deleteButtons.fetchSemanticsNodes().lastIndex].performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isEmpty()
+        }
+
+        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+    }
+
+    @Test
+    fun mainActivityPersistsCustomProfileDnsOverridesThroughRealViewModels() {
+        val label = "Activity E2E DNS"
+        val nameserver = "198.18.0.2"
+
+        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
+        composeRule.onNodeWithText("添加配置").performClick()
+        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
+        composeRule.onNodeWithText("创建自定义配置").performClick()
+        composeRule.onNodeWithText("保存").performClick()
+
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("DNS").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("DNS 覆盖 · $label").fetchSemanticsNodes().isNotEmpty()
+        }
+        // 作者 long：Nameserver 位于可滚动表单下方，先滚到字段再写入，验证真实页面而非直接调用 ViewModel。
+        composeRule.onNodeWithTag("profile-dns-override-list")
+            .performScrollToNode(hasText("Nameserver"))
+        composeRule.onNodeWithText("Nameserver").performTextInput(nameserver)
+        composeRule.onNodeWithText("保存").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("DNS 覆盖 · $label").fetchSemanticsNodes().isEmpty()
+        }
+
+        composeRule.onNodeWithText("DNS").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("DNS 覆盖 · $label").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("profile-dns-override-list")
+            .performScrollToNode(hasText("Nameserver"))
+        composeRule.onNodeWithText(nameserver).assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
 
         composeRule.onNodeWithText("删除").performClick()
