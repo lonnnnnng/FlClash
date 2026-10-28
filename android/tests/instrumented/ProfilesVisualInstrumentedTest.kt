@@ -111,4 +111,39 @@ class ProfilesVisualInstrumentedTest {
             waitForOrientation(Configuration.ORIENTATION_PORTRAIT)
         }
     }
+
+    @Test
+    fun profilesSelectedStateFontScaleMatrixMatchesBaseline() {
+        fun captureHash(): String {
+            composeRule.waitForIdle()
+            val bitmap = composeRule
+                .onNodeWithTag("profiles_page")
+                .captureToImage()
+                .asAndroidBitmap()
+            val png = ByteArrayOutputStream().also { output ->
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+            }.toByteArray()
+            return MessageDigest.getInstance("SHA-256").digest(png)
+                .joinToString("") { byte -> "%02x".format(byte) }
+        }
+
+        composeRule.activity.runOnUiThread {
+            composeRule.activity.showCustomSelectedScenario()
+            composeRule.activity.setFontScale(1.3f)
+        }
+        composeRule.onNodeWithTag("profile_card_601").assertExists()
+        val font13Hash = captureHash()
+
+        composeRule.activity.runOnUiThread {
+            composeRule.activity.setFontScale(2.0f)
+        }
+        composeRule.onNodeWithTag("profile_card_601").assertExists()
+        val font20Hash = captureHash()
+
+        assertEquals(
+            "fontScale=1.3 sha256=9bf8f24e721f0535eab0a5f8ed153c37967520659a707541868faae4f94e4e5e\n" +
+                "fontScale=2.0 sha256=33bd90c4ac325d87f7ddd207bfb210972ab16e00b5fe68af608d1511f6fa4f8e",
+            "fontScale=1.3 sha256=$font13Hash\nfontScale=2.0 sha256=$font20Hash",
+        )
+    }
 }

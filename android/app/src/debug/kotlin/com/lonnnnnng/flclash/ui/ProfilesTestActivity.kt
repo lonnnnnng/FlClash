@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
@@ -24,6 +27,7 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
  */
 class ProfilesTestActivity : ComponentActivity() {
     private var scenario by mutableStateOf(ProfilesScenario.EMPTY)
+    private var fontScaleValue by mutableStateOf(1f)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,35 +36,41 @@ class ProfilesTestActivity : ComponentActivity() {
                 ProfilesScenario.EMPTY -> emptyList()
                 ProfilesScenario.CUSTOM_SELECTED -> listOf(sampleProfile())
             }
-            KClashTheme {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    ProfilesPanel(
-                        state = ProfilesUiState(
-                            profiles = profiles,
-                            currentProfileId = profiles.firstOrNull()?.id,
-                        ),
-                        editorState = ProfileEditorUiState(),
-                        runtimeState = CoreRuntimeStatus.STOPPED,
-                        showAddDialog = false,
-                        onShowAddDialog = {},
-                        onDismissAddDialog = {},
-                        onPickFile = {},
-                        onPickQrCode = {},
-                        onAddRemote = { _, _ -> },
-                        onAddCustom = {},
-                        onSelect = {},
-                        onEdit = {},
-                        onUpdate = {},
-                        onCloseEditor = {},
-                        onSaveEditor = {},
-                        onDelete = {},
-                    )
+            val baseDensity = LocalDensity.current
+            CompositionLocalProvider(
+                // 作者 long：字体矩阵只改变文字缩放，不改变设备密度，确保基线差异对应真实可达性场景。
+                LocalDensity provides Density(baseDensity.density, fontScale = fontScaleValue),
+            ) {
+                KClashTheme {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        ProfilesPanel(
+                            state = ProfilesUiState(
+                                profiles = profiles,
+                                currentProfileId = profiles.firstOrNull()?.id,
+                            ),
+                            editorState = ProfileEditorUiState(),
+                            runtimeState = CoreRuntimeStatus.STOPPED,
+                            showAddDialog = false,
+                            onShowAddDialog = {},
+                            onDismissAddDialog = {},
+                            onPickFile = {},
+                            onPickQrCode = {},
+                            onAddRemote = { _, _ -> },
+                            onAddCustom = {},
+                            onSelect = {},
+                            onEdit = {},
+                            onUpdate = {},
+                            onCloseEditor = {},
+                            onSaveEditor = {},
+                            onDelete = {},
+                        )
+                    }
                 }
             }
         }
@@ -68,6 +78,10 @@ class ProfilesTestActivity : ComponentActivity() {
 
     fun showCustomSelectedScenario() {
         scenario = ProfilesScenario.CUSTOM_SELECTED
+    }
+
+    fun setFontScale(value: Float) {
+        fontScaleValue = value
     }
 
     private fun sampleProfile() = Profile.custom(601L, "家庭配置").copy(
