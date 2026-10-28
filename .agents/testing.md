@@ -623,3 +623,13 @@
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过；Redmi Note 8 Pro（Android 16/API 36）75 项失败 0、错误 0、跳过 0。
 - `./gradlew :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Debug APK SHA-256：`e63b5a3637f53dcef5fb5bf59f01d942e679c06a1de31ade4082db0a28f8f4d8`，原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心；完整 Access 视觉交互和返回未保存确认仍待后续切片。
+
+## Access 返回未保存变更确认首片验收记录（2026-10-28）
+
+- `AccessControlUiState` 保存已持久化设置基线并暴露 `hasUnsavedChanges`；仅修改搜索关键字不会触发脏状态，设置开关、列表、模式、排序、过滤、智能选择和剪贴板导入会触发脏状态。
+- Access 脏状态下系统返回和底部导航离开都会显示“按应用代理有未保存的修改”；“取消”留在当前页面，“放弃更改”恢复基线后离开，“保存并退出”异步保存成功后离开，保存失败则保留页面和错误状态。
+- `AccessControlPanelInstrumentedTest.unsavedChangesDialogOffersCancelDiscardAndSave` 覆盖对话框按钮和放弃回滚；`MainActivityInstrumentedTest.mainActivityGuardsAccessChangesWhenSystemBackIsPressed` 使用真实 MainActivity 验证底部导航、系统返回和原状态恢复。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0、跳过 0，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过；Redmi Note 8 Pro（Android 16/API 36）77 项失败 0、错误 0、跳过 0。
+- Debug APK SHA-256：`738a2bbdb9e717d85a0106397ea6742bd65777da472758fd0d2b7bad39790395`，原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心；顶栏搜索/全选和完整视觉交互仍待后续。

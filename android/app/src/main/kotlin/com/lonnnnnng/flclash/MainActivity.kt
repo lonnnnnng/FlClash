@@ -185,6 +185,7 @@ class MainActivity : ComponentActivity() {
                     onProbeWebDav = ::probeWebDav,
                     onUploadWebDav = ::uploadWebDav,
                     onDownloadWebDav = ::downloadWebDav,
+                    onExitApp = ::finish,
                 )
             }
         }

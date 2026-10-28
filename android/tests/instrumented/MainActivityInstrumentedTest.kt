@@ -200,6 +200,37 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("access_control_save").performClick()
         composeRule.waitForIdle()
     }
+
+    @Test
+    fun mainActivityGuardsAccessChangesWhenSystemBackIsPressed() {
+        val dashboard = composeRule.onNodeWithTag("page_dashboard")
+        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_search")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        val enabledSwitch = composeRule.onNodeWithTag("access_control_enabled")
+        enabledSwitch.performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+
+        composeRule.activityRule.scenario.onActivity { activity ->
+            activity.onBackPressedDispatcher.onBackPressed()
+        }
+        composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+        composeRule.onNodeWithText("保存后才会应用新的白名单、黑名单和筛选设置。").assertIsDisplayed()
+
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithText("按应用代理有未保存的修改").assertDoesNotExist()
+        enabledSwitch.performClick()
+        composeRule.waitForIdle()
+    }
 }
 
 private fun findSelectableLauncherPackage(context: Context): String? {

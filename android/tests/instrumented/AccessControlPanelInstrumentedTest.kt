@@ -270,4 +270,46 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_smart_select").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_app_list").assertDoesNotExist()
     }
+
+    @Test
+    fun unsavedChangesDialogOffersCancelDiscardAndSave() {
+        val persisted = AccessControlProps(
+            enable = true,
+            mode = AccessControlMode.REJECT_SELECTED,
+            rejectList = emptyList(),
+        )
+        var state by mutableStateOf(
+            AccessControlUiState(
+                settings = persisted.copy(rejectList = listOf("com.example.mail")),
+                persistedSettings = persisted,
+                apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
+                isLoading = false,
+            ),
+        )
+        var exitCount = 0
+        composeRule.setContent {
+            KClashTheme {
+                AccessControlUnsavedChangesDialog(
+                    visible = state.hasUnsavedChanges,
+                    isSaving = false,
+                    onCancel = {},
+                    onDiscard = {
+                        state = state.copy(settings = state.persistedSettings)
+                        exitCount++
+                    },
+                    onSaveAndExit = {
+                        state = state.copy(persistedSettings = state.settings)
+                        exitCount++
+                    },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_discard_changes").performClick()
+        assertEquals(1, exitCount)
+        composeRule.onNodeWithText("按应用代理有未保存的修改").assertDoesNotExist()
+    }
 }

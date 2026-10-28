@@ -36,6 +36,7 @@ data class InstalledAppInfo(
 
 data class AccessControlUiState(
     val settings: AccessControlProps = AccessControlDefaults.value,
+    val persistedSettings: AccessControlProps = AccessControlDefaults.value,
     val apps: List<InstalledAppInfo> = emptyList(),
     val searchQuery: String = "",
     val isLoading: Boolean = true,
@@ -62,6 +63,9 @@ data class AccessControlUiState(
             val selected = currentPackageList(settings).toSet()
             return visibleApps.count { it.packageName in selected }
         }
+
+    val hasUnsavedChanges: Boolean
+        get() = normalizeAccessControlSettings(settings) != normalizeAccessControlSettings(persistedSettings)
 }
 
 object AccessControlDefaults {
@@ -103,6 +107,11 @@ fun AccessControlProps.withCurrentPackageList(packages: Collection<String>): Acc
         AccessControlMode.REJECT_SELECTED -> copy(rejectList = normalized)
     }
 }
+
+fun normalizeAccessControlSettings(settings: AccessControlProps): AccessControlProps = settings.copy(
+    acceptList = settings.acceptList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
+    rejectList = settings.rejectList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
+)
 
 /**
  * 作者 long：剪贴板导入要保持 Flutter 的原始文本语义，不能复用页面勾选时的排序和空值清洗，
@@ -161,8 +170,10 @@ class AccessControlViewModel @Inject constructor(
             runCatching {
                 settingsProvider.current() to loadInstalledApps(context)
             }.onSuccess { (settings, apps) ->
+                val persisted = normalizeAccessControlSettings(settings)
                 mutableState.value = mutableState.value.copy(
-                    settings = settings.sanitize(),
+                    settings = persisted,
+                    persistedSettings = persisted,
                     apps = apps,
                     isLoading = false,
                     error = null,
@@ -282,19 +293,22 @@ class AccessControlViewModel @Inject constructor(
             }
     }
 
-    fun save() {
+    fun save(onSuccess: () -> Unit = {}) {
         if (runtimeManager.state.value.isRunning) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再修改按应用代理")
             return
         }
         viewModelScope.launch {
             mutableState.value = mutableState.value.copy(isSaving = true, error = null)
-            runCatching { settingsProvider.save(mutableState.value.settings.sanitize()) }
+            val normalized = normalizeAccessControlSettings(mutableState.value.settings)
+            runCatching { settingsProvider.save(normalized) }
                 .onSuccess {
                     mutableState.value = mutableState.value.copy(
-                        settings = mutableState.value.settings.sanitize(),
+                        settings = normalized,
+                        persistedSettings = normalized,
                         isSaving = false,
                     )
+                    onSuccess()
                 }
                 .onFailure { error ->
                     mutableState.value = mutableState.value.copy(
@@ -304,6 +318,13 @@ class AccessControlViewModel @Inject constructor(
                     mutableErrors.emit(error.message ?: "保存按应用代理设置失败")
                 }
         }
+    }
+
+    fun discardUnsavedChanges() {
+        mutableState.value = mutableState.value.copy(
+            settings = mutableState.value.persistedSettings,
+            error = null,
+        )
     }
 
     private fun updateSettings(update: AccessControlProps.() -> AccessControlProps) {
@@ -330,10 +351,6 @@ class AccessControlViewModel @Inject constructor(
         mutableErrors.tryEmit(message)
     }
 
-    private fun AccessControlProps.sanitize(): AccessControlProps = copy(
-        acceptList = acceptList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
-        rejectList = rejectList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
-    )
 }
 
 private fun loadInstalledApps(context: Context): List<InstalledAppInfo> {

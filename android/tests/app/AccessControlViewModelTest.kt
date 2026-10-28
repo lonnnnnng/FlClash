@@ -12,6 +12,26 @@ import org.junit.Test
  */
 class AccessControlViewModelTest {
     @Test
+    fun `access state compares settings with persisted baseline but ignores search text`() {
+        val persisted = AccessControlProps(
+            enable = true,
+            mode = AccessControlMode.REJECT_SELECTED,
+            rejectList = listOf("com.example.browser"),
+        )
+
+        val searched = AccessControlUiState(
+            settings = persisted,
+            persistedSettings = persisted,
+            searchQuery = "browser",
+            isLoading = false,
+        )
+        assertEquals(false, searched.hasUnsavedChanges)
+
+        val changed = searched.copy(settings = persisted.copy(enable = false))
+        assertEquals(true, changed.hasUnsavedChanges)
+    }
+
+    @Test
     fun `smart selection separates domestic and other launcher packages`() {
         val apps = listOf(
             InstalledAppInfo("com.tencent.mm", "微信"),

@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.activity.compose.BackHandler
 import android.content.ContentResolver
 import android.provider.OpenableColumns
 import android.text.format.DateUtils
@@ -129,6 +130,7 @@ fun KClashApp(
     onProbeWebDav: (WebDavCredentials) -> Unit = {},
     onUploadWebDav: (WebDavCredentials, BackupRestoreScope) -> Unit = { _, _ -> },
     onDownloadWebDav: (WebDavCredentials, BackupRestoreScope, BackupRestoreStrategy) -> Unit = { _, _, _ -> },
+    onExitApp: () -> Unit = {},
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
@@ -163,6 +165,9 @@ fun KClashApp(
     var showScriptsDialog by rememberSaveable { mutableStateOf(false) }
     var showRemoteScriptDialog by rememberSaveable { mutableStateOf(false) }
     var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
+    var showAccessUnsavedChanges by rememberSaveable { mutableStateOf(false) }
+    var pendingAccessExitDestination by rememberSaveable { mutableStateOf<Int?>(null) }
+    var pendingAccessExitFinishes by rememberSaveable { mutableStateOf(false) }
     // 作者 long：观测页会随顶层导航离开组合，页签状态必须提升到主页面保存，避免用户返回观测时丢失当前页签。
     var selectedObservationTabIndex by rememberSaveable { mutableStateOf(ObservationTab.REQUESTS.ordinal) }
     val selectedDestination = MainDestination.values()[selectedDestinationIndex]
@@ -242,6 +247,47 @@ fun KClashApp(
         }
     }
 
+    fun requestAccessExit(destination: MainDestination? = null) {
+        pendingAccessExitDestination = destination?.ordinal
+        pendingAccessExitFinishes = destination == null
+        showAccessUnsavedChanges = true
+    }
+
+    fun completeAccessExit() {
+        val destination = pendingAccessExitDestination
+        val finishes = pendingAccessExitFinishes
+        pendingAccessExitDestination = null
+        pendingAccessExitFinishes = false
+        showAccessUnsavedChanges = false
+        if (destination != null) selectedDestinationIndex = destination
+        if (finishes) onExitApp()
+    }
+
+    fun cancelAccessExit() {
+        pendingAccessExitDestination = null
+        pendingAccessExitFinishes = false
+        showAccessUnsavedChanges = false
+    }
+
+    AccessControlUnsavedChangesDialog(
+        visible = showAccessUnsavedChanges,
+        isSaving = accessControlState.isSaving,
+        onCancel = ::cancelAccessExit,
+        onDiscard = {
+            accessControlViewModel.discardUnsavedChanges()
+            completeAccessExit()
+        },
+        onSaveAndExit = {
+            accessControlViewModel.save {
+                completeAccessExit()
+            }
+        },
+    )
+
+    BackHandler(enabled = selectedDestination == MainDestination.DASHBOARD && accessControlState.hasUnsavedChanges) {
+        requestAccessExit()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -255,10 +301,18 @@ fun KClashApp(
             MainNavigationBar(
                 selectedDestination = selectedDestination,
                 onDestinationSelected = { destination ->
-                    selectedDestinationIndex = destination.ordinal
-                    if (destination != MainDestination.PROFILES) {
-                        // 作者 long：离开配置页时关闭添加弹窗，避免弹窗覆盖首页并让返回后的页面状态不明确。
-                        showAddDialog = false
+                    if (
+                        destination != selectedDestination &&
+                        selectedDestination == MainDestination.DASHBOARD &&
+                        accessControlState.hasUnsavedChanges
+                    ) {
+                        requestAccessExit(destination)
+                    } else {
+                        selectedDestinationIndex = destination.ordinal
+                        if (destination != MainDestination.PROFILES) {
+                            // 作者 long：离开配置页时关闭添加弹窗，避免弹窗覆盖首页并让返回后的页面状态不明确。
+                            showAddDialog = false
+                        }
                     }
                 },
             )
@@ -325,7 +379,7 @@ fun KClashApp(
                             onSmartSelect = accessControlViewModel::smartSelectApps,
                             onExportToClipboard = accessControlViewModel::exportToClipboard,
                             onImportFromClipboard = accessControlViewModel::importFromClipboard,
-                            onSave = accessControlViewModel::save,
+                            onSave = { accessControlViewModel.save() },
                         )
                     }
                     item {
@@ -539,6 +593,38 @@ fun KClashApp(
         }
     }
 
+}
+
+@Composable
+internal fun AccessControlUnsavedChangesDialog(
+    visible: Boolean,
+    isSaving: Boolean,
+    onCancel: () -> Unit,
+    onDiscard: () -> Unit,
+    onSaveAndExit: () -> Unit,
+) {
+    if (!visible) return
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("按应用代理有未保存的修改") },
+        text = { Text("保存后才会应用新的白名单、黑名单和筛选设置。") },
+        dismissButton = {
+            TextButton(onClick = onCancel) { Text("取消") }
+        },
+        confirmButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(
+                    onClick = onDiscard,
+                    modifier = Modifier.testTag("access_control_discard_changes"),
+                ) { Text("放弃更改") }
+                Button(
+                    onClick = onSaveAndExit,
+                    enabled = !isSaving,
+                    modifier = Modifier.testTag("access_control_save_and_exit"),
+                ) { Text("保存并退出") }
+            }
+        },
+    )
 }
 
 /**
