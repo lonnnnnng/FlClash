@@ -314,6 +314,7 @@ fun KClashApp(
                             onTogglePackage = accessControlViewModel::togglePackage,
                             onSelectVisible = accessControlViewModel::selectVisibleApps,
                             onClearVisible = accessControlViewModel::clearVisibleApps,
+                            onSmartSelect = accessControlViewModel::smartSelectApps,
                             onSave = accessControlViewModel::save,
                         )
                     }
@@ -1517,10 +1518,11 @@ internal fun AccessControlCard(
     onTogglePackage: (String) -> Unit,
     onSelectVisible: () -> Unit,
     onClearVisible: () -> Unit,
+    onSmartSelect: () -> Unit,
     onSave: () -> Unit,
 ) {
     val canEdit = !runtimeState.isRunning && !state.isLoading && !state.isSaving
-    val contentCanEdit = canEdit && state.settings.enable
+    val contentCanEdit = canEdit && state.settings.enable && !state.isSmartSelecting
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1659,6 +1661,20 @@ internal fun AccessControlCard(
                         label = { Text("搜索应用或包名") },
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(
+                            onClick = onSmartSelect,
+                            enabled = contentCanEdit,
+                            modifier = Modifier.testTag("access_control_smart_select"),
+                        ) {
+                            if (state.isSmartSelecting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            } else {
+                                Text("智能选择")
+                            }
+                        }
                         TextButton(onClick = onSelectVisible, enabled = contentCanEdit) { Text("全选当前结果") }
                         TextButton(onClick = onClearVisible, enabled = contentCanEdit) { Text("清除当前结果") }
                     }

@@ -12,6 +12,29 @@ import org.junit.Test
  */
 class AccessControlViewModelTest {
     @Test
+    fun `smart selection separates domestic and other launcher packages`() {
+        val apps = listOf(
+            InstalledAppInfo("com.tencent.mm", "微信"),
+            InstalledAppInfo("com.google.android.gms", "Google Play 服务"),
+            InstalledAppInfo("com.mxtech.videoplayer.ad", "MX Player"),
+            InstalledAppInfo("org.mozilla.firefox", "Firefox"),
+        )
+
+        val chinaPackages = apps.map { it.packageName }
+            .filter(ChinaPackageMatcher::isChinaPackage)
+            .toSet()
+
+        assertEquals(setOf("com.tencent.mm"), chinaPackages)
+        assertEquals(
+            SmartSelectionResult(
+                acceptList = listOf("com.google.android.gms", "com.mxtech.videoplayer.ad", "org.mozilla.firefox"),
+                rejectList = listOf("com.tencent.mm"),
+            ),
+            buildSmartSelection(apps, chinaPackages),
+        )
+    }
+
+    @Test
     fun `visible apps filter system and no network entries before name sorting`() {
         val state = AccessControlUiState(
             settings = AccessControlProps(

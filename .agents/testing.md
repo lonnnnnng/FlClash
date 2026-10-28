@@ -589,3 +589,14 @@
 - Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`）已完成页面验收；本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心。
 - Debug APK SHA-256：`3d03f836f80e752c0cb3c13fb5a6f388be4c84e4bf5eb078c27c05d1d37a7fec`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 当前切片状态：`DONE-VERIFIED`（系统设置引导首片）；Always-on 状态回读、OEM 兼容性和完整系统行为回归仍待后续。
+
+## Access 智能选择首片验收记录（2026-10-28）
+
+- `ChinaPackageMatcher` 沿用 Flutter 的国内包名前缀和排除列表；Kotlin 只对当前 Launcher 应用清单分类，不申请 `QUERY_ALL_PACKAGES`，不扫描不可见安装包。
+- Access 卡片新增“智能选择”；分类在 `Dispatchers.Default` 执行，期间锁定搜索、筛选、选择和保存入口，完成后同时写入国内应用黑名单与其他应用白名单。
+- `AccessControlViewModelTest` 覆盖国内包、排除包和双列表拆分；`AccessControlPanelInstrumentedTest` 覆盖启用/关闭状态下按钮可用性。
+- `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 216 项失败 0、错误 0，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest`：通过，3 项失败 0、错误 0；全量 instrumentation 72 项失败 0、错误 0、跳过 0。
+- Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`）完成页面控件验收；本轮未访问两条真实在线路径、未使用工作区 `1.yaml`、未启动 VPN 或 Mihomo 核心。
+- Debug APK SHA-256：`a872797f40816bab48c78d2f49de7c65d88faa0e8dba96f8864a2244f86c3ea0`；APK 原生库仅包含 `lib/arm64-v8a/`。
+- 当前切片状态：`DONE-VERIFIED`（Access 智能选择首片）；剪贴板导入/导出、完整 Flutter 视觉交互和页面级 E2E 仍待后续。

@@ -21,7 +21,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class InstalledAppInfo(
     val packageName: String,
@@ -37,6 +39,7 @@ data class AccessControlUiState(
     val searchQuery: String = "",
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
+    val isSmartSelecting: Boolean = false,
     val error: String? = null,
 ) {
     val visibleApps: List<InstalledAppInfo>
@@ -98,6 +101,22 @@ fun AccessControlProps.withCurrentPackageList(packages: Collection<String>): Acc
         AccessControlMode.ACCEPT_SELECTED -> copy(acceptList = normalized)
         AccessControlMode.REJECT_SELECTED -> copy(rejectList = normalized)
     }
+}
+
+data class SmartSelectionResult(
+    val acceptList: List<String>,
+    val rejectList: List<String>,
+)
+
+fun buildSmartSelection(
+    apps: List<InstalledAppInfo>,
+    chinaPackages: Set<String>,
+): SmartSelectionResult {
+    val packageNames = apps.map { it.packageName }.toSet()
+    return SmartSelectionResult(
+        acceptList = (packageNames - chinaPackages).sorted(),
+        rejectList = (packageNames intersect chinaPackages).sorted(),
+    )
 }
 
 @HiltViewModel
@@ -180,6 +199,41 @@ class AccessControlViewModel @Inject constructor(
     fun clearVisibleApps() {
         updateSettings {
             withCurrentPackageList(currentPackageList(this).toSet() - mutableState.value.visibleApps.map { it.packageName }.toSet())
+        }
+    }
+
+    fun smartSelectApps() {
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再修改按应用代理")
+            return
+        }
+        if (mutableState.value.isSmartSelecting) return
+        viewModelScope.launch {
+            val apps = mutableState.value.apps
+            mutableState.value = mutableState.value.copy(isSmartSelecting = true, error = null)
+            runCatching {
+                withContext(Dispatchers.Default) {
+                    val chinaPackages = apps.asSequence()
+                        .map { it.packageName }
+                        .filter(ChinaPackageMatcher::isChinaPackage)
+                        .toSet()
+                    buildSmartSelection(apps, chinaPackages)
+                }
+            }.onSuccess { selection ->
+                mutableState.value = mutableState.value.copy(
+                    settings = mutableState.value.settings.copy(
+                        acceptList = selection.acceptList,
+                        rejectList = selection.rejectList,
+                    ),
+                    isSmartSelecting = false,
+                )
+            }.onFailure { error ->
+                mutableState.value = mutableState.value.copy(
+                    isSmartSelecting = false,
+                    error = error.message ?: "智能选择应用失败",
+                )
+                mutableErrors.emit(error.message ?: "智能选择应用失败")
+            }
         }
     }
 

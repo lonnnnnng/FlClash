@@ -66,6 +66,7 @@ class AccessControlPanelInstrumentedTest {
                     },
                     onSelectVisible = {},
                     onClearVisible = {},
+                    onSmartSelect = {},
                     onSave = {},
                 )
             }
@@ -76,6 +77,7 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_app_com.example.video").performClick()
 
         assertEquals(listOf("com.example.video"), state.settings.rejectList)
+        composeRule.onNodeWithTag("access_control_smart_select").assertIsEnabled()
     }
 
     @Test
@@ -103,6 +105,7 @@ class AccessControlPanelInstrumentedTest {
                     onTogglePackage = {},
                     onSelectVisible = {},
                     onClearVisible = {},
+                    onSmartSelect = {},
                     onSave = {},
                 )
             }
@@ -141,6 +144,7 @@ class AccessControlPanelInstrumentedTest {
                     onTogglePackage = {},
                     onSelectVisible = {},
                     onClearVisible = {},
+                    onSmartSelect = {},
                     onSave = {},
                 )
             }
@@ -152,6 +156,7 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_filter_system").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_filter_no_network").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_search").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_smart_select").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_save").assertIsNotEnabled()
 
@@ -165,6 +170,7 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_filter_system").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_filter_no_network").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_search").assertIsEnabled()
+        composeRule.onNodeWithTag("access_control_smart_select").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_save").assertIsEnabled()
     }
