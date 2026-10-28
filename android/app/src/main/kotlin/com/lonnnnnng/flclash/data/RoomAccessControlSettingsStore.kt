@@ -1,7 +1,9 @@
 package com.lonnnnnng.flclash.data
 
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.lonnnnnng.flclash.common.AccessControlMode
+import com.lonnnnnng.flclash.common.AccessSortType
 import com.lonnnnnng.flclash.service.AccessControlSettingsProvider
 import com.lonnnnnng.flclash.service.models.AccessControlProps
 import javax.inject.Inject
@@ -14,7 +16,7 @@ class RoomAccessControlSettingsStore @Inject constructor(
     private val preferences: AppPreferenceDao,
 ) : AccessControlSettingsProvider {
     override suspend fun current(): AccessControlProps = runCatching {
-        preferences.get(KEY)?.let { Gson().fromJson(it, AccessControlProps::class.java) }
+        preferences.get(KEY)?.let(::decode)
     }.getOrNull()?.sanitize() ?: DEFAULT
 
     override suspend fun save(value: AccessControlProps) {
@@ -31,6 +33,17 @@ class RoomAccessControlSettingsStore @Inject constructor(
         acceptList = acceptList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
         rejectList = rejectList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
     )
+
+    private fun decode(raw: String): AccessControlProps {
+        // 作者 long：给旧版四字段 JSON 补上新增筛选字段后再交给 Gson，
+        // 这样缺失字段使用产品默认值，同时保留新版本显式关闭的筛选开关。
+        val json = JsonParser.parseString(raw).asJsonObject
+        if (!json.has("mode")) json.addProperty("mode", "rejectSelected")
+        if (!json.has("sort")) json.addProperty("sort", AccessSortType.NONE.name)
+        if (!json.has("isFilterSystemApp")) json.addProperty("isFilterSystemApp", true)
+        if (!json.has("isFilterNonInternetApp")) json.addProperty("isFilterNonInternetApp", true)
+        return Gson().fromJson(json, AccessControlProps::class.java)
+    }
 
     private companion object {
         const val KEY = "vpn_access_control"

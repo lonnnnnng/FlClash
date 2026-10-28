@@ -1,16 +1,20 @@
 package com.lonnnnnng.flclash.service.models
 
 import com.lonnnnnng.flclash.common.AccessControlMode
+import com.lonnnnnng.flclash.common.AccessSortType
 import com.google.gson.Gson
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
 
 data class AccessControlProps(
-    val enable: Boolean,
-    val mode: AccessControlMode,
-    val acceptList: List<String>,
-    val rejectList: List<String>,
+    val enable: Boolean = false,
+    val mode: AccessControlMode = AccessControlMode.REJECT_SELECTED,
+    val acceptList: List<String> = emptyList(),
+    val rejectList: List<String> = emptyList(),
+    val sort: AccessSortType = AccessSortType.NONE,
+    val isFilterSystemApp: Boolean = true,
+    val isFilterNonInternetApp: Boolean = true,
 )
 
 data class VpnOptions(

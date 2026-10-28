@@ -79,6 +79,7 @@ import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.common.AccessControlMode
+import com.lonnnnnng.flclash.common.AccessSortType
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -297,6 +298,9 @@ fun KClashApp(
                             runtimeState = runtimeState,
                             onEnabledChange = accessControlViewModel::setEnabled,
                             onModeChange = accessControlViewModel::setMode,
+                            onSortChange = accessControlViewModel::setSort,
+                            onFilterSystemAppsChange = accessControlViewModel::setFilterSystemApps,
+                            onFilterNonInternetAppsChange = accessControlViewModel::setFilterNonInternetApps,
                             onSearchChange = accessControlViewModel::setSearchQuery,
                             onTogglePackage = accessControlViewModel::togglePackage,
                             onSelectVisible = accessControlViewModel::selectVisibleApps,
@@ -1462,6 +1466,9 @@ internal fun AccessControlCard(
     runtimeState: CoreRuntimeStatus,
     onEnabledChange: (Boolean) -> Unit,
     onModeChange: (AccessControlMode) -> Unit,
+    onSortChange: (AccessSortType) -> Unit,
+    onFilterSystemAppsChange: (Boolean) -> Unit,
+    onFilterNonInternetAppsChange: (Boolean) -> Unit,
     onSearchChange: (String) -> Unit,
     onTogglePackage: (String) -> Unit,
     onSelectVisible: () -> Unit,
@@ -1543,6 +1550,48 @@ internal fun AccessControlCard(
                         .alpha(if (state.settings.enable) 1f else 0.55f),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    Text("排序方式", style = MaterialTheme.typography.labelLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        TextButton(
+                            onClick = { onSortChange(AccessSortType.NONE) },
+                            enabled = contentCanEdit,
+                            modifier = Modifier.testTag("access_control_sort_none"),
+                        ) { Text("默认") }
+                        TextButton(
+                            onClick = { onSortChange(AccessSortType.NAME) },
+                            enabled = contentCanEdit,
+                            modifier = Modifier.testTag("access_control_sort_name"),
+                        ) { Text("名称") }
+                        TextButton(
+                            onClick = { onSortChange(AccessSortType.TIME) },
+                            enabled = contentCanEdit,
+                            modifier = Modifier.testTag("access_control_sort_time"),
+                        ) { Text("更新时间") }
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Switch(
+                            checked = state.settings.isFilterSystemApp,
+                            onCheckedChange = onFilterSystemAppsChange,
+                            enabled = contentCanEdit,
+                            modifier = Modifier.testTag("access_control_filter_system"),
+                        )
+                        Text("过滤系统应用")
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Switch(
+                            checked = state.settings.isFilterNonInternetApp,
+                            onCheckedChange = onFilterNonInternetAppsChange,
+                            enabled = contentCanEdit,
+                            modifier = Modifier.testTag("access_control_filter_no_network"),
+                        )
+                        Text("过滤无网络应用")
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(
                             onClick = { onModeChange(AccessControlMode.ACCEPT_SELECTED) },

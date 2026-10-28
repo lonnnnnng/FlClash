@@ -2,10 +2,13 @@ package com.lonnnnnng.flclash.ui
 
 import android.content.Context
 import android.content.Intent
+import android.Manifest
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.common.AccessControlMode
+import com.lonnnnnng.flclash.common.AccessSortType
 import com.lonnnnnng.flclash.service.AccessControlSettingsProvider
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.service.models.AccessControlProps
@@ -23,6 +26,9 @@ import kotlinx.coroutines.launch
 data class InstalledAppInfo(
     val packageName: String,
     val label: String,
+    val isSystem: Boolean = false,
+    val hasInternetPermission: Boolean = true,
+    val lastUpdateTime: Long = 0L,
 )
 
 data class AccessControlUiState(
@@ -36,15 +42,22 @@ data class AccessControlUiState(
     val visibleApps: List<InstalledAppInfo>
         get() {
             val query = searchQuery.trim()
-            if (query.isEmpty()) return apps
-            return apps.filter { app ->
-                app.label.contains(query, ignoreCase = true) ||
-                    app.packageName.contains(query, ignoreCase = true)
+            val selected = currentPackageList(settings).toSet()
+            val filtered = apps.filter { app ->
+                (!settings.isFilterSystemApp || !app.isSystem) &&
+                    (!settings.isFilterNonInternetApp || app.hasInternetPermission) &&
+                    (query.isEmpty() ||
+                        app.label.contains(query, ignoreCase = true) ||
+                        app.packageName.contains(query, ignoreCase = true))
             }
+            return sortVisibleApps(filtered, selected, settings.sort)
         }
 
     val selectedCount: Int
-        get() = currentPackageList(settings).size
+        get() {
+            val selected = currentPackageList(settings).toSet()
+            return visibleApps.count { it.packageName in selected }
+        }
 }
 
 object AccessControlDefaults {
@@ -54,6 +67,24 @@ object AccessControlDefaults {
         acceptList = emptyList(),
         rejectList = emptyList(),
     )
+}
+
+fun sortVisibleApps(
+    apps: List<InstalledAppInfo>,
+    selectedPackages: Set<String>,
+    sort: AccessSortType,
+): List<InstalledAppInfo> {
+    val comparator = compareByDescending<InstalledAppInfo> { it.packageName in selectedPackages }
+        .let { base ->
+            when (sort) {
+                AccessSortType.NONE -> base
+                AccessSortType.NAME -> base.thenBy { it.label.lowercase() }.thenBy { it.packageName }
+                AccessSortType.TIME -> base.thenByDescending { it.lastUpdateTime }
+                    .thenBy { it.label.lowercase() }
+                    .thenBy { it.packageName }
+            }
+        }
+    return apps.sortedWith(comparator)
 }
 
 fun currentPackageList(settings: AccessControlProps): List<String> = when (settings.mode) {
@@ -118,6 +149,18 @@ class AccessControlViewModel @Inject constructor(
 
     fun setMode(mode: AccessControlMode) {
         updateSettings { copy(mode = mode) }
+    }
+
+    fun setSort(sort: AccessSortType) {
+        updateSettings { copy(sort = sort) }
+    }
+
+    fun setFilterSystemApps(enabled: Boolean) {
+        updateSettings { copy(isFilterSystemApp = enabled) }
+    }
+
+    fun setFilterNonInternetApps(enabled: Boolean) {
+        updateSettings { copy(isFilterNonInternetApp = enabled) }
     }
 
     fun togglePackage(packageName: String) {
@@ -191,6 +234,16 @@ private fun loadInstalledApps(context: Context): List<InstalledAppInfo> {
                 label = resolveInfo.loadLabel(context.packageManager).toString()
                     .trim()
                     .ifEmpty { packageName },
+                isSystem = resolveInfo.activityInfo.applicationInfo?.let {
+                    it.flags and ApplicationInfo.FLAG_SYSTEM != 0
+                } == true,
+                hasInternetPermission = context.packageManager.checkPermission(
+                    Manifest.permission.INTERNET,
+                    packageName,
+                ) == PackageManager.PERMISSION_GRANTED,
+                lastUpdateTime = runCatching {
+                    context.packageManager.getPackageInfo(packageName, 0).lastUpdateTime
+                }.getOrDefault(0L),
             )
         }
         .distinctBy { it.packageName }

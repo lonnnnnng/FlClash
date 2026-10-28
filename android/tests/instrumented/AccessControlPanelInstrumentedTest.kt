@@ -55,6 +55,9 @@ class AccessControlPanelInstrumentedTest {
                     runtimeState = CoreRuntimeStatus.STOPPED,
                     onEnabledChange = { state = state.copy(settings = state.settings.copy(enable = it)) },
                     onModeChange = { state = state.copy(settings = state.settings.copy(mode = it)) },
+                    onSortChange = { state = state.copy(settings = state.settings.copy(sort = it)) },
+                    onFilterSystemAppsChange = { state = state.copy(settings = state.settings.copy(isFilterSystemApp = it)) },
+                    onFilterNonInternetAppsChange = { state = state.copy(settings = state.settings.copy(isFilterNonInternetApp = it)) },
                     onSearchChange = { state = state.copy(searchQuery = it) },
                     onTogglePackage = { packageName ->
                         val selected = currentPackageList(state.settings).toMutableSet()
@@ -93,6 +96,9 @@ class AccessControlPanelInstrumentedTest {
                     runtimeState = CoreRuntimeStatus.RUNNING,
                     onEnabledChange = {},
                     onModeChange = {},
+                    onSortChange = {},
+                    onFilterSystemAppsChange = {},
+                    onFilterNonInternetAppsChange = {},
                     onSearchChange = {},
                     onTogglePackage = {},
                     onSelectVisible = {},
@@ -128,6 +134,9 @@ class AccessControlPanelInstrumentedTest {
                     runtimeState = CoreRuntimeStatus.STOPPED,
                     onEnabledChange = { state = state.copy(settings = state.settings.copy(enable = it)) },
                     onModeChange = { state = state.copy(settings = state.settings.copy(mode = it)) },
+                    onSortChange = { state = state.copy(settings = state.settings.copy(sort = it)) },
+                    onFilterSystemAppsChange = { state = state.copy(settings = state.settings.copy(isFilterSystemApp = it)) },
+                    onFilterNonInternetAppsChange = { state = state.copy(settings = state.settings.copy(isFilterNonInternetApp = it)) },
                     onSearchChange = { state = state.copy(searchQuery = it) },
                     onTogglePackage = {},
                     onSelectVisible = {},
@@ -139,6 +148,9 @@ class AccessControlPanelInstrumentedTest {
 
         composeRule.onNodeWithText("应用访问控制已关闭").assertIsDisplayed()
         composeRule.onNodeWithTag("access_control_mode_allow").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_sort_name").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_filter_system").assertIsNotEnabled()
+        composeRule.onNodeWithTag("access_control_filter_no_network").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_search").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsNotEnabled()
         composeRule.onNodeWithTag("access_control_save").assertIsNotEnabled()
@@ -149,6 +161,9 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_turn_on").assertDoesNotExist()
         composeRule.onNodeWithText("选中应用将会被排除在 VPN 之外").assertIsDisplayed()
         composeRule.onNodeWithTag("access_control_mode_allow").assertIsEnabled()
+        composeRule.onNodeWithTag("access_control_sort_name").assertIsEnabled()
+        composeRule.onNodeWithTag("access_control_filter_system").assertIsEnabled()
+        composeRule.onNodeWithTag("access_control_filter_no_network").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_search").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_app_com.example.mail").assertIsEnabled()
         composeRule.onNodeWithTag("access_control_save").assertIsEnabled()

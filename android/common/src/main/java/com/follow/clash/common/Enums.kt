@@ -20,3 +20,9 @@ enum class AccessControlMode {
     @SerializedName("rejectSelected")
     REJECT_SELECTED,
 }
+
+enum class AccessSortType {
+    NONE,
+    NAME,
+    TIME,
+}

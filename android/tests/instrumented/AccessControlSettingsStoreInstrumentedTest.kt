@@ -4,6 +4,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.common.AccessControlMode
+import com.lonnnnnng.flclash.common.AccessSortType
 import com.lonnnnnng.flclash.service.models.AccessControlProps
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -51,5 +52,22 @@ class AccessControlSettingsStoreInstrumentedTest {
         assertEquals(AccessControlMode.ACCEPT_SELECTED, restored.mode)
         assertEquals(listOf("com.a", "com.z"), restored.acceptList)
         assertEquals(listOf("com.unused"), restored.rejectList)
+    }
+
+    @Test
+    fun oldFourFieldJsonReceivesNewFilterDefaults() = runBlocking {
+        database.appPreferences().put(
+            AppPreferenceEntity(
+                key = "vpn_access_control",
+                value = """{"enable":true,"mode":"rejectSelected","acceptList":[],"rejectList":["com.example.app"]}""",
+                updatedAt = 1L,
+            ),
+        )
+
+        val restored = RoomAccessControlSettingsStore(database.appPreferences()).current()
+
+        assertEquals(AccessSortType.NONE, restored.sort)
+        assertEquals(true, restored.isFilterSystemApp)
+        assertEquals(true, restored.isFilterNonInternetApp)
     }
 }

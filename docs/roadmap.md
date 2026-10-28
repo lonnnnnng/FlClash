@@ -56,11 +56,11 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 214 项通过，失败 0，错误 0，跳过 0 |
-| Instrumentation | 71 项通过，失败 0，错误 0，跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36） |
+| 单元测试 | 216 项通过，失败 0，错误 0，跳过 0 |
+| Instrumentation | 72 项通过，失败 0，错误 0，跳过 0；设备为 Redmi Note 8 Pro（Android 16/API 36） |
 | Debug 构建 | `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
-| Debug 原生库 | APK SHA-256 为 `92746ee9659b042a93d21d6d08769495c29b4e8432a977d5242be50060ab92ba`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
+| Debug 原生库 | APK SHA-256 为 `b97a47829c3e13ba6d956d14d6595e963eb379d0bd9457e3636c705b854c6caa`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
 | Release 构建 | `./gradlew :app:assembleRelease :app:lintRelease --no-daemon` 已通过；当前输出为未签名预发布 APK，尚未创建独立 release keystore |
 | 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、进程重建后的选择 UI 恢复、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、代理选择 Activity 页面宿主选择与自动恢复、主 Activity 顶层导航与观测页签跨页面/重建状态保持、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
 
@@ -436,7 +436,7 @@ flowchart LR
 待完成：
 
 - Tasker/MacroDroid 实际应用回归（当前已完成 ADB/Intent 契约验证）。
-- 完整 Flutter Access 页面 parity（选择器、持久化、服务参数、真实核心流量回归和关闭状态遮罩/一键开启首片已完成；排序、系统/无网络过滤、智能选择、剪贴板和完整页面视觉交互仍待补齐）。
+- 完整 Flutter Access 页面 parity（选择器、持久化、服务参数、真实核心流量回归、关闭状态遮罩/一键开启、排序和系统/无网络过滤已完成首片；智能选择、剪贴板和完整页面视觉交互仍待补齐）。
 - Always-on VPN 的完整配置和系统设置兼容。
 - Android 组件导出、Intent 和权限的完整自动化审计。
 
@@ -1060,7 +1060,7 @@ flowchart LR
 收尾范围：
 
 1. Tasker/MacroDroid 实际应用回归。
-2. 完整 Flutter Access 页面 parity（选择器、持久化、服务参数、真实核心流量回归和关闭状态遮罩/一键开启首片已完成；排序、系统/无网络过滤、智能选择、剪贴板和完整页面视觉交互仍待补齐）。
+2. 完整 Flutter Access 页面 parity（选择器、持久化、服务参数、真实核心流量回归、关闭状态遮罩/一键开启、排序和系统/无网络过滤已完成首片；智能选择、剪贴板和完整页面视觉交互仍待补齐）。
 3. Always-on VPN 的完整配置和系统设置兼容。
 4. Android 组件导出、Intent 和权限的完整自动化审计（已完成；仍需保留 Tasker/MacroDroid 真实第三方应用回归作为独立收尾项）。
 
@@ -1226,7 +1226,19 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - `AccessControlPanelInstrumentedTest` 新增关闭→一键开启回归，断言关闭状态控件禁用、开启按钮可用以及开启后编辑入口恢复；定向测试 4 项通过。
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过；Redmi Note 8 Pro（Android 16/API 36）全量 instrumentation 71 项，失败 0、错误 0、跳过 0。
 - `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 测试失败 0、错误 0，Lint 错误 0；本轮未访问真实订阅路径、未启动 VPN 或 Mihomo 核心。
-- 当前切片状态：`DONE-VERIFIED`（Access 关闭状态交互首片）；完整 Flutter Access 页面 parity 仍需排序、系统/无网络应用过滤、智能选择、剪贴板导入导出、完整视觉收敛和页面级 E2E。
+- 当前切片状态：`DONE-VERIFIED`（Access 关闭状态交互首片）；完整 Flutter Access 页面 parity 仍需智能选择、剪贴板导入导出、完整视觉收敛和页面级 E2E。
+
+
+### 2026-10-28：Access 应用排序与来源过滤 parity 首片
+
+- `AccessControlProps` 新增 `sort`、`isFilterSystemApp` 和 `isFilterNonInternetApp`，通过 Room JSON 持久化；旧版四字段 JSON 在读取时补齐默认排序和过滤值，不影响已有包名选择。
+- `InstalledAppInfo` 增加系统应用标记、`INTERNET` 权限标记和 `lastUpdateTime`；应用清单仍限定为 Launcher 可见应用，不申请 `QUERY_ALL_PACKAGES`。
+- Access 列表按 Flutter 语义先应用来源过滤，再按“已选置顶 + 默认/名称/更新时间”排序；新增排序按钮和系统/无网络过滤开关，关闭按应用代理或核心运行时继续锁定这些控件。
+- 新增 `AccessControlViewModelTest` 2 项列表过滤/排序单元测试；`AccessControlPanelInstrumentedTest` 覆盖新增控件的关闭状态禁用；`AccessControlSettingsStoreInstrumentedTest` 覆盖旧 JSON 默认值兼容。
+- `./gradlew :common:testDebugUnitTest :service:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 测试 216 项失败 0、错误 0，Lint 错误 0。
+- `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过；Redmi Note 8 Pro（Android 16/API 36）72 项 instrumentation 失败 0、错误 0、跳过 0。
+- Debug APK SHA-256 为 `b97a47829c3e13ba6d956d14d6595e963eb379d0bd9457e3636c705b854c6caa`，原生库仅包含 `lib/arm64-v8a/`；本轮未访问真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心。
+- 当前切片状态：`DONE-VERIFIED`（Access 排序和来源过滤首片）；仍待智能选择、剪贴板导入导出、完整 Flutter 视觉交互和页面级 E2E。
 
 ## 12. 路线图维护规则
 
