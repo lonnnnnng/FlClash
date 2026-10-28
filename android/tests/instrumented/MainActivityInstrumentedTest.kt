@@ -218,6 +218,62 @@ class MainActivityInstrumentedTest {
     }
 
     @Test
+    fun mainActivityPersistsCustomProfileProxiesThroughRealViewModels() {
+        val label = "Activity E2E 代理"
+        val proxy = "- name: DIRECT-TEST\n  type: direct"
+
+        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
+        composeRule.onNodeWithText("添加配置").performClick()
+        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
+        composeRule.onNodeWithText("创建自定义配置").performClick()
+        composeRule.onNodeWithText("保存").performClick()
+
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
+        }
+        // 作者 long：先写入最小基础 YAML，确保代理分区回写时要保留同一份 Profile 的其他内容。
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
+        composeRule.onNodeWithText("保存").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+        }
+
+        // 作者 long：配置卡片按钮与底部导航同名，必须点击卡片内的第一个节点，避免误切到代理页。
+        composeRule.onAllNodesWithText("代理")[0].performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("代理 YAML").performTextInput(proxy)
+        composeRule.onNodeWithText("保存").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isEmpty()
+        }
+
+        composeRule.onAllNodesWithText("代理")[0].performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText(proxy).assertIsDisplayed()
+        composeRule.onNodeWithText("取消").performClick()
+
+        composeRule.onNodeWithText("删除").performClick()
+        composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
+        val deleteButtons = composeRule.onAllNodesWithText("删除")
+        deleteButtons[deleteButtons.fetchSemanticsNodes().lastIndex].performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isEmpty()
+        }
+
+        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+    }
+
+    @Test
     fun mainActivityCompletesAccessClipboardLifecycleThroughRealViewModels() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val candidatePackage = findSelectableLauncherPackage(context)
