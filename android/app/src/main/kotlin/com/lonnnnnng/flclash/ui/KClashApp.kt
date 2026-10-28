@@ -1384,7 +1384,11 @@ internal fun ProxyGroupsCard(
         !state.isLoading &&
         state.switchingGroup == null &&
         state.batchTestingGroup == null
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("proxy_groups_card"),
+    ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -1471,7 +1475,10 @@ internal fun ProxyGroupsCard(
             onDismissRequest = { if (state.switchingGroup == null) groupPendingSelection = null },
             title = { Text("${if (group.isComputed) "选择" else "切换"} ${group.name}") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(
+                    modifier = Modifier.testTag("proxy_group_dialog_content_${group.name}"),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
                     if (group.isComputed) {
                         Text(
                             "点击当前节点可恢复自动选择",

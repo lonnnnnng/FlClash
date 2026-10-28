@@ -1,0 +1,4 @@
+# KClash ProxyGroupsCard and selector content PNG baselines.
+# Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0, dark mode.
+state=default_card sha256=d2dd27e3d2b89b7f2aa41a3e05f27b1a837dd5c042c7e934017c7d35fab7f4ff
+state=dialog_initial sha256=bb9ce7f5ed33e3145023546eb8bc12c3b329cee56d520c5dcfe47e70688dcf0b
