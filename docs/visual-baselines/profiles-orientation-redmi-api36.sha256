@@ -1,0 +1,4 @@
+# KClash ProfilesPanel selected-state orientation PNG baselines.
+# Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0, dark mode.
+state=custom_selected orientation=portrait sha256=793a665b414afa6898783a8298ea631da41a79350a34a707880a8ed3355ba55c
+state=custom_selected orientation=landscape sha256=df2c3e85c4568f0bbca23a968ed5b4f26986209f63d4bf1bc41213bc31a424f6
