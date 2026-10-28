@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +14,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreConnectionMetadata
@@ -20,6 +23,7 @@ import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -174,6 +178,79 @@ class ObservationDetailsInstrumentedTest {
         if (mismatches.isNotEmpty()) {
             error("observation screenshot baseline mismatch: ${mismatches.joinToString("; ")}")
         }
+    }
+
+    @Test
+    fun observationRunningStatesFontScaleMatrixMatchesBaseline() {
+        val request = connection("request-font-scale", "api.example.test")
+        val dnsQuery = dnsQuery("api.example.test", "1.1.1.1")
+        // 作者 long：固定历史时间让大字号基线只反映布局和文字缩放，不随当前时间变化。
+        val log = CoreEvent.Log("warning", "上游响应较慢", 0L)
+        var selectedTabIndex by mutableIntStateOf(0)
+        var fontScaleValue by mutableStateOf(1.3f)
+
+        composeRule.setContent {
+            val baseDensity = LocalDensity.current
+            CompositionLocalProvider(
+                // 作者 long：只改变字体缩放，不改变设备密度，确保页签间的差异可复现。
+                LocalDensity provides Density(baseDensity.density, fontScale = fontScaleValue),
+            ) {
+                KClashTheme {
+                    ObservationPage(
+                        requests = RequestsUiState(listOf(request)),
+                        dns = DnsUiState(listOf(dnsQuery)),
+                        logs = LogsUiState(listOf(log)),
+                        runtimeState = CoreRuntimeStatus.RUNNING,
+                        selectedTabIndex = selectedTabIndex,
+                        onSelectedTabChange = { selectedTabIndex = it },
+                        onShowRequests = {},
+                        onShowDns = {},
+                        onClearDns = {},
+                        onShowLogs = {},
+                        onClearLogs = {},
+                        onExportLogs = {},
+                    )
+                }
+            }
+        }
+
+        fun captureHash(): String {
+            composeRule.waitForIdle()
+            val bitmap = composeRule
+                .onNodeWithTag("observation_page")
+                .captureToImage()
+                .asAndroidBitmap()
+            val png = ByteArrayOutputStream().also { output ->
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+            }.toByteArray()
+            return MessageDigest.getInstance("SHA-256").digest(png)
+                .joinToString("") { byte -> "%02x".format(byte) }
+        }
+
+        val actual = buildMap {
+            put("fontScale=1.3 requests", captureHash())
+            selectedTabIndex = 1
+            put("fontScale=1.3 dns", captureHash())
+            selectedTabIndex = 2
+            put("fontScale=1.3 logs", captureHash())
+            fontScaleValue = 2.0f
+            selectedTabIndex = 0
+            put("fontScale=2.0 requests", captureHash())
+            selectedTabIndex = 1
+            put("fontScale=2.0 dns", captureHash())
+            selectedTabIndex = 2
+            put("fontScale=2.0 logs", captureHash())
+        }
+
+        assertEquals(
+            "fontScale=1.3 requests sha256=ded6474b0ca13e5af4d2b81f59434dd5f1425382ebbafd4dfaf2fe8de82ab373\n" +
+                "fontScale=1.3 dns sha256=cabbe76d6f3400a7b48f11c4d2503b60e87599ffb777a1c6870c9eabf8ae81e0\n" +
+                "fontScale=1.3 logs sha256=a1c76e593d770e2e98d1ed313fb3e37c0c48c11fe5a8877037d0d82348feba39\n" +
+                "fontScale=2.0 requests sha256=d2c796b148a00180ccb35f19b752387e8c2b28096d4de2961ae8204f9eed576b\n" +
+                "fontScale=2.0 dns sha256=6da0e5f4c9cb5add1227b90f3373f5dde5b57b7417a8f1743589fce58855e25f\n" +
+                "fontScale=2.0 logs sha256=503bf138c393346bccf59833a1a2905a59f1605f651c83426d0133b9d025d692",
+            actual.entries.joinToString("\n") { (state, hash) -> "$state sha256=$hash" },
+        )
     }
 
     private fun connection(id: String, host: String) = CoreConnection(
