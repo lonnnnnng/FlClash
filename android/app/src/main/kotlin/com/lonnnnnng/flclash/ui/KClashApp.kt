@@ -1666,19 +1666,35 @@ internal fun AccessControlCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 itemVerticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    "按应用代理",
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                if (searchExpanded) {
+                    OutlinedTextField(
+                        value = state.searchQuery,
+                        onValueChange = onSearchChange,
+                        enabled = canEdit,
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("access_control_search"),
+                        singleLine = true,
+                        label = { Text("搜索应用或包名") },
+                    )
+                } else {
+                    Text(
+                        "按应用代理",
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(
-                        onClick = { searchExpanded = !searchExpanded },
+                        onClick = {
+                            if (searchExpanded) onSearchChange("")
+                            searchExpanded = !searchExpanded
+                        },
                         enabled = canEdit,
                         modifier = Modifier
                             .testTag("access_control_search_toggle")
@@ -2055,18 +2071,6 @@ internal fun AccessControlCard(
                             enabled = contentCanEdit,
                             modifier = Modifier.testTag("access_control_mode_deny"),
                         ) { Text("黑名单") }
-                    }
-                    AnimatedVisibility(visible = searchExpanded) {
-                        OutlinedTextField(
-                            value = state.searchQuery,
-                            onValueChange = onSearchChange,
-                            enabled = canEdit,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("access_control_search"),
-                            singleLine = true,
-                            label = { Text("搜索应用或包名") },
-                        )
                     }
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),

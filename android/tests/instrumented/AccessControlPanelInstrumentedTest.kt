@@ -81,6 +81,7 @@ class AccessControlPanelInstrumentedTest {
 
         composeRule.onNodeWithTag("access_control_search_toggle").performClick()
         composeRule.onNodeWithContentDescription("关闭搜索").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_search").assertIsDisplayed()
         composeRule.onNodeWithTag("access_control_search").performTextInput("视频")
         composeRule.waitForIdle()
         composeRule.onNodeWithText("示例视频").assertIsDisplayed()
@@ -88,6 +89,9 @@ class AccessControlPanelInstrumentedTest {
 
         assertEquals(listOf("com.example.video"), state.settings.rejectList)
         composeRule.onNodeWithTag("access_control_smart_select").assertIsEnabled()
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        composeRule.onNodeWithTag("access_control_search").assertDoesNotExist()
+        assertEquals("", state.searchQuery)
     }
 
     @Test
@@ -539,6 +543,56 @@ class AccessControlPanelInstrumentedTest {
         composeRule.onNodeWithTag("access_control_search_toggle").assertExists().performClick()
         composeRule.onNodeWithTag("access_control_search").assertExists()
         composeRule.onNodeWithTag("access_control_actions").assertExists()
+        composeRule.onNodeWithTag("access_control_select_visible").assertExists()
+        composeRule.onNodeWithTag("access_control_clear_visible").assertExists()
+        composeRule.onNodeWithTag("access_control_save").assertExists()
+        composeRule.onNodeWithTag("access_control_app_com.example.mail").assertExists()
+    }
+
+    @Test
+    fun extraLargeFontScaleKeepsAccessControlActionsReachable() {
+        val apps = listOf(InstalledAppInfo("com.example.mail", "一个较长的示例邮件应用名称"))
+        composeRule.setContent {
+            val baseDensity = LocalDensity.current
+            CompositionLocalProvider(
+                // 作者 long：2.0 倍字体覆盖系统“超大”档位，避免只验证常规大字号而遗漏按钮换行后的可达性。
+                LocalDensity provides Density(baseDensity.density, fontScale = 2.0f),
+            ) {
+                KClashTheme {
+                    AccessControlCard(
+                        state = AccessControlUiState(
+                            settings = AccessControlProps(
+                                enable = true,
+                                mode = AccessControlMode.REJECT_SELECTED,
+                                rejectList = emptyList(),
+                            ),
+                            apps = apps,
+                            isLoading = false,
+                        ),
+                        runtimeState = CoreRuntimeStatus.STOPPED,
+                        onEnabledChange = {},
+                        onModeChange = {},
+                        onSortChange = {},
+                        onFilterSystemAppsChange = {},
+                        onFilterNonInternetAppsChange = {},
+                        onSearchChange = {},
+                        onTogglePackage = {},
+                        onSelectVisible = {},
+                        onClearVisible = {},
+                        onToggleVisible = {},
+                        onSmartSelect = {},
+                        onExportToClipboard = {},
+                        onImportFromClipboard = {},
+                        onSave = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag("access_control_card").assertExists()
+        composeRule.onNodeWithTag("access_control_search_toggle").assertExists().performClick()
+        composeRule.onNodeWithTag("access_control_search").assertExists()
+        composeRule.onNodeWithTag("access_control_topbar_actions").assertExists()
         composeRule.onNodeWithTag("access_control_select_visible").assertExists()
         composeRule.onNodeWithTag("access_control_clear_visible").assertExists()
         composeRule.onNodeWithTag("access_control_save").assertExists()
