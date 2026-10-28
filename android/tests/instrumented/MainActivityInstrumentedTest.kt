@@ -16,10 +16,10 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -241,6 +241,106 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("access_control_search").assertDoesNotExist()
         composeRule.onNodeWithTag("access_control_no_results").assertDoesNotExist()
         composeRule.onNodeWithTag("access_control_app_list").assertIsDisplayed()
+    }
+
+    @Test
+    fun mainActivityTogglesOnlyVisibleAccessResultsAndDiscardsChanges() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val candidatePackage = findSelectableLauncherPackage(context)
+        check(candidatePackage != null) { "设备没有可用于按应用代理 E2E 的非系统网络应用" }
+
+        val dashboard = composeRule.onNodeWithTag("page_dashboard")
+        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        composeRule.waitUntil(15_000) {
+            composeRule.onAllNodesWithTag("access_control_app_list")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        val enabledSwitch = composeRule.onNodeWithTag("access_control_enabled")
+        val initialEnabled = enabledSwitch.fetchSemanticsNode().config[SemanticsProperties.ToggleableState]
+        val wasEnabled = initialEnabled == ToggleableState.On
+        if (!wasEnabled) {
+            enabledSwitch.performClick()
+            composeRule.waitForIdle()
+        }
+
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        composeRule.onNodeWithTag("access_control_search").performTextInput(candidatePackage)
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_app_$candidatePackage")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        val appNode = composeRule.onNodeWithTag("access_control_app_$candidatePackage")
+        val initialPackageState = appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState]
+
+        // 作者 long：先把当前搜索结果归一化为未选中，才能同时验证顶栏 toggle 的选中和取消两条分支。
+        if (initialPackageState == ToggleableState.On) {
+            composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
+            composeRule.waitForIdle()
+        }
+        composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
+        composeRule.onNodeWithContentDescription("取消全选当前结果").assertIsDisplayed()
+        assertEquals(
+            ToggleableState.On,
+            appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
+        )
+
+        composeRule.onNodeWithTag("access_control_clear_visible").performClick()
+        composeRule.onNodeWithContentDescription("全选当前结果").assertIsDisplayed()
+        assertEquals(
+            ToggleableState.Off,
+            appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
+        )
+
+        composeRule.onNodeWithTag("access_control_select_visible").performClick()
+        assertEquals(
+            ToggleableState.On,
+            appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
+        )
+        composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
+        composeRule.onNodeWithContentDescription("全选当前结果").assertIsDisplayed()
+        assertEquals(
+            ToggleableState.Off,
+            appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
+        )
+
+        // 作者 long：关闭搜索后离开首页，走真实未保存对话框并放弃修改，确保批量操作不会写入 Room。
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_discard_changes").performClick()
+        composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
+        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+        composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("access_control_card"))
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_search_toggle")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        assertEquals(
+            initialEnabled,
+            composeRule.onNodeWithTag("access_control_enabled")
+                .fetchSemanticsNode()
+                .config[SemanticsProperties.ToggleableState],
+        )
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        composeRule.onNodeWithTag("access_control_search").performTextInput(candidatePackage)
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("access_control_app_$candidatePackage")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        assertEquals(
+            initialPackageState,
+            composeRule.onNodeWithTag("access_control_app_$candidatePackage")
+                .fetchSemanticsNode()
+                .config[SemanticsProperties.ToggleableState],
+        )
+        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
     }
 
     @Test
