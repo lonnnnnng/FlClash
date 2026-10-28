@@ -1,0 +1,4 @@
+# KClash AccessControlCard interaction-state PNG baselines.
+# Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0.
+state=closed sha256=697332c4f518d575e67b342a1535b1a74be9ff6fffdbb0b99a072fce859ae90c
+state=dirty sha256=303caf72a6bfb85694a64981e0246f324a14f0637fb063b424a4f29f6aa88193

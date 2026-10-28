@@ -652,6 +652,85 @@ class AccessControlPanelInstrumentedTest {
     }
 
     @Test
+    fun accessControlCardStateScreenshotMatrixMatchesBaseline() {
+        var screenshotState by mutableStateOf("closed")
+        composeRule.setContent {
+            val settings = when (screenshotState) {
+                "closed" -> AccessControlProps(
+                    enable = false,
+                    mode = AccessControlMode.REJECT_SELECTED,
+                    rejectList = emptyList(),
+                )
+                "dirty" -> AccessControlProps(
+                    enable = true,
+                    mode = AccessControlMode.REJECT_SELECTED,
+                    rejectList = listOf("com.example.mail"),
+                )
+                else -> error("unknown screenshot state: $screenshotState")
+            }
+            val persisted = when (screenshotState) {
+                "closed" -> settings
+                "dirty" -> settings.copy(rejectList = emptyList())
+                else -> settings
+            }
+            KClashTheme {
+                AccessControlCard(
+                    state = AccessControlUiState(
+                        settings = settings,
+                        persistedSettings = persisted,
+                        apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
+                        isLoading = false,
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    onEnabledChange = {},
+                    onModeChange = {},
+                    onSortChange = {},
+                    onFilterSystemAppsChange = {},
+                    onFilterNonInternetAppsChange = {},
+                    onSearchChange = {},
+                    onTogglePackage = {},
+                    onSelectVisible = {},
+                    onClearVisible = {},
+                    onToggleVisible = {},
+                    onSmartSelect = {},
+                    onExportToClipboard = {},
+                    onImportFromClipboard = {},
+                    onSave = {},
+                )
+            }
+        }
+
+        fun captureHash(): String {
+            composeRule.waitForIdle()
+            val bitmap = composeRule
+                .onNodeWithTag("access_control_card")
+                .captureToImage()
+                .asAndroidBitmap()
+            val png = ByteArrayOutputStream().also { output ->
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+            }.toByteArray()
+            return MessageDigest.getInstance("SHA-256").digest(png)
+                .joinToString("") { byte -> "%02x".format(byte) }
+        }
+
+        val expected = mapOf(
+            "closed" to "697332c4f518d575e67b342a1535b1a74be9ff6fffdbb0b99a072fce859ae90c",
+            "dirty" to "303caf72a6bfb85694a64981e0246f324a14f0637fb063b424a4f29f6aa88193",
+        )
+        val actual = expected.keys.associateWith { state ->
+            screenshotState = state
+            captureHash()
+        }
+        val mismatches = expected.mapNotNull { (state, expectedHash) ->
+            val actualHash = actual.getValue(state)
+            if (actualHash == expectedHash) null else "$state expected=$expectedHash actual=$actualHash"
+        }
+        if (mismatches.isNotEmpty()) {
+            error("state screenshot baseline mismatch: ${mismatches.joinToString("; ")}")
+        }
+    }
+
+    @Test
     fun accessControlCardFontScaleScreenshotMatrixMatchesBaseline() {
         var fontScale by mutableStateOf(1.3f)
         composeRule.setContent {
