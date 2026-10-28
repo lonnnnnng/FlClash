@@ -808,7 +808,10 @@ internal fun ProfilesPanel(
     var showWebDavRestoreDialog by remember { mutableStateOf(false) }
     var pendingWebDavCredentials by remember { mutableStateOf<WebDavCredentials?>(null) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(
+        modifier = Modifier.testTag("profiles_page"),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -3387,7 +3390,12 @@ internal fun ProfileCard(
     onOpenDialersEditor: () -> Unit = {},
     onOpenScriptBinding: () -> Unit = {},
 ) {
-    Card(modifier = Modifier.fillMaxWidth(), onClick = onSelect) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("profile_card_${profile.id}"),
+        onClick = onSelect,
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(selected = selected, onClick = onSelect)
