@@ -30,6 +30,11 @@ internal val ConnectionDetailSaver = Saver<CoreConnection?, Bundle>(
                     putLong("uid", uid)
                     putString("specialProxy", specialProxy)
                     putString("specialRules", specialRules)
+                    putStringArrayList("sourceGeoIp", ArrayList(sourceGeoIp))
+                    putStringArrayList("destinationGeoIp", ArrayList(destinationGeoIp))
+                    putString("sourceIpAsn", sourceIpAsn)
+                    putString("destinationIpAsn", destinationIpAsn)
+                    putString("dnsMode", dnsMode)
                 }
             }
         }
@@ -56,6 +61,11 @@ internal val ConnectionDetailSaver = Saver<CoreConnection?, Bundle>(
                 uid = saved.getLong("uid"),
                 specialProxy = saved.getString("specialProxy").orEmpty(),
                 specialRules = saved.getString("specialRules").orEmpty(),
+                sourceGeoIp = saved.getStringArrayList("sourceGeoIp").orEmpty(),
+                destinationGeoIp = saved.getStringArrayList("destinationGeoIp").orEmpty(),
+                sourceIpAsn = saved.getString("sourceIpAsn").orEmpty(),
+                destinationIpAsn = saved.getString("destinationIpAsn").orEmpty(),
+                dnsMode = saved.getString("dnsMode").orEmpty(),
             ),
         )
     },

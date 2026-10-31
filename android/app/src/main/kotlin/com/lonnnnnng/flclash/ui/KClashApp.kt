@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.activity.compose.BackHandler
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.ContentResolver
 import android.provider.OpenableColumns
 import android.text.format.DateUtils
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,6 +31,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,6 +42,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
@@ -47,11 +52,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,8 +71,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
@@ -511,6 +520,10 @@ fun KClashApp(
                     ConnectionsCard(
                         state = runtimeConnections,
                         runtimeState = runtimeState,
+                        onCopyText = { value ->
+                            checkNotNull(context.getSystemService(ClipboardManager::class.java))
+                                .setPrimaryClip(ClipData.newPlainText("KClash 连接详情", value))
+                        },
                     )
                 }
 
@@ -2620,6 +2633,7 @@ internal fun runtimeDiagnosticHistoryRows(events: List<RuntimeDiagnosticEvent>):
 internal fun ConnectionsCard(
     state: ConnectionsUiState,
     runtimeState: CoreRuntimeStatus,
+    onCopyText: (String) -> Unit,
 ) {
     // 作者 long：活动连接可能在轮询中消失，因此保留点击时快照；重建后也无需再向核心查找已结束的连接。
     var selectedConnection by rememberSaveable(stateSaver = ConnectionDetailSaver) {
@@ -2677,9 +2691,10 @@ internal fun ConnectionsCard(
         }
     }
     selectedConnection?.let { connection ->
-        ConnectionDetailDialog(
+        ConnectionDetailSheet(
             connection = connection,
             onDismiss = { selectedConnection = null },
+            onCopyText = onCopyText,
         )
     }
 }
@@ -2727,33 +2742,72 @@ private fun ConnectionRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ConnectionDetailDialog(
+private fun ConnectionDetailSheet(
     connection: CoreConnection,
     onDismiss: () -> Unit,
+    onCopyText: (String) -> Unit,
 ) {
     val metadata = connection.metadata
-    AlertDialog(
+    val sheetState = rememberModalBottomSheetState()
+    var copyMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(copyMessage) {
+        if (copyMessage != null) {
+            kotlinx.coroutines.delay(2_000)
+            copyMessage = null
+        }
+    }
+    val copyValue: (String) -> Unit = { value ->
+        // 作者 long：复制反馈放在面板内，避免外层 Snackbar 被模态遮罩盖住；失败时不能显示成功。
+        copyMessage = runCatching { onCopyText(value) }.fold({ "已复制" }, { "复制失败" })
+    }
+    val maxContentHeight = (LocalConfiguration.current.screenHeightDp * 0.84f).dp
+    ModalBottomSheet(
+        modifier = Modifier.testTag("connections_detail_sheet"),
+        sheetState = sheetState,
+        dragHandle = { BottomSheetDefaults.DragHandle(Modifier.testTag("connection_detail_handle")) },
         onDismissRequest = onDismiss,
-        title = { Text("连接详情") },
-        text = {
+    ) {
+        Column(
+            modifier = Modifier
+                .testTag("connections_detail_content")
+                .fillMaxWidth()
+                .heightIn(max = maxContentHeight)
+                .padding(horizontal = 24.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "连接详情",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Outlined.Close, contentDescription = "关闭连接详情")
+                }
+            }
+            copyMessage?.let { Text(it, modifier = Modifier.testTag("connections_copy_feedback")) }
             Column(
                 modifier = Modifier
                     .testTag("connections_detail_dialog")
-                    .heightIn(max = 520.dp)
+                    .weight(1f, fill = false)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 ConnectionDetailSection(
                     title = "基本信息",
                     rows = listOf(
-                        "创建时间" to connection.start,
+                        "创建时间" to formatConnectionStart(connection.start),
                         "网络类型" to metadata.network,
-                        "进程" to metadata.process,
+                        "进程" to connectionProcessText(metadata.process, metadata.uid),
                         "规则" to connectionRuleText(connection),
                         "上传" to formatBytes(connection.upload),
                         "下载" to formatBytes(connection.download),
                     ),
+                    onCopyText = copyValue,
                 )
                 ConnectionDetailSection(
                     title = "地址",
@@ -2761,42 +2815,86 @@ private fun ConnectionDetailDialog(
                         "主机" to metadata.host,
                         "来源" to connectionEndpoint(metadata.sourceIp, metadata.sourcePort),
                         "目标" to connectionEndpoint(metadata.destinationIp, metadata.destinationPort),
+                        "目标 GeoIP" to metadata.destinationGeoIp.joinToString(" "),
+                        "目标 ASN" to metadata.destinationIpAsn,
                         "远端目标" to metadata.remoteDestination,
-                        "进程路径" to metadata.processPath,
-                        "UID" to metadata.uid.toString(),
                     ),
+                    onCopyText = copyValue,
                 )
                 ConnectionDetailSection(
                     title = "代理",
                     rows = listOf(
-                        "代理链" to connection.chains.asReversed().joinToString(" → "),
                         "特殊代理" to metadata.specialProxy,
                         "特殊规则" to metadata.specialRules,
+                        "DNS 模式" to metadata.dnsMode,
                     ),
+                    onCopyText = copyValue,
                 )
+                ConnectionChainRow(connection.chains)
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
-        },
-    )
+            Spacer(Modifier.height(24.dp))
+        }
+    }
 }
 
 @Composable
 private fun ConnectionDetailSection(
     title: String,
     rows: List<Pair<String, String>>,
+    onCopyText: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(title, style = MaterialTheme.typography.titleSmall)
         rows.filter { it.second.isNotBlank() }.forEach { (label, value) ->
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("connection_detail_$label")
+                    .heightIn(min = 48.dp)
+                    .clickable(role = Role.Button, onClickLabel = "复制$label") { onCopyText(value) }
+                    .padding(vertical = 6.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
                 Text(
                     label,
+                    modifier = Modifier.weight(0.42f),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(value, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    value,
+                    modifier = Modifier.weight(0.58f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.End,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ConnectionChainRow(chains: List<String>) {
+    val displayed = chains.asReversed()
+    Row(
+        modifier = Modifier.fillMaxWidth().semantics {
+            contentDescription = displayed.joinToString(" → ")
+        }.testTag("connection_detail_chains"),
+    ) {
+        Text("代理链", modifier = Modifier.weight(0.42f), style = MaterialTheme.typography.labelMedium)
+        FlowRow(
+            modifier = Modifier.weight(0.58f),
+            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.End),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            displayed.forEachIndexed { index, chain ->
+                if (index > 0) Text("→")
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = RoundedCornerShape(8.dp),
+                ) {
+                    Text(chain, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                }
             }
         }
     }
@@ -2816,6 +2914,7 @@ private fun connectionRuleText(connection: CoreConnection): String = buildString
         append(")")
     }
 }
+
 
 @Composable
 private fun RequestsCard(

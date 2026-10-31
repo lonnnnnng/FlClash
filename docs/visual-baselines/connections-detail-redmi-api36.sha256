@@ -1,9 +1,10 @@
-# KClash ConnectionDetailDialog PNG baselines, reviewed 2026-10-31.
+# KClash ConnectionDetailSheet PNG baselines, reviewed 2026-10-31.
 # Device: Redmi Note 8 Pro, Android 16/API 36, dark mode, portrait, system font scale 1.0.
-# Dialog window includes title and close button; content viewport is either at the top or at the last proxy-chain field.
-state=default_top sha256=3240ee1967f94301eea675e680d9156861ae72f1234cd31c342afa2a30edbe75
-state=default_bottom sha256=6dc102a1a7c09539b7a3b6cf7f05028abed36719569b8fb27a37835364d71e5f
-# Long metadata fixture, real system font scale 2.0, viewport at the last special-rule field.
-# Font setting is restored to its previous value after the test; LocalDensity injection alone does not cover the Dialog window.
-state=long_font20_portrait_bottom sha256=5de677f0544262b5709003e43c549b6dc658ac84fdd16366be0d5c759ec15a0a
-state=long_font20_landscape_bottom sha256=39ff9ffe3ed57e73c2b0fa698c0cf0af9cda85299c62d13fc30944571c43c59f
+# Expanded sheet content includes title and close button; handle/system bars are excluded.
+# Whole-screen PNGs are optionally captured for manual safe-area review, not hashed because system bars vary.
+state=default_top sha256=544f945f3c6495d2ad36cef3f3d734d7db457d34fecf4c0840fb831b80df6254
+state=default_bottom sha256=a2268884f7cfb9a898d3041d763b5928ea251d30c6f6fd2db47f744b81e00e2a
+# Long metadata fixture, real system font scale 2.0, viewport at the last proxy-chain field.
+# Font setting is restored to its previous value after the test; LocalDensity injection alone does not cover the sheet window.
+state=long_font20_portrait_bottom sha256=8ba154066394417aa37fff115f58b25664a72ee2efbb6f1306cca5778204dea5
+state=long_font20_landscape_bottom sha256=6c9282ac26020493995b3fc56232fb227ff81d403ff4735a06ab66ad31aa819f

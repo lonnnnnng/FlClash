@@ -9,9 +9,14 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -82,17 +87,17 @@ class ConnectionsInstrumentedTest {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithTag("connections_row_0").performClick()
+        expandDetailSheet()
         composeRule.onNodeWithText("连接详情").assertIsDisplayed()
         composeRule.onNodeWithText("基本信息").assertIsDisplayed()
         assertDetailVisibleAfterScroll("MATCH")
         assertDetailVisibleAfterScroll("api.example.test")
         assertDetailVisibleAfterScroll("10.0.0.2:54321")
         assertDetailVisibleAfterScroll("192.0.2.10:443")
-        assertDetailVisibleAfterScroll("/data/app/client")
-        assertDetailVisibleAfterScroll("10000")
+        assertDetailVisibleAfterScroll("com.example.client(10000)")
         assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
 
-        composeRule.onNodeWithText("关闭").performClick()
+        composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
         composeRule.onNodeWithText("连接详情").assertDoesNotExist()
         composeRule.onNodeWithTag("connections_row_0").assertIsDisplayed()
         composeRule.onNodeWithText("活动连接（1）").assertIsDisplayed()
@@ -104,12 +109,13 @@ class ConnectionsInstrumentedTest {
             activity.showRunningScenario()
         }
         composeRule.onNodeWithTag("connections_row_0").performClick()
+        expandDetailSheet()
         val topHash = captureHash("detail_default_top", dialog = true)
         assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
         val bottomHash = captureHash("detail_default_bottom", dialog = true)
         assertEquals(
-            "top=3240ee1967f94301eea675e680d9156861ae72f1234cd31c342afa2a30edbe75\n" +
-                "bottom=6dc102a1a7c09539b7a3b6cf7f05028abed36719569b8fb27a37835364d71e5f",
+            "top=544f945f3c6495d2ad36cef3f3d734d7db457d34fecf4c0840fb831b80df6254\n" +
+                "bottom=a2268884f7cfb9a898d3041d763b5928ea251d30c6f6fd2db47f744b81e00e2a",
             "top=$topHash\nbottom=$bottomHash",
         )
     }
@@ -124,11 +130,9 @@ class ConnectionsInstrumentedTest {
                 activity.setFontScale(2f)
             }
             composeRule.onNodeWithTag("connections_row_0").performClick()
+            expandDetailSheet()
             assertLongDetailFields()
-            assertEquals(
-                "5de677f0544262b5709003e43c549b6dc658ac84fdd16366be0d5c759ec15a0a",
-                captureHash("detail_long_font20_portrait", dialog = true),
-            )
+            val portraitHash = captureHash("detail_long_font20_portrait", dialog = true)
 
             composeRule.activityRule.scenario.onActivity { activity ->
                 activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -136,13 +140,17 @@ class ConnectionsInstrumentedTest {
             composeRule.waitUntil(5_000) {
                 composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
             }
+            expandDetailSheet()
             assertLongDetailFields()
-            assertEquals(
-                "39ff9ffe3ed57e73c2b0fa698c0cf0af9cda85299c62d13fc30944571c43c59f",
-                captureHash("detail_long_font20_landscape", dialog = true),
-            )
-            composeRule.onNodeWithText("关闭").assertIsDisplayed().performClick()
+            val landscapeHash = captureHash("detail_long_font20_landscape", dialog = true)
+            composeRule.onNodeWithContentDescription("关闭连接详情").assertIsDisplayed().performClick()
             composeRule.onNodeWithTag("connections_detail_dialog").assertDoesNotExist()
+            // 作者 long：两种方向都采样后再报告差异，首次截图变化不能阻断横屏可达性的独立检查。
+            assertEquals(
+                "portrait=8ba154066394417aa37fff115f58b25664a72ee2efbb6f1306cca5778204dea5\n" +
+                    "landscape=6c9282ac26020493995b3fc56232fb227ff81d403ff4735a06ab66ad31aa819f",
+                "portrait=$portraitHash\nlandscape=$landscapeHash",
+            )
         } finally {
             setSystemFontScaleAndWait(originalFontScale)
             composeRule.activityRule.scenario.onActivity { activity ->
@@ -163,6 +171,40 @@ class ConnectionsInstrumentedTest {
         composeRule.waitForIdle()
     }
 
+    @Test
+    fun detailTextCopiesAndMetadataSurvivesRecreation() {
+        composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
+        composeRule.onNodeWithTag("connections_row_0").performClick()
+        expandDetailSheet()
+        assertDetailVisibleAfterScroll("US Example ISP")
+        assertDetailVisibleAfterScroll("AS64496")
+        composeRule.onNodeWithTag("connection_detail_目标 ASN").performClick()
+        assertEquals("AS64496", composeRule.activity.lastCopiedValue)
+        composeRule.onNodeWithText("已复制").assertIsDisplayed()
+        composeRule.activityRule.scenario.recreate()
+        expandDetailSheet()
+        assertDetailVisibleAfterScroll("US Example ISP")
+        assertDetailVisibleAfterScroll("AS64496")
+        assertDetailVisibleAfterScroll("fake-ip")
+        composeRule.onNodeWithTag("connection_detail_DNS 模式").performClick()
+        assertEquals("fake-ip", composeRule.activity.lastCopiedValue)
+    }
+
+    @Test
+    fun missingFieldsStayHiddenAndSheetDismissesOnBackAndSwipe() {
+        composeRule.activityRule.scenario.onActivity { it.showMinimalRunningScenario() }
+        composeRule.onNodeWithTag("connections_row_0").performClick()
+        listOf("进程", "目标 GeoIP", "目标 ASN", "DNS 模式", "UID").forEach {
+            composeRule.onNodeWithTag("connection_detail_$it").assertDoesNotExist()
+        }
+        androidx.test.espresso.Espresso.pressBack()
+        composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
+        composeRule.onNodeWithTag("connections_row_0").performClick()
+        composeRule.onNodeWithTag("connections_detail_sheet").performTouchInput { swipeDown() }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
+    }
+
     private fun shell(command: String): String = ParcelFileDescriptor.AutoCloseInputStream(
         InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command),
     ).bufferedReader().use { it.readText() }
@@ -173,6 +215,7 @@ class ConnectionsInstrumentedTest {
             activity.showRunningScenario()
         }
         composeRule.onNodeWithTag("connections_row_0").performClick()
+        expandDetailSheet()
         composeRule.activityRule.scenario.onActivity { activity ->
             activity.showEmptyRunningScenario()
         }
@@ -185,18 +228,18 @@ class ConnectionsInstrumentedTest {
             activity.showStoppedScenario()
         }
         composeRule.activityRule.scenario.recreate()
+        expandDetailSheet()
         composeRule.onNodeWithText("启动核心后显示当前活动连接。").assertExists()
-        assertDetailVisibleAfterScroll("2026-10-28T00:00:00Z")
-        assertDetailVisibleAfterScroll("com.example.client")
+        assertDetailVisibleAfterScroll(formatConnectionStart("2026-10-28T00:00:00Z"))
+        assertDetailVisibleAfterScroll("com.example.client(10000)")
         assertDetailVisibleAfterScroll("MATCH")
         assertDetailVisibleAfterScroll("api.example.test")
         assertDetailVisibleAfterScroll("10.0.0.2:54321")
         assertDetailVisibleAfterScroll("192.0.2.10:443")
         assertDetailVisibleAfterScroll("api.example.test:443")
-        assertDetailVisibleAfterScroll("/data/app/client")
-        assertDetailVisibleAfterScroll("10000")
+        assertDetailVisibleAfterScroll("com.example.client(10000)")
         assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
-        composeRule.onNodeWithText("关闭").performClick()
+        composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
         composeRule.activityRule.scenario.recreate()
         composeRule.onNodeWithTag("connections_detail_dialog").assertDoesNotExist()
         composeRule.onNodeWithText("启动核心后显示当前活动连接。").assertIsDisplayed()
@@ -205,30 +248,52 @@ class ConnectionsInstrumentedTest {
     private fun assertLongDetailFields() {
         assertDetailVisibleAfterScroll("MATCH(${ConnectionsTestActivity.LONG_HOST})")
         assertDetailVisibleAfterScroll(ConnectionsTestActivity.LONG_HOST)
-        assertDetailVisibleAfterScroll(ConnectionsTestActivity.LONG_PROCESS_PATH)
-        assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
-        assertDetailVisibleAfterScroll("GLOBAL")
+        assertDetailVisibleAfterScroll("AS64496")
+        assertDetailVisibleAfterScroll("US Example ISP")
+        assertDetailVisibleAfterScroll("fake-ip")
+        composeRule.onNodeWithTag("connection_detail_特殊代理").performScrollTo().assertIsDisplayed()
         assertDetailVisibleAfterScroll("special-rule")
-        composeRule.onNodeWithText("关闭").assertIsDisplayed()
+        assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
+        composeRule.onNodeWithContentDescription("关闭连接详情").assertIsDisplayed()
     }
 
     private fun assertDetailVisibleAfterScroll(value: String) {
         // 作者 long：限定详情子树并主动滚动，避免背景摘要或屏外语义节点让可达性检查误通过。
+        if (value == "DIRECT → GLOBAL") {
+            composeRule.onNodeWithTag("connection_detail_chains").performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithContentDescription(value).assertIsDisplayed()
+            return
+        }
         composeRule.onNode(
             hasText(value) and hasAnyAncestor(hasTestTag("connections_detail_dialog")),
             useUnmergedTree = true,
         ).performScrollTo().assertIsDisplayed()
     }
 
+    private fun expandDetailSheet() {
+        // 作者 long：半展开面板的底部尚在屏外；先使用真实展开语义，再验证字段滚动，不能把屏外存在当成可见。
+        val actions = composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsActions.Expand))
+        if (actions.fetchSemanticsNodes().isNotEmpty()) {
+            actions[0].performSemanticsAction(SemanticsActions.Expand) { it() }
+        }
+        composeRule.waitForIdle()
+    }
+
     private fun captureHash(name: String, dialog: Boolean = false): String {
         composeRule.waitForIdle()
-        val node = if (dialog) composeRule.onNode(isDialog()) else composeRule.onNodeWithTag("connections_page")
+        val node = composeRule.onNodeWithTag(if (dialog) "connections_detail_content" else "connections_page")
         val bitmap = node.captureToImage().asAndroidBitmap()
         val png = ByteArrayOutputStream().also { output ->
             check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
         }.toByteArray()
         // 作者 long：保留同一断言对应的实际图片，视觉变化必须人工看图后才允许更新哈希基线。
         recordVisualPng("connections-$name", png)
+        if (dialog && InstrumentationRegistry.getArguments().getString("kclashCapturePng") == "true") {
+            val screen = checkNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+            val screenPng = ByteArrayOutputStream().also { screen.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+            recordVisualPng("connections-screen-$name", screenPng.toByteArray())
+            screen.recycle()
+        }
         return MessageDigest.getInstance("SHA-256").digest(png)
             .joinToString("") { byte -> "%02x".format(byte) }
     }

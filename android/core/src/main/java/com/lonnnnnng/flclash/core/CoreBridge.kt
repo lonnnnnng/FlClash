@@ -366,42 +366,14 @@ class CoreBridge {
 
     internal fun parseConnectionsResponse(result: JSONObject?): List<CoreConnection> {
         requireNotNull(result) { "核心连接响应缺少 result" }
-        val connections = result.optJSONArray("connections") ?: return emptyList()
-        return buildList(connections.length()) {
-            for (index in 0 until connections.length()) {
-                val raw = connections.optJSONObject(index) ?: continue
-                add(parseConnectionPayload(raw))
-            }
-        }
+        return parseConnectionsJson(JsonParser.parseString(result.toString()).asJsonObject)
     }
 
-    internal fun parseConnectionPayload(raw: JSONObject): CoreConnection {
-        val metadata = raw.optJSONObject("metadata") ?: JSONObject()
-        return parseConnectionPayload(
-            CoreConnectionPayload(
-                id = raw.optString("id"),
-                upload = raw.optLong("upload", 0L),
-                download = raw.optLong("download", 0L),
-                start = raw.optString("start"),
-                metadata = CoreConnectionMetadata(
-                network = metadata.optString("network"),
-                sourceIp = metadata.optString("sourceIP"),
-                sourcePort = metadata.optPort("sourcePort"),
-                destinationIp = metadata.optString("destinationIP"),
-                destinationPort = metadata.optPort("destinationPort"),
-                host = metadata.optString("host"),
-                process = metadata.optString("process"),
-                processPath = metadata.optString("processPath"),
-                remoteDestination = metadata.optString("remoteDestination"),
-                uid = metadata.optLong("uid", 0L).coerceAtLeast(0L),
-                specialProxy = metadata.optString("specialProxy"),
-                specialRules = metadata.optString("specialRules"),
-                ),
-                chains = raw.optJSONArray("chains").toStringList(),
-                rule = raw.optString("rule"),
-                rulePayload = raw.optString("rulePayload"),
-            ),
-        )
+    internal fun parseConnectionsJson(result: JsonObject): List<CoreConnection> {
+        // 作者 long：轮询与 request 事件共用元数据解码，避免同一条连接在两种观测入口丢失不同字段。
+        return result.array("connections")?.mapNotNull { raw ->
+            raw.takeIf { it.isJsonObject }?.asJsonObject?.let(::parseConnectionJson)
+        }.orEmpty()
     }
 
     internal fun parseConnectionPayload(payload: CoreConnectionPayload): CoreConnection = CoreConnection(
@@ -436,6 +408,11 @@ class CoreBridge {
                     uid = metadata.long("uid").coerceAtLeast(0L),
                     specialProxy = metadata.string("specialProxy"),
                     specialRules = metadata.string("specialRules"),
+                    sourceGeoIp = metadata.array("sourceGeoIP").stringList().filter { it.isNotBlank() },
+                    destinationGeoIp = metadata.array("destinationGeoIP").stringList().filter { it.isNotBlank() },
+                    sourceIpAsn = metadata.string("sourceIPASN"),
+                    destinationIpAsn = metadata.string("destinationIPASN"),
+                    dnsMode = metadata.string("dnsMode"),
                 ),
                 chains = raw.array("chains").stringList(),
                 rule = raw.string("rule"),
@@ -773,6 +750,11 @@ data class CoreConnectionMetadata(
     val uid: Long,
     val specialProxy: String,
     val specialRules: String,
+    val sourceGeoIp: List<String> = emptyList(),
+    val destinationGeoIp: List<String> = emptyList(),
+    val sourceIpAsn: String = "",
+    val destinationIpAsn: String = "",
+    val dnsMode: String = "",
 )
 
 private fun org.json.JSONArray?.toStringList(): List<String> {

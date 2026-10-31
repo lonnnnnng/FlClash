@@ -28,6 +28,8 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
  * 不读取 Room、网络、VPN、Mihomo 核心或工作区配置，避免环境差异进入视觉基线。
  */
 class ConnectionsTestActivity : ComponentActivity() {
+    var lastCopiedValue: String? = null
+        private set
     private var scenario by mutableStateOf(ConnectionsScenario.STOPPED)
     private var fontScaleValue by mutableStateOf(1f)
 
@@ -49,6 +51,14 @@ class ConnectionsTestActivity : ComponentActivity() {
                     connections = listOf(sampleConnection()),
                 )
                 ConnectionsScenario.RUNNING_EMPTY -> ConnectionsUiState()
+                ConnectionsScenario.RUNNING_MINIMAL -> ConnectionsUiState(
+                    connections = listOf(sampleConnection().let { connection ->
+                        connection.copy(metadata = connection.metadata.copy(
+                            uid = 0L, process = "", destinationGeoIp = emptyList(),
+                            destinationIpAsn = "", dnsMode = "",
+                        ))
+                    }),
+                )
                 ConnectionsScenario.RUNNING_LONG -> ConnectionsUiState(
                     connections = listOf(sampleConnection().let { connection ->
                         connection.copy(
@@ -80,6 +90,7 @@ class ConnectionsTestActivity : ComponentActivity() {
                         ConnectionsCard(
                             state = state,
                             runtimeState = runtimeState,
+                            onCopyText = { lastCopiedValue = it },
                         )
                     }
                 }
@@ -101,6 +112,10 @@ class ConnectionsTestActivity : ComponentActivity() {
 
     fun showLongRunningScenario() {
         scenario = ConnectionsScenario.RUNNING_LONG
+    }
+
+    fun showMinimalRunningScenario() {
+        scenario = ConnectionsScenario.RUNNING_MINIMAL
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -131,6 +146,9 @@ class ConnectionsTestActivity : ComponentActivity() {
             uid = 10_000L,
             specialProxy = "",
             specialRules = "",
+            destinationGeoIp = listOf("US", "Example ISP"),
+            destinationIpAsn = "AS64496",
+            dnsMode = "fake-ip",
         ),
         chains = listOf("GLOBAL", "DIRECT"),
         rule = "MATCH",
@@ -148,4 +166,5 @@ private enum class ConnectionsScenario {
     RUNNING,
     RUNNING_EMPTY,
     RUNNING_LONG,
+    RUNNING_MINIMAL,
 }

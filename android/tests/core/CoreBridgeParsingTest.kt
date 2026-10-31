@@ -17,6 +17,37 @@ class CoreBridgeParsingTest {
     private val bridge = CoreBridge()
 
     @Test
+    fun `polling and request event preserve the same connection metadata`() {
+        val connection = """{
+          "id":"metadata-1","start":"2026-10-31T00:00:00.123456789Z","upload":-1,"download":20,
+          "metadata":{"network":"tcp","sourcePort":12345,"destinationPort":"443",
+          "sourceGeoIP":["LAN"],"destinationGeoIP":["US","Example ISP"],
+          "sourceIPASN":"AS64512","destinationIPASN":"AS64496","dnsMode":"fake-ip"},
+          "chains":["GLOBAL","DIRECT"],"rule":"MATCH"
+        }"""
+        val polled = bridge.parseConnectionsJson(JsonParser.parseString("""{"connections":[$connection]}""").asJsonObject).single()
+        val event = bridge.parseEvents("""{"method":"message","arguments":[{"type":"request","data":$connection}]}""".toByteArray()).single() as CoreEvent.Request
+        assertEquals(polled, event.connection)
+        assertEquals(listOf("LAN"), polled.metadata.sourceGeoIp)
+        assertEquals(listOf("US", "Example ISP"), polled.metadata.destinationGeoIp)
+        assertEquals("AS64512", polled.metadata.sourceIpAsn)
+        assertEquals("AS64496", polled.metadata.destinationIpAsn)
+        assertEquals("fake-ip", polled.metadata.dnsMode)
+        assertEquals("12345", polled.metadata.sourcePort)
+        assertEquals(0L, polled.upload)
+    }
+
+    @Test
+    fun `missing and null metadata do not become visible null text`() {
+        for (raw in listOf("{}", """{"destinationGeoIP":null,"destinationIPASN":null,"dnsMode":null}""")) {
+            val parsed = bridge.parseConnectionsJson(JsonParser.parseString("""{"connections":[{"metadata":$raw}]}""").asJsonObject).single()
+            assertEquals(emptyList<String>(), parsed.metadata.destinationGeoIp)
+            assertEquals("", parsed.metadata.destinationIpAsn)
+            assertEquals("", parsed.metadata.dnsMode)
+        }
+    }
+
+    @Test
     fun `proxy group response preserves core ordering and selector members`() {
         val result = bridge.parseProxyGroupsPayload(
             names = listOf("GLOBAL", "媒体"),
@@ -182,6 +213,11 @@ class CoreBridgeParsingTest {
                     uid = 12345,
                     specialProxy = "",
                     specialRules = "",
+                    sourceGeoIp = listOf("10.0.0.0/8"),
+                    destinationGeoIp = listOf("US", "Example ISP"),
+                    sourceIpAsn = "AS64512",
+                    destinationIpAsn = "AS64496",
+                    dnsMode = "fake-ip",
                 ),
                 chains = listOf("GLOBAL", "香港-01"),
                 rule = "MATCH",
@@ -195,6 +231,9 @@ class CoreBridgeParsingTest {
         assertEquals("443", parsed.metadata.destinationPort)
         assertEquals(listOf("GLOBAL", "香港-01"), parsed.chains)
         assertEquals("MATCH", parsed.rule)
+        assertEquals(listOf("US", "Example ISP"), parsed.metadata.destinationGeoIp)
+        assertEquals("AS64496", parsed.metadata.destinationIpAsn)
+        assertEquals("fake-ip", parsed.metadata.dnsMode)
     }
 
     @Test
@@ -216,7 +255,12 @@ class CoreBridgeParsingTest {
                       "host":"example.com",
                       "destinationIP":"203.0.113.7",
                       "destinationPort":"443",
-                      "process":"com.example.app"
+                      "process":"com.example.app",
+                      "sourceGeoIP":["LAN"],
+                      "destinationGeoIP":["US","Example ISP"],
+                      "sourceIPASN":"AS64512",
+                      "destinationIPASN":"AS64496",
+                      "dnsMode":"redir-host"
                     },
                     "chains":["GLOBAL","DIRECT"],
                     "rule":"DOMAIN-SUFFIX",
@@ -237,6 +281,9 @@ class CoreBridgeParsingTest {
         assertEquals("request-1", request.id)
         assertEquals("example.com", request.metadata.host)
         assertEquals("DOMAIN-SUFFIX", request.rule)
+        assertEquals(listOf("US", "Example ISP"), request.metadata.destinationGeoIp)
+        assertEquals("AS64496", request.metadata.destinationIpAsn)
+        assertEquals("redir-host", request.metadata.dnsMode)
         val traffic = (events[1] as CoreEvent.RequestTraffic).updates.single()
         assertEquals(CoreTrafficUpdate("request-1", 40, 80), traffic)
     }
