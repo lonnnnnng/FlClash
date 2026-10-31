@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.AlwaysOnVpnState
 import com.lonnnnnng.flclash.common.AccessControlMode
@@ -40,90 +37,101 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
  */
 class DashboardTestActivity : ComponentActivity() {
     private var scenario by mutableStateOf(DashboardScenario.DEFAULT)
-    private var fontScaleValue by mutableStateOf(1f)
+    private var useDarkTheme by mutableStateOf(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        savedInstanceState?.let {
+            scenario = DashboardScenario.valueOf(it.getString("dashboard_scenario", DashboardScenario.DEFAULT.name))
+            useDarkTheme = it.getBoolean("dashboard_dark_theme", true)
+        }
         setContent {
             val accessEnabled = scenario == DashboardScenario.DEFAULT
             val running = scenario == DashboardScenario.RUNNING
-            val baseDensity = LocalDensity.current
-            CompositionLocalProvider(
-                // 作者 long：字体矩阵只改变文字缩放，不改变设备密度，确保页面高度变化来自可达性档位本身。
-                LocalDensity provides Density(baseDensity.density, fontScale = fontScaleValue),
-            ) {
-                KClashTheme {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(16.dp)
-                            .testTag("dashboard_page"),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        RuntimeCard(
-                            state = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
-                            onStart = {},
-                            onStop = {},
-                        )
-                        RuntimeStatsCard(
-                            state = if (running) runningStats() else RuntimeStatsUiState(),
-                            runtimeState = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
-                        )
-                        BatteryOptimizationCard(
-                            ignored = scenario == DashboardScenario.SYSTEM_READY,
-                            onRequest = {},
-                        )
-                        AlwaysOnVpnCard(
-                            state = if (scenario == DashboardScenario.SYSTEM_READY) {
-                                AlwaysOnVpnState.KCLASH_ENABLED
-                            } else {
-                                AlwaysOnVpnState.UNKNOWN
-                            },
-                            onRequest = {},
-                        )
-                        AccessControlCard(
-                            state = AccessControlUiState(
-                                settings = AccessControlProps(
-                                    enable = accessEnabled,
-                                    mode = AccessControlMode.REJECT_SELECTED,
-                                    rejectList = emptyList(),
+            KClashTheme(darkTheme = useDarkTheme) {
+                MainPageScaffold(
+                    selectedDestination = MainDestination.DASHBOARD,
+                    onDestinationSelected = {},
+                    modifier = Modifier.testTag("dashboard_page"),
+                ) { insets ->
+                    DashboardWidth { horizontalInset ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(insets)
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = horizontalInset, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            RuntimeCard(
+                                state = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
+                                onStart = {},
+                                onStop = {},
+                            )
+                            RuntimeStatsCard(
+                                state = if (running) runningStats() else RuntimeStatsUiState(),
+                                runtimeState = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
+                            )
+                            DashboardProfileCard(
+                                profile = if (running) runningProfile() else null,
+                                onShowProfiles = {},
+                                onAddProfile = {},
+                            )
+                            BatteryOptimizationCard(
+                                ignored = scenario == DashboardScenario.SYSTEM_READY,
+                                onRequest = {},
+                            )
+                            AlwaysOnVpnCard(
+                                state = if (scenario == DashboardScenario.SYSTEM_READY) {
+                                    AlwaysOnVpnState.KCLASH_ENABLED
+                                } else {
+                                    AlwaysOnVpnState.UNKNOWN
+                                },
+                                onRequest = {},
+                            )
+                            AccessControlCard(
+                                state = AccessControlUiState(
+                                    settings = AccessControlProps(
+                                        enable = accessEnabled,
+                                        mode = AccessControlMode.REJECT_SELECTED,
+                                        rejectList = emptyList(),
+                                    ),
+                                    persistedSettings = AccessControlProps(
+                                        enable = accessEnabled,
+                                        mode = AccessControlMode.REJECT_SELECTED,
+                                        rejectList = emptyList(),
+                                    ),
+                                    apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
+                                    isLoading = false,
                                 ),
-                                persistedSettings = AccessControlProps(
-                                    enable = accessEnabled,
-                                    mode = AccessControlMode.REJECT_SELECTED,
-                                    rejectList = emptyList(),
-                                ),
-                                apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
-                                isLoading = false,
-                            ),
-                            runtimeState = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
-                            onEnabledChange = {},
-                            onModeChange = {},
-                            onSortChange = {},
-                            onFilterSystemAppsChange = {},
-                            onFilterNonInternetAppsChange = {},
-                            onSearchChange = {},
-                            onTogglePackage = {},
-                            onSelectVisible = {},
-                            onClearVisible = {},
-                            onToggleVisible = {},
-                            onSmartSelect = {},
-                            onExportToClipboard = {},
-                            onImportFromClipboard = {},
-                            onSave = {},
-                        )
-                        ProbeCard(
-                            state = if (running) runningProbeState() else ProbeUiState(),
-                            diagnostic = if (running) runningDiagnosticState() else DiagnosticSessionUiState(),
-                            diagnosticHistory = if (running) listOf(runningDiagnosticEvent()) else emptyList(),
-                            runtimeState = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
-                            profile = if (running) runningProfile() else null,
-                            onProbe = {},
-                            onExportDiagnostic = {},
-                            onShowDiagnosticHistory = {},
-                            onExportDiagnosticHistory = {},
-                        )
+                                runtimeState = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
+                                onEnabledChange = {},
+                                onModeChange = {},
+                                onSortChange = {},
+                                onFilterSystemAppsChange = {},
+                                onFilterNonInternetAppsChange = {},
+                                onSearchChange = {},
+                                onTogglePackage = {},
+                                onSelectVisible = {},
+                                onClearVisible = {},
+                                onToggleVisible = {},
+                                onSmartSelect = {},
+                                onExportToClipboard = {},
+                                onImportFromClipboard = {},
+                                onSave = {},
+                            )
+                            ProbeCard(
+                                state = if (running) runningProbeState() else ProbeUiState(),
+                                diagnostic = if (running) runningDiagnosticState() else DiagnosticSessionUiState(),
+                                diagnosticHistory = if (running) listOf(runningDiagnosticEvent()) else emptyList(),
+                                runtimeState = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
+                                profile = if (running) runningProfile() else null,
+                                onProbe = {},
+                                onExportDiagnostic = {},
+                                onShowDiagnosticHistory = {},
+                                onExportDiagnosticHistory = {},
+                            )
+                        }
                     }
                 }
             }
@@ -138,8 +146,14 @@ class DashboardTestActivity : ComponentActivity() {
         scenario = DashboardScenario.RUNNING
     }
 
-    fun setFontScale(value: Float) {
-        fontScaleValue = value
+    fun setDarkTheme(value: Boolean) {
+        useDarkTheme = value
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("dashboard_scenario", scenario.name)
+        outState.putBoolean("dashboard_dark_theme", useDarkTheme)
+        super.onSaveInstanceState(outState)
     }
 }
 

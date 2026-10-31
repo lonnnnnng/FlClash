@@ -50,10 +50,19 @@ class MainActivityInstrumentedTest {
     fun mainActivityRendersHomeAndProfileEntry() {
         composeRule.onNodeWithText("KClash").assertIsDisplayed()
         composeRule.onNodeWithText("核心状态").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("启动核心").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_stats_card").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_profile_card").assertIsDisplayed()
+        composeRule.onNodeWithTag("main_navigation_dock").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_profile_action").performClick()
+        composeRule.onNodeWithText("添加订阅").assertIsDisplayed()
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("nav_dashboard").performClick()
+        // 作者 long：首页系统入口位于连接信息之后，须滚动可达；添加浮钮只属于配置页。
+        composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("always_on_vpn_card"))
         composeRule.onNodeWithTag("always_on_vpn_card").assertIsDisplayed()
-        composeRule.onNodeWithText("启动核心").assertIsDisplayed()
-        // 作者 long：ExtendedFloatingActionButton 的文本会被父节点合并，入口断言必须查看未合并语义树。
-        composeRule.onNodeWithText("添加配置", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
+        composeRule.onNodeWithTag("profiles_add_fab").assertIsDisplayed()
     }
 
     @Test

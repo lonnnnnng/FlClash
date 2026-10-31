@@ -2,9 +2,9 @@
 
 > 文档类型：产品迁移路线图、功能矩阵、依赖图和验收门槛
 >
-> 最后核对：2026-10-31（北京时间）
+> 最后核对：2026-10-31（北京时间，本轮 Dashboard 页面视觉首片）
 >
-> 当前基线：`kotlin` 分支；首页/配置/代理/连接/观测导航、Profiles ViewModel、Profile 排序、Scripts 本地资源管理、远程脚本导入/手动同步、Profile 绑定与 JavaScript 执行边界、内存 Room、WebDAV Keystore 凭据/手动备份、认证/离线反馈、Always-on VPN 系统设置引导、Compose instrumentation 和 Redmi 真机验收均已完成首轮切片；Profiles 页面已补齐空态/选中态、横竖屏和 1.3x/2.0x 大字号视觉基线，Dashboard 默认态与运行态已补齐统计/诊断交互、截图和 1.3x/2.0x 大字号视觉基线，Connections 运行态已补齐 1.3x/2.0x 大字号视觉基线，Observation Requests/DNS/Logs 运行态已补齐 1.3x/2.0x 大字号视觉基线
+> 当前基线：`kotlin` 分支；首页/配置/代理/连接/观测导航、Profiles ViewModel、Profile 排序、Scripts 本地资源管理、远程脚本导入/手动同步、Profile 绑定与 JavaScript 执行边界、内存 Room、WebDAV Keystore 凭据/手动备份、认证/离线反馈、Always-on VPN 系统设置引导、Compose instrumentation 和 Redmi 真机验收均已完成首轮切片；Profiles 页面已补齐空态/选中态及首轮视觉基线；Dashboard 已完成 Flutter 手机卡片层级、主控卡、双栏流量块、当前配置入口、浮动图标 Dock 与仅配置页显示添加按钮的首片，并补齐深浅色竖屏视觉基线；横屏和大字号不再作为后续验收范围。出口 IP、质量信息和真实流量历史图仍无 Kotlin 数据源，不作视觉伪造；完整 Dashboard/其他页面视觉对齐仍为 `PARTIAL`
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -56,11 +56,11 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | 231 项通过，失败 0，错误 0，跳过 0；本轮新增面板几何、窗口变化、松手投影、超椭圆采样、停靠/侧栏动效常量测试 |
-| Instrumentation | 既有 87 项稳定全量基线；本轮新增真实 MainActivity 观测页空态/三页签导航、Profiles Rules/Proxies/Proxy Groups/Providers/DNS/Dialers 高级编辑七个定向用例、观测页六状态截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、Proxy 代理组两状态截图基线、Dashboard 两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 两状态截图基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Connections 连接行详情打开/关闭回归和 Profiles 三项视觉矩阵（空态/选中态、横竖屏、1.3x/2.0x 大字号）定向用例通过；此前完整 `DashboardInstrumentedTest` 为 5 项；2026-10-31 最新完整 `ConnectionsInstrumentedTest` 15 项和 `ObservationDetailsInstrumentedTest` 4 项均通过，共 19 项，失败 0、错误 0、跳过 0；另 1 项显式真实核心连接详情 E2E 通过，默认不混入固定宿主回归；真实 MainActivity 观测页清空/导出验收已完成，随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，未替换稳定基线；设备为 Redmi Note 8 Pro（Android 16/API 36） |
-| Debug 构建 | `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 已通过 |
-| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
-| Debug 原生库 | APK SHA-256 为 `cfd7a2790ea35662ca8e5481b95d8e31b62b6c829158257fedfd1cfe35d6bca2`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
+| 单元测试 | `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；JVM 231 项，失败 0、错误 0、跳过 0 |
+| Instrumentation | Dashboard 竖屏默认/运行/浅色 4 项，以及 MainActivity 首屏/导航 2 项在 Redmi 真机通过，共 `OK (6 tests)`；后续横屏和大字号场景不纳入测试 |
+| Debug 构建 | 标准全工程 Debug、AndroidTest 和 Lint 检查通过；Lint `0 errors, 36 warnings, 4 hints` |
+| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `1da6f8eb0c3a23b4677bed1e8f5decddbb33e136130c975b0019ad6b2325b130` |
+| Debug 原生库 | APK 内原生库仅 `lib/arm64-v8a/`，包含 `libclash.so`；AndroidTest APK SHA-256 `b453984a029fcf7164b14eb3a98ebd1bf0717868d43f4bbabb770fa57f79a163` |
 | Release 构建 | `./gradlew :app:assembleRelease :app:lintRelease --no-daemon` 已通过；当前输出为未签名预发布 APK，尚未创建独立 release keystore |
 | 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、进程重建后的选择 UI 恢复、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、代理选择 Activity 页面宿主选择与自动恢复、Proxy 代理组默认卡片/初始选择对话框截图基线、Dashboard 默认停止态/系统就绪态截图基线、主 Activity 顶层导航与观测页签跨页面/重建状态保持、观测页 Requests/DNS/Logs 停止态空态与三页签真实宿主回归、观测页六状态组件截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号截图基线、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、真实 MainActivity DNS/日志清空与日志导出且 Requests 保留、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、Always-on VPN 系统设置引导卡片、Access 页面级剪贴板导入/导出 E2E、Access 直接选择保存后 Room 重建恢复、Access 无结果搜索后列表恢复、Access 当前结果全选/清除及放弃修改真实宿主 E2E、Access 关闭态/脏状态截图基线、横屏重排、1.5/2.0 倍字体可达性、系统字体 1.3/2.0 回归、Access 顶栏脏状态保存、菜单层级和完整搜索态定向回归、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
 
@@ -459,8 +459,10 @@ flowchart LR
 - Edge-to-edge 基础设置。
 - Access 卡片首轮响应式收敛：标题/状态/排序/筛选区域可换行，已完成横屏重排、1.5/2.0 倍字体 Compose 可达性回归、系统字体 1.3/2.0 宿主回归、Redmi 默认卡片 PNG 哈希基线、1.3/1.5/1.8/2.0 字体截图矩阵和竖屏/横屏截图矩阵首片；真实宿主保存后重建可恢复 Room 设置；脏状态下提供标题栏保存、Flutter 风格主菜单/设置/操作层级和标题栏完整搜索态，正文操作入口保留为小屏备用。
 - Profiles 页面视觉首片：空态、选中自定义配置态、横屏/竖屏和 1.3x/2.0x 大字号均由 Debug 固定宿主提供稳定截图节点；大字号矩阵基线记录在 `docs/visual-baselines/profiles-font-scale-redmi-api36.sha256`，不改变正式 Profiles ViewModel、Room 或文件写回逻辑。
-- Dashboard 默认态大字号视觉首片：固定停止态 Dashboard 页面在 1.3x/2.0x 下保持可滚动卡片组合，基线记录在 `docs/visual-baselines/dashboard-font-scale-redmi-api36.sha256`，不读取系统设置、Room、网络、VPN、Mihomo 核心或 `1.yaml`。
-- Dashboard 运行态视觉与交互首片：固定 `RUNNING` 宿主注入非零上传/下载速率、累计流量、连接数、HTTP 200、代理链、规则、延迟以及 Requests/DNS/Logs 各一条证据；验证 Runtime/统计卡片可见、停止入口可见和诊断摘要完整，并记录运行态整页截图与 1.3x/2.0x 大字号基线，仍不读取 Room、系统设置、已安装应用、网络、VPN、Mihomo 核心或 `1.yaml`。
+- Dashboard 默认态字号基线文件仅保留既有历史证据；按当前验收范围不再运行横屏或大字号测试。
+- Dashboard 页面视觉还原首片：用同一主题壳层覆盖正式 MainActivity 和固定视觉宿主；核心卡使用 34dp 圆角、Flutter 手机内边距和 88dp 开关，流量统计采用上传/下载双块和 22dp 内层形状，当前配置作为首屏入口；五目的地 Dock 改为浮动圆角条和 Material 矢量图标，配置添加 FAB 仅在配置页出现。Dashboard 横向内容宽度上限 560dp，系统导航安全区由 Dock 留白，按应用代理、电池优化、Always-on VPN、诊断仍在首屏卡组下方可滚动到达。
+- Dashboard 固定宿主在 Redmi Note 8 Pro（Android 16/API 36、1080×2340，serial `wsvwypiz7xwslvl7`）验证停止/运行和深色/浅色竖屏截图；测试首次采集哈希与旧版不同，已人工检查主卡、流量块、配置卡和 Dock 的布局及按钮裁切，并写入 `docs/visual-baselines/dashboard-states-redmi-api36.sha256`。历史横屏/大字号 PNG 与哈希仅保留为既有记录，不再作为后续回归门槛。截图只证明 KClash 自身回归稳定，不声称 Flutter 引擎逐像素一致；宿主使用固定夹具，不读取 Room、系统设置、已安装应用、网络、VPN、Mihomo 核心或 `1.yaml`。
+- Dashboard 视觉边界：Flutter 当前配置入口和浮动 Dock 已还原静态层级；面板动态形变/拖拽动画暂缓；出口 IP、质量与国家信息、流量历史图在 Kotlin 尚无对应数据源，需先补可靠领域状态才能完成内容 parity。浅色目前使用项目 Material 3 色板，不等同 Flutter Material You 动态取色。
 - Connections 连接详情：以安全布局实际高度实现 `9/16`、`0.9` 两档，宽度超过 600dp 时使用右侧栏，宽为窗口的 40% 并限制在 360–560dp；拖柄支持点击、拖动和无障碍展开/收起，返回/下滑/遮罩/顶栏均可关闭。正文中部起手下滑回顶时，位移与剩余惯性都不收起面板。保留本地时间、`process(uid)`、元数据、空字段隐藏、复制、反序代理链和点击快照恢复。深色默认及真实系统字体 2.0x 横竖屏四份内容基线已更新；新增浅色横竖屏与 360×640dp 实际窗口顶部/底部六份基线（`docs/visual-baselines/connections-detail-light-redmi-api36.sha256`），整屏安全区已人工检查。进出场与遮罩联动已使用可测试的临界弹簧；横屏侧栏按 Flutter 的 300ms/200ms 标准减速曲线运行，关闭中旋转不会重新入场或丢失关闭回调。19 项固定宿主回归和另 1 项真实 MainActivity 核心详情 E2E 已通过。
 - Connections 运行态摘要字号矩阵：固定单条活动连接在页面注入的 1.3x/2.0x 下验证摘要换行与截断；完整长主机名、长规则及元数据的滚动另由真实系统字体 2.0x 详情测试覆盖。详情已移除 Flutter 参考没有的独立进程路径/UID 行，模型仍保留原始字段。摘要基线记录在 `docs/visual-baselines/connections-font-scale-redmi-api36.sha256`，固定宿主不读取 Room、网络、VPN、Mihomo 核心或 `1.yaml`。
 - Observation 运行态大字号视觉首片：固定 Requests、DNS、Logs 各一条记录，在 1.3x/2.0x 下保持页签切换、字段换行和滚动可达，六个基线记录在 `docs/visual-baselines/observation-page-font-scale-redmi-api36.sha256`，不读取 Room、网络、VPN、Mihomo 核心或 `1.yaml`。
@@ -469,13 +471,14 @@ flowchart LR
 待完成：
 
 - Flutter 页面信息架构和 Android 手机导航结构对齐。
-- Dashboard、Profiles、Proxy、Connection、Observations 页面及其 Requests、DNS、Logs 页签的完整交互对齐。
-- Material You 动态颜色、浅色/深色主题。
+- Dashboard 剩余出口 IP/质量状态及真实流量历史数据能力，再据此完成内容 parity；当前停止/运行两态和深浅色竖屏视觉首片已完成单设备基线。
+- Profiles、Proxy、Connection、Observations 页面及其 Requests、DNS、Logs 页签的完整视觉与交互对齐；Dashboard Dock 的 Flutter 拖拽/液态动效也尚未实现。
+- Material You 动态颜色；Dashboard 已有浅色/深色静态主题截图，但全应用主题覆盖尚未完成。
 - Flutter 连续圆角、底部面板、弹层和交互节奏。
 - Connections 两档高度、横屏侧栏、浅色和小窗口首片已验证；底部面板超椭圆为四次曲线采样近似，入场/退场和遮罩联动已完成，横屏侧栏已对齐 Flutter 的 300ms/200ms 标准减速曲线；仍需补齐 Flutter 的快速拖甩速度延续、越界回弹、精确曲率逐像素对照、短内容 `fitsContent` 和键盘联动（当前连接详情无输入框）。更多字号、跨设备和完整页面视觉 parity 继续保留。
-- 横屏布局和小屏滚动策略的全页面覆盖。
-- 无障碍语义、内容描述、触控区域和系统动态字体矩阵的全页面覆盖。
-- 截图基线和 Compose screenshot regression；当前已完成 Redmi 单设备观测页 Requests/DNS/Logs 六状态组件基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、Proxy 代理组默认卡片/初始选择对话框两状态基线、Dashboard 两场景基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态整页基线、Connections 停止态/运行态两状态基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Profiles 空态/选中自定义配置态两状态基线、Profiles 选中配置横竖屏矩阵和 Profiles 选中配置 1.3x/2.0x 大字号矩阵，跨设备矩阵仍待补齐；Connections 详情已形成深色默认/大字号四份、浅色横竖屏四份与小窗口两份独立截图基线，跨设备矩阵仍待补齐，真实 MainActivity 的观测清空/导出行为已有运行态证据，但尚未形成页面级截图基线。
+- 横屏布局和小屏滚动策略的全页面覆盖；按当前验收范围，后续不执行横屏与大字号测试。
+- 无障碍语义、内容描述和触控区域的全页面覆盖；Dashboard 开关已提供动作语义和 48dp 以上触控区域，Dock/其他页面仍需完整审计。
+- 截图基线和 Compose screenshot regression；当前已完成 Redmi 单设备观测页 Requests/DNS/Logs 六状态组件基线、Proxy 代理组默认卡片/初始选择对话框两状态基线、Dashboard 停止/运行/系统就绪深色基线及浅色默认/运行竖屏基线、Connections 停止态/运行态两状态基线、Profiles 空态/选中自定义配置态两状态基线；其他页面仍待补齐。历史字号/方向矩阵仅存档，不作为后续执行门槛。Connections 详情独立截图矩阵与真实 MainActivity 观测清空/导出证据保持原有状态。
 
 完成门槛：
 

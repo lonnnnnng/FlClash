@@ -1,4 +1,10 @@
-# KClash Dashboard fixed-state PNG baselines.
-# Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0, dark mode.
-state=default sha256=557961817f608d1eb34033928b354f515f24cc546320acbc4b2771d9640e724e
-state=system_ready sha256=08dad777abcfe55e86aba952ef355a01a0f757feb45802942f0c3c255fd58607
+# KClash Dashboard fixed-state PNG baselines after the native visual shell alignment.
+# Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0.
+# Future Dashboard acceptance runs only portrait default/running and light-theme states.
+state=default sha256=464738e30a98f0049c1cb6379559c125d8fbfe90491baee31341bef861c86c2c
+state=system_ready sha256=47b0ac48bcf9b38022979f38b1fa4e87dd926494836148ebdcf8eeabc80aa905
+state=running sha256=0d7821c9ffb9e543cb50cea53f9eb9e14e97ced739f0b6b814588330b05f64e7
+
+# Light theme.
+state=light_default sha256=a8282432638a383be3ebec20b220d66ec14da3c299146968f124651ec6fe7755
+state=light_running sha256=893e382e6b88b9ae4e314ed7da7f70d8eb3c19497aa350228cfe1d9e683fc139
