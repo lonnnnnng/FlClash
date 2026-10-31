@@ -1,0 +1,12 @@
+# KClash ConnectionModalSheet light PNG baselines, reviewed 2026-10-31.
+# Device: Redmi Note 8 Pro, Android 16/API 36, density 440, system font scale 1.0.
+# Light theme is injected into the debug host; the device-wide theme is unchanged.
+# Portrait: 0.9 available-height detent. Landscape: full-height side panel, width clamp(40%, 360dp, 560dp).
+# Content PNG excludes handle/system bars; whole-screen PNG manually verifies panel and safe-area placement.
+state=light_portrait_top sha256=79c82f2f62af1d189ec3082ec82406bca4eba90b9f13d362a89a5a3831d08666
+state=light_portrait_bottom sha256=ed2d6c8f8350dc5770a6586ace33751d193dfb695773ef62a56d4c6d29cac67d
+state=light_landscape_top sha256=23c1bc4aa5e65997322c179df342e85aa3d171e2318e6f6ba69bc2173ff660eb
+state=light_landscape_bottom sha256=3922ea63a1da30ec5637cf51935f0a23b001ddea3f91cbd7e9f5e8187486ff83
+# Same device, temporary actual wm size 990x1760 (360x640dp); previous size restored in finally.
+state=small_light_top sha256=0dc934dd4bbe284ae48fd9cb15786d66867081db1f6f78f02240e0be569eb7c2
+state=small_light_bottom sha256=f00476b91d2a27816ce09fd487b9febcb325fd166fb242ff02449eb6f6ecf03f

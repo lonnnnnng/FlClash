@@ -31,7 +31,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,7 +41,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
@@ -58,7 +56,6 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,7 +68,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -2742,7 +2738,6 @@ private fun ConnectionRow(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ConnectionDetailSheet(
     connection: CoreConnection,
@@ -2750,7 +2745,7 @@ private fun ConnectionDetailSheet(
     onCopyText: (String) -> Unit,
 ) {
     val metadata = connection.metadata
-    val sheetState = rememberModalBottomSheetState()
+    val contentScrollState = rememberScrollState()
     var copyMessage by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(copyMessage) {
         if (copyMessage != null) {
@@ -2762,18 +2757,12 @@ private fun ConnectionDetailSheet(
         // 作者 long：复制反馈放在面板内，避免外层 Snackbar 被模态遮罩盖住；失败时不能显示成功。
         copyMessage = runCatching { onCopyText(value) }.fold({ "已复制" }, { "复制失败" })
     }
-    val maxContentHeight = (LocalConfiguration.current.screenHeightDp * 0.84f).dp
-    ModalBottomSheet(
-        modifier = Modifier.testTag("connections_detail_sheet"),
-        sheetState = sheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle(Modifier.testTag("connection_detail_handle")) },
-        onDismissRequest = onDismiss,
-    ) {
+    ConnectionModalSheet(onDismiss = onDismiss, contentScrollState = contentScrollState) {
         Column(
             modifier = Modifier
                 .testTag("connections_detail_content")
                 .fillMaxWidth()
-                .heightIn(max = maxContentHeight)
+                .weight(1f)
                 .padding(horizontal = 24.dp),
         ) {
             Row(
@@ -2794,7 +2783,7 @@ private fun ConnectionDetailSheet(
                 modifier = Modifier
                     .testTag("connections_detail_dialog")
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(contentScrollState),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 ConnectionDetailSection(

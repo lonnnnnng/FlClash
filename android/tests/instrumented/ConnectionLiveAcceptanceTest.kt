@@ -199,7 +199,7 @@ class ConnectionLiveAcceptanceTest {
     }
 
     private fun expandSheet() {
-        val actions = compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsActions.Expand))
+        val actions = compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsActions.Expand) and hasTestTag("connections_detail_sheet"))
         if (actions.fetchSemanticsNodes().isNotEmpty()) actions[0].performSemanticsAction(SemanticsActions.Expand) { it() }
         compose.waitForIdle()
     }

@@ -4,18 +4,22 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.ParcelFileDescriptor
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -23,6 +27,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -114,8 +119,8 @@ class ConnectionsInstrumentedTest {
         assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
         val bottomHash = captureHash("detail_default_bottom", dialog = true)
         assertEquals(
-            "top=544f945f3c6495d2ad36cef3f3d734d7db457d34fecf4c0840fb831b80df6254\n" +
-                "bottom=a2268884f7cfb9a898d3041d763b5928ea251d30c6f6fd2db47f744b81e00e2a",
+            "top=ab1204b05bce90e6d4431bb9f4ade38043c2f1d257889b57244d5060d57bcea6\n" +
+                "bottom=ef928ddde3f1d0ce88cd0e84803327bd91da8b476c5db00ac0901b12287567d3",
             "top=$topHash\nbottom=$bottomHash",
         )
     }
@@ -147,8 +152,8 @@ class ConnectionsInstrumentedTest {
             composeRule.onNodeWithTag("connections_detail_dialog").assertDoesNotExist()
             // 作者 long：两种方向都采样后再报告差异，首次截图变化不能阻断横屏可达性的独立检查。
             assertEquals(
-                "portrait=8ba154066394417aa37fff115f58b25664a72ee2efbb6f1306cca5778204dea5\n" +
-                    "landscape=6c9282ac26020493995b3fc56232fb227ff81d403ff4735a06ab66ad31aa819f",
+                "portrait=0f0087659342aece563b627f51706fb18d358789bd3e3e6e6bdccc464e896823\n" +
+                    "landscape=7f4843c3c31a2899e4b693071ded28f92b10a7a5d3886c1e1fe6b3d7e5cbf0ea",
                 "portrait=$portraitHash\nlandscape=$landscapeHash",
             )
         } finally {
@@ -201,8 +206,174 @@ class ConnectionsInstrumentedTest {
         composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
         composeRule.onNodeWithTag("connections_row_0").performClick()
         composeRule.onNodeWithTag("connections_detail_sheet").performTouchInput { swipeDown() }
-        composeRule.waitForIdle()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodes(hasTestTag("connections_detail_sheet")).fetchSemanticsNodes().isEmpty()
+        }
         composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
+    }
+
+    @Test
+    fun sheetDetentsSupportTapDragSemanticsAndScrimDismissal() {
+        composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
+        composeRule.onNodeWithTag("connections_row_0").performClick()
+        assertSheetHeight(9f / 16f)
+        composeRule.onNodeWithTag("connection_detail_handle").performClick()
+        assertSheetHeight(0.9f)
+        composeRule.activityRule.scenario.recreate()
+        assertSheetHeight(0.9f)
+        composeRule.onNodeWithTag("connections_detail_sheet").performSemanticsAction(SemanticsActions.Collapse) { it() }
+        assertSheetHeight(9f / 16f)
+        val height = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot.height
+        composeRule.onNodeWithTag("connections_detail_sheet").performTouchInput {
+            swipe(Offset(width / 2f, 40f), Offset(width / 2f, 40f - height * 0.4f), 800)
+        }
+        assertSheetHeight(0.9f)
+        composeRule.onNodeWithTag("connections_detail_sheet").performTouchInput {
+            swipe(Offset(width / 2f, 40f), Offset(width / 2f, 40f + height * 0.35f), 1000)
+        }
+        assertSheetHeight(9f / 16f)
+        composeRule.onNodeWithTag("connection_detail_scrim").performTouchInput { click(Offset(2f, 2f)) }
+        composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
+    }
+
+    @Test
+    fun scrollingFromContentMiddleDoesNotCollapseSheetWithRemainingFling() {
+        composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
+        composeRule.onNodeWithTag("connections_row_0").performClick()
+        expandDetailSheet()
+        assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
+        val content = composeRule.onNodeWithTag("connections_detail_dialog")
+        assertTrue(content.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value() > 0f)
+        // 作者 long：一次快速下滑从正文底部回顶，剩余惯性不能越过正文边界收起或关闭详情。
+        content.performTouchInput {
+            swipe(Offset(width / 2f, height * 0.15f), Offset(width / 2f, height * 0.95f), 180)
+        }
+        composeRule.waitUntil(5_000) {
+            content.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value() == 0f
+        }
+        assertSheetHeight(0.9f)
+        composeRule.onNodeWithText("基本信息").assertIsDisplayed()
+        // 作者 long：下一次从顶部起手仍可收起，不能靠全面禁用正文拖动来修复误关闭。
+        val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
+        content.performTouchInput {
+            swipe(Offset(width / 2f, 24f), Offset(width / 2f, 24f + viewport.height * 0.35f), 1000)
+        }
+        assertSheetHeight(9f / 16f)
+    }
+
+    @Test
+    fun lightDetailPortraitAndLandscapeMatchBaselines() {
+        composeRule.activityRule.scenario.onActivity { it.setDarkTheme(false); it.showRunningScenario() }
+        composeRule.onNodeWithTag("connections_row_0").performClick()
+        expandDetailSheet()
+        val actual = linkedMapOf<String, String>()
+        try {
+            actual["light_portrait_top"] = captureHash("detail_light_portrait_top", dialog = true)
+            assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
+            actual["light_portrait_bottom"] = captureHash("detail_light_portrait_bottom", dialog = true)
+            composeRule.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
+            composeRule.waitUntil(5_000) { composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
+            assertSidePanelBounds()
+            composeRule.onNodeWithText("基本信息").performScrollTo()
+            actual["light_landscape_top"] = captureHash("detail_light_landscape_top", dialog = true)
+            assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
+            actual["light_landscape_bottom"] = captureHash("detail_light_landscape_bottom", dialog = true)
+            composeRule.onNodeWithTag("connection_detail_DNS 模式").performScrollTo().performClick()
+            assertEquals("fake-ip", composeRule.activity.lastCopiedValue)
+            composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+        } finally {
+            restorePortrait()
+        }
+        assertEquals(mapOf(
+            "light_portrait_top" to "79c82f2f62af1d189ec3082ec82406bca4eba90b9f13d362a89a5a3831d08666",
+            "light_portrait_bottom" to "ed2d6c8f8350dc5770a6586ace33751d193dfb695773ef62a56d4c6d29cac67d",
+            "light_landscape_top" to "23c1bc4aa5e65997322c179df342e85aa3d171e2318e6f6ba69bc2173ff660eb",
+            "light_landscape_bottom" to "3922ea63a1da30ec5637cf51935f0a23b001ddea3f91cbd7e9f5e8187486ff83",
+        ), actual)
+    }
+
+    @Test
+    fun smallWindowUsesActualBoundsAndKeepsLastFieldReachable() {
+        val previousWidth = composeRule.activity.window.decorView.width
+        val previousOverride = Regex("Override size: (\\d+x\\d+)").find(shell("wm size"))?.groupValues?.get(1)
+        val density = composeRule.activity.resources.displayMetrics.density
+        val widthPx = (360 * density).toInt()
+        val heightPx = (640 * density).toInt()
+        val actual = linkedMapOf<String, String>()
+        try {
+            // 作者 long：Dialog 是独立窗口，必须改变真机实际可用显示区域，给背景加 size 无法证明面板适应小窗口。
+            shell("wm size ${widthPx}x$heightPx")
+            composeRule.waitUntil(10_000) { composeRule.activity.window.decorView.width == widthPx }
+            composeRule.activityRule.scenario.onActivity { it.setDarkTheme(false); it.showRunningScenario() }
+            composeRule.onNodeWithTag("connections_row_0").performClick()
+            assertSheetHeight(9f / 16f)
+            expandDetailSheet()
+            assertSheetHeight(0.9f)
+            actual["small_light_top"] = captureHash("detail_small_light_top", dialog = true)
+            assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
+            actual["small_light_bottom"] = captureHash("detail_small_light_bottom", dialog = true)
+            composeRule.onNodeWithContentDescription("关闭连接详情").assertIsDisplayed().performClick()
+        } finally {
+            shell("wm size ${previousOverride ?: "reset"}")
+            composeRule.waitUntil(10_000) { composeRule.activity.window.decorView.width == previousWidth }
+        }
+        assertEquals(mapOf(
+            "small_light_top" to "0dc934dd4bbe284ae48fd9cb15786d66867081db1f6f78f02240e0be569eb7c2",
+            "small_light_bottom" to "f00476b91d2a27816ce09fd487b9febcb325fd166fb242ff02449eb6f6ecf03f",
+        ), actual)
+    }
+
+    @Test
+    fun disabledSystemAnimationsStillAllowExpandCollapseAndClose() {
+        val previousScale = shell("settings get global animator_duration_scale").trim()
+        try {
+            shell("settings put global animator_duration_scale 0")
+            composeRule.activityRule.scenario.recreate()
+            composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
+            composeRule.onNodeWithTag("connections_row_0").performClick()
+            assertSheetHeight(9f / 16f)
+            composeRule.onNodeWithTag("connection_detail_handle").performClick()
+            assertSheetHeight(0.9f)
+            composeRule.onNodeWithTag("connection_detail_handle").performClick()
+            assertSheetHeight(9f / 16f)
+            androidx.test.espresso.Espresso.pressBack()
+            composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
+        } finally {
+            if (previousScale == "null") shell("settings delete global animator_duration_scale")
+            else shell("settings put global animator_duration_scale $previousScale")
+        }
+    }
+
+    private fun restorePortrait() {
+        composeRule.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT }
+        composeRule.waitUntil(5_000) { composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT }
+    }
+
+    private fun assertSheetHeight(fraction: Float) {
+        // 作者 long：手势松手由独立协程完成归档；等待目标几何后仍执行严格像素断言，不用固定延迟掩盖卡住的动画。
+        composeRule.waitUntil(5_000) {
+            val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
+            val panel = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode()
+            panel.config[SemanticsProperties.StateDescription] == (if (fraction == 0.9f) "已展开" else "半展开") &&
+                kotlin.math.abs(viewport.height * fraction - panel.boundsInRoot.height) <= 2f
+        }
+        val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
+        val panel = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot
+        assertEquals("面板高度必须基于安全区内实际窗口", viewport.height * fraction, panel.height, 2f)
+        assertEquals(viewport.bottom, panel.bottom, 2f)
+        assertEquals(viewport.width, panel.width, 2f)
+    }
+
+    private fun assertSidePanelBounds() {
+        composeRule.waitForIdle()
+        val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
+        val panel = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot
+        val density = composeRule.activity.resources.displayMetrics.density
+        val expectedWidth = (viewport.width * 0.4f).coerceIn(360 * density, 560 * density)
+        assertEquals(expectedWidth, panel.width, 2f)
+        assertEquals(viewport.height, panel.height, 2f)
+        assertEquals(viewport.right, panel.right, 2f)
+        assertTrue(panel.top >= viewport.top)
     }
 
     private fun shell(command: String): String = ParcelFileDescriptor.AutoCloseInputStream(
@@ -272,9 +443,10 @@ class ConnectionsInstrumentedTest {
 
     private fun expandDetailSheet() {
         // 作者 long：半展开面板的底部尚在屏外；先使用真实展开语义，再验证字段滚动，不能把屏外存在当成可见。
-        val actions = composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsActions.Expand))
+        val actions = composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsActions.Expand) and hasTestTag("connections_detail_sheet"))
         if (actions.fetchSemanticsNodes().isNotEmpty()) {
             actions[0].performSemanticsAction(SemanticsActions.Expand) { it() }
+            assertSheetHeight(0.9f)
         }
         composeRule.waitForIdle()
     }

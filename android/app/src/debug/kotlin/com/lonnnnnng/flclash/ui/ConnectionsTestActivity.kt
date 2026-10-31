@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,6 +33,7 @@ class ConnectionsTestActivity : ComponentActivity() {
         private set
     private var scenario by mutableStateOf(ConnectionsScenario.STOPPED)
     private var fontScaleValue by mutableStateOf(1f)
+    private var darkThemeOverride by mutableStateOf<Boolean?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +41,7 @@ class ConnectionsTestActivity : ComponentActivity() {
         savedInstanceState?.let {
             scenario = ConnectionsScenario.valueOf(it.getString("scenario", ConnectionsScenario.STOPPED.name))
             fontScaleValue = it.getFloat("fontScale", 1f)
+            darkThemeOverride = if (it.containsKey("darkTheme")) it.getBoolean("darkTheme") else null
         }
         setContent {
             val runtimeState = when (scenario) {
@@ -78,7 +81,7 @@ class ConnectionsTestActivity : ComponentActivity() {
                 // 作者 long：字体矩阵只改变文字缩放，不改变设备密度，确保连接详情的换行差异可重复。
                 LocalDensity provides Density(baseDensity.density, fontScale = fontScaleValue),
             ) {
-                KClashTheme {
+                KClashTheme(darkTheme = darkThemeOverride ?: isSystemInDarkTheme()) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -121,11 +124,16 @@ class ConnectionsTestActivity : ComponentActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("scenario", scenario.name)
         outState.putFloat("fontScale", fontScaleValue)
+        darkThemeOverride?.let { outState.putBoolean("darkTheme", it) }
         super.onSaveInstanceState(outState)
     }
 
     fun setFontScale(value: Float) {
         fontScaleValue = value
+    }
+
+    fun setDarkTheme(value: Boolean) {
+        darkThemeOverride = value
     }
 
     private fun sampleConnection() = CoreConnection(
