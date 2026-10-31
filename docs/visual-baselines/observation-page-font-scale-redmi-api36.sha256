@@ -1,8 +1,8 @@
 # KClash ObservationPage running-state font-scale PNG baselines.
 # Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0.
-fontScale=1.3 requests sha256=ded6474b0ca13e5af4d2b81f59434dd5f1425382ebbafd4dfaf2fe8de82ab373
+fontScale=1.3 requests sha256=0f89025061b8d9fd35fd4daca0cf0291777f5c9aa3a28ef5907b19fe6a45b80e
 fontScale=1.3 dns sha256=cabbe76d6f3400a7b48f11c4d2503b60e87599ffb777a1c6870c9eabf8ae81e0
 fontScale=1.3 logs sha256=a1c76e593d770e2e98d1ed313fb3e37c0c48c11fe5a8877037d0d82348feba39
-fontScale=2.0 requests sha256=d2c796b148a00180ccb35f19b752387e8c2b28096d4de2961ae8204f9eed576b
+fontScale=2.0 requests sha256=99716ddfdfba334a6a4fc0ebdaa646c200229114d5681ec7f491099ad465b1ec
 fontScale=2.0 dns sha256=6da0e5f4c9cb5add1227b90f3373f5dde5b57b7417a8f1743589fce58855e25f
 fontScale=2.0 logs sha256=503bf138c393346bccf59833a1a2905a59f1605f651c83426d0133b9d025d692

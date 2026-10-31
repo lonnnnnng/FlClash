@@ -33,15 +33,34 @@ class ConnectionsTestActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 作者 long：重建验收必须保留相同输入，才能区分详情恢复失败和测试场景被意外重置。
+        savedInstanceState?.let {
+            scenario = ConnectionsScenario.valueOf(it.getString("scenario", ConnectionsScenario.STOPPED.name))
+            fontScaleValue = it.getFloat("fontScale", 1f)
+        }
         setContent {
             val runtimeState = when (scenario) {
                 ConnectionsScenario.STOPPED -> CoreRuntimeStatus.STOPPED
-                ConnectionsScenario.RUNNING -> CoreRuntimeStatus.RUNNING
+                else -> CoreRuntimeStatus.RUNNING
             }
             val state = when (scenario) {
                 ConnectionsScenario.STOPPED -> ConnectionsUiState()
                 ConnectionsScenario.RUNNING -> ConnectionsUiState(
                     connections = listOf(sampleConnection()),
+                )
+                ConnectionsScenario.RUNNING_EMPTY -> ConnectionsUiState()
+                ConnectionsScenario.RUNNING_LONG -> ConnectionsUiState(
+                    connections = listOf(sampleConnection().let { connection ->
+                        connection.copy(
+                            metadata = connection.metadata.copy(
+                                host = LONG_HOST,
+                                processPath = LONG_PROCESS_PATH,
+                                specialProxy = "GLOBAL",
+                                specialRules = "special-rule",
+                            ),
+                            rulePayload = LONG_HOST,
+                        )
+                    }),
                 )
             }
             val baseDensity = LocalDensity.current
@@ -72,6 +91,24 @@ class ConnectionsTestActivity : ComponentActivity() {
         scenario = ConnectionsScenario.RUNNING
     }
 
+    fun showEmptyRunningScenario() {
+        scenario = ConnectionsScenario.RUNNING_EMPTY
+    }
+
+    fun showStoppedScenario() {
+        scenario = ConnectionsScenario.STOPPED
+    }
+
+    fun showLongRunningScenario() {
+        scenario = ConnectionsScenario.RUNNING_LONG
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("scenario", scenario.name)
+        outState.putFloat("fontScale", fontScaleValue)
+        super.onSaveInstanceState(outState)
+    }
+
     fun setFontScale(value: Float) {
         fontScaleValue = value
     }
@@ -99,9 +136,16 @@ class ConnectionsTestActivity : ComponentActivity() {
         rule = "MATCH",
         rulePayload = "",
     )
+
+    companion object {
+        const val LONG_HOST = "a-long-hostname-for-connection-detail-scroll-verification.api.example.test"
+        const val LONG_PROCESS_PATH = "/data/app/com.example.client/long-installation-directory/native-library/arm64/libclient.so"
+    }
 }
 
 private enum class ConnectionsScenario {
     STOPPED,
     RUNNING,
+    RUNNING_EMPTY,
+    RUNNING_LONG,
 }

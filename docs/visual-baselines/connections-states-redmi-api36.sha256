@@ -1,4 +1,4 @@
 # KClash ConnectionsCard fixed-state PNG baselines.
 # Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0, dark mode.
 state=stopped_empty sha256=07736d6f23751a9f8f9b5caf292562aba4b273eb73e0d78c10beaef487e4087f
-state=running_non_empty sha256=52ec482ca5537a64a2091d563f4fb95ed9fea2d61562cca86d4499e0a88e2920
+state=running_non_empty sha256=e636a875e0244931c81e59e5205eacaac38dbe104fe9dfe8996ee53d14c25860

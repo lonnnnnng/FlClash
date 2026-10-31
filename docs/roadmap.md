@@ -2,7 +2,7 @@
 
 > 文档类型：产品迁移路线图、功能矩阵、依赖图和验收门槛
 >
-> 最后核对：2026-10-29（北京时间）
+> 最后核对：2026-10-31（北京时间）
 >
 > 当前基线：`kotlin` 分支；首页/配置/代理/连接/观测导航、Profiles ViewModel、Profile 排序、Scripts 本地资源管理、远程脚本导入/手动同步、Profile 绑定与 JavaScript 执行边界、内存 Room、WebDAV Keystore 凭据/手动备份、认证/离线反馈、Always-on VPN 系统设置引导、Compose instrumentation 和 Redmi 真机验收均已完成首轮切片；Profiles 页面已补齐空态/选中态、横竖屏和 1.3x/2.0x 大字号视觉基线，Dashboard 默认态与运行态已补齐统计/诊断交互、截图和 1.3x/2.0x 大字号视觉基线，Connections 运行态已补齐 1.3x/2.0x 大字号视觉基线，Observation Requests/DNS/Logs 运行态已补齐 1.3x/2.0x 大字号视觉基线
 
@@ -57,10 +57,10 @@
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
 | 单元测试 | 220 项通过，失败 0，错误 0，跳过 0 |
-| Instrumentation | 既有 87 项稳定全量基线；本轮新增真实 MainActivity 观测页空态/三页签导航、Profiles Rules/Proxies/Proxy Groups/Providers/DNS/Dialers 高级编辑七个定向用例、观测页六状态截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、Proxy 代理组两状态截图基线、Dashboard 两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 两状态截图基线、Connections 运行态 1.3x/2.0x 大字号矩阵和 Profiles 三项视觉矩阵（空态/选中态、横竖屏、1.3x/2.0x 大字号）定向用例通过；本轮完整 `DashboardInstrumentedTest` 为 5 项，失败 0、错误 0、跳过 0；真实 MainActivity 观测页清空/导出验收已完成，随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，未替换稳定基线；设备为 Redmi Note 8 Pro（Android 16/API 36） |
+| Instrumentation | 既有 87 项稳定全量基线；本轮新增真实 MainActivity 观测页空态/三页签导航、Profiles Rules/Proxies/Proxy Groups/Providers/DNS/Dialers 高级编辑七个定向用例、观测页六状态截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、Proxy 代理组两状态截图基线、Dashboard 两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 两状态截图基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Connections 连接行详情打开/关闭回归和 Profiles 三项视觉矩阵（空态/选中态、横竖屏、1.3x/2.0x 大字号）定向用例通过；此前完整 `DashboardInstrumentedTest` 为 5 项；2026-10-31 完整 `ConnectionsInstrumentedTest` 6 项和 `ObservationDetailsInstrumentedTest` 4 项均通过，共 10 项，失败 0、错误 0、跳过 0；真实 MainActivity 观测页清空/导出验收已完成，随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，未替换稳定基线；设备为 Redmi Note 8 Pro（Android 16/API 36） |
 | Debug 构建 | `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 已通过 |
 | Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` |
-| Debug 原生库 | APK SHA-256 为 `c2b8e4eb3341f8e0ad6bccaa1aa89d392b3678956f539c0d442d949fdf943355`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
+| Debug 原生库 | APK SHA-256 为 `90116692e1ab704c1f20a04bf7fe1eb62f9892940d0d227c7582173fe2ecb260`；APK 内原生库全部位于 `lib/arm64-v8a/`，包含 Mihomo `libclash.so` |
 | Release 构建 | `./gradlew :app:assembleRelease :app:lintRelease --no-daemon` 已通过；当前输出为未签名预发布 APK，尚未创建独立 release keystore |
 | 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、进程重建后的选择 UI 恢复、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、代理选择 Activity 页面宿主选择与自动恢复、Proxy 代理组默认卡片/初始选择对话框截图基线、Dashboard 默认停止态/系统就绪态截图基线、主 Activity 顶层导航与观测页签跨页面/重建状态保持、观测页 Requests/DNS/Logs 停止态空态与三页签真实宿主回归、观测页六状态组件截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号截图基线、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、真实 MainActivity DNS/日志清空与日志导出且 Requests 保留、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、Always-on VPN 系统设置引导卡片、Access 页面级剪贴板导入/导出 E2E、Access 直接选择保存后 Room 重建恢复、Access 无结果搜索后列表恢复、Access 当前结果全选/清除及放弃修改真实宿主 E2E、Access 关闭态/脏状态截图基线、横屏重排、1.5/2.0 倍字体可达性、系统字体 1.3/2.0 回归、Access 顶栏脏状态保存、菜单层级和完整搜索态定向回归、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
 
@@ -253,6 +253,7 @@ flowchart LR
 - `MainViewModel` 只在核心运行且首页 Activity 可见时每秒轮询统计；页面进入后台会取消收集，停止或进入错误时清理/回显状态。
 - Compose 首页已提供运行统计卡片，展示上传、下载、连接数和累计流量，并覆盖停止态、加载态和错误态。
 - `CoreBridge`、`CoreRuntimeManager` 和 `MainViewModel` 已接入 Mihomo `getConnections`，首页显示活动连接数量、目标、进程、代理链、规则和上下行计数。
+- Connections 摘要行可打开按分组展示已映射字段的详情；点击快照保留至关闭，在连接结束、核心停止和 Activity 重建后仍可读取；摘要及详情的代理链顺序均与 Flutter 反序展示一致。
 - `CoreBridge` 已接入 `updateEventListener()`，解析 Go 核心的 `message.arguments` 批次，并将 `request`、`requestTraffic` 事件转换为 Kotlin 领域事件。
 - `CoreBridge` 已将 `dns`、`log` 事件转换为稳定的 Kotlin `CoreDnsQuery` 和 `CoreEvent.Log`，并覆盖 DNS 字段、日志级别和损坏事件丢弃测试。
 - `CoreRuntimeManager` 在核心运行期间安装事件监听器和 Mihomo 日志泵，停止或启动失败时成对释放；事件流不经过 Compose 或 gomobile 生成类型。
@@ -459,7 +460,8 @@ flowchart LR
 - Profiles 页面视觉首片：空态、选中自定义配置态、横屏/竖屏和 1.3x/2.0x 大字号均由 Debug 固定宿主提供稳定截图节点；大字号矩阵基线记录在 `docs/visual-baselines/profiles-font-scale-redmi-api36.sha256`，不改变正式 Profiles ViewModel、Room 或文件写回逻辑。
 - Dashboard 默认态大字号视觉首片：固定停止态 Dashboard 页面在 1.3x/2.0x 下保持可滚动卡片组合，基线记录在 `docs/visual-baselines/dashboard-font-scale-redmi-api36.sha256`，不读取系统设置、Room、网络、VPN、Mihomo 核心或 `1.yaml`。
 - Dashboard 运行态视觉与交互首片：固定 `RUNNING` 宿主注入非零上传/下载速率、累计流量、连接数、HTTP 200、代理链、规则、延迟以及 Requests/DNS/Logs 各一条证据；验证 Runtime/统计卡片可见、停止入口可见和诊断摘要完整，并记录运行态整页截图与 1.3x/2.0x 大字号基线，仍不读取 Room、系统设置、已安装应用、网络、VPN、Mihomo 核心或 `1.yaml`。
-- Connections 运行态大字号视觉首片：固定单条活动连接在 1.3x/2.0x 下保持长主机名、进程路径和连接元数据可滚动，基线记录在 `docs/visual-baselines/connections-font-scale-redmi-api36.sha256`，不读取 Room、网络、VPN、Mihomo 核心或 `1.yaml`。
+- Connections 连接详情：摘要行可点击，按“基本信息 / 地址 / 代理”展示已映射字段；单条点击快照在连接消失、核心停止及 Activity 重建后仍可阅读，关闭后重建不再弹出。摘要和详情均按 Flutter 反序显示代理链，Requests 仍只读复用摘要。详情子树逐字段滚动可达，已补齐默认字号顶部/底部及真实系统字体 2.0x 横竖屏四份截图基线（`docs/visual-baselines/connections-detail-redmi-api36.sha256`）。
+- Connections 运行态摘要字号矩阵：固定单条活动连接在页面注入的 1.3x/2.0x 下验证摘要换行与截断；完整长主机名和进程路径的滚动另由真实系统字体 2.0x 详情测试覆盖，基线记录在 `docs/visual-baselines/connections-font-scale-redmi-api36.sha256`，不读取 Room、网络、VPN、Mihomo 核心或 `1.yaml`。
 - Observation 运行态大字号视觉首片：固定 Requests、DNS、Logs 各一条记录，在 1.3x/2.0x 下保持页签切换、字段换行和滚动可达，六个基线记录在 `docs/visual-baselines/observation-page-font-scale-redmi-api36.sha256`，不读取 Room、网络、VPN、Mihomo 核心或 `1.yaml`。
 - Observation 页面组件交互首片：在固定运行态宿主中验证 DNS 与日志分别清空、日志导出回调以及 Requests 数据保持不受影响；真实 `MainActivity` 的运行数据清空与文件导出已在 Redmi 真机完成，跨设备和完整页面级端到端覆盖仍待补齐。
 
@@ -471,7 +473,7 @@ flowchart LR
 - Flutter 连续圆角、底部面板、弹层和交互节奏。
 - 横屏布局和小屏滚动策略的全页面覆盖。
 - 无障碍语义、内容描述、触控区域和系统动态字体矩阵的全页面覆盖。
-- 截图基线和 Compose screenshot regression；当前已完成 Redmi 单设备观测页 Requests/DNS/Logs 六状态组件基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、Proxy 代理组默认卡片/初始选择对话框两状态基线、Dashboard 两场景基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态整页基线、Connections 停止态/运行态两状态基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Profiles 空态/选中自定义配置态两状态基线、Profiles 选中配置横竖屏矩阵和 Profiles 选中配置 1.3x/2.0x 大字号矩阵，跨设备矩阵仍待补齐；真实 MainActivity 的观测清空/导出行为已有运行态证据，但尚未形成页面级截图基线。
+- 截图基线和 Compose screenshot regression；当前已完成 Redmi 单设备观测页 Requests/DNS/Logs 六状态组件基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、Proxy 代理组默认卡片/初始选择对话框两状态基线、Dashboard 两场景基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态整页基线、Connections 停止态/运行态两状态基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Profiles 空态/选中自定义配置态两状态基线、Profiles 选中配置横竖屏矩阵和 Profiles 选中配置 1.3x/2.0x 大字号矩阵，跨设备矩阵仍待补齐；Connections 详情已形成默认字号顶部/底部和真实系统字体 2.0x 横竖屏四份独立截图基线，浅色主题及跨设备矩阵仍待补齐，真实 MainActivity 的观测清空/导出行为已有运行态证据，但尚未形成页面级截图基线。
 
 完成门槛：
 
@@ -486,15 +488,16 @@ flowchart LR
 当前已有：
 
 - 220 项 JVM 单元测试，失败 0、错误 0。
+- 2026-10-31 连接详情收敛：Connections 6 项 + Observation 4 项真机回归全部通过；覆盖详情快照恢复、真实系统字体 2.0x 横竖屏及详情独立截图，真实核心详情 E2E 尚待完成。
 - Debug APK 构建和 arm64 产物检查。
 - `:app:lintDebug` 已通过；当前有 36 条非阻断 Warning、5 条 Hint，错误为 0。
-- 既有 87 项 instrumentation 稳定基线；本轮新增真实 MainActivity 无结果搜索恢复、观测页停止态空态用例、观测页六状态截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、观测页 DNS/日志独立清空与日志导出组件交互用例、Proxy 代理组两状态截图基线、Dashboard 两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 两状态截图基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Profiles 两状态截图基线、Profiles 横竖屏矩阵和 Profiles 1.3x/2.0x 大字号矩阵用例，定向用例均通过；真实 MainActivity 观测页清空/导出端到端已由本轮 Redmi 真机操作补齐，当前又重新验证了真实 MainActivity Profiles 创建→编辑→删除组合流程。随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，出现既有宿主失败；停用干扰应用后的复跑 XML 为 `tests=0`，未形成有效类级证据，因此不替换稳定基线。
+- 既有 87 项 instrumentation 稳定基线；本轮新增真实 MainActivity 无结果搜索恢复、观测页停止态空态用例、观测页六状态截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、观测页 DNS/日志独立清空与日志导出组件交互用例、Proxy 代理组两状态截图基线、Dashboard 两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 两状态截图基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Connections 连接行详情打开/关闭回归、Profiles 两状态截图基线、Profiles 横竖屏矩阵和 Profiles 1.3x/2.0x 大字号矩阵用例，定向用例均通过；真实 MainActivity 观测页清空/导出端到端已由本轮 Redmi 真机操作补齐，当前又重新验证了真实 MainActivity Profiles 创建→编辑→删除组合流程。随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，出现既有宿主失败；停用干扰应用后的复跑 XML 为 `tests=0`，未形成有效类级证据，因此不替换稳定基线。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
 待完成：
 
-- 完整页面级 Compose/Instrumentation 测试，当前已新增 Access 真实宿主直接选择→保存→重建恢复、无结果搜索恢复、横屏重排、1.5/2.0 倍大字号可达性、系统字体 1.3/2.0 回归、顶栏保存/菜单层级、完整搜索态、默认卡片截图哈希基线、1.3/1.5/1.8/2.0 字体截图矩阵回归、观测页停止态空态/三页签真实宿主回归、观测页 Requests/DNS/Logs 六状态组件截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、观测页 DNS/日志独立清空与日志导出组件交互用例、Proxy 代理组默认卡片/初始选择对话框两状态截图基线、Dashboard 默认停止态/系统就绪态两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 停止态/运行态两状态截图基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Profiles 空态/选中自定义配置态两状态截图基线、Profiles 选中配置横竖屏矩阵、Profiles 选中配置 1.3x/2.0x 大字号矩阵、真实 MainActivity Profiles 创建→编辑→删除组合回归、观测非空详情入口/搜索/日志级别筛选/关闭回归，以及 Profiles Rules 高级编辑真实宿主回归；本轮补齐真实 MainActivity 观测页 DNS/日志清空、日志导出和 Requests 保留证据；停用前台干扰应用后已有 87 项稳定全量基线，跨设备截图仍需继续补齐。
+- 完整页面级 Compose/Instrumentation 测试，当前已新增 Access 真实宿主直接选择→保存→重建恢复、无结果搜索恢复、横屏重排、1.5/2.0 倍大字号可达性、系统字体 1.3/2.0 回归、顶栏保存/菜单层级、完整搜索态、默认卡片截图哈希基线、1.3/1.5/1.8/2.0 字体截图矩阵回归、观测页停止态空态/三页签真实宿主回归、观测页 Requests/DNS/Logs 六状态组件截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、观测页 DNS/日志独立清空与日志导出组件交互用例、Proxy 代理组默认卡片/初始选择对话框两状态截图基线、Dashboard 默认停止态/系统就绪态两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 停止态/运行态两状态截图基线、Connections 连接行详情打开/关闭回归、Connections 运行态 1.3x/2.0x 大字号矩阵、Profiles 空态/选中自定义配置态两状态截图基线、Profiles 选中配置横竖屏矩阵、Profiles 选中配置 1.3x/2.0x 大字号矩阵、真实 MainActivity Profiles 创建→编辑→删除组合回归、观测非空详情入口/搜索/日志级别筛选/关闭回归，以及 Profiles Rules 高级编辑真实宿主回归；本轮补齐真实 MainActivity 观测页 DNS/日志清空、日志导出和 Requests 保留证据；停用前台干扰应用后已有 87 项稳定全量基线，跨设备截图仍需继续补齐。
 - VPN 权限、TUN 停止清理、后台恢复、系统撤销 VPN、Wi‑Fi 断开恢复、进程重建和 `dumpsys connectivity` 真机测试已有证据；Wi‑Fi↔移动网络切换仍待完成。
 - 连接、请求、DNS、日志端到端测试的自动化脚本和稳定断言。
 - R8、Release 构建和 APK 签名检查。
@@ -540,7 +543,7 @@ flowchart LR
 4. Requests 页面。
 5. 基础日志流。
 
-当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 已补齐横竖屏及 1.3x/2.0x 大字号矩阵，Dashboard、Connections 和 Observation 运行态已补齐 1.3x/2.0x 大字号矩阵，Dashboard 运行态已补齐统计/诊断交互断言，下一步补跨设备截图矩阵和 Profiles/Dashboard/Connections/Observation 其他页面级交互边界。
+当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 已补齐横竖屏及 1.3x/2.0x 大字号矩阵，Dashboard、Connections 和 Observation 运行态已补齐 1.3x/2.0x 大字号矩阵，Dashboard 运行态已补齐统计/诊断交互断言，Connections 已补齐详情打开/关闭、连接消失和停止后的快照保留、Activity 重建、真实系统字体 2.0x 横竖屏可达性及独立详情截图。下一步优先补齐连接详情的字段格式和缺失元数据、Flutter 底部面板表现、真实核心详情 E2E；随后补浅色主题、跨设备矩阵和其他页面级交互边界。
 
 ### N3：DNS、日志和故障诊断
 
@@ -1652,6 +1655,26 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，系统字体 `1.0`、深色模式）运行态整页基线为 `0d27198ca05862b09b06a5d698eccf73b08f4adfb8de85a7907da165d8ada664`；1.3x 为 `4c72f9ae7da4d2743f38bf8b20e4076d339903a8ce17e278534ab3b972ff23e7`，2.0x 为 `c2b7d4d998ea9f79eda98aae598c8ed10f55a98e4de3b4bd37ce9b3cb6933d63`。
 - 已通过 `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.DashboardInstrumentedTest`，以及标准 `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`；JVM 单元测试 220 项通过、Lint 0 errors，Debug APK SHA-256 为 `c2b8e4eb3341f8e0ad6bccaa1aa89d392b3678956f539c0d442d949fdf943355`，原生库仅包含 `lib/arm64-v8a/`。
 - 本轮固定宿主不访问两条真实在线路径、工作区根目录 `1.yaml`、Room、系统设置、已安装应用、网络、VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`（Redmi 单设备 Dashboard 运行态统计/诊断交互与视觉首片）。下一步补跨设备截图矩阵和 Dashboard/Profiles/Connections/Observation 其他页面级交互边界。
+
+### 2026-10-29：Connections 连接行详情交互首片
+
+- `ConnectionsCard` 的运行态连接摘要行新增点击语义；点击后打开 Material 3 `ConnectionDetailDialog`，按“基本信息 / 地址 / 代理”展示创建时间、网络类型、进程、规则、上传/下载、主机、来源/目标、远端目标、进程路径、UID、代理链和特殊代理字段。
+- 详情只由 `ConnectionsCard` 内部选择状态驱动；关闭对话框后连接列表、`活动连接（1）` 计数和摘要行仍保持可见。`RequestsCard` 继续以只读方式复用摘要渲染，不新增连接操作或核心 API。
+- `ConnectionsInstrumentedTest.connectionsRowOpensDetailsAndClosesWithoutChangingList` 覆盖 Redmi 真机点击连接行、部分详情字段可见、关闭和列表恢复；完整类 3 项通过，失败 0、错误 0、跳过 0。原测试对代理链和规则仅检查语义节点存在，不能作为滚动可达性证据，2026-10-31 切片补齐。设备为 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）。
+- `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过，JVM 单元测试 220 项、Lint 0 errors；Debug APK SHA-256 为 `39d51b818f5ece83ffce0cb8ee822cf62652b5ef3c980be7bb749dfc576400f3`，原生库仅包含 `lib/arm64-v8a/`。
+- 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`（Redmi 单设备 Connections 连接行详情页面级交互）。下一步补连接详情独立截图基线、跨设备截图矩阵及其他页面级交互边界。
+
+### 2026-10-31：Connections 详情快照恢复与可达性收敛
+
+- 连接详情改用显式 `Bundle` Saver 保存单条点击快照；连接从轮询列表消失、核心停止后保留阅读内容，Activity 重建也无需重新向核心查找已结束连接。
+- 摘要与详情代理链改为反序展示，与 Flutter 的 `chains.reversed` 一致；共享摘要使 Requests 的三份运行态截图也需要复核。
+- 新增长主机、长进程路径、2.0x 字号横竖屏、连接消失/核心停止/Activity 重建和关闭后重建的回归；字段断言限定详情子树，逐项滚动后验证可见。
+- 最终在 Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）运行完整 `ConnectionsInstrumentedTest` 6 项和 `ObservationDetailsInstrumentedTest` 4 项，输出 `OK (10 tests)`，失败 0、错误 0、跳过 0；真实系统字体 2.0x 横竖屏测试结束后已恢复字号到原值 `1.0`。四份详情截图和六份受影响摘要截图均已人工复核。
+- 复现：先构建并用显式 serial 安装 Debug 和 AndroidTest APK，再执行 `adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest,com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner`；需要采集实际 PNG 时在 runner 名称前加入 `-e kclashCapturePng true`，图片通过 `kclash_png_name` / `kclash_png_base64` 状态传回。最终原始日志：`/tmp/kclash-connections-final-20261031.log`，采集记录：`/tmp/kclash-connections-png-channel-20261031.log`、`/tmp/kclash-connections-system-font-20261031.log`（本机临时证据，不进入仓库）。
+- 验收修正：最初只注入页面 `LocalDensity` 的测试不能证明独立 Dialog 窗口字号，已改为真实系统字体并在 `finally` 恢复；`run-as` 的 SELinux 拒绝和外部目录 `ENOENT` 也已保留在本机日志，最终使用可选 instrumentation 图片通道，不依赖文件导出权限。首次截图差异经看图确认后仅更新受代理链反序影响的六份摘要基线，DNS/Logs 基线保持一致。
+- 标准 `./gradlew test :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过，JVM 220 项通过；最终 AndroidTest 构建和 Lint 再次通过（0 Error、36 Warning、5 Hint）。Debug APK SHA-256：`90116692e1ab704c1f20a04bf7fe1eb62f9892940d0d227c7582173fe2ecb260`，原生库仅 `lib/arm64-v8a/`。
+- 当前切片状态：`DONE-VERIFIED`（Redmi 单设备详情交互、点击快照恢复和详情截图矩阵）；未访问两条真实在线路径、未读取 `1.yaml`、未启动 VPN/Mihomo。系统字号是本轮唯一调整后恢复的全局设备设置。
+- 边界：仅固定宿主组件验收，不替代真实连接详情 E2E；时间本地化、进程/UID 格式、GeoIP/ASN/DNS 元数据、Flutter 底部面板外形、浅色主题和跨设备验收仍待补齐。
 
 ## 12. 路线图维护规则
 

@@ -189,13 +189,14 @@ class ObservationDetailsInstrumentedTest {
             val png = ByteArrayOutputStream().also { output ->
                 check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
             }.toByteArray()
+            recordPng("tab$selectedTabIndex-running${runtimeState.isRunning}", png)
             return MessageDigest.getInstance("SHA-256").digest(png)
                 .joinToString("") { byte -> "%02x".format(byte) }
         }
 
         val expected = mapOf(
             "requests_stopped_empty" to "2c301cde81cb2132e7460d041ed0ec81df0d28812fe0b418ebc99eafc9bbef41",
-            "requests_running_non_empty" to "51acd93dd9bca5e9a3998ba377acbfc017d8a0ccc3b2750c8e083a96bba23540",
+            "requests_running_non_empty" to "39458f3ca452ebc589e350ae59f27982f64b03058b3ff73ae0736ec20ebef7b0",
             "dns_stopped_empty" to "f181db667a12f9db0c1cf764816b7c56b139d96792d08d80695ee5b158fdf7e4",
             "dns_running_non_empty" to "3a544d24ed1a6924f9c902f1cbb85be8fa7415bee5610b990951ffff40abce44",
             "logs_stopped_empty" to "8ef07b0b6abd266258b74000eafa2b252426a5b999af49a5cf704866ea1624d3",
@@ -269,6 +270,7 @@ class ObservationDetailsInstrumentedTest {
             val png = ByteArrayOutputStream().also { output ->
                 check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
             }.toByteArray()
+            recordPng("font$fontScaleValue-tab$selectedTabIndex", png)
             return MessageDigest.getInstance("SHA-256").digest(png)
                 .joinToString("") { byte -> "%02x".format(byte) }
         }
@@ -289,14 +291,19 @@ class ObservationDetailsInstrumentedTest {
         }
 
         assertEquals(
-            "fontScale=1.3 requests sha256=ded6474b0ca13e5af4d2b81f59434dd5f1425382ebbafd4dfaf2fe8de82ab373\n" +
+            "fontScale=1.3 requests sha256=0f89025061b8d9fd35fd4daca0cf0291777f5c9aa3a28ef5907b19fe6a45b80e\n" +
                 "fontScale=1.3 dns sha256=cabbe76d6f3400a7b48f11c4d2503b60e87599ffb777a1c6870c9eabf8ae81e0\n" +
                 "fontScale=1.3 logs sha256=a1c76e593d770e2e98d1ed313fb3e37c0c48c11fe5a8877037d0d82348feba39\n" +
-                "fontScale=2.0 requests sha256=d2c796b148a00180ccb35f19b752387e8c2b28096d4de2961ae8204f9eed576b\n" +
+                "fontScale=2.0 requests sha256=99716ddfdfba334a6a4fc0ebdaa646c200229114d5681ec7f491099ad465b1ec\n" +
                 "fontScale=2.0 dns sha256=6da0e5f4c9cb5add1227b90f3373f5dde5b57b7417a8f1743589fce58855e25f\n" +
                 "fontScale=2.0 logs sha256=503bf138c393346bccf59833a1a2905a59f1605f651c83426d0133b9d025d692",
             actual.entries.joinToString("\n") { (state, hash) -> "$state sha256=$hash" },
         )
+    }
+
+    private fun recordPng(name: String, png: ByteArray) {
+        // 作者 long：共享连接摘要的链路顺序变化需要实际图片复核，不能只根据失败日志替换预期哈希。
+        recordVisualPng("observation-$name", png)
     }
 
     private fun connection(id: String, host: String) = CoreConnection(

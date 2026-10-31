@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -2618,6 +2621,10 @@ internal fun ConnectionsCard(
     state: ConnectionsUiState,
     runtimeState: CoreRuntimeStatus,
 ) {
+    // 作者 long：活动连接可能在轮询中消失，因此保留点击时快照；重建后也无需再向核心查找已结束的连接。
+    var selectedConnection by rememberSaveable(stateSaver = ConnectionDetailSaver) {
+        mutableStateOf<CoreConnection?>(null)
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -2657,17 +2664,32 @@ internal fun ConnectionsCard(
                 )
 
                 else -> state.connections.take(MAX_CONNECTIONS_ON_HOME).forEachIndexed { index, connection ->
-                    Column(modifier = Modifier.testTag("connections_row_$index")) {
-                        ConnectionRow(connection)
-                    }
+                    ConnectionRow(
+                        connection = connection,
+                        modifier = Modifier.testTag("connections_row_$index"),
+                        onClick = {
+                            // 作者 long：摘要行会截断长地址和进程信息，点击详情让用户能完整核对所选连接。
+                            selectedConnection = connection
+                        },
+                    )
                 }
             }
         }
     }
+    selectedConnection?.let { connection ->
+        ConnectionDetailDialog(
+            connection = connection,
+            onDismiss = { selectedConnection = null },
+        )
+    }
 }
 
 @Composable
-private fun ConnectionRow(connection: CoreConnection) {
+private fun ConnectionRow(
+    connection: CoreConnection,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
     val metadata = connection.metadata
     val title = metadata.host.ifBlank {
         metadata.destinationIp.ifBlank { metadata.remoteDestination.ifBlank { "未知目标" } }
@@ -2675,8 +2697,17 @@ private fun ConnectionRow(connection: CoreConnection) {
     val endpoint = listOf(metadata.destinationIp, metadata.destinationPort)
         .filter { it.isNotBlank() }
         .joinToString(":")
-    val chain = connection.chains.joinToString(" → ")
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    // 作者 long：沿用 Flutter 的代理链反序展示，让同一条连接在两端保持相同的阅读顺序。
+    val chain = connection.chains.asReversed().joinToString(" → ")
+    Column(
+        modifier = modifier.then(
+            if (onClick == null) Modifier else Modifier.clickable(
+                role = Role.Button,
+                onClick = onClick,
+            ),
+        ),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
         Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(
             listOf(metadata.network.uppercase(), endpoint, metadata.process, chain)
@@ -2693,6 +2724,96 @@ private fun ConnectionRow(connection: CoreConnection) {
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+@Composable
+private fun ConnectionDetailDialog(
+    connection: CoreConnection,
+    onDismiss: () -> Unit,
+) {
+    val metadata = connection.metadata
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("连接详情") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .testTag("connections_detail_dialog")
+                    .heightIn(max = 520.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                ConnectionDetailSection(
+                    title = "基本信息",
+                    rows = listOf(
+                        "创建时间" to connection.start,
+                        "网络类型" to metadata.network,
+                        "进程" to metadata.process,
+                        "规则" to connectionRuleText(connection),
+                        "上传" to formatBytes(connection.upload),
+                        "下载" to formatBytes(connection.download),
+                    ),
+                )
+                ConnectionDetailSection(
+                    title = "地址",
+                    rows = listOf(
+                        "主机" to metadata.host,
+                        "来源" to connectionEndpoint(metadata.sourceIp, metadata.sourcePort),
+                        "目标" to connectionEndpoint(metadata.destinationIp, metadata.destinationPort),
+                        "远端目标" to metadata.remoteDestination,
+                        "进程路径" to metadata.processPath,
+                        "UID" to metadata.uid.toString(),
+                    ),
+                )
+                ConnectionDetailSection(
+                    title = "代理",
+                    rows = listOf(
+                        "代理链" to connection.chains.asReversed().joinToString(" → "),
+                        "特殊代理" to metadata.specialProxy,
+                        "特殊规则" to metadata.specialRules,
+                    ),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+    )
+}
+
+@Composable
+private fun ConnectionDetailSection(
+    title: String,
+    rows: List<Pair<String, String>>,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(title, style = MaterialTheme.typography.titleSmall)
+        rows.filter { it.second.isNotBlank() }.forEach { (label, value) ->
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(value, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+private fun connectionEndpoint(ip: String, port: String): String = when {
+    ip.isBlank() -> ""
+    port.isBlank() -> ip
+    else -> "$ip:$port"
+}
+
+private fun connectionRuleText(connection: CoreConnection): String = buildString {
+    append(connection.rule)
+    if (connection.rulePayload.isNotBlank()) {
+        append("(")
+        append(connection.rulePayload)
+        append(")")
     }
 }
 
