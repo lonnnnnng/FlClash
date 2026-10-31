@@ -4,6 +4,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.ParcelFileDescriptor
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.assertIsDisplayed
@@ -115,13 +116,15 @@ class ConnectionsInstrumentedTest {
         }
         composeRule.onNodeWithTag("connections_row_0").performClick()
         expandDetailSheet()
+        val shapeHash = captureHash("detail_superellipse_dark", sheet = true)
         val topHash = captureHash("detail_default_top", dialog = true)
         assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
         val bottomHash = captureHash("detail_default_bottom", dialog = true)
         assertEquals(
-            "top=ab1204b05bce90e6d4431bb9f4ade38043c2f1d257889b57244d5060d57bcea6\n" +
+            "shape=412ccb6a664b13b16713614662b92a8da1891806ef9c412f17366c3e3c1b06c5\n" +
+                "top=ab1204b05bce90e6d4431bb9f4ade38043c2f1d257889b57244d5060d57bcea6\n" +
                 "bottom=ef928ddde3f1d0ce88cd0e84803327bd91da8b476c5db00ac0901b12287567d3",
-            "top=$topHash\nbottom=$bottomHash",
+            "shape=$shapeHash\ntop=$topHash\nbottom=$bottomHash",
         )
     }
 
@@ -269,6 +272,7 @@ class ConnectionsInstrumentedTest {
         val actual = linkedMapOf<String, String>()
         try {
             actual["light_portrait_top"] = captureHash("detail_light_portrait_top", dialog = true)
+            actual["light_superellipse"] = captureHash("detail_superellipse_light", sheet = true)
             assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
             actual["light_portrait_bottom"] = captureHash("detail_light_portrait_bottom", dialog = true)
             composeRule.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
@@ -286,6 +290,7 @@ class ConnectionsInstrumentedTest {
         }
         assertEquals(mapOf(
             "light_portrait_top" to "79c82f2f62af1d189ec3082ec82406bca4eba90b9f13d362a89a5a3831d08666",
+            "light_superellipse" to "7af73735580eefd6ef9ad354d7d668cbef94df290fcfcc11e19220a8e2ea0660",
             "light_portrait_bottom" to "ed2d6c8f8350dc5770a6586ace33751d193dfb695773ef62a56d4c6d29cac67d",
             "light_landscape_top" to "23c1bc4aa5e65997322c179df342e85aa3d171e2318e6f6ba69bc2173ff660eb",
             "light_landscape_bottom" to "3922ea63a1da30ec5637cf51935f0a23b001ddea3f91cbd7e9f5e8187486ff83",
@@ -341,6 +346,117 @@ class ConnectionsInstrumentedTest {
         } finally {
             if (previousScale == "null") shell("settings delete global animator_duration_scale")
             else shell("settings put global animator_duration_scale $previousScale")
+        }
+    }
+
+    @Test
+    fun sheetEntranceAndExitAnimateTogetherWithTheModalBarrier() {
+        val wasAutoAdvance = composeRule.mainClock.autoAdvance
+        try {
+            composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
+            composeRule.waitForIdle()
+            composeRule.mainClock.autoAdvance = false
+            composeRule.onNodeWithTag("connections_row_0").performClick()
+            composeRule.mainClock.advanceTimeByFrame()
+            assertEquals(
+                "进入中",
+                composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
+                    .config[SemanticsProperties.StateDescription],
+            )
+            // 作者 long：必须检查真实中间帧的位移与遮罩像素，只有状态标签变化不能证明面板实际在移动。
+            composeRule.mainClock.advanceTimeBy(96)
+            composeRule.waitForIdle()
+            val enteringTop = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot.top
+            val enteringScrimAlpha = composeRule.onNodeWithTag("connection_detail_scrim").captureToImage().toPixelMap()[2, 2].alpha
+            composeRule.mainClock.advanceTimeBy(600)
+            composeRule.waitForIdle()
+            val restingTop = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot.top
+            val restingScrimAlpha = composeRule.onNodeWithTag("connection_detail_scrim").captureToImage().toPixelMap()[2, 2].alpha
+            assertTrue("入场中面板尚未到达停靠点", enteringTop > restingTop + 5f)
+            assertTrue("入场中遮罩应逐步变深", enteringScrimAlpha < restingScrimAlpha - 0.01f)
+            assertEquals(
+                "已打开",
+                composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
+                    .config[SemanticsProperties.StateDescription],
+            )
+
+            composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+            composeRule.mainClock.advanceTimeByFrame()
+            composeRule.waitForIdle()
+            assertEquals(
+                "关闭中",
+                composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
+                    .config[SemanticsProperties.StateDescription],
+            )
+            composeRule.mainClock.advanceTimeBy(96)
+            composeRule.waitForIdle()
+            assertTrue(
+                "退出中面板应向底部移动",
+                composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot.top > restingTop + 5f,
+            )
+            assertTrue(
+                "退出中遮罩应逐步变浅",
+                composeRule.onNodeWithTag("connection_detail_scrim").captureToImage().toPixelMap()[2, 2].alpha < restingScrimAlpha - 0.01f,
+            )
+            // 作者 long：重复关闭或退出中旋转都不能重新入场，也不能丢掉最终移除 Dialog 的回调。
+            composeRule.onNodeWithTag("connections_detail_sheet").performSemanticsAction(SemanticsActions.Dismiss) { it() }
+            composeRule.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
+            composeRule.waitUntil(5_000) { composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
+            composeRule.mainClock.advanceTimeByFrame()
+            composeRule.mainClock.advanceTimeBy(600)
+            composeRule.waitForIdle()
+            composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
+        } finally {
+            composeRule.mainClock.autoAdvance = wasAutoAdvance
+            restorePortrait()
+        }
+    }
+
+    @Test
+    fun sideSheetUsesFlutterDeceleratingEntranceAndExit() {
+        val wasAutoAdvance = composeRule.mainClock.autoAdvance
+        try {
+            composeRule.activityRule.scenario.onActivity {
+                it.setDarkTheme(false)
+                it.showRunningScenario()
+                it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            }
+            composeRule.waitUntil(5_000) {
+                composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            }
+            composeRule.waitForIdle()
+            composeRule.mainClock.autoAdvance = false
+            composeRule.onNodeWithTag("connections_row_0").performClick()
+            composeRule.mainClock.advanceTimeByFrame()
+            assertEquals(
+                "进入中",
+                composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
+                    .config[SemanticsProperties.StateDescription],
+            )
+            val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
+            composeRule.mainClock.advanceTimeBy(120)
+            val enteringRight = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot.right
+            assertTrue("侧栏入场应从屏幕右侧滑入", enteringRight > viewport.right + 5f)
+            composeRule.mainClock.advanceTimeBy(220)
+            composeRule.waitForIdle()
+            val resting = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot
+            assertEquals(viewport.right, resting.right, 2f)
+            assertEquals("已打开", composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
+                .config[SemanticsProperties.StateDescription])
+
+            composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+            composeRule.mainClock.advanceTimeByFrame()
+            composeRule.mainClock.advanceTimeBy(80)
+            val exitingRight = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot.right
+            assertTrue("侧栏退场应向屏幕右侧滑出", exitingRight > resting.right + 5f)
+            assertEquals("关闭中", composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
+                .config[SemanticsProperties.StateDescription])
+            composeRule.mainClock.advanceTimeBy(180)
+            composeRule.waitForIdle()
+            composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
+        } finally {
+            composeRule.mainClock.autoAdvance = wasAutoAdvance
+            restorePortrait()
         }
     }
 
@@ -451,9 +567,15 @@ class ConnectionsInstrumentedTest {
         composeRule.waitForIdle()
     }
 
-    private fun captureHash(name: String, dialog: Boolean = false): String {
+    private fun captureHash(name: String, dialog: Boolean = false, sheet: Boolean = false): String {
         composeRule.waitForIdle()
-        val node = composeRule.onNodeWithTag(if (dialog) "connections_detail_content" else "connections_page")
+        val node = composeRule.onNodeWithTag(
+            when {
+                sheet -> "connections_detail_sheet"
+                dialog -> "connections_detail_content"
+                else -> "connections_page"
+            },
+        )
         val bitmap = node.captureToImage().asAndroidBitmap()
         val png = ByteArrayOutputStream().also { output ->
             check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))

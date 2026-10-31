@@ -1,0 +1,6 @@
+# KClash ConnectionModalSheet surface shape baselines, reviewed 2026-10-31.
+# Device: Redmi Note 8 Pro, Android 16/API 36, density 440, system font scale 1.0.
+# The captured node includes the complete expanded phone sheet surface and content;
+# the hash therefore covers the top superellipse silhouette and the rendered detail layout.
+state=dark_expanded_superellipse sha256=412ccb6a664b13b16713614662b92a8da1891806ef9c412f17366c3e3c1b06c5
+state=light_expanded_superellipse sha256=7af73735580eefd6ef9ad354d7d668cbef94df290fcfcc11e19220a8e2ea0660

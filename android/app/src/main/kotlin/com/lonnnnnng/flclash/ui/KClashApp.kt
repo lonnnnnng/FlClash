@@ -2757,7 +2757,7 @@ private fun ConnectionDetailSheet(
         // 作者 long：复制反馈放在面板内，避免外层 Snackbar 被模态遮罩盖住；失败时不能显示成功。
         copyMessage = runCatching { onCopyText(value) }.fold({ "已复制" }, { "复制失败" })
     }
-    ConnectionModalSheet(onDismiss = onDismiss, contentScrollState = contentScrollState) {
+    ConnectionModalSheet(onDismiss = onDismiss, contentScrollState = contentScrollState) { requestDismiss ->
         Column(
             modifier = Modifier
                 .testTag("connections_detail_content")
@@ -2774,7 +2774,7 @@ private fun ConnectionDetailSheet(
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.weight(1f),
                 )
-                IconButton(onClick = onDismiss) {
+                IconButton(onClick = requestDismiss) {
                     Icon(Icons.Outlined.Close, contentDescription = "关闭连接详情")
                 }
             }
