@@ -18,6 +18,8 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.decodeSelectedMap
 import com.lonnnnnng.flclash.data.encodeSelectedMap
+import com.lonnnnnng.flclash.data.decodeUnfoldSet
+import com.lonnnnnng.flclash.data.encodeUnfoldSet
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ProxyDelayBatchResult
 import com.lonnnnnng.flclash.service.ProxyDelayRequest
@@ -61,6 +63,7 @@ class ProxyGroupsTestActivity : ComponentActivity() {
                     currentGroupName = currentProfile?.currentGroupName,
                     onRefresh = viewModel::refresh,
                     onSelectGroup = viewModel::selectGroup,
+                    onToggleGroup = viewModel::toggleGroupExpanded,
                     onSelect = viewModel::selectProxy,
                     onTestDelay = viewModel::testDelay,
                     onTestGroupDelay = viewModel::testDelayGroup,
@@ -137,7 +140,22 @@ class ActivityProxyProfileStore : ProfileStore {
         return updated
     }
 
+    override suspend fun updateProfileGroupViewState(
+        id: Long,
+        groupName: String,
+        unfoldSet: Set<String>,
+    ): Profile {
+        val updated = mutableProfiles.value.single { it.id == id }.copy(
+            currentGroupName = groupName,
+            unfoldSetJson = encodeUnfoldSet(unfoldSet),
+        )
+        mutableProfiles.value = listOf(updated)
+        return updated
+    }
+
     fun selectedMap(): Map<String, String> = decodeSelectedMap(mutableProfiles.value.single().selectedMapJson)
+
+    fun unfoldSet(): Set<String> = decodeUnfoldSet(mutableProfiles.value.single().unfoldSetJson)
 }
 
 class ActivityProxyGroupsRuntime : ProxyGroupsRuntime {

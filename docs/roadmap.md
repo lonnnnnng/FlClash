@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-11-01（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 当前基线：`kotlin` 分支；首页具备多配置快速切换、远程单项同步、订阅摘要和 Rule/Global/Direct 模式入口，模式选择由 `CoreRuntimeManager` 持久化并在核心启动后应用。运行态配置选择现提供“停止核心后切换”的明确入口，不会静默替换核心正在使用的配置；固定宿主真机用例和 ViewModel 状态保护已通过，真实运行核心的停止后切换端到端仍待验收。本轮未访问订阅 URL、未读取或修改 `1.yaml`、未启动 VPN 或 Mihomo。此前 Redmi 真机使用固定宿主完成主页配置详情、代理组摘要/节点选择、配置创建后进入编辑和新草稿退出。Profiles 自定义编辑现有结构化分区入口（Rules、Proxies、Proxy Groups、Providers、DNS、Dialers）并保留原始 YAML 高级编辑；分区保存会同步父级 YAML 并保护已保存的新草稿，离开时可命名或保留默认名；导入/预览和完整分区表单仍未完成。代理组主页已具备 Tab/List 布局切换、列表分组标题与图标样式、横向分组标签、页内节点网格、搜索、单/批量测速、刷新、Profile 级组名记忆、工具菜单排序/密度/卡片尺寸/隐藏超时和当前节点定位。当前主流程顺序是 Dashboard 首页 → Profiles 配置 → Proxy Groups 代理组；Dashboard 默认卡片顺序保持 Flutter Android 参考顺序，先不为统计入口改变主页层级。Requests/DNS/Logs 后续视觉打磨暂停。完整主流程 UI/UX 仍为 `PARTIAL`。验收固定为 Redmi 真机竖屏、系统默认字号；后续不运行横屏或大字号用例。出口 IP、质量信息和真实流量历史图仍无 Kotlin 数据源，不作视觉伪造
+> 当前基线：`kotlin` 分支；首页具备多配置快速切换、远程单项同步、订阅摘要和 Rule/Global/Direct 模式入口，模式选择由 `CoreRuntimeManager` 持久化并在核心启动后应用。运行态配置选择现提供“停止核心后切换”的明确入口，不会静默替换核心正在使用的配置；固定宿主真机用例和 ViewModel 状态保护已通过，真实运行核心的停止后切换端到端仍待验收。本轮未访问订阅 URL、未读取或修改 `1.yaml`、未启动 VPN 或 Mihomo。此前 Redmi 真机使用固定宿主完成主页配置详情、代理组摘要/节点选择、配置创建后进入编辑和新草稿退出。Profiles 自定义编辑现有结构化分区入口（Rules、Proxies、Proxy Groups、Providers、DNS、Dialers）并保留原始 YAML 高级编辑；分区保存会同步父级 YAML 并保护已保存的新草稿，离开时可命名或保留默认名；导入/预览和完整分区表单仍未完成。代理组主页已具备 Tab/List 布局切换、列表分组标题与图标样式、横向分组标签、页内节点网格、搜索、单/批量测速、刷新、Profile 级组名记忆、List 组折叠/展开及 Profile 持久化、工具菜单排序/密度/卡片尺寸/隐藏超时和当前节点定位。当前主流程顺序是 Dashboard 首页 → Profiles 配置 → Proxy Groups 代理组；Dashboard 默认卡片顺序保持 Flutter Android 参考顺序，先不为统计入口改变主页层级。Requests/DNS/Logs 后续视觉打磨暂停。完整主流程 UI/UX 仍为 `PARTIAL`。验收固定为 Redmi 真机竖屏、系统默认字号；后续不运行横屏或大字号用例。出口 IP、质量信息和真实流量历史图仍无 Kotlin 数据源，不作视觉伪造
 > Dashboard 首页已完成原位编辑首片：支持长按拖动可见卡片、移除/重新添加卡片，并将布局保存在应用偏好中；核心启停卡固定在顶部。编辑态进出场和 Flutter 摇摆动画、主页其余菜单与按钮逐项核对仍未完成，因此 Dashboard 整体仍为 `PARTIAL`。
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
@@ -184,7 +184,7 @@ flowchart LR
 - 不可用节点显示“失败”。
 - `DIRECT → FR-1-01` 切换成功。
 
-当前明确未纳入 M3：URLTest/Fallback 全部 Flutter 选择语义、延迟结果持久化、Tab/List 双布局和 Flutter 节点列表完整交互。
+当前明确未纳入 M3：URLTest/Fallback 全部 Flutter 选择语义、延迟结果持久化和 Flutter 节点列表完整交互的剩余细节。
 
 ## 7. 进行中和未完成的功能矩阵
 
@@ -387,7 +387,7 @@ flowchart LR
 - YAML 编辑器语法体验、搜索、定位、错误行提示和大文件性能。
 - 完整页面级 E2E；本地 SAF 备份恢复首片和 WebDAV 手动备份（含凭据、UI、仓库、认证/离线反馈和本地回环真机回归）已完成，外部服务回归和云端同步仍待后续。
 - 真实在线订阅更新回归；自动更新调度、失败重试、失败摘要和通知已完成代码与自动化验证。
-- Profile 级别的代理组展开状态和其他 Flutter 行为数据。
+- 其他 Flutter 行为数据（代理组展开状态已由当前代理页切片覆盖）。
 
 完成门槛：
 
@@ -472,6 +472,7 @@ flowchart LR
 - Access 卡片首轮响应式收敛：标题/状态/排序/筛选区域可换行，已完成横屏重排、1.5/2.0 倍字体 Compose 可达性回归、系统字体 1.3/2.0 宿主回归、Redmi 默认卡片 PNG 哈希基线、1.3/1.5/1.8/2.0 字体截图矩阵和竖屏/横屏截图矩阵首片；真实宿主保存后重建可恢复 Room 设置；脏状态下提供标题栏保存、Flutter 风格主菜单/设置/操作层级和标题栏完整搜索态，正文操作入口保留为小屏备用。
 - Profiles 页面视觉首片：Debug 固定宿主覆盖空态、选中自定义配置和远程订阅用量三态，并包含正式页面顶栏；基线固定为 Redmi Note 8 Pro、Android 16/API 36、竖屏、系统默认字号和深色主题，记录在 `docs/visual-baselines/profiles-states-redmi-api36.sha256`。旧横屏/字号哈希仅保留为历史证据，不再执行相关用例。
 - Proxy 节点卡片视觉首片：两行名称、22dp 当前使用/优选徽标、独立 72×48dp 测速触控区；computed 当前出口和优选分别读取核心 now 与保存选择。代理组主页已支持 Flutter 对应的 Tab/List 布局切换：Tab 保留横向可滚动标签和组内节点网格，List 显示分组标题、组图标样式（填充/简洁/隐藏）、分组批量测速和节点网格；两种模式共用搜索、选择、测速、排序、隐藏超时和 Profile 组记忆。新增代理工具菜单（排序：默认/延迟/名称；网格密度；卡片尺寸；隐藏超时节点；布局；List 图标样式）、应用级偏好持久化和当前节点定位；竖屏默认字号下 8 项定向回归和深浅色页面基线已通过。叶子协议字段和更细滚动恢复仍待后续。
+- List 模式组折叠/展开使用 Profile `unfoldSet` 持久化，空集合初始折叠；标题和展开图标均可切换节点区域，保留批量测速入口。ViewModel、Compose List、Dashboard 代理弹层和真实 Room 持久化均有 Redmi 竖屏默认字号定向回归；完整 List 页面视觉 parity 仍需继续逐项对照 Flutter。
 - Connections / Requests / DNS / Logs 记录卡片视觉首片已完成：统一头部时间与类型、24dp 独立记录卡、规则/代理链、DNS 响应和状态标签；记录内容视觉切片已有深浅色基线，Connections/Observation 页面级截图和详情基线复核一致。Redmi 真机 13 项定向交互回归通过。仅使用现有模型真实字段；单连接实时速率、相对时间及完整页面 parity 保留后续。
 - Requests/DNS 详情与完整列表首片已完成：记录行进入两档底部面板，DNS 详情分组/空值隐藏/长 IPv6 和错误复制有深浅色八状态基线；详情水平边距已调整为 16dp。全屏列表提供返回、搜索、DNS 清理工具栏和关键词筛选，DNS 详情及列表筛选可在 Activity 重建后恢复；DNS 清理使用 CoreRuntimeManager/CoreBridge，固定宿主覆盖成功/失败反馈。固定宿主证明 KClash 自身渲染稳定，不代表 Flutter 逐像素相同。
 - Logs 页面现在复用观测全屏列表壳，提供展开搜索、日志级别关键词、可移除标签、Flutter 风格普通空态/搜索无结果态和顶栏导出；Redmi 竖屏默认字号 9 项固定宿主回归与跨观测页入口单测方法通过，深浅色页基线记录于 `docs/visual-baselines/logs-page-states-redmi-api36.sha256`。日志仍由固定夹具渲染，没有启动核心或访问网络。
@@ -1939,6 +1940,15 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - 覆盖当前 APK 的启动空态：在尚未导入有效 Profile 时，Redmi 真机导航只显示“首页、配置、工具”，代理 Tab 不出现。导入真实 Profile 后，代理 Tab 出现；选中真实配置并启动核心后，代理页实际读取到 Mihomo 返回的 Selector、Fallback 和多个节点组。
 - 停止核心后，页面回到“核心已停止”，两份真实 Profile 与代理 Tab 保留；设备侧未再发现 KClash 的 VPN/TUN 活动态，确认停止清理完成。
 - Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`；当前 Debug APK 构建成功并覆盖安装，未运行横屏或大字号用例。真实核心闭环已验证，但主流程整体 UI/UX 仍为 `PARTIAL`，后续继续按 Dashboard → Profiles → Proxy Groups 逐页对齐。
+
+### 2026-11-01：Proxy Groups List 组折叠/展开与 Profile 持久化
+
+- Flutter 参考的 List 模式以空 `unfoldSet` 初始折叠所有组；组标题点击切换当前组的展开状态，并使用约 240ms 的展开/收起动画。该行为依据 `lib/views/proxies/list.dart` 的 `_handleChange`、`_GroupSliver` 和 `ListHeader` 核对。
+- Kotlin `Profile` 新增安全的 `unfoldSet` JSON 编解码，过滤空组名并对损坏 JSON 回退空集合；`ProfileRepository` 以一次 Room 更新同时保存当前组名和展开集合，避免标题点击的整行写入互相覆盖。
+- `ProxyGroupsViewModel` 将展开集合纳入 `ProxyGroupsUiState`，组标题切换先更新 UI，持久化失败时回滚并通过错误流提示；代理组 List 页面保留组标题和批量测速入口，节点区按集合折叠/展开，提供 Flutter 对应的展开/收起图标和动画。
+- 新增 JSON、ViewModel、Compose List 和 Repository/Room 回归；`./gradlew :app:testDebugUnitTest --no-daemon` 通过，`compileDebugAndroidTestKotlin` 与 `lintDebug -Ptarget-platform=android-arm64` 通过。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`：`ProxyGroupsActivityInstrumentedTest#proxyListLayoutShowsGroupSectionsAndListIconMenu`、`ProxyGroupsViewModelPanelInstrumentedTest#listGroupHeaderTogglesNodesAndPersistsProfileViewState`、`ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore` 各 1 项通过；未运行横屏或大字号用例。
+- 本轮只使用固定代理页/Room 宿主，没有访问两条真实在线路径、读取或修改 `1.yaml`、启动 VPN 或 Mihomo；设备上此前导入的两份真实 Profile 保持不变。Proxy Groups 整体仍为 `PARTIAL`，叶子协议类型、按组滚动位置恢复和更细 Flutter 卡片视觉校准继续排队；下一步回到 Dashboard → Profiles 主流程逐项核对管理菜单和导入/预览。
 
 ## 12. 路线图维护规则
 

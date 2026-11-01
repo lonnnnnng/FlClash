@@ -109,6 +109,9 @@ data class Profile(
     val fileName: String
         get() = "$id.yaml"
 
+    val unfoldSet: Set<String>
+        get() = decodeUnfoldSet(unfoldSetJson)
+
     fun toEntity(): ProfileEntity = ProfileEntity(
         id = id,
         type = type,
@@ -165,6 +168,7 @@ data class Profile(
 }
 
 private val selectedMapType = object : TypeToken<Map<String, String>>() {}.type
+private val unfoldSetType = object : TypeToken<Set<String>>() {}.type
 
 /**
  * 作者 long：代理组选择只保存组名到节点名的稳定映射；损坏或旧版本留下的 JSON 必须回退为空映射，
@@ -180,6 +184,21 @@ fun encodeSelectedMap(selectedMap: Map<String, String>): String = Gson().toJson(
     selectedMap
         .filter { (group, proxy) -> group.isNotBlank() && proxy.isNotBlank() }
         .toSortedMap(),
+)
+
+/**
+ * 作者 long：List 模式的展开状态属于当前 Profile；损坏或旧版本 JSON 必须回退为空集合，
+ * 这样代理页仍能以 Flutter 默认的折叠状态打开，不会阻塞配置加载。
+ */
+fun decodeUnfoldSet(raw: String?): Set<String> = runCatching {
+    Gson().fromJson<Set<String>>(raw.orEmpty(), unfoldSetType)
+        .orEmpty()
+        .filter(String::isNotBlank)
+        .toSet()
+}.getOrDefault(emptySet())
+
+fun encodeUnfoldSet(unfoldSet: Set<String>): String = Gson().toJson(
+    unfoldSet.filter(String::isNotBlank).toSortedSet(),
 )
 
 fun ProfileEntity.toDomain(): Profile = Profile(

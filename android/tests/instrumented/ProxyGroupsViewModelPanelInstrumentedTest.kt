@@ -18,6 +18,8 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.decodeSelectedMap
 import com.lonnnnnng.flclash.data.encodeSelectedMap
+import com.lonnnnnng.flclash.data.decodeUnfoldSet
+import com.lonnnnnng.flclash.data.encodeUnfoldSet
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ProxyDelayBatchResult
 import com.lonnnnnng.flclash.service.ProxyDelayRequest
@@ -173,6 +175,42 @@ class ProxyGroupsViewModelPanelInstrumentedTest {
         composeRule.onNodeWithText("URLTest · 当前：node-c").assertIsDisplayed()
     }
 
+    @Test
+    fun listGroupHeaderTogglesNodesAndPersistsProfileViewState() {
+        val group = autoGroup()
+        val store = FakeProxyPanelProfileStore()
+        val runtime = FakeProxyPanelRuntime(ProxyGroupsSnapshot(listOf(group)))
+        val viewModel = ProxyGroupsViewModel(runtime, store)
+
+        composeRule.setContent {
+            val state by viewModel.state.collectAsState()
+            KClashTheme {
+                ProxyGroupsCard(
+                    state = state,
+                    runtimeState = CoreRuntimeStatus.RUNNING,
+                    onRefresh = viewModel::refresh,
+                    onToggleGroup = viewModel::toggleGroupExpanded,
+                    onSelect = viewModel::selectProxy,
+                    onTestDelay = viewModel::testDelay,
+                    onTestGroupDelay = viewModel::testDelayGroup,
+                )
+            }
+        }
+
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_group_Auto").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("proxy_tools").performClick()
+        composeRule.onNodeWithTag("proxy_tools_display_mode").performClick()
+        composeRule.onNodeWithTag("proxy_display_mode_LIST").performClick()
+        assertTrue(composeRule.onAllNodesWithTag("proxy_list_node_Auto_node-a").fetchSemanticsNodes().isEmpty())
+        composeRule.onNodeWithTag("proxy_list_group_header_Auto").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_list_node_Auto_node-a").fetchSemanticsNodes().isNotEmpty()
+        }
+        assertEquals(setOf("Auto"), store.unfoldSet())
+    }
+
     private fun autoGroup() = ProxyGroupInfo(
         name = "Auto",
         type = "URLTest",
@@ -202,11 +240,26 @@ private class FakeProxyPanelProfileStore : ProfileStore {
         return updated
     }
 
+    override suspend fun updateProfileGroupViewState(
+        id: Long,
+        groupName: String,
+        unfoldSet: Set<String>,
+    ): Profile {
+        val updated = mutableProfiles.value.single { it.id == id }.copy(
+            currentGroupName = groupName,
+            unfoldSetJson = encodeUnfoldSet(unfoldSet),
+        )
+        mutableProfiles.value = listOf(updated)
+        return updated
+    }
+
     override suspend fun updateRemoteProfile(id: Long): Profile = error("unused")
     override suspend fun deleteProfile(id: Long) = Unit
     override suspend fun reorder(ids: List<Long>) = Unit
 
     fun selectedMap(): Map<String, String> = decodeSelectedMap(mutableProfiles.value.single().selectedMapJson)
+
+    fun unfoldSet(): Set<String> = decodeUnfoldSet(mutableProfiles.value.single().unfoldSetJson)
 }
 
 private class FakeProxyPanelRuntime(

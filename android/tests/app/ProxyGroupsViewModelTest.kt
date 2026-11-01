@@ -10,6 +10,8 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.decodeSelectedMap
 import com.lonnnnnng.flclash.data.encodeSelectedMap
+import com.lonnnnnng.flclash.data.decodeUnfoldSet
+import com.lonnnnnng.flclash.data.encodeUnfoldSet
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ProxyGroupsRuntime
 import com.lonnnnnng.flclash.service.ProxyDelayRequest
@@ -226,6 +228,34 @@ class ProxyGroupsViewModelTest {
     }
 
     @Test
+    fun `list group expansion restores from and persists to the active profile`() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.UnconfinedTestDispatcher())
+        val group = ProxyGroupInfo("Auto", "URLTest", "node-a", listOf("node-a", "node-b"), false)
+        val profile = Profile.custom(101L, "展开状态").copy(
+            unfoldSetJson = encodeUnfoldSet(setOf("Auto")),
+        )
+        val store = SelectionProfileStore(profile)
+        val runtime = FakeProxyGroupsRuntime(
+            status = CoreRuntimeStatus.RUNNING,
+            snapshot = ProxyGroupsSnapshot(listOf(group)),
+        )
+        val viewModel = ProxyGroupsViewModel(runtime, store)
+        val stateJob = backgroundScope.launch { viewModel.state.collect {} }
+
+        viewModel.state.first { it.groups.isNotEmpty() }
+        assertEquals(setOf("Auto"), viewModel.state.value.unfoldSet)
+
+        viewModel.toggleGroupExpanded("Auto")
+        viewModel.state.first { it.unfoldSet.isEmpty() }
+        assertTrue(store.unfoldSet().isEmpty())
+
+        viewModel.toggleGroupExpanded("Auto")
+        viewModel.state.first { it.unfoldSet == setOf("Auto") }
+        assertEquals(setOf("Auto"), store.unfoldSet())
+        stateJob.cancel()
+    }
+
+    @Test
     fun `failed selection keeps the previous persisted mapping`() = runTest {
         Dispatchers.setMain(kotlinx.coroutines.test.UnconfinedTestDispatcher())
         val group = ProxyGroupInfo("Auto", "URLTest", "node-a", listOf("node-a", "node-b"), false)
@@ -311,6 +341,21 @@ private class SelectionProfileStore(profile: Profile) : ProfileStore {
         profiles.value = listOf(updated)
         return updated
     }
+
+    override suspend fun updateProfileGroupViewState(
+        id: Long,
+        groupName: String,
+        unfoldSet: Set<String>,
+    ): Profile {
+        val updated = profiles.value.single { it.id == id }.copy(
+            currentGroupName = groupName,
+            unfoldSetJson = encodeUnfoldSet(unfoldSet),
+        )
+        profiles.value = listOf(updated)
+        return updated
+    }
+
+    fun unfoldSet(): Set<String> = decodeUnfoldSet(profiles.value.single().unfoldSetJson)
 
     override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile = error("unused")
     override suspend fun updateRemoteProfile(id: Long): Profile = error("unused")

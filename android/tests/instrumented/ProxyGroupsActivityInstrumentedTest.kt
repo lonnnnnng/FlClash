@@ -16,6 +16,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -121,7 +122,7 @@ class ProxyGroupsActivityInstrumentedTest {
         composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
         composeRule.onNodeWithTag("proxy_group_search").performTextInput("node-b")
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsDisplayed()
-        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertDoesNotExist()
+        assertTrue(composeRule.onAllNodesWithTag("proxy_node_Auto_node-a").fetchSemanticsNodes().isEmpty())
 
         composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
         composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsDisplayed()
@@ -184,8 +185,19 @@ class ProxyGroupsActivityInstrumentedTest {
         composeRule.onNodeWithTag("proxy_groups_list").assertIsDisplayed()
         composeRule.onNodeWithTag("proxy_list_group_Auto").assertIsDisplayed()
         composeRule.onNodeWithTag("proxy_list_group_header_Auto").assertIsDisplayed()
+        assertTrue(composeRule.onAllNodesWithTag("proxy_list_node_Auto_node-a").fetchSemanticsNodes().isEmpty())
+        composeRule.onNodeWithTag("proxy_list_group_header_Auto").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_list_node_Auto_node-a").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithTag("proxy_list_node_Auto_node-a").assertIsDisplayed()
-        composeRule.onNodeWithTag("proxy_group_tabs").assertDoesNotExist()
+        assertEquals(setOf("Auto"), composeRule.activity.profileStore.unfoldSet())
+        composeRule.onNodeWithTag("proxy_list_group_header_Auto").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_list_node_Auto_node-a").fetchSemanticsNodes().isEmpty()
+        }
+        assertTrue(composeRule.activity.profileStore.unfoldSet().isEmpty())
+        assertTrue(composeRule.onAllNodesWithTag("proxy_group_tabs").fetchSemanticsNodes().isEmpty())
 
         composeRule.onNodeWithTag("proxy_tools").performClick()
         composeRule.onNodeWithTag("proxy_tools_icon_style").assertIsDisplayed().performClick()

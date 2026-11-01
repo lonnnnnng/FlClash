@@ -13,6 +13,8 @@ import com.lonnnnnng.flclash.service.ProxyGroupsRuntime
 import com.lonnnnnng.flclash.service.ProxyDelayRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,13 +23,14 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.launch
 
 data class ProxyGroupsUiState(
     val groups: List<ProxyGroupInfo> = emptyList(),
     val selectedMap: Map<String, String> = emptyMap(),
+    val unfoldSet: Set<String> = emptySet(),
     val isLoading: Boolean = false,
     val switchingGroup: String? = null,
     val batchTestingGroup: String? = null,
@@ -206,6 +209,7 @@ class ProxyGroupsViewModel @Inject constructor(
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(ProxyGroupsUiState())
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private val profileViewStateMutex = Mutex()
     private var groupDelayJob: Job? = null
 
     val state: StateFlow<ProxyGroupsUiState> = mutableState
@@ -241,6 +245,7 @@ class ProxyGroupsViewModel @Inject constructor(
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
                         selectedMap = currentProfileSelectedMap(),
+                        unfoldSet = currentProfileUnfoldSet(),
                         batchTestingGroup = mutableState.value.batchTestingGroup,
                         delayResults = retainDelayResults(
                             snapshot.groups,
@@ -280,6 +285,35 @@ class ProxyGroupsViewModel @Inject constructor(
                 throw error
             } catch (error: Throwable) {
                 mutableErrors.emit(error.message ?: "保存当前代理组失败")
+            }
+        }
+    }
+
+    fun toggleGroupExpanded(name: String) {
+        if (name.isBlank() || mutableState.value.groups.none { it.name == name }) return
+        val profileId = profileStore.currentProfileId.value ?: return
+        val previous = mutableState.value.unfoldSet
+        val updated = previous.toMutableSet().apply {
+            if (!add(name)) remove(name)
+        }.toSet()
+        // 作者 long：先更新页面状态让折叠反馈立即出现，再把同一集合写回当前 Profile；失败时回滚，避免视觉状态与下次恢复不一致。
+        mutableState.update { it.copy(unfoldSet = updated) }
+        viewModelScope.launch {
+            try {
+                profileViewStateMutex.withLock {
+                    profileStore.updateProfileGroupViewState(
+                        profileId,
+                        name,
+                        mutableState.value.unfoldSet,
+                    )
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                mutableState.update { state ->
+                    if (state.unfoldSet == updated) state.copy(unfoldSet = previous) else state
+                }
+                mutableErrors.emit(error.message ?: "保存代理组展开状态失败")
             }
         }
     }
@@ -337,6 +371,12 @@ class ProxyGroupsViewModel @Inject constructor(
         profileStore.currentProfileId.value
             ?.let { id -> profileStore.profiles.value.firstOrNull { it.id == id } }
             ?.let { decodeSelectedMap(it.selectedMapJson) }
+            .orEmpty()
+
+    private fun currentProfileUnfoldSet(): Set<String> =
+        profileStore.currentProfileId.value
+            ?.let { id -> profileStore.profiles.value.firstOrNull { it.id == id } }
+            ?.unfoldSet
             .orEmpty()
 
     /**

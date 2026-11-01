@@ -26,4 +26,14 @@ class ProfileSelectionTest {
         assertTrue(decodeSelectedMap("not-json").isEmpty())
         assertTrue(decodeSelectedMap("{\"GLOBAL\":\"\",\"\":\"node\"}").isEmpty())
     }
+
+    @Test
+    fun `unfold set json round trip is deterministic and filters blank names`() {
+        val json = encodeUnfoldSet(setOf("节点选择", "GLOBAL", ""))
+
+        assertEquals("[\"GLOBAL\",\"节点选择\"]", json)
+        assertEquals(setOf("节点选择", "GLOBAL"), decodeUnfoldSet(json))
+        assertTrue(decodeUnfoldSet("not-json").isEmpty())
+        assertTrue(decodeUnfoldSet("{\"GLOBAL\":true}").isEmpty())
+    }
 }

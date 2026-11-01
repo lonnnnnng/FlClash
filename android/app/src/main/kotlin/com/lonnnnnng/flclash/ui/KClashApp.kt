@@ -45,6 +45,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.Button
@@ -139,6 +144,8 @@ import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.MyLocation
@@ -579,6 +586,7 @@ fun KClashApp(
                     currentGroupName = selectedProfile?.currentGroupName,
                     onRefresh = proxyGroupsViewModel::refresh,
                     onSelectGroup = proxyGroupsViewModel::selectGroup,
+                    onToggleGroup = proxyGroupsViewModel::toggleGroupExpanded,
                     onSelect = proxyGroupsViewModel::selectProxy,
                     onTestDelay = proxyGroupsViewModel::testDelay,
                     onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
@@ -644,6 +652,7 @@ fun KClashApp(
                                     currentGroupName = selectedProfile?.currentGroupName,
                                     onRefresh = proxyGroupsViewModel::refresh,
                                     onSelectGroup = proxyGroupsViewModel::selectGroup,
+                                    onToggleGroup = proxyGroupsViewModel::toggleGroupExpanded,
                                     onSelect = proxyGroupsViewModel::selectProxy,
                                     onTestDelay = proxyGroupsViewModel::testDelay,
                                     onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
@@ -1803,6 +1812,7 @@ internal fun ProxyGroupsCard(
     onContentAtTopChanged: (Boolean) -> Unit = {},
     onRefresh: () -> Unit,
     onSelectGroup: (String) -> Unit = {},
+    onToggleGroup: (String) -> Unit = {},
     onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestGroupDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo) -> Unit,
@@ -2115,7 +2125,7 @@ internal fun ProxyGroupsCard(
                     runtimeState = runtimeState,
                     query = proxyQuery,
                     options = pageOptions,
-                    onSelectGroup = onSelectGroup,
+                    onToggleGroup = onToggleGroup,
                     onSelect = onSelect,
                     onTestDelay = onTestDelay,
                     onTestGroupDelay = onTestGroupDelay,
@@ -2145,7 +2155,7 @@ private fun ProxyGroupsListPage(
     runtimeState: CoreRuntimeStatus,
     query: String,
     options: ProxyPageOptions,
-    onSelectGroup: (String) -> Unit,
+    onToggleGroup: (String) -> Unit,
     onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestGroupDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo) -> Unit,
@@ -2176,7 +2186,7 @@ private fun ProxyGroupsListPage(
                 val selected = selectedProxyName(group, state.selectedMap)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().clickable { onSelectGroup(group.name) }
+                        modifier = Modifier.fillMaxWidth().clickable { onToggleGroup(group.name) }
                             .testTag("proxy_list_group_header_${group.name}"),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -2197,37 +2207,53 @@ private fun ProxyGroupsListPage(
                                 state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
                             modifier = Modifier.testTag("proxy_list_group_batch_${group.name}"),
                         ) { Text("批量测速") }
+                        IconButton(
+                            onClick = { onToggleGroup(group.name) },
+                            modifier = Modifier.testTag("proxy_list_group_toggle_${group.name}"),
+                        ) {
+                            val expanded = group.name in state.unfoldSet
+                            Icon(
+                                imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                                contentDescription = if (expanded) "收起 ${group.name}" else "展开 ${group.name}",
+                            )
+                        }
                     }
-                    if (members.isEmpty()) {
-                        Text(
-                            if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        members.chunked(columns).forEachIndexed { rowIndex, row ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                row.forEach { proxyName ->
-                                    ProxyNodeCard(
-                                        name = proxyName,
-                                        type = state.groups.firstOrNull { it.name == proxyName }?.type,
-                                        cardSize = options.cardSize,
-                                        inUse = proxyName == selected,
-                                        preferred = group.isComputed && proxyName == state.selectedMap[group.name],
-                                        enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
-                                            group.isSelectable && state.switchingGroup == null && state.batchTestingGroup == null,
-                                        delay = state.delayState(group, proxyName),
-                                        selectionTag = "proxy_list_node_${group.name}_$proxyName",
-                                        delayTag = "proxy_list_node_delay_${group.name}_$proxyName",
-                                        onSelect = { onSelect(group, proxyName) },
-                                        onTestDelay = { onTestDelay(group, proxyName) },
-                                        modifier = Modifier.weight(1f),
-                                    )
+                    AnimatedVisibility(
+                        visible = group.name in state.unfoldSet,
+                        enter = expandVertically(animationSpec = tween(240)) + fadeIn(animationSpec = tween(120)),
+                        exit = shrinkVertically(animationSpec = tween(240)) + fadeOut(animationSpec = tween(120)),
+                    ) {
+                        if (members.isEmpty()) {
+                            Text(
+                                if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        } else {
+                            members.chunked(columns).forEach { row ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    row.forEach { proxyName ->
+                                        ProxyNodeCard(
+                                            name = proxyName,
+                                            type = state.groups.firstOrNull { it.name == proxyName }?.type,
+                                            cardSize = options.cardSize,
+                                            inUse = proxyName == selected,
+                                            preferred = group.isComputed && proxyName == state.selectedMap[group.name],
+                                            enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                                                group.isSelectable && state.switchingGroup == null && state.batchTestingGroup == null,
+                                            delay = state.delayState(group, proxyName),
+                                            selectionTag = "proxy_list_node_${group.name}_$proxyName",
+                                            delayTag = "proxy_list_node_delay_${group.name}_$proxyName",
+                                            onSelect = { onSelect(group, proxyName) },
+                                            onTestDelay = { onTestDelay(group, proxyName) },
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                    }
+                                    repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                                 }
-                                repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                             }
                         }
                     }

@@ -192,7 +192,10 @@ class DashboardInstrumentedTest {
         withProxyOptions(ProxyPageOptions(displayMode = ProxyDisplayMode.LIST)) {
             openProxyPicker()
             composeRule.onNodeWithTag("proxy_group_tabs").assertDoesNotExist()
-            composeRule.onNodeWithTag("proxy_groups_list").assertIsDisplayed().performScrollToIndex(2)
+            composeRule.onNodeWithTag("proxy_groups_list").assertIsDisplayed()
+            composeRule.onNodeWithTag("proxy_list_group_header_机场选择").performClick()
+            composeRule.onNodeWithTag("proxy_list_node_机场选择_日本节点").assertIsDisplayed()
+            composeRule.onNodeWithTag("proxy_groups_list").performScrollToIndex(2)
             composeRule.onNodeWithTag("proxy_groups_list").performTouchInput { swipeDown() }
             composeRule.onNodeWithTag("dashboard_proxy_picker").assertIsDisplayed()
             composeRule.onNodeWithTag("dashboard_proxy_picker_close").performClick()

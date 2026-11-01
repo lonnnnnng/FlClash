@@ -56,6 +56,7 @@ class DashboardTestActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ProxyPageOptionsStore.clear(this)
         savedInstanceState?.let {
             scenario = DashboardScenario.valueOf(it.getString("dashboard_scenario", DashboardScenario.DEFAULT.name))
             useDarkTheme = it.getBoolean("dashboard_dark_theme", true)
@@ -131,6 +132,14 @@ class DashboardTestActivity : ComponentActivity() {
                                 currentGroupName = currentGroupName,
                                 onRefresh = {},
                                 onSelectGroup = { currentGroupName = it },
+                                onToggleGroup = { name ->
+                                    currentGroupName = name
+                                    proxyState = proxyState.copy(
+                                        unfoldSet = proxyState.unfoldSet.toMutableSet().apply {
+                                            if (!add(name)) remove(name)
+                                        },
+                                    )
+                                },
                                 onSelect = { group, name ->
                                     proxyState = proxyState.copy(selectedMap = proxyState.selectedMap + (group.name to name))
                                     proxySelectionCount++

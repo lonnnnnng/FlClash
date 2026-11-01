@@ -756,3 +756,15 @@ UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号�
 - `ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，87 项 instrumentation 失败 0、错误 0、跳过 0。
 - XML 结果文件：`android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml`；Debug APK SHA-256：`0607455c385ab0cd173863786c9fb95f5543e625c5271952e5f8a7f9411b0b39`。
 - 验收结束已恢复 `com.duanju.player`，设备系统字体 `1.0`、方向为竖屏；本轮未访问两条真实在线路径、未使用 `1.yaml`、未启动 VPN 或 Mihomo 核心。
+
+## Proxy Groups List 组折叠/展开真机回归（2026-11-01）
+
+- Flutter `lib/views/proxies/list.dart` 的 `unfoldSet` 默认为空，List 模式初始折叠；标题点击切换节点行显示，并写回当前 Profile。本轮按该源码实现 `Profile.unfoldSetJson` 解码/编码、ViewModel 状态、Room 持久化和展开/收起动画。
+- `./gradlew :app:testDebugUnitTest --no-daemon -Ptarget-platform=android-arm64`：通过。
+- `./gradlew :app:compileDebugAndroidTestKotlin :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；之后的 `connectedDebugAndroidTest` 也重新编译了最终 Kotlin/AndroidTest 源码。
+- Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`，ABI `arm64-v8a`，屏幕 `1080×2340` 竖屏，系统字号 `1.0`）：以下定向测试各 1 项通过，失败、错误和跳过均为 0：
+  - `ProxyGroupsActivityInstrumentedTest#proxyListLayoutShowsGroupSectionsAndListIconMenu`
+  - `ProxyGroupsViewModelPanelInstrumentedTest#listGroupHeaderTogglesNodesAndPersistsProfileViewState`
+  - `ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore`
+  - `DashboardInstrumentedTest#dashboardProxyPickerInheritsListLayoutAndMiddleDragKeepsSheetOpen`
+- 只运行 Redmi 竖屏默认字号用例；没有访问在线白名单、读取或修改工作区根目录 `1.yaml`、启动 VPN/Mihomo，也没有清理或修改设备上已有的两份真实 Profile。横屏和大字号用例未运行。

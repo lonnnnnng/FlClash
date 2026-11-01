@@ -54,6 +54,10 @@ interface ProfileStore {
         profiles.value.firstOrNull { it.id == id }
             ?.copy(currentGroupName = groupName)
             ?: error("配置不存在")
+    suspend fun updateProfileGroupViewState(id: Long, groupName: String, unfoldSet: Set<String>): Profile =
+        profiles.value.firstOrNull { it.id == id }
+            ?.copy(currentGroupName = groupName, unfoldSetJson = encodeUnfoldSet(unfoldSet))
+            ?: error("配置不存在")
     suspend fun refreshCurrentProfile() = Unit
     suspend fun updateProfileAutoUpdate(
         id: Long,
@@ -243,6 +247,22 @@ class ProfileRepository(
         withContext(Dispatchers.IO) {
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
             val updated = current.copy(selectedMapJson = encodeSelectedMap(selectedMap))
+            profileDao.update(updated.toEntity())
+            updated
+        }
+
+    override suspend fun updateProfileGroupViewState(
+        id: Long,
+        groupName: String,
+        unfoldSet: Set<String>,
+    ): Profile =
+        withContext(Dispatchers.IO) {
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            // 作者 long：当前组和折叠状态由同一次 Room 更新保存，避免并发写整行时互相覆盖。
+            val updated = current.copy(
+                currentGroupName = groupName,
+                unfoldSetJson = encodeUnfoldSet(unfoldSet),
+            )
             profileDao.update(updated.toEntity())
             updated
         }

@@ -16,8 +16,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.KClashDatabase
 import com.lonnnnnng.flclash.data.ProfileRepository
+import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ScriptRepository
 import com.lonnnnnng.flclash.data.decodeSelectedMap
+import com.lonnnnnng.flclash.data.decodeUnfoldSet
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
 import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
@@ -244,14 +246,23 @@ class ProfilesRepositoryPanelInstrumentedTest {
                     error("该分组记忆流程不访问远程订阅")
             },
         )
-        val profile = runBlocking { repository.addCustomProfile("分组恢复") }
+        val profile = Profile.custom(7401L, "分组恢复")
+        runBlocking { database.profiles().insert(profile.toEntity()) }
 
-        val updated = runBlocking { repository.updateProfileCurrentGroupName(profile.id, "节点选择") }
+        val unfoldSet = setOf("节点选择", "自动选择")
+        val updated = runBlocking {
+            repository.updateProfileGroupViewState(profile.id, "节点选择", unfoldSet)
+        }
 
         assertEquals("节点选择", updated.currentGroupName)
+        assertEquals(unfoldSet, updated.unfoldSet)
         assertEquals(
             "节点选择",
             runBlocking { database.profiles().getById(profile.id)?.currentGroupName },
+        )
+        assertEquals(
+            unfoldSet,
+            decodeUnfoldSet(runBlocking { database.profiles().getById(profile.id)?.unfoldSetJson }),
         )
     }
 
