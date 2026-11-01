@@ -1933,6 +1933,13 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36，ABI 列表含 `arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`：安装 Debug APK 后，`MainActivityInstrumentedTest#mainActivityNavigatesAcrossFlutterMobileDestinationsAndTools` 与 `#mainActivityRendersHomeAndProfileEntry` 各 1 项通过。未清空设备应用数据；本轮未访问在线白名单、未读取或修改工作区根目录 `1.yaml`，未启动 VPN/Mihomo，也未运行横屏或大字号用例。
 - 当前只完成主导航结构和二级入口首片；四个页面内容/样式整体 parity 仍为 `PARTIAL`。下一步继续按 Dashboard → Profiles → Proxy Groups 顺序逐页、逐菜单和逐按钮对照 Flutter，不扩展 Requests/DNS/Logs 视觉工作。
 
+### 2026-11-01：授权真实配置导入与代理入口条件真机核验
+
+- 使用项目 `AGENTS.md` 明确授权的两条真实订阅路径，通过 KClash Deep Link 导入成功，设备上保留两份远程 Profile；文档、日志和验收输出不记录完整 URL、Token 或配置正文。
+- 覆盖当前 APK 的启动空态：在尚未导入有效 Profile 时，Redmi 真机导航只显示“首页、配置、工具”，代理 Tab 不出现。导入真实 Profile 后，代理 Tab 出现；选中真实配置并启动核心后，代理页实际读取到 Mihomo 返回的 Selector、Fallback 和多个节点组。
+- 停止核心后，页面回到“核心已停止”，两份真实 Profile 与代理 Tab 保留；设备侧未再发现 KClash 的 VPN/TUN 活动态，确认停止清理完成。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`；当前 Debug APK 构建成功并覆盖安装，未运行横屏或大字号用例。真实核心闭环已验证，但主流程整体 UI/UX 仍为 `PARTIAL`，后续继续按 Dashboard → Profiles → Proxy Groups 逐页对齐。
+
 ## 12. 路线图维护规则
 
 - 每次功能状态、验收证据、范围或优先级发生变化，都必须同步更新本文件，并与对应代码或文档在同一轮提交。
