@@ -79,6 +79,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.NumberFormat
+import java.util.Locale
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.core.CoreOutboundMode
@@ -403,6 +405,71 @@ internal fun RuntimeStatsCard(state: RuntimeStatsUiState, runtimeState: CoreRunt
         state.error?.let { Text(it, Modifier.padding(top = 10.dp), color = MaterialTheme.colorScheme.error) }
     }
 }
+
+@Composable
+internal fun DashboardConnectionStatsCard(
+    connectionCount: Int,
+    requestCount: Int,
+    dnsCount: Int,
+    onConnections: () -> Unit,
+    onRequests: () -> Unit,
+    onDns: () -> Unit,
+) {
+    val entries = listOf(
+        Triple("连接", connectionCount, onConnections),
+        Triple("请求", requestCount, onRequests),
+        Triple("DNS", dnsCount, onDns),
+    )
+    Card(
+        modifier = Modifier.fillMaxWidth().testTag("dashboard_connection_stats_card"),
+        shape = RoundedCornerShape(34.dp),
+        colors = CardDefaults.cardColors(containerColor = dashboardCardColor()),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(8.dp),
+        ) {
+            entries.forEachIndexed { index, (label, count, onClick) ->
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 66.dp)
+                        .clip(RoundedCornerShape(26.dp))
+                        .clickable(onClick = onClick)
+                        .semantics {
+                            role = Role.Button
+                            contentDescription = label + "，" + dashboardCount(count) + " 条"
+                        }
+                        .testTag(
+                            when (index) {
+                                0 -> "dashboard_connection_stats_connections"
+                                1 -> "dashboard_connection_stats_requests"
+                                else -> "dashboard_connection_stats_dns"
+                            },
+                        )
+                        .padding(vertical = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+                ) {
+                    Text(
+                        dashboardCount(count),
+                        style = TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
+                        maxLines = 1,
+                    )
+                    Text(
+                        label,
+                        style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun dashboardCount(count: Int): String =
+    NumberFormat.getIntegerInstance(Locale.US).format(count)
 
 @Composable
 internal fun OutboundModeCard(

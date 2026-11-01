@@ -6,6 +6,7 @@
 >
 > 当前基线：`kotlin` 分支；首页具备多配置快速切换、远程单项同步、订阅摘要和 Rule/Global/Direct 模式入口，模式选择由 `CoreRuntimeManager` 持久化并在核心启动后应用。运行态配置选择现提供“停止核心后切换”的明确入口，不会静默替换核心正在使用的配置；固定宿主真机用例和 ViewModel 状态保护已通过，真实运行核心的停止后切换端到端仍待验收。本轮未访问订阅 URL、未读取或修改 `1.yaml`、未启动 VPN 或 Mihomo。此前 Redmi 真机使用固定宿主完成主页配置详情、代理组摘要/节点选择、配置创建后进入编辑和新草稿退出。Profiles 自定义编辑现有结构化分区入口（Rules、Proxies、Proxy Groups、Providers、DNS、Dialers）并保留原始 YAML 高级编辑；分区保存会同步父级 YAML 并保护已保存的新草稿，离开时可命名或保留默认名；导入/预览和完整分区表单仍未完成。代理组主页已具备 Tab/List 布局切换、列表分组标题与图标样式、横向分组标签、页内节点网格、搜索、单/批量测速、刷新、Profile 级组名记忆、List 组折叠/展开及 Profile 持久化、工具菜单排序/密度/卡片尺寸/隐藏超时和当前节点定位。当前主流程顺序是 Dashboard 首页 → Profiles 配置 → Proxy Groups 代理组；Dashboard 默认卡片顺序保持 Flutter Android 参考顺序，先不为统计入口改变主页层级。Requests/DNS/Logs 后续视觉打磨暂停。完整主流程 UI/UX 仍为 `PARTIAL`。验收固定为 Redmi 真机竖屏、系统默认字号；后续不运行横屏或大字号用例。出口 IP、质量信息和真实流量历史图仍无 Kotlin 数据源，不作视觉伪造
 > Dashboard 首页已完成原位编辑首片：支持长按拖动可见卡片、移除/重新添加卡片，并将布局保存在应用偏好中；核心启停卡固定在顶部。编辑态进出场和 Flutter 摇摆动画、主页其余菜单与按钮逐项核对仍未完成，因此 Dashboard 整体仍为 `PARTIAL`。
+> 2026-11-01 Dashboard 新增 Flutter `connectionStats` 对应的可选统计卡，保留 Android 默认隐藏；连接、请求和 DNS 点击分别复用 Connections 与 Observation 现有页面。代码和真实宿主定向验收记录见本日条目，整体 Dashboard 仍为 `PARTIAL`。
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -1949,6 +1950,14 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - 新增 JSON、ViewModel、Compose List 和 Repository/Room 回归；`./gradlew :app:testDebugUnitTest --no-daemon` 通过，`compileDebugAndroidTestKotlin` 与 `lintDebug -Ptarget-platform=android-arm64` 通过。
 - Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`：`ProxyGroupsActivityInstrumentedTest#proxyListLayoutShowsGroupSectionsAndListIconMenu`、`ProxyGroupsViewModelPanelInstrumentedTest#listGroupHeaderTogglesNodesAndPersistsProfileViewState`、`ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore` 各 1 项通过；未运行横屏或大字号用例。
 - 本轮只使用固定代理页/Room 宿主，没有访问两条真实在线路径、读取或修改 `1.yaml`、启动 VPN 或 Mihomo；设备上此前导入的两份真实 Profile 保持不变。Proxy Groups 整体仍为 `PARTIAL`，叶子协议类型、按组滚动位置恢复和更细 Flutter 卡片视觉校准继续排队；下一步回到 Dashboard → Profiles 主流程逐项核对管理菜单和导入/预览。
+
+### 2026-11-01：Dashboard Flutter connectionStats 可选卡片
+
+- 对照 lib/views/dashboard/widgets/connection_stats.dart 和 lib/views/dashboard/widgets/connections_table.dart，新增三等分统计卡片：连接、请求、DNS 各自显示实时计数、按钮语义和独立 testTag；外层保持 Dashboard 34dp 圆角、8dp 内边距、Material 主题色和移动端紧凑布局。
+- 对照 lib/models/config.dart 的 Android 默认 Dashboard 列表，CONNECTION_STATS 默认隐藏，只能从“编辑首页 → 添加卡片”加入；旧偏好升级不会强制显示，避免改变已验收的首页顺序。
+- 连接入口复用现有 Connections 页面；请求和 DNS 入口进入现有 Observation 目标后打开完整列表对话框，保留搜索、筛选、清空和详情入口，不新增网络或核心数据源；三个入口均经过首页 Access 未保存修改保护。
+- :app:testDebugUnitTest、:app:compileDebugAndroidTestKotlin、:app:lintDebug、:app:assembleDebug、:app:assembleDebugAndroidTest 均通过；Impeccable detector 对改动 UI 文件返回空问题列表。Debug APK SHA-256：b229f4e7c1733ac8b54f6872eb58dc73257f0b15c8a07f5987ad6c7f8f09cfc2。
+- Redmi Note 8 Pro（wsvwypiz7xwslvl7，Android 16/API 36，arm64-v8a）重新读取为竖屏、系统字号 1.0，覆盖安装未清数据；DashboardLayoutEditorInstrumentedTest 定向执行 3 项全部通过，覆盖添加卡片、三个入口、布局持久化和未保存修改在取消/重建/放弃后的路由恢复。设备服务列表为空，未启动核心；未访问在线白名单、未读取或修改根目录 1.yaml，未运行横屏或大字号用例。连接入口的 Flutter 底部弹层几何和 Dashboard 其余逐按钮视觉 parity 继续排队，整体 UI/UX 仍为 PARTIAL。
 
 ## 12. 路线图维护规则
 

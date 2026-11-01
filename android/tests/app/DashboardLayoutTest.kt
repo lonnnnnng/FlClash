@@ -22,6 +22,7 @@ class DashboardLayoutTest {
             ),
             layout.visibleInOrder(),
         )
+        assertEquals(false, DashboardSection.CONNECTION_STATS in layout.visible)
     }
 
     @Test
@@ -38,7 +39,7 @@ class DashboardLayoutTest {
     }
 
     @Test
-    fun newlyAddedSectionIsVisibleAfterPreferenceUpgrade() {
+    fun newlyAddedHiddenSectionStaysHiddenAfterPreferenceUpgrade() {
         val knownSections = DashboardSection.entries.dropLast(1)
         val knownNames = knownSections.map { it.name }
         val layout = DashboardLayoutState.fromStored(
@@ -48,7 +49,8 @@ class DashboardLayoutTest {
         )
 
         assertEquals(DashboardSection.entries, layout.order)
-        assertEquals(DashboardSection.entries, layout.visibleInOrder())
+        assertEquals(knownSections, layout.visibleInOrder())
+        assertEquals(false, DashboardSection.CONNECTION_STATS in layout.visible)
     }
 
     @Test

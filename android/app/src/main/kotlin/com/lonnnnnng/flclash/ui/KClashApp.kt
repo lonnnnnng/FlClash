@@ -179,6 +179,12 @@ private enum class ToolsSubpage {
     OBSERVATIONS,
 }
 
+private enum class DashboardFeedTarget {
+    CONNECTIONS,
+    REQUESTS,
+    DNS,
+}
+
 private enum class AccessMenuLayer {
     NONE,
     MAIN,
@@ -356,6 +362,7 @@ fun KClashApp(
     var pendingAccessExitDestination by rememberSaveable { mutableStateOf<Int?>(null) }
     var pendingAccessExitFinishes by rememberSaveable { mutableStateOf(false) }
     var pendingAccessExitOpenAddDialog by rememberSaveable { mutableStateOf(false) }
+    var pendingAccessExitFeed by rememberSaveable { mutableStateOf<DashboardFeedTarget?>(null) }
     var pendingProfilesToolbarAction by remember { mutableStateOf<ProfilesToolbarAction?>(null) }
     // 作者 long：观测页会随顶层导航离开组合，页签状态必须提升到主页面保存，避免用户返回观测时丢失当前页签。
     var selectedObservationTabIndex by rememberSaveable { mutableStateOf(ObservationTab.REQUESTS.ordinal) }
@@ -458,16 +465,41 @@ fun KClashApp(
         showAccessUnsavedChanges = true
     }
 
+    fun openDashboardFeed(feed: DashboardFeedTarget) {
+        isDashboardEditing = false
+        dashboardDraggingSection = null
+        selectedDestinationIndex = MainDestination.TOOLS.ordinal
+        when (feed) {
+            DashboardFeedTarget.CONNECTIONS -> toolsSubpage = ToolsSubpage.CONNECTIONS
+            DashboardFeedTarget.REQUESTS -> {
+                selectedObservationTabIndex = ObservationTab.REQUESTS.ordinal
+                toolsSubpage = ToolsSubpage.OBSERVATIONS
+                showRequests = true
+            }
+            DashboardFeedTarget.DNS -> {
+                selectedObservationTabIndex = ObservationTab.DNS.ordinal
+                toolsSubpage = ToolsSubpage.OBSERVATIONS
+                showDns = true
+            }
+        }
+    }
+
     fun completeAccessExit() {
         val destination = pendingAccessExitDestination
         val finishes = pendingAccessExitFinishes
         val openAddDialog = pendingAccessExitOpenAddDialog
+        val feed = pendingAccessExitFeed
         pendingAccessExitDestination = null
         pendingAccessExitFinishes = false
         pendingAccessExitOpenAddDialog = false
+        pendingAccessExitFeed = null
         showAccessUnsavedChanges = false
-        showAddDialog = openAddDialog
-        if (destination != null) selectedDestinationIndex = destination
+        if (feed != null) {
+            openDashboardFeed(feed)
+        } else {
+            showAddDialog = openAddDialog
+            if (destination != null) selectedDestinationIndex = destination
+        }
         if (finishes) onExitApp()
     }
 
@@ -475,7 +507,18 @@ fun KClashApp(
         pendingAccessExitDestination = null
         pendingAccessExitFinishes = false
         pendingAccessExitOpenAddDialog = false
+        pendingAccessExitFeed = null
         showAccessUnsavedChanges = false
+    }
+
+    fun requestDashboardFeed(feed: DashboardFeedTarget) {
+        if (accessControlState.hasUnsavedChanges) {
+            // 作者 long：统计快捷入口同样会离开首页，必须等待 Access 草稿确认后再打开列表。
+            pendingAccessExitFeed = feed
+            requestAccessExit(destination = MainDestination.TOOLS)
+        } else {
+            openDashboardFeed(feed)
+        }
     }
 
     fun navigateTo(destination: MainDestination, openAddDialog: Boolean = false) {
@@ -620,6 +663,14 @@ fun KClashApp(
                                 DashboardSection.NETWORK_STATS -> RuntimeStatsCard(
                                     state = runtimeStats,
                                     runtimeState = runtimeState,
+                                )
+                                DashboardSection.CONNECTION_STATS -> DashboardConnectionStatsCard(
+                                    connectionCount = if (runtimeState.isRunning) runtimeStats.connectionCount else 0,
+                                    requestCount = runtimeRequests.requests.size,
+                                    dnsCount = runtimeDns.queries.size,
+                                    onConnections = { requestDashboardFeed(DashboardFeedTarget.CONNECTIONS) },
+                                    onRequests = { requestDashboardFeed(DashboardFeedTarget.REQUESTS) },
+                                    onDns = { requestDashboardFeed(DashboardFeedTarget.DNS) },
                                 )
                                 DashboardSection.OUTBOUND_MODE -> OutboundModeCard(
                                     mode = outboundMode,

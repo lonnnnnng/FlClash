@@ -2,7 +2,11 @@ package com.lonnnnnng.flclash.ui
 
 import android.content.Context
 
-internal enum class DashboardSection(val title: String, val description: String) {
+internal enum class DashboardSection(
+    val title: String,
+    val description: String,
+    val visibleByDefault: Boolean = true,
+) {
     NETWORK_STATS("网络速度", "查看实时上传和下载流量"),
     OUTBOUND_MODE("出站模式", "切换规则、全局或直连"),
     PROFILES("配置", "查看当前配置或快速切换"),
@@ -11,11 +15,14 @@ internal enum class DashboardSection(val title: String, val description: String)
     ALWAYS_ON_VPN("始终开启 VPN", "管理 Android 系统 VPN 选项"),
     ACCESS_CONTROL("按应用代理", "选择需要经过代理的应用"),
     PROBE("真实请求诊断", "检查当前配置的连通性"),
+    CONNECTION_STATS("连接统计", "查看实时连接、最近请求和 DNS 查询", visibleByDefault = false),
 }
 
 internal data class DashboardLayoutState(
     val order: List<DashboardSection> = DashboardSection.entries.toList(),
-    val visible: Set<DashboardSection> = DashboardSection.entries.toSet(),
+    val visible: Set<DashboardSection> = DashboardSection.entries
+        .filter(DashboardSection::visibleByDefault)
+        .toSet(),
 ) {
     fun visibleInOrder(): List<DashboardSection> = order.filter(visible::contains)
 
@@ -58,14 +65,18 @@ internal data class DashboardLayoutState(
             val decodedOrder = orderNames.orEmpty().mapNotNull { name ->
                 DashboardSection.entries.firstOrNull { it.name == name }
             }
-            // 作者 long：版本升级新增卡片时追加到旧顺序末尾，确保已有布局不会让新入口消失。
+            // 作者 long：新增卡片追加到旧顺序末尾；可选卡片仅进入编辑候选区，不强行改变用户首页。
             val order = (decodedOrder + DashboardSection.entries).distinct()
             val newlyAdded = knownSectionNames?.toSet()?.let { known ->
-                DashboardSection.entries.filterNot { it.name in known }
+                DashboardSection.entries.filter {
+                    it.name !in known && it.visibleByDefault
+                }
             }.orEmpty()
             val visible = visibleNames?.mapNotNull { name ->
                 DashboardSection.entries.firstOrNull { it.name == name }
-            }?.toSet()?.plus(newlyAdded) ?: DashboardSection.entries.toSet()
+            }?.toSet()?.plus(newlyAdded) ?: DashboardSection.entries
+                .filter(DashboardSection::visibleByDefault)
+                .toSet()
             return DashboardLayoutState(order = order, visible = visible)
         }
     }
