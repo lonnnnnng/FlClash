@@ -8,6 +8,9 @@
 > Dashboard 首页已完成原位编辑首片：支持长按拖动可见卡片、移除/重新添加卡片，并将布局保存在应用偏好中；核心启停卡固定在顶部。编辑态进出场和 Flutter 摇摆动画、主页其余菜单与按钮逐项核对仍未完成，因此 Dashboard 整体仍为 `PARTIAL`。
 > 2026-11-01 Dashboard 新增 Flutter `connectionStats` 对应的可选统计卡，保留 Android 默认隐藏；连接、请求和 DNS 点击分别复用 Connections 与 Observation 现有页面。代码和真实宿主定向验收记录见本日条目，整体 Dashboard 仍为 `PARTIAL`。
 
+> 2026-11-01 Dashboard 顶栏标题已按 Flutter 对齐：首页显示“仪表盘”，编辑态显示“编辑仪表盘”，编辑候选区显示“可添加”。
+> 2026-11-01 Dashboard 出站模式卡已按 Flutter 手机端 connected button 几何对齐：三个模式独立 52dp 按钮、3dp 间距、26/12dp 非对称圆角、选中态胶囊动画、13sp/18sp 强调标签；保持 Rule → Global → Direct 顺序和相同模式不重复提交。
+
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
 路线图不把“代码存在”“单元测试通过”“真机产品可用”混为一谈。每个功能必须分别经过代码完成、自动化验证和真实设备验收，才能进入已完成状态。
@@ -1958,6 +1961,21 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - 连接入口复用现有 Connections 页面；请求和 DNS 入口进入现有 Observation 目标后打开完整列表对话框，保留搜索、筛选、清空和详情入口，不新增网络或核心数据源；三个入口均经过首页 Access 未保存修改保护。
 - :app:testDebugUnitTest、:app:compileDebugAndroidTestKotlin、:app:lintDebug、:app:assembleDebug、:app:assembleDebugAndroidTest 均通过；Impeccable detector 对改动 UI 文件返回空问题列表。Debug APK SHA-256：b229f4e7c1733ac8b54f6872eb58dc73257f0b15c8a07f5987ad6c7f8f09cfc2。
 - Redmi Note 8 Pro（wsvwypiz7xwslvl7，Android 16/API 36，arm64-v8a）重新读取为竖屏、系统字号 1.0，覆盖安装未清数据；DashboardLayoutEditorInstrumentedTest 定向执行 3 项全部通过，覆盖添加卡片、三个入口、布局持久化和未保存修改在取消/重建/放弃后的路由恢复。设备服务列表为空，未启动核心；未访问在线白名单、未读取或修改根目录 1.yaml，未运行横屏或大字号用例。连接入口的 Flutter 底部弹层几何和 Dashboard 其余逐按钮视觉 parity 继续排队，整体 UI/UX 仍为 PARTIAL。
+
+### 2026-11-01：Dashboard 顶栏标题与编辑态文案对齐
+
+- Flutter Dashboard 首页标题为“仪表盘”，进入编辑后标题切换为“编辑仪表盘”，编辑列表的候选分区使用“可添加”；Kotlin 复用 MainPageScaffold 的标题参数，Dashboard 编辑态按同一状态切换，原有编辑/完成按钮语义保持不变。
+- :app:testDebugUnitTest、:app:compileDebugAndroidTestKotlin、:app:lintDebug、:app:assembleDebug、:app:assembleDebugAndroidTest 通过；Redmi Note 8 Pro（wsvwypiz7xwslvl7，API 36，arm64-v8a）竖屏系统字号 1.0 定向 MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry 与 DashboardLayoutEditorInstrumentedTest#dashboardLayoutEditorReordersAndPersistsSectionVisibility，OK (2 tests)。
+- 本轮未访问在线白名单、未读取或修改 1.yaml、未启动 VPN/Mihomo，也未运行横屏或大字号用例；Dashboard 其他卡片和菜单逐项视觉 parity 仍为 PARTIAL。
+
+### 2026-11-01：Dashboard 出站模式 connected button 几何对齐
+
+- Flutter `lib/views/dashboard/widgets/outbound_mode.dart` 与 `card.dart` 的手机分支使用 `DashboardConnectedGroup`：按钮高度 52dp，组间距 3dp，端部外圆角 26dp，内侧静止圆角 12dp，选中后四角展开为 26dp 胶囊；Kotlin 已移除原先的共享底轨和 4dp 内边距，按同一几何与 240ms ease-out 动画实现。
+- Rule、Global、Direct 图标以 Flutter `AppGlyphs` 的 24 单位坐标、1.8 单位线宽重建原生矢量路径，标签调整为 footnote 对应的 13sp/18sp、半粗体；当前模式重复点击保持选择，不重复触发变更回调。rules 外框仍使用近似曲线，Flutter superellipse、ElasticPress 按压膨胀/置顶及焦点环尚待继续对齐。
+- `:app:testDebugUnitTest`、`:app:compileDebugAndroidTestKotlin`、`:app:lintDebug`、`:app:assembleDebug`、`:app:assembleDebugAndroidTest` 均通过；Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，API 36，arm64-v8a）竖屏、系统字号 1.0 定向执行 Dashboard 出站模式三项切换、主页入口和编辑布局共 3 项，`OK (3 tests)`。
+- Dashboard 全屏截图基线已随本轮几何和图标调整更新：dark default/system_ready=`2e5cfd2f...`、running=`2c4fffe5...`，light default=`af78e2ab...`、running=`d309fe04...`；代理组摘要/选择器 dark/light 截图用例仍保持通过。未运行横屏、大字号，未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，设备既有两份 Profile 未清理。整体 UI/UX 仍为 `PARTIAL`。
+- 截图已通过 instrumentation 通道导出到本机；本轮图片查看工具未成功呈现画面，人工视觉复核仍未完成。哈希基线仅用于锁定本轮原生渲染稳定性，不作为 Flutter 像素一致的验收结论。Debug APK SHA-256：`e6329541f9b26cf7cf6edceebb30f0e2277f21ef5263ada28bbb4fcf2d3c3efe`。
+- 最终验证：App JVM 单元测试 142 项，失败/错误/跳过均为 0；三项 Dashboard 固定状态截图用例与代理组摘要/选择器截图用例在安装更新后的测试包后 `OK (4 tests)`，加上三项行为用例共 7 项定向真机回归。基线更新前的旧哈希失败保留为预期变更记录；测试包未重装导致的一次旧断言复跑也已明确纠正。
 
 ## 12. 路线图维护规则
 

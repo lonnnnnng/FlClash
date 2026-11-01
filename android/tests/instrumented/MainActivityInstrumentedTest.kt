@@ -49,7 +49,7 @@ class MainActivityInstrumentedTest {
 
     @Test
     fun mainActivityRendersHomeAndProfileEntry() {
-        composeRule.onNodeWithText("KClash").assertIsDisplayed()
+        composeRule.onNodeWithText("仪表盘").assertIsDisplayed()
         composeRule.onNodeWithText("核心状态").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("启动核心").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_stats_card").assertIsDisplayed()

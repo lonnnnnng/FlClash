@@ -124,6 +124,12 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithTag("dashboard_mode_global").performClick()
         composeRule.onNodeWithTag("dashboard_mode_global").assertIsSelected()
         composeRule.onNodeWithTag("dashboard_mode_rule").assertIsNotSelected()
+        composeRule.onNodeWithTag("dashboard_mode_direct").performClick()
+        composeRule.onNodeWithTag("dashboard_mode_direct").assertIsSelected()
+        composeRule.onNodeWithTag("dashboard_mode_global").assertIsNotSelected()
+        // 作者 long：重复点击当前模式必须保持当前选择，Flutter setup action 对相同模式直接返回。
+        composeRule.onNodeWithTag("dashboard_mode_direct").performClick()
+        composeRule.onNodeWithTag("dashboard_mode_direct").assertIsSelected()
     }
 
     @Test
@@ -265,11 +271,11 @@ class DashboardInstrumentedTest {
 }
 
 private val baselines = mapOf(
-    "default" to "1e1ce2477be1dc3bed4543653ecadfd9197cffa50c35c6a6c1ae7913adb5a0f6",
-    "system_ready" to "1e1ce2477be1dc3bed4543653ecadfd9197cffa50c35c6a6c1ae7913adb5a0f6",
-    "running" to "2ca39f3de36edcafc30ad3ea7c7307b11f2a1f8ca108aa526f90023ad25f46e8",
-    "light_default" to "6b297450f902ee5ccb9b5da66fc7ba1129e0015aa403c93922ad167fa7d69e14",
-    "light_running" to "9caed5cf3d74f4842942f527eb9b8532995bd46e75ce8c8a74c350c6b17d6047",
+    "default" to "2e5cfd2f65d73acf1ea6ac7c36634a466a6e7b5465fd4a410cb2c20addac8bd0",
+    "system_ready" to "2e5cfd2f65d73acf1ea6ac7c36634a466a6e7b5465fd4a410cb2c20addac8bd0",
+    "running" to "2c4fffe57c45d2a04ced846eca0bba6b21018306b629986374f8bb1abd979447",
+    "light_default" to "af78e2abc59c3fb15c42d517d1bf90979796948f0772d13dc4cbbd79e36c3eef",
+    "light_running" to "d309fe0472fbe453e2a09ec70fc5bdc7f0487ad833d0bf772b9f7b9960390c8f",
 )
 
 private val proxyPickerBaselines = mapOf(

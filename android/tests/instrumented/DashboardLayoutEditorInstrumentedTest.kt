@@ -52,6 +52,7 @@ class DashboardLayoutEditorInstrumentedTest {
             DashboardLayoutStore.save(context, DashboardLayoutState())
             composeRule.activityRule.scenario.recreate()
             composeRule.onNodeWithTag("dashboard_edit_layout").performClick()
+            composeRule.onNodeWithText("编辑仪表盘").assertIsDisplayed()
             composeRule.onNodeWithTag("dashboard_edit_section_network_stats").assertIsDisplayed()
             composeRule.onNodeWithTag("page_dashboard")
                 .performScrollToNode(hasTestTag("dashboard_edit_section_profiles"))
@@ -69,6 +70,7 @@ class DashboardLayoutEditorInstrumentedTest {
             assertEquals(DashboardSection.NETWORK_STATS, expected.visibleInOrder().last())
 
             composeRule.onNodeWithTag("dashboard_edit_layout").performClick()
+            composeRule.onNodeWithText("仪表盘").assertIsDisplayed()
             composeRule.onNodeWithTag("dashboard_stats_card").performScrollTo().assertIsDisplayed()
 
             composeRule.activityRule.scenario.recreate()

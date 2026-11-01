@@ -176,7 +176,7 @@ internal fun DashboardEditableSection(
 @Composable
 internal fun DashboardAddableSectionHeader() {
     Text(
-        text = "添加卡片",
+        text = "可添加",
         modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 2.dp),
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -84,7 +84,7 @@ internal fun MainPageScaffold(
         containerColor = pageColor,
         topBar = {
             TopAppBar(
-                title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) "KClash" else selectedDestination.label) },
+                title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) "仪表盘" else selectedDestination.label) },
                 navigationIcon = topBarNavigationIcon ?: {},
                 actions = topBarActions,
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = pageColor),

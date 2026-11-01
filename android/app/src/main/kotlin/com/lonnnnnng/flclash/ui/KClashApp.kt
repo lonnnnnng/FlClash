@@ -570,7 +570,9 @@ fun KClashApp(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         onDestinationSelected = ::navigateTo,
         destinations = navigationDestinations,
-        topBarTitle = if (selectedDestination == MainDestination.TOOLS && toolsSubpage != ToolsSubpage.MENU) {
+        topBarTitle = if (selectedDestination == MainDestination.DASHBOARD && isDashboardEditing) {
+            "编辑仪表盘"
+        } else if (selectedDestination == MainDestination.TOOLS && toolsSubpage != ToolsSubpage.MENU) {
             when (toolsSubpage) {
                 ToolsSubpage.CONNECTIONS -> "连接"
                 ToolsSubpage.OBSERVATIONS -> "观测"

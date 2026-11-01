@@ -1,6 +1,10 @@
 package com.lonnnnnng.flclash.ui
 
 import android.text.format.DateUtils
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
@@ -32,15 +36,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
-import androidx.compose.material.icons.outlined.AccountTree
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.PowerSettingsNew
-import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material.icons.outlined.SwapHoriz
@@ -477,24 +478,33 @@ internal fun OutboundModeCard(
     onModeChange: (CoreOutboundMode) -> Unit,
 ) {
     val options = listOf(
-        Triple(CoreOutboundMode.RULE, "规则", Icons.Outlined.AccountTree),
-        Triple(CoreOutboundMode.GLOBAL, "全局", Icons.Outlined.Public),
-        Triple(CoreOutboundMode.DIRECT, "直连", Icons.Outlined.NearMe),
+        Triple(CoreOutboundMode.RULE, "规则", DashboardModeGlyphs.rules),
+        Triple(CoreOutboundMode.GLOBAL, "全局", DashboardModeGlyphs.proxies),
+        Triple(CoreOutboundMode.DIRECT, "直连", DashboardModeGlyphs.target),
     )
     DashboardSurface(Modifier.testTag("dashboard_outbound_mode_card")) {
-        DashboardHeader("出站模式", Icons.Outlined.SwapHoriz)
+        DashboardHeader("出站模式", DashboardModeGlyphs.split)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp)
-                .clip(RoundedCornerShape(26.dp))
-                .background(dashboardBlockColor())
-                .selectableGroup()
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
         ) {
-            options.forEach { (option, label, icon) ->
+            options.forEachIndexed { index, (option, label, icon) ->
                 val selected = mode == option
+                // 作者 long：三个模式各自着色，端部保留大圆角；选中时内侧也展开成胶囊，避免额外底轨挤压按钮。
+                val easing = CubicBezierEasing(0.215f, 0.61f, 0.355f, 1f)
+                val startRadius by animateDpAsState(
+                    if (selected || index == 0) 26.dp else 12.dp, tween(240, easing = easing), label = "modeStartRadius",
+                )
+                val endRadius by animateDpAsState(
+                    if (selected || index == options.lastIndex) 26.dp else 12.dp, tween(240, easing = easing), label = "modeEndRadius",
+                )
+                val background by animateColorAsState(
+                    if (selected) MaterialTheme.colorScheme.primary else dashboardBlockColor(),
+                    tween(240, easing = easing), label = "modeBackground",
+                )
                 Surface(
                     modifier = Modifier
                         .weight(1f)
@@ -506,21 +516,21 @@ internal fun OutboundModeCard(
                         )
                         .semantics { contentDescription = label }
                         .testTag("dashboard_mode_${option.wireValue}"),
-                    shape = RoundedCornerShape(22.dp),
-                    color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    shape = RoundedCornerShape(startRadius, endRadius, endRadius, startRadius),
+                    color = background,
                     contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
                     ) {
                         Icon(icon, contentDescription = null, Modifier.size(18.dp))
                         Text(
                             label,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold),
+                            style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold),
                         )
                     }
                 }
