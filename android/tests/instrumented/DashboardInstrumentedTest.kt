@@ -36,6 +36,7 @@ class DashboardInstrumentedTest {
 
     @Test
     fun dashboardScreenshotMatrixMatchesBaseline() {
+        composeRule.onNodeWithTag("nav_proxy").assertDoesNotExist()
         val actual = linkedMapOf("default" to captureHash("default"))
         composeRule.activityRule.scenario.onActivity { it.showSystemReadyScenario() }
         actual["system_ready"] = captureHash("system_ready")
@@ -43,17 +44,19 @@ class DashboardInstrumentedTest {
     }
 
     @Test
-    fun dashboardRunningStateRendersStatsAndDiagnosticEvidence() {
+    fun dashboardRunningStateRendersMainCardsWithoutDiagnosticExtras() {
         composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
         composeRule.onNodeWithTag("dashboard_runtime_card").assertIsDisplayed()
         composeRule.onNodeWithText("核心运行中").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("停止核心").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_stats_card").assertIsDisplayed()
-        composeRule.onNodeWithText("3 个连接").assertIsDisplayed()
+        composeRule.onNodeWithText("3 个连接").assertDoesNotExist()
         composeRule.onNodeWithTag("dashboard_profile_card").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_profile_sync").assertIsNotEnabled()
         composeRule.onNodeWithText("固定诊断样例").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithTag("dashboard_probe_card").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_probe_card").assertDoesNotExist()
+        composeRule.onNodeWithTag("always_on_vpn_card").assertDoesNotExist()
+        composeRule.onNodeWithTag("access_control_card").assertDoesNotExist()
         composeRule.onNodeWithTag("main_navigation_dock").assertIsDisplayed()
     }
 
@@ -212,15 +215,18 @@ class DashboardInstrumentedTest {
     fun dashboardProxySummaryAndPickerCaptureDarkAndLight() = withProxyOptions(ProxyPageOptions()) {
         assertPortraitDefaultFontConfiguration()
         composeRule.activityRule.scenario.onActivity { it.showProxyGroupsScenario() }
+        val actual = linkedMapOf<String, String>()
         for (dark in listOf(true, false)) {
             composeRule.activityRule.scenario.onActivity { it.setDarkTheme(dark) }
             val theme = if (dark) "dark" else "light"
             composeRule.onNodeWithTag("dashboard_proxy_groups_card").performScrollTo()
-            assertEquals(proxyPickerBaselines["summary_$theme"], recordNodePng("dashboard_proxy_summary_$theme", "dashboard_proxy_groups_card"))
+            actual["summary_$theme"] = recordNodePng("dashboard_proxy_summary_$theme", "dashboard_proxy_groups_card")
             composeRule.onNodeWithTag("dashboard_proxy_groups_card").performClick()
-            assertEquals(proxyPickerBaselines["picker_$theme"], recordNodePng("dashboard_proxy_picker_$theme", "connections_detail_sheet"))
+            actual["picker_$theme"] = recordNodePng("dashboard_proxy_picker_$theme", "connections_detail_sheet")
             composeRule.onNodeWithTag("dashboard_proxy_picker_close").performClick()
         }
+        // 作者 long：一次采齐深浅色的卡片和面板，基线变化时仍保留完整画面供同批视觉复核。
+        assertBaselines(actual, proxyPickerBaselines)
     }
 
     private fun openProxyPicker() {
@@ -252,6 +258,7 @@ class DashboardInstrumentedTest {
     }
 
     private fun captureHash(name: String): String {
+        assertPortraitDefaultFontConfiguration()
         composeRule.waitForIdle()
         val bitmap = composeRule.onNodeWithTag("dashboard_page").captureToImage().asAndroidBitmap()
         val png = ByteArrayOutputStream().also { output ->
@@ -261,26 +268,26 @@ class DashboardInstrumentedTest {
         return MessageDigest.getInstance("SHA-256").digest(png).joinToString("") { "%02x".format(it) }
     }
 
-    private fun assertBaselines(actual: Map<String, String>) {
+    private fun assertBaselines(actual: Map<String, String>, expected: Map<String, String> = baselines) {
         val mismatches = actual.mapNotNull { (name, hash) ->
-            val expected = baselines[name]
-            if (expected == hash) null else "$name expected=$expected actual=$hash"
+            val expectedHash = expected[name]
+            if (expectedHash == hash) null else "$name expected=$expectedHash actual=$hash"
         }
         check(mismatches.isEmpty()) { "dashboard screenshot baseline mismatch: ${mismatches.joinToString("; ")}" }
     }
 }
 
 private val baselines = mapOf(
-    "default" to "2e5cfd2f65d73acf1ea6ac7c36634a466a6e7b5465fd4a410cb2c20addac8bd0",
-    "system_ready" to "2e5cfd2f65d73acf1ea6ac7c36634a466a6e7b5465fd4a410cb2c20addac8bd0",
-    "running" to "2c4fffe57c45d2a04ced846eca0bba6b21018306b629986374f8bb1abd979447",
-    "light_default" to "af78e2abc59c3fb15c42d517d1bf90979796948f0772d13dc4cbbd79e36c3eef",
-    "light_running" to "d309fe0472fbe453e2a09ec70fc5bdc7f0487ad833d0bf772b9f7b9960390c8f",
+    "default" to "e99f05f3a12f04a78e85807be66162e9b6ee5d9a08bb780b9ce7bc277e3b5493",
+    "system_ready" to "e99f05f3a12f04a78e85807be66162e9b6ee5d9a08bb780b9ce7bc277e3b5493",
+    "running" to "83178f202e133235501c8eca09223338ef8a4e1877a26ccff485638f969280f8",
+    "light_default" to "95694af704996e098261e69e8848361bdb1a379adc848af0039ff19af24542a2",
+    "light_running" to "55f7251627ddfe6c94ef6c930810910d3705c4804438622ae0d022383dcf1f43",
 )
 
 private val proxyPickerBaselines = mapOf(
-    "summary_dark" to "6fd94883371c103cefb6657b5c0181594310139a4cca060036cbbc6c58ce1a2a",
-    "summary_light" to "43deeeb5ae0308173edfa2ceabe6b86f8380b6e32c84cbe282db6d5e0f247d63",
+    "summary_dark" to "a0c773fd53333ead00ad9af0489c00530e93532737f9e79b68f1cfcbec9b6eaa",
+    "summary_light" to "6db47c9c907197889f31b18509fe2b5ec0587104ea7d5d6dfe4ee1ee5061d6d9",
     "picker_dark" to "62847a1e78ebf50115e56f5a8a0ba18393251f7d51002cd4fd55f4bc6db05d46",
     "picker_light" to "43e3cb2030ed1f63c927dfb187c964ab3a09bf5e34ffc4c8f275b39c5016ecdc",
 )

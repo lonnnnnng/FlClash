@@ -42,6 +42,10 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    companion object {
+        internal const val EXTRA_DEVELOPER_TOOLS = "kclash_developer_tools"
+    }
+
     @Inject lateinit var backupRepository: BackupRepository
     @Inject lateinit var webDavBackupRepository: WebDavBackupRepository
     private val viewModel: MainViewModel by viewModels()
@@ -150,10 +154,13 @@ class MainActivity : ComponentActivity() {
     private var webDavCredentials by mutableStateOf<WebDavCredentials?>(null)
     private var webDavBusy by mutableStateOf(false)
     private var initialDeepLinkHandled = false
+    private var developerToolsEnabled by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // 作者 long：订阅请求诊断和系统 VPN 引导只供显式 Debug 验收使用，普通启动及 Release 不增加原版没有的入口。
+        developerToolsEnabled = BuildConfig.DEBUG && intent.getBooleanExtra(EXTRA_DEVELOPER_TOOLS, false)
         batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
         alwaysOnVpnState = AlwaysOnVpn.state(this)
         webDavCredentials = runCatching { webDavBackupRepository.readCredentials() }
@@ -186,6 +193,7 @@ class MainActivity : ComponentActivity() {
                     onUploadWebDav = ::uploadWebDav,
                     onDownloadWebDav = ::downloadWebDav,
                     onExitApp = ::finish,
+                    developerToolsEnabled = developerToolsEnabled,
                 )
             }
         }
@@ -354,6 +362,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        developerToolsEnabled = BuildConfig.DEBUG && intent.getBooleanExtra(EXTRA_DEVELOPER_TOOLS, false)
         window.decorView.post { handleDeepLink(intent) }
     }
 

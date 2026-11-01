@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -27,15 +28,26 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import androidx.lifecycle.ViewModelProvider
+import com.lonnnnnng.flclash.ui.AccessControlUiState
+import com.lonnnnnng.flclash.ui.AccessControlViewModel
+import com.lonnnnnng.flclash.ui.currentPackageList
+import com.lonnnnnng.flclash.data.RoomAccessControlSettingsStore
+import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.runner.RunWith
 
 /**
  * 作者 long：主页面宿主测试必须从真实 MainActivity 进入，确认 Hilt、ViewModel、主题和 Compose 根页面
- * 已经连成可交互入口，并覆盖手机主导航与观测页签；测试不触发订阅网络、VPN 授权或核心启动。
+ * 已经连成可交互入口，并覆盖手机主导航与观测页签；只有显式授权的配置准备用例访问订阅网络。
  */
 @RunWith(AndroidJUnit4::class)
 class MainActivityInstrumentedTest {
@@ -48,9 +60,65 @@ class MainActivityInstrumentedTest {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
+    fun mainActivityPreparesAuthorizedProfilesForUiAcceptance() {
+        val arguments = InstrumentationRegistry.getArguments()
+        val urls = listOfNotNull(
+            arguments.getString("kclashAcceptanceUrl1")?.takeIf { it.isNotBlank() },
+        )
+        // 作者 long：普通 UI 回归不访问订阅；真机准备只接收工作区当前唯一授权地址，验收后保留配置。
+        assumeTrue(
+            "配置准备仅用于显式授权的真机验收",
+            arguments.getString("kclashPrepareProfiles") == "true" && urls.size == 1,
+        )
+        val entryPoint = EntryPointAccessors.fromApplication(
+            composeRule.activity.application,
+            ConnectionAcceptanceEntryPoint::class.java,
+        )
+        val repository = entryPoint.profileRepository()
+        var added = 0
+        var repaired = 0
+        var reused = 0
+        val failures = mutableListOf<String>()
+        runBlocking(Dispatchers.IO) {
+            urls.forEachIndexed { index, url ->
+                try {
+                    // 作者 long：逐项等待正式 Repository，已有记录与正文完整时保持原样，正文缺失时只修复同一 ID。
+                    val existing = entryPoint.database().profiles().getAll().firstOrNull { it.url == url }
+                    when {
+                        existing == null -> {
+                            repository.addRemoteProfile(url)
+                            added++
+                        }
+                        !repository.profileFile(existing.id).isFile || repository.profileFile(existing.id).length() == 0L -> {
+                            repository.updateRemoteProfile(existing.id)
+                            repaired++
+                        }
+                        else -> reused++
+                    }
+                } catch (failure: Exception) {
+                    // 作者 long：验收输出保留 HTTP 状态或异常类型，不携带订阅地址、重定向地址或异常中的凭据。
+                    val detail = failure.message.orEmpty().takeIf {
+                        Regex("订阅服务器返回 HTTP \\d{3}").matches(it)
+                    } ?: failure.javaClass.simpleName
+                    failures += "授权配置 ${index + 1} 准备失败：$detail"
+                }
+            }
+        }
+        InstrumentationRegistry.getInstrumentation().sendStatus(0, android.os.Bundle().apply {
+            putString("kclash_profile_preparation", "added=$added repaired=$repaired reused=$reused failures=${failures.size}")
+        })
+        assertTrue(failures.joinToString("；"), failures.isEmpty())
+        composeRule.waitUntil(15_000) {
+            urls.all { url -> repository.profiles.value.any { it.url == url } }
+        }
+        composeRule.onNodeWithTag("nav_proxy").assertIsDisplayed()
+    }
+
+    @Test
     fun mainActivityRendersHomeAndProfileEntry() {
+        verifyPreservedProfileMetadata()
         composeRule.onNodeWithText("仪表盘").assertIsDisplayed()
-        composeRule.onNodeWithText("核心状态").assertIsDisplayed()
+        composeRule.onNodeWithText("状态").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("启动核心").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_stats_card").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_profile_card").assertIsDisplayed()
@@ -63,9 +131,11 @@ class MainActivityInstrumentedTest {
         }
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_dashboard").performClick()
-        // 作者 long：首页系统入口位于连接信息之后，须滚动可达；添加浮钮只属于配置页。
-        composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("always_on_vpn_card"))
-        composeRule.onNodeWithTag("always_on_vpn_card").assertIsDisplayed()
+        // 作者 long：系统授权和验收诊断不属于 Flutter 默认首页，普通启动不应混入这些入口。
+        composeRule.onNodeWithTag("always_on_vpn_card").assertDoesNotExist()
+        composeRule.onNodeWithTag("dashboard_battery_card").assertDoesNotExist()
+        composeRule.onNodeWithTag("access_control_card").assertDoesNotExist()
+        composeRule.onNodeWithTag("dashboard_probe_card").assertDoesNotExist()
         composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("profiles_add_fab").assertIsDisplayed()
     }
@@ -77,7 +147,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
-        composeRule.onNodeWithText("核心状态").assertIsDisplayed()
+        composeRule.onNodeWithText("状态").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_tools").performClick()
         composeRule.onNodeWithTag("page_tools").assertIsDisplayed()
         composeRule.onNodeWithTag("tools_item_connections").performClick()
@@ -168,7 +238,7 @@ class MainActivityInstrumentedTest {
     fun mainActivityCompletesCustomProfileLifecycleThroughRealViewModels() {
         val label = "Activity E2E 配置"
 
-        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890")
@@ -194,7 +264,7 @@ class MainActivityInstrumentedTest {
         val label = "Activity E2E 规则"
         val rule = "DOMAIN-SUFFIX,example.com,DIRECT"
 
-        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
@@ -241,7 +311,7 @@ class MainActivityInstrumentedTest {
         val label = "Activity E2E 代理"
         val proxy = "- name: DIRECT-TEST\n  type: direct"
 
-        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保代理分区回写时要保留同一份 Profile 的其他内容。
@@ -288,7 +358,7 @@ class MainActivityInstrumentedTest {
         val label = "Activity E2E 代理组"
         val group = "- name: AUTO-TEST\n  type: select\n  proxies:\n    - DIRECT-TEST"
 
-        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保代理组分区回写时要保留同一份 Profile 的其他内容。
@@ -335,7 +405,7 @@ class MainActivityInstrumentedTest {
         val label = "Activity E2E Provider"
         val provider = "test:\n  type: file\n  path: ./providers/test.yaml"
 
-        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保 Provider 分区回写时要保留同一份 Profile 的其他内容。
@@ -382,7 +452,7 @@ class MainActivityInstrumentedTest {
         val label = "Activity E2E DNS"
         val nameserver = "198.18.0.2"
 
-        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("mixed-port: 7890\nmode: rule")
@@ -432,7 +502,7 @@ class MainActivityInstrumentedTest {
         val label = "Activity E2E Dialers"
         val dialer = "DIRECT-TEST -> AUTO-TEST"
 
-        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("mixed-port: 7890\nmode: rule")
@@ -478,8 +548,7 @@ class MainActivityInstrumentedTest {
         val candidatePackage = findSelectableLauncherPackage(context)
         check(candidatePackage != null) { "设备没有可用于按应用代理 E2E 的非系统网络应用" }
 
-        val dashboard = composeRule.onNodeWithTag("page_dashboard")
-        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        openAccessPage()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithTag("access_control_search_toggle")
                 .fetchSemanticsNodes()
@@ -544,8 +613,7 @@ class MainActivityInstrumentedTest {
 
     @Test
     fun mainActivityRestoresAccessListAfterSearchNoResults() {
-        val dashboard = composeRule.onNodeWithTag("page_dashboard")
-        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        openAccessPage()
         composeRule.waitUntil(15_000) {
             composeRule.onAllNodesWithTag("access_control_app_list")
                 .fetchSemanticsNodes()
@@ -583,8 +651,7 @@ class MainActivityInstrumentedTest {
         val candidatePackage = findSelectableLauncherPackage(context)
         check(candidatePackage != null) { "设备没有可用于按应用代理 E2E 的非系统网络应用" }
 
-        val dashboard = composeRule.onNodeWithTag("page_dashboard")
-        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        openAccessPage()
         composeRule.waitUntil(15_000) {
             composeRule.onAllNodesWithTag("access_control_app_list")
                 .fetchSemanticsNodes()
@@ -640,15 +707,21 @@ class MainActivityInstrumentedTest {
             appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
         )
 
-        // 作者 long：关闭搜索后离开首页，走真实未保存对话框并放弃修改，确保批量操作不会写入 Room。
+        // 作者 long：关闭搜索后离开应用代理页，走真实未保存对话框并放弃修改，确保批量操作不会写入 Room。
         composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+        // 作者 long：批量选中再取消可能完全回到已保存值，退出保护必须先留下与初始开关不同的真实草稿。
+        if (enabledSwitch.fetchSemanticsNode().config[SemanticsProperties.ToggleableState] == initialEnabled) {
+            enabledSwitch.performClick()
+        }
+        assertTrue("放弃修改前必须存在未保存草稿", recordAccessState("batch_before_navigation").hasUnsavedChanges)
         composeRule.onNodeWithTag("nav_tools").performClick()
-        composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+        recordAccessState("batch_after_navigation")
+        waitForAccessExitDialog()
         composeRule.onNodeWithTag("access_control_discard_changes").performClick()
         composeRule.onNodeWithTag("page_tools").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
-        composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("access_control_card"))
+        openAccessPage()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithTag("access_control_search_toggle")
                 .fetchSemanticsNodes()
@@ -682,106 +755,56 @@ class MainActivityInstrumentedTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val candidatePackage = findSelectableLauncherPackage(context)
         check(candidatePackage != null) { "设备没有可用于按应用代理 E2E 的非系统网络应用" }
+        val store = accessSettingsStore()
+        val original = runBlocking(Dispatchers.IO) { store.current() }
+        try {
+            openAccessPage()
+            val enabledSwitch = composeRule.onNodeWithTag("access_control_enabled")
+            if (enabledSwitch.fetchSemanticsNode().config[SemanticsProperties.ToggleableState] != ToggleableState.On) {
+                enabledSwitch.performClick()
+            }
 
-        val dashboard = composeRule.onNodeWithTag("page_dashboard")
-        dashboard.performScrollToNode(hasTestTag("access_control_card"))
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("access_control_search_toggle")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+            composeRule.onNodeWithTag("access_control_search_toggle").performClick()
+            composeRule.onNodeWithTag("access_control_search").performTextInput(candidatePackage)
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithTag("access_control_app_$candidatePackage").fetchSemanticsNodes().isNotEmpty()
+            }
+            val appNode = composeRule.onNodeWithTag("access_control_app_$candidatePackage")
+            val wasSelected = appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState] == ToggleableState.On
+            appNode.performClick()
+            composeRule.onNodeWithTag("access_control_topbar_save").performClick()
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithTag("access_control_topbar_save").fetchSemanticsNodes().isEmpty()
+            }
 
-        val clipboard = checkNotNull(context.getSystemService(ClipboardManager::class.java))
-        composeRule.onNodeWithTag("access_control_actions").performClick()
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag("access_control_clipboard_export").performClick()
-        composeRule.waitForIdle()
-        val originalText = clipboard.primaryClip
-            ?.takeIf { it.itemCount > 0 }
-            ?.getItemAt(0)
-            ?.coerceToText(context)
-            ?.toString()
-            .orEmpty()
-
-        val enabledSwitch = composeRule.onNodeWithTag("access_control_enabled")
-        val wasEnabled = runCatching {
-            enabledSwitch.assertIsOn()
-            true
-        }.getOrDefault(false)
-        if (!wasEnabled) {
-            enabledSwitch.performClick()
-        }
-
-        composeRule.onNodeWithTag("access_control_search_toggle").performClick()
-        composeRule.onNodeWithTag("access_control_search").performTextInput(candidatePackage)
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("access_control_app_$candidatePackage")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        val appNode = composeRule.onNodeWithTag("access_control_app_$candidatePackage")
-        val wasSelected = runCatching {
-            appNode.assertIsOn()
-            true
-        }.getOrDefault(false)
-        appNode.performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("access_control_topbar_save").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithTag("access_control_topbar_save").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("保存按应用代理").fetchSemanticsNodes().isNotEmpty()
-        }
-
-        // 作者 long：真实宿主重建后重新读取 Room 设置，才能证明页面编辑不是只停留在内存 StateFlow。
-        composeRule.activityRule.scenario.recreate()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("page_dashboard").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("access_control_card"))
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("access_control_search_toggle")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        composeRule.waitUntil(15_000) {
-            composeRule.onAllNodesWithTag("access_control_app_$candidatePackage")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        // 重建后不再次输入搜索，直接读取完整应用列表，避免把搜索动画时序混入 Room 恢复断言。
-        val restoredNode = composeRule.onNodeWithTag("access_control_app_$candidatePackage")
-        if (wasSelected) {
+            // 作者 long：Activity 重建保留 ViewModel，正式 Room 的独立回读才能证明应用选择已经持久化。
+            val saved = runBlocking(Dispatchers.IO) { store.current() }
+            assertEquals(true, saved.enable)
+            assertEquals(!wasSelected, candidatePackage in currentPackageList(saved))
+            composeRule.activityRule.scenario.recreate()
+            composeRule.onNodeWithTag("page_access_control").assertIsDisplayed()
+            openAccessPage()
+            composeRule.waitUntil(15_000) {
+                composeRule.onAllNodesWithTag("access_control_app_$candidatePackage").fetchSemanticsNodes().isNotEmpty()
+            }
             assertEquals(
-                ToggleableState.Off,
-                restoredNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
+                if (wasSelected) ToggleableState.Off else ToggleableState.On,
+                composeRule.onNodeWithTag("access_control_app_$candidatePackage")
+                    .fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
             )
-        } else {
-            restoredNode.assertIsOn()
-        }
-
-        // 恢复测试前的应用选择；原本关闭时通过“放弃更改”回到持久化基线，避免关闭态保存入口被禁用造成污染。
-        clipboard.setPrimaryClip(ClipData.newPlainText("Access E2E restore", originalText))
-        composeRule.onNodeWithTag("access_control_actions").performClick()
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag("access_control_clipboard_import").performClick()
-        if (!wasEnabled) {
-            composeRule.onNodeWithTag("access_control_enabled").performClick()
-            composeRule.onNodeWithTag("nav_tools").performClick()
-            composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
-            composeRule.onNodeWithText("放弃更改").performClick()
-            composeRule.onNodeWithTag("page_tools").assertIsDisplayed()
-            composeRule.onNodeWithTag("nav_dashboard").performClick()
-        } else {
-            composeRule.onNodeWithTag("access_control_save").performClick()
-            composeRule.waitForIdle()
+        } finally {
+            // 作者 long：保存已改变持久化 baseline，完整恢复原设置；放弃新草稿不能撤销此前的保存。
+            runBlocking(Dispatchers.IO) { store.save(original) }
+            composeRule.activityRule.scenario.onActivity { activity ->
+                ViewModelProvider(activity)[AccessControlViewModel::class.java].reload()
+            }
+            assertEquals(original, runBlocking(Dispatchers.IO) { store.current() })
         }
     }
 
     @Test
     fun mainActivityReflowsAccessCardAfterRotation() {
-        val dashboard = composeRule.onNodeWithTag("page_dashboard")
-        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        openAccessPage()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithTag("access_control_card").fetchSemanticsNodes().isNotEmpty()
         }
@@ -797,7 +820,7 @@ class MainActivityInstrumentedTest {
                 }
                 landscape
             }
-            composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("access_control_card"))
+            openAccessPage()
             composeRule.onNodeWithTag("access_control_card").assertIsDisplayed()
             composeRule.onNodeWithTag("access_control_search_toggle").assertIsDisplayed()
             composeRule.onNodeWithTag("access_control_enabled").assertIsDisplayed()
@@ -811,8 +834,7 @@ class MainActivityInstrumentedTest {
 
     @Test
     fun mainActivityGuardsAccessChangesWhenSystemBackIsPressed() {
-        val dashboard = composeRule.onNodeWithTag("page_dashboard")
-        dashboard.performScrollToNode(hasTestTag("access_control_card"))
+        openAccessPage()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithTag("access_control_search_toggle")
                 .fetchSemanticsNodes()
@@ -820,24 +842,221 @@ class MainActivityInstrumentedTest {
         }
 
         val enabledSwitch = composeRule.onNodeWithTag("access_control_enabled")
+        val initialState = recordAccessState("before_toggle")
         enabledSwitch.performClick()
         composeRule.waitForIdle()
+        val changedState = recordAccessState("after_toggle")
+        assertEquals(!initialState.settings.enable, changedState.settings.enable)
+        assertTrue("开关变更后必须保留未保存草稿", changedState.hasUnsavedChanges)
 
         composeRule.onNodeWithTag("nav_tools").performClick()
-        composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+        recordAccessState("after_navigation")
+        waitForAccessExitDialog()
         composeRule.onNodeWithText("取消").performClick()
-        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+        composeRule.onNodeWithTag("page_access_control").assertIsDisplayed()
 
         composeRule.activityRule.scenario.onActivity { activity ->
             activity.onBackPressedDispatcher.onBackPressed()
         }
-        composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+        waitForAccessExitDialog()
         composeRule.onNodeWithText("保存后才会应用新的白名单、黑名单和筛选设置。").assertIsDisplayed()
 
         composeRule.onNodeWithText("取消").performClick()
         composeRule.onNodeWithText("按应用代理有未保存的修改").assertDoesNotExist()
+        composeRule.onNodeWithTag("tools_subpage_back").performClick()
+        waitForAccessExitDialog()
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("page_access_control").assertIsDisplayed()
         enabledSwitch.performClick()
         composeRule.waitForIdle()
+    }
+
+    @Test
+    fun mainActivitySavesAccessChangesBeforeLeavingTools() {
+        openAccessPage()
+        val store = accessSettingsStore()
+        val original = runBlocking(Dispatchers.IO) { store.current() }
+        try {
+            composeRule.onNodeWithTag("access_control_enabled").performClick()
+            composeRule.onNodeWithTag("nav_tools").performClick()
+            waitForAccessExitDialog()
+            composeRule.onNodeWithTag("access_control_save_and_exit").performClick()
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithText("按应用代理有未保存的修改").fetchSemanticsNodes().isEmpty()
+            }
+            composeRule.onNodeWithTag("page_access_control").assertDoesNotExist()
+            composeRule.onNodeWithTag("page_tools").assertIsDisplayed()
+            // 作者 long：直接从正式 Room 回读，证明退出在写入完成后发生，不能仅凭对话框关闭宣称保存成功。
+            val saved = runBlocking(Dispatchers.IO) { store.current() }
+            assertEquals(original.copy(enable = !original.enable), saved)
+        } finally {
+            // 作者 long：退出验收只改变本用例的全局设置，恢复完整 baseline，不通过放弃草稿撤销已经落库的修改。
+            runBlocking(Dispatchers.IO) { store.save(original) }
+            composeRule.activityRule.scenario.onActivity { activity ->
+                ViewModelProvider(activity)[AccessControlViewModel::class.java].reload()
+            }
+        }
+    }
+    @Test
+    fun mainActivityPlacesBatteryAuthorizationInOnDemandSettings() {
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("tools_item_developer").assertDoesNotExist()
+        composeRule.onNodeWithTag("page_tools").performScrollToNode(hasTestTag("tools_item_general"))
+        composeRule.onNodeWithTag("tools_item_general").performClick()
+        composeRule.onNodeWithTag("page_general").assertIsDisplayed()
+        composeRule.onNodeWithTag("general_item_on_demand").performClick()
+        composeRule.onNodeWithTag("page_on_demand").assertIsDisplayed()
+        composeRule.onNodeWithText("前置条件").assertIsDisplayed()
+        composeRule.onNodeWithText("忽略电池优化").assertIsDisplayed()
+        composeRule.onNodeWithTag("on_demand_battery_authorize").assertIsDisplayed()
+        composeRule.onNodeWithTag("always_on_vpn_card").assertDoesNotExist()
+        composeRule.onNodeWithTag("dashboard_probe_card").assertDoesNotExist()
+
+        // 作者 long：返回必须沿按需连接的父页逐级退出，不能跳回首页或把系统授权留在仪表盘。
+        composeRule.onNodeWithTag("tools_subpage_back").performClick()
+        composeRule.onNodeWithTag("page_general").assertIsDisplayed()
+        composeRule.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        composeRule.onNodeWithTag("tools_item_general").assertExists()
+        composeRule.onNodeWithTag("nav_dashboard").performClick()
+        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
+    }
+
+    @Test
+    fun mainActivityKeepsExtendedDiagnosticsBehindExplicitDebugEntry() {
+        try {
+            composeRule.activityRule.scenario.onActivity { activity ->
+                // 作者 long：用真实启动 Intent 重建同一宿主，避免另一个 Activity 实例让 Scenario 停在 PAUSED。
+                activity.intent.putExtra(MainActivity.EXTRA_DEVELOPER_TOOLS, true)
+            }
+            composeRule.activityRule.scenario.recreate()
+            composeRule.onNodeWithTag("nav_tools").performClick()
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithTag("tools_item_developer").fetchSemanticsNodes().isNotEmpty()
+            }
+            composeRule.onNodeWithTag("page_tools").performScrollToNode(hasTestTag("tools_item_developer"))
+            composeRule.onNodeWithTag("tools_item_developer").performClick()
+            composeRule.onNodeWithTag("always_on_vpn_card").assertIsDisplayed()
+            composeRule.onNodeWithTag("page_tools").performScrollToNode(hasTestTag("dashboard_probe_card"))
+            composeRule.onNodeWithTag("dashboard_probe_card").assertIsDisplayed()
+            composeRule.onNodeWithText("测试当前路由").assertIsNotEnabled()
+            composeRule.activityRule.scenario.recreate()
+            composeRule.onNodeWithTag("page_tools").performScrollToNode(hasTestTag("dashboard_probe_card"))
+            composeRule.onNodeWithTag("dashboard_probe_card").assertIsDisplayed()
+        } finally {
+            // 作者 long：撤销显式 Debug 入口后恢复普通 Tools 清单，测试不调用系统授权、订阅或核心诊断。
+            composeRule.activityRule.scenario.onActivity { activity ->
+                activity.intent.removeExtra(MainActivity.EXTRA_DEVELOPER_TOOLS)
+            }
+            composeRule.activityRule.scenario.recreate()
+            composeRule.onNodeWithTag("nav_tools").performClick()
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithTag("tools_item_developer").fetchSemanticsNodes().isEmpty()
+            }
+            composeRule.onNodeWithTag("tools_item_developer").assertDoesNotExist()
+            composeRule.onNodeWithTag("nav_dashboard").performClick()
+        }
+    }
+}
+
+// 作者 long：持久化验收使用正式数据库的独立读取器，避免 Activity 重建保留 ViewModel 时只比较同一份内存状态。
+private fun MainActivityInstrumentedTest.accessSettingsStore(): RoomAccessControlSettingsStore {
+    val entryPoint = EntryPointAccessors.fromApplication(
+        composeRule.activity.application,
+        ConnectionAcceptanceEntryPoint::class.java,
+    )
+    return RoomAccessControlSettingsStore(entryPoint.database().appPreferences())
+}
+
+// 作者 long：诊断退出保护时读取正式宿主的同一个 ViewModel，区分草稿没有变化与导航绕过确认，不输出配置内容。
+private fun MainActivityInstrumentedTest.recordAccessState(phase: String): AccessControlUiState {
+    var snapshot: AccessControlUiState? = null
+    composeRule.activityRule.scenario.onActivity { activity ->
+        snapshot = ViewModelProvider(activity)[AccessControlViewModel::class.java].state.value
+    }
+    val state = checkNotNull(snapshot)
+    val accessVisible = composeRule.onAllNodesWithTag("page_access_control").fetchSemanticsNodes().isNotEmpty()
+    val toolsVisible = composeRule.onAllNodesWithTag("page_tools").fetchSemanticsNodes().isNotEmpty()
+    InstrumentationRegistry.getInstrumentation().sendStatus(0, android.os.Bundle().apply {
+        putString(
+            "kclash_access_state",
+            "phase=$phase enabled=${state.settings.enable} persisted=${state.persistedSettings.enable} " +
+                "dirty=${state.hasUnsavedChanges} loading=${state.isLoading} access=$accessVisible tools=$toolsVisible",
+        )
+    })
+    return state
+}
+
+// 作者 long：按应用代理从 Flutter Tools 的设置分组进入，所有真实宿主用例共用该正式路径。
+private fun MainActivityInstrumentedTest.openAccessPage() {
+    composeRule.onNodeWithTag("nav_tools").performClick()
+    composeRule.onNodeWithTag("page_tools").performScrollToNode(hasTestTag("tools_item_access"))
+    composeRule.onNodeWithTag("tools_item_access").performClick()
+    composeRule.waitUntil(15_000) {
+        // 作者 long：设置及应用列表加载时控件已出现但仍禁用，须等正式数据加载完毕才能修改出真实草稿。
+        runCatching {
+            composeRule.onNodeWithTag("access_control_enabled").assertIsEnabled()
+            true
+        }.getOrDefault(false)
+    }
+    composeRule.onNodeWithTag("page_access_control").assertIsDisplayed()
+}
+
+// 作者 long：确认框使用独立窗口，等待实际可见后操作，避免把语义节点创建时序当作窗口已完成布局。
+private fun MainActivityInstrumentedTest.waitForAccessExitDialog() {
+    try {
+        composeRule.waitUntil(5_000) {
+            runCatching {
+                composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
+                true
+            }.getOrDefault(false)
+        }
+    } catch (failure: Throwable) {
+        // 作者 long：确认框失败时保留窗口实际画面与标题边界，区分布局问题和宿主焦点问题，不输出配置或订阅。
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val nodes = composeRule.onAllNodesWithText("按应用代理有未保存的修改").fetchSemanticsNodes()
+        instrumentation.sendStatus(0, android.os.Bundle().apply {
+            putString("kclash_access_dialog_bounds", nodes.joinToString { it.boundsInRoot.toString() })
+        })
+        if (InstrumentationRegistry.getArguments().getString("kclashCapturePng") == "true") {
+            instrumentation.uiAutomation.takeScreenshot()?.let { bitmap ->
+                val png = java.io.ByteArrayOutputStream().also {
+                    check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+                }.toByteArray()
+                com.lonnnnnng.flclash.ui.recordVisualPng("access_exit_dialog_timeout", png)
+            }
+        }
+        throw failure
+    }
+}
+
+// 作者 long：通过正式 Room 记录和 Repository 文件路径核验，空库或缺失正文不能被记为配置已保留。
+private fun MainActivityInstrumentedTest.verifyPreservedProfileMetadata() {
+    val instrumentation = InstrumentationRegistry.getInstrumentation()
+    val arguments = InstrumentationRegistry.getArguments()
+    val phase = arguments.getString("kclashProfileSnapshot")
+    if (phase !in listOf("inspect", "before", "after")) return
+    val expectedCount = arguments.getString("kclashExpectedProfileCount")?.toIntOrNull() ?: 1
+    require(expectedCount > 0) { "配置保留核验不能接受空库" }
+    val context = composeRule.activity.application
+    val entryPoint = EntryPointAccessors.fromApplication(context, ConnectionAcceptanceEntryPoint::class.java)
+    val rows = runBlocking(Dispatchers.IO) { entryPoint.database().profiles().getAll() }.sortedBy { it.id }
+    // 作者 long：只比较 Profile 文件名、大小和修改时间，证明 UI 验收未改配置，不读取订阅地址或 YAML 正文。
+    val files = rows.map { entryPoint.profileRepository().profileFile(it.id) }
+    val missing = files.count { !it.isFile || it.length() == 0L }
+    instrumentation.sendStatus(0, android.os.Bundle().apply {
+        putString("kclash_preserved_profiles", "phase=$phase count=${rows.size} missing=$missing expected=$expectedCount")
+    })
+    if (phase == "inspect") return
+    // 作者 long：当前只保留一个授权来源，仍需校验配置及正文存在，禁止把空库当作验收成功。
+    assertTrue("真机 UI 验收至少保留 $expectedCount 份配置", rows.size >= expectedCount)
+    assertEquals("每份配置都必须存在非空正文文件", 0, missing)
+    val metadata = files.joinToString("\n") { "${it.name}\t${it.length()}\t${it.lastModified()}" }
+    val snapshot = context.cacheDir.resolve("dashboard-ownership-profile-metadata.txt")
+    if (phase == "before") {
+        snapshot.writeText(metadata)
+    } else {
+        check(snapshot.isFile) { "缺少 UI 验收前的 Profile 文件元数据快照" }
+        assertEquals(snapshot.readText(), metadata)
     }
 }
 

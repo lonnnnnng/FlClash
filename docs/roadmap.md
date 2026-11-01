@@ -4,12 +4,11 @@
 >
 > 最后核对：2026-11-01（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 当前基线：`kotlin` 分支；首页具备多配置快速切换、远程单项同步、订阅摘要和 Rule/Global/Direct 模式入口，模式选择由 `CoreRuntimeManager` 持久化并在核心启动后应用。运行态配置选择现提供“停止核心后切换”的明确入口，不会静默替换核心正在使用的配置；固定宿主真机用例和 ViewModel 状态保护已通过，真实运行核心的停止后切换端到端仍待验收。本轮未访问订阅 URL、未读取或修改 `1.yaml`、未启动 VPN 或 Mihomo。此前 Redmi 真机使用固定宿主完成主页配置详情、代理组摘要/节点选择、配置创建后进入编辑和新草稿退出。Profiles 自定义编辑现有结构化分区入口（Rules、Proxies、Proxy Groups、Providers、DNS、Dialers）并保留原始 YAML 高级编辑；分区保存会同步父级 YAML 并保护已保存的新草稿，离开时可命名或保留默认名；导入/预览和完整分区表单仍未完成。代理组主页已具备 Tab/List 布局切换、列表分组标题与图标样式、横向分组标签、页内节点网格、搜索、单/批量测速、刷新、Profile 级组名记忆、List 组折叠/展开及 Profile 持久化、工具菜单排序/密度/卡片尺寸/隐藏超时和当前节点定位。当前主流程顺序是 Dashboard 首页 → Profiles 配置 → Proxy Groups 代理组；Dashboard 默认卡片顺序保持 Flutter Android 参考顺序，先不为统计入口改变主页层级。Requests/DNS/Logs 后续视觉打磨暂停。完整主流程 UI/UX 仍为 `PARTIAL`。验收固定为 Redmi 真机竖屏、系统默认字号；后续不运行横屏或大字号用例。出口 IP、质量信息和真实流量历史图仍无 Kotlin 数据源，不作视觉伪造
-> Dashboard 首页已完成原位编辑首片：支持长按拖动可见卡片、移除/重新添加卡片，并将布局保存在应用偏好中；核心启停卡固定在顶部。编辑态进出场和 Flutter 摇摆动画、主页其余菜单与按钮逐项核对仍未完成，因此 Dashboard 整体仍为 `PARTIAL`。
-> 2026-11-01 Dashboard 新增 Flutter `connectionStats` 对应的可选统计卡，保留 Android 默认隐藏；连接、请求和 DNS 点击分别复用 Connections 与 Observation 现有页面。代码和真实宿主定向验收记录见本日条目，整体 Dashboard 仍为 `PARTIAL`。
-
-> 2026-11-01 Dashboard 顶栏标题已按 Flutter 对齐：首页显示“仪表盘”，编辑态显示“编辑仪表盘”，编辑候选区显示“可添加”。
-> 2026-11-01 Dashboard 出站模式卡已按 Flutter 手机端 connected button 几何对齐：三个模式独立 52dp 按钮、3dp 间距、26/12dp 非对称圆角、选中态胶囊动画、13sp/18sp 强调标签；保持 Rule → Global → Direct 顺序和相同模式不重复提交。
+> 当前基线：`kotlin` 主线。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
+> 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
+> 最新验收：App JVM 146 项通过，Debug/AndroidTest 构建和 Lint 通过；Redmi 竖屏默认字号下，主流程 9 项、首页编辑 6 项、Dashboard 行为 5 项、截图 4 项共 24 项定向 UI 回归通过。九张页面/组件图已同批采集、目视查看并更新原生基线，不能据此宣称 Flutter 逐像素一致。
+> 在线验收只使用工作区外层 `AGENTS.md` 当前唯一授权链接（原第二条）。正式 Room 目前保留 1 份成功导入的真实 Profile，验收前后文件名、大小、修改时间一致；本轮没有清数据或删除真实配置。旧双链接与两份配置记录仅作历史证据。
+> 完整 Dashboard、Profiles 和 Proxy Groups UI/UX 仍为 `PARTIAL`。下一步继续主页状态/运行时间、出口 IP/质量与真实流量历史、剩余菜单和按钮；随后补 Profiles 管理菜单、导入/预览与完整结构化表单，再补 Proxy Groups 叶子协议类型、按组滚动恢复和细节视觉。Flutter 可选 VPN、服务状态、内网 IP、内存信息及持续边缘拖动滚动仍待可靠状态与行为链路。后续只验收 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -33,7 +32,7 @@
 | ABI | 只构建、测试和发布 `arm64-v8a` |
 | 验收设备 | Redmi Note 8 Pro，serial 每次操作前重新读取 |
 | 当前验收设备 | `wsvwypiz7xwslvl7`，Android 16 / API 36 |
-| 真机验收订阅 | 只使用当前工作区根目录 `AGENTS.md` 中列出的两条用户授权测试路径 |
+| 真机验收订阅 | 只使用当前工作区根目录 `AGENTS.md` 保留的唯一授权路径（原第二条）；已导入配置保留供调试 |
 | 发布签名 | 发布阶段创建新的独立 keystore，不复用 Flutter 签名 |
 | 核心 | Go Mihomo，Android 应用通过 Kotlin Bridge 使用 |
 
@@ -53,7 +52,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | `kotlin` 是长期主线并追踪 `origin/kotlin`；当前工作树保留本轮主页、Profiles 结构化编辑入口和 Proxy 视觉切片，Flutter 变更继续由 `upstream` 追踪 |
+| 远端关系 | `kotlin` 是长期主线并追踪 `origin/kotlin`；本轮为首页卡片/功能入口归属、编辑流程与唯一在线验收来源纠偏，Flutter 变更继续由 `upstream` 追踪 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -61,13 +60,13 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换、测速和代理模式保存/应用 |
-| 单元测试 | 最新 `:app:testDebugUnitTest` 为 137 项，失败 0、错误 0、跳过 0；历史全工程 242 项仅作历史记录 |
-| 主流程真机测试 | Redmi 竖屏默认字号：Dashboard 14 项、ProxyGroups 8 项、Profiles 主流程/结构化编辑通过；本轮新增分区保存后父级同步、已保存草稿命名和空草稿删除回归；不运行横屏或大字号用例 |
-| Debug 构建 | `:app:assembleDebug`、`:app:assembleDebugAndroidTest`、`:app:testDebugUnitTest`、`:app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；Lint 0 errors、43 warnings、5 hints |
-| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `dbd67e2fcdeceeaf1c692cef8f77c624adc7aed5be3275d526330e7c80abd3e2` |
-| Debug 原生库 | APK 内原生库均位于 `lib/arm64-v8a/`，包含 `libclash.so`；AndroidTest APK SHA-256 `003cab58bca374ba9317f38b8ec201e80407f991cfd9209086dc396c0fbe7d66`（无原生库） |
-| Release 构建 | `./gradlew :app:assembleRelease :app:lintRelease --no-daemon` 已通过；当前输出为未签名预发布 APK，尚未创建独立 release keystore |
-| 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、进程重建后的选择 UI 恢复、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、代理选择 Activity 页面宿主选择与自动恢复、Proxy 代理组默认卡片/初始选择对话框截图基线、Dashboard 默认停止态/系统就绪态截图基线、主 Activity 顶层导航与观测页签跨页面/重建状态保持、观测页 Requests/DNS/Logs 停止态空态与三页签真实宿主回归、观测页六状态组件截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号截图基线、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、真实 MainActivity DNS/日志清空与日志导出且 Requests 保留、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、Always-on VPN 系统设置引导卡片、Access 页面级剪贴板导入/导出 E2E、Access 直接选择保存后 Room 重建恢复、Access 无结果搜索后列表恢复、Access 当前结果全选/清除及放弃修改真实宿主 E2E、Access 关闭态/脏状态截图基线、横屏重排、1.5/2.0 倍字体可达性、系统字体 1.3/2.0 回归、Access 顶栏脏状态保存、菜单层级和完整搜索态定向回归、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
+| 单元测试 | 最新 `:app:testDebugUnitTest` 为 146 项，失败 0、错误 0、跳过 0；历史全工程 242 项仅作历史记录 |
+| 主流程真机测试 | Redmi 竖屏默认字号：MainActivity 9 项、首页编辑 6 项、Dashboard 行为 5 项和截图 4 项全部通过；覆盖退出取消/放弃/保存、重建、编辑排序、统计入口和代理选择。主流程整体仍为 `PARTIAL` |
+| Debug 构建 | `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64` 通过；Lint 0 errors、45 warnings、7 hints |
+| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `0338314cfafc8c0ce7c2cdf2ef8d2f2913dc62e4059ba5c4863de57ef2ace58f`；设备安装包与当前构建哈希一致 |
+| Debug 原生库 | APK 原生库只位于 `lib/arm64-v8a/`；AndroidTest APK SHA-256 `b2a8999e4afb59f951b54dfc3479ffd8c1e046cb1973fe71411c0cbb4f37cdf8`（无原生库），设备测试包与当前构建哈希一致 |
+| Release 构建 | 历史 `:app:assembleRelease :app:lintRelease` 已通过，输出为未签名预发布 APK；本轮未重建 Release，独立 release keystore 仍待发布阶段创建 |
+| 最近真机证据 | `wsvwypiz7xwslvl7`、API 36、1080×2340、字号 1.0：唯一授权 Profile 准备复用成功，验收前后 `count=1 missing=0` 且文件元数据一致；24 项定向 UI 回归通过，深浅色首页/策略组图和编辑控件已目视复核。本轮 UI 验收没有启动 VPN/Mihomo，结束时 KClash 服务条目为 0；历史真实核心与其他页面证据见下文 |
 
 ## 4. 目标架构图
 
@@ -471,7 +470,7 @@ flowchart LR
 当前已有：
 
 - Compose + Material 3 基础主题。
-- 首页、配置、代理、连接、观测五个手机目的地；观测页包含 Requests、DNS、Logs 三个页签，核心状态和代理组交互。
+- 仪表盘、代理、配置、工具四个手机主 Tab；无配置时隐藏代理 Tab。连接和观测从工具或可选连接统计卡进入，观测页包含 Requests、DNS、Logs 三个页签。
 - Edge-to-edge 基础设置。
 - Access 卡片首轮响应式收敛：标题/状态/排序/筛选区域可换行，已完成横屏重排、1.5/2.0 倍字体 Compose 可达性回归、系统字体 1.3/2.0 宿主回归、Redmi 默认卡片 PNG 哈希基线、1.3/1.5/1.8/2.0 字体截图矩阵和竖屏/横屏截图矩阵首片；真实宿主保存后重建可恢复 Room 设置；脏状态下提供标题栏保存、Flutter 风格主菜单/设置/操作层级和标题栏完整搜索态，正文操作入口保留为小屏备用。
 - Profiles 页面视觉首片：Debug 固定宿主覆盖空态、选中自定义配置和远程订阅用量三态，并包含正式页面顶栏；基线固定为 Redmi Note 8 Pro、Android 16/API 36、竖屏、系统默认字号和深色主题，记录在 `docs/visual-baselines/profiles-states-redmi-api36.sha256`。旧横屏/字号哈希仅保留为历史证据，不再执行相关用例。
@@ -490,7 +489,7 @@ flowchart LR
 - 只呈现 Bridge 已提供的真实字段。单条连接没有速率数据时不显示伪造的 `/s`；日志正文仍为原始文本，不假设未提供的结构化字段。
 - Redmi Note 8 Pro 竖屏、系统默认字号真机验证；横屏及大字号用例不运行。
 - Dashboard 默认态字号基线文件仅保留既有历史证据；按当前验收范围不再运行横屏或大字号测试。
-- Dashboard 页面视觉还原首片：用同一主题壳层覆盖正式 MainActivity 和固定视觉宿主；核心卡使用 34dp 圆角、Flutter 手机内边距和 88dp 开关，流量统计采用上传/下载双块和 22dp 内层形状，当前配置作为首屏入口；五目的地 Dock 改为浮动圆角条和 Material 矢量图标，配置添加 FAB 仅在配置页出现。Dashboard 横向内容宽度上限 560dp，系统导航安全区由 Dock 留白，按应用代理、电池优化、Always-on VPN、诊断仍在首屏卡组下方可滚动到达。
+- Dashboard 页面视觉还原首片：用同一主题壳层覆盖正式 MainActivity 和固定视觉宿主；核心卡使用 34dp 圆角、Flutter 手机内边距和 88dp 开关，流量统计采用上传/下载双块和 22dp 内层形状，当前配置作为首屏入口；四 Tab Dock 改为浮动圆角条和 Material 矢量图标，配置添加 FAB 仅在配置页出现。Dashboard 横向内容宽度上限 560dp，系统导航安全区由 Dock 留白，按应用代理已移入工具设置分组，电池授权已移入常规/按需连接；系统 Always-on 和订阅请求诊断仅从显式 Debug 验收入口进入。
 - Dashboard 固定宿主在 Redmi Note 8 Pro（Android 16/API 36、1080×2340，serial `wsvwypiz7xwslvl7`）验证停止/运行和深色/浅色竖屏截图；测试首次采集哈希与旧版不同，已人工检查主卡、流量块、配置卡和 Dock 的布局及按钮裁切，并写入 `docs/visual-baselines/dashboard-states-redmi-api36.sha256`。历史横屏/大字号 PNG 与哈希仅保留为既有记录，不再作为后续回归门槛。截图只证明 KClash 自身回归稳定，不声称 Flutter 引擎逐像素一致；宿主使用固定夹具，不读取 Room、系统设置、已安装应用、网络、VPN、Mihomo 核心或 `1.yaml`。
 - Dashboard 视觉边界：Flutter 当前配置入口和浮动 Dock 已还原静态层级；面板动态形变/拖拽动画暂缓；出口 IP、质量与国家信息、流量历史图在 Kotlin 尚无对应数据源，需先补可靠领域状态才能完成内容 parity。浅色目前使用项目 Material 3 色板，不等同 Flutter Material You 动态取色。
 - Connections 连接详情：以安全布局实际高度实现 `9/16`、`0.9` 两档，宽度超过 600dp 时使用右侧栏，宽为窗口的 40% 并限制在 360–560dp；拖柄支持点击、拖动和无障碍展开/收起，返回/下滑/遮罩/顶栏均可关闭。正文中部起手下滑回顶时，位移与剩余惯性都不收起面板。保留本地时间、`process(uid)`、元数据、空字段隐藏、复制、反序代理链和点击快照恢复。深色默认及真实系统字体 2.0x 横竖屏四份内容基线已更新；新增浅色横竖屏与 360×640dp 实际窗口顶部/底部六份基线（`docs/visual-baselines/connections-detail-light-redmi-api36.sha256`），整屏安全区已人工检查。进出场与遮罩联动已使用可测试的临界弹簧；横屏侧栏按 Flutter 的 300ms/200ms 标准减速曲线运行，关闭中旋转不会重新入场或丢失关闭回调。19 项固定宿主回归和另 1 项真实 MainActivity 核心详情 E2E 已通过。
@@ -1976,6 +1975,33 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - Dashboard 全屏截图基线已随本轮几何和图标调整更新：dark default/system_ready=`2e5cfd2f...`、running=`2c4fffe5...`，light default=`af78e2ab...`、running=`d309fe04...`；代理组摘要/选择器 dark/light 截图用例仍保持通过。未运行横屏、大字号，未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，设备既有两份 Profile 未清理。整体 UI/UX 仍为 `PARTIAL`。
 - 截图已通过 instrumentation 通道导出到本机；本轮图片查看工具未成功呈现画面，人工视觉复核仍未完成。哈希基线仅用于锁定本轮原生渲染稳定性，不作为 Flutter 像素一致的验收结论。Debug APK SHA-256：`e6329541f9b26cf7cf6edceebb30f0e2277f21ef5263ada28bbb4fcf2d3c3efe`。
 - 最终验证：App JVM 单元测试 142 项，失败/错误/跳过均为 0；三项 Dashboard 固定状态截图用例与代理组摘要/选择器截图用例在安装更新后的测试包后 `OK (4 tests)`，加上三项行为用例共 7 项定向真机回归。基线更新前的旧哈希失败保留为预期变更记录；测试包未重装导致的一次旧断言复跑也已明确纠正。
+
+### 2026-11-01：首页卡片与功能入口归属纠偏
+
+- 逐项对照 `lib/models/config.dart`、`lib/views/dashboard/widget_registry.dart`、`lib/views/tools.dart` 和 `lib/views/config/on_demand.dart`；这些 Flutter 参考文件与本地 `main` 无差异。Android 默认首页严格收敛为：状态 → 网络速度 → 出站模式 → 配置 → 策略组。
+- 从首页渲染、可添加清单和 Kotlin 旧布局解析中移除电池优化、系统 Always-on、按应用代理和订阅请求诊断；保留已有卡片的自定义顺序及隐藏偏好，不更改 Profile 数据。网络速度不再附带连接数量，状态卡移除自创提示文案；连接统计仍是原版对应、默认隐藏的可选卡。
+- 按应用代理接回“工具 → 设置 → 按应用代理”，沿用现有真实 ViewModel、Room、应用列表、剪贴板和保存；Dock、顶栏返回、系统返回和 Activity 重建后的未保存确认均迁移至该独立子页。重新进入时清空上次搜索。
+- 电池优化授权接回“工具 → 常规 → 按需连接 → 前置条件 → 忽略电池优化”；授权文案、已授权状态和按钮颜色对照 Flutter。此轮仅接回既有授权能力，完整常规与按需连接设置（位置权限、SSID 条件等）仍未实现。
+- Flutter UI 和现存原生桥接没有找到系统 Always-on 或针对订阅地址的证据包诊断入口。两者按 Kotlin 验收扩展保留，仅 Debug 且显式传入 `kclash_developer_tools=true` 时显示“开发者模式”入口；普通启动与 Release 不显示。没有把它们冒充原版的 VPN 开关或网络服务可用性卡。
+- 编辑流程同时收敛：状态卡整卡长按可排序、不可移除；其他卡片右上角叠减号徽标；编辑态屏蔽业务控件，候选行左侧为 28dp 添加按钮、40dp 图标底块和原版文案。
+- 当前 Flutter Android 可添加而 Kotlin 尚缺的四项明确排队：VPN（需启用设置与本地代理模式链路）、服务状态（需真实目标探测）、内网 IP（需内网地址及 allowLan/mixedPort 状态）、内存信息（需进程/核心内存模型）。不展示假读数或无行为的占位卡。
+- 首页标题同时对照 Flutter 中文资源收敛为“状态 / 配置 / 策略组”。源码核实订阅 UA 的 `clash-verge` 与 `Platform/android` 兼容标记后已补齐 Kotlin 请求格式，保留自身名称与版本；本地 HTTP 重定向回归确认两跳均携带该标记。第一条授权订阅在真机原生请求与本机原版 UA 对照请求中均返回 HTTP 403（nginx、JSON 响应），尚不能判定拒绝原因，未恢复该配置；第二条通过正式 Repository 重新导入成功并保留。失败记录保留，未把单份配置宣称为两份恢复。
+- 验证状态：最新 App JVM 146 项、Debug/AndroidTest 构建和 Lint 通过。验收初次通过正式 Room 核实为空，与此前“两份配置保留”的历史记录不一致；此轮没有执行原有 Profile 删除或清数据。按用户最新范围，元数据核验要求唯一授权来源已导入且正文存在，禁止空库通过。截图宿主遵循无配置隐藏代理 Tab 的门控，并取消启动时清空代理页偏好。Tools 导航、电池授权路径、Debug 重建和 Access 退出保护最终通过定向复验，先前失败与修复保留在以下记录；完整 Dashboard UI/UX 仍为 `PARTIAL`。
+- 退出确认诊断已经通过正式宿主 ViewModel 区分原因：开关变更后草稿为 `dirty=true`，Dock 仍直接离开应用代理页；批量选中/取消后则回到已保存值，草稿为 `dirty=false`。导航守卫现改为点击时读取当前保存的工具子页与草稿，批量用例明确留下开关草稿后再验证放弃；两项原失败方法修复后 `OK (2 tests)`，日志 `/tmp/kclash-dashboard-ownership-20261101-mainflow_ready-214052.log`。诊断失败日志保留于本机，不把增加等待或空草稿当作修复。
+- 主流程定向复验 `OK (9 tests)`（`/tmp/kclash-dashboard-ownership-20261101-mainflow-214715.log`），覆盖工具导航、电池原版路径、Debug 入口恢复、应用代理的 Dock/顶栏/系统返回取消、放弃、保存退出和保存后重建。保存结果从正式 Room 独立回读，Activity 重建只证明页面恢复；保存用例用 `finally` 恢复完整原设置，避免以放弃后续草稿撤销此前保存而留下开关污染。保存中跨重建、保存期间取消/放弃以及进程死亡时的草稿恢复仍需后续独立切片，不作为本轮已完成结论。
+- 首页编辑定向复验 `OK (6 tests)`（`/tmp/kclash-dashboard-ownership-20261101-editor-214936.log`），覆盖状态卡整卡排序/不可移除、右上角移除和左侧添加几何、普通卡片拖动、显隐与顺序持久化、连接统计三个入口，以及退出决定在 Activity 重建后的取消/放弃和 Dashboard 目标恢复。所有用例均为 Redmi 竖屏默认字号，未触碰真实 Profile 正文。
+- Dashboard 行为定向复验 `OK (5 tests)`（`/tmp/kclash-dashboard-ownership-20261101-dashboard-215155.log`），覆盖运行态默认卡片不混入验收扩展、出站三模式、Rule/Global/Direct 策略组摘要门控、连续节点选择与搜索重置、继承 List 偏好和中部拖动不关闭面板。
+- 九张固定宿主截图已同批采集：停止/系统就绪、运行、深浅色首页，以及深浅色策略组摘要和选择面板；其中系统就绪与默认画面相同。旧基线四项失败保留为预期标题/提示/导航变更记录（`/tmp/kclash-dashboard-ownership-20261101-capture-215339.log`）。本轮通过图片工具实际查看了全部不同画面与编辑控件，更新原生基线并安装最终测试包后 `OK (4 tests)`（`/tmp/kclash-dashboard-ownership-20261101-capture-220550.log`）；选择面板的深浅色哈希保持原值。目视核对覆盖按钮/文案可见性、无配置代理入口门控和面板首排，固定数据仍不代表 Flutter 逐像素一致。
+- 最终构建日志 `/tmp/kclash-dashboard-ownership-20261101-final-build.log`：App JVM 146 项失败/错误/跳过均为 0，Debug/AndroidTest 构建通过，Lint 0 errors、45 warnings、7 hints。App APK SHA-256 `0338314cfafc8c0ce7c2cdf2ef8d2f2913dc62e4059ba5c4863de57ef2ace58f`，测试 APK `b2a8999e4afb59f951b54dfc3479ffd8c1e046cb1973fe71411c0cbb4f37cdf8`，均已与设备安装包逐一比对；原生库仅 `arm64-v8a`。本轮不启动核心，不运行横屏/大字号；整体 UI/UX 和四项可选卡、持续边缘滚动及完整动效仍为待完成。
+
+### 2026-11-01：在线验收收敛为唯一授权来源
+
+- 用户确认原第一条链接无法导入，明确撤回使用范围；工作区外层 `AGENTS.md` 已删除该条，只保留原第二条并重新编号为 1。后续不再访问被撤回的链接。
+- 仓库 `AGENTS.md`、项目上下文、测试入口与当前路线图同步单链接规则；历史双链接证据保留其当时语义。真实订阅地址、Token 和响应正文不进入仓库或验收报告。
+- 真机连接验收脚本 `tool/android_connection_acceptance.py` 同步为恰好一条清单，默认索引为 `1`，拒绝旧 `--target-index 2`；当前唯一链接始终从外层 `AGENTS.md` 读取，不写入源码。
+- 连接脚本 Python 语法、帮助参数和旧索引拒绝核验通过；该核验在参数阶段结束，没有启动真实核心或设备动作。实际连接流程的过滤器收敛为精确 `Class#method`，后续只运行竖屏默认字号验收。
+- 真机已成功导入的授权 Profile 保留供后续 UI/UX 调试验收；准备入口优先复用已有记录与正文，不重复导入或删除。验收前后继续核对正式 Room ID 及文件元数据。
+- 单链接准备结果 `added=0 repaired=0 reused=1 failures=0`（`/tmp/kclash-dashboard-ownership-20261101-prepare-210913.log`）。验收前 `/tmp/kclash-dashboard-ownership-20261101-before-210919.log` 与验收后 `/tmp/kclash-dashboard-ownership-20261101-after-220848.log` 均 `OK (1 test)`、`count=1 missing=0 expected=1`，同一份真实 Profile 文件的名称、大小和修改时间保持一致。结束时服务查询为 0；保留配置继续调试，不访问已撤回来源。
 
 ## 12. 路线图维护规则
 

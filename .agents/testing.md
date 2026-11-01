@@ -14,11 +14,23 @@
 
 当前权威设备是已连接的 ARM64 Redmi Note 8 Pro（本轮核验 Android 16/API 36）。serial 不写死在脚本或配置中，每次操作前用 `adb devices -l` 和 `getprop` 重新确认。
 
+在线订阅验收只使用工作区根目录 `AGENTS.md` 保留的唯一授权路径（原第二条），已导入的真实 Profile 留在设备上供后续调试。本地配置仍只使用工作区根目录 `1.yaml`。下文双链接和测试配置删除记录属于历史验收，不作为当前操作规则。
+
+`tool/android_connection_acceptance.py` 只接受单条清单，默认索引为 `1`；历史 `--target-index 2` 命令不再适用。
+
 UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号相关用例，也不要直接运行包含这类用例的整类 instrumentation；使用精确的 `Class#method` 过滤器选择其他行为测试。
 
 ## Failure handling
 
 真实设备动作失败时保留失败 Run 和审计事实，先检查 logcat、服务状态、权限和核心事件，再决定修复或重试；不能用历史成功覆盖当前失败。
+
+## 当前首页归属与单链接验收（2026-11-01）
+
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、Android 16/API 36、`arm64-v8a`、竖屏 `1080×2340`、字号 `1.0`）：主流程 9 项、首页编辑 6 项、Dashboard 行为 5 项、截图 4 项，共 24 项精确方法 UI 回归通过；未运行横屏或大字号用例。
+- `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64` 通过；App JVM 146 项失败/错误/跳过为 0，Lint 0 errors、45 warnings、7 hints。
+- 应用代理退出保护先前失败已通过正式 ViewModel 诊断并修复：导航在点击时读取当前工具子页与草稿；批量用例留下真实修改再验证退出。取消、放弃、保存、顶栏/系统返回和确认框重建有定向证据；保存结果从正式 Room 独立回读，并恢复完整原设置。
+- 唯一授权 Profile 准备入口 `added=0 repaired=0 reused=1 failures=0`；验收前后均 `count=1 missing=0 expected=1`，同一文件名称、大小、修改时间一致。没有删除真实配置或清数据；本轮 UI 验收未启动 VPN/Mihomo，结束时服务条目为 0。
+- 九张不同状态/主题的固定宿主 PNG 已同批采集并实际目视核对，基线更新后 4 项截图方法复验通过；不作为 Flutter 像素一致证据。完整主流程 UI/UX 仍为 `PARTIAL`，详细结果、失败记录及最终 APK 哈希见 `docs/roadmap.md`。
 
 ## DNS Overrides 切片实测记录（2026-10-27）
 

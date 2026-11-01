@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash.data
 
+import com.lonnnnnng.flclash.BuildConfig
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -28,7 +29,8 @@ class HttpSubscriptionClient : SubscriptionClient {
                 // 作者 long：订阅入口可能从 HTTP 301 到 HTTPS，手动跟随才能保留协议白名单和重定向上限。
                 instanceFollowRedirects = false
                 requestMethod = "GET"
-                setRequestProperty("User-Agent", "KClash/0.1")
+                // 作者 long：订阅服务按客户端类型返回 Clash 配置，沿用原版兼容标记并保留 KClash 自身身份与版本。
+                setRequestProperty("User-Agent", "KClash/v${BuildConfig.VERSION_NAME} clash-verge Platform/android")
             }
             try {
                 val code = connection.responseCode

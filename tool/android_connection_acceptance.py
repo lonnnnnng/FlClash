@@ -15,15 +15,15 @@ from urllib.parse import parse_qsl, urlsplit
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--serial", required=True)
-    parser.add_argument("--target-index", type=int, choices=(1, 2), default=2)
+    parser.add_argument("--target-index", type=int, choices=(1,), default=1)
     parser.add_argument("--log", type=Path, required=True)
     args = parser.parse_args()
     repository = Path(__file__).resolve().parents[1]
     workspace = repository.parent
-    # 作者 long：输入来源固定，避免测试脚本接受任意 YAML/地址而绕开项目授权边界。
+    # 作者 long：只接受 AGENTS.md 当前唯一的授权来源；旧第二条已编号为 1，不恢复已撤回的链接。
     targets = re.findall(r"^\d+\.\s+(https?://\S+)\s*$", (workspace / "AGENTS.md").read_text(), re.M)
-    if len(targets) != 2:
-        raise SystemExit("授权清单必须恰好包含两条路径；未执行设备操作。")
+    if len(targets) != 1:
+        raise SystemExit("授权清单必须恰好包含一条路径；未执行设备操作。")
     config = (workspace / "1.yaml").read_bytes()
     if not config:
         raise SystemExit("原始 1.yaml 为空；未执行设备操作。")
@@ -84,7 +84,7 @@ def main():
             with args.log.open("w") as output:
                 subprocess.run(adb + [
                     "shell", "am", "instrument", "-w", "-r", "-e", "kclashLiveAcceptance", "true",
-                    "-e", "class", "com.lonnnnnng.flclash.ConnectionLiveAcceptanceTest",
+                    "-e", "class", "com.lonnnnnng.flclash.ConnectionLiveAcceptanceTest#realConnectionOpensCopiesAndRestoresDetailThenCleansUp",
                     "com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
                 ], stdout=output, stderr=subprocess.STDOUT, check=True)
         result = args.log.read_text()

@@ -11,14 +11,11 @@ class DashboardLayoutTest {
 
         assertEquals(
             listOf(
+                DashboardSection.CURRENT_OUTBOUND,
                 DashboardSection.NETWORK_STATS,
                 DashboardSection.OUTBOUND_MODE,
                 DashboardSection.PROFILES,
                 DashboardSection.PROXY_GROUPS,
-                DashboardSection.BATTERY_OPTIMIZATION,
-                DashboardSection.ALWAYS_ON_VPN,
-                DashboardSection.ACCESS_CONTROL,
-                DashboardSection.PROBE,
             ),
             layout.visibleInOrder(),
         )
@@ -32,10 +29,11 @@ class DashboardLayoutTest {
             visibleNames = listOf("PROFILES"),
         )
 
-        assertEquals(DashboardSection.PROXY_GROUPS, layout.order[0])
-        assertEquals(DashboardSection.PROFILES, layout.order[1])
+        assertEquals(DashboardSection.CURRENT_OUTBOUND, layout.order[0])
+        assertEquals(DashboardSection.PROXY_GROUPS, layout.order[1])
+        assertEquals(DashboardSection.PROFILES, layout.order[2])
         assertEquals(DashboardSection.entries.toSet(), layout.order.toSet())
-        assertEquals(listOf(DashboardSection.PROFILES), layout.visibleInOrder())
+        assertEquals(listOf(DashboardSection.CURRENT_OUTBOUND, DashboardSection.PROFILES), layout.visibleInOrder())
     }
 
     @Test
@@ -54,12 +52,30 @@ class DashboardLayoutTest {
     }
 
     @Test
+    fun oldSystemAndDiagnosticCardsDisappearWithoutResettingDashboardPreferences() {
+        val previous = listOf(
+            "PROFILES", "ACCESS_CONTROL", "CURRENT_OUTBOUND", "PROBE", "NETWORK_STATS",
+            "ALWAYS_ON_VPN", "BATTERY_OPTIMIZATION",
+        )
+        val layout = DashboardLayoutState.fromStored(previous, previous, previous)
+
+        assertEquals(
+            listOf(
+                DashboardSection.PROFILES, DashboardSection.CURRENT_OUTBOUND, DashboardSection.NETWORK_STATS,
+                DashboardSection.OUTBOUND_MODE, DashboardSection.PROXY_GROUPS,
+            ),
+            layout.visibleInOrder(),
+        )
+        assertEquals(false, DashboardSection.CONNECTION_STATS in layout.visible)
+    }
+
+    @Test
     fun visibilityAndOrderChangesRemainIndependent() {
         val layout = DashboardLayoutState()
             .setVisible(DashboardSection.NETWORK_STATS, false)
             .move(DashboardSection.PROFILES, -1)
 
-        assertEquals(DashboardSection.PROFILES, layout.order[1])
+        assertEquals(DashboardSection.PROFILES, layout.order[2])
         assertEquals(false, DashboardSection.NETWORK_STATS in layout.visible)
         assertEquals(true, DashboardSection.PROFILES in layout.visible)
     }
@@ -72,13 +88,10 @@ class DashboardLayoutTest {
 
         assertEquals(
             listOf(
+                DashboardSection.CURRENT_OUTBOUND,
                 DashboardSection.PROFILES,
                 DashboardSection.NETWORK_STATS,
                 DashboardSection.PROXY_GROUPS,
-                DashboardSection.BATTERY_OPTIMIZATION,
-                DashboardSection.ALWAYS_ON_VPN,
-                DashboardSection.ACCESS_CONTROL,
-                DashboardSection.PROBE,
             ),
             layout.visibleInOrder(),
         )
@@ -92,6 +105,43 @@ class DashboardLayoutTest {
             .setVisible(DashboardSection.NETWORK_STATS, true)
 
         assertEquals(DashboardSection.NETWORK_STATS, layout.visibleInOrder().last())
+    }
+
+    @Test
+    fun statusCardCanBeReorderedButCannotBeRemoved() {
+        val layout = DashboardLayoutState()
+            .reorderVisible(DashboardSection.CURRENT_OUTBOUND, DashboardSection.NETWORK_STATS)
+
+        assertEquals(DashboardSection.NETWORK_STATS, layout.visibleInOrder().first())
+        assertEquals(DashboardSection.CURRENT_OUTBOUND, layout.visibleInOrder()[1])
+        assertEquals(layout, layout.setVisible(DashboardSection.CURRENT_OUTBOUND, false))
+    }
+
+    @Test
+    fun storedStatusPositionSurvivesReloadEvenWhenVisibilityIsMissing() {
+        val layout = DashboardLayoutState.fromStored(
+            orderNames = listOf("OUTBOUND_MODE", "CURRENT_OUTBOUND", "NETWORK_STATS"),
+            visibleNames = listOf("OUTBOUND_MODE", "NETWORK_STATS"),
+        )
+
+        assertEquals(
+            listOf(DashboardSection.OUTBOUND_MODE, DashboardSection.CURRENT_OUTBOUND, DashboardSection.NETWORK_STATS),
+            layout.visibleInOrder(),
+        )
+    }
+
+    @Test
+    fun olderLayoutKeepsStatusFirstAndPreservesExistingUserOrder() {
+        val previousOrder = listOf("PROFILES", "OUTBOUND_MODE", "NETWORK_STATS")
+        val layout = DashboardLayoutState.fromStored(
+            orderNames = previousOrder,
+            visibleNames = previousOrder,
+            knownSectionNames = previousOrder,
+        )
+
+        assertEquals(DashboardSection.CURRENT_OUTBOUND, layout.order.first())
+        assertEquals(previousOrder, layout.order.drop(1).take(previousOrder.size).map { it.name })
+        assertEquals(false, DashboardSection.CONNECTION_STATS in layout.visible)
     }
 
     @Test

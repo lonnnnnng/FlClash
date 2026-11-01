@@ -95,6 +95,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
@@ -177,6 +178,10 @@ private enum class ToolsSubpage {
     MENU,
     CONNECTIONS,
     OBSERVATIONS,
+    ACCESS_CONTROL,
+    GENERAL,
+    ON_DEMAND,
+    DEVELOPER,
 }
 
 private enum class DashboardFeedTarget {
@@ -313,6 +318,7 @@ fun KClashApp(
     onUploadWebDav: (WebDavCredentials, BackupRestoreScope) -> Unit = { _, _ -> },
     onDownloadWebDav: (WebDavCredentials, BackupRestoreScope, BackupRestoreStrategy) -> Unit = { _, _, _ -> },
     onExitApp: () -> Unit = {},
+    developerToolsEnabled: Boolean = false,
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val outboundMode by runtimeViewModel.outboundMode.collectAsState()
@@ -347,6 +353,8 @@ fun KClashApp(
     var isDashboardEditing by rememberSaveable { mutableStateOf(false) }
     var dashboardDraggingSection by remember { mutableStateOf<DashboardSection?>(null) }
     var dashboardDragY by remember { mutableStateOf(0f) }
+    var dashboardDragTop by remember { mutableStateOf(0f) }
+    var dashboardDragHeight by remember { mutableStateOf(0) }
     val dashboardSwayProgress = rememberDashboardEditSwayProgress(isDashboardEditing)
     val selectedProfile = profilesState.profiles.firstOrNull { it.id == profilesState.currentProfileId }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
@@ -362,7 +370,7 @@ fun KClashApp(
     var pendingAccessExitDestination by rememberSaveable { mutableStateOf<Int?>(null) }
     var pendingAccessExitFinishes by rememberSaveable { mutableStateOf(false) }
     var pendingAccessExitOpenAddDialog by rememberSaveable { mutableStateOf(false) }
-    var pendingAccessExitFeed by rememberSaveable { mutableStateOf<DashboardFeedTarget?>(null) }
+    var pendingAccessExitToolsSubpage by rememberSaveable { mutableStateOf<ToolsSubpage?>(null) }
     var pendingProfilesToolbarAction by remember { mutableStateOf<ProfilesToolbarAction?>(null) }
     // 作者 long：观测页会随顶层导航离开组合，页签状态必须提升到主页面保存，避免用户返回观测时丢失当前页签。
     var selectedObservationTabIndex by rememberSaveable { mutableStateOf(ObservationTab.REQUESTS.ordinal) }
@@ -375,6 +383,13 @@ fun KClashApp(
         MainDestination.DASHBOARD
     } else {
         requestedDestination
+    }
+    LaunchedEffect(selectedDestination, toolsSubpage) {
+        if (selectedDestination == MainDestination.TOOLS) pageListState.scrollToItem(0)
+    }
+
+    LaunchedEffect(developerToolsEnabled) {
+        if (!developerToolsEnabled && toolsSubpage == ToolsSubpage.DEVELOPER) toolsSubpage = ToolsSubpage.MENU
     }
 
     LaunchedEffect(showProxyDestination) {
@@ -458,10 +473,15 @@ fun KClashApp(
         }
     }
 
-    fun requestAccessExit(destination: MainDestination? = null, openAddDialog: Boolean = false) {
+    fun requestAccessExit(
+        destination: MainDestination? = null,
+        openAddDialog: Boolean = false,
+        toolsPage: ToolsSubpage? = null,
+    ) {
         pendingAccessExitDestination = destination?.ordinal
-        pendingAccessExitFinishes = destination == null
+        pendingAccessExitFinishes = destination == null && toolsPage == null
         pendingAccessExitOpenAddDialog = openAddDialog
+        pendingAccessExitToolsSubpage = toolsPage
         showAccessUnsavedChanges = true
     }
 
@@ -488,18 +508,15 @@ fun KClashApp(
         val destination = pendingAccessExitDestination
         val finishes = pendingAccessExitFinishes
         val openAddDialog = pendingAccessExitOpenAddDialog
-        val feed = pendingAccessExitFeed
+        val toolsPage = pendingAccessExitToolsSubpage
         pendingAccessExitDestination = null
         pendingAccessExitFinishes = false
         pendingAccessExitOpenAddDialog = false
-        pendingAccessExitFeed = null
+        pendingAccessExitToolsSubpage = null
         showAccessUnsavedChanges = false
-        if (feed != null) {
-            openDashboardFeed(feed)
-        } else {
-            showAddDialog = openAddDialog
-            if (destination != null) selectedDestinationIndex = destination
-        }
+        showAddDialog = openAddDialog
+        if (destination != null) selectedDestinationIndex = destination
+        if (toolsPage != null) toolsSubpage = toolsPage
         if (finishes) onExitApp()
     }
 
@@ -507,35 +524,41 @@ fun KClashApp(
         pendingAccessExitDestination = null
         pendingAccessExitFinishes = false
         pendingAccessExitOpenAddDialog = false
-        pendingAccessExitFeed = null
+        pendingAccessExitToolsSubpage = null
         showAccessUnsavedChanges = false
     }
 
     fun requestDashboardFeed(feed: DashboardFeedTarget) {
-        if (accessControlState.hasUnsavedChanges) {
-            // 作者 long：统计快捷入口同样会离开首页，必须等待 Access 草稿确认后再打开列表。
-            pendingAccessExitFeed = feed
-            requestAccessExit(destination = MainDestination.TOOLS)
-        } else {
-            openDashboardFeed(feed)
-        }
+        openDashboardFeed(feed)
     }
 
-    fun navigateTo(destination: MainDestination, openAddDialog: Boolean = false) {
-        if (destination == MainDestination.TOOLS) toolsSubpage = ToolsSubpage.MENU
-        if (destination != selectedDestination &&
-            selectedDestination == MainDestination.DASHBOARD &&
+    fun hasUnsavedAccessChanges(): Boolean =
+        selectedDestinationIndex == MainDestination.TOOLS.ordinal &&
+            toolsSubpage == ToolsSubpage.ACCESS_CONTROL &&
             accessControlState.hasUnsavedChanges
-        ) {
-            // 作者 long：卡片和 Dock 离开首页共用未保存保护，避免新增快捷入口绕过 Access 的草稿确认。
-            requestAccessExit(destination, openAddDialog)
+
+    fun navigateTo(destination: MainDestination, openAddDialog: Boolean = false) {
+        // 作者 long：工具子页变化不会切换 Dock 的选中项，保留的导航回调必须在点击时读取当前路由和草稿，
+        // 避免使用进入应用代理之前的页面快照而绕过未保存确认。
+        if (hasUnsavedAccessChanges()) {
+            requestAccessExit(destination, openAddDialog, if (destination == MainDestination.TOOLS) ToolsSubpage.MENU else null)
         } else {
-            if (selectedDestination == MainDestination.DASHBOARD && destination != MainDestination.DASHBOARD) {
+            if (destination == MainDestination.TOOLS) toolsSubpage = ToolsSubpage.MENU
+            if (selectedDestinationIndex == MainDestination.DASHBOARD.ordinal && destination != MainDestination.DASHBOARD) {
                 isDashboardEditing = false
                 dashboardDraggingSection = null
             }
             selectedDestinationIndex = destination.ordinal
             showAddDialog = openAddDialog && destination == MainDestination.PROFILES
+        }
+    }
+
+    fun returnFromToolsSubpage() {
+        val parent = if (toolsSubpage == ToolsSubpage.ON_DEMAND) ToolsSubpage.GENERAL else ToolsSubpage.MENU
+        if (hasUnsavedAccessChanges()) {
+            requestAccessExit(MainDestination.TOOLS, toolsPage = parent)
+        } else {
+            toolsSubpage = parent
         }
     }
 
@@ -554,15 +577,12 @@ fun KClashApp(
         },
     )
 
-    BackHandler(enabled = selectedDestination == MainDestination.DASHBOARD && accessControlState.hasUnsavedChanges) {
-        requestAccessExit()
-    }
     BackHandler(enabled = selectedDestination == MainDestination.DASHBOARD && isDashboardEditing) {
         isDashboardEditing = false
         dashboardDraggingSection = null
     }
     BackHandler(enabled = selectedDestination == MainDestination.TOOLS && toolsSubpage != ToolsSubpage.MENU) {
-        toolsSubpage = ToolsSubpage.MENU
+        returnFromToolsSubpage()
     }
 
     MainPageScaffold(
@@ -576,6 +596,10 @@ fun KClashApp(
             when (toolsSubpage) {
                 ToolsSubpage.CONNECTIONS -> "连接"
                 ToolsSubpage.OBSERVATIONS -> "观测"
+                ToolsSubpage.ACCESS_CONTROL -> "按应用代理"
+                ToolsSubpage.GENERAL -> "常规"
+                ToolsSubpage.ON_DEMAND -> "按需连接"
+                ToolsSubpage.DEVELOPER -> "开发者模式"
                 ToolsSubpage.MENU -> "工具"
             }
         } else {
@@ -583,8 +607,11 @@ fun KClashApp(
         },
         topBarNavigationIcon = if (selectedDestination == MainDestination.TOOLS && toolsSubpage != ToolsSubpage.MENU) {
             {
-                IconButton(onClick = { toolsSubpage = ToolsSubpage.MENU }) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回工具")
+                IconButton(onClick = ::returnFromToolsSubpage, modifier = Modifier.testTag("tools_subpage_back")) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = if (toolsSubpage == ToolsSubpage.ON_DEMAND) "返回常规" else "返回工具",
+                    )
                 }
             }
         } else {
@@ -601,7 +628,7 @@ fun KClashApp(
                 ) {
                     Icon(
                         imageVector = if (isDashboardEditing) Icons.Outlined.Check else Icons.Outlined.Edit,
-                        contentDescription = if (isDashboardEditing) "完成编辑" else "编辑首页",
+                        contentDescription = if (isDashboardEditing) "完成" else "编辑仪表盘",
                     )
                 }
             } else if (selectedDestination == MainDestination.PROFILES) {
@@ -645,23 +672,23 @@ fun KClashApp(
                         .padding(horizontal = if (selectedDestination == MainDestination.DASHBOARD) dashboardInset else 16.dp)
                         .testTag("page_${selectedDestination.name.lowercase()}"),
                     contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(
+                        if (selectedDestination == MainDestination.DASHBOARD && isDashboardEditing) 0.dp else 12.dp,
+                    ),
                 ) {
                     when (selectedDestination) {
                     MainDestination.DASHBOARD -> {
-                        item {
-                            RuntimeCard(
-                                state = runtimeState,
-                                onStart = onStartRuntime,
-                                onStop = onStopRuntime,
-                            )
-                        }
                         items(
                             items = dashboardLayout.visibleInOrder(),
                             key = { it.name },
                         ) { section ->
                             val content: @Composable () -> Unit = {
                                 when (section) {
+                                DashboardSection.CURRENT_OUTBOUND -> RuntimeCard(
+                                    state = runtimeState,
+                                    onStart = onStartRuntime,
+                                    onStop = onStopRuntime,
+                                )
                                 DashboardSection.NETWORK_STATS -> RuntimeStatsCard(
                                     state = runtimeStats,
                                     runtimeState = runtimeState,
@@ -710,70 +737,42 @@ fun KClashApp(
                                     onTestDelay = proxyGroupsViewModel::testDelay,
                                     onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
                                 )
-                                DashboardSection.BATTERY_OPTIMIZATION -> BatteryOptimizationCard(
-                                    ignored = batteryOptimizationIgnored,
-                                    onRequest = onRequestBatteryOptimization,
-                                )
-                                DashboardSection.ALWAYS_ON_VPN -> AlwaysOnVpnCard(
-                                    state = alwaysOnVpnState,
-                                    onRequest = onRequestAlwaysOnVpn,
-                                )
-                                DashboardSection.ACCESS_CONTROL -> AccessControlCard(
-                                    state = accessControlState,
-                                    runtimeState = runtimeState,
-                                    onEnabledChange = accessControlViewModel::setEnabled,
-                                    onModeChange = accessControlViewModel::setMode,
-                                    onSortChange = accessControlViewModel::setSort,
-                                    onFilterSystemAppsChange = accessControlViewModel::setFilterSystemApps,
-                                    onFilterNonInternetAppsChange = accessControlViewModel::setFilterNonInternetApps,
-                                    onSearchChange = accessControlViewModel::setSearchQuery,
-                                    onTogglePackage = accessControlViewModel::togglePackage,
-                                    onSelectVisible = accessControlViewModel::selectVisibleApps,
-                                    onClearVisible = accessControlViewModel::clearVisibleApps,
-                                    onToggleVisible = accessControlViewModel::toggleVisibleApps,
-                                    onSmartSelect = accessControlViewModel::smartSelectApps,
-                                    onExportToClipboard = accessControlViewModel::exportToClipboard,
-                                    onImportFromClipboard = accessControlViewModel::importFromClipboard,
-                                    onSave = { accessControlViewModel.save() },
-                                )
-                                DashboardSection.PROBE -> ProbeCard(
-                                    state = runtimeProbe,
-                                    diagnostic = diagnosticState,
-                                    diagnosticHistory = diagnosticHistory,
-                                    runtimeState = runtimeState,
-                                    profile = selectedProfile,
-                                    onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
-                                    onExportDiagnostic = onExportDiagnostic,
-                                    onShowDiagnosticHistory = { showDiagnosticHistory = true },
-                                    onExportDiagnosticHistory = onExportDiagnosticHistory,
-                                )
                                 }
                             }
                             if (isDashboardEditing) {
                                 DashboardEditableSection(
                                     section = section,
                                     swayProgress = dashboardSwayProgress,
-                                    onRemove = {
+                                    isDragging = dashboardDraggingSection == section,
+                                    dragOffsetPx = {
+                                        val item = dashboardListState.layoutInfo.visibleItemsInfo
+                                            .firstOrNull { it.key == section.name }
+                                        if (item != null) dashboardDragTop - item.offset else 0f
+                                    },
+                                    onRemove = if (section.removable) ({
                                         dashboardLayout = dashboardLayout.setVisible(section, false)
                                         DashboardLayoutStore.save(context, dashboardLayout)
-                                    },
+                                    }) else null,
                                     onDragStart = { localY ->
                                         val item = dashboardListState.layoutInfo.visibleItemsInfo
                                             .firstOrNull { it.key == section.name }
                                         if (item != null) {
                                             dashboardDraggingSection = section
-                                            dashboardDragY = item.offset + with(density) { 4.dp.toPx() } + localY
+                                            dashboardDragY = item.offset + localY
+                                            dashboardDragTop = item.offset.toFloat()
+                                            dashboardDragHeight = item.size
                                         }
                                     },
                                     onDragBy = { deltaY ->
                                         if (dashboardDraggingSection == section) {
                                             dashboardDragY += deltaY
+                                            dashboardDragTop += deltaY
                                             val listInfo = dashboardListState.layoutInfo
                                             val sectionItems = listInfo.visibleItemsInfo.filter { item ->
                                                 DashboardSection.entries.any { it.name == item.key }
                                             }
                                             val target = sectionItems.minByOrNull { item ->
-                                                abs(item.offset + item.size / 2f - dashboardDragY)
+                                                abs(item.offset + item.size / 2f - (dashboardDragTop + dashboardDragHeight / 2f))
                                             }?.key?.let { key ->
                                                 DashboardSection.entries.firstOrNull { it.name == key }
                                             }
@@ -784,7 +783,7 @@ fun KClashApp(
                                                     DashboardLayoutStore.save(context, changed)
                                                 }
                                             }
-                                            // 作者 long：拖拽接近视口边缘时持续滚动，长列表仍可把卡片放到屏幕外的目标位置。
+                                            // 作者 long：每次拖动接近视口边缘时推进列表，允许把卡片放到当前屏幕外的目标位置。
                                             val edge = with(density) { 56.dp.toPx() }
                                             when {
                                                 dashboardDragY < listInfo.viewportStartOffset + edge ->
@@ -795,7 +794,9 @@ fun KClashApp(
                                         }
                                     },
                                     onDragEnd = { dashboardDraggingSection = null },
-                                    modifier = Modifier.animateItem(),
+                                    modifier = (if (dashboardDraggingSection == section) Modifier else Modifier.animateItem())
+                                        .zIndex(if (dashboardDraggingSection == section) 1f else 0f)
+                                        .padding(bottom = 12.dp),
                                     content = content,
                                 )
                             } else {
@@ -809,7 +810,7 @@ fun KClashApp(
                                 items(addable, key = { "dashboard_add_${it.name}" }) { section ->
                                     DashboardAddableSectionRow(
                                         section = section,
-                                        modifier = Modifier.animateItem(),
+                                        modifier = Modifier.animateItem().padding(bottom = 8.dp),
                                     ) {
                                         dashboardLayout = dashboardLayout.setVisible(section, true)
                                         DashboardLayoutStore.save(context, dashboardLayout)
@@ -914,6 +915,13 @@ fun KClashApp(
                                     selectedObservationTabIndex = tab.ordinal
                                     toolsSubpage = ToolsSubpage.OBSERVATIONS
                                 },
+                                onOpenAccessControl = {
+                                    // 作者 long：重新进入独立应用代理页时清空上次搜索，避免隐藏的查询继续筛掉完整应用列表。
+                                    accessControlViewModel.setSearchQuery("")
+                                    toolsSubpage = ToolsSubpage.ACCESS_CONTROL
+                                },
+                                onOpenGeneral = { toolsSubpage = ToolsSubpage.GENERAL },
+                                onOpenDeveloper = if (developerToolsEnabled) ({ toolsSubpage = ToolsSubpage.DEVELOPER }) else null,
                                 onShowUnavailable = { label ->
                                     coroutineScope.launch { snackbarHostState.showSnackbar("${label}页面正在按 Flutter 参考实现补齐") }
                                 },
@@ -946,6 +954,56 @@ fun KClashApp(
                                     onShowLogs = { showLogs = true },
                                     onClearLogs = runtimeViewModel::clearLogs,
                                     onExportLogs = { onExportLogs(runtimeLogs.entries) },
+                                )
+                            }
+                        }
+                        ToolsSubpage.ACCESS_CONTROL -> item {
+                            Box(Modifier.fillMaxWidth().testTag("page_access_control")) {
+                                AccessControlCard(
+                                    state = accessControlState,
+                                    runtimeState = runtimeState,
+                                    onEnabledChange = accessControlViewModel::setEnabled,
+                                    onModeChange = accessControlViewModel::setMode,
+                                    onSortChange = accessControlViewModel::setSort,
+                                    onFilterSystemAppsChange = accessControlViewModel::setFilterSystemApps,
+                                    onFilterNonInternetAppsChange = accessControlViewModel::setFilterNonInternetApps,
+                                    onSearchChange = accessControlViewModel::setSearchQuery,
+                                    onTogglePackage = accessControlViewModel::togglePackage,
+                                    onSelectVisible = accessControlViewModel::selectVisibleApps,
+                                    onClearVisible = accessControlViewModel::clearVisibleApps,
+                                    onToggleVisible = accessControlViewModel::toggleVisibleApps,
+                                    onSmartSelect = accessControlViewModel::smartSelectApps,
+                                    onExportToClipboard = accessControlViewModel::exportToClipboard,
+                                    onImportFromClipboard = accessControlViewModel::importFromClipboard,
+                                    onSave = { accessControlViewModel.save() },
+                                )
+                            }
+                        }
+                        ToolsSubpage.GENERAL -> item {
+                            GeneralSettingsPanel(onOpenOnDemand = { toolsSubpage = ToolsSubpage.ON_DEMAND })
+                        }
+                        ToolsSubpage.ON_DEMAND -> item {
+                            OnDemandSettingsPanel(
+                                batteryOptimizationIgnored = batteryOptimizationIgnored,
+                                onRequestBatteryOptimization = onRequestBatteryOptimization,
+                            )
+                        }
+                        ToolsSubpage.DEVELOPER -> if (developerToolsEnabled) {
+                            // 作者 long：系统 Always-on 引导和订阅请求证据是 Kotlin 验收扩展，不伪装成 Flutter 仪表盘功能。
+                            item {
+                                AlwaysOnVpnCard(state = alwaysOnVpnState, onRequest = onRequestAlwaysOnVpn)
+                            }
+                            item {
+                                ProbeCard(
+                                    state = runtimeProbe,
+                                    diagnostic = diagnosticState,
+                                    diagnosticHistory = diagnosticHistory,
+                                    runtimeState = runtimeState,
+                                    profile = selectedProfile,
+                                    onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
+                                    onExportDiagnostic = onExportDiagnostic,
+                                    onShowDiagnosticHistory = { showDiagnosticHistory = true },
+                                    onExportDiagnosticHistory = onExportDiagnosticHistory,
                                 )
                             }
                         }
@@ -2442,36 +2500,6 @@ private fun ProxyGroupNodesPage(
                         onSelect = { onSelect(group, proxyName) },
                         onTestDelay = { onTestDelay(group, proxyName) },
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-internal fun BatteryOptimizationCard(
-    ignored: Boolean,
-    onRequest: () -> Unit,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("dashboard_battery_card"),
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("后台运行", style = MaterialTheme.typography.titleMedium)
-            Text(
-                if (ignored) {
-                    "电池优化已忽略，系统不会主动限制 KClash 的后台 VPN 服务。"
-                } else {
-                    "建议关闭电池优化，避免系统在后台暂停 KClash 的 VPN 服务。"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (!ignored) {
-                OutlinedButton(onClick = onRequest) {
-                    Text("打开电池优化设置")
                 }
             }
         }

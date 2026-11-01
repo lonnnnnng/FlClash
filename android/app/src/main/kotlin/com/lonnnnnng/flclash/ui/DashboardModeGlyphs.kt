@@ -8,8 +8,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
-/** 作者 long：出站模式沿用 Flutter AppGlyphs 的 24 单位坐标和 1.8 单位线宽，避免 Material 图标改变卡片语义与轮廓。 */
+/** 作者 long：仪表盘模式与编辑按钮沿用 Flutter AppGlyphs 的 24 单位坐标和 1.8 单位线宽，保持原版图标轮廓。 */
 internal object DashboardModeGlyphs {
+    val add = glyph("DashboardAdd", listOf("M12 5V19", "M5 12H19"))
+    val remove = glyph("DashboardRemove", listOf("M5 12H19"))
+
     val proxies = glyph("DashboardProxies", listOf(
         "M20.8 12A8.8 8.8 0 1 1 3.2 12A8.8 8.8 0 1 1 20.8 12Z",
         "M15.8 12A3.8 8.8 0 1 1 8.2 12A3.8 8.8 0 1 1 15.8 12Z",

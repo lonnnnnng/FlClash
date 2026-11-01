@@ -100,7 +100,7 @@ internal fun dashboardPageColor(): Color = if (LocalKClashDarkTheme.current) {
 }
 
 @Composable
-private fun dashboardCardColor(): Color = if (LocalKClashDarkTheme.current) {
+internal fun dashboardCardColor(): Color = if (LocalKClashDarkTheme.current) {
     MaterialTheme.colorScheme.surfaceContainer
 } else {
     MaterialTheme.colorScheme.surfaceBright
@@ -174,7 +174,7 @@ internal fun DashboardProxyGroupsCard(
         modifier = Modifier.testTag("dashboard_proxy_groups_card"),
         onClick = if (groups.isEmpty()) null else ({ showPicker = true }),
     ) {
-        DashboardHeader("代理组", Icons.Outlined.Layers) {
+        DashboardHeader("策略组", Icons.Outlined.Layers) {
             if (groups.isNotEmpty()) Icon(Icons.Outlined.ChevronRight, null, Modifier.size(20.dp))
         }
         Spacer(Modifier.height(12.dp))
@@ -309,7 +309,7 @@ internal fun RuntimeCard(
                 drawPath(path, tone)
             }
             Column(Modifier.padding(start = 20.dp, top = 18.dp, end = 16.dp, bottom = 18.dp)) {
-                DashboardHeader("核心状态", Icons.Outlined.Tune)
+                DashboardHeader("状态", Icons.Outlined.Tune)
                 Row(
                     Modifier.fillMaxWidth().padding(top = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -337,11 +337,6 @@ internal fun RuntimeCard(
                             )
                         }
                         Text(state.label, style = TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold))
-                        Text(
-                            if (state.isRunning) "代理已开启" else "连接由你掌控",
-                            style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
-                            color = colors.onSurfaceVariant,
-                        )
                     }
                     Surface(
                         onClick = if (state.isRunning) onStop else onStart,
@@ -380,13 +375,8 @@ internal fun RuntimeCard(
 internal fun RuntimeStatsCard(state: RuntimeStatsUiState, runtimeState: CoreRuntimeStatus) {
     val active = runtimeState.isRunning
     DashboardSurface(Modifier.testTag("dashboard_stats_card")) {
-        DashboardHeader("网络速度", Icons.Outlined.Speed) {
-            Text(
-                "${if (active) state.connectionCount else 0} 个连接",
-                style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        // 作者 long：Flutter 手机网络速度卡只展示上下行，连接数量属于默认隐藏的连接统计卡。
+        DashboardHeader("网络速度", Icons.Outlined.Speed)
         val fontScale = LocalDensity.current.fontScale
         BoxWithConstraints(Modifier.fillMaxWidth().padding(top = 12.dp)) {
             // 作者 long：大字号时将速度块纵排，保持数值与单位完整，避免两栏压缩后只能读到省略号。
@@ -588,7 +578,7 @@ internal fun DashboardProfileCard(
             }
         },
     ) {
-        DashboardHeader("当前配置", Icons.Outlined.Description)
+        DashboardHeader("配置", Icons.Outlined.Description)
         Row(
             Modifier.fillMaxWidth().padding(top = 12.dp),
             verticalAlignment = Alignment.CenterVertically,

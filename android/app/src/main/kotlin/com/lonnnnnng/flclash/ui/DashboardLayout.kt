@@ -4,18 +4,17 @@ import android.content.Context
 
 internal enum class DashboardSection(
     val title: String,
-    val description: String,
+    val description: String? = null,
     val visibleByDefault: Boolean = true,
+    val removable: Boolean = true,
 ) {
-    NETWORK_STATS("网络速度", "查看实时上传和下载流量"),
-    OUTBOUND_MODE("出站模式", "切换规则、全局或直连"),
-    PROFILES("配置", "查看当前配置或快速切换"),
-    PROXY_GROUPS("代理组", "选择代理节点并执行测速"),
-    BATTERY_OPTIMIZATION("电池优化", "查看后台运行限制状态"),
-    ALWAYS_ON_VPN("始终开启 VPN", "管理 Android 系统 VPN 选项"),
-    ACCESS_CONTROL("按应用代理", "选择需要经过代理的应用"),
-    PROBE("真实请求诊断", "检查当前配置的连通性"),
-    CONNECTION_STATS("连接统计", "查看实时连接、最近请求和 DNS 查询", visibleByDefault = false),
+    CURRENT_OUTBOUND("状态", "含启动键，不可移除", removable = false),
+    NETWORK_STATS("网络速度"),
+    OUTBOUND_MODE("出站模式"),
+    PROFILES("配置"),
+    PROXY_GROUPS("策略组"),
+    // 作者 long：手机首页只收录 Flutter 的仪表盘卡片，系统授权、应用代理设置和验收诊断由各自页面承载。
+    CONNECTION_STATS("连接统计", "实时连接、最近请求、DNS查询", visibleByDefault = false),
 }
 
 internal data class DashboardLayoutState(
@@ -26,14 +25,18 @@ internal data class DashboardLayoutState(
 ) {
     fun visibleInOrder(): List<DashboardSection> = order.filter(visible::contains)
 
-    fun setVisible(section: DashboardSection, isVisible: Boolean): DashboardLayoutState = copy(
-        order = if (isVisible && section !in visible) {
-            order.filterNot { it == section } + section
-        } else {
-            order
-        },
-        visible = if (isVisible) visible + section else visible - section,
-    )
+    fun setVisible(section: DashboardSection, isVisible: Boolean): DashboardLayoutState {
+        // 作者 long：状态卡承载唯一的首页启动入口，可以排序，但不允许移除或通过偏好隐藏。
+        if (!isVisible && !section.removable) return this
+        return copy(
+            order = if (isVisible && section !in visible) {
+                order.filterNot { it == section } + section
+            } else {
+                order
+            },
+            visible = if (isVisible) visible + section else visible - section,
+        )
+    }
 
     fun reorderVisible(from: DashboardSection, to: DashboardSection): DashboardLayoutState {
         val visibleOrder = visibleInOrder().toMutableList()
@@ -65,8 +68,9 @@ internal data class DashboardLayoutState(
             val decodedOrder = orderNames.orEmpty().mapNotNull { name ->
                 DashboardSection.entries.firstOrNull { it.name == name }
             }
-            // 作者 long：新增卡片追加到旧顺序末尾；可选卡片仅进入编辑候选区，不强行改变用户首页。
-            val order = (decodedOrder + DashboardSection.entries).distinct()
+            val required = DashboardSection.entries.filterNot(DashboardSection::removable)
+            // 作者 long：旧版状态卡在偏好之外固定置顶，首次纳入排序时保留该位置；已保存的拖动位置不被覆盖。
+            val order = (required.filterNot(decodedOrder::contains) + decodedOrder + DashboardSection.entries).distinct()
             val newlyAdded = knownSectionNames?.toSet()?.let { known ->
                 DashboardSection.entries.filter {
                     it.name !in known && it.visibleByDefault
@@ -77,7 +81,7 @@ internal data class DashboardLayoutState(
             }?.toSet()?.plus(newlyAdded) ?: DashboardSection.entries
                 .filter(DashboardSection::visibleByDefault)
                 .toSet()
-            return DashboardLayoutState(order = order, visible = visible)
+            return DashboardLayoutState(order = order, visible = visible + required)
         }
     }
 }
