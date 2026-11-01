@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 data class ProfilesUiState(
     val profiles: List<Profile> = emptyList(),
@@ -36,6 +37,13 @@ data class ProfileEditorUiState(
     val profile: Profile? = null,
     val content: String = "",
     val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+    val isNew: Boolean = false,
+    val hasPersistedChanges: Boolean = false,
+)
+
+data class RemoteProfileEditorUiState(
+    val profile: Profile? = null,
     val isSaving: Boolean = false,
 )
 
@@ -105,6 +113,7 @@ class ProfilesViewModel @Inject constructor(
     private val busy = MutableStateFlow(false)
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private val mutableEditor = MutableStateFlow(ProfileEditorUiState())
+    private val mutableRemoteEditor = MutableStateFlow(RemoteProfileEditorUiState())
     private val mutableRulesEditor = MutableStateFlow(ProfileRulesEditorUiState())
     private val mutableProxiesEditor = MutableStateFlow(ProfileProxiesEditorUiState())
     private val mutableProxyGroupsEditor = MutableStateFlow(ProfileProxyGroupsEditorUiState())
@@ -122,6 +131,7 @@ class ProfilesViewModel @Inject constructor(
 
     val errors = mutableErrors.asSharedFlow()
     val editorState: StateFlow<ProfileEditorUiState> = mutableEditor
+    val remoteEditorState: StateFlow<RemoteProfileEditorUiState> = mutableRemoteEditor
     val rulesEditorState: StateFlow<ProfileRulesEditorUiState> = mutableRulesEditor
     val proxiesEditorState: StateFlow<ProfileProxiesEditorUiState> = mutableProxiesEditor
     val proxyGroupsEditorState: StateFlow<ProfileProxyGroupsEditorUiState> = mutableProxyGroupsEditor
@@ -130,8 +140,12 @@ class ProfilesViewModel @Inject constructor(
     val dialersEditorState: StateFlow<ProfileDialersEditorUiState> = mutableDialersEditor
 
     fun select(id: Long) {
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再切换配置")
+        val runtimeStatus = runtimeManager.state.value
+        if (runtimeStatus == CoreRuntimeStatus.RUNNING ||
+            runtimeStatus == CoreRuntimeStatus.STARTING ||
+            runtimeStatus == CoreRuntimeStatus.STOPPING
+        ) {
+            mutableErrors.tryEmit("核心运行或切换状态中，请等待核心停止后再切换配置")
             return
         }
         launchAction { repository.selectProfile(id) }
@@ -141,28 +155,89 @@ class ProfilesViewModel @Inject constructor(
         repository.addRemoteProfile(url, label)
     }
 
+    fun addRemoteBatch(urls: List<String>) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        val distinctUrls = urls.map(String::trim).filter(String::isNotEmpty).distinct()
+        if (distinctUrls.isEmpty()) return
+
+        val existingUrls = repository.profiles.value
+            .asSequence()
+            .filter { it.type == ProfileType.URL }
+            .map(Profile::url)
+            .toSet()
+        val importUrls = distinctUrls.filterNot(existingUrls::contains)
+        val skippedExisting = distinctUrls.size - importUrls.size
+
+        viewModelScope.launch {
+            busy.value = true
+            var imported = 0
+            var failed = 0
+            try {
+                // 作者 long：逐条导入并隔离订阅失败，避免一个失效链接中断同批其他配置；错误只报告数量以免泄露带凭据的 URL。
+                importUrls.forEach { url ->
+                    try {
+                        repository.addRemoteProfile(url, "")
+                        imported++
+                    } catch (error: CancellationException) {
+                        throw error
+                    } catch (_: Exception) {
+                        failed++
+                    }
+                }
+            } finally {
+                busy.value = false
+            }
+
+            mutableErrors.emit(
+                "批量导入完成：新增 $imported 个，跳过重复 $skippedExisting 个，失败 $failed 个",
+            )
+        }
+    }
+
     fun addFile(label: String, bytes: ByteArray) = launchAction {
         repository.addFileProfile(label, bytes)
     }
 
-    fun addCustom(label: String) = launchAction {
-        repository.addCustomProfile(label)
+    fun addCustom(label: String) {
+        if (busy.value) return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        viewModelScope.launch {
+            busy.value = true
+            try {
+                // 作者 long：新建后直接进入编辑，编辑状态由 ViewModel 保留，不能依赖一次性页面事件而丢失创建结果。
+                runCatching { repository.addCustomProfile(label) }
+                    .onSuccess { profile -> openEditor(profile, isNew = true) }
+                    .onFailure { error -> mutableErrors.emit(error.message ?: "创建配置失败") }
+            } finally {
+                busy.value = false
+            }
+        }
     }
 
     fun reportError(message: String) {
         mutableErrors.tryEmit(message)
     }
 
-    fun openEditor(profile: Profile) {
+    fun openEditor(profile: Profile, isNew: Boolean = false) {
         if (runtimeManager.state.value.isRunning) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑配置")
             return
         }
+        if (profile.type == ProfileType.URL) {
+            mutableRemoteEditor.value = RemoteProfileEditorUiState(profile)
+            return
+        }
         viewModelScope.launch {
-            mutableEditor.value = ProfileEditorUiState(profile = profile, isLoading = true)
+            mutableEditor.value = ProfileEditorUiState(profile = profile, isLoading = true, isNew = isNew)
             runCatching { repository.readLocalProfileContent(profile.id) }
                 .onSuccess { content ->
-                    mutableEditor.value = ProfileEditorUiState(profile = profile, content = content)
+                    mutableEditor.value = ProfileEditorUiState(profile = profile, content = content, isNew = isNew)
                 }
                 .onFailure { error ->
                     mutableEditor.value = ProfileEditorUiState()
@@ -173,6 +248,133 @@ class ProfilesViewModel @Inject constructor(
 
     fun closeEditor() {
         mutableEditor.value = ProfileEditorUiState()
+        mutableRemoteEditor.value = RemoteProfileEditorUiState()
+    }
+
+    fun discardEditor() {
+        val editor = mutableEditor.value
+        val profile = editor.profile ?: return
+        if (editor.isSaving) return
+        if (!editor.isNew || editor.hasPersistedChanges) {
+            closeEditor()
+            return
+        }
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        viewModelScope.launch {
+            // 作者 long：新草稿删除失败时保留编辑器和正文，避免用户以为已经放弃却在列表留下空配置。
+            mutableEditor.value = editor.copy(isSaving = true)
+            runCatching { repository.deleteProfile(profile.id) }
+                .onSuccess { closeEditor() }
+                .onFailure { error ->
+                    mutableEditor.value = editor
+                    mutableErrors.emit(error.message ?: "放弃新配置失败")
+                }
+        }
+    }
+
+    /**
+     * 作者 long：结构化分区直接写入配置文件或覆盖元数据，必须同步父级编辑器，
+     * 否则稍后保存原始 YAML 会用旧快照覆盖刚保存的配置。
+     */
+    private fun reflectStructuredSave(profileId: Long, content: String? = null, profile: Profile? = null) {
+        val editor = mutableEditor.value
+        if (editor.profile?.id != profileId) return
+        mutableEditor.value = editor.copy(
+            profile = profile ?: editor.profile,
+            content = content ?: editor.content,
+            hasPersistedChanges = true,
+        )
+    }
+
+    fun finishNewDraftEditor(label: String?) {
+        val editor = mutableEditor.value
+        val profile = editor.profile ?: return
+        if (!editor.isNew || !editor.hasPersistedChanges) {
+            if (label == null) discardEditor()
+            return
+        }
+        if (label == null) {
+            closeEditor()
+            return
+        }
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        val normalized = label.trim()
+        if (normalized.isEmpty()) {
+            mutableErrors.tryEmit("配置名称不能为空")
+            return
+        }
+        if (normalized.length > MAX_PROFILE_LABEL_LENGTH) {
+            mutableErrors.tryEmit("配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符")
+            return
+        }
+        if (normalized == profile.label.trim()) {
+            closeEditor()
+            return
+        }
+        viewModelScope.launch {
+            mutableEditor.value = editor.copy(isSaving = true)
+            runCatching { repository.updateProfileLabel(profile.id, normalized) }
+                .onSuccess { closeEditor() }
+                .onFailure { error ->
+                    mutableEditor.value = mutableEditor.value.copy(isSaving = false)
+                    mutableErrors.emit(error.message ?: "重命名配置失败")
+                }
+        }
+    }
+
+    fun saveRemoteEditor(label: String, url: String, autoUpdate: Boolean, intervalMinutes: Long) {
+        val profile = mutableRemoteEditor.value.profile ?: return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        val normalizedLabel = label.trim()
+        if (normalizedLabel.length > MAX_PROFILE_LABEL_LENGTH) {
+            mutableErrors.tryEmit("配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符")
+            return
+        }
+        val normalizedUrl = runCatching { normalizeRemoteProfileUrl(url) }
+            .getOrElse {
+                mutableErrors.tryEmit(it.message ?: "请输入有效的 HTTP/HTTPS 订阅链接")
+                return
+            }
+        if (autoUpdate && intervalMinutes <= 0L) {
+            mutableErrors.tryEmit("自动更新间隔必须大于 0 分钟")
+            return
+        }
+        val savedIntervalMinutes = intervalMinutes.takeIf { it > 0L }
+            ?: (profile.autoUpdateIntervalMillis / MILLIS_PER_MINUTE).coerceAtLeast(1L)
+        viewModelScope.launch {
+            busy.value = true
+            mutableRemoteEditor.value = mutableRemoteEditor.value.copy(isSaving = true)
+            try {
+                val updated = repository.updateRemoteProfileSettings(
+                    id = profile.id,
+                    label = normalizedLabel,
+                    url = normalizedUrl,
+                    autoUpdate = autoUpdate,
+                    intervalMillis = savedIntervalMinutes.coerceAtMost(MAX_AUTO_UPDATE_INTERVAL_MINUTES) * MILLIS_PER_MINUTE,
+                )
+                closeEditor()
+                if (updated.url != profile.url) {
+                    // 作者 long：只有订阅地址实际变化才下载新内容，修改名称或自动更新周期不应制造额外网络请求。
+                    runCatching { repository.updateRemoteProfile(profile.id) }
+                        .onFailure { error -> mutableErrors.emit(error.message ?: "订阅更新失败") }
+                }
+            } catch (error: Throwable) {
+                if (error is kotlinx.coroutines.CancellationException) throw error
+                mutableRemoteEditor.value = mutableRemoteEditor.value.copy(isSaving = false)
+                mutableErrors.emit(error.message ?: "保存订阅设置失败")
+            } finally {
+                busy.value = false
+            }
+        }
     }
 
     fun openRulesEditor(profile: Profile) {
@@ -217,7 +419,8 @@ class ProfilesViewModel @Inject constructor(
             mutableRulesEditor.value = state.copy(isSaving = true)
             runCatching {
                 val updatedContent = ProfileRulesEditor.replaceRules(state.sourceContent, rules)
-                repository.updateLocalProfileContent(profile.id, updatedContent)
+                val updatedProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
+                reflectStructuredSave(profile.id, updatedContent, updatedProfile)
             }.onSuccess {
                 closeRulesEditor()
             }.onFailure { error ->
@@ -269,7 +472,8 @@ class ProfilesViewModel @Inject constructor(
             mutableProxiesEditor.value = state.copy(isSaving = true)
             runCatching {
                 val updatedContent = ProfileProxiesEditor.replaceProxies(state.sourceContent, proxies)
-                repository.updateLocalProfileContent(profile.id, updatedContent)
+                val updatedProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
+                reflectStructuredSave(profile.id, updatedContent, updatedProfile)
             }.onSuccess {
                 closeProxiesEditor()
             }.onFailure { error ->
@@ -321,7 +525,8 @@ class ProfilesViewModel @Inject constructor(
             mutableProxyGroupsEditor.value = state.copy(isSaving = true)
             runCatching {
                 val updatedContent = ProfileProxyGroupsEditor.replaceGroups(state.sourceContent, groups)
-                repository.updateLocalProfileContent(profile.id, updatedContent)
+                val updatedProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
+                reflectStructuredSave(profile.id, updatedContent, updatedProfile)
             }.onSuccess {
                 closeProxyGroupsEditor()
             }.onFailure { error ->
@@ -397,8 +602,9 @@ class ProfilesViewModel @Inject constructor(
                     state.sourceContent,
                     ProfileProvidersEditor.Sections(proxyProviders, ruleProviders),
                 )
-                repository.updateLocalProfileContent(profile.id, updatedContent)
-                repository.updateProfileOverrides(
+                val contentProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
+                reflectStructuredSave(profile.id, updatedContent, contentProfile)
+                val updatedProfile = repository.updateProfileOverrides(
                     profile.id,
                     ProfileProviderOverrides(
                         proxyProviders = proxyProviderOverrides,
@@ -408,6 +614,7 @@ class ProfilesViewModel @Inject constructor(
                         dialers = ProfileProviderOverrides.fromJsonString(profile.overridesJson).dialers,
                     ).toJsonString(),
                 )
+                reflectStructuredSave(profile.id, profile = updatedProfile)
             }.onSuccess {
                 closeProvidersEditor()
             }.onFailure { error ->
@@ -447,10 +654,11 @@ class ProfilesViewModel @Inject constructor(
             mutableDnsEditor.value = state.copy(overrides = overrides, isSaving = true)
             runCatching {
                 val current = ProfileProviderOverrides.fromJsonString(profile.overridesJson)
-                repository.updateProfileOverrides(
+                val updatedProfile = repository.updateProfileOverrides(
                     profile.id,
                     current.copy(dns = overrides).toJsonString(),
                 )
+                reflectStructuredSave(profile.id, profile = updatedProfile)
             }.onSuccess {
                 closeDnsEditor()
             }.onFailure { error ->
@@ -506,10 +714,11 @@ class ProfilesViewModel @Inject constructor(
             runCatching {
                 val current = ProfileProviderOverrides.fromJsonString(profile.overridesJson)
                 val mapping = ProfileDialerEditor.parseDialers(dialers)
-                repository.updateProfileOverrides(
+                val updatedProfile = repository.updateProfileOverrides(
                     profile.id,
                     current.copy(dialers = mapping).toJsonString(),
                 )
+                reflectStructuredSave(profile.id, profile = updatedProfile)
             }.onSuccess {
                 closeDialersEditor()
             }.onFailure { error ->
@@ -615,4 +824,13 @@ class ProfilesViewModel @Inject constructor(
             busy.value = false
         }
     }
+
+    private companion object {
+        const val MAX_PROFILE_LABEL_LENGTH = 64
+        const val MAX_AUTO_UPDATE_INTERVAL_MINUTES = Long.MAX_VALUE / 60_000L
+        const val MILLIS_PER_MINUTE = 60_000L
+    }
 }
+
+private fun normalizeRemoteProfileUrl(value: String): String =
+    com.lonnnnnng.flclash.data.normalizeSubscriptionUrl(value)

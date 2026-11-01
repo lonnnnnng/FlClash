@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash.ui
 
+import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
@@ -36,6 +38,16 @@ class ProxyGroupsViewModelTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `outbound mode controls visible groups without changing core order`() {
+        val visible = ProxyGroupInfo("Visible", "Selector", "node", listOf("node"), false)
+        val hidden = visible.copy(name = "Hidden", hidden = true)
+        val groups = listOf(hidden, visible)
+        assertEquals(listOf(visible), visibleProxyGroups(groups, CoreOutboundMode.RULE))
+        assertEquals(groups, visibleProxyGroups(groups, CoreOutboundMode.GLOBAL))
+        assertTrue(visibleProxyGroups(groups, CoreOutboundMode.DIRECT).isEmpty())
     }
 
     @Test
@@ -239,6 +251,46 @@ class ProxyGroupsViewModelTest {
         )
         assertEquals(mapOf("Auto" to "node-a"), viewModel.state.value.selectedMap)
         stateJob.cancel()
+    }
+
+    @Test
+    fun `proxy page options sort by name and keep nested groups when hiding timeouts`() {
+        val nested = ProxyGroupInfo("Relay", "Selector", "node-c", listOf("node-c"), false)
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "URLTest",
+            now = "node-timeout",
+            all = listOf("node-timeout", "Relay", "node-fast", "node-fail"),
+            hidden = false,
+            testUrl = "https://one",
+        )
+        val state = ProxyGroupsUiState(
+            groups = listOf(group, nested),
+            delayResults = mapOf(
+                ProxyDelayKey("Auto", "node-timeout", "https://one") to
+                    ProxyDelayUiState(value = CoreBridge.DELAY_TIMED_OUT, updatedAtMillis = Long.MAX_VALUE),
+                ProxyDelayKey("Auto", "node-fast", "https://one") to
+                    ProxyDelayUiState(value = 120, updatedAtMillis = Long.MAX_VALUE),
+                ProxyDelayKey("Auto", "node-fail", "https://one") to
+                    ProxyDelayUiState(value = CoreBridge.DELAY_FAILED, updatedAtMillis = Long.MAX_VALUE),
+            ),
+        )
+
+        assertEquals(
+            listOf("Relay", "node-fail", "node-fast", "node-timeout"),
+            sortProxyMembers(group, state.groups, state, group.all, ProxySortOption.NAME),
+        )
+        assertEquals(
+            listOf("node-timeout", "Relay", "node-fast"),
+            hideTimedOutProxyMembers(group, state.groups, state, group.all),
+        )
+    }
+
+    @Test
+    fun `proxy grid density follows flutter column rules`() {
+        assertEquals(2, proxyGridColumnCount(360f, ProxyGridDensity.STANDARD))
+        assertEquals(3, proxyGridColumnCount(360f, ProxyGridDensity.COMPACT))
+        assertEquals(1, proxyGridColumnCount(360f, ProxyGridDensity.LOOSE))
     }
 }
 

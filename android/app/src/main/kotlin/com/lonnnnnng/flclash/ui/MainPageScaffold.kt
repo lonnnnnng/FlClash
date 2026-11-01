@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,9 +20,8 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Hub
-import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,10 +48,17 @@ import androidx.compose.ui.unit.sp
 
 internal enum class MainDestination(val label: String, val icon: ImageVector) {
     DASHBOARD("首页", Icons.Outlined.Home),
-    PROFILES("配置", Icons.Outlined.Description),
     PROXY("代理", Icons.Outlined.SwapVert),
-    CONNECTIONS("连接", Icons.Outlined.Hub),
-    OBSERVATIONS("观测", Icons.Outlined.Insights),
+    PROFILES("配置", Icons.Outlined.Description),
+    TOOLS("工具", Icons.Outlined.Build),
+}
+
+/** 作者 long：Flutter 手机导航在没有可用 Profile/代理组时隐藏代理入口，空配置页不展示不可操作的 Tab。 */
+internal fun mainDestinations(hasProxyDestination: Boolean): List<MainDestination> = buildList {
+    add(MainDestination.DASHBOARD)
+    if (hasProxyDestination) add(MainDestination.PROXY)
+    add(MainDestination.PROFILES)
+    add(MainDestination.TOOLS)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,23 +66,32 @@ internal enum class MainDestination(val label: String, val icon: ImageVector) {
 internal fun MainPageScaffold(
     selectedDestination: MainDestination,
     onDestinationSelected: (MainDestination) -> Unit,
+    destinations: List<MainDestination> = MainDestination.entries,
     modifier: Modifier = Modifier,
     snackbarHost: @Composable () -> Unit = {},
+    topBarActions: @Composable RowScope.() -> Unit = {},
+    topBarTitle: String? = null,
+    topBarNavigationIcon: @Composable (() -> Unit)? = null,
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val pageColor = if (selectedDestination == MainDestination.DASHBOARD) dashboardPageColor() else MaterialTheme.colorScheme.surface
+    val pageColor = when (selectedDestination) {
+        MainDestination.DASHBOARD -> dashboardPageColor()
+        else -> MaterialTheme.colorScheme.surface
+    }
     Scaffold(
         modifier = modifier,
         containerColor = pageColor,
         topBar = {
             TopAppBar(
-                title = { Text(if (selectedDestination == MainDestination.DASHBOARD) "KClash" else selectedDestination.label) },
+                title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) "KClash" else selectedDestination.label) },
+                navigationIcon = topBarNavigationIcon ?: {},
+                actions = topBarActions,
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = pageColor),
             )
         },
         snackbarHost = snackbarHost,
-        bottomBar = { MainNavigationDock(selectedDestination, onDestinationSelected) },
+        bottomBar = { MainNavigationDock(selectedDestination, destinations, onDestinationSelected) },
         floatingActionButton = floatingActionButton,
         content = content,
     )
@@ -90,7 +106,11 @@ internal fun DashboardWidth(content: @Composable (horizontalInset: Dp) -> Unit) 
 }
 
 @Composable
-private fun MainNavigationDock(selected: MainDestination, onSelected: (MainDestination) -> Unit) {
+private fun MainNavigationDock(
+    selected: MainDestination,
+    destinations: List<MainDestination>,
+    onSelected: (MainDestination) -> Unit,
+) {
     val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val fontScale = LocalDensity.current.fontScale
     // 作者 long：保留参考 Dock 的 62dp、21dp 边距与 28dp 图标；字体增大时增加高度，防止标签侵入系统手势区。
@@ -106,7 +126,7 @@ private fun MainNavigationDock(selected: MainDestination, onSelected: (MainDesti
             shadowElevation = 6.dp,
         ) {
             Row(Modifier.padding(4.dp).selectableGroup(), verticalAlignment = Alignment.CenterVertically) {
-                MainDestination.entries.forEach { destination ->
+                destinations.forEach { destination ->
                     val active = destination == selected
                     Surface(
                         Modifier.weight(1f).clip(CircleShape).selectable(

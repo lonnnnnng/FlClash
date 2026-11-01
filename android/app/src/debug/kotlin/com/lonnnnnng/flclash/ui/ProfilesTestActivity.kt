@@ -3,21 +3,17 @@ package com.lonnnnnng.flclash.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.SubscriptionInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 
@@ -27,7 +23,7 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
  */
 class ProfilesTestActivity : ComponentActivity() {
     private var scenario by mutableStateOf(ProfilesScenario.EMPTY)
-    private var fontScaleValue by mutableStateOf(1f)
+    private var toolbarAction by mutableStateOf<ProfilesToolbarAction?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,25 +31,33 @@ class ProfilesTestActivity : ComponentActivity() {
             val profiles = when (scenario) {
                 ProfilesScenario.EMPTY -> emptyList()
                 ProfilesScenario.CUSTOM_SELECTED -> listOf(sampleProfile())
+                ProfilesScenario.REMOTE_USAGE -> listOf(sampleRemoteProfile())
             }
-            val baseDensity = LocalDensity.current
-            CompositionLocalProvider(
-                // 作者 long：字体矩阵只改变文字缩放，不改变设备密度，确保基线差异对应真实可达性场景。
-                LocalDensity provides Density(baseDensity.density, fontScale = fontScaleValue),
-            ) {
-                KClashTheme {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
+            KClashTheme {
+                MainPageScaffold(
+                    selectedDestination = MainDestination.PROFILES,
+                    onDestinationSelected = {},
+                    modifier = Modifier.testTag("profiles_test_screen"),
+                    topBarActions = {
+                        ProfilesTopBarActions(
+                            profiles = profiles,
+                            busy = false,
+                            canMutate = true,
+                            onAdd = {},
+                            onAction = { toolbarAction = it },
+                        )
+                    },
+                ) { insets ->
+                    Column(Modifier.fillMaxSize().padding(insets).padding(horizontal = 16.dp, vertical = 8.dp)) {
                         ProfilesPanel(
+                            modifier = Modifier.fillMaxSize(),
                             state = ProfilesUiState(
                                 profiles = profiles,
                                 currentProfileId = profiles.firstOrNull()?.id,
                             ),
+                            toolbarAction = toolbarAction,
+                            onToolbarActionHandled = { toolbarAction = null },
+                            showInlineToolbar = false,
                             editorState = ProfileEditorUiState(),
                             runtimeState = CoreRuntimeStatus.STOPPED,
                             showAddDialog = false,
@@ -80,17 +84,28 @@ class ProfilesTestActivity : ComponentActivity() {
         scenario = ProfilesScenario.CUSTOM_SELECTED
     }
 
-    fun setFontScale(value: Float) {
-        fontScaleValue = value
+    fun showRemoteUsageScenario() {
+        scenario = ProfilesScenario.REMOTE_USAGE
     }
 
     private fun sampleProfile() = Profile.custom(601L, "家庭配置").copy(
         // 作者 long：截图必须避免相对时间随设备时钟变化，因此固定为无更新时间的稳定状态。
         lastUpdateAt = null,
     )
+
+    private fun sampleRemoteProfile() = Profile.remote(602L, "https://example.test/subscription", "机场订阅").copy(
+        lastUpdateAt = null,
+        subscriptionInfo = SubscriptionInfo(
+            upload = 1_073_741_824L,
+            download = 2_147_483_648L,
+            total = 10_737_418_240L,
+            expire = 1_793_318_400L,
+        ),
+    )
 }
 
 private enum class ProfilesScenario {
     EMPTY,
     CUSTOM_SELECTED,
+    REMOTE_USAGE,
 }

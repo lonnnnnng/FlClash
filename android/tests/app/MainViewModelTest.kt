@@ -93,6 +93,31 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `request filter matches flutter fields with whitespace terms and keyword intersection`() {
+        val request = connection("request-field-search").copy(
+            metadata = connection("request-field-search").metadata.copy(
+                sourceIp = "10.20.30.40",
+                sourcePort = "54321",
+                processPath = "/data/app/browser",
+                destinationIpAsn = "AS64496",
+                destinationGeoIp = listOf("US Example ISP"),
+                specialProxy = "relay",
+                specialRules = "sniff",
+            ),
+            chains = listOf("Proxy-A", "DIRECT"),
+            rulePayload = "example.net",
+        )
+
+        assertEquals(listOf(request), filterRequests(listOf(request), "10.20 54321"))
+        assertEquals(listOf(request), filterRequests(listOf(request), "browser AS64496"))
+        assertEquals(listOf(request), filterRequests(listOf(request), "us example"))
+        assertEquals(listOf(request), filterRequests(listOf(request), "proxy-a", listOf("DIRECT")))
+        assertEquals(emptyList<CoreConnection>(), filterRequests(listOf(request), "", listOf("direct")))
+        assertEquals(emptyList<CoreConnection>(), filterRequests(listOf(request), "proxy-a absent"))
+        assertEquals(emptyList<CoreConnection>(), filterRequests(listOf(request), "proxy-a", listOf("missing")))
+    }
+
+    @Test
     fun `dns filter searches domain upstream answers and error`() {
         val first = dnsQuery("example.com")
         val second = first.copy(
@@ -105,6 +130,26 @@ class MainViewModelTest {
         assertEquals(listOf(second), filterDnsQueries(listOf(first, second), "dns.example.net"))
         assertEquals(listOf(second), filterDnsQueries(listOf(first, second), "timeout"))
         assertEquals(listOf(first, second), filterDnsQueries(listOf(first, second), ""))
+    }
+
+    @Test
+    fun `dns filter matches flutter tags and whitespace terms`() {
+        val cached = dnsQuery("cached.example.net").copy(
+            cached = true,
+            initiator = "com.example.browser",
+            rcode = "NXDOMAIN",
+            answers = emptyList(),
+        )
+
+        assertEquals(listOf(cached), filterDnsQueries(listOf(cached), "cached browser"))
+        assertEquals(listOf(cached), filterDnsQueries(listOf(cached), "nxdomain", listOf("缓存")))
+        assertEquals(listOf(cached), filterDnsQueries(listOf(cached), "cached", listOf("A")))
+        val failedWithoutCode = cached.copy(rcode = "", error = "timeout")
+        assertEquals(listOf(failedWithoutCode), filterDnsQueries(listOf(failedWithoutCode), "timeout"))
+        assertEquals(emptyList<CoreDnsQuery>(), filterDnsQueries(listOf(failedWithoutCode), "", listOf("失败")))
+        assertEquals(emptyList<CoreDnsQuery>(), filterDnsQueries(listOf(cached), "", listOf("a")))
+        assertEquals(emptyList<CoreDnsQuery>(), filterDnsQueries(listOf(cached), "cached absent"))
+        assertEquals(emptyList<CoreDnsQuery>(), filterDnsQueries(listOf(cached), "cached", listOf("NOERROR")))
     }
 
     @Test

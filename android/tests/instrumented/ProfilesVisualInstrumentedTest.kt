@@ -1,13 +1,14 @@
 package com.lonnnnnng.flclash.ui
 
-import android.content.pm.ActivityInfo
-import android.content.res.Configuration
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,7 +16,7 @@ import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 
 /**
- * 作者 long：Profiles 视觉回归固定空态和单个选中自定义配置，编辑器、Room 和真实 ViewModel 由既有页面 E2E 覆盖。
+ * 作者 long：Profiles 视觉回归只固定手机竖屏和系统默认字号；横屏、大字号历史矩阵不再执行。
  */
 @RunWith(AndroidJUnit4::class)
 class ProfilesVisualInstrumentedTest {
@@ -24,126 +25,38 @@ class ProfilesVisualInstrumentedTest {
 
     @Test
     fun profilesScreenshotMatrixMatchesBaseline() {
-        fun captureHash(): String {
-            composeRule.waitForIdle()
-            val bitmap = composeRule
-                .onNodeWithTag("profiles_page")
-                .captureToImage()
-                .asAndroidBitmap()
-            val png = ByteArrayOutputStream().also { output ->
-                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
-            }.toByteArray()
-            return MessageDigest.getInstance("SHA-256").digest(png)
-                .joinToString("") { byte -> "%02x".format(byte) }
-        }
+        val actual = linkedMapOf("empty" to captureHash("empty"))
+        composeRule.onAllNodesWithTag("profiles_sync_all").assertCountEquals(0)
+        composeRule.activityRule.scenario.onActivity { it.showCustomSelectedScenario() }
+        actual["custom_selected"] = captureHash("custom_selected")
+        composeRule.onAllNodesWithTag("profiles_sync_all").assertCountEquals(0)
+        composeRule.activityRule.scenario.onActivity { it.showRemoteUsageScenario() }
+        actual["remote_usage"] = captureHash("remote_usage")
+        composeRule.onNodeWithTag("profiles_sync_all").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_expiry_602", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithText("已用 3.0GB / 10.0GB").assertIsDisplayed()
 
         val expected = mapOf(
-            "empty" to "7be078c77904b1b361743899e9618d75429d9a9650a205667e77e59b640af0d6",
-            "custom_selected" to "793a665b414afa6898783a8298ea631da41a79350a34a707880a8ed3355ba55c",
+            "empty" to "c648aa2a728eef3d5b3b5ce493e3725b716e8914f653c9366a93f130c56dfff9",
+            "custom_selected" to "ae18793505a09c77a712820d68d4d1f5a5ceedd58337a7cb4cef9120d6cc409b",
+            "remote_usage" to "fa4cce6aae89bae203c5123d48aebc2b6bde23afda7f6f0e40000df2a1c09d56",
         )
-        val actual = buildMap {
-            put("empty", captureHash())
-            composeRule.activity.runOnUiThread {
-                composeRule.activity.showCustomSelectedScenario()
-            }
-            put("custom_selected", captureHash())
+        val mismatches = actual.mapNotNull { (state, hash) ->
+            val baseline = expected.getValue(state)
+            if (baseline == hash) null
+            else "$state expected=$baseline actual=$hash"
         }
-        val mismatches = expected.mapNotNull { (state, expectedHash) ->
-            val actualHash = actual.getValue(state)
-            if (actualHash == expectedHash) null else "$state expected=$expectedHash actual=$actualHash"
-        }
-        if (mismatches.isNotEmpty()) {
-            error("profiles screenshot baseline mismatch: ${mismatches.joinToString("; ")}")
-        }
+        check(mismatches.isEmpty()) { "profiles screenshot baseline mismatch: ${mismatches.joinToString("; ")}" }
     }
 
-    @Test
-    fun profilesSelectedStateOrientationMatrixMatchesBaseline() {
-        fun captureHash(): String {
-            composeRule.waitForIdle()
-            val bitmap = composeRule
-                .onNodeWithTag("profiles_page")
-                .captureToImage()
-                .asAndroidBitmap()
-            val png = ByteArrayOutputStream().also { output ->
-                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
-            }.toByteArray()
-            return MessageDigest.getInstance("SHA-256").digest(png)
-                .joinToString("") { byte -> "%02x".format(byte) }
-        }
-
-        fun waitForOrientation(orientation: Int) {
-            composeRule.waitUntil(5_000) {
-                var current = Configuration.ORIENTATION_UNDEFINED
-                composeRule.activityRule.scenario.onActivity { activity ->
-                    current = activity.resources.configuration.orientation
-                }
-                current == orientation
-            }
-            composeRule.onNodeWithTag("profiles_page").assertExists()
-        }
-
-        try {
-            composeRule.activityRule.scenario.onActivity { activity ->
-                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            }
-            waitForOrientation(Configuration.ORIENTATION_PORTRAIT)
-            composeRule.activity.showCustomSelectedScenario()
-            composeRule.onNodeWithTag("profile_card_601").assertExists()
-            val portraitHash = captureHash()
-
-            composeRule.activityRule.scenario.onActivity { activity ->
-                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            }
-            waitForOrientation(Configuration.ORIENTATION_LANDSCAPE)
-            composeRule.activity.showCustomSelectedScenario()
-            composeRule.onNodeWithTag("profile_card_601").assertExists()
-            val landscapeHash = captureHash()
-
-            assertEquals(
-                "portrait=793a665b414afa6898783a8298ea631da41a79350a34a707880a8ed3355ba55c landscape=df2c3e85c4568f0bbca23a968ed5b4f26986209f63d4bf1bc41213bc31a424f6",
-                "portrait=$portraitHash landscape=$landscapeHash",
-            )
-        } finally {
-            composeRule.activityRule.scenario.onActivity { activity ->
-                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            }
-            waitForOrientation(Configuration.ORIENTATION_PORTRAIT)
-        }
-    }
-
-    @Test
-    fun profilesSelectedStateFontScaleMatrixMatchesBaseline() {
-        fun captureHash(): String {
-            composeRule.waitForIdle()
-            val bitmap = composeRule
-                .onNodeWithTag("profiles_page")
-                .captureToImage()
-                .asAndroidBitmap()
-            val png = ByteArrayOutputStream().also { output ->
-                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
-            }.toByteArray()
-            return MessageDigest.getInstance("SHA-256").digest(png)
-                .joinToString("") { byte -> "%02x".format(byte) }
-        }
-
-        composeRule.activity.runOnUiThread {
-            composeRule.activity.showCustomSelectedScenario()
-            composeRule.activity.setFontScale(1.3f)
-        }
-        composeRule.onNodeWithTag("profile_card_601").assertExists()
-        val font13Hash = captureHash()
-
-        composeRule.activity.runOnUiThread {
-            composeRule.activity.setFontScale(2.0f)
-        }
-        composeRule.onNodeWithTag("profile_card_601").assertExists()
-        val font20Hash = captureHash()
-
-        assertEquals(
-            "fontScale=1.3 sha256=9bf8f24e721f0535eab0a5f8ed153c37967520659a707541868faae4f94e4e5e\n" +
-                "fontScale=2.0 sha256=33bd90c4ac325d87f7ddd207bfb210972ab16e00b5fe68af608d1511f6fa4f8e",
-            "fontScale=1.3 sha256=$font13Hash\nfontScale=2.0 sha256=$font20Hash",
-        )
+    private fun captureHash(name: String): String {
+        composeRule.waitForIdle()
+        val bitmap = composeRule.onNodeWithTag("profiles_test_screen").captureToImage().asAndroidBitmap()
+        val png = ByteArrayOutputStream().also { output ->
+            check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+        }.toByteArray()
+        recordVisualPng("profiles_$name", png)
+        return MessageDigest.getInstance("SHA-256").digest(png)
+            .joinToString("") { byte -> "%02x".format(byte) }
     }
 }

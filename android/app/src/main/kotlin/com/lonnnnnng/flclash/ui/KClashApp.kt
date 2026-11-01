@@ -10,8 +10,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,15 +23,30 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -47,13 +63,17 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,7 +84,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -73,6 +96,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
@@ -84,10 +108,10 @@ import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.data.BackupRestoreScope
 import com.lonnnnnng.flclash.data.BackupRestoreStrategy
 import com.lonnnnnng.flclash.data.WebDavCredentials
-import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ProfileDnsOverrides
@@ -98,20 +122,54 @@ import com.lonnnnnng.flclash.common.AccessControlMode
 import com.lonnnnnng.flclash.common.AccessSortType
 import com.lonnnnnng.flclash.AlwaysOnVpnState
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Deselect
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material.icons.outlined.QrCodeScanner
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Hub
+import androidx.compose.material.icons.outlined.SwapVert
+import androidx.compose.material.icons.outlined.Tune
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.cos
+import kotlin.math.sin
 
-private enum class ObservationTab(val label: String) {
+internal enum class ObservationTab(val label: String) {
     REQUESTS("请求"),
     DNS("DNS"),
     LOGS("日志"),
+}
+
+private enum class ToolsSubpage {
+    MENU,
+    CONNECTIONS,
+    OBSERVATIONS,
 }
 
 private enum class AccessMenuLayer {
@@ -119,6 +177,100 @@ private enum class AccessMenuLayer {
     MAIN,
     SETTINGS,
     ACTIONS,
+}
+
+private enum class ProxyToolsMenuPage {
+    ROOT,
+    DISPLAY_MODE,
+    SORT,
+    DENSITY,
+    CARD_SIZE,
+    ICON_STYLE,
+}
+
+internal enum class ProfilesToolbarAction {
+    SYNC_ALL,
+    SORT,
+    SCRIPTS,
+    WEBDAV,
+    BACKUP_EXPORT,
+    BACKUP_RESTORE,
+}
+
+private val ProfileIllustrationShape = GenericShape { size, _ ->
+    val radius = minOf(size.width, size.height) * 0.48f
+    repeat(7) { index ->
+        val angle = -PI / 2 + index * 2 * PI / 7
+        val x = size.width / 2 + cos(angle).toFloat() * radius
+        val y = size.height / 2 + sin(angle).toFloat() * radius
+        if (index == 0) moveTo(x, y) else lineTo(x, y)
+    }
+    close()
+}
+
+@Composable
+internal fun ProfilesTopBarActions(
+    profiles: List<Profile>,
+    busy: Boolean,
+    canMutate: Boolean,
+    onAdd: () -> Unit,
+    onAction: (ProfilesToolbarAction) -> Unit,
+) {
+    if (profiles.any { it.type == ProfileType.URL }) {
+        IconButton(
+            onClick = { onAction(ProfilesToolbarAction.SYNC_ALL) },
+            enabled = canMutate,
+            modifier = Modifier.testTag("profiles_sync_all"),
+        ) {
+            Icon(Icons.Outlined.Sync, contentDescription = "同步全部配置")
+        }
+    }
+    if (profiles.isNotEmpty()) {
+        IconButton(
+            onClick = { onAction(ProfilesToolbarAction.SORT) },
+            enabled = canMutate,
+            modifier = Modifier.testTag("profiles_sort"),
+        ) { Icon(Icons.AutoMirrored.Outlined.Sort, contentDescription = "排序") }
+    }
+    IconButton(
+        onClick = onAdd,
+        enabled = !busy,
+        modifier = Modifier.testTag("profiles_add_fab"),
+    ) { Icon(Icons.Outlined.Add, contentDescription = "添加配置") }
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(
+            onClick = { expanded = true },
+            enabled = !busy,
+            modifier = Modifier.testTag("profiles_tools"),
+        ) { Icon(Icons.Outlined.MoreVert, contentDescription = "配置工具") }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("脚本") },
+                leadingIcon = { Icon(Icons.Outlined.Code, contentDescription = null) },
+                onClick = { expanded = false; onAction(ProfilesToolbarAction.SCRIPTS) },
+            )
+            DropdownMenuItem(
+                text = { Text("WebDAV") },
+                leadingIcon = { Icon(Icons.Outlined.Sync, contentDescription = null) },
+                onClick = { expanded = false; onAction(ProfilesToolbarAction.WEBDAV) },
+                modifier = Modifier.testTag("webdav_open"),
+            )
+            DropdownMenuItem(
+                text = { Text("备份") },
+                leadingIcon = { Icon(Icons.Outlined.Backup, contentDescription = null) },
+                onClick = { expanded = false; onAction(ProfilesToolbarAction.BACKUP_EXPORT) },
+                modifier = Modifier.testTag("backup_export"),
+            )
+            DropdownMenuItem(
+                text = { Text("恢复") },
+                leadingIcon = { Icon(Icons.Outlined.Restore, contentDescription = null) },
+                onClick = { expanded = false; onAction(ProfilesToolbarAction.BACKUP_RESTORE) },
+                modifier = Modifier.testTag("backup_restore"),
+                enabled = canMutate,
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -150,6 +302,7 @@ fun KClashApp(
     onExitApp: () -> Unit = {},
 ) {
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
+    val outboundMode by runtimeViewModel.outboundMode.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
     val runtimeConnections by runtimeViewModel.connections.collectAsState()
     val runtimeRequests by runtimeViewModel.requests.collectAsState()
@@ -160,6 +313,7 @@ fun KClashApp(
     val diagnosticHistory by runtimeViewModel.diagnosticHistory.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
+    val remoteEditorState by profilesViewModel.remoteEditorState.collectAsState()
     val rulesEditorState by profilesViewModel.rulesEditorState.collectAsState()
     val proxiesEditorState by profilesViewModel.proxiesEditorState.collectAsState()
     val proxyGroupsEditorState by profilesViewModel.proxyGroupsEditorState.collectAsState()
@@ -173,6 +327,14 @@ fun KClashApp(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    var dashboardLayout by remember(context) { mutableStateOf(DashboardLayoutStore.load(context)) }
+    val dashboardListState = rememberLazyListState()
+    val pageListState = rememberLazyListState()
+    val density = LocalDensity.current
+    var isDashboardEditing by rememberSaveable { mutableStateOf(false) }
+    var dashboardDraggingSection by remember { mutableStateOf<DashboardSection?>(null) }
+    var dashboardDragY by remember { mutableStateOf(0f) }
+    val dashboardSwayProgress = rememberDashboardEditSwayProgress(isDashboardEditing)
     val selectedProfile = profilesState.profiles.firstOrNull { it.id == profilesState.currentProfileId }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
@@ -182,13 +344,30 @@ fun KClashApp(
     var showScriptsDialog by rememberSaveable { mutableStateOf(false) }
     var showRemoteScriptDialog by rememberSaveable { mutableStateOf(false) }
     var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
+    var toolsSubpage by rememberSaveable { mutableStateOf(ToolsSubpage.MENU) }
     var showAccessUnsavedChanges by rememberSaveable { mutableStateOf(false) }
     var pendingAccessExitDestination by rememberSaveable { mutableStateOf<Int?>(null) }
     var pendingAccessExitFinishes by rememberSaveable { mutableStateOf(false) }
     var pendingAccessExitOpenAddDialog by rememberSaveable { mutableStateOf(false) }
+    var pendingProfilesToolbarAction by remember { mutableStateOf<ProfilesToolbarAction?>(null) }
     // 作者 long：观测页会随顶层导航离开组合，页签状态必须提升到主页面保存，避免用户返回观测时丢失当前页签。
     var selectedObservationTabIndex by rememberSaveable { mutableStateOf(ObservationTab.REQUESTS.ordinal) }
-    val selectedDestination = MainDestination.values()[selectedDestinationIndex]
+    val showProxyDestination = profilesState.profiles.isNotEmpty() || proxyGroupsState.groups.isNotEmpty()
+    val navigationDestinations = mainDestinations(showProxyDestination)
+    val requestedDestination = MainDestination.values()[
+        selectedDestinationIndex.coerceIn(0, MainDestination.values().lastIndex)
+    ]
+    val selectedDestination = if (!showProxyDestination && requestedDestination == MainDestination.PROXY) {
+        MainDestination.DASHBOARD
+    } else {
+        requestedDestination
+    }
+
+    LaunchedEffect(showProxyDestination) {
+        if (!showProxyDestination && selectedDestinationIndex == MainDestination.PROXY.ordinal) {
+            selectedDestinationIndex = MainDestination.DASHBOARD.ordinal
+        }
+    }
 
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -293,6 +472,7 @@ fun KClashApp(
     }
 
     fun navigateTo(destination: MainDestination, openAddDialog: Boolean = false) {
+        if (destination == MainDestination.TOOLS) toolsSubpage = ToolsSubpage.MENU
         if (destination != selectedDestination &&
             selectedDestination == MainDestination.DASHBOARD &&
             accessControlState.hasUnsavedChanges
@@ -300,6 +480,10 @@ fun KClashApp(
             // 作者 long：卡片和 Dock 离开首页共用未保存保护，避免新增快捷入口绕过 Access 的草稿确认。
             requestAccessExit(destination, openAddDialog)
         } else {
+            if (selectedDestination == MainDestination.DASHBOARD && destination != MainDestination.DASHBOARD) {
+                isDashboardEditing = false
+                dashboardDraggingSection = null
+            }
             selectedDestinationIndex = destination.ordinal
             showAddDialog = openAddDialog && destination == MainDestination.PROFILES
         }
@@ -323,33 +507,94 @@ fun KClashApp(
     BackHandler(enabled = selectedDestination == MainDestination.DASHBOARD && accessControlState.hasUnsavedChanges) {
         requestAccessExit()
     }
+    BackHandler(enabled = selectedDestination == MainDestination.DASHBOARD && isDashboardEditing) {
+        isDashboardEditing = false
+        dashboardDraggingSection = null
+    }
+    BackHandler(enabled = selectedDestination == MainDestination.TOOLS && toolsSubpage != ToolsSubpage.MENU) {
+        toolsSubpage = ToolsSubpage.MENU
+    }
 
     MainPageScaffold(
         selectedDestination = selectedDestination,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         onDestinationSelected = ::navigateTo,
-        floatingActionButton = {
-            if (selectedDestination == MainDestination.PROFILES) {
-                ExtendedFloatingActionButton(
-                    text = { Text("添加配置") },
-                    icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
-                    modifier = Modifier.testTag("profiles_add_fab"),
-                    onClick = { showAddDialog = true },
+        destinations = navigationDestinations,
+        topBarTitle = if (selectedDestination == MainDestination.TOOLS && toolsSubpage != ToolsSubpage.MENU) {
+            when (toolsSubpage) {
+                ToolsSubpage.CONNECTIONS -> "连接"
+                ToolsSubpage.OBSERVATIONS -> "观测"
+                ToolsSubpage.MENU -> "工具"
+            }
+        } else {
+            null
+        },
+        topBarNavigationIcon = if (selectedDestination == MainDestination.TOOLS && toolsSubpage != ToolsSubpage.MENU) {
+            {
+                IconButton(onClick = { toolsSubpage = ToolsSubpage.MENU }) {
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回工具")
+                }
+            }
+        } else {
+            null
+        },
+        topBarActions = {
+            if (selectedDestination == MainDestination.DASHBOARD) {
+                IconButton(
+                    onClick = {
+                        isDashboardEditing = !isDashboardEditing
+                        dashboardDraggingSection = null
+                    },
+                    modifier = Modifier.testTag("dashboard_edit_layout"),
+                ) {
+                    Icon(
+                        imageVector = if (isDashboardEditing) Icons.Outlined.Check else Icons.Outlined.Edit,
+                        contentDescription = if (isDashboardEditing) "完成编辑" else "编辑首页",
+                    )
+                }
+            } else if (selectedDestination == MainDestination.PROFILES) {
+                ProfilesTopBarActions(
+                    profiles = profilesState.profiles,
+                    busy = profilesState.isBusy,
+                    canMutate = !profilesState.isBusy && !runtimeState.isRunning,
+                    onAdd = { showAddDialog = true },
+                    onAction = { pendingProfilesToolbarAction = it },
                 )
             }
         },
     ) { paddingValues ->
         DashboardWidth { dashboardInset ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = if (selectedDestination == MainDestination.DASHBOARD) dashboardInset else 16.dp)
-                    .testTag("page_${selectedDestination.name.lowercase()}"),
-                contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                when (selectedDestination) {
+            if (selectedDestination == MainDestination.PROXY) {
+                // 作者 long：代理页占用 Scaffold 的剩余高度，让组内网格独立滚动，避免套入其他页面的 LazyColumn。
+                ProxyGroupsCard(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = dashboardInset)
+                        .testTag("page_proxy"),
+                    state = proxyGroupsState,
+                    runtimeState = runtimeState,
+                    mode = outboundMode,
+                    currentProfileId = selectedProfile?.id,
+                    currentGroupName = selectedProfile?.currentGroupName,
+                    onRefresh = proxyGroupsViewModel::refresh,
+                    onSelectGroup = proxyGroupsViewModel::selectGroup,
+                    onSelect = proxyGroupsViewModel::selectProxy,
+                    onTestDelay = proxyGroupsViewModel::testDelay,
+                    onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
+                )
+            } else {
+                LazyColumn(
+                    state = if (selectedDestination == MainDestination.DASHBOARD) dashboardListState else pageListState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = if (selectedDestination == MainDestination.DASHBOARD) dashboardInset else 16.dp)
+                        .testTag("page_${selectedDestination.name.lowercase()}"),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    when (selectedDestination) {
                     MainDestination.DASHBOARD -> {
                         item {
                             RuntimeCard(
@@ -358,74 +603,171 @@ fun KClashApp(
                                 onStop = onStopRuntime,
                             )
                         }
-                        item {
-                            RuntimeStatsCard(
-                                state = runtimeStats,
-                                runtimeState = runtimeState,
-                            )
+                        items(
+                            items = dashboardLayout.visibleInOrder(),
+                            key = { it.name },
+                        ) { section ->
+                            val content: @Composable () -> Unit = {
+                                when (section) {
+                                DashboardSection.NETWORK_STATS -> RuntimeStatsCard(
+                                    state = runtimeStats,
+                                    runtimeState = runtimeState,
+                                )
+                                DashboardSection.OUTBOUND_MODE -> OutboundModeCard(
+                                    mode = outboundMode,
+                                    onModeChange = { mode ->
+                                        runtimeViewModel.setOutboundMode(mode)
+                                        if (mode == CoreOutboundMode.GLOBAL) {
+                                            proxyGroupsViewModel.selectGlobalGroup()
+                                        }
+                                    },
+                                )
+                                DashboardSection.PROFILES -> DashboardProfileCard(
+                                    profile = selectedProfile,
+                                    profiles = profilesState.profiles,
+                                    currentProfileId = profilesState.currentProfileId,
+                                    isBusy = profilesState.isBusy,
+                                    runtimeState = runtimeState,
+                                    onShowProfiles = { navigateTo(MainDestination.PROFILES) },
+                                    onAddProfile = {
+                                        navigateTo(MainDestination.PROFILES, openAddDialog = true)
+                                    },
+                                    onSelectProfile = profilesViewModel::select,
+                                    onUpdateProfile = profilesViewModel::update,
+                                    onStopRuntime = onStopRuntime,
+                                )
+                                DashboardSection.PROXY_GROUPS -> DashboardProxyGroupsCard(
+                                    state = proxyGroupsState,
+                                    runtimeState = runtimeState,
+                                    mode = outboundMode,
+                                    currentProfileId = selectedProfile?.id,
+                                    currentGroupName = selectedProfile?.currentGroupName,
+                                    onRefresh = proxyGroupsViewModel::refresh,
+                                    onSelectGroup = proxyGroupsViewModel::selectGroup,
+                                    onSelect = proxyGroupsViewModel::selectProxy,
+                                    onTestDelay = proxyGroupsViewModel::testDelay,
+                                    onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
+                                )
+                                DashboardSection.BATTERY_OPTIMIZATION -> BatteryOptimizationCard(
+                                    ignored = batteryOptimizationIgnored,
+                                    onRequest = onRequestBatteryOptimization,
+                                )
+                                DashboardSection.ALWAYS_ON_VPN -> AlwaysOnVpnCard(
+                                    state = alwaysOnVpnState,
+                                    onRequest = onRequestAlwaysOnVpn,
+                                )
+                                DashboardSection.ACCESS_CONTROL -> AccessControlCard(
+                                    state = accessControlState,
+                                    runtimeState = runtimeState,
+                                    onEnabledChange = accessControlViewModel::setEnabled,
+                                    onModeChange = accessControlViewModel::setMode,
+                                    onSortChange = accessControlViewModel::setSort,
+                                    onFilterSystemAppsChange = accessControlViewModel::setFilterSystemApps,
+                                    onFilterNonInternetAppsChange = accessControlViewModel::setFilterNonInternetApps,
+                                    onSearchChange = accessControlViewModel::setSearchQuery,
+                                    onTogglePackage = accessControlViewModel::togglePackage,
+                                    onSelectVisible = accessControlViewModel::selectVisibleApps,
+                                    onClearVisible = accessControlViewModel::clearVisibleApps,
+                                    onToggleVisible = accessControlViewModel::toggleVisibleApps,
+                                    onSmartSelect = accessControlViewModel::smartSelectApps,
+                                    onExportToClipboard = accessControlViewModel::exportToClipboard,
+                                    onImportFromClipboard = accessControlViewModel::importFromClipboard,
+                                    onSave = { accessControlViewModel.save() },
+                                )
+                                DashboardSection.PROBE -> ProbeCard(
+                                    state = runtimeProbe,
+                                    diagnostic = diagnosticState,
+                                    diagnosticHistory = diagnosticHistory,
+                                    runtimeState = runtimeState,
+                                    profile = selectedProfile,
+                                    onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
+                                    onExportDiagnostic = onExportDiagnostic,
+                                    onShowDiagnosticHistory = { showDiagnosticHistory = true },
+                                    onExportDiagnosticHistory = onExportDiagnosticHistory,
+                                )
+                                }
+                            }
+                            if (isDashboardEditing) {
+                                DashboardEditableSection(
+                                    section = section,
+                                    swayProgress = dashboardSwayProgress,
+                                    onRemove = {
+                                        dashboardLayout = dashboardLayout.setVisible(section, false)
+                                        DashboardLayoutStore.save(context, dashboardLayout)
+                                    },
+                                    onDragStart = { localY ->
+                                        val item = dashboardListState.layoutInfo.visibleItemsInfo
+                                            .firstOrNull { it.key == section.name }
+                                        if (item != null) {
+                                            dashboardDraggingSection = section
+                                            dashboardDragY = item.offset + with(density) { 4.dp.toPx() } + localY
+                                        }
+                                    },
+                                    onDragBy = { deltaY ->
+                                        if (dashboardDraggingSection == section) {
+                                            dashboardDragY += deltaY
+                                            val listInfo = dashboardListState.layoutInfo
+                                            val sectionItems = listInfo.visibleItemsInfo.filter { item ->
+                                                DashboardSection.entries.any { it.name == item.key }
+                                            }
+                                            val target = sectionItems.minByOrNull { item ->
+                                                abs(item.offset + item.size / 2f - dashboardDragY)
+                                            }?.key?.let { key ->
+                                                DashboardSection.entries.firstOrNull { it.name == key }
+                                            }
+                                            if (target != null && target != section) {
+                                                val changed = dashboardLayout.reorderVisible(section, target)
+                                                if (changed != dashboardLayout) {
+                                                    dashboardLayout = changed
+                                                    DashboardLayoutStore.save(context, changed)
+                                                }
+                                            }
+                                            // 作者 long：拖拽接近视口边缘时持续滚动，长列表仍可把卡片放到屏幕外的目标位置。
+                                            val edge = with(density) { 56.dp.toPx() }
+                                            when {
+                                                dashboardDragY < listInfo.viewportStartOffset + edge ->
+                                                    coroutineScope.launch { dashboardListState.scrollBy(-18f) }
+                                                dashboardDragY > listInfo.viewportEndOffset - edge ->
+                                                    coroutineScope.launch { dashboardListState.scrollBy(18f) }
+                                            }
+                                        }
+                                    },
+                                    onDragEnd = { dashboardDraggingSection = null },
+                                    modifier = Modifier.animateItem(),
+                                    content = content,
+                                )
+                            } else {
+                                content()
+                            }
                         }
-                        item {
-                            DashboardProfileCard(
-                                profile = selectedProfile,
-                                onShowProfiles = { navigateTo(MainDestination.PROFILES) },
-                                onAddProfile = {
-                                    navigateTo(MainDestination.PROFILES, openAddDialog = true)
-                                },
-                            )
-                        }
-                        item {
-                            BatteryOptimizationCard(
-                                ignored = batteryOptimizationIgnored,
-                                onRequest = onRequestBatteryOptimization,
-                            )
-                        }
-                        item {
-                            AlwaysOnVpnCard(
-                                state = alwaysOnVpnState,
-                                onRequest = onRequestAlwaysOnVpn,
-                            )
-                        }
-                        item {
-                            AccessControlCard(
-                                state = accessControlState,
-                                runtimeState = runtimeState,
-                                onEnabledChange = accessControlViewModel::setEnabled,
-                                onModeChange = accessControlViewModel::setMode,
-                                onSortChange = accessControlViewModel::setSort,
-                                onFilterSystemAppsChange = accessControlViewModel::setFilterSystemApps,
-                                onFilterNonInternetAppsChange = accessControlViewModel::setFilterNonInternetApps,
-                                onSearchChange = accessControlViewModel::setSearchQuery,
-                                onTogglePackage = accessControlViewModel::togglePackage,
-                                onSelectVisible = accessControlViewModel::selectVisibleApps,
-                                onClearVisible = accessControlViewModel::clearVisibleApps,
-                                onToggleVisible = accessControlViewModel::toggleVisibleApps,
-                                onSmartSelect = accessControlViewModel::smartSelectApps,
-                                onExportToClipboard = accessControlViewModel::exportToClipboard,
-                                onImportFromClipboard = accessControlViewModel::importFromClipboard,
-                                onSave = { accessControlViewModel.save() },
-                            )
-                        }
-                        item {
-                            ProbeCard(
-                                state = runtimeProbe,
-                                diagnostic = diagnosticState,
-                                diagnosticHistory = diagnosticHistory,
-                                runtimeState = runtimeState,
-                                profile = selectedProfile,
-                                onProbe = { selectedProfile?.url?.let(runtimeViewModel::probe) },
-                                onExportDiagnostic = onExportDiagnostic,
-                                onShowDiagnosticHistory = { showDiagnosticHistory = true },
-                                onExportDiagnosticHistory = onExportDiagnosticHistory,
-                            )
+                        if (isDashboardEditing) {
+                            val addable = DashboardSection.entries.filterNot { it in dashboardLayout.visible }
+                            if (addable.isNotEmpty()) {
+                                item(key = "dashboard_addable_header") { DashboardAddableSectionHeader() }
+                                items(addable, key = { "dashboard_add_${it.name}" }) { section ->
+                                    DashboardAddableSectionRow(
+                                        section = section,
+                                        modifier = Modifier.animateItem(),
+                                    ) {
+                                        dashboardLayout = dashboardLayout.setVisible(section, true)
+                                        DashboardLayoutStore.save(context, dashboardLayout)
+                                    }
+                                }
+                            }
                         }
                     }
 
                     MainDestination.PROFILES -> item {
                         ProfilesPanel(
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 420.dp),
                             state = profilesState,
                             editorState = editorState,
+                            remoteEditorState = remoteEditorState,
                             runtimeState = runtimeState,
                             showAddDialog = showAddDialog,
+                            toolbarAction = pendingProfilesToolbarAction,
+                            onToolbarActionHandled = { pendingProfilesToolbarAction = null },
+                            showInlineToolbar = false,
                             onShowAddDialog = { showAddDialog = true },
                             onDismissAddDialog = { showAddDialog = false },
                             onPickFile = {
@@ -440,6 +782,10 @@ fun KClashApp(
                                 showAddDialog = false
                                 profilesViewModel.addRemote(url, label)
                             },
+                            onAddRemoteBatch = { urls ->
+                                showAddDialog = false
+                                profilesViewModel.addRemoteBatch(urls)
+                            },
                             onAddCustom = { label ->
                                 showAddDialog = false
                                 profilesViewModel.addCustom(label)
@@ -450,7 +796,10 @@ fun KClashApp(
                             onUpdate = profilesViewModel::update,
                             onSetAutoUpdate = profilesViewModel::setAutoUpdate,
                             onCloseEditor = profilesViewModel::closeEditor,
+                            onDiscardEditor = profilesViewModel::discardEditor,
+                    onFinishNewDraftEditor = profilesViewModel::finishNewDraftEditor,
                             onSaveEditor = profilesViewModel::saveEditor,
+                            onSaveRemoteEditor = profilesViewModel::saveRemoteEditor,
                             onDelete = profilesViewModel::delete,
                             rulesEditorState = rulesEditorState,
                             onOpenRulesEditor = profilesViewModel::openRulesEditor,
@@ -493,46 +842,55 @@ fun KClashApp(
                         )
                     }
 
-                    MainDestination.PROXY -> item {
-                        ProxyGroupsCard(
-                            state = proxyGroupsState,
-                            runtimeState = runtimeState,
-                            onRefresh = proxyGroupsViewModel::refresh,
-                            onSelect = proxyGroupsViewModel::selectProxy,
-                            onTestDelay = proxyGroupsViewModel::testDelay,
-                            onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
-                        )
-                    }
+                    MainDestination.PROXY -> Unit
 
-                    MainDestination.CONNECTIONS -> item {
-                        ConnectionsCard(
-                            state = runtimeConnections,
-                            runtimeState = runtimeState,
-                            onCopyText = { value ->
-                                checkNotNull(context.getSystemService(ClipboardManager::class.java))
-                                    .setPrimaryClip(ClipData.newPlainText("KClash 连接详情", value))
-                            },
-                        )
-                    }
-
-                    MainDestination.OBSERVATIONS -> item {
-                        ObservationPage(
-                            requests = runtimeRequests,
-                            dns = runtimeDns,
-                            logs = runtimeLogs,
-                            runtimeState = runtimeState,
-                            selectedTabIndex = selectedObservationTabIndex,
-                            onSelectedTabChange = { selectedObservationTabIndex = it },
-                            onShowRequests = { showRequests = true },
-                            onShowDns = { showDns = true },
-                            onClearDns = runtimeViewModel::clearDns,
-                            onShowLogs = { showLogs = true },
-                            onClearLogs = runtimeViewModel::clearLogs,
-                            onExportLogs = { onExportLogs(runtimeLogs.entries) },
-                        )
+                    MainDestination.TOOLS -> when (toolsSubpage) {
+                        ToolsSubpage.MENU -> item {
+                            ToolsPanel(
+                                onOpenConnections = { toolsSubpage = ToolsSubpage.CONNECTIONS },
+                                onOpenObservation = { tab ->
+                                    selectedObservationTabIndex = tab.ordinal
+                                    toolsSubpage = ToolsSubpage.OBSERVATIONS
+                                },
+                                onShowUnavailable = { label ->
+                                    coroutineScope.launch { snackbarHostState.showSnackbar("${label}页面正在按 Flutter 参考实现补齐") }
+                                },
+                            )
+                        }
+                        ToolsSubpage.CONNECTIONS -> item {
+                            Box(Modifier.fillMaxWidth().testTag("page_connections")) {
+                                ConnectionsCard(
+                                    state = runtimeConnections,
+                                    runtimeState = runtimeState,
+                                    onCopyText = { value ->
+                                        checkNotNull(context.getSystemService(ClipboardManager::class.java))
+                                            .setPrimaryClip(ClipData.newPlainText("KClash 连接详情", value))
+                                    },
+                                )
+                            }
+                        }
+                        ToolsSubpage.OBSERVATIONS -> item {
+                            Box(Modifier.fillMaxWidth().testTag("page_observations")) {
+                                ObservationPage(
+                                    requests = runtimeRequests,
+                                    dns = runtimeDns,
+                                    logs = runtimeLogs,
+                                    runtimeState = runtimeState,
+                                    selectedTabIndex = selectedObservationTabIndex,
+                                    onSelectedTabChange = { selectedObservationTabIndex = it },
+                                    onShowRequests = { showRequests = true },
+                                    onShowDns = { showDns = true },
+                                    onClearDns = runtimeViewModel::clearDns,
+                                    onShowLogs = { showLogs = true },
+                                    onClearLogs = runtimeViewModel::clearLogs,
+                                    onExportLogs = { onExportLogs(runtimeLogs.entries) },
+                                )
+                            }
+                        }
                     }
                 }
-                item { Spacer(Modifier.height(88.dp)) }
+                    item { Spacer(Modifier.height(88.dp)) }
+                }
             }
         }
     }
@@ -541,6 +899,10 @@ fun KClashApp(
         RequestsDialog(
             state = runtimeRequests,
             onDismiss = { showRequests = false },
+            onCopyText = { value ->
+                checkNotNull(context.getSystemService(ClipboardManager::class.java))
+                    .setPrimaryClip(ClipData.newPlainText("KClash 请求详情", value))
+            },
         )
     }
 
@@ -548,7 +910,11 @@ fun KClashApp(
         DnsDialog(
             state = runtimeDns,
             onDismiss = { showDns = false },
-            onClear = runtimeViewModel::clearDns,
+            onClearDnsCache = runtimeViewModel::clearDnsCache,
+            onCopyText = { value ->
+                checkNotNull(context.getSystemService(ClipboardManager::class.java))
+                    .setPrimaryClip(ClipData.newPlainText("KClash DNS 详情", value))
+            },
         )
     }
 
@@ -556,7 +922,6 @@ fun KClashApp(
         LogsDialog(
             state = runtimeLogs,
             onDismiss = { showLogs = false },
-            onClear = runtimeViewModel::clearLogs,
             onExport = { onExportLogs(runtimeLogs.entries) },
         )
     }
@@ -677,7 +1042,7 @@ internal fun ObservationPage(
     val safeSelectedTabIndex = selectedTabIndex.coerceIn(0, ObservationTab.values().lastIndex)
     val selectedTab = ObservationTab.values()[safeSelectedTabIndex]
 
-    Column(modifier = Modifier.testTag("observation_page")) {
+    Column(modifier = Modifier.background(recordPageColor()).testTag("observation_page")) {
         PrimaryTabRow(selectedTabIndex = safeSelectedTabIndex) {
             ObservationTab.values().forEach { tab ->
                 Tab(
@@ -725,8 +1090,10 @@ internal fun ObservationPage(
  */
 @Composable
 internal fun ProfilesPanel(
+    modifier: Modifier = Modifier,
     state: ProfilesUiState,
     editorState: ProfileEditorUiState,
+    remoteEditorState: RemoteProfileEditorUiState = RemoteProfileEditorUiState(),
     runtimeState: CoreRuntimeStatus,
     showAddDialog: Boolean,
     onShowAddDialog: () -> Unit,
@@ -734,6 +1101,7 @@ internal fun ProfilesPanel(
     onPickFile: () -> Unit,
     onPickQrCode: () -> Unit,
     onAddRemote: (label: String, url: String) -> Unit,
+    onAddRemoteBatch: ((List<String>) -> Unit)? = null,
     onAddCustom: (label: String) -> Unit,
     onSelect: (id: Long) -> Unit,
     onEdit: (profile: Profile) -> Unit,
@@ -741,7 +1109,10 @@ internal fun ProfilesPanel(
     onUpdate: (profile: Profile) -> Unit,
     onSetAutoUpdate: (profile: Profile, enabled: Boolean) -> Unit = { _, _ -> },
     onCloseEditor: () -> Unit,
+    onDiscardEditor: () -> Unit = onCloseEditor,
+    onFinishNewDraftEditor: (String?) -> Unit = { onDiscardEditor() },
     onSaveEditor: (content: String) -> Unit,
+    onSaveRemoteEditor: (label: String, url: String, autoUpdate: Boolean, intervalMinutes: Long) -> Unit = { _, _, _, _ -> },
     onDelete: (profile: Profile) -> Unit,
     rulesEditorState: ProfileRulesEditorUiState = ProfileRulesEditorUiState(),
     onOpenRulesEditor: (profile: Profile) -> Unit = {},
@@ -781,6 +1152,9 @@ internal fun ProfilesPanel(
     onProbeWebDav: (WebDavCredentials) -> Unit = {},
     onUploadWebDav: (WebDavCredentials, BackupRestoreScope) -> Unit = { _, _ -> },
     onDownloadWebDav: (WebDavCredentials, BackupRestoreScope, BackupRestoreStrategy) -> Unit = { _, _, _ -> },
+    toolbarAction: ProfilesToolbarAction? = null,
+    onToolbarActionHandled: () -> Unit = {},
+    showInlineToolbar: Boolean = true,
 ) {
     val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
@@ -791,60 +1165,94 @@ internal fun ProfilesPanel(
     var showWebDavDialog by remember { mutableStateOf(false) }
     var showWebDavRestoreDialog by remember { mutableStateOf(false) }
     var pendingWebDavCredentials by remember { mutableStateOf<WebDavCredentials?>(null) }
+    var inlineToolbarAction by remember { mutableStateOf<ProfilesToolbarAction?>(null) }
+
+    val actionToHandle = toolbarAction ?: inlineToolbarAction
+    LaunchedEffect(actionToHandle) {
+        when (actionToHandle) {
+            ProfilesToolbarAction.SYNC_ALL -> state.profiles.filter { it.type == ProfileType.URL }.forEach(onUpdate)
+            ProfilesToolbarAction.SORT -> showReorderDialog = true
+            ProfilesToolbarAction.SCRIPTS -> onOpenScripts()
+            ProfilesToolbarAction.WEBDAV -> showWebDavDialog = true
+            ProfilesToolbarAction.BACKUP_EXPORT -> onExportBackup()
+            ProfilesToolbarAction.BACKUP_RESTORE -> showBackupRestoreDialog = true
+            null -> Unit
+        }
+        if (toolbarAction != null) onToolbarActionHandled()
+        else if (inlineToolbarAction != null) inlineToolbarAction = null
+    }
 
     Column(
-        modifier = Modifier.testTag("profiles_page"),
+        modifier = modifier.testTag("profiles_page"),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "配置",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .weight(1f),
-            )
-            if (state.profiles.isNotEmpty()) {
-                TextButton(
-                    onClick = { showReorderDialog = true },
-                    enabled = canMutateProfiles,
-                ) { Text("排序") }
+        // 作者 long：Debug 面板单独渲染时保留同一组操作，正式页面则由 MainPageScaffold 顶栏承载。
+        if (showInlineToolbar) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                ProfilesTopBarActions(
+                    profiles = state.profiles,
+                    busy = state.isBusy,
+                    canMutate = canMutateProfiles,
+                    onAdd = onShowAddDialog,
+                    onAction = { inlineToolbarAction = it },
+                )
             }
-            TextButton(onClick = onOpenScripts, enabled = !state.isBusy) { Text("脚本") }
-            TextButton(
-                onClick = { showWebDavDialog = true },
-                enabled = !state.isBusy,
-                modifier = Modifier.testTag("webdav_open"),
-            ) { Text("WebDAV") }
-            TextButton(
-                onClick = onExportBackup,
-                enabled = !state.isBusy,
-                modifier = Modifier.testTag("backup_export"),
-            ) { Text("备份") }
-            TextButton(
-                onClick = { showBackupRestoreDialog = true },
-                enabled = canMutateProfiles,
-                modifier = Modifier.testTag("backup_restore"),
-            ) { Text("恢复") }
         }
         if (state.profiles.isEmpty()) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                contentAlignment = Alignment.Center,
+            ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
+                    modifier = Modifier.widthIn(max = 320.dp).padding(horizontal = 32.dp, vertical = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text("还没有配置")
+                    Box(Modifier.size(160.dp), contentAlignment = Alignment.Center) {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            shape = ProfileIllustrationShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                        ) {}
+                        Surface(
+                            modifier = Modifier.size(96.dp),
+                            shape = RoundedCornerShape(28.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Description,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(56.dp),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                        Surface(
+                            modifier = Modifier.align(Alignment.TopEnd).padding(top = 26.dp, end = 18.dp).size(14.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        ) {}
+                        Surface(
+                            modifier = Modifier.align(Alignment.BottomStart).padding(start = 20.dp, bottom = 30.dp).size(9.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = MaterialTheme.colorScheme.primary,
+                        ) {}
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    Text("暂无配置", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "添加订阅或创建自定义配置后，配置会保存在 KClash 独立数据目录中。",
+                        "添加一个配置文件后即可开始使用",
                         style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
                     )
-                    Spacer(Modifier.height(12.dp))
-                    Button(onClick = onShowAddDialog) { Text("添加配置") }
+                    Spacer(Modifier.height(24.dp))
+                    androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog) {
+                        Icon(Icons.Outlined.Add, contentDescription = null)
+                        Spacer(Modifier.size(8.dp))
+                        Text("添加配置")
+                    }
                 }
             }
         } else {
@@ -878,6 +1286,12 @@ internal fun ProfilesPanel(
             onPickFile = onPickFile,
             onPickQrCode = onPickQrCode,
             onAddRemote = onAddRemote,
+            onAddRemoteBatch = onAddRemoteBatch ?: { urls -> urls.forEach { onAddRemote("", it) } },
+            existingUrls = state.profiles
+                .asSequence()
+                .filter { it.type == ProfileType.URL }
+                .map(Profile::url)
+                .toSet(),
             onAddCustom = onAddCustom,
         )
     }
@@ -1002,10 +1416,29 @@ internal fun ProfilesPanel(
                 profile = profile,
                 initialContent = editorState.content,
                 saving = editorState.isSaving,
+                isNewDraft = editorState.isNew,
+                hasPersistedChanges = editorState.hasPersistedChanges,
                 onDismiss = onCloseEditor,
+                onDiscard = onDiscardEditor,
+                onFinishNewDraft = onFinishNewDraftEditor,
                 onSave = onSaveEditor,
+                onOpenRulesEditor = onOpenRulesEditor,
+                onOpenProxiesEditor = onOpenProxiesEditor,
+                onOpenProxyGroupsEditor = onOpenProxyGroupsEditor,
+                onOpenProvidersEditor = onOpenProvidersEditor,
+                onOpenDnsEditor = onOpenDnsEditor,
+                onOpenDialersEditor = onOpenDialersEditor,
             )
         }
+    }
+
+    remoteEditorState.profile?.let { profile ->
+        RemoteProfileEditorDialog(
+            profile = profile,
+            saving = remoteEditorState.isSaving,
+            onDismiss = onCloseEditor,
+            onSave = onSaveRemoteEditor,
+        )
     }
 
     rulesEditorState.profile?.let { profile ->
@@ -1115,6 +1548,7 @@ internal fun ProfilesPanel(
             )
         }
     }
+
 }
 
 @Composable
@@ -1356,99 +1790,444 @@ internal fun WebDavBackupDialog(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ProxyGroupsCard(
+    modifier: Modifier = Modifier,
     state: ProxyGroupsUiState,
     runtimeState: CoreRuntimeStatus,
+    currentProfileId: Long? = null,
+    currentGroupName: String? = null,
+    mode: CoreOutboundMode = CoreOutboundMode.GLOBAL,
+    picker: Boolean = false,
+    onContentAtTopChanged: (Boolean) -> Unit = {},
     onRefresh: () -> Unit,
+    onSelectGroup: (String) -> Unit = {},
     onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestGroupDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo) -> Unit,
 ) {
-    var groupPendingSelection by remember { mutableStateOf<com.lonnnnnng.flclash.core.ProxyGroupInfo?>(null) }
-    var proxyQuery by remember(groupPendingSelection?.name) { mutableStateOf("") }
+    val optionsContext = LocalContext.current.applicationContext
+    var pageOptions by remember(optionsContext) {
+        mutableStateOf(ProxyPageOptionsStore.load(optionsContext))
+    }
+    var toolsExpanded by rememberSaveable { mutableStateOf(false) }
+    var toolsMenuPage by rememberSaveable { mutableStateOf(ProxyToolsMenuPage.ROOT) }
+    var locateSelectedRequest by rememberSaveable(currentProfileId) { mutableStateOf(0) }
+    val groups = visibleProxyGroups(state.groups, mode)
+    val groupNames = groups.map { it.name }
+    val initialPage = groupNames.indexOf(currentGroupName).coerceAtLeast(0)
+    val pagerState = rememberPagerState(initialPage = initialPage) { groups.size }
+    val groupTabsState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    var searchExpanded by rememberSaveable(currentProfileId) { mutableStateOf(picker) }
+    var proxyQuery by rememberSaveable(currentProfileId) { mutableStateOf("") }
+
+    LaunchedEffect(currentProfileId, currentGroupName, groupNames) {
+        if (groupNames.isNotEmpty()) {
+            val savedIndex = groupNames.indexOf(currentGroupName)
+            val page = if (savedIndex >= 0) savedIndex else pagerState.currentPage.coerceIn(groupNames.indices)
+            if (pagerState.currentPage != page) pagerState.scrollToPage(page)
+        }
+    }
+    LaunchedEffect(pagerState, groupNames) {
+        // 作者 long：只在组切换稳定后写入 Profile，取消中的滑动不应改变下次恢复的分组。
+        snapshotFlow { pagerState.settledPage }
+            .distinctUntilChanged()
+            .collect { page -> groups.getOrNull(page)?.name?.let(onSelectGroup) }
+    }
+    val selectedGroupIndex = if (groupNames.isEmpty()) 0 else pagerState.currentPage.coerceIn(groupNames.indices)
+    val selectedGroup = groups.getOrNull(selectedGroupIndex)
     val canRefresh = runtimeState == CoreRuntimeStatus.RUNNING &&
         !state.isLoading &&
         state.switchingGroup == null &&
         state.batchTestingGroup == null
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("proxy_groups_card"),
+    fun updatePageOptions(updated: ProxyPageOptions) {
+        pageOptions = updated
+        ProxyPageOptionsStore.save(optionsContext, updated)
+    }
+    Column(
+        modifier = modifier.fillMaxSize().padding(top = 8.dp, bottom = 8.dp)
+            .testTag("proxy_groups_page"),
+        verticalArrangement = Arrangement.spacedBy(if (picker) 8.dp else 12.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("代理组", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        if (groups.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (state.isLoading) {
                     CircularProgressIndicator()
                 } else {
-                    TextButton(onClick = onRefresh, enabled = canRefresh) { Text("刷新") }
+                    Text(
+                        if (runtimeState == CoreRuntimeStatus.RUNNING) {
+                            "当前配置没有可展示的代理组。"
+                        } else {
+                            "启动核心后加载代理组。"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
-            if (state.groups.isEmpty() && !state.isLoading) {
-                Text(
-                    if (runtimeState == CoreRuntimeStatus.RUNNING) {
-                        "当前配置没有可展示的代理组。"
-                    } else {
-                        "启动核心后加载代理组。"
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                state.groups.forEach { group ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("proxy_group_${group.name}"),
-                        onClick = { if (group.isSelectable && group.all.isNotEmpty()) groupPendingSelection = group },
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(group.name, style = MaterialTheme.typography.titleSmall)
-                                    // 作者 long：Flutter 在嵌套代理组卡片中展示最终叶子节点，避免用户只能看到中间组名。
-                                    val displayedProxy = resolveSelectedProxy(
-                                        group = group,
-                                        groups = state.groups,
-                                        selectedMap = state.selectedMap,
-                                    ).leafName ?: selectedProxyName(group, state.selectedMap)
-                                    Text(
-                                        "${group.type} · 当前：${displayedProxy ?: "未选择"}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                                if (group.isSelectable) {
-                                    TextButton(
-                                        onClick = { groupPendingSelection = group },
-                                        enabled = state.switchingGroup == null && state.batchTestingGroup == null,
-                                        modifier = Modifier.testTag("proxy_group_select_${group.name}"),
-                                    ) { Text(if (group.isComputed) "选择" else "切换") }
-                                }
-                                TextButton(
-                                    onClick = { onTestGroupDelay(group) },
-                                    enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
-                                        state.switchingGroup == null &&
-                                        state.batchTestingGroup == null &&
-                                        group.all.isNotEmpty(),
-                                    modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
-                                ) {
-                                    if (state.batchTestingGroup == group.name) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(16.dp),
-                                            strokeWidth = 2.dp,
+        } else {
+            if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
+                LazyRow(
+                    state = groupTabsState,
+                    modifier = Modifier.fillMaxWidth().height(48.dp).testTag("proxy_group_tabs"),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    itemsIndexed(groups, key = { _, group -> group.name }) { index, group ->
+                        val selected = index == selectedGroupIndex
+                        Surface(
+                            modifier = Modifier.widthIn(min = 64.dp).height(48.dp)
+                                .selectable(
+                                    selected = selected,
+                                    role = Role.Tab,
+                                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+                                )
+                                .testTag("proxy_group_tab_${group.name}"),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        ) {
+                            Box(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(group.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                }
+            }
+
+            selectedGroup?.let { group ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val displayedProxy = resolveSelectedProxy(
+                        group = group,
+                        groups = state.groups,
+                        selectedMap = state.selectedMap,
+                    ).leafName ?: selectedProxyName(group, state.selectedMap)
+                    Text(
+                        "${group.type} · 当前：${displayedProxy ?: "未选择"}",
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (picker && pageOptions.displayMode == ProxyDisplayMode.TAB) {
+                        // 作者 long：弹层高度有限，测速复用摘要行，避免键盘出现后独立工具行挤掉可操作的节点。
+                        IconButton(
+                            onClick = { onTestGroupDelay(group) },
+                            enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                                state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
+                            modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
+                        ) {
+                            if (state.batchTestingGroup == group.name) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                            else Icon(Icons.Outlined.Bolt, contentDescription = "批量测速")
+                        }
+                    }
+                    if (!picker) {
+                        IconButton(
+                            onClick = {
+                                if (searchExpanded) proxyQuery = ""
+                                searchExpanded = !searchExpanded
+                            },
+                            modifier = Modifier.testTag("proxy_group_search_toggle"),
+                        ) {
+                            Icon(
+                                if (searchExpanded) Icons.Outlined.Close else Icons.Outlined.Search,
+                                contentDescription = if (searchExpanded) "关闭节点搜索" else "搜索节点",
+                            )
+                        }
+                        IconButton(
+                            onClick = { locateSelectedRequest++ },
+                            enabled = group.all.isNotEmpty(),
+                            modifier = Modifier.testTag("proxy_scroll_to_selected"),
+                        ) {
+                            Icon(Icons.Outlined.MyLocation, contentDescription = "定位当前节点")
+                        }
+                        Box {
+                            IconButton(
+                                onClick = {
+                                    toolsMenuPage = ProxyToolsMenuPage.ROOT
+                                    toolsExpanded = true
+                                },
+                                modifier = Modifier.testTag("proxy_tools"),
+                            ) {
+                                Icon(Icons.Outlined.MoreVert, contentDescription = "代理组工具")
+                            }
+                            DropdownMenu(
+                                expanded = toolsExpanded,
+                                onDismissRequest = { toolsExpanded = false },
+                            ) {
+                                when (toolsMenuPage) {
+                                    ProxyToolsMenuPage.ROOT -> {
+                                        DropdownMenuItem(
+                                            text = { Text("布局：${pageOptions.displayMode.label}") },
+                                            onClick = { toolsMenuPage = ProxyToolsMenuPage.DISPLAY_MODE },
+                                            modifier = Modifier.testTag("proxy_tools_display_mode"),
                                         )
-                                    } else {
-                                        Text("批量测速")
+                                        DropdownMenuItem(
+                                            text = { Text("排序：${pageOptions.sort.label}") },
+                                            onClick = { toolsMenuPage = ProxyToolsMenuPage.SORT },
+                                            modifier = Modifier.testTag("proxy_tools_sort"),
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("网格密度：${pageOptions.gridDensity.label}") },
+                                            onClick = { toolsMenuPage = ProxyToolsMenuPage.DENSITY },
+                                            modifier = Modifier.testTag("proxy_tools_density"),
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("卡片尺寸：${pageOptions.cardSize.label}") },
+                                            onClick = { toolsMenuPage = ProxyToolsMenuPage.CARD_SIZE },
+                                            modifier = Modifier.testTag("proxy_tools_card_size"),
+                                        )
+                                        if (pageOptions.displayMode == ProxyDisplayMode.LIST) {
+                                            DropdownMenuItem(
+                                                text = { Text("列表图标：${pageOptions.iconStyle.label}") },
+                                                onClick = { toolsMenuPage = ProxyToolsMenuPage.ICON_STYLE },
+                                                modifier = Modifier.testTag("proxy_tools_icon_style"),
+                                            )
+                                        }
+                                        DropdownMenuItem(
+                                            text = { Text("隐藏超时节点") },
+                                            onClick = { updatePageOptions(pageOptions.copy(hideTimeout = !pageOptions.hideTimeout)) },
+                                            trailingIcon = {
+                                                if (pageOptions.hideTimeout) Icon(Icons.Outlined.Check, contentDescription = "已启用")
+                                            },
+                                            modifier = Modifier.testTag("proxy_tools_hide_timeout"),
+                                        )
+                                    }
+                                    ProxyToolsMenuPage.DISPLAY_MODE -> {
+                                        ProxyMenuBackItem("布局") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
+                                        ProxyDisplayMode.entries.forEach { option ->
+                                            ProxyMenuOptionItem(option.label, option == pageOptions.displayMode, "proxy_display_mode_${option.name}") {
+                                                updatePageOptions(pageOptions.copy(displayMode = option))
+                                                toolsExpanded = false
+                                            }
+                                        }
+                                    }
+                                    ProxyToolsMenuPage.SORT -> {
+                                        ProxyMenuBackItem("排序") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
+                                        ProxySortOption.entries.forEach { option ->
+                                            ProxyMenuOptionItem(option.label, option == pageOptions.sort, "proxy_sort_option_${option.name}") {
+                                                updatePageOptions(pageOptions.copy(sort = option))
+                                                toolsExpanded = false
+                                            }
+                                        }
+                                    }
+                                    ProxyToolsMenuPage.DENSITY -> {
+                                        ProxyMenuBackItem("网格密度") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
+                                        ProxyGridDensity.entries.forEach { option ->
+                                            ProxyMenuOptionItem(option.label, option == pageOptions.gridDensity, "proxy_density_option_${option.name}") {
+                                                updatePageOptions(pageOptions.copy(gridDensity = option))
+                                                toolsExpanded = false
+                                            }
+                                        }
+                                    }
+                                    ProxyToolsMenuPage.CARD_SIZE -> {
+                                        ProxyMenuBackItem("卡片尺寸") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
+                                        ProxyNodeCardSize.entries.forEach { option ->
+                                            ProxyMenuOptionItem(option.label, option == pageOptions.cardSize, "proxy_card_size_option_${option.name}") {
+                                                updatePageOptions(pageOptions.copy(cardSize = option))
+                                                toolsExpanded = false
+                                            }
+                                        }
+                                    }
+                                    ProxyToolsMenuPage.ICON_STYLE -> {
+                                        ProxyMenuBackItem("列表图标") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
+                                        ProxyGroupIconStyle.entries.forEach { option ->
+                                            ProxyMenuOptionItem(option.label, option == pageOptions.iconStyle, "proxy_icon_style_${option.name}") {
+                                                updatePageOptions(pageOptions.copy(iconStyle = option))
+                                                toolsExpanded = false
+                                            }
+                                        }
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+                if (searchExpanded && !picker) {
+                    OutlinedTextField(
+                        value = proxyQuery,
+                        onValueChange = { proxyQuery = it },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                            .testTag("proxy_group_search"),
+                        label = { Text("搜索节点") },
+                        singleLine = true,
+                    )
+                }
+                if (!picker) Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    if (!picker) TextButton(
+                        onClick = onRefresh,
+                        enabled = canRefresh,
+                        modifier = Modifier.testTag("proxy_groups_refresh"),
+                    ) {
+                        if (state.isLoading) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                        else Text("刷新")
+                    }
+                    TextButton(
+                        onClick = { onTestGroupDelay(group) },
+                        enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                            state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
+                        modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
+                    ) {
+                        if (state.batchTestingGroup == group.name) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                        else Text("批量测速")
+                    }
+                }
+            }
+
+            if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
+                HorizontalPager(
+                    state = pagerState,
+                    key = { page -> groupNames[page] },
+                    modifier = Modifier.fillMaxWidth().weight(1f).testTag("proxy_groups_pager"),
+                ) { page ->
+                    val group = groups.getOrNull(page) ?: return@HorizontalPager
+                    ProxyGroupNodesPage(
+                        group = group,
+                        groups = state.groups,
+                        state = state,
+                        query = proxyQuery,
+                        options = pageOptions,
+                        locateRequest = locateSelectedRequest,
+                        isCurrentPage = page == pagerState.currentPage,
+                        onSelect = onSelect,
+                        onTestDelay = onTestDelay,
+                        onContentAtTopChanged = onContentAtTopChanged,
+                    )
+                }
+            } else {
+                ProxyGroupsListPage(
+                    modifier = Modifier.fillMaxWidth().weight(1f).testTag("proxy_groups_list"),
+                    groups = groups,
+                    state = state,
+                    runtimeState = runtimeState,
+                    query = proxyQuery,
+                    options = pageOptions,
+                    onSelectGroup = onSelectGroup,
+                    onSelect = onSelect,
+                    onTestDelay = onTestDelay,
+                    onTestGroupDelay = onTestGroupDelay,
+                    onContentAtTopChanged = onContentAtTopChanged,
+                )
+            }
+            if (picker) {
+                // 作者 long：弹层搜索单独留在当前组合中，关闭即释放，避免覆盖完整代理页原有查询。
+                OutlinedTextField(
+                    value = proxyQuery,
+                    onValueChange = { proxyQuery = it },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                        .testTag("proxy_group_search"),
+                    label = { Text("搜索节点") },
+                    singleLine = true,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProxyGroupsListPage(
+    modifier: Modifier,
+    groups: List<com.lonnnnnng.flclash.core.ProxyGroupInfo>,
+    state: ProxyGroupsUiState,
+    runtimeState: CoreRuntimeStatus,
+    query: String,
+    options: ProxyPageOptions,
+    onSelectGroup: (String) -> Unit,
+    onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
+    onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
+    onTestGroupDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo) -> Unit,
+    onContentAtTopChanged: (Boolean) -> Unit = {},
+) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
+            .distinctUntilChanged().collect { onContentAtTopChanged(it) }
+    }
+    LazyColumn(
+        modifier = modifier,
+        state = listState,
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        items(groups, key = { it.name }) { group ->
+            BoxWithConstraints(Modifier.fillMaxWidth().testTag("proxy_list_group_${group.name}")) {
+                // 作者 long：隐藏组只影响可见分组，递归叶子、排序和延迟仍需完整核心组图。
+                val searched = filterProxyMembers(group, query)
+                val sorted = sortProxyMembers(group, state.groups, state, searched, options.sort)
+                val members = if (options.hideTimeout) {
+                    hideTimedOutProxyMembers(group, state.groups, state, sorted)
+                } else {
+                    sorted
+                }
+                val columns = proxyGridColumnCount(maxWidth.value, options.gridDensity)
+                val selected = selectedProxyName(group, state.selectedMap)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { onSelectGroup(group.name) }
+                            .testTag("proxy_list_group_header_${group.name}"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        ProxyGroupIcon(group.name, options.iconStyle)
+                        Column(Modifier.weight(1f).padding(start = 8.dp)) {
+                            Text(group.name, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                "${group.type} · 当前：${resolveSelectedProxy(group, state.groups, state.selectedMap).leafName ?: selected ?: "未选择"}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        TextButton(
+                            onClick = { onTestGroupDelay(group) },
+                            enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                                state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
+                            modifier = Modifier.testTag("proxy_list_group_batch_${group.name}"),
+                        ) { Text("批量测速") }
+                    }
+                    if (members.isEmpty()) {
+                        Text(
+                            if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        members.chunked(columns).forEachIndexed { rowIndex, row ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                row.forEach { proxyName ->
+                                    ProxyNodeCard(
+                                        name = proxyName,
+                                        type = state.groups.firstOrNull { it.name == proxyName }?.type,
+                                        cardSize = options.cardSize,
+                                        inUse = proxyName == selected,
+                                        preferred = group.isComputed && proxyName == state.selectedMap[group.name],
+                                        enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                                            group.isSelectable && state.switchingGroup == null && state.batchTestingGroup == null,
+                                        delay = state.delayState(group, proxyName),
+                                        selectionTag = "proxy_list_node_${group.name}_$proxyName",
+                                        delayTag = "proxy_list_node_delay_${group.name}_$proxyName",
+                                        onSelect = { onSelect(group, proxyName) },
+                                        onTestDelay = { onTestDelay(group, proxyName) },
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+                                repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                             }
                         }
                     }
@@ -1456,101 +2235,138 @@ internal fun ProxyGroupsCard(
             }
         }
     }
+}
 
-    groupPendingSelection?.let { group ->
-        AlertDialog(
-            onDismissRequest = { if (state.switchingGroup == null) groupPendingSelection = null },
-            title = { Text("${if (group.isComputed) "选择" else "切换"} ${group.name}") },
-            text = {
-                Column(
-                    modifier = Modifier.testTag("proxy_group_dialog_content_${group.name}"),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    if (group.isComputed) {
-                        Text(
-                            "点击当前节点可恢复自动选择",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    OutlinedTextField(
-                        value = proxyQuery,
-                        onValueChange = { proxyQuery = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("proxy_group_search"),
-                        label = { Text("搜索节点") },
-                        singleLine = true,
-                    )
-                    val visibleProxies = filterProxyMembers(group, proxyQuery)
-                    if (visibleProxies.isEmpty()) {
-                        Text(
-                            "没有匹配的节点",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    visibleProxies.forEach { proxyName ->
-                        val delay = state.delayState(group, proxyName)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = proxyName == selectedProxyName(group, state.selectedMap),
-                                onClick = {
-                                    onSelect(group, proxyName)
-                                    groupPendingSelection = null
-                                },
-                                enabled = state.switchingGroup == null && state.batchTestingGroup == null,
-                                modifier = Modifier.testTag("proxy_node_${group.name}_$proxyName"),
-                            )
-                            Text(
-                                proxyName,
-                                modifier = Modifier.weight(1f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            TextButton(
-                                onClick = { onTestDelay(group, proxyName) },
-                                enabled = state.switchingGroup == null &&
-                                    state.batchTestingGroup == null &&
-                                    delay?.isTesting != true,
-                                modifier = Modifier.testTag("proxy_node_delay_${group.name}_$proxyName"),
-                            ) {
-                                if (delay?.isTesting == true) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                    )
-                                } else {
-                                    Text(delayLabel(delay))
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { groupPendingSelection = null },
-                    enabled = state.switchingGroup == null && state.batchTestingGroup == null,
-                    modifier = Modifier.testTag("proxy_group_close_${group.name}"),
-                ) { Text("关闭") }
-            },
+@Composable
+private fun ProxyGroupIcon(name: String, style: ProxyGroupIconStyle) {
+    when (style) {
+        ProxyGroupIconStyle.HIDDEN -> Spacer(Modifier.size(32.dp))
+        ProxyGroupIconStyle.PLAIN -> Text(
+            name.firstOrNull()?.uppercase() ?: "?",
+            modifier = Modifier.size(32.dp),
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleMedium,
         )
+        ProxyGroupIconStyle.FILLED -> Surface(
+            modifier = Modifier.size(32.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(name.firstOrNull()?.uppercase() ?: "?", style = MaterialTheme.typography.titleSmall)
+            }
+        }
     }
 }
 
-private fun delayLabel(delay: ProxyDelayUiState?): String = when {
-    delay == null -> "测速"
-    delay.isTesting -> "测速中"
-    delay.value == null -> "无结果"
-    delay.value > 0 -> "${delay.value} ms"
-    // 作者 long：保留 Mihomo 的超时/失败语义，让用户区分网络超时和普通测试失败。
-    delay.value == CoreBridge.DELAY_TIMED_OUT -> "超时"
-    else -> "失败"
+@Composable
+private fun ProxyMenuBackItem(label: String, onBack: () -> Unit) {
+    DropdownMenuItem(
+        text = { Text("返回：$label") },
+        onClick = onBack,
+        modifier = Modifier.testTag("proxy_tools_back"),
+    )
+}
+
+@Composable
+private fun ProxyMenuOptionItem(
+    label: String,
+    isSelected: Boolean,
+    testTag: String,
+    onClick: () -> Unit,
+) {
+    DropdownMenuItem(
+        text = { Text(label) },
+        onClick = onClick,
+        trailingIcon = {
+            if (isSelected) Icon(Icons.Outlined.Check, contentDescription = "已选择")
+        },
+        modifier = Modifier.testTag(testTag).semantics { selected = isSelected },
+    )
+}
+
+@Composable
+private fun ProxyGroupNodesPage(
+    group: com.lonnnnnng.flclash.core.ProxyGroupInfo,
+    groups: List<com.lonnnnnng.flclash.core.ProxyGroupInfo>,
+    state: ProxyGroupsUiState,
+    query: String,
+    options: ProxyPageOptions,
+    locateRequest: Int,
+    isCurrentPage: Boolean,
+    onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
+    onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
+    onContentAtTopChanged: (Boolean) -> Unit = {},
+) {
+    val gridState = rememberLazyGridState()
+    LaunchedEffect(gridState, isCurrentPage) {
+        if (isCurrentPage) snapshotFlow {
+            gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset == 0
+        }.distinctUntilChanged().collect { onContentAtTopChanged(it) }
+    }
+    val searchedProxies = filterProxyMembers(group, query)
+    val sortedProxies = sortProxyMembers(group, groups, state, searchedProxies, options.sort)
+    val visibleProxies = if (options.hideTimeout) {
+        hideTimedOutProxyMembers(group, groups, state, sortedProxies)
+    } else {
+        sortedProxies
+    }
+    val savedSelection = selectedProxyName(group, state.selectedMap)
+    val inUseName = if (group.isComputed) {
+        group.now?.takeIf { it in group.all } ?: savedSelection
+    } else {
+        savedSelection
+    }
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize().testTag("proxy_group_${group.name}"),
+    ) {
+        // 作者 long：按密度选项调整 Flutter 同源的 250dp 网格列宽，宽松模式允许单列卡片。
+        val columnCount = proxyGridColumnCount(maxWidth.value, options.gridDensity)
+        LaunchedEffect(isCurrentPage, inUseName, query, visibleProxies, locateRequest) {
+            val selectedIndex = if (query.isBlank()) visibleProxies.indexOf(inUseName) else -1
+            if (isCurrentPage && selectedIndex > 0) gridState.animateScrollToItem(selectedIndex)
+        }
+        if (visibleProxies.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize().testTag("proxy_group_members_${group.name}"),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columnCount),
+                state = gridState,
+                modifier = Modifier.fillMaxSize().testTag("proxy_group_members_${group.name}"),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                gridItems(visibleProxies, key = { it }) { proxyName ->
+                    val delay = state.delayState(group, proxyName)
+                    ProxyNodeCard(
+                        name = proxyName,
+                        type = groups.firstOrNull { it.name == proxyName }?.type,
+                        cardSize = options.cardSize,
+                        inUse = proxyName == inUseName,
+                        preferred = group.isComputed && proxyName == state.selectedMap[group.name],
+                        enabled = isCurrentPage && group.isSelectable &&
+                            state.switchingGroup == null && state.batchTestingGroup == null,
+                        delay = delay,
+                        selectionTag = "proxy_node_${group.name}_$proxyName",
+                        delayTag = "proxy_node_delay_${group.name}_$proxyName",
+                        onSelect = { onSelect(group, proxyName) },
+                        onTestDelay = { onTestDelay(group, proxyName) },
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -2516,54 +3332,50 @@ internal fun ConnectionsCard(
     var selectedConnection by rememberSaveable(stateSaver = ConnectionDetailSaver) {
         mutableStateOf<CoreConnection?>(null)
     }
-    Card(
+    RecordSection(
+        hasRecords = runtimeState.isRunning && state.error == null && state.connections.isNotEmpty(),
         modifier = Modifier
             .fillMaxWidth()
             .testTag("connections_card"),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "活动连接${if (runtimeState.isRunning) "（${state.connections.size}）" else ""}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (state.isLoading && runtimeState.isRunning) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "活动连接${if (runtimeState.isRunning) "（${state.connections.size}）" else ""}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            if (state.isLoading && runtimeState.isRunning) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             }
-            when {
-                !runtimeState.isRunning -> Text(
-                    "启动核心后显示当前活动连接。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        }
+        when {
+            !runtimeState.isRunning -> Text(
+                "启动核心后显示当前活动连接。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-                state.error != null -> Text(
-                    state.error,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
+            state.error != null -> Text(
+                state.error,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
 
-                state.connections.isEmpty() -> Text(
-                    "当前没有活动连接。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            state.connections.isEmpty() -> Text(
+                "当前没有活动连接。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-                else -> state.connections.take(MAX_CONNECTIONS_ON_HOME).forEachIndexed { index, connection ->
-                    ConnectionRow(
-                        connection = connection,
-                        modifier = Modifier.testTag("connections_row_$index"),
-                        onClick = {
-                            // 作者 long：摘要行会截断长地址和进程信息，点击详情让用户能完整核对所选连接。
-                            selectedConnection = connection
-                        },
-                    )
-                }
+            else -> state.connections.take(MAX_CONNECTIONS_ON_HOME).forEachIndexed { index, connection ->
+                ConnectionRow(
+                    connection = connection,
+                    modifier = Modifier.testTag("connections_row_$index"),
+                    onClick = {
+                        // 作者 long：摘要行会截断长地址和进程信息，点击详情让用户能完整核对所选连接。
+                        selectedConnection = connection
+                    },
+                )
             }
         }
     }
@@ -2572,49 +3384,6 @@ internal fun ConnectionsCard(
             connection = connection,
             onDismiss = { selectedConnection = null },
             onCopyText = onCopyText,
-        )
-    }
-}
-
-@Composable
-private fun ConnectionRow(
-    connection: CoreConnection,
-    modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null,
-) {
-    val metadata = connection.metadata
-    val title = metadata.host.ifBlank {
-        metadata.destinationIp.ifBlank { metadata.remoteDestination.ifBlank { "未知目标" } }
-    }
-    val endpoint = listOf(metadata.destinationIp, metadata.destinationPort)
-        .filter { it.isNotBlank() }
-        .joinToString(":")
-    // 作者 long：沿用 Flutter 的代理链反序展示，让同一条连接在两端保持相同的阅读顺序。
-    val chain = connection.chains.asReversed().joinToString(" → ")
-    Column(
-        modifier = modifier.then(
-            if (onClick == null) Modifier else Modifier.clickable(
-                role = Role.Button,
-                onClick = onClick,
-            ),
-        ),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(
-            listOf(metadata.network.uppercase(), endpoint, metadata.process, chain)
-                .filter { it.isNotBlank() }
-                .joinToString(" · "),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            "↑ ${formatBytes(connection.upload)} · ↓ ${formatBytes(connection.download)}" +
-                if (connection.rule.isNotBlank()) " · ${connection.rule}" else "",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -2770,13 +3539,13 @@ private fun ConnectionChainRow(chains: List<String>) {
     }
 }
 
-private fun connectionEndpoint(ip: String, port: String): String = when {
+internal fun connectionEndpoint(ip: String, port: String): String = when {
     ip.isBlank() -> ""
     port.isBlank() -> ip
     else -> "$ip:$port"
 }
 
-private fun connectionRuleText(connection: CoreConnection): String = buildString {
+internal fun connectionRuleText(connection: CoreConnection): String = buildString {
     append(connection.rule)
     if (connection.rulePayload.isNotBlank()) {
         append("(")
@@ -2792,37 +3561,32 @@ private fun RequestsCard(
     runtimeState: CoreRuntimeStatus,
     onShowAll: () -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "请求记录${if (runtimeState.isRunning) "（${state.requests.size}）" else ""}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (state.requests.isNotEmpty()) {
-                    TextButton(onClick = onShowAll) { Text("查看全部") }
-                }
+    RecordSection(hasRecords = runtimeState.isRunning && state.requests.isNotEmpty()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "请求记录${if (runtimeState.isRunning) "（${state.requests.size}）" else ""}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            if (state.requests.isNotEmpty()) {
+                TextButton(onClick = onShowAll) { Text("查看全部") }
             }
-            when {
-                !runtimeState.isRunning -> Text(
-                    "启动核心后显示请求、目标和规则命中信息。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        }
+        when {
+            !runtimeState.isRunning -> Text(
+                "启动核心后显示请求、目标和规则命中信息。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-                state.requests.isEmpty() -> Text(
-                    "等待核心上报请求事件。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            state.requests.isEmpty() -> Text(
+                "等待核心上报请求事件。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-                else -> state.requests.takeLast(MAX_REQUESTS_ON_HOME).asReversed().forEach { request ->
-                    ConnectionRow(request)
-                }
+            else -> state.requests.takeLast(MAX_REQUESTS_ON_HOME).asReversed().forEach { request ->
+                ConnectionRow(request)
             }
         }
     }
@@ -2831,38 +3595,59 @@ private fun RequestsCard(
 @Composable
 internal fun RequestsDialog(
     state: RequestsUiState,
+    onCopyText: (String) -> Unit = {},
     onDismiss: () -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
-    val filtered = filterRequests(state.requests, query)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("请求记录（${state.requests.size}）") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ObservationSearchField(
-                    value = query,
-                    onValueChange = { query = it },
-                    label = "搜索目标、进程、代理链或规则",
+    var searchExpanded by rememberSaveable { mutableStateOf(false) }
+    var keywords by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var selectedConnection by rememberSaveable(stateSaver = ConnectionDetailSaver) { mutableStateOf<CoreConnection?>(null) }
+    val filtered = filterRequests(state.requests, query, keywords)
+    ObservationListPage(
+        title = "最近请求",
+        searchLabel = "搜索目标、进程、代理链或规则",
+        searchQuery = query,
+        searchExpanded = searchExpanded,
+        keywords = keywords,
+        onDismiss = onDismiss,
+        onSearchQueryChange = { query = it },
+        onSearchExpandedChange = { searchExpanded = it },
+        onRemoveKeyword = { keywords = keywords - it },
+    ) {
+        ObservationList(
+            items = filtered.asReversed(),
+            filterKey = "$query|${keywords.joinToString("|")}",
+            emptyContent = {
+                val noResults = query.isNotBlank() || keywords.isNotEmpty()
+                ObservationEmptyState(
+                    title = if (noResults) "没有匹配的结果" else "暂无请求",
+                    illustration = if (noResults) {
+                        ObservationEmptyIllustration.SEARCH
+                    } else {
+                        ObservationEmptyIllustration.REQUESTS
+                    },
+                    testTag = if (noResults) "requests_no_results_state" else "requests_empty_state",
                 )
-                Text(
-                    "显示 ${filtered.size}/${state.requests.size}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                ObservationList(
-                    items = filtered.asReversed(),
-                    filterKey = query,
-                    emptyText = "没有匹配的请求记录。",
-                    itemKey = { it.id },
-                    row = ::ConnectionRow,
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
-        },
-    )
+            },
+            itemKey = { it.id },
+            itemTag = { index -> "request_row_$index" },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+        ) { connection ->
+            ConnectionRow(
+                connection = connection,
+                onClick = { selectedConnection = connection },
+                onClickKeyword = { keyword -> if (keyword !in keywords) keywords = keywords + keyword },
+            )
+        }
+    }
+    if (selectedConnection != null) {
+        ConnectionDetailSheet(
+            connection = selectedConnection!!,
+            onDismiss = { selectedConnection = null },
+            onCopyText = onCopyText,
+        )
+    }
 }
 
 @Composable
@@ -2872,73 +3657,34 @@ private fun DnsCard(
     onShowAll: () -> Unit,
     onClear: () -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "DNS 查询${if (runtimeState.isRunning) "（${state.queries.size}）" else ""}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (state.queries.isNotEmpty()) {
-                    TextButton(onClick = onShowAll) { Text("查看全部") }
-                    TextButton(onClick = onClear) { Text("清空") }
-                }
-            }
-            when {
-                !runtimeState.isRunning -> Text(
-                    "启动核心后显示 DNS 查询记录。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                state.queries.isEmpty() -> Text(
-                    "等待核心上报 DNS 查询事件。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                else -> state.queries.takeLast(MAX_OBSERVATION_ROWS).asReversed().forEach { query ->
-                    DnsQueryRow(query)
-                }
+    RecordSection(hasRecords = runtimeState.isRunning && state.queries.isNotEmpty()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "DNS 查询${if (runtimeState.isRunning) "（${state.queries.size}）" else ""}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            if (state.queries.isNotEmpty()) {
+                TextButton(onClick = onShowAll) { Text("查看全部") }
+                TextButton(onClick = onClear) { Text("清空") }
             }
         }
-    }
-}
-
-@Composable
-private fun DnsQueryRow(query: CoreDnsQuery) {
-    val domain = query.domain.ifBlank { "未知域名" }
-    val details = listOf(query.type, query.rcode, query.upstream)
-        .filter { it.isNotBlank() }
-        .joinToString(" · ")
-    val result = when {
-        query.error.isNotBlank() -> "失败：${query.error}"
-        query.answers.isNotEmpty() -> query.answers.joinToString(", ")
-        else -> "无结果"
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(domain, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(
-            listOf(details, result).filter { it.isNotBlank() }.joinToString(" · "),
-            style = MaterialTheme.typography.bodySmall,
-            color = if (query.error.isNotBlank()) {
-                MaterialTheme.colorScheme.error
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        if (query.delay > 0L) {
-            Text(
-                "耗时 ${query.delay} ms",
-                style = MaterialTheme.typography.labelMedium,
+        when {
+            !runtimeState.isRunning -> Text(
+                "启动核心后显示 DNS 查询记录。",
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            state.queries.isEmpty() -> Text(
+                "等待核心上报 DNS 查询事件。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            else -> state.queries.takeLast(MAX_OBSERVATION_ROWS).asReversed().forEach { query ->
+                DnsQueryRow(query)
+            }
         }
     }
 }
@@ -2947,41 +3693,105 @@ private fun DnsQueryRow(query: CoreDnsQuery) {
 internal fun DnsDialog(
     state: DnsUiState,
     onDismiss: () -> Unit,
-    onClear: () -> Unit,
+    onClearDnsCache: suspend () -> Result<Unit>,
+    onCopyText: (String) -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
-    val filtered = filterDnsQueries(state.queries, query)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("DNS 查询（${state.queries.size}）") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ObservationSearchField(
-                    value = query,
-                    onValueChange = { query = it },
-                    label = "搜索域名、上游、答案或错误",
+    var searchExpanded by rememberSaveable { mutableStateOf(false) }
+    var keywords by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var selectedQuery by rememberSaveable(stateSaver = DnsQueryDetailSaver) {
+        mutableStateOf<CoreDnsQuery?>(null)
+    }
+    val clearFeedbackHostState = remember { SnackbarHostState() }
+    val clearScope = rememberCoroutineScope()
+    var clearingDnsCache by remember { mutableStateOf(false) }
+    var clearSucceeded by remember { mutableStateOf(false) }
+    // 作者 long：核心返回的底层异常可能包含运行上下文，弹窗仅展示稳定的成功/失败文案。
+    val clearDnsCache: () -> Unit = {
+        if (!clearingDnsCache) {
+            clearScope.launch {
+                clearingDnsCache = true
+                val succeeded = try {
+                    onClearDnsCache().isSuccess
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (_: Exception) {
+                    false
+                } finally {
+                    clearingDnsCache = false
+                }
+                clearSucceeded = succeeded
+                clearFeedbackHostState.showSnackbar(
+                    if (succeeded) "DNS 缓存已清除" else "清除 DNS 缓存失败",
                 )
-                Text(
-                    "显示 ${filtered.size}/${state.queries.size}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                ObservationList(
-                    items = filtered.asReversed(),
-                    filterKey = query,
-                    emptyText = "没有匹配的 DNS 查询。",
-                    itemKey = { "${it.time}|${it.domain}|${it.initiator}" },
-                    row = ::DnsQueryRow,
+            }
+        }
+    }
+    val filtered = filterDnsQueries(state.queries, query, keywords)
+    ObservationListPage(
+        title = "DNS查询",
+        searchLabel = "搜索域名、上游、答案或错误",
+        searchQuery = query,
+        searchExpanded = searchExpanded,
+        keywords = keywords,
+        onDismiss = onDismiss,
+        onSearchQueryChange = { query = it },
+        onSearchExpandedChange = { searchExpanded = it },
+        onRemoveKeyword = { keywords = keywords - it },
+        onClear = clearDnsCache,
+        clearEnabled = !clearingDnsCache,
+        pageOverlay = {
+            SnackbarHost(clearFeedbackHostState) { snackbarData ->
+                Snackbar(
+                    snackbarData = snackbarData,
+                    containerColor = if (clearSucceeded) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.errorContainer
+                    },
+                    contentColor = if (clearSucceeded) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onErrorContainer
+                    },
                 )
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
-        },
-        dismissButton = {
-            TextButton(onClick = onClear, enabled = state.queries.isNotEmpty()) { Text("清空") }
-        },
-    )
+    ) {
+        ObservationList(
+            items = filtered.asReversed(),
+            filterKey = "$query|${keywords.joinToString("|")}",
+            emptyContent = {
+                val noResults = query.isNotBlank() || keywords.isNotEmpty()
+                ObservationEmptyState(
+                    title = if (noResults) "没有匹配的结果" else "DNS查询为空",
+                    illustration = if (noResults) {
+                        ObservationEmptyIllustration.SEARCH
+                    } else {
+                        ObservationEmptyIllustration.DNS
+                    },
+                    testTag = if (noResults) "dns_no_results_state" else "dns_empty_state",
+                )
+            },
+            itemKey = { "${it.time}|${it.domain}|${it.initiator}" },
+            itemTag = { index -> "dns_row_$index" },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+        ) { dns ->
+            DnsQueryRow(
+                query = dns,
+                onClick = { selectedQuery = dns },
+                onClickKeyword = { keyword -> if (keyword !in keywords) keywords = keywords + keyword },
+            )
+        }
+    }
+    if (selectedQuery != null) {
+        DnsQueryDetailSheet(
+            query = selectedQuery!!,
+            onDismiss = { selectedQuery = null },
+            onCopyText = onCopyText,
+        )
+    }
 }
 
 @Composable
@@ -2992,65 +3802,36 @@ private fun LogsCard(
     onClear: () -> Unit,
     onExport: () -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "核心日志${if (runtimeState.isRunning) "（${state.entries.size}）" else ""}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (state.entries.isNotEmpty()) {
-                    TextButton(onClick = onShowAll) { Text("查看全部") }
-                    TextButton(onClick = onClear) { Text("清空") }
-                    TextButton(onClick = onExport) { Text("导出") }
-                }
-            }
-            when {
-                !runtimeState.isRunning -> Text(
-                    "启动核心后显示 Mihomo 日志。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                state.entries.isEmpty() -> Text(
-                    "等待核心上报日志事件。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                else -> state.entries.takeLast(MAX_OBSERVATION_ROWS).asReversed().forEach { entry ->
-                    LogRow(entry)
-                }
+    RecordSection(hasRecords = runtimeState.isRunning && state.entries.isNotEmpty()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "核心日志${if (runtimeState.isRunning) "（${state.entries.size}）" else ""}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            if (state.entries.isNotEmpty()) {
+                TextButton(onClick = onShowAll) { Text("查看全部") }
+                TextButton(onClick = onClear) { Text("清空") }
+                TextButton(onClick = onExport) { Text("导出") }
             }
         }
-    }
-}
+        when {
+            !runtimeState.isRunning -> Text(
+                "启动核心后显示 Mihomo 日志。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-@Composable
-private fun LogRow(entry: CoreEvent.Log) {
-    val level = entry.level.ifBlank { "info" }.uppercase()
-    val color = if (entry.level.equals("error", ignoreCase = true)) {
-        MaterialTheme.colorScheme.error
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(level, style = MaterialTheme.typography.labelMedium, color = color)
-        Text(
-            entry.payload.ifBlank { "（空日志）" },
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            DateUtils.getRelativeTimeSpanString(entry.timestampMillis).toString(),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+            state.entries.isEmpty() -> Text(
+                "等待核心上报日志事件。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            else -> state.entries.takeLast(MAX_OBSERVATION_ROWS).asReversed().forEach { entry ->
+                LogRow(entry)
+            }
+        }
     }
 }
 
@@ -3058,57 +3839,60 @@ private fun LogRow(entry: CoreEvent.Log) {
 internal fun LogsDialog(
     state: LogsUiState,
     onDismiss: () -> Unit,
-    onClear: () -> Unit,
     onExport: () -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
-    var levelFilter by rememberSaveable { mutableStateOf<String?>(null) }
-    val filtered = filterLogs(state.entries, query, levelFilter)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("核心日志（${state.entries.size}）") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ObservationSearchField(
-                    value = query,
-                    onValueChange = { query = it },
-                    label = "搜索日志级别或内容",
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    listOf(
-                        "全部" to null,
-                        "错误" to "error",
-                        "警告" to "warn",
-                    ).forEach { (label, value) ->
-                        TextButton(onClick = { levelFilter = value }) {
-                            Text(if (levelFilter == value) "✓ $label" else label)
-                        }
-                    }
+    var searchExpanded by rememberSaveable { mutableStateOf(false) }
+    var keywords by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    val filteredBySearch = filterLogs(state.entries, query, null)
+    val filtered = keywords.fold(filteredBySearch) { entries, keyword ->
+        filterLogs(entries, "", keyword)
+    }
+    ObservationListPage(
+        title = "日志",
+        searchLabel = "搜索日志级别或内容",
+        searchQuery = query,
+        searchExpanded = searchExpanded,
+        keywords = keywords,
+        onDismiss = onDismiss,
+        onSearchQueryChange = { query = it },
+        onSearchExpandedChange = { searchExpanded = it },
+        onRemoveKeyword = { keyword -> keywords = keywords - keyword },
+        onExport = onExport,
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            Text(
+                "显示 ${filtered.size}/${state.entries.size}",
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 8.dp)
+                    .testTag("log_result_count"),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            ObservationList(
+                items = filtered.asReversed(),
+                filterKey = "$query|${keywords.joinToString("|")}",
+                emptyContent = {
+                    val isSearching = query.isNotBlank() || keywords.isNotEmpty()
+                    ObservationEmptyState(
+                        title = if (isSearching) "没有匹配的结果" else "暂无日志",
+                        illustration = if (isSearching) {
+                            ObservationEmptyIllustration.SEARCH
+                        } else {
+                            ObservationEmptyIllustration.LOGS
+                        },
+                        testTag = if (isSearching) "logs_no_results_state" else "logs_empty_state",
+                    )
+                },
+                itemKey = { "${it.timestampMillis}|${it.level}|${it.payload}" },
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            ) { entry ->
+                LogRow(entry) { keyword ->
+                    if (keyword !in keywords) keywords = keywords + keyword
                 }
-                Text(
-                    "显示 ${filtered.size}/${state.entries.size}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                ObservationList(
-                    items = filtered.asReversed(),
-                    filterKey = "$query|${levelFilter.orEmpty()}",
-                    emptyText = "没有匹配的核心日志。",
-                    itemKey = { "${it.timestampMillis}|${it.level}|${it.payload}" },
-                    row = ::LogRow,
-                )
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
-        },
-        dismissButton = {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextButton(onClick = onClear, enabled = state.entries.isNotEmpty()) { Text("清空") }
-                TextButton(onClick = onExport, enabled = state.entries.isNotEmpty()) { Text("导出") }
-            }
-        },
-    )
+        }
+    }
 }
 
 @Composable
@@ -3126,6 +3910,93 @@ private fun ObservationSearchField(
     )
 }
 
+@Composable
+internal fun DnsQueryDetailSheet(
+    query: CoreDnsQuery,
+    onDismiss: () -> Unit,
+    onCopyText: (String) -> Unit,
+) {
+    val contentScrollState = rememberScrollState()
+    var copyMessage by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(copyMessage) {
+        if (copyMessage != null) {
+            kotlinx.coroutines.delay(2_000)
+            copyMessage = null
+        }
+    }
+    val copyValue: (String) -> Unit = { value ->
+        copyMessage = runCatching { onCopyText(value) }.fold({ "已复制" }, { "复制失败" })
+    }
+    ConnectionModalSheet(
+        onDismiss = onDismiss,
+        contentScrollState = contentScrollState,
+        accessibilityTitle = "DNS 详情",
+    ) { requestDismiss ->
+        // 作者 long：Flutter DNS 详情列表两侧留白为 16dp，保持基本信息、错误和答案共用该对齐线。
+        Column(
+            modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 16.dp),
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("DNS 详情", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                IconButton(onClick = requestDismiss) {
+                    Icon(Icons.Outlined.Close, contentDescription = "关闭 DNS 详情")
+                }
+            }
+            copyMessage?.let { Text(it, modifier = Modifier.testTag("dns_copy_feedback")) }
+            Column(
+                modifier = Modifier.weight(1f, fill = false).verticalScroll(contentScrollState),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                ConnectionDetailSection(
+                    title = "基本信息",
+                    rows = listOf(
+                        "时间" to formatConnectionStart(query.time),
+                        "域名" to query.domain,
+                        "记录类型" to query.type,
+                        "发起方" to query.initiator,
+                        "上游" to query.upstream,
+                        "缓存" to if (query.cached) "是" else "否",
+                        "响应码" to query.rcode,
+                        "耗时" to "${query.delay} ms",
+                    ),
+                    onCopyText = copyValue,
+                )
+                // 作者 long：解析错误独立成组并使用错误色，避免长错误挤占基本信息的值列；答案整行复制便于复用 IPv6 等完整记录。
+                if (query.error.isNotBlank()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("错误", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            query.error,
+                            modifier = Modifier.fillMaxWidth().testTag("connection_detail_错误")
+                                .heightIn(min = 48.dp)
+                                .clickable(role = Role.Button, onClickLabel = "复制错误") { copyValue(query.error) }
+                                .padding(vertical = 14.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+                if (query.answers.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("答案", style = MaterialTheme.typography.titleSmall)
+                        query.answers.forEachIndexed { index, answer ->
+                            Text(
+                                answer,
+                                modifier = Modifier.fillMaxWidth().testTag("dns_detail_answer_$index")
+                                    .heightIn(min = 48.dp)
+                                    .clickable(role = Role.Button, onClickLabel = "复制答案") { copyValue(answer) }
+                                    .padding(vertical = 14.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
 /**
  * 作者 long：详情页默认跟随最新事件，但用户向上翻阅历史后必须保持当前位置，避免高频日志把阅读位置抢回顶部。
  */
@@ -3133,8 +4004,11 @@ private fun ObservationSearchField(
 private fun <T> ObservationList(
     items: List<T>,
     filterKey: Any?,
-    emptyText: String,
+    emptyContent: @Composable () -> Unit,
     itemKey: (T) -> Any,
+    itemTag: ((Int) -> String)? = null,
+    modifier: Modifier = Modifier.heightIn(max = 480.dp),
+    contentPadding: PaddingValues = PaddingValues(),
     row: @Composable (T) -> Unit,
 ) {
     val listState = rememberLazyListState()
@@ -3158,18 +4032,19 @@ private fun <T> ObservationList(
     }
 
     if (items.isEmpty()) {
-        Text(
-            emptyText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Box(modifier.fillMaxWidth(), contentAlignment = BiasAlignment(0f, -0.2f)) {
+            emptyContent()
+        }
     } else {
         LazyColumn(
             state = listState,
-            modifier = Modifier.heightIn(max = 480.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = modifier.fillMaxWidth(),
+            contentPadding = contentPadding,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(items, key = itemKey) { item -> row(item) }
+            itemsIndexed(items, key = { _, item -> itemKey(item) }) { index, item ->
+                Box(itemTag?.let { Modifier.testTag(it(index)) } ?: Modifier) { row(item) }
+            }
         }
     }
 }
@@ -3480,99 +4355,190 @@ internal fun ProfileCard(
     onOpenDialersEditor: () -> Unit = {},
     onOpenScriptBinding: () -> Unit = {},
 ) {
+    var showActions by remember(profile.id) { mutableStateOf(false) }
+    val expiryDate = profile.subscriptionInfo?.expireAtMillis?.let { millis ->
+        SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date(millis))
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("profile_card_${profile.id}"),
         onClick = onSelect,
+        shape = RoundedCornerShape(24.dp),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = selected, onClick = onSelect)
-                Column(modifier = Modifier.weight(1f)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 14.dp, end = 8.dp, bottom = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = profile.realLabel,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
                     )
-                    Text(
-                        text = profileSubtitle(profile),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    expiryDate?.let { date ->
+                        Surface(
+                            modifier = Modifier.padding(start = 8.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        ) {
+                            Text(
+                                date,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .testTag("profile_expiry_${profile.id}"),
+                            )
+                        }
+                    }
                 }
-            }
-            profile.lastUpdateAt?.let { updatedAt ->
+                Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "更新于 ${DateUtils.getRelativeTimeSpanString(updatedAt)}",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = profileSubtitle(profile),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 48.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-            }
-            if (profile.type == ProfileType.URL) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 48.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("自动更新", modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = profile.autoUpdate,
-                        onCheckedChange = onSetAutoUpdate,
-                        enabled = canMutate,
-                        modifier = Modifier.testTag("profile_auto_update_${profile.id}"),
-                    )
-                }
                 profile.lastUpdateError?.let { error ->
                     Text(
-                        text = "自动更新失败：$error",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "同步失败：$error",
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.error,
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(start = 48.dp),
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
+                } ?: profile.lastUpdateAt?.let { updatedAt ->
+                    Text(
+                        text = "更新于 ${DateUtils.getRelativeTimeSpanString(updatedAt)}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 6.dp),
                     )
                 }
             }
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalArrangement = Arrangement.spacedBy(0.dp),
-                maxItemsInEachRow = 3,
-            ) {
-                if (profile.type != ProfileType.URL) {
-                    TextButton(onClick = onEdit, enabled = canMutate) { Text("编辑") }
-                }
-                if (profile.type == ProfileType.URL) {
-                    TextButton(onClick = onUpdate, enabled = canMutate) { Text("同步") }
-                }
-                TextButton(
-                    onClick = onRename,
-                    enabled = canMutate,
-                    modifier = Modifier.testTag("profile_rename_${profile.id}"),
-                ) { Text("重命名") }
-                if (profile.type == ProfileType.CUSTOM) {
-                    TextButton(onClick = onOpenProvidersEditor, enabled = canMutate) { Text("Provider") }
-                    TextButton(onClick = onOpenDnsEditor, enabled = canMutate) { Text("DNS") }
-                    TextButton(onClick = onOpenDialersEditor, enabled = canMutate) { Text("Dialers") }
-                    TextButton(onClick = onOpenProxyGroupsEditor, enabled = canMutate) { Text("代理组") }
-                    TextButton(onClick = onOpenProxiesEditor, enabled = canMutate) { Text("代理") }
-                    TextButton(onClick = onOpenRulesEditor, enabled = canMutate) { Text("高级") }
+
+            if (selected) {
+                Surface(
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(24.dp)
+                        .testTag("profile_selected_${profile.id}"),
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Outlined.Check, contentDescription = "已选中", modifier = Modifier.size(18.dp))
+                    }
                 }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                TextButton(onClick = onOpenScriptBinding, enabled = canMutate) { Text("脚本") }
-                TextButton(onClick = onDelete, enabled = canMutate) { Text("删除") }
+
+            Box {
+                IconButton(
+                    onClick = { showActions = true },
+                    enabled = canMutate,
+                    modifier = Modifier.testTag(
+                        if (selected) "profile_actions_selected" else "profile_actions_${profile.id}",
+                    ),
+                ) { Icon(Icons.Outlined.MoreVert, contentDescription = "${profile.realLabel}的配置操作") }
+                DropdownMenu(expanded = showActions, onDismissRequest = { showActions = false }) {
+                    if (profile.type == ProfileType.URL) {
+                        DropdownMenuItem(
+                            text = { Text("编辑") },
+                            leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                            onClick = { showActions = false; onEdit() },
+                            enabled = canMutate,
+                            modifier = Modifier.testTag("profile_edit_${profile.id}"),
+                        )
+                        DropdownMenuItem(
+                            text = { Text("同步") },
+                            leadingIcon = { Icon(Icons.Outlined.Sync, contentDescription = null) },
+                            onClick = { showActions = false; onUpdate() },
+                            enabled = canMutate,
+                        )
+                        DropdownMenuItem(
+                            text = { Text(if (profile.autoUpdate) "自动更新（开启）" else "自动更新（关闭）") },
+                            leadingIcon = { Icon(Icons.Outlined.Sync, contentDescription = null) },
+                            onClick = { showActions = false; onSetAutoUpdate(!profile.autoUpdate) },
+                            modifier = Modifier.testTag("profile_auto_update_${profile.id}"),
+                            enabled = canMutate,
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text("编辑") },
+                            leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                            onClick = { showActions = false; onEdit() },
+                            enabled = canMutate,
+                        )
+                    }
+                    DropdownMenuItem(
+                        text = { Text("重命名") },
+                        leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                        onClick = { showActions = false; onRename() },
+                        modifier = Modifier.testTag("profile_rename_${profile.id}"),
+                        enabled = canMutate,
+                    )
+                    if (profile.type == ProfileType.CUSTOM) {
+                        DropdownMenuItem(
+                            text = { Text("高级") },
+                            leadingIcon = { Icon(Icons.Outlined.Tune, contentDescription = null) },
+                            onClick = { showActions = false; onOpenRulesEditor() },
+                            enabled = canMutate,
+                        )
+                        DropdownMenuItem(
+                            text = { Text("代理") },
+                            leadingIcon = { Icon(Icons.Outlined.SwapVert, contentDescription = null) },
+                            onClick = { showActions = false; onOpenProxiesEditor() },
+                            enabled = canMutate,
+                            modifier = Modifier.testTag("profile_action_proxies"),
+                        )
+                        DropdownMenuItem(
+                            text = { Text("代理组") },
+                            leadingIcon = { Icon(Icons.Outlined.Hub, contentDescription = null) },
+                            onClick = { showActions = false; onOpenProxyGroupsEditor() },
+                            enabled = canMutate,
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Provider") },
+                            leadingIcon = { Icon(Icons.Outlined.Cloud, contentDescription = null) },
+                            onClick = { showActions = false; onOpenProvidersEditor() },
+                            enabled = canMutate,
+                        )
+                        DropdownMenuItem(
+                            text = { Text("DNS") },
+                            leadingIcon = { Icon(Icons.Outlined.Dns, contentDescription = null) },
+                            onClick = { showActions = false; onOpenDnsEditor() },
+                            enabled = canMutate,
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Dialers") },
+                            leadingIcon = { Icon(Icons.Outlined.Link, contentDescription = null) },
+                            onClick = { showActions = false; onOpenDialersEditor() },
+                            enabled = canMutate,
+                        )
+                    }
+                    DropdownMenuItem(
+                        text = { Text("脚本") },
+                        leadingIcon = { Icon(Icons.Outlined.Code, contentDescription = null) },
+                        onClick = { showActions = false; onOpenScriptBinding() },
+                        enabled = canMutate,
+                    )
+                    DropdownMenuItem(
+                        text = { Text("删除") },
+                        leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
+                        onClick = { showActions = false; onDelete() },
+                        enabled = canMutate,
+                    )
+                }
             }
         }
     }
@@ -3691,25 +4657,121 @@ internal fun ProfileEditorDialog(
     profile: Profile,
     initialContent: String,
     saving: Boolean,
+    isNewDraft: Boolean = false,
+    hasPersistedChanges: Boolean = false,
     onDismiss: () -> Unit,
+    onDiscard: () -> Unit = onDismiss,
+    onFinishNewDraft: (String?) -> Unit = { onDiscard() },
     onSave: (String) -> Unit,
+    onOpenRulesEditor: (Profile) -> Unit = {},
+    onOpenProxiesEditor: (Profile) -> Unit = {},
+    onOpenProxyGroupsEditor: (Profile) -> Unit = {},
+    onOpenProvidersEditor: (Profile) -> Unit = {},
+    onOpenDnsEditor: (Profile) -> Unit = {},
+    onOpenDialersEditor: (Profile) -> Unit = {},
 ) {
-    var content by rememberSaveable(profile.id) { mutableStateOf(initialContent) }
+    var content by rememberSaveable(profile.id, initialContent) { mutableStateOf(initialContent) }
+    var showDiscardConfirmation by rememberSaveable(profile.id) { mutableStateOf(false) }
+    var showSectionDiscardConfirmation by rememberSaveable(profile.id) { mutableStateOf(false) }
+    var showDraftNameDialog by rememberSaveable(profile.id) { mutableStateOf(false) }
+    var draftName by rememberSaveable(profile.id) { mutableStateOf(profile.label) }
+    var pendingSectionAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val isDirty = content != initialContent
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    // 作者 long：分区编辑即时持久化；退出时区分空草稿与已有内容，防止误删已保存配置。
+    fun finishExit() {
+        if (isNewDraft && hasPersistedChanges) {
+            draftName = profile.label
+            showDraftNameDialog = true
+        } else {
+            onDiscard()
+        }
+    }
+
+    fun requestExit() {
+        if (saving) return
+        keyboardController?.hide()
+        if (isDirty) showDiscardConfirmation = true else finishExit()
+    }
+
+    fun openSection(action: () -> Unit) {
+        if (isDirty) {
+            pendingSectionAction = action
+            showSectionDiscardConfirmation = true
+        } else {
+            action()
+        }
+    }
+
     AlertDialog(
-        onDismissRequest = { if (!saving) onDismiss() },
+        onDismissRequest = { requestExit() },
         title = { Text("编辑 ${profile.realLabel}") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    "保存后会替换 KClash 本地配置文件，核心启动时仍会再次校验 YAML。",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+                    .testTag("profile_editor_scroll")
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                if (profile.type == ProfileType.CUSTOM) {
+                    Text("配置概览", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "按分区编辑自定义配置；原始 YAML 仍可用于导入或处理未覆盖的字段。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    ProfileEditorSectionButton(
+                        title = "规则",
+                        summary = "Rules",
+                        icon = Icons.Outlined.Edit,
+                        onClick = { openSection { onOpenRulesEditor(profile) } },
+                    )
+                    ProfileEditorSectionButton(
+                        title = "代理",
+                        summary = "Proxies",
+                        icon = Icons.Outlined.Link,
+                        onClick = { openSection { onOpenProxiesEditor(profile) } },
+                    )
+                    ProfileEditorSectionButton(
+                        title = "代理组",
+                        summary = "Proxy Groups",
+                        icon = Icons.Outlined.Hub,
+                        onClick = { openSection { onOpenProxyGroupsEditor(profile) } },
+                    )
+                    ProfileEditorSectionButton(
+                        title = "Provider",
+                        summary = "Proxy Providers / Rule Providers",
+                        icon = Icons.Outlined.Cloud,
+                        onClick = { openSection { onOpenProvidersEditor(profile) } },
+                    )
+                    ProfileEditorSectionButton(
+                        title = "DNS",
+                        summary = "DNS overrides",
+                        icon = Icons.Outlined.Dns,
+                        onClick = { openSection { onOpenDnsEditor(profile) } },
+                    )
+                    ProfileEditorSectionButton(
+                        title = "Dialers",
+                        summary = "出站链路映射",
+                        icon = Icons.Outlined.SwapVert,
+                        onClick = { openSection { onOpenDialersEditor(profile) } },
+                    )
+                    Text("原始 YAML", style = MaterialTheme.typography.titleSmall)
+                } else {
+                    Text(
+                        "保存后会替换 KClash 本地配置文件，核心启动时仍会再次校验 YAML。",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
                 OutlinedTextField(
                     value = content,
                     onValueChange = { content = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 12,
-                    maxLines = 20,
+                    modifier = Modifier.fillMaxWidth().testTag("profile_editor_content"),
+                    minLines = if (profile.type == ProfileType.CUSTOM) 3 else 12,
+                    maxLines = if (profile.type == ProfileType.CUSTOM) 6 else 20,
                     enabled = !saving,
                     label = { Text("YAML") },
                 )
@@ -3717,8 +4779,205 @@ internal fun ProfileEditorDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { onSave(content) },
+                onClick = {
+                    keyboardController?.hide()
+                    onSave(content)
+                },
                 enabled = !saving && content.isNotBlank(),
+            ) {
+                if (saving) CircularProgressIndicator() else Text("保存")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    requestExit()
+                },
+                enabled = !saving,
+            ) { Text("取消") }
+        },
+    )
+
+    if (showDiscardConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDiscardConfirmation = false },
+            title = { Text("放弃未保存的修改？") },
+            text = { Text("退出后，本次编辑内容不会写入配置。") },
+            confirmButton = {
+                TextButton(onClick = { showDiscardConfirmation = false; keyboardController?.hide(); finishExit() }) { Text("放弃") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDiscardConfirmation = false }) { Text("继续编辑") }
+            },
+        )
+    }
+
+    if (showSectionDiscardConfirmation) {
+        AlertDialog(
+            onDismissRequest = {
+                showSectionDiscardConfirmation = false
+                pendingSectionAction = null
+            },
+            title = { Text("原始 YAML 尚未保存") },
+            text = { Text("进入分区编辑会放弃当前 YAML 修改，继续吗？") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        content = initialContent
+                        showSectionDiscardConfirmation = false
+                        val action = pendingSectionAction
+                        pendingSectionAction = null
+                        action?.invoke()
+                    },
+                ) { Text("放弃并继续") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showSectionDiscardConfirmation = false
+                        pendingSectionAction = null
+                    },
+                ) { Text("继续编辑") }
+            },
+        )
+    }
+
+    if (showDraftNameDialog) {
+        AlertDialog(
+            onDismissRequest = { onFinishNewDraft(null) },
+            title = { Text("为配置命名") },
+            text = {
+                OutlinedTextField(
+                    value = draftName,
+                    onValueChange = { draftName = it },
+                    enabled = !saving,
+                    label = { Text("配置名称") },
+                    modifier = Modifier.testTag("new_profile_name"),
+                    singleLine = true,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { onFinishNewDraft(draftName) },
+                    enabled = !saving && draftName.isNotBlank(),
+                ) {
+                    if (saving) CircularProgressIndicator() else Text("保存名称")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { onFinishNewDraft(null) },
+                    enabled = !saving,
+                ) { Text("保留默认名称") }
+            },
+        )
+    }
+}
+
+/**
+ * 作者 long：自定义配置的分区入口统一放在编辑器内，保证用户从 Profiles 进入后能沿 Flutter
+ * 的“概览 → 分区”层级继续编辑；每个入口仍由 ViewModel 负责读取和保存，避免 UI 直接改写配置。
+ */
+@Composable
+private fun ProfileEditorSectionButton(
+    title: String,
+    summary: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
+    ) {
+        Icon(icon, contentDescription = null)
+        Spacer(Modifier.size(10.dp))
+        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+            Text(title)
+            Text(
+                summary,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Icon(Icons.Outlined.Edit, contentDescription = "编辑$title")
+    }
+}
+
+@Composable
+internal fun RemoteProfileEditorDialog(
+    profile: Profile,
+    saving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (label: String, url: String, autoUpdate: Boolean, intervalMinutes: Long) -> Unit,
+) {
+    var label by rememberSaveable(profile.id, profile.url) { mutableStateOf(profile.label) }
+    var url by rememberSaveable(profile.id, profile.url) { mutableStateOf(profile.url) }
+    var autoUpdate by rememberSaveable(profile.id, profile.url) { mutableStateOf(profile.autoUpdate) }
+    var intervalMinutes by rememberSaveable(profile.id, profile.url) {
+        mutableStateOf((profile.autoUpdateIntervalMillis / 60_000L).coerceAtLeast(1L).toString())
+    }
+    val parsedInterval = intervalMinutes.toLongOrNull()
+    val canSave = !saving && label.length <= 64 && isValidRemoteProfileUrl(url) &&
+        (!autoUpdate || parsedInterval != null && parsedInterval > 0L)
+
+    AlertDialog(
+        onDismissRequest = { if (!saving) onDismiss() },
+        title = { Text("编辑订阅") },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                OutlinedTextField(
+                    value = label,
+                    onValueChange = { label = it.take(64) },
+                    enabled = !saving,
+                    label = { Text("名称") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().testTag("remote_profile_editor_label"),
+                )
+                OutlinedTextField(
+                    value = url,
+                    onValueChange = { url = it },
+                    enabled = !saving,
+                    label = { Text("订阅链接") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().testTag("remote_profile_editor_url"),
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text("自动更新")
+                    Switch(
+                        checked = autoUpdate,
+                        onCheckedChange = { autoUpdate = it },
+                        enabled = !saving,
+                        modifier = Modifier.testTag("remote_profile_editor_auto_update"),
+                    )
+                }
+                OutlinedTextField(
+                    value = intervalMinutes,
+                    onValueChange = { intervalMinutes = it.filter(Char::isDigit).take(7) },
+                    enabled = !saving && autoUpdate,
+                    label = { Text("自动更新间隔（分钟）") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().testTag("remote_profile_editor_interval"),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val interval = parsedInterval
+                        ?: (profile.autoUpdateIntervalMillis / 60_000L).coerceAtLeast(1L)
+                    onSave(label.trim(), url.trim(), autoUpdate, interval)
+                },
+                enabled = canSave,
             ) {
                 if (saving) CircularProgressIndicator() else Text("保存")
             }
@@ -3728,6 +4987,11 @@ internal fun ProfileEditorDialog(
         },
     )
 }
+
+private fun isValidRemoteProfileUrl(value: String): Boolean = runCatching {
+    val uri = java.net.URI(value.trim())
+    uri.scheme in setOf("http", "https") && !uri.host.isNullOrBlank()
+}.getOrDefault(false)
 
 /**
  * 作者 long：规则编辑器只回写顶层规则区块，保留自定义 Profile 中未编辑的端口、代理和 DNS 字段，
@@ -3754,7 +5018,7 @@ internal fun ProfileRulesEditorDialog(
                 OutlinedTextField(
                     value = rules,
                     onValueChange = { rules = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("profile_rules_yaml"),
                     minLines = 10,
                     maxLines = 18,
                     enabled = !saving,
@@ -3766,6 +5030,7 @@ internal fun ProfileRulesEditorDialog(
             TextButton(
                 onClick = { onSave(rules) },
                 enabled = !saving,
+                modifier = Modifier.testTag("profile_rules_save"),
             ) {
                 if (saving) CircularProgressIndicator() else Text("保存")
             }
@@ -4486,57 +5751,172 @@ internal fun AddProfileDialog(
     onPickFile: () -> Unit,
     onPickQrCode: () -> Unit,
     onAddRemote: (label: String, url: String) -> Unit,
+    onAddRemoteBatch: (List<String>) -> Unit = { urls -> urls.forEach { onAddRemote("", it) } },
+    existingUrls: Set<String> = emptySet(),
     onAddCustom: (label: String) -> Unit,
 ) {
     var label by rememberSaveable { mutableStateOf("") }
     var url by rememberSaveable { mutableStateOf("") }
-    var customMode by rememberSaveable { mutableStateOf(false) }
+    var batchMode by rememberSaveable { mutableStateOf(false) }
+    var batchInput by rememberSaveable { mutableStateOf("") }
+    // 作者 long：来源与表单分步呈现，避免订阅字段和自定义配置字段同时挤在添加入口。
+    var step by rememberSaveable { mutableStateOf(AddProfileStep.SOURCE) }
+    val busyDismiss = { if (!busy) onDismiss() }
     AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(if (customMode) "创建自定义配置" else "添加订阅") },
+        onDismissRequest = busyDismiss,
+        title = {
+            Text(
+                when (step) {
+                    AddProfileStep.SOURCE -> "添加配置"
+                    AddProfileStep.REMOTE -> "从链接导入"
+                    AddProfileStep.CUSTOM -> "创建自定义配置"
+                },
+            )
+        },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(onClick = onPickQrCode, enabled = !busy) {
-                    Text("从二维码图片导入")
-                }
-                OutlinedButton(onClick = onPickFile, enabled = !busy) {
-                    Text("从文件导入 YAML")
-                }
-                OutlinedTextField(
-                    value = label,
-                    onValueChange = { label = it },
-                    label = { Text("名称（可选）") },
-                    singleLine = true,
-                    enabled = !busy,
-                )
-                if (!customMode) {
-                    OutlinedTextField(
-                        value = url,
-                        onValueChange = { url = it },
-                        label = { Text("订阅链接") },
-                        singleLine = true,
+            when (step) {
+                AddProfileStep.SOURCE -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = onPickQrCode,
                         enabled = !busy,
-                    )
-                    OutlinedButton(onClick = { customMode = true }, enabled = !busy) {
+                        modifier = Modifier.fillMaxWidth().testTag("profile_add_source_qr"),
+                    ) {
+                        Icon(Icons.Outlined.QrCodeScanner, contentDescription = null)
+                        Text("从二维码图片导入")
+                    }
+                    OutlinedButton(
+                        onClick = onPickFile,
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth().testTag("profile_add_source_file"),
+                    ) {
+                        Icon(Icons.Outlined.Description, contentDescription = null)
+                        Text("从文件导入 YAML")
+                    }
+                    OutlinedButton(
+                        onClick = { step = AddProfileStep.REMOTE },
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth().testTag("profile_add_source_remote"),
+                    ) {
+                        Icon(Icons.Outlined.Link, contentDescription = null)
+                        Text("添加订阅链接")
+                    }
+                    OutlinedButton(
+                        onClick = { step = AddProfileStep.CUSTOM },
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth().testTag("profile_add_source_custom"),
+                    ) {
+                        Icon(Icons.Outlined.Edit, contentDescription = null)
                         Text("创建自定义配置")
                     }
-                } else {
-                    TextButton(onClick = { customMode = false }, enabled = !busy) {
-                        Text("改为添加订阅")
+                }
+                AddProfileStep.REMOTE -> {
+                    val preview = parseProfileUrlImport(batchInput, existingUrls)
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        PrimaryTabRow(selectedTabIndex = if (batchMode) 1 else 0) {
+                            Tab(
+                                selected = !batchMode,
+                                onClick = { batchMode = false },
+                                modifier = Modifier.testTag("profile_add_mode_single"),
+                                text = { Text("单条") },
+                            )
+                            Tab(
+                                selected = batchMode,
+                                onClick = { batchMode = true },
+                                modifier = Modifier.testTag("profile_add_mode_batch"),
+                                text = { Text("批量") },
+                            )
+                        }
+                        if (batchMode) {
+                            OutlinedTextField(
+                                value = batchInput,
+                                onValueChange = { batchInput = it },
+                                label = { Text("粘贴订阅链接") },
+                                minLines = 4,
+                                maxLines = 7,
+                                enabled = !busy,
+                                modifier = Modifier.fillMaxWidth().testTag("profile_add_remote_batch"),
+                            )
+                            Text("识别到 ${preview.urls.size} 个链接")
+                            if (preview.skippedExisting > 0) {
+                                Text("跳过已添加的重复项 ${preview.skippedExisting} 个")
+                            }
+                            if (preview.invalidCount > 0) {
+                                Text(
+                                    "有 ${preview.invalidCount} 条链接格式无效，修正后才能导入",
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        } else {
+                            OutlinedTextField(
+                                value = label,
+                                onValueChange = { label = it },
+                                label = { Text("名称（可选）") },
+                                singleLine = true,
+                                enabled = !busy,
+                                modifier = Modifier.testTag("profile_add_remote_label"),
+                            )
+                            OutlinedTextField(
+                                value = url,
+                                onValueChange = { url = it },
+                                label = { Text("订阅链接") },
+                                singleLine = true,
+                                enabled = !busy,
+                                modifier = Modifier.testTag("profile_add_remote_url"),
+                            )
+                        }
                     }
+                }
+                AddProfileStep.CUSTOM -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = label,
+                        onValueChange = { label = it },
+                        label = { Text("名称（可选）") },
+                        singleLine = true,
+                        enabled = !busy,
+                        modifier = Modifier.testTag("profile_add_custom_label"),
+                    )
                 }
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    if (customMode) onAddCustom(label) else onAddRemote(label, url)
-                },
-                enabled = !busy && (customMode || url.isNotBlank()),
-            ) { Text("保存") }
+            when (step) {
+                AddProfileStep.SOURCE -> Unit
+                AddProfileStep.REMOTE -> {
+                    val preview = parseProfileUrlImport(batchInput, existingUrls)
+                    TextButton(
+                        onClick = {
+                            if (batchMode) onAddRemoteBatch(preview.urls)
+                            else onAddRemote(label, url)
+                        },
+                        enabled = !busy && if (batchMode) {
+                            preview.urls.isNotEmpty() && preview.invalidCount == 0
+                        } else {
+                            url.isNotBlank()
+                        },
+                        modifier = Modifier.testTag("profile_add_submit"),
+                    ) { Text(if (batchMode) "导入 ${preview.urls.size} 条" else "导入") }
+                }
+                AddProfileStep.CUSTOM -> TextButton(
+                    onClick = { onAddCustom(label) },
+                    enabled = !busy,
+                ) { Text("创建") }
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !busy) { Text("取消") }
+            TextButton(
+                onClick = {
+                    if (step == AddProfileStep.SOURCE) onDismiss() else step = AddProfileStep.SOURCE
+                },
+                enabled = !busy,
+            ) {
+                Text(if (step == AddProfileStep.SOURCE) "取消" else "返回")
+            }
         },
     )
+}
+
+private enum class AddProfileStep {
+    SOURCE,
+    REMOTE,
+    CUSTOM,
 }

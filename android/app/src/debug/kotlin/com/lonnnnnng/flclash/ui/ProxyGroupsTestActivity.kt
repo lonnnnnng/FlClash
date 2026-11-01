@@ -3,8 +3,13 @@ package com.lonnnnnng.flclash.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
@@ -32,25 +37,74 @@ class ProxyGroupsTestActivity : ComponentActivity() {
     lateinit var runtime: ActivityProxyGroupsRuntime
     lateinit var profileStore: ActivityProxyProfileStore
     lateinit var viewModel: ProxyGroupsViewModel
+    private var visualState by mutableStateOf<ProxyGroupsUiState?>(null)
+    private var darkTheme by mutableStateOf<Boolean?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 作者 long：Debug UI 用例必须从 Flutter 对齐的默认代理展示偏好开始，避免设备上一次用例的菜单选择污染截图。
+        ProxyPageOptionsStore.clear(this)
         runtime = ActivityProxyGroupsRuntime()
         profileStore = ActivityProxyProfileStore()
         viewModel = ProxyGroupsViewModel(runtime, profileStore)
         setContent {
             val state by viewModel.state.collectAsState()
-            KClashTheme {
+            val profiles by profileStore.profiles.collectAsState()
+            val currentProfileId by profileStore.currentProfileId.collectAsState()
+            val currentProfile = profiles.firstOrNull { it.id == currentProfileId }
+            KClashTheme(darkTheme = darkTheme ?: androidx.compose.foundation.isSystemInDarkTheme()) {
                 ProxyGroupsCard(
-                    state = state,
+                    modifier = Modifier.fillMaxSize(),
+                    state = visualState ?: state,
                     runtimeState = CoreRuntimeStatus.RUNNING,
+                    currentProfileId = currentProfileId,
+                    currentGroupName = currentProfile?.currentGroupName,
                     onRefresh = viewModel::refresh,
+                    onSelectGroup = viewModel::selectGroup,
                     onSelect = viewModel::selectProxy,
                     onTestDelay = viewModel::testDelay,
                     onTestGroupDelay = viewModel::testDelayGroup,
                 )
             }
         }
+    }
+
+    fun showResultsScenario(dark: Boolean, testing: Boolean = false) {
+        darkTheme = dark
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "URLTest",
+            now = "node-a",
+            all = listOf("node-a", "node-b", "node-timeout", "nested"),
+            hidden = false,
+            testUrl = "https://example.com",
+        )
+        // 作者 long：稳定注入边界延迟和未采用的优选，独立验证显示状态，不调用测试网址或真实核心。
+        visualState = ProxyGroupsUiState(
+            groups = listOf(group, ProxyGroupInfo("nested", "Fallback", "leaf", listOf("leaf"), false)),
+            selectedMap = mapOf("Auto" to "node-b"),
+            delayResults = listOf(100, 600, CoreBridge.DELAY_TIMED_OUT, CoreBridge.DELAY_FAILED)
+                .mapIndexed { index, value ->
+                    ProxyDelayKey(group.name, group.all[index], requireNotNull(group.testUrl)) to
+                        ProxyDelayUiState(isTesting = testing && index == 1, value = value)
+                }.toMap(),
+        )
+    }
+
+    fun showLongSelectionScenario() {
+        val members = (0..19).map { index -> "node-${index.toString().padStart(2, '0')}" }
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "URLTest",
+            now = members.last(),
+            all = members,
+            hidden = false,
+            testUrl = "https://example.com",
+        )
+        visualState = ProxyGroupsUiState(
+            groups = listOf(group),
+            selectedMap = mapOf(group.name to members.last()),
+        )
     }
 }
 
@@ -77,6 +131,12 @@ class ActivityProxyProfileStore : ProfileStore {
         return updated
     }
 
+    override suspend fun updateProfileCurrentGroupName(id: Long, groupName: String): Profile {
+        val updated = mutableProfiles.value.single { it.id == id }.copy(currentGroupName = groupName)
+        mutableProfiles.value = listOf(updated)
+        return updated
+    }
+
     fun selectedMap(): Map<String, String> = decodeSelectedMap(mutableProfiles.value.single().selectedMapJson)
 }
 
@@ -89,11 +149,14 @@ class ActivityProxyGroupsRuntime : ProxyGroupsRuntime {
         hidden = false,
         testUrl = "https://example.com",
     )
-    private val snapshot = ProxyGroupsSnapshot(listOf(group))
+    private val snapshot = ProxyGroupsSnapshot(
+        listOf(group, ProxyGroupInfo("nested", "Fallback", "leaf", listOf("leaf"), false)),
+    )
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.RUNNING)
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
     override val events: Flow<CoreEvent> = emptyFlow()
     var lastTarget: String? = null
+    var lastDelayTarget: String? = null
 
     override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = Result.success(snapshot)
 
@@ -102,8 +165,10 @@ class ActivityProxyGroupsRuntime : ProxyGroupsRuntime {
         return Result.success(snapshot)
     }
 
-    override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): Result<ProxyDelay?> =
-        Result.success(ProxyDelay(testUrl, proxyName, 100))
+    override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): Result<ProxyDelay?> {
+        lastDelayTarget = proxyName
+        return Result.success(ProxyDelay(testUrl, proxyName, 100))
+    }
 
     override suspend fun testDelayBatch(
         requests: List<ProxyDelayRequest>,

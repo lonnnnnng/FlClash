@@ -2,9 +2,16 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -27,12 +34,10 @@ class ProxyGroupsActivityInstrumentedTest {
     @Test
     fun proxySelectionPersistsAndComputedGroupCanReturnToAutomatic() {
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("proxy_group_Auto").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag("proxy_node_Auto_node-a").fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeRule.onNodeWithTag("proxy_group_select_Auto").performClick()
-        composeRule.onNodeWithTag("proxy_group_search").performTextInput("node-b")
-        composeRule.onNodeWithTag("proxy_node_Auto_node-b").performClick()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsDisplayed().performClick()
 
         composeRule.waitUntil(5_000) {
             composeRule.activity.viewModel.state.value.selectedMap == mapOf("Auto" to "node-b")
@@ -40,7 +45,6 @@ class ProxyGroupsActivityInstrumentedTest {
         assertEquals("node-b", composeRule.activity.runtime.lastTarget)
         assertEquals(mapOf("Auto" to "node-b"), composeRule.activity.profileStore.selectedMap())
 
-        composeRule.onNodeWithTag("proxy_group_select_Auto").performClick()
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.activity.viewModel.state.value.selectedMap.isEmpty()
@@ -50,33 +54,54 @@ class ProxyGroupsActivityInstrumentedTest {
     }
 
     @Test
-    fun proxyGroupsScreenshotMatrixMatchesBaseline() {
+    fun proxyGroupTabsShowOneGroupAndPersistCurrentGroup() {
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("proxy_group_Auto").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag("proxy_group_tab_nested").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_node_nested_leaf").assertIsNotDisplayed()
+
+        composeRule.onNodeWithTag("proxy_group_tab_nested").performClick().assertIsSelected()
+        composeRule.onNodeWithTag("proxy_node_nested_leaf").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsNotDisplayed()
+        composeRule.waitUntil(5_000) {
+            composeRule.activity.profileStore.profiles.value.single().currentGroupName == "nested"
+        }
+    }
+
+    @Test
+    fun proxyGroupsScreenshotMatrixMatchesBaseline() {
+        assertPortraitDefaultFontConfiguration()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_node_Auto_node-a").fetchSemanticsNodes().isNotEmpty()
         }
 
-        fun captureHash(tag: String): String {
+        fun captureHash(name: String): String {
             composeRule.waitForIdle()
             val bitmap = composeRule
-                .onNodeWithTag(tag)
+                .onNodeWithTag("proxy_groups_page")
                 .captureToImage()
                 .asAndroidBitmap()
             val png = ByteArrayOutputStream().also { output ->
                 check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
             }.toByteArray()
+            recordVisualPng("proxy_$name", png)
             return MessageDigest.getInstance("SHA-256").digest(png)
                 .joinToString("") { byte -> "%02x".format(byte) }
         }
 
         val expected = mapOf(
-            "default_card" to "d2dd27e3d2b89b7f2aa41a3e05f27b1a837dd5c042c7e934017c7d35fab7f4ff",
-            "dialog_initial" to "bb9ce7f5ed33e3145023546eb8bc12c3b329cee56d520c5dcfe47e70688dcf0b",
+            "page_dark" to "00348516b269eb447b5c5fac7d1f344df8bef42551bfeeb4be680b0320d3ce54",
+            "page_light" to "eb647aaebf5e9d249756e3eecfaba52c05bd3bf3ffa9d0a567938afa68c6d9a7",
         )
         val actual = buildMap {
-            put("default_card", captureHash("proxy_groups_card"))
-            composeRule.onNodeWithTag("proxy_group_select_Auto").performClick()
-            composeRule.onNodeWithTag("proxy_group_dialog_content_Auto").assertExists()
-            put("dialog_initial", captureHash("proxy_group_dialog_content_Auto"))
+            listOf(true, false).forEach { dark ->
+                val theme = if (dark) "dark" else "light"
+                composeRule.activityRule.scenario.onActivity { it.showResultsScenario(dark) }
+                composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsSelected()
+                composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsDisplayed()
+                put("page_$theme", captureHash("page_$theme"))
+            }
         }
         val mismatches = expected.mapNotNull { (state, expectedHash) ->
             val actualHash = actual.getValue(state)
@@ -85,5 +110,86 @@ class ProxyGroupsActivityInstrumentedTest {
         if (mismatches.isNotEmpty()) {
             error("proxy screenshot baseline mismatch: ${mismatches.joinToString("; ")}")
         }
+    }
+
+    @Test
+    fun searchFiltersInlineNodeGridAndCanBeClosed() {
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_node_Auto_node-a").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
+        composeRule.onNodeWithTag("proxy_group_search").performTextInput("node-b")
+        composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertDoesNotExist()
+
+        composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsDisplayed()
+    }
+
+    @Test
+    fun delayActionDoesNotSelectNodeAndCurrentChoiceHasSelectedSemantics() {
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_node_Auto_node-a").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsSelected()
+        // 作者 long：直接触摸卡片内独立测速区，确认它不会冒泡成节点选择。
+        composeRule.onNodeWithTag("proxy_node_delay_Auto_node-b", useUnmergedTree = true)
+            .assertIsDisplayed().performTouchInput { click() }
+        composeRule.waitUntil(5_000) {
+            composeRule.activity.viewModel.state.value.delayResults.values.any { it.value == 100 }
+        }
+
+        composeRule.onNodeWithTag("proxy_node_delay_Auto_node-b", useUnmergedTree = true).assertIsDisplayed()
+        assertEquals("node-b", composeRule.activity.runtime.lastDelayTarget)
+        assertEquals(null, composeRule.activity.runtime.lastTarget)
+        assertEquals(emptyMap<String, String>(), composeRule.activity.profileStore.selectedMap())
+    }
+
+    @Test
+    fun testingNodeDisablesRepeatDelayWhileOtherPageActionsRemainAvailable() {
+        composeRule.activityRule.scenario.onActivity { it.showResultsScenario(dark = true, testing = true) }
+        composeRule.onNodeWithTag("proxy_node_delay_Auto_node-b", useUnmergedTree = true).assertIsNotEnabled()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsEnabled()
+        composeRule.onNodeWithTag("proxy_groups_refresh").assertIsDisplayed()
+    }
+
+    @Test
+    fun proxyToolsMenuChangesGridDensityAndCurrentNodeCanBeLocated() {
+        composeRule.onNodeWithTag("proxy_tools").performClick()
+        composeRule.onNodeWithTag("proxy_tools_density").performClick()
+        composeRule.onNodeWithTag("proxy_density_option_COMPACT").performClick()
+
+        composeRule.onNodeWithTag("proxy_tools").performClick()
+        composeRule.onNodeWithTag("proxy_tools_hide_timeout").assertIsDisplayed()
+
+        composeRule.activityRule.scenario.onActivity { it.showLongSelectionScenario() }
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_node_Auto_node-19").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("proxy_scroll_to_selected").performClick()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-19").assertIsDisplayed()
+    }
+
+    @Test
+    fun proxyListLayoutShowsGroupSectionsAndListIconMenu() {
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("proxy_node_Auto_node-a").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("proxy_tools").performClick()
+        composeRule.onNodeWithTag("proxy_tools_display_mode").performClick()
+        composeRule.onNodeWithTag("proxy_display_mode_LIST").performClick()
+
+        composeRule.onNodeWithTag("proxy_groups_list").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_list_group_Auto").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_list_group_header_Auto").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_list_node_Auto_node-a").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_group_tabs").assertDoesNotExist()
+
+        composeRule.onNodeWithTag("proxy_tools").performClick()
+        composeRule.onNodeWithTag("proxy_tools_icon_style").assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag("proxy_icon_style_HIDDEN").performClick()
+        composeRule.onNodeWithTag("proxy_list_group_Auto").assertIsDisplayed()
     }
 }

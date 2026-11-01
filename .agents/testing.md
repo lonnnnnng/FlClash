@@ -14,6 +14,8 @@
 
 当前权威设备是已连接的 ARM64 Redmi Note 8 Pro（本轮核验 Android 16/API 36）。serial 不写死在脚本或配置中，每次操作前用 `adb devices -l` 和 `getprop` 重新确认。
 
+UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号相关用例，也不要直接运行包含这类用例的整类 instrumentation；使用精确的 `Class#method` 过滤器选择其他行为测试。
+
 ## Failure handling
 
 真实设备动作失败时保留失败 Run 和审计事实，先检查 logcat、服务状态、权限和核心事件，再决定修复或重试；不能用历史成功覆盖当前失败。

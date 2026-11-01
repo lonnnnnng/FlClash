@@ -22,6 +22,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
@@ -54,9 +55,13 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("dashboard_stats_card").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_profile_card").assertIsDisplayed()
         composeRule.onNodeWithTag("main_navigation_dock").assertIsDisplayed()
-        composeRule.onNodeWithTag("dashboard_profile_action").performClick()
-        composeRule.onNodeWithText("添加订阅").assertIsDisplayed()
-        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("dashboard_profile_action").performScrollTo().performClick()
+        // 作者 long：已有配置直接进入配置列表，空态会同时打开添加弹窗，两条分支都必须可继续添加。
+        if (composeRule.onAllNodesWithText("创建自定义配置").fetchSemanticsNodes().isNotEmpty()) {
+            composeRule.onNodeWithText("创建自定义配置").assertIsDisplayed()
+            composeRule.onNodeWithText("取消").performClick()
+        }
+        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_dashboard").performClick()
         // 作者 long：首页系统入口位于连接信息之后，须滚动可达；添加浮钮只属于配置页。
         composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("always_on_vpn_card"))
@@ -66,22 +71,20 @@ class MainActivityInstrumentedTest {
     }
 
     @Test
-    fun mainActivityNavigatesAcrossPrimaryAndObservationDestinations() {
+    fun mainActivityNavigatesAcrossFlutterMobileDestinationsAndTools() {
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
-        composeRule.onNodeWithText("配置").performClick()
+        composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
         composeRule.onNodeWithText("核心状态").assertIsDisplayed()
-        composeRule.onNodeWithText("代理").performClick()
-        composeRule.onNodeWithTag("page_proxy").assertIsDisplayed()
-        composeRule.onNodeWithText("代理组").assertIsDisplayed()
-        composeRule.onNodeWithText("连接").performClick()
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("page_tools").assertIsDisplayed()
+        composeRule.onNodeWithTag("tools_item_connections").performClick()
         composeRule.onNodeWithTag("page_connections").assertIsDisplayed()
         composeRule.onNodeWithText("活动连接").assertIsDisplayed()
-        composeRule.onNodeWithText("首页").performClick()
-        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
-        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("tools_item_requests").performClick()
         composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
         composeRule.onNodeWithTag("page_requests").assertIsDisplayed()
         composeRule.onNodeWithText("DNS").performClick()
@@ -90,13 +93,14 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("日志").performClick()
         composeRule.onNodeWithTag("page_logs").assertIsDisplayed()
         composeRule.onNodeWithText("核心日志").assertIsDisplayed()
-        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }
 
     @Test
     fun mainActivityRendersObservationEmptyStatesFromEachTab() {
-        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("tools_item_requests").performClick()
         composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
         composeRule.onNodeWithTag("page_requests").assertIsDisplayed()
         composeRule.onNodeWithText("请求记录").assertIsDisplayed()
@@ -114,19 +118,22 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("启动核心后显示 Mihomo 日志。").assertIsDisplayed()
 
         // 作者 long：真实宿主完成页签切换后仍能回到首页，保证空态回归不会破坏主导航状态。
-        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }
 
     @Test
     fun mainActivityRetainsObservationTabAcrossPrimaryNavigationAndRecreation() {
-        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("tools_item_requests").performClick()
         composeRule.onNodeWithText("DNS").performClick()
         composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
 
-        composeRule.onNodeWithText("代理").performClick()
-        composeRule.onNodeWithTag("page_proxy").assertIsDisplayed()
-        composeRule.onNodeWithText("观测").performClick()
+        // 作者 long：代理 Tab 仅在存在可用配置/代理组时展示；此回归不依赖设备是否已有有效配置。
+        composeRule.onNodeWithTag("nav_profiles").performClick()
+        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("tools_item_dns").performClick()
         composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
 
         // 作者 long：Activity 重建会重新创建页面组合，只有主页面的可保存导航状态才能恢复用户正在查看的页签。
@@ -138,34 +145,44 @@ class MainActivityInstrumentedTest {
     }
 
     @Test
+    fun mainActivityCreatesAndDiscardsUntouchedCustomDraft() {
+        val label = "Activity 草稿退出验收"
+        composeRule.onNodeWithTag("nav_profiles").performClick()
+        composeRule.onNodeWithTag("profiles_add_fab").performClick()
+        composeRule.onNodeWithTag("profile_add_source_custom").performClick()
+        composeRule.onNodeWithTag("profile_add_custom_label").performTextInput(label)
+        composeRule.onNodeWithText("创建").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("编辑 $label").assertIsDisplayed()
+        // 作者 long：只取消本用例创建的空草稿，不写配置正文，也不删除或替换设备原有配置。
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText(label, substring = true).fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.onNodeWithTag("profiles_add_fab").assertIsDisplayed()
+    }
+
+    @Test
     fun mainActivityCompletesCustomProfileLifecycleThroughRealViewModels() {
         val label = "Activity E2E 配置"
 
         composeRule.onNodeWithText("配置").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("添加配置").performClick()
-        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
-        composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("保存").performClick()
-
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
-        }
+        startCustomProfileEditor(label)
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
         }
 
+        openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
-        composeRule.onAllNodesWithText("删除")[1].performClick()
+        composeRule.onNodeWithText("删除").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("还没有配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("暂无配置").fetchSemanticsNodes().isNotEmpty()
         }
 
         composeRule.onNodeWithText("首页").performClick()
@@ -179,18 +196,7 @@ class MainActivityInstrumentedTest {
 
         composeRule.onNodeWithText("配置").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("添加配置").performClick()
-        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
-        composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("保存").performClick()
-
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
-        }
+        startCustomProfileEditor(label)
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
@@ -198,6 +204,7 @@ class MainActivityInstrumentedTest {
         }
 
         // 作者 long：规则编辑必须经过真实 ProfilesViewModel 和文件写回，再次打开才能验证不是只更新了对话框内存。
+        openProfileActions(label)
         composeRule.onNodeWithText("高级").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · $label").fetchSemanticsNodes().isNotEmpty()
@@ -208,6 +215,7 @@ class MainActivityInstrumentedTest {
             composeRule.onAllNodesWithText("规则 · $label").fetchSemanticsNodes().isEmpty()
         }
 
+        openProfileActions(label)
         composeRule.onNodeWithText("高级").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · $label").fetchSemanticsNodes().isNotEmpty()
@@ -215,6 +223,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText(rule).assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
 
+        openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         val deleteButtons = composeRule.onAllNodesWithText("删除")
@@ -234,27 +243,16 @@ class MainActivityInstrumentedTest {
 
         composeRule.onNodeWithText("配置").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("添加配置").performClick()
-        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
-        composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("保存").performClick()
-
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
-        }
+        startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保代理分区回写时要保留同一份 Profile 的其他内容。
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
-        }
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
         }
 
-        // 作者 long：配置卡片按钮与底部导航同名，必须点击卡片内的第一个节点，避免误切到代理页。
-        composeRule.onAllNodesWithText("代理")[0].performClick()
+        openProfileActions(label)
+        composeRule.onNodeWithTag("profile_action_proxies").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -264,13 +262,15 @@ class MainActivityInstrumentedTest {
             composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isEmpty()
         }
 
-        composeRule.onAllNodesWithText("代理")[0].performClick()
+        openProfileActions(label)
+        composeRule.onNodeWithTag("profile_action_proxies").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText(proxy).assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
 
+        openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         val deleteButtons = composeRule.onAllNodesWithText("删除")
@@ -290,25 +290,15 @@ class MainActivityInstrumentedTest {
 
         composeRule.onNodeWithText("配置").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("添加配置").performClick()
-        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
-        composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("保存").performClick()
-
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
-        }
+        startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保代理组分区回写时要保留同一份 Profile 的其他内容。
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
-        }
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
         }
 
+        openProfileActions(label)
         composeRule.onNodeWithText("代理组").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isNotEmpty()
@@ -319,6 +309,7 @@ class MainActivityInstrumentedTest {
             composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isEmpty()
         }
 
+        openProfileActions(label)
         composeRule.onNodeWithText("代理组").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isNotEmpty()
@@ -326,6 +317,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText(group).assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
 
+        openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         val deleteButtons = composeRule.onAllNodesWithText("删除")
@@ -345,25 +337,15 @@ class MainActivityInstrumentedTest {
 
         composeRule.onNodeWithText("配置").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("添加配置").performClick()
-        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
-        composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("保存").performClick()
-
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
-        }
+        startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保 Provider 分区回写时要保留同一份 Profile 的其他内容。
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
-        }
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
         }
 
+        openProfileActions(label)
         composeRule.onNodeWithText("Provider").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Provider · $label").fetchSemanticsNodes().isNotEmpty()
@@ -374,6 +356,7 @@ class MainActivityInstrumentedTest {
             composeRule.onAllNodesWithText("Provider · $label").fetchSemanticsNodes().isEmpty()
         }
 
+        openProfileActions(label)
         composeRule.onNodeWithText("Provider").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Provider · $label").fetchSemanticsNodes().isNotEmpty()
@@ -381,6 +364,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText(provider).assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
 
+        openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         val deleteButtons = composeRule.onAllNodesWithText("删除")
@@ -400,14 +384,13 @@ class MainActivityInstrumentedTest {
 
         composeRule.onNodeWithText("配置").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("添加配置").performClick()
-        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
-        composeRule.onNodeWithText("创建自定义配置").performClick()
+        startCustomProfileEditor(label)
+        composeRule.onNodeWithTag("profile_editor_content").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
-
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
         }
+        openProfileActions(label)
         composeRule.onNodeWithText("DNS").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("DNS 覆盖 · $label").fetchSemanticsNodes().isNotEmpty()
@@ -421,6 +404,7 @@ class MainActivityInstrumentedTest {
             composeRule.onAllNodesWithText("DNS 覆盖 · $label").fetchSemanticsNodes().isEmpty()
         }
 
+        openProfileActions(label)
         composeRule.onNodeWithText("DNS").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("DNS 覆盖 · $label").fetchSemanticsNodes().isNotEmpty()
@@ -430,6 +414,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText(nameserver).assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
 
+        openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         val deleteButtons = composeRule.onAllNodesWithText("删除")
@@ -449,14 +434,13 @@ class MainActivityInstrumentedTest {
 
         composeRule.onNodeWithText("配置").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("添加配置").performClick()
-        composeRule.onNodeWithText("名称（可选）").performTextInput(label)
-        composeRule.onNodeWithText("创建自定义配置").performClick()
+        startCustomProfileEditor(label)
+        composeRule.onNodeWithTag("profile_editor_content").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
-
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
         }
+        openProfileActions(label)
         composeRule.onNodeWithText("Dialers").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isNotEmpty()
@@ -467,6 +451,7 @@ class MainActivityInstrumentedTest {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isEmpty()
         }
 
+        openProfileActions(label)
         composeRule.onNodeWithText("Dialers").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isNotEmpty()
@@ -474,6 +459,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText(dialer).assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
 
+        openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         val deleteButtons = composeRule.onAllNodesWithText("删除")
@@ -656,11 +642,11 @@ class MainActivityInstrumentedTest {
 
         // 作者 long：关闭搜索后离开首页，走真实未保存对话框并放弃修改，确保批量操作不会写入 Room。
         composeRule.onNodeWithTag("access_control_search_toggle").performClick()
-        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithTag("nav_tools").performClick()
         composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
         composeRule.onNodeWithTag("access_control_discard_changes").performClick()
-        composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
-        composeRule.onNodeWithText("首页").performClick()
+        composeRule.onNodeWithTag("page_tools").assertIsDisplayed()
+        composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
         composeRule.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("access_control_card"))
         composeRule.waitUntil(5_000) {
@@ -781,11 +767,11 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("access_control_clipboard_import").performClick()
         if (!wasEnabled) {
             composeRule.onNodeWithTag("access_control_enabled").performClick()
-            composeRule.onNodeWithText("观测").performClick()
+            composeRule.onNodeWithTag("nav_tools").performClick()
             composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
             composeRule.onNodeWithText("放弃更改").performClick()
-            composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
-            composeRule.onNodeWithText("首页").performClick()
+            composeRule.onNodeWithTag("page_tools").assertIsDisplayed()
+            composeRule.onNodeWithTag("nav_dashboard").performClick()
         } else {
             composeRule.onNodeWithTag("access_control_save").performClick()
             composeRule.waitForIdle()
@@ -837,7 +823,7 @@ class MainActivityInstrumentedTest {
         enabledSwitch.performClick()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("观测").performClick()
+        composeRule.onNodeWithTag("nav_tools").performClick()
         composeRule.onNodeWithText("按应用代理有未保存的修改").assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
@@ -853,6 +839,23 @@ class MainActivityInstrumentedTest {
         enabledSwitch.performClick()
         composeRule.waitForIdle()
     }
+}
+
+// 作者 long：所有配置 E2E 从同一来源选择进入创建后编辑，避免继续依赖旧版先回列表再手动编辑的路径。
+private fun MainActivityInstrumentedTest.startCustomProfileEditor(label: String) {
+    composeRule.onNodeWithTag("profiles_add_fab").performClick()
+    composeRule.onNodeWithTag("profile_add_source_custom").performClick()
+    composeRule.onNodeWithTag("profile_add_custom_label").performTextInput(label)
+    composeRule.onNodeWithText("创建").performClick()
+    composeRule.waitUntil(5_000) {
+        composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
+    }
+    composeRule.onNodeWithText("编辑 $label").assertIsDisplayed()
+}
+
+private fun MainActivityInstrumentedTest.openProfileActions(label: String) {
+    composeRule.onNodeWithText(label).assertIsDisplayed()
+    composeRule.onNodeWithTag("profile_actions_selected").performClick()
 }
 
 private fun findSelectableLauncherPackage(context: Context): String? {

@@ -70,6 +70,155 @@ class ProfilesViewModelTest {
     }
 
     @Test
+    fun `profile selection is rejected while runtime is active or transitioning`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val current = Profile.custom(80L, "当前配置")
+        val target = Profile.custom(81L, "目标配置")
+
+        listOf(
+            CoreRuntimeStatus.RUNNING,
+            CoreRuntimeStatus.STARTING,
+            CoreRuntimeStatus.STOPPING,
+        ).forEach { status ->
+            val store = FakeProfileStore(current, listOf(target))
+            val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(status))
+            val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+            viewModel.select(target.id)
+            advanceUntilIdle()
+
+            assertEquals("核心运行或切换状态中，请等待核心停止后再切换配置", error.await())
+            assertEquals(current.id, store.currentProfileId.value)
+            assertTrue(store.selectedProfiles.isEmpty())
+        }
+    }
+
+    @Test
+    fun `custom creation opens a new editor and discard deletes only the new draft`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(24L, "新草稿")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+
+        viewModel.addCustom(profile.label)
+        advanceUntilIdle()
+        assertEquals(profile.id, viewModel.editorState.value.profile?.id)
+        assertTrue(viewModel.editorState.value.isNew)
+        viewModel.discardEditor()
+        advanceUntilIdle()
+        assertEquals(1, store.deleteCalls)
+        assertNull(viewModel.editorState.value.profile)
+
+        viewModel.openEditor(profile)
+        advanceUntilIdle()
+        viewModel.discardEditor()
+        advanceUntilIdle()
+        assertEquals(1, store.deleteCalls)
+        assertNull(viewModel.editorState.value.profile)
+    }
+
+    @Test
+    fun `failed draft deletion keeps editor available for retry`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(25L, "新草稿")
+        val store = FakeProfileStore(profile).apply { deleteFailure = true }
+        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        viewModel.addCustom(profile.label)
+        advanceUntilIdle()
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.discardEditor()
+        advanceUntilIdle()
+
+        assertEquals("draft deletion failed", error.await())
+        assertEquals(profile.id, viewModel.editorState.value.profile?.id)
+        assertTrue(viewModel.editorState.value.isNew)
+        assertEquals(false, viewModel.editorState.value.isSaving)
+    }
+
+    @Test
+    fun `saving a structured section refreshes the parent editor and preserves the draft`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(27L, "新草稿")
+        val original = "mixed-port: 7890\nrules:\n  - DOMAIN,example.com,DIRECT\n"
+        val store = FakeProfileStore(profile).apply { content = original }
+        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+
+        viewModel.addCustom(profile.label)
+        advanceUntilIdle()
+        viewModel.openRulesEditor(profile)
+        advanceUntilIdle()
+        viewModel.saveRules("MATCH,DIRECT")
+        advanceUntilIdle()
+
+        val updated = "mixed-port: 7890\nrules:\n  - MATCH,DIRECT\n"
+        assertEquals(updated, viewModel.editorState.value.content)
+        assertTrue(viewModel.editorState.value.hasPersistedChanges)
+        viewModel.discardEditor()
+        advanceUntilIdle()
+
+        assertEquals(0, store.deleteCalls)
+        assertNull(viewModel.editorState.value.profile)
+        assertEquals(updated, store.content)
+    }
+
+    @Test
+    fun `metadata section save marks a new draft as persisted`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(28L, "新草稿")
+        val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
+        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+
+        viewModel.addCustom(profile.label)
+        advanceUntilIdle()
+        viewModel.openDnsEditor(profile)
+        viewModel.saveDns(ProfileDnsOverrides(enable = true, enhancedMode = "fake-ip"))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.editorState.value.hasPersistedChanges)
+        viewModel.finishNewDraftEditor(null)
+
+        assertEquals(0, store.deleteCalls)
+        assertNull(viewModel.editorState.value.profile)
+    }
+
+    @Test
+    fun `saved new draft can be renamed before leaving`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(29L, "未命名配置")
+        val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
+        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+
+        viewModel.addCustom(profile.label)
+        advanceUntilIdle()
+        viewModel.openRulesEditor(profile)
+        advanceUntilIdle()
+        viewModel.saveRules("MATCH,DIRECT")
+        advanceUntilIdle()
+        viewModel.finishNewDraftEditor("家庭网络")
+        advanceUntilIdle()
+
+        assertEquals("家庭网络", store.updatedLabel)
+        assertEquals(0, store.deleteCalls)
+        assertNull(viewModel.editorState.value.profile)
+    }
+
+    @Test
+    fun `custom creation is rejected while core is running`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val store = FakeProfileStore(Profile.custom(26L, "已有配置"))
+        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING))
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.addCustom("新配置")
+        advanceUntilIdle()
+
+        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, error.await())
+        assertEquals(0, store.customAddCalls)
+        assertNull(viewModel.editorState.value.profile)
+    }
+
+    @Test
     fun `remote profile auto update toggle persists metadata`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(3L, "https://example.test/subscription")
@@ -84,6 +233,138 @@ class ProfilesViewModelTest {
 
         assertEquals(listOf(profile.id to false), store.autoUpdateChanges)
         assertEquals(false, store.profiles.value.single().autoUpdate)
+    }
+
+    @Test
+    fun `remote editor saves settings and refreshes only when subscription url changes`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(31L, "https://old.example/subscription", "旧名称")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openEditor(profile)
+        assertEquals(profile.id, viewModel.remoteEditorState.value.profile?.id)
+        viewModel.saveRemoteEditor(
+            label = "新名称",
+            url = " https://new.example/subscription ",
+            autoUpdate = false,
+            intervalMinutes = 45L,
+        )
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(RemoteSettingsUpdate(31L, "新名称", "https://new.example/subscription", false, 45L * 60_000L)),
+            store.remoteSettingsUpdates,
+        )
+        assertEquals(listOf(31L), store.remoteUpdateCalls)
+        assertNull(viewModel.remoteEditorState.value.profile)
+    }
+
+    @Test
+    fun `remote editor rejects invalid url without changing the profile`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(32L, "https://old.example/subscription")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.openEditor(profile)
+        viewModel.saveRemoteEditor("名称", "file:///tmp/config.yaml", true, 60L)
+        advanceUntilIdle()
+
+        assertEquals("请输入有效的 HTTP/HTTPS 订阅链接", error.await())
+        assertTrue(store.remoteSettingsUpdates.isEmpty())
+        assertEquals(profile.url, store.profiles.value.single().url)
+        assertEquals(profile.id, viewModel.remoteEditorState.value.profile?.id)
+    }
+
+    @Test
+    fun `remote editor does not download when the subscription url is unchanged`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(33L, "https://same.example/subscription", "旧名称")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openEditor(profile)
+        viewModel.saveRemoteEditor(
+            label = "新名称",
+            url = profile.url,
+            autoUpdate = true,
+            intervalMinutes = 30L,
+        )
+        advanceUntilIdle()
+
+        assertEquals(emptyList<Long>(), store.remoteUpdateCalls)
+        assertEquals("新名称", store.profiles.value.single().label)
+        assertNull(viewModel.remoteEditorState.value.profile)
+    }
+
+    @Test
+    fun `batch import is sequential skips existing urls and continues after failures`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val existing = Profile.remote(35L, "https://existing.invalid/sub")
+        val store = FakeProfileStore(Profile.custom(36L, "自定义"), listOf(existing)).apply {
+            remoteAddFailures += "https://failed.invalid/sub"
+        }
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+
+        viewModel.addRemoteBatch(
+            listOf(
+                existing.url,
+                "https://first.invalid/sub",
+                "https://failed.invalid/sub",
+                "https://last.invalid/sub",
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(
+                "https://first.invalid/sub",
+                "https://failed.invalid/sub",
+                "https://last.invalid/sub",
+            ),
+            store.remoteAddCalls,
+        )
+        assertEquals(
+            "批量导入完成：新增 2 个，跳过重复 1 个，失败 1 个",
+            error.await(),
+        )
+        assertEquals(
+            listOf("https://existing.invalid/sub", "https://first.invalid/sub", "https://last.invalid/sub"),
+            store.profiles.value.filter { it.type == com.lonnnnnng.flclash.data.ProfileType.URL }.map(Profile::url),
+        )
+    }
+
+    @Test
+    fun `remote editor keeps existing interval when auto update is disabled`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(34L, "https://same.example/subscription")
+        val store = FakeProfileStore(profile)
+        val viewModel = ProfilesViewModel(
+            repository = store,
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        )
+
+        viewModel.openEditor(profile)
+        viewModel.saveRemoteEditor("", profile.url, false, 0L)
+        advanceUntilIdle()
+
+        assertEquals(Profile.DEFAULT_UPDATE_INTERVAL_MILLIS, store.remoteSettingsUpdates.single().intervalMillis)
+        assertEquals(false, store.remoteSettingsUpdates.single().autoUpdate)
     }
 
     @Test
@@ -541,25 +822,42 @@ private class FakeProfileStore(
 ) : ProfileStore {
     override val profiles = MutableStateFlow(listOf(profile) + extraProfiles)
     override val currentProfileId = MutableStateFlow<Long?>(profile.id)
+    val selectedProfiles = mutableListOf<Long?>()
     var deleteCalls = 0
+    var deleteFailure = false
+    var customAddCalls = 0
     var reorderedIds: List<Long>? = null
     var content = ""
     var updatedContent: String? = null
     var updatedLabel: String? = null
+    val remoteSettingsUpdates = mutableListOf<RemoteSettingsUpdate>()
+    val remoteUpdateCalls = mutableListOf<Long>()
+    val remoteAddCalls = mutableListOf<String>()
+    val remoteAddFailures = mutableSetOf<String>()
+    private var nextRemoteId = 1_000L
     var updatedOverridesJson: String? = null
     var autoUpdateChanges = mutableListOf<Pair<Long, Boolean>>()
     val scriptBindingUpdates = mutableListOf<Long?>()
 
-    override suspend fun selectProfile(id: Long?) = Unit
+    override suspend fun selectProfile(id: Long?) {
+        selectedProfiles += id
+    }
 
-    override suspend fun addRemoteProfile(url: String, label: String): Profile =
-        error("unused test operation")
+    override suspend fun addRemoteProfile(url: String, label: String): Profile {
+        remoteAddCalls += url
+        if (url in remoteAddFailures) error("subscription import failed")
+        val added = Profile.remote(nextRemoteId++, url, label)
+        profiles.value = profiles.value + added
+        return added
+    }
 
     override suspend fun addFileProfile(label: String, bytes: ByteArray): Profile =
         error("unused test operation")
 
-    override suspend fun addCustomProfile(label: String): Profile =
-        error("unused test operation")
+    override suspend fun addCustomProfile(label: String): Profile {
+        customAddCalls++
+        return profile.copy(label = label)
+    }
 
     override suspend fun readLocalProfileContent(id: Long): String = content
 
@@ -572,6 +870,24 @@ private class FakeProfileStore(
     override suspend fun updateProfileLabel(id: Long, label: String): Profile {
         updatedLabel = label
         val updated = profile.copy(label = label)
+        profiles.value = profiles.value.map { if (it.id == id) updated else it }
+        return updated
+    }
+
+    override suspend fun updateRemoteProfileSettings(
+        id: Long,
+        label: String,
+        url: String,
+        autoUpdate: Boolean,
+        intervalMillis: Long,
+    ): Profile {
+        remoteSettingsUpdates += RemoteSettingsUpdate(id, label, url, autoUpdate, intervalMillis)
+        val updated = profile.copy(
+            label = label,
+            url = url,
+            autoUpdate = autoUpdate,
+            autoUpdateIntervalMillis = intervalMillis,
+        )
         profiles.value = profiles.value.map { if (it.id == id) updated else it }
         return updated
     }
@@ -602,14 +918,25 @@ private class FakeProfileStore(
         return updated
     }
 
-    override suspend fun updateRemoteProfile(id: Long): Profile =
-        error("unused test operation")
+    override suspend fun updateRemoteProfile(id: Long): Profile {
+        remoteUpdateCalls += id
+        return profiles.value.single { it.id == id }
+    }
 
     override suspend fun deleteProfile(id: Long) {
         deleteCalls++
+        if (deleteFailure) error("draft deletion failed")
     }
 
     override suspend fun reorder(ids: List<Long>) {
         reorderedIds = ids
     }
 }
+
+private data class RemoteSettingsUpdate(
+    val id: Long,
+    val label: String,
+    val url: String,
+    val autoUpdate: Boolean,
+    val intervalMillis: Long,
+)

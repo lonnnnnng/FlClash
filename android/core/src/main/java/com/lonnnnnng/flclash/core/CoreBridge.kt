@@ -17,6 +17,21 @@ import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+enum class CoreOutboundMode(val wireValue: String) {
+    RULE("rule"),
+    GLOBAL("global"),
+    DIRECT("direct");
+
+    companion object {
+        internal fun fromWire(value: String?): CoreOutboundMode = when (value?.trim()?.lowercase()) {
+            "rule" -> RULE
+            "global" -> GLOBAL
+            "direct" -> DIRECT
+            else -> throw CoreBridgeException("invalid_outbound_mode", "核心返回了未知的代理模式")
+        }
+    }
+}
+
 /**
  * 作者 long：把 Go 核心的 JSON method/event 协议收敛成可等待的 Kotlin API，
  * 这样服务层不会在页面或生命周期代码里拼接原始方法名，也不会把错误响应误当成成功。
@@ -73,6 +88,20 @@ class CoreBridge {
                 .put("skip-cert-verify", skipCertVerify),
         )
         parseMessageResult(response.optString("result", ""), "apply_config_failed")
+    }
+
+    suspend fun getConfiguredMode(path: String): CoreOutboundMode {
+        val raw = invoke("getConfig", path).optJSONObject("result")
+            ?: throw CoreBridgeException("invalid_core_config", "核心配置响应缺少配置对象")
+        return CoreOutboundMode.fromWire(raw.optString("mode", "rule"))
+    }
+
+    suspend fun updateMode(mode: CoreOutboundMode) {
+        val response = invoke(
+            method = "updateConfig",
+            arguments = JSONObject().put("mode", mode.wireValue),
+        )
+        parseMessageResult(response.optString("result", ""), "update_mode_failed")
     }
 
     suspend fun getProxyGroups(): ProxyGroupsSnapshot {
@@ -141,6 +170,9 @@ class CoreBridge {
 
     suspend fun getConnections(): List<CoreConnection> =
         parseConnectionsResponse(invoke("getConnections", JSONObject()).optJSONObject("result"))
+
+    suspend fun clearDnsCache(): Boolean =
+        invoke("clearDnsCache", JSONObject()).optBoolean("result", false)
 
     fun startEventListener() {
         resetEventFlowStats()

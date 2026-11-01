@@ -1,35 +1,67 @@
 package com.lonnnnnng.flclash.ui
 
+import android.text.format.DateUtils
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.AccountTree
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.PowerSettingsNew
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Stop
+import androidx.compose.material.icons.outlined.SwapHoriz
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +80,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.ProfileType
+import com.lonnnnnng.flclash.core.CoreOutboundMode
+import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import kotlin.math.cos
@@ -76,9 +111,25 @@ private fun dashboardBlockColor(): Color = if (LocalKClashDarkTheme.current) {
 }
 
 @Composable
-internal fun DashboardSurface(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+internal fun DashboardSurface(
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (onClick == null) {
+                    Modifier
+                } else {
+                    Modifier
+                        // 作者 long：首页卡片本身就是 Flutter 手机端的进入详情入口，
+                        // 保留内部同步、切换等按钮的独立点击语义。
+                        .clickable(onClick = onClick)
+                        .semantics { role = Role.Button }
+                },
+            ),
         shape = RoundedCornerShape(34.dp),
         colors = CardDefaults.cardColors(containerColor = dashboardCardColor()),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
@@ -97,6 +148,123 @@ private fun DashboardHeader(title: String, icon: ImageVector, trailing: @Composa
         Icon(icon, contentDescription = null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(title, Modifier.weight(1f), style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold))
         trailing()
+    }
+}
+
+@Composable
+internal fun DashboardProxyGroupsCard(
+    state: ProxyGroupsUiState,
+    runtimeState: CoreRuntimeStatus,
+    mode: CoreOutboundMode,
+    currentProfileId: Long?,
+    currentGroupName: String?,
+    onRefresh: () -> Unit,
+    onSelectGroup: (String) -> Unit,
+    onSelect: (ProxyGroupInfo, String) -> Unit,
+    onTestDelay: (ProxyGroupInfo, String) -> Unit,
+    onTestGroupDelay: (ProxyGroupInfo) -> Unit,
+) {
+    val groups = visibleProxyGroups(state.groups, mode)
+    var showPicker by rememberSaveable(currentProfileId) { mutableStateOf(false) }
+    DashboardSurface(
+        modifier = Modifier.testTag("dashboard_proxy_groups_card"),
+        onClick = if (groups.isEmpty()) null else ({ showPicker = true }),
+    ) {
+        DashboardHeader("代理组", Icons.Outlined.Layers) {
+            if (groups.isNotEmpty()) Icon(Icons.Outlined.ChevronRight, null, Modifier.size(20.dp))
+        }
+        Spacer(Modifier.height(12.dp))
+        if (groups.isEmpty()) {
+            Column(
+                Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 36.dp)
+                    .testTag("dashboard_proxy_groups_empty"),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Box(
+                    Modifier.size(64.dp).background(dashboardBlockColor(), RoundedCornerShape(24.dp)),
+                    contentAlignment = Alignment.Center,
+                ) { Icon(Icons.Outlined.Layers, null, Modifier.size(26.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    if (runtimeState.isRunning) "没有代理组" else "核心未运行",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                if (!runtimeState.isRunning) Text(
+                    "启动后显示代理组",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        groups.size.toString(),
+                        Modifier.testTag("dashboard_proxy_groups_count"),
+                        style = TextStyle(fontSize = 36.sp, lineHeight = 40.sp, fontWeight = FontWeight.SemiBold),
+                    )
+                    Text(" 组", Modifier.padding(bottom = 4.dp), style = MaterialTheme.typography.bodySmall)
+                }
+                val shown = groups.take(4)
+                val rest = groups.size - shown.size
+                val badgeCount = shown.size + if (rest > 0) 1 else 0
+                Box(Modifier.width((badgeCount * 40 - (badgeCount - 1) * 8).dp).height(40.dp)) {
+                    repeat(badgeCount) { index ->
+                        Box(
+                            Modifier.offset(x = (index * 32).dp).size(40.dp)
+                                .border(3.dp, dashboardCardColor(), RoundedCornerShape(14.dp))
+                                .padding(3.dp).background(dashboardBlockColor(), RoundedCornerShape(11.dp)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            // 作者 long：核心暂未提供自定义 icon，使用上游同样的组名首字回退，不伪造远程图标数据。
+                            Text(
+                                if (index < shown.size) shown[index].name.take(1) else "+$rest",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (showPicker) {
+        var contentAtTop by remember { mutableStateOf(true) }
+        ConnectionModalSheet(
+            onDismiss = { showPicker = false },
+            contentScrollState = rememberScrollState(),
+            accessibilityTitle = "代理",
+            isContentAtTop = { contentAtTop },
+            avoidIme = true,
+        ) { requestDismiss ->
+            Column(Modifier.fillMaxSize().testTag("dashboard_proxy_picker")) {
+                Row(
+                    Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("代理", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+                    IconButton(onClick = requestDismiss, modifier = Modifier.testTag("dashboard_proxy_picker_close")) {
+                        Icon(Icons.Outlined.Close, "关闭代理")
+                    }
+                }
+                // 作者 long：弹层和完整代理页共用真实操作入口；选择节点不关闭弹层，当前分组继续写回 Profile。
+                ProxyGroupsCard(
+                    state = state,
+                    runtimeState = runtimeState,
+                    currentProfileId = currentProfileId,
+                    currentGroupName = currentGroupName,
+                    mode = mode,
+                    picker = true,
+                    onContentAtTopChanged = { contentAtTop = it },
+                    onRefresh = onRefresh,
+                    onSelectGroup = onSelectGroup,
+                    onSelect = onSelect,
+                    onTestDelay = onTestDelay,
+                    onTestGroupDelay = onTestGroupDelay,
+                )
+            }
+        }
     }
 }
 
@@ -235,6 +403,64 @@ internal fun RuntimeStatsCard(state: RuntimeStatsUiState, runtimeState: CoreRunt
 }
 
 @Composable
+internal fun OutboundModeCard(
+    mode: CoreOutboundMode,
+    onModeChange: (CoreOutboundMode) -> Unit,
+) {
+    val options = listOf(
+        Triple(CoreOutboundMode.RULE, "规则", Icons.Outlined.AccountTree),
+        Triple(CoreOutboundMode.GLOBAL, "全局", Icons.Outlined.Public),
+        Triple(CoreOutboundMode.DIRECT, "直连", Icons.Outlined.NearMe),
+    )
+    DashboardSurface(Modifier.testTag("dashboard_outbound_mode_card")) {
+        DashboardHeader("出站模式", Icons.Outlined.SwapHoriz)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+                .clip(RoundedCornerShape(26.dp))
+                .background(dashboardBlockColor())
+                .selectableGroup()
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            options.forEach { (option, label, icon) ->
+                val selected = mode == option
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp)
+                        .selectable(
+                            selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { if (!selected) onModeChange(option) },
+                        )
+                        .semantics { contentDescription = label }
+                        .testTag("dashboard_mode_${option.wireValue}"),
+                    shape = RoundedCornerShape(22.dp),
+                    color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Icon(icon, contentDescription = null, Modifier.size(18.dp))
+                        Text(
+                            label,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun DashboardSpeedTile(label: String, icon: ImageVector, speed: Long, total: Long, modifier: Modifier) {
     Surface(modifier, shape = RoundedCornerShape(22.dp), color = dashboardBlockColor()) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -252,8 +478,37 @@ private fun DashboardSpeedTile(label: String, icon: ImageVector, speed: Long, to
 }
 
 @Composable
-internal fun DashboardProfileCard(profile: Profile?, onShowProfiles: () -> Unit, onAddProfile: () -> Unit) {
-    DashboardSurface(Modifier.testTag("dashboard_profile_card")) {
+@OptIn(ExperimentalMaterial3Api::class)
+internal fun DashboardProfileCard(
+    profile: Profile?,
+    profiles: List<Profile> = listOfNotNull(profile),
+    currentProfileId: Long? = profile?.id,
+    isBusy: Boolean = false,
+    runtimeState: CoreRuntimeStatus = CoreRuntimeStatus.STOPPED,
+    onShowProfiles: () -> Unit,
+    onAddProfile: () -> Unit,
+    onSelectProfile: (Long) -> Unit = {},
+    onUpdateProfile: (Profile) -> Unit = {},
+    onStopRuntime: () -> Unit = {},
+) {
+    var showProfilePicker by remember { mutableStateOf(false) }
+    var showProfileDetail by rememberSaveable(profile?.id) { mutableStateOf(false) }
+    val hasProfiles = profiles.isNotEmpty()
+    // 作者 long：运行中的核心仍持有已应用配置，启动/停止过程中也不能让当前选择先于核心输入变化。
+    val runtimeTransitioning = runtimeState == CoreRuntimeStatus.STARTING ||
+        runtimeState == CoreRuntimeStatus.STOPPING
+    val canSelectProfile = !isBusy && !runtimeState.isRunning && !runtimeTransitioning
+
+    DashboardSurface(
+        modifier = Modifier.testTag("dashboard_profile_card"),
+        onClick = {
+            when {
+                profile != null -> showProfileDetail = true
+                hasProfiles -> showProfilePicker = true
+                else -> onAddProfile()
+            }
+        },
+    ) {
         DashboardHeader("当前配置", Icons.Outlined.Description)
         Row(
             Modifier.fillMaxWidth().padding(top = 12.dp),
@@ -261,16 +516,288 @@ internal fun DashboardProfileCard(profile: Profile?, onShowProfiles: () -> Unit,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(profile?.label ?: "还没有配置", style = TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(if (profile == null) "添加一个配置，开始连接" else "已选择", style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(profile?.realLabel ?: "还没有配置", style = TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(
+                    text = profile?.let(::dashboardProfileSummary) ?: if (hasProfiles) "请选择配置" else "添加一个配置，开始连接",
+                    style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (profile?.type == ProfileType.URL) {
+                if (isBusy) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp).testTag("dashboard_profile_sync_loading"),
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    IconButton(
+                        onClick = { onUpdateProfile(profile) },
+                        enabled = canSelectProfile,
+                        modifier = Modifier.testTag("dashboard_profile_sync"),
+                    ) {
+                        Icon(Icons.Outlined.Sync, contentDescription = "同步当前配置")
+                    }
+                }
+            }
+            if (profiles.size > 1) {
+                IconButton(
+                    onClick = { showProfilePicker = true },
+                    enabled = !isBusy,
+                    modifier = Modifier.testTag("dashboard_profile_switch"),
+                ) {
+                    Icon(Icons.Outlined.SwapHoriz, contentDescription = "切换配置")
+                }
             }
             TextButton(
-                onClick = if (profile == null) onAddProfile else onShowProfiles,
+                onClick = when {
+                    profile != null -> onShowProfiles
+                    hasProfiles -> ({ showProfilePicker = true })
+                    else -> onAddProfile
+                },
+                enabled = profile != null || hasProfiles && canSelectProfile || !hasProfiles,
                 modifier = Modifier.testTag("dashboard_profile_action"),
             ) {
-                Text(if (profile == null) "添加配置" else "查看配置")
+                Text(if (profile == null && !hasProfiles) "添加配置" else if (profile == null) "选择配置" else "查看配置")
                 Icon(Icons.Outlined.ChevronRight, null, Modifier.size(18.dp))
             }
         }
+        profile?.subscriptionInfo?.takeIf { it.usage != null }?.let { info ->
+            val used = info.upload + info.download
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("已用 ${formatBytes(used)}", style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("共 ${formatBytes(info.total)}", style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .height(4.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    .testTag("dashboard_profile_usage_track"),
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxWidth(info.usage ?: 0f)
+                        .height(4.dp)
+                        .background(MaterialTheme.colorScheme.primary),
+                )
+            }
+        }
+        profile?.subscriptionInfo?.expireAtMillis?.let { expiry ->
+            Text(
+                "到期 ${DateUtils.getRelativeTimeSpanString(expiry)}",
+                modifier = Modifier.padding(top = 6.dp).testTag("dashboard_profile_expiry"),
+                style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        profile?.lastUpdateAt?.let { updatedAt ->
+            Text(
+                "更新于 ${DateUtils.getRelativeTimeSpanString(updatedAt)}",
+                modifier = Modifier.padding(top = 4.dp),
+                style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
+
+    if (showProfilePicker) {
+        ModalBottomSheet(
+            onDismissRequest = { showProfilePicker = false },
+            modifier = Modifier.testTag("dashboard_profile_picker"),
+        ) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
+                Text("切换配置", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                when (runtimeState) {
+                    CoreRuntimeStatus.RUNNING -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().testTag("dashboard_profile_runtime_notice"),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(
+                                "核心运行中，停止后可切换配置",
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            TextButton(
+                                onClick = onStopRuntime,
+                                modifier = Modifier.testTag("dashboard_profile_stop_runtime"),
+                            ) {
+                                Icon(Icons.Outlined.Stop, contentDescription = null, Modifier.size(16.dp))
+                                Text("停止核心")
+                            }
+                        }
+                    }
+                    CoreRuntimeStatus.STARTING, CoreRuntimeStatus.STOPPING -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().testTag("dashboard_profile_runtime_notice"),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                            Text(
+                                if (runtimeState == CoreRuntimeStatus.STARTING) "核心启动中，暂时无法切换配置"
+                                else "核心停止中，请稍候",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    else -> Unit
+                }
+                LazyColumn(Modifier.heightIn(max = 560.dp)) {
+                    items(profiles, key = Profile::id) { item ->
+                        val selected = item.id == currentProfileId
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+                                .clickable(enabled = canSelectProfile) {
+                                    // 作者 long：切换立即关闭面板，配置应用与运行态校验统一由 ProfilesViewModel 处理。
+                                    if (item.id != currentProfileId) onSelectProfile(item.id)
+                                    showProfilePicker = false
+                                }
+                                .padding(horizontal = 14.dp, vertical = 14.dp)
+                                .testTag("dashboard_profile_option_${item.id}"),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+                                if (selected) Icon(Icons.Outlined.Check, contentDescription = "当前配置", tint = MaterialTheme.colorScheme.primary)
+                            }
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text(item.realLabel, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleSmall)
+                                Text(dashboardProfileSummary(item), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showProfileDetail && profile != null) {
+        DashboardProfileDetailSheet(
+            profile = profile,
+            canMutate = canSelectProfile,
+            isBusy = isBusy,
+            onDismiss = { showProfileDetail = false },
+            onShowProfiles = {
+                showProfileDetail = false
+                onShowProfiles()
+            },
+            onUpdate = { onUpdateProfile(profile) },
+        )
+    }
+}
+
+/**
+ * 作者 long：Flutter Dashboard 点击当前配置会打开轻量详情 sheet；这里先呈现 Kotlin
+ * 已有的真实元数据和订阅信息，再从同一入口进入完整 Profiles 页面，避免重复下载或伪造配置统计。
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DashboardProfileDetailSheet(
+    profile: Profile,
+    canMutate: Boolean,
+    isBusy: Boolean,
+    onDismiss: () -> Unit,
+    onShowProfiles: () -> Unit,
+    onUpdate: () -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.testTag("dashboard_profile_detail_sheet"),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                profile.realLabel,
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.testTag("dashboard_profile_detail_name"),
+            )
+            Text(
+                dashboardProfileSourceLabel(profile),
+                modifier = Modifier.testTag("dashboard_profile_detail_source"),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            profile.subscriptionInfo?.let { info ->
+                Text("用量 ${formatBytes(info.upload + info.download)} / ${formatBytes(info.total)}")
+                info.expireAtMillis?.let { expiry ->
+                    Text("到期 ${DateUtils.getRelativeTimeSpanString(expiry)}")
+                }
+            }
+            profile.lastUpdateAt?.let { updatedAt ->
+                Text(
+                    "更新于 ${DateUtils.getRelativeTimeSpanString(updatedAt)}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            profile.currentGroupName?.takeIf(String::isNotBlank)?.let { groupName ->
+                Text("最近代理组：$groupName", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                if (profile.type == ProfileType.URL) {
+                    if (isBusy) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp).align(Alignment.CenterVertically)
+                                .testTag("dashboard_profile_detail_sync_loading"),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                    TextButton(
+                        onClick = onUpdate,
+                        enabled = canMutate,
+                        modifier = Modifier.testTag("dashboard_profile_detail_sync"),
+                    ) { Text("同步") }
+                }
+                TextButton(
+                    onClick = onShowProfiles,
+                    modifier = Modifier.testTag("dashboard_profile_detail_open_profiles"),
+                ) { Text("查看全部配置") }
+            }
+        }
+    }
+}
+
+private fun dashboardProfileSourceLabel(profile: Profile): String = when (profile.type) {
+    ProfileType.URL -> "远程订阅"
+    ProfileType.FILE -> "本地文件"
+    ProfileType.CUSTOM -> "自定义配置"
+}
+
+private fun dashboardProfileSummary(profile: Profile): String {
+    val source = when (profile.type) {
+        ProfileType.URL -> "远程订阅"
+        ProfileType.FILE -> "本地文件"
+        ProfileType.CUSTOM -> "自定义配置"
+    }
+    val info = profile.subscriptionInfo
+    val usage = info?.takeIf { it.usage != null }?.let {
+        "${formatBytes(it.upload + it.download)} / ${formatBytes(it.total)}"
+    }
+    val updated = profile.lastUpdateAt?.let { "更新于 ${DateUtils.getRelativeTimeSpanString(it)}" }
+    return listOfNotNull(source, usage, updated).joinToString(" · ")
 }

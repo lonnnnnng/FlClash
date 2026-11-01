@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.service
 import android.os.Build
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
@@ -52,6 +53,7 @@ class CoreRuntimeManager(
     private val runtimeResumeStore: RuntimeResumeStore,
     private val runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
     private val profileScriptEvaluator: ProfileScriptEvaluator = MissingProfileScriptEvaluator,
+    private val outboundModeStore: OutboundModeStore = NoopOutboundModeStore,
 ) : ProxyGroupsRuntime {
     init {
         RuntimeDiagnosticHistory.configure(runtimeDiagnosticStore)
@@ -63,10 +65,13 @@ class CoreRuntimeManager(
     private val eventListenerStarted = AtomicBoolean(false)
     private val logListenerStarted = AtomicBoolean(false)
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.STOPPED)
+    private var preferredOutboundMode: CoreOutboundMode? = outboundModeStore.read()
+    private val mutableOutboundMode = MutableStateFlow(preferredOutboundMode ?: CoreOutboundMode.RULE)
     private val profileScriptApplier = ProfileScriptApplier(profileScriptEvaluator)
     private var hasSuccessfulRun = false
 
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
+    val outboundMode: StateFlow<CoreOutboundMode> = mutableOutboundMode.asStateFlow()
     override val events: Flow<CoreEvent> = bridge.events
     val eventFlowStats = bridge.eventFlowStats
     val diagnosticEvents = RuntimeDiagnosticHistory.events
@@ -98,6 +103,13 @@ class CoreRuntimeManager(
             // 只有校验通过后才允许调用 setupConfig，避免把回退状态报告成可用代理。
             bridge.validateConfig(paths.configFile.path)
             bridge.setupConfig(profile.selectedMap)
+            val mode = preferredOutboundMode ?: bridge.getConfiguredMode(paths.configFile.path)
+            if (preferredOutboundMode != null) bridge.updateMode(mode)
+            mutableOutboundMode.value = mode
+            if (preferredOutboundMode == null) {
+                preferredOutboundMode = mode
+                outboundModeStore.write(mode)
+            }
             if (eventListenerStarted.compareAndSet(false, true)) {
                 bridge.startEventListener()
             }
@@ -224,6 +236,18 @@ class CoreRuntimeManager(
         }
     }
 
+    suspend fun setOutboundMode(mode: CoreOutboundMode): Result<Unit> = transitionLock.withLock {
+        runCatching {
+            check(mutableState.value != CoreRuntimeStatus.STARTING &&
+                mutableState.value != CoreRuntimeStatus.STOPPING
+            ) { "核心正在切换状态" }
+            if (mutableState.value == CoreRuntimeStatus.RUNNING) bridge.updateMode(mode)
+            preferredOutboundMode = mode
+            mutableOutboundMode.value = mode
+            outboundModeStore.write(mode)
+        }
+    }
+
     override suspend fun changeProxy(groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> =
         transitionLock.withLock {
             runCatching {
@@ -315,6 +339,17 @@ class CoreRuntimeManager(
         runCatching {
             check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
             bridge.getConnections()
+        }
+    }
+
+    suspend fun clearDnsCache(): Result<Unit> = transitionLock.withLock {
+        try {
+            check(bridge.clearDnsCache()) { "清除 DNS 缓存失败" }
+            Result.success(Unit)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            Result.failure(error)
         }
     }
 

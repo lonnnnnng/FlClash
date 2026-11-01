@@ -6,6 +6,7 @@ import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
+import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
@@ -30,6 +31,7 @@ class MainViewModel @Inject constructor(
     private val runtimeManager: CoreRuntimeManager,
 ) : ViewModel() {
     val runtimeState = runtimeManager.state
+    val outboundMode = runtimeManager.outboundMode
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
     val errors = mutableErrors.asSharedFlow()
@@ -128,6 +130,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun setOutboundMode(mode: CoreOutboundMode) {
+        viewModelScope.launch {
+            runtimeManager.setOutboundMode(mode).onFailure { error ->
+                mutableErrors.emit(error.message ?: "切换代理模式失败")
+            }
+        }
+    }
+
     fun reportError(message: String) {
         mutableErrors.tryEmit(message)
     }
@@ -135,6 +145,8 @@ class MainViewModel @Inject constructor(
     fun clearDns() {
         mutableDns.value = DnsUiState()
     }
+
+    suspend fun clearDnsCache(): Result<Unit> = runtimeManager.clearDnsCache()
 
     fun clearLogs() {
         mutableLogs.value = LogsUiState()
@@ -316,27 +328,39 @@ data class RequestsUiState(
 
 /**
  * 作者 long：详情对话框只允许搜索用户可识别的网络字段，避免把 Kotlin 对象的内部格式暴露给 UI，
- * 同时让请求、DNS 和日志使用同一套大小写不敏感的筛选语义。
+ * 自由输入忽略大小写，点击标签则按完整名称精确筛选，避免混淆不同节点。
  */
 internal fun filterRequests(
     requests: List<CoreConnection>,
     query: String,
+    keywords: List<String> = emptyList(),
 ): List<CoreConnection> {
-    val needle = query.trim()
-    if (needle.isEmpty()) return requests
+    val terms = observationSearchTerms(query)
+    if (terms.isEmpty() && keywords.isEmpty()) return requests
     return requests.filter { request ->
-        listOf(
-            request.id,
+        val metadata = request.metadata
+        val fields = listOf(
             request.metadata.network,
             request.metadata.host,
-            request.metadata.destinationIp,
-            request.metadata.destinationPort,
-            request.metadata.process,
-            request.metadata.remoteDestination,
-            request.chains.joinToString(" "),
+            metadata.destinationIp,
+            metadata.destinationPort,
+            metadata.sourceIp,
+            metadata.sourcePort,
+            metadata.process,
+            metadata.processPath,
+            metadata.remoteDestination,
+            metadata.destinationIpAsn,
+            metadata.destinationGeoIp.joinToString(" "),
+            metadata.specialProxy,
+            metadata.specialRules,
             request.rule,
             request.rulePayload,
-        ).containsIgnoreCase(needle)
+        ) + request.chains
+        val keywordsMatch = keywords.all { keyword ->
+            // 作者 long：标签来自用户点击的完整进程或节点名称，精确匹配防止大小写不同的节点被合并筛选。
+            keyword == metadata.process || keyword in request.chains
+        }
+        keywordsMatch && terms.all { term -> fields.any { it.contains(term, ignoreCase = true) } }
     }
 }
 
@@ -355,21 +379,33 @@ data class DnsUiState(
 internal fun filterDnsQueries(
     queries: List<CoreDnsQuery>,
     query: String,
+    keywords: List<String> = emptyList(),
 ): List<CoreDnsQuery> {
-    val needle = query.trim()
-    if (needle.isEmpty()) return queries
+    val terms = observationSearchTerms(query)
+    if (terms.isEmpty() && keywords.isEmpty()) return queries
     return queries.filter { dns ->
-        listOf(
+        val failureCode = dns.rcode.isNotBlank() && !dns.rcode.equals("NOERROR", ignoreCase = true)
+        val tags = buildList {
+            add(dns.type)
+            if (dns.initiator.isNotBlank()) add(dns.initiator)
+            if (dns.cached) add("缓存")
+            if (failureCode) add(dns.rcode)
+        }
+        val fields = listOf(
             dns.domain,
-            dns.type,
-            dns.initiator,
-            dns.upstream,
-            dns.answers.joinToString(" "),
+            *tags.toTypedArray(),
             dns.rcode,
+            dns.upstream,
             dns.error,
-        ).containsIgnoreCase(needle)
+            *dns.answers.toTypedArray(),
+        )
+        keywords.all { keyword -> keyword in tags } &&
+            terms.all { term -> fields.any { it.contains(term, ignoreCase = true) } }
     }
 }
+
+private fun observationSearchTerms(query: String): List<String> =
+    query.trim().split(Regex("\\s+")).filter(String::isNotEmpty)
 
 data class LogsUiState(
     val entries: List<CoreEvent.Log> = emptyList(),

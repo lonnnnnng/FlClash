@@ -4,7 +4,7 @@ FlClash Kotlin 是面向 Android 手机的原生客户端，复用 Go Mihomo 代
 
 ## 已确认边界
 
-- 首发设备：Android 手机，覆盖竖屏和横屏；Android TV、平板、车机和桌面平台暂不验收。
+- 首发设备：Android 手机；Android TV、平板、车机和桌面平台暂不验收。页面验收固定使用竖屏和系统默认字号，不运行横屏或大字号测试。
 - UI：Compose + Material 3，自定义 Design System 对齐 Flutter 的颜色、字体、间距、形状和交互。
 - 状态：单 Activity、Navigation Compose、ViewModel、StateFlow 和单向数据流。
 - 数据：Room 全新 schema，不兼容 Flutter/Drift 数据；只维护 Kotlin 自身的未来迁移。

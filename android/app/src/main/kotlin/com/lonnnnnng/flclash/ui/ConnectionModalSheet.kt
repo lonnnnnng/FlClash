@@ -31,6 +31,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
@@ -175,12 +177,16 @@ internal class ConnectionSheetGeometry(val availableHeight: Float) {
 internal fun ConnectionModalSheet(
     onDismiss: () -> Unit,
     contentScrollState: ScrollState,
+    accessibilityTitle: String = "连接详情",
+    isContentAtTop: () -> Boolean = { contentScrollState.value == 0 },
+    avoidIme: Boolean = false,
     content: @Composable ColumnScope.(onDismissRequest: () -> Unit) -> Unit,
 ) {
     var savedDetent by rememberSaveable { mutableStateOf(ConnectionSheetDetent.PARTIAL) }
     val state = remember { AnchoredDraggableState(savedDetent) }
     val scope = rememberCoroutineScope()
     val dismissSheet by rememberUpdatedState(onDismiss)
+    val contentAtTop by rememberUpdatedState(isContentAtTop)
     val presentation = remember { Animatable(0f) }
     val presentationSpec = remember { ConnectionSheetMotion.presentationSpec() }
     var hasEntered by remember { mutableStateOf(false) }
@@ -209,7 +215,7 @@ internal fun ConnectionModalSheet(
                         onClick = requestDismiss,
                     )
                     .semantics {
-                        contentDescription = "关闭连接详情遮罩"
+                        contentDescription = "关闭${accessibilityTitle}遮罩"
                         stateDescription = when {
                             dismissalStarted -> "关闭中"
                             hasEntered -> "已打开"
@@ -220,10 +226,13 @@ internal fun ConnectionModalSheet(
             // 作者 long：停靠比例以顶部及左右安全区后的窗口为分母；底部安全区属于面板，再由内容避让导航栏。
             BoxWithConstraints(
                 Modifier.fillMaxSize()
+                    // 作者 long：带底部搜索的节点弹层在键盘上方重新计算停靠高度，保证输入框与节点都可达。
+                    .then(if (avoidIme) Modifier.imePadding() else Modifier)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
                     .testTag("connection_sheet_viewport"),
             ) {
                 val density = LocalDensity.current
+                val imeVisible = WindowInsets.ime.getBottom(density) > 0
                 val geometry = remember(constraints.maxHeight) { ConnectionSheetGeometry(constraints.maxHeight.toFloat()) }
                 val settleSpec = remember { ConnectionSheetMotion.settleSpec() }
                 val sidePanel = maxWidth > 600.dp
@@ -254,7 +263,7 @@ internal fun ConnectionModalSheet(
                             .width((maxWidth * 0.4f).coerceIn(360.dp, 560.dp)).fillMaxHeight()
                             .graphicsLayer { translationX = size.width * (1f - presentation.value) }
                             .testTag("connections_detail_sheet").semantics {
-                                paneTitle = "连接详情"; stateDescription = "侧面板"
+                                paneTitle = accessibilityTitle; stateDescription = "侧面板"
                                 dismiss { requestDismiss(); true }
                             },
                         color = MaterialTheme.colorScheme.surfaceContainer,
@@ -269,6 +278,12 @@ internal fun ConnectionModalSheet(
                         DraggableAnchors { ConnectionSheetDetent.entries.forEach { it at geometry.offset(it) } }
                     }
                     SideEffect { state.updateAnchors(anchors, savedDetent) }
+                    LaunchedEffect(avoidIme, imeVisible, geometry, dismissalStarted) {
+                        // 作者 long：键盘压缩可用高度后半展开只剩工具栏，搜索时展开到键盘上方，保留可操作的节点结果。
+                        if (avoidIme && imeVisible && !dismissalStarted) {
+                            state.animateTo(ConnectionSheetDetent.EXPANDED, settleSpec)
+                        }
+                    }
                     LaunchedEffect(state, geometry) {
                         snapshotFlow {
                             val offset = state.offset.takeIf { it.isFinite() } ?: geometry.offset(savedDetent)
@@ -312,7 +327,7 @@ internal fun ConnectionModalSheet(
                     val nestedScroll = remember(state, geometry) {
                         object : NestedScrollConnection {
                             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
-                                if (source == NestedScrollSource.UserInput && available.y < 0f && contentScrollState.value == 0)
+                                if (source == NestedScrollSource.UserInput && available.y < 0f && contentAtTop())
                                     Offset(0f, state.dispatchRawDelta(available.y)) else Offset.Zero
 
                             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset =
@@ -344,7 +359,7 @@ internal fun ConnectionModalSheet(
                                 // 作者 long：从列表中部开始下滑只滚回顶部，同一手势不能继续关闭面板，避免长详情误退出。
                                 awaitEachGesture {
                                     awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                                    dragStartedAtTop = contentScrollState.value == 0
+                                    dragStartedAtTop = contentAtTop()
                                     do { val event = awaitPointerEvent(PointerEventPass.Initial) }
                                     while (event.changes.any { it.pressed })
                                 }
@@ -357,7 +372,7 @@ internal fun ConnectionModalSheet(
                                 flingBehavior = fling,
                             )
                             .testTag("connections_detail_sheet").semantics {
-                                paneTitle = "连接详情"
+                                paneTitle = accessibilityTitle
                                 stateDescription = if (savedDetent == ConnectionSheetDetent.EXPANDED) "已展开" else "半展开"
                                 dismiss { requestDismiss(); true }
                                 if (savedDetent != ConnectionSheetDetent.EXPANDED) expand {

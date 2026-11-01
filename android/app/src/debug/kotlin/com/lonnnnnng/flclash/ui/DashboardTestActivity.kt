@@ -24,7 +24,10 @@ import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
+import com.lonnnnnng.flclash.core.CoreOutboundMode
+import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.SubscriptionInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
@@ -38,6 +41,18 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
 class DashboardTestActivity : ComponentActivity() {
     private var scenario by mutableStateOf(DashboardScenario.DEFAULT)
     private var useDarkTheme by mutableStateOf(true)
+    private var selectedProfileId by mutableStateOf<Long?>(null)
+    private var isProfileSyncing by mutableStateOf(false)
+    private var profilePickerRuntimeStopped by mutableStateOf(false)
+    private var outboundMode by mutableStateOf(CoreOutboundMode.RULE)
+    private var proxyState by mutableStateOf(ProxyGroupsUiState())
+    private var currentGroupName by mutableStateOf("机场选择")
+    var proxySelectionCount = 0
+        private set
+    var profilesNavigationCount = 0
+        private set
+    var runtimeStopCount = 0
+        private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +62,21 @@ class DashboardTestActivity : ComponentActivity() {
         }
         setContent {
             val accessEnabled = scenario == DashboardScenario.DEFAULT
-            val running = scenario == DashboardScenario.RUNNING
+            val running = scenario == DashboardScenario.RUNNING || scenario == DashboardScenario.PROXY_GROUPS
+                || scenario == DashboardScenario.RUNNING_PROFILE_PICKER && !profilePickerRuntimeStopped
+            val homeProfiles = when (scenario) {
+                DashboardScenario.PROFILE_PICKER, DashboardScenario.RUNNING_PROFILE_PICKER -> dashboardPickerProfiles()
+                DashboardScenario.RUNNING, DashboardScenario.PROXY_GROUPS -> listOf(runningProfile())
+                else -> emptyList()
+            }
+            val currentProfileId = when (scenario) {
+                DashboardScenario.PROFILE_PICKER, DashboardScenario.RUNNING_PROFILE_PICKER -> selectedProfileId
+                DashboardScenario.RUNNING, DashboardScenario.PROXY_GROUPS -> 99L
+                else -> null
+            }
+            val runtimeState = if (scenario == DashboardScenario.RUNNING_PROFILE_PICKER) {
+                if (profilePickerRuntimeStopped) CoreRuntimeStatus.STOPPED else CoreRuntimeStatus.RUNNING
+            } else if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED
             KClashTheme(darkTheme = useDarkTheme) {
                 MainPageScaffold(
                     selectedDestination = MainDestination.DASHBOARD,
@@ -64,18 +93,50 @@ class DashboardTestActivity : ComponentActivity() {
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             RuntimeCard(
-                                state = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
+                                state = runtimeState,
                                 onStart = {},
-                                onStop = {},
+                                onStop = {
+                                    runtimeStopCount++
+                                    profilePickerRuntimeStopped = true
+                                },
                             )
                             RuntimeStatsCard(
                                 state = if (running) runningStats() else RuntimeStatsUiState(),
-                                runtimeState = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
+                                runtimeState = runtimeState,
+                            )
+                            OutboundModeCard(
+                                mode = outboundMode,
+                                onModeChange = { outboundMode = it },
                             )
                             DashboardProfileCard(
-                                profile = if (running) runningProfile() else null,
-                                onShowProfiles = {},
+                                profile = homeProfiles.firstOrNull { it.id == currentProfileId },
+                                profiles = homeProfiles,
+                                currentProfileId = currentProfileId,
+                                isBusy = isProfileSyncing,
+                                runtimeState = runtimeState,
+                                onShowProfiles = { profilesNavigationCount++ },
                                 onAddProfile = {},
+                                onSelectProfile = { selectedProfileId = it },
+                                onUpdateProfile = { isProfileSyncing = true },
+                                onStopRuntime = {
+                                    runtimeStopCount++
+                                    profilePickerRuntimeStopped = true
+                                },
+                            )
+                            DashboardProxyGroupsCard(
+                                state = proxyState,
+                                runtimeState = runtimeState,
+                                mode = outboundMode,
+                                currentProfileId = currentProfileId,
+                                currentGroupName = currentGroupName,
+                                onRefresh = {},
+                                onSelectGroup = { currentGroupName = it },
+                                onSelect = { group, name ->
+                                    proxyState = proxyState.copy(selectedMap = proxyState.selectedMap + (group.name to name))
+                                    proxySelectionCount++
+                                },
+                                onTestDelay = { _, _ -> },
+                                onTestGroupDelay = {},
                             )
                             BatteryOptimizationCard(
                                 ignored = scenario == DashboardScenario.SYSTEM_READY,
@@ -146,6 +207,28 @@ class DashboardTestActivity : ComponentActivity() {
         scenario = DashboardScenario.RUNNING
     }
 
+    fun showProfilePickerScenario() {
+        selectedProfileId = 101L
+        isProfileSyncing = false
+        scenario = DashboardScenario.PROFILE_PICKER
+    }
+
+    fun showRunningProfilePickerScenario() {
+        selectedProfileId = 101L
+        isProfileSyncing = false
+        profilePickerRuntimeStopped = false
+        runtimeStopCount = 0
+        scenario = DashboardScenario.RUNNING_PROFILE_PICKER
+    }
+
+    fun showProxyGroupsScenario() {
+        outboundMode = CoreOutboundMode.RULE
+        currentGroupName = "机场选择"
+        proxySelectionCount = 0
+        proxyState = ProxyGroupsUiState(groups = dashboardProxyGroups())
+        scenario = DashboardScenario.PROXY_GROUPS
+    }
+
     fun setDarkTheme(value: Boolean) {
         useDarkTheme = value
     }
@@ -161,7 +244,34 @@ private enum class DashboardScenario {
     DEFAULT,
     SYSTEM_READY,
     RUNNING,
+    PROFILE_PICKER,
+    RUNNING_PROFILE_PICKER,
+    PROXY_GROUPS,
 }
+
+// 作者 long：主页代理入口只验证正式节点组件与回调，固定数据不读取真实订阅、不发起测速或核心请求。
+private fun dashboardProxyGroups() = listOf(
+    ProxyGroupInfo("机场选择", "Selector", "香港节点", listOf("香港节点", "日本节点") + (1..24).map { "备用节点 $it" }, false),
+    ProxyGroupInfo("自动选择", "URLTest", "香港节点", listOf("香港节点", "日本节点"), false),
+    ProxyGroupInfo("流媒体", "Selector", "日本节点", listOf("香港节点", "日本节点"), false),
+    ProxyGroupInfo("下载", "Selector", "香港节点", listOf("香港节点", "日本节点"), false),
+    ProxyGroupInfo("其他", "Selector", "香港节点", listOf("香港节点", "日本节点"), false),
+    ProxyGroupInfo("隐藏组", "Selector", "香港节点", listOf("香港节点"), true),
+)
+
+// 作者 long：首页配置交互夹具使用固定的远程与自定义配置，不触发订阅网络或 Mihomo 核心。
+private fun dashboardPickerProfiles() = listOf(
+    Profile.remote(101L, "https://fixture.invalid/subscription", "固定远程订阅").copy(
+        lastUpdateAt = System.currentTimeMillis() - 3_600_000L,
+        subscriptionInfo = SubscriptionInfo(
+            upload = 2L * 1024 * 1024,
+            download = 3L * 1024 * 1024,
+            total = 10L * 1024 * 1024,
+            expire = System.currentTimeMillis() / 1000 + 86_400L,
+        ),
+    ),
+    Profile.custom(102L, "固定自定义配置"),
+)
 
 // 作者 long：运行态视觉夹具使用固定的安全样例数据，验证统计和诊断卡片的排版，不触发真实网络或核心调用。
 private fun runningStats() = RuntimeStatsUiState(

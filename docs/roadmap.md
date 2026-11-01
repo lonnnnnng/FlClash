@@ -2,9 +2,10 @@
 
 > 文档类型：产品迁移路线图、功能矩阵、依赖图和验收门槛
 >
-> 最后核对：2026-10-31（北京时间，本轮 Dashboard 页面视觉首片）
+> 最后核对：2026-11-01（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 当前基线：`kotlin` 分支；首页/配置/代理/连接/观测导航、Profiles ViewModel、Profile 排序、Scripts 本地资源管理、远程脚本导入/手动同步、Profile 绑定与 JavaScript 执行边界、内存 Room、WebDAV Keystore 凭据/手动备份、认证/离线反馈、Always-on VPN 系统设置引导、Compose instrumentation 和 Redmi 真机验收均已完成首轮切片；Profiles 页面已补齐空态/选中态及首轮视觉基线；Dashboard 已完成 Flutter 手机卡片层级、主控卡、双栏流量块、当前配置入口、浮动图标 Dock 与仅配置页显示添加按钮的首片，并补齐深浅色竖屏视觉基线；横屏和大字号不再作为后续验收范围。出口 IP、质量信息和真实流量历史图仍无 Kotlin 数据源，不作视觉伪造；完整 Dashboard/其他页面视觉对齐仍为 `PARTIAL`
+> 当前基线：`kotlin` 分支；首页具备多配置快速切换、远程单项同步、订阅摘要和 Rule/Global/Direct 模式入口，模式选择由 `CoreRuntimeManager` 持久化并在核心启动后应用。运行态配置选择现提供“停止核心后切换”的明确入口，不会静默替换核心正在使用的配置；固定宿主真机用例和 ViewModel 状态保护已通过，真实运行核心的停止后切换端到端仍待验收。本轮未访问订阅 URL、未读取或修改 `1.yaml`、未启动 VPN 或 Mihomo。此前 Redmi 真机使用固定宿主完成主页配置详情、代理组摘要/节点选择、配置创建后进入编辑和新草稿退出。Profiles 自定义编辑现有结构化分区入口（Rules、Proxies、Proxy Groups、Providers、DNS、Dialers）并保留原始 YAML 高级编辑；分区保存会同步父级 YAML 并保护已保存的新草稿，离开时可命名或保留默认名；导入/预览和完整分区表单仍未完成。代理组主页已具备 Tab/List 布局切换、列表分组标题与图标样式、横向分组标签、页内节点网格、搜索、单/批量测速、刷新、Profile 级组名记忆、工具菜单排序/密度/卡片尺寸/隐藏超时和当前节点定位。当前主流程顺序是 Dashboard 首页 → Profiles 配置 → Proxy Groups 代理组；Dashboard 默认卡片顺序保持 Flutter Android 参考顺序，先不为统计入口改变主页层级。Requests/DNS/Logs 后续视觉打磨暂停。完整主流程 UI/UX 仍为 `PARTIAL`。验收固定为 Redmi 真机竖屏、系统默认字号；后续不运行横屏或大字号用例。出口 IP、质量信息和真实流量历史图仍无 Kotlin 数据源，不作视觉伪造
+> Dashboard 首页已完成原位编辑首片：支持长按拖动可见卡片、移除/重新添加卡片，并将布局保存在应用偏好中；核心启停卡固定在顶部。编辑态进出场和 Flutter 摇摆动画、主页其余菜单与按钮逐项核对仍未完成，因此 Dashboard 整体仍为 `PARTIAL`。
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -21,7 +22,7 @@
 | 上游仓库 | `chen08209/FlClash` |
 | 个人 fork | `lonnnnnng/FlClash` |
 | 数据迁移 | 不做 Flutter/Drift 数据迁移；这是全新应用 |
-| Android 范围 | Android 手机，首发覆盖竖屏和横屏 |
+| Android 范围 | Android 手机，验收限定竖屏和系统默认字号 |
 | 不纳入首发 | Android TV、平板、车机、桌面托盘和桌面 Helper |
 | Android 最低版本 | API 24 |
 | 编译与目标版本 | compile/target SDK 37，需随工具链和发布要求复核 |
@@ -48,19 +49,19 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | `kotlin` 是长期主线，`origin/kotlin` 与当前本地切片保持同步；Flutter 变更继续由 `upstream` 追踪 |
+| 远端关系 | `kotlin` 是长期主线并追踪 `origin/kotlin`；当前工作树保留本轮主页、Profiles 结构化编辑入口和 Proxy 视觉切片，Flutter 变更继续由 `upstream` 追踪 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
 | 状态管理 | ViewModel + StateFlow + 单向事件流 |
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
-| 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换和测速 |
-| 单元测试 | `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；JVM 231 项，失败 0、错误 0、跳过 0 |
-| Instrumentation | Dashboard 竖屏默认/运行/浅色 4 项，以及 MainActivity 首屏/导航 2 项在 Redmi 真机通过，共 `OK (6 tests)`；后续横屏和大字号场景不纳入测试 |
-| Debug 构建 | 标准全工程 Debug、AndroidTest 和 Lint 检查通过；Lint `0 errors, 36 warnings, 4 hints` |
-| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `1da6f8eb0c3a23b4677bed1e8f5decddbb33e136130c975b0019ad6b2325b130` |
-| Debug 原生库 | APK 内原生库仅 `lib/arm64-v8a/`，包含 `libclash.so`；AndroidTest APK SHA-256 `b453984a029fcf7164b14eb3a98ebd1bf0717868d43f4bbabb770fa57f79a163` |
+| 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换、测速和代理模式保存/应用 |
+| 单元测试 | 最新 `:app:testDebugUnitTest` 为 137 项，失败 0、错误 0、跳过 0；历史全工程 242 项仅作历史记录 |
+| 主流程真机测试 | Redmi 竖屏默认字号：Dashboard 14 项、ProxyGroups 8 项、Profiles 主流程/结构化编辑通过；本轮新增分区保存后父级同步、已保存草稿命名和空草稿删除回归；不运行横屏或大字号用例 |
+| Debug 构建 | `:app:assembleDebug`、`:app:assembleDebugAndroidTest`、`:app:testDebugUnitTest`、`:app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；Lint 0 errors、43 warnings、5 hints |
+| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `dbd67e2fcdeceeaf1c692cef8f77c624adc7aed5be3275d526330e7c80abd3e2` |
+| Debug 原生库 | APK 内原生库均位于 `lib/arm64-v8a/`，包含 `libclash.so`；AndroidTest APK SHA-256 `003cab58bca374ba9317f38b8ec201e80407f991cfd9209086dc396c0fbe7d66`（无原生库） |
 | Release 构建 | `./gradlew :app:assembleRelease :app:lintRelease --no-daemon` 已通过；当前输出为未签名预发布 APK，尚未创建独立 release keystore |
 | 最近真机证据 | 订阅启动、TUN/前台服务、代理组读取、真实 Mihomo 代理切换与核心重启后的选择保持、进程重建后的选择 UI 恢复、Selector 状态、代理选择 ViewModel 面板切换/持久化/失败回滚、代理选择 Activity 页面宿主选择与自动恢复、Proxy 代理组默认卡片/初始选择对话框截图基线、Dashboard 默认停止态/系统就绪态截图基线、主 Activity 顶层导航与观测页签跨页面/重建状态保持、观测页 Requests/DNS/Logs 停止态空态与三页签真实宿主回归、观测页六状态组件截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号截图基线、运行统计卡片、真实请求诊断、诊断会话证据包导出、运行诊断历史详情与导出、核心/网络/DNS 运行事件记录、活动连接/Requests/DNS/日志非空记录、观测详情搜索与日志级别筛选、真实 MainActivity DNS/日志清空与日志导出且 Requests 保留、Deep Link 订阅导入、进程重建恢复及首页 `CORE_RESTARTED` 历史展示、通知栏 STOP、桌面快捷入口、Quick Settings Tile、事件流健康摘要 Compose 断言、Always-on VPN 系统设置引导卡片、Access 页面级剪贴板导入/导出 E2E、Access 直接选择保存后 Room 重建恢复、Access 无结果搜索后列表恢复、Access 当前结果全选/清除及放弃修改真实宿主 E2E、Access 关闭态/脏状态截图基线、横屏重排、1.5/2.0 倍字体可达性、系统字体 1.3/2.0 回归、Access 顶栏脏状态保存、菜单层级和完整搜索态定向回归、停止清理和本地 SAF 备份/恢复均已在 `wsvwypiz7xwslvl7` 验证 |
 
@@ -97,7 +98,7 @@ flowchart LR
     M4 --> M5[M5 运行观测\nPARTIAL]
     M4 --> M6[M6 Profiles 高级能力\nPLANNED]
     M5 --> M7[M7 Android 平台入口\nPARTIAL]
-    M6 --> M8[M8 UI/UX 完整对齐\nPLANNED]
+    M6 --> M8[M8 UI/UX 完整对齐\nPARTIAL]
     M7 --> M8
     M5 --> M9[M9 质量、签名与发布\nPLANNED]
     M6 --> M9
@@ -261,6 +262,7 @@ flowchart LR
 - `MainViewModel` 已维护最近 2000 条 Requests 历史，并按连接 ID 合并上下行流量更新；首页提供请求空态、最近记录和完整记录对话框。
 - `MainViewModel` 已维护最近 1000 条 DNS 查询和核心日志，停止核心时清空运行观测，并提供用户主动清空入口。
 - Compose 首页已提供 DNS 查询和核心日志卡片、最近记录和完整记录对话框，覆盖停止态、空态和错误日志颜色提示。
+- Requests/DNS 完整记录对话框可进入单条详情；Requests 复用连接快照面板，DNS 按基本信息、错误、答案分组并隐藏缺失字段，支持整行复制及成功/失败反馈。点击代理链或 DNS 标签可叠加精确关键词筛选，自由搜索按空白拆词、忽略大小写且所有词同时匹配；关闭单条详情后保留搜索和标签。固定宿主真机流程已验证，DNS 详情的 Activity 重建恢复仍待补齐。
 - 核心日志详情和首页卡片提供系统文件导出；导出前遮蔽 URL 查询参数、JSON 凭据字段和常见 token/key/secret/password/url 值。
 - `CoreBridge.probe`、`CoreRuntimeManager.probe` 和首页“真实请求诊断”卡片已接入；结果包含 HTTP 状态、耗时、最终 URL、代理链、规则和核心路由版本，且不保留响应正文。
 
@@ -297,7 +299,7 @@ flowchart LR
 
 ### 7.3 Profiles 高级能力
 
-状态：`PARTIAL`，基础能力已完成，完整 Flutter parity 未开始。
+状态：`PARTIAL`，基础能力和高级分区首片已完成，完整 Flutter parity 仍在推进。
 
 已完成本轮切片：
 
@@ -322,6 +324,10 @@ flowchart LR
 - 自定义 Profile 新增脚本库入口；脚本元数据保存到 Room，正文保存到 `filesDir/scripts/<id>.js`，支持新建、读取、编辑、删除和排序，写入采用原子替换。
 - Profile 卡片新增脚本绑定入口；绑定和解绑只写入 Kotlin 自有 `profiles.scriptId`，核心运行期间拒绝修改，脚本删除时在同一 Room 事务内清除关联 Profile，避免留下孤立引用。
 - 脚本库与编辑器在核心运行期间禁止修改；Profile 绑定脚本会在核心启动的暂存配置阶段执行，失败时阻止配置校验和 Mihomo 启动。
+- Profiles 页面视觉首片改为图标顶栏、紧凑配置卡片和菜单式卡片操作；空态展示插画式图形与添加入口，订阅卡显示用量/到期日，存在 URL Profile 时才显示批量同步入口。批量同步仅分发 URL Profile；Repository、Room 和订阅网络行为不因视觉调整改变。
+- 自定义 Profile 编辑器首片改为“配置概览 → Rules、Proxies、Proxy Groups、Providers、DNS、Dialers 分区入口 → 原始 YAML 高级编辑”的层级；分区按钮复用已有 ViewModel 编辑器，保存仍由对应 Repository/覆盖模型负责，输入法退出时主动收起以保持手机弹窗标题和操作可见。
+- 分区保存成功后同步父级编辑器的 YAML 正文和 Profile 元数据，避免原始 YAML 旧快照覆盖结构化修改；父级仍有未保存 YAML 时，进入分区前要求明确放弃或返回继续编辑。
+- 新建配置的未修改空草稿退出时仍删除；Rules、Proxies、Proxy Groups、Providers、DNS 或 Dialers 已持久化修改后退出则保留配置，并提供命名或保留默认名称选项。
 
 ### 2026-10-27：Profile DNS Overrides 切片
 
@@ -393,12 +399,18 @@ flowchart LR
 
 状态：`PARTIAL`。
 
+已完成首片：
+
+- Tab/List 双布局、横向分组切换、节点网格、搜索、单节点/批量测速、刷新、Profile 当前组记忆和 List 三种图标样式。
+- 工具菜单排序、网格密度、卡片尺寸、隐藏超时节点、Tab 当前节点定位及应用级偏好保存；切换失败保留此前的 Profile 映射。
+- Dashboard 代理组摘要与选择弹层：Rule 过滤 hidden、Global 展示全部、Direct 空态；连续选节点不关闭，复用正式代理页偏好并隔离搜索状态。
+
 待完成：
 
-- URLTest/Fallback 的完整递归选择和自动选择语义仍待补齐；当前节点/自动恢复基础交互已完成。
-- 代理组选择的完整递归 UI 导航、展开状态和 Tab/List 双布局。
-- 超时节点隐藏和失败节点回滚策略。
-- 展开、折叠、滚动定位。
+- URLTest/Fallback 的完整计算选择与优选语义、真实核心回归；当前节点和自动恢复基础交互已完成。
+- 按组滚动位置恢复、List 组内当前节点定位、叶子节点协议类型，以及更细的卡片与组标题视觉校准。
+- 按组/测速 URL 的超时统计摘要；不使用缺失模型伪造计数。递归解析仍使用完整组图，保持 Flutter 平面列表，不新增上游没有的子组下钻。
+- Dashboard 弹层在键盘出现后的首排节点已完整可见；测速入口收进摘要行后，首排节点和测速控件均未被输入法裁切。
 - 延迟结果的跨进程持久化缓存。
 
 完成门槛：
@@ -458,7 +470,20 @@ flowchart LR
 - 首页、配置、代理、连接、观测五个手机目的地；观测页包含 Requests、DNS、Logs 三个页签，核心状态和代理组交互。
 - Edge-to-edge 基础设置。
 - Access 卡片首轮响应式收敛：标题/状态/排序/筛选区域可换行，已完成横屏重排、1.5/2.0 倍字体 Compose 可达性回归、系统字体 1.3/2.0 宿主回归、Redmi 默认卡片 PNG 哈希基线、1.3/1.5/1.8/2.0 字体截图矩阵和竖屏/横屏截图矩阵首片；真实宿主保存后重建可恢复 Room 设置；脏状态下提供标题栏保存、Flutter 风格主菜单/设置/操作层级和标题栏完整搜索态，正文操作入口保留为小屏备用。
-- Profiles 页面视觉首片：空态、选中自定义配置态、横屏/竖屏和 1.3x/2.0x 大字号均由 Debug 固定宿主提供稳定截图节点；大字号矩阵基线记录在 `docs/visual-baselines/profiles-font-scale-redmi-api36.sha256`，不改变正式 Profiles ViewModel、Room 或文件写回逻辑。
+- Profiles 页面视觉首片：Debug 固定宿主覆盖空态、选中自定义配置和远程订阅用量三态，并包含正式页面顶栏；基线固定为 Redmi Note 8 Pro、Android 16/API 36、竖屏、系统默认字号和深色主题，记录在 `docs/visual-baselines/profiles-states-redmi-api36.sha256`。旧横屏/字号哈希仅保留为历史证据，不再执行相关用例。
+- Proxy 节点卡片视觉首片：两行名称、22dp 当前使用/优选徽标、独立 72×48dp 测速触控区；computed 当前出口和优选分别读取核心 now 与保存选择。代理组主页已支持 Flutter 对应的 Tab/List 布局切换：Tab 保留横向可滚动标签和组内节点网格，List 显示分组标题、组图标样式（填充/简洁/隐藏）、分组批量测速和节点网格；两种模式共用搜索、选择、测速、排序、隐藏超时和 Profile 组记忆。新增代理工具菜单（排序：默认/延迟/名称；网格密度；卡片尺寸；隐藏超时节点；布局；List 图标样式）、应用级偏好持久化和当前节点定位；竖屏默认字号下 8 项定向回归和深浅色页面基线已通过。叶子协议字段和更细滚动恢复仍待后续。
+- Connections / Requests / DNS / Logs 记录卡片视觉首片已完成：统一头部时间与类型、24dp 独立记录卡、规则/代理链、DNS 响应和状态标签；记录内容视觉切片已有深浅色基线，Connections/Observation 页面级截图和详情基线复核一致。Redmi 真机 13 项定向交互回归通过。仅使用现有模型真实字段；单连接实时速率、相对时间及完整页面 parity 保留后续。
+- Requests/DNS 详情与完整列表首片已完成：记录行进入两档底部面板，DNS 详情分组/空值隐藏/长 IPv6 和错误复制有深浅色八状态基线；详情水平边距已调整为 16dp。全屏列表提供返回、搜索、DNS 清理工具栏和关键词筛选，DNS 详情及列表筛选可在 Activity 重建后恢复；DNS 清理使用 CoreRuntimeManager/CoreBridge，固定宿主覆盖成功/失败反馈。固定宿主证明 KClash 自身渲染稳定，不代表 Flutter 逐像素相同。
+- Logs 页面现在复用观测全屏列表壳，提供展开搜索、日志级别关键词、可移除标签、Flutter 风格普通空态/搜索无结果态和顶栏导出；Redmi 竖屏默认字号 9 项固定宿主回归与跨观测页入口单测方法通过，深浅色页基线记录于 `docs/visual-baselines/logs-page-states-redmi-api36.sha256`。日志仍由固定夹具渲染，没有启动核心或访问网络。
+
+验收门槛：
+
+- 首先完成 Dashboard 主页、Profiles 配置和 Proxy Groups 代理组的逐页面、菜单和按钮闭环；三条主流程未收敛前，Requests/DNS/Logs 的进一步视觉打磨暂停。
+- 当前主流程切片：主页配置详情和代理组摘要/节点选择 → 自定义配置创建/结构化编辑/草稿退出 → 配置管理菜单与代理组剩余视觉交互。
+- 固定 Debug 宿主覆盖普通/长/缺字段连接、DNS 缓存/NXDOMAIN/超时和日志不同级别，深浅主题各有截图基线。
+- 真实 Connections、Requests、DNS、Logs 页面分别验证停止/运行空态、非空态、详情/筛选，以及清空与导出；点击和导航状态不破坏现有记录语义。
+- 只呈现 Bridge 已提供的真实字段。单条连接没有速率数据时不显示伪造的 `/s`；日志正文仍为原始文本，不假设未提供的结构化字段。
+- Redmi Note 8 Pro 竖屏、系统默认字号真机验证；横屏及大字号用例不运行。
 - Dashboard 默认态字号基线文件仅保留既有历史证据；按当前验收范围不再运行横屏或大字号测试。
 - Dashboard 页面视觉还原首片：用同一主题壳层覆盖正式 MainActivity 和固定视觉宿主；核心卡使用 34dp 圆角、Flutter 手机内边距和 88dp 开关，流量统计采用上传/下载双块和 22dp 内层形状，当前配置作为首屏入口；五目的地 Dock 改为浮动圆角条和 Material 矢量图标，配置添加 FAB 仅在配置页出现。Dashboard 横向内容宽度上限 560dp，系统导航安全区由 Dock 留白，按应用代理、电池优化、Always-on VPN、诊断仍在首屏卡组下方可滚动到达。
 - Dashboard 固定宿主在 Redmi Note 8 Pro（Android 16/API 36、1080×2340，serial `wsvwypiz7xwslvl7`）验证停止/运行和深色/浅色竖屏截图；测试首次采集哈希与旧版不同，已人工检查主卡、流量块、配置卡和 Dock 的布局及按钮裁切，并写入 `docs/visual-baselines/dashboard-states-redmi-api36.sha256`。历史横屏/大字号 PNG 与哈希仅保留为既有记录，不再作为后续回归门槛。截图只证明 KClash 自身回归稳定，不声称 Flutter 引擎逐像素一致；宿主使用固定夹具，不读取 Room、系统设置、已安装应用、网络、VPN、Mihomo 核心或 `1.yaml`。
@@ -471,20 +496,30 @@ flowchart LR
 待完成：
 
 - Flutter 页面信息架构和 Android 手机导航结构对齐。
-- Dashboard 剩余出口 IP/质量状态及真实流量历史数据能力，再据此完成内容 parity；当前停止/运行两态和深浅色竖屏视觉首片已完成单设备基线。
+- 主流程优先：Dashboard 当前配置详情、快切/同步和 Rule/Global/Direct 模式入口已有固定宿主、状态层与真实核心方法验证；历史 Redmi 证据曾用根目录 `1.yaml` 完成文件导入、运行态三模式切换和停止/重启后模式恢复，本轮未重复访问。Profiles 远程编辑、添加来源选择、独立表单、本地文件导入、批量链接重复反馈、自定义配置结构化保存和草稿退出命名均已有首片验证；代理组 Tab/List、列表图标、分组标题、页内节点网格、搜索、选择、测速、工具菜单、排序/过滤和当前节点定位首片已验收。下一步返回 Dashboard 完成主页统计入口与运行态切换的产品链路验收，再继续 Profiles 配置管理菜单和导入/预览，最后补 Proxy Groups 叶子协议类型、按组滚动位置恢复和更细的 Flutter 卡片/分组视觉校准。主流程完成前不恢复 Requests/DNS/Logs 的次要视觉细节。
+- Dashboard 剩余出口 IP/质量状态及真实流量历史数据能力，再据此完成内容 parity；当前停止/运行两态和深浅色竖屏视觉首片已有单设备基线。
 - Profiles、Proxy、Connection、Observations 页面及其 Requests、DNS、Logs 页签的完整视觉与交互对齐；Dashboard Dock 的 Flutter 拖拽/液态动效也尚未实现。
+- 暂停项：Requests/DNS 完整页面、搜索筛选视觉校准及 DNS 真实核心清理端到端验收暂不排期；先完成首页、配置和代理组主流程后再恢复。
 - Material You 动态颜色；Dashboard 已有浅色/深色静态主题截图，但全应用主题覆盖尚未完成。
 - Flutter 连续圆角、底部面板、弹层和交互节奏。
-- Connections 两档高度、横屏侧栏、浅色和小窗口首片已验证；底部面板超椭圆为四次曲线采样近似，入场/退场和遮罩联动已完成，横屏侧栏已对齐 Flutter 的 300ms/200ms 标准减速曲线；仍需补齐 Flutter 的快速拖甩速度延续、越界回弹、精确曲率逐像素对照、短内容 `fitsContent` 和键盘联动（当前连接详情无输入框）。更多字号、跨设备和完整页面视觉 parity 继续保留。
-- 横屏布局和小屏滚动策略的全页面覆盖；按当前验收范围，后续不执行横屏与大字号测试。
+- Connections 两档高度、横屏侧栏、浅色和小窗口首片已验证；底部面板超椭圆为四次曲线采样近似，入场/退场和遮罩联动已完成，横屏侧栏已对齐 Flutter 的 300ms/200ms 标准减速曲线；仍需补齐 Flutter 的快速拖甩速度延续、越界回弹、精确曲率逐像素对照、短内容 `fitsContent` 和键盘联动（当前连接详情无输入框）。跨设备和完整页面视觉 parity 继续保留，后续验收固定为竖屏和系统默认字号。
+- 小屏滚动策略、无障碍语义、内容描述和触控区域的全页面覆盖；按当前验收范围，后续不执行横屏与大字号测试。
 - 无障碍语义、内容描述和触控区域的全页面覆盖；Dashboard 开关已提供动作语义和 48dp 以上触控区域，Dock/其他页面仍需完整审计。
-- 截图基线和 Compose screenshot regression；当前已完成 Redmi 单设备观测页 Requests/DNS/Logs 六状态组件基线、Proxy 代理组默认卡片/初始选择对话框两状态基线、Dashboard 停止/运行/系统就绪深色基线及浅色默认/运行竖屏基线、Connections 停止态/运行态两状态基线、Profiles 空态/选中自定义配置态两状态基线；其他页面仍待补齐。历史字号/方向矩阵仅存档，不作为后续执行门槛。Connections 详情独立截图矩阵与真实 MainActivity 观测清空/导出证据保持原有状态。
+- 截图基线和 Compose screenshot regression；当前已完成 Redmi 单设备观测页 Requests/DNS/Logs 六状态组件基线、Proxy Groups 当前页内节点网格深浅色两状态基线、Dashboard 停止/运行/系统就绪深色基线及浅色默认/运行竖屏基线、Connections 停止态/运行态两状态基线、Profiles 空态/选中自定义配置/远程订阅用量三状态基线；其他页面仍待补齐。历史字号/方向矩阵仅存档，不作为后续执行门槛。Connections 详情独立截图矩阵与真实 MainActivity 观测清空/导出证据保持原有状态。
 
 完成门槛：
 
 - 关键用户流程在 Flutter 参考和 KClash Android 上逐屏比对。
-- 旋转、恢复、进程重建后状态不丢失。
+- 页面恢复、进程重建后状态不丢失；后续回归固定为竖屏和系统默认字号。
 - UI 不直接调用 Core、gomobile 或数据库。
+
+### 2026-11-01：代理组主页节点直选主流程首片
+
+- 代理目的地改为占满 Scaffold 可用高度的独立页面，横向组标签控制分页；当前组节点在页面内使用虚拟化网格展示，点节点即可切换，不再要求先开选择弹窗。单节点测速仍使用卡片内独立触控区，避免测速点击触发节点切换。
+- 搜索、刷新、当前组批量测速和 computed 组当前/优选状态保留在主页面；切组稳定后将组名写回当前 Profile，Room 更新由 Repository 承担，已增加真实 Repository 持久化用例。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏、系统字号 `1.0`：`ProxyGroupsActivityInstrumentedTest` `OK (6 tests)`，覆盖节点直选/自动恢复、横向分组切换、搜索、单节点测速隔离、忙态禁用及深浅色页面截图；`ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore` `OK (1 test)`。深色页面哈希 `c591ad6f15217ac76146fbe35a458f1fcb43ad85e2954de1804e1c10036b2d5c`，浅色 `6b01f6da5f8e736b853b0862ff1d3d93fb9031d0fa247f9799b6efbbd52b02dc`，记录在 `docs/visual-baselines/proxy-groups-states-redmi-api36.sha256`。
+- `:app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`、`./gradlew test :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 均通过；全工程 JVM 235 项通过，Lint 为 0 error、38 warnings、3 hints。Debug APK SHA-256 `aa2b7f728b617a0656346490b48c27cb68285669e6e9ae6f39053a8d91891676`，AndroidTest APK SHA-256 `a74d2231a439b7a841e872c3ef288574883a358ec0a462026bfb31807cdbfd70`，主 APK 原生库仅含 `arm64-v8a`。
+- 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
 
@@ -492,17 +527,18 @@ flowchart LR
 
 当前已有：
 
-- 231 项 JVM 单元测试，失败 0、错误 0、跳过 0。
+- 233 项 JVM 单元测试，失败 0、错误 0、跳过 0。
+- 2026-11-01 Requests/DNS 详情与筛选：Redmi 竖屏默认字号精确筛选 9 项全部通过，DNS 深浅色八状态新增基线，记录卡片、观测页面和连接详情既有基线一致；未运行横屏/大字号用例，未启动网络/VPN/核心。
 - 2026-10-31 连接详情面板收敛：Connections 13 项 + Observation 4 项真机回归全部通过；另 1 项显式真实核心详情 E2E 通过。覆盖非空/空元数据、复制、快照恢复、两档几何与拖动、正文中部起手保护、遮罩/返回/下滑关闭、真实系统字体 2.0x 横竖屏、浅色/小窗口和禁用系统动画，共十份详情内容截图；真实请求只识别代理连接，不读取 HTTP 响应状态/正文。
 - Debug APK 构建和 arm64 产物检查。
-- `:app:lintDebug` 已通过；当前有 36 条非阻断 Warning、5 条 Hint，错误为 0；详情高度已改为实际窗口约束，消除该处 `ConfigurationScreenWidthHeight` 提示。
-- 既有 87 项 instrumentation 稳定基线；本轮新增真实 MainActivity 无结果搜索恢复、观测页停止态空态用例、观测页六状态截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、观测页 DNS/日志独立清空与日志导出组件交互用例、Proxy 代理组两状态截图基线、Dashboard 两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 两状态截图基线、Connections 运行态 1.3x/2.0x 大字号矩阵、Connections 连接行详情打开/关闭回归、Profiles 两状态截图基线、Profiles 横竖屏矩阵和 Profiles 1.3x/2.0x 大字号矩阵用例，定向用例均通过；真实 MainActivity 观测页清空/导出端到端已由本轮 Redmi 真机操作补齐，当前又重新验证了真实 MainActivity Profiles 创建→编辑→删除组合流程。随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，出现既有宿主失败；停用干扰应用后的复跑 XML 为 `tests=0`，未形成有效类级证据，因此不替换稳定基线。
+- `:app:lintDebug` 已通过；当前有 36 条非阻断 Warning、3 条 Hint，错误为 0；详情高度已改为实际窗口约束，消除该处 `ConfigurationScreenWidthHeight` 提示。
+- 既有 87 项 instrumentation 稳定基线；本轮 Profiles 定向回归 29 项通过：三状态截图 1 项、ProfilesPanel 10 项、ProfileUi 11 项、MainActivity 创建/编辑/删除及 Rules/Proxies/Proxy Groups/Providers/DNS Overrides/Dialers 7 项。横屏/大字号矩阵是历史测试记录，后续不再运行；真实 MainActivity 观测页清空/导出端到端已由 Redmi 真机操作补齐。随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，出现既有宿主失败；停用干扰应用后的复跑 XML 为 `tests=0`，未形成有效类级证据，因此不替换稳定基线。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
 
 待完成：
 
-- 完整页面级 Compose/Instrumentation 测试，当前已新增 Access 真实宿主直接选择→保存→重建恢复、无结果搜索恢复、横屏重排、1.5/2.0 倍大字号可达性、系统字体 1.3/2.0 回归、顶栏保存/菜单层级、完整搜索态、默认卡片截图哈希基线、1.3/1.5/1.8/2.0 字体截图矩阵回归、观测页停止态空态/三页签真实宿主回归、观测页 Requests/DNS/Logs 六状态组件截图基线、观测页 Requests/DNS/Logs 运行态 1.3x/2.0x 大字号矩阵、观测页 DNS/日志独立清空与日志导出组件交互用例、Proxy 代理组默认卡片/初始选择对话框两状态截图基线、Dashboard 默认停止态/系统就绪态两场景截图基线、Dashboard 默认态与运行态 1.3x/2.0x 大字号矩阵、Dashboard 运行态统计/诊断证据断言、Connections 停止态/运行态两状态截图基线、Connections 连接行详情打开/关闭回归、Connections 运行态 1.3x/2.0x 大字号矩阵、Profiles 空态/选中自定义配置态两状态截图基线、Profiles 选中配置横竖屏矩阵、Profiles 选中配置 1.3x/2.0x 大字号矩阵、真实 MainActivity Profiles 创建→编辑→删除组合回归、观测非空详情入口/搜索/日志级别筛选/关闭回归，以及 Profiles Rules 高级编辑真实宿主回归；本轮补齐真实 MainActivity 观测页 DNS/日志清空、日志导出和 Requests 保留证据；停用前台干扰应用后已有 87 项稳定全量基线，跨设备截图仍需继续补齐。
+- 完整页面级 Compose/Instrumentation 测试仍需按 Android 手机日常使用流程补齐；已完成的覆盖包括 Access 真实宿主选择/保存/恢复、观测页停止态空态和详情交互、Proxy/Dashboard/Connections 页面状态、Profiles 三状态竖屏默认字号截图、Profiles 卡片操作菜单回归及远程批量同步仅分发 URL Profile 的断言。横屏和大字号历史用例不再列入执行计划。停用前台干扰应用后已有 87 项稳定全量基线，跨设备截图仍需继续补齐。
 - VPN 权限、TUN 停止清理、后台恢复、系统撤销 VPN、Wi‑Fi 断开恢复、进程重建和 `dumpsys connectivity` 真机测试已有证据；Wi‑Fi↔移动网络切换仍待完成。
 - 连接、请求、DNS、日志端到端测试的自动化脚本和稳定断言。
 - R8、Release 构建和 APK 签名检查。
@@ -548,7 +584,7 @@ flowchart LR
 4. Requests 页面。
 5. 基础日志流。
 
-当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 已补齐横竖屏及 1.3x/2.0x 大字号矩阵，Dashboard、Connections 和 Observation 运行态已补齐 1.3x/2.0x 大字号矩阵，Dashboard 运行态已补齐统计/诊断交互断言。Connections 已补齐详情快照恢复、真实系统字体 2.0x 横竖屏可达性、元数据/格式/复制、Flutter 两档高度、横屏侧栏、浅色、小窗口、底部弹簧进出场、侧栏减速进出场、关闭中重建和真实核心详情 E2E。下一步先补齐快速拖甩速度延续、顶部越界回弹及 Flutter 连续圆角精确对照，再扩展其他页面的浅色/响应式交互与跨设备矩阵；当前切片不代表完整 Connections 页面 parity。
+当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 覆盖竖屏系统默认字号下的空态、选中自定义配置和订阅用量三态，横屏/大字号不再作为后续测试范围。Dashboard、Connections 和 Observation 的大字号矩阵属于历史验证记录，不继续执行。Dashboard 运行态已补齐统计/诊断交互断言；首页三态控件已在 Redmi 真机根目录 `1.yaml` 配置下完成真实核心切换和停止/重启恢复，不作为外网流量分流测试证据。Connections 已补齐详情快照恢复、元数据/格式/复制、Flutter 两档高度、浅色、小窗口、底部弹簧进出场、侧栏减速进出场、关闭中重建和真实核心详情 E2E。当前下一步回到主流程：完成 Profiles 添加/导入主路径，再补 Proxy Groups 递归行为和工具入口；Connections/Requests/DNS/Logs 的细节暂不推进。当前切片不代表任一完整页面 parity。
 
 ### N3：DNS、日志和故障诊断
 
@@ -1714,6 +1750,188 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - 真实核心复验：安装同一对最新 APK 后执行 `python3 tool/android_connection_acceptance.py --serial wsvwypiz7xwslvl7 --target-index 2 --log /tmp/kclash-detents-live-final-20261031.log`，结果 `OK (1 test)` 和 `real-core-detail-copy-recreate-stop-passed`。仅使用外层原始 `1.yaml` 与白名单第 2 条路径；双 APK 哈希已核对，原始配置 SHA-256 保持 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`。真实 DNS `normal`、GeoIP 数量 0、ASN 空，没有新增 VPN 授权，没有验证 HTTP 响应状态/正文。结束后 KClash 服务为空、`tun0` 不存在、VPN 路由和 Connectivity TUN 记录消失、临时输入已删除；测试 Profile、原选择、剪贴板及核心暂存配置由验收用例恢复。
 - 失败留痕：首轮 12 项中四项为待复核截图差异，另两项拖动归档未结束；延长到条件等待仍超时，排除了单纯读取过早。临时诊断确认 Foundation 保留初始 fling 对象，旧几何目标 `2119px` 与当前隐藏锚点 `2262px` 不一致；最终松手读取当前锚点，并通过当前 `ScrollScope` 逐帧归档，规避嵌套拖动锁。四项定向交互复验 `OK (4 tests)` 后，完整 17 项和真实核心 1 项均通过。失败/诊断日志保留在 `/tmp/kclash-detents-gestures-second-20261031.log`、`/tmp/kclash-detents-debug-fourth-20261031.log`，临时 Log 代码已移除。截图提取曾因字段顺序错配，改为按完整 instrumentation 状态块配对后，最终十份 PNG 的实际 SHA-256 均与基线一致；证据目录 `/tmp/kclash-detents-final-png-20261031/`。
 - 当前切片状态：`DONE-VERIFIED`（Redmi 单设备两档几何、侧栏、浅色/小窗口/禁用动画和真实详情回归）。完整 UI/UX 阶段继续 `PARTIAL`；下一步对齐 superellipse 连续圆角、弹簧/越界回弹和入场退场曲线，再扩展其他页面浅色/响应式与跨设备矩阵。短内容 fitsContent、键盘联动和全页面 parity 尚未完成，当前详情没有输入框。
+
+### 2026-10-31：Profiles 页面视觉首片
+
+- 顶栏操作改为图标入口；没有 URL Profile 时不展示“同步全部”，有订阅时可批量同步 URL Profile 并保留排序/工具入口。脚本、WebDAV、备份和恢复仍可从工具菜单访问。
+- 空态改为居中插画式图形与添加入口；卡片移除左侧 RadioButton 和常驻多行文字按钮，改用紧凑标题/副标题、选中标识和溢出菜单。远程订阅卡显示已用/总量与到期日；编辑、单项同步、自动更新、重命名、高级 YAML 分区、脚本绑定和删除均继续可从菜单进入。
+- 固定宿主提供空态、选中自定义配置、远程订阅用量三态截图。Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36，竖屏、系统字号 `1.0`、深色模式）基线见 `docs/visual-baselines/profiles-states-redmi-api36.sha256`：空态 `c648aa2a728eef3d5b3b5ce493e3725b716e8914f653c9366a93f130c56dfff9`、选中态 `ae18793505a09c77a712820d68d4d1f5a5ceedd58337a7cb4cef9120d6cc409b`、订阅用量 `fa4cce6aae89bae203c5123d48aebc2b6bde23afda7f6f0e40000df2a1c09d56`；最终源码复验 `profilesScreenshotMatrixMatchesBaseline` 通过。
+- Profiles 定向真机回归共 29 项通过：`ProfilesVisualInstrumentedTest` 1 项、`ProfilesPanelInstrumentedTest` 10 项、`ProfileUiInstrumentedTest` 11 项、真实 `MainActivityInstrumentedTest` 配置生命周期和六类高级编辑 7 项。覆盖菜单操作、远程批量同步只分发 URL Profile、创建/编辑/删除和高级分区回写；没有触发订阅网络、VPN 或 Mihomo 核心。
+- 本轮标准 `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过：231 项 JVM 测试失败 0、错误 0、跳过 0；Lint 0 Error、36 Warning、3 Hint。Debug APK SHA-256 为 `371d11b8b4b0be6fa41887bb429d28af34b61087458c835140325db2a895e147`，AndroidTest APK SHA-256 为 `4ab90d6a5ee4a21bb983455c043fea20f2a0d2b9f29a2cd7302f55ac2fc39bbf`；APK 内原生库仅有 `lib/arm64-v8a/`。
+- 验收前后设备均为竖屏、系统字号 `1.0`。未访问两条真实在线路径、未读取或修改工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心。旧横屏/大字号矩阵仅保留为历史，不再执行；Profiles 页面视觉与交互首片为 `DONE-VERIFIED`，完整 UI/UX parity 仍为 `PARTIAL`。下一步继续逐页收敛 Flutter 页面差异，并补充竖屏默认字号范围内的页面回归。
+
+### 2026-10-31：Proxy 节点卡片视觉首片
+
+- 代理组选择弹层中的节点从 `RadioButton + 文本行` 收敛为独立节点卡片：20dp 普通圆角、两行名称、22dp 当前使用/优选徽标，以及 72×48dp 独立测速触控区；保留原有 `onSelect`、搜索、单节点测速和 computed 组自动选择回调。为保留 Android 触控高度，卡片最小 96dp；Flutter 的超椭圆、网格与 86dp standard 几何尚未完整对齐。
+- 延迟区域显示闪电入口、测速中进度、无结果/失败/超时和毫秒值；正数 <600ms 使用成功色，>=600ms 使用警告色，<=0 使用错误色（Flutter 对 0 的文案为失败但颜色为 success，本轮统一错误语义）。主题色由 Flutter green/orange HCT 亮色 tone40 / 暗色 tone80 离线计算。叶子协议类型尚未进入 Kotlin Bridge，仅嵌套组显示自身真实类型，不用父组类型替代。
+- computed 当前使用标记读取有效核心 `now`，优选读取保存的 `selectedMap`；两者可分别显示。列表改为 `LazyColumn`，搜索和关闭位于滚动区外，内容区域最高 420dp。
+- 最终 Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）精确筛选 8 项用例，结果 `OK (8 tests)`：Activity 卡片/视觉/触摸/测速中 4 项、真实 ViewModel 面板保存/自动恢复/失败回滚/嵌套摘要 3 项、computed 搜索 1 项。实际触摸测速按钮后选择和 Profile 映射保持不变；测速中禁止重复测速，但卡片选择与关闭仍可用。滚动到列表末项后超时、失败和 Fallback 类型均可见。
+- 固定场景 6 份 PNG 经人工复核并更新至 `docs/visual-baselines/proxy-groups-states-redmi-api36.sha256`；默认组卡片哈希保持不变。结果图覆盖深浅色、100ms 成功、600ms 警告、超时/失败、当前出口与未采用优选及列表首尾。截图中的成功/警告文字对比度：浅色均约 4.99:1、深色约 7.19:1/7.21:1；仅验证这两类文字，不代替全页量化审计。基线证明 KClash 自身渲染稳定，尚非与 Flutter 截图逐像素相同。
+- 标准 `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；Debug JVM 报告 231 项，失败/错误/跳过均为 0。最后只变更测试断言后再次通过 AndroidTest 构建和 Lint（0 Error、36 Warning、3 Hint）。Debug APK SHA-256 `aeb3227f2b7bc311a46aca7ba2de813e1901b140b7a0a0b0af1f7360899665a9`，AndroidTest APK SHA-256 `aa7b2ff3d4cc284d3a69edc9fe9d66f0d65fe17e35fc66abec300ebccdd3fe18`；原生库仅 `lib/arm64-v8a/`。
+- 复现：显式 serial 安装本轮双 APK，再使用 `am instrument -w -r -e class` 的精确 `Class#method` 列表（4 项 ProxyGroupsActivityInstrumentedTest、3 项 ProxyGroupsViewModelPanelInstrumentedTest 和 ProfileUiInstrumentedTest#computedProxyGroupShowsAutomaticSelectionAction）。用例名称及最终结果保存在 `/tmp/kclash-proxy-final-device-20261031.log`；构建日志 `/tmp/kclash-proxy-final-checks-second-20261031.log`、最后测试构建/Lint 日志 `/tmp/kclash-proxy-final-test-build-20261031.log`，PNG `/tmp/kclash-proxy-final-visual-20261031/`（本机临时证据，不进入仓库）。
+- 失败记录：首轮为旧截图哈希失配；复核纠正了父组类型误标在叶子上的问题、空文本语义、缺失触摸 click 导入和旧提示语。加入 LazyColumn 后定向用例必须先滚动到目标项，并在原始语义树中检查嵌套测速控件；两项修正复验 `OK (2 tests)`，最终 8 项均通过。一次 ADB 结果流在第 2 项中断，设备日志实际记录 8 项/3 项失败，未用该不完整输出充当通过证据。
+- 当前切片 `DONE-VERIFIED`（Redmi 单设备竖屏、系统默认字号；深浅主题为宿主注入，不改系统主题）。结束时仍为竖屏、字号 1.0，KClash 无运行服务、tun0 不存在。未访问两条在线路径、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，未执行横屏/大字号用例。完整代理页面网格、叶子协议类型、卡片菜单、超椭圆精确曲率及其他页面仍待后续，整体 UI/UX 保持 `PARTIAL`。
+
+### 2026-10-31：Connections / Requests / DNS / Logs 记录卡片视觉首片
+
+- 新增共用 `RecordRows.kt`：连接、DNS 和日志记录采用独立卡片，统一 Flutter 参考的头部/正文/辅助文字层级、间距与状态标签。Connections 显示目标端口、实际目标 IP、规则、反序代理链、进程/UID、来源地址和明确标为累计的上传/下载；DNS 显示时间、类型、真实毫秒耗时、答案、缓存/发起方/上游及失败响应码；Logs 按级别显示中性/警告/错误标签。
+- Connections 与 Observation 运行列表移除重复的大外层卡片，停止和空状态保留提示卡；深浅色页面背景及非空列表正文对比已修正。卡片继续保留 Connections 点击详情和触摸反馈。真实数据模型不提供单连接瞬时速率，因此页面不显示虚构速率；日志正文尚未由 Bridge 结构化。
+- 新增 1 项 `RecordCardsInstrumentedTest#recordCardsMatchDarkAndLightBaselines`，固定覆盖普通/长/缺字段连接、DNS 缓存/NXDOMAIN/超时、info/warning/error 及空正文；六份记录 PNG 深浅色基线位于 `docs/visual-baselines/record-cards-states-redmi-api36.sha256`。最终截图日志 `/tmp/kclash-record-final-corrected-device-20261031.log`，PNG `/tmp/kclash-record-final-visual-20261031/`；19 张有效 PNG 中，17 张（记录卡片 6 张、Connections/Observation 页面状态 8 张、详情内容/形状 3 张）与仓库基线 SHA-256 一致；另 2 张详情整屏图已人工检查安全区，无哈希基线。截图是固定夹具下 KClash 自身渲染稳定性证据，不代表与 Flutter 引擎逐像素相同。
+- Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）最终精确执行 13 项：RecordCards 1、Connections 6、ObservationDetails 3、MainActivity 3，结果 `OK (13 tests)`；覆盖深浅卡片矩阵、页面状态、真实详情触摸与恢复、筛选、独立清空/日志导出和跨目的地导航。最终设备为竖屏 `1080x2340`、系统字号 `1.0`，自动旋转已恢复到原值 `1`，用户旋转值 `0`。ADB `ip link` 可读列表无 `tun0`，无 KClash 主进程；Android 拒绝读取 `dumpsys activity services`，故本轮不声称已通过该命令核实服务清空。
+- 标准 `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；JVM 231 项失败/错误/跳过均为 0，Lint 0 Error、36 Warning、3 Hint。Debug APK SHA-256 `3f3477e6cdb17591b6d620d7bc5aaab3ece2f62cca4590e0af31457a36a7dd8e`，AndroidTest APK SHA-256 `e262359d2e71bf0da85a56879dee95892f405df2228211b88a264566dce215b8`；原生库仅 `lib/arm64-v8a/`。构建日志 `/tmp/kclash-record-final-checks-20261031.log`。
+- 验收只使用固定测试宿主，没有访问在线白名单路径、读取或修改工作区根目录 `1.yaml`、启动 VPN 或 Mihomo；本轮没有运行横屏或大字号用例。一次自动旋转导致的意外横屏采集已弃用、未进入基线，并新增采集前竖屏/默认字号断言；早期一次 MainActivity 测试类全限定名拼写错误未算通过，改正后 13 项完整重跑通过。当前记录卡片视觉首片 `DONE-VERIFIED`；Requests/DNS 详情差异与关键词交互、结构化日志、时间相对化、Flutter 超椭圆精确曲率、完整页面工具栏/主题及跨设备 parity 仍待后续，整个 UI/UX 阶段保持 `PARTIAL`。
+
+### 2026-11-01：Requests / DNS 单条详情与关键词筛选首片
+
+- 以本地 Flutter `main:lib/views/dns_queries.dart` 的基本信息/错误/答案分组，以及 `main:lib/models/common.dart` 的关键词语义为参考。Requests 行点击复用连接详情面板和点击快照 Saver；DNS 行点击打开共用两档面板，隐藏空字段、保留完整 IPv6，支持字段整行复制及成功/失败反馈。关闭详情后仍保留原列表搜索与关键词。
+- Requests 代理链与 DNS 类型/发起方/缓存/非 NOERROR 响应码标签可点击组合筛选；关键词采用区分大小写的精确 AND，自由搜索按空白分词、忽略大小写并采用 AND，两类条件可叠加。Requests 搜索覆盖真实来源/目标地址、进程路径、GeoIP、ASN、特殊规则和代理链；对应边界新增 2 项 JVM 测试。
+- 新增 `DnsDetailsInstrumentedTest#dnsDetailsMatchDarkAndLightBaselinesAndCopyValues`，覆盖多答案/错误 × 深浅色 × 半展开/展开八种状态，并检查空字段隐藏、完整 IPv6、复制成功/失败。八份基线写入 `docs/visual-baselines/dns-details-states-redmi-api36.sha256`；浅色由固定宿主注入，不修改系统主题。截图证明 KClash 自身渲染稳定，尚不代表与 Flutter 引擎逐像素相同。
+- Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36）显式指定设备、按精确 `Class#method` 执行 9 项：ObservationDetails 4、DNS 详情 1、RecordCards 1、Connections 3，结果 `OK (9 tests)`；覆盖详情打开/关闭、关键词与搜索、日志级别筛选、独立清空/导出、深浅卡片及既有连接详情。最终日志 `/tmp/kclash-observation-details-stable-final-device-20261031.log`。提取 25 张 PNG，其中有仓库基线的 23 张（DNS 8、记录卡片 6、观测页 6、连接详情 3）全部匹配；另 2 张为无哈希基线的整屏辅助图，本轮不将其计入匹配或人工复核数量。PNG 位于 `/tmp/kclash-observation-details-stable-final-visual-20261031/`，结果报告 `/tmp/kclash-observation-details-stable-final-visual-report-20261031.txt`；DNS 八状态已人工检查。
+- 标准 `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；JVM Debug 报告 233 项，失败/错误/跳过均为 0，Lint 0 Error、36 Warning、3 Hint。最后仅修改测试截图等待与基线后，`:app:assembleDebugAndroidTest` 再次通过并安装复验。Debug APK SHA-256 `4a04cdc2d305c689909ccf0afabf374b13110bb7ca77d2d72199ac23a123125b`，AndroidTest APK SHA-256 `88ce6963ad3c324529918be9fb7eb764804c2d3b3006ac327d199e7a65f019ee`；主 APK 原生库仅 `lib/arm64-v8a/`，测试 APK 无原生库。构建日志 `/tmp/kclash-observation-details-checks-third-20261031.log`、`/tmp/kclash-observation-details-final-test-build-20261031.log`、`/tmp/kclash-observation-details-stable-final-build-20261031.log`。
+- 失败留痕：首轮 DIRECT 文本匹配到多个节点，修为限定可点击语义；第二轮点击 DNS 卡片中心误触标签，改为真实触摸卡片右上留白。随后 9 项回归中 DNS 四张展开态哈希漂移，差异仅位于拖柄 48dp 区域；点击拖柄的波纹进入截图，正文保持一致。最终改用 `SemanticsActions.Expand`，等待语义为已展开且面板高度达到窗口的 0.9（误差不超过 2px）；稳定截图人工复核后更新四张展开态基线，最终 9 项完整重跑通过。原始失败日志保留在 `/tmp/kclash-observation-details-device-first-20261031.log`、`/tmp/kclash-observation-details-device-second-20261031.log`、`/tmp/kclash-observation-details-device-final-20261031.log`、`/tmp/kclash-dns-stable-capture-device-20261031.log`。
+- 本轮仅使用固定 Compose 夹具，没有访问在线白名单路径、读取或修改工作区根目录 `1.yaml`、启动 VPN 或 Mihomo 核心；没有执行横屏或大字号用例。结束时设备为竖屏 `1080x2340`、系统字号 `1.0`、用户旋转值 `0`、自动旋转恢复原值 `1`；`ip link` 无 `tun0`，KClash 主进程为空，最新 `dumpsys activity services com.lonnnnnng.flclash` 成功返回 `(nothing)`。前轮服务查询被系统拒绝的历史记录仍保留。
+- 当前详情与筛选切片为 `DONE-VERIFIED`，整体 UI/UX 继续 `PARTIAL`，本轮未提交推送。下一步优先对齐 Requests/DNS 完整列表工具栏、搜索/关键词区与页面布局，再补 DNS 点击快照的 Activity 重建恢复（当前 `selectedQuery` 仍为普通 `remember`）。DNS 详情水平内边距当前 24dp，Flutter 参考为 16dp；结构化日志、相对时间、全应用主题、连续圆角精确曲率、完整页面 parity 和跨设备验证仍待后续。
+
+### 2026-11-01：Requests / DNS 完整列表工具栏与重建恢复首片
+
+- Requests 与 DNS 记录改为全屏页面壳，统一上游标题“最近请求”“DNS查询”、返回入口、可展开搜索和关键词筛选；DNS 顶栏提供清理操作。详情关闭后保留列表搜索和关键词，DNS 详情快照通过 Activity 重建后恢复。
+- 新增固定 Debug 宿主页面截图，Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏默认字号分别采集 Requests/DNS 深浅色 4 张页面图，人工检查标题、顶栏与记录布局无裁切或遮挡；哈希记录在 `docs/visual-baselines/observation-list-pages-redmi-api36.sha256`。测试在采集前断言竖屏和字号 `1.0`。
+- AndroidTest 构建已安装到指定真机；截图、DNS 详情快照重建、顶栏操作、详情搜索/日志级别筛选、请求/DNS 详情及关键词组合筛选共 5 项精确 instrumentation 全部通过。完整单元测试、Debug/AndroidTest 构建和 Lint 已按 `android-arm64` 参数通过；主 APK 只包含 `lib/arm64-v8a/libclash.so`。
+- 已知行为差异：Kotlin DNS 顶栏动作清除本地查询历史，Flutter `dns_queries.dart` 调用 `clearDnsCache()` 清除 Mihomo 缓存。当前 Core bridge 没有清理缓存方法，不能将此操作记作完全对齐；后续需补 bridge 调用与成功/失败提示。
+- 本轮只用固定 Debug 夹具，未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN 或 Mihomo；未运行横屏/大字号用例。Requests/DNS 工具栏与重建恢复首片 `DONE-VERIFIED`，整体 UI/UX 仍为 `PARTIAL`。后续先做 Flutter 对照下的展开搜索/关键词区和完整页边距视觉校准，再收敛 DNS 清理行为与详情 24dp/16dp 内边距差异。
+
+### 2026-11-01：DNS 缓存清理反馈首片
+
+- `MainViewModel.clearDnsCache()` 返回 `Result<Unit>`，DNS 全屏页根据结果显示成功或失败 Snackbar；提示挂在列表弹窗自身窗口内，避免被下层主页面 Scaffold 遮挡。清理期间禁用重复点击，失败只显示稳定文案，不暴露核心异常文本；本地查询历史不被清空。
+- CoreRuntimeManager 的成功确认和负确认单测已随完整 JVM 测试通过。Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36）固定列表宿主 4 项精确 instrumentation 通过：Requests/DNS 深浅截图、DNS 详情与筛选重建、清理成功反馈、清理失败反馈；两种反馈用例均验证 DNS 历史仍显示。截图哈希仍匹配 `docs/visual-baselines/observation-list-pages-redmi-api36.sha256`。
+- 标准 `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；Debug APK SHA-256 `25a9de5850c6030470b59355b3db09471e7c778643ed079275a9ff79e3909139`，AndroidTest APK SHA-256 `ca73f8904b0a4c29080ec14c456ee6ed16988c5e64ffa16fc8246a1750916c78`；APK 只包含 `lib/arm64-v8a/libclash.so`。
+- 真机仅安装 Debug/AndroidTest 并运行固定 Compose 夹具；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN 或 Mihomo。设备验收为竖屏 `1080×2340`、系统字号 `1.0`；未运行横屏或大字号用例。清理反馈 UI 与 RuntimeManager 返回契约已验证，运行中真实核心的端到端缓存清理仍未验证，不能据此宣称在线核心操作完成。Requests/DNS 整体 UI/UX 仍为 `PARTIAL`；下一步校准 Flutter 对照下的展开搜索、关键词筛选区域和完整列表页视觉。
+
+### 2026-11-01：DNS 详情边距对齐
+
+- Flutter `lib/views/dns_queries.dart` 的 `DnsQueryDetailView` 使用水平 `16dp` 列表边距；Kotlin DNS 详情容器已从 `24dp` 调整为 `16dp`，连接详情容器保持原布局。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36）重新采集并人工检查深浅色 × 成功答案/解析错误 × 半展开/展开 8 种详情图；长域名、DNS 上游 URL、完整 IPv6、错误文本均未裁切。八个 SHA-256 已同步到测试断言和 `docs/visual-baselines/dns-details-states-redmi-api36.sha256`。
+- 标准 Gradle 单测、Debug/AndroidTest 构建和 Lint 通过；DNS 详情八态 instrumentation `OK (1 test)`，Requests/DNS 列表回归 `OK (4 tests)`。Debug APK SHA-256 `92430de1fa5bebba6e22f0d8a79eaffd8688f6dc55d7d70d6e9e3a2bac6288f2`，AndroidTest APK SHA-256 `1648caba2645588595e70fcfe9a52bc69965b19866141fcc3ffa947e05be6d33`。
+- 本轮只使用固定 Compose 夹具，没有访问在线白名单、读取或修改 `1.yaml`、启动 VPN 或 Mihomo；设备保持竖屏 `1080×2340`、系统字号 `1.0`，未执行横屏/大字号用例。DNS 详情边距切片 `DONE-VERIFIED`，Requests/DNS 和整体 UI/UX 仍为 `PARTIAL`；下一步逐项核对展开搜索、关键词栏及完整 Requests/DNS 列表页面布局。
+
+### 2026-11-01：Requests / DNS 搜索栏和关键词条 Flutter 对齐
+
+- 对照 Flutter `lib/ui/scaffold.dart` 的 `_buildBarSearch`、`_BarSearch`、`_KeywordStrip`，以及 `lib/ui/search_field.dart`、`lib/ui/chip.dart`。展开搜索时 Kotlin 隐藏返回和 DNS 清理动作，保留独立取消键；搜索框为 44dp 胶囊，前置 20dp 搜索图标，文本起点 41dp，查询非空时显示清除按钮，取消或系统返回会清空查询并退出。
+- 关键词条固定为 36dp；上下间距分别 4dp / 16dp，横向内边距 16dp，标签间隔 8dp。标签采用上游 15sp 半粗文字、16dp 删除图标及深浅色凸起表面；含标签时顶部总占位仍为 56dp，避免列表起点随筛选状态跳动。
+- 搜索输入区、搜索动作和取消动作补齐 Flutter raised-surface 中性胶囊色面。Redmi 最终搜索态截图已人工检查：输入胶囊与取消按钮间隔 12dp，关键词条和记录卡片均无裁切或重叠。
+- `ObservationListInstrumentedTest#expandedSearchReplacesToolbarActionsAndClearKeepsSearchOpen`、`ObservationDetailsInstrumentedTest#requestsAndDnsRecordsOpenDetailsAndKeywordChipsFilterRows`、`ObservationListInstrumentedTest#observationRequestAndDnsListsCaptureDarkAndLightScreens` 均在 Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36）精确通过；覆盖搜索态动作切换、字段清空/取消、36dp 标签、请求/DNS 详情和关键词筛选，以及四张普通态深浅色页面截图哈希。四张最终哈希位于 `docs/visual-baselines/observation-list-pages-redmi-api36.sha256`，截图为固定夹具渲染一致性证据，不声称跨 Flutter/Compose 像素等价。
+- Flutter `SearchField` 的 41dp 前缀宽度现有真机回归断言：以搜索胶囊为基准检查图标左 inset 12dp、输入起点 41dp、图标到文字 9dp，坐标容差不超过 1px。Redmi 精确执行 `ObservationListInstrumentedTest#expandedSearchReplacesToolbarActionsAndClearKeepsSearchOpen`，结果 `OK (1 test)`；测试报告 `android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml`。本次 Debug APK SHA-256 `a911a6e6abd564bf140b4984d7a3bf3b0ff046e622a0a715200281d79e4dd72c`，AndroidTest APK SHA-256 `48657b5cf2a0c0eb64892e47f846e08d922d21d2c1689e2b9e18ebe377a2d1bb`。
+- `./gradlew :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64` 和 `./gradlew :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；Lint `0 errors, 38 warnings, 3 hints`。Debug APK SHA-256 `5d975c6ea9e8e0f31653421561cd3f610521e4ae8eb20f01929012f11d661008`，AndroidTest APK SHA-256 `50baa01fa68b48b8fa026f68e8b28e260e9bd2cf7db10cea9bd3d08653aee477`；主 APK 原生库仅位于 `lib/arm64-v8a/`。
+- 验收固定设备竖屏 `1080×2340`、系统字号 `1.0`；没有访问在线白名单、读取或修改 `1.yaml`、启动 VPN 或 Mihomo，也没有运行横屏/大字号用例。全量 JVM 单元测试本轮未重跑，整体 Requests/DNS 页面与 UI/UX 阶段仍为 `PARTIAL`；下一步核对列表页面剩余操作，以及观测页和 Dashboard 的 Flutter 视觉边距。
+
+### 2026-11-01：Requests / DNS 空态与无结果态视觉对齐
+
+- Requests 普通空态改为“暂无请求”与请求图形；DNS 普通空态改为“DNS查询为空”与 DNS 图形；过滤后无记录统一显示“没有匹配的结果”及搜索图形。两类页面的加载态/列表错误态在 Flutter 参考中均未接入，本轮没有新增 Kotlin 专属状态。
+- 新增共用 Compose 空态组件，按类型绘制独立的圆瓣矢量底图、上游 primary-container/tertiary 点缀和 Material 图标；正文保持 17sp/22sp，插画依据纵向空间采用 120dp 或 160dp，最大宽 320dp，并按 Flutter 的 -0.2 垂直对齐。日志弹窗仍保留原文本空态。
+- 固定夹具新增 Requests/DNS 普通空列表和搜索无结果覆盖。Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）精确执行 `ObservationListInstrumentedTest` 全部 7 项，失败/错误/跳过均为 0；包含 41dp 搜索输入起点、DNS 快捷清理反馈、详情重建，以及空态/无结果深浅色截图。8 个 SHA-256 位于 `docs/visual-baselines/observation-empty-states-redmi-api36.sha256`；4 张全屏空态图和 4 张无结果组件图已人工检查，无裁切、遮挡或主题对比问题。
+- 最终设备为竖屏 `1080×2340`、系统字号 `1.0`。仅使用固定 Debug 夹具；没有访问白名单在线路径、读取或修改 `1.yaml`、导入订阅或启动 VPN/Mihomo；没有运行横屏/大字号用例。最终 Debug APK SHA-256 `dae4ea207ce8a8d8b003c55256cd5238e404fa2153478e1312cdee6aff52956e`，AndroidTest APK SHA-256 `f44bbb50ebd1d8aba82fbbee3cc4092198281c29c639c2be37f6638ac4223c2e`。`:app:lintDebug` 通过，0 Error、38 Warning、3 Hint；全量 JVM 单测本轮未重跑。Requests/DNS 其余页面交互及整体 UI/UX 仍为 `PARTIAL`；下一步核对剩余列表操作和观测页/Dashboard 页面边距。
+
+### 2026-11-01：Logs 全屏列表与主流程优先级调整
+
+- Logs 从 AlertDialog 改为与 Requests/DNS 一致的全屏列表页，顶部提供返回、搜索和导出；日志级别标签可加入关键词筛选并从标签条移除。普通空态与搜索无结果态复用观测页插画组件。页面仍使用现有日志状态和导出回调。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏、系统字号 `1.0`：`ObservationListInstrumentedTest` `OK (9 tests)`，覆盖 Logs 深浅色截图哈希、级别筛选、搜索、导出，以及既有 Requests/DNS 回归；`ObservationDetailsInstrumentedTest#requestsDnsAndLogsDetailsSupportSearchAndLevelFilter` 单项通过。`:app:testDebugUnitTest` 113 项通过，`:app:lintDebug` 通过。
+- Logs 截图哈希为深色 `018be45df75a8b7f2d121fdf2af1ff2ce062847b6b16488624857c4d9560e5bf`、浅色 `cbe7afba7d17037586701e4dea342629ba92c1caf0b5d2f8bded9f8c204425d5`，存放于 `docs/visual-baselines/logs-page-states-redmi-api36.sha256`。Debug APK SHA-256 `5110f0c01a16e4872a7de0e207fae8991a8b04c7120416fd7d9142cfeff17d88`，AndroidTest APK SHA-256 `cc838f2ea7228babad419af6f9f8f4ad6d40bb10aebe72746ac902b3bd1ee0f0`。
+- 验收只使用固定宿主；未访问两条在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。整体 UI/UX 仍为 `PARTIAL`。后续优先级调整为 Dashboard 当前配置主控 → Profiles 配置管理主路径 → Proxy Groups 组/节点切换；观测日志预览卡的清空快捷操作、自动跟随滚动与更细视觉对齐仍未完成。
+
+### 2026-11-01：首页配置快捷操作与代理模式
+
+- Dashboard 当前配置卡提供多 Profile 快速切换、远程 URL 单项同步和忙碌反馈，并显示配置来源、更新时间、订阅用量进度及到期时间；Profile 操作复用 `ProfilesViewModel`，核心运行或配置操作忙碌时禁用修改。首页新增 Rule/Global/Direct 三态模式控件；`CoreRuntimeManager` 将用户选择写入 SharedPreferences，核心运行时即时调用 Bridge，停止态选择在核心启动后应用。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏、系统字号 `1.0`：`DashboardInstrumentedTest` `OK (7 tests)`，覆盖配置切换、同步忙碌态、模式三态选择及停止/运行深浅色截图；`MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry` `OK (1 test)`。截图哈希：深色默认/系统就绪 `1e1ce2477be1dc3bed4543653ecadfd9197cffa50c35c6a6c1ae7913adb5a0f6`，深色运行 `2ca39f3de36edcafc30ad3ea7c7307b11f2a1f8ca108aa526f90023ad25f46e8`，浅色默认 `6b297450f902ee5ccb9b5da66fc7ba1129e0015aa403c93922ad167fa7d69e14`，浅色运行 `9caed5cf3d74f4842942f527eb9b8532995bd46e75ce8c8a74c350c6b17d6047`。
+- `./gradlew test :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；全工程 JVM 242 项，失败 0、错误 0、跳过 0。`:app:lintDebug` 为 0 errors、38 warnings、3 hints。当前 Debug APK SHA-256 `0a44a59cf00ebd73977ee477f29f0312a55b28934dd25d8dea9ba5726379c1d3`；AndroidTest APK SHA-256 `7cb0884b5283556dd6ba2c26fcacd1f1fa1e38dfa1d0d0a8233c76253787afea`。
+- 模式控件此前只有固定 Compose 宿主与 CoreRuntimeManager JVM 证据；本轮补上 Redmi 真实核心闭环，详情见下方“首页出站模式真实核心闭环”。本轮未通过界面手动添加或访问在线订阅；核心运行期间设备连接计数变化，目标未核验，因此不把本轮作为在线路径或外网分流验收。未运行横屏或大字号用例。Dashboard 外观和内容 parity 仍为 `PARTIAL`，主流程下一步转到 Profiles 导入，然后推进 Proxy Groups 递归与工具入口。
+
+### 2026-11-01：Profiles 添加来源与远程订阅编辑主路径
+
+- Flutter 远程 Profile 菜单可进入订阅编辑页，编辑名称、URL 和自动更新策略；Kotlin 原先只有同步、自动更新开关和重命名。本轮为 URL Profile 菜单补“编辑”入口与独立编辑表单，提供名称、HTTP/HTTPS URL、自动更新开关和分钟间隔。添加配置现在先选二维码图片、YAML 文件、订阅链接或自定义配置，再进入对应表单，避免来源入口和编辑字段混在同一对话框。
+- `ProfilesViewModel` 校验 URL、名称长度和自动更新间隔，核心运行时拒绝保存；`ProfileRepository` 校验订阅地址、重复 URL 和 Profile 类型后持久化设置。URL 实际变化时才调用既有订阅下载/YAML 校验；下载失败保留旧配置文件并通过现有错误流提示。URL 未变化时只保存元数据，不触发网络请求。
+- Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏、系统字号 `1.0`：`ProfileUiInstrumentedTest` 15 项通过，覆盖 QR/文件入口回调、订阅来源独立表单、远程菜单编辑和自动更新间隔；`ProfilesViewModelPanelInstrumentedTest#realViewModelDrivesCreateEditAndDeleteFlow` 1 项通过，覆盖真实 ViewModel 创建、编辑和删除组合路径。全工程 JVM 242 项通过。
+- `:app:connectedDebugAndroidTest`、`./gradlew test :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；Lint 0 errors、38 warnings、3 hints。测试使用固定 Compose/ProfileStore 替身，没有访问两条真实在线白名单、未读取或修改根目录 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。
+- 已知差异：Flutter 手机端通过相机扫码；Kotlin 目前从二维码图片 picker 导入，尚未提供相机扫码。Flutter 订阅添加还支持批量链接、重复 URL 提示及 age-secret 解密；Kotlin 目前没有 age-secret 解密 Bridge，配置导入完整路径仍为 `PARTIAL`。Requests/DNS/Logs 后续页面打磨继续暂停。
+- 下一步顺序：补齐 Profiles 批量订阅链接、重复项反馈和相机扫码导入；本地 YAML 文件导入已通过真机主路径验收。随后推进 Proxy Groups 工具菜单、递归节点行为和当前节点自动定位。所有验收继续固定为 Redmi 竖屏默认字号，不运行横屏或大字号用例。
+
+### 2026-11-01：首页出站模式真实核心闭环
+
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）此前未安装 KClash；本轮安装 Debug APK 并首次授予通知与 Android VPN 权限。只使用工作区根目录 `1.yaml`，未读取其正文；设备 `/sdcard/Download/1.yaml` 与工作区文件 SHA-256 同为 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`。
+- 从 KClash「配置 → 添加配置 → 从文件导入 YAML」选取 `1.yaml`，首页显示本地 Profile；点击首页启动后进入“核心运行中”。依次切换 Rule、Global、Direct，三个模式均在实际运行态界面得到选中反馈；切换成功后核心状态仍为运行中。
+- Direct 模式下停止核心再启动，启动成功且 Direct 仍为当前选中模式；随后再次停止，首页回到“核心已停止”。本轮没有手动访问在线订阅、诊断地址或其他外部 URL；运行核心期间设备连接计数变化，但没有核验这些连接的目标，因此不声称后台没有联网，也不把本轮作为在线路径白名单或公网流量分流验收。
+- `./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 成功（Gradle 标记已完成任务为 `UP-TO-DATE`）；APK 原生库仅含 `arm64-v8a`，Debug APK SHA-256 `0a44a59cf00ebd73977ee477f29f0312a55b28934dd25d8dea9ba5726379c1d3`。精确 Redmi instrumentation `DashboardInstrumentedTest#dashboardOutboundModeControlChangesSelectedMode` 和 `#dashboardProfilePickerChangesCurrentProfile` 各 1 项通过；真机保持竖屏、系统字号 `1.0`，未运行横屏或大字号测试。
+- 本次闭环验证的是首页操作到 Mihomo `updateConfig` 调用、模式状态反馈及重启恢复，不等同于互联网流量分流端到端验收。整体首页内容 parity 仍为 `PARTIAL`；后续先完成 Profiles 批量链接/重复项反馈和相机扫码，再做 Proxy Groups 工具菜单、递归组和当前节点自动定位。Requests/DNS/Logs 次要视觉工作继续暂停。
+
+### 2026-11-01：Proxy Groups 工具菜单、排序过滤与当前节点定位
+
+- 代理页工具入口加入 Flutter 对应的排序、网格密度、卡片尺寸和隐藏超时节点四类设置；设置保存到应用级 `SharedPreferences`，不写入 Profile YAML，也不会随 Profile 切换丢失。排序实现默认原序、名称升序和延迟优先级（成功、未测、超时、失败）；隐藏超时保留当前选择和嵌套代理组入口，过滤为空时回退原列表。
+- 节点卡片支持紧凑/标准/宽松高度；网格密度按 Flutter 的 250dp 基准调整列数。新增定位按钮通过当前组的 `LazyVerticalGrid` 滚动到当前节点；嵌套组仍保持 Flutter 的平面列表行为，没有新增子组下钻页面。
+- 自动化验证：App JVM 123 项通过；`:app:compileDebugKotlin :app:compileDebugAndroidTestKotlin` 通过；新增代理排序/隐藏过滤/网格密度纯逻辑测试通过。Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏、系统字号 `1.0`：新增 `proxyToolsMenuChangesGridDensityAndCurrentNodeCanBeLocated` 通过；截图方法在更新 `docs/visual-baselines/proxy-groups-states-redmi-api36.sha256` 后重跑通过，整类 7 项已全部通过。
+- 本轮未访问两条真实在线白名单、未读取或修改工作区根目录 `1.yaml`、未启动 VPN/Mihomo；没有运行横屏或大字号用例。当前代理主流程工具首片为 `DONE-VERIFIED`，完整 Proxy UI/UX 仍为 `PARTIAL`；Flutter Tab/List 模式切换、列表图标样式、叶子协议字段和更细滚动恢复继续排在后续。
+
+### 2026-11-01：Proxy Groups Tab/List 布局与列表图标
+
+- 代理工具菜单增加 Flutter 对应的布局切换。Tab 模式继续使用横向分组标签和单组节点网格；List 模式按组显示标题、当前节点摘要、组图标和批量测速入口，组内节点仍使用同一选择/测速卡片，不新增子组下钻。
+- List 模式提供填充、简洁和隐藏三种组图标样式；布局和图标偏好保存到应用级 `SharedPreferences`，并与排序、密度、卡片尺寸和隐藏超时设置共用状态边界。搜索、节点选择、单节点测速和延迟/超时/失败过滤在两种布局中保持一致。
+- 自动化验证：`:app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`、App JVM 123 项通过。Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏、系统字号 `1.0`：`proxyListLayoutShowsGroupSectionsAndListIconMenu` 通过；此前代理组工具/定位用例与 7 项整类回归保持通过。
+- 本轮未访问两条真实在线白名单、未读取或修改工作区根目录 `1.yaml`、未启动 VPN/Mihomo；没有运行横屏或大字号用例。Tab/List 主流程首片为 `DONE-VERIFIED`，完整 Proxy UI/UX 仍为 `PARTIAL`；叶子协议字段、按组滚动位置恢复和更细 Flutter 卡片几何仍排在后续。
+
+### 2026-11-01：Profiles 批量订阅导入首片
+
+- 添加订阅表单提供“单条/批量”切换。批量输入支持换行、YAML `- ` 列表项和引号；预览已识别链接数、跳过的已有订阅数，重复项不重复导入；输入中存在无效链接时阻止提交并只显示无效数量，不回显链接正文。
+- `ProfilesViewModel.addRemoteBatch` 按输入顺序逐条提交，单条下载失败不会中断后续链接；结果摘要只展示新增、重复跳过和失败数量，避免订阅 URL 中的 token 出现在 Snackbar。核心运行时仍拒绝修改 Profile。
+- 自动化验证：`ProfileUrlImportTest` 3 项、`ProfilesViewModelTest#batch import is sequential skips existing urls and continues after failures` 通过；App 全量 JVM 测试及 `:app:lintDebug` 通过，Android 主代码和 instrumentation 编译通过。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏、系统字号 `1.0`：`ProfileUiInstrumentedTest#batchProfileImportShowsDuplicateCountAndSubmitsOnlyNewUrls` 与 `#batchProfileImportBlocksInvalidEntriesWithoutShowingTheirContents` 分别 1 项通过。仅使用固定 `.invalid` 表单夹具，没有访问在线白名单、读取或修改根目录 `1.yaml`，也未启动 VPN/Mihomo；没有运行横屏或大字号用例。
+- 配置批量导入与重复反馈首片完成，完整 Profiles/UI parity 仍为 `PARTIAL`；相机扫码和 age-secret 解密仍未覆盖。工具菜单、Tab/List 和 Tab 当前节点定位已随后完成；当前下一片为自定义配置创建后的编辑与草稿退出，再补结构化编辑和主流程菜单。完成主流程前继续暂停 Requests/DNS/Logs 视觉工作。
+
+### 2026-11-01：主页配置详情、代理组摘要与 Profiles 结构化编辑入口（DONE-VERIFIED 首片）
+
+- 当前配置整卡可打开配置详情，显示名称、来源、订阅摘要和同步/配置管理入口；核心运行时详情可读、同步禁用。Dashboard 代理组卡显示数量与最多四枚首字徽标及剩余数量，按 Rule/Global/Direct 模式过滤展示；整卡打开节点选择弹层。
+- 弹层复用代理组 Tab/List 偏好、搜索、选择与测速回调，选节点后保持打开；关闭后释放查询。使用完整组图解析当前叶子，避免 hidden 分组过滤破坏递归结果。键盘出现时面板自动展开，测速收进摘要行后首排节点和测速控件完整可见。
+- Redmi 定向真机证据：`DashboardInstrumentedTest` 14 项、`ProxyGroupsActivityInstrumentedTest` 8 项、Profiles 结构化分区入口 1 项、真实 ViewModel 创建/编辑/放弃组合 1 项、主页空草稿退出 1 项均通过；本轮主流程组合重跑最终 `OK (26 tests)`。首次 Dashboard 搜索用例因键盘压缩半展开面板失败，已修复并复验通过；主页入口旧断言和错误测试类名也已修正。
+- 自定义编辑器现在展示“配置概览”以及 Rules、Proxies、Proxy Groups、Providers、DNS、Dialers 六个入口，并保留可滚动原始 YAML；分区按钮调用既有 ViewModel 编辑器。输入法在取消、保存和放弃确认时收起，确保手机弹窗标题和底部操作可见。该切片仍不等同 Flutter 的即时持久化结构化页面，改动后退出命名、导入/预览和完整分区表单继续排队。
+- `./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :app:testDebugUnitTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；App JVM `127` 项失败 0、错误 0、跳过 0；Lint `0 errors, 41 warnings, 4 hints`。Debug APK SHA-256 `638425a54b0d174a4ac532014748ea1565fee527ff3ef697f0b0136afc0ee4f9`，AndroidTest APK SHA-256 `2c06880b882c340383b18cffc0f04cc9ab27f4cabf50d43375eb94b83481a267`，主 APK 原生库仅 `lib/arm64-v8a/`。
+- 本切片使用固定 Debug/ProfileStore 数据，未访问在线白名单、未读取或修改根目录 `1.yaml`、未启动 VPN/Mihomo；设备为 Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`），仅竖屏系统字号 `1.0`。主流程整体 UI/UX 仍为 `PARTIAL`，下一片优先做自定义配置结构化编辑的即时保存/退出命名，再推进配置管理菜单和代理组剩余视觉交互。
+
+### 2026-11-01：首页运行态配置切换引导
+
+- 首页运行中仍可打开配置选择弹层；弹层明确提示先停止核心，提供直接停止操作，停止完成前禁用其他配置项，停止后在同一弹层继续选择。启动/停止过渡态显示等待提示，避免配置切换与核心生命周期并发。
+- `ProfilesViewModel.select` 对 RUNNING、STARTING、STOPPING 状态增加业务层保护；Profile 切换不自动重启核心，当前选择和核心已应用配置仍保持区分。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64` 通过；App JVM 128 项失败 0、错误 0、跳过 0。`:app:lintDebug` 通过。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`：`DashboardInstrumentedTest` 整类 `15` 项通过，失败/错误/跳过均为 0，覆盖首页运行态停止引导、停止态配置切换、配置详情、代理组摘要与选择器、出站模式和截图基线。停止引导用例验证运行态提示、配置项禁用、停止回调和停止后继续选择；未通过真实运行中的 Mihomo 核心触发停止，因此生产运行时端到端仍未验收。
+- 本轮未访问两条真实在线白名单，未读取或修改工作区根目录 `1.yaml`，未启动 VPN/Mihomo；未运行横屏或大字号用例。首页切换交互首片已实现并通过固定宿主验证，完整 Dashboard/Profiles/Proxy Groups 主流程仍为 `PARTIAL`。下一步继续 Profiles 新建自定义配置后的结构化编辑和退出命名，再推进配置管理菜单与 Proxy Groups 叶子协议/视觉细节；Requests/DNS/Logs 后续视觉打磨继续暂停。
+
+### 2026-11-01：Profiles 分区保存与新建草稿退出保护
+
+- Rules、Proxies、Proxy Groups、Providers、DNS 和 Dialers 保存成功后，同步父级编辑器的 YAML 正文或 Profile 覆盖元数据；原始 YAML 有未保存修改时，进入分区前先确认放弃，避免编辑器旧快照覆盖分区结果。
+- 新建 Profile 的空草稿仍可在退出时删除；分区内容已经持久化后退出不再删除配置，而是允许保存新名称或保留默认名称。已保存 YAML 的界面状态随文件更新刷新。
+- `./gradlew :app:testDebugUnitTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；`ProfilesViewModelTest` 34 项通过。Instrumentation APK 编译通过。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`：`ProfilesViewModelPanelInstrumentedTest` 2 项通过，覆盖结构化 Rules 保存→父级正文刷新→草稿命名保留，以及未改动草稿退出删除；`ProfileUiInstrumentedTest#savedNewProfileOffersRenameWhenLeavingEditor`、`#savedNewProfileCanKeepDefaultNameWhenLeavingEditor` 和 `#unsavedYamlRequiresConfirmationBeforeOpeningStructuredSection` 通过。
+- 仅使用固定 `ProfileStore` 夹具；未访问在线白名单、未读取或修改根目录 `1.yaml`、未启动 VPN/Mihomo；未运行横屏或大字号用例。Profiles 生命周期切片为 `DONE-VERIFIED`，完整 Profiles 和 Dashboard/Proxy Groups 主流程仍为 `PARTIAL`。下一步回到 Dashboard 逐项对齐主页按钮/统计入口，再推进 Profiles 管理菜单与 Proxy Groups 剩余视觉交互；Requests/DNS/Logs 后续视觉打磨继续暂停。
+
+### 2026-11-01：主流程优先级收敛
+
+- 近期实现顺序固定为 Dashboard → Profiles → Proxy Groups，逐页完成主操作、顶栏菜单、卡片/列表入口、弹层和错误/空/忙状态；观测页视觉与菜单打磨排在主流程之后。
+- Dashboard 继续保留 Flutter Android 默认卡片顺序，Android 专属核心启停卡作为平台入口；本轮不为统计入口重排主页，也不把 DNS 或最近请求入口作为当前工作目标。
+- Dashboard 先完成首页各按钮和跳转的逐项核对；Profiles 随后补齐配置行菜单、添加/同步/编辑/导入等操作；Proxy Groups 再完成运行时代理组菜单及自定义 Proxy Groups 的结构化表单、排序和删除确认。原始 YAML 编辑保留为高级入口，不视作结构化表单完成。
+- 本条只调整近期推进顺序，不提升任何功能状态；Dashboard、Profiles、Proxy Groups 整体 UI/UX 仍为 `PARTIAL`。后续验收继续仅限 Redmi Note 8 Pro、竖屏、系统默认字号和 `arm64-v8a`。
+
+### 2026-11-01：Dashboard 首页原位布局编辑
+
+- Dashboard 顶栏提供“编辑首页/完成编辑”切换；首页原位置显示卡片操作行，长按拖动手柄重排、移除按钮隐藏卡片，列表末尾可添加未显示卡片，边缘拖动支持滚动。顺序和显隐实时保存在应用级 SharedPreferences，不写入 Profile 或 YAML；添加卡片时放到可见列表末尾。默认顺序保持 Flutter Android 主卡顺序，核心启停卡固定在顶部。
+- 新增布局状态单元测试 6 项，覆盖默认主卡顺序、未知/缺失偏好恢复、升级新增卡片默认可见、显隐与排序独立、可见卡片拖动排序时不带回隐藏卡片，以及重新添加时移至可见列表末尾。
+- `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过；`DashboardLayoutTest` 6 项通过，Lint 无错误。Debug APK 已安装并在真机打开，竖屏默认字号截图确认编辑操作没有遮挡卡片标题或连接数。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`：独立 `DashboardLayoutEditorInstrumentedTest` 2 项通过，覆盖卡片长按拖动后顺序持久化、卡片移除/重新添加和 Activity 重建读取。测试只使用应用本地状态；未访问在线白名单、未读取或修改根目录 `1.yaml`、未启动 VPN/Mihomo；未运行横屏或大字号用例。
+- 执行边界记录：首次使用 `-Pandroid.testInstrumentationRunnerArguments.method=...` 过滤时参数未生效，实际运行了 `MainActivityInstrumentedTest` 整类 19 项，其中包含观测页和旋转用例。该次有 1 项主页导航断言失败，因为布局偏好虽已恢复，复用的 Activity 仍保留旧组合状态；该执行结果不作为观测页或旋转验收证据。随后将新编辑器测试隔离到单独测试类，定向用例通过，未再次运行该整类。
+- 编辑器核心交互已验证；Flutter 进出场/摇摆动效和 Dashboard 主页其余按钮、菜单的逐项核对仍在队列，Dashboard 整体 UI/UX 仍为 `PARTIAL`。下一步进入 Profiles 管理菜单与添加/同步/编辑路径，再推进 Proxy Groups 结构化表单、排序和删除确认；Requests/DNS/Logs 继续延期。
+
+### 2026-11-01：手机主导航四 Tab 与代理入口条件
+
+- Flutter 手机端主导航顺序为“首页 → 代理 → 配置 → 工具”；代理入口不是固定项，无可用配置/代理组时隐藏。初始化前 Flutter 暂以 Profile 是否存在作为入口兜底，初始化完成后按当前可见代理组决定；Kotlin 主页面按 Profile/代理组状态生成导航，空状态只保留“首页、配置、工具”。
+- Requests、活动连接、DNS 查询、资源、设置和关于从主导航收回工具页入口；工具页保留 Flutter “导航 / 设置 / 其他”分组。工具入口跳转已通过真实 MainActivity 定向测试；工具页全部二级功能和视觉细节仍需逐项按 Flutter 对齐。
+- 自动化验证：`MainPageScaffoldTest` 覆盖无可用配置时隐藏代理、入口可用时四 Tab 顺序；`:app:testDebugUnitTest :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64` 通过。
+- Redmi Note 8 Pro（serial `wsvwypiz7xwslvl7`，Android 16/API 36，ABI 列表含 `arm64-v8a`）竖屏 `1080×2340`、系统字号 `1.0`：安装 Debug APK 后，`MainActivityInstrumentedTest#mainActivityNavigatesAcrossFlutterMobileDestinationsAndTools` 与 `#mainActivityRendersHomeAndProfileEntry` 各 1 项通过。未清空设备应用数据；本轮未访问在线白名单、未读取或修改工作区根目录 `1.yaml`，未启动 VPN/Mihomo，也未运行横屏或大字号用例。
+- 当前只完成主导航结构和二级入口首片；四个页面内容/样式整体 parity 仍为 `PARTIAL`。下一步继续按 Dashboard → Profiles → Proxy Groups 顺序逐页、逐菜单和逐按钮对照 Flutter，不扩展 Requests/DNS/Logs 视觉工作。
 
 ## 12. 路线图维护规则
 

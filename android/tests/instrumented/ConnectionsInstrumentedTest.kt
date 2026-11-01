@@ -45,15 +45,17 @@ class ConnectionsInstrumentedTest {
 
     @Test
     fun connectionsScreenshotMatrixMatchesBaseline() {
+        assertPortraitDefaultFontConfiguration()
         val expected = mapOf(
-            "stopped_empty" to "07736d6f23751a9f8f9b5caf292562aba4b273eb73e0d78c10beaef487e4087f",
-            "running_non_empty" to "e636a875e0244931c81e59e5205eacaac38dbe104fe9dfe8996ee53d14c25860",
+            "stopped_empty" to "cafef8bee10bf49508f0041aadfe3bf5655d28d2f5c975a5ab56efb83f6e9583",
+            "running_non_empty" to "ed80f15f4851a9116ec2dbfbea6f2adaf72f4c121881def22fd9f977c6110dac",
         )
         val actual = buildMap {
             put("stopped_empty", captureHash("stopped_empty"))
             composeRule.activity.runOnUiThread {
                 composeRule.activity.showRunningScenario()
             }
+            assertPortraitDefaultFontConfiguration()
             put("running_non_empty", captureHash("running_non_empty"))
         }
         val mismatches = expected.mapNotNull { (state, expectedHash) ->
@@ -92,7 +94,8 @@ class ConnectionsInstrumentedTest {
         }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithTag("connections_row_0").performClick()
+        // 作者 long：整条记录改为独立卡片后，用真实触摸确认圆角表面仍能打开详情，不能只验证语义回调。
+        composeRule.onNodeWithTag("connections_row_0").performTouchInput { click() }
         expandDetailSheet()
         composeRule.onNodeWithText("连接详情").assertIsDisplayed()
         composeRule.onNodeWithText("基本信息").assertIsDisplayed()

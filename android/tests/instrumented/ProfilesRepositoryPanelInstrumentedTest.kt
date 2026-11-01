@@ -109,9 +109,9 @@ class ProfilesRepositoryPanelInstrumentedTest {
 
         composeRule.onNodeWithText("添加配置").performClick()
         composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("保存").performClick()
+        composeRule.onNodeWithText("创建").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("未命名配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
         }
 
         val createdProfile = repository.profiles.value.single()
@@ -119,10 +119,6 @@ class ProfilesRepositoryPanelInstrumentedTest {
         assertEquals(createdProfile.id, repository.currentProfileId.value)
         assertTrue(repository.profileFile(createdProfile.id).isFile)
 
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
-        }
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
@@ -168,7 +164,7 @@ class ProfilesRepositoryPanelInstrumentedTest {
         composeRule.onAllNodesWithText("删除").assertCountEquals(2)
         composeRule.onAllNodesWithText("删除")[1].performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("还没有配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("暂无配置").fetchSemanticsNodes().isNotEmpty()
         }
         assertEquals(0, runBlocking { database.profiles().getAll().size })
         assertEquals(null, repository.currentProfileId.value)
@@ -231,6 +227,32 @@ class ProfilesRepositoryPanelInstrumentedTest {
             decodeSelectedMap(runBlocking { database.profiles().getById(profile.id)?.selectedMapJson }),
         )
         assertEquals(selectedMap, runBlocking { repository.activeProfile().selectedMap })
+    }
+
+    @Test
+    fun repositoryPersistsCurrentProxyGroupForPageRestore() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context = context,
+            database = database,
+            subscriptionClient = object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload =
+                    error("该分组记忆流程不访问远程订阅")
+            },
+        )
+        val profile = runBlocking { repository.addCustomProfile("分组恢复") }
+
+        val updated = runBlocking { repository.updateProfileCurrentGroupName(profile.id, "节点选择") }
+
+        assertEquals("节点选择", updated.currentGroupName)
+        assertEquals(
+            "节点选择",
+            runBlocking { database.profiles().getById(profile.id)?.currentGroupName },
+        )
     }
 
     @Test

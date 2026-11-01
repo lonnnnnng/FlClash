@@ -32,10 +32,28 @@ interface ProfileStore {
         profiles.value.firstOrNull { it.id == id }
             ?.copy(label = label.trim())
             ?: error("配置不存在")
+    suspend fun updateRemoteProfileSettings(
+        id: Long,
+        label: String,
+        url: String,
+        autoUpdate: Boolean,
+        intervalMillis: Long,
+    ): Profile = profiles.value.firstOrNull { it.id == id }
+        ?.copy(
+            label = label.trim(),
+            url = url.trim(),
+            autoUpdate = autoUpdate,
+            autoUpdateIntervalMillis = intervalMillis,
+        )
+        ?: error("配置不存在")
     suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
     suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile
+    suspend fun updateProfileCurrentGroupName(id: Long, groupName: String): Profile =
+        profiles.value.firstOrNull { it.id == id }
+            ?.copy(currentGroupName = groupName)
+            ?: error("配置不存在")
     suspend fun refreshCurrentProfile() = Unit
     suspend fun updateProfileAutoUpdate(
         id: Long,
@@ -187,6 +205,32 @@ class ProfileRepository(
         updated
     }
 
+    override suspend fun updateRemoteProfileSettings(
+        id: Long,
+        label: String,
+        url: String,
+        autoUpdate: Boolean,
+        intervalMillis: Long,
+    ): Profile = withContext(Dispatchers.IO) {
+        val normalizedLabel = label.trim()
+        require(normalizedLabel.length <= MAX_PROFILE_LABEL_LENGTH) {
+            "配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符"
+        }
+        val normalizedUrl = normalizeSubscriptionUrl(url)
+        require(mutableProfiles.value.none { it.id != id && it.url == normalizedUrl }) { "该订阅已经添加" }
+        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+        require(current.type == ProfileType.URL) { "只有远程订阅支持编辑订阅信息" }
+        val updated = current.copy(
+            label = normalizedLabel,
+            url = normalizedUrl,
+            autoUpdate = autoUpdate,
+            autoUpdateIntervalMillis = intervalMillis.coerceAtLeast(MIN_AUTO_UPDATE_INTERVAL_MILLIS),
+        )
+        // 作者 long：远程配置地址和自动更新策略属于 Room 元数据，先完整持久化；地址变化后由 ViewModel 再拉取并校验新订阅。
+        profileDao.update(updated.toEntity())
+        updated
+    }
+
     override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
         withContext(Dispatchers.IO) {
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
@@ -199,6 +243,15 @@ class ProfileRepository(
         withContext(Dispatchers.IO) {
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
             val updated = current.copy(selectedMapJson = encodeSelectedMap(selectedMap))
+            profileDao.update(updated.toEntity())
+            updated
+        }
+
+    override suspend fun updateProfileCurrentGroupName(id: Long, groupName: String): Profile =
+        withContext(Dispatchers.IO) {
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            // 作者 long：组页记忆按 Profile 隔离，切回同一配置时可恢复上次查看的组，不改动核心 YAML。
+            val updated = current.copy(currentGroupName = groupName)
             profileDao.update(updated.toEntity())
             updated
         }
@@ -390,4 +443,15 @@ class ProfileRepository(
         const val MAX_UPDATE_ERROR_LENGTH = 240
         const val MAX_PROFILE_LABEL_LENGTH = 64
     }
+}
+
+internal fun normalizeSubscriptionUrl(value: String): String {
+    val normalized = value.trim()
+    require(normalized.isNotEmpty()) { "订阅链接不能为空" }
+    val uri = runCatching { java.net.URI(normalized) }
+        .getOrElse { throw IllegalArgumentException("订阅链接格式无效", it) }
+    require(
+        uri.scheme in setOf("http", "https") && !uri.host.isNullOrBlank(),
+    ) { "请输入有效的 HTTP/HTTPS 订阅链接" }
+    return normalized
 }

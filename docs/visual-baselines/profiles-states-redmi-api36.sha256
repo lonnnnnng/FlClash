@@ -1,4 +1,5 @@
-# KClash ProfilesPanel fixed-state PNG baselines.
-# Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0, dark mode.
-state=empty sha256=7be078c77904b1b361743899e9618d75429d9a9650a205667e77e59b640af0d6
-state=custom_selected sha256=793a665b414afa6898783a8298ea631da41a79350a34a707880a8ed3355ba55c
+# KClash Profiles fixed-state PNG baselines.
+# Device: Redmi Note 8 Pro, Android 16/API 36, portrait, system font scale 1.0, dark mode.
+state=empty sha256=c648aa2a728eef3d5b3b5ce493e3725b716e8914f653c9366a93f130c56dfff9
+state=custom_selected sha256=ae18793505a09c77a712820d68d4d1f5a5ceedd58337a7cb4cef9120d6cc409b
+state=remote_usage sha256=fa4cce6aae89bae203c5123d48aebc2b6bde23afda7f6f0e40000df2a1c09d56

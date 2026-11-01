@@ -17,6 +17,16 @@ class CoreBridgeParsingTest {
     private val bridge = CoreBridge()
 
     @Test
+    fun `core outbound mode accepts only supported values`() {
+        assertEquals(CoreOutboundMode.RULE, CoreOutboundMode.fromWire("rule"))
+        assertEquals(CoreOutboundMode.GLOBAL, CoreOutboundMode.fromWire("GLOBAL"))
+        assertEquals(CoreOutboundMode.DIRECT, CoreOutboundMode.fromWire("direct"))
+        assertThrows(CoreBridgeException::class.java) {
+            CoreOutboundMode.fromWire("bypass")
+        }
+    }
+
+    @Test
     fun `polling and request event preserve the same connection metadata`() {
         val connection = """{
           "id":"metadata-1","start":"2026-10-31T00:00:00.123456789Z","upload":-1,"download":20,

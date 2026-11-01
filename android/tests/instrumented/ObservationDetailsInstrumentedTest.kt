@@ -7,15 +7,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.click
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreConnectionMetadata
@@ -80,29 +89,34 @@ class ObservationDetailsInstrumentedTest {
                 )
                 when (dialog) {
                     ObservationDialog.REQUESTS -> RequestsDialog(requests) { dialog = null }
-                    ObservationDialog.DNS -> DnsDialog(dns, { dialog = null }, {})
-                    ObservationDialog.LOGS -> LogsDialog(logs, { dialog = null }, {}, {})
+                    ObservationDialog.DNS -> DnsDialog(dns, { dialog = null }, { Result.success(Unit) })
+                    ObservationDialog.LOGS -> LogsDialog(logs, { dialog = null }, {})
                     null -> Unit
                 }
             }
         }
 
         composeRule.onNodeWithText("查看全部").performClick()
+        composeRule.onNodeWithContentDescription("搜索").performClick()
         composeRule.onNodeWithText("搜索目标、进程、代理链或规则").performTextInput("api.example.test")
-        composeRule.onNodeWithText("显示 1/2").assertIsDisplayed()
-        composeRule.onNodeWithText("关闭").performClick()
+        composeRule.onNodeWithTag("request_row_0").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
+        composeRule.onNodeWithContentDescription("返回最近请求列表").performClick()
 
         composeRule.onNodeWithText("DNS").performClick()
         composeRule.onNodeWithText("查看全部").performClick()
+        composeRule.onNodeWithContentDescription("搜索").performClick()
         composeRule.onNodeWithText("搜索域名、上游、答案或错误").performTextInput("1.1.1.1")
-        composeRule.onNodeWithText("显示 1/2").assertIsDisplayed()
-        composeRule.onNodeWithText("关闭").performClick()
+        composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
+        composeRule.onNodeWithContentDescription("返回DNS查询列表").performClick()
 
         composeRule.onNodeWithText("日志").performClick()
         composeRule.onNodeWithText("查看全部").performClick()
-        composeRule.onNodeWithText("错误").performClick()
+        composeRule.onNodeWithTag("log_level_error").performClick()
         composeRule.onNodeWithText("显示 1/2").assertIsDisplayed()
-        composeRule.onNodeWithText("关闭").performClick()
+        composeRule.onNodeWithContentDescription("移除筛选 error").performClick()
+        composeRule.onNodeWithContentDescription("返回日志列表").performClick()
     }
 
     @Test
@@ -148,7 +162,125 @@ class ObservationDetailsInstrumentedTest {
 
         // 作者 long：清空 DNS/日志只能影响各自 StateFlow，Requests 记录仍应保持可见，避免一次清理误删其他观测数据。
         composeRule.onNodeWithText("请求").performClick()
-        composeRule.onNodeWithText("api.example.test").assertIsDisplayed()
+        composeRule.onNodeWithText("api.example.test:443", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun requestsAndDnsRecordsOpenDetailsAndKeywordChipsFilterRows() {
+        // 作者 long：两条记录使用不同出口，才能证明标签筛选确实排除了其他记录，而不是仅添加一个外观标签。
+        val request = connection("request-detail", "api.example.test").copy(chains = listOf("GLOBAL", "Proxy"))
+        val secondRequest = connection("request-second", "other.example.test")
+        val query = dnsQuery("api.example.test", "https://dns.example.test/dns-query").copy(
+            cached = true,
+            rcode = "NXDOMAIN",
+            answers = emptyList(),
+            error = "name not resolved",
+        )
+        val otherQuery = dnsQuery("other.example.test", "https://other-dns.example.test/query")
+        var dialog by mutableStateOf<ObservationDialog?>(null)
+        var copiedText: String? = null
+
+        composeRule.setContent {
+            var selectedTabIndex by remember { mutableStateOf(0) }
+            KClashTheme {
+                ObservationPage(
+                    requests = RequestsUiState(listOf(request, secondRequest)),
+                    dns = DnsUiState(listOf(query, otherQuery)),
+                    logs = LogsUiState(),
+                    runtimeState = CoreRuntimeStatus.RUNNING,
+                    selectedTabIndex = selectedTabIndex,
+                    onSelectedTabChange = { selectedTabIndex = it },
+                    onShowRequests = { dialog = ObservationDialog.REQUESTS },
+                    onShowDns = { dialog = ObservationDialog.DNS },
+                    onClearDns = {},
+                    onShowLogs = {},
+                    onClearLogs = {},
+                    onExportLogs = {},
+                )
+                when (dialog) {
+                    ObservationDialog.REQUESTS -> RequestsDialog(
+                        state = RequestsUiState(listOf(request, secondRequest)),
+                        onCopyText = { copiedText = it },
+                        onDismiss = { dialog = null },
+                    )
+                    ObservationDialog.DNS -> DnsDialog(
+                        DnsUiState(listOf(query, otherQuery)),
+                        onDismiss = { dialog = null },
+                        onClearDnsCache = { Result.success(Unit) },
+                        onCopyText = { copiedText = it },
+                    )
+                    else -> Unit
+                }
+            }
+        }
+
+        composeRule.onNodeWithText("查看全部").performClick()
+        composeRule.onNodeWithTag("request_row_0").assertIsDisplayed()
+        composeRule.onNodeWithTag("request_row_0").performTouchInput {
+            click(androidx.compose.ui.geometry.Offset(width / 2f, height * 0.2f))
+        }
+        composeRule.onNodeWithText("连接详情").assertIsDisplayed()
+        // 作者 long：最新记录排在首项；按字段滚动避免面板两档高度改变后，固定滑动距离把目标字段划出屏幕。
+        composeRule.onNodeWithTag("connection_detail_主机").performScrollTo().performClick()
+        assertEquals("other.example.test", copiedText)
+        composeRule.onNodeWithTag("connections_copy_feedback").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+        composeRule.onNodeWithTag("request_row_0").assertIsDisplayed()
+        composeRule.onNode(hasText("DIRECT") and hasClickAction()).performClick()
+        composeRule.onNodeWithTag("request_row_0").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithText("搜索目标、进程、代理链或规则").performTextInput("other.example")
+        composeRule.onNodeWithTag("request_row_0").performTouchInput {
+            click(androidx.compose.ui.geometry.Offset(width / 2f, height * 0.2f))
+        }
+        composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+        composeRule.onNodeWithText("other.example").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("移除筛选 DIRECT")
+            .assertIsDisplayed()
+            .assertHeightIsEqualTo(36.dp)
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        composeRule.waitForIdle()
+        assertPortraitDefaultFontConfiguration()
+        val keywordScreenshot = composeRule.onNodeWithTag("observation_list_page")
+            .captureToImage()
+            .asAndroidBitmap()
+        val keywordPng = ByteArrayOutputStream().also { output ->
+            check(keywordScreenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+        }.toByteArray()
+        recordVisualPng("observation-search-keyword-requests", keywordPng)
+        composeRule.onNodeWithContentDescription("移除筛选 DIRECT").performClick()
+        composeRule.onNodeWithText("other.example").performTextClearance()
+        composeRule.onNodeWithTag("request_row_1").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
+        composeRule.onNodeWithContentDescription("返回最近请求列表").performClick()
+        composeRule.onNodeWithText("DNS").performClick()
+        composeRule.onNodeWithText("查看全部").performClick()
+        composeRule.onNodeWithTag("observation_clear").assertIsDisplayed()
+        composeRule.onNode(hasText("缓存") and hasClickAction()).performClick()
+        composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
+        composeRule.onNode(hasText("NXDOMAIN") and hasClickAction()).performClick()
+        composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithText("搜索域名、上游、答案或错误").performTextInput("api.example")
+        // 作者 long：DNS 卡片中间包含关键词标签，点击右上耗时留白才能验证外层详情手势，避免误触筛选。
+        composeRule.onNodeWithTag("dns_row_0").performTouchInput {
+            click(androidx.compose.ui.geometry.Offset(width * 0.9f, height * 0.15f))
+        }
+        composeRule.onNodeWithText("DNS 详情").assertIsDisplayed()
+        composeRule.onNodeWithTag("connection_detail_缓存").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("connection_detail_错误").performScrollTo().performClick()
+        assertEquals("name not resolved", copiedText)
+        composeRule.onNodeWithTag("dns_copy_feedback").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("关闭 DNS 详情").performClick()
+        composeRule.onNodeWithText("api.example").assertIsDisplayed()
+        composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("移除筛选 缓存").assertIsDisplayed().performClick()
+        composeRule.onNodeWithContentDescription("移除筛选 NXDOMAIN").assertIsDisplayed().performClick()
+        // 作者 long：移除标签后自由搜索仍生效，先清空搜索再验证所有记录恢复，防止返回详情时丢失输入。
+        composeRule.onNodeWithText("api.example").performTextClearance()
+        composeRule.onNodeWithTag("dns_row_1").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
+        composeRule.onNodeWithContentDescription("返回DNS查询列表").performClick()
     }
 
     @Test
@@ -182,6 +314,7 @@ class ObservationDetailsInstrumentedTest {
 
         fun captureHash(tag: String): String {
             composeRule.waitForIdle()
+            assertPortraitDefaultFontConfiguration()
             val bitmap = composeRule
                 .onNodeWithTag(tag)
                 .captureToImage()
@@ -195,12 +328,12 @@ class ObservationDetailsInstrumentedTest {
         }
 
         val expected = mapOf(
-            "requests_stopped_empty" to "2c301cde81cb2132e7460d041ed0ec81df0d28812fe0b418ebc99eafc9bbef41",
-            "requests_running_non_empty" to "39458f3ca452ebc589e350ae59f27982f64b03058b3ff73ae0736ec20ebef7b0",
-            "dns_stopped_empty" to "f181db667a12f9db0c1cf764816b7c56b139d96792d08d80695ee5b158fdf7e4",
-            "dns_running_non_empty" to "3a544d24ed1a6924f9c902f1cbb85be8fa7415bee5610b990951ffff40abce44",
-            "logs_stopped_empty" to "8ef07b0b6abd266258b74000eafa2b252426a5b999af49a5cf704866ea1624d3",
-            "logs_running_non_empty" to "c5094b6641af25dcf7aac38c1c4d6461321ea7d2a0dbe568daab5fb06f87f495",
+            "requests_stopped_empty" to "3f61716a5fb654df6e669319c9cf13e6b221c0ce6f053e46bd901ce895900089",
+            "requests_running_non_empty" to "de629eacfb360e82bfc24bc0fc42f7917c4bd30437819478bf98178539ed73ef",
+            "dns_stopped_empty" to "fb934a398e53b1c14e2e47f49f5ed2840997e178864628f5cc3e7acb6183fb11",
+            "dns_running_non_empty" to "39215ad6f7221c2934055489a78cec63e175a4247603da13dff63a7934a7f1fc",
+            "logs_stopped_empty" to "13d0da5be91f840b13197063a24db3b3a8d24ffa3a94ffe0b603a5c675cf307b",
+            "logs_running_non_empty" to "e909b933cffb64dfa24b39e06ae6f46c147b89103f681ce95140265cda65b0ef",
         )
         val actual = buildMap {
             put("requests_stopped_empty", captureHash("observation_page"))

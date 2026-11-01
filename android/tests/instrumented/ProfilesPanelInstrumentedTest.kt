@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -29,6 +30,44 @@ import org.junit.runner.RunWith
 class ProfilesPanelInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun remoteToolbarSyncsEveryUrlProfileOnly() {
+        val profiles = listOf(
+            Profile.remote(120L, "https://example.test/one", "订阅一"),
+            Profile.custom(121L, "自定义配置"),
+            Profile.remote(122L, "https://example.test/two", "订阅二"),
+        )
+        val updatedIds = mutableListOf<Long>()
+        composeRule.setContent {
+            KClashTheme {
+                ProfilesPanel(
+                    state = ProfilesUiState(profiles = profiles),
+                    editorState = ProfileEditorUiState(),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    showAddDialog = false,
+                    onShowAddDialog = {},
+                    onDismissAddDialog = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                    onSelect = {},
+                    onEdit = {},
+                    onUpdate = { updatedIds += it.id },
+                    onCloseEditor = {},
+                    onSaveEditor = {},
+                    onDelete = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("profiles_sync_all").performClick()
+        composeRule.waitForIdle()
+
+        // 作者 long：批量同步只分发远程订阅，避免自定义配置进入订阅更新流程。
+        assertEquals(listOf(120L, 122L), updatedIds)
+    }
 
     @Test
     fun customCreationUpdatesPanelList() {
@@ -62,10 +101,53 @@ class ProfilesPanelInstrumentedTest {
 
         composeRule.onNodeWithText("添加配置").performClick()
         composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("保存").performClick()
+        composeRule.onNodeWithText("创建").performClick()
 
         composeRule.onNodeWithText("未命名配置").assertIsDisplayed()
         composeRule.onNodeWithText("自定义配置").assertIsDisplayed()
+    }
+
+    @Test
+    fun customEditorExposesStructuredSectionsBeforeRawYaml() {
+        val profile = Profile.custom(102L, "结构化配置")
+        var openedSection: String? = null
+        composeRule.setContent {
+            KClashTheme {
+                ProfilesPanel(
+                    state = ProfilesUiState(profiles = listOf(profile)),
+                    editorState = ProfileEditorUiState(profile = profile, isNew = true),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    showAddDialog = false,
+                    onShowAddDialog = {},
+                    onDismissAddDialog = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                    onSelect = {},
+                    onEdit = {},
+                    onUpdate = {},
+                    onCloseEditor = {},
+                    onSaveEditor = {},
+                    onDelete = {},
+                    onOpenRulesEditor = { openedSection = "Rules:${it.id}" },
+                    onOpenProxiesEditor = { openedSection = "Proxies:${it.id}" },
+                    onOpenProxyGroupsEditor = { openedSection = "Proxy Groups:${it.id}" },
+                    onOpenProvidersEditor = { openedSection = "Providers:${it.id}" },
+                    onOpenDnsEditor = { openedSection = "DNS:${it.id}" },
+                    onOpenDialersEditor = { openedSection = "Dialers:${it.id}" },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("配置概览").assertIsDisplayed()
+        composeRule.onNodeWithText("规则").assertIsDisplayed()
+        composeRule.onNodeWithText("代理组").assertIsDisplayed()
+        composeRule.onNodeWithText("Provider").assertIsDisplayed()
+        composeRule.onNodeWithText("原始 YAML").performScrollTo()
+        composeRule.onNodeWithText("原始 YAML").assertIsDisplayed()
+        composeRule.onNodeWithText("规则").performClick()
+        assertEquals("Rules:${profile.id}", openedSection)
     }
 
     @Test
@@ -100,7 +182,8 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("自动更新").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithText("自动更新（开启）").assertIsDisplayed()
         composeRule.onNodeWithTag("profile_auto_update_${profile.id}").performClick()
 
         assertEquals(false, changedTo)
@@ -139,6 +222,7 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
         composeRule.onNodeWithTag("profile_rename_${profile.id}").performClick()
         composeRule.onNodeWithText("重命名配置").assertIsDisplayed()
         composeRule.onNodeWithText("名称").performTextClearance()
@@ -178,7 +262,9 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag("profiles_tools").performClick()
         composeRule.onNodeWithTag("backup_export").performClick()
+        composeRule.onNodeWithTag("profiles_tools").performClick()
         composeRule.onNodeWithTag("backup_restore").performClick()
         composeRule.onNodeWithText("恢复备份").assertIsDisplayed()
         composeRule.onNodeWithText("选择备份文件").performClick()
@@ -218,7 +304,7 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("排序").performClick()
+        composeRule.onNodeWithTag("profiles_sort").performClick()
         composeRule.onNodeWithText("排序配置").assertIsDisplayed()
         composeRule.onAllNodesWithText("下移")[0].performClick()
         composeRule.onNodeWithText("保存排序").performClick()
@@ -262,6 +348,7 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
         composeRule.onNodeWithText("编辑").performClick()
         composeRule.onNodeWithText("编辑 编辑配置").assertIsDisplayed()
         composeRule.onNodeWithText("保存").performClick()
@@ -343,16 +430,18 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“待删除配置”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
         composeRule.onNodeWithText("待删除配置").assertIsDisplayed()
 
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
         composeRule.onNodeWithText("删除").performClick()
-        composeRule.onAllNodesWithText("删除").assertCountEquals(2)
-        composeRule.onAllNodesWithText("删除")[1].performClick()
+        composeRule.onAllNodesWithText("删除").assertCountEquals(1)
+        composeRule.onNodeWithText("删除").performClick()
 
-        composeRule.onNodeWithText("还没有配置").assertIsDisplayed()
+        composeRule.onNodeWithText("暂无配置").assertIsDisplayed()
     }
 
     @Test
@@ -381,9 +470,7 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("编辑").assertIsNotEnabled()
-        composeRule.onNodeWithText("排序").assertIsNotEnabled()
-        composeRule.onNodeWithTag("profile_rename_${profile.id}").assertIsNotEnabled()
-        composeRule.onNodeWithText("删除").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_actions_selected").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profiles_sort").assertIsNotEnabled()
     }
 }

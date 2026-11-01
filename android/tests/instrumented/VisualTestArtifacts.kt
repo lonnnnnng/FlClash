@@ -1,8 +1,18 @@
 package com.lonnnnnng.flclash.ui
 
 import android.os.Bundle
+import android.content.res.Configuration
 import android.util.Base64
 import androidx.test.platform.app.InstrumentationRegistry
+
+internal fun assertPortraitDefaultFontConfiguration() {
+    // 作者 long：设备自动旋转可能在测试中途改变宽度，每次采集前都核对方向和字号，防止错误画面进入基线。
+    val configuration = InstrumentationRegistry.getInstrumentation().targetContext.resources.configuration
+    check(configuration.orientation == Configuration.ORIENTATION_PORTRAIT && configuration.fontScale == 1f) {
+        "截图仅验收竖屏默认字号，实际 orientation=${configuration.orientation}, fontScale=${configuration.fontScale}, " +
+            "bounds=${configuration.screenWidthDp}x${configuration.screenHeightDp}dp"
+    }
+}
 
 internal fun recordVisualPng(name: String, png: ByteArray) {
     if (InstrumentationRegistry.getArguments().getString("kclashCapturePng") != "true") return

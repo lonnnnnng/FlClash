@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreEvent
+import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.decodeSelectedMap
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 data class ProxyGroupsUiState(
@@ -31,6 +33,14 @@ data class ProxyGroupsUiState(
     val batchTestingGroup: String? = null,
     val delayResults: Map<ProxyDelayKey, ProxyDelayUiState> = emptyMap(),
 )
+
+internal fun visibleProxyGroups(groups: List<ProxyGroupInfo>, mode: CoreOutboundMode): List<ProxyGroupInfo> =
+    // 作者 long：Direct 不经过代理组；Rule 遵守配置的 hidden 标记，Global 保留全部组供全局出口选择。
+    when (mode) {
+        CoreOutboundMode.DIRECT -> emptyList()
+        CoreOutboundMode.RULE -> groups.filterNot { it.hidden }
+        CoreOutboundMode.GLOBAL -> groups
+    }
 
 data class ProxyDelayKey(
     val groupName: String,
@@ -242,6 +252,35 @@ class ProxyGroupsViewModel @Inject constructor(
                     mutableState.value = ProxyGroupsUiState()
                     mutableErrors.emit(error.message ?: "读取代理组失败")
                 }
+        }
+    }
+
+    fun selectGroup(name: String) {
+        if (name.isBlank() || mutableState.value.groups.none { it.name == name }) return
+        val profileId = profileStore.currentProfileId.value ?: return
+        viewModelScope.launch {
+            // 作者 long：只把当前核心快照中的组名记入当前 Profile，避免无效标签覆盖重启恢复位置。
+            try {
+                profileStore.updateProfileCurrentGroupName(profileId, name)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                mutableErrors.emit(error.message ?: "保存当前代理组失败")
+            }
+        }
+    }
+
+    fun selectGlobalGroup() {
+        val profileId = profileStore.currentProfileId.value ?: return
+        viewModelScope.launch {
+            try {
+                // 作者 long：首页切到 Global 时与 Flutter 一致地把代理页恢复位置指向 GLOBAL，即使代理页尚未加载。
+                profileStore.updateProfileCurrentGroupName(profileId, "GLOBAL")
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                mutableErrors.emit(error.message ?: "保存当前代理组失败")
+            }
         }
     }
 

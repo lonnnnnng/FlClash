@@ -2,6 +2,8 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -9,6 +11,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.hasText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.Profile
@@ -48,11 +54,119 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("创建自定义配置").performClick()
+        composeRule.onNodeWithTag("profile_add_source_custom").performClick()
         composeRule.onNodeWithText("创建自定义配置").assertIsDisplayed()
-        composeRule.onNodeWithText("保存").performClick()
+        composeRule.onNodeWithText("创建").performClick()
 
         assertTrue(added)
+    }
+
+    @Test
+    fun addProfileSourceMenuRoutesQrAndFileImportActions() {
+        var pickedQr = false
+        var pickedFile = false
+        composeRule.setContent {
+            KClashTheme {
+                AddProfileDialog(
+                    busy = false,
+                    onDismiss = {},
+                    onPickFile = { pickedFile = true },
+                    onPickQrCode = { pickedQr = true },
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("profile_add_source_qr").assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag("profile_add_source_file").assertIsDisplayed().performClick()
+
+        assertTrue(pickedQr)
+        assertTrue(pickedFile)
+    }
+
+    @Test
+    fun addProfileSourceMenuOpensDedicatedRemoteSubscriptionForm() {
+        var added: List<String>? = null
+        composeRule.setContent {
+            KClashTheme {
+                AddProfileDialog(
+                    busy = false,
+                    onDismiss = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { label, url -> added = listOf(label, url) },
+                    onAddCustom = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("profile_add_source_remote").performClick()
+        composeRule.onNodeWithText("从链接导入").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_add_remote_label").performTextInput("我的订阅")
+        composeRule.onNodeWithTag("profile_add_remote_url").performTextInput("https://example.invalid/sub")
+        composeRule.onNodeWithText("导入").performClick()
+
+        assertEquals(listOf("我的订阅", "https://example.invalid/sub"), added)
+    }
+
+    @Test
+    fun batchProfileImportShowsDuplicateCountAndSubmitsOnlyNewUrls() {
+        val existing = "https://existing.invalid/sub"
+        val first = "https://first.invalid/sub"
+        var added: List<String>? = null
+        composeRule.setContent {
+            KClashTheme {
+                AddProfileDialog(
+                    busy = false,
+                    onDismiss = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddRemoteBatch = { added = it },
+                    existingUrls = setOf(existing),
+                    onAddCustom = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("profile_add_source_remote").performClick()
+        composeRule.onNodeWithTag("profile_add_mode_batch").performClick()
+        composeRule.onNodeWithTag("profile_add_remote_batch")
+            .performTextInput("$first\n$existing\n$first")
+        composeRule.onNodeWithText("识别到 1 个链接").assertIsDisplayed()
+        composeRule.onNodeWithText("跳过已添加的重复项 1 个").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_add_submit").performClick()
+
+        assertEquals(listOf(first), added)
+    }
+
+    @Test
+    fun batchProfileImportBlocksInvalidEntriesWithoutShowingTheirContents() {
+        var added = false
+        composeRule.setContent {
+            KClashTheme {
+                AddProfileDialog(
+                    busy = false,
+                    onDismiss = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddRemoteBatch = { added = true },
+                    onAddCustom = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("profile_add_source_remote").performClick()
+        composeRule.onNodeWithTag("profile_add_mode_batch").performClick()
+        composeRule.onNodeWithTag("profile_add_remote_batch")
+            .performTextInput("https://valid.invalid/sub\nfile:///private/config")
+
+        composeRule.onNodeWithText("有 1 条链接格式无效，修正后才能导入").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_add_submit").assertIsNotEnabled()
+        composeRule.onAllNodesWithText("file:///private/config").assertCountEquals(0)
+        assertEquals(false, added)
     }
 
     @Test
@@ -74,6 +188,170 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithText("保存").performClick()
 
         assertEquals("mixed-port: 7890", saved)
+    }
+
+    @Test
+    fun savedNewProfileOffersRenameWhenLeavingEditor() {
+        var finished = false
+        var selectedName: String? = "not-selected"
+        composeRule.setContent {
+            KClashTheme {
+                ProfileEditorDialog(
+                    profile = Profile.custom(10L, "未命名配置"),
+                    initialContent = "mixed-port: 7890",
+                    saving = false,
+                    isNewDraft = true,
+                    hasPersistedChanges = true,
+                    onDismiss = {},
+                    onDiscard = {},
+                    onFinishNewDraft = { name ->
+                        finished = true
+                        selectedName = name
+                    },
+                    onSave = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithText("为配置命名").assertIsDisplayed()
+        composeRule.onNodeWithTag("new_profile_name").performTextClearance()
+        composeRule.onNodeWithTag("new_profile_name").performTextInput("家庭网络")
+        composeRule.onNodeWithText("保存名称").performClick()
+
+        assertTrue(finished)
+        assertEquals("家庭网络", selectedName)
+    }
+
+    @Test
+    fun savedNewProfileCanKeepDefaultNameWhenLeavingEditor() {
+        var finished = false
+        var selectedName: String? = "not-selected"
+        composeRule.setContent {
+            KClashTheme {
+                ProfileEditorDialog(
+                    profile = Profile.custom(11L, "未命名配置"),
+                    initialContent = "mixed-port: 7890",
+                    saving = false,
+                    isNewDraft = true,
+                    hasPersistedChanges = true,
+                    onDismiss = {},
+                    onDiscard = {},
+                    onFinishNewDraft = { name ->
+                        finished = true
+                        selectedName = name
+                    },
+                    onSave = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithText("为配置命名").assertIsDisplayed()
+        composeRule.onNodeWithText("保留默认名称").performClick()
+
+        assertTrue(finished)
+        assertEquals(null, selectedName)
+    }
+
+    @Test
+    fun unsavedYamlRequiresConfirmationBeforeOpeningStructuredSection() {
+        var opened = false
+        composeRule.setContent {
+            KClashTheme {
+                ProfileEditorDialog(
+                    profile = Profile.custom(12L, "结构化配置"),
+                    initialContent = "mixed-port: 7890",
+                    saving = false,
+                    onDismiss = {},
+                    onSave = {},
+                    onOpenRulesEditor = { opened = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("profile_editor_content").performTextInput("\nallow-lan: true")
+        composeRule.onNodeWithTag("profile_editor_scroll").performScrollToNode(hasText("规则"))
+        composeRule.onNodeWithText("规则").performClick()
+        composeRule.onNodeWithText("原始 YAML 尚未保存").assertIsDisplayed()
+        composeRule.onNodeWithText("继续编辑").performClick()
+        assertEquals(false, opened)
+
+        composeRule.onNodeWithTag("profile_editor_scroll").performScrollToNode(hasText("规则"))
+        composeRule.onNodeWithText("规则").performClick()
+        composeRule.onNodeWithText("放弃并继续").performClick()
+
+        assertTrue(opened)
+        composeRule.onNodeWithTag("profile_editor_content")
+            .assertTextContains("mixed-port: 7890", substring = true)
+    }
+
+    @Test
+    fun remoteProfileMenuOpensEditorAndEditorForwardsSubscriptionSettings() {
+        val profile = Profile.remote(111L, "https://old.example/subscription", "远程配置")
+        var showEditor by mutableStateOf(false)
+        var saved: List<Any>? = null
+        composeRule.setContent {
+            KClashTheme {
+                if (showEditor) {
+                    RemoteProfileEditorDialog(
+                        profile = profile,
+                        saving = false,
+                        onDismiss = {},
+                        onSave = { label, url, autoUpdate, interval ->
+                            saved = listOf(label, url, autoUpdate, interval)
+                        },
+                    )
+                } else {
+                    ProfileCard(
+                        profile = profile,
+                        selected = true,
+                        canMutate = true,
+                        onSelect = {},
+                        onEdit = { showEditor = true },
+                        onUpdate = {},
+                        onDelete = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_edit_${profile.id}").performClick()
+        composeRule.onNodeWithText("编辑订阅").assertIsDisplayed()
+        composeRule.onNodeWithTag("remote_profile_editor_label").performTextClearance()
+        composeRule.onNodeWithTag("remote_profile_editor_label").performTextInput("新远程配置")
+        composeRule.onNodeWithTag("remote_profile_editor_url").performTextClearance()
+        composeRule.onNodeWithTag("remote_profile_editor_url").performTextInput("https://new.example/subscription")
+        composeRule.onNodeWithTag("remote_profile_editor_interval").performTextClearance()
+        composeRule.onNodeWithTag("remote_profile_editor_interval").performTextInput("45")
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals(listOf("新远程配置", "https://new.example/subscription", true, 45L), saved)
+    }
+
+    @Test
+    fun remoteProfileEditorDisablesIntervalWhenAutoUpdateIsOff() {
+        val profile = Profile.remote(112L, "https://same.example/subscription", "远程配置")
+        var saved: List<Any>? = null
+        composeRule.setContent {
+            KClashTheme {
+                RemoteProfileEditorDialog(
+                    profile = profile,
+                    saving = false,
+                    onDismiss = {},
+                    onSave = { label, url, autoUpdate, interval ->
+                        saved = listOf(label, url, autoUpdate, interval)
+                    },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("remote_profile_editor_auto_update").performClick()
+        composeRule.onNodeWithTag("remote_profile_editor_interval").assertIsNotEnabled()
+        composeRule.onNodeWithText("保存").performClick()
+
+        assertEquals(listOf("远程配置", profile.url, false, 1_440L), saved)
     }
 
     @Test
@@ -194,6 +472,7 @@ class ProfileUiInstrumentedTest {
     @Test
     fun computedProxyGroupShowsAutomaticSelectionAction() {
         var batchGroup: String? = null
+        var selected: String? = null
         composeRule.setContent {
             KClashTheme {
                 ProxyGroupsCard(
@@ -211,7 +490,7 @@ class ProfileUiInstrumentedTest {
                     ),
                     runtimeState = CoreRuntimeStatus.RUNNING,
                     onRefresh = {},
-                    onSelect = { _, _ -> },
+                    onSelect = { _, proxy -> selected = proxy },
                     onTestDelay = { _, _ -> },
                     onTestGroupDelay = { group -> batchGroup = group.name },
                 )
@@ -220,11 +499,12 @@ class ProfileUiInstrumentedTest {
 
         composeRule.onNodeWithText("批量测速").performClick()
         assertEquals("Auto", batchGroup)
-        composeRule.onNodeWithText("Auto").performClick()
-        composeRule.onNodeWithText("选择 Auto").assertIsDisplayed()
-        composeRule.onNodeWithText("点击当前节点可恢复自动选择").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_group_tab_Auto").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-b").performClick()
+        assertEquals("node-b", selected)
+        composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
         composeRule.onNodeWithText("搜索节点").performTextInput("node-b")
-        assertEquals(2, composeRule.onAllNodesWithText("node-b").fetchSemanticsNodes().size)
+        assertTrue(composeRule.onAllNodesWithText("node-b").fetchSemanticsNodes().isNotEmpty())
         assertTrue(composeRule.onAllNodesWithText("node-a").fetchSemanticsNodes().isEmpty())
     }
 
@@ -306,13 +586,6 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("编辑").assertIsNotEnabled()
-        composeRule.onNodeWithText("Provider").assertIsNotEnabled()
-        composeRule.onNodeWithText("DNS").assertIsNotEnabled()
-        composeRule.onNodeWithText("代理组").assertIsNotEnabled()
-        composeRule.onNodeWithText("高级").assertIsNotEnabled()
-        composeRule.onNodeWithText("代理").assertIsNotEnabled()
-        composeRule.onNodeWithText("脚本").assertIsNotEnabled()
-        composeRule.onNodeWithText("删除").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_actions_selected").assertIsNotEnabled()
     }
 }

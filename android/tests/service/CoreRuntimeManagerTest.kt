@@ -6,6 +6,7 @@ import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreBridgeException
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
+import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -83,7 +84,7 @@ class CoreRuntimeManagerTest {
             """.trimIndent() + "\n",
             File(homeDir, "config.yaml").readText(),
         )
-        assertEquals(listOf("initialize", "validate", "setup", "log-start", "listener-start"), bridge.calls)
+        assertEquals(listOf("initialize", "validate", "setup", "mode-read", "log-start", "listener-start"), bridge.calls)
         assertEquals(mapOf("GLOBAL" to "node-a"), bridge.setupSelectedMap)
         assertEquals(listOf("service-start"), controller.events)
         assertTrue(controller.started)
@@ -149,7 +150,7 @@ class CoreRuntimeManagerTest {
 
         val staged = File(homeDir, "config.yaml").readText()
         assertTrue(staged.contains("dialer-proxy: Relay"))
-        assertEquals(listOf("initialize", "validate", "setup", "log-start", "listener-start"), bridge.calls)
+        assertEquals(listOf("initialize", "validate", "setup", "mode-read", "log-start", "listener-start"), bridge.calls)
     }
 
     @Test
@@ -437,6 +438,38 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
+    fun `clear dns cache delegates to the core and reports success`() = runTest {
+        val bridge = FakeBridge()
+        val manager = manager(
+            profile = null,
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+
+        val result = manager.clearDnsCache()
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf("clear-dns-cache"), bridge.calls)
+    }
+
+    @Test
+    fun `clear dns cache turns a negative core acknowledgement into failure`() = runTest {
+        val bridge = FakeBridge(dnsCacheClearResult = false)
+        val manager = manager(
+            profile = null,
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+
+        val result = manager.clearDnsCache()
+
+        assertTrue(result.isFailure)
+        assertEquals("清除 DNS 缓存失败", result.exceptionOrNull()?.message)
+    }
+
+    @Test
     fun `runtime stats are read from the core only while running`() = runTest {
         val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mixed-port: 7890\n") }
         val manager = manager(
@@ -458,6 +491,46 @@ class CoreRuntimeManagerTest {
             manager.getStats().getOrThrow(),
         )
         assertTrue(manager.getConnections().isSuccess)
+    }
+
+    @Test
+    fun `stopped mode choice is persisted and applied after profile setup`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mode: rule\n") }
+        val bridge = FakeBridge()
+        val store = FakeOutboundModeStore()
+        val manager = manager(
+            profile = ActiveProfile(33, "模式配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+            outboundModeStore = store,
+        )
+
+        manager.setOutboundMode(CoreOutboundMode.GLOBAL).getOrThrow()
+        manager.startProxy().getOrThrow()
+
+        assertEquals(CoreOutboundMode.GLOBAL, manager.outboundMode.value)
+        assertEquals(CoreOutboundMode.GLOBAL, store.mode)
+        assertTrue(bridge.calls.indexOf("setup") < bridge.calls.indexOf("mode-global"))
+        assertTrue(bridge.calls.none { it == "mode-read" })
+    }
+
+    @Test
+    fun `first startup reads mode from the staged profile`() = runTest {
+        val source = temporaryFolder.newFile("profile.yaml").apply { writeText("mode: direct\n") }
+        val bridge = FakeBridge(configuredMode = CoreOutboundMode.DIRECT)
+        val manager = manager(
+            profile = ActiveProfile(34, "直连配置", source.path),
+            homeDir = temporaryFolder.newFolder("core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+
+        manager.startProxy().getOrThrow()
+
+        assertEquals(CoreOutboundMode.DIRECT, manager.outboundMode.value)
+        assertTrue(bridge.calls.contains("mode-read"))
+        assertTrue(bridge.calls.none { it.startsWith("mode-") && it != "mode-read" })
     }
 
     @Test
@@ -639,6 +712,7 @@ class CoreRuntimeManagerTest {
         runtimeDiagnosticStore: RuntimeDiagnosticStore = NoopRuntimeDiagnosticStore,
         profileScriptEvaluator: ProfileScriptEvaluator = MissingProfileScriptEvaluator,
         prepareCore: suspend () -> Unit = {},
+        outboundModeStore: OutboundModeStore = NoopOutboundModeStore,
     ): CoreRuntimeManager {
         return CoreRuntimeManager(
             paths = CoreRuntimePaths(homeDir, prepare = prepareCore),
@@ -651,7 +725,16 @@ class CoreRuntimeManagerTest {
             runtimeResumeStore = runtimeResumeStore,
             runtimeDiagnosticStore = runtimeDiagnosticStore,
             profileScriptEvaluator = profileScriptEvaluator,
+            outboundModeStore = outboundModeStore,
         )
+    }
+
+    private class FakeOutboundModeStore(var mode: CoreOutboundMode? = null) : OutboundModeStore {
+        override fun read(): CoreOutboundMode? = mode
+
+        override fun write(mode: CoreOutboundMode) {
+            this.mode = mode
+        }
     }
 
     private class FakeRuntimeResumeStore : RuntimeResumeStore {
@@ -683,6 +766,8 @@ class CoreRuntimeManagerTest {
         private val proxyChangeError: Throwable? = null,
         private val delayError: Throwable? = null,
         private val delayErrors: Set<String> = emptySet(),
+        private val dnsCacheClearResult: Boolean = true,
+        private val configuredMode: CoreOutboundMode = CoreOutboundMode.RULE,
     ) : CoreRuntimeBridge {
         override val events = emptyFlow<CoreEvent>()
         private val mutableEventFlowStats = MutableStateFlow(CoreEventFlowStats())
@@ -706,6 +791,15 @@ class CoreRuntimeManagerTest {
         override suspend fun setupConfig(selectedMap: Map<String, String>) {
             calls += "setup"
             setupSelectedMap = selectedMap
+        }
+
+        override suspend fun getConfiguredMode(path: String): CoreOutboundMode {
+            calls += "mode-read"
+            return configuredMode
+        }
+
+        override suspend fun updateMode(mode: CoreOutboundMode) {
+            calls += "mode-${mode.wireValue}"
         }
 
         override suspend fun getProxyGroups(): ProxyGroupsSnapshot {
@@ -745,6 +839,11 @@ class CoreRuntimeManagerTest {
         override suspend fun getConnectionCount(): Int = 2
 
         override suspend fun getConnections(): List<CoreConnection> = emptyList()
+
+        override suspend fun clearDnsCache(): Boolean {
+            calls += "clear-dns-cache"
+            return dnsCacheClearResult
+        }
 
         override fun startEventListener() {
             eventListenerStarted = true

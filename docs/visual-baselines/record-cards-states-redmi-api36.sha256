@@ -1,0 +1,10 @@
+# KClash record cards fixed-state PNG baselines.
+# Device: Redmi Note 8 Pro, Android 16/API 36, portrait, system font scale 1.0, Asia/Shanghai.
+# Theme: injected dark/light; fixture only, no core/VPN/network.
+# Connection: standard, long host/chains, absent metadata; DNS: cached, NXDOMAIN, timeout; logs: info/warning/error/empty.
+state=connection_dark sha256=dcb7054f26f8c5f23149572a42ee136fa5e3319565e2e33eac4b32203f07b2ca
+state=dns_dark sha256=8e1f88106e1b8885ffc4553e29832e14b2624d01cb4a7fca61de6dd12964cdd7
+state=log_dark sha256=dcb443b64cdefe94f123d0bd7b90c1659268c04ba498e755a9c51b22af8dbf77
+state=connection_light sha256=58f136f5e54ed37f59ebaa6f1f3650e5ab03ca1605fb97ae3e05183d0e5314df
+state=dns_light sha256=fad91e33843c8a636c2640090d2b9f81bb079d40036abfb2d645502c6d8e0c4a
+state=log_light sha256=9e8ff042d49da3faf274c827470440b34c8a8bf5eab33b0d4b731b9bd6f9c72f

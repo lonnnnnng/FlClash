@@ -1,0 +1,13 @@
+# KClash DNS detail fixed-state PNG baselines, manually reviewed 2026-11-01.
+# Device: Redmi Note 8 Pro, Android 16/API 36, portrait, system font scale 1.0, Asia/Shanghai.
+# Theme: injected dark/light; fixture only, no core/VPN/network.
+# Scene: multiple answers including full IPv6, long domain, missing fields, upstream timeout.
+# Capture: partial at initial scroll position; semantics Expand and settled geometry, scrolled to final answer/error; no handle click ripple.
+state=answers_dark_partial sha256=e2027d9a3006f5f960a133ec9c1e6d72bc281963049767b27fcec0d5701a3c92
+state=answers_dark_expanded sha256=175ab123d1cb6fa6b685082e16f8431de29438cef3cf5306a454ad7b23c3e978
+state=error_dark_partial sha256=7c8bcd7a0ffa0bc7373c9e85042519a4000fd05a7fab98c64943f7f59800d150
+state=error_dark_expanded sha256=80b4a3048bc43ef23d851700c296aea406a2f72a40f191863a04242ee8b6d4c0
+state=answers_light_partial sha256=70b21c8814a0ae19eafc7a44c660027a510ba4efb6064181bd3c27304ccee586
+state=answers_light_expanded sha256=f7e93cc2eaac60040f7e1b250416d66efa6e10d4468f0b39c47180cc0c40c843
+state=error_light_partial sha256=070da8fc42f2f6953190c867673b64d797346f97ea22cef8bc686e9ce1f1f151
+state=error_light_expanded sha256=b7d1e6a21c75f4be31d0ca6904bbc63373f59e8497d66c3e9a35a663463895df

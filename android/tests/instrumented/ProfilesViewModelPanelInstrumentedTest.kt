@@ -6,9 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.Profile
@@ -20,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,6 +71,7 @@ class ProfilesViewModelPanelInstrumentedTest {
                     onEdit = viewModel::openEditor,
                     onUpdate = viewModel::update,
                     onCloseEditor = viewModel::closeEditor,
+                    onDiscardEditor = viewModel::discardEditor,
                     onSaveEditor = viewModel::saveEditor,
                     onDelete = viewModel::delete,
                 )
@@ -74,14 +80,26 @@ class ProfilesViewModelPanelInstrumentedTest {
 
         composeRule.onNodeWithText("添加配置").performClick()
         composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("保存").performClick()
+        composeRule.onNodeWithText("创建").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("未命名配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("未命名配置").assertIsDisplayed()
-        composeRule.onNodeWithText("自定义配置").assertIsDisplayed()
+        composeRule.onNodeWithText("编辑 未命名配置").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_editor_content").performTextInput("allow-lan: true\n")
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithText("放弃未保存的修改？").assertIsDisplayed()
+        composeRule.onNodeWithText("继续编辑").performClick()
+        composeRule.onNodeWithText("编辑 未命名配置").assertIsDisplayed()
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithText("放弃").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("暂无配置").fetchSemanticsNodes().isNotEmpty()
+        }
+        assertEquals(emptyList<Profile>(), store.profiles.value)
 
-        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("添加配置").performClick()
+        composeRule.onNodeWithText("创建自定义配置").performClick()
+        composeRule.onNodeWithText("创建").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
         }
@@ -90,17 +108,93 @@ class ProfilesViewModelPanelInstrumentedTest {
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isEmpty()
         }
+        composeRule.onNodeWithText("未命名配置").assertIsDisplayed()
+        composeRule.onNodeWithText("自定义配置").assertIsDisplayed()
+
         assertEquals("mixed-port: 7890", store.updatedContents.single())
 
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“未命名配置”吗？本地配置文件也会一并删除。").assertIsDisplayed()
-        composeRule.onAllNodesWithText("删除").assertCountEquals(2)
-        composeRule.onAllNodesWithText("删除")[1].performClick()
+        composeRule.onAllNodesWithText("删除").assertCountEquals(1)
+        composeRule.onNodeWithText("删除").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("还没有配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("暂无配置").fetchSemanticsNodes().isNotEmpty()
         }
         assertEquals(emptyList<Profile>(), store.profiles.value)
         assertEquals(null, store.currentProfileId.value)
+    }
+
+    @Test
+    fun structuredSectionSaveRefreshesNewProfileAndOffersRenameOnExit() {
+        val store = FakePanelProfileStore()
+        val runtime = FakePanelRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
+        val viewModel = ProfilesViewModel(store, runtime)
+        var showAddDialog by mutableStateOf(false)
+
+        composeRule.setContent {
+            val state by viewModel.state.collectAsState()
+            val editorState by viewModel.editorState.collectAsState()
+            val rulesEditorState by viewModel.rulesEditorState.collectAsState()
+            val runtimeState by runtime.state.collectAsState()
+            KClashTheme {
+                ProfilesPanel(
+                    state = state,
+                    editorState = editorState,
+                    rulesEditorState = rulesEditorState,
+                    runtimeState = runtimeState,
+                    showAddDialog = showAddDialog,
+                    onShowAddDialog = { showAddDialog = true },
+                    onDismissAddDialog = { showAddDialog = false },
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = { label ->
+                        showAddDialog = false
+                        viewModel.addCustom(label)
+                    },
+                    onSelect = viewModel::select,
+                    onEdit = viewModel::openEditor,
+                    onUpdate = viewModel::update,
+                    onCloseEditor = viewModel::closeEditor,
+                    onDiscardEditor = viewModel::discardEditor,
+                    onFinishNewDraftEditor = viewModel::finishNewDraftEditor,
+                    onSaveEditor = viewModel::saveEditor,
+                    onOpenRulesEditor = viewModel::openRulesEditor,
+                    onCloseRulesEditor = viewModel::closeRulesEditor,
+                    onSaveRules = viewModel::saveRules,
+                    onDelete = viewModel::delete,
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("添加配置").performClick()
+        composeRule.onNodeWithText("创建自定义配置").performClick()
+        composeRule.onNodeWithText("创建").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("规则").performClick()
+        composeRule.onNodeWithText("规则 · 未命名配置").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_rules_yaml").performTextInput("MATCH,DIRECT")
+        composeRule.onNodeWithTag("profile_rules_save").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isEmpty()
+        }
+
+        composeRule.onNodeWithTag("profile_editor_content").assertTextContains("MATCH,DIRECT", substring = true)
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithText("为配置命名").assertIsDisplayed()
+        composeRule.onNodeWithTag("new_profile_name").performTextClearance()
+        composeRule.onNodeWithTag("new_profile_name").performTextInput("家庭网络")
+        composeRule.onNodeWithText("保存名称").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isEmpty()
+        }
+
+        assertEquals(0, store.deleteCalls)
+        assertEquals("家庭网络", store.profiles.value.single().label)
+        assertTrue(store.updatedContents.single().contains("MATCH,DIRECT"))
     }
 }
 
@@ -116,6 +210,7 @@ private class FakePanelProfileStore : ProfileStore {
     private val mutableCurrentProfileId = MutableStateFlow<Long?>(null)
     private val contents = mutableMapOf<Long, String>()
     val updatedContents = mutableListOf<String>()
+    var deleteCalls = 0
 
     override val profiles: StateFlow<List<Profile>> = mutableProfiles.asStateFlow()
     override val currentProfileId: StateFlow<Long?> = mutableCurrentProfileId.asStateFlow()
@@ -141,6 +236,12 @@ private class FakePanelProfileStore : ProfileStore {
     override suspend fun readLocalProfileContent(id: Long): String =
         contents[id] ?: error("测试配置内容不存在")
 
+    override suspend fun updateProfileLabel(id: Long, label: String): Profile {
+        val updated = mutableProfiles.value.single { it.id == id }.copy(label = label)
+        mutableProfiles.value = listOf(updated)
+        return updated
+    }
+
     override suspend fun updateLocalProfileContent(id: Long, content: String): Profile {
         val current = mutableProfiles.value.single { it.id == id }
         contents[id] = content
@@ -159,6 +260,7 @@ private class FakePanelProfileStore : ProfileStore {
         error("该页面流程不更新远程订阅")
 
     override suspend fun deleteProfile(id: Long) {
+        deleteCalls++
         mutableProfiles.value = mutableProfiles.value.filterNot { it.id == id }
         if (mutableCurrentProfileId.value == id) mutableCurrentProfileId.value = null
     }

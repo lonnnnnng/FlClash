@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.CoreConnection
+import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
 import com.lonnnnnng.flclash.core.CoreProbeResult
@@ -223,6 +224,10 @@ interface CoreRuntimeBridge {
 
     suspend fun setupConfig(selectedMap: Map<String, String> = emptyMap())
 
+    suspend fun getConfiguredMode(path: String): CoreOutboundMode
+
+    suspend fun updateMode(mode: CoreOutboundMode)
+
     suspend fun getProxyGroups(): ProxyGroupsSnapshot
 
     suspend fun changeProxy(groupName: String, proxyName: String): Boolean
@@ -238,6 +243,8 @@ interface CoreRuntimeBridge {
     suspend fun getConnectionCount(): Int
 
     suspend fun getConnections(): List<CoreConnection>
+
+    suspend fun clearDnsCache(): Boolean
 
     fun startEventListener()
 
@@ -268,6 +275,10 @@ class NativeCoreRuntimeBridge(
 
     override suspend fun setupConfig(selectedMap: Map<String, String>) = coreBridge.setupConfig(selectedMap)
 
+    override suspend fun getConfiguredMode(path: String): CoreOutboundMode = coreBridge.getConfiguredMode(path)
+
+    override suspend fun updateMode(mode: CoreOutboundMode) = coreBridge.updateMode(mode)
+
     override suspend fun getProxyGroups(): ProxyGroupsSnapshot = coreBridge.getProxyGroups()
 
     override suspend fun changeProxy(groupName: String, proxyName: String): Boolean =
@@ -286,6 +297,8 @@ class NativeCoreRuntimeBridge(
     override suspend fun getConnectionCount(): Int = coreBridge.getConnectionCount()
 
     override suspend fun getConnections(): List<CoreConnection> = coreBridge.getConnections()
+
+    override suspend fun clearDnsCache(): Boolean = coreBridge.clearDnsCache()
 
     override fun startEventListener() = coreBridge.startEventListener()
 

@@ -42,6 +42,8 @@ import com.lonnnnnng.flclash.service.DefaultVpnOptionsProvider
 import com.lonnnnnng.flclash.service.ProfileScriptEvaluator
 import com.lonnnnnng.flclash.service.VpnOptionsProvider
 import com.lonnnnnng.flclash.service.AccessControlSettingsProvider
+import com.lonnnnnng.flclash.service.OutboundModeStore
+import com.lonnnnnng.flclash.service.SharedPreferencesOutboundModeStore
 import java.io.File
 import dagger.Module
 import dagger.Provides
@@ -212,6 +214,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideOutboundModeStore(@ApplicationContext context: Context): OutboundModeStore =
+        SharedPreferencesOutboundModeStore(context)
+
+    @Provides
+    @Singleton
     fun provideCoreBridge(): CoreBridge = CoreBridge()
 
     @Provides
@@ -225,6 +232,7 @@ object AppModule {
         runtimeResumeStore: RuntimeResumeStore,
         runtimeDiagnosticStore: RuntimeDiagnosticStore,
         profileScriptEvaluator: ProfileScriptEvaluator,
+        outboundModeStore: OutboundModeStore,
     ): CoreRuntimeManager = CoreRuntimeManager(
         paths = paths,
         profileProvider = profileProvider,
@@ -234,6 +242,7 @@ object AppModule {
         runtimeResumeStore = runtimeResumeStore,
         runtimeDiagnosticStore = runtimeDiagnosticStore,
         profileScriptEvaluator = profileScriptEvaluator,
+        outboundModeStore = outboundModeStore,
     )
 
     @Provides
