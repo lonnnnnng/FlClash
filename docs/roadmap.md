@@ -4,7 +4,7 @@
 >
 > 最后核对：2026-11-03（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 当前基线：`kotlin` 主线，本轮提交 DNS 基线和浏览器主链路修复，尚未推送；远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
+> 当前基线：`kotlin` 主线，DNS 基线和浏览器主链路修复已提交并同步到 `origin/kotlin`（代码提交 `cab92464`）；远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
 > 最新验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，更细卡片/组标题视觉校准继续排队；真实 age 密文 E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
 > 本轮 Android 包此前未安装，正式 Room 为空；通过工作区外层 `AGENTS.md` 唯一授权入口导入并保留一份 Profile，未触碰外层 `1.yaml`、未清数据或删除 Profile。延迟缓存用例验证同一 Profile/组/节点/测试 URL 的正延迟跨真实应用进程恢复，并向正式 Room 写入不同 Profile 与旧测试 URL 探针，确认均不进入当前页面；成功后删除的只有测试探针行和应用内标记。核心保持 `STOPPED`，没有 ProxyService、VpnService 或 TUN。
@@ -62,7 +62,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | `kotlin` 追踪 `origin/kotlin`；本轮修复本地提交，尚未推送；Flutter 只作为参考 |
+| 远端关系 | `kotlin` 追踪 `origin/kotlin`；DNS/浏览器修复 `cab92464` 已同步；Flutter 只作为参考 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
