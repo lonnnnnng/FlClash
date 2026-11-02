@@ -780,33 +780,46 @@ class CoreRuntimeManager(
         val stamp: com.lonnnnnng.flclash.core.CoreRouteStamp, val content: String)
 
     override suspend fun previewConfig(profileId: Long): RuntimeConfigPreview = withContext(Dispatchers.IO) {
-        val (profile, revision, applied) = transitionLock.withLock {
-            val current = requireNotNull(profileProvider.activeProfile()) { "没有可用配置" }
-            check(current.id == profileId) { "当前配置已变化，请重新打开预览" }
-            if (mutableState.value.isRunning) {
-                // 作者 long：运行时读取已暂存的输入，不能重跑脚本后把另一个结果冒充当前已加载配置。
-                return@withContext RuntimeConfigPreview(current.id, current.label, readPreviewFile(paths.configFile), true)
+        val snapshot = transitionLock.withLock {
+            val target = requireNotNull(profileProvider.profileById(profileId)) { "配置不存在" }
+            val currentId = profileProvider.activeProfileId()
+            if (mutableState.value.isRunning && currentId == target.id) {
+                // 作者 long：只有确实交给核心的当前配置可标为已应用，不能把另一会话的 config.yaml 当作目标预览。
+                check(loadedConfigKey == configKey(target)) { "配置或核心状态已变化，请重试" }
+                return@withContext RuntimeConfigPreview(target.id, target.label, readPreviewFile(paths.configFile), true)
             }
-            Triple(current, mutableIpRouteRevision.value, mutableState.value)
+            PreviewInput(target, currentId, mutableIpRouteRevision.value, mutableState.value, lanSharingStore.read())
         }
+        val profile = snapshot.profile
         val source = File(profile.filePath)
-        val sourceStamp = source.length() to source.lastModified()
         val script = profile.scriptPath?.let(::File)
-        val scriptStamp = script?.let { it.length() to it.lastModified() }
-        // 作者 long：停止态只在内存中复用启动处理链；脚本可能等待执行器，不能持有启停锁或覆盖 config.yaml。
-        val content = renderProfileContent(profile, readPreviewFile(source))
+        val sourceBytes = readPreviewBytes(source)
+        script?.let { require(it.isFile) { "绑定脚本正文不存在" } }
+        val scriptBytes = script?.let { readPreviewBytes(it) }
+        // 作者 long：非当前配置与停止态都只在内存渲染，慢脚本不占启停锁，不加载 Provider 或覆盖 config.yaml。
+        val content = renderProfileContent(profile, sourceBytes.toString(Charsets.UTF_8), snapshot.lanOverride,
+            scriptBytes?.toString(Charsets.UTF_8))
         check(content.toByteArray(Charsets.UTF_8).size <= MAX_PREVIEW_BYTES) { "配置超过 2 MiB，暂不支持预览" }
+        // 作者 long：比较原字节，等长且保留 mtime 的替换也必须被识别；大文件读取放在启停锁之外。
+        val filesUnchanged = source.isFile && sourceBytes.contentEquals(readPreviewBytes(source)) &&
+            (script == null || script.isFile && checkNotNull(scriptBytes).contentEquals(readPreviewBytes(script)))
         transitionLock.withLock {
-            check(mutableIpRouteRevision.value == revision && mutableState.value == applied &&
-                profileProvider.activeProfile() == profile &&
-                sourceStamp == (source.length() to source.lastModified()) &&
-                scriptStamp == script?.let { it.length() to it.lastModified() }
+            check(mutableIpRouteRevision.value == snapshot.revision && mutableState.value == snapshot.runtime &&
+                profileProvider.activeProfileId() == snapshot.currentProfileId &&
+                profileProvider.profileById(profileId) == profile && lanSharingStore.read() == snapshot.lanOverride && filesUnchanged
             ) { "配置或核心状态已变化，请重试" }
         }
         RuntimeConfigPreview(profile.id, profile.label, content, false)
     }
 
-    private fun readPreviewFile(file: File, limit: Int = MAX_PREVIEW_BYTES): String {
+    // 作者 long：快照不生成 toString，避免源配置和绑定脚本的信息意外进入异常日志。
+    private class PreviewInput(val profile: ActiveProfile, val currentProfileId: Long?, val revision: Long,
+        val runtime: CoreRuntimeStatus, val lanOverride: Boolean?)
+
+    private fun readPreviewFile(file: File, limit: Int = MAX_PREVIEW_BYTES): String =
+        readPreviewBytes(file, limit).toString(Charsets.UTF_8)
+
+    private fun readPreviewBytes(file: File, limit: Int = MAX_PREVIEW_BYTES): ByteArray {
         require(file.isFile) { "配置文件不存在" }
         // 作者 long：先限制读取量再解码，避免大订阅或读取中增长的文件耗尽预览页面内存。
         val bytes = file.inputStream().use { input ->
@@ -820,12 +833,14 @@ class CoreRuntimeManager(
             output.toByteArray()
         }
         require(bytes.size <= limit) { if (limit == MAX_PREVIEW_BYTES) "配置超过 2 MiB，暂不支持预览" else "配置超过 8 MiB，暂不支持统计" }
-        return bytes.toString(Charsets.UTF_8)
+        return bytes
     }
 
-    private suspend fun renderProfileContent(profile: ActiveProfile, sourceContent: String, lanOverride: Boolean? = lanSharingStore.read()): String {
+    private suspend fun renderProfileContent(profile: ActiveProfile, sourceContent: String,
+        lanOverride: Boolean? = lanSharingStore.read(), scriptContent: String? = null): String {
         // 作者 long：脚本先生成配置，再合并 Provider/DNS 覆盖；启动与预览共用顺序，避免预览和实际输入分叉。
-        val scriptedContent = profileScriptApplier.apply(sourceContent, profile.scriptPath)
+        val scriptedContent = if (scriptContent == null) profileScriptApplier.apply(sourceContent, profile.scriptPath)
+            else profileScriptApplier.applyContent(sourceContent, scriptContent)
         return patchLanSharing(ProfileProviderOverrideApplier.apply(
             scriptedContent,
             ProfileProviderOverrides.fromJsonString(profile.overridesJson),

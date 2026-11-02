@@ -96,6 +96,7 @@ object AppModule {
             .addMigrations(KClashDatabase.MIGRATION_2_3)
             .addMigrations(KClashDatabase.MIGRATION_3_4)
             .addMigrations(KClashDatabase.MIGRATION_4_5)
+            .addMigrations(KClashDatabase.MIGRATION_5_6)
             .build()
 
     @Provides
@@ -108,16 +109,40 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideProfileContentDecoder(
+        @ApplicationContext context: Context,
+        bridge: CoreBridge,
+    ): com.lonnnnnng.flclash.data.ProfileContentDecoder =
+        com.lonnnnnng.flclash.data.AgeProfileContentDecoder(context.cacheDir, bridge::decryptConfig)
+
+    @Provides
+    fun provideProfileFileDocumentReader(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileFileDocumentReader =
+        com.lonnnnnng.flclash.data.AndroidProfileFileDocumentReader(context)
+
+    @Provides
+    @Singleton
     fun provideProfileRepository(
         @ApplicationContext context: Context,
         database: KClashDatabase,
         subscriptionClient: SubscriptionClient,
         configValidator: ProfileConfigValidator,
-    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient, configValidator)
+        contentDecoder: com.lonnnnnng.flclash.data.ProfileContentDecoder,
+    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient, configValidator, contentDecoder)
 
     @Provides
     @Singleton
     fun provideProfileStore(repository: ProfileRepository): ProfileStore = repository
+
+    @Provides
+    fun provideProfileExportReader(repository: ProfileRepository): com.lonnnnnng.flclash.data.ProfileExportReader = repository
+
+    @Provides
+    fun provideProfileDocumentWriter(writer: com.lonnnnnng.flclash.data.AndroidProfileDocumentWriter):
+        com.lonnnnnng.flclash.data.ProfileDocumentWriter = writer
+
+    @Provides
+    fun provideProfileQrEncoder(encoder: com.lonnnnnng.flclash.ui.SubscriptionQrEncoder):
+        com.lonnnnnng.flclash.ui.ProfileQrEncoder = encoder
 
     @Provides
     @Singleton
@@ -245,6 +270,11 @@ object AppModule {
     @Singleton
     fun provideRuntimeDiagnosticStore(database: KClashDatabase): RuntimeDiagnosticStore =
         RoomRuntimeDiagnosticStore(database.runtimeDiagnostics())
+
+    @Provides
+    @Singleton
+    fun provideProxyDelayStore(database: KClashDatabase): com.lonnnnnng.flclash.data.ProxyDelayStore =
+        com.lonnnnnng.flclash.data.RoomProxyDelayStore(database.proxyDelayResults())
 
     @Provides
     @Singleton

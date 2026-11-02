@@ -137,3 +137,116 @@ private fun delaySortPriority(delay: Int?): Int = when {
     delay == CoreBridge.DELAY_TIMED_OUT -> 2
     else -> 3
 }
+
+internal fun proxyListSelectedItemIndex(
+    groups: List<ProxyGroupInfo>,
+    members: Map<String, List<String>>,
+    expanded: Set<String>,
+    selectedMap: Map<String, String>,
+    groupName: String,
+    columns: Int,
+): Int? {
+    require(columns > 0)
+    var header = 0
+    for (group in groups) {
+        val visible = members[group.name].orEmpty()
+        if (group.name == groupName) {
+            if (group.name !in expanded) return header
+            // 作者 long：定位本组直接选中的成员，嵌套组定位其卡片；排序/搜索之后按当前展示顺序计算行号。
+            val selected = selectedProxyName(group, selectedMap)
+            val index = visible.indexOf(selected)
+            return if (index < 0) null else header + 1 + index / columns
+        }
+        header += 1 + if (group.name in expanded) maxOf(1, (visible.size + columns - 1) / columns) else 0
+    }
+    return null
+}
+
+/** 作者 long：筛选、排序或列数变化后，滚动位置要绑定到节点身份而不是旧的懒列表索引。 */
+internal data class ProxyScrollAnchor(
+    val groupName: String,
+    val proxyName: String?,
+    val scrollOffset: Int,
+)
+
+internal data class ProxyListScrollItem(
+    val groupName: String,
+    val proxyNames: List<String>,
+    val isHeader: Boolean = false,
+)
+
+internal data class ProxyListScrollLayout(
+    val items: List<ProxyListScrollItem>,
+    val columns: Int,
+    val cardSize: ProxyNodeCardSize,
+)
+
+internal data class ProxyGridScrollLayout(
+    val groupName: String,
+    val proxyNames: List<String>,
+    val columns: Int,
+    val cardSize: ProxyNodeCardSize,
+)
+
+internal fun proxyListScrollItems(
+    groups: List<ProxyGroupInfo>,
+    members: Map<String, List<String>>,
+    expanded: Set<String>,
+    columns: Int,
+): List<ProxyListScrollItem> {
+    require(columns > 0)
+    return buildList {
+        groups.forEach { group ->
+            add(ProxyListScrollItem(group.name, emptyList(), isHeader = true))
+            if (group.name !in expanded) return@forEach
+            val visible = members[group.name].orEmpty()
+            if (visible.isEmpty()) add(ProxyListScrollItem(group.name, emptyList()))
+            else visible.chunked(columns).forEach { row ->
+                add(ProxyListScrollItem(group.name, row))
+            }
+        }
+    }
+}
+
+internal fun proxyListScrollAnchor(
+    items: List<ProxyListScrollItem>,
+    firstVisibleItemIndex: Int,
+    firstVisibleItemScrollOffset: Int,
+): ProxyScrollAnchor? {
+    val item = items.getOrNull(firstVisibleItemIndex) ?: return null
+    return ProxyScrollAnchor(item.groupName, item.proxyNames.firstOrNull(), firstVisibleItemScrollOffset)
+}
+
+internal fun proxyListScrollItemIndex(
+    items: List<ProxyListScrollItem>,
+    anchor: ProxyScrollAnchor,
+): Int? {
+    val exact = anchor.proxyName?.let { proxyName ->
+        items.indexOfFirst { it.groupName == anchor.groupName && proxyName in it.proxyNames }
+    } ?: -1
+    if (exact >= 0) return exact
+    // 作者 long：搜索把锚定节点过滤掉时，回到同组组头，避免把用户送到无关组的旧像素位置。
+    val groupHeader = items.indexOfFirst { it.groupName == anchor.groupName && it.isHeader }
+    if (groupHeader >= 0) return groupHeader
+    return items.indexOfFirst { it.isHeader }.takeIf { it >= 0 }
+}
+
+internal fun proxyGridScrollAnchor(
+    groupName: String,
+    proxyNames: List<String>,
+    firstVisibleItemIndex: Int,
+    firstVisibleItemScrollOffset: Int,
+): ProxyScrollAnchor? = proxyNames.getOrNull(firstVisibleItemIndex)?.let {
+    ProxyScrollAnchor(groupName, it, firstVisibleItemScrollOffset)
+}
+
+internal fun proxyGridScrollItemIndex(
+    proxyNames: List<String>,
+    anchor: ProxyScrollAnchor,
+    columns: Int,
+): Int? {
+    require(columns > 0)
+    val index = anchor.proxyName?.let(proxyNames::indexOf) ?: -1
+    if (index >= 0) return (index / columns) * columns
+    return proxyNames.indices.firstOrNull()?.let { (it / columns) * columns }
+}

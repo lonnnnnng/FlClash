@@ -8,6 +8,8 @@ import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileStore
+import com.lonnnnnng.flclash.data.ProxyDelayEntity
+import com.lonnnnnng.flclash.data.ProxyDelayStore
 import com.lonnnnnng.flclash.data.decodeSelectedMap
 import com.lonnnnnng.flclash.data.encodeSelectedMap
 import com.lonnnnnng.flclash.data.decodeUnfoldSet
@@ -43,6 +45,80 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProxyGroupsViewModelTest {
+    @Test fun protocolDescriptionsUseLeafTypesAndLooseNestedGroupExit() {
+        val nested = ProxyGroupInfo("nested", "Selector", "leaf", listOf("leaf"), false)
+        val state = ProxyGroupsUiState(groups = listOf(nested), proxyTypes = mapOf("leaf" to "Vless", "DIRECT" to "Direct"))
+        assertEquals("Vless", state.proxyType("leaf", ProxyNodeCardSize.LOOSE))
+        assertEquals("Direct", state.proxyType("DIRECT", ProxyNodeCardSize.COMPACT))
+        assertEquals("Selector", state.proxyType("nested", ProxyNodeCardSize.STANDARD))
+        assertEquals("Selector(leaf)", state.proxyType("nested", ProxyNodeCardSize.LOOSE))
+        assertNull(state.proxyType("missing", ProxyNodeCardSize.STANDARD))
+        val cyclic = state.copy(groups = listOf(nested.copy(now = "nested", all = listOf("nested"))))
+        assertEquals("Selector", cyclic.proxyType("nested", ProxyNodeCardSize.LOOSE))
+    }
+
+    @Test fun typeMetadataRefreshesAfterSelectionAndIsReplacedWhenProfileChanges() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val group = ProxyGroupInfo("Shared", "Selector", "a", listOf("a", "b"), false)
+        val old = Profile.custom(701, "old")
+        val next = Profile.custom(702, "next")
+        val store = SelectionProfileStore(old).apply { profiles.value = listOf(old, next) }
+        val first = ProxyGroupsSnapshot(listOf(group), mapOf("a" to "Trojan", "b" to "Vless"))
+        val selected = first.copy(proxyTypes = first.proxyTypes + ("b" to "Shadowsocks"))
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, first, Result.success(selected))
+        val model = ProxyGroupsViewModel(runtime, store)
+        val observing = backgroundScope.launch { model.state.collect {} }
+        try {
+            runCurrent()
+            assertEquals(first.proxyTypes, model.state.value.proxyTypes)
+            model.selectProxy(group, "b")
+            runCurrent()
+            assertEquals(selected.proxyTypes, model.state.value.proxyTypes)
+            runtime.snapshot = ProxyGroupsSnapshot(listOf(group), mapOf("a" to "Direct"))
+            store.currentProfileId.value = next.id
+            runCurrent()
+            assertEquals(mapOf("a" to "Direct"), model.state.value.proxyTypes)
+        } finally { observing.cancel(); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun listLocationCountsVisibleRowsAndTargetsDirectMemberAfterFiltering() {
+        val first = ProxyGroupInfo("One", "Selector", "a", listOf("a", "b", "c"), false)
+        val second = ProxyGroupInfo("Two", "Selector", "nested", listOf("x", "nested"), false)
+        val groups = listOf(first, second)
+        val members = mapOf("One" to first.all, "Two" to listOf("nested", "x"))
+        assertEquals(4, proxyListSelectedItemIndex(groups, members, setOf("One", "Two"), emptyMap(), "Two", 2))
+        assertEquals(2, proxyListSelectedItemIndex(groups, members, setOf("Two"), emptyMap(), "Two", 2))
+        assertEquals(3, proxyListSelectedItemIndex(groups, members, setOf("One"), emptyMap(), "Two", 2))
+        assertNull(proxyListSelectedItemIndex(groups, members + ("Two" to listOf("x")), setOf("Two"), emptyMap(), "Two", 2))
+        assertNull(proxyListSelectedItemIndex(groups, members, emptySet(), emptyMap(), "missing", 2))
+    }
+
+    @Test fun semanticScrollAnchorFollowsNodeAcrossListAndGridShapeChanges() {
+        val group = ProxyGroupInfo("One", "Selector", "node-20", listOf("node-20", "node-00", "node-10", "node-30"), false)
+        val oldMembers = mapOf(group.name to group.all)
+        val oldItems = proxyListScrollItems(listOf(group), oldMembers, setOf(group.name), columns = 2)
+        val anchor = proxyListScrollAnchor(oldItems, firstVisibleItemIndex = 1, firstVisibleItemScrollOffset = 19)
+        assertEquals(ProxyScrollAnchor("One", "node-20", 19), anchor)
+
+        val sortedMembers = mapOf(group.name to group.all.sorted())
+        val sortedItems = proxyListScrollItems(listOf(group), sortedMembers, setOf(group.name), columns = 3)
+        assertEquals(1, proxyListScrollItemIndex(sortedItems, checkNotNull(anchor)))
+
+        val filteredItems = proxyListScrollItems(
+            listOf(group),
+            mapOf(group.name to sortedMembers.getValue(group.name).filterNot { it == "node-20" }),
+            setOf(group.name),
+            columns = 3,
+        )
+        // 作者 long：锚定节点被搜索过滤后回到同组组头，不跳到旧像素对应的其他节点。
+        assertEquals(0, proxyListScrollItemIndex(filteredItems, checkNotNull(anchor)))
+
+        val gridAnchor = proxyGridScrollAnchor("One", group.all, firstVisibleItemIndex = 2, firstVisibleItemScrollOffset = 11)
+        assertEquals(ProxyScrollAnchor("One", "node-10", 11), gridAnchor)
+        assertEquals(0, proxyGridScrollItemIndex(sortedMembers.getValue(group.name), checkNotNull(gridAnchor), columns = 3))
+        assertEquals(0, proxyGridScrollItemIndex(sortedMembers.getValue(group.name).filterNot { it == "node-10" }, checkNotNull(gridAnchor), columns = 3))
+    }
+
     @Test
     fun oldSelectionPersistenceCannotReplaceNewProfileSnapshot() = runTest {
         Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
@@ -189,6 +265,109 @@ class ProxyGroupsViewModelTest {
     }
 
     @Test
+    fun `delay result survives viewmodel recreation and remains isolated by profile`() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.UnconfinedTestDispatcher())
+        val group = ProxyGroupInfo("Shared", "Selector", "node-a", listOf("node-a"), false, "https://one")
+        val profile = Profile.custom(601L, "原配置")
+        val store = InMemoryProxyDelayStore()
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(group)))
+        val first = ProxyGroupsViewModel(runtime, SelectionProfileStore(profile), store)
+        val firstJob = backgroundScope.launch { first.state.collect {} }
+
+        first.state.first { it.groups.isNotEmpty() }
+        first.testDelay(group, "node-a")
+        first.state.first { it.delayState(group, "node-a")?.value == 100 }
+        assertEquals(100, store.load(profile.id).single().value)
+        first.viewModelScope.cancel()
+        firstJob.cancel()
+
+        val restored = ProxyGroupsViewModel(runtime, SelectionProfileStore(profile), store)
+        val restoredJob = backgroundScope.launch { restored.state.collect {} }
+        restored.state.first { it.groups.isNotEmpty() && it.delayState(group, "node-a")?.value == 100 }
+        assertEquals(100, restored.state.value.delayState(group, "node-a")?.value)
+        restored.viewModelScope.cancel()
+        restoredJob.cancel()
+
+        val otherProfile = Profile.custom(602L, "同名新配置")
+        val isolated = ProxyGroupsViewModel(runtime, SelectionProfileStore(otherProfile), store)
+        val isolatedJob = backgroundScope.launch { isolated.state.collect {} }
+        isolated.state.first { it.groups.isNotEmpty() }
+        assertNull(isolated.state.value.delayState(group, "node-a"))
+        isolated.viewModelScope.cancel()
+        isolatedJob.cancel()
+    }
+
+    @Test
+    fun `expired delay result is removed before profile restoration`() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.UnconfinedTestDispatcher())
+        val group = ProxyGroupInfo("Auto", "URLTest", "node-a", listOf("node-a"), false, "https://one")
+        val profile = Profile.custom(603L, "过期缓存")
+        val store = InMemoryProxyDelayStore(
+            listOf(
+                ProxyDelayEntity(
+                    profileId = profile.id,
+                    groupName = group.name,
+                    proxyName = "node-a",
+                    testUrl = "https://one",
+                    value = 188,
+                    updatedAtMillis = System.currentTimeMillis() - DELAY_RESULT_TTL_MS - 1L,
+                ),
+            ),
+        )
+        val model = ProxyGroupsViewModel(
+            FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(group))),
+            SelectionProfileStore(profile),
+            store,
+        )
+        val stateJob = backgroundScope.launch { model.state.collect {} }
+
+        model.state.first { it.groups.isNotEmpty() }
+        assertNull(model.state.value.delayState(group, "node-a"))
+        assertTrue(store.load(profile.id).isEmpty())
+        model.viewModelScope.cancel()
+        stateJob.cancel()
+    }
+
+    @Test
+    fun `empty delay result deletes stale cache while failure and timeout are restorable`() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.UnconfinedTestDispatcher())
+        val group = ProxyGroupInfo("Auto", "URLTest", "node-a", listOf("node-a"), false, "https://one")
+        val profile = Profile.custom(604L, "测速状态")
+        val stale = ProxyDelayEntity(profile.id, "Auto", "node-a", "https://one", 188, System.currentTimeMillis())
+        val store = InMemoryProxyDelayStore(listOf(stale))
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(group)))
+        val emptyModel = ProxyGroupsViewModel(runtime, SelectionProfileStore(profile), store)
+        val emptyJob = backgroundScope.launch { emptyModel.state.collect {} }
+        emptyModel.state.first { it.groups.isNotEmpty() }
+        runtime.singleDelayResult = Result.success(null)
+        emptyModel.testDelay(group, "node-a")
+        emptyModel.state.first { it.delayState(group, "node-a")?.isTesting == false }
+        assertTrue(store.load(profile.id).isEmpty())
+        emptyModel.viewModelScope.cancel()
+        emptyJob.cancel()
+
+        runtime.singleDelayResult = Result.failure(IllegalStateException("失败"))
+        val failedModel = ProxyGroupsViewModel(runtime, SelectionProfileStore(profile), store)
+        val failedJob = backgroundScope.launch { failedModel.state.collect {} }
+        failedModel.state.first { it.groups.isNotEmpty() }
+        failedModel.testDelay(group, "node-a")
+        failedModel.state.first { it.delayState(group, "node-a")?.value == CoreBridge.DELAY_FAILED }
+        assertEquals(CoreBridge.DELAY_FAILED, store.load(profile.id).single().value)
+        failedModel.viewModelScope.cancel()
+        failedJob.cancel()
+
+        runtime.singleDelayResult = Result.success(ProxyDelay("https://one", "node-a", CoreBridge.DELAY_TIMED_OUT))
+        val timeoutModel = ProxyGroupsViewModel(runtime, SelectionProfileStore(profile), store)
+        val timeoutJob = backgroundScope.launch { timeoutModel.state.collect {} }
+        timeoutModel.state.first { it.groups.isNotEmpty() && it.delayState(group, "node-a")?.value == CoreBridge.DELAY_FAILED }
+        timeoutModel.testDelay(group, "node-a")
+        timeoutModel.state.first { it.delayState(group, "node-a")?.value == CoreBridge.DELAY_TIMED_OUT }
+        assertEquals(CoreBridge.DELAY_TIMED_OUT, store.load(profile.id).single().value)
+        timeoutModel.viewModelScope.cancel()
+        timeoutJob.cancel()
+    }
+
+    @Test
     fun `batch delay targets resolve nested groups and deduplicate leaf requests`() {
         val nested = ProxyGroupInfo(
             name = "Relay",
@@ -247,7 +426,7 @@ class ProxyGroupsViewModelTest {
     }
 
     @Test
-    fun `computed selected name prefers explicit pin then fixed then automatic now`() {
+    fun `computed selected name prefers automatic now then explicit pin and fixed fallback`() {
         val group = ProxyGroupInfo(
             name = "Auto",
             type = "URLTest",
@@ -257,8 +436,39 @@ class ProxyGroupsViewModelTest {
             hidden = false,
         )
 
-        assertEquals("fixed-node", selectedProxyName(group))
-        assertEquals("pinned-node", selectedProxyName(group, mapOf("Auto" to "pinned-node")))
+        assertEquals("auto-node", selectedProxyName(group))
+        assertEquals("auto-node", selectedProxyName(group, mapOf("Auto" to "pinned-node")))
+        assertEquals("pinned-node", selectedProxyName(group.copy(now = null), mapOf("Auto" to "pinned-node")))
+        assertEquals("fixed-node", selectedProxyName(group.copy(now = null)))
+    }
+
+    @Test
+    fun `computed selected name ignores invalid automatic pinned and fixed nodes`() {
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "Fallback",
+            now = "stale-auto",
+            fixed = "stale-fixed",
+            all = listOf("node-a"),
+            hidden = false,
+        )
+
+        assertNull(selectedProxyName(group))
+        assertNull(selectedProxyName(group, mapOf("Auto" to "stale-pinned")))
+    }
+
+    @Test
+    fun `selector selected name keeps explicit mapping ahead of core now`() {
+        val group = ProxyGroupInfo(
+            name = "Manual",
+            type = "Selector",
+            now = "node-a",
+            all = listOf("node-a", "node-b"),
+            hidden = false,
+        )
+
+        assertEquals("node-b", selectedProxyName(group, mapOf("Manual" to "node-b")))
+        assertEquals("node-a", selectedProxyName(group))
     }
 
     @Test
@@ -379,6 +589,51 @@ class ProxyGroupsViewModelTest {
     }
 
     @Test
+    fun `delay summary counts success timeout failure and in flight only for the group url`() {
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "URLTest",
+            now = "node-fast",
+            all = listOf("node-fast", "node-timeout", "node-fail", "node-running", "node-other-url"),
+            hidden = false,
+            testUrl = "https://group.example",
+        )
+        val state = ProxyGroupsUiState(
+            groups = listOf(group),
+            delayResults = mapOf(
+                ProxyDelayKey("Auto", "node-fast", "https://group.example") to ProxyDelayUiState(value = 120, updatedAtMillis = 10),
+                ProxyDelayKey("Auto", "node-timeout", "https://group.example") to ProxyDelayUiState(value = CoreBridge.DELAY_TIMED_OUT, updatedAtMillis = 10),
+                ProxyDelayKey("Auto", "node-fail", "https://group.example") to ProxyDelayUiState(value = CoreBridge.DELAY_FAILED, updatedAtMillis = 10),
+                ProxyDelayKey("Auto", "node-running", "https://group.example") to ProxyDelayUiState(isTesting = true),
+                ProxyDelayKey("Auto", "node-other-url", "https://other.example") to ProxyDelayUiState(value = 80, updatedAtMillis = 10),
+            ),
+        )
+
+        assertEquals(
+            ProxyDelaySummary(tested = 3, success = 1, timedOut = 1, failed = 1, testing = 1),
+            state.delaySummary(group, nowMillis = 10),
+        )
+    }
+
+    @Test
+    fun `delay summary drops expired values and does not turn empty results into failures`() {
+        val group = ProxyGroupInfo("Auto", "URLTest", "node-a", listOf("node-a", "node-b"), false, "https://group.example")
+        val state = ProxyGroupsUiState(
+            groups = listOf(group),
+            delayResults = mapOf(
+                ProxyDelayKey("Auto", "node-a", "https://group.example") to ProxyDelayUiState(value = CoreBridge.DELAY_FAILED, updatedAtMillis = 100),
+                ProxyDelayKey("Auto", "node-b", "https://group.example") to ProxyDelayUiState(value = null, updatedAtMillis = 100),
+            ),
+        )
+
+        assertEquals(ProxyDelaySummary(), state.delaySummary(group, nowMillis = 100 + DELAY_RESULT_TTL_MS + 1))
+        assertEquals(
+            ProxyDelaySummary(tested = 1, failed = 1),
+            state.delaySummary(group, nowMillis = 100),
+        )
+    }
+
+    @Test
     fun `proxy grid density follows flutter column rules`() {
         assertEquals(2, proxyGridColumnCount(360f, ProxyGridDensity.STANDARD))
         assertEquals(3, proxyGridColumnCount(360f, ProxyGridDensity.COMPACT))
@@ -392,8 +647,8 @@ private class SelectionProfileStore(profile: Profile) : ProfileStore {
     override val currentProfileId = MutableStateFlow<Long?>(profile.id)
 
     override suspend fun selectProfile(id: Long?) = Unit
-    override suspend fun addRemoteProfile(url: String, label: String): Profile = error("unused")
-    override suspend fun addFileProfile(label: String, bytes: ByteArray): Profile = error("unused")
+    override suspend fun addRemoteProfile(url: String, label: String, ageSecretKey: String): Profile = error("unused")
+    override suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String): Profile = error("unused")
     override suspend fun addCustomProfile(label: String): Profile = error("unused")
     override suspend fun readLocalProfileContent(id: Long): String = error("unused")
     override suspend fun updateLocalProfileContent(id: Long, content: String): Profile = error("unused")
@@ -427,6 +682,35 @@ private class SelectionProfileStore(profile: Profile) : ProfileStore {
     override suspend fun reorder(ids: List<Long>) = Unit
 }
 
+private class InMemoryProxyDelayStore(
+    initial: List<ProxyDelayEntity> = emptyList(),
+) : ProxyDelayStore {
+    private val values = initial.toMutableList()
+
+    override suspend fun load(profileId: Long): List<ProxyDelayEntity> =
+        values.filter { it.profileId == profileId }.toList()
+
+    override suspend fun upsert(value: ProxyDelayEntity) {
+        values.removeAll {
+            it.profileId == value.profileId &&
+                it.groupName == value.groupName &&
+                it.proxyName == value.proxyName &&
+                it.testUrl == value.testUrl
+        }
+        values += value
+    }
+
+    override suspend fun delete(profileId: Long, groupName: String, proxyName: String, testUrl: String) {
+        values.removeAll {
+            it.profileId == profileId && it.groupName == groupName && it.proxyName == proxyName && it.testUrl == testUrl
+        }
+    }
+
+    override suspend fun deleteOlderThan(profileId: Long, cutoffMillis: Long) {
+        values.removeAll { it.profileId == profileId && it.updatedAtMillis < cutoffMillis }
+    }
+}
+
 private class FakeProxyGroupsRuntime(
     status: CoreRuntimeStatus,
     var snapshot: ProxyGroupsSnapshot,
@@ -437,6 +721,7 @@ private class FakeProxyGroupsRuntime(
     override val events: Flow<CoreEvent> = emptyFlow()
     var lastProxyName: String? = null
     var beforeBatch: suspend () -> Unit = {}
+    var singleDelayResult: Result<ProxyDelay?>? = null
 
     override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = Result.success(snapshot)
 
@@ -446,7 +731,7 @@ private class FakeProxyGroupsRuntime(
     }
 
     override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): Result<ProxyDelay?> =
-        Result.success(ProxyDelay(testUrl, proxyName, 100))
+        singleDelayResult ?: Result.success(ProxyDelay(testUrl, proxyName, 100))
 
     override suspend fun testDelayBatch(
         requests: List<ProxyDelayRequest>,

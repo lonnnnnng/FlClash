@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
@@ -32,6 +33,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,6 +47,21 @@ import org.junit.runner.RunWith
 class ProxyGroupsViewModelPanelInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    private lateinit var previousPageOptions: ProxyPageOptions
+
+    @Before
+    fun isolateProxyPageOptions() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        previousPageOptions = ProxyPageOptionsStore.load(context)
+        ProxyPageOptionsStore.save(context, ProxyPageOptions())
+    }
+
+    @After
+    fun restoreProxyPageOptions() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        ProxyPageOptionsStore.save(context, previousPageOptions)
+    }
 
     @Test
     fun selectionAndComputedAutoRecoveryFlowThroughRealViewModel() {
@@ -69,7 +87,7 @@ class ProxyGroupsViewModelPanelInstrumentedTest {
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithTag("proxy_group_Auto").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithTag("proxy_group_select_Auto").performClick()
+        composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
         composeRule.onNodeWithTag("proxy_group_search").performTextInput("node-b")
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").performClick()
 
@@ -79,7 +97,6 @@ class ProxyGroupsViewModelPanelInstrumentedTest {
         assertEquals("node-b", runtime.lastTarget)
         assertEquals(mapOf("Auto" to "node-b"), store.selectedMap())
 
-        composeRule.onNodeWithTag("proxy_group_select_Auto").performClick()
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").performClick()
 
         composeRule.waitUntil(5_000) {
@@ -116,7 +133,7 @@ class ProxyGroupsViewModelPanelInstrumentedTest {
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithTag("proxy_group_Auto").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithTag("proxy_group_select_Auto").performClick()
+        composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").performClick()
 
         composeRule.waitUntil(5_000) {
@@ -228,8 +245,8 @@ private class FakeProxyPanelProfileStore : ProfileStore {
     override val currentProfileId: StateFlow<Long?> = MutableStateFlow<Long?>(initial.id).asStateFlow()
 
     override suspend fun selectProfile(id: Long?) = Unit
-    override suspend fun addRemoteProfile(url: String, label: String): Profile = error("unused")
-    override suspend fun addFileProfile(label: String, bytes: ByteArray): Profile = error("unused")
+    override suspend fun addRemoteProfile(url: String, label: String, ageSecretKey: String): Profile = error("unused")
+    override suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String): Profile = error("unused")
     override suspend fun addCustomProfile(label: String): Profile = error("unused")
     override suspend fun readLocalProfileContent(id: Long): String = error("unused")
     override suspend fun updateLocalProfileContent(id: Long, content: String): Profile = error("unused")

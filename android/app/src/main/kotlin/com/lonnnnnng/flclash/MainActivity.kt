@@ -57,6 +57,7 @@ class MainActivity : ComponentActivity() {
     private val outboundIpViewModel: OutboundIpViewModel by viewModels()
     private val runtimeConfigPreviewViewModel: com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModel by viewModels()
     private val profilesViewModel: ProfilesViewModel by viewModels()
+    private val profileSharingViewModel: com.lonnnnnng.flclash.ui.ProfileSharingViewModel by viewModels()
     private val accessControlViewModel: AccessControlViewModel by viewModels()
     private val proxyGroupsViewModel: ProxyGroupsViewModel by viewModels()
     private val scriptsViewModel: ScriptsViewModel by viewModels()
@@ -193,6 +194,7 @@ class MainActivity : ComponentActivity() {
                     serviceStatusViewModel = serviceStatusViewModel,
                     intranetIpViewModel = intranetIpViewModel,
                     profilesViewModel = profilesViewModel,
+                    profileSharingViewModel = profileSharingViewModel,
                     accessControlViewModel = accessControlViewModel,
                     proxyGroupsViewModel = proxyGroupsViewModel,
                     scriptsViewModel = scriptsViewModel,

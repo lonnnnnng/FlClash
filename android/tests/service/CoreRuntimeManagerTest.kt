@@ -598,10 +598,10 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
-    fun `preview rejects another profile missing file and excessive input`() = runTest {
+    fun `preview rejects missing profile missing file and excessive input`() = runTest {
         val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
         val manager = manager(ActiveProfile(42, "边界", source.path), temporaryFolder.newFolder(), FakeBridge(), FakeServiceController())
-        assertTrue(runCatching { manager.previewConfig(43) }.isFailure)
+        assertEquals("配置不存在", runCatching { manager.previewConfig(43) }.exceptionOrNull()?.message)
         source.writeBytes(ByteArray(2 * 1024 * 1024 + 1))
         assertEquals("配置超过 2 MiB，暂不支持预览", runCatching { manager.previewConfig(42) }.exceptionOrNull()?.message)
         assertTrue(source.delete())
@@ -630,6 +630,156 @@ class CoreRuntimeManagerTest {
         release.complete(Unit)
         assertTrue(pending.await().isFailure)
         assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
+    }
+
+    @Test
+    fun `noncurrent preview renders own transforms while stopped and running without selecting or applying it`() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val targetSource = temporaryFolder.newFile().apply { writeText("mixed-port: 7891\n") }
+        val script = temporaryFolder.newFile().apply { writeText("function main(c) { return c }") }
+        val current = ActiveProfile(45, "当前配置", source.path)
+        val target = ActiveProfile(46, "另一份配置", targetSource.path, scriptPath = script.path,
+            overridesJson = ProfileProviderOverrides(mapOf("cloud" to ProxyProviderOverride(timeout = 2100))).toJsonString())
+        val provider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = current
+            override suspend fun profileById(id: Long) = listOf(current, target).firstOrNull { it.id == id }
+        }
+        val home = temporaryFolder.newFolder()
+        val staged = File(home, "config.yaml").apply { writeText("previous input") }
+        val bridge = FakeBridge()
+        val controller = FakeServiceController()
+        var scriptCalls = 0
+        val manager = manager(current, home, bridge, controller, profileProvider = provider,
+            profileScriptEvaluator = object : ProfileScriptEvaluator {
+                override suspend fun evaluate(script: String, configJson: String): String {
+                    scriptCalls++
+                    assertTrue(configJson.contains("7891"))
+                    return "{\"mixed-port\":7892,\"proxy-providers\":{\"cloud\":{\"type\":\"http\"}}}"
+                }
+            })
+        val stopped = manager.previewConfig(target.id)
+        assertEquals(target.id, stopped.profileId)
+        assertFalse(stopped.isApplied)
+        assertTrue(stopped.content.contains("mixed-port: 7892"))
+        assertTrue(stopped.content.contains("timeout: 2100"))
+        assertEquals("previous input", staged.readText())
+        assertTrue(bridge.calls.isEmpty())
+        assertFalse(controller.started)
+        manager.startProxy().getOrThrow()
+        val appliedInput = staged.readText()
+        val calls = bridge.calls.toList()
+        val running = manager.previewConfig(target.id)
+        assertEquals(stopped.content, running.content)
+        assertFalse(running.isApplied)
+        assertEquals(appliedInput, staged.readText())
+        assertEquals(calls, bridge.calls)
+        assertEquals(current.id, provider.activeProfileId())
+        assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
+        assertTrue(manager.previewConfig(current.id).isApplied)
+        assertEquals(2, scriptCalls)
+        assertEquals("mixed-port: 7891\n", targetSource.readText())
+    }
+
+    @Test
+    fun `valid target preview does not resolve broken current script or invoke core`() = runTest {
+        val target = ActiveProfile(48, "有效目标", temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }.path)
+        val provider = object : ActiveProfileProvider {
+            override suspend fun activeProfile(): ActiveProfile = error("绑定脚本不存在")
+            override suspend fun activeProfileId() = 47L
+            override suspend fun profileById(id: Long) = target.takeIf { it.id == id }
+        }
+        val bridge = FakeBridge()
+        val manager = manager(null, temporaryFolder.newFolder(), bridge, FakeServiceController(), profileProvider = provider)
+        assertEquals(target.id, manager.previewConfig(target.id).profileId)
+        assertTrue(bridge.calls.isEmpty())
+    }
+
+    @Test
+    fun `noncurrent preview rejects target edits deletion same timestamp file replacements and LAN changes`() = runTest {
+        for (change in listOf("metadata", "deleted", "source", "script", "lan", "selection")) {
+            val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+            val targetSource = temporaryFolder.newFile().apply { writeText("mixed-port: 7891\n") }
+            val script = temporaryFolder.newFile().apply { writeText("function main(c) { return c }") }
+            val current = ActiveProfile(49, "当前配置", source.path)
+            val target = ActiveProfile(50, "目标配置", targetSource.path, scriptPath = script.path)
+            val profiles = java.util.concurrent.ConcurrentHashMap(mapOf(current.id to current, target.id to target))
+            val selected = java.util.concurrent.atomic.AtomicReference(current.id)
+            val provider = object : ActiveProfileProvider {
+                override suspend fun activeProfile() = profiles[selected.get()]
+                override suspend fun profileById(id: Long) = profiles[id]
+            }
+            val entered = CompletableDeferred<Unit>()
+            val release = CompletableDeferred<Unit>()
+            val lan = object : LanSharingStore {
+                var enabled = false
+                override fun read(): Boolean = enabled
+                override fun write(value: Boolean?) { enabled = value ?: false }
+            }
+            val bridge = FakeBridge()
+            val manager = manager(current, temporaryFolder.newFolder(), bridge, FakeServiceController(),
+                profileProvider = provider, lanSharingStore = lan,
+                profileScriptEvaluator = object : ProfileScriptEvaluator {
+                    override suspend fun evaluate(script: String, configJson: String): String {
+                        entered.complete(Unit)
+                        release.await()
+                        return configJson
+                    }
+                })
+            val pending = async { runCatching { manager.previewConfig(target.id) } }
+            entered.await()
+            when (change) {
+                "metadata" -> profiles[target.id] = target.copy(overridesJson = "{\"dns\":{\"enable\":true}}")
+                "deleted" -> profiles.remove(target.id)
+                "source" -> {
+                    val modified = targetSource.lastModified()
+                    targetSource.writeText("mixed-port: 7892\n")
+                    assertTrue(targetSource.setLastModified(modified))
+                }
+                "script" -> {
+                    val modified = script.lastModified()
+                    script.writeText("function main(d) { return d }")
+                    assertTrue(script.setLastModified(modified))
+                }
+                "lan" -> lan.enabled = true
+                "selection" -> selected.set(target.id)
+            }
+            release.complete(Unit)
+            assertEquals(change, "配置或核心状态已变化，请重试", pending.await().exceptionOrNull()?.message)
+            assertTrue(bridge.calls.isEmpty())
+        }
+    }
+
+    @Test
+    fun `slow noncurrent preview does not block a hot switch and cannot return for the old session`() = runTest {
+        val first = ActiveProfile(54, "原配置", temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }.path)
+        val target = ActiveProfile(55, "预览目标", temporaryFolder.newFile().apply { writeText("mixed-port: 7891\n") }.path,
+            scriptPath = temporaryFolder.newFile().apply { writeText("function main(c) { return c }") }.path)
+        val next = ActiveProfile(56, "切换目标", temporaryFolder.newFile().apply { writeText("mixed-port: 7892\n") }.path)
+        val profiles = listOf(first, target, next).associateBy { it.id }
+        val selected = java.util.concurrent.atomic.AtomicReference(first.id)
+        val provider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profiles[selected.get()]
+            override suspend fun profileById(id: Long) = profiles[id]
+        }
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val home = temporaryFolder.newFolder()
+        val manager = manager(first, home, FakeBridge(), FakeServiceController(), profileProvider = provider,
+            profileScriptEvaluator = object : ProfileScriptEvaluator {
+                override suspend fun evaluate(script: String, configJson: String): String {
+                    entered.complete(Unit); release.await(); return configJson
+                }
+            })
+        manager.startProxy().getOrThrow()
+        val pending = async { runCatching { manager.previewConfig(target.id) } }
+        entered.await()
+        manager.selectProfile(next.id) { selected.set(it) }
+        assertFalse(pending.isCompleted)
+        assertEquals(next.id, selected.get())
+        assertEquals("mixed-port: 7892\n", File(home, "config.yaml").readText())
+        release.complete(Unit)
+        assertEquals("配置或核心状态已变化，请重试", pending.await().exceptionOrNull()?.message)
+        assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
     }
 
     @Test
@@ -1397,10 +1547,11 @@ class CoreRuntimeManagerTest {
         elapsedRealtimeMillis: () -> Long = { 0L },
         lanSharingStore: LanSharingStore = NoopLanSharingStore,
         vpnSettingsStore: VpnSettingsStore = DefaultVpnSettingsStore,
+        profileProvider: ActiveProfileProvider? = null,
     ): CoreRuntimeManager {
         return CoreRuntimeManager(
             paths = CoreRuntimePaths(homeDir, prepare = prepareCore),
-            profileProvider = object : ActiveProfileProvider {
+            profileProvider = profileProvider ?: object : ActiveProfileProvider {
                 override suspend fun activeProfile(): ActiveProfile? = profile
             },
             bridge = bridge,

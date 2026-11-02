@@ -76,7 +76,12 @@ func handleMethodCall(call *MethodCall) (data []byte) {
 	if err != nil {
 		return encodeResponse(MethodResponse{ID: call.ID, Error: asMethodError(err)})
 	}
-	return spillResponse(call.ID, encodeResponse(MethodResponse{ID: call.ID, Result: result}))
+	response := encodeResponse(MethodResponse{ID: call.ID, Result: result})
+	// 作者 long：解密正文只通过回调交给导入方校验，不能因响应较大而把敏感明文另存为 spill 文件。
+	if call.Method == decryptConfigMethod {
+		return response
+	}
+	return spillResponse(call.ID, response)
 }
 
 func encodeResponse(response MethodResponse) []byte {

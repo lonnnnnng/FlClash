@@ -469,6 +469,33 @@ class ProfilesRepositoryPanelInstrumentedTest {
     }
 
     @Test
+    fun invalidFileImportDoesNotCreateProfileOrWriteProfileFile() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val database = Room.inMemoryDatabaseBuilder(
+            context,
+            KClashDatabase::class.java,
+        ).allowMainThreadQueries().build()
+        val repository = ProfileRepository(
+            context = context,
+            database = database,
+            subscriptionClient = object : SubscriptionClient {
+                override suspend fun download(url: String): SubscriptionDownload =
+                    error("该本地导入流程不访问远程订阅")
+            },
+        )
+        val profileDirectory = repository.profileFile(0L).parentFile
+        val filesBefore = profileDirectory?.list()?.toSet().orEmpty()
+
+        val error = runCatching {
+            runBlocking { repository.addFileProfile("无效配置", "- invalid\n- root\n".toByteArray()) }
+        }.exceptionOrNull()
+
+        assertTrue(error is IllegalArgumentException)
+        assertTrue(runBlocking { database.profiles().getAll() }.isEmpty())
+        assertEquals(filesBefore, profileDirectory?.list()?.toSet().orEmpty())
+    }
+
+    @Test
     fun repositoryReordersProfilesAndKeepsCurrentSelection() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val database = Room.inMemoryDatabaseBuilder(

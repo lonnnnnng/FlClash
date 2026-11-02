@@ -78,7 +78,10 @@ data class ProfileEntity(
     val matchTarget: String?,
     val overridesJson: String,
     val orderIndex: Int,
-)
+) {
+    // 作者 long：Room 实体可能进入调试输出，避免 data class 自动把解密密钥和订阅凭据展开。
+    override fun toString(): String = "ProfileEntity(id=$id, type=$type)"
+}
 
 data class Profile(
     val id: Long,
@@ -100,6 +103,8 @@ data class Profile(
     val overridesJson: String = "{}",
     val lastUpdateError: String? = null,
 ) {
+    override fun toString(): String = "Profile(id=$id, type=$type)"
+
     val realLabel: String
         get() = label.trim().ifEmpty { defaultLabel }
 

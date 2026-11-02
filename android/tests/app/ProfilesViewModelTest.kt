@@ -30,6 +30,225 @@ import org.junit.Test
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
 
+    @Test fun `local key only save does not submit content or download`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(91, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+        val store = FakeProfileStore(profile).apply { content = "original" }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        model.openEditor(profile)
+        advanceUntilIdle()
+        model.saveFileEditor(null, " local-fixture \n")
+        advanceUntilIdle()
+        assertEquals("local-fixture", store.profiles.value.single().ageSecretKey)
+        assertNull(store.fileUpdates.single().second)
+        assertEquals("original", store.content)
+        assertTrue(store.remoteUpdateCalls.isEmpty())
+        assertNull(model.editorState.value.profile)
+    }
+
+    @Test fun `picker cancellation does not read or change file editor`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(92, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+        val store = FakeProfileStore(profile)
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+            fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("cancelled picker cannot read") })
+        model.openEditor(profile)
+        advanceUntilIdle()
+        val token = checkNotNull(model.beginFileReplacementPick())
+        model.acceptFileReplacement(token, null)
+        advanceUntilIdle()
+        assertEquals(profile.id, model.editorState.value.profile?.id)
+        assertNull(model.editorState.value.replacement)
+        assertTrue(store.fileUpdates.isEmpty())
+    }
+
+    @Test fun `selected file is frozen only saved on confirmation and overrides raw draft`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val bytes = "selected".toByteArray()
+        val profile = Profile.custom(93, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+        val store = FakeProfileStore(profile).apply { content = "original" }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+            com.lonnnnnng.flclash.data.ProfileConfigValidator {},
+            com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", bytes) })
+        model.openEditor(profile)
+        advanceUntilIdle()
+        val token = checkNotNull(model.beginFileReplacementPick())
+        model.acceptFileReplacement(token, "content://fixture/document")
+        model.editorState.first { it.replacement != null }
+        assertTrue(store.fileUpdates.isEmpty())
+        bytes.fill(0)
+        model.saveFileEditor("draft", "fixture")
+        advanceUntilIdle()
+        assertEquals("selected", store.fileUpdates.single().second?.toString(Charsets.UTF_8))
+        assertEquals("selected", store.content)
+    }
+
+    @Test fun `late picker and reader cannot populate a reopened editor with the same id`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val finished = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val profile = Profile.custom(94, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+        val store = FakeProfileStore(profile)
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+            com.lonnnnnng.flclash.data.ProfileConfigValidator {},
+            com.lonnnnnng.flclash.data.ProfileFileDocumentReader {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { gate.await() }
+                finished.complete(Unit)
+                com.lonnnnnng.flclash.data.ProfileFileDocument("stale.yaml", "fixture".toByteArray())
+            })
+        model.openEditor(profile)
+        advanceUntilIdle()
+        val slowToken = checkNotNull(model.beginFileReplacementPick())
+        model.acceptFileReplacement(slowToken, "content://fixture/slow")
+        model.closeEditor()
+        model.openEditor(profile)
+        gate.complete(Unit)
+        finished.await()
+        advanceUntilIdle()
+        assertNull(model.editorState.value.replacement)
+        val staleToken = checkNotNull(model.beginFileReplacementPick())
+        model.closeEditor()
+        model.openEditor(profile)
+        advanceUntilIdle()
+        val currentToken = checkNotNull(model.beginFileReplacementPick())
+        model.acceptFileReplacement(staleToken, "content://fixture/stale-picker")
+        advanceUntilIdle()
+        assertNull(model.editorState.value.replacement)
+        model.acceptFileReplacement(currentToken, "content://fixture/current-picker")
+        model.editorState.first { it.replacement != null }
+        assertEquals("stale.yaml", model.editorState.value.replacement?.name)
+    }
+
+    @Test fun `failed file save retains pending file and allows key retry or cancellation`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(95, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+        val store = FakeProfileStore(profile).apply { fileSaveFailure = com.lonnnnnng.flclash.data.AgeSecretKeyRequiredException() }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+            com.lonnnnnng.flclash.data.ProfileConfigValidator {},
+            com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "fixture".toByteArray()) })
+        model.openEditor(profile)
+        advanceUntilIdle()
+        val token = checkNotNull(model.beginFileReplacementPick())
+        model.acceptFileReplacement(token, "content://fixture/one")
+        model.editorState.first { it.replacement != null }
+        val error = async(start = CoroutineStart.UNDISPATCHED) { model.errors.first() }
+        model.saveFileEditor(null, "")
+        advanceUntilIdle()
+        assertTrue(error.await().contains("密钥"))
+        assertEquals("1.yaml", model.editorState.value.replacement?.name)
+        assertTrue(!model.editorState.value.isSaving)
+        store.fileSaveFailure = null
+        model.clearFileReplacement()
+        model.saveFileEditor("edited", " fixture ")
+        advanceUntilIdle()
+        assertEquals("edited", store.content)
+    }
+
+    @Test fun `invalid selected file and running state cannot save file metadata or body`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(96, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+        val store = FakeProfileStore(profile)
+        val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
+        val model = ProfilesViewModel(store, runtime,
+            com.lonnnnnng.flclash.data.ProfileConfigValidator { error("invalid") },
+            com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("invalid.yaml", "fixture".toByteArray()) })
+        model.openEditor(profile)
+        advanceUntilIdle()
+        val token = checkNotNull(model.beginFileReplacementPick())
+        model.acceptFileReplacement(token, "content://fixture/invalid")
+        model.editorState.first { it.replacement != null }
+        model.saveFileEditor(null, "fixture")
+        advanceUntilIdle()
+        assertTrue(store.fileUpdates.isEmpty())
+        model.clearFileReplacement()
+        runtime.set(CoreRuntimeStatus.RUNNING)
+        model.saveFileEditor(null, "fixture")
+        advanceUntilIdle()
+        assertTrue(store.fileUpdates.isEmpty())
+    }
+
+    @Test fun `key only edit persists trimmed key and refreshes but unchanged key does not`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(35, "https://same.example/subscription").copy(ageSecretKey = "old-fixture")
+        val store = FakeProfileStore(profile)
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        model.openEditor(profile)
+        model.saveRemoteEditor("", profile.url, true, 60, " new-fixture \n")
+        advanceUntilIdle()
+        assertEquals("new-fixture", store.profiles.value.single().ageSecretKey)
+        assertEquals(listOf(35L), store.remoteUpdateCalls)
+        model.openEditor(store.profiles.value.single())
+        model.saveRemoteEditor("new name", profile.url, true, 90, " new-fixture ")
+        advanceUntilIdle()
+        assertEquals(listOf(35L), store.remoteUpdateCalls)
+    }
+
+    @Test fun `single import asks for missing key once and retries with trimmed input`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val store = FakeProfileStore(Profile.custom(1, "existing")).apply { requiresAgeKey = true }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        model.addRemote("https://example.test/encrypted", "import")
+        advanceUntilIdle()
+        assertTrue(model.ageKeyRequired.value)
+        model.submitAgeKey(" fixture-identity \n")
+        advanceUntilIdle()
+        assertTrue(!model.ageKeyRequired.value)
+        assertEquals(2, store.remoteAddCalls.size)
+        assertEquals("fixture-identity", store.profiles.value.last().ageSecretKey)
+    }
+
+    @Test fun `cancelling missing key discards retry and running state blocks retry writes`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val store = FakeProfileStore(Profile.custom(1, "existing")).apply { requiresAgeKey = true }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        model.addRemote("https://example.test/encrypted", "import")
+        advanceUntilIdle()
+        model.cancelAgeImport()
+        model.submitAgeKey("fixture")
+        advanceUntilIdle()
+        assertTrue(!model.ageKeyRequired.value)
+        assertEquals(1, store.remoteAddCalls.size)
+        val running = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING))
+        running.addRemote("https://example.test/encrypted", "import", "fixture")
+        advanceUntilIdle()
+        assertEquals(1, store.remoteAddCalls.size)
+    }
+
+    @Test fun `late missing key result after cancellation cannot reopen prompt`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val store = FakeProfileStore(Profile.custom(1, "existing")).apply {
+            requiresAgeKey = true
+            beforeRemoteAdd = { gate.await() }
+        }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        model.addRemote("https://example.test/slow", "import")
+        model.cancelAgeImport()
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertTrue(!model.ageKeyRequired.value)
+        assertEquals(1, store.profiles.value.size)
+    }
+
+    @Test fun `wrong key on retry reports failure without reopening key prompt`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val url = "https://example.test/encrypted"
+        val store = FakeProfileStore(Profile.custom(1, "existing")).apply {
+            requiresAgeKey = true
+            remoteAddFailures += url
+        }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        model.addRemote(url, "import")
+        advanceUntilIdle()
+        assertTrue(model.ageKeyRequired.value)
+        val error = async(start = CoroutineStart.UNDISPATCHED) { model.errors.first() }
+        model.submitAgeKey("wrong-fixture")
+        advanceUntilIdle()
+        assertEquals("subscription import failed", error.await())
+        assertTrue(!model.ageKeyRequired.value)
+        assertEquals(1, store.profiles.value.size)
+    }
+
     @After
     fun tearDown() {
         Dispatchers.resetMain()
@@ -810,6 +1029,7 @@ private class FakeRuntimeStatusProvider(
 ) : CoreRuntimeStatusProvider {
     private val mutableState = MutableStateFlow(status)
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
+    fun set(status: CoreRuntimeStatus) { mutableState.value = status }
 }
 
 private class FakeProfileStore(
@@ -824,12 +1044,16 @@ private class FakeProfileStore(
     var customAddCalls = 0
     var reorderedIds: List<Long>? = null
     var content = ""
+    var fileSaveFailure: Exception? = null
+    val fileUpdates = mutableListOf<Pair<String, ByteArray?>>()
     var updatedContent: String? = null
     var updatedLabel: String? = null
     val remoteSettingsUpdates = mutableListOf<RemoteSettingsUpdate>()
     val remoteUpdateCalls = mutableListOf<Long>()
     val remoteAddCalls = mutableListOf<String>()
     val remoteAddFailures = mutableSetOf<String>()
+    var requiresAgeKey = false
+    var beforeRemoteAdd: suspend () -> Unit = {}
     private var nextRemoteId = 1_000L
     var updatedOverridesJson: String? = null
     var autoUpdateChanges = mutableListOf<Pair<Long, Boolean>>()
@@ -839,15 +1063,17 @@ private class FakeProfileStore(
         selectedProfiles += id
     }
 
-    override suspend fun addRemoteProfile(url: String, label: String): Profile {
+    override suspend fun addRemoteProfile(url: String, label: String, ageSecretKey: String): Profile {
         remoteAddCalls += url
+        beforeRemoteAdd()
+        if (requiresAgeKey && ageSecretKey.isBlank()) throw com.lonnnnnng.flclash.data.AgeSecretKeyRequiredException()
         if (url in remoteAddFailures) error("subscription import failed")
-        val added = Profile.remote(nextRemoteId++, url, label)
+        val added = Profile.remote(nextRemoteId++, url, label).copy(ageSecretKey = ageSecretKey)
         profiles.value = profiles.value + added
         return added
     }
 
-    override suspend fun addFileProfile(label: String, bytes: ByteArray): Profile =
+    override suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String): Profile =
         error("unused test operation")
 
     override suspend fun addCustomProfile(label: String): Profile {
@@ -863,6 +1089,16 @@ private class FakeProfileStore(
         return profile
     }
 
+    override suspend fun updateFileProfile(id: Long, ageSecretKey: String, replacement: ByteArray?, canWrite: () -> Boolean): Profile {
+        check(canWrite())
+        fileSaveFailure?.let { throw it }
+        fileUpdates += ageSecretKey to replacement
+        if (replacement != null) content = replacement.toString(Charsets.UTF_8)
+        val updated = profiles.value.first { it.id == id }.copy(ageSecretKey = ageSecretKey)
+        profiles.value = profiles.value.map { if (it.id == id) updated else it }
+        return updated
+    }
+
     override suspend fun updateProfileLabel(id: Long, label: String): Profile {
         updatedLabel = label
         val updated = profile.copy(label = label)
@@ -876,6 +1112,7 @@ private class FakeProfileStore(
         url: String,
         autoUpdate: Boolean,
         intervalMillis: Long,
+        ageSecretKey: String,
     ): Profile {
         remoteSettingsUpdates += RemoteSettingsUpdate(id, label, url, autoUpdate, intervalMillis)
         val updated = profile.copy(
@@ -883,6 +1120,7 @@ private class FakeProfileStore(
             url = url,
             autoUpdate = autoUpdate,
             autoUpdateIntervalMillis = intervalMillis,
+            ageSecretKey = ageSecretKey,
         )
         profiles.value = profiles.value.map { if (it.id == id) updated else it }
         return updated

@@ -74,6 +74,13 @@ class CoreBridge {
         parseMessageResult(response.optString("result", ""), "invalid_config")
     }
 
+    suspend fun decryptConfig(path: String, ageSecretKey: String): String {
+        // 作者 long：解密是无核心生命周期副作用的文件转换，复用现有 Go method，不启动或重载 Mihomo。
+        val response = invoke("decryptConfig", JSONObject().put("path", path).put("age-secret-key", ageSecretKey))
+        return response.get("result") as? String
+            ?: throw CoreBridgeException("invalid_decrypt_result", "核心未返回解密配置")
+    }
+
     suspend fun setupConfig(
         selectedMap: Map<String, String> = emptyMap(),
         testUrl: String = DEFAULT_TEST_URL,
@@ -483,7 +490,19 @@ class CoreBridge {
                 )
             }
         }
-        return parseProxyGroupsPayload(names, payloads)
+        return parseProxyGroupsPayload(names, payloads).copy(
+            // 作者 long：all 只列导航分组，叶子协议在完整 proxies map 中；两者分开保存，不能把叶子加入组导航。
+            proxyTypes = parseProxyTypes(JsonParser.parseString(proxies.toString()).asJsonObject),
+        )
+    }
+
+    internal fun parseProxyTypes(proxies: JsonObject): Map<String, String> = buildMap {
+        proxies.entrySet().forEach { (name, value) ->
+            val type = value.takeIf { it.isJsonObject }?.asJsonObject?.get("type")
+                ?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+            // 作者 long：未知新协议保留核心原名，缺失或损坏字段留空，不拿父组类型冒充节点协议。
+            if (!type.isNullOrBlank()) put(name, type)
+        }
     }
 
     internal fun parseProxyGroupsPayload(
@@ -897,6 +916,7 @@ data class CoreDnsQuery(
 
 data class ProxyGroupsSnapshot(
     val groups: List<ProxyGroupInfo>,
+    val proxyTypes: Map<String, String> = emptyMap(),
 )
 
 data class ProxyGroupInfo(

@@ -92,8 +92,8 @@ class ProxyGroupsActivityInstrumentedTest {
         }
 
         val expected = mapOf(
-            "page_dark" to "00348516b269eb447b5c5fac7d1f344df8bef42551bfeeb4be680b0320d3ce54",
-            "page_light" to "eb647aaebf5e9d249756e3eecfaba52c05bd3bf3ffa9d0a567938afa68c6d9a7",
+            "page_dark" to "104e6e560376d0302b8d55853b3a0313d6b510cf6102be1fefc4a9e7406af782",
+            "page_light" to "e34d6aaa8c98143f6b17e748193f49e25b045f26e9283df8f160d29939c5a08d",
         )
         val actual = buildMap {
             listOf(true, false).forEach { dark ->
@@ -167,7 +167,7 @@ class ProxyGroupsActivityInstrumentedTest {
 
         composeRule.activityRule.scenario.onActivity { it.showLongSelectionScenario() }
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("proxy_node_Auto_node-19").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag("proxy_node_Auto_node-00").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithTag("proxy_scroll_to_selected").performClick()
         composeRule.onNodeWithTag("proxy_node_Auto_node-19").assertIsDisplayed()

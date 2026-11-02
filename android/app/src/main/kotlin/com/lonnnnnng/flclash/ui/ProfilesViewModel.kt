@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lonnnnnng.flclash.data.ProfileConfigValidator
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileDialerEditor
 import com.lonnnnnng.flclash.data.ProfileProxyGroupsEditor
@@ -10,6 +11,7 @@ import com.lonnnnnng.flclash.data.ProfileProvidersEditor
 import com.lonnnnnng.flclash.data.ProfileRulesEditor
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileType
+import com.lonnnnnng.flclash.data.YamlProfileConfigValidator
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.service.ProfileDnsOverrides
@@ -26,6 +28,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 data class ProfilesUiState(
     val profiles: List<Profile> = emptyList(),
@@ -40,7 +44,11 @@ data class ProfileEditorUiState(
     val isSaving: Boolean = false,
     val isNew: Boolean = false,
     val hasPersistedChanges: Boolean = false,
+    val isReadingFile: Boolean = false,
+    val replacement: ProfileFileReplacementPreview? = null,
 )
+
+data class ProfileFileReplacementPreview(val name: String, val sizeBytes: Int, val isEncrypted: Boolean, val isValidYaml: Boolean)
 
 data class RemoteProfileEditorUiState(
     val profile: Profile? = null,
@@ -109,6 +117,8 @@ internal fun isProfileMutationBlocked(runtimeStatus: CoreRuntimeStatus): Boolean
 class ProfilesViewModel @Inject constructor(
     private val repository: ProfileStore,
     private val runtimeManager: CoreRuntimeStatusProvider,
+    private val configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
+    private val fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
 ) : ViewModel() {
     private val busy = MutableStateFlow(false)
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -120,6 +130,15 @@ class ProfilesViewModel @Inject constructor(
     private val mutableProvidersEditor = MutableStateFlow(ProfileProvidersEditorUiState())
     private val mutableDnsEditor = MutableStateFlow(ProfileDnsEditorUiState())
     private val mutableDialersEditor = MutableStateFlow(ProfileDialersEditorUiState())
+    private val mutableAgeKeyRequired = MutableStateFlow(false)
+    private var retryAgeImport: (suspend (String) -> Unit)? = null
+    private var ageImportGeneration = 0L
+    private var localEditorGeneration = 0L
+    private var pendingFilePick: Triple<Long, Long, Long>? = null
+    private var nextFilePickToken = 0L
+    private var replacementBytes: ByteArray? = null
+    private var replacementReadJob: kotlinx.coroutines.Job? = null
+    val ageKeyRequired: StateFlow<Boolean> = mutableAgeKeyRequired
 
     val state: StateFlow<ProfilesUiState> = combine(
         repository.profiles,
@@ -145,8 +164,8 @@ class ProfilesViewModel @Inject constructor(
         launchAction { runtimeManager.selectProfile(id, repository::selectProfile) }
     }
 
-    fun addRemote(url: String, label: String) = launchAction {
-        repository.addRemoteProfile(url, label)
+    fun addRemote(url: String, label: String, ageSecretKey: String = "") = importWithAgeKey(ageSecretKey) { key ->
+        repository.addRemoteProfile(url, label, key)
     }
 
     fun addRemoteBatch(urls: List<String>) {
@@ -191,8 +210,61 @@ class ProfilesViewModel @Inject constructor(
         }
     }
 
-    fun addFile(label: String, bytes: ByteArray) = launchAction {
-        repository.addFileProfile(label, bytes)
+    fun addFile(label: String, bytes: ByteArray) = importWithAgeKey("") { key ->
+        repository.addFileProfile(label, bytes, key)
+    }
+
+    fun cancelAgeImport() {
+        ageImportGeneration++
+        retryAgeImport = null
+        mutableAgeKeyRequired.value = false
+    }
+
+    fun submitAgeKey(key: String) {
+        val action = retryAgeImport ?: return
+        if (key.isBlank()) return
+        cancelAgeImport()
+        // 作者 long：只为首次缺钥提供一次补输；错误密钥直接报错，自动更新不进入交互重试。
+        importWithAgeKey(key.trim(), allowPrompt = false, action)
+    }
+
+    private fun importWithAgeKey(key: String, allowPrompt: Boolean = true, action: suspend (String) -> Unit) {
+        if (busy.value) return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        cancelAgeImport()
+        val generation = ageImportGeneration
+        busy.value = true
+        viewModelScope.launch {
+            try {
+                action(key.trim())
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: com.lonnnnnng.flclash.data.AgeSecretKeyRequiredException) {
+                if (allowPrompt && generation == ageImportGeneration) {
+                    retryAgeImport = action
+                    mutableAgeKeyRequired.value = true
+                } else if (!allowPrompt) mutableErrors.emit(error.message ?: "请输入 age 解密密钥")
+            } catch (error: Exception) {
+                mutableErrors.emit(error.message ?: "导入配置失败")
+            } finally {
+                busy.value = false
+            }
+        }
+    }
+
+    // 作者 long：预检只向确认弹窗返回安全状态，不把包含敏感配置片段的解析器错误直接展示给用户。
+    suspend fun validateFileImport(bytes: ByteArray): Boolean = withContext(Dispatchers.IO) {
+        try {
+            configValidator.validate(bytes)
+            true
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Exception) {
+            false
+        }
     }
 
     fun addCustom(label: String) {
@@ -223,26 +295,118 @@ class ProfilesViewModel @Inject constructor(
             mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑配置")
             return
         }
+        closeEditor()
+        val generation = localEditorGeneration
         if (profile.type == ProfileType.URL) {
             mutableRemoteEditor.value = RemoteProfileEditorUiState(profile)
             return
         }
+        mutableEditor.value = ProfileEditorUiState(profile = profile, isLoading = true, isNew = isNew)
         viewModelScope.launch {
-            mutableEditor.value = ProfileEditorUiState(profile = profile, isLoading = true, isNew = isNew)
+            if (generation != localEditorGeneration) return@launch
             runCatching { repository.readLocalProfileContent(profile.id) }
                 .onSuccess { content ->
-                    mutableEditor.value = ProfileEditorUiState(profile = profile, content = content, isNew = isNew)
+                    if (generation == localEditorGeneration) mutableEditor.value = ProfileEditorUiState(profile = profile, content = content, isNew = isNew)
                 }
                 .onFailure { error ->
-                    mutableEditor.value = ProfileEditorUiState()
-                    mutableErrors.emit(error.message ?: "无法读取配置")
+                    if (error is CancellationException) throw error
+                    if (generation == localEditorGeneration) {
+                        mutableEditor.value = ProfileEditorUiState()
+                        mutableErrors.emit("无法读取配置")
+                    }
                 }
         }
     }
 
     fun closeEditor() {
+        localEditorGeneration++
+        pendingFilePick = null
+        replacementReadJob?.cancel()
+        replacementReadJob = null
+        replacementBytes = null
         mutableEditor.value = ProfileEditorUiState()
         mutableRemoteEditor.value = RemoteProfileEditorUiState()
+    }
+
+    fun beginFileReplacementPick(): Long? {
+        val editor = mutableEditor.value
+        val profile = editor.profile ?: return null
+        if (profile.type != ProfileType.FILE || editor.isSaving || editor.isReadingFile || busy.value) return null
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return null
+        }
+        // 作者 long：系统选择器回调只属于发起时的配置和编辑会话，关闭重开后即使 ID 相同也不能接收旧文件。
+        val token = ++nextFilePickToken
+        pendingFilePick = Triple(profile.id, localEditorGeneration, token)
+        return token
+    }
+
+    fun acceptFileReplacement(token: Long?, uri: String?) {
+        val request = pendingFilePick ?: return
+        if (token != request.third) return
+        pendingFilePick = null
+        if (uri == null || request.first != mutableEditor.value.profile?.id || request.second != localEditorGeneration) return
+        val generation = localEditorGeneration
+        mutableEditor.value = mutableEditor.value.copy(isReadingFile = true)
+        replacementReadJob = viewModelScope.launch {
+            try {
+                val document = fileReader.read(uri)
+                val bytes = document.bytes.copyOf()
+                require(bytes.isNotEmpty() && bytes.size <= com.lonnnnnng.flclash.data.MAX_PROFILE_FILE_BYTES)
+                val encrypted = com.lonnnnnng.flclash.data.isAgeEncryptedProfile(bytes)
+                val valid = !encrypted && validateFileImport(bytes)
+                if (generation == localEditorGeneration) {
+                    replacementBytes = bytes
+                    mutableEditor.value = mutableEditor.value.copy(isReadingFile = false,
+                        replacement = ProfileFileReplacementPreview(document.name, bytes.size, encrypted, valid))
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                if (generation == localEditorGeneration) {
+                    mutableEditor.value = mutableEditor.value.copy(isReadingFile = false)
+                    mutableErrors.emit("无法读取配置文件，文件为空、超过 8 MiB 或已不可用")
+                }
+            }
+        }
+    }
+
+    fun clearFileReplacement() {
+        if (mutableEditor.value.isSaving || mutableEditor.value.isReadingFile) return
+        replacementBytes = null
+        mutableEditor.value = mutableEditor.value.copy(replacement = null)
+    }
+
+    fun saveFileEditor(editedContent: String?, ageSecretKey: String) {
+        val editor = mutableEditor.value
+        val profile = editor.profile ?: return
+        if (profile.type != ProfileType.FILE || editor.isSaving || editor.isReadingFile || busy.value) return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        val preview = editor.replacement
+        if (preview != null && !preview.isEncrypted && !preview.isValidYaml) return
+        val bytes = replacementBytes?.copyOf() ?: editedContent?.toByteArray(Charsets.UTF_8)
+        val generation = localEditorGeneration
+        busy.value = true
+        mutableEditor.value = editor.copy(isSaving = true)
+        viewModelScope.launch {
+            try {
+                repository.updateFileProfile(profile.id, ageSecretKey.trim(), bytes) { !isProfileMutationBlocked(runtimeManager.state.value) }
+                if (generation == localEditorGeneration) closeEditor()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                if (generation == localEditorGeneration) {
+                    mutableEditor.value = mutableEditor.value.copy(isSaving = false)
+                    mutableErrors.emit(error.message ?: "保存本地配置失败")
+                }
+            } finally {
+                busy.value = false
+            }
+        }
     }
 
     fun discardEditor() {
@@ -322,7 +486,7 @@ class ProfilesViewModel @Inject constructor(
         }
     }
 
-    fun saveRemoteEditor(label: String, url: String, autoUpdate: Boolean, intervalMinutes: Long) {
+    fun saveRemoteEditor(label: String, url: String, autoUpdate: Boolean, intervalMinutes: Long, ageSecretKey: String? = null) {
         val profile = mutableRemoteEditor.value.profile ?: return
         if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
@@ -354,10 +518,11 @@ class ProfilesViewModel @Inject constructor(
                     url = normalizedUrl,
                     autoUpdate = autoUpdate,
                     intervalMillis = savedIntervalMinutes.coerceAtMost(MAX_AUTO_UPDATE_INTERVAL_MINUTES) * MILLIS_PER_MINUTE,
+                    ageSecretKey = ageSecretKey?.trim() ?: profile.ageSecretKey,
                 )
                 closeEditor()
-                if (updated.url != profile.url) {
-                    // 作者 long：只有订阅地址实际变化才下载新内容，修改名称或自动更新周期不应制造额外网络请求。
+                if (updated.url != profile.url || updated.ageSecretKey != profile.ageSecretKey) {
+                    // 作者 long：密钥改变后也要重新解密验证；名称和更新周期不改变下载内容，不产生网络请求。
                     runCatching { repository.updateRemoteProfile(profile.id) }
                         .onFailure { error -> mutableErrors.emit(error.message ?: "订阅更新失败") }
                 }
@@ -724,6 +889,10 @@ class ProfilesViewModel @Inject constructor(
 
     fun saveEditor(content: String) {
         val profile = mutableEditor.value.profile ?: return
+        if (profile.type == ProfileType.FILE) {
+            saveFileEditor(content, profile.ageSecretKey)
+            return
+        }
         if (runtimeManager.state.value.isRunning) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再保存配置")
             return

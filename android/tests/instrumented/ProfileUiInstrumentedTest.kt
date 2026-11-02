@@ -25,6 +25,7 @@ import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -37,6 +38,57 @@ import org.junit.runner.RunWith
 class ProfileUiInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun localFileImportPreviewShowsMetadataAndConfirmsOnlyAfterReview() {
+        var confirmed = false
+        var dismissed = false
+        composeRule.setContent {
+            KClashTheme {
+                ProfileFileImportPreviewDialog(
+                    fileName = "家庭网络.yaml",
+                    fileSizeBytes = 1_024,
+                    isValidYaml = true,
+                    busy = false,
+                    onConfirm = { confirmed = true },
+                    onDismiss = { dismissed = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("家庭网络.yaml").assertIsDisplayed()
+        composeRule.onNodeWithText("文件大小：1024 字节").assertIsDisplayed()
+        composeRule.onNodeWithText("YAML 格式校验通过").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_file_import_confirm").performClick()
+
+        assertTrue(confirmed)
+        assertFalse(dismissed)
+    }
+
+    @Test
+    fun invalidLocalFilePreviewBlocksImportAndCanBeCancelled() {
+        var confirmed = false
+        var dismissed = false
+        composeRule.setContent {
+            KClashTheme {
+                ProfileFileImportPreviewDialog(
+                    fileName = "broken.yaml",
+                    fileSizeBytes = 24,
+                    isValidYaml = false,
+                    busy = false,
+                    onConfirm = { confirmed = true },
+                    onDismiss = { dismissed = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("无法读取 YAML 配置，文件未导入").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_file_import_confirm").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_file_import_cancel").performClick()
+
+        assertFalse(confirmed)
+        assertTrue(dismissed)
+    }
 
     @Test
     fun addProfileDialogSwitchesToCustomAndInvokesCallback() {
@@ -572,6 +624,7 @@ class ProfileUiInstrumentedTest {
 
     @Test
     fun profileMutationButtonsDisableWhileCoreIsRunning() {
+        var previewed = false
         composeRule.setContent {
             KClashTheme {
                 ProfileCard(
@@ -582,10 +635,16 @@ class ProfileUiInstrumentedTest {
                     onEdit = {},
                     onUpdate = {},
                     onDelete = {},
+                    onPreview = { previewed = true },
                 )
             }
         }
 
-        composeRule.onNodeWithTag("profile_actions_selected").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        for (action in listOf("编辑", "重命名", "高级", "脚本", "删除")) {
+            composeRule.onNodeWithText(action).assertIsNotEnabled()
+        }
+        composeRule.onNodeWithTag("profile_preview_10").performClick()
+        assertTrue(previewed)
     }
 }

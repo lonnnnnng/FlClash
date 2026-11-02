@@ -27,7 +27,13 @@ class ProfileScriptApplier(
         val scriptBytes = scriptFile.readBytes()
         require(scriptBytes.isNotEmpty()) { "脚本内容不能为空" }
         require(scriptBytes.size <= MAX_SCRIPT_BYTES) { "脚本文件超过 2 MiB 限制" }
-        val script = scriptBytes.toString(Charsets.UTF_8)
+        return applyContent(yaml, scriptBytes.toString(Charsets.UTF_8))
+    }
+
+    internal suspend fun applyContent(yaml: String, script: String): String {
+        // 作者 long：预览执行冻结的脚本正文，避免文件在读取与执行之间被替换而混入另一版本。
+        require(script.isNotEmpty()) { "脚本内容不能为空" }
+        require(script.toByteArray(Charsets.UTF_8).size <= MAX_SCRIPT_BYTES) { "脚本文件超过 2 MiB 限制" }
         val configJson = YamlConfigCodec.toJson(yaml)
         val resultJson = evaluator.evaluate(script, configJson)
         return YamlConfigCodec.toYaml(resultJson)

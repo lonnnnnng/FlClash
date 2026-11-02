@@ -45,6 +45,11 @@ data class ProxyDelayBatchResult(
 
 interface ActiveProfileProvider {
     suspend fun activeProfile(): ActiveProfile?
+
+    // 作者 long：指定 ID 的只读查询不能回退到另一份配置，更不能通过改当前选择来复用启动入口。
+    suspend fun profileById(id: Long): ActiveProfile? = activeProfile()?.takeIf { it.id == id }
+
+    suspend fun activeProfileId(): Long? = activeProfile()?.id
 }
 
 /**

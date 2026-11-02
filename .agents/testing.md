@@ -1,5 +1,42 @@
 # Testing
 
+## Proxy Groups 叶子协议与滚动恢复（2026-11-02）
+
+- 构建命令：`./gradlew :app:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`；App JVM 261 项、Core JVM 34 项通过，失败/错误/跳过 0；Debug/AndroidTest 构建通过，Lint 为 0 errors、47 warnings、9 hints。
+- Debug APK SHA-256：`b1b3774d63b11b6cac12ed83e8c4ec297cf2d25801dbccd35bb939ed29b2c66b`；AndroidTest APK SHA-256：`287ae0e08fabe9170ad6f6420f5f961d66c6cffcb721f88ce30857e38d6213cd`；原生库仅 `arm64-v8a`。
+- Redmi Note 8 Pro `wsvwypiz7xwslvl7`、Android 16/API 36、竖屏、默认字号精确回归通过：`ProxyProtocolScrollInstrumentedTest#leafProtocolsAndLooseNestedExitRenderInTabAndListBothThemes`、`#groupPositionsSurviveDistantTabsLayoutNavigationAndProfileSwitch`、`#listLocatesInsideGroupAndRestoresScrollAcrossLayoutAndNavigation`；`ProxyGroupsActivityInstrumentedTest` 的 4 项既有选择/布局回归、`ProxyGroupsViewModelPanelInstrumentedTest` 的 2 项选择/失败回归，以及 Dashboard 代理选择器 2 项回归均通过。
+- 本轮覆盖 Kotlin Bridge 的叶子 `type` 解析、Tab/List 按 Profile/组隔离滚动恢复、List 组内当前节点定位、深浅主题节点协议显示和嵌套组摘要；未运行整类 instrumentation、横屏或大字号。未访问订阅、未启动 VPN/Mihomo、未读取或修改外层 `1.yaml`、未清理正式应用数据。
+- 仍未覆盖真实 age 密文经 Android Bridge 的 Android E2E、加密 SAF/全新 Profile SAF 导入、URLTest/Fallback 完整语义、排序/搜索/密度变化后的语义锚定、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整页面视觉 parity。
+
+## FILE 密钥编辑与真实 SAF 替换（2026-11-02）
+
+- App 258 项 JVM 通过（失败/错误/跳过 0），新增 6 项 VM 和 9 项文件/读取故障测试；Core/Service/Common/Go 本轮未重跑。最终 Debug/AndroidTest 和 Lint 通过（0 errors、47 warnings、7 hints），复用 arm64 AAR；命令、日志和本机/设备一致的 APK 哈希见 roadmap 同日 FILE 节。
+- Redmi 竖屏/字号 1.0，精确 13 方法通过：本地表单 5、隔离 Repository 2、真实 DocumentsUI 1、age/写守卫/正式首页回归 5。没有整类、横屏或大字号测试；深浅两张整窗截图实际查看。先后保留编辑标签错误和 picker 后台时序失败，修正后最终单项 1 与回归 12 均通过。
+- 真实 SAF 仅用外层 1.yaml 原字节：非当前 FILE 菜单→系统选择器 BACK 取消→暂存→取消替换→重选并确认；核对选择、正文、mtime、Room 数量和密钥，正式库不写入。隔离 Repository 覆盖只改钥不改正文/时间、错误解密/语法/DB/迟到变化保护。确认前取消零写；已进入 NonCancellable 提交阶段可完成保存或恢复，不能宣传任意取消零写。
+- 正式 Room 前后 inspect 0 条、服务为空；未清数据、创建正式 Profile、启核心或访问订阅。FILE 明文编辑/替换 DONE-VERIFIED，真实 age 密文经 Android Bridge E2E、加密 SAF 与全新 Profile 导入 SAF 仍未验，Profiles 整体 PARTIAL。下一步 Proxy Groups 叶子协议和按组滚动恢复。
+
+## Profiles age 密钥表单与解密首片（2026-11-02）
+
+- App 243、Core 32 项 JVM 共 275 项通过（失败/错误/跳过 0），Go 正确/错误密钥、解密不 spill 及原 spill 回归共 5 项通过；Service/Common 本轮未重跑。Debug/AndroidTest、arm64 AAR 与 Lint 通过（0 errors、46 warnings、7 hints）。命令、日志、安装哈希、失败记录见 roadmap 同日 age 节。
+- Redmi 竖屏/字号 1.0 精确 9 方法通过：age 6 项和原订阅编辑/正式首页 3 项。深浅主题掩码表单截图均实际查看；文件加密提示为 UI 状态测试，不生成配置正文。
+- 真机仅使用外层 1.yaml 原字节、隔离内存 Room/独占缓存与 fake 下载/decoder，真实 Bridge 只核对明文透传。验证密钥持久化、更新复用、失败不新增/不覆盖和本地导入；真实 age 密文经 Android Bridge 的完整 E2E、真实加密订阅及真实 SAF 加密文件均未验。Go 真实加密单测与 Kotlin decoder 单测分别证明各层，不声称真机密文闭环。
+- 正式 Room inspect 0 条，服务为空；未重建正式 Profile、清数据、启核心/VPN 或访问订阅，1.yaml 哈希保持不变。age 表单/接线 DONE-VERIFIED，完整解密链路 DONE-UNIT，Profiles 整体 PARTIAL。下一步本地配置后续密钥编辑/文件替换，然后 Proxy Groups 叶子协议与滚动恢复。
+
+## Profiles 非当前配置预览（2026-11-02）
+
+- App 231、Service 116 项 JVM 共 347 项通过，失败/错误/跳过 0；新增 4 项 Service 用例覆盖非当前变换/无核心副作用、损坏当前脚本、6 种元数据/文件/LAN/选择变更和慢预览期间热切。Core/Common/Go 未重跑，历史四模块 394 项不算本轮结果。
+- Debug/AndroidTest 构建与 Lint 通过（0 errors、46 warnings、7 hints）。Redmi 竖屏、字号 1.0 精确 10 方法通过：新增菜单/关闭/后台/深浅主题/Repository 5 项，首页预览与原写操作守卫、两分享菜单、正式首页 inspect 共 5 项。方法、日志及哈希见 roadmap 同日“Profiles 非当前配置只读预览”。
+- Repository 真机用例只用外层 1.yaml 原字节，隔离内存 Room/独占缓存，从 URL/FILE/CUSTOM 非当前菜单进入真实管理器和预览页，核心操作调用为 0，选择、源缓存和暂存正文/mtime、Room 数量保持不变。当前夹具脚本缺失不影响其他有效目标；深浅两张固定正文截图均实际查看。未修改 1.yaml、不访问订阅、不创建正式 Profile、不启核心。
+- 真正运行核心时的非当前预览及真实 MainActivity 非空订阅 E2E 未单独验收；运行态/热切由 Service 单测、运行中菜单由固定宿主证明。正式 Room inspect 仍为 0，不将空库记作历史非空配置保留通过。该切片 DONE-VERIFIED，完整 Profiles 仍 PARTIAL；下一步结构化表单。
+
+## Profile 卡片分享三项（2026-11-02）
+
+- App 231 项 JVM 单测通过，新增 12 项覆盖敏感复制、二维码原链接回读与迟到保护、导出 ID/快照/取消/一次消费、失败脱敏及缓存预算/原字节。Debug/AndroidTest 构建、Lint 通过（0 errors、46 warnings、7 hints）；Service/Core/Go 未重跑，历史四模块 394 项不算本轮结果。
+- Redmi 竖屏、字号 1.0 精确 9 方法通过：分享菜单/二维码/敏感剪贴板 4 项，真实 DocumentsUI 导出 1 项，原导入确认与无效取消/自定义配置运行锁定 3 项，正式 MainActivity inspect 1 项。方法、日志、安装哈希与失败记录见 roadmap 同日“Profile 卡片链接、二维码与 YAML 系统导出”。深浅二维码两张 PNG 均人工查看、实际解码通过。
+- 系统导出仅使用外层 1.yaml 原字节及隔离内存 Room/缓存：先取消零写入，再保存并逐字节核对，非当前 ID、当前选择和缓存元数据保持不变。不生成真实验收 YAML、不访问订阅、不启动核心；真实 MainActivity 已有订阅分享与 SAF 导入 E2E 不在该用例证明范围。
+- 正式 Profile 保留前置检查实际为 count=0、至少一份断言失败；最终 inspect 仍为 0，不能沿用历史两份保留结论。不清数据或为了测试补建 Profile。另保留测试构造方法编译失败、Compose 时钟等待超时与 Android startSeq 进程启动失败；修正/恢复后最终功能用例通过。
+- 分享切片 DONE-VERIFIED，下一步为非当前配置预览；完整 Profiles 仍 PARTIAL。外层 1.yaml 未修改。
+
 ## Layers
 
 - Kotlin 单元测试覆盖配置解析、领域模型、Repository、UseCase、状态机和错误映射。
@@ -30,6 +67,13 @@ UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号�
 - test、Debug、AndroidTest 和 Lint 通过；Lint 0 errors、46 warnings、7 hints。Go 路由/出口/Provider/内存/LAN 定向测试通过，完整命令见 roadmap 提交核对节，不能推导为全 Go 测试通过。
 - 本地两包 SHA-256 与最近 Providers 验收记录一致；App 仅 arm64-v8a，测试包无原生库。本次未重跑真机、未重新安装或读取设备包，历史 /tmp 日志目前已不存在；保留当时结果，当前本机日志使用 kclash-submit-20261102 前缀。
 - 当前页面完成度继续 PARTIAL；下一步 Profiles 管理菜单、导入/预览/结构化表单，再补 Proxy Groups 叶子协议、滚动恢复和视觉。蜂窝网络切换、正式签名/Release 与远端 CI 均不由本地通过代替。
+
+## Profiles 本地 YAML 导入预检（2026-11-02）
+
+- `:app:testDebugUnitTest`：219 项通过，失败/错误/跳过 0；`:app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug` 通过，Lint 0 errors、46 warnings、7 hints。
+- Redmi `wsvwypiz7xwslvl7`：`ProfileUiInstrumentedTest` 22 项通过，覆盖文件元数据预览、有效确认、无效 YAML 禁止导入及取消；`ProfilesRepositoryPanelInstrumentedTest#invalidFileImportDoesNotCreateProfileOrWriteProfileFile` 单项通过，确认失败前后 Room 和 Profile 文件目录内容不变。
+- 该 UI 类使用固定 Compose 内容，仓库用例使用内存 Room；没有启动核心/VPN、访问真实订阅或使用 `1.yaml`。尚未用 SAF picker 做真实文件端到端导入，语法校验也不代表核心运行时语义校验。
+- 最新完整四模块单测仍为此前验证的 394 项（App 219、Service 112、Core 32、Common 31）；本轮只重跑 App 单测和本地构建/Lint，没有重新执行其余三个模块。
 
 ## Dashboard 外部 Providers 明细与单项更新（2026-11-02）
 

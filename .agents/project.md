@@ -36,4 +36,4 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 
 ## 当前推进顺序（2026-11-02）
 
-首页真实状态、停止态节点管理、运行态配置热切、预览/统计与 Providers 明细/HTTP 单项更新已有分项验收。接下来继续 Profiles 配置管理菜单、导入/预览和结构化表单，再推进 Proxy Groups 叶子协议、按组滚动恢复与视觉；Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity 仍待补齐。Requests/DNS/Logs 次要视觉打磨继续暂停，正式签名和发布单独推进。当前本地四模块单测为 394 项，完整证据与真机边界见 roadmap。
+首页真实状态、停止态节点管理、运行态配置热切、预览/统计与 Providers 明细/HTTP 单项更新已有分项验收。Profiles 卡片分享三项、按目标 ID 只读配置预览、age 链接/订阅表单和 FILE 密钥编辑/系统文件替换已完成切片；FILE 只改密钥不改正文或时间，真实 SAF 取消/暂存/确认及保存失败保护已用外层 1.yaml 原字节、隔离 Room/缓存验收，CUSTOM 保持原分区编辑器。Proxy Groups 叶子协议显示、按 Profile/组隔离的 Tab/List 滚动恢复和 List 组内当前节点定位已完成 Redmi 精确回归。真实 age 密文经 Android Bridge 的完整 E2E、加密 SAF 与全新 Profile 导入的真实 SAF 仍待验，整体 Profiles/Proxy Groups UI/UX 保持 PARTIAL。下一步推进 URLTest/Fallback 完整语义、更细代理组视觉和排序/搜索/密度变化后的语义锚定；Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity 继续待补。Requests/DNS/Logs 次要视觉暂停，正式签名和发布单独推进。本轮 App 261、Core 34 项单测、Debug/AndroidTest 与 Lint 通过（0 errors、47 warnings、9 hints），Redmi 代理组精确方法通过；Service/Common/Go 未重跑。正式 Room 前后 inspect 仍为 0，未补建正式 Profile、清数据、启核心或访问订阅；详细证据和失败记录见 roadmap 同日 Proxy Groups 节。

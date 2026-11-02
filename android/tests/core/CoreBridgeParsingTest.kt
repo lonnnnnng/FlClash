@@ -14,6 +14,25 @@ import kotlinx.coroutines.yield
 import com.google.gson.JsonParser
 
 class CoreBridgeParsingTest {
+    @Test fun proxyTypesKeepLeavesGroupsAndUnknownProtocolsWithoutPrivateMetadata() {
+        val types = CoreBridge().parseProxyTypes(JsonParser.parseString("""{
+            "Main":{"type":"Selector","all":["a","b"],"now":"a"},
+            "a":{"type":"Shadowsocks","provider-name":"fixture-provider","password":"fixture-secret"},
+            "b":{"type":"FutureProtocol"},"DIRECT":{"type":"Direct"},"REJECT":{"type":"Reject"}
+        }""").asJsonObject)
+        assertEquals(mapOf("Main" to "Selector", "a" to "Shadowsocks", "b" to "FutureProtocol", "DIRECT" to "Direct", "REJECT" to "Reject"), types)
+        assertFalse(types.toString().contains("secret"))
+        assertFalse(types.toString().contains("provider"))
+    }
+
+    @Test fun proxyTypesIgnoreMalformedMissingOrBlankFields() {
+        val types = CoreBridge().parseProxyTypes(JsonParser.parseString("""{
+            "null":null,"array":[],"number":1,"missing":{},"blank":{"type":" "},
+            "wrong":{"type":3},"object":{"type":{}},"valid":{"type":"Vless"}
+        }""").asJsonObject)
+        assertEquals(mapOf("valid" to "Vless"), types)
+    }
+
     @Test fun providerDetailsParseOnlyPublicFieldsAndRfc3339Times() {
         val bridge = CoreBridge()
         val raw = """[{"name":"fixture","type":"Proxy","count":12,"vehicle-type":"HTTP","update-at":"2026-11-02T08:00:00.123456789+08:00","path":"private","subscription-info":{"token":"fixture-secret"}}]"""

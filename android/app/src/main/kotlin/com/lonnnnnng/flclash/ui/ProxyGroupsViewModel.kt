@@ -7,6 +7,9 @@ import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.data.ProfileStore
+import com.lonnnnnng.flclash.data.NoopProxyDelayStore
+import com.lonnnnnng.flclash.data.ProxyDelayEntity
+import com.lonnnnnng.flclash.data.ProxyDelayStore
 import com.lonnnnnng.flclash.data.decodeSelectedMap
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ProxyGroupsRuntime
@@ -37,7 +40,17 @@ data class ProxyGroupsUiState(
     val switchingGroup: String? = null,
     val batchTestingGroup: String? = null,
     val delayResults: Map<ProxyDelayKey, ProxyDelayUiState> = emptyMap(),
+    val proxyTypes: Map<String, String> = emptyMap(),
 )
+
+internal fun ProxyGroupsUiState.proxyType(name: String, cardSize: ProxyNodeCardSize): String? {
+    val group = groups.firstOrNull { it.name == name }
+    val type = proxyTypes[name]?.takeIf { it.isNotBlank() } ?: group?.type ?: return null
+    if (group == null || cardSize != ProxyNodeCardSize.LOOSE) return type
+    val leaf = resolveSelectedProxy(group, groups, selectedMap).leafName
+    // 作者 long：宽松卡片沿用原版“组类型(最终出口)”说明；叶子只显示自己的协议，不借用组或出口的协议。
+    return if (leaf.isNullOrBlank() || leaf == name) type else "$type($leaf)"
+}
 
 internal fun visibleProxyGroups(groups: List<ProxyGroupInfo>, mode: CoreOutboundMode): List<ProxyGroupInfo> =
     // 作者 long：直连模式只改变真实路由，不隐藏节点管理；用户仍可预选节点和测速，切回代理模式立即生效。
@@ -59,6 +72,45 @@ data class ProxyDelayUiState(
     val updatedAtMillis: Long = 0L,
 )
 
+data class ProxyDelaySummary(
+    val tested: Int = 0,
+    val success: Int = 0,
+    val timedOut: Int = 0,
+    val failed: Int = 0,
+    val testing: Int = 0,
+)
+
+/**
+ * 作者 long：汇总只读取当前组和当前测速 URL 的直接成员，避免同名节点或其他 URL 的旧结果污染组标题。
+ * 空结果不计入失败，用户可以据此区分“尚未测速”和“本次测速明确失败”。
+ */
+fun ProxyGroupsUiState.delaySummary(
+    group: ProxyGroupInfo,
+    nowMillis: Long = System.currentTimeMillis(),
+): ProxyDelaySummary {
+    var success = 0
+    var timedOut = 0
+    var failed = 0
+    var testing = 0
+    group.all.forEach { proxyName ->
+        val result = delayState(group, proxyName, nowMillis) ?: return@forEach
+        when {
+            result.isTesting -> testing++
+            result.value == null -> Unit
+            result.value > 0 -> success++
+            result.value == CoreBridge.DELAY_TIMED_OUT -> timedOut++
+            else -> failed++
+        }
+    }
+    return ProxyDelaySummary(
+        tested = success + timedOut + failed,
+        success = success,
+        timedOut = timedOut,
+        failed = failed,
+        testing = testing,
+    )
+}
+
 fun ProxyGroupsUiState.delayState(
     group: ProxyGroupInfo,
     proxyName: String,
@@ -77,8 +129,11 @@ internal const val DELAY_RESULT_TTL_MS = 45_000L
  * 作者 long：Mihomo 的 URLTest/Fallback 自动测速事件只携带测试地址和叶子节点名称，
  * 因此要把同一结果分发到当前页面中所有匹配的代理组，保持不同测试地址之间的结果隔离。
  */
-internal fun ProxyGroupsUiState.applyDelayEvent(event: CoreEvent.Delay): ProxyGroupsUiState {
-    val updates = groups
+internal fun delayUpdatesForEvent(
+    groups: List<ProxyGroupInfo>,
+    event: CoreEvent.Delay,
+    updatedAtMillis: Long = System.currentTimeMillis(),
+): Map<ProxyDelayKey, ProxyDelayUiState> = groups
         .filter { group ->
             group.testUrl.orDefaultTestUrl() == event.result.url && event.result.name in group.all
         }
@@ -86,9 +141,12 @@ internal fun ProxyGroupsUiState.applyDelayEvent(event: CoreEvent.Delay): ProxyGr
             ProxyDelayKey(group.name, event.result.name, event.result.url) to
                 ProxyDelayUiState(
                     value = event.result.value,
-                    updatedAtMillis = System.currentTimeMillis(),
+                    updatedAtMillis = updatedAtMillis,
                 )
         }
+
+internal fun ProxyGroupsUiState.applyDelayEvent(event: CoreEvent.Delay): ProxyGroupsUiState {
+    val updates = delayUpdatesForEvent(groups, event)
     return if (updates.isEmpty()) this else copy(delayResults = delayResults + updates)
 }
 
@@ -107,10 +165,14 @@ internal fun computedSelectionTarget(
 internal fun selectedProxyName(
     group: ProxyGroupInfo,
     selectedMap: Map<String, String> = emptyMap(),
-): String? = selectedMap[group.name]
-    ?.takeIf { it in group.all }
-    ?: group.fixed?.takeIf { it in group.all }
-    ?: group.now?.takeIf { it in group.all }
+): String? {
+    val selected = selectedMap[group.name]?.takeIf { it in group.all }
+    val fixed = group.fixed?.takeIf { it in group.all }
+    val now = group.now?.takeIf { it in group.all }
+    // 作者 long：URLTest/Fallback 的 `now` 是核心当前自动结果，必须优先于旧的手动固定值；
+    // 核心暂时没有返回结果时，再用手动映射和 fixed 恢复可见选择，避免页面显示过期节点。
+    return if (group.isComputed) now ?: selected ?: fixed else selected ?: fixed ?: now
+}
 
 internal data class ProxySelectionResolution(
     val leafName: String?,
@@ -208,6 +270,7 @@ private fun retainDelayResults(
 class ProxyGroupsViewModel @Inject constructor(
     private val runtimeManager: ProxyGroupsRuntime,
     private val profileStore: ProfileStore,
+    private val proxyDelayStore: ProxyDelayStore = NoopProxyDelayStore,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(ProxyGroupsUiState())
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -238,7 +301,15 @@ class ProxyGroupsViewModel @Inject constructor(
         viewModelScope.launch {
             runtimeManager.events.collect { event ->
                 if (event is CoreEvent.Delay) {
-                    mutableState.update { it.applyDelayEvent(event) }
+                    val profileId = profileStore.currentProfileId.value
+                    val generation = profileGeneration
+                    val timestamp = System.currentTimeMillis()
+                    val updates = delayUpdatesForEvent(mutableState.value.groups, event, timestamp)
+                    if (updates.isEmpty()) return@collect
+                    if (generation == profileGeneration && profileId == profileStore.currentProfileId.value) {
+                        mutableState.update { it.copy(delayResults = it.delayResults + updates) }
+                        persistDelayUpdates(profileId, generation, updates)
+                    }
                 }
             }
         }
@@ -250,26 +321,34 @@ class ProxyGroupsViewModel @Inject constructor(
         val profileId = profileStore.currentProfileId.value
         refreshJob = viewModelScope.launch {
             mutableState.value = mutableState.value.copy(isLoading = true)
-            runtimeManager.getProxyGroups()
-                .onSuccess { snapshot ->
-                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
-                    mutableState.value = ProxyGroupsUiState(
-                        groups = snapshot.groups,
-                        selectedMap = currentProfileSelectedMap(),
-                        unfoldSet = currentProfileUnfoldSet(),
-                        batchTestingGroup = mutableState.value.batchTestingGroup,
-                        delayResults = retainDelayResults(
-                            snapshot.groups,
-                            mutableState.value.delayResults,
-                        ),
-                    )
+            val result = runtimeManager.getProxyGroups()
+            if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+            if (result.isSuccess) {
+                val snapshot = result.getOrThrow()
+                val delayResults = try {
+                    restoreDelayResults(profileId, snapshot.groups, mutableState.value.delayResults)
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Throwable) {
+                    mutableErrors.emit(error.message ?: "恢复测速结果失败")
+                    retainDelayResults(snapshot.groups, mutableState.value.delayResults)
                 }
-                .onFailure { error ->
-                    if (error is CancellationException) throw error
-                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onFailure
-                    mutableState.value = ProxyGroupsUiState()
-                    mutableErrors.emit(error.message ?: "读取代理组失败")
-                }
+                if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+                mutableState.value = ProxyGroupsUiState(
+                    groups = snapshot.groups,
+                    proxyTypes = snapshot.proxyTypes,
+                    selectedMap = currentProfileSelectedMap(),
+                    unfoldSet = currentProfileUnfoldSet(),
+                    batchTestingGroup = mutableState.value.batchTestingGroup,
+                    delayResults = delayResults,
+                )
+            } else {
+                val error = result.exceptionOrNull() ?: IllegalStateException("读取代理组失败")
+                if (error is CancellationException) throw error
+                if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+                mutableState.value = ProxyGroupsUiState()
+                mutableErrors.emit(error.message ?: "读取代理组失败")
+            }
         }
     }
 
@@ -362,6 +441,7 @@ class ProxyGroupsViewModel @Inject constructor(
                     if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
+                            proxyTypes = snapshot.proxyTypes,
                         selectedMap = updatedMap,
                         unfoldSet = currentProfileUnfoldSet(),
                         delayResults = retainDelayResults(
@@ -393,6 +473,73 @@ class ProxyGroupsViewModel @Inject constructor(
             ?.let { decodeSelectedMap(it.selectedMapJson) }
             .orEmpty()
 
+    private suspend fun restoreDelayResults(
+        profileId: Long?,
+        groups: List<ProxyGroupInfo>,
+        current: Map<ProxyDelayKey, ProxyDelayUiState>,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): Map<ProxyDelayKey, ProxyDelayUiState> {
+        val retained = retainDelayResults(groups, current, nowMillis)
+        if (profileId == null) return retained
+        proxyDelayStore.deleteOlderThan(profileId, nowMillis - DELAY_RESULT_TTL_MS)
+        val valid = groups.flatMap { group ->
+            group.all.map { proxy -> ProxyDelayKey(group.name, proxy, group.testUrl.orDefaultTestUrl()) }
+        }.toSet()
+        val restored = proxyDelayStore.load(profileId)
+            .asSequence()
+            .map { entity ->
+                ProxyDelayKey(entity.groupName, entity.proxyName, entity.testUrl) to
+                    ProxyDelayUiState(value = entity.value, updatedAtMillis = entity.updatedAtMillis)
+            }
+            .filter { (key, value) ->
+                key in valid && nowMillis - value.updatedAtMillis <= DELAY_RESULT_TTL_MS
+            }
+            .toMap()
+        // 作者 long：当前进程正在进行的测速状态优先于磁盘快照，避免恢复动作覆盖用户刚点下的“测速中”。
+        return restored + retained
+    }
+
+    private suspend fun persistDelayUpdates(
+        profileId: Long?,
+        generation: Long,
+        updates: Map<ProxyDelayKey, ProxyDelayUiState>,
+    ) {
+        if (profileId == null) return
+        updates.forEach { (key, value) ->
+            if (value.isTesting || generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@forEach
+            try {
+                persistDelayResult(profileId, key, value)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                mutableErrors.emit(error.message ?: "保存测速结果失败")
+            }
+        }
+    }
+
+    private suspend fun persistDelayResult(
+        profileId: Long,
+        key: ProxyDelayKey,
+        value: ProxyDelayUiState,
+    ) {
+        val result = value.value
+        if (result == null) {
+            // 作者 long：空结果代表核心没有返回可用数值，必须删除旧缓存，不能在重建后伪造失败。
+            proxyDelayStore.delete(profileId, key.groupName, key.proxyName, key.testUrl)
+        } else {
+            proxyDelayStore.upsert(
+                ProxyDelayEntity(
+                    profileId = profileId,
+                    groupName = key.groupName,
+                    proxyName = key.proxyName,
+                    testUrl = key.testUrl,
+                    value = result,
+                    updatedAtMillis = value.updatedAtMillis,
+                ),
+            )
+        }
+    }
+
     private fun currentProfileUnfoldSet(): Set<String> =
         profileStore.currentProfileId.value
             ?.let { id -> profileStore.profiles.value.firstOrNull { it.id == id } }
@@ -406,39 +553,41 @@ class ProxyGroupsViewModel @Inject constructor(
         if (mutableState.value.batchTestingGroup != null) return
         val key = ProxyDelayKey(group.name, proxyName, group.testUrl.orDefaultTestUrl())
         val generation = profileGeneration
+        val profileId = profileStore.currentProfileId.value
         if (mutableState.value.delayResults[key]?.isTesting == true) return
         mutableState.update {
             it.copy(delayResults = it.delayResults + (key to ProxyDelayUiState(isTesting = true)))
         }
         viewModelScope.launch {
-            runtimeManager.testDelay(proxyName, key.testUrl)
-                .onSuccess { result ->
-                    if (generation != profileGeneration) return@onSuccess
-                    mutableState.update { state ->
-                        state.copy(
-                            delayResults = state.delayResults + (
-                                key to ProxyDelayUiState(
-                                    value = result?.value,
-                                    updatedAtMillis = System.currentTimeMillis(),
-                                )
-                                ),
-                        )
-                    }
+            val outcome = runtimeManager.testDelay(proxyName, key.testUrl)
+            if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+            val updated: ProxyDelayUiState
+            if (outcome.isSuccess) {
+                updated = ProxyDelayUiState(
+                    value = outcome.getOrNull()?.value,
+                    updatedAtMillis = System.currentTimeMillis(),
+                )
+            } else {
+                updated = ProxyDelayUiState(
+                    value = CoreBridge.DELAY_FAILED,
+                    updatedAtMillis = System.currentTimeMillis(),
+                )
+            }
+            mutableState.update { state ->
+                state.copy(delayResults = state.delayResults + (key to updated))
+            }
+            try {
+                if (generation == profileGeneration && profileId == profileStore.currentProfileId.value && profileId != null) {
+                    persistDelayResult(profileId, key, updated)
                 }
-                .onFailure { error ->
-                    if (generation != profileGeneration) return@onFailure
-                    mutableState.update { state ->
-                        state.copy(
-                            delayResults = state.delayResults + (
-                                key to ProxyDelayUiState(
-                                    value = CoreBridge.DELAY_FAILED,
-                                    updatedAtMillis = System.currentTimeMillis(),
-                                )
-                                ),
-                        )
-                    }
-                    mutableErrors.emit(error.message ?: "测速失败")
-                }
+            } catch (persistError: CancellationException) {
+                throw persistError
+            } catch (persistError: Throwable) {
+                mutableErrors.emit(persistError.message ?: "保存测速结果失败")
+            }
+            if (outcome.isFailure) {
+                mutableErrors.emit(outcome.exceptionOrNull()?.message ?: "测速失败")
+            }
         }
     }
 
@@ -468,51 +617,61 @@ class ProxyGroupsViewModel @Inject constructor(
         groupDelayJob?.cancel()
         groupDelayJob = viewModelScope.launch {
             try {
-                runtimeManager.testDelayBatch(targets.map { it.request })
-                    .onSuccess { results ->
-                        if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
-                        val displayNames = targets.associateBy { it.request }
-                        val updates = results.associate { item ->
-                            val target = displayNames[item.request]
-                            val displayName = target?.displayName ?: item.request.proxyName
-                            ProxyDelayKey(group.name, displayName, item.request.testUrl) to
-                                ProxyDelayUiState(
-                                    value = when {
-                                        item.error != null -> CoreBridge.DELAY_FAILED
-                                        else -> item.result?.value
-                                    },
-                                    updatedAtMillis = System.currentTimeMillis(),
-                                )
-                        }
-                        val failures = results.count { it.error != null }
-                        mutableState.update { state ->
-                            state.copy(
-                                batchTestingGroup = null,
-                                delayResults = state.delayResults + updates,
-                            )
-                        }
-                        if (failures > 0) {
-                            mutableErrors.emit("批量测速完成：$failures 项失败")
-                        }
-                    }
-                    .onFailure { error ->
-                        if (error is CancellationException) throw error
-                        if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onFailure
-                        val failed = keys.mapValues { (_, value) ->
-                            value.copy(
-                                isTesting = false,
-                                value = CoreBridge.DELAY_FAILED,
+                val outcome = runtimeManager.testDelayBatch(targets.map { it.request })
+                if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+                if (outcome.isSuccess) {
+                    val results = outcome.getOrThrow()
+                    val displayNames = targets.associateBy { it.request }
+                    val updates = results.associate { item ->
+                        val target = displayNames[item.request]
+                        val displayName = target?.displayName ?: item.request.proxyName
+                        ProxyDelayKey(group.name, displayName, item.request.testUrl) to
+                            ProxyDelayUiState(
+                                value = when {
+                                    item.error != null -> CoreBridge.DELAY_FAILED
+                                    else -> item.result?.value
+                                },
                                 updatedAtMillis = System.currentTimeMillis(),
                             )
-                        }
-                        mutableState.update { state ->
-                            state.copy(
-                                batchTestingGroup = null,
-                                delayResults = state.delayResults + failed,
-                            )
-                        }
-                        mutableErrors.emit(error.message ?: "批量测速失败")
                     }
+                    val failures = results.count { it.error != null }
+                    mutableState.update { state ->
+                        state.copy(
+                            batchTestingGroup = null,
+                            delayResults = state.delayResults + updates,
+                        )
+                    }
+                    persistDelayUpdates(
+                        profileId = profileId,
+                        generation = generation,
+                        updates = updates,
+                    )
+                    if (failures > 0) {
+                        mutableErrors.emit("批量测速完成：$failures 项失败")
+                    }
+                } else {
+                    val error = outcome.exceptionOrNull()
+                    if (error is CancellationException) throw error
+                    val failed = keys.mapValues { (_, value) ->
+                        value.copy(
+                            isTesting = false,
+                            value = CoreBridge.DELAY_FAILED,
+                            updatedAtMillis = System.currentTimeMillis(),
+                        )
+                    }
+                    mutableState.update { state ->
+                        state.copy(
+                            batchTestingGroup = null,
+                            delayResults = state.delayResults + failed,
+                        )
+                    }
+                    persistDelayUpdates(
+                        profileId = profileId,
+                        generation = generation,
+                        updates = failed,
+                    )
+                    mutableErrors.emit(error?.message ?: "批量测速失败")
+                }
             } finally {
                 // 作者 long：旧任务的取消收尾不能结束新配置中同名代理组的测速。
                 if (generation == profileGeneration && profileId == profileStore.currentProfileId.value) {

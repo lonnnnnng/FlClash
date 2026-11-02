@@ -118,8 +118,8 @@ class ActivityProxyProfileStore : ProfileStore {
     override val currentProfileId: StateFlow<Long?> = MutableStateFlow<Long?>(initial.id).asStateFlow()
 
     override suspend fun selectProfile(id: Long?) = Unit
-    override suspend fun addRemoteProfile(url: String, label: String): Profile = error("unused")
-    override suspend fun addFileProfile(label: String, bytes: ByteArray): Profile = error("unused")
+    override suspend fun addRemoteProfile(url: String, label: String, ageSecretKey: String): Profile = error("unused")
+    override suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String): Profile = error("unused")
     override suspend fun addCustomProfile(label: String): Profile = error("unused")
     override suspend fun readLocalProfileContent(id: Long): String = error("unused")
     override suspend fun updateLocalProfileContent(id: Long, content: String): Profile = error("unused")

@@ -59,7 +59,8 @@ class RuntimeConfigPreviewViewModel @Inject constructor(
 
     private companion object {
         val SAFE_PREVIEW_ERRORS = setOf(
-            "配置文件不存在", "没有可用配置", "配置超过 2 MiB，暂不支持预览",
+            "配置不存在", "配置文件不存在", "没有可用配置", "配置超过 2 MiB，暂不支持预览",
+            "绑定脚本不存在", "绑定脚本正文不存在", "脚本内容不能为空", "脚本文件超过 2 MiB 限制",
             "当前配置已变化，请重新打开预览", "配置或核心状态已变化，请重试",
         )
     }

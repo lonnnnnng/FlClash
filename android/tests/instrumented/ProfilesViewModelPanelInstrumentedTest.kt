@@ -219,10 +219,10 @@ private class FakePanelProfileStore : ProfileStore {
         mutableCurrentProfileId.value = id?.takeIf { candidate -> mutableProfiles.value.any { it.id == candidate } }
     }
 
-    override suspend fun addRemoteProfile(url: String, label: String): Profile =
+    override suspend fun addRemoteProfile(url: String, label: String, ageSecretKey: String): Profile =
         error("该页面流程不访问远程订阅")
 
-    override suspend fun addFileProfile(label: String, bytes: ByteArray): Profile =
+    override suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String): Profile =
         error("该页面流程不访问文件选择器")
 
     override suspend fun addCustomProfile(label: String): Profile {

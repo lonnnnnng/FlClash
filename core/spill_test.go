@@ -7,8 +7,42 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/metacubex/mihomo/component/age"
 	"github.com/metacubex/mihomo/constant"
 )
+
+func TestDecryptConfigNeverSpillsPlaintext(t *testing.T) {
+	home := withSpillHome(t, 64)
+	key, recipient, err := age.GenX25519KeyPair()
+	if err != nil {
+		t.Fatal("generate fixture identity")
+	}
+	plaintext := []byte("mode: rule\nrules:\n  - MATCH,DIRECT\n")
+	ciphertext, err := age.EncryptBytes(plaintext, recipient)
+	if err != nil {
+		t.Fatal("encrypt fixture")
+	}
+	path := filepath.Join(t.TempDir(), "encrypted.age")
+	if err := os.WriteFile(path, ciphertext, 0o600); err != nil {
+		t.Fatal("write fixture")
+	}
+	arguments, _ := json.Marshal(DecryptConfigParams{Path: path, AgeSecretKey: key})
+	frame := handleMethodCall(&MethodCall{ID: "decrypt", Method: decryptConfigMethod, Arguments: arguments})
+	var response struct {
+		Result string       `json:"result"`
+		File   string       `json:"file"`
+		Error  *MethodError `json:"error"`
+	}
+	if err := json.Unmarshal(frame, &response); err != nil {
+		t.Fatal("decode response")
+	}
+	if len(frame) <= spillThreshold || response.File != "" || response.Error != nil || response.Result != string(plaintext) {
+		t.Fatal("decrypt response must remain inline above spill threshold")
+	}
+	if _, err := os.Stat(filepath.Join(home, spilledResponseDirName)); !os.IsNotExist(err) {
+		t.Fatal("decrypt must not create a response directory")
+	}
+}
 
 func withSpillHome(t *testing.T, threshold int) string {
 	t.Helper()
