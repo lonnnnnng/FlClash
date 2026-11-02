@@ -393,6 +393,32 @@ class ProxyGroupsViewModelTest {
     }
 
     @Test
+    fun `batch delay targets follow nested manual selection when automatic result is absent`() {
+        val nested = ProxyGroupInfo(
+            name = "Relay",
+            type = "Selector",
+            now = null,
+            fixed = "node-fixed",
+            all = listOf("node-a", "node-fixed"),
+            hidden = false,
+            testUrl = "https://nested",
+        )
+        val group = ProxyGroupInfo(
+            name = "Auto",
+            type = "URLTest",
+            now = "Relay",
+            all = listOf("Relay"),
+            hidden = false,
+            testUrl = "https://outer",
+        )
+
+        assertEquals(
+            listOf(ProxyDelayTarget("Relay", ProxyDelayRequest("node-fixed", "https://nested"))),
+            resolveDelayTargets(group, listOf(group, nested), mapOf("Relay" to "node-fixed")),
+        )
+    }
+
+    @Test
     fun `batch delay target cycle is ignored instead of recursing forever`() {
         val first = ProxyGroupInfo("First", "Selector", "Second", listOf("Second"), false)
         val second = ProxyGroupInfo("Second", "Selector", "First", listOf("First"), false)

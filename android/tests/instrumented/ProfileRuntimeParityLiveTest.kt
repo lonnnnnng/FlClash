@@ -62,7 +62,97 @@ class ProfileRuntimeParityLiveTest {
             ip = ViewModelProvider(it)[OutboundIpViewModel::class.java]
         }
         var stage = "stopped-nodes"
+        fun exerciseComputedGroup(type: String): Boolean {
+            stage = "computed-${type.lowercase()}"
+            compose.waitUntil(30_000) {
+                groups.state.value.groups.any { it.type.equals(type, ignoreCase = true) && it.all.isNotEmpty() }
+            }
+            var group = groups.state.value.groups.first { it.type.equals(type, ignoreCase = true) && it.all.isNotEmpty() }
+            val profileId = checkNotNull(repository.currentProfileId.value)
+            val saved = groups.state.value.selectedMap[group.name]
+            if (saved != null && saved in group.all) {
+                compose.runOnIdle { groups.selectProxy(group, saved) }
+                compose.waitUntil(30_000) {
+                    groups.state.value.selectedMap[group.name] == null && groups.state.value.switchingGroup == null &&
+                        groups.state.value.groups.firstOrNull { it.name == group.name }?.fixed.isNullOrBlank()
+                }
+                group = groups.state.value.groups.first { it.name == group.name }
+            } else if (saved != null) {
+                // 作者 long：配置更新后若持久映射已不属于该组，先清除失效映射，恢复核心自动结果再验证当前交互。
+                runBlocking(Dispatchers.IO) {
+                    repository.updateProfileSelectedMap(profileId, groups.state.value.selectedMap - group.name)
+                    manager.changeProxy(group.name, "").getOrThrow()
+                }
+                groups.refresh()
+                compose.waitUntil(30_000) {
+                    groups.state.value.selectedMap[group.name] == null && groups.state.value.groups.firstOrNull { it.name == group.name }?.fixed.isNullOrBlank()
+                }
+                group = groups.state.value.groups.first { it.name == group.name }
+            }
+            assertTrue("核心自动结果必须属于当前组", group.now != null && group.now in group.all)
+            val groupNames = groups.state.value.groups.map { it.name }.toSet()
+            val testUrl = group.testUrl?.takeIf { it.isNotBlank() }
+                ?: com.lonnnnnng.flclash.core.CoreBridge.DEFAULT_TEST_URL
+            val healthyTarget = runBlocking(Dispatchers.IO) {
+                group.all.asSequence()
+                    .filter { it !in groupNames }
+                    .take(4)
+                    .firstOrNull { candidate ->
+                        (manager.testDelay(candidate, testUrl, 4_000L).getOrNull()?.value ?: -1) > 0
+                    }
+            }
+            val target = healthyTarget ?: group.all.firstOrNull { it !in groupNames }
+            assertTrue("真实组必须包含可选择的叶子节点", target != null)
+            compose.runOnIdle { groups.selectProxy(group, checkNotNull(target)) }
+            compose.waitUntil(45_000) {
+                val pinned = groups.state.value.groups.firstOrNull { it.name == group.name }
+                groups.state.value.selectedMap[group.name] == target && groups.state.value.switchingGroup == null &&
+                    pinned != null && pinned.fixed == target && (healthyTarget == null || pinned.now == target)
+            }
+            val pinned = groups.state.value.groups.first { it.name == group.name }
+            assertTrue("页面当前节点必须跟随核心 now", pinned.now == selectedProxyName(pinned, groups.state.value.selectedMap))
+            val invalid = runBlocking(Dispatchers.IO) {
+                manager.changeProxy(group.name, "__KCLASH_INVALID_PROXY__").isFailure
+            }
+            assertTrue("核心必须拒绝不属于组的节点", invalid)
+            val afterInvalid = runBlocking(Dispatchers.IO) {
+                manager.getProxyGroups().getOrThrow().groups.first { it.name == group.name }
+            }
+            assertTrue("无效节点不能覆盖有效手动固定", afterInvalid.fixed == target)
+            assertTrue("无效节点不能把当前节点改成组外节点", afterInvalid.now != null && afterInvalid.now in afterInvalid.all)
+
+            compose.runOnIdle {
+                groups.selectProxy(checkNotNull(groups.state.value.groups.firstOrNull { it.name == group.name }), checkNotNull(target))
+            }
+            compose.waitUntil(45_000) {
+                val automatic = groups.state.value.groups.firstOrNull { it.name == group.name }
+                groups.state.value.selectedMap[group.name] == null && groups.state.value.switchingGroup == null &&
+                    automatic?.fixed.isNullOrBlank() && automatic != null && automatic.now in automatic.all
+            }
+            val automatic = groups.state.value.groups.first { it.name == group.name }
+            assertTrue("页面选择解析必须跟随核心自动 now", automatic.now == selectedProxyName(automatic, groups.state.value.selectedMap))
+            return healthyTarget != null
+        }
         try {
+            if (args.getString("kclashComputedGroupsOnly") == "true") {
+                val fallbackHadHealthyNode = exerciseComputedGroup("Fallback")
+                stage = "computed-url-test-profile"
+                val created = runBlocking(Dispatchers.IO) { repository.addFileProfile("验收 1.yaml", localBytes) }
+                addedId = created.id
+                runBlocking(Dispatchers.IO) { manager.selectProfile(created.id, repository::selectProfile) }
+                compose.waitUntil(30_000) {
+                    repository.currentProfileId.value == created.id && !groups.state.value.isLoading &&
+                        groups.state.value.groups.any { it.type.equals("URLTest", ignoreCase = true) }
+                }
+                val urlTestHadHealthyNode = exerciseComputedGroup("URLTest")
+                instrumentation.sendStatus(2, Bundle().apply {
+                    putString(
+                        "kclash_computed_groups",
+                        "real-core-fallback-and-urltest-pin-clear-invalid-passed-healthy=$fallbackHadHealthyNode/$urlTestHadHealthyNode",
+                    )
+                })
+                return
+            }
             compose.waitUntil(30_000) { groups.state.value.groups.any { it.isSelectable && it.all.size > 1 } }
             compose.waitUntil(40_000) { ip.state.value.info != null }
             stage = "stopped-ip"
@@ -89,16 +179,26 @@ class ProfileRuntimeParityLiveTest {
                 manager.state.value in listOf(CoreRuntimeStatus.RUNNING, CoreRuntimeStatus.FAILED)
             }
             assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
+            exerciseComputedGroup("Fallback")
             stage = "local-import"
             val created = runBlocking(Dispatchers.IO) { repository.addFileProfile("验收 1.yaml", localBytes) }
             addedId = created.id
-            compose.onNodeWithTag("dashboard_profile_card").performScrollTo().performClick()
-            compose.onNodeWithTag("dashboard_profile_detail_open_profiles").performClick()
+            // 作者 long：运行态配置切换直接复用主页“查看配置”正式入口，避免详情 Sheet 关闭与 Profiles 宿主切换同时发生时丢失列表语义树。
+            compose.onNodeWithTag("dashboard_profile_action").performScrollTo().performClick()
+            compose.onNodeWithTag("page_profiles").assertIsDisplayed()
             stage = "hot-switch-local"
+            // 作者 long：Profile 列表由 Room 流异步刷新，先等待新卡片进入语义树再执行热切换，避免把列表刷新竞态误判成切换失败。
+            compose.waitUntil(30_000) {
+                compose.onAllNodesWithTag("profile_card_${created.id}").fetchSemanticsNodes().isNotEmpty()
+            }
             compose.onNodeWithTag("profile_card_" + created.id).performScrollTo().performClick()
             compose.waitUntil(30_000) { repository.currentProfileId.value == created.id && !groups.state.value.isLoading && groups.state.value.groups.isNotEmpty() }
             assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
+            exerciseComputedGroup("URLTest")
             stage = "hot-switch-original"
+            compose.waitUntil(30_000) {
+                compose.onAllNodesWithTag("profile_card_${originalId}").fetchSemanticsNodes().isNotEmpty()
+            }
             compose.onNodeWithTag("profile_card_" + originalId).performScrollTo().performClick()
             compose.waitUntil(30_000) { repository.currentProfileId.value == originalId && groups.state.value.groups.isNotEmpty() && !groups.state.value.isLoading }
             assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
@@ -165,9 +265,18 @@ class ProfileRuntimeParityLiveTest {
             instrumentation.sendStatus(2, Bundle().apply { putString("kclash_profile_runtime", "stopped-nodes-selection-delay-hot-profile-switch-ip-refresh-stop-passed") })
         } catch (failure: Throwable) {
             val probe = runCatching { runBlocking(Dispatchers.IO) { manager.queryOutboundIp(com.lonnnnnng.flclash.data.outboundIpSources) } }.getOrNull()
+            val currentProfiles = repository.profiles.value
+            val groupState = runCatching { groups.state.value }.getOrNull()
             instrumentation.sendStatus(2, Bundle().apply {
                 putString("kclash_profile_runtime", "failed-stage=" + stage + " vm-error=" + ip.state.value.error +
                     " response=" + probe?.statusCode + "/" + probe?.error +
+                    " profile-count=" + currentProfiles.size +
+                    " profile-ids=" + currentProfiles.joinToString(",") { it.id.toString() } +
+                    " current-profile=" + repository.currentProfileId.value +
+                    " groups=" + groupState?.groups?.size +
+                    " groups-loading=" + groupState?.isLoading +
+                    " groups-error=" + groups.errors.replayCache.joinToString("|") +
+                    " core=" + manager.state.value +
                     " stamp=" + probe?.stamp + " current=" + runBlocking(Dispatchers.IO) { manager.ipRouteStamp() })
             })
             throw failure

@@ -213,6 +213,7 @@ internal data class ProxyDelayTarget(
 internal fun resolveDelayTargets(
     group: ProxyGroupInfo,
     groups: List<ProxyGroupInfo>,
+    selectedMap: Map<String, String> = emptyMap(),
 ): List<ProxyDelayTarget> {
     val seen = linkedSetOf<ProxyDelayRequest>()
     return group.all
@@ -222,6 +223,7 @@ internal fun resolveDelayTargets(
                 proxyName = proxyName,
                 testUrl = group.testUrl.orDefaultTestUrl(),
                 groups = groups,
+                selectedMap = selectedMap,
                 visiting = emptySet(),
             )
         }
@@ -233,6 +235,7 @@ private fun resolveLeafTargets(
     proxyName: String,
     testUrl: String,
     groups: List<ProxyGroupInfo>,
+    selectedMap: Map<String, String>,
     visiting: Set<String>,
 ): List<ProxyDelayTarget> {
     val nestedGroup = groups.firstOrNull { it.name == proxyName }
@@ -240,7 +243,8 @@ private fun resolveLeafTargets(
     if (nestedGroup.name in visiting) return emptyList()
     val nextVisiting = visiting + nestedGroup.name
     val nestedTestUrl = nestedGroup.testUrl?.takeIf { it.isNotBlank() } ?: testUrl
-    val selected = nestedGroup.now?.takeIf { it.isNotBlank() }
+    // 作者 long：测速必须与页面当前选择一致；Selector 先取手动映射，URLTest/Fallback 仍遵循 now、手动映射、fixed 的统一优先级。
+    val selected = selectedProxyName(nestedGroup, selectedMap)
     val members = selected?.let(::listOf) ?: nestedGroup.all
     return members.flatMap { member ->
         resolveLeafTargets(
@@ -248,6 +252,7 @@ private fun resolveLeafTargets(
             proxyName = member,
             testUrl = nestedTestUrl,
             groups = groups,
+            selectedMap = selectedMap,
             visiting = nextVisiting,
         )
     }
@@ -597,7 +602,7 @@ class ProxyGroupsViewModel @Inject constructor(
      */
     fun testDelayGroup(group: ProxyGroupInfo) {
         if (mutableState.value.batchTestingGroup != null || group.all.isEmpty()) return
-        val targets = resolveDelayTargets(group, mutableState.value.groups)
+        val targets = resolveDelayTargets(group, mutableState.value.groups, mutableState.value.selectedMap)
         if (targets.isEmpty()) {
             mutableErrors.tryEmit("当前代理组没有可测速节点")
             return

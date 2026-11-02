@@ -1,5 +1,20 @@
 # Testing
 
+## 延迟 Room 缓存真实进程重建（2026-11-03）
+
+- Redmi Note 8 Pro `wsvwypiz7xwslvl7`（Android 16/API 36、arm64-v8a、1080×2340、竖屏、字号 1.0）：`ProxyDelayProcessPersistenceLiveTest` 双阶段通过。阶段一经正式 ViewModel 在授权 Profile 对真实叶子节点测速并核对正延迟写入正式 Room；阶段二 `am force-stop` 后启动新应用进程，验证 PID 变化、同一 Profile/组/节点/testUrl 的延迟值恢复，以及其他 Profile/旧 testUrl 的探针不显示。
+- 运行 `python3 tool/android_proxy_delay_process_acceptance.py --serial wsvwypiz7xwslvl7` 可重建 APK 并执行验收；脚本只从工作区外层 `AGENTS.md` 读取唯一授权入口并脱敏输出。正式库为空时导入并保留授权 Profile；若库内有其他 Profile 但无授权 Profile，则停止，不为测试额外导入。成功后仅移除测试写入的 Room 探针行和应用内标记，保留有效缓存与正式 Profile。
+- 正式配置以外层授权来源为准，本切片未读写外层 `1.yaml`；Runtime 始终为 `STOPPED`，未启动 ProxyService/VpnService/TUN，未清数据或删除 Profile。
+- `ProxyDelayDaoInstrumentedTest` 3/3 通过；强制 App/Core JVM 测试 270/34 项通过，Debug/AndroidTest 构建及 Lint 通过（0 errors、51 warnings、9 hints）。Debug APK SHA-256 `db03165a180429f6d46a336d5c125652dfde20a2fa4110069bcc5fda06dd92ac`，AndroidTest SHA-256 `deabbe570d3808404b30800360c9f25d59932c4503458dd0863291c633bd2078`，均与设备安装包一致。
+
+## URLTest/Fallback 真实核心选择与滚动锚定（2026-11-02）
+
+- Redmi Note 8 Pro `wsvwypiz7xwslvl7`（Android 16/API 36、arm64-v8a、1080×2340、竖屏、字号 1.0）：真实 Mihomo Fallback/URLTest 停止态配置加载、正延迟节点、ViewModel 手动固定、核心 `fixed/now`、非法节点拒绝、再次选择清除固定并恢复自动结果，精确 instrumentation 1/1 通过；结果 `healthy=true/true`。核心没有启动前台 ProxyService、VpnService 或 TUN。
+- Fallback 只来自已授权在线 Profile，URLTest 只来自外层 `1.yaml` 原字节（34814 bytes，SHA-256 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`）；保留授权 Profile，测试创建的临时 FILE Profile 清理并通过原 Profile ID/文件元数据断言。测试后服务为空，配置字节不变。
+- `ProxyProtocolScrollInstrumentedTest#gridSemanticAnchorSurvivesSortDensityAndSearchChanges` 在同设备精确通过 1/1，覆盖名称排序、网格密度、搜索过滤后的节点语义锚定。
+- 强制 `:app:testDebugUnitTest :core:testDebugUnitTest --rerun-tasks`：App 270、Core 34 项通过，失败/错误/跳过 0；Debug/AndroidTest 编译打包通过，Lint 0 errors、51 warnings、9 hints。Debug APK SHA-256 `3d3f530a95d2763315d1c0d70214c55eebf6643f7ab54a0e1038de101cdef81f`，AndroidTest SHA-256 `2645dc44def5fa1ab03071d55523b66c06b699d0b0ec06fcd96d99ed2b8c6f5d`，均与设备一致；原生库仅 arm64-v8a。
+- 在线 Profile 准备首次 SocketTimeout，设备重连后同一授权来源重试成功；未加 computed-only 参数的较长 ProfileRuntimeParity 流程仍在 `stopped-delay` 因 DIRECT 默认测速无正延迟失败，未启动核心。不能把目标分支通过推广为完整 ProfileRuntimeParity 通过。当前下一步为真实 Profile 延迟 Room 缓存进程重建，URLTest/Fallback 无有效 `now` 及跨进程优选状态仍待单独验收。
+
 ## Proxy Groups 叶子协议与滚动恢复（2026-11-02）
 
 - 构建命令：`./gradlew :app:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`；App JVM 261 项、Core JVM 34 项通过，失败/错误/跳过 0；Debug/AndroidTest 构建通过，Lint 为 0 errors、47 warnings、9 hints。

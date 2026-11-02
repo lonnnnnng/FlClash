@@ -2,13 +2,13 @@
 
 > 文档类型：产品迁移路线图、功能矩阵、依赖图和验收门槛
 >
-> 最后核对：2026-11-02（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
+> 最后核对：2026-11-03（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 当前基线：`kotlin` 主线。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
+> 当前基线：`kotlin` 主线，HEAD 与 `origin/kotlin` 同步，工作树保留未提交改动。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 最新验收：Proxy Groups 已补齐叶子节点真实协议类型、按 Profile/组隔离的 Tab/List 滚动恢复和 List 组内当前节点定位；停止态与运行态均可显示节点、切换和测速。URLTest/Fallback 的 Kotlin 选择解析已统一为有效核心 `now` 优先，核心无结果时回退手动映射与 `fixed`。延迟结果已按 Profile/组/节点/测速 URL 写入 Room，带 45 秒 TTL、失败/超时状态恢复和过期清理；App 269 项、Core 34 项 JVM 测试通过，本轮新增 Room instrumentation 覆盖迁移与 DAO，Redmi 真机已完成代理组整类 8/8、ViewModel 面板和协议滚动回归。真实核心 URLTest/Fallback 回归、真实 age 密文 Android E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
-> 在线验收只允许工作区外层 `AGENTS.md` 当前唯一授权链接；本轮未访问订阅、未创建正式 Profile、未启核心/VPN，真机配置正文仅使用外层 `1.yaml` 原字节和隔离内存 Room/缓存。正式 Room 本轮 inspect 为 0 条；历史两份 Profile 的保留记录不能作为当前非空配置的证明，不推断旧数据去向。
-> 完整 Dashboard、Profiles 和 Proxy Groups UI/UX 仍为 `PARTIAL`。运行时间、30 次真实速度采样、可选内存/内网 IP/VPN、服务检测及服务出口 IP/质量首片已具备真实链路；出口 IP 停止态 DIRECT 与运行态实际代理出口已验证。服务长按排序、边缘持续滚动与服务 route hits 逐项核验复用已验收；首页出口 route hits 复用、出口质量来源全覆盖和持久缓存仍待补齐；当前配置详情已补齐四项真实统计、外部 Providers 明细和 HTTP 单项更新，详情窗口已独立于首页列表项；Profiles 本地 YAML 已具备语法预检、元数据预览、确认/取消和仓库写入前复核。Profile 卡片已补订阅链接复制、二维码、缓存 YAML 系统导出和按指定 ID 只读配置预览，运行中也可打开且不改变当前选择；age 已接入链接导入/编辑、缺钥补输、文件导入与手动/自动更新解密，先校验明文再写缓存；FILE 密钥编辑、系统文件替换及失败保护已完成分项验收；Proxy Groups 叶子协议、按组滚动恢复和 List 组内定位已完成，真实密文端到端与新增导入 SAF 闭环仍待补齐，下一步推进 URLTest/Fallback 完整语义、更细代理组视觉和语义锚定。持续边缘拖动滚动已完成独立真机切片。后续只验收 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
+> 最新验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，更细卡片/组标题视觉校准继续排队；真实 age 密文 E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
+> 本轮 Android 包此前未安装，正式 Room 为空；通过工作区外层 `AGENTS.md` 唯一授权入口导入并保留一份 Profile，未触碰外层 `1.yaml`、未清数据或删除 Profile。延迟缓存用例验证同一 Profile/组/节点/测试 URL 的正延迟跨真实应用进程恢复，并向正式 Room 写入不同 Profile 与旧测试 URL 探针，确认均不进入当前页面；成功后删除的只有测试探针行和应用内标记。核心保持 `STOPPED`，没有 ProxyService、VpnService 或 TUN。
+> 完整 ProfileRuntimeParity 长流程仍曾在停止态 `DIRECT` 默认测速阶段失败，不能推广为通过。Dashboard、Profiles 和 Proxy Groups 的完整 UI/UX 仍为 `PARTIAL`；后续仍需完成代理组卡片/组标题视觉、真实 age 密文 Android E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity。验收限定 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -52,7 +52,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | `kotlin` 追踪 `origin/kotlin`；当前 `HEAD` 与 `origin/kotlin` 已同步，工作树干净；Flutter 只作为参考 |
+| 远端关系 | `kotlin` 追踪 `origin/kotlin`；当前 `HEAD` 与 `origin/kotlin` 同步，工作树有未提交改动；Flutter 只作为参考 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -60,13 +60,13 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 统一启动、停止、配置热切、停止态节点读取/选择/测速、模式、VPN/纯代理、LAN 热更新、Provider 更新与观测失效；UI 不直接调用 gomobile |
-| 单元测试 | 本轮 App 269 项、Core 34 项，失败/错误/跳过 0；Service/Common/Go 未重跑，历史结果不计入本轮 |
-| 主流程真机测试 | Redmi 竖屏默认字号：代理组整类 8/8、ViewModel 面板、协议滚动和既有选择器回归通过；真实密文 Android E2E 未验 |
-| Debug 构建 | App test、Core test、assembleDebug、assembleDebugAndroidTest、lintDebug 通过；Lint 0 errors、51 warnings、9 hints |
-| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `baa1dc80b4847a2ad589efd55bb1c1ec2c5deed8be03810aa897eac00d46bdab`，与 Redmi 已安装 base.apk 一致 |
-| Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 `65d90b2a323413bc8b2690fdab6db1f9743032dd8a5dd788d12e36f077c82480`，与设备一致且无原生库 |
+| 单元测试 | 本轮强制 App 270 项、Core 34 项，失败/错误/跳过 0；Service/Common/Go 未重跑，历史结果不计入本轮 |
+| 主流程真机测试 | Redmi 竖屏默认字号：代理组整类 8/8、ViewModel 面板、协议滚动、语义锚定 1/1；真实 Mihomo URLTest/Fallback 固定/恢复/非法选择回归 1/1；完整 ProfileRuntimeParity 长流程仍受停止态 DIRECT 默认测速失败影响 |
+| Debug 构建 | Debug/AndroidTest 构建与 `lintDebug` 通过；Lint 0 errors、51 warnings、9 hints |
+| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `db03165a180429f6d46a336d5c125652dfde20a2fa4110069bcc5fda06dd92ac`，与 Redmi 已安装 base.apk 一致 |
+| Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 `deabbe570d3808404b30800360c9f25d59932c4503458dd0863291c633bd2078`，与设备一致且不含原生库 |
 | Release 构建 | 历史 `:app:assembleRelease :app:lintRelease` 已通过，输出为未签名预发布 APK；本轮未重建 Release，独立 release keystore 仍待发布阶段创建 |
-| 最近真机证据 | Redmi API 36、1080×2340、字号 1.0：本地密钥/后台清除/失败保护与真实 DocumentsUI 替换通过；深浅整窗截图实际查看。正式 Room 前后 inspect 0 条、服务为空；未启动真实核心或访问订阅 |
+| 最近真机证据 | Redmi API 36、1080×2340、字号 1.0：真实 Mihomo Fallback/URLTest 固定与自动恢复、非法选择保护通过；排序/密度/搜索语义锚定通过。保留唯一授权 Profile，临时 `1.yaml` Profile 已清理，配置哈希未变；核心停止且无前台服务/TUN |
 
 ## 4. 目标架构图
 
@@ -416,11 +416,11 @@ flowchart LR
 
 待完成：
 
-- URLTest/Fallback 的核心选择优先级已统一：有效 `now` 表示自动当前节点并优先展示，`now` 缺失时回退有效手动映射和 `fixed`；Selector 仍由手动映射优先。真实核心回归、优选状态持久化与边界行为仍待补齐。
-- 更细的卡片与组标题视觉校准，以及排序、搜索、密度变化后的节点语义锚定。
-- 按组/测速 URL 的超时统计摘要；不使用缺失模型伪造计数。递归解析仍使用完整组图，保持 Flutter 平面列表，不新增上游没有的子组下钻。
-- 延迟结果持久化已完成代码和单元/Room 迁移验证（`DONE-UNIT`）；仍需在 Redmi 真机上杀进程/重建后确认缓存恢复，并在真实核心回归中确认不会展示旧 Profile 或旧测速 URL 的结果。
-- 下一步推进排序、搜索、网格密度变化后的节点语义滚动锚定，再补更细的卡片与组标题视觉校准。
+- URLTest/Fallback 的有效核心 `now` 优先、手动固定、再次选择清除固定和非法成员拒绝已由真实 Mihomo 真机回归覆盖；两组均找到正延迟节点。无有效核心 `now` 时的映射/`fixed` 回退已有 JVM 覆盖，真实核心无结果边界及跨进程优选状态恢复仍待补齐。
+- List/Grid 排序、搜索过滤、网格密度变化后的语义锚定已有实现、JVM 覆盖和 Redmi 精确方法 `gridSemanticAnchorSurvivesSortDensityAndSearchChanges` 真机验收；更细的卡片与组标题视觉校准仍待补齐。
+- 按组/测速 URL 的成功、超时、失败和进行中摘要已有实现及 JVM 覆盖，不使用缺失模型伪造计数。递归解析仍使用完整组图，保持 Flutter 平面列表，不新增上游没有的子组下钻。
+- 延迟结果持久化已有 Room 实现、45 秒 TTL、过期清理、DAO/迁移与 ViewModel 重建 JVM 覆盖；Redmi 真机正式 Profile 通过真实 `force-stop`/新进程验证缓存恢复，并确认旧 Profile 与旧测速 URL 的同名节点不进入当前页面（`DONE-VERIFIED`）。
+- 下一步继续收敛代理组卡片与组标题视觉，再处理 URLTest/Fallback 无有效核心 `now` 的真实边界、跨进程手动优选状态，以及 Profiles 的真实密文/SAF 闭环。
 
 完成门槛：
 
@@ -506,7 +506,7 @@ flowchart LR
 待完成：
 
 - Flutter 页面信息架构和 Android 手机导航结构对齐。
-- 主流程优先：Dashboard 当前配置详情、快切/同步和 Rule/Global/Direct 模式入口已有固定宿主、状态层与真实核心方法验证；历史 Redmi 证据曾用根目录 `1.yaml` 完成文件导入、运行态三模式切换和停止/重启后模式恢复，本轮未重复访问。Profiles 远程编辑、添加来源选择、批量链接重复反馈、自定义配置结构化保存和草稿退出命名均已有首片验证；本轮补齐本地 YAML 语法预检、元数据预览及确认后写入，但真实 SAF 文件选择端到端仍待验。代理组 Tab/List、列表图标、分组标题、页内节点网格、搜索、选择、测速、工具菜单、排序/过滤、叶子协议显示、按组滚动恢复和 List 组内当前节点定位均已验收。Dashboard 已补齐真实状态、配置统计/运行配置预览、运行态热切以及 Providers 明细/单项更新切片；Profile 卡片已接入原订阅链接复制、二维码、缓存 YAML 系统导出与非当前 Profile 配置预览；age 链接/订阅表单和 FILE 密钥编辑/文件替换已完成分项验收；下一步补 URLTest/Fallback 完整语义、更细卡片/分组视觉和排序/搜索/密度变化后的语义锚定，真实加密端到端与新增导入 SAF 另列待验。主流程完成前不恢复 Requests/DNS/Logs 的次要视觉细节。
+- 主流程优先：Dashboard 当前配置详情、快切/同步和 Rule/Global/Direct 模式入口已有固定宿主、状态层与真实核心方法验证；Profiles 管理、导入预览和结构化表单已有多项分片验证，真实 SAF 文件选择导入仍待验；代理组 Tab/List、节点选择、测速、叶子协议、滚动恢复、排序/搜索/密度语义锚定均有相应真机切片。URLTest/Fallback 自动当前选择、手动固定/恢复自动及非法节点保护、延迟 Room 缓存真实进程重建均有 Redmi 验收；下一步补代理组卡片/组标题视觉，再处理真实加密端到端和新增导入 SAF。主流程完成前不恢复 Requests/DNS/Logs 的次要视觉细节。
 - Dashboard 出口 IP 已完成停止态 DIRECT 与运行态实际代理出口验证；质量有正式链路与固定宿主，待补质量来源全覆盖、Room 持久缓存、route hits 复用与更细内容 parity；运行时间和最近 30 次真实速度采样已通过正式 MainActivity/核心验收，停止/运行两态和深浅色竖屏截图已有单设备基线。
 - 可选服务状态真实检测及出口 IP/质量首片已验收：13 目标、10 种核心状态、单项/全部检测、启用及按钮排序、至少一项、偏好重建；前台可见自动检测前两项，详情按代理链首节点共享出口查询与质量入口，路由稳定等待与旧结果保护。整行长按排序、松手保存、边缘滚动及后台取消已验收；服务 route hits 逐项核验复用已有真实 GitHub 证据，无关选择变化保留检测时间，改变出口或网络通知强制重测。服务完整 parity 继续保留 PARTIAL，不把 Google/GitHub 真机结果推广为 13 项外部服务全部验收。
 - Profiles、Proxy、Connection、Observations 页面及其 Requests、DNS、Logs 页签的完整视觉与交互对齐；Dashboard Dock 的 Flutter 拖拽/液态动效也尚未实现。
@@ -595,7 +595,7 @@ flowchart LR
 4. Requests 页面。
 5. 基础日志流。
 
-当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 覆盖竖屏系统默认字号下的空态、选中自定义配置和订阅用量三态，横屏/大字号不再作为后续测试范围。Dashboard、Connections 和 Observation 的大字号矩阵属于历史验证记录，不继续执行。Dashboard 运行态已补齐统计/诊断交互断言；首页三态控件已在 Redmi 真机根目录 `1.yaml` 配置下完成真实核心切换和停止/重启恢复，不作为外网流量分流测试证据。Connections 已补齐详情快照恢复、元数据/格式/复制、Flutter 两档高度、浅色、小窗口、底部弹簧进出场、侧栏减速进出场、关闭中重建和真实核心详情 E2E。当前主流程已覆盖 Profiles 添加/导入首片、文件 YAML 预检和确认弹窗固定宿主、Proxy Groups 递归选择、叶子协议显示、按组滚动恢复、List 组内定位与工具菜单，以及首页真实状态、统计和 Provider 更新；Profile 卡片分享三项与指定 ID 只读预览已实现；age 表单和 FILE 密钥/文件替换已完成分项验收；下一步推进 URLTest/Fallback 完整语义、更细代理组视觉和语义锚定，真实加密端到端与新增导入 SAF 另列待验；Connections/Requests/DNS/Logs 的细节暂不推进。当前切片不代表任一完整页面 parity。
+当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 覆盖竖屏系统默认字号下的空态、选中自定义配置和订阅用量三态，横屏/大字号不再作为后续测试范围。Dashboard、Connections 和 Observation 的大字号矩阵属于历史验证记录，不继续执行。Dashboard 运行态已补齐统计/诊断交互断言；首页三态控件已在 Redmi 真机根目录 `1.yaml` 配置下完成真实核心切换和停止/重启恢复，不作为外网流量分流测试证据。Connections 已补齐详情快照恢复、元数据/格式/复制、Flutter 两档高度、浅色、小窗口、底部弹簧进出场、侧栏减速进出场、关闭中重建和真实核心详情 E2E。当前主流程已覆盖 Profiles 添加/导入首片、文件 YAML 预检和确认弹窗固定宿主、Proxy Groups 递归选择、叶子协议显示、按组滚动恢复、List 组内定位、语义锚定和工具菜单，以及 URLTest/Fallback 真实 Mihomo 选择和延迟缓存真实进程重建回归；Profile 卡片分享三项与指定 ID 只读预览已实现；age 表单和 FILE 密钥/文件替换已完成分项验收；下一步继续补代理组卡片/组标题视觉，真实加密端到端与新增导入 SAF 另列待验；Connections/Requests/DNS/Logs 的细节暂不推进。当前切片不代表任一完整页面 parity。
 
 ### N3：DNS、日志和故障诊断
 
@@ -1115,7 +1115,7 @@ flowchart LR
 4. 批量测速、搜索、缓存和结果失效。
 5. 订阅自动更新和本地 SAF 备份恢复（已完成；WebDAV 手动备份的协议、凭据存储、配置 UI、ZIP 仓库接入、认证/离线反馈和本地回环真机回归已完成，外部授权服务回归仅在具备授权条件时执行，自动云端同步明确延期且不进入首发范围）。
 
-本轮已完成 Profile 排序、Profile 名称重命名、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义、嵌套组平面叶子展示、叶子节点协议类型、按 Profile/组隔离的 Tab/List 滚动恢复、List 组内定位、选择映射的 Room/Runtime/ViewModel 持久化闭环、代理选择 ViewModel 页面状态流真机回归、真实 Mihomo 代理选择与核心重启保持、进程重建后的选择 UI 恢复、代理选择 Activity E2E 首片、主 Activity 配置生命周期 E2E 首片、顶层导航与观测页签状态保持、Requests/DNS/Logs 详情交互回归、订阅自动更新代码/设备调度/两条授权路径真实导入同步回归、本地 SAF 备份恢复首片、WebDAV 手动备份协议层以及 WebDAV Keystore 凭据、配置 UI、ZIP 仓库接入、认证/离线反馈和本地回环真机回归、Kotlin arm64 Tag/手动未签名预发布构建入口；外部授权 WebDAV 服务回归仅在具备授权条件时执行，自动云端同步明确延期。Profiles 卡片分享/预览、age 表单及 FILE 密钥/文件替换已有分项验收，真实密文和新增导入 SAF 仍待验；当前下一步补 URLTest/Fallback 完整语义、更细代理组视觉和排序/搜索/密度变化后的语义锚定；Providers 批量、资源编辑/侧载与订阅用量仍未完成，完整主流程未收敛前不进入正式发布。
+本轮已完成 Profile 排序、Profile 名称重命名、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义、嵌套组平面叶子展示、叶子节点协议类型、按 Profile/组隔离的 Tab/List 滚动恢复、List 组内定位、排序/搜索/密度语义锚定、URLTest/Fallback 真实 Mihomo 自动/手动选择与失效目标边界回归、延迟结果 Room 跨应用进程恢复与旧 Profile/旧 URL 隔离回归、选择映射的 Room/Runtime/ViewModel 持久化闭环、代理选择 ViewModel 页面状态流真机回归、真实 Mihomo 代理选择与核心重启保持、进程重建后的选择 UI 恢复、代理选择 Activity E2E 首片、主 Activity 配置生命周期 E2E 首片、顶层导航与观测页签状态保持、Requests/DNS/Logs 详情交互回归、订阅自动更新代码/设备调度/两条授权路径真实导入同步回归、本地 SAF 备份恢复首片、WebDAV 手动备份协议层以及 WebDAV Keystore 凭据、配置 UI、ZIP 仓库接入、认证/离线反馈和本地回环真机回归、Kotlin arm64 Tag/手动未签名预发布构建入口；外部授权 WebDAV 服务回归仅在具备授权条件时执行，自动云端同步明确延期。Profiles 卡片分享/预览、age 表单及 FILE 密钥/文件替换已有分项验收，真实密文和新增导入 SAF 仍待验；当前下一步补代理组卡片/组标题视觉，再推进真实密文和 SAF 闭环；Providers 批量、资源编辑/侧载与订阅用量仍未完成，完整主流程未收敛前不进入正式发布。
 
 ### N5：平台入口和系统集成
 
@@ -2294,3 +2294,23 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，Android 16/API 36，`1080×2340`，竖屏，系统字号 `1.0`）连续采集的代理组页面截图稳定：深色 `104e6e560376d0302b8d55853b3a0313d6b510cf6102be1fefc4a9e7406af782`、浅色 `e34d6aaa8c98143f6b17e748193f49e25b045f26e9283df8f160d29939c5a08d`。两张 PNG 已人工查看，组标签、节点卡片、协议摘要、延迟状态、搜索和定位入口完整，无明显裁切或重叠。
 - 更新 `ProxyGroupsActivityInstrumentedTest.proxyGroupsScreenshotMatrixMatchesBaseline` 及 `docs/visual-baselines/proxy-groups-states-redmi-api36.sha256`。基线更新后已重跑代理组整类，行为与截图断言 **8/8** 通过；协议滚动与 ViewModel 面板回归也通过。
 - 本轮仍只使用固定 Debug 宿主，不访问在线订阅、不启动 Mihomo/VPN、不读取或修改工作区外层 `1.yaml`；真实 URLTest/Fallback 核心回归、延迟 Room 缓存进程重建、排序/搜索/密度变化后的语义锚定及更细卡片/组标题视觉继续待办。该截图基线切片状态为 `DONE-VERIFIED`，Proxy Groups 整体仍为 `PARTIAL`。
+
+### 2026-11-02：URLTest/Fallback 真实核心选择与滚动锚定 — DONE-VERIFIED（Proxy Groups 整体仍 PARTIAL）
+
+- 新增真实核心回归分支 `kclashComputedGroupsOnly`，复用既有 `ProfileRuntimeParityLiveTest#stoppedNodesHotProfileSwitchAndRealExitFollowRuntime`。授权 Profile 使用工作区外层 `AGENTS.md` 唯一链接，URLTest 配置只从外层 `1.yaml` 原字节导入；没有生成或替换 YAML。
+- Redmi Note 8 Pro `wsvwypiz7xwslvl7`（Android 16/API 36、arm64-v8a、1080×2340 竖屏、系统字号 1.0）真实 Go Mihomo 核心停止态加载配置并执行测试：授权 Profile 的 Fallback 与 `1.yaml` 的 URLTest 均找到正延迟候选；通过正式 ViewModel 手动固定后，Room `selectedMap` 与核心 `fixed/now` 一致；提交组外节点被核心拒绝且没有改变有效选择；再次点击清除 `fixed`，核心回到有效自动 `now`，页面解析与核心一致。instrumentation 结果 `healthy=true/true`，1/1 通过。
+- `ProxyProtocolScrollInstrumentedTest#gridSemanticAnchorSurvivesSortDensityAndSearchChanges` 精确真机方法通过 1/1：名称排序、网格密度变化后仍定位相同节点，搜索过滤锚点后回到组内首个可见节点。该项连同已有 JVM 锚点测试，语义滚动锚定标为 `DONE-VERIFIED`；更细卡片与组标题视觉仍待完成。
+- `./gradlew :app:testDebugUnitTest :core:testDebugUnitTest --rerun-tasks --no-daemon -Ptarget-platform=android-arm64` 强制通过：App 270、Core 34 项，失败/错误/跳过均为 0。Debug/AndroidTest 编译与打包通过；`./gradlew :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过，Lint 0 errors、51 warnings、9 hints。
+- Debug APK SHA-256 `3d3f530a95d2763315d1c0d70214c55eebf6643f7ab54a0e1038de101cdef81f`，AndroidTest APK SHA-256 `2645dc44def5fa1ab03071d55523b66c06b699d0b0ec06fcd96d99ed2b8c6f5d`，均与 Redmi 安装包一致；App 原生库仅 `arm64-v8a`，测试 APK 无原生库。
+- 配置准备首次出现 `SocketTimeoutException`（`/tmp/kclash-profile-prepare-20261102.log`）；设备重连后同一授权地址准备成功，新增 1 份、失败 0（`/tmp/kclash-profile-prepare-20261102-rerun.log`）。未加参数运行的完整 ProfileRuntimeParity 用例在 `stopped-delay` 阶段因 `DIRECT` 默认测速无正延迟失败，尚未启动核心；保留日志 `/tmp/kclash-profile-runtime-20261102-urltest.log`。目标 computed 组分支随后独立通过，不能把完整长流程记为通过。
+- 成功用例清理断言确认临时 Profile 删除、原 Profile ID 集合及正文元数据恢复；外层 `1.yaml` 仍为 34814 bytes、SHA-256 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`。核心保持停止态，没有启动 ProxyService/VpnService/TUN；验收后系统服务列表为空。
+- 本切片状态 `DONE-VERIFIED`。URLTest/Fallback 无有效 `now` 的核心边界、跨进程优选状态恢复、延迟 Room 缓存真机进程重建和更细代理组视觉仍待补齐；下一步先验收真实 Profile 的 Room 延迟缓存进程重建。Proxy Groups 整体保持 `PARTIAL`。本轮未提交或推送。
+
+### 2026-11-03：正式 Profile 延迟 Room 缓存跨进程恢复 — DONE-VERIFIED
+
+- 新增 `ProxyDelayProcessPersistenceLiveTest` 双阶段用例和 `tool/android_proxy_delay_process_acceptance.py`。脚本只从工作区外层 `AGENTS.md` 读取唯一授权来源，并在日志输出前脱敏；只接受已核验的 Redmi serial，竖屏和字号由 instrumentation 再次断言。若正式 Profile 库为空，第一阶段导入并保留授权 Profile；若库内已有其他 Profile 但没有授权 Profile，则失败退出，不新增记录。
+- 第一阶段通过正式 `ProxyGroupsViewModel.testDelay()` 对授权 Profile 真实叶子节点测速，找到正延迟后核实正式 Room `(Profile, 组, 节点, testUrl)` 行已写入；同时写入一个其他 Profile 同 URL 同名节点和一个当前 Profile 旧 URL 探针，并保存只包含验收元数据的应用内标记。
+- 脚本对 `com.lonnnnnng.flclash` 执行 `am force-stop` 并确认 PID 消失，第二次精确 instrumentation 在新进程运行，核对 PID 已变化、当前 Profile/组/testUrl 匹配、节点徽标恢复同一延迟值，其他 Profile 与旧 URL 探针均不进入页面。成功时删除仅由本测试写入的两条探针行与标记；真实 Profile 和有效测速缓存保留。
+- Redmi Note 8 Pro `wsvwypiz7xwslvl7`（Android 16/API 36、arm64-v8a、1080×2340、竖屏、系统字号 1.0）双阶段通过 `OK (1 test)` / `OK (1 test)`；`ProxyDelayDaoInstrumentedTest` 3/3 通过。全程 Runtime `STOPPED`，没有 ProxyService、VpnService 或 TUN；没有读取/修改外层 `1.yaml`，没有清数据或删除 Profile。
+- 强制 `./gradlew :app:testDebugUnitTest :core:testDebugUnitTest --rerun-tasks --no-daemon -Ptarget-platform=android-arm64` 通过：App 270、Core 34 项，失败/错误/跳过 0。Debug/AndroidTest 构建和 `lintDebug` 通过，Lint 0 errors、51 warnings、9 hints。最终重建后 Debug APK SHA-256 `db03165a180429f6d46a336d5c125652dfde20a2fa4110069bcc5fda06dd92ac`，AndroidTest APK SHA-256 `deabbe570d3808404b30800360c9f25d59932c4503458dd0863291c633bd2078`，均与 Redmi 安装包匹配；App 原生库仅 arm64-v8a。
+- 本阶段 `DONE-VERIFIED`，Proxy Groups 整体仍为 `PARTIAL`。下一步补代理组卡片和组标题的视觉校准；真实 age 密文 Android E2E、加密 SAF/全新 Profile SAF 导入、URLTest/Fallback 无有效核心 `now` 的边界及跨进程手动优选恢复继续待验。本轮未提交或推送。
