@@ -7,9 +7,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
@@ -81,18 +84,17 @@ class ProfilesViewModelPanelInstrumentedTest {
 
         composeRule.onNodeWithText("添加配置").performClick()
         composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("创建").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("编辑 未命名配置").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_title_menu").assertIsDisplayed()
         composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("allow-lan: true\n")
-        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
         composeRule.onNodeWithText("放弃未保存的修改？").assertIsDisplayed()
         composeRule.onNodeWithText("继续编辑").performClick()
-        composeRule.onNodeWithText("编辑 未命名配置").assertIsDisplayed()
-        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("custom_profile_title_menu").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
         composeRule.onNodeWithText("放弃").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("暂无配置").fetchSemanticsNodes().isNotEmpty()
@@ -101,21 +103,21 @@ class ProfilesViewModelPanelInstrumentedTest {
 
         composeRule.onNodeWithText("添加配置").performClick()
         composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("创建").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("编辑 未命名配置").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_title_menu").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
         composeRule.onNodeWithText("未命名配置").assertIsDisplayed()
         composeRule.onNodeWithText("自定义配置").assertIsDisplayed()
 
         assertEquals("mixed-port: 7890", store.updatedContents.single())
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“未命名配置”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         composeRule.onAllNodesWithText("删除").assertCountEquals(1)
@@ -172,9 +174,8 @@ class ProfilesViewModelPanelInstrumentedTest {
 
         composeRule.onNodeWithText("添加配置").performClick()
         composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("创建").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("规则").performClick()
         composeRule.onNodeWithText("规则 · 未命名配置").assertIsDisplayed()
@@ -186,13 +187,13 @@ class ProfilesViewModelPanelInstrumentedTest {
 
         composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content").assertTextContains("MATCH,DIRECT", substring = true)
-        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
         composeRule.onNodeWithText("为配置命名").assertIsDisplayed()
         composeRule.onNodeWithTag("new_profile_name").performTextClearance()
         composeRule.onNodeWithTag("new_profile_name").performTextInput("家庭网络")
         composeRule.onNodeWithText("保存名称").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
 
         assertEquals(0, store.deleteCalls)

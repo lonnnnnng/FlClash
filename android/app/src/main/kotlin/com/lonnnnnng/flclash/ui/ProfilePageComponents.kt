@@ -34,6 +34,7 @@ internal fun ProfileEditorPage(
     text: @Composable () -> Unit,
     confirmButton: @Composable () -> Unit = {},
     dismissButton: @Composable () -> Unit = {},
+    backTag: String = "profile_editor_back",
 ) {
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -46,7 +47,7 @@ internal fun ProfileEditorPage(
             topBar = {
                 TopAppBar(
                     title = title,
-                    navigationIcon = { IconButton(onClick = onDismissRequest) {
+                    navigationIcon = { IconButton(onClick = onDismissRequest, modifier = Modifier.testTag(backTag)) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回")
                     } },
                     actions = { confirmButton() },

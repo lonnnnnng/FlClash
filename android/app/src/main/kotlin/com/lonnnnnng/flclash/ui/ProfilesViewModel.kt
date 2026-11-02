@@ -46,6 +46,7 @@ data class ProfileEditorUiState(
     val hasPersistedChanges: Boolean = false,
     val isReadingFile: Boolean = false,
     val replacement: ProfileFileReplacementPreview? = null,
+    val overview: CustomProfileSummary? = null,
 )
 
 data class ProfileFileReplacementPreview(val name: String, val sizeBytes: Int, val isEncrypted: Boolean, val isValidYaml: Boolean)
@@ -114,12 +115,19 @@ internal fun isProfileMutationBlocked(runtimeStatus: CoreRuntimeStatus): Boolean
     runtimeStatus.isRunning
 
 @HiltViewModel
-class ProfilesViewModel @Inject constructor(
+class ProfilesViewModel internal constructor(
     private val repository: ProfileStore,
     private val runtimeManager: CoreRuntimeStatusProvider,
     private val configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
     private val fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
+    private val overviewDispatcher: kotlinx.coroutines.CoroutineDispatcher,
 ) : ViewModel() {
+    @Inject constructor(
+        repository: ProfileStore,
+        runtimeManager: CoreRuntimeStatusProvider,
+        configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
+        fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
+    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default)
     private val busy = MutableStateFlow(false)
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private val mutableEditor = MutableStateFlow(ProfileEditorUiState())
@@ -138,6 +146,7 @@ class ProfilesViewModel @Inject constructor(
     private var nextFilePickToken = 0L
     private var replacementBytes: ByteArray? = null
     private var replacementReadJob: kotlinx.coroutines.Job? = null
+    private var overviewJob: kotlinx.coroutines.Job? = null
     val ageKeyRequired: StateFlow<Boolean> = mutableAgeKeyRequired
 
     val state: StateFlow<ProfilesUiState> = combine(
@@ -306,7 +315,10 @@ class ProfilesViewModel @Inject constructor(
             if (generation != localEditorGeneration) return@launch
             runCatching { repository.readLocalProfileContent(profile.id) }
                 .onSuccess { content ->
-                    if (generation == localEditorGeneration) mutableEditor.value = ProfileEditorUiState(profile = profile, content = content, isNew = isNew)
+                    if (generation == localEditorGeneration) {
+                        mutableEditor.value = ProfileEditorUiState(profile = profile, content = content, isNew = isNew)
+                        refreshOverview()
+                    }
                 }
                 .onFailure { error ->
                     if (error is CancellationException) throw error
@@ -320,6 +332,8 @@ class ProfilesViewModel @Inject constructor(
 
     fun closeEditor() {
         localEditorGeneration++
+        overviewJob?.cancel()
+        overviewJob = null
         pendingFilePick = null
         replacementReadJob?.cancel()
         replacementReadJob = null
@@ -452,7 +466,24 @@ class ProfilesViewModel @Inject constructor(
             profile = profile ?: editor.profile,
             content = content ?: editor.content,
             hasPersistedChanges = true,
+            overview = null,
         )
+        refreshOverview()
+    }
+
+    private fun refreshOverview() {
+        overviewJob?.cancel()
+        val snapshot = mutableEditor.value
+        val profile = snapshot.profile?.takeIf { it.type == ProfileType.CUSTOM } ?: return
+        val generation = localEditorGeneration
+        overviewJob = viewModelScope.launch {
+            // 作者 long：较大的 YAML 在后台解析；离开、重开或分区保存后，旧统计不得覆盖新概览。
+            val overview = withContext(overviewDispatcher) { customProfileSummary(snapshot.content, profile) }
+            if (generation == localEditorGeneration && mutableEditor.value.profile == profile &&
+                mutableEditor.value.content == snapshot.content) {
+                mutableEditor.value = mutableEditor.value.copy(overview = overview)
+            }
+        }
     }
 
     fun finishNewDraftEditor(label: String?) {
@@ -873,7 +904,8 @@ class ProfilesViewModel @Inject constructor(
         viewModelScope.launch {
             mutableDialersEditor.value = state.copy(dialers = dialers, isSaving = true)
             runCatching {
-                val current = ProfileProviderOverrides.fromJsonString(profile.overridesJson)
+                val latest = repository.profiles.value.firstOrNull { it.id == profile.id } ?: error("配置不存在")
+                val current = ProfileProviderOverrides.fromJsonString(latest.overridesJson)
                 val mapping = ProfileDialerEditor.parseDialers(dialers)
                 val updatedProfile = repository.updateProfileOverrides(
                     profile.id,
@@ -942,7 +974,7 @@ class ProfilesViewModel @Inject constructor(
             return
         }
         // 作者 long：名称编辑只更新 Profile 元数据，核心运行期间拒绝写入，保证卡片标题与当前运行配置一致。
-        launchAction { repository.updateProfileLabel(profile.id, normalized) }
+        saveEditorMetadata(profile.id) { repository.updateProfileLabel(profile.id, normalized) }
     }
 
     fun refreshSelection() {
@@ -954,8 +986,27 @@ class ProfilesViewModel @Inject constructor(
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
             return
         }
-        // 作者 long：绑定只改变 Profile 的元数据，不执行脚本；执行链路完成前必须保持显式的无副作用边界。
-        launchAction { repository.updateProfileScript(profile.id, scriptId) }
+        // 作者 long：绑定只保存元数据；同步父概览以保留新草稿，实际脚本在核心配置应用时才执行。
+        saveEditorMetadata(profile.id) { repository.updateProfileScript(profile.id, scriptId) }
+    }
+
+    private fun saveEditorMetadata(profileId: Long, save: suspend () -> Profile) {
+        if (busy.value || mutableEditor.value.isSaving) return
+        val generation = localEditorGeneration
+        if (mutableEditor.value.profile?.id == profileId) {
+            // 作者 long：元数据写入尚未完成时不能退出并删除新草稿；失败则留在概览供用户重试。
+            mutableEditor.value = mutableEditor.value.copy(isSaving = true)
+        }
+        launchAction {
+            try {
+                val updated = save()
+                if (generation == localEditorGeneration) reflectStructuredSave(profileId, profile = updated)
+            } finally {
+                if (generation == localEditorGeneration && mutableEditor.value.profile?.id == profileId) {
+                    mutableEditor.value = mutableEditor.value.copy(isSaving = false)
+                }
+            }
+        }
     }
 
     fun reorder(ids: List<Long>) {

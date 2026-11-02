@@ -43,7 +43,7 @@ class ProfilePreviewInstrumentedTest {
         for (run in listOf(false, true)) {
             compose.runOnIdle { running = run }
             for (profile in profiles) {
-                compose.onNodeWithTag("profile_actions_${profile.id}").performClick()
+                compose.onNodeWithTag("profile_actions_${profile.id}").performTouchInput { longClick() }
                 if (profile.type != ProfileType.CUSTOM) compose.onNodeWithTag("profile_more_${profile.id}").performClick()
                 compose.onNodeWithTag("profile_preview_${profile.id}").assertIsEnabled().performClick()
             }

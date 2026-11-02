@@ -9,6 +9,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
@@ -95,6 +97,7 @@ class ProfileUiInstrumentedTest {
     @Test
     fun addProfileDialogSwitchesToCustomAndInvokesCallback() {
         var added = false
+        var customLabel: String? = null
         composeRule.setContent {
             KClashTheme {
                 AddProfileDialog(
@@ -103,16 +106,16 @@ class ProfileUiInstrumentedTest {
                     onPickFile = {},
                     onPickQrCode = {},
                     onAddRemote = { _, _ -> },
-                    onAddCustom = { added = true },
+                    onAddCustom = { added = true; customLabel = it },
                 )
             }
         }
 
         composeRule.onNodeWithTag("profile_add_source_custom").performClick()
-        composeRule.onNodeWithText("创建自定义配置").assertIsDisplayed()
-        composeRule.onNodeWithText("创建").performClick()
 
         assertTrue(added)
+        assertEquals("", customLabel)
+        composeRule.onNodeWithTag("profile_add_custom_label").assertDoesNotExist()
     }
 
     @Test
@@ -238,7 +241,8 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("编辑 E2E 配置").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_title_menu").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("保存").performClick()
 
         assertEquals("mixed-port: 7890", saved)
@@ -267,7 +271,7 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
         composeRule.onNodeWithText("为配置命名").assertIsDisplayed()
         composeRule.onNodeWithTag("new_profile_name").performTextClearance()
         composeRule.onNodeWithTag("new_profile_name").performTextInput("家庭网络")
@@ -300,7 +304,7 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
         composeRule.onNodeWithText("为配置命名").assertIsDisplayed()
         composeRule.onNodeWithText("保留默认名称").performClick()
 
@@ -371,7 +375,7 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithTag("profile_edit_${profile.id}").performClick()
         composeRule.onNodeWithText("编辑订阅").assertIsDisplayed()
         composeRule.onNodeWithTag("remote_profile_editor_label").performTextClearance()
@@ -643,7 +647,7 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         for (action in listOf("编辑", "重命名", "删除")) {
             composeRule.onNodeWithText(action).assertIsNotEnabled()
         }

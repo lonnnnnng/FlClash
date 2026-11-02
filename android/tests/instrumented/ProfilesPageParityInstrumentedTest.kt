@@ -53,12 +53,12 @@ class ProfilesPageParityInstrumentedTest {
         for (theme in listOf("light", "dark")) {
             compose.runOnIdle { dark = theme == "dark" }
             capture("profiles_page_$theme")
-            compose.onNodeWithTag("profile_actions_selected").performClick()
+            compose.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
             compose.onNodeWithTag("profile_extend_801").performClick()
             compose.onNodeWithTag("profile_extension_dns").assertIsDisplayed().performClick()
             capture("profiles_extension_$theme")
             compose.onNodeWithContentDescription("返回").performClick()
-            compose.onNodeWithTag("profile_actions_selected").performClick()
+            compose.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
             compose.onNodeWithTag("profile_edit_801").performClick()
             compose.onNodeWithTag("profile_editor_page").assertIsDisplayed()
             compose.onNodeWithTag("remote_profile_editor_age_key").assertIsDisplayed()
@@ -68,6 +68,44 @@ class ProfilesPageParityInstrumentedTest {
             compose.onNodeWithText("取消").performClick()
         }
         assertEquals(2, openedDns)
+    }
+
+    @Test fun customOverviewTitleMenuAndMoreRenderBothThemes() {
+        assertPortraitDefaultFontConfiguration()
+        var profile by mutableStateOf(Profile.custom(802, "家庭与出行的自定义配置"))
+        var dark by mutableStateOf(false)
+        var previewId: Long? = null
+        var openedDialers = 0
+        val summary = CustomProfileSummary(rules = 16, referencedProviders = 3, missingProviders = 1,
+            proxies = 8, groups = listOf(CustomProfileGroupSummary("常用策略", "select", 8, 2)),
+            dnsEnabled = true, dialers = 2)
+        compose.setContent { KClashTheme(darkTheme = dark) {
+            ProfileEditorDialog(profile, "mixed-port: 7890", false, onDismiss = {}, onSave = {},
+                overview = summary, onRename = { _, label -> profile = profile.copy(label = label) },
+                onPreview = { previewId = it }, onOpenDialersEditor = { openedDialers++ })
+        } }
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark" }
+            compose.onNodeWithTag("custom_profile_rules").assertIsDisplayed()
+            compose.onNodeWithTag("custom_profile_resources").assertTextContains("3 · 缺失 1")
+            compose.onNodeWithTag("custom_profile_group_0").assertIsDisplayed()
+            capture("profiles_custom_overview_$theme")
+            compose.onNodeWithTag("custom_profile_title_menu").performClick()
+            compose.onNodeWithTag("custom_profile_preview").performClick()
+            assertEquals(profile.id, previewId)
+            compose.onNodeWithTag("custom_profile_title_menu").performClick()
+            compose.onNodeWithTag("custom_profile_rename").performClick()
+            compose.onNodeWithTag("profile_rename_label").performTextClearance()
+            compose.onNodeWithTag("profile_rename_label").performTextInput("家庭配置 $theme")
+            compose.onNodeWithTag("profile_rename_save").performClick()
+            compose.onNodeWithText("家庭配置 $theme").assertIsDisplayed()
+            compose.onNodeWithTag("custom_profile_more").performClick()
+            compose.onNodeWithTag("custom_profile_dialers").assertIsDisplayed().performClick()
+            compose.onNodeWithTag("custom_profile_script").assertIsDisplayed()
+            capture("profiles_custom_more_$theme")
+            compose.onNodeWithTag("custom_profile_more_back").performClick()
+        }
+        assertEquals(2, openedDialers)
     }
 
     private fun capture(name: String) {

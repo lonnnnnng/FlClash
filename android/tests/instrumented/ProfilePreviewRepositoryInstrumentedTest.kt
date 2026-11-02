@@ -105,7 +105,7 @@ class ProfilePreviewRepositoryInstrumentedTest {
             assertTrue(runCatching { runBlocking { repository.activeProfile() } }.isFailure)
             assertNull(runBlocking { repository.profileById(9999) })
             for (target in targets) {
-                compose.onNodeWithTag("profile_actions_${target.id}").performClick()
+                compose.onNodeWithTag("profile_actions_${target.id}").performTouchInput { longClick() }
                 if (target.type != ProfileType.CUSTOM) compose.onNodeWithTag("profile_more_${target.id}").performClick()
                 compose.onNodeWithTag("profile_preview_${target.id}").performClick()
                 compose.waitUntil(10_000) { model.state.value.preview != null || model.state.value.error != null }

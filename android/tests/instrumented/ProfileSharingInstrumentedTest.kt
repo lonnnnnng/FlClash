@@ -44,7 +44,7 @@ class ProfileSharingInstrumentedTest {
         composeRule.onNodeWithTag("profile_export_${remote.id}").assertIsEnabled().performClick()
         assertEquals(listOf("copy" to remote.id, "qr" to remote.id, "export" to remote.id), actions)
         composeRule.onNodeWithTag("profile_selected_${file.id}", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("profile_actions_${remote.id}").performClick()
+        composeRule.onNodeWithTag("profile_actions_${remote.id}").performTouchInput { longClick() }
         composeRule.onNodeWithTag("profile_edit_${remote.id}").assertIsNotEnabled()
         composeRule.onNodeWithTag("profile_rename_${remote.id}").assertDoesNotExist()
         composeRule.onNodeWithTag("profile_extend_${remote.id}").assertIsEnabled()
@@ -58,7 +58,7 @@ class ProfileSharingInstrumentedTest {
         composeRule.onNodeWithTag("profile_show_qr_${file.id}").assertDoesNotExist()
         composeRule.onNodeWithTag("profile_export_${file.id}").performClick()
         assertEquals(listOf("export" to file.id), actions)
-        composeRule.onNodeWithTag("profile_actions_${custom.id}").performClick()
+        composeRule.onNodeWithTag("profile_actions_${custom.id}").performTouchInput { longClick() }
         composeRule.onNodeWithTag("profile_more_${custom.id}").assertDoesNotExist()
         composeRule.onNodeWithTag("profile_export_${custom.id}").assertDoesNotExist()
         composeRule.onNodeWithTag("profile_edit_${custom.id}").assertIsEnabled()
@@ -114,7 +114,7 @@ class ProfileSharingInstrumentedTest {
     }
 
     private fun openMore(id: Long) {
-        composeRule.onNodeWithTag("profile_actions_$id").performClick()
+        composeRule.onNodeWithTag("profile_actions_$id").performTouchInput { longClick() }
         composeRule.onNodeWithTag("profile_more_$id").performClick()
     }
 

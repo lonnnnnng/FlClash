@@ -11,6 +11,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -101,7 +103,6 @@ class ProfilesPanelInstrumentedTest {
 
         composeRule.onNodeWithText("添加配置").performClick()
         composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("创建").performClick()
 
         composeRule.onNodeWithText("未命名配置").assertIsDisplayed()
         composeRule.onNodeWithText("自定义配置").assertIsDisplayed()
@@ -140,10 +141,10 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("配置概览").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_title_menu").assertIsDisplayed()
         composeRule.onNodeWithText("规则").assertIsDisplayed()
-        composeRule.onNodeWithText("代理组").assertIsDisplayed()
-        composeRule.onNodeWithText("Provider").assertIsDisplayed()
+        composeRule.onNodeWithText("策略组").assertIsDisplayed()
+        composeRule.onNodeWithText("资源").assertIsDisplayed()
         composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("规则").performScrollTo().performClick()
         assertEquals("Rules:${profile.id}", openedSection)
@@ -193,7 +194,7 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithTag("profile_rename_${profile.id}").performClick()
         composeRule.onNodeWithText("重命名配置").assertIsDisplayed()
         composeRule.onNodeWithText("名称").performTextClearance()
@@ -303,13 +304,14 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("编辑 编辑配置").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_title_menu").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("保存").performClick()
 
         assertEquals("mixed-port: 7890", savedContent)
-        composeRule.onNodeWithText("编辑 编辑配置").assertDoesNotExist()
+        composeRule.onNodeWithTag("custom_profile_title_menu").assertDoesNotExist()
     }
 
     @Test
@@ -385,13 +387,13 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“待删除配置”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
         composeRule.onNodeWithText("待删除配置").assertIsDisplayed()
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onAllNodesWithText("删除").assertCountEquals(1)
         composeRule.onNodeWithText("删除").performClick()
@@ -425,7 +427,7 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
         composeRule.onNodeWithText("删除").assertIsNotEnabled()
         composeRule.onNodeWithTag("profiles_sort").assertIsNotEnabled()

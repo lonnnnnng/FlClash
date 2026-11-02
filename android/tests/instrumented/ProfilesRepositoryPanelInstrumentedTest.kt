@@ -11,6 +11,8 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
@@ -115,9 +117,8 @@ class ProfilesRepositoryPanelInstrumentedTest {
 
         composeRule.onNodeWithText("添加配置").performClick()
         composeRule.onNodeWithText("创建自定义配置").performClick()
-        composeRule.onNodeWithText("创建").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isNotEmpty()
         }
 
         val createdProfile = repository.profiles.value.single()
@@ -129,7 +130,7 @@ class ProfilesRepositoryPanelInstrumentedTest {
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
         assertEquals("mixed-port: 7890", runBlocking {
             repository.readLocalProfileContent(createdProfile.id)
@@ -138,7 +139,7 @@ class ProfilesRepositoryPanelInstrumentedTest {
             database.profiles().getById(createdProfile.id)?.id
         })
 
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithText("编辑").performClick()
         composeRule.onNodeWithText("规则").performClick()
         composeRule.waitUntil(5_000) {
@@ -168,8 +169,8 @@ class ProfilesRepositoryPanelInstrumentedTest {
             runBlocking { repository.readLocalProfileContent(createdProfile.id) },
         )
 
-        composeRule.onNodeWithText("取消").performClick()
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“未命名配置”吗？本地配置文件也会一并删除。").assertIsDisplayed()
         composeRule.onNodeWithText("删除").performClick()

@@ -24,7 +24,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -271,21 +274,19 @@ class MainActivityInstrumentedTest {
 
     @Test
     fun mainActivityCreatesAndDiscardsUntouchedCustomDraft() {
-        val label = "Activity 草稿退出验收"
         composeRule.onNodeWithTag("nav_profiles").performClick()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val repository = EntryPointAccessors.fromApplication(context, ConnectionAcceptanceEntryPoint::class.java).profileRepository()
+        val before = repository.profiles.value.map { it.id }.toSet()
         composeRule.onNodeWithTag("profiles_add_fab").performClick()
         composeRule.onNodeWithTag("profile_add_source_custom").performClick()
-        composeRule.onNodeWithTag("profile_add_custom_label").performTextInput(label)
-        composeRule.onNodeWithText("创建").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("编辑 $label").assertIsDisplayed()
-        // 作者 long：只取消本用例创建的空草稿，不写配置正文，也不删除或替换设备原有配置。
-        composeRule.onNodeWithText("取消").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label, substring = true).fetchSemanticsNodes().isEmpty()
-        }
+        composeRule.onNodeWithTag("custom_profile_title_menu").assertIsDisplayed()
+        // 作者 long：空草稿不先命名；按真实 ID 集合确认退出只删除新草稿，保留设备原有配置。
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
+        composeRule.waitUntil(5_000) { repository.profiles.value.map { it.id }.toSet() == before }
         composeRule.onNodeWithTag("profiles_add_fab").assertIsDisplayed()
     }
 
@@ -300,7 +301,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
 
         openProfileActions(label)
@@ -327,7 +328,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
 
         // 作者 long：规则编辑必须经过真实 ProfilesViewModel 和文件写回，再次打开才能验证不是只更新了对话框内存。
@@ -378,7 +379,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
 
         openProfileActions(label)
@@ -428,12 +429,12 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
 
         openProfileActions(label)
         composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("代理组").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_profile_add_group").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -445,7 +446,7 @@ class MainActivityInstrumentedTest {
 
         openProfileActions(label)
         composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("代理组").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_profile_add_group").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -478,12 +479,12 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
 
         openProfileActions(label)
         composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("Provider").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_profile_resources").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Provider · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -495,7 +496,7 @@ class MainActivityInstrumentedTest {
 
         openProfileActions(label)
         composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("Provider").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_profile_resources").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Provider · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -527,7 +528,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
         openProfileActions(label)
         composeRule.onNodeWithText("编辑").performClick()
@@ -580,11 +581,12 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
+            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
         }
         openProfileActions(label)
         composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("Dialers").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_profile_more").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_profile_dialers").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -596,7 +598,8 @@ class MainActivityInstrumentedTest {
 
         openProfileActions(label)
         composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("Dialers").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_profile_more").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_profile_dialers").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -1138,17 +1141,29 @@ private fun MainActivityInstrumentedTest.verifyPreservedProfileMetadata() {
 private fun MainActivityInstrumentedTest.startCustomProfileEditor(label: String) {
     composeRule.onNodeWithTag("profiles_add_fab").performClick()
     composeRule.onNodeWithTag("profile_add_source_custom").performClick()
-    composeRule.onNodeWithTag("profile_add_custom_label").performTextInput(label)
-    composeRule.onNodeWithText("创建").performClick()
     composeRule.waitUntil(5_000) {
-        composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isNotEmpty()
+        composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isNotEmpty()
     }
-    composeRule.onNodeWithText("编辑 $label").assertIsDisplayed()
+    composeRule.onNodeWithTag("custom_profile_title_menu").performClick()
+    composeRule.onNodeWithTag("custom_profile_rename").performClick()
+    composeRule.onNodeWithTag("profile_rename_label").performTextClearance()
+    composeRule.onNodeWithTag("profile_rename_label").performTextInput(label)
+    composeRule.onNodeWithTag("profile_rename_save").performClick()
+    composeRule.waitUntil(5_000) {
+        composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isNotEmpty()
+    }
 }
 
 private fun MainActivityInstrumentedTest.openProfileActions(label: String) {
+    // 作者 long：分区保存返回概览；更多页先退一层，随后退出已有配置，才能操作列表长按菜单。
+    if (composeRule.onAllNodesWithTag("custom_profile_more_back").fetchSemanticsNodes().isNotEmpty()) {
+        composeRule.onNodeWithTag("custom_profile_more_back").performClick()
+    }
+    if (composeRule.onAllNodesWithTag("custom_profile_back").fetchSemanticsNodes().isNotEmpty()) {
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
+    }
     composeRule.onNodeWithText(label).assertIsDisplayed()
-    composeRule.onNodeWithTag("profile_actions_selected").performClick()
+    composeRule.onNodeWithText(label).performTouchInput { longClick() }
 }
 
 private fun findSelectableLauncherPackage(context: Context): String? {

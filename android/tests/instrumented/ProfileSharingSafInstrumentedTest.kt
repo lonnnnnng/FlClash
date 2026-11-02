@@ -8,6 +8,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -127,7 +129,7 @@ class ProfileSharingSafInstrumentedTest {
     }
 
     private fun launchExport(id: Long) {
-        composeRule.onNodeWithTag("profile_actions_$id").performClick()
+        composeRule.onNodeWithTag("profile_actions_$id").performTouchInput { longClick() }
         composeRule.onNodeWithTag("profile_more_$id").performClick()
         composeRule.onNodeWithTag("profile_export_$id").performClick()
     }

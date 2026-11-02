@@ -36,7 +36,7 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 
 ## 当前推进顺序（2026-11-03）
 
-配置页整页首版已接入独立滚动列表、选中定位、长按菜单、锚定添加来源、远程/FILE/自定义概览整页编辑及工具备份/脚本入口；FILE 名称/密钥/正文原子保存、URL/FILE DNS/Provider 覆盖已接通。App 272 项通过；设备中间失败、定向修复及 Profile 保护证据见 roadmap 同日配置页节。标准/脚本扩展模式、创建步骤和完整主题视觉仍为 PARTIAL，下一步继续整页差异与真实密文/SAF 闭环。
+配置页整页首版已接入独立滚动列表、选中定位、长按菜单、锚定添加来源、远程/FILE/自定义概览整页编辑及工具备份/脚本入口；FILE 名称/密钥/正文原子保存、URL/FILE DNS/Provider 覆盖已接通。自定义配置已补直接创建草稿、四分区概览、标题重命名/预览、整卡长按与 URL 菜单顺序，并保护元数据保存期间的新草稿；App 277 项通过，Redmi 定向 24/24、截图补验 2/2，正式 Profile 文件保持完整。CUSTOM 导入、NTP/Sniffer、完整策略组可视编辑、卡片组数、标准/脚本扩展和自动 apply 及完整主题仍为 PARTIAL；证据见 roadmap 同日自定义配置节，下一步继续整页差异与真实密文/SAF 闭环。
 
 首页真实状态、停止态节点管理、运行态配置热切、预览/统计与 Providers 明细/HTTP 单项更新已有分项验收。Profiles 分享三项、按目标 ID 只读预览、age 表单和 FILE 密钥/系统文件替换已完成切片；真实 age 密文 Android E2E、加密 SAF 与全新 Profile 导入 SAF 仍待验。URLTest/Fallback 有效核心 now、固定/恢复自动、非法节点保护，延迟 Room 缓存真实进程重建，以及排序/搜索/密度变化后的语义锚定已完成对应验收。DNS baseline 和浏览器主链路修复已提交并推送，详见 roadmap。
 

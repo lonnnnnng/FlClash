@@ -1,5 +1,12 @@
 # Testing
 
+## 自定义配置创建与概览整页对齐（2026-11-03）
+
+- App JVM 277 项，失败/错误/跳过 0；Debug/AndroidTest/Lint 通过（0 errors、53 warnings、9 hints）。构建日志 `/tmp/kclash-custom-overview-20261103-final-build.log`。Service/Core/Common/Go 和 DNS/浏览器主链路本轮未重跑。
+- Redmi API 36、arm64、竖屏 1080×2340、字号 1.0：精确方法 24/24，补充截图 2/2；覆盖 CUSTOM 直接创建、四分区概览、标题菜单、更多、YAML/分区保存、退出命名、元数据草稿保护、长按菜单和非当前只读预览。完整方法/日志/APK 哈希见 roadmap 同日节。
+- 正式 Profile 前后保护各 1/1，count=1/missing=0/expected=1，文件名/size/mtime 一致；只删除正式宿主测试自己创建的空草稿，未清数据、访问订阅或读写外层 1.yaml，未启动核心/VPN，最终服务为空且无 tun0。
+- 十态深浅主题截图已目视，概览/更多无遮挡；固定列表测试宿主背景和系统栏主题仍待统一，不更新旧哈希基线。中间 longClick import 编译失败与后台 Default dispatcher 跨测试生命周期导致的 3 项失败均已修复，最终统一批次通过；完整 UI 和问题校验仍为 PARTIAL。
+
 ## 配置页整页首版对齐（2026-11-03）
 
 - App JVM 272 项全通过；Debug/AndroidTest/Lint 通过。构建、设备日志及 APK 哈希见 roadmap 同日配置页节。

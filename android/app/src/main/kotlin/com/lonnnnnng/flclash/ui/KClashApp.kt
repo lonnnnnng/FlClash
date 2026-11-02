@@ -394,16 +394,6 @@ fun KClashApp(
         } finally { memoryViewModel?.setVisible(false) }
     }
     val previewProfile = profilesState.profiles.firstOrNull { it.id == configPreview.profileId }
-    RuntimeConfigPreviewHost(
-        state = configPreview,
-        profile = previewProfile,
-        boundScript = scriptsState.scripts.firstOrNull { it.id == previewProfile?.scriptId },
-        currentProfileId = profilesState.currentProfileId,
-        runtimeState = runtimeState,
-        destination = selectedDestination.name,
-        onRetry = { configPreview.profileId?.let { runtimeConfigPreviewViewModel?.open(it) } },
-        onClose = { runtimeConfigPreviewViewModel?.close() },
-    )
     pendingFileImport?.let { pending ->
         ProfileFileImportPreviewDialog(
             fileName = pending.fileName,
@@ -1166,6 +1156,18 @@ fun KClashApp(
         }
     }
 
+    // 作者 long：预览最后挂载，才能覆盖仍打开的整页配置概览，返回后继续原编辑路径。
+    RuntimeConfigPreviewHost(
+        state = configPreview,
+        profile = previewProfile,
+        boundScript = scriptsState.scripts.firstOrNull { it.id == previewProfile?.scriptId },
+        currentProfileId = profilesState.currentProfileId,
+        runtimeState = runtimeState,
+        destination = selectedDestination.name,
+        onRetry = { configPreview.profileId?.let { runtimeConfigPreviewViewModel?.open(it) } },
+        onClose = { runtimeConfigPreviewViewModel?.close() },
+    )
+
     if (showRequests) {
         RequestsDialog(
             state = runtimeRequests,
@@ -1744,6 +1746,9 @@ internal fun ProfilesPanel(
                 saving = editorState.isSaving,
                 isNewDraft = editorState.isNew,
                 hasPersistedChanges = editorState.hasPersistedChanges,
+                overview = editorState.overview,
+                onRename = onRename,
+                onPreview = onPreviewProfile,
                 onDismiss = onCloseEditor,
                 onDiscard = onDiscardEditor,
                 onFinishNewDraft = onFinishNewDraftEditor,
@@ -4105,161 +4110,98 @@ internal fun ProfileCard(
         SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date(millis))
     }
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .combinedClickable(onClick = onSelect, onLongClickLabel = "配置操作",
-                onLongClick = { showMore = false; showActions = true })
-            .testTag("profile_card_${profile.id}"),
-        shape = RoundedCornerShape(24.dp),
-        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = dashboardCardColor()),
-    ) {
-        Row(
+    Box(modifier.testTag(if (selected) "profile_actions_selected" else "profile_actions_${profile.id}")) {
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 14.dp, end = 8.dp, bottom = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .combinedClickable(onClick = onSelect, onLongClickLabel = "配置操作",
+                    onLongClick = { showMore = false; showActions = true })
+                .testTag("profile_card_${profile.id}"),
+            shape = RoundedCornerShape(24.dp),
+            colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = dashboardCardColor()),
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = profile.realLabel,
+                            style = androidx.compose.ui.text.TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                        expiryDate?.let { date ->
+                            Surface(
+                                modifier = Modifier.padding(start = 8.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            ) {
+                                Text(
+                                    date,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    modifier = Modifier
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .testTag("profile_expiry_${profile.id}"),
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
                     Text(
-                        text = profile.realLabel,
-                        style = androidx.compose.ui.text.TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold),
+                        text = profileSubtitle(profile),
+                        style = androidx.compose.ui.text.TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
                     )
-                    expiryDate?.let { date ->
-                        Surface(
-                            modifier = Modifier.padding(start = 8.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                        ) {
-                            Text(
-                                date,
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .testTag("profile_expiry_${profile.id}"),
-                            )
+                }
+
+                if (profile.type != ProfileType.CUSTOM) {
+                    Text(
+                        text = when {
+                            profile.lastUpdateError != null -> "失败"
+                            profile.lastUpdateAt != null -> DateUtils.getRelativeTimeSpanString(profile.lastUpdateAt).toString()
+                            else -> "未同步"
+                        },
+                        modifier = Modifier.padding(start = 8.dp).widthIn(max = 80.dp)
+                            .clickable(enabled = profile.lastUpdateError != null) { showUpdateError = true }
+                            .testTag("profile_update_status_${profile.id}"),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (profile.lastUpdateError != null) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
+
+                if (selected) {
+                    Surface(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(24.dp)
+                            .testTag("profile_selected_${profile.id}"),
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        color = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Outlined.Check, contentDescription = "已选中", modifier = Modifier.size(18.dp))
                         }
                     }
                 }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = profileSubtitle(profile),
-                    style = androidx.compose.ui.text.TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
 
-            if (profile.type != ProfileType.CUSTOM) {
-                Text(
-                    text = when {
-                        profile.lastUpdateError != null -> "失败"
-                        profile.lastUpdateAt != null -> DateUtils.getRelativeTimeSpanString(profile.lastUpdateAt).toString()
-                        else -> "未同步"
-                    },
-                    modifier = Modifier.padding(start = 8.dp).widthIn(max = 80.dp)
-                        .clickable(enabled = profile.lastUpdateError != null) { showUpdateError = true }
-                        .testTag("profile_update_status_${profile.id}"),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (profile.lastUpdateError != null) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                )
-            }
-
-            if (selected) {
-                Surface(
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .size(24.dp)
-                        .testTag("profile_selected_${profile.id}"),
-                    shape = androidx.compose.foundation.shape.CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Outlined.Check, contentDescription = "已选中", modifier = Modifier.size(18.dp))
-                    }
-                }
-            }
-
-            Box {
-                IconButton(
-                    onClick = { showMore = false; showActions = true },
-                    // 作者 long：所有类型均有只读预览，运行中仍可打开菜单，写操作继续各自受守卫保护。
-                    modifier = Modifier.testTag(
-                        if (selected) "profile_actions_selected" else "profile_actions_${profile.id}",
-                    ).size(32.dp),
-                ) { Icon(Icons.Outlined.MoreVert, contentDescription = "${profile.realLabel}的配置操作") }
-                DropdownMenu(expanded = showActions, onDismissRequest = { showActions = false }) {
-                    if (showMore) {
-                        DropdownMenuItem(
-                            text = { Text("返回") },
-                            leadingIcon = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null) },
-                            onClick = { showMore = false },
-                        )
-                        DropdownMenuItem(
-                            text = { Text("运行配置") },
-                            leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
-                            onClick = { showActions = false; onPreview() },
-                            modifier = Modifier.testTag("profile_preview_${profile.id}"),
-                        )
-                        if (profile.type == ProfileType.URL) {
+                Box {
+                    DropdownMenu(expanded = showActions, onDismissRequest = { showActions = false }) {
+                        if (showMore) {
                             DropdownMenuItem(
-                                text = { Text("复制链接") },
-                                onClick = { showActions = false; onCopyLink() },
-                                modifier = Modifier.testTag("profile_copy_link_${profile.id}"),
-                            )
-                            DropdownMenuItem(
-                                text = { Text("二维码") },
-                                leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, contentDescription = null) },
-                                onClick = { showActions = false; onShowQr() },
-                                modifier = Modifier.testTag("profile_show_qr_${profile.id}"),
-                            )
-                        }
-                        DropdownMenuItem(
-                            text = { Text(if (exportBusy) "正在导出…" else "导出") },
-                            onClick = { showActions = false; onExport() },
-                            enabled = !exportBusy,
-                            modifier = Modifier.testTag("profile_export_${profile.id}"),
-                        )
-                    } else {
-                        if (profile.type == ProfileType.URL) {
-                            DropdownMenuItem(
-                                text = { Text("编辑") },
-                                leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-                                onClick = { showActions = false; onEdit() },
-                                enabled = canMutate,
-                                modifier = Modifier.testTag("profile_edit_${profile.id}"),
-                            )
-                            DropdownMenuItem(
-                                text = { Text("同步") },
-                                leadingIcon = { Icon(Icons.Outlined.Sync, contentDescription = null) },
-                                onClick = { showActions = false; onUpdate() },
-                                enabled = canMutate,
-                            )
-                        } else {
-                            DropdownMenuItem(
-                                text = { Text("编辑") },
-                                leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-                                onClick = { showActions = false; onEdit() },
-                                enabled = canMutate,
-                                modifier = Modifier.testTag("profile_edit_${profile.id}"),
-                            )
-                        }
-                        if (profile.type == ProfileType.CUSTOM) {
-                            DropdownMenuItem(
-                                text = { Text("重命名") },
-                                leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-                                onClick = { showActions = false; onRename() },
-                                modifier = Modifier.testTag("profile_rename_${profile.id}"),
-                                enabled = canMutate,
+                                text = { Text("返回") },
+                                leadingIcon = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null) },
+                                onClick = { showMore = false },
                             )
                             DropdownMenuItem(
                                 text = { Text("运行配置") },
@@ -4267,25 +4209,70 @@ internal fun ProfileCard(
                                 onClick = { showActions = false; onPreview() },
                                 modifier = Modifier.testTag("profile_preview_${profile.id}"),
                             )
-                        } else {
-                            DropdownMenuItem(text = { Text("扩展") },
-                                leadingIcon = { Icon(Icons.Outlined.Extension, null) },
-                                onClick = { showActions = false; onExtend() },
-                                modifier = Modifier.testTag("profile_extend_${profile.id}"))
-                        }
-                        if (profile.type != ProfileType.CUSTOM) {
+                            if (profile.type == ProfileType.URL) {
+                                DropdownMenuItem(
+                                    text = { Text("复制链接") },
+                                    onClick = { showActions = false; onCopyLink() },
+                                    modifier = Modifier.testTag("profile_copy_link_${profile.id}"),
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("二维码") },
+                                    leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, contentDescription = null) },
+                                    onClick = { showActions = false; onShowQr() },
+                                    modifier = Modifier.testTag("profile_show_qr_${profile.id}"),
+                                )
+                            }
                             DropdownMenuItem(
-                                text = { Text("更多") },
-                                leadingIcon = { Icon(Icons.Outlined.MoreVert, contentDescription = null) },
-                                onClick = { showMore = true },
-                                modifier = Modifier.testTag("profile_more_${profile.id}"),
+                                text = { Text(if (exportBusy) "正在导出…" else "导出") },
+                                onClick = { showActions = false; onExport() },
+                                enabled = !exportBusy,
+                                modifier = Modifier.testTag("profile_export_${profile.id}"),
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                text = { Text("编辑") },
+                                leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                                onClick = { showActions = false; onEdit() }, enabled = canMutate,
+                                modifier = Modifier.testTag("profile_edit_${profile.id}"),
+                            )
+                            if (profile.type == ProfileType.CUSTOM) {
+                                DropdownMenuItem(
+                                    text = { Text("重命名") },
+                                    leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                                    onClick = { showActions = false; onRename() },
+                                    modifier = Modifier.testTag("profile_rename_${profile.id}"),
+                                    enabled = canMutate,
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("运行配置") },
+                                    leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
+                                    onClick = { showActions = false; onPreview() },
+                                    modifier = Modifier.testTag("profile_preview_${profile.id}"),
+                                )
+                            } else {
+                                DropdownMenuItem(text = { Text("扩展") },
+                                    leadingIcon = { Icon(Icons.Outlined.Extension, null) },
+                                    onClick = { showActions = false; onExtend() },
+                                    modifier = Modifier.testTag("profile_extend_${profile.id}"))
+                            }
+                            if (profile.type == ProfileType.URL) {
+                                DropdownMenuItem(text = { Text("同步") }, leadingIcon = { Icon(Icons.Outlined.Sync, null) },
+                                    onClick = { showActions = false; onUpdate() }, enabled = canMutate)
+                            }
+                            if (profile.type != ProfileType.CUSTOM) {
+                                DropdownMenuItem(
+                                    text = { Text("更多") },
+                                    leadingIcon = { Icon(Icons.Outlined.MoreVert, contentDescription = null) },
+                                    onClick = { showMore = true },
+                                    modifier = Modifier.testTag("profile_more_${profile.id}"),
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                                leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                                onClick = { showActions = false; onDelete() }, enabled = canMutate,
                             )
                         }
-                        DropdownMenuItem(
-                            text = { Text("删除", color = MaterialTheme.colorScheme.error) },
-                            leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                            onClick = { showActions = false; onDelete() }, enabled = canMutate,
-                        )
                     }
                 }
             }
@@ -4318,7 +4305,7 @@ internal fun ProfileRenameDialog(
                 onValueChange = { label = it.take(64) },
                 enabled = !saving,
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().testTag("profile_rename_label"),
                 label = { Text("名称") },
                 supportingText = { Text("名称不能为空，最多 64 个字符") },
             )
@@ -4327,6 +4314,7 @@ internal fun ProfileRenameDialog(
             TextButton(
                 onClick = { onSave(normalized) },
                 enabled = !saving && normalized.isNotEmpty() && normalized != profile.label,
+                modifier = Modifier.testTag("profile_rename_save"),
             ) {
                 if (saving) CircularProgressIndicator() else Text("保存")
             }
@@ -4406,256 +4394,6 @@ internal fun ProfileScriptBindingDialog(
             TextButton(onClick = onDismiss, enabled = !saving) { Text("关闭") }
         },
     )
-}
-
-@Composable
-internal fun ProfileEditorDialog(
-    profile: Profile,
-    initialContent: String,
-    saving: Boolean,
-    isNewDraft: Boolean = false,
-    hasPersistedChanges: Boolean = false,
-    onDismiss: () -> Unit,
-    onDiscard: () -> Unit = onDismiss,
-    onFinishNewDraft: (String?) -> Unit = { onDiscard() },
-    onSave: (String) -> Unit,
-    onOpenRulesEditor: (Profile) -> Unit = {},
-    onOpenProxiesEditor: (Profile) -> Unit = {},
-    onOpenProxyGroupsEditor: (Profile) -> Unit = {},
-    onOpenProvidersEditor: (Profile) -> Unit = {},
-    onOpenDnsEditor: (Profile) -> Unit = {},
-    onOpenDialersEditor: (Profile) -> Unit = {},
-    onOpenScriptBinding: (Profile) -> Unit = {},
-) {
-    var content by rememberSaveable(profile.id, initialContent) { mutableStateOf(initialContent) }
-    var showDiscardConfirmation by rememberSaveable(profile.id) { mutableStateOf(false) }
-    var showSectionDiscardConfirmation by rememberSaveable(profile.id) { mutableStateOf(false) }
-    var showDraftNameDialog by rememberSaveable(profile.id) { mutableStateOf(false) }
-    var draftName by rememberSaveable(profile.id) { mutableStateOf(profile.label) }
-    var showYaml by rememberSaveable(profile.id) { mutableStateOf(false) }
-    var pendingSectionAction by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val isDirty = content != initialContent
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
-
-    // 作者 long：分区编辑即时持久化；退出时区分空草稿与已有内容，防止误删已保存配置。
-    fun finishExit() {
-        if (isNewDraft && hasPersistedChanges) {
-            draftName = profile.label
-            showDraftNameDialog = true
-        } else {
-            onDiscard()
-        }
-    }
-
-    fun requestExit() {
-        if (saving) return
-        focusManager.clearFocus(force = true)
-        keyboardController?.hide()
-        if (isDirty) showDiscardConfirmation = true else finishExit()
-    }
-
-    fun openSection(action: () -> Unit) {
-        // 作者 long：进入分区或确认弹窗前释放 YAML 输入焦点，避免键盘恢复焦点后改变点击位置。
-        focusManager.clearFocus(force = true)
-        keyboardController?.hide()
-        if (isDirty) {
-            pendingSectionAction = action
-            showSectionDiscardConfirmation = true
-        } else {
-            action()
-        }
-    }
-
-    ProfileEditorPage(
-        onDismissRequest = { requestExit() },
-        title = { Text("编辑 ${profile.realLabel}") },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("profile_editor_scroll")
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                if (profile.type == ProfileType.CUSTOM) {
-                    Text("配置概览", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        profile.realLabel,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    ProfileEditorSectionButton(
-                        title = "规则",
-                        summary = "Rules",
-                        icon = Icons.Outlined.Edit,
-                        onClick = { openSection { onOpenRulesEditor(profile) } },
-                    )
-                    ProfileEditorSectionButton(
-                        title = "代理",
-                        summary = "Proxies",
-                        icon = Icons.Outlined.Link,
-                        onClick = { openSection { onOpenProxiesEditor(profile) } },
-                    )
-                    ProfileEditorSectionButton(
-                        title = "代理组",
-                        summary = "Proxy Groups",
-                        icon = Icons.Outlined.Hub,
-                        onClick = { openSection { onOpenProxyGroupsEditor(profile) } },
-                    )
-                    ProfileEditorSectionButton(
-                        title = "Provider",
-                        summary = "Proxy Providers / Rule Providers",
-                        icon = Icons.Outlined.Cloud,
-                        onClick = { openSection { onOpenProvidersEditor(profile) } },
-                    )
-                    ProfileEditorSectionButton(
-                        title = "DNS",
-                        summary = "DNS overrides",
-                        icon = Icons.Outlined.Dns,
-                        onClick = { openSection { onOpenDnsEditor(profile) } },
-                    )
-                    ProfileEditorSectionButton(
-                        title = "Dialers",
-                        summary = "出站链路映射",
-                        icon = Icons.Outlined.SwapVert,
-                        onClick = { openSection { onOpenDialersEditor(profile) } },
-                    )
-                    ProfileEditorSectionButton(
-                        title = "脚本", summary = "绑定 JavaScript", icon = Icons.Outlined.Code,
-                        onClick = { openSection { onOpenScriptBinding(profile) } },
-                    )
-                    TextButton(onClick = { showYaml = !showYaml }, modifier = Modifier.testTag("custom_profile_toggle_yaml")) {
-                        Text(if (showYaml) "收起原始 YAML" else "编辑原始 YAML")
-                    }
-                } else {
-                    Text(
-                        "保存后会替换 KClash 本地配置文件，核心启动时仍会再次校验 YAML。",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-                if (profile.type != ProfileType.CUSTOM || showYaml) OutlinedTextField(
-                    value = content,
-                    onValueChange = { content = it },
-                    modifier = Modifier.fillMaxWidth().testTag("profile_editor_content"),
-                    minLines = if (profile.type == ProfileType.CUSTOM) 3 else 12,
-                    maxLines = if (profile.type == ProfileType.CUSTOM) 6 else 20,
-                    enabled = !saving,
-                    label = { Text("YAML") },
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    keyboardController?.hide()
-                    onSave(content)
-                },
-                enabled = !saving && content.isNotBlank(),
-            ) {
-                if (saving) CircularProgressIndicator() else Text("保存")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    requestExit()
-                },
-                enabled = !saving,
-            ) { Text("取消") }
-        },
-    )
-
-    if (showDiscardConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text("放弃未保存的修改？") },
-            text = { Text("退出后，本次编辑内容不会写入配置。") },
-            confirmButton = {
-                TextButton(onClick = { showDiscardConfirmation = false; keyboardController?.hide(); finishExit() }) { Text("放弃") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDiscardConfirmation = false }) { Text("继续编辑") }
-            },
-        )
-    }
-
-    if (showSectionDiscardConfirmation) {
-        AlertDialog(
-            onDismissRequest = {
-                showSectionDiscardConfirmation = false
-                pendingSectionAction = null
-            },
-            title = { Text("原始 YAML 尚未保存") },
-            text = { Text("进入分区编辑会放弃当前 YAML 修改，继续吗？") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        content = initialContent
-                        showSectionDiscardConfirmation = false
-                        val action = pendingSectionAction
-                        pendingSectionAction = null
-                        action?.invoke()
-                    },
-                ) { Text("放弃并继续") }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showSectionDiscardConfirmation = false
-                        pendingSectionAction = null
-                    },
-                ) { Text("继续编辑") }
-            },
-        )
-    }
-
-    if (showDraftNameDialog) {
-        AlertDialog(
-            onDismissRequest = { onFinishNewDraft(null) },
-            title = { Text("为配置命名") },
-            text = {
-                OutlinedTextField(
-                    value = draftName,
-                    onValueChange = { draftName = it },
-                    enabled = !saving,
-                    label = { Text("配置名称") },
-                    modifier = Modifier.testTag("new_profile_name"),
-                    singleLine = true,
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { onFinishNewDraft(draftName) },
-                    enabled = !saving && draftName.isNotBlank(),
-                ) {
-                    if (saving) CircularProgressIndicator() else Text("保存名称")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { onFinishNewDraft(null) },
-                    enabled = !saving,
-                ) { Text("保留默认名称") }
-            },
-        )
-    }
-}
-
-/**
- * 作者 long：自定义配置的分区入口统一放在编辑器内，保证用户从 Profiles 进入后能沿 Flutter
- * 的“概览 → 分区”层级继续编辑；每个入口仍由 ViewModel 负责读取和保存，避免 UI 直接改写配置。
- */
-@Composable
-private fun ProfileEditorSectionButton(
-    title: String,
-    summary: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit,
-) {
-    Surface(shape = RoundedCornerShape(20.dp), color = dashboardCardColor()) {
-        ProfileSectionRow(title, summary, icon, onClick = onClick)
-    }
 }
 
 @Composable
@@ -5578,137 +5316,88 @@ internal fun AddProfileDialog(
     val busyDismiss = { if (!busy) onDismiss() }
     if (step == AddProfileStep.SOURCE) {
         ProfileSourceMenu(sourceAnchor, busy, busyDismiss, onPickQrCode, onPickFile,
-            { step = AddProfileStep.REMOTE }, { step = AddProfileStep.CUSTOM })
+            { step = AddProfileStep.REMOTE }, { onAddCustom("") })
         return
     }
     AlertDialog(
         onDismissRequest = busyDismiss,
-        title = {
-            Text(
-                when (step) {
-                    AddProfileStep.SOURCE -> "添加配置"
-                    AddProfileStep.REMOTE -> "从链接导入"
-                    AddProfileStep.CUSTOM -> "创建自定义配置"
-                },
-            )
-        },
+        title = { Text("从链接导入") },
         text = {
-            when (step) {
-                AddProfileStep.SOURCE -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ProfileSectionRow("从二维码图片导入", icon = Icons.Outlined.QrCodeScanner, enabled = !busy,
-                        modifier = Modifier.testTag("profile_add_source_qr"), onClick = onPickQrCode)
-                    ProfileSectionRow("从文件导入 YAML", icon = Icons.Outlined.Description, enabled = !busy,
-                        modifier = Modifier.testTag("profile_add_source_file"), onClick = onPickFile)
-                    ProfileSectionRow("添加订阅链接", icon = Icons.Outlined.Link, enabled = !busy,
-                        modifier = Modifier.testTag("profile_add_source_remote"), onClick = { step = AddProfileStep.REMOTE })
-                    androidx.compose.material3.HorizontalDivider()
-                    ProfileSectionRow("创建自定义配置", icon = Icons.Outlined.Edit, enabled = !busy,
-                        modifier = Modifier.testTag("profile_add_source_custom"), onClick = { step = AddProfileStep.CUSTOM })
+            val preview = parseProfileUrlImport(batchInput, existingUrls)
+            Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PrimaryTabRow(selectedTabIndex = if (batchMode) 1 else 0) {
+                    Tab(
+                        selected = !batchMode,
+                        onClick = { batchMode = false },
+                        modifier = Modifier.testTag("profile_add_mode_single"),
+                        text = { Text("单条") },
+                    )
+                    Tab(
+                        selected = batchMode,
+                        onClick = { ageKey = ""; batchMode = true },
+                        modifier = Modifier.testTag("profile_add_mode_batch"),
+                        text = { Text("批量") },
+                    )
                 }
-                AddProfileStep.REMOTE -> {
-                    val preview = parseProfileUrlImport(batchInput, existingUrls)
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        PrimaryTabRow(selectedTabIndex = if (batchMode) 1 else 0) {
-                            Tab(
-                                selected = !batchMode,
-                                onClick = { batchMode = false },
-                                modifier = Modifier.testTag("profile_add_mode_single"),
-                                text = { Text("单条") },
-                            )
-                            Tab(
-                                selected = batchMode,
-                                onClick = { ageKey = ""; batchMode = true },
-                                modifier = Modifier.testTag("profile_add_mode_batch"),
-                                text = { Text("批量") },
-                            )
-                        }
-                        if (batchMode) {
-                            OutlinedTextField(
-                                value = batchInput,
-                                onValueChange = { batchInput = it },
-                                label = { Text("粘贴订阅链接") },
-                                minLines = 4,
-                                maxLines = 7,
-                                enabled = !busy,
-                                modifier = Modifier.fillMaxWidth().testTag("profile_add_remote_batch"),
-                            )
-                            Text("识别到 ${preview.urls.size} 个链接")
-                            if (preview.skippedExisting > 0) {
-                                Text("跳过已添加的重复项 ${preview.skippedExisting} 个")
-                            }
-                            if (preview.invalidCount > 0) {
-                                Text(
-                                    "有 ${preview.invalidCount} 条链接格式无效，修正后才能导入",
-                                    color = MaterialTheme.colorScheme.error,
-                                )
-                            }
-                        } else {
-                            OutlinedTextField(
-                                value = label,
-                                onValueChange = { label = it },
-                                label = { Text("名称（可选）") },
-                                singleLine = true,
-                                enabled = !busy,
-                                modifier = Modifier.testTag("profile_add_remote_label"),
-                            )
-                            OutlinedTextField(
-                                value = url,
-                                onValueChange = { url = it },
-                                label = { Text("订阅链接") },
-                                singleLine = true,
-                                enabled = !busy,
-                                modifier = Modifier.testTag("profile_add_remote_url"),
-                            )
-                            AgeSecretKeyField(ageKey, { ageKey = it }, !busy, "profile_add_remote_age_key")
-                        }
+                if (batchMode) {
+                    OutlinedTextField(
+                        value = batchInput,
+                        onValueChange = { batchInput = it },
+                        label = { Text("粘贴订阅链接") },
+                        minLines = 4,
+                        maxLines = 7,
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth().testTag("profile_add_remote_batch"),
+                    )
+                    Text("识别到 ${preview.urls.size} 个链接")
+                    if (preview.skippedExisting > 0) {
+                        Text("跳过已添加的重复项 ${preview.skippedExisting} 个")
                     }
-                }
-                AddProfileStep.CUSTOM -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (preview.invalidCount > 0) {
+                        Text(
+                            "有 ${preview.invalidCount} 条链接格式无效，修正后才能导入",
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                } else {
                     OutlinedTextField(
                         value = label,
                         onValueChange = { label = it },
                         label = { Text("名称（可选）") },
                         singleLine = true,
                         enabled = !busy,
-                        modifier = Modifier.testTag("profile_add_custom_label"),
+                        modifier = Modifier.testTag("profile_add_remote_label"),
                     )
+                    OutlinedTextField(
+                        value = url,
+                        onValueChange = { url = it },
+                        label = { Text("订阅链接") },
+                        singleLine = true,
+                        enabled = !busy,
+                        modifier = Modifier.testTag("profile_add_remote_url"),
+                    )
+                    AgeSecretKeyField(ageKey, { ageKey = it }, !busy, "profile_add_remote_age_key")
                 }
             }
         },
         confirmButton = {
-            when (step) {
-                AddProfileStep.SOURCE -> Unit
-                AddProfileStep.REMOTE -> {
-                    val preview = parseProfileUrlImport(batchInput, existingUrls)
-                    TextButton(
-                        onClick = {
-                            if (batchMode) onAddRemoteBatch(preview.urls)
-                            else if (onAddRemoteWithAgeKey != null) onAddRemoteWithAgeKey(label, url, ageKey.trim())
-                            else onAddRemote(label, url)
-                        },
-                        enabled = !busy && if (batchMode) {
-                            preview.urls.isNotEmpty() && preview.invalidCount == 0
-                        } else {
-                            url.isNotBlank()
-                        },
-                        modifier = Modifier.testTag("profile_add_submit"),
-                    ) { Text(if (batchMode) "导入 ${preview.urls.size} 条" else "导入") }
-                }
-                AddProfileStep.CUSTOM -> TextButton(
-                    onClick = { onAddCustom(label) },
-                    enabled = !busy,
-                ) { Text("创建") }
-            }
-        },
-        dismissButton = {
+            val preview = parseProfileUrlImport(batchInput, existingUrls)
             TextButton(
                 onClick = {
-                    if (step == AddProfileStep.SOURCE) onDismiss() else step = AddProfileStep.SOURCE
+                    if (batchMode) onAddRemoteBatch(preview.urls)
+                    else if (onAddRemoteWithAgeKey != null) onAddRemoteWithAgeKey(label, url, ageKey.trim())
+                    else onAddRemote(label, url)
                 },
-                enabled = !busy,
-            ) {
-                Text(if (step == AddProfileStep.SOURCE) "取消" else "返回")
-            }
+                enabled = !busy && if (batchMode) {
+                    preview.urls.isNotEmpty() && preview.invalidCount == 0
+                } else {
+                    url.isNotBlank()
+                },
+                modifier = Modifier.testTag("profile_add_submit"),
+            ) { Text(if (batchMode) "导入 ${preview.urls.size} 条" else "导入") }
+        },
+        dismissButton = {
+            TextButton(onClick = { step = AddProfileStep.SOURCE }, enabled = !busy) { Text("返回") }
         },
     )
 }
@@ -5716,5 +5405,4 @@ internal fun AddProfileDialog(
 private enum class AddProfileStep {
     SOURCE,
     REMOTE,
-    CUSTOM,
 }

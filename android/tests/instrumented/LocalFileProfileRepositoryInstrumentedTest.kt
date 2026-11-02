@@ -107,7 +107,7 @@ class LocalFileProfileRepositoryInstrumentedTest {
             }
             try {
                 compose.waitUntil(10_000) { model.state.value.profiles.size == 2 }
-                compose.onNodeWithTag("profile_actions_${f.target.id}").performClick()
+                compose.onNodeWithTag("profile_actions_${f.target.id}").performTouchInput { longClick() }
                 compose.onNodeWithText("编辑").performClick()
                 compose.waitUntil(10_000) { model.editorState.value.profile?.id == f.target.id && !model.editorState.value.isLoading }
                 val before = runBlocking { f.row() }
