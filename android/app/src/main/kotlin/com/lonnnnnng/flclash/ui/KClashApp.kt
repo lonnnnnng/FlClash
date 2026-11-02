@@ -316,6 +316,14 @@ fun KClashApp(
     val providersEditorState by profilesViewModel.providersEditorState.collectAsState()
     val dnsEditorState by profilesViewModel.dnsEditorState.collectAsState()
     val dialersEditorState by profilesViewModel.dialersEditorState.collectAsState()
+    val moreEditorState by profilesViewModel.moreEditorState.collectAsState()
+    val customImportState by profilesViewModel.customImportState.collectAsState()
+    var customImportPickToken by rememberSaveable { mutableStateOf<Long?>(null) }
+    val customImportPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        val token = customImportPickToken
+        customImportPickToken = null
+        profilesViewModel.acceptCustomImportFile(token, uri?.toString())
+    }
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val scriptsState by scriptsViewModel.state.collectAsState()
     val scriptEditorState by scriptsViewModel.editorState.collectAsState()
@@ -860,6 +868,21 @@ fun KClashApp(
                     onCloseDnsEditor = profilesViewModel::closeDnsEditor,
                     onSaveDns = profilesViewModel::saveDns,
                     dialersEditorState = dialersEditorState,
+                    moreEditorState = moreEditorState,
+                    onOpenMoreEditor = profilesViewModel::openMoreEditor,
+                    onCloseMoreEditor = profilesViewModel::closeMoreEditor,
+                    onSaveMoreEditor = profilesViewModel::saveMoreEditor,
+                    customImportState = customImportState,
+                    onPickCustomImportFile = {
+                        profilesViewModel.beginCustomImportPick()?.let { token ->
+                            customImportPickToken = token
+                            try { customImportPicker.launch(arrayOf("*/*")) }
+                            catch (_: Exception) { customImportPickToken = null; profilesViewModel.cancelCustomImport() }
+                        }
+                    },
+                    onImportCustomUrl = profilesViewModel::importCustomFromUrl,
+                    onConfirmCustomImport = profilesViewModel::confirmCustomImport,
+                    onCancelCustomImport = profilesViewModel::cancelCustomImport,
                     onOpenDialersEditor = profilesViewModel::openDialersEditor,
                     onCloseDialersEditor = profilesViewModel::closeDialersEditor,
                     onSaveDialers = profilesViewModel::saveDialers,
@@ -1430,6 +1453,15 @@ internal fun ProfilesPanel(
     onCloseDnsEditor: () -> Unit = {},
     onSaveDns: (ProfileDnsOverrides) -> Unit = {},
     dialersEditorState: ProfileDialersEditorUiState = ProfileDialersEditorUiState(),
+    moreEditorState: ProfileMoreEditorUiState = ProfileMoreEditorUiState(),
+    onOpenMoreEditor: (Profile) -> Unit = {},
+    onCloseMoreEditor: () -> Unit = {},
+    onSaveMoreEditor: (com.lonnnnnng.flclash.service.ProfileNtpOverrides, com.lonnnnnng.flclash.service.ProfileSnifferOverrides) -> Unit = { _, _ -> },
+    customImportState: CustomImportUiState = CustomImportUiState(),
+    onPickCustomImportFile: () -> Unit = {},
+    onImportCustomUrl: (String, String) -> Unit = { _, _ -> },
+    onConfirmCustomImport: () -> Unit = {},
+    onCancelCustomImport: () -> Unit = {},
     onOpenDialersEditor: (Profile) -> Unit = {},
     onCloseDialersEditor: () -> Unit = {},
     onSaveDialers: (String) -> Unit = {},
@@ -1747,6 +1779,15 @@ internal fun ProfilesPanel(
                 isNewDraft = editorState.isNew,
                 hasPersistedChanges = editorState.hasPersistedChanges,
                 overview = editorState.overview,
+                moreEditorState = moreEditorState,
+                onOpenMoreEditor = onOpenMoreEditor,
+                onCloseMoreEditor = onCloseMoreEditor,
+                onSaveMoreEditor = onSaveMoreEditor,
+                customImportState = customImportState,
+                onPickCustomImportFile = onPickCustomImportFile,
+                onImportCustomUrl = onImportCustomUrl,
+                onConfirmCustomImport = onConfirmCustomImport,
+                onCancelCustomImport = onCancelCustomImport,
                 onRename = onRename,
                 onPreview = onPreviewProfile,
                 onDismiss = onCloseEditor,

@@ -1,5 +1,12 @@
 # Testing
 
+## 自定义配置导入与更多网络设置（2026-11-03）
+
+- App JVM 284、Service JVM 128 项全通过；Debug/AndroidTest/Lint 通过（0 errors、53 warnings、9 hints），最终日志 /tmp/kclash-custom-more-20261103-final7-build.log。
+- Redmi 最终源码精确批次 26/26，日志 /tmp/kclash-custom-more-20261103-final7-device.log；方法清单与中间失败日志保留。新增更多页深浅主题、端口校验、协议编辑、URL/文件菜单和摘要确认；真实隔离 Room/文件仅读取授权 1.yaml，验证确认前零写入、运行/过期快照保护与成功提交。
+- 更多字段保存只写元数据，核心暂存合并保留未知字段/未选协议；真实核心/浏览器网络未重验，Core/Common/Go 未重跑。原正式 Profile 前后保护及最终哈希见 roadmap；不清数据、访问订阅或改写 1.yaml。
+- 图目录 /tmp/kclash-custom-more-20261103-images/，新八态已目视；固定列表宿主主题和上游字段添加/快捷 YAML 等差异继续为 PARTIAL，不能据此宣称完整 parity。
+
 ## 自定义配置创建与概览整页对齐（2026-11-03）
 
 - App JVM 277 项，失败/错误/跳过 0；Debug/AndroidTest/Lint 通过（0 errors、53 warnings、9 hints）。构建日志 `/tmp/kclash-custom-overview-20261103-final-build.log`。Service/Core/Common/Go 和 DNS/浏览器主链路本轮未重跑。

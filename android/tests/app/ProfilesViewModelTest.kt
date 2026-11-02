@@ -30,6 +30,79 @@ import org.junit.Test
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
 
+    @Test fun moreSaveKeepsOtherOverridesAndRetainsNewDraft() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(111, "草稿").copy(overridesJson = ProfileProviderOverrides(dns = ProfileDnsOverrides(enable = true)).toJsonString())
+        val store = FakeProfileStore(profile)
+        val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        model.openEditor(profile, isNew = true)
+        advanceUntilIdle()
+        model.openMoreEditor(profile)
+        model.saveMoreEditor(com.lonnnnnng.flclash.service.ProfileNtpOverrides(enable = true), com.lonnnnnng.flclash.service.ProfileSnifferOverrides())
+        advanceUntilIdle()
+        val saved = ProfileProviderOverrides.fromJsonString(store.profiles.value.single().overridesJson)
+        assertEquals(true, saved.dns.enable)
+        assertEquals(true, saved.ntp.enable)
+        assertTrue(model.editorState.value.hasPersistedChanges)
+        assertEquals(true, model.editorState.value.overview?.ntpEnabled)
+        model.discardEditor()
+        advanceUntilIdle()
+        assertEquals(0, store.deleteCalls)
+    }
+
+    @Test fun customImportWaitsForConfirmationAndRejectsLateFileResult() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(112, "目标")
+        val store = FakeProfileStore(profile).apply { content = "rules: []" }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+            fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("导入.yaml", "rules: [MATCH,DIRECT]".toByteArray()) },
+            overviewDispatcher = mainDispatcher)
+        model.openEditor(profile)
+        advanceUntilIdle()
+        val oldToken = model.beginCustomImportPick()
+        model.closeEditor()
+        model.openEditor(profile)
+        advanceUntilIdle()
+        model.acceptCustomImportFile(oldToken, "content://test/old")
+        advanceUntilIdle()
+        assertNull(model.customImportState.value.name)
+        val token = model.beginCustomImportPick()
+        model.acceptCustomImportFile(token, "content://test/new")
+        advanceUntilIdle()
+        assertEquals("导入.yaml", model.customImportState.value.name)
+        assertEquals("rules: []", store.content)
+        model.cancelCustomImport()
+        assertNull(model.customImportState.value.name)
+        assertNull(store.updatedContent)
+    }
+
+    @Test fun urlImportConfirmsIntoSameDraftAndRejectsRuntimeChange() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(113, "草稿")
+        val store = FakeProfileStore(profile)
+        val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        model.openEditor(profile, isNew = true)
+        advanceUntilIdle()
+        model.importCustomFromUrl("https://example.test/import")
+        advanceUntilIdle()
+        assertEquals("URL 配置", model.customImportState.value.name)
+        assertNull(store.updatedContent)
+        runtime.set(CoreRuntimeStatus.RUNNING)
+        model.confirmCustomImport()
+        advanceUntilIdle()
+        assertNull(store.updatedContent)
+        runtime.set(CoreRuntimeStatus.STOPPED)
+        model.confirmCustomImport()
+        advanceUntilIdle()
+        assertTrue(store.content.contains("rules:"))
+        assertEquals(profile.id, model.editorState.value.profile?.id)
+        assertTrue(model.editorState.value.hasPersistedChanges)
+        assertNull(model.customImportState.value.name)
+        assertEquals(1, store.profiles.value.size)
+    }
+
     @Test fun `file editor saves name and key together and failure retains editor`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(98, "old name").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
@@ -1190,6 +1263,15 @@ private class FakeProfileStore(
     }
 
     override suspend fun readLocalProfileContent(id: Long): String = content
+
+    override suspend fun downloadCustomImport(url: String): ByteArray = "rules: []".toByteArray()
+
+    override suspend fun replaceCustomProfile(id: Long, content: String, expected: Profile, expectedContent: String, canWrite: () -> Boolean): Profile {
+        check(canWrite())
+        check(this.content == expectedContent)
+        check(profiles.value.first { it.id == id } == expected)
+        return updateLocalProfileContent(id, content)
+    }
 
     override suspend fun updateLocalProfileContent(id: Long, content: String): Profile {
         updatedContent = content

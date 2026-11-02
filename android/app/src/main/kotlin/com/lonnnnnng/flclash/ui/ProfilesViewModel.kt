@@ -16,6 +16,8 @@ import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
+import com.lonnnnnng.flclash.service.ProfileNtpOverrides
+import com.lonnnnnng.flclash.service.ProfileSnifferOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -105,6 +107,20 @@ data class ProfileDialersEditorUiState(
     val isSaving: Boolean = false,
 )
 
+data class ProfileMoreEditorUiState(
+    val profile: Profile? = null,
+    val ntp: ProfileNtpOverrides = ProfileNtpOverrides(),
+    val sniffer: ProfileSnifferOverrides = ProfileSnifferOverrides(),
+    val isSaving: Boolean = false,
+)
+
+data class CustomImportUiState(
+    val isLoading: Boolean = false,
+    val name: String? = null,
+    val summary: CustomProfileSummary? = null,
+    val droppedSubRules: Int = 0,
+)
+
 internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
 
 /**
@@ -138,6 +154,13 @@ class ProfilesViewModel internal constructor(
     private val mutableProvidersEditor = MutableStateFlow(ProfileProvidersEditorUiState())
     private val mutableDnsEditor = MutableStateFlow(ProfileDnsEditorUiState())
     private val mutableDialersEditor = MutableStateFlow(ProfileDialersEditorUiState())
+    private val mutableMoreEditor = MutableStateFlow(ProfileMoreEditorUiState())
+    private val mutableCustomImport = MutableStateFlow(CustomImportUiState())
+    private var customImportContent: String? = null
+    private var customImportProfile: Profile? = null
+    private var customImportOriginal: String? = null
+    private var customImportJob: kotlinx.coroutines.Job? = null
+    private var customImportToken = 0L
     private val mutableAgeKeyRequired = MutableStateFlow(false)
     private var retryAgeImport: (suspend (String) -> Unit)? = null
     private var ageImportGeneration = 0L
@@ -166,6 +189,8 @@ class ProfilesViewModel internal constructor(
     val providersEditorState: StateFlow<ProfileProvidersEditorUiState> = mutableProvidersEditor
     val dnsEditorState: StateFlow<ProfileDnsEditorUiState> = mutableDnsEditor
     val dialersEditorState: StateFlow<ProfileDialersEditorUiState> = mutableDialersEditor
+    val moreEditorState: StateFlow<ProfileMoreEditorUiState> = mutableMoreEditor
+    val customImportState: StateFlow<CustomImportUiState> = mutableCustomImport
 
     fun select(id: Long) {
         if (busy.value) return
@@ -332,6 +357,7 @@ class ProfilesViewModel internal constructor(
 
     fun closeEditor() {
         localEditorGeneration++
+        cancelCustomImport()
         overviewJob?.cancel()
         overviewJob = null
         pendingFilePick = null
@@ -340,6 +366,106 @@ class ProfilesViewModel internal constructor(
         replacementBytes = null
         mutableEditor.value = ProfileEditorUiState()
         mutableRemoteEditor.value = RemoteProfileEditorUiState()
+        mutableMoreEditor.value = ProfileMoreEditorUiState()
+    }
+
+    fun beginCustomImportPick(): Long? {
+        val editor = mutableEditor.value
+        if (editor.profile?.type != ProfileType.CUSTOM || editor.isSaving || editor.isReadingFile || busy.value) return null
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return null
+        }
+        cancelCustomImport()
+        return customImportToken
+    }
+
+    fun acceptCustomImportFile(token: Long?, uri: String?, ageSecretKey: String = "") {
+        if (token != customImportToken || uri == null) return
+        prepareCustomImport(token, ageSecretKey) { fileReader.read(uri).let { it.name to it.bytes } }
+    }
+
+    fun importCustomFromUrl(url: String, ageSecretKey: String = "") {
+        val token = beginCustomImportPick() ?: return
+        val normalized = runCatching { normalizeRemoteProfileUrl(url) }.getOrElse {
+            mutableErrors.tryEmit("请输入有效的 HTTP/HTTPS 链接")
+            return
+        }
+        prepareCustomImport(token, ageSecretKey) { "URL 配置" to repository.downloadCustomImport(normalized) }
+    }
+
+    private fun prepareCustomImport(token: Long, ageSecretKey: String, read: suspend () -> Pair<String, ByteArray>) {
+        val editor = mutableEditor.value
+        val profile = editor.profile?.takeIf { it.type == ProfileType.CUSTOM } ?: return
+        val generation = localEditorGeneration
+        mutableCustomImport.value = CustomImportUiState(isLoading = true)
+        mutableEditor.value = editor.copy(isReadingFile = true)
+        customImportJob = viewModelScope.launch {
+            try {
+                // 作者 long：读取器和仓库各自负责 IO；统一调度器让取消、旧会话隔离和测试等待都覆盖整条导入链。
+                val (name, bytes) = withContext(overviewDispatcher) { read() }
+                val imported = withContext(overviewDispatcher) { repository.decodeCustomImport(bytes, ageSecretKey) }
+                val content = imported.content
+                val summary = withContext(overviewDispatcher) { customProfileSummary(content, profile.copy(overridesJson = "{}")) }
+                if (generation == localEditorGeneration && token == customImportToken) {
+                    customImportContent = content
+                    customImportProfile = profile
+                    customImportOriginal = editor.content
+                    mutableCustomImport.value = CustomImportUiState(name = name, summary = summary, droppedSubRules = imported.droppedSubRules)
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                if (generation == localEditorGeneration && token == customImportToken) {
+                    mutableCustomImport.value = CustomImportUiState()
+                    mutableErrors.emit(if (error is com.lonnnnnng.flclash.data.AgeSecretKeyRequiredException) error.message.orEmpty() else "导入失败，请检查链接、文件格式或解密密钥")
+                }
+            } finally {
+                if (generation == localEditorGeneration && token == customImportToken) mutableEditor.value = mutableEditor.value.copy(isReadingFile = false)
+            }
+        }
+    }
+
+    fun cancelCustomImport() {
+        customImportToken++
+        customImportJob?.cancel()
+        customImportJob = null
+        customImportContent = null
+        customImportProfile = null
+        customImportOriginal = null
+        mutableCustomImport.value = CustomImportUiState()
+        mutableEditor.value = mutableEditor.value.copy(isReadingFile = false)
+    }
+
+    fun confirmCustomImport() {
+        val profile = customImportProfile ?: return
+        val content = customImportContent ?: return
+        val original = customImportOriginal ?: return
+        if (mutableEditor.value.isSaving || busy.value) return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        val generation = localEditorGeneration
+        val token = customImportToken
+        mutableEditor.value = mutableEditor.value.copy(isSaving = true)
+        viewModelScope.launch {
+            try {
+                val updated = repository.replaceCustomProfile(profile.id, content, profile, original) {
+                    !isProfileMutationBlocked(runtimeManager.state.value) && generation == localEditorGeneration && token == customImportToken
+                }
+                if (generation == localEditorGeneration) {
+                    reflectStructuredSave(profile.id, content, updated)
+                    cancelCustomImport()
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                if (generation == localEditorGeneration) mutableErrors.emit("替换失败，原配置已保留；请检查运行状态或重新导入")
+            } finally {
+                if (generation == localEditorGeneration) mutableEditor.value = mutableEditor.value.copy(isSaving = false)
+            }
+        }
     }
 
     fun beginFileReplacementPick(): Long? {
@@ -892,6 +1018,58 @@ class ProfilesViewModel internal constructor(
 
     fun closeDialersEditor() {
         mutableDialersEditor.value = ProfileDialersEditorUiState()
+    }
+
+    fun openMoreEditor(profile: Profile) {
+        if (profile.type != ProfileType.CUSTOM) return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            return
+        }
+        val overrides = ProfileProviderOverrides.fromJsonString(profile.overridesJson)
+        mutableMoreEditor.value = ProfileMoreEditorUiState(profile, overrides.ntp, overrides.sniffer)
+    }
+
+    fun closeMoreEditor() {
+        if (!mutableMoreEditor.value.isSaving) mutableMoreEditor.value = ProfileMoreEditorUiState()
+    }
+
+    fun saveMoreEditor(ntp: ProfileNtpOverrides, sniffer: ProfileSnifferOverrides) {
+        val state = mutableMoreEditor.value
+        val profile = state.profile ?: return
+        if (runtimeManager.state.value.isRunning) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存 NTP 或 Sniffer")
+            return
+        }
+        if (state.isSaving || busy.value) return
+        try {
+            validateMoreFields(ntp.toJson(), true)
+            validateMoreFields(sniffer.toJson(), false)
+        } catch (error: IllegalArgumentException) {
+            mutableErrors.tryEmit(error.message ?: "NTP 或 Sniffer 字段无效")
+            return
+        }
+        val generation = localEditorGeneration
+        viewModelScope.launch {
+            mutableMoreEditor.value = state.copy(ntp = ntp, sniffer = sniffer, isSaving = true)
+            try {
+                // 作者 long：分区保存读取最新覆盖，避免连续修改更多、DNS 或 Provider 时覆盖另一分区。
+                val latest = repository.profiles.value.firstOrNull { it.id == profile.id } ?: error("配置不存在")
+                val current = ProfileProviderOverrides.fromJsonString(latest.overridesJson)
+                val updated = repository.updateProfileOverrides(profile.id, current.copy(ntp = ntp, sniffer = sniffer).toJsonString())
+                if (generation == localEditorGeneration) {
+                    reflectStructuredSave(profile.id, profile = updated)
+                    mutableMoreEditor.value = ProfileMoreEditorUiState()
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                if (generation == localEditorGeneration) {
+                    mutableMoreEditor.value = mutableMoreEditor.value.copy(isSaving = false)
+                    mutableErrors.emit(error.message ?: "保存 NTP 或 Sniffer 失败")
+                }
+            }
+        }
     }
 
     fun saveDialers(dialers: String) {

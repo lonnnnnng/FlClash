@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.withTransaction
 import com.lonnnnnng.flclash.service.ActiveProfile
 import com.lonnnnnng.flclash.service.ActiveProfileProvider
+import com.lonnnnnng.flclash.service.ProfileProviderOverrides
 import java.io.File
 import java.io.IOException
 import java.util.UUID
@@ -32,6 +33,10 @@ interface ProfileStore {
     suspend fun readLocalProfileContent(id: Long): String
     suspend fun readProfileSourceContent(id: Long): String = readLocalProfileContent(id)
     suspend fun updateLocalProfileContent(id: Long, content: String): Profile
+    suspend fun downloadCustomImport(url: String): ByteArray = error("此数据源不支持 URL 导入")
+    suspend fun decodeCustomImport(bytes: ByteArray, ageSecretKey: String): CustomProfileImportContent = customProfileImportContent(PlainProfileContentDecoder.decode(bytes, ageSecretKey))
+    suspend fun replaceCustomProfile(id: Long, content: String, expected: Profile, expectedContent: String, canWrite: () -> Boolean): Profile =
+        error("此数据源不支持自定义配置替换")
     suspend fun updateFileProfile(
         id: Long,
         ageSecretKey: String,
@@ -234,6 +239,41 @@ class ProfileRepository(
         val updated = current.copy(lastUpdateAt = System.currentTimeMillis())
         profileDao.update(updated.toEntity())
         updated
+    }
+
+    override suspend fun downloadCustomImport(url: String): ByteArray = withContext(Dispatchers.IO) {
+        subscriptionClient.download(normalizeSubscriptionUrl(url)).bytes
+    }
+
+    override suspend fun decodeCustomImport(bytes: ByteArray, ageSecretKey: String): CustomProfileImportContent = withContext(Dispatchers.IO) {
+        customProfileImportContent(contentDecoder.decode(bytes, ageSecretKey))
+    }
+
+    override suspend fun replaceCustomProfile(id: Long, content: String, expected: Profile, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        fileMutationMutex.withLock {
+            require(content.toByteArray(Charsets.UTF_8).size <= MAX_PROFILE_FILE_BYTES && content.isNotBlank()) { "配置为空或超过 8 MiB" }
+            configValidator.validate(content.toByteArray(Charsets.UTF_8))
+            val file = profileFile(id)
+            val original = snapshotLocalProfileFile(file)
+            require(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化或缺失，请重新导入" }
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            // 作者 long：导入同时替换正文、覆盖与旧节点选择；文件和 Room 必须共同提交或回滚。
+            withContext(kotlinx.coroutines.NonCancellable) {
+                replaceLocalProfileFile(file, content.toByteArray(Charsets.UTF_8), { commit ->
+                    database.withTransaction {
+                        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                        require(current.type == ProfileType.CUSTOM && current == expected) { "配置已变化，请重新导入" }
+                        check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
+                        val updated = current.copy(overridesJson = ProfileProviderOverrides().toJsonString(),
+                            selectedMapJson = "{}", currentGroupName = "", unfoldSetJson = "[]", lastUpdateAt = System.currentTimeMillis())
+                        profileDao.update(updated.toEntity())
+                        check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
+                        commit()
+                        updated
+                    }
+                }, expected = original)
+            }
+        }
     }
 
     override suspend fun updateFileProfile(

@@ -108,6 +108,78 @@ class ProfilesPageParityInstrumentedTest {
         assertEquals(2, openedDialers)
     }
 
+    @Test fun customMoreFieldsAndImportMenuWorkAcrossThemes() {
+        assertPortraitDefaultFontConfiguration()
+        val profile = Profile.custom(811, "自定义网络设置")
+        var dark by mutableStateOf(false)
+        var more by mutableStateOf(ProfileMoreEditorUiState())
+        var savedNtp = com.lonnnnnng.flclash.service.ProfileNtpOverrides()
+        var savedSniffer = com.lonnnnnng.flclash.service.ProfileSnifferOverrides()
+        var importedUrl = ""
+        var importState by mutableStateOf(CustomImportUiState())
+        var confirmedImports = 0
+        var pickedFile = 0
+        compose.setContent { KClashTheme(darkTheme = dark) {
+            ProfileEditorDialog(profile, "rules: []", false, onDismiss = {}, onSave = {},
+                overview = CustomProfileSummary(), moreEditorState = more,
+                onOpenMoreEditor = { more = ProfileMoreEditorUiState(profile, savedNtp, savedSniffer) },
+                onCloseMoreEditor = { more = ProfileMoreEditorUiState() },
+                onSaveMoreEditor = { ntp, sniffer -> savedNtp = ntp; savedSniffer = sniffer; more = ProfileMoreEditorUiState() },
+                customImportState = importState,
+                onImportCustomUrl = { url, _ -> importedUrl = url; importState = CustomImportUiState(name = "配置.yaml", summary = CustomProfileSummary(rules = 16, proxies = 8)) },
+                onConfirmCustomImport = { confirmedImports++; importState = CustomImportUiState() },
+                onCancelCustomImport = { importState = CustomImportUiState() },
+                onPickCustomImportFile = { pickedFile++ })
+        } }
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark" }
+            compose.onNodeWithTag("custom_profile_more").performClick()
+            compose.onNodeWithTag("custom_profile_ntp").performClick()
+            capture("profiles_custom_ntp_" + theme)
+            if (theme == "light") {
+                compose.onNodeWithTag("more_enable_override").performClick()
+                compose.onNodeWithTag("more_enable_value").performClick()
+                compose.onNodeWithTag("more_port_override").performScrollTo().performClick()
+                compose.onNodeWithTag("more_port_value").performTextClearance()
+                compose.onNodeWithTag("more_port_value").performTextInput("65536")
+                compose.onNodeWithTag("profile_more_editor_save").performClick()
+                compose.onNodeWithTag("profile_more_editor_error").assertTextContains("端口必须", substring = true)
+                compose.onNodeWithTag("more_port_value").performTextClearance()
+                compose.onNodeWithTag("more_port_value").performTextInput("123")
+            }
+            compose.onNodeWithTag("profile_more_editor_save").performClick()
+            compose.onNodeWithTag("custom_profile_sniffer").performClick()
+            if (theme == "light") {
+                compose.onNodeWithTag("more_enable_override").performClick()
+                compose.onNodeWithTag("more_enable_value").performClick()
+                compose.onNodeWithTag("sniff_HTTP_override").performScrollTo().performClick()
+                compose.onNodeWithTag("sniff_HTTP_ports").performTextInput("80\n8000-9000")
+            }
+            compose.onNodeWithTag("profile_more_editor_save").performClick()
+            compose.onNodeWithTag("custom_profile_sniffer").performClick()
+            compose.onNodeWithTag("sniff_HTTP_override").performScrollTo()
+            capture("profiles_custom_sniffer_" + theme)
+            compose.onNodeWithTag("profile_more_editor_save").performClick()
+            compose.onNodeWithTag("custom_profile_more_back").performClick()
+            compose.onNodeWithTag("custom_profile_import").performClick()
+            compose.onNodeWithText("从 URL 导入").performClick()
+            compose.onNodeWithTag("custom_import_url").performTextClearance()
+            compose.onNodeWithTag("custom_import_url").performTextInput("https://example.test/config")
+            capture("profiles_custom_import_" + theme)
+            compose.onNodeWithTag("custom_import_url_confirm").performClick()
+            capture("profiles_custom_import_confirm_" + theme)
+            compose.onNodeWithTag("custom_import_replace_confirm").performClick()
+            compose.onNodeWithTag("custom_profile_import").performClick()
+            compose.onNodeWithText("从文件导入").performClick()
+        }
+        assertEquals(true, savedNtp.enable)
+        assertEquals(123, savedNtp.port)
+        assertEquals(listOf("80", "8000-9000"), savedSniffer.sniff?.get("HTTP")?.ports)
+        assertEquals("https://example.test/config", importedUrl)
+        assertEquals(2, pickedFile)
+        assertEquals(2, confirmedImports)
+    }
+
     private fun capture(name: String) {
         compose.waitForIdle()
         // 作者 long：全屏 Dialog 的窗口提交晚于 Compose 空闲，等待系统绘制完成再采集，避免混入前一页。

@@ -129,6 +129,8 @@ data class ProfileProviderOverrides(
     val dns: ProfileDnsOverrides = ProfileDnsOverrides(),
     /** null 表示未设置；空 map 表示用户明确清空全部 Dialers。 */
     val dialers: Map<String, String>? = null,
+    val ntp: ProfileNtpOverrides = ProfileNtpOverrides(),
+    val sniffer: ProfileSnifferOverrides = ProfileSnifferOverrides(),
 ) {
     fun toJsonString(): String = JsonObject().apply {
         add("proxy-providers", JsonObject().apply {
@@ -137,6 +139,8 @@ data class ProfileProviderOverrides(
             }
         })
         if (!dns.isEmpty) add("dns", dns.toJson())
+        if (!ntp.isEmpty) add("ntp", ntp.toJson())
+        if (!sniffer.isEmpty) add("sniffer", sniffer.toJson())
         dialers?.let { values ->
             add("dialers", JsonObject().apply {
                 values.forEach { (proxy, target) ->
@@ -163,7 +167,9 @@ data class ProfileProviderOverrides(
                 val dns = root.getAsJsonObject("dns")
                     ?.let(ProfileDnsOverrides::fromJson)
                     ?: ProfileDnsOverrides()
-                ProfileProviderOverrides(values, dns, root.optStringMapOrNull("dialers"))
+                ProfileProviderOverrides(values, dns, root.optStringMapOrNull("dialers"),
+                    root.getAsJsonObject("ntp")?.let(ProfileNtpOverrides::fromJson) ?: ProfileNtpOverrides(),
+                    root.getAsJsonObject("sniffer")?.let(ProfileSnifferOverrides::fromJson) ?: ProfileSnifferOverrides())
             }.getOrDefault(ProfileProviderOverrides())
         }
     }
@@ -180,7 +186,8 @@ object ProfileProviderOverrideApplier {
             updated = applyProxyProviders(updated, overrides.proxyProviders)
         }
         updated = ProfileDialerOverrideApplier.apply(updated, overrides.dialers)
-        return ProfileDnsOverrideApplier.apply(updated, overrides.dns)
+        updated = ProfileDnsOverrideApplier.apply(updated, overrides.dns)
+        return ProfileMoreOverrideApplier.apply(updated, overrides.ntp, overrides.sniffer)
     }
 
     private fun applyProxyProviders(

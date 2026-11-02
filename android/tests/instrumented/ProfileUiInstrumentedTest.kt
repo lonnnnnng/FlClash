@@ -330,17 +330,27 @@ class ProfileUiInstrumentedTest {
 
         composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("\nallow-lan: true")
+        // 作者 long：收起正文后再进入分区，避免输入法 resize 尚未提交时按滚动前的坐标点击；草稿内容仍保留。
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_scroll").performScrollToNode(hasText("规则"))
         composeRule.onNodeWithText("规则").performClick()
         composeRule.onNodeWithText("原始 YAML 尚未保存").assertIsDisplayed()
         composeRule.onNodeWithText("继续编辑").performClick()
         assertEquals(false, opened)
 
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("原始 YAML 尚未保存").fetchSemanticsNodes().isEmpty()
+        }
+
         composeRule.onNodeWithTag("profile_editor_scroll").performScrollToNode(hasText("规则"))
         composeRule.onNodeWithText("规则").performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("放弃并继续").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithText("放弃并继续").performClick()
 
         assertTrue(opened)
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content")
             .assertTextContains("mixed-port: 7890", substring = true)
     }

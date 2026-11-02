@@ -53,7 +53,7 @@ internal fun customProfileSummary(content: String, profile: Profile): CustomProf
         proxies = proxies.size,
         groups = groups.map { CustomProfileGroupSummary(it.text("name"), it.text("type"), it.strings("proxies").size, it.strings("use").size) },
         dnsEnabled = overrides.dns.enable ?: enabled("dns"), dialers = dialers,
-        ntpEnabled = enabled("ntp"), snifferEnabled = enabled("sniffer"),
+        ntpEnabled = overrides.ntp.enable ?: enabled("ntp"), snifferEnabled = overrides.sniffer.enable ?: enabled("sniffer"),
     )
 }.getOrElse {
     // 作者 long：损坏配置仍可进入 YAML 修复，但不能把解析失败伪装成全部为零。
