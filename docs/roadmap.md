@@ -52,7 +52,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | `kotlin` 追踪 `origin/kotlin`；本轮累计改动已完成提交前复核，待推送到 `origin/kotlin`；Flutter 只作为参考 |
+| 远端关系 | `kotlin` 追踪 `origin/kotlin`；当前 `HEAD` 与远端均为 `b4cb0134`，工作树干净；Flutter 只作为参考 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
