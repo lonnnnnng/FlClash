@@ -6,11 +6,24 @@
 >
 > 当前基线：`kotlin` 主线，DNS 基线和浏览器主链路修复已提交并同步到 `origin/kotlin`（代码提交 `cab92464`）；远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 最新验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，代理页整体首版已完成工具栏、分组溢出选择、搜索、Tab/List、固定组头、三档卡片与独立测速，21 项定向真机回归通过；真实 age 密文 E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
+> 最新验收：自定义策略组可视编辑首版已接通概览 → 单组/管理 → 成员/选项/快捷 YAML → 原子保存。App 294、Service 128 项通过，Redmi 最终 12/12，正式 Profile 前后保持 1 份且文件元数据不变；当前 APK 哈希与验收边界见下方同日策略组节。下一阶段继续标准/脚本扩展页与其自动应用链，完整 UI 保持 PARTIAL。
+> 代理页与延迟缓存历史验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，代理页整体首版已完成工具栏、分组溢出选择、搜索、Tab/List、固定组头、三档卡片与独立测速，21 项定向真机回归通过；真实 age 密文 E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
 > 前序延迟缓存验收时 Android 包尚未安装，正式 Room 为空；通过工作区外层 `AGENTS.md` 唯一授权入口导入并保留一份 Profile，未触碰外层 `1.yaml`、未清数据或删除 Profile。延迟缓存用例验证同一 Profile/组/节点/测试 URL 的正延迟跨真实应用进程恢复，并向正式 Room 写入不同 Profile 与旧测试 URL 探针，确认均不进入当前页面；成功后删除的只有测试探针行和应用内标记。核心保持 `STOPPED`，没有 ProxyService、VpnService 或 TUN。
 > 完整 ProfileRuntimeParity 长流程仍曾在停止态 `DIRECT` 默认测速阶段失败，不能推广为通过。Dashboard、Profiles 和 Proxy Groups 的完整 UI/UX 仍为 `PARTIAL`；后续仍需完成代理页连续圆角/动效/节点菜单、真实 age 密文 Android E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity。验收限定 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
 
 > 2026-11-03 主链路修复补充：真实订阅本身可用，Kotlin 缺少 Flutter 的 DNS baseline，导致 Android 虚拟 DNS 无应答；已补齐脚本后 baseline → 用户覆盖 → LAN 暂存链路，并按已应用配置读取 mixed-port/TUN 参数和发布系统 HTTP 代理。有认证或禁用 mixed-port 时不广播代理，运行态配置改变网络参数时同步重建并支持失败回滚。Redmi 上 UDP/TCP 53 与系统解析均通过；X 浏览器百度与 Cloudflare 页面实测成功。详情及最终构建校验见下方“DNS 基线与浏览器主链路修复”。本段之后较早的“核心 STOPPED、未启动 TUN”等记录只适用于各自历史切片。
+
+### 自定义策略组可视编辑首版（2026-11-03）
+
+- 继续以 Flutter 基线 `7fd417fb9a9a277c6a9339a8ac87f907df7c25f7` 的 `custom/groups.dart`、`custom/members.dart`、`state/custom.dart` 为参考。CUSTOM 概览的 + 直接新增、点组直接编辑，新增管理入口可进入列表。列表支持新增、复制、删除、长按拖动排序及上移/下移；从概览编辑单组确认后直接原子保存并返回，列表批量草稿则统一保存。
+- 单组整页分为常规、节点、可选设置：名称、四种类型、图标地址；代理/其他组/Provider 多选、搜索、混合排序与 use-position；全部代理/资源、过滤/排除表达式；按类型显示的测速参数、空组回退、默认选中、负载均衡/哈希、隐藏和 UDP。可选字段有添加面板、逐项编辑和移除，false/0 与未设置分开；保留单组快捷 YAML 和整列表 YAML。
+- 草稿保留未知字段，可视表单及单组快捷 YAML 改名同步组成员、规则目标、链式代理、NTP 出站和 Profile 选择/展开/覆盖引用。拒绝空/保留/重复名称、无节点来源、非法空组回退、负数参数及组/链式代理循环。未编辑分区及常规 block YAML 边界注释保留；flow 根对象或整体缩进无法单独定位分区时完整序列化，保持字段语义。修正旧提取器剥掉无缩进列表字段缩进的问题，并防止未来嵌套 name/type 被误作组字段。
+- 保存复用文件快照、原子 rename 和 Room 事务，拒绝过期正文/运行状态/旧编辑代际，沿用最新名称、绑定脚本及其他覆盖，保留核心内建 GLOBAL 的选择记录。父概览保存后刷新；取消新建/成员修改不写文件。全屏 Dialog 同步自身深浅主题系统栏，修复浅色编辑页状态栏图标不可读。
+- 最终统一执行根 Wrapper `:app:testDebugUnitTest :service:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`，App JVM **294**、Service JVM **128**，失败/错误/跳过均 0；Lint **0 errors、53 warnings、9 hints**。最终日志 `/tmp/kclash-groups-20261103-final6-build.log`；Core/Common/Go、DNS/浏览器网络主链路本轮未重跑。
+- Redmi Note 8 Pro `wsvwypiz7xwslvl7`，API 36、1080×2340、竖屏字号 1.0，最终精确批次 **12/12**，方法清单 `/tmp/kclash-groups-20261103-methods.txt`，日志 `/tmp/kclash-groups-20261103-final6-device.log`。覆盖整套深浅表单/成员/设置/YAML、长按拖动、复制删除、直接确认、旧配置页回归；真实 MainActivity 从添加入口创建临时 Profile、可视新增组、文件回读、重新打开及管理/YAML 入口通过，最后只删除自己创建且核对过 ID/名称的临时配置。真实文件仓库用例只读取授权 `1.yaml`（本机/设备 SHA-256 均为 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`），隔离 Room/缓存验证过期/运行守卫及成功保存，不访问 Provider 或订阅。
+- 正式 Profile 前后保护各 **1/1**，均 count=1、missing=0、expected=1，文件名/大小/mtime 完全相同；日志 `/tmp/kclash-groups-20261103-before.log`、`/tmp/kclash-groups-20261103-final6-after.log`。未清数据、删除正式配置或启动核心/VPN，最终服务为空且无 tun0。App SHA-256 `9d3db01beb93dcd094f7c383851f6d32ed7512207ccd8e9bd0be71105e17bd48`，测试包 `9f084531e0fd2bfbb48eaa1a3a0d0823f38db18778ced93fed99111a214cc54c`，均与设备安装包匹配；App 仅 arm64-v8a，测试包无原生库。
+- 最终截图 `/tmp/kclash-groups-20261103-final-images/` 共 28 个画面（另有拼图），其中策略组列表/成员选择/成员排序/选项/快捷 YAML × 深浅 10 态已目视；画面采于 final5，final6 仅补 GLOBAL 元数据保护，UI 源码相同。首批 9/9 已通过，随后补充管理入口、系统栏、无缩进列表和真实宿主回归后最终 12/12；中间 final2 构建因测试 moveTo 的 durationMillis 参数不存在失败，按编译器签名改为 delayMillis，final3/4/5/6 构建均通过，失败日志保留。
+- 当前为**可视编辑首版 DONE-VERIFIED，Profiles/整体 UI 仍 PARTIAL**。批量选择/删除、远程图标选择与预览、过滤预设/核心侧表达式校验、完整问题横幅、长列表边缘拖动滚动、全局资源登记/重名映射仍待对齐；缺失成员目前保留引用供用户修复。标准/脚本扩展模式与离开后的 autoApply、卡片组数、更多页的字段添加/快捷 YAML、真实 age/SAF 闭环继续作为后续整页工作，不把本批当作完整 Flutter parity。
 
 ### 自定义配置导入与更多网络设置（2026-11-03）
 
@@ -22,7 +35,7 @@
 - 正式 Profile 前后保护各 1/1 通过，均 count=1、missing=0、expected=1，文件名/size/mtime 与 before 相同；日志 /tmp/kclash-custom-more-20261103-before.log 和 /tmp/kclash-custom-more-20261103-final7-after.log。未清数据或删除正式配置；正式宿主用例只删除自己创建的空草稿。最终服务为空、sysfs 无 tun0。
 - Debug APK SHA-256 5c974fdd17afdde8bf65b279fe1a6fb232f756230ef2763e2d2d6f4cfd258b90，AndroidTest 302ee1fdc1f23637c0c03a36075e2259e01c7299edee561fce9c2e672db7c06d，与设备安装包一致；App 仅 arm64-v8a，测试包无原生库。更多/导入八态截图与前序配置页十态存于 /tmp/kclash-custom-more-20261103-images/，已目视检查；导入输入态键盘可见，确认后键盘退出，固定列表宿主主题问题仍保留。
 - 中间失败保留：首轮 service 原统计停止时序测试 1 项失败，独立及后续整批通过；导入读取固定 IO 导致 JVM 测试无法等待和后续 Main dispatcher 清理失败，改为注入调度器后通过；可空文件快照编译错误已修复。设备首批 24/26、后批 25/26，文案子串断言与独立窗口焦点/点击时序修复后 final5 为 26/26；一次 Lint 内部 Unexpected owner function: null 重跑最终成功。不将中间批次记为全绿。
-- 整体 UI 仍为 PARTIAL。字段添加面板、逐字段弹窗/快捷 YAML、完整策略组可视编辑和计数卡、标准/脚本扩展与自动 apply 待继续。CUSTOM 导入保留本地 YAML 资源结构，上游全局资源登记/重名映射/远程资源加载尚未对齐；文件密文输入与压缩包导入、真实 URL/age/SAF 全流程 E2E 未验收。后续继续整页还原后批量验证。
+- 整体 UI 仍为 PARTIAL。更多页字段添加面板、逐字段弹窗/快捷 YAML、策略组批量/图标/问题校验与计数卡、标准/脚本扩展与自动 apply 待继续；策略组可视首版已有上方后续切片。CUSTOM 导入保留本地 YAML 资源结构，上游全局资源登记/重名映射/远程资源加载尚未对齐；文件密文输入与压缩包导入、真实 URL/age/SAF 全流程 E2E 未验收。后续继续整页还原后批量验证。
 
 ### 自定义配置创建与概览整页对齐（2026-11-03）
 
@@ -33,7 +46,7 @@
 - 正式 Profile 前后保护各 1/1 通过，均为 `count=1 missing=0 expected=1`，文件名/size/mtime 一致；日志 `/tmp/kclash-custom-overview-20261103-before.log` 和 `/tmp/kclash-custom-overview-20261103-after.log`。正式配置保留，正式宿主用例仅删除自己新建的空草稿；本轮未清数据、未访问订阅、未读写外层 `1.yaml`，未启动核心/VPN，最终服务为空、无 tun0。
 - Debug APK SHA-256 `036015d23a82939ae88a7c2d0966715332bf4902c02518f6b104133cb18fa6ee`，AndroidTest `94a13b184e01e71de70017265f834dccbb4f8ec79a26fcc00fc116e2a7188033`，与设备安装包一致；App 原生库仅 arm64-v8a，测试包无原生库。列表、扩展、远程编辑、自定义概览、更多的深浅主题共 10 张图已目视，目录 `/tmp/kclash-custom-overview-20261103-images/`；概览/更多窗口完整无遮挡，固定列表测试宿主 Activity 背景和系统栏主题仍待统一，不更新旧视觉哈希基线。
 - 中间 AndroidTest `Unresolved reference longClick` 已补 import；JVM 首轮 275 项有 3 项因后台解析跨越测试 Main dispatcher 生命周期失败，改为显式注入概览 dispatcher 后最终 277 项全通过。保留失败经过，不将早期失败视为最终结果。
-- Profiles/整体 UI 仍为 PARTIAL。当时待补的 CUSTOM URL/FILE 导入和 NTP/Sniffer 已有上方后续切片；策略组可视添加/排序/成员编辑、卡片策略组计数、标准/脚本扩展模式及离开后的自动 apply 仍待补齐；规则资源引用仅覆盖简单 RULE-SET，不宣称完整问题校验。下一步继续 Profiles/Dashboard 整页差异及真实密文/SAF 闭环，完成整版后批量验证。
+- Profiles/整体 UI 仍为 PARTIAL。当时待补的 CUSTOM URL/FILE 导入和 NTP/Sniffer 已有上方后续切片；策略组可视添加/排序/成员编辑已由上方首版切片补齐；卡片策略组计数、策略组完整 parity、标准/脚本扩展模式及离开后的自动 apply 仍待补齐；规则资源引用仅覆盖简单 RULE-SET，不宣称完整问题校验。下一步继续 Profiles/Dashboard 整页差异及真实密文/SAF 闭环，完成整版后批量验证。
 
 ### 配置页整页首版对齐（2026-11-03）
 
@@ -112,13 +125,13 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 统一启动、停止、配置热切、停止态节点读取/选择/测速、模式、VPN/纯代理、LAN 热更新、Provider 更新与观测失效；UI 不直接调用 gomobile |
-| 单元测试 | 最新自定义配置导入/更多切片 App 284、Service 128 项，失败/错误/跳过 0；DNS 修复与 Core 34 项为前序结果，本轮 Core/Common/Go 未重跑 |
-| 主流程真机测试 | Redmi 竖屏默认字号：最新自定义配置导入/更多精确批次 26/26；配置页前序批次和定向复验见同日配置页节；代理页批次 21/21；代理组整类 8/8、ViewModel 面板、协议滚动、语义锚定 1/1；真实 Mihomo URLTest/Fallback 固定/恢复/非法选择回归 1/1；完整 ProfileRuntimeParity 长流程仍受停止态 DIRECT 默认测速失败影响 |
+| 单元测试 | 最新策略组可视编辑切片 App 294、Service 128 项，失败/错误/跳过 0；DNS 修复与 Core 34 项为前序结果，本轮 Core/Common/Go 未重跑 |
+| 主流程真机测试 | Redmi 竖屏默认字号：最新策略组编辑精确批次 12/12，正式 MainActivity/原子仓库/深浅主题通过；前序自定义配置导入/更多 26/26；配置页前序批次和定向复验见同日配置页节；代理页批次 21/21；代理组整类 8/8、ViewModel 面板、协议滚动、语义锚定 1/1；真实 Mihomo URLTest/Fallback 固定/恢复/非法选择回归 1/1；完整 ProfileRuntimeParity 长流程仍受停止态 DIRECT 默认测速失败影响 |
 | Debug 构建 | Debug/AndroidTest 构建与 `lintDebug` 通过；Lint 0 errors、53 warnings、9 hints |
-| Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；当前自定义配置版本 SHA-256 5c974fdd17afdde8bf65b279fe1a6fb232f756230ef2763e2d2d6f4cfd258b90，与 Redmi 安装包一致；前次 DNS/浏览器验收哈希见对应历史节 |
-| Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 302ee1fdc1f23637c0c03a36075e2259e01c7299edee561fce9c2e672db7c06d，与设备一致且无原生库 |
+| Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；当前策略组编辑版本 SHA-256 9d3db01beb93dcd094f7c383851f6d32ed7512207ccd8e9bd0be71105e17bd48，与 Redmi 安装包一致；前次 DNS/浏览器验收哈希见对应历史节 |
+| Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 9f084531e0fd2bfbb48eaa1a3a0d0823f38db18778ced93fed99111a214cc54c，与设备一致且无原生库 |
 | Release 构建 | 历史 `:app:assembleRelease :app:lintRelease` 已通过，输出为未签名预发布 APK；本轮未重建 Release，独立 release keystore 仍待发布阶段创建 |
-| 最近真机证据 | Redmi API 36、1080×2340、竖屏字号 1.0：自定义配置精确批次 24/24、截图补验 2/2，概览/更多等 10 态已目视；代理页前序精确批次 21/21；正式 Profile 文件元数据前后不变（1 份且非空），服务为空、无 tun0。真实网络证据见 DNS/浏览器修复节 |
+| 最近真机证据 | Redmi API 36、1080×2340、竖屏字号 1.0：策略组可视编辑最终精确批次 12/12、截图 10 态已目视，正式 Profile 前后保护各 1/1；前序自定义配置概览/更多证据见历史节；代理页前序精确批次 21/21；正式 Profile 文件元数据前后不变（1 份且非空），服务为空、无 tun0。真实网络证据见 DNS/浏览器修复节 |
 
 ## 4. 目标架构图
 
@@ -368,7 +381,7 @@ flowchart LR
 - 核心运行期间仍阻止 Profile 删除和正文编辑/同步；当前配置选择无论停止或运行均通过 CoreRuntimeManager 串行校验、热应用，失败回滚原选择/输入，回滚失败停止核心。
 - 自定义 Profile 新增 Rules 分区快速编辑入口；编辑器逐行校验规则类型和动作，拒绝 `SUB-RULE`，保存时只替换顶层 `rules` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 新增 Proxies 分区快速编辑入口；编辑器按 YAML 列表校验代理名称和类型，拒绝重复名称和非列表结构，保存时只替换顶层 `proxies` 区块，不改写其他 YAML 字段。
-- 自定义 Profile 新增 Proxy Groups 分区快速编辑入口；编辑器按 YAML 列表校验代理组名称和 Flutter 支持的类型，拒绝 `relay`、重复名称和非列表结构，保存时只替换顶层 `proxy-groups` 区块并保留边界注释与其他 YAML 字段。
+- 自定义 Profile 的 Proxy Groups 已有可视列表/单组/成员/可选设置首版，保留整列表与单组快捷 YAML；支持复制、删除、排序、引用跟随改名和原子保存，保留未知字段与未编辑分区。完整问题校验、批量与图标等边界见顶部策略组首版节，整体仍 PARTIAL。
 - 自定义 Profile 新增 Providers 分区快速编辑入口；分别编辑顶层 `proxy-providers`/`rule-providers` map，校验嵌套 map、非空字段和唯一名称，保存时局部替换并保留边界注释与其他 YAML 字段。
 - 自定义 Profile 的代理 Provider 新增字段化覆盖表单；支持健康检查 URL、间隔、超时、lazy、期望状态、名称前缀/后缀、UDP、跳过证书校验和 IP 版本，并将覆盖按 Provider 名称持久化到 Kotlin 自有 `overridesJson`。
 - Provider 覆盖只作用于核心启动时生成的暂存 YAML，原始 Profile 文件保持不变；已有 `health-check`/`override` 子字段会局部合并并保留未覆盖字段，避免编辑覆盖后丢失用户配置。

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.ProfileConfigValidator
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileDialerEditor
+import com.lonnnnnng.flclash.data.ProxyGroupDrafts
+import com.lonnnnnng.flclash.data.ProxyGroupsSave
 import com.lonnnnnng.flclash.data.ProfileProxyGroupsEditor
 import com.lonnnnnng.flclash.data.ProfileProxiesEditor
 import com.lonnnnnng.flclash.data.ProfileProvidersEditor
@@ -78,6 +80,7 @@ data class ProfileProxyGroupsEditorUiState(
     val profile: Profile? = null,
     val sourceContent: String = "",
     val groups: String = "",
+    val initialGroupIndex: Int? = null,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
 )
@@ -165,6 +168,7 @@ class ProfilesViewModel internal constructor(
     private var retryAgeImport: (suspend (String) -> Unit)? = null
     private var ageImportGeneration = 0L
     private var localEditorGeneration = 0L
+    private var proxyGroupsGeneration = 0L
     private var pendingFilePick: Triple<Long, Long, Long>? = null
     private var nextFilePickToken = 0L
     private var replacementBytes: ByteArray? = null
@@ -357,6 +361,7 @@ class ProfilesViewModel internal constructor(
 
     fun closeEditor() {
         localEditorGeneration++
+        closeProxyGroupsEditor()
         cancelCustomImport()
         overviewJob?.cancel()
         overviewJob = null
@@ -807,35 +812,73 @@ class ProfilesViewModel internal constructor(
         }
     }
 
-    fun openProxyGroupsEditor(profile: Profile) {
+    fun openProxyGroupsEditor(profile: Profile) = openProxyGroupsEditorPage(profile, null)
+
+    fun openSingleProxyGroupEditor(profile: Profile, index: Int) = openProxyGroupsEditorPage(profile, index)
+
+    private fun openProxyGroupsEditorPage(profile: Profile, index: Int?) {
         if (profile.type != ProfileType.CUSTOM) {
             mutableErrors.tryEmit("高级代理组编辑仅支持自定义配置")
             return
         }
-        if (runtimeManager.state.value.isRunning) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑代理组")
             return
         }
+        if (mutableProxyGroupsEditor.value.isSaving) return
+        val generation = ++proxyGroupsGeneration
+        mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(profile = profile, isLoading = true, initialGroupIndex = index)
         viewModelScope.launch {
-            mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(profile = profile, isLoading = true)
             runCatching {
                 val content = repository.readLocalProfileContent(profile.id)
                 content to ProfileProxyGroupsEditor.extractGroups(content)
             }.onSuccess { (content, groups) ->
-                mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(
-                    profile = profile,
-                    sourceContent = content,
-                    groups = groups,
+                if (generation == proxyGroupsGeneration) mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(
+                    profile = profile, sourceContent = content, groups = groups, initialGroupIndex = index,
                 )
             }.onFailure { error ->
-                mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState()
-                mutableErrors.emit(error.message ?: "无法读取代理组配置")
+                if (error is CancellationException) throw error
+                if (generation == proxyGroupsGeneration) {
+                    mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState()
+                    mutableErrors.emit("无法读取代理组配置")
+                }
             }
         }
     }
 
     fun closeProxyGroupsEditor() {
+        proxyGroupsGeneration++
         mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState()
+    }
+
+    fun saveProxyGroupsDraft(save: ProxyGroupsSave) {
+        val state = mutableProxyGroupsEditor.value
+        val profile = state.profile ?: return
+        if (state.isLoading || state.isSaving) return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存代理组")
+            return
+        }
+        val generation = proxyGroupsGeneration
+        mutableProxyGroupsEditor.value = state.copy(isSaving = true)
+        viewModelScope.launch {
+            runCatching {
+                val content = withContext(overviewDispatcher) { ProxyGroupDrafts.apply(state.sourceContent, save) }
+                val updated = repository.saveCustomProxyGroups(profile.id, save, state.sourceContent) {
+                    generation == proxyGroupsGeneration && !isProfileMutationBlocked(runtimeManager.state.value)
+                }
+                if (generation == proxyGroupsGeneration) {
+                    reflectStructuredSave(profile.id, content, updated)
+                    closeProxyGroupsEditor()
+                }
+            }.onFailure { error ->
+                if (error is CancellationException) throw error
+                if (generation == proxyGroupsGeneration) {
+                    mutableProxyGroupsEditor.value = state.copy(isSaving = false)
+                    mutableErrors.emit(error.message ?: "保存代理组失败")
+                }
+            }
+        }
     }
 
     fun saveProxyGroups(groups: String) {

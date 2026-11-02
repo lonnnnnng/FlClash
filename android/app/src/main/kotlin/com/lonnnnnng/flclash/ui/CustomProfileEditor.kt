@@ -31,6 +31,7 @@ internal fun ProfileEditorDialog(
     onOpenRulesEditor: (Profile) -> Unit = {},
     onOpenProxiesEditor: (Profile) -> Unit = {},
     onOpenProxyGroupsEditor: (Profile) -> Unit = {},
+    onOpenSingleProxyGroupEditor: ((Profile, Int) -> Unit)? = null,
     onOpenProvidersEditor: (Profile) -> Unit = {},
     onOpenDnsEditor: (Profile) -> Unit = {},
     onOpenDialersEditor: (Profile) -> Unit = {},
@@ -137,6 +138,7 @@ internal fun ProfileEditorDialog(
                         onDns = { openSection { onOpenDnsEditor(profile) } },
                         onMore = { openSection { showMore = true } },
                         onGroups = { openSection { onOpenProxyGroupsEditor(profile) } },
+                        onGroup = onOpenSingleProxyGroupEditor?.let { open -> { index -> openSection { open(profile, index) } } },
                         onProxies = { openSection { onOpenProxiesEditor(profile) } },
                     )
                     TextButton(onClick = { showYaml = !showYaml }, modifier = Modifier.testTag("custom_profile_toggle_yaml")) {

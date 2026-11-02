@@ -16,16 +16,8 @@ object ProfileProxyGroupsEditor {
         if (lines[start].substringAfter(':').trim() == "[]") return ""
         val end = findSectionEnd(lines, start)
         val contentEnd = end - trailingBoundaryLines(lines, start, end)
-        return lines
-            .subList(start + 1, contentEnd)
-            .joinToString("\n") { line ->
-                when {
-                    line.startsWith("  ") -> line.removePrefix("  ")
-                    line.isBlank() -> ""
-                    else -> line.trim()
-                }
-            }
-            .trim('\n')
+        // 作者 long：导入器会输出无缩进列表，手写文件可能缩进两格；按整个分区的最小缩进处理，不能单独剥掉字段缩进。
+        return dedent(lines.subList(start + 1, contentEnd)).joinToString("\n").trim('\n')
     }
 
     fun replaceGroups(yaml: String, editorText: String): String {
@@ -116,6 +108,7 @@ object ProfileProxyGroupsEditor {
 
     private fun entryFields(entry: List<String>): Map<String, String> = buildMap {
         entry.forEachIndexed { index, rawLine ->
+            if (index > 0 && rawLine.length - rawLine.trimStart().length != 2) return@forEachIndexed
             val candidate = if (index == 0) {
                 rawLine.trim().removePrefix("-").trimStart()
             } else {

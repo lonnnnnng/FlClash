@@ -988,6 +988,41 @@ class ProfilesViewModelTest {
     }
 
     @Test
+    fun `visual groups save refreshes parent and refuses a running runtime`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(77L, "Visual")
+        val store = FakeProfileStore(profile).apply {
+            content = "proxy-groups:\n  - {name: Main, type: select, proxies: [DIRECT]}\nrules: ['MATCH,Main']\n"
+        }
+        val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
+        val viewModel = ProfilesViewModel(repository = store, runtimeManager = runtime, overviewDispatcher = mainDispatcher)
+        viewModel.openEditor(profile)
+        advanceUntilIdle()
+        viewModel.openSingleProxyGroupEditor(profile, 0)
+        advanceUntilIdle()
+        assertEquals(0, viewModel.proxyGroupsEditorState.value.initialGroupIndex)
+        val groups = com.lonnnnnng.flclash.data.ProxyGroupDrafts.read(store.content).map { it.edit { fields -> fields.addProperty("name", "Renamed") } }
+        viewModel.saveProxyGroupsDraft(com.lonnnnnng.flclash.data.ProxyGroupsSave(groups))
+        advanceUntilIdle()
+        assertNull(viewModel.proxyGroupsEditorState.value.profile)
+        assertTrue(checkNotNull(store.updatedContent).contains("MATCH,Renamed"))
+        assertEquals("Renamed", viewModel.editorState.value.overview?.groups?.single()?.name)
+        viewModel.openProxyGroupsEditor(profile)
+        advanceUntilIdle()
+        runtime.set(CoreRuntimeStatus.RUNNING)
+        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
+        val before = store.updatedContent
+        viewModel.saveProxyGroupsDraft(com.lonnnnnng.flclash.data.ProxyGroupsSave(groups))
+        advanceUntilIdle()
+        assertEquals("核心运行中，请先停止核心后再保存代理组", error.await())
+        assertEquals(before, store.updatedContent)
+        viewModel.closeProxyGroupsEditor()
+        viewModel.saveProxyGroupsDraft(com.lonnnnnng.flclash.data.ProxyGroupsSave(groups))
+        advanceUntilIdle()
+        assertNull(viewModel.proxyGroupsEditorState.value.profile)
+    }
+
+    @Test
     fun `custom proxy groups editor keeps dialog open when a group is invalid`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(8L, "非法代理组")

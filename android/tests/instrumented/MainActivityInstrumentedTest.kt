@@ -8,6 +8,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsOn
@@ -419,51 +420,53 @@ class MainActivityInstrumentedTest {
     @Test
     fun mainActivityPersistsCustomProfileProxyGroupsThroughRealViewModels() {
         val label = "Activity E2E 代理组"
-        val group = "- name: AUTO-TEST\n  type: select\n  proxies:\n    - DIRECT-TEST"
-
-        composeRule.onNodeWithTag("nav_profiles").performClick()
-        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        startCustomProfileEditor(label)
-        // 作者 long：先写入最小基础 YAML，确保代理组分区回写时要保留同一份 Profile 的其他内容。
-        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
-        composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
-        composeRule.onNodeWithText("保存").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
+        val entryPoint = EntryPointAccessors.fromApplication(composeRule.activity.application, ConnectionAcceptanceEntryPoint::class.java)
+        val repository = entryPoint.profileRepository()
+        val before = runBlocking(Dispatchers.IO) { entryPoint.database().profiles().getAll().map { it.id }.toSet() }
+        val selected = repository.currentProfileId.value
+        var createdId: Long? = null
+        try {
+            composeRule.onNodeWithTag("nav_profiles").performClick()
+            startCustomProfileEditor(label)
+            createdId = runBlocking(Dispatchers.IO) { entryPoint.database().profiles().getAll().single { it.id !in before && it.label == label }.id }
+            // 作者 long：通过真实可视表单创建策略组，避免继续向旧文本控件注入一份另造的验收 YAML。
+            composeRule.onNodeWithTag("custom_profile_add_group").performScrollTo().performClick()
+            composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("proxy_group_name").fetchSemanticsNodes().isNotEmpty() }
+            composeRule.onNodeWithTag("proxy_group_name").performClick()
+            composeRule.onNodeWithTag("group_value_input").performTextInput("AUTO-TEST")
+            composeRule.onNodeWithTag("group_value_confirm").performClick()
+            composeRule.onNodeWithTag("proxy_group_members").performClick()
+            composeRule.onNodeWithTag("group_members_add").performClick()
+            composeRule.onNodeWithText("DIRECT").performClick()
+            composeRule.onNodeWithTag("group_member_picker_done").performClick()
+            composeRule.onNodeWithTag("proxy_group_members_confirm").performClick()
+            composeRule.onNodeWithTag("proxy_group_form_confirm").performClick()
+            composeRule.waitUntil(10_000) { composeRule.onAllNodesWithTag("proxy_group_list_save").fetchSemanticsNodes().isEmpty() }
+            val content = runBlocking(Dispatchers.IO) { repository.readLocalProfileContent(checkNotNull(createdId)) }
+            val group = com.lonnnnnng.flclash.data.ProxyGroupDrafts.read(content).single()
+            assertEquals("AUTO-TEST", group.name)
+            assertEquals(listOf("DIRECT"), group.strings("proxies"))
+            composeRule.onNodeWithTag("custom_profile_group_0").performScrollTo().performClick()
+            composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("proxy_group_name").fetchSemanticsNodes().isNotEmpty() }
+            composeRule.onNodeWithTag("proxy_group_name").assertTextContains("AUTO-TEST", substring = true)
+            composeRule.onNodeWithTag("proxy_group_form_back").performClick()
+            composeRule.onNodeWithTag("custom_profile_manage_groups").performScrollTo().performClick()
+            composeRule.onNodeWithTag("proxy_groups_yaml").performClick()
+            composeRule.onNodeWithTag("proxy_groups_yaml_content").assertTextContains("AUTO-TEST", substring = true)
+            composeRule.onNodeWithTag("proxy_groups_yaml_back").performClick()
+            composeRule.onNodeWithTag("proxy_group_list_back").performClick()
+            composeRule.onNodeWithTag("custom_profile_back").performClick()
+            composeRule.onNodeWithTag("nav_dashboard").performClick()
+        } finally {
+            // 作者 long：只删除本方法从真实添加入口创建且核对过 ID/名称的临时配置，保留正式 Profile 和原选择。
+            runBlocking(Dispatchers.IO) {
+                createdId?.let { id ->
+                    val row = entryPoint.database().profiles().getById(id)
+                    if (row != null) { check(id !in before && row.label == label); repository.deleteProfile(id) }
+                }
+                repository.selectProfile(selected)
+            }
         }
-
-        openProfileActions(label)
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithTag("custom_profile_add_group").performScrollTo().performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText("代理组 YAML").performTextInput(group)
-        composeRule.onNodeWithText("保存").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isEmpty()
-        }
-
-        openProfileActions(label)
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithTag("custom_profile_add_group").performScrollTo().performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText(group).assertIsDisplayed()
-        composeRule.onNodeWithText("取消").performClick()
-
-        openProfileActions(label)
-        composeRule.onNodeWithText("删除").performClick()
-        composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
-        val deleteButtons = composeRule.onAllNodesWithText("删除")
-        deleteButtons[deleteButtons.fetchSemanticsNodes().lastIndex].performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isEmpty()
-        }
-
-        composeRule.onNodeWithText("首页").performClick()
-        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }
 
     @Test

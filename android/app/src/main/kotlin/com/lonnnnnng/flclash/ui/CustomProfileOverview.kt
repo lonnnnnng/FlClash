@@ -26,6 +26,7 @@ internal fun CustomProfileOverview(
     onMore: () -> Unit,
     onGroups: () -> Unit,
     onProxies: () -> Unit,
+    onGroup: ((Int) -> Unit)? = null,
 ) {
     val readable = summary?.takeUnless { it.unreadable }
     fun count(value: Int?) = value?.toString() ?: "—"
@@ -48,19 +49,21 @@ internal fun CustomProfileOverview(
     }
     Row(Modifier.fillMaxWidth().padding(top = 18.dp), verticalAlignment = Alignment.CenterVertically) {
         Text("策略组", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-        IconButton(onClick = onGroups, enabled = enabled, modifier = Modifier.testTag("custom_profile_add_group")) {
-            Icon(Icons.Outlined.Add, "编辑策略组")
+        if (!readable?.groups.isNullOrEmpty()) IconButton(onClick = onGroups, enabled = enabled,
+            modifier = Modifier.testTag("custom_profile_manage_groups")) { Icon(Icons.Outlined.Settings, "管理策略组") }
+        IconButton(onClick = { onGroup?.invoke(-1) ?: onGroups() }, enabled = enabled, modifier = Modifier.testTag("custom_profile_add_group")) {
+            Icon(Icons.Outlined.Add, "添加策略组")
         }
     }
     Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
         Column {
             if (readable?.groups.isNullOrEmpty()) {
                 ProfileSectionRow("添加策略组", "将代理和资源组合为可切换的出站策略", Icons.Outlined.Hub, enabled,
-                    Modifier.testTag("custom_profile_groups"), onGroups)
+                    Modifier.testTag("custom_profile_groups"), { onGroup?.invoke(-1) ?: onGroups() })
             } else {
                 readable.groups.forEachIndexed { index, group ->
                     ProfileSectionRow(group.name, "${group.type} · ${group.members} 个成员 · ${group.resources} 个资源", Icons.Outlined.Hub,
-                        enabled, Modifier.testTag("custom_profile_group_$index"), onGroups)
+                        enabled, Modifier.testTag("custom_profile_group_$index"), { onGroup?.invoke(index) ?: onGroups() })
                 }
             }
         }

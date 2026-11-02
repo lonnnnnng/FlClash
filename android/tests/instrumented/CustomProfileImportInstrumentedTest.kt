@@ -20,6 +20,55 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CustomProfileImportInstrumentedTest {
+    @Test fun customGroupSavePreservesOverridesAndRejectsStaleOrRunningWrite() = runBlocking {
+        val args = InstrumentationRegistry.getArguments()
+        assumeTrue("只使用授权 1.yaml", args.getString("kclashLocalFile") == "true")
+        val descriptor = InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand("cat /sdcard/Download/1.yaml")
+        val bytes = FileInputStream(descriptor.fileDescriptor).use { it.readBytes() }
+        descriptor.close()
+        assertEquals(args.getString("kclashLocalFileSha256"), MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) })
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val directory = File(context.cacheDir, "custom-groups-" + System.nanoTime()).apply { mkdirs() }
+        val isolated = object : ContextWrapper(context) {
+            override fun getApplicationContext(): Context = this
+            override fun getFilesDir(): File = directory
+        }
+        val database = Room.inMemoryDatabaseBuilder(context, KClashDatabase::class.java).build()
+        val repository = ProfileRepository(isolated, database, object : SubscriptionClient {
+            override suspend fun download(url: String): SubscriptionDownload = error("本地验收不访问订阅")
+        })
+        try {
+            val created = repository.addCustomProfile("真实本地策略")
+            val source = repository.decodeCustomImport(bytes, "").content
+            repository.updateLocalProfileContent(created.id, source)
+            val fields = ProfileProviderOverrides(dns = ProfileDnsOverrides(enable = false), ntp = ProfileNtpOverrides(enable = true))
+            val profile = repository.updateProfileOverrides(created.id, fields.toJsonString())
+            val file = repository.profileFile(created.id)
+            val before = file.readBytes()
+            val mtime = file.lastModified()
+            val groups = ProxyGroupDrafts.read(source)
+            check(groups.isNotEmpty())
+            val name = groups.first().name
+            val save = ProxyGroupsSave(groups.mapIndexed { index, group -> if (index == 0) group.edit { it.addProperty("name", name + "_edited") } else group })
+            assertTrue(runCatching { repository.saveCustomProxyGroups(profile.id, save, source) { false } }.isFailure)
+            assertTrue(runCatching { repository.saveCustomProxyGroups(profile.id, save, source + "\n") { true } }.isFailure)
+            assertTrue(file.readBytes().contentEquals(before))
+            assertEquals(mtime, file.lastModified())
+            val renamed = repository.updateProfileLabel(profile.id, "保留最新名称")
+            val updated = repository.saveCustomProxyGroups(profile.id, save, source) { true }
+            assertEquals(renamed.label, updated.label)
+            assertEquals(fields, ProfileProviderOverrides.fromJsonString(updated.overridesJson))
+            assertEquals(name + "_edited", ProxyGroupDrafts.read(file.readText()).first().name)
+            assertEquals(1, database.profiles().getAll().size)
+            assertEquals(created.id, repository.currentProfileId.value)
+        } finally {
+            database.close()
+            // 作者 long：只回收当前测试创建的独占缓存，正式库和授权文件不参与写入。
+            check(directory.parentFile == context.cacheDir && directory.name.startsWith("custom-groups-"))
+            directory.deleteRecursively()
+        }
+    }
+
     @Test fun customReplacementCommitsAtomicallyAndRejectsStaleOrRunningWrite() = runBlocking {
         val args = InstrumentationRegistry.getArguments()
         assumeTrue("只使用授权 1.yaml", args.getString("kclashLocalFile") == "true")

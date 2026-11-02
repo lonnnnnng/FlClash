@@ -1,5 +1,12 @@
 # Testing
 
+## 自定义策略组可视编辑首版（2026-11-03）
+
+- App JVM 294、Service JVM 128 项全部通过；Debug/AndroidTest/Lint 通过，0 errors、53 warnings、9 hints，最终日志 /tmp/kclash-groups-20261103-final6-build.log。Core/Common/Go、真实 DNS/浏览器网络本轮未重跑。
+- Redmi 竖屏默认字号最终精确批次 12/12，方法清单 /tmp/kclash-groups-20261103-methods.txt，日志 /tmp/kclash-groups-20261103-final6-device.log；覆盖列表复制/删除/长按排序、直接编辑/确认、成员混排、可选设置/快捷 YAML、旧配置页及真实 MainActivity 新建/保存/重新打开。真实仓库只读授权 1.yaml、隔离 Room/cache 验证原子保存、旧正文/运行守卫和其他覆盖保留。
+- 正式 Profile 前后各 1/1，count=1/missing=0/expected=1，文件名/size/mtime 相同。真实宿主仅回收自己创建且核对 ID/名称的临时 Profile，未清数据、访问订阅或启动核心/VPN，最终服务为空且无 tun0。两包哈希与设备一致，App 仅 arm64，详情见 roadmap。
+- 截图 /tmp/kclash-groups-20261103-final-images/，策略组十态已目视；浅色 Dialog 系统栏对比度已修复。首批 9/9；final2 测试 moveTo 参数编译失败，修为 delayMillis，后续 final3/4/5/6 构建成功，最终 12/12。批量、图标、过滤预设/核心表达式校验和长列表边缘拖动等仍 PARTIAL。
+
 ## 自定义配置导入与更多网络设置（2026-11-03）
 
 - App JVM 284、Service JVM 128 项全通过；Debug/AndroidTest/Lint 通过（0 errors、53 warnings、9 hints），最终日志 /tmp/kclash-custom-more-20261103-final7-build.log。

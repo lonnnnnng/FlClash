@@ -858,6 +858,8 @@ fun KClashApp(
                     onOpenProxyGroupsEditor = profilesViewModel::openProxyGroupsEditor,
                     onCloseProxyGroupsEditor = profilesViewModel::closeProxyGroupsEditor,
                     onSaveProxyGroups = profilesViewModel::saveProxyGroups,
+                    onSaveProxyGroupsDraft = profilesViewModel::saveProxyGroupsDraft,
+                    onOpenSingleProxyGroupEditor = profilesViewModel::openSingleProxyGroupEditor,
                     providersEditorState = providersEditorState,
                     onOpenProvidersEditor = profilesViewModel::openProvidersEditor,
                     onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
@@ -1443,6 +1445,8 @@ internal fun ProfilesPanel(
     onOpenProxyGroupsEditor: (profile: Profile) -> Unit = {},
     onCloseProxyGroupsEditor: () -> Unit = {},
     onSaveProxyGroups: (groups: String) -> Unit = {},
+    onSaveProxyGroupsDraft: ((com.lonnnnnng.flclash.data.ProxyGroupsSave) -> Unit)? = null,
+    onOpenSingleProxyGroupEditor: ((Profile, Int) -> Unit)? = null,
     providersEditorState: ProfileProvidersEditorUiState = ProfileProvidersEditorUiState(),
     onOpenProvidersEditor: (profile: Profile) -> Unit = {},
     onCloseProvidersEditor: () -> Unit = {},
@@ -1797,6 +1801,7 @@ internal fun ProfilesPanel(
                 onOpenRulesEditor = onOpenRulesEditor,
                 onOpenProxiesEditor = onOpenProxiesEditor,
                 onOpenProxyGroupsEditor = onOpenProxyGroupsEditor,
+                onOpenSingleProxyGroupEditor = onOpenSingleProxyGroupEditor,
                 onOpenProvidersEditor = onOpenProvidersEditor,
                 onOpenDnsEditor = onOpenDnsEditor,
                 onOpenDialersEditor = onOpenDialersEditor,
@@ -1865,6 +1870,9 @@ internal fun ProfilesPanel(
             ProfileProxyGroupsEditorDialog(
                 profile = profile,
                 initialGroups = proxyGroupsEditorState.groups,
+                sourceContent = proxyGroupsEditorState.sourceContent,
+                initialGroupIndex = proxyGroupsEditorState.initialGroupIndex,
+                onSaveDraft = onSaveProxyGroupsDraft,
                 saving = proxyGroupsEditorState.isSaving,
                 onDismiss = onCloseProxyGroupsEditor,
                 onSave = onSaveProxyGroups,
@@ -4643,40 +4651,11 @@ internal fun ProfileProxyGroupsEditorDialog(
     saving: Boolean,
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
+    sourceContent: String = "",
+    initialGroupIndex: Int? = null,
+    onSaveDraft: ((com.lonnnnnng.flclash.data.ProxyGroupsSave) -> Unit)? = null,
 ) {
-    var groups by rememberSaveable(profile.id) { mutableStateOf(initialGroups) }
-    ProfileEditorPage(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text("代理组 · ${profile.realLabel}") },
-        text = {
-            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    "每个代理组以 - name 和 type 开始，支持 select、url-test、fallback 和 load-balance。",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                OutlinedTextField(
-                    value = groups,
-                    onValueChange = { groups = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 12,
-                    maxLines = 20,
-                    enabled = !saving,
-                    label = { Text("代理组 YAML") },
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(groups) },
-                enabled = !saving,
-            ) {
-                if (saving) CircularProgressIndicator() else Text("保存")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
-        },
-    )
+    VisualProxyGroupsEditor(profile, initialGroups, sourceContent, saving, initialGroupIndex, onDismiss, onSave, onSaveDraft)
 }
 
 /**

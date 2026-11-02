@@ -1,10 +1,24 @@
 package com.lonnnnnng.flclash.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class ProfileProxyGroupsEditorTest {
+    @Test
+    fun `canonical indentless groups retain field and member indentation`() {
+        val source = "proxy-groups:\n- name: Main\n  type: select\n  proxies:\n  - DIRECT\n  future:\n    name: preserved\n    type: unknown\nrules: ['MATCH,Main']\n"
+        val extracted = ProfileProxyGroupsEditor.extractGroups(source)
+        assertTrue(extracted.contains("\n  type: select\n"))
+        val updated = ProfileProxyGroupsEditor.replaceGroups(source, extracted)
+        val group = ProxyGroupDrafts.read(updated).single()
+        assertEquals("Main", group.name)
+        assertEquals("select", group.text("type"))
+        assertEquals(listOf("DIRECT"), group.strings("proxies"))
+        assertEquals("preserved", group.fields.getAsJsonObject("future").get("name").asString)
+    }
+
     @Test
     fun `extracts proxy groups and keeps unrelated yaml when replacing`() {
         val source = """

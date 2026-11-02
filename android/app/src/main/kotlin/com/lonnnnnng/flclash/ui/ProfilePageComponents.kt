@@ -24,6 +24,10 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
 
 /** 作者 long：配置编辑和扩展使用整页导航层级，让键盘、长表单和子编辑器共享完整手机视口。 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +44,21 @@ internal fun ProfileEditorPage(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
+        val view = LocalView.current
+        val window = (view.parent as? DialogWindowProvider)?.window
+        val lightBars = MaterialTheme.colorScheme.surface.luminance() > 0.5f
+        DisposableEffect(window, lightBars) {
+            val controller = window?.let { WindowCompat.getInsetsController(it, view) }
+            val status = controller?.isAppearanceLightStatusBars
+            val navigation = controller?.isAppearanceLightNavigationBars
+            // 作者 long：整页 Dialog 有独立 Window，主题切换必须同步它自己的系统栏，否则浅色编辑页的白色状态图标不可读。
+            controller?.isAppearanceLightStatusBars = lightBars
+            controller?.isAppearanceLightNavigationBars = lightBars
+            onDispose {
+                if (status != null) controller.isAppearanceLightStatusBars = status
+                if (navigation != null) controller.isAppearanceLightNavigationBars = navigation
+            }
+        }
         Scaffold(
             modifier = Modifier.fillMaxSize().testTag("profile_editor_page"),
             containerColor = dashboardPageColor(),

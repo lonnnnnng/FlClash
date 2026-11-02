@@ -33,6 +33,11 @@ interface ProfileStore {
     suspend fun readLocalProfileContent(id: Long): String
     suspend fun readProfileSourceContent(id: Long): String = readLocalProfileContent(id)
     suspend fun updateLocalProfileContent(id: Long, content: String): Profile
+    suspend fun saveCustomProxyGroups(id: Long, save: ProxyGroupsSave, expectedContent: String, canWrite: () -> Boolean): Profile {
+        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+        require(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开策略组" }
+        return updateLocalProfileContent(id, ProxyGroupDrafts.apply(expectedContent, save))
+    }
     suspend fun downloadCustomImport(url: String): ByteArray = error("此数据源不支持 URL 导入")
     suspend fun decodeCustomImport(bytes: ByteArray, ageSecretKey: String): CustomProfileImportContent = customProfileImportContent(PlainProfileContentDecoder.decode(bytes, ageSecretKey))
     suspend fun replaceCustomProfile(id: Long, content: String, expected: Profile, expectedContent: String, canWrite: () -> Boolean): Profile =
@@ -239,6 +244,32 @@ class ProfileRepository(
         val updated = current.copy(lastUpdateAt = System.currentTimeMillis())
         profileDao.update(updated.toEntity())
         updated
+    }
+
+    override suspend fun saveCustomProxyGroups(id: Long, save: ProxyGroupsSave, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        fileMutationMutex.withLock {
+            val content = ProxyGroupDrafts.apply(expectedContent, save)
+            configValidator.validate(content.toByteArray(Charsets.UTF_8))
+            val file = profileFile(id)
+            val original = snapshotLocalProfileFile(file)
+            require(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化，请重新打开策略组" }
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            // 作者 long：策略组与名称引用共同提交；沿用最新元数据，保留脚本绑定、DNS 覆盖和用户配置选择。
+            withContext(kotlinx.coroutines.NonCancellable) {
+                replaceLocalProfileFile(file, content.toByteArray(Charsets.UTF_8), { commit ->
+                    database.withTransaction {
+                        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                        require(current.type == ProfileType.CUSTOM) { "只有自定义配置支持策略组编辑" }
+                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                        val updated = ProxyGroupDrafts.updateProfileReferences(current, save).copy(lastUpdateAt = System.currentTimeMillis())
+                        profileDao.update(updated.toEntity())
+                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                        commit()
+                        updated
+                    }
+                }, expected = original)
+            }
+        }
     }
 
     override suspend fun downloadCustomImport(url: String): ByteArray = withContext(Dispatchers.IO) {
