@@ -254,7 +254,8 @@ object AppModule {
     fun provideVpnOptionsProvider(
         accessControlSettingsProvider: AccessControlSettingsProvider,
         vpnSettingsStore: com.lonnnnnng.flclash.service.VpnSettingsStore,
-    ): VpnOptionsProvider = DefaultVpnOptionsProvider(accessControlSettingsProvider, vpnSettingsStore)
+        paths: CoreRuntimePaths,
+    ): VpnOptionsProvider = DefaultVpnOptionsProvider(accessControlSettingsProvider, vpnSettingsStore, paths.configFile)
 
     @Provides
     @Singleton

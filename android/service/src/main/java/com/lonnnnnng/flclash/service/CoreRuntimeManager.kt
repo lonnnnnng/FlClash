@@ -109,6 +109,7 @@ class CoreRuntimeManager(
     private var preferredOutboundMode: CoreOutboundMode? = outboundModeStore.read()
     private val mutableOutboundMode = MutableStateFlow(preferredOutboundMode ?: CoreOutboundMode.RULE)
     private val profileScriptApplier = ProfileScriptApplier(profileScriptEvaluator)
+    private var appliedVpnOptions: com.lonnnnnng.flclash.service.models.VpnOptions? = null
     private var hasSuccessfulRun = false
     private var loadedConfigKey: List<Any?>? = null
 
@@ -145,9 +146,21 @@ class CoreRuntimeManager(
             if (previous?.id == id && loadedConfigKey == configKey(previous)) return@withContext
             val previousContent = paths.configFile.takeIf { it.isFile }?.readBytes()
             val previousKey = loadedConfigKey
+            val previousOptions = appliedVpnOptions
+            var servicesChanged = false
             try {
                 select(id)
                 ensureConfigLoaded(force = true)
+                if (mutableState.value.isRunning && previousOptions != null) {
+                    // 作者 long：配置换端口或 TUN 参数后必须同步系统网络；待重启的 VPN 开关仍保持当前会话选择。
+                    val nextOptions = vpnOptionsProvider.current().copy(enable = previousOptions.enable)
+                    if (nextOptions != previousOptions) {
+                        servicesChanged = true
+                        serviceController.stopAndAwait()
+                        serviceController.start(nextOptions)
+                        appliedVpnOptions = nextOptions
+                    }
+                }
             } catch (failure: Throwable) {
                 var restored = true
                 // 作者 long：加载失败必须恢复选择和已应用输入，不能让页面新配置与仍在服务的旧节点分裂。
@@ -159,6 +172,11 @@ class CoreRuntimeManager(
                             paths.configFile.writeBytes(previousContent)
                             bridge.setupConfig(previous.selectedMap)
                             bridge.updateMode(mutableOutboundMode.value)
+                            if (servicesChanged && previousOptions != null) {
+                                serviceController.stopAndAwait()
+                                serviceController.start(previousOptions)
+                                appliedVpnOptions = previousOptions
+                            }
                             loadedConfigKey = previousKey
                         } catch (_: Exception) {
                             restored = false
@@ -227,6 +245,7 @@ class CoreRuntimeManager(
             )
             val vpnOptions = vpnOptionsProvider.current()
             serviceController.start(vpnOptions)
+            appliedVpnOptions = vpnOptions
             if (!listenerStarted.get()) {
                 bridge.startListener()
                 listenerStarted.set(true)
@@ -838,11 +857,11 @@ class CoreRuntimeManager(
 
     private suspend fun renderProfileContent(profile: ActiveProfile, sourceContent: String,
         lanOverride: Boolean? = lanSharingStore.read(), scriptContent: String? = null): String {
-        // 作者 long：脚本先生成配置，再合并 Provider/DNS 覆盖；启动与预览共用顺序，避免预览和实际输入分叉。
+        // 作者 long：脚本生成配置后先补 DNS 运行基线，再合并显式覆盖；预览和启动共用顺序，防止无 DNS 订阅接管后断网。
         val scriptedContent = if (scriptContent == null) profileScriptApplier.apply(sourceContent, profile.scriptPath)
             else profileScriptApplier.applyContent(sourceContent, scriptContent)
         return patchLanSharing(ProfileProviderOverrideApplier.apply(
-            scriptedContent,
+            ProfileDnsBaselineApplier.apply(scriptedContent),
             ProfileProviderOverrides.fromJsonString(profile.overridesJson),
         ), lanOverride)
     }

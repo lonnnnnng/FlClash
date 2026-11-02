@@ -4,11 +4,21 @@
 >
 > 最后核对：2026-11-03（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 当前基线：`kotlin` 主线，HEAD 与 `origin/kotlin` 同步，工作树保留未提交改动。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
+> 当前基线：`kotlin` 主线，本轮提交 DNS 基线和浏览器主链路修复，尚未推送；远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
 > 最新验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，更细卡片/组标题视觉校准继续排队；真实 age 密文 E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
 > 本轮 Android 包此前未安装，正式 Room 为空；通过工作区外层 `AGENTS.md` 唯一授权入口导入并保留一份 Profile，未触碰外层 `1.yaml`、未清数据或删除 Profile。延迟缓存用例验证同一 Profile/组/节点/测试 URL 的正延迟跨真实应用进程恢复，并向正式 Room 写入不同 Profile 与旧测试 URL 探针，确认均不进入当前页面；成功后删除的只有测试探针行和应用内标记。核心保持 `STOPPED`，没有 ProxyService、VpnService 或 TUN。
 > 完整 ProfileRuntimeParity 长流程仍曾在停止态 `DIRECT` 默认测速阶段失败，不能推广为通过。Dashboard、Profiles 和 Proxy Groups 的完整 UI/UX 仍为 `PARTIAL`；后续仍需完成代理组卡片/组标题视觉、真实 age 密文 Android E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity。验收限定 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
+
+> 2026-11-03 主链路修复补充：真实订阅本身可用，Kotlin 缺少 Flutter 的 DNS baseline，导致 Android 虚拟 DNS 无应答；已补齐脚本后 baseline → 用户覆盖 → LAN 暂存链路，并按已应用配置读取 mixed-port/TUN 参数和发布系统 HTTP 代理。有认证或禁用 mixed-port 时不广播代理，运行态配置改变网络参数时同步重建并支持失败回滚。Redmi 上 UDP/TCP 53 与系统解析均通过；X 浏览器百度与 Cloudflare 页面实测成功。详情及最终构建校验见下方“DNS 基线与浏览器主链路修复”。本段之后较早的“核心 STOPPED、未启动 TUN”等记录只适用于各自历史切片。
+
+### DNS 基线与浏览器主链路修复（2026-11-03）
+
+- **代码**：`ProfileDnsBaselineApplier` 对齐 Flutter `baselineDns`，在原配置未启用 DNS 时只对核心暂存 YAML 补 `enable: true`、`enhanced-mode: fake-ip` 和两个 DoH nameserver；原 Profile 文件不回写，显式 DNS 覆盖仍在其后生效。
+- **运行参数**：`DefaultVpnOptionsProvider` 从已校验的 `mihomo/config.yaml` 读取实际 mixed-port、TUN stack/MTU/拥塞控制；Android API 29+ 按 Flutter 语义发布 HTTP proxy，端口认证或无有效端口时关闭广播。运行中配置变更网络参数会重建 Proxy/VPN 服务，失败时恢复旧服务参数。
+- **自动化**：App 270 项、Service 125 项 JVM 测试通过；Debug/AndroidTest 构建和 `lintDebug` 通过（0 errors，51 warnings，9 hints）。新增 DNS baseline 单测及 Redmi 真机 DNS 回归。
+- **真机**：Redmi Note 8 Pro `wsvwypiz7xwslvl7`，Android 16/API 36，arm64-v8a；UDP 53、绑定 VPN 的 TCP 53、Android 系统域名解析均通过。X 浏览器百度和 Cloudflare `/cdn-cgi/trace` 均成功加载；Kotlin Debug APK SHA-256 为 `1f58b9d1a4129b0de6329e377d07e29c18c0ff9b12bbb3923dd6bbddae41376e`，与设备安装包一致。
+- **对照边界**：设备上的 FlClash 0.9.2 使用同一网络和现有配置启动成功，百度与 Cloudflare 均可访问；直接从 shell 探测 `198.18.0.2:53` 的超时在两套实现中都能观察到，不能作为浏览器链路失败证据。Android 16 Private DNS 的 TCP/853 探测由系统额外发起，当前只记录为平台边界，未伪造 853 明文 DNS 劫持。
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -52,7 +62,7 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | `kotlin` 追踪 `origin/kotlin`；当前 `HEAD` 与 `origin/kotlin` 同步，工作树有未提交改动；Flutter 只作为参考 |
+| 远端关系 | `kotlin` 追踪 `origin/kotlin`；本轮修复本地提交，尚未推送；Flutter 只作为参考 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
@@ -60,11 +70,11 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 统一启动、停止、配置热切、停止态节点读取/选择/测速、模式、VPN/纯代理、LAN 热更新、Provider 更新与观测失效；UI 不直接调用 gomobile |
-| 单元测试 | 本轮强制 App 270 项、Core 34 项，失败/错误/跳过 0；Service/Common/Go 未重跑，历史结果不计入本轮 |
+| 单元测试 | 本次 DNS 修复 App 270 项、Service 125 项，失败/错误/跳过 0；Core 34 项为前序结果，本次 Core/Common/Go 未重跑 |
 | 主流程真机测试 | Redmi 竖屏默认字号：代理组整类 8/8、ViewModel 面板、协议滚动、语义锚定 1/1；真实 Mihomo URLTest/Fallback 固定/恢复/非法选择回归 1/1；完整 ProfileRuntimeParity 长流程仍受停止态 DIRECT 默认测速失败影响 |
 | Debug 构建 | Debug/AndroidTest 构建与 `lintDebug` 通过；Lint 0 errors、51 warnings、9 hints |
-| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `db03165a180429f6d46a336d5c125652dfde20a2fa4110069bcc5fda06dd92ac`，与 Redmi 已安装 base.apk 一致 |
-| Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 `deabbe570d3808404b30800360c9f25d59932c4503458dd0863291c633bd2078`，与设备一致且不含原生库 |
+| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `1f58b9d1a4129b0de6329e377d07e29c18c0ff9b12bbb3923dd6bbddae41376e`，与 Redmi 已安装 base.apk 一致 |
+| Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 `8c6d27cde15bbceec1d2237ec7e5ee54117cc442dc0a5537ae068e9ec1ad6567`，与设备一致且不含原生库 |
 | Release 构建 | 历史 `:app:assembleRelease :app:lintRelease` 已通过，输出为未签名预发布 APK；本轮未重建 Release，独立 release keystore 仍待发布阶段创建 |
 | 最近真机证据 | Redmi API 36、1080×2340、字号 1.0：真实 Mihomo Fallback/URLTest 固定与自动恢复、非法选择保护通过；排序/密度/搜索语义锚定通过。保留唯一授权 Profile，临时 `1.yaml` Profile 已清理，配置哈希未变；核心停止且无前台服务/TUN |
 

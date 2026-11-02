@@ -9,6 +9,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Test
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 private fun vpnOptions(port: Int) = VpnOptions(
     enable = true,
@@ -88,6 +90,47 @@ class ServiceConfigTest {
 }
 
 class DefaultVpnOptionsProviderTest {
+    @get:Rule val temporaryFolder = TemporaryFolder()
+
+    @Test fun appliedConfigUsesEffectivePortAndTunOptions() = runTest {
+        val file = temporaryFolder.newFile("config.json")
+        file.writeText("""{"mixed-port":17890,"tun":{"stack":"system","mtu":1400,"congestion-controller":"bbr"}}""")
+        val provider = DefaultVpnOptionsProvider(appliedConfigFile = file)
+        val options = provider.current()
+        assertEquals(17890, options.port)
+        assertEquals(true, options.systemProxy)
+        assertEquals("system", options.stack)
+        assertEquals(1400, options.mtu)
+        assertEquals("bbr", options.congestionController)
+        // 作者 long：同一暂存路径会在配置切换时被原子替换，不能把上次读取的端口缓存到下一次启动。
+        file.writeText("""{"mixed-port":27890}""")
+        assertEquals(27890, provider.current().port)
+    }
+
+    @Test fun authenticatedOrDisabledMixedPortDoesNotAdvertiseHttpProxy() = runTest {
+        val file = temporaryFolder.newFile("config.json")
+        val provider = DefaultVpnOptionsProvider(appliedConfigFile = file)
+        file.writeText("""{"mixed-port":17890,"authentication":["test:example"]}""")
+        assertEquals(false, provider.current().systemProxy)
+        file.writeText("""{"mixed-port":0}""")
+        assertEquals(false, provider.current().systemProxy)
+        file.writeText("""{}""")
+        assertEquals(0, provider.current().port)
+        assertEquals(false, provider.current().systemProxy)
+    }
+
+    @Test fun invalidAppliedConfigCannotSilentlyAdvertiseDefaultPort() = runTest {
+        val file = temporaryFolder.newFile("config.json")
+        val provider = DefaultVpnOptionsProvider(appliedConfigFile = file)
+        file.writeText("""{"mixed-port":65536}""")
+        assertEquals(true, runCatching { provider.current() }.isFailure)
+        file.writeText("[")
+        assertEquals(true, runCatching { provider.current() }.isFailure)
+        assertEquals(true, runCatching {
+            DefaultVpnOptionsProvider(appliedConfigFile = java.io.File(temporaryFolder.root, "missing")).current()
+        }.isFailure)
+    }
+
     @Test fun vpnPreferenceSelectsProxyOnlyOptionsWithoutChangingAccessSettings() = runTest {
         val store = object : VpnSettingsStore {
             var enabled = false

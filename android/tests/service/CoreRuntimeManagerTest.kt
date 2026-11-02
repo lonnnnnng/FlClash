@@ -553,13 +553,39 @@ class CoreRuntimeManagerTest {
         manager.selectProfile(52) { selected = checkNotNull(it) }
         assertEquals(52L, selected)
         assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
-        assertEquals("mixed-port: 7891\n", File(home, "config.yaml").readText())
+        assertEquals(7891, com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(File(home, "config.yaml").readText())).asJsonObject["mixed-port"].asInt)
         assertEquals(1, controller.events.count { it == "service-start" })
         sourceA.delete()
         assertTrue(runCatching { manager.selectProfile(51) { selected = checkNotNull(it) } }.isFailure)
         assertEquals(52L, selected)
         assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
-        assertEquals("mixed-port: 7891\n", File(home, "config.yaml").readText())
+        assertEquals(7891, com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(File(home, "config.yaml").readText())).asJsonObject["mixed-port"].asInt)
+    }
+
+    @Test fun hotSwitchRebuildsChangedVpnPortAndRestoresItOnServiceFailure() = runTest {
+        val a = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val b = temporaryFolder.newFile().apply { writeText("mixed-port: 17890\n") }
+        val profiles = listOf(ActiveProfile(1, "A", a.path), ActiveProfile(2, "B", b.path))
+        var selected = 1L
+        val home = temporaryFolder.newFolder()
+        val services = FakeServiceController()
+        val manager = CoreRuntimeManager(CoreRuntimePaths(home), object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profiles.single { it.id == selected }
+        }, FakeBridge(), services, DefaultVpnOptionsProvider(appliedConfigFile = File(home, "config.yaml")),
+            FakeRuntimeResumeStore(), elapsedRealtimeMillis = { 0L })
+        manager.startProxy().getOrThrow()
+        assertEquals(7890, services.receivedOptions?.port)
+        manager.selectProfile(2) { selected = checkNotNull(it) }
+        assertEquals(17890, services.receivedOptions?.port)
+        assertEquals(listOf("service-start", "service-stop", "service-start"), services.events)
+        services.failNextStart = true
+        assertTrue(runCatching { manager.selectProfile(1) { selected = checkNotNull(it) } }.isFailure)
+        assertEquals(2L, selected)
+        assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
+        assertEquals(17890, services.receivedOptions?.port)
+        assertTrue(services.started)
+        assertEquals(17890, com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(File(home, "config.yaml").readText())).asJsonObject["mixed-port"].asInt)
+        manager.stop().getOrThrow()
     }
 
     @Test
@@ -776,7 +802,7 @@ class CoreRuntimeManagerTest {
         manager.selectProfile(next.id) { selected.set(it) }
         assertFalse(pending.isCompleted)
         assertEquals(next.id, selected.get())
-        assertEquals("mixed-port: 7892\n", File(home, "config.yaml").readText())
+        assertEquals(7892, com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(File(home, "config.yaml").readText())).asJsonObject["mixed-port"].asInt)
         release.complete(Unit)
         assertEquals("配置或核心状态已变化，请重试", pending.await().exceptionOrNull()?.message)
         assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
@@ -825,9 +851,16 @@ class CoreRuntimeManagerTest {
                   cloud:
                     type: http
                     url: https://example.com/cloud
+
                     health-check:
                       enable: true
                       timeout: 2000
+                dns:
+                  enable: true
+                  enhanced-mode: fake-ip
+                  nameserver:
+                    - https://doh.pub/dns-query
+                    - https://dns.alidns.com/dns-query
             """.trimIndent() + "\n",
             File(homeDir, "config.yaml").readText(),
         )
@@ -994,7 +1027,7 @@ class CoreRuntimeManagerTest {
     @Test
     fun `core failure diagnostics keep code and redact raw core message`() = runTest {
         val source = temporaryFolder.newFile("invalid-with-detail.yaml").apply {
-            writeText("broken\n")
+            writeText("mixed-port: 7890\n")
         }
         val diagnosticStore = FakeRuntimeDiagnosticStore()
         val bridge = FakeBridge(

@@ -17,6 +17,8 @@ import com.lonnnnnng.flclash.service.models.AccessControlProps
 import com.lonnnnnng.flclash.service.models.VpnOptions
 import com.lonnnnnng.flclash.service.ServiceConfig
 import com.lonnnnnng.flclash.service.VpnRuntimeState
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import java.io.File
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
@@ -113,28 +115,54 @@ interface RuntimeResumeStore {
 
 /**
  * 作者 long：VPN 启用选择独立于 Profile，默认保持手机 TUN 接管；
- * 同时关闭系统 HTTP 代理，避免订阅配置的 mixed-port 尚未解析时把流量送到错误端口。
+ * HTTP 代理端口与 TUN 参数读取核心已经校验的输入，防止脚本改写后系统仍连接旧端口。
  */
 class DefaultVpnOptionsProvider(
     private val accessControlSettingsProvider: AccessControlSettingsProvider =
         DisabledAccessControlSettingsProvider,
     private val vpnSettingsStore: VpnSettingsStore = DefaultVpnSettingsStore,
+    private val appliedConfigFile: File? = null,
 ) : VpnOptionsProvider {
-    override suspend fun current() = VpnOptions(
-        enable = vpnSettingsStore.read(),
-        port = DEFAULT_MIXED_PORT,
-        ipv6 = false,
-        dnsHijacking = false,
-        accessControlProps = accessControlSettingsProvider.current().sanitized(),
-        allowBypass = true,
-        systemProxy = false,
-        bypassDomain = emptyList(),
-        stack = "mips",
-        routeAddress = emptyList(),
-    )
+    override suspend fun current(): VpnOptions {
+        val profileOptions = appliedConfigFile?.let(::readProfileTunOptions)
+        val port = profileOptions?.mixedPort ?: DEFAULT_MIXED_PORT
+        return VpnOptions(
+            enable = vpnSettingsStore.read(),
+            port = port,
+            ipv6 = false,
+            dnsHijacking = false,
+            accessControlProps = accessControlSettingsProvider.current().sanitized(),
+            allowBypass = true,
+            // 作者 long：与 Flutter 一样广播本地代理，让浏览器把域名交给核心解析；
+            // Android 的代理广播不能携带认证信息，有认证的端口必须继续走 TUN。
+            systemProxy = port > 0 && profileOptions?.authenticated != true,
+            bypassDomain = emptyList(),
+            stack = profileOptions?.stack ?: DEFAULT_STACK,
+            routeAddress = emptyList(),
+            mtu = profileOptions?.mtu ?: 0,
+            congestionController = profileOptions?.congestionController,
+        )
+    }
+
+    private fun readProfileTunOptions(file: File): ProfileTunOptions {
+        // 作者 long：生产调用发生在配置暂存、脚本和覆盖应用成功之后，读取失败必须阻止启动，不能广播猜测端口。
+        require(file.isFile) { "已应用配置文件不存在" }
+        val root = JsonParser.parseString(YamlConfigCodec.toJson(file.readText(Charsets.UTF_8))).asJsonObject
+        val port = root.intValue("mixed-port") ?: 0
+        require(port in 0..65535) { "mixed-port 超出有效范围" }
+        val tun = root.objectValue("tun")
+        return ProfileTunOptions(
+            mixedPort = port,
+            authenticated = root.stringListValue("authentication").any(String::isNotBlank),
+            stack = tun?.stringValue("stack")?.takeIf(String::isNotBlank) ?: DEFAULT_STACK,
+            mtu = tun?.intValue("mtu")?.takeIf { it > 0 },
+            congestionController = tun?.stringValue("congestion-controller")?.takeIf(String::isNotBlank),
+        )
+    }
 
     private companion object {
         const val DEFAULT_MIXED_PORT = 7890
+        const val DEFAULT_STACK = "mips"
     }
 
     private fun AccessControlProps.sanitized(): AccessControlProps = copy(
@@ -142,6 +170,28 @@ class DefaultVpnOptionsProvider(
         rejectList = rejectList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
     )
 }
+
+private data class ProfileTunOptions(
+    val mixedPort: Int,
+    val authenticated: Boolean = false,
+    val stack: String = "mips",
+    val mtu: Int? = null,
+    val congestionController: String? = null,
+)
+
+private fun JsonObject.objectValue(key: String): JsonObject? =
+    get(key)?.takeIf { it.isJsonObject }?.asJsonObject
+
+private fun JsonObject.stringValue(key: String): String? =
+    get(key)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+
+private fun JsonObject.intValue(key: String): Int? =
+    get(key)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }?.asInt
+
+private fun JsonObject.stringListValue(key: String): List<String> =
+    get(key)?.takeIf { it.isJsonArray }?.asJsonArray
+        ?.mapNotNull { item -> item.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString }
+        .orEmpty()
 
 class AndroidProxyServiceController(
     private val context: Context,
