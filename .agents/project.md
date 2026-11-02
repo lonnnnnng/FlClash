@@ -34,6 +34,10 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 - 系统 Always-on 与订阅请求证据包是 Kotlin 验收扩展，仅显式 Debug 开发者入口可见，普通启动与 Release 不展示。
 - 内存信息默认隐藏，已支持真实 RSS/Go 分项、详情、释放后重读与前台可见态轮询；内网 IP 已支持非 VPN 地址、复制、局域网共享覆盖和运行态监听热切换；可选 VPN 已接入独立设置、纯代理模式及显式重启生效；服务状态已接入 13 个固定目标、停止态 DIRECT/运行态规则检测、目标管理与路由失效保护，详情按检测代理链首节点查询真实出口 IP，并支持共享质量详情、复制、隐藏和独立重试，整行长按排序、边缘持续滚动和松手保存已验收，服务结果已接入 route hits 逐项核验复用，保留原检测时间；网络/配置/会话强失效，出口 IP 与质量不随服务结果复用，验收证据见 roadmap；运行时间与 30 点真实速度历史已完成独立切片，出口 IP 已支持停止态 DIRECT 与运行态路由查询，有效配置加载后即可管理节点，运行中可热切配置；质量来源全覆盖、持久缓存和完整页面视觉继续按 roadmap 推进。当前配置详情已增加已应用输入与核心 Provider 的四项真实数量统计，详情前台刷新、失败重试和配置/运行状态变化清除已接入，外部 Provider 明细与 HTTP 单项更新已接入，文件类型只读；更新在启停锁外执行，Go 版本门禁和 Kotlin 配置/会话复核防止同名资源串配置，管理器驱动节点、统计与路由刷新。批量更新、资源编辑/侧载、订阅用量与完整视觉 parity 仍待补齐。
 
-## 当前推进顺序（2026-11-02）
+## 当前推进顺序（2026-11-03）
 
-首页真实状态、停止态节点管理、运行态配置热切、预览/统计与 Providers 明细/HTTP 单项更新已有分项验收。Profiles 卡片分享三项、按目标 ID 只读配置预览、age 链接/订阅表单和 FILE 密钥编辑/系统文件替换已完成切片；FILE 只改密钥不改正文或时间，真实 SAF 取消/暂存/确认及保存失败保护已用外层 1.yaml 原字节、隔离 Room/缓存验收，CUSTOM 保持原分区编辑器。Proxy Groups 叶子协议显示、按 Profile/组隔离的 Tab/List 滚动恢复和 List 组内当前节点定位已完成 Redmi 精确回归。真实 age 密文经 Android Bridge 的完整 E2E、加密 SAF 与全新 Profile 导入的真实 SAF 仍待验，整体 Profiles/Proxy Groups UI/UX 保持 PARTIAL。下一步推进 URLTest/Fallback 完整语义、更细代理组视觉和排序/搜索/密度变化后的语义锚定；Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity 继续待补。Requests/DNS/Logs 次要视觉暂停，正式签名和发布单独推进。本轮 App 261、Core 34 项单测、Debug/AndroidTest 与 Lint 通过（0 errors、47 warnings、9 hints），Redmi 代理组精确方法通过；Service/Common/Go 未重跑。正式 Room 前后 inspect 仍为 0，未补建正式 Profile、清数据、启核心或访问订阅；详细证据和失败记录见 roadmap 同日 Proxy Groups 节。
+首页真实状态、停止态节点管理、运行态配置热切、预览/统计与 Providers 明细/HTTP 单项更新已有分项验收。Profiles 分享三项、按目标 ID 只读预览、age 表单和 FILE 密钥/系统文件替换已完成切片；真实 age 密文 Android E2E、加密 SAF 与全新 Profile 导入 SAF 仍待验。URLTest/Fallback 有效核心 now、固定/恢复自动、非法节点保护，延迟 Room 缓存真实进程重建，以及排序/搜索/密度变化后的语义锚定已完成对应验收。DNS baseline 和浏览器主链路修复已提交并推送，详见 roadmap。
+
+代理页整体首版对齐已完成：单一工具栏、Tab/List、分组溢出选择、搜索清空、定位、折叠、三档卡片、独立测速和深浅主题，Redmi 精确批次 21/21 通过。整体 UI/UX 仍为 PARTIAL，下一步回到 Profiles/Dashboard 整页对齐，并补真实密文/新增导入 SAF、URLTest/Fallback 无有效 now 的真实边界和跨进程手动优选状态。代理页连续超椭圆、精确动效/焦点、节点菜单/添加本地、远程组图标，Providers 批量/编辑/侧载与质量来源全覆盖/持久缓存仍待后续；首页服务 route hits 逐项核验复用已有分项证据。
+
+Requests/DNS/Logs 次要视觉暂停，正式签名和发布单独推进。当前保留一份正式授权 Profile，不沿用旧文档 Room 为空的历史状态；不清数据、不删除配置、不访问撤回源。最新构建、定向真机与文件保护证据见 roadmap 同日代理页节。

@@ -72,18 +72,20 @@ internal fun MainPageScaffold(
     topBarActions: @Composable RowScope.() -> Unit = {},
     topBarTitle: String? = null,
     topBarNavigationIcon: @Composable (() -> Unit)? = null,
+    showTopBar: Boolean = true,
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val pageColor = when (selectedDestination) {
         MainDestination.DASHBOARD -> dashboardPageColor()
+        MainDestination.PROXY -> proxyPageColor()
         else -> MaterialTheme.colorScheme.surface
     }
     Scaffold(
         modifier = modifier,
         containerColor = pageColor,
         topBar = {
-            TopAppBar(
+            if (showTopBar) TopAppBar(
                 title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) "仪表盘" else selectedDestination.label) },
                 navigationIcon = topBarNavigationIcon ?: {},
                 actions = topBarActions,

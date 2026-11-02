@@ -92,8 +92,8 @@ class ProxyGroupsActivityInstrumentedTest {
         }
 
         val expected = mapOf(
-            "page_dark" to "104e6e560376d0302b8d55853b3a0313d6b510cf6102be1fefc4a9e7406af782",
-            "page_light" to "e34d6aaa8c98143f6b17e748193f49e25b045f26e9283df8f160d29939c5a08d",
+            "page_dark" to "167f41b4df3c1602e0be8e11a13e35a5e7c3c07c5c9ef0c4abb2323a75866623",
+            "page_light" to "d84a4b882e795cff01901d00c0e34c48f29ea082467ca97d7a12779756e7fbac",
         )
         val actual = buildMap {
             listOf(true, false).forEach { dark ->
@@ -153,6 +153,7 @@ class ProxyGroupsActivityInstrumentedTest {
         composeRule.activityRule.scenario.onActivity { it.showResultsScenario(dark = true, testing = true) }
         composeRule.onNodeWithTag("proxy_node_delay_Auto_node-b", useUnmergedTree = true).assertIsNotEnabled()
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsEnabled()
+        composeRule.onNodeWithTag("proxy_tools").performClick()
         composeRule.onNodeWithTag("proxy_groups_refresh").assertIsDisplayed()
     }
 

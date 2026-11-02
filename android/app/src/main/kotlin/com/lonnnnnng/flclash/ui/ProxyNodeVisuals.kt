@@ -23,6 +23,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +36,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -42,10 +45,11 @@ import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.ui.theme.proxyDelaySuccessColor
 import com.lonnnnnng.flclash.ui.theme.proxyDelayWarningColor
 
-// 作者 long：节点卡片沿用 Flutter standard 的两行名称和紧凑详情层级；独立测速区域保留 Android 48dp 触控高度。
+// 作者 long：节点几何由文字行高决定，测速只扩展命中范围，不把按钮默认高度计入详情行。
 private object ProxyNodeStyle {
     val shape = RoundedCornerShape(20.dp)
-    val name = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, letterSpacing = 0.sp)
+    val name = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, letterSpacing = 0.sp,
+        platformStyle = PlatformTextStyle(includeFontPadding = false))
     val type = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, letterSpacing = 0.sp)
     val delay = TextStyle(fontSize = 11.sp, lineHeight = 13.sp, letterSpacing = 0.sp, fontWeight = FontWeight.SemiBold)
 }
@@ -55,9 +59,11 @@ internal fun ProxyNodeCard(
     name: String,
     type: String?,
     cardSize: ProxyNodeCardSize = ProxyNodeCardSize.STANDARD,
+    insideGroup: Boolean = false,
     inUse: Boolean,
     preferred: Boolean,
     enabled: Boolean,
+    delayEnabled: Boolean = enabled,
     delay: ProxyDelayUiState?,
     selectionTag: String,
     delayTag: String,
@@ -70,7 +76,7 @@ internal fun ProxyNodeCard(
     val minimumHeight = when (cardSize) {
         ProxyNodeCardSize.COMPACT -> 66.dp
         ProxyNodeCardSize.STANDARD -> 86.dp
-        ProxyNodeCardSize.LOOSE -> 108.dp
+        ProxyNodeCardSize.LOOSE -> 105.dp
     }
     val selectionDescription = when {
         inUse && preferred -> "当前使用，优选节点"
@@ -88,11 +94,13 @@ internal fun ProxyNodeCard(
         },
         shape = ProxyNodeStyle.shape,
         // 作者 long：Flutter 节点选中态不填主色、不加描边，当前使用与优选分别交给徽标表达。
-        color = colors.surfaceContainerHighest,
+        color = proxyNodeColor(insideGroup),
     ) {
         Box(Modifier.heightIn(min = minimumHeight)) {
-            Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(Modifier.fillMaxWidth().align(Alignment.Center).padding(horizontal = 12.dp, vertical = 10.dp)) {
+                // 作者 long：中文回退字体的实际字高可能略大于标称行高，名称只设最小高度，
+                // 不能把最大高度锁死为 40dp，否则 Compose 会把第二行裁成单行省略。
+                Row(Modifier.heightIn(min = (20 * nameLines).dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         name,
                         Modifier.weight(1f),
@@ -119,16 +127,16 @@ internal fun ProxyNodeCard(
                         }
                     }
                 }
-                Spacer(Modifier.height(if (cardSize == ProxyNodeCardSize.LOOSE) 6.dp else 8.dp))
+                Spacer(Modifier.height(8.dp))
                 if (cardSize == ProxyNodeCardSize.LOOSE) {
                     ProxyNodeType(type, Modifier.fillMaxWidth(), colors.onSurface.copy(alpha = 0.8f))
-                    Spacer(Modifier.height(2.dp))
+                    Spacer(Modifier.height(6.dp))
                     ProxyDelayAction(
                         name = name,
                         delay = delay,
-                        enabled = enabled,
+                        enabled = delayEnabled,
                         delayTag = delayTag,
-                        modifier = Modifier.align(Alignment.End),
+                        modifier = Modifier.align(Alignment.Start),
                         colors = colors,
                         onTestDelay = onTestDelay,
                     )
@@ -138,7 +146,7 @@ internal fun ProxyNodeCard(
                         ProxyDelayAction(
                             name = name,
                             delay = delay,
-                            enabled = enabled,
+                            enabled = delayEnabled,
                             delayTag = delayTag,
                             modifier = Modifier,
                             colors = colors,
@@ -177,27 +185,32 @@ private fun ProxyDelayAction(
     colors: androidx.compose.material3.ColorScheme,
     onTestDelay: () -> Unit,
 ) {
-    TextButton(
-        onClick = onTestDelay,
-        enabled = enabled && delay?.isTesting != true,
-        modifier = modifier.size(width = 72.dp, height = 48.dp).testTag(delayTag).semantics {
-            contentDescription = "$name，${proxyDelayLabel(delay)}"
-        },
-    ) {
-        when {
-            delay?.isTesting == true -> CircularProgressIndicator(Modifier.size(13.dp), strokeWidth = 2.dp)
-            delay == null -> Icon(Icons.Outlined.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
-            else -> Text(
-                proxyDelayLabel(delay),
-                style = ProxyNodeStyle.delay,
-                color = when {
-                    !enabled -> colors.onSurface.copy(alpha = 0.38f)
-                    delay.value == null -> colors.onSurfaceVariant
-                    delay.value <= 0 -> colors.error
-                    delay.value < 600 -> proxyDelaySuccessColor()
-                    else -> proxyDelayWarningColor()
-                },
-            )
+    // 作者 long：测速按 caption 行高绘制，移除 Material 布局占位后仍由 Compose 扩展触控命中；
+    // 避免两列节点被单个测速按钮撑到 120dp。
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+        TextButton(
+            onClick = onTestDelay,
+            enabled = enabled && delay?.isTesting != true,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+            modifier = modifier.height(13.dp).width(58.dp).testTag(delayTag).semantics {
+                contentDescription = "$name，${proxyDelayLabel(delay)}"
+            },
+        ) {
+            when {
+                delay?.isTesting == true -> CircularProgressIndicator(Modifier.size(13.dp), strokeWidth = 2.dp)
+                delay == null -> Icon(Icons.Outlined.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
+                else -> Text(
+                    proxyDelayLabel(delay),
+                    style = ProxyNodeStyle.delay,
+                    color = when {
+                        !enabled -> colors.onSurface.copy(alpha = 0.38f)
+                        delay.value == null -> colors.onSurfaceVariant
+                        delay.value <= 0 -> colors.error
+                        delay.value < 600 -> proxyDelaySuccessColor()
+                        else -> proxyDelayWarningColor()
+                    },
+                )
+            }
         }
     }
 }

@@ -141,6 +141,38 @@ class MainActivityInstrumentedTest {
     }
 
     @Test
+    fun mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile() {
+        val entry = EntryPointAccessors.fromApplication(composeRule.activity.application, ConnectionAcceptanceEntryPoint::class.java)
+        val repository = entry.profileRepository()
+        val options = com.lonnnnnng.flclash.ui.ProxyPageOptionsStore.load(composeRule.activity)
+        composeRule.waitUntil(15_000) { repository.currentProfileId.value != null }
+        val currentId = repository.currentProfileId.value
+        val file = repository.profileFile(checkNotNull(currentId))
+        val metadata = file.length() to file.lastModified()
+        try {
+            composeRule.waitUntil(15_000) {
+                composeRule.onAllNodesWithTag("nav_proxy").fetchSemanticsNodes().isNotEmpty()
+            }
+            composeRule.onNodeWithTag("nav_proxy").performClick()
+            composeRule.onNodeWithTag("proxy_page_toolbar").assertIsDisplayed()
+            composeRule.onNodeWithTag("main_navigation_dock").assertIsDisplayed()
+            assertEquals(1, composeRule.onAllNodesWithTag("proxy_page_toolbar").fetchSemanticsNodes().size)
+            for (layout in listOf("LIST", "TAB")) {
+                composeRule.onNodeWithTag("proxy_tools").performClick()
+                composeRule.onNodeWithTag("proxy_tools_display_mode").performClick()
+                composeRule.onNodeWithTag("proxy_display_mode_" + layout).performClick()
+                composeRule.onNodeWithTag(if (layout == "LIST") "proxy_groups_list" else "proxy_groups_pager").assertIsDisplayed()
+            }
+            composeRule.onNodeWithTag("nav_dashboard").performClick()
+            composeRule.onNodeWithContentDescription("启动核心").assertIsDisplayed()
+            assertEquals(currentId, repository.currentProfileId.value)
+            assertEquals(metadata, file.length() to file.lastModified())
+        } finally {
+            com.lonnnnnng.flclash.ui.ProxyPageOptionsStore.save(composeRule.activity, options)
+        }
+    }
+
+    @Test
     fun mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile() {
         val entry = EntryPointAccessors.fromApplication(composeRule.activity.application, ConnectionAcceptanceEntryPoint::class.java)
         val repository = entry.profileRepository()

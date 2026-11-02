@@ -189,7 +189,11 @@ class ProxyGroupsViewModelPanelInstrumentedTest {
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithTag("proxy_group_Outer").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("URLTest · 当前：node-c").assertIsDisplayed()
+        // 作者 long：完整代理页不再增加独立摘要排；嵌套出口与 Flutter 一样在宽松节点卡的协议行展示。
+        composeRule.onNodeWithTag("proxy_tools").performClick()
+        composeRule.onNodeWithTag("proxy_tools_card_size").performClick()
+        composeRule.onNodeWithTag("proxy_card_size_option_LOOSE").performClick()
+        composeRule.onNodeWithText("Selector(node-c)").assertIsDisplayed()
     }
 
     @Test

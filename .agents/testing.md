@@ -1,5 +1,13 @@
 # Testing
 
+## 代理页整体首版对齐（2026-11-03）
+
+- Redmi Note 8 Pro wsvwypiz7xwslvl7（API 36、arm64-v8a、1080×2340、竖屏、字号 1.0）：最终定向 21/21 通过，覆盖代理组 8、ViewModel 面板 4、协议/滚动 4、页面 parity 2、Dashboard picker 2、正式 MainActivity 1 项。
+- ProxyPageParityInstrumentedTest 覆盖 Tab/List × 三档卡片 × 深浅主题、折叠、独立测速触摸、溢出组选择、搜索清空及长中文名行数；13 态 PNG 哈希在 docs/visual-baselines/proxy-page-layout-matrix-redmi-api36.sha256，主页面两态基线已按人工审查后的截图更新。
+- 正式 Profile 前后保护 count=1/missing=0，文件名/大小/mtime 与 before 快照相同；最终无服务和 tun0。Debug APK ac176cca36b4025e82e0381e2eb97ae182d53343b4ad09555d92434bca4e675d、AndroidTest bfd106f504a1194cb7af3874a09a8040948eebd08f268d36ca1a70d3822786c8 均与设备安装包一致，App 仅 arm64-v8a。
+- 最终 App JVM 270 项通过、Debug/AndroidTest 与 lintDebug 通过（0 errors、51 warnings、9 hints）；Service/Core/Common/Go 本轮未重跑。本轮未访问订阅、未读写外层 1.yaml、未启动 VPN/Mihomo；未重新验证网络核心。完整 UI parity 仍为 PARTIAL，详见 roadmap 同日记录。
+
+
 ## 延迟 Room 缓存真实进程重建（2026-11-03）
 
 - Redmi Note 8 Pro `wsvwypiz7xwslvl7`（Android 16/API 36、arm64-v8a、1080×2340、竖屏、字号 1.0）：`ProxyDelayProcessPersistenceLiveTest` 双阶段通过。阶段一经正式 ViewModel 在授权 Profile 对真实叶子节点测速并核对正延迟写入正式 Room；阶段二 `am force-stop` 后启动新应用进程，验证 PID 变化、同一 Profile/组/节点/testUrl 的延迟值恢复，以及其他 Profile/旧 testUrl 的探针不显示。

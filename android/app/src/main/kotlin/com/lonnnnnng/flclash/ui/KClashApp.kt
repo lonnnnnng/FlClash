@@ -10,7 +10,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -27,37 +26,21 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items as gridItems
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.core.tween
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.InputChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -65,7 +48,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -79,23 +61,21 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.platform.LocalContext
@@ -136,7 +116,6 @@ import com.lonnnnnng.flclash.common.AccessControlMode
 import com.lonnnnnng.flclash.common.AccessSortType
 import com.lonnnnnng.flclash.AlwaysOnVpnState
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -146,7 +125,6 @@ import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Backup
-import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Check
@@ -155,11 +133,8 @@ import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
@@ -173,7 +148,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.PI
-import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -204,15 +178,6 @@ private enum class AccessMenuLayer {
     MAIN,
     SETTINGS,
     ACTIONS,
-}
-
-private enum class ProxyToolsMenuPage {
-    ROOT,
-    DISPLAY_MODE,
-    SORT,
-    DENSITY,
-    CARD_SIZE,
-    ICON_STYLE,
 }
 
 internal enum class ProfilesToolbarAction {
@@ -766,6 +731,7 @@ fun KClashApp(
 
     MainPageScaffold(
         selectedDestination = selectedDestination,
+        showTopBar = selectedDestination != MainDestination.PROXY,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         onDestinationSelected = ::navigateTo,
         destinations = navigationDestinations,
@@ -828,7 +794,6 @@ fun KClashApp(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .padding(horizontal = dashboardInset)
                         .testTag("page_proxy"),
                     state = proxyGroupsState,
                     scrollStateHolder = proxyScrollStateHolder,
@@ -2133,677 +2098,6 @@ internal fun WebDavBackupDialog(
         )
     }
 
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-internal fun ProxyGroupsCard(
-    modifier: Modifier = Modifier,
-    state: ProxyGroupsUiState,
-    runtimeState: CoreRuntimeStatus,
-    currentProfileId: Long? = null,
-    currentGroupName: String? = null,
-    mode: CoreOutboundMode = CoreOutboundMode.GLOBAL,
-    picker: Boolean = false,
-    scrollStateHolder: SaveableStateHolder = rememberSaveableStateHolder(),
-    onContentAtTopChanged: (Boolean) -> Unit = {},
-    onRefresh: () -> Unit,
-    onSelectGroup: (String) -> Unit = {},
-    onToggleGroup: (String) -> Unit = {},
-    onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
-    onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
-    onTestGroupDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo) -> Unit,
-) {
-    val optionsContext = LocalContext.current.applicationContext
-    var pageOptions by remember(optionsContext) {
-        mutableStateOf(ProxyPageOptionsStore.load(optionsContext))
-    }
-    var toolsExpanded by rememberSaveable { mutableStateOf(false) }
-    var toolsMenuPage by rememberSaveable { mutableStateOf(ProxyToolsMenuPage.ROOT) }
-    var locateSelectedRequest by rememberSaveable(currentProfileId) { mutableStateOf(0) }
-    var locateTargetGroup by rememberSaveable(currentProfileId) { mutableStateOf<String?>(null) }
-    val groups = visibleProxyGroups(state.groups, mode)
-    val groupNames = groups.map { it.name }
-    val initialPage = groupNames.indexOf(currentGroupName).coerceAtLeast(0)
-    val pagerState = rememberPagerState(initialPage = initialPage) { groups.size }
-    val groupTabsState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-    var searchExpanded by rememberSaveable(currentProfileId) { mutableStateOf(picker) }
-    var proxyQuery by rememberSaveable(currentProfileId) { mutableStateOf("") }
-
-    LaunchedEffect(currentProfileId, currentGroupName, groupNames) {
-        if (groupNames.isNotEmpty()) {
-            val savedIndex = groupNames.indexOf(currentGroupName)
-            val page = if (savedIndex >= 0) savedIndex else pagerState.currentPage.coerceIn(groupNames.indices)
-            if (pagerState.currentPage != page) pagerState.scrollToPage(page)
-        }
-    }
-    LaunchedEffect(pagerState, groupNames) {
-        // 作者 long：只在组切换稳定后写入 Profile，取消中的滑动不应改变下次恢复的分组。
-        snapshotFlow { pagerState.settledPage }
-            .distinctUntilChanged()
-            .collect { page -> groups.getOrNull(page)?.name?.let(onSelectGroup) }
-    }
-    val selectedGroupIndex = if (groupNames.isEmpty()) 0 else pagerState.currentPage.coerceIn(groupNames.indices)
-    val selectedGroup = groups.getOrNull(selectedGroupIndex)
-    val canRefresh = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-        !state.isLoading &&
-        state.switchingGroup == null &&
-        state.batchTestingGroup == null
-    fun updatePageOptions(updated: ProxyPageOptions) {
-        pageOptions = updated
-        ProxyPageOptionsStore.save(optionsContext, updated)
-    }
-    Column(
-        modifier = modifier.fillMaxSize().padding(top = 8.dp, bottom = 8.dp)
-            .testTag("proxy_groups_page"),
-        verticalArrangement = Arrangement.spacedBy(if (picker) 8.dp else 12.dp),
-    ) {
-        if (groups.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (state.isLoading) {
-                    CircularProgressIndicator()
-                } else {
-                    Text(
-                        if (runtimeState == CoreRuntimeStatus.RUNNING) {
-                            "当前配置没有可展示的代理组。"
-                        } else {
-                            "添加有效配置后显示代理组。"
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        } else {
-            if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
-                LazyRow(
-                    state = groupTabsState,
-                    modifier = Modifier.fillMaxWidth().height(48.dp).testTag("proxy_group_tabs"),
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    itemsIndexed(groups, key = { _, group -> group.name }) { index, group ->
-                        val selected = index == selectedGroupIndex
-                        Surface(
-                            modifier = Modifier.widthIn(min = 64.dp).height(48.dp)
-                                .selectable(
-                                    selected = selected,
-                                    role = Role.Tab,
-                                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
-                                )
-                                .testTag("proxy_group_tab_${group.name}"),
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer,
-                            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        ) {
-                            Box(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(group.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            }
-                        }
-                    }
-                }
-            }
-
-            selectedGroup?.let { group ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    val displayedProxy = resolveSelectedProxy(
-                        group = group,
-                        groups = state.groups,
-                        selectedMap = state.selectedMap,
-                    ).leafName ?: selectedProxyName(group, state.selectedMap)
-                    Text(
-                        "${group.type} · 当前：${displayedProxy ?: "未选择"}",
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    ProxyDelaySummaryText(
-                        summary = state.delaySummary(group),
-                        modifier = Modifier.testTag("proxy_group_delay_summary_${group.name}"),
-                    )
-                    if (picker && pageOptions.displayMode == ProxyDisplayMode.TAB) {
-                        // 作者 long：弹层高度有限，测速复用摘要行，避免键盘出现后独立工具行挤掉可操作的节点。
-                        IconButton(
-                            onClick = { onTestGroupDelay(group) },
-                            enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                                state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
-                            modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
-                        ) {
-                            if (state.batchTestingGroup == group.name) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                            else Icon(Icons.Outlined.Bolt, contentDescription = "批量测速")
-                        }
-                    }
-                    if (!picker) {
-                        IconButton(
-                            onClick = {
-                                if (searchExpanded) proxyQuery = ""
-                                searchExpanded = !searchExpanded
-                            },
-                            modifier = Modifier.testTag("proxy_group_search_toggle"),
-                        ) {
-                            Icon(
-                                if (searchExpanded) Icons.Outlined.Close else Icons.Outlined.Search,
-                                contentDescription = if (searchExpanded) "关闭节点搜索" else "搜索节点",
-                            )
-                        }
-                        IconButton(
-                            onClick = { locateTargetGroup = group.name; locateSelectedRequest++ },
-                            enabled = group.all.isNotEmpty(),
-                            modifier = Modifier.testTag("proxy_scroll_to_selected"),
-                        ) {
-                            Icon(Icons.Outlined.MyLocation, contentDescription = "定位当前节点")
-                        }
-                        Box {
-                            IconButton(
-                                onClick = {
-                                    toolsMenuPage = ProxyToolsMenuPage.ROOT
-                                    toolsExpanded = true
-                                },
-                                modifier = Modifier.testTag("proxy_tools"),
-                            ) {
-                                Icon(Icons.Outlined.MoreVert, contentDescription = "代理组工具")
-                            }
-                            DropdownMenu(
-                                expanded = toolsExpanded,
-                                onDismissRequest = { toolsExpanded = false },
-                            ) {
-                                when (toolsMenuPage) {
-                                    ProxyToolsMenuPage.ROOT -> {
-                                        DropdownMenuItem(
-                                            text = { Text("布局：${pageOptions.displayMode.label}") },
-                                            onClick = { toolsMenuPage = ProxyToolsMenuPage.DISPLAY_MODE },
-                                            modifier = Modifier.testTag("proxy_tools_display_mode"),
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text("排序：${pageOptions.sort.label}") },
-                                            onClick = { toolsMenuPage = ProxyToolsMenuPage.SORT },
-                                            modifier = Modifier.testTag("proxy_tools_sort"),
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text("网格密度：${pageOptions.gridDensity.label}") },
-                                            onClick = { toolsMenuPage = ProxyToolsMenuPage.DENSITY },
-                                            modifier = Modifier.testTag("proxy_tools_density"),
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text("卡片尺寸：${pageOptions.cardSize.label}") },
-                                            onClick = { toolsMenuPage = ProxyToolsMenuPage.CARD_SIZE },
-                                            modifier = Modifier.testTag("proxy_tools_card_size"),
-                                        )
-                                        if (pageOptions.displayMode == ProxyDisplayMode.LIST) {
-                                            DropdownMenuItem(
-                                                text = { Text("列表图标：${pageOptions.iconStyle.label}") },
-                                                onClick = { toolsMenuPage = ProxyToolsMenuPage.ICON_STYLE },
-                                                modifier = Modifier.testTag("proxy_tools_icon_style"),
-                                            )
-                                        }
-                                        DropdownMenuItem(
-                                            text = { Text("隐藏超时节点") },
-                                            onClick = { updatePageOptions(pageOptions.copy(hideTimeout = !pageOptions.hideTimeout)) },
-                                            trailingIcon = {
-                                                if (pageOptions.hideTimeout) Icon(Icons.Outlined.Check, contentDescription = "已启用")
-                                            },
-                                            modifier = Modifier.testTag("proxy_tools_hide_timeout"),
-                                        )
-                                    }
-                                    ProxyToolsMenuPage.DISPLAY_MODE -> {
-                                        ProxyMenuBackItem("布局") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
-                                        ProxyDisplayMode.entries.forEach { option ->
-                                            ProxyMenuOptionItem(option.label, option == pageOptions.displayMode, "proxy_display_mode_${option.name}") {
-                                                updatePageOptions(pageOptions.copy(displayMode = option))
-                                                toolsExpanded = false
-                                            }
-                                        }
-                                    }
-                                    ProxyToolsMenuPage.SORT -> {
-                                        ProxyMenuBackItem("排序") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
-                                        ProxySortOption.entries.forEach { option ->
-                                            ProxyMenuOptionItem(option.label, option == pageOptions.sort, "proxy_sort_option_${option.name}") {
-                                                updatePageOptions(pageOptions.copy(sort = option))
-                                                toolsExpanded = false
-                                            }
-                                        }
-                                    }
-                                    ProxyToolsMenuPage.DENSITY -> {
-                                        ProxyMenuBackItem("网格密度") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
-                                        ProxyGridDensity.entries.forEach { option ->
-                                            ProxyMenuOptionItem(option.label, option == pageOptions.gridDensity, "proxy_density_option_${option.name}") {
-                                                updatePageOptions(pageOptions.copy(gridDensity = option))
-                                                toolsExpanded = false
-                                            }
-                                        }
-                                    }
-                                    ProxyToolsMenuPage.CARD_SIZE -> {
-                                        ProxyMenuBackItem("卡片尺寸") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
-                                        ProxyNodeCardSize.entries.forEach { option ->
-                                            ProxyMenuOptionItem(option.label, option == pageOptions.cardSize, "proxy_card_size_option_${option.name}") {
-                                                updatePageOptions(pageOptions.copy(cardSize = option))
-                                                toolsExpanded = false
-                                            }
-                                        }
-                                    }
-                                    ProxyToolsMenuPage.ICON_STYLE -> {
-                                        ProxyMenuBackItem("列表图标") { toolsMenuPage = ProxyToolsMenuPage.ROOT }
-                                        ProxyGroupIconStyle.entries.forEach { option ->
-                                            ProxyMenuOptionItem(option.label, option == pageOptions.iconStyle, "proxy_icon_style_${option.name}") {
-                                                updatePageOptions(pageOptions.copy(iconStyle = option))
-                                                toolsExpanded = false
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (searchExpanded && !picker) {
-                    OutlinedTextField(
-                        value = proxyQuery,
-                        onValueChange = { proxyQuery = it },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                            .testTag("proxy_group_search"),
-                        label = { Text("搜索节点") },
-                        singleLine = true,
-                    )
-                }
-                if (!picker) Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    if (!picker) TextButton(
-                        onClick = onRefresh,
-                        enabled = canRefresh,
-                        modifier = Modifier.testTag("proxy_groups_refresh"),
-                    ) {
-                        if (state.isLoading) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                        else Text("刷新")
-                    }
-                    TextButton(
-                        onClick = { onTestGroupDelay(group) },
-                        enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                            state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
-                        modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
-                    ) {
-                        if (state.batchTestingGroup == group.name) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                        else Text("批量测速")
-                    }
-                }
-            }
-
-            if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
-                HorizontalPager(
-                    state = pagerState,
-                    key = { page -> "$currentProfileId:${groupNames[page]}" },
-                    modifier = Modifier.fillMaxWidth().weight(1f).testTag("proxy_groups_pager"),
-                ) { page ->
-                    val group = groups.getOrNull(page) ?: return@HorizontalPager
-                    // 作者 long：Pager 会释放离屏组，位置按配置/组名独立保留；测速刷新与再次进入页面不能覆盖用户浏览位置。
-                    scrollStateHolder.SaveableStateProvider("tab:$currentProfileId:${group.name}") {
-                        ProxyGroupNodesPage(
-                            group = group,
-                            groups = state.groups,
-                            state = state,
-                            query = proxyQuery,
-                            options = pageOptions,
-                            locateRequest = locateSelectedRequest,
-                            locateTargetGroup = locateTargetGroup,
-                            isCurrentPage = page == pagerState.currentPage,
-                            onSelect = onSelect,
-                            onTestDelay = onTestDelay,
-                            onContentAtTopChanged = onContentAtTopChanged,
-                        )
-                    }
-                }
-            } else {
-                scrollStateHolder.SaveableStateProvider("list:$currentProfileId") {
-                    ProxyGroupsListPage(
-                        modifier = Modifier.fillMaxWidth().weight(1f),
-                        groups = groups,
-                        state = state,
-                        runtimeState = runtimeState,
-                        query = proxyQuery,
-                        locateGroupName = selectedGroup?.name,
-                        locateRequest = locateSelectedRequest,
-                        options = pageOptions,
-                        onToggleGroup = onToggleGroup,
-                        onSelect = onSelect,
-                        onTestDelay = onTestDelay,
-                        onTestGroupDelay = onTestGroupDelay,
-                        onContentAtTopChanged = onContentAtTopChanged,
-                    )
-                }
-            }
-            if (picker) {
-                // 作者 long：弹层搜索单独留在当前组合中，关闭即释放，避免覆盖完整代理页原有查询。
-                OutlinedTextField(
-                    value = proxyQuery,
-                    onValueChange = { proxyQuery = it },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                        .testTag("proxy_group_search"),
-                    label = { Text("搜索节点") },
-                    singleLine = true,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProxyGroupsListPage(
-    modifier: Modifier,
-    groups: List<com.lonnnnnng.flclash.core.ProxyGroupInfo>,
-    state: ProxyGroupsUiState,
-    runtimeState: CoreRuntimeStatus,
-    query: String,
-    locateGroupName: String?,
-    locateRequest: Int,
-    options: ProxyPageOptions,
-    onToggleGroup: (String) -> Unit,
-    onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
-    onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
-    onTestGroupDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo) -> Unit,
-    onContentAtTopChanged: (Boolean) -> Unit = {},
-) {
-    val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
-            .distinctUntilChanged().collect { onContentAtTopChanged(it) }
-    }
-    BoxWithConstraints(modifier) {
-        val columns = proxyGridColumnCount(maxWidth.value, options.gridDensity)
-        val members = groups.associate { group ->
-            val sorted = sortProxyMembers(group, state.groups, state, filterProxyMembers(group, query), options.sort)
-            group.name to if (options.hideTimeout) hideTimedOutProxyMembers(group, state.groups, state, sorted) else sorted
-        }
-        val scrollLayout = ProxyListScrollLayout(
-            items = proxyListScrollItems(groups, members, state.unfoldSet, columns),
-            columns = columns,
-            cardSize = options.cardSize,
-        )
-        val previousScrollLayout = remember { mutableStateOf<ProxyListScrollLayout?>(null) }
-        val previousLayout = previousScrollLayout.value
-        val semanticAnchor = if (previousLayout != null && previousLayout != scrollLayout) {
-            proxyListScrollAnchor(
-                items = previousLayout.items,
-                firstVisibleItemIndex = listState.firstVisibleItemIndex,
-                firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
-            )
-        } else {
-            null
-        }
-        LaunchedEffect(scrollLayout) {
-            semanticAnchor?.let { anchor ->
-                val target = proxyListScrollItemIndex(scrollLayout.items, anchor)
-                if (target != null) listState.scrollToItem(target, anchor.scrollOffset.coerceAtLeast(0))
-            }
-        }
-        SideEffect { previousScrollLayout.value = scrollLayout }
-        fun locate(groupName: String) {
-            val index = proxyListSelectedItemIndex(groups, members, state.unfoldSet, state.selectedMap, groupName, columns)
-            if (index != null) scope.launch { listState.animateScrollToItem(index) }
-        }
-        var handledLocateRequest by rememberSaveable { mutableStateOf(locateRequest) }
-        LaunchedEffect(locateRequest) {
-            if (locateRequest != handledLocateRequest) {
-                handledLocateRequest = locateRequest
-                locateGroupName?.let(::locate)
-            }
-        }
-        // 作者 long：List 的每行是独立懒加载项，组内定位使用真实行索引；不能把长组塞进一个 item 后只滚到组头。
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().testTag("proxy_groups_list"), state = listState,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            groups.forEach { group ->
-                val visible = members.getValue(group.name)
-                val expanded = group.name in state.unfoldSet
-                val selected = selectedProxyName(group, state.selectedMap)
-                item(key = "header:${group.name}") {
-                    Box(Modifier.fillMaxWidth().testTag("proxy_list_group_${group.name}")) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().clickable { onToggleGroup(group.name) }
-                                .testTag("proxy_list_group_header_${group.name}"),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            ProxyGroupIcon(group.name, options.iconStyle)
-                            Column(Modifier.weight(1f).padding(start = 8.dp)) {
-                                Text(group.name, style = MaterialTheme.typography.titleMedium)
-                                Text("${group.type} · 当前：${resolveSelectedProxy(group, state.groups, state.selectedMap).leafName ?: selected ?: "未选择"}",
-                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                ProxyDelaySummaryText(
-                                    summary = state.delaySummary(group),
-                                    modifier = Modifier.testTag("proxy_list_group_delay_summary_${group.name}"),
-                                )
-                            }
-                            if (expanded) IconButton(onClick = { locate(group.name) },
-                                modifier = Modifier.testTag("proxy_list_group_locate_${group.name}")) {
-                                Icon(Icons.Outlined.MyLocation, contentDescription = "定位 ${group.name} 的当前节点")
-                            }
-                            TextButton(onClick = { onTestGroupDelay(group) },
-                                enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                                    state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
-                                modifier = Modifier.testTag("proxy_list_group_batch_${group.name}")) { Text("批量测速") }
-                            IconButton(onClick = { onToggleGroup(group.name) }, modifier = Modifier.testTag("proxy_list_group_toggle_${group.name}")) {
-                                Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                                    contentDescription = if (expanded) "收起 ${group.name}" else "展开 ${group.name}")
-                            }
-                        }
-                    }
-                }
-                if (expanded) {
-                    if (visible.isEmpty()) item(key = "empty:${group.name}") {
-                        Text(if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
-                            modifier = Modifier.padding(horizontal = 8.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    visible.chunked(columns).forEach { row ->
-                        item(key = "row:${group.name.length}:${group.name}:${row.first()}") {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                row.forEach { proxyName ->
-                                    ProxyNodeCard(name = proxyName, type = state.proxyType(proxyName, options.cardSize),
-                                        cardSize = options.cardSize, inUse = proxyName == selected,
-                                        preferred = group.isComputed && proxyName == state.selectedMap[group.name],
-                                        enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                                            group.isSelectable && state.switchingGroup == null && state.batchTestingGroup == null,
-                                        delay = state.delayState(group, proxyName),
-                                        selectionTag = "proxy_list_node_${group.name}_$proxyName",
-                                        delayTag = "proxy_list_node_delay_${group.name}_$proxyName",
-                                        onSelect = { onSelect(group, proxyName) }, onTestDelay = { onTestDelay(group, proxyName) },
-                                        modifier = Modifier.weight(1f))
-                                }
-                                repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProxyDelaySummaryText(
-    summary: ProxyDelaySummary,
-    modifier: Modifier = Modifier,
-) {
-    if (summary.tested == 0 && summary.testing == 0) return
-    val parts = buildList {
-        if (summary.success > 0) add("成功 ${summary.success}")
-        if (summary.timedOut > 0) add("超时 ${summary.timedOut}")
-        if (summary.failed > 0) add("失败 ${summary.failed}")
-        if (summary.testing > 0) add("进行中 ${summary.testing}")
-    }
-    Text(
-        "测速：${parts.joinToString(" · ")}",
-        modifier = modifier,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
-}
-
-@Composable
-private fun ProxyGroupIcon(name: String, style: ProxyGroupIconStyle) {
-    when (style) {
-        ProxyGroupIconStyle.HIDDEN -> Spacer(Modifier.size(32.dp))
-        ProxyGroupIconStyle.PLAIN -> Text(
-            name.firstOrNull()?.uppercase() ?: "?",
-            modifier = Modifier.size(32.dp),
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleMedium,
-        )
-        ProxyGroupIconStyle.FILLED -> Surface(
-            modifier = Modifier.size(32.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(name.firstOrNull()?.uppercase() ?: "?", style = MaterialTheme.typography.titleSmall)
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProxyMenuBackItem(label: String, onBack: () -> Unit) {
-    DropdownMenuItem(
-        text = { Text("返回：$label") },
-        onClick = onBack,
-        modifier = Modifier.testTag("proxy_tools_back"),
-    )
-}
-
-@Composable
-private fun ProxyMenuOptionItem(
-    label: String,
-    isSelected: Boolean,
-    testTag: String,
-    onClick: () -> Unit,
-) {
-    DropdownMenuItem(
-        text = { Text(label) },
-        onClick = onClick,
-        trailingIcon = {
-            if (isSelected) Icon(Icons.Outlined.Check, contentDescription = "已选择")
-        },
-        modifier = Modifier.testTag(testTag).semantics { selected = isSelected },
-    )
-}
-
-@Composable
-private fun ProxyGroupNodesPage(
-    group: com.lonnnnnng.flclash.core.ProxyGroupInfo,
-    groups: List<com.lonnnnnng.flclash.core.ProxyGroupInfo>,
-    state: ProxyGroupsUiState,
-    query: String,
-    options: ProxyPageOptions,
-    locateRequest: Int,
-    isCurrentPage: Boolean,
-    locateTargetGroup: String?,
-    onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
-    onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
-    onContentAtTopChanged: (Boolean) -> Unit = {},
-) {
-    val gridState = rememberLazyGridState()
-    LaunchedEffect(gridState, isCurrentPage) {
-        if (isCurrentPage) snapshotFlow {
-            gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset == 0
-        }.distinctUntilChanged().collect { onContentAtTopChanged(it) }
-    }
-    val searchedProxies = filterProxyMembers(group, query)
-    val sortedProxies = sortProxyMembers(group, groups, state, searchedProxies, options.sort)
-    val visibleProxies = if (options.hideTimeout) {
-        hideTimedOutProxyMembers(group, groups, state, sortedProxies)
-    } else {
-        sortedProxies
-    }
-    val inUseName = selectedProxyName(group, state.selectedMap)
-    BoxWithConstraints(
-        modifier = Modifier.fillMaxSize().testTag("proxy_group_${group.name}"),
-    ) {
-        // 作者 long：按密度选项调整 Flutter 同源的 250dp 网格列宽，宽松模式允许单列卡片。
-        val columnCount = proxyGridColumnCount(maxWidth.value, options.gridDensity)
-        val scrollLayout = ProxyGridScrollLayout(group.name, visibleProxies, columnCount, options.cardSize)
-        val previousScrollLayout = remember { mutableStateOf<ProxyGridScrollLayout?>(null) }
-        val previousLayout = previousScrollLayout.value
-        val semanticAnchor = if (previousLayout != null && previousLayout != scrollLayout) {
-            proxyGridScrollAnchor(
-                groupName = previousLayout.groupName,
-                proxyNames = previousLayout.proxyNames,
-                firstVisibleItemIndex = gridState.firstVisibleItemIndex,
-                firstVisibleItemScrollOffset = gridState.firstVisibleItemScrollOffset,
-            )
-        } else {
-            null
-        }
-        LaunchedEffect(scrollLayout) {
-            semanticAnchor?.let { anchor ->
-                val target = proxyGridScrollItemIndex(scrollLayout.proxyNames, anchor, columnCount)
-                if (target != null) gridState.scrollToItem(target, anchor.scrollOffset.coerceAtLeast(0))
-            }
-        }
-        SideEffect { previousScrollLayout.value = scrollLayout }
-        var handledLocateRequest by rememberSaveable { mutableStateOf(locateRequest) }
-        LaunchedEffect(isCurrentPage, locateRequest) {
-            if (isCurrentPage && locateRequest != handledLocateRequest) {
-                handledLocateRequest = locateRequest
-                val selectedIndex = if (locateTargetGroup == group.name) visibleProxies.indexOf(inUseName) else -1
-                if (selectedIndex >= 0) gridState.animateScrollToItem(selectedIndex)
-            }
-        }
-        if (visibleProxies.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().testTag("proxy_group_members_${group.name}"),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(columnCount),
-                state = gridState,
-                modifier = Modifier.fillMaxSize().testTag("proxy_group_members_${group.name}"),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                gridItems(visibleProxies, key = { it }) { proxyName ->
-                    val delay = state.delayState(group, proxyName)
-                    ProxyNodeCard(
-                        name = proxyName,
-                        type = state.proxyType(proxyName, options.cardSize),
-                        cardSize = options.cardSize,
-                        inUse = proxyName == inUseName,
-                        preferred = group.isComputed && proxyName == state.selectedMap[group.name],
-                        enabled = isCurrentPage && group.isSelectable &&
-                            state.switchingGroup == null && state.batchTestingGroup == null,
-                        delay = delay,
-                        selectionTag = "proxy_node_${group.name}_$proxyName",
-                        delayTag = "proxy_node_delay_${group.name}_$proxyName",
-                        onSelect = { onSelect(group, proxyName) },
-                        onTestDelay = { onTestDelay(group, proxyName) },
-                    )
-                }
-            }
-        }
-    }
 }
 
 @Composable
