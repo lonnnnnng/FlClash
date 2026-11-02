@@ -46,6 +46,8 @@ enum class CoreRuntimeStatus(
 interface CoreRuntimeStatusProvider {
     val state: StateFlow<CoreRuntimeStatus>
     suspend fun selectProfile(id: Long, select: suspend (Long?) -> Unit) { select(id) }
+    suspend fun profileInputsApplied(id: Long): Boolean = false
+    suspend fun applyCurrentProfile(id: Long) { error("此运行环境不支持配置应用") }
 }
 
 /**
@@ -112,18 +114,29 @@ class CoreRuntimeManager(
     private var appliedVpnOptions: com.lonnnnnng.flclash.service.models.VpnOptions? = null
     private var hasSuccessfulRun = false
     private var loadedConfigKey: List<Any?>? = null
+    private var loadedAutomaticConfigKey: List<Any?>? = null
 
     private fun configKey(profile: ActiveProfile): List<Any?> {
         val source = File(profile.filePath)
         val script = profile.scriptPath?.let(::File)
         return listOf(profile.id, profile.filePath, source.length(), source.lastModified(),
-            profile.overridesJson, profile.scriptPath, script?.length(), script?.lastModified(), lanSharingStore.read())
+            profile.overridesJson, profile.standardExtension, profile.scriptPath, script?.length(), script?.lastModified(), lanSharingStore.read())
+    }
+
+    private fun automaticConfigKey(profile: ActiveProfile): List<Any?> {
+        val source = File(profile.filePath)
+        val overrides = ProfileProviderOverrides.fromJsonString(profile.overridesJson).copy(extension = ProfileExtensionOverrides())
+        return listOf(profile.id, profile.filePath, source.length(), source.lastModified(), overrides.toJsonString(), lanSharingStore.read())
     }
 
     private suspend fun ensureConfigLoaded(force: Boolean = false) = withContext(Dispatchers.IO) {
         val profile = requireNotNull(profileProvider.activeProfile()) { "请先添加可用配置" }
         val key = configKey(profile)
         if (!force && loadedConfigKey == key) return@withContext
+        // 作者 long：代理页会因扩展元数据变化后台读取节点；只改扩展/脚本时沿用已应用配置，不能绕过页面的应用与回滚入口。
+        // 订阅正文、DNS/Provider 等覆盖或 LAN 真正改变后仍重新加载，保持原有更新链路。
+        if (!force && profile.deferExtensionApplication && loadedConfigKey?.firstOrNull() == profile.id &&
+            loadedAutomaticConfigKey == automaticConfigKey(profile)) return@withContext
         ensureInitialized()
         stageConfig(profile)
         bridge.validateConfig(paths.configFile.path)
@@ -138,14 +151,31 @@ class CoreRuntimeManager(
         }
         // 作者 long：配置加载不启用监听或 VPN，停止态也能读取真实节点、选择和测速。
         loadedConfigKey = key
+        loadedAutomaticConfigKey = automaticConfigKey(profile)
+    }
+
+    override suspend fun profileInputsApplied(id: Long): Boolean = transitionLock.withLock {
+        val profile = profileProvider.activeProfile()
+        profile?.id == id && loadedConfigKey == configKey(profile)
+    }
+
+    override suspend fun applyCurrentProfile(id: Long) = transitionLock.withLock {
+        // 作者 long：退出扩展页时配置可能已在别处切换，自动应用只能刷新当前目标，绝不能把旧配置重新选中。
+        check(profileProvider.activeProfileId() == id) { "当前配置已切换，扩展已保存，将在选用时应用" }
+        applyProfileLocked(id) { target -> check(target == id) { "当前配置已变化" } }
     }
 
     override suspend fun selectProfile(id: Long, select: suspend (Long?) -> Unit) = transitionLock.withLock {
+        applyProfileLocked(id, select)
+    }
+
+    private suspend fun applyProfileLocked(id: Long, select: suspend (Long?) -> Unit) {
         withContext(Dispatchers.IO) {
             val previous = profileProvider.activeProfile()
             if (previous?.id == id && loadedConfigKey == configKey(previous)) return@withContext
             val previousContent = paths.configFile.takeIf { it.isFile }?.readBytes()
             val previousKey = loadedConfigKey
+            val previousAutomaticKey = loadedAutomaticConfigKey
             val previousOptions = appliedVpnOptions
             var servicesChanged = false
             try {
@@ -178,6 +208,7 @@ class CoreRuntimeManager(
                                 appliedVpnOptions = previousOptions
                             }
                             loadedConfigKey = previousKey
+                            loadedAutomaticConfigKey = previousAutomaticKey
                         } catch (_: Exception) {
                             restored = false
                             serviceController.stop()
@@ -493,10 +524,14 @@ class CoreRuntimeManager(
                 return@withContext
             }
             ensureConfigLoaded()
+            check(allowLan != null || !profile.deferExtensionApplication || loadedConfigKey == configKey(profile)) {
+                "扩展尚未应用，请先在扩展页应用后再恢复配置的局域网设置"
+            }
             val previous = withTimeout(3_000L) { bridge.getLanConfig() }
             val savedOverride = lanSharingStore.read()
             val savedContent = paths.configFile.readBytes()
             val savedKey = loadedConfigKey
+            val savedAutomaticKey = loadedAutomaticConfigKey
             try {
                 // 作者 long：普通开关只修改当前已应用输入，不能再次执行可能有动态结果的用户脚本。
                 if (allowLan == null) stageConfig(profile, null)
@@ -507,7 +542,9 @@ class CoreRuntimeManager(
                 val actual = withTimeout(3_000L) { bridge.getLanConfig() }
                 check(actual == candidate) { "核心局域网状态与设置不一致" }
                 lanSharingStore.write(allowLan)
-                loadedConfigKey = configKey(profile)
+                // 作者 long：普通 LAN 开关只补丁已应用正文；保留旧扩展指纹，不能把尚未应用的规则/脚本误标为已应用。
+                loadedConfigKey = if (allowLan != null && savedKey != null) savedKey.dropLast(1) + listOf(lanSharingStore.read()) else configKey(profile)
+                loadedAutomaticConfigKey = if (allowLan != null && savedAutomaticKey != null) savedAutomaticKey.dropLast(1) + listOf(lanSharingStore.read()) else automaticConfigKey(profile)
                 mutableLanSharing.value = LanSharingState(actual, true)
                 invalidateIpRoute()
             } catch (failure: Throwable) {
@@ -520,6 +557,7 @@ class CoreRuntimeManager(
                         check(withTimeout(3_000L) { bridge.getLanConfig() } == previous)
                         lanSharingStore.write(savedOverride)
                         loadedConfigKey = savedKey
+                        loadedAutomaticConfigKey = savedAutomaticKey
                         mutableLanSharing.value = LanSharingState(previous, true)
                     } catch (_: Exception) {
                         restored = false
@@ -861,7 +899,7 @@ class CoreRuntimeManager(
         val scriptedContent = if (scriptContent == null) profileScriptApplier.apply(sourceContent, profile.scriptPath)
             else profileScriptApplier.applyContent(sourceContent, scriptContent)
         return patchLanSharing(ProfileProviderOverrideApplier.apply(
-            ProfileDnsBaselineApplier.apply(scriptedContent),
+            ProfileDnsBaselineApplier.apply(ProfileExtensionApplier.apply(scriptedContent, profile.standardExtension)),
             ProfileProviderOverrides.fromJsonString(profile.overridesJson),
         ), lanOverride)
     }

@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash.data
 
 import androidx.room.withTransaction
+import com.lonnnnnng.flclash.service.ExtensionRule
+import com.lonnnnnng.flclash.service.ExtensionRules
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.ByteArrayInputStream
@@ -37,6 +39,7 @@ private data class ParsedBackup(
     val scripts: List<ScriptEntity>,
     val currentProfileId: Long?,
     val files: Map<String, ByteArray>,
+    val globalRules: List<ExtensionRule> = emptyList(),
 )
 
 /**
@@ -69,6 +72,7 @@ class BackupRepository(
             } else {
                 null
             }
+            val globalRules = if (scope == BackupRestoreScope.ALL_DATA) ExtensionRules.decode(preferenceDao.get(ExtensionRules.PREFERENCE_KEY)) else emptyList()
             val manifest = BackupManifest(
                 version = CURRENT_VERSION,
                 createdAtMillis = System.currentTimeMillis(),
@@ -81,6 +85,7 @@ class BackupRepository(
                     putText(zip, PROFILES_ENTRY, gson.toJson(profiles))
                     if (manifest.includesScripts) {
                         putText(zip, SCRIPTS_ENTRY, gson.toJson(scripts))
+                        putText(zip, GLOBAL_RULES_ENTRY, ExtensionRules.toJson(globalRules).toString())
                         currentProfileId?.let { putText(zip, CURRENT_PROFILE_ENTRY, it.toString()) }
                     }
                     profiles.sortedBy { it.id }.forEach { profile ->
@@ -124,6 +129,13 @@ class BackupRepository(
                     profilesToRestore.forEach { profileDao.insert(it) }
                     if (scope == BackupRestoreScope.ALL_DATA) {
                         parsed.scripts.forEach { scriptDao.insert(it) }
+                        // 作者 long：规则 ID 随完整备份保留，兼容恢复只合并同 ID，避免各配置的禁用集合错位。
+                        val global = if (strategy == BackupRestoreStrategy.OVERRIDE) parsed.globalRules else {
+                            val incomingIds = parsed.globalRules.map { it.id }.toSet()
+                            ExtensionRules.decode(preferenceDao.get(ExtensionRules.PREFERENCE_KEY)).filterNot { it.id in incomingIds } + parsed.globalRules
+                        }
+                        ExtensionRules.validate(global)
+                        preferenceDao.put(AppPreferenceEntity(ExtensionRules.PREFERENCE_KEY, ExtensionRules.toJson(global).toString(), System.currentTimeMillis()))
                         parsed.currentProfileId?.let { currentId ->
                             preferenceDao.put(
                                 AppPreferenceEntity(
@@ -163,7 +175,7 @@ class BackupRepository(
             runCatching { gson.fromJson(json.toString(Charsets.UTF_8), BackupManifest::class.java) }
                 .getOrElse { throw IllegalArgumentException("备份清单无效", it) }
         } ?: throw IllegalArgumentException("备份缺少清单")
-        require(manifest.version == CURRENT_VERSION) {
+        require(manifest.version in 1..CURRENT_VERSION) {
             if (manifest.version > CURRENT_VERSION) "备份版本过高" else "备份版本过旧"
         }
         val profiles = decodeList<ProfileEntity>(entries[PROFILES_ENTRY], "Profiles")
@@ -179,7 +191,8 @@ class BackupRepository(
             null
         }
         validateRows(profiles, scripts, entries, manifest)
-        return ParsedBackup(manifest, profiles, scripts, currentProfileId, entries)
+        return ParsedBackup(manifest, profiles, scripts, currentProfileId, entries,
+            ExtensionRules.decode(entries[GLOBAL_RULES_ENTRY]?.toString(Charsets.UTF_8)))
     }
 
     private fun validateRows(
@@ -333,6 +346,7 @@ class BackupRepository(
                 name == PROFILES_ENTRY ||
                 name == SCRIPTS_ENTRY ||
                 name == CURRENT_PROFILE_ENTRY ||
+                name == GLOBAL_RULES_ENTRY ||
                 name.matches(Regex("(?:profiles|scripts)/[0-9]+\\.(?:yaml|js)")),
         ) { "备份包含未知条目" }
     }
@@ -359,12 +373,13 @@ class BackupRepository(
     }
 
     private companion object {
-        const val CURRENT_VERSION = 1
+        const val CURRENT_VERSION = 2
         const val MAX_ENTRY_BYTES = 16L * 1024L * 1024L
         const val CURRENT_PROFILE_KEY = "current_profile_id"
         const val MANIFEST_ENTRY = "manifest.json"
         const val PROFILES_ENTRY = "profiles.json"
         const val SCRIPTS_ENTRY = "scripts.json"
+        const val GLOBAL_RULES_ENTRY = "global_extension_rules.json"
         const val CURRENT_PROFILE_ENTRY = "current_profile_id.txt"
         const val PROFILES_DIRECTORY = "profiles"
         const val SCRIPTS_DIRECTORY = "scripts"

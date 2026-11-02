@@ -4,6 +4,10 @@ import android.content.Context
 import androidx.room.withTransaction
 import com.lonnnnnng.flclash.service.ActiveProfile
 import com.lonnnnnng.flclash.service.ActiveProfileProvider
+import com.lonnnnnng.flclash.service.ExtensionRule
+import com.lonnnnnng.flclash.service.ExtensionRules
+import com.lonnnnnng.flclash.service.ProfileExtensionOverrides
+import com.lonnnnnng.flclash.service.StandardProfileExtension
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
 import java.io.File
 import java.io.IOException
@@ -92,6 +96,11 @@ interface ProfileStore {
     suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
+    suspend fun extensionProfile(id: Long): Profile? = profiles.value.firstOrNull { it.id == id }
+    suspend fun globalExtensionRules(): List<ExtensionRule> = emptyList()
+    suspend fun saveGlobalExtensionRules(rules: List<ExtensionRule>) { error("此数据源不支持全局附加规则") }
+    suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile =
+        error("此数据源不支持扩展设置")
     suspend fun updateRemoteProfile(id: Long): Profile
     suspend fun deleteProfile(id: Long)
     suspend fun reorder(ids: List<Long>)
@@ -461,9 +470,37 @@ class ProfileRepository(
                 if (scriptId != null) {
                     requireNotNull(database.scripts().getById(scriptId)) { "脚本不存在" }
                 }
-                val updated = current.copy(scriptId = scriptId)
+                val updated = current.copy(scriptId = scriptId,
+                    extendType = if (scriptId != null && current.type != ProfileType.CUSTOM) "script" else current.extendType)
                 profileDao.update(updated.toEntity())
                 updated
+            }
+        }
+
+    override suspend fun extensionProfile(id: Long): Profile? = withContext(Dispatchers.IO) { profileDao.getById(id)?.toDomain() }
+
+    override suspend fun globalExtensionRules(): List<ExtensionRule> =
+        ExtensionRules.decode(preferenceDao.get(ExtensionRules.PREFERENCE_KEY))
+
+    override suspend fun saveGlobalExtensionRules(rules: List<ExtensionRule>) = withContext(Dispatchers.IO) {
+        ExtensionRules.validate(rules)
+        preferenceDao.put(AppPreferenceEntity(ExtensionRules.PREFERENCE_KEY, ExtensionRules.toJson(rules).toString(), System.currentTimeMillis()))
+    }
+
+    override suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile =
+        withContext(Dispatchers.IO) {
+            require(mode in setOf("standard", "script")) { "未知扩展模式" }
+            ExtensionRules.validate(extension.rules)
+            require(matchTarget == null || matchTarget.isNotBlank() && ',' !in matchTarget && '\n' !in matchTarget) { "默认目标无效" }
+            database.withTransaction {
+                val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                require(current.type != ProfileType.CUSTOM) { "自定义配置请直接编辑规则" }
+                if (scriptId != null) requireNotNull(database.scripts().getById(scriptId)) { "脚本不存在" }
+                // 作者 long：扩展只改自己的元数据，合并事务内最新 DNS/Provider 等覆盖，运行期间也不会重写订阅正文。
+                val overrides = ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(extension = extension.copy(configured = true))
+                current.copy(extendType = mode, scriptId = scriptId, matchTarget = matchTarget, overridesJson = overrides.toJsonString()).also {
+                    profileDao.update(it.toEntity())
+                }
             }
         }
 
@@ -580,20 +617,27 @@ class ProfileRepository(
             ?: profileDao.getAll().firstOrNull()?.id
     }
 
-    private suspend fun toActiveProfile(profile: Profile): ActiveProfile =
-        ActiveProfile(
+    private suspend fun toActiveProfile(profile: Profile): ActiveProfile {
+        val extension = ProfileProviderOverrides.fromJsonString(profile.overridesJson).extension
+        // 作者 long：旧绑定在引入模式前始终执行，未明确选择新模式的配置保留旧行为；CUSTOM 的既有绑定继续兼容。
+        val useScript = profile.type == ProfileType.CUSTOM || profile.extendType == "script" || !extension.configured && profile.scriptId != null
+        val standard = profile.type != ProfileType.CUSTOM && !useScript
+        return ActiveProfile(
             id = profile.id,
             label = profile.realLabel,
             filePath = profileFile(profile.id).path,
             selectedMap = decodeSelectedMap(profile.selectedMapJson),
             overridesJson = profile.overridesJson,
-            scriptPath = profile.scriptId?.let { scriptId ->
+            scriptPath = profile.scriptId?.takeIf { useScript }?.let { scriptId ->
                 requireNotNull(database.scripts().getById(scriptId)) { "绑定脚本不存在" }
                 scriptFile(scriptId).also { file ->
                     require(file.isFile) { "绑定脚本正文不存在" }
                 }.path
             },
+            deferExtensionApplication = profile.type != ProfileType.CUSTOM,
+            standardExtension = if (standard) StandardProfileExtension(extension.rules + globalExtensionRules().filterNot { it.id in extension.disabledGlobalRuleIds }, profile.matchTarget) else null,
         )
+    }
 
     private suspend fun ensureCurrentProfile(id: Long) {
         if (mutableCurrentProfileId.value == null) selectProfile(id)

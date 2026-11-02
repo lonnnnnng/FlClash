@@ -6,12 +6,24 @@
 >
 > 当前基线：`kotlin` 主线，DNS 基线和浏览器主链路修复已提交并同步到 `origin/kotlin`（代码提交 `cab92464`）；远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 最新验收：自定义策略组可视编辑首版已接通概览 → 单组/管理 → 成员/选项/快捷 YAML → 原子保存。App 294、Service 128 项通过，Redmi 最终 12/12，正式 Profile 前后保持 1 份且文件元数据不变；当前 APK 哈希与验收边界见下方同日策略组节。下一阶段继续标准/脚本扩展页与其自动应用链，完整 UI 保持 PARTIAL。
+> 最新验收：标准／脚本扩展整页首版及退出自动应用已接通。App 299、Service 137 项通过，Redmi 最终 12/12，真实停止态 Mihomo 完成标准/脚本互斥应用、失败回滚及重试；正式 Profile 前后保持 1 份且文件元数据不变。当前 APK 哈希与验收边界见下方同日扩展页节。下一阶段继续更多页字段添加/快捷 YAML、CUSTOM 规则可视整页，再补真实密文/SAF 闭环；完整 UI 保持 PARTIAL。
 > 代理页与延迟缓存历史验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，代理页整体首版已完成工具栏、分组溢出选择、搜索、Tab/List、固定组头、三档卡片与独立测速，21 项定向真机回归通过；真实 age 密文 E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
 > 前序延迟缓存验收时 Android 包尚未安装，正式 Room 为空；通过工作区外层 `AGENTS.md` 唯一授权入口导入并保留一份 Profile，未触碰外层 `1.yaml`、未清数据或删除 Profile。延迟缓存用例验证同一 Profile/组/节点/测试 URL 的正延迟跨真实应用进程恢复，并向正式 Room 写入不同 Profile 与旧测试 URL 探针，确认均不进入当前页面；成功后删除的只有测试探针行和应用内标记。核心保持 `STOPPED`，没有 ProxyService、VpnService 或 TUN。
 > 完整 ProfileRuntimeParity 长流程仍曾在停止态 `DIRECT` 默认测速阶段失败，不能推广为通过。Dashboard、Profiles 和 Proxy Groups 的完整 UI/UX 仍为 `PARTIAL`；后续仍需完成代理页连续圆角/动效/节点菜单、真实 age 密文 Android E2E、加密 SAF/全新 Profile SAF 导入、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity。验收限定 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
 
 > 2026-11-03 主链路修复补充：真实订阅本身可用，Kotlin 缺少 Flutter 的 DNS baseline，导致 Android 虚拟 DNS 无应答；已补齐脚本后 baseline → 用户覆盖 → LAN 暂存链路，并按已应用配置读取 mixed-port/TUN 参数和发布系统 HTTP 代理。有认证或禁用 mixed-port 时不广播代理，运行态配置改变网络参数时同步重建并支持失败回滚。Redmi 上 UDP/TCP 53 与系统解析均通过；X 浏览器百度与 Cloudflare 页面实测成功。详情及最终构建校验见下方“DNS 基线与浏览器主链路修复”。本段之后较早的“核心 STOPPED、未启动 TUN”等记录只适用于各自历史切片。
+
+### 标准／脚本扩展整页与自动应用首版（2026-11-03）
+
+- 参考本地 Flutter 基线 `7fd417fb9a9a277c6a9339a8ac87f907df7c25f7` 的 `profiles/extend/{extend,standard,script}.dart`、`providers/state/profile.dart`、`providers/actions/setup.dart`、`common/task.dart`、`database/rules.dart` 与七类规则预设，本轮未 fetch 上游。URL/FILE 扩展页新增标准/脚本模式、规则表单/原始规则、预设、上下移动/长按拖动、复选全选批量删除、默认目标搜索/跟随配置、按配置启用/禁用全局规则及全局定义管理、脚本绑定/取消和脚本管理入口；保留 DNS/Provider 覆盖入口和源文件写锁。
+- 扩展元数据允许运行时保存，源文件不回写；本配置规则 → 启用的全局规则 → 原规则。附加规则目标 `MATCH` 使用显式默认目标或原最后一条 MATCH 的目标，不改写原规则。脚本模式只执行绑定脚本，标准模式不执行保留的绑定；未显式选择新模式的旧绑定与 CUSTOM 既有脚本行为保持兼容。完整备份输出 v2、读取兼容 v1..2，保留全局规则稳定 ID；仅配置恢复不改全局定义。
+- 当前配置支持立即应用与退出自动应用，保存/应用串行，最少显示 600ms 应用状态；非当前配置只保存，应用前在管理器启停锁内复核 ID。失败保留已保存编辑并恢复旧核心输入/服务，页面可重试或暂不应用退出。后台节点刷新不会提前应用待确认的扩展/脚本；源文件、其他覆盖和 LAN 变更仍遵循原加载链。LAN 布尔热切不误标扩展已应用，待应用时恢复继承 LAN 会提示先应用扩展。
+- 真实核心验收发现并修复共享编解码边界：SnakeYAML 2.3 的 1024 字符缓冲区末尾若为高代理项，会向已满缓冲区补读并抛出 `IndexOutOfBoundsException`；扩展重序列化改变 emoji 节点名位置后触发。`YamlConfigCodec` 的 Reader 为补读预留一格，不删改字符，覆盖多个首轮/后续缓冲区边界及往返单测。此前标准 apply 失败由此导致，非节点可用性故障。规则行手势取消不再提交旧顺序，修复批量删除后旧规则复现。
+- 最终统一根 Wrapper `:app:testDebugUnitTest :service:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 成功；App JVM **299**、Service JVM **137**，失败/错误/跳过均 0；Lint **0 errors、53 warnings、9 hints**。日志 `/tmp/kclash-extension-20261103-final14-build.log`；之后仅将真实配置正文比较改为不打印正文的布尔断言，AndroidTest 增量构建 `/tmp/kclash-extension-20261103-final15-testbuild.log` 和最终 12 项复验通过，生产/UI 源码未变。Core/Common/Go、运行态真实 VPN 与浏览器网络本轮未重跑；运行态应用/回滚由 Service 单测验证，真实核心本轮仅停止态加载，不据此推广为网络验收。
+- Redmi Note 8 Pro `wsvwypiz7xwslvl7`，API 36、1080×2340、竖屏字号 1.0，最终精确批次 **12/12**。方法清单 `/tmp/kclash-extension-20261103-methods.txt`，设备日志 `/tmp/kclash-extension-20261103-final15-device.log`；覆盖新页操作/深浅主题、隔离 Repository 和备份 v1/v2、旧配置页、正式 MainActivity 非当前扩展保存重开。真实核心用授权原 `1.yaml` 创建临时 FILE，验证后台刷新保持旧输入、标准/脚本互斥应用、坏脚本回滚及修复重试，最后恢复正式选择并只回收自己创建且核对 ID/名称的 Profile/脚本。
+- 正式 Profile 前后保护各 **1/1**，均 count=1、missing=0、expected=1，文件名/size/mtime 一致；日志 `/tmp/kclash-extension-20261103-before.log`、`/tmp/kclash-extension-20261103-final15-after.log`。未清数据、删除正式配置、访问订阅或启用核心监听/VPN，最终服务为空、`/sys/class/net` 无 tun0。原始 `1.yaml` 本机/设备 SHA-256 均为 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`。App SHA-256 `07bdb944688b94b5104822f3fb92447c8221f3a3d2856ec9ff607402b2c5d75a`，测试包 `f4e4184a590910d06e5ca64f377d610f3cb4af46e18f7336145f13d3f81445a4`，均与设备安装包一致；App 仅 arm64-v8a，测试包无原生库，记录 `/tmp/kclash-extension-20261103-final15-artifacts.json`。
+- 最终截图 `/tmp/kclash-extension-20261103-final14-images/` 共 14 态，新扩展页标准/脚本/已应用/失败重试 × 深浅主题 **8 态已目视**，内容/动作无遮挡、系统栏清晰。固定宿主截图只证明当前原生布局，不作为 Flutter 像素一致性证据。保留早期 UI 删除/定位失败、真实核心 final10/phase11/diagnose12/diagnose13 失败日志；渲染阶段和异常类型/栈位置诊断不输出真实配置正文，最终 final14、final15 均 12/12 通过。
+- 本轮**整页首版 DONE-VERIFIED，Profiles/整体 UI 仍 PARTIAL**。超长列表边缘拖动/虚拟化、精确动效/视觉和真实运行态扩展切换 E2E 仍待后续；下一步按整页继续更多页字段添加/快捷 YAML、CUSTOM 规则可视编辑，再补真实 age/SAF、策略组批量/图标/问题提示和全局资源映射。Requests/DNS/Logs 次要视觉暂停，正式签名与发布独立推进。
 
 ### 自定义策略组可视编辑首版（2026-11-03）
 
@@ -23,7 +35,7 @@
 - Redmi Note 8 Pro `wsvwypiz7xwslvl7`，API 36、1080×2340、竖屏字号 1.0，最终精确批次 **12/12**，方法清单 `/tmp/kclash-groups-20261103-methods.txt`，日志 `/tmp/kclash-groups-20261103-final6-device.log`。覆盖整套深浅表单/成员/设置/YAML、长按拖动、复制删除、直接确认、旧配置页回归；真实 MainActivity 从添加入口创建临时 Profile、可视新增组、文件回读、重新打开及管理/YAML 入口通过，最后只删除自己创建且核对过 ID/名称的临时配置。真实文件仓库用例只读取授权 `1.yaml`（本机/设备 SHA-256 均为 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`），隔离 Room/缓存验证过期/运行守卫及成功保存，不访问 Provider 或订阅。
 - 正式 Profile 前后保护各 **1/1**，均 count=1、missing=0、expected=1，文件名/大小/mtime 完全相同；日志 `/tmp/kclash-groups-20261103-before.log`、`/tmp/kclash-groups-20261103-final6-after.log`。未清数据、删除正式配置或启动核心/VPN，最终服务为空且无 tun0。App SHA-256 `9d3db01beb93dcd094f7c383851f6d32ed7512207ccd8e9bd0be71105e17bd48`，测试包 `9f084531e0fd2bfbb48eaa1a3a0d0823f38db18778ced93fed99111a214cc54c`，均与设备安装包匹配；App 仅 arm64-v8a，测试包无原生库。
 - 最终截图 `/tmp/kclash-groups-20261103-final-images/` 共 28 个画面（另有拼图），其中策略组列表/成员选择/成员排序/选项/快捷 YAML × 深浅 10 态已目视；画面采于 final5，final6 仅补 GLOBAL 元数据保护，UI 源码相同。首批 9/9 已通过，随后补充管理入口、系统栏、无缩进列表和真实宿主回归后最终 12/12；中间 final2 构建因测试 moveTo 的 durationMillis 参数不存在失败，按编译器签名改为 delayMillis，final3/4/5/6 构建均通过，失败日志保留。
-- 当前为**可视编辑首版 DONE-VERIFIED，Profiles/整体 UI 仍 PARTIAL**。批量选择/删除、远程图标选择与预览、过滤预设/核心侧表达式校验、完整问题横幅、长列表边缘拖动滚动、全局资源登记/重名映射仍待对齐；缺失成员目前保留引用供用户修复。标准/脚本扩展模式与离开后的 autoApply、卡片组数、更多页的字段添加/快捷 YAML、真实 age/SAF 闭环继续作为后续整页工作，不把本批当作完整 Flutter parity。
+- 当前为**可视编辑首版 DONE-VERIFIED，Profiles/整体 UI 仍 PARTIAL**。批量选择/删除、远程图标选择与预览、过滤预设/核心侧表达式校验、完整问题横幅、长列表边缘拖动滚动、全局资源登记/重名映射仍待对齐；缺失成员目前保留引用供用户修复。当时待补的标准/脚本扩展及 autoApply 已由上方后续切片补齐；卡片组数、更多页字段添加/快捷 YAML、真实 age/SAF 闭环继续作为后续整页工作，不把本批当作完整 Flutter parity。
 
 ### 自定义配置导入与更多网络设置（2026-11-03）
 
@@ -35,7 +47,7 @@
 - 正式 Profile 前后保护各 1/1 通过，均 count=1、missing=0、expected=1，文件名/size/mtime 与 before 相同；日志 /tmp/kclash-custom-more-20261103-before.log 和 /tmp/kclash-custom-more-20261103-final7-after.log。未清数据或删除正式配置；正式宿主用例只删除自己创建的空草稿。最终服务为空、sysfs 无 tun0。
 - Debug APK SHA-256 5c974fdd17afdde8bf65b279fe1a6fb232f756230ef2763e2d2d6f4cfd258b90，AndroidTest 302ee1fdc1f23637c0c03a36075e2259e01c7299edee561fce9c2e672db7c06d，与设备安装包一致；App 仅 arm64-v8a，测试包无原生库。更多/导入八态截图与前序配置页十态存于 /tmp/kclash-custom-more-20261103-images/，已目视检查；导入输入态键盘可见，确认后键盘退出，固定列表宿主主题问题仍保留。
 - 中间失败保留：首轮 service 原统计停止时序测试 1 项失败，独立及后续整批通过；导入读取固定 IO 导致 JVM 测试无法等待和后续 Main dispatcher 清理失败，改为注入调度器后通过；可空文件快照编译错误已修复。设备首批 24/26、后批 25/26，文案子串断言与独立窗口焦点/点击时序修复后 final5 为 26/26；一次 Lint 内部 Unexpected owner function: null 重跑最终成功。不将中间批次记为全绿。
-- 整体 UI 仍为 PARTIAL。更多页字段添加面板、逐字段弹窗/快捷 YAML、策略组批量/图标/问题校验与计数卡、标准/脚本扩展与自动 apply 待继续；策略组可视首版已有上方后续切片。CUSTOM 导入保留本地 YAML 资源结构，上游全局资源登记/重名映射/远程资源加载尚未对齐；文件密文输入与压缩包导入、真实 URL/age/SAF 全流程 E2E 未验收。后续继续整页还原后批量验证。
+- 整体 UI 仍为 PARTIAL。更多页字段添加面板、逐字段弹窗/快捷 YAML、策略组批量/图标/问题校验与计数卡、标准/脚本扩展与自动 apply 已由上方后续切片接通；策略组可视首版同见上方后续切片。CUSTOM 导入保留本地 YAML 资源结构，上游全局资源登记/重名映射/远程资源加载尚未对齐；文件密文输入与压缩包导入、真实 URL/age/SAF 全流程 E2E 未验收。后续继续整页还原后批量验证。
 
 ### 自定义配置创建与概览整页对齐（2026-11-03）
 
@@ -46,7 +58,7 @@
 - 正式 Profile 前后保护各 1/1 通过，均为 `count=1 missing=0 expected=1`，文件名/size/mtime 一致；日志 `/tmp/kclash-custom-overview-20261103-before.log` 和 `/tmp/kclash-custom-overview-20261103-after.log`。正式配置保留，正式宿主用例仅删除自己新建的空草稿；本轮未清数据、未访问订阅、未读写外层 `1.yaml`，未启动核心/VPN，最终服务为空、无 tun0。
 - Debug APK SHA-256 `036015d23a82939ae88a7c2d0966715332bf4902c02518f6b104133cb18fa6ee`，AndroidTest `94a13b184e01e71de70017265f834dccbb4f8ec79a26fcc00fc116e2a7188033`，与设备安装包一致；App 原生库仅 arm64-v8a，测试包无原生库。列表、扩展、远程编辑、自定义概览、更多的深浅主题共 10 张图已目视，目录 `/tmp/kclash-custom-overview-20261103-images/`；概览/更多窗口完整无遮挡，固定列表测试宿主 Activity 背景和系统栏主题仍待统一，不更新旧视觉哈希基线。
 - 中间 AndroidTest `Unresolved reference longClick` 已补 import；JVM 首轮 275 项有 3 项因后台解析跨越测试 Main dispatcher 生命周期失败，改为显式注入概览 dispatcher 后最终 277 项全通过。保留失败经过，不将早期失败视为最终结果。
-- Profiles/整体 UI 仍为 PARTIAL。当时待补的 CUSTOM URL/FILE 导入和 NTP/Sniffer 已有上方后续切片；策略组可视添加/排序/成员编辑已由上方首版切片补齐；卡片策略组计数、策略组完整 parity、标准/脚本扩展模式及离开后的自动 apply 仍待补齐；规则资源引用仅覆盖简单 RULE-SET，不宣称完整问题校验。下一步继续 Profiles/Dashboard 整页差异及真实密文/SAF 闭环，完成整版后批量验证。
+- Profiles/整体 UI 仍为 PARTIAL。当时待补的 CUSTOM URL/FILE 导入和 NTP/Sniffer 已有上方后续切片；策略组可视添加/排序/成员编辑已由上方首版切片补齐；标准/脚本扩展模式及离开后的自动 apply 已由上方后续切片接通；卡片策略组计数和策略组完整 parity 仍待补齐；规则资源引用仅覆盖简单 RULE-SET，不宣称完整问题校验。下一步继续 Profiles/Dashboard 整页差异及真实密文/SAF 闭环，完成整版后批量验证。
 
 ### 配置页整页首版对齐（2026-11-03）
 
@@ -56,7 +68,7 @@
 - Redmi API 36、竖屏默认字号：60 项批次最初 56 通过、2 失败、2 跳过；修复 YAML 切分区前焦点/键盘、父子编辑器按钮定位。原跳过的两项 FILE 仓库测试携授权 1.yaml 参数通过。定向 5 项为 4 通过、1 旧删除按钮数量断言失败；修正后 Repository 整页创建/编辑/删除和正式 MainActivity 最终 2/2 通过。保留中间失败日志，不将 60 项单批记为全绿。
 - 正式 Profile 保护 phase=after count=1 missing=0 expected=1，文件名/大小/mtime 与 before 相同。未清数据、删除正式配置或访问订阅，未启动核心/VPN；服务为空，/sys/class/net 无 tun0（ip link 查询被设备权限拒绝，未以失败作为无 TUN 证据）。本地与设备 1.yaml 哈希一致，原文件未改写。
 - Debug APK SHA-256 892e1f668dd7405a10d534d77b74064f7ce60b0a91228b3e4a7d2c5847c14358，AndroidTest 8cb9cfe2d97d78c1701453615882c1f9d31136e551d13c5b85a1a52e03796431，与设备一致；App 仅 arm64-v8a，测试包无原生库。最终设备日志 /tmp/kclash-profiles-page-20261103-finish-device.log 和 /tmp/kclash-profiles-page-20261103-confirm-device.log。
-- 深浅主题列表/扩展/远程编辑 6 态重新采集并抽查；等待窗口绘制后无叠影。测试宿主 Activity 背景/系统栏主题切换仍待统一，不更新旧 Profiles 哈希基线。当时的常驻溢出按钮、CUSTOM 命名步骤和菜单顺序待办已由上方自定义配置切片补齐；Flutter 标准/脚本扩展模式及规则自动 apply 链仍待补齐。Profiles/整体 UI 保持 PARTIAL；下一阶段继续整页差异和真实密文/SAF 闭环。
+- 深浅主题列表/扩展/远程编辑 6 态重新采集并抽查；等待窗口绘制后无叠影。测试宿主 Activity 背景/系统栏主题切换仍待统一，不更新旧 Profiles 哈希基线。当时的常驻溢出按钮、CUSTOM 命名步骤和菜单顺序待办已由上方自定义配置切片补齐；当时待补的 Flutter 标准/脚本扩展模式及规则自动 apply 链已有上方后续切片。Profiles/整体 UI 保持 PARTIAL；下一阶段继续整页差异和真实密文/SAF 闭环。
 
 ### 代理页整体首版对齐（2026-11-03）
 
@@ -125,13 +137,13 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 统一启动、停止、配置热切、停止态节点读取/选择/测速、模式、VPN/纯代理、LAN 热更新、Provider 更新与观测失效；UI 不直接调用 gomobile |
-| 单元测试 | 最新策略组可视编辑切片 App 294、Service 128 项，失败/错误/跳过 0；DNS 修复与 Core 34 项为前序结果，本轮 Core/Common/Go 未重跑 |
-| 主流程真机测试 | Redmi 竖屏默认字号：最新策略组编辑精确批次 12/12，正式 MainActivity/原子仓库/深浅主题通过；前序自定义配置导入/更多 26/26；配置页前序批次和定向复验见同日配置页节；代理页批次 21/21；代理组整类 8/8、ViewModel 面板、协议滚动、语义锚定 1/1；真实 Mihomo URLTest/Fallback 固定/恢复/非法选择回归 1/1；完整 ProfileRuntimeParity 长流程仍受停止态 DIRECT 默认测速失败影响 |
+| 单元测试 | 最新标准/脚本扩展切片 App 299、Service 137 项，失败/错误/跳过 0；Core 34 项为前序结果，本轮 Core/Common/Go 未重跑 |
+| 主流程真机测试 | Redmi 竖屏默认字号：最新标准/脚本扩展精确批次 12/12，含正式 MainActivity、备份兼容与真实停止态核心应用/回滚；前序策略组 12/12、自定义配置导入/更多 26/26、代理页 21/21；其他历史批次见对应节。完整 ProfileRuntimeParity 长流程仍受停止态 DIRECT 默认测速失败影响 |
 | Debug 构建 | Debug/AndroidTest 构建与 `lintDebug` 通过；Lint 0 errors、53 warnings、9 hints |
-| Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；当前策略组编辑版本 SHA-256 9d3db01beb93dcd094f7c383851f6d32ed7512207ccd8e9bd0be71105e17bd48，与 Redmi 安装包一致；前次 DNS/浏览器验收哈希见对应历史节 |
-| Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 9f084531e0fd2bfbb48eaa1a3a0d0823f38db18778ced93fed99111a214cc54c，与设备一致且无原生库 |
+| Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；当前扩展页版本 SHA-256 07bdb944688b94b5104822f3fb92447c8221f3a3d2856ec9ff607402b2c5d75a，与 Redmi 安装包一致；前次 DNS/浏览器验收哈希见对应历史节 |
+| Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 f4e4184a590910d06e5ca64f377d610f3cb4af46e18f7336145f13d3f81445a4，与设备一致且无原生库 |
 | Release 构建 | 历史 `:app:assembleRelease :app:lintRelease` 已通过，输出为未签名预发布 APK；本轮未重建 Release，独立 release keystore 仍待发布阶段创建 |
-| 最近真机证据 | Redmi API 36、1080×2340、竖屏字号 1.0：策略组可视编辑最终精确批次 12/12、截图 10 态已目视，正式 Profile 前后保护各 1/1；前序自定义配置概览/更多证据见历史节；代理页前序精确批次 21/21；正式 Profile 文件元数据前后不变（1 份且非空），服务为空、无 tun0。真实网络证据见 DNS/浏览器修复节 |
+| 最近真机证据 | Redmi API 36、1080×2340、竖屏字号 1.0：扩展页最终精确批次 12/12、新页截图 8 态已目视，正式 Profile 前后保护各 1/1，文件元数据不变（1 份且非空），服务为空、无 tun0；真实停止态核心应用通过。本轮未重跑 VPN/浏览器网络，网络证据见 DNS/浏览器修复节 |
 
 ## 4. 目标架构图
 

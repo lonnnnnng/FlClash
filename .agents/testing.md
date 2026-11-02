@@ -1,5 +1,14 @@
 # Testing
 
+## 标准／脚本扩展整页与自动应用首版（2026-11-03）
+
+- 统一根 Wrapper App/Service 单测、Debug、AndroidTest、Lint 通过；App JVM 299、Service JVM 137，失败/错误/跳过均 0，Lint 0 errors、53 warnings、9 hints。日志 `/tmp/kclash-extension-20261103-final14-build.log`；之后仅调整真实配置断言脱敏，AndroidTest 增量构建 `/tmp/kclash-extension-20261103-final15-testbuild.log` 成功并重跑 12/12，生产/UI 未变；Core/Common/Go、真实运行态 VPN/浏览器网络未重跑。
+- Redmi API 36、1080×2340、竖屏默认字号，精确方法批次 12/12，方法清单 `/tmp/kclash-extension-20261103-methods.txt`，最终日志 `/tmp/kclash-extension-20261103-final15-device.log`。覆盖规则编辑/预设/排序/批删、全局启停、模式/脚本、深浅主题、隔离仓库/备份 v1/v2、旧配置页及正式非当前配置保存重开。
+- 真实 Mihomo 仅加载授权原 `1.yaml` 的临时 FILE：验证待应用扩展不被后台刷新提前加载、标准/脚本互斥应用、坏脚本回滚及修复重试，恢复正式选择后仅回收自己创建的临时 Profile/脚本。停止态不启监听/VPN；运行态元数据保存/自动应用/回滚由 App/Service 单测覆盖，未声称真实运行态扩展 E2E。
+- 初次真实应用失败经脱敏阶段/栈定位为 SnakeYAML 2.3 的高代理项满缓冲区补读越界，已在共享 codec 预留一格并补多边界往返单测；final14 真实核心通过。删除旧手势取消误提交导致规则复现也已修复。早期失败日志保留，详见 roadmap。
+- 正式 Profile 前后保护各 1/1，count=1/missing=0/expected=1，文件名/size/mtime 一致；日志 `/tmp/kclash-extension-20261103-before.log`、`/tmp/kclash-extension-20261103-final15-after.log`。原 `1.yaml` 本机/设备哈希不变，两包安装哈希一致，App 仅 arm64、测试包无原生库；最终服务为空、无 tun0。未清数据、删除正式配置、访问订阅或改写授权文件。
+- 最终图目录 `/tmp/kclash-extension-20261103-final14-images/`，新扩展标准/脚本/已应用/重试共深浅 8 态已目视；只证明原生布局，未宣称 Flutter 像素 parity。完整 Profiles/UI 保持 PARTIAL，后续整页更多字段/快捷 YAML、CUSTOM 规则与真实密文/SAF 闭环。
+
 ## 自定义策略组可视编辑首版（2026-11-03）
 
 - App JVM 294、Service JVM 128 项全部通过；Debug/AndroidTest/Lint 通过，0 errors、53 warnings、9 hints，最终日志 /tmp/kclash-groups-20261103-final6-build.log。Core/Common/Go、真实 DNS/浏览器网络本轮未重跑。

@@ -32,6 +32,8 @@ data class ActiveProfile(
     val selectedMap: Map<String, String> = emptyMap(),
     val overridesJson: String = "{}",
     val scriptPath: String? = null,
+    val standardExtension: StandardProfileExtension? = null,
+    val deferExtensionApplication: Boolean = false,
 )
 
 data class ProxyDelayRequest(

@@ -29,3 +29,11 @@ Profiles 的页面状态通过 `ProfileStore` 和 `CoreRuntimeStatusProvider` �
 ## UI
 
 Compose 使用 Material 3 作为基础，并由独立 Design System 保存 Flutter 参考实现中的颜色、字体、间距、形状、状态色和导航行为。页面不通过平台分支复制逻辑；差异应进入明确的 Android 手机布局策略。
+
+## Profile 扩展与应用输入
+
+- URL/FILE 的标准扩展保存在 typed `ProfileProviderOverrides.extension`：配置独有规则、稳定 ID 的全局规则禁用集合和显式模式标记；模式、脚本 ID、默认目标沿用 Profile 自有字段。全局规则定义保存在 `app_preferences.global_extension_rules`，完整备份使用 v2 并接受旧 v1 归档；仅配置恢复不改全局规则。Room schema 不变。
+- 标准模式按本配置附加规则 → 启用的全局规则 → 原始规则合并；附加规则中的 `MATCH` 目标取显式默认目标或原配置最后一个 MATCH。脚本模式只执行绑定脚本，不叠加标准规则。源 YAML 不回写，DNS baseline、显式覆盖、LAN 继续作用于暂存输入。旧绑定未明确配置新模式时继续执行；CUSTOM 既有脚本行为保留。
+- `ProfileExtensionController` 用串行队列处理元数据、显式应用和退出自动应用，真实应用只能进入 `CoreRuntimeManager.applyCurrentProfile`，并在启停锁内复核当前 ID；应用失败保留已保存编辑并由管理器恢复旧配置/服务。
+- `loadedConfigKey` 表示已交给核心的完整输入，普通配置另有 `loadedAutomaticConfigKey` 比较源文件、非扩展覆盖和 LAN。后台节点刷新不能因扩展元数据/脚本变化提前加载；显式应用、选用或启动走完整加载。LAN 布尔热切只更新旧输入的 LAN 指纹，不把待应用扩展标为已应用；待应用时恢复继承 LAN 会提示先应用扩展，避免重新执行未提交脚本。
+- `YamlConfigCodec` 通过安全构造器按调用创建解析器；Reader 在普通整缓冲读取时预留一格，供 SnakeYAML 2.3 在末尾遇到 UTF-16 高代理项时补读低代理项，避免包含 emoji 的节点名在扩展/脚本重序列化后触发越界。字符内容不变，源配置不回写。

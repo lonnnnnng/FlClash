@@ -7,6 +7,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import java.io.File
+import java.io.StringReader
 import java.math.BigDecimal
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.LoaderOptions
@@ -65,7 +66,12 @@ object YamlConfigCodec {
         require(yaml.toByteArray(Charsets.UTF_8).size <= MAX_CONFIG_BYTES) {
             "配置文件超过 8 MiB 限制"
         }
-        val parsed = loader().load<Any?>(yaml)
+        // 作者 long：SnakeYAML 2.3 遇到缓冲区末尾的高代理项会再补读一个字符；
+        // 每次常规读取预留一格，避免含 emoji 的节点名在扩展/脚本重排后碰到 1024 字符边界而越界。
+        val parsed = loader().load<Any?>(object : StringReader(yaml) {
+            override fun read(buffer: CharArray, offset: Int, length: Int): Int =
+                super.read(buffer, offset, if (offset == 0 && length == buffer.size && length > 1) length - 1 else length)
+        })
         val json = gson.toJsonTree(parsed)
         require(json.isJsonObject) { "脚本配置必须是 YAML 对象" }
         val objectConfig = json.asJsonObject

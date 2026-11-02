@@ -81,6 +81,22 @@ class BackupRepositoryInstrumentedTest {
     }
 
     @Test
+    fun legacyVersionOneRestoresAndCompatibleMergeKeepsNewGlobalRules() = runBlocking {
+        val rules = listOf(com.lonnnnnng.flclash.service.ExtensionRule("global", "DOMAIN,example.test,DIRECT"))
+        database.appPreferences().put(AppPreferenceEntity("global_extension_rules", com.lonnnnnng.flclash.service.ExtensionRules.toJson(rules).toString(), 1))
+        val archive = zip(
+            "{\"version\":1,\"createdAtMillis\":1,\"includesScripts\":true,\"includesCurrentProfile\":false}" to "manifest.json",
+            com.google.gson.Gson().toJson(listOf(profile(1111, null))) to "profiles.json",
+            "[]" to "scripts.json", "legacy contents" to "profiles/1111.yaml",
+        )
+        repository.restore(archive, BackupRestoreScope.ALL_DATA, BackupRestoreStrategy.COMPATIBLE)
+        assertEquals(rules, com.lonnnnnng.flclash.service.ExtensionRules.decode(database.appPreferences().get("global_extension_rules")))
+        assertEquals("legacy contents", File(root, "profiles/1111.yaml").readText())
+        repository.restore(archive, BackupRestoreScope.ALL_DATA, BackupRestoreStrategy.OVERRIDE)
+        assertTrue(com.lonnnnnng.flclash.service.ExtensionRules.decode(database.appPreferences().get("global_extension_rules")).isEmpty())
+    }
+
+    @Test
     fun invalidPathAndUnknownVersionAreRejectedBeforeChangingFiles() = runBlocking {
         write("profiles/1004.yaml", "keep: true")
         val before = File(root, "profiles/1004.yaml").readText()

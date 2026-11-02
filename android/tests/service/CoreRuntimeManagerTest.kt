@@ -141,9 +141,10 @@ class CoreRuntimeManagerTest {
         val runtime = manager(ActiveProfile(8, "统计", source.path), temporaryFolder.newFolder(), bridge, controller)
         runtime.startProxy().getOrThrow()
         val pending = CompletableDeferred<com.lonnnnnng.flclash.core.CoreProviderCounts>()
-        bridge.providerRead = { pending.await() }
+        val entered = CompletableDeferred<Unit>()
+        bridge.providerRead = { entered.complete(Unit); pending.await() }
         val request = async { runCatching { runtime.profileStatistics(8) } }
-        runCurrent()
+        entered.await()
         controller.onStop = { pending.complete(com.lonnnnnng.flclash.core.CoreProviderCounts(0, 0)) }
         runtime.stop().getOrThrow()
         assertTrue(request.await().isFailure)
@@ -1565,6 +1566,71 @@ class CoreRuntimeManagerTest {
         bridge.ipRead = { manager.setOutboundMode(CoreOutboundMode.GLOBAL).getOrThrow(); valid }
         assertTrue(runCatching { manager.queryIpMetadata("https://fixture.invalid") }.isFailure)
         manager.stop().getOrThrow()
+    }
+
+    @Test fun extensionApplyUsesSameProfileWithoutStartingAndGuardsStaleTarget() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
+        var profile = ActiveProfile(71, "扩展", source.path)
+        val bridge = FakeBridge(); val controller = FakeServiceController(); val home = temporaryFolder.newFolder()
+        val runtime = manager(profile, home, bridge, controller, profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profile
+        })
+        assertFalse(runtime.profileInputsApplied(71))
+        runtime.applyCurrentProfile(71)
+        assertTrue(runtime.profileInputsApplied(71)); assertTrue(controller.events.isEmpty()); assertFalse(bridge.listenerStarted)
+        profile = profile.copy(standardExtension = StandardProfileExtension(listOf(ExtensionRule("x", "DOMAIN,example.test,MATCH")), "Main"))
+        assertFalse(runtime.profileInputsApplied(71))
+        runtime.applyCurrentProfile(71)
+        assertTrue(File(home, "config.yaml").readText().contains("DOMAIN,example.test,Main"))
+        assertEquals("rules: ['MATCH,DIRECT']\n", source.readText())
+        assertTrue(runCatching { runtime.applyCurrentProfile(72) }.isFailure)
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value); assertTrue(controller.events.isEmpty())
+    }
+
+    @Test fun backgroundProxyRefreshKeepsDeferredExtensionUntilExplicitApply() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
+        var profile = ActiveProfile(71, "扩展", source.path, deferExtensionApplication = true)
+        val bridge = FakeBridge(); val controller = FakeServiceController(); val home = temporaryFolder.newFolder()
+        val runtime = manager(profile, home, bridge, controller, lanSharingStore = FakeLanStore(), profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profile
+        })
+        runtime.getProxyGroups().getOrThrow()
+        val applied = File(home, "config.yaml").readText()
+        profile = profile.copy(standardExtension = StandardProfileExtension(listOf(ExtensionRule("x", "DOMAIN,example.test,DIRECT"))))
+        runtime.getProxyGroups().getOrThrow()
+        assertEquals(applied, File(home, "config.yaml").readText())
+        assertFalse(runtime.profileInputsApplied(71))
+        runtime.updateLanSharing(true)
+        runtime.getProxyGroups().getOrThrow()
+        assertFalse(runtime.profileInputsApplied(71))
+        assertFalse(File(home, "config.yaml").readText().contains("DOMAIN,example.test,DIRECT"))
+        assertTrue(runCatching { runtime.updateLanSharing(null) }.isFailure)
+        runtime.applyCurrentProfile(71)
+        assertTrue(runtime.profileInputsApplied(71))
+        assertTrue(File(home, "config.yaml").readText().contains("DOMAIN,example.test,DIRECT"))
+        // 作者 long：普通 DNS 覆盖变化仍走已有自动加载，延期的只是扩展输入，不能冻结其他设置。
+        profile = profile.copy(overridesJson = ProfileProviderOverrides(dns = ProfileDnsOverrides(ipv6 = true)).toJsonString())
+        runtime.getProxyGroups().getOrThrow()
+        assertTrue(runtime.profileInputsApplied(71)); assertTrue(controller.events.isEmpty())
+    }
+
+    @Test fun extensionFailureRestoresRunningConfigAndKeepsNewInputsUnapplied() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
+        var profile = ActiveProfile(71, "扩展", source.path)
+        val bridge = FakeBridge(); val controller = FakeServiceController(); val home = temporaryFolder.newFolder()
+        val runtime = manager(profile, home, bridge, controller, profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profile
+        })
+        runtime.startProxy().getOrThrow()
+        val previous = File(home, "config.yaml").readText()
+        profile = profile.copy(standardExtension = StandardProfileExtension(listOf(ExtensionRule("x", "invalid-rule"))))
+        assertTrue(runCatching { runtime.applyCurrentProfile(71) }.isFailure)
+        assertEquals(previous, File(home, "config.yaml").readText())
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        assertFalse(runtime.profileInputsApplied(71)); assertTrue(bridge.listenerStarted)
+        profile = profile.copy(standardExtension = StandardProfileExtension(listOf(ExtensionRule("x", "DOMAIN,example.test,DIRECT"))))
+        runtime.applyCurrentProfile(71)
+        assertTrue(runtime.profileInputsApplied(71)); assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
     }
 
     private fun manager(

@@ -156,7 +156,7 @@ internal fun ProfileSectionRow(
     }
 }
 
-/** 作者 long：扩展入口只导航到已有的 Profile 覆盖编辑器，不把缺失的标准/脚本模式伪装成已实现选项。 */
+/** 作者 long：独立列表宿主可只提供覆盖导航回调；正式入口通过 ProfileExtensionRoute 挂载持久化扩展页。 */
 @Composable
 internal fun ProfileExtensionPage(
     label: String,

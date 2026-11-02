@@ -43,6 +43,18 @@ class ProfileScriptTest {
     }
 
     @Test
+    fun yamlCodecPreservesSupplementaryCharactersAtReaderBufferBoundaries() {
+        // 作者 long：首轮和后续轮次的满缓冲区都可能截断节点名中的 emoji，必须覆盖原文与序列化后再次解析。
+        for (boundary in listOf(1023, 1024, 2046, 2047, 2048, 3071)) {
+            val label = "x".repeat(boundary - "name: ".length) + "\uD83C\uDDE8\uD83C\uDDF3"
+            val parsed = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson("name: $label\n")).asJsonObject
+            assertEquals(label, parsed["name"].asString)
+            val roundTrip = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(YamlConfigCodec.toYaml(parsed.toString()))).asJsonObject
+            assertEquals(label, roundTrip["name"].asString)
+        }
+    }
+
+    @Test
     fun applierPassesJsonToEvaluatorAndReturnsOnlyEvaluatorConfig() = runBlocking {
         val scriptFile = temporaryFolder.newFile("profile.js").apply {
             writeText("function main(config) { return config }")

@@ -889,6 +889,7 @@ fun KClashApp(
                     onCloseDialersEditor = profilesViewModel::closeDialersEditor,
                     onSaveDialers = profilesViewModel::saveDialers,
                     onReorderProfiles = profilesViewModel::reorder,
+                    extensionController = profilesViewModel.extension,
                     scripts = scriptsState.scripts,
                     onBindScript = profilesViewModel::bindScript,
                     onOpenScripts = { showScriptsDialog = true },
@@ -1470,6 +1471,7 @@ internal fun ProfilesPanel(
     onCloseDialersEditor: () -> Unit = {},
     onSaveDialers: (String) -> Unit = {},
     onReorderProfiles: (List<Long>) -> Unit = {},
+    extensionController: ProfileExtensionController? = null,
     scripts: List<Script> = emptyList(),
     onBindScript: (Profile, Long?) -> Unit = { _, _ -> },
     onOpenScripts: () -> Unit = {},
@@ -1756,7 +1758,9 @@ internal fun ProfilesPanel(
 
     extensionProfileId?.let { id ->
         state.profiles.firstOrNull { it.id == id }?.let { profile ->
-            ProfileExtensionPage(profile.realLabel, canMutateProfiles, { extensionProfileId = null },
+            if (extensionController != null) ProfileExtensionRoute(id, extensionController, scripts, canMutateProfiles,
+                { extensionProfileId = null }, onOpenScripts, { onOpenDnsEditor(profile) }, { onOpenProvidersEditor(profile) })
+            else ProfileExtensionPage(profile.realLabel, canMutateProfiles, { extensionProfileId = null },
                 { onOpenDnsEditor(profile) }, { onOpenProvidersEditor(profile) }, { scriptBindingProfileId = id })
         }
     }

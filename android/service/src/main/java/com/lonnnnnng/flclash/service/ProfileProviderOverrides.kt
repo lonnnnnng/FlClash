@@ -131,6 +131,7 @@ data class ProfileProviderOverrides(
     val dialers: Map<String, String>? = null,
     val ntp: ProfileNtpOverrides = ProfileNtpOverrides(),
     val sniffer: ProfileSnifferOverrides = ProfileSnifferOverrides(),
+    val extension: ProfileExtensionOverrides = ProfileExtensionOverrides(),
 ) {
     fun toJsonString(): String = JsonObject().apply {
         add("proxy-providers", JsonObject().apply {
@@ -138,6 +139,7 @@ data class ProfileProviderOverrides(
                 if (!override.isEmpty) add(name, override.toJson())
             }
         })
+        if (extension != ProfileExtensionOverrides()) add("extension", extension.toJson())
         if (!dns.isEmpty) add("dns", dns.toJson())
         if (!ntp.isEmpty) add("ntp", ntp.toJson())
         if (!sniffer.isEmpty) add("sniffer", sniffer.toJson())
@@ -169,7 +171,8 @@ data class ProfileProviderOverrides(
                     ?: ProfileDnsOverrides()
                 ProfileProviderOverrides(values, dns, root.optStringMapOrNull("dialers"),
                     root.getAsJsonObject("ntp")?.let(ProfileNtpOverrides::fromJson) ?: ProfileNtpOverrides(),
-                    root.getAsJsonObject("sniffer")?.let(ProfileSnifferOverrides::fromJson) ?: ProfileSnifferOverrides())
+                    root.getAsJsonObject("sniffer")?.let(ProfileSnifferOverrides::fromJson) ?: ProfileSnifferOverrides(),
+                    root.getAsJsonObject("extension")?.let(ProfileExtensionOverrides::fromJson) ?: ProfileExtensionOverrides())
             }.getOrDefault(ProfileProviderOverrides())
         }
     }
