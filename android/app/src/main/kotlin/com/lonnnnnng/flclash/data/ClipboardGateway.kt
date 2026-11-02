@@ -30,6 +30,6 @@ class AndroidClipboardGateway @Inject constructor(
         ?.toString()
 
     override fun writeText(text: String) {
-        clipboard.setPrimaryClip(ClipData.newPlainText("KClash 按应用代理", text))
+        clipboard.setPrimaryClip(ClipData.newPlainText("KClash", text))
     }
 }

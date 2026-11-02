@@ -68,6 +68,8 @@ interface ProxyServiceController {
     suspend fun start(options: VpnOptions)
 
     fun stop()
+
+    suspend fun stopAndAwait() { stop() }
 }
 
 interface VpnOptionsProvider {
@@ -105,15 +107,16 @@ interface RuntimeResumeStore {
 }
 
 /**
- * 作者 long：在设置页面接入前先使用与 Flutter 默认值一致的手机 TUN 配置，
+ * 作者 long：VPN 启用选择独立于 Profile，默认保持手机 TUN 接管；
  * 同时关闭系统 HTTP 代理，避免订阅配置的 mixed-port 尚未解析时把流量送到错误端口。
  */
 class DefaultVpnOptionsProvider(
     private val accessControlSettingsProvider: AccessControlSettingsProvider =
         DisabledAccessControlSettingsProvider,
+    private val vpnSettingsStore: VpnSettingsStore = DefaultVpnSettingsStore,
 ) : VpnOptionsProvider {
     override suspend fun current() = VpnOptions(
-        enable = true,
+        enable = vpnSettingsStore.read(),
         port = DEFAULT_MIXED_PORT,
         ipv6 = false,
         dnsHijacking = false,
@@ -139,14 +142,20 @@ class AndroidProxyServiceController(
     private val context: Context,
 ) : ProxyServiceController {
     override suspend fun start(options: VpnOptions) {
-        check(options.enable) { "VPN 未启用" }
         ServiceConfig.updateVpnOptions(options)
         ServiceConfig.updateVpnState(VpnRuntimeState.STOPPED)
+        ServiceConfig.updateProxyState(VpnRuntimeState.STARTING)
         ContextCompat.startForegroundService(
             context,
             Intent(context, ProxyService::class.java),
         )
         try {
+            // 作者 long：本地代理和 VPN 共用核心；关闭 VPN 时只等待代理前台服务，不创建 TUN。
+            val proxyState = withTimeout(VPN_START_TIMEOUT_MS) {
+                ServiceConfig.proxyState.first { it == VpnRuntimeState.CONNECTED || it == VpnRuntimeState.FAILED }
+            }
+            check(proxyState == VpnRuntimeState.CONNECTED) { "本地代理服务启动失败" }
+            if (!options.enable) return
             ContextCompat.startForegroundService(
                 context,
                 Intent(context, VpnService::class.java),
@@ -168,16 +177,28 @@ class AndroidProxyServiceController(
         }
     }
 
+    override suspend fun stopAndAwait() {
+        stop()
+        // 作者 long：STOP action 只发出异步请求；旧实例彻底销毁后才能重用同一网络观察器和前台通知。
+        withTimeout(VPN_START_TIMEOUT_MS) {
+            ServiceConfig.proxyAlive.first { !it }
+            ServiceConfig.vpnAlive.first { !it }
+        }
+    }
+
     override fun stop() {
         // 作者 long：VpnService 由系统保持绑定，必须先发送停止 action 让其关闭 TUN，
         // 再停止服务组件；只调用 stopService 会留下 tun0 和系统 VPN 路由。
-        stopServiceWithCleanup(ProxyService::class.java)
-        stopServiceWithCleanup(VpnService::class.java)
+        stopServiceWithCleanup(ProxyService::class.java, ServiceConfig.proxyAlive.value)
+        stopServiceWithCleanup(VpnService::class.java, ServiceConfig.vpnAlive.value)
     }
 
-    private fun stopServiceWithCleanup(serviceClass: Class<out android.app.Service>) {
-        val stopIntent = Intent(context, serviceClass).setAction(ACTION_STOP_SERVICE)
-        runCatching { context.startService(stopIntent) }
+    private fun stopServiceWithCleanup(serviceClass: Class<out android.app.Service>, alive: Boolean) {
+        // 作者 long：未创建的服务也要撤销已排队的启动，但不能为纯代理模式额外创建一个 VPN 实例。
+        if (alive) {
+            val stopIntent = Intent(context, serviceClass).setAction(ACTION_STOP_SERVICE)
+            runCatching { context.startService(stopIntent) }
+        }
         context.stopService(Intent(context, serviceClass))
     }
 
@@ -195,6 +216,7 @@ data class CoreRuntimePaths(
 }
 
 interface ProxyGroupsRuntime : CoreRuntimeStatusProvider {
+    val proxyGroupsRevision: Flow<Long> get() = kotlinx.coroutines.flow.flowOf(0L)
     val events: Flow<CoreEvent>
 
     suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot>
@@ -215,6 +237,24 @@ interface ProxyGroupsRuntime : CoreRuntimeStatusProvider {
 }
 
 interface CoreRuntimeBridge {
+    suspend fun externalProviders(): List<com.lonnnnnng.flclash.core.CoreExternalProvider> = error("核心未提供 Provider 明细")
+    suspend fun updateExternalProvider(name: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp): Unit = error("核心未提供 Provider 更新")
+    suspend fun providerCounts(): com.lonnnnnng.flclash.core.CoreProviderCounts = error("核心未提供 Provider 统计")
+    suspend fun checkRoutes(routes: List<List<com.lonnnnnng.flclash.core.CoreRouteHit>>): com.lonnnnnng.flclash.core.CoreRouteCheck = error("核心未提供路由核验")
+    suspend fun checkServices(targets: List<com.lonnnnnng.flclash.core.ServiceTarget>, direct: Boolean, timeoutMs: Long): List<com.lonnnnnng.flclash.core.CoreServiceCheck> = error("核心未提供服务检测")
+    suspend fun getLanConfig(path: String? = null): com.lonnnnnng.flclash.core.CoreLanConfig = error("核心未提供局域网状态")
+    suspend fun updateAllowLan(value: Boolean) { error("核心未提供局域网设置") }
+    suspend fun getMemoryStats(): com.lonnnnnng.flclash.core.CoreMemoryStats = error("核心未提供内存统计")
+    suspend fun releaseMemory() { error("核心未提供内存回收") }
+
+    suspend fun directOutboundIp(urls: List<String>, timeoutMs: Long): com.lonnnnnng.flclash.core.CoreIpResponse = outboundIp(urls, timeoutMs)
+    suspend fun outboundIpForProxy(urls: List<String>, timeoutMs: Long, proxyName: String): com.lonnnnnng.flclash.core.CoreIpResponse = error("核心未提供节点出口查询")
+    suspend fun directIpMetadata(url: String, timeoutMs: Long): com.lonnnnnng.flclash.core.CoreIpResponse = ipMetadata(url, timeoutMs)
+    suspend fun outboundIp(urls: List<String>, timeoutMs: Long): com.lonnnnnng.flclash.core.CoreIpResponse =
+        error("核心未提供出口查询")
+    suspend fun ipMetadata(url: String, timeoutMs: Long): com.lonnnnnng.flclash.core.CoreIpResponse =
+        error("核心未提供 IP 信息查询")
+    suspend fun ipRouteStamp(): com.lonnnnnng.flclash.core.CoreRouteStamp = error("核心未提供路由版本")
     val events: Flow<CoreEvent>
     val eventFlowStats: StateFlow<CoreEventFlowStats>
 
@@ -262,6 +302,23 @@ interface CoreRuntimeBridge {
 class NativeCoreRuntimeBridge(
     private val coreBridge: CoreBridge,
 ) : CoreRuntimeBridge {
+    override suspend fun checkServices(targets: List<com.lonnnnnng.flclash.core.ServiceTarget>, direct: Boolean, timeoutMs: Long) =
+        coreBridge.checkServices(targets, direct, timeoutMs)
+    override suspend fun checkRoutes(routes: List<List<com.lonnnnnng.flclash.core.CoreRouteHit>>) = coreBridge.checkRoutes(routes)
+    override suspend fun getLanConfig(path: String?) = coreBridge.getLanConfig(path)
+    override suspend fun updateAllowLan(value: Boolean) = coreBridge.updateAllowLan(value)
+    override suspend fun externalProviders() = coreBridge.externalProviders()
+    override suspend fun updateExternalProvider(name: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp) = coreBridge.updateExternalProvider(name, stamp)
+    override suspend fun providerCounts() = coreBridge.providerCounts()
+    override suspend fun getMemoryStats() = coreBridge.getMemoryStats()
+    override suspend fun releaseMemory() = coreBridge.releaseMemory()
+
+    override suspend fun directOutboundIp(urls: List<String>, timeoutMs: Long) = coreBridge.outboundIp(urls, timeoutMs, direct = true)
+    override suspend fun outboundIpForProxy(urls: List<String>, timeoutMs: Long, proxyName: String) = coreBridge.outboundIpForProxy(urls, timeoutMs, proxyName)
+    override suspend fun directIpMetadata(url: String, timeoutMs: Long) = coreBridge.ipMetadata(url, timeoutMs, direct = true)
+    override suspend fun outboundIp(urls: List<String>, timeoutMs: Long) = coreBridge.outboundIp(urls, timeoutMs)
+    override suspend fun ipMetadata(url: String, timeoutMs: Long) = coreBridge.ipMetadata(url, timeoutMs)
+    override suspend fun ipRouteStamp() = coreBridge.ipRouteStamp()
     override val events: Flow<CoreEvent>
         get() = coreBridge.events
 

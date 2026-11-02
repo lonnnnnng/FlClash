@@ -50,6 +50,11 @@ class QuickActionActivity : ComponentActivity() {
     }
 
     private fun requestStart() {
+        // 作者 long：快捷入口与首页使用相同模式，纯代理启动不能被无关的 VPN 授权阻挡。
+        if (!runtimeManager.vpnSettings.value.enabled) {
+            runRuntimeAction { runtimeManager.startProxy() }
+            return
+        }
         val consentIntent = runCatching { VpnService.prepare(this) }.getOrElse {
             finish()
             return

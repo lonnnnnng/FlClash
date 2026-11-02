@@ -32,6 +32,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
@@ -163,7 +168,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.PI
-import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.sin
@@ -319,10 +323,27 @@ fun KClashApp(
     onDownloadWebDav: (WebDavCredentials, BackupRestoreScope, BackupRestoreStrategy) -> Unit = { _, _, _ -> },
     onExitApp: () -> Unit = {},
     developerToolsEnabled: Boolean = false,
+    memoryViewModel: MemoryViewModel? = null,
+    serviceStatusViewModel: ServiceStatusViewModel? = null,
+    intranetIpViewModel: IntranetIpViewModel? = null,
+    onRestartVpn: () -> Unit = {},
+    outboundIpViewModel: OutboundIpViewModel? = null,
+    runtimeConfigPreviewViewModel: RuntimeConfigPreviewViewModel? = null,
+    profileStatisticsViewModel: ProfileStatisticsViewModel? = null,
 ) {
+    val serviceStatusState = serviceStatusViewModel?.state?.collectAsState()?.value ?: ServiceStatusUiState()
+    val memoryState = memoryViewModel?.state?.collectAsState()?.value ?: MemoryUiState()
+    val vpnSettings = runtimeViewModel.vpnSettings.collectAsState().value
+    val vpnSaving = runtimeViewModel.vpnSaving.collectAsState().value
+    val intranetState = intranetIpViewModel?.state?.collectAsState()?.value ?: IntranetIpUiState()
+    val profileStatistics = profileStatisticsViewModel?.state?.collectAsState()?.value ?: ProfileStatisticsUiState()
+    val profileProviders = profileStatisticsViewModel?.providers?.collectAsState()?.value ?: ProfileProvidersUiState()
+    val configPreview = runtimeConfigPreviewViewModel?.state?.collectAsState()?.value ?: RuntimeConfigPreviewUiState()
+    val outboundIpState = outboundIpViewModel?.state?.collectAsState()?.value ?: OutboundIpUiState()
     val runtimeState by runtimeViewModel.runtimeState.collectAsState()
     val outboundMode by runtimeViewModel.outboundMode.collectAsState()
     val runtimeStats by runtimeViewModel.stats.collectAsState()
+    val runtimeUptimeMillis by runtimeViewModel.uptimeMillis.collectAsState()
     val runtimeConnections by runtimeViewModel.connections.collectAsState()
     val runtimeRequests by runtimeViewModel.requests.collectAsState()
     val runtimeDns by runtimeViewModel.dns.collectAsState()
@@ -361,6 +382,7 @@ fun KClashApp(
     var showRequests by rememberSaveable { mutableStateOf(false) }
     var showDns by rememberSaveable { mutableStateOf(false) }
     var showLogs by rememberSaveable { mutableStateOf(false) }
+    var profileDetailId by rememberSaveable { mutableStateOf<Long?>(null) }
     var showDiagnosticHistory by rememberSaveable { mutableStateOf(false) }
     var showScriptsDialog by rememberSaveable { mutableStateOf(false) }
     var showRemoteScriptDialog by rememberSaveable { mutableStateOf(false) }
@@ -383,6 +405,102 @@ fun KClashApp(
         MainDestination.DASHBOARD
     } else {
         requestedDestination
+    }
+    LaunchedEffect(serviceStatusViewModel, selectedDestination, isDashboardEditing) {
+        try {
+            snapshotFlow {
+                selectedDestination == MainDestination.DASHBOARD && !isDashboardEditing &&
+                    dashboardListState.layoutInfo.visibleItemsInfo.any { it.key == DashboardSection.SERVICE_STATUS.name }
+            }.collect { serviceStatusViewModel?.setVisible(it) }
+        } finally { serviceStatusViewModel?.setVisible(false); serviceStatusViewModel?.setDetailVisible(false) }
+    }
+    LaunchedEffect(intranetIpViewModel, selectedDestination, isDashboardEditing) {
+        try {
+            snapshotFlow {
+                selectedDestination == MainDestination.DASHBOARD && !isDashboardEditing &&
+                    dashboardListState.layoutInfo.visibleItemsInfo.any { it.key == DashboardSection.INTRANET_IP.name }
+            }.collect { intranetIpViewModel?.setVisible(it) }
+        } finally { intranetIpViewModel?.setVisible(false) }
+    }
+    LaunchedEffect(memoryViewModel, selectedDestination, isDashboardEditing) {
+        try {
+            // 作者 long：列表会预组合离屏卡片，必须按实际可见项采样；编辑与其他页面不刷新内存。
+            snapshotFlow {
+                selectedDestination == MainDestination.DASHBOARD && !isDashboardEditing &&
+                    dashboardListState.layoutInfo.visibleItemsInfo.any { it.key == DashboardSection.MEMORY_INFO.name }
+            }.collect { memoryViewModel?.setVisible(it) }
+        } finally { memoryViewModel?.setVisible(false) }
+    }
+    LaunchedEffect(selectedProfile?.id, selectedDestination) {
+        if (configPreview.profileId != null &&
+            (configPreview.profileId != selectedProfile?.id || selectedDestination != MainDestination.DASHBOARD)
+        ) runtimeConfigPreviewViewModel?.close()
+    }
+    RuntimeConfigPreviewSheet(
+        state = configPreview,
+        onRetry = { configPreview.profileId?.let { runtimeConfigPreviewViewModel?.open(it) } },
+        onClose = { runtimeConfigPreviewViewModel?.close() },
+    )
+    var previewRuntimeState by remember { mutableStateOf(runtimeState) }
+    LaunchedEffect(runtimeState) {
+        // 作者 long：启停后的预览来源会改变，关闭旧快照，让用户重新打开取得对应会话的输入。
+        if (previewRuntimeState != runtimeState && configPreview.profileId != null) runtimeConfigPreviewViewModel?.close()
+        previewRuntimeState = runtimeState
+    }
+    fun reorderDashboardDrag() {
+        val dragged = dashboardDraggingSection ?: return
+        val items = dashboardListState.layoutInfo.visibleItemsInfo.mapNotNull { item ->
+            DashboardSection.entries.firstOrNull { it.name == item.key }?.let {
+                DashboardDragItem(it, item.offset, item.size)
+            }
+        }
+        val target = dashboardDragTarget(
+            items, dashboardLayout.visibleInOrder(), dashboardDragTop + dashboardDragHeight / 2f,
+        )
+        if (target != null && target != dragged) {
+            val changed = dashboardLayout.reorderVisible(dragged, target)
+            if (changed != dashboardLayout) {
+                // 作者 long：拿起首个可见卡片时不能让列表按旧 key 追到新位置，否则视口跳动会中断跨屏拖动。
+                dashboardListState.requestScrollToItem(
+                    dashboardListState.firstVisibleItemIndex, dashboardListState.firstVisibleItemScrollOffset,
+                )
+                dashboardLayout = changed
+                DashboardLayoutStore.save(context, changed)
+            }
+        }
+    }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            // 作者 long：进入后台即结束这次拿起，回来不能在没有手指按住时继续滚动或改排序。
+            if (event == Lifecycle.Event.ON_STOP) dashboardDraggingSection = null
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(isDashboardEditing, dashboardDraggingSection, selectedDestination) {
+        if (!isDashboardEditing || dashboardDraggingSection == null || selectedDestination != MainDestination.DASHBOARD) return@LaunchedEffect
+        var previousFrame = withFrameNanos { it }
+        while (true) {
+            val frame = withFrameNanos { it }
+            val info = dashboardListState.layoutInfo
+            val delta = dashboardDragScrollDelta(
+                dashboardDragY, info.viewportStartOffset, info.viewportEndOffset,
+                density.density, (frame - previousFrame) / 1_000_000f,
+            )
+            previousFrame = frame
+            if (delta != 0f) {
+                // 作者 long：一个受拖动生命周期约束的滚动循环取代逐事件 launch，松手或退出时整段取消。
+                dashboardListState.scrollBy(delta)
+                reorderDashboardDrag()
+            }
+        }
+    }
+    LaunchedEffect(selectedDestination, outboundIpViewModel) {
+        outboundIpViewModel?.setDashboardVisible(selectedDestination == MainDestination.DASHBOARD)
+    }
+    androidx.compose.runtime.DisposableEffect(outboundIpViewModel) {
+        onDispose { outboundIpViewModel?.setDashboardVisible(false) }
     }
     LaunchedEffect(selectedDestination, toolsSubpage) {
         if (selectedDestination == MainDestination.TOOLS) pageListState.scrollToItem(0)
@@ -585,6 +703,32 @@ fun KClashApp(
         returnFromToolsSubpage()
     }
 
+    // 作者 long：详情窗口由页面持有，不能随 LazyColumn 卡片被回收；启停改变前一张卡片高度也应保留正在查看的列表。
+    val detailProfile = selectedProfile?.takeIf { it.id == profileDetailId && selectedDestination == MainDestination.DASHBOARD }
+    DisposableEffect(detailProfile?.id) {
+        profileStatisticsViewModel?.show(detailProfile?.id)
+        onDispose { profileStatisticsViewModel?.show(null) }
+    }
+    LaunchedEffect(selectedProfile?.id, selectedDestination) {
+        if (profileDetailId != selectedProfile?.id || selectedDestination != MainDestination.DASHBOARD) profileDetailId = null
+    }
+    if (detailProfile != null) {
+        DashboardProfileDetailSheet(
+            profile = detailProfile,
+            canMutate = !profilesState.isBusy && !runtimeState.isRunning && runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING,
+            isBusy = profilesState.isBusy,
+            onDismiss = { profileDetailId = null },
+            onShowProfiles = { profileDetailId = null; navigateTo(MainDestination.PROFILES) },
+            onUpdate = { profilesViewModel.update(detailProfile) },
+            onPreview = { profileDetailId = null; runtimeConfigPreviewViewModel?.open(detailProfile.id) },
+            statistics = profileStatistics.takeIf { it.profileId == detailProfile.id } ?: ProfileStatisticsUiState(detailProfile.id, isLoading = true),
+            onRetryStatistics = { profileStatisticsViewModel?.retry() },
+            providers = profileProviders.takeIf { it.profileId == detailProfile.id } ?: ProfileProvidersUiState(detailProfile.id, isLoading = true),
+            onRetryProviders = { profileStatisticsViewModel?.retryProviders() },
+            onUpdateProvider = { profileStatisticsViewModel?.updateProvider(it) },
+        )
+    }
+
     MainPageScaffold(
         selectedDestination = selectedDestination,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -686,9 +830,33 @@ fun KClashApp(
                                 when (section) {
                                 DashboardSection.CURRENT_OUTBOUND -> RuntimeCard(
                                     state = runtimeState,
+                                    uptimeMillis = runtimeUptimeMillis,
+                                    outboundIp = outboundIpState,
+                                    onRefreshIp = { outboundIpViewModel?.refresh() },
+                                    onRefreshIpQuality = { outboundIpViewModel?.refreshQuality() },
                                     onStart = onStartRuntime,
                                     onStop = onStopRuntime,
                                 )
+                                DashboardSection.SERVICE_STATUS -> DashboardServiceStatusCard(
+                                    serviceStatusState, { serviceStatusViewModel?.check(it) },
+                                    { target, value -> serviceStatusViewModel?.toggle(target, value) },
+                                    { target, offset -> serviceStatusViewModel?.move(target, offset) },
+                                    { serviceStatusViewModel?.setDetailVisible(it) }, { serviceStatusViewModel?.reloadSettings() },
+                                    { serviceStatusViewModel?.refreshExit(it) }, { serviceStatusViewModel?.openQuality(it) },
+                                    { serviceStatusViewModel?.closeQuality() }, { serviceStatusViewModel?.refreshQuality(force = true) },
+                                    onReorder = { serviceStatusViewModel?.reorder(it) },
+                                )
+                                DashboardSection.VPN -> DashboardVpnCard(
+                                    vpnSettings, vpnSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
+                                    runtimeViewModel::setVpnEnabled, onRestartVpn,
+                                )
+                                DashboardSection.INTRANET_IP -> DashboardIntranetIpCard(
+                                    intranetState, { intranetIpViewModel?.setAllowLan(it) },
+                                    { intranetIpViewModel?.copyAddress() }, { intranetIpViewModel?.retry() },
+                                )
+                                DashboardSection.MEMORY_INFO -> {
+                                    DashboardMemoryCard(state = memoryState, onRelease = { memoryViewModel?.release() })
+                                }
                                 DashboardSection.NETWORK_STATS -> RuntimeStatsCard(
                                     state = runtimeStats,
                                     runtimeState = runtimeState,
@@ -723,6 +891,13 @@ fun KClashApp(
                                     onSelectProfile = profilesViewModel::select,
                                     onUpdateProfile = profilesViewModel::update,
                                     onStopRuntime = onStopRuntime,
+                                    onPreviewConfig = { runtimeConfigPreviewViewModel?.open(it.id) },
+                                    statistics = profileStatistics,
+                                    onOpenDetail = { profileDetailId = it.id },
+                                    onRetryStatistics = { profileStatisticsViewModel?.retry() },
+                                    providers = profileProviders,
+                                    onRetryProviders = { profileStatisticsViewModel?.retryProviders() },
+                                    onUpdateProvider = { profileStatisticsViewModel?.updateProvider(it) },
                                 )
                                 DashboardSection.PROXY_GROUPS -> DashboardProxyGroupsCard(
                                     state = proxyGroupsState,
@@ -767,30 +942,7 @@ fun KClashApp(
                                         if (dashboardDraggingSection == section) {
                                             dashboardDragY += deltaY
                                             dashboardDragTop += deltaY
-                                            val listInfo = dashboardListState.layoutInfo
-                                            val sectionItems = listInfo.visibleItemsInfo.filter { item ->
-                                                DashboardSection.entries.any { it.name == item.key }
-                                            }
-                                            val target = sectionItems.minByOrNull { item ->
-                                                abs(item.offset + item.size / 2f - (dashboardDragTop + dashboardDragHeight / 2f))
-                                            }?.key?.let { key ->
-                                                DashboardSection.entries.firstOrNull { it.name == key }
-                                            }
-                                            if (target != null && target != section) {
-                                                val changed = dashboardLayout.reorderVisible(section, target)
-                                                if (changed != dashboardLayout) {
-                                                    dashboardLayout = changed
-                                                    DashboardLayoutStore.save(context, changed)
-                                                }
-                                            }
-                                            // 作者 long：每次拖动接近视口边缘时推进列表，允许把卡片放到当前屏幕外的目标位置。
-                                            val edge = with(density) { 56.dp.toPx() }
-                                            when {
-                                                dashboardDragY < listInfo.viewportStartOffset + edge ->
-                                                    coroutineScope.launch { dashboardListState.scrollBy(-18f) }
-                                                dashboardDragY > listInfo.viewportEndOffset - edge ->
-                                                    coroutineScope.launch { dashboardListState.scrollBy(18f) }
-                                            }
+                                            reorderDashboardDrag()
                                         }
                                     },
                                     onDragEnd = { dashboardDraggingSection = null },
@@ -1959,7 +2111,7 @@ internal fun ProxyGroupsCard(
     }
     val selectedGroupIndex = if (groupNames.isEmpty()) 0 else pagerState.currentPage.coerceIn(groupNames.indices)
     val selectedGroup = groups.getOrNull(selectedGroupIndex)
-    val canRefresh = runtimeState == CoreRuntimeStatus.RUNNING &&
+    val canRefresh = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
         !state.isLoading &&
         state.switchingGroup == null &&
         state.batchTestingGroup == null
@@ -1981,7 +2133,7 @@ internal fun ProxyGroupsCard(
                         if (runtimeState == CoreRuntimeStatus.RUNNING) {
                             "当前配置没有可展示的代理组。"
                         } else {
-                            "启动核心后加载代理组。"
+                            "添加有效配置后显示代理组。"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2044,7 +2196,7 @@ internal fun ProxyGroupsCard(
                         // 作者 long：弹层高度有限，测速复用摘要行，避免键盘出现后独立工具行挤掉可操作的节点。
                         IconButton(
                             onClick = { onTestGroupDelay(group) },
-                            enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                            enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
                                 state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
                             modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
                         ) {
@@ -2198,7 +2350,7 @@ internal fun ProxyGroupsCard(
                     }
                     TextButton(
                         onClick = { onTestGroupDelay(group) },
-                        enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                        enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
                             state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
                         modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
                     ) {
@@ -2314,7 +2466,7 @@ private fun ProxyGroupsListPage(
                         }
                         TextButton(
                             onClick = { onTestGroupDelay(group) },
-                            enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                            enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
                                 state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
                             modifier = Modifier.testTag("proxy_list_group_batch_${group.name}"),
                         ) { Text("批量测速") }
@@ -2353,7 +2505,7 @@ private fun ProxyGroupsListPage(
                                             cardSize = options.cardSize,
                                             inUse = proxyName == selected,
                                             preferred = group.isComputed && proxyName == state.selectedMap[group.name],
-                                            enabled = runtimeState == CoreRuntimeStatus.RUNNING &&
+                                            enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
                                                 group.isSelectable && state.switchingGroup == null && state.batchTestingGroup == null,
                                             delay = state.delayState(group, proxyName),
                                             selectionTag = "proxy_list_node_${group.name}_$proxyName",

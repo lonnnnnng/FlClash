@@ -19,6 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.outlined.Verified
+import androidx.compose.material.icons.outlined.VpnKey
+import androidx.compose.material.icons.outlined.Devices
+import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Lan
@@ -258,5 +262,9 @@ private fun DashboardSection.editorIcon(): ImageVector = when (this) {
     DashboardSection.OUTBOUND_MODE -> DashboardModeGlyphs.split
     DashboardSection.PROFILES -> Icons.Outlined.Description
     DashboardSection.PROXY_GROUPS -> Icons.Outlined.Layers
+    DashboardSection.MEMORY_INFO -> Icons.Outlined.Memory
+    DashboardSection.SERVICE_STATUS -> Icons.Outlined.Verified
+    DashboardSection.VPN -> Icons.Outlined.VpnKey
+    DashboardSection.INTRANET_IP -> Icons.Outlined.Devices
     DashboardSection.CONNECTION_STATS -> Icons.Outlined.Lan
 }

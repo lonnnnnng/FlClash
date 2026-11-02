@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONObject
+import org.json.JSONArray
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -104,6 +105,26 @@ class CoreBridge {
         parseMessageResult(response.optString("result", ""), "update_mode_failed")
     }
 
+    suspend fun getLanConfig(path: String? = null): CoreLanConfig = parseLanConfig(
+        invoke(if (path == null) "getLanConfig" else "getConfig", path ?: JSONObject())
+            .optJSONObject("result")?.let { JsonParser.parseString(it.toString()).asJsonObject },
+    )
+
+    internal fun parseLanConfig(raw: JsonObject?): CoreLanConfig {
+        requireNotNull(raw) { "核心未返回局域网配置" }
+        val allow = raw.get("allow-lan")
+        val port = raw.get("mixed-port")
+        require(allow != null && allow.isJsonPrimitive && allow.asJsonPrimitive.isBoolean) { "局域网开关无效" }
+        require(port != null && port.isJsonPrimitive && port.asJsonPrimitive.isNumber) { "代理端口无效" }
+        val number = port.asBigDecimal.intValueExact()
+        require(number in 0..65535) { "代理端口超出范围" }
+        return CoreLanConfig(allow.asBoolean, number)
+    }
+
+    suspend fun updateAllowLan(value: Boolean) {
+        parseMessageResult(invoke("updateConfig", JSONObject().put("allow-lan", value)).optString("result", ""), "update_lan_failed")
+    }
+
     suspend fun getProxyGroups(): ProxyGroupsSnapshot {
         val response = invoke("getProxies", JSONObject())
         return parseProxyGroupsResponse(response.optJSONObject("result"))
@@ -159,8 +180,216 @@ class CoreBridge {
         return parseProbeResponse(response.optJSONObject("result"))
     }
 
+    suspend fun checkServices(targets: List<ServiceTarget>, direct: Boolean, timeoutMs: Long): List<CoreServiceCheck> {
+        require(targets.isNotEmpty() && targets.distinct().size == targets.size) { "请选择检测服务" }
+        val result = invoke("serviceCheck", JSONObject().put("names", JSONArray(targets.map { it.id }))
+            .put("proxy-name", if (direct) "DIRECT" else "").put("timeout", timeoutMs)).optJSONArray("result")
+        return parseServiceChecks(result?.let { JsonParser.parseString(it.toString()).asJsonArray }, targets)
+    }
+
+    internal fun parseServiceChecks(raw: com.google.gson.JsonArray?, requested: List<ServiceTarget>): List<CoreServiceCheck> {
+        requireNotNull(raw) { "核心未返回服务检测结果" }
+        val results = raw.map { element ->
+            require(element.isJsonObject) { "服务检测结果格式无效" }
+            val item = element.asJsonObject
+            fun text(key: String): String = item.get(key)?.also {
+                require(it.isJsonPrimitive && it.asJsonPrimitive.isString) { "服务检测字段无效" }
+            }?.asString.orEmpty()
+            fun number(key: String, required: Boolean = true): Long {
+                val value = item.get(key)
+                if (value == null && !required) return 0L
+                require(value != null && value.isJsonPrimitive && value.asJsonPrimitive.isNumber) { "服务检测版本或时间无效" }
+                return value.asBigDecimal.longValueExact().also { require(it >= 0L) }
+            }
+            val target = ServiceTarget.entries.firstOrNull { it.id == text("name") }
+            require(target != null && target in requested) { "核心返回了未请求的服务" }
+            val status = ServiceStatus.entries.firstOrNull { it.wire == text("status") } ?: ServiceStatus.FAILED
+            val chains = item.get("chains")?.takeUnless { it.isJsonNull }?.let { value ->
+                require(value.isJsonArray) { "服务代理链格式无效" }
+                value.asJsonArray.map { require(it.isJsonPrimitive && it.asJsonPrimitive.isString); it.asString }
+            }.orEmpty()
+            CoreServiceCheck(target, status, number("delay", false).takeIf { it > 0L },
+                text("region").takeIf(String::isNotBlank), chains, number("checked-at"),
+                CoreRouteStamp(number("core-epoch"), number("route-version")), parseRouteHits(item.get("hits")))
+        }
+        // 作者 long：遗漏或重复项不能当作整批成功，否则页面会把上一次结果保留下来冒充本次检测。
+        require(results.map { it.target }.toSet() == requested.toSet() && results.size == requested.size) { "服务检测结果不完整" }
+        return requested.map { target -> results.single { it.target == target } }
+    }
+
+    private fun parseRouteHits(raw: com.google.gson.JsonElement?): List<CoreRouteHit> = runCatching {
+        require(raw != null && raw.isJsonArray)
+        raw.asJsonArray.map { element ->
+            require(element.isJsonObject)
+            val item = element.asJsonObject
+            fun text(key: String, optional: Boolean = false): String {
+                val value = item.get(key)
+                if (value == null && optional) return ""
+                require(value != null && value.isJsonPrimitive && value.asJsonPrimitive.isString)
+                return value.asString
+            }
+            CoreRouteHit(text("host"), text("proxy", true), text("exit")).also { require(it.reusable) }
+        }
+        // 作者 long：任一命中损坏就放弃整项复用，仍允许显示本次服务检测结果。
+    }.getOrDefault(emptyList())
+
+    suspend fun checkRoutes(routes: List<List<CoreRouteHit>>): CoreRouteCheck {
+        val rows = JSONArray()
+        routes.forEach { hits ->
+            require(hits.isNotEmpty() && hits.all { it.reusable })
+            rows.put(JSONArray().apply { hits.forEach { hit ->
+                put(JSONObject().put("host", hit.host).put("proxy", hit.proxy).put("exit", hit.exit))
+            } })
+        }
+        val result = invoke("checkRoutes", JSONObject().put("routes", rows)).optJSONObject("result")
+        return parseRouteCheck(result?.let { JsonParser.parseString(it.toString()).asJsonObject }, routes.size)
+    }
+
+    internal fun parseRouteCheck(result: JsonObject?, count: Int): CoreRouteCheck {
+        requireNotNull(result) { "核心未返回路由核验" }
+        fun number(key: String): Long {
+            val value = result.get(key)
+            require(value != null && value.isJsonPrimitive && value.asJsonPrimitive.isNumber)
+            return value.asBigDecimal.longValueExact().also { require(it >= 0L) }
+        }
+        val held = result.get("held")
+        require(held != null && held.isJsonArray && held.asJsonArray.size() == count) { "路由核验结果不完整" }
+        return CoreRouteCheck(CoreRouteStamp(number("core-epoch"), number("route-version")), held.asJsonArray.map {
+            require(it.isJsonPrimitive && it.asJsonPrimitive.isBoolean) { "路由核验结果无效" }
+            it.asBoolean
+        })
+    }
+
+    suspend fun providerCounts(): CoreProviderCounts {
+        val result = invoke("getExternalProviders", JSONObject()).optJSONArray("result")
+        return parseProviderCounts(result?.let { JsonParser.parseString(it.toString()).asJsonArray })
+    }
+
+    suspend fun externalProviders(): List<CoreExternalProvider> {
+        val raw = invoke("getExternalProviders", JSONObject()).optJSONArray("result")
+        return parseExternalProviders(raw?.let { JsonParser.parseString(it.toString()).asJsonArray })
+    }
+
+    suspend fun updateExternalProvider(name: String, stamp: CoreRouteStamp) {
+        require(name.isNotBlank())
+        val result = invoke("updateExternalProviderScoped", JSONObject().put("name", name).put("core-epoch", stamp.epoch)
+            .put("route-version", stamp.version)).get("result")
+        // 作者 long：消息协议只有空字符串代表成功，缺失或错误类型不能被 optString 当成成功吞掉。
+        check(result is String)
+        parseMessageResult(result, "provider_update_error")
+    }
+
+    internal fun parseExternalProviders(raw: com.google.gson.JsonArray?): List<CoreExternalProvider> {
+        parseProviderCounts(raw)
+        return requireNotNull(raw).map { element ->
+            val item = element.asJsonObject
+            fun text(key: String): String {
+                val value = item.get(key)
+                require(value != null && value.isJsonPrimitive && value.asJsonPrimitive.isString && value.asString.isNotBlank())
+                return value.asString
+            }
+            CoreExternalProvider(text("name"), text("type"), text("vehicle-type"), item.get("count").asBigDecimal.longValueExact(),
+                parseProviderTime(text("update-at")))
+        }
+    }
+
+    internal fun parseProviderTime(value: String): Long? {
+        // 作者 long：Go 的零时间表示尚未更新；兼容 API 24 并将纳秒截为毫秒，不依赖 API 26 的 java.time。
+        val match = requireNotNull(Regex("""(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,9}))?(Z|[+-]\d{2}:\d{2})""").matchEntire(value))
+        if (value == "0001-01-01T00:00:00Z") return null
+        val normalized = match.groupValues[1] + "." + match.groupValues[2].padEnd(3, '0').take(3) + match.groupValues[3]
+        val format = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.ROOT).apply { isLenient = false }
+        val position = java.text.ParsePosition(0)
+        val date = requireNotNull(format.parse(normalized, position))
+        require(position.index == normalized.length)
+        return date.time.takeIf { it > 0 }
+    }
+
+    internal fun parseProviderCounts(raw: com.google.gson.JsonArray?): CoreProviderCounts {
+        requireNotNull(raw) { "核心未返回 Provider 统计" }
+        var proxies = 0L
+        val names = mutableSetOf<String>()
+        raw.forEach { element ->
+            require(element.isJsonObject)
+            val item = element.asJsonObject
+            fun text(key: String): String {
+                val value = item.get(key)
+                require(value != null && value.isJsonPrimitive && value.asJsonPrimitive.isString && value.asString.isNotBlank())
+                return value.asString
+            }
+            require(names.add(text("name"))) { "Provider 统计重复" }
+            val type = text("type")
+            require(type == "Proxy" || type == "Rule") { "Provider 类型无效" }
+            val count = item.get("count")
+            require(count != null && count.isJsonPrimitive && count.asJsonPrimitive.isNumber)
+            val size = count.asBigDecimal.longValueExact().also { require(it >= 0L) }
+            // 作者 long：规则 Provider 的条目数不是代理节点；节点仅累加已加载的 Proxy Provider。
+            if (type == "Proxy") proxies = Math.addExact(proxies, size)
+        }
+        return CoreProviderCounts(proxies, raw.size().toLong())
+    }
+
+    suspend fun getMemoryStats(): CoreMemoryStats = parseMemoryJson(
+        invoke("getMemoryStats", JSONObject()).optJSONObject("result")?.let { JsonParser.parseString(it.toString()).asJsonObject },
+    )
+
+    suspend fun releaseMemory() { invoke("forceGc", JSONObject()) }
+
+    internal fun parseMemoryJson(result: JsonObject?): CoreMemoryStats {
+        requireNotNull(result) { "核心未返回内存统计" }
+        fun bytes(key: String): Long {
+            val value = result.get(key)
+            require(value != null && value.isJsonPrimitive && value.asJsonPrimitive.isNumber) { "内存统计字段缺失或无效" }
+            return value.asBigDecimal.longValueExact().also { require(it >= 0L) { "内存统计不能为负数" } }
+        }
+        return CoreMemoryStats(bytes("rss"), bytes("heapInuse"), bytes("heapIdle"), bytes("stackInuse"), bytes("runtimeOther"))
+    }
+
     suspend fun getTraffic(): CoreTraffic =
         parseTrafficResponse(invoke("getTraffic", false).optJSONObject("result"))
+
+    suspend fun outboundIp(urls: List<String>, timeoutMs: Long, direct: Boolean = false): CoreIpResponse =
+        outboundIpForProxy(urls, timeoutMs, if (direct) "DIRECT" else "")
+
+    suspend fun outboundIpForProxy(urls: List<String>, timeoutMs: Long, proxyName: String): CoreIpResponse = parseIpResponse(
+        // 作者 long：服务出口来自检测的代理链，查询指定节点才能避免把首页规则出口冒充该服务出口。
+        invoke("outboundIp", JSONObject().put("proxy-name", proxyName).put("urls", JSONArray(urls)).put("timeout", timeoutMs))
+            .optJSONObject("result"),
+    )
+
+    suspend fun ipMetadata(url: String, timeoutMs: Long, direct: Boolean = false): CoreIpResponse {
+        // 作者 long：正文能力与诊断 API 分离，仅供固定 IP 信息源使用；诊断仍保持 max-body=0。
+        val response = invoke("probe", JSONObject()
+            .put("url", url).put("proxy-name", if (direct) "DIRECT" else "").put("timeout", timeoutMs)
+            .put("headers", JSONObject().put("User-Agent", "Mozilla/5.0"))
+            .put("max-body", 16_384))
+        return parseIpResponse(response.optJSONObject("result"))
+    }
+
+    suspend fun ipRouteStamp(): CoreRouteStamp {
+        // 作者 long：读取快照时刷新自动组选择，但不启动 Go 常驻轮询；首页可见期间由 ViewModel 每秒读取。
+        val result = invoke("watchRoute", false).optJSONObject("result")
+            ?: throw CoreBridgeException("missing_route_stamp", "核心未返回路由版本")
+        return CoreRouteStamp(result.optLong("core-epoch"), result.optLong("route-version"))
+    }
+
+    internal fun parseIpResponse(result: JSONObject?): CoreIpResponse =
+        parseIpJson(result?.let { JsonParser.parseString(it.toString()).asJsonObject })
+
+    internal fun parseIpJson(result: JsonObject?): CoreIpResponse {
+        requireNotNull(result) { "IP 信息查询未返回结果" }
+        fun text(key: String) = result.get(key)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString.orEmpty()
+        fun number(key: String, fallback: Long = 0L) = result.get(key)?.takeIf { it.isJsonPrimitive }?.let {
+            runCatching { it.asLong }.getOrNull()
+        } ?: fallback
+        return CoreIpResponse(
+            sourceUrl = text("url"),
+            body = text("body"),
+            error = text("error"),
+            statusCode = number("status-code", 200L).toInt(),
+            stamp = CoreRouteStamp(number("core-epoch"), number("route-version")),
+        )
+    }
 
     suspend fun getTotalTraffic(): CoreTraffic =
         parseTrafficResponse(invoke("getTotalTraffic", false).optJSONObject("result"))

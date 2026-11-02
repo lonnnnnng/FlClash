@@ -19,6 +19,9 @@ import androidx.compose.ui.test.advanceEventTime
 import androidx.compose.ui.test.center
 import androidx.compose.ui.test.down
 import androidx.compose.ui.test.moveBy
+import androidx.compose.ui.test.moveTo
+import androidx.compose.ui.test.cancel
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.up
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
@@ -45,6 +48,133 @@ class DashboardLayoutEditorInstrumentedTest {
 
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Test
+    fun dashboardDragContinuesScrollingAtBottomAndStopsOnRelease() {
+        assertPortraitDefaultFontConfiguration()
+        val context = composeRule.activity.applicationContext
+        val original = DashboardLayoutStore.load(context)
+        try {
+            DashboardLayoutStore.save(context, DashboardLayoutState(visible = DashboardSection.entries.toSet()))
+            composeRule.activityRule.scenario.recreate()
+            composeRule.onNodeWithTag("dashboard_edit_layout").performClick()
+            val page = composeRule.onNodeWithTag("page_dashboard")
+            val card = composeRule.onNodeWithTag("dashboard_drag_current_outbound")
+            val pageBounds = page.fetchSemanticsNode().boundsInRoot
+            val cardBounds = card.fetchSemanticsNode().boundsInRoot
+            composeRule.mainClock.autoAdvance = false
+            card.performTouchInput { down(center) }
+            composeRule.mainClock.advanceTimeBy(800)
+            card.performTouchInput { moveTo(Offset(center.x, pageBounds.bottom - cardBounds.top - 8f)) }
+            composeRule.mainClock.advanceTimeBy(200)
+            val first = dashboardScrollPosition()
+            // 作者 long：第二段没有移动事件，只有画面帧；这能区分持续滚动和旧版逐事件推进。
+            composeRule.mainClock.advanceTimeBy(200)
+            val second = dashboardScrollPosition()
+            assertTrue("到达下边缘后应滚动", first > 0f)
+            assertTrue("手指停住后应继续滚动 first=$first second=$second order=${DashboardLayoutStore.load(context).visibleInOrder()}", second > first + 1f)
+            page.performTouchInput { up() }
+            composeRule.mainClock.advanceTimeBy(100)
+            val released = dashboardScrollPosition()
+            val saved = DashboardLayoutStore.load(context)
+            composeRule.mainClock.advanceTimeBy(500)
+            assertEquals(released, dashboardScrollPosition(), 0.1f)
+            assertEquals(saved, DashboardLayoutStore.load(context))
+            assertTrue(saved.visibleInOrder().indexOf(DashboardSection.CURRENT_OUTBOUND) > 0)
+            composeRule.mainClock.autoAdvance = true
+            composeRule.onNodeWithTag("dashboard_edit_layout").performClick()
+            composeRule.activityRule.scenario.recreate()
+            assertEquals(saved, DashboardLayoutStore.load(context))
+        } finally {
+            composeRule.mainClock.autoAdvance = true
+            DashboardLayoutStore.save(context, original)
+            composeRule.activityRule.scenario.recreate()
+        }
+    }
+
+    @Test
+    fun dashboardDragContinuesScrollingAtTopAndStopsOnCancel() {
+        assertPortraitDefaultFontConfiguration()
+        val context = composeRule.activity.applicationContext
+        val original = DashboardLayoutStore.load(context)
+        try {
+            val order = DashboardSection.entries.filterNot { it == DashboardSection.NETWORK_STATS } + DashboardSection.NETWORK_STATS
+            DashboardLayoutStore.save(context, DashboardLayoutState(order, order.toSet()))
+            composeRule.activityRule.scenario.recreate()
+            composeRule.onNodeWithTag("dashboard_edit_layout").performClick()
+            val page = composeRule.onNodeWithTag("page_dashboard")
+            page.performScrollToNode(hasTestTag("dashboard_drag_network_stats"))
+            val card = composeRule.onNodeWithTag("dashboard_drag_network_stats")
+            val pageBounds = page.fetchSemanticsNode().boundsInRoot
+            val cardBounds = card.fetchSemanticsNode().boundsInRoot
+            composeRule.mainClock.autoAdvance = false
+            card.performTouchInput { down(center) }
+            composeRule.mainClock.advanceTimeBy(800)
+            card.performTouchInput { moveTo(Offset(center.x, pageBounds.top - cardBounds.top + 8f)) }
+            composeRule.mainClock.advanceTimeBy(200)
+            val first = dashboardScrollPosition()
+            composeRule.mainClock.advanceTimeBy(200)
+            val second = dashboardScrollPosition()
+            assertTrue("手指停在上边缘应继续回滚 first=$first second=$second order=${DashboardLayoutStore.load(context).visibleInOrder()}", second < first - 1f)
+            page.performTouchInput { cancel() }
+            composeRule.mainClock.advanceTimeBy(100)
+            val cancelled = dashboardScrollPosition()
+            val saved = DashboardLayoutStore.load(context)
+            composeRule.mainClock.advanceTimeBy(500)
+            assertEquals(cancelled, dashboardScrollPosition(), 0.1f)
+            assertEquals(saved, DashboardLayoutStore.load(context))
+        } finally {
+            composeRule.mainClock.autoAdvance = true
+            DashboardLayoutStore.save(context, original)
+            composeRule.activityRule.scenario.recreate()
+        }
+    }
+
+    private fun dashboardScrollPosition(): Float = composeRule.onNodeWithTag("page_dashboard")
+        .fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
+
+    @Test
+    fun dashboardEdgeDragDoesNotResumeAfterBackgroundOrEditorExit() {
+        assertPortraitDefaultFontConfiguration()
+        val context = composeRule.activity.applicationContext
+        val original = DashboardLayoutStore.load(context)
+        try {
+            DashboardLayoutStore.save(context, DashboardLayoutState(visible = DashboardSection.entries.toSet()))
+            composeRule.activityRule.scenario.recreate()
+            composeRule.onNodeWithTag("dashboard_edit_layout").performClick()
+            val page = composeRule.onNodeWithTag("page_dashboard")
+            val card = composeRule.onNodeWithTag("dashboard_drag_current_outbound")
+            val pageBounds = page.fetchSemanticsNode().boundsInRoot
+            val cardBounds = card.fetchSemanticsNode().boundsInRoot
+            composeRule.mainClock.autoAdvance = false
+            card.performTouchInput { down(center) }
+            composeRule.mainClock.advanceTimeBy(800)
+            card.performTouchInput { moveTo(Offset(center.x, pageBounds.bottom - cardBounds.top - 8f)) }
+            composeRule.mainClock.advanceTimeBy(100)
+            composeRule.activityRule.scenario.moveToState(androidx.lifecycle.Lifecycle.State.CREATED)
+            composeRule.activityRule.scenario.moveToState(androidx.lifecycle.Lifecycle.State.RESUMED)
+            composeRule.mainClock.advanceTimeBy(100)
+            val resumed = dashboardScrollPosition()
+            val saved = DashboardLayoutStore.load(context)
+            composeRule.mainClock.advanceTimeBy(300)
+            assertEquals(resumed, dashboardScrollPosition(), 0.1f)
+            assertEquals(saved, DashboardLayoutStore.load(context))
+            page.performTouchInput { cancel() }
+            // 作者 long：完成编辑不能让旧滚动循环进入普通首页，回来后也不恢复旧拿起状态。
+            composeRule.onNodeWithTag("dashboard_edit_layout").performClick()
+            composeRule.mainClock.advanceTimeBy(100)
+            val finished = dashboardScrollPosition()
+            composeRule.mainClock.advanceTimeBy(300)
+            assertEquals(finished, dashboardScrollPosition(), 0.1f)
+            assertEquals(saved, DashboardLayoutStore.load(context))
+            composeRule.mainClock.autoAdvance = true
+            composeRule.onNodeWithText("仪表盘").assertIsDisplayed()
+        } finally {
+            composeRule.mainClock.autoAdvance = true
+            DashboardLayoutStore.save(context, original)
+            composeRule.activityRule.scenario.recreate()
+        }
+    }
 
     @Test
     fun dashboardLayoutEditorReordersAndPersistsSectionVisibility() {

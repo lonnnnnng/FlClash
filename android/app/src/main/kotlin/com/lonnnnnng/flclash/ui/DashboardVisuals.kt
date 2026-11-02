@@ -1,6 +1,9 @@
 package com.lonnnnnng.flclash.ui
 
 import android.text.format.DateUtils
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -191,11 +194,11 @@ internal fun DashboardProxyGroupsCard(
                 ) { Icon(Icons.Outlined.Layers, null, Modifier.size(26.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    if (runtimeState.isRunning) "没有代理组" else "核心未运行",
+                    if (state.isLoading) "正在加载代理组" else "没有代理组",
                     style = MaterialTheme.typography.titleSmall,
                 )
-                if (!runtimeState.isRunning) Text(
-                    "启动后显示代理组",
+                if (currentProfileId == null) Text(
+                    "添加有效配置后显示代理组",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -278,6 +281,10 @@ internal fun RuntimeCard(
     state: CoreRuntimeStatus,
     onStart: () -> Unit,
     onStop: () -> Unit,
+    uptimeMillis: Long? = null,
+    outboundIp: OutboundIpUiState = OutboundIpUiState(),
+    onRefreshIp: () -> Unit = {},
+    onRefreshIpQuality: () -> Unit = {},
 ) {
     val busy = state == CoreRuntimeStatus.STARTING || state == CoreRuntimeStatus.STOPPING
     val colors = MaterialTheme.colorScheme
@@ -295,7 +302,7 @@ internal fun RuntimeCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
     ) {
         Box(Modifier.fillMaxWidth()) {
-            // 作者 long：只装饰主控背景，不赋予装饰图形语义；出口 IP 尚无数据源，不能伪造探测结果。
+            // 作者 long：主控背景只作装饰，出口信息由独立状态提供，不能从运行状态推测国家或质量。
             Canvas(Modifier.align(Alignment.TopEnd).offset(x = 60.dp, y = (-66).dp).size(240.dp)) {
                 val path = Path()
                 repeat(241) { index ->
@@ -336,7 +343,15 @@ internal fun RuntimeCard(
                                 style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold),
                             )
                         }
-                        Text(state.label, style = TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold))
+                        OutboundIpPanel(outboundIp, state.isRunning, onRefreshIp, onRefreshIpQuality)
+                        Column {
+                            Text("运行时间", style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
+                            Text(
+                                formatRuntimeDuration(uptimeMillis.takeIf { state.isRunning }),
+                                Modifier.testTag("dashboard_runtime_duration"),
+                                style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
+                            )
+                        }
                     }
                     Surface(
                         onClick = if (state.isRunning) onStop else onStart,
@@ -378,17 +393,20 @@ internal fun RuntimeStatsCard(state: RuntimeStatsUiState, runtimeState: CoreRunt
         // 作者 long：Flutter 手机网络速度卡只展示上下行，连接数量属于默认隐藏的连接统计卡。
         DashboardHeader("网络速度", Icons.Outlined.Speed)
         val fontScale = LocalDensity.current.fontScale
+        val history = if (active) state.trafficHistory else emptyList()
+        val upload = history.map { it.up }
+        val download = history.map { it.down }
         BoxWithConstraints(Modifier.fillMaxWidth().padding(top = 12.dp)) {
             // 作者 long：大字号时将速度块纵排，保持数值与单位完整，避免两栏压缩后只能读到省略号。
             if (fontScale > 1.4f || maxWidth < 260.dp) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    DashboardSpeedTile("上传", Icons.Outlined.ArrowUpward, if (active) state.traffic.up else 0, state.totalTraffic.up, Modifier.fillMaxWidth())
-                    DashboardSpeedTile("下载", Icons.Outlined.ArrowDownward, if (active) state.traffic.down else 0, state.totalTraffic.down, Modifier.fillMaxWidth())
+                    DashboardSpeedTile("上传", Icons.Outlined.ArrowUpward, if (active) state.traffic.up else 0, if (active) state.totalTraffic.up else 0, upload, "dashboard_upload_history", Modifier.fillMaxWidth())
+                    DashboardSpeedTile("下载", Icons.Outlined.ArrowDownward, if (active) state.traffic.down else 0, if (active) state.totalTraffic.down else 0, download, "dashboard_download_history", Modifier.fillMaxWidth())
                 }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    DashboardSpeedTile("上传", Icons.Outlined.ArrowUpward, if (active) state.traffic.up else 0, state.totalTraffic.up, Modifier.weight(1f))
-                    DashboardSpeedTile("下载", Icons.Outlined.ArrowDownward, if (active) state.traffic.down else 0, state.totalTraffic.down, Modifier.weight(1f))
+                    DashboardSpeedTile("上传", Icons.Outlined.ArrowUpward, if (active) state.traffic.up else 0, if (active) state.totalTraffic.up else 0, upload, "dashboard_upload_history", Modifier.weight(1f))
+                    DashboardSpeedTile("下载", Icons.Outlined.ArrowDownward, if (active) state.traffic.down else 0, if (active) state.totalTraffic.down else 0, download, "dashboard_download_history", Modifier.weight(1f))
                 }
             }
         }
@@ -530,18 +548,21 @@ internal fun OutboundModeCard(
 }
 
 @Composable
-private fun DashboardSpeedTile(label: String, icon: ImageVector, speed: Long, total: Long, modifier: Modifier) {
+private fun DashboardSpeedTile(label: String, icon: ImageVector, speed: Long, total: Long, samples: List<Long>, chartTag: String, modifier: Modifier) {
     Surface(modifier, shape = RoundedCornerShape(22.dp), color = dashboardBlockColor()) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
-                Text(label, style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column {
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(icon, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                    Text(label, style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                val formatted = formatBytes(speed)
+                val numericEnd = formatted.indexOfFirst { it.isLetter() }.takeIf { it >= 0 } ?: formatted.length
+                Text(formatted.take(numericEnd), style = TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
+                Text("${formatted.drop(numericEnd)}/s", style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("累计 ${formatBytes(total)}", style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            val formatted = formatBytes(speed)
-            val numericEnd = formatted.indexOfFirst { it.isLetter() }.takeIf { it >= 0 } ?: formatted.length
-            Text(formatted.take(numericEnd), style = TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
-            Text("${formatted.drop(numericEnd)}/s", style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("累计 ${formatBytes(total)}", style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            DashboardTrafficChart(label, samples, chartTag)
         }
     }
 }
@@ -559,20 +580,33 @@ internal fun DashboardProfileCard(
     onSelectProfile: (Long) -> Unit = {},
     onUpdateProfile: (Profile) -> Unit = {},
     onStopRuntime: () -> Unit = {},
+    onPreviewConfig: (Profile) -> Unit = {},
+    statistics: ProfileStatisticsUiState = ProfileStatisticsUiState(),
+    onDetailVisible: (Long?) -> Unit = {},
+    onRetryStatistics: () -> Unit = {},
+    providers: ProfileProvidersUiState = ProfileProvidersUiState(),
+    onRetryProviders: () -> Unit = {},
+    onUpdateProvider: (String) -> Unit = {},
+    onOpenDetail: ((Profile) -> Unit)? = null,
 ) {
     var showProfilePicker by remember { mutableStateOf(false) }
     var showProfileDetail by rememberSaveable(profile?.id) { mutableStateOf(false) }
+    DisposableEffect(showProfileDetail, profile?.id) {
+        onDetailVisible(profile?.id?.takeIf { showProfileDetail })
+        onDispose { onDetailVisible(null) }
+    }
     val hasProfiles = profiles.isNotEmpty()
-    // 作者 long：运行中的核心仍持有已应用配置，启动/停止过程中也不能让当前选择先于核心输入变化。
+    // 作者 long：选择交给生命周期管理器串行热应用；正文同步仍受单独的写入门禁保护。
     val runtimeTransitioning = runtimeState == CoreRuntimeStatus.STARTING ||
         runtimeState == CoreRuntimeStatus.STOPPING
-    val canSelectProfile = !isBusy && !runtimeState.isRunning && !runtimeTransitioning
+    val canSelectProfile = !isBusy
+    val canSyncProfile = !isBusy && !runtimeState.isRunning && !runtimeTransitioning
 
     DashboardSurface(
         modifier = Modifier.testTag("dashboard_profile_card"),
         onClick = {
             when {
-                profile != null -> showProfileDetail = true
+                profile != null -> if (onOpenDetail != null) onOpenDetail(profile) else { showProfileDetail = true }
                 hasProfiles -> showProfilePicker = true
                 else -> onAddProfile()
             }
@@ -603,7 +637,7 @@ internal fun DashboardProfileCard(
                 } else {
                     IconButton(
                         onClick = { onUpdateProfile(profile) },
-                        enabled = canSelectProfile,
+                        enabled = canSyncProfile,
                         modifier = Modifier.testTag("dashboard_profile_sync"),
                     ) {
                         Icon(Icons.Outlined.Sync, contentDescription = "同步当前配置")
@@ -686,45 +720,12 @@ internal fun DashboardProfileCard(
             Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
                 Text("切换配置", style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(12.dp))
-                when (runtimeState) {
-                    CoreRuntimeStatus.RUNNING -> {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().testTag("dashboard_profile_runtime_notice"),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text(
-                                "核心运行中，停止后可切换配置",
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            TextButton(
-                                onClick = onStopRuntime,
-                                modifier = Modifier.testTag("dashboard_profile_stop_runtime"),
-                            ) {
-                                Icon(Icons.Outlined.Stop, contentDescription = null, Modifier.size(16.dp))
-                                Text("停止核心")
-                            }
-                        }
-                    }
-                    CoreRuntimeStatus.STARTING, CoreRuntimeStatus.STOPPING -> {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().testTag("dashboard_profile_runtime_notice"),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                            Text(
-                                if (runtimeState == CoreRuntimeStatus.STARTING) "核心启动中，暂时无法切换配置"
-                                else "核心停止中，请稍候",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                    else -> Unit
-                }
+                if (runtimeState.isRunning) Text(
+                    "切换配置会立即应用到当前连接",
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 LazyColumn(Modifier.heightIn(max = 560.dp)) {
                     items(profiles, key = Profile::id) { item ->
                         val selected = item.id == currentProfileId
@@ -760,7 +761,7 @@ internal fun DashboardProfileCard(
     if (showProfileDetail && profile != null) {
         DashboardProfileDetailSheet(
             profile = profile,
-            canMutate = canSelectProfile,
+            canMutate = canSyncProfile,
             isBusy = isBusy,
             onDismiss = { showProfileDetail = false },
             onShowProfiles = {
@@ -768,6 +769,15 @@ internal fun DashboardProfileCard(
                 onShowProfiles()
             },
             onUpdate = { onUpdateProfile(profile) },
+            statistics = statistics.takeIf { it.profileId == profile.id } ?: ProfileStatisticsUiState(profile.id, isLoading = true),
+            onRetryStatistics = onRetryStatistics,
+            providers = providers.takeIf { it.profileId == profile.id } ?: ProfileProvidersUiState(profile.id, isLoading = true),
+            onRetryProviders = onRetryProviders,
+            onUpdateProvider = onUpdateProvider,
+            onPreview = {
+                showProfileDetail = false
+                onPreviewConfig(profile)
+            },
         )
     }
 }
@@ -778,21 +788,30 @@ internal fun DashboardProfileCard(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DashboardProfileDetailSheet(
+internal fun DashboardProfileDetailSheet(
     profile: Profile,
     canMutate: Boolean,
     isBusy: Boolean,
     onDismiss: () -> Unit,
     onShowProfiles: () -> Unit,
     onUpdate: () -> Unit,
+    onPreview: () -> Unit,
+    statistics: ProfileStatisticsUiState,
+    onRetryStatistics: () -> Unit,
+    providers: ProfileProvidersUiState,
+    onRetryProviders: () -> Unit,
+    onUpdateProvider: (String) -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        // 作者 long：统计增加内容高度后直接展开详情，底部操作保留系统导航安全区，避免首开时被半展开位置裁切。
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         modifier = Modifier.testTag("dashboard_profile_detail_sheet"),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 24.dp),
@@ -803,6 +822,7 @@ private fun DashboardProfileDetailSheet(
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.testTag("dashboard_profile_detail_name"),
             )
+            ProfileStatisticsPanel(statistics, onRetryStatistics)
             Text(
                 dashboardProfileSourceLabel(profile),
                 modifier = Modifier.testTag("dashboard_profile_detail_source"),
@@ -824,10 +844,14 @@ private fun DashboardProfileDetailSheet(
             profile.currentGroupName?.takeIf(String::isNotBlank)?.let { groupName ->
                 Text("最近代理组：$groupName", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            ProfileProvidersPanel(providers, onRetryProviders, onUpdateProvider)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
             ) {
+                TextButton(onClick = onPreview, modifier = Modifier.testTag("dashboard_profile_detail_preview")) {
+                    Text("运行配置")
+                }
                 if (profile.type == ProfileType.URL) {
                     if (isBusy) {
                         CircularProgressIndicator(

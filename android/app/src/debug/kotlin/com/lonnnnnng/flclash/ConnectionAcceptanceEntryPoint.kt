@@ -16,4 +16,9 @@ interface ConnectionAcceptanceEntryPoint {
     fun profileRepository(): ProfileRepository
     fun database(): KClashDatabase
     fun paths(): CoreRuntimePaths
+    fun runtimeManager(): com.lonnnnnng.flclash.service.CoreRuntimeManager
+    fun vpnSettingsStore(): com.lonnnnnng.flclash.service.VpnSettingsStore
+    fun lanSharingStore(): com.lonnnnnng.flclash.service.LanSharingStore
+    fun serviceSettingsStore(): com.lonnnnnng.flclash.data.ServiceSettingsStore
+    fun serviceExitStore(): com.lonnnnnng.flclash.data.ServiceExitStore
 }

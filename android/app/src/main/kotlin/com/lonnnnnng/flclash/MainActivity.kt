@@ -19,6 +19,7 @@ import com.lonnnnnng.flclash.ui.KClashApp
 import com.lonnnnnng.flclash.ui.DiagnosticSessionUiState
 import com.lonnnnnng.flclash.ui.DiagnosticSessionStatus
 import com.lonnnnnng.flclash.ui.MainViewModel
+import com.lonnnnnng.flclash.ui.OutboundIpViewModel
 import com.lonnnnnng.flclash.ui.ProfilesViewModel
 import com.lonnnnnng.flclash.ui.AccessControlViewModel
 import com.lonnnnnng.flclash.ui.ProxyGroupsViewModel
@@ -49,16 +50,32 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var backupRepository: BackupRepository
     @Inject lateinit var webDavBackupRepository: WebDavBackupRepository
     private val viewModel: MainViewModel by viewModels()
+    private val intranetIpViewModel: com.lonnnnnng.flclash.ui.IntranetIpViewModel by viewModels()
+    private val serviceStatusViewModel: com.lonnnnnng.flclash.ui.ServiceStatusViewModel by viewModels()
+    private val profileStatisticsViewModel: com.lonnnnnng.flclash.ui.ProfileStatisticsViewModel by viewModels()
+    private val memoryViewModel: com.lonnnnnng.flclash.ui.MemoryViewModel by viewModels()
+    private val outboundIpViewModel: OutboundIpViewModel by viewModels()
+    private val runtimeConfigPreviewViewModel: com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModel by viewModels()
     private val profilesViewModel: ProfilesViewModel by viewModels()
     private val accessControlViewModel: AccessControlViewModel by viewModels()
     private val proxyGroupsViewModel: ProxyGroupsViewModel by viewModels()
     private val scriptsViewModel: ScriptsViewModel by viewModels()
+    private val networkCallback = object : android.net.ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: android.net.Network) { outboundIpViewModel.networkChanged() }
+        override fun onLost(network: android.net.Network) { outboundIpViewModel.networkChanged() }
+        override fun onLinkPropertiesChanged(network: android.net.Network, properties: android.net.LinkProperties) {
+            outboundIpViewModel.networkChanged()
+        }
+    }
+    private var observingNetwork = false
+    private var pendingVpnRestart = false
     private val vpnConsentLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            viewModel.startRuntime()
+            completeRuntimeRequest()
         } else {
+            pendingVpnRestart = false
             viewModel.reportError("VPN 权限未授予")
         }
     }
@@ -159,6 +176,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        pendingVpnRestart = savedInstanceState?.getBoolean("pending_vpn_restart") ?: false
         // 作者 long：订阅请求诊断和系统 VPN 引导只供显式 Debug 验收使用，普通启动及 Release 不增加原版没有的入口。
         developerToolsEnabled = BuildConfig.DEBUG && intent.getBooleanExtra(EXTRA_DEVELOPER_TOOLS, false)
         batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
@@ -170,11 +188,16 @@ class MainActivity : ComponentActivity() {
             KClashTheme {
                 KClashApp(
                     runtimeViewModel = viewModel,
+                    outboundIpViewModel = outboundIpViewModel,
+                    memoryViewModel = memoryViewModel,
+                    serviceStatusViewModel = serviceStatusViewModel,
+                    intranetIpViewModel = intranetIpViewModel,
                     profilesViewModel = profilesViewModel,
                     accessControlViewModel = accessControlViewModel,
                     proxyGroupsViewModel = proxyGroupsViewModel,
                     scriptsViewModel = scriptsViewModel,
-                    onStartRuntime = ::requestRuntimeStart,
+                    onStartRuntime = { requestRuntimeStart() },
+                    onRestartVpn = { requestRuntimeStart(restart = true) },
                     onStopRuntime = viewModel::stopRuntime,
                     batteryOptimizationIgnored = batteryOptimizationIgnored,
                     alwaysOnVpnState = alwaysOnVpnState,
@@ -194,6 +217,8 @@ class MainActivity : ComponentActivity() {
                     onDownloadWebDav = ::downloadWebDav,
                     onExitApp = ::finish,
                     developerToolsEnabled = developerToolsEnabled,
+                    runtimeConfigPreviewViewModel = runtimeConfigPreviewViewModel,
+                    profileStatisticsViewModel = profileStatisticsViewModel,
                 )
             }
         }
@@ -215,6 +240,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // 作者 long：只观察底层互联网链路，VPN 自身的出现不应造成反复探测；重连和地址变化使旧出口失效。
+        if (!observingNetwork) {
+            observingNetwork = runCatching {
+                getSystemService(android.net.ConnectivityManager::class.java).registerNetworkCallback(
+                    android.net.NetworkRequest.Builder()
+                        .addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                        .addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN).build(),
+                    networkCallback,
+                )
+            }.isSuccess
+        }
+        outboundIpViewModel.networkChanged()
         batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
         alwaysOnVpnState = AlwaysOnVpn.state(this)
         if (!initialDeepLinkHandled) {
@@ -228,11 +265,25 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         // 作者 long：只有首页 Activity 对用户可见时才读取运行统计和连接，后台运行的核心不应被 UI 轮询拖住。
         viewModel.setObservationVisible(true)
+        outboundIpViewModel.setForeground(true)
+        memoryViewModel.setForeground(true)
+        serviceStatusViewModel.setForeground(true)
+        profileStatisticsViewModel.setForeground(true)
+        intranetIpViewModel.setForeground(true)
     }
 
     override fun onStop() {
+        if (observingNetwork) {
+            runCatching { getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(networkCallback) }
+            observingNetwork = false
+        }
         // 作者 long：先关闭轮询闸门再进入后台，避免生命周期切换期间继续启动下一轮 JNI 读取。
         viewModel.setObservationVisible(false)
+        outboundIpViewModel.setForeground(false)
+        memoryViewModel.setForeground(false)
+        serviceStatusViewModel.setForeground(false)
+        profileStatisticsViewModel.setForeground(false)
+        intranetIpViewModel.setForeground(false)
         super.onStop()
     }
 
@@ -366,17 +417,30 @@ class MainActivity : ComponentActivity() {
         window.decorView.post { handleDeepLink(intent) }
     }
 
-    private fun requestRuntimeStart() {
-        // 作者 long：Android 要求每次启动前重新检查授权，不能把上一次同意结果当成永久权限。
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean("pending_vpn_restart", pendingVpnRestart)
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun completeRuntimeRequest() {
+        val restart = pendingVpnRestart
+        pendingVpnRestart = false
+        if (restart) viewModel.restartForVpnSettings() else viewModel.startRuntime()
+    }
+
+    private fun requestRuntimeStart(restart: Boolean = false) {
+        pendingVpnRestart = restart
+        // 作者 long：关闭 VPN 的本地代理不申请系统接管权限；重启前先授权，拒绝时保留现有会话。
+        if (!viewModel.vpnSettings.value.enabled) {
+            completeRuntimeRequest()
+            return
+        }
         val consentIntent = runCatching { VpnService.prepare(this) }.getOrElse { error ->
+            pendingVpnRestart = false
             viewModel.reportError(error.message ?: "无法申请 VPN 权限")
             return
         }
-        if (consentIntent == null) {
-            viewModel.startRuntime()
-        } else {
-            vpnConsentLauncher.launch(consentIntent)
-        }
+        if (consentIntent == null) completeRuntimeRequest() else vpnConsentLauncher.launch(consentIntent)
     }
 
     private fun handleDeepLink(intent: Intent?) {

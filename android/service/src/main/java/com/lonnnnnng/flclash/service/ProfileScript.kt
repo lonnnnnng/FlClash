@@ -45,8 +45,9 @@ class ProfileScriptApplier(
 object YamlConfigCodec {
     private const val MAX_CONFIG_BYTES = 8 * 1024 * 1024
     private val gson = Gson()
-    private val loader = Yaml(SafeConstructor(LoaderOptions()))
-    private val dumper = Yaml(
+    // 作者 long：预览可以与启动并行解析，SnakeYAML 实例不能在不同协程间共享可变解析状态。
+    private fun loader() = Yaml(SafeConstructor(LoaderOptions()))
+    private fun dumper() = Yaml(
         DumperOptions().apply {
             defaultFlowStyle = DumperOptions.FlowStyle.BLOCK
             indent = 2
@@ -58,7 +59,7 @@ object YamlConfigCodec {
         require(yaml.toByteArray(Charsets.UTF_8).size <= MAX_CONFIG_BYTES) {
             "配置文件超过 8 MiB 限制"
         }
-        val parsed = loader.load<Any?>(yaml)
+        val parsed = loader().load<Any?>(yaml)
         val json = gson.toJsonTree(parsed)
         require(json.isJsonObject) { "脚本配置必须是 YAML 对象" }
         val objectConfig = json.asJsonObject
@@ -75,7 +76,7 @@ object YamlConfigCodec {
         val parsed = runCatching { JsonParser.parseString(json) }
             .getOrElse { throw IllegalArgumentException("脚本返回值不是有效 JSON", it) }
         require(parsed.isJsonObject) { "脚本必须返回配置对象" }
-        val dumped = dumper.dump(jsonToJava(parsed.asJsonObject))
+        val dumped = dumper().dump(jsonToJava(parsed.asJsonObject))
         return if (dumped.endsWith('\n')) dumped else "$dumped\n"
     }
 

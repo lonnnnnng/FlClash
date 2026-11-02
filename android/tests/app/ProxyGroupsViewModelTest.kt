@@ -16,6 +16,11 @@ import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ProxyGroupsRuntime
 import com.lonnnnnng.flclash.service.ProxyDelayRequest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -37,6 +43,62 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProxyGroupsViewModelTest {
+    @Test
+    fun oldSelectionPersistenceCannotReplaceNewProfileSnapshot() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val oldGroup = ProxyGroupInfo("Old", "Selector", "a", listOf("a", "b"), false)
+        val newGroup = oldGroup.copy(name = "New")
+        val oldProfile = Profile.custom(501L, "旧配置")
+        val nextProfile = Profile.custom(502L, "新配置")
+        val store = SelectionProfileStore(oldProfile)
+        store.profiles.value = listOf(oldProfile, nextProfile)
+        val save = CompletableDeferred<Unit>()
+        store.beforeSelectionSave = { save.await() }
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(oldGroup)))
+        val model = ProxyGroupsViewModel(runtime, store)
+        val observing = backgroundScope.launch { model.state.collect {} }
+        try {
+            runCurrent()
+            model.selectProxy(oldGroup, "b")
+            runCurrent()
+            runtime.snapshot = ProxyGroupsSnapshot(listOf(newGroup))
+            store.currentProfileId.value = nextProfile.id
+            runCurrent()
+            save.complete(Unit)
+            runCurrent()
+            assertEquals(listOf(newGroup), model.state.value.groups)
+            assertTrue(model.state.value.selectedMap.isEmpty())
+        } finally { observing.cancel(); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test
+    fun cancelledOldBatchCannotPublishIntoNewProfile() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val group = ProxyGroupInfo("Shared", "Selector", "a", listOf("a", "b"), false)
+        val oldProfile = Profile.custom(503L, "旧配置")
+        val nextProfile = Profile.custom(504L, "新配置")
+        val store = SelectionProfileStore(oldProfile)
+        store.profiles.value = listOf(oldProfile, nextProfile)
+        val completion = CompletableDeferred<Unit>()
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(group)))
+        // 作者 long：模拟底层把取消包装成普通失败，旧批次仍不能污染同名新配置节点。
+        runtime.beforeBatch = { withContext(NonCancellable) { completion.await() }; error("旧批次结束") }
+        val model = ProxyGroupsViewModel(runtime, store)
+        val observing = backgroundScope.launch { model.state.collect {} }
+        try {
+            runCurrent()
+            model.testDelayGroup(group)
+            runCurrent()
+            store.currentProfileId.value = nextProfile.id
+            runCurrent()
+            completion.complete(Unit)
+            runCurrent()
+            assertEquals(listOf(group), model.state.value.groups)
+            assertNull(model.state.value.batchTestingGroup)
+            assertTrue(model.state.value.delayResults.isEmpty())
+        } finally { completion.complete(Unit); observing.cancel(); model.viewModelScope.cancel(); runCurrent() }
+    }
+
     @After
     fun tearDown() {
         Dispatchers.resetMain()
@@ -49,7 +111,7 @@ class ProxyGroupsViewModelTest {
         val groups = listOf(hidden, visible)
         assertEquals(listOf(visible), visibleProxyGroups(groups, CoreOutboundMode.RULE))
         assertEquals(groups, visibleProxyGroups(groups, CoreOutboundMode.GLOBAL))
-        assertTrue(visibleProxyGroups(groups, CoreOutboundMode.DIRECT).isEmpty())
+        assertEquals(listOf(visible), visibleProxyGroups(groups, CoreOutboundMode.DIRECT))
     }
 
     @Test
@@ -325,6 +387,7 @@ class ProxyGroupsViewModelTest {
 }
 
 private class SelectionProfileStore(profile: Profile) : ProfileStore {
+    var beforeSelectionSave: suspend () -> Unit = {}
     override val profiles = MutableStateFlow(listOf(profile))
     override val currentProfileId = MutableStateFlow<Long?>(profile.id)
 
@@ -337,8 +400,9 @@ private class SelectionProfileStore(profile: Profile) : ProfileStore {
     override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile = error("unused")
 
     override suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile {
+        beforeSelectionSave()
         val updated = profiles.value.single { it.id == id }.copy(selectedMapJson = encodeSelectedMap(selectedMap))
-        profiles.value = listOf(updated)
+        profiles.value = profiles.value.map { if (it.id == id) updated else it }
         return updated
     }
 
@@ -365,13 +429,14 @@ private class SelectionProfileStore(profile: Profile) : ProfileStore {
 
 private class FakeProxyGroupsRuntime(
     status: CoreRuntimeStatus,
-    private val snapshot: ProxyGroupsSnapshot,
+    var snapshot: ProxyGroupsSnapshot,
     private val changeResult: Result<ProxyGroupsSnapshot> = Result.success(snapshot),
 ) : ProxyGroupsRuntime {
     private val mutableState = MutableStateFlow(status)
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
     override val events: Flow<CoreEvent> = emptyFlow()
     var lastProxyName: String? = null
+    var beforeBatch: suspend () -> Unit = {}
 
     override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = Result.success(snapshot)
 
@@ -387,12 +452,13 @@ private class FakeProxyGroupsRuntime(
         requests: List<ProxyDelayRequest>,
         timeoutMs: Long,
         maxConcurrent: Int,
-    ): Result<List<com.lonnnnnng.flclash.service.ProxyDelayBatchResult>> = Result.success(
+    ): Result<List<com.lonnnnnng.flclash.service.ProxyDelayBatchResult>> = runCatching {
+        beforeBatch()
         requests.map { request ->
             com.lonnnnnng.flclash.service.ProxyDelayBatchResult(
                 request = request,
                 result = ProxyDelay(request.testUrl, request.proxyName, 100),
             )
-        },
-    )
+        }
+    }
 }

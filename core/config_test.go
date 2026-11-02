@@ -1020,3 +1020,29 @@ func TestTestDelayStopsQueueingOnceTheTimeoutIsSpent(t *testing.T) {
 		t.Fatal("handleTestDelay outlived the timeout it was given, waiting for a slot")
 	}
 }
+
+// 作者 long：文件配置可能已落后于热更新；卡片必须读当前核心值，未加载配置时明确失败。
+func TestGetLanConfigReflectsHotUpdate(t *testing.T) {
+	withCurrentConfig(t, &config.Config{General: &config.General{MixedPort: 7890}, Controller: &config.Controller{}})
+	first, err := handleGetLanConfig(nil)
+	if err != nil || first.AllowLan || first.MixedPort != 7890 {
+		t.Fatalf("initial LAN snapshot = %v, %v", first, err)
+	}
+	allow := true
+	if err := updateConfig(&UpdateParams{AllowLan: &allow}); err != nil {
+		t.Fatal(err)
+	}
+	next, err := handleGetLanConfig(nil)
+	if err != nil || !next.AllowLan || next.MixedPort != 7890 {
+		t.Fatalf("patched LAN snapshot = %v, %v", next, err)
+	}
+	if first.AllowLan {
+		t.Fatal("earlier snapshot must not mutate")
+	}
+}
+func TestGetLanConfigRejectsMissingAppliedConfig(t *testing.T) {
+	withCurrentConfig(t, nil)
+	if _, err := handleGetLanConfig(nil); err != errConfigNotApplied {
+		t.Fatalf("error = %v", err)
+	}
+}

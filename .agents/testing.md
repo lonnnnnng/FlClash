@@ -24,7 +24,117 @@ UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号�
 
 真实设备动作失败时保留失败 Run 和审计事实，先检查 logcat、服务状态、权限和核心事件，再决定修复或重试；不能用历史成功覆盖当前失败。
 
-## 当前首页归属与单链接验收（2026-11-01）
+## 提交前本地复核（2026-11-02）
+
+- 四模块 JVM 单测全部重新执行：App 219、Service 112、Core 32、Common 31，共 394 项，失败/错误/跳过 0；历史 363 项是前三模块统计，不包含 Common。
+- test、Debug、AndroidTest 和 Lint 通过；Lint 0 errors、46 warnings、7 hints。Go 路由/出口/Provider/内存/LAN 定向测试通过，完整命令见 roadmap 提交核对节，不能推导为全 Go 测试通过。
+- 本地两包 SHA-256 与最近 Providers 验收记录一致；App 仅 arm64-v8a，测试包无原生库。本次未重跑真机、未重新安装或读取设备包，历史 /tmp 日志目前已不存在；保留当时结果，当前本机日志使用 kclash-submit-20261102 前缀。
+- 当前页面完成度继续 PARTIAL；下一步 Profiles 管理菜单、导入/预览/结构化表单，再补 Proxy Groups 叶子协议、滚动恢复和视觉。蜂窝网络切换、正式签名/Release 与远端 CI 均不由本地通过代替。
+
+## Dashboard 外部 Providers 明细与单项更新（2026-11-02）
+
+- 全量 JVM 363 项通过：App 219、Service 112、Core 32，新增 8 项；失败/错误/跳过 0。Debug/AndroidTest、Lint 与 Go 外部 Provider 定向测试通过，Lint 0 errors、46 warnings、7 hints。最终详情宿主调整后 App 单测、两包与 Lint 再通过，完整命令和日志见 roadmap 同日节。
+- Redmi 竖屏默认字号精确执行 4 项固定宿主 UI：加载、失败重试、空态、HTTP 更新/防重复、文件只读、失败重试与成功反馈、深浅色/长名称/底部动作，以及原详情和运行态快切。整窗截图已目视；固定数据不代表真实资源下载。
+- 正式 MainActivity 1 项通过：已有两份配置 8/90 项外部 Provider 与核心一致，停止态真实更新现有 HTTP 规则 Provider，后台/纯代理运行/现有配置热切/恢复原选择/停止后的列表保持可见；核心会话不因热切重启，不存在项拒绝。Proxy Provider 实际下载和运行态下载未单独覆盖。前后配置保护另各 1 项。
+- 发现并修复详情由 LazyColumn 卡片持有导致启停后隐藏的窗口问题：窗口提升到页面持有，不能仅以增加等待或移除可见性断言消除失败。首次异步资源填充时跨时刻快照比较、语义滚动和路由竞争失败日志均保留，最终完整链路通过；详情数据一致与可操作入口分别验证。
+- 两份 Profile 原文件元数据及原选择保留，恢复 VPN 偏好、首页布局和停止态；无残留服务/tun0，字号 1.0，安装哈希与构建一致。不清数据、不新增/删除 Profile、不下载 Profile 订阅正文、不读写 1.yaml。Provider 缓存按真实单项更新发生变化，不能与 Profile 文件不变混为一谈。批量/编辑/侧载/订阅用量仍待补齐。
+
+## Dashboard 当前配置真实统计（2026-11-02）
+
+- 本轮 App 217、Service 108、Core 30，共 355 项 JVM（新增 11 项）通过；Debug/AndroidTest、Lint 与 Go 外部 Provider 定向测试通过，Lint 0 errors、46 warnings、7 hints。最终详情展开/导航安全区修改后 App 单测及打包/Lint 再通过。日志、首次编译失败与最终哈希见 roadmap 同日节。
+- Redmi 竖屏默认字号，固定宿主统计加载/失败重试/零值 1 项、深浅色及底部动作 1 项、原详情/预览/运行态快切 3 项；正式 MainActivity 停止/运行/后台/现有 Profile 热切/停止统计 1 项，共 6 个精确方法，前后配置保护另各 1 项。只读已应用输入与核心列表，不启动统计专属生命周期，不运行横屏/大字号或整类 instrumentation。
+- 统计以最终输入及已加载 Provider 为准，GLOBAL/DIRECT/Rule Provider 条目不叠加节点。单测验证脚本只在加载时执行、统计不重跑，配置/文件/会话竞争拒绝旧结果、停止不阻塞；ViewModel 验证门控、重试、超时和迟到，Bridge 验证完整数量字段与溢出。
+- 整窗深浅色 PNG 已目视，四项统计/元数据/底部三个动作完整且避开导航条；初始节点截图偏移与半展开裁切均修正后复验。无默认首页基线变更，无 Flutter 像素一致性结论。真实外部 Provider 非零下载/热更新未另行验收。
+- 两份 Profile 的 ID/current/文件名/大小/mtime 保留，恢复原选择、VPN、布局与停止态；无残留服务/tun0，安装哈希与构建一致。无订阅下载、无新增/删除 Profile、不读写 1.yaml；外部 Provider 明细及更新仍待补齐。
+
+## Dashboard 服务 route hits 缓存（2026-11-02）
+
+- 本轮 App 213、Service 103、Core 28，共 344 项 JVM 通过，新增 13 项；Debug、AndroidTest、Lint 和 Go 路由定向测试通过，Lint 0 errors、46 warnings、7 hints。最终日志、APK/测试包哈希与失败记录见 roadmap 同日节。
+- ServiceStatusRuntimeLiveTest#serviceRouteCacheReusesUnchangedExitAndRechecksChangedExitAndNetwork 在正式 MainActivity 验证真实 GitHub hits：DIRECT 模式下无关 GLOBAL 选择变化保留原检测时间与结果；手动检测、正式网络变化通知、真实代理出口变化与停止重测。独立核心核验 held=1。没有将网络通知模拟声称为实际 Wi-Fi/蜂窝切换。
+- 真实服务出口/质量 1 项、服务管理 2 项、排序 3 项、服务出口交互 2 项回归，合计 9 项精确功能方法；前后配置保护另各 1 项。只用 Redmi 竖屏默认字号，不运行整类、横屏或大字号；测试包修正后重建再安装。
+- 缓存核验不占启停锁；网络/配置/会话/epoch 强失效、空命中/损坏/核验异常重测、后台/迟到保护均有单元证据。服务复用不保留出口 IP/质量，稳定等待期间手动检测延后、后台取消。仅进程内，不推广到首页 IP 或持久缓存。
+- 前后两份 Profile 的 ID/current/文件名/大小/mtime 保留；恢复 GLOBAL、模式、服务/VPN 偏好、首页布局与停止态，无服务、无 tun0。只复用设备已有授权配置，不下载订阅、不读写 1.yaml、不清数据或创建/删除 Profile；安装包哈希与本地一致。
+
+## Dashboard 服务管理长按排序（2026-11-02）
+
+- App 207 项 JVM 通过（新增 3 项完整排列/保存失败/保存并发测试），Debug/AndroidTest 构建与 Lint 通过，0 errors、46 warnings、7 hints。Service/Core/Go 本轮未修改、未重跑，上一轮基线为 98/26 项；不将历史结果计为本轮新执行。
+- 整行长按显示预览，松手只提交一次，取消/后台/离开结束预览；边缘停住手指仍持续滚动。保留上下移动按钮、禁用集合和至少启用一项约束；写入失败保留原顺序。
+- Redmi 竖屏默认字号精确方法验证：预览/松手/取消、下边缘持续滚动与松手停止、后台取消共 3 项；正式 MainActivity 拖动写入真实偏好、重建恢复、禁用集合与最后一项保护 1 项；原服务管理及深浅色截图 2 项、出口质量 2 项回归。前后配置保护另各 1 项；最终日志及哈希见 roadmap 同日节。
+- 深浅色管理页整窗截图实际目视；原浅色截图捕获上一帧，等待列表完成绘制后重新采集。初轮漏接 LazyListState 导致布局为空与拖动失效、取消后离屏断言、测试辅助方法编译错误和打包期间安装失败均保留，不以失败轮次充当验收。
+- 不主动启动 VPN/纯代理、不下载订阅、不读写 1.yaml、不创建或删除 Profile；保留两份配置及原选择/文件元数据，真实用例 finally 恢复服务偏好与首页布局。route hits 细粒度复用、质量全来源与持久缓存仍未完成。
+
+## Dashboard 服务出口 IP 与质量详情首片（2026-11-02）
+
+- App 204、Service 98、Core 26，共 328 项 JVM 通过，失败/错误/跳过 0；Debug/AndroidTest 构建和 Lint 通过（0 errors、46 warnings、7 hints）。Go outbound IP、node hits、route check 与路由版本定向测试通过。
+- Redmi 竖屏默认字号 11 项精确方法通过：新增服务出口交互/深浅色长 IPv6 截图 2 项、正式首页真实出口与质量 1 项、原首页 IP 3 项、服务管理 2 项、首页编辑 3 项；前后配置保护另各 1 项。精确方法、日志、失败记录和 APK 哈希见 roadmap 同日节。
+- 真实 GitHub 服务检测后按代理链首节点查询出口，DIRECT 与真实代理出口实际不同，运行态经独立查询复核有效公共 IP；直连质量来源为 IP_LOCATE，代理质量来源为 IP_QUERY。复制/隐藏/返回、停止清除旧出口与质量详情通过；没有将相邻两次查询的 IPv4/IPv6 或轮换 IP 强行判等。
+- 详情可见才查询，按节点共享结果、最多两节点并发；IP 失败独立重试、不修改服务可用性。单测覆盖后台取消、路由变化、迟到结果、重测刷新 IP、关闭重开质量页与强制刷新；整体质量失败不虚构某个来源失败。
+- 深浅色长 IPv6 服务行与完整质量窗口四张 PNG 已目视；夹具不代表实际 IPv6 网络。两份 Profile 及文件名/大小/mtime 保留，恢复原选择、GLOBAL 映射、模式、布局、服务与 VPN 设置及停止态；不清数据、不下载订阅、不读写 1.yaml。App/测试包安装哈希与构建一致，App 仅 arm64-v8a，测试包无原生库。
+- 实际服务只覆盖 GitHub 和一个可用代理节点，质量只覆盖上述两个成功来源；全来源覆盖、持久缓存、服务拖动排序、route hits 复用及完整 Flutter parity 仍未完成，Dashboard 保持 PARTIAL。
+
+## Dashboard 可选服务状态真实检测首片（2026-11-02）
+
+- App 196、Service 96、Core 26，共 318 项 JVM 通过；Debug/AndroidTest 构建和 Lint 通过（0 errors、46 warnings、7 hints）。Go 服务检测并发/取消/重试、服务规则和路由定向测试通过。
+- Redmi 竖屏默认字号 7 项精确方法通过：服务交互与深浅色截图 2 项、正式首页真实检测与目标偏好恢复 1 项、首页编辑 3 项、真实 VPN/纯代理双向重启 1 项；另有前后配置保护方法各 1 项。精确方法、日志与安装哈希见 roadmap 同日节。
+- 真实结果：停止态 Google timeout、GitHub available；运行态按规则两者 available；停止后 GitHub DIRECT available。停止态首轮结果因路由变化被拒绝，等待稳定后重试成功；不能把该失败隐藏或把超时声称可用。未实际检测其余 11 项服务，10 种状态与全量按钮的呈现使用固定夹具。
+- ViewModel 单测覆盖可见/前台门控、稳定等待、缓存、失败重试、单项去重/超时、后台取消、旧路由迟到结果、路由过期重试和设置保存失败/重建/至少一项。Service 验证 DIRECT 不启动服务、运行态按规则、网络等待不阻塞停止、旧版本和缺项拒绝；Bridge 验证全部状态和字段完整性。
+- 深浅色卡片/详情/管理六张 PNG 已目视；本轮不改默认首页截图基线。两份 Profile 文件名/大小/mtime 一致，恢复原布局、服务设置、VPN 选择和停止态；不清数据、不下载订阅、不创建/删除 Profile、不读写 1.yaml。结束无服务、无 tun0，不运行横屏或大字号。
+- 服务出口 IP/质量、拖动排序与 route hits 复用仍待补齐，整体 Dashboard 保持 PARTIAL；不能将这一切片视为完整 Flutter parity。
+
+## Dashboard 可选 VPN 与纯代理模式（2026-11-02）
+
+- App 189、Service 93、Core 24，共 306 项 JVM 通过；Debug/AndroidTest 构建与 Lint 通过（0 errors、45 warnings、7 hints）。Go 本轮未改动、未重跑。
+- Redmi 竖屏默认字号 7 项精确方法通过：VPN 交互/深浅色截图 2 项、正式首页纯代理→VPN→纯代理 1 项、首页编辑 3 项、真实共享监听 1 项。开关保存选择，显式重启才改变 TUN；纯代理端口 TCP 可连接，停止后两服务退出。方法与日志见 roadmap 同日节。
+- TUN 接口通过 instrumentation shell 读 sysfs 独立核对，应用 File.exists 的 false 不能作为不存在证据。首轮误判与测试编译失败已保留，最终复验通过；深浅色卡片已目视。
+- 前后保留 2 份 Profile 且正文元数据一致；恢复 VPN/共享选择、布局及停止态，不读写 1.yaml、不清数据、不创建/删除 Profile。复用已有授权来源，保留既有首页自动出口查询；无横屏/大字号。
+- 纯代理 kill-process 恢复、快捷入口无授权现场、首次授权拒绝、跨设备代理请求未单独验收。最终 APK/测试包均核对安装哈希一致，结束无服务、无 tun0。
+
+## Dashboard 可选内网 IP 与局域网共享（2026-11-02）
+
+- App 189、Service 89、Core 24 项 JVM 共 302 项通过；Debug/AndroidTest 构建、Lint 通过（0 errors、45 warnings、7 hints）；Go 当前局域网状态读取和热更新 3 项定向测试通过。
+- Redmi 竖屏默认字号 7 项精确方法通过：内网卡交互/深浅色截图 2 项、正式 MainActivity 真实地址与共享监听热切换 1 项、既有首页编辑 3 项、真实内存回归 1 项。运行态共享开启/关闭/再开启时手机自身内网 TCP 监听相应恢复/拒绝/恢复，核心会话标记不变；配置与布局/覆盖均恢复。
+- 深浅色 IPv4/长 IPv6 四张 PNG 已目视。实际 IPv6-only 网络、跨设备局域网访问、Wi-Fi↔蜂窝切换未验证，不能用固定夹具代替；精确方法、失败记录、来源和最终日志见 roadmap 同日节。
+- 原两份 Profile 和文件元数据保持完整，不清数据、不读写 1.yaml；真实测试复用已有唯一授权配置，首页沿用自动出口 IP 查询。结束服务为空、无 tun0，不运行横屏/大字号，安装包哈希已核对。
+
+## Dashboard 可选内存信息（2026-11-02）
+
+- App 183、Service 84、Core 23 项 JVM 通过（共 290 项）；Debug/AndroidTest 构建、Lint 通过（0 errors、45 warnings、7 hints），Go 真实内存统计定向测试通过。
+- Redmi 竖屏默认字号 6 项精确方法通过：固定宿主内存交互/深浅色截图 2 项、正式 MainActivity 停止态真实 RSS/Go 分项/释放重读/后台暂停恢复/布局重建 1 项、既有首页编辑回归 3 项。运行态回收保持会话另有服务层单元测试，本轮未开启真机运行会话。
+- 深浅色卡片和完整窗口详情已目视；独立窗口的节点截图偏移不能替代完整画面。半展开导致错误提示不可见的首轮失败保留，改为完整展开后复验通过；精确方法、日志及安装包哈希见 roadmap 同日节。
+- 安装前后均 2 份 Profile 且文件元数据一致；恢复原布局，未访问订阅或读写 1.yaml，未启动 VPN/ProxyService，首页沿用既有自动 IP 查询；结束服务为空、无 tun0，不运行横屏/大字号。
+
+## 配置加载与运行解耦、真实出口联动（2026-11-02）
+
+- App 176、Service 82、Core 22 项 JVM 通过，Debug/AndroidTest 构建、Lint 通过（0 errors、45 warnings、7 hints）；Go DIRECT/outbound/setup 定向测试通过。
+- Redmi 竖屏默认字号 7 项定向 UI 通过；真实 ProfileRuntimeParityLiveTest 显式开启后覆盖停止态节点/选择/正延迟测速、停止与运行态切配置、实际代理节点正延迟测速和 GLOBAL 选择、代理链/显示 IP 独立核对、停止恢复当前网络出口。实际代理出口发生变化。
+- 真实测试仅复用唯一授权来源与根目录 1.yaml；保留原两份 Profile 及正文元数据，恢复原选择/映射/模式，仅删除本方法临时创建的已知 Profile。IPv4/IPv6 竞速结果按当前网络独立 DIRECT 来源核对，禁止用启动前固定 IP 等值代替。
+- 深浅色运行配置预览及首页停止态截图已目视。构建、失败记录、最终日志与安装包 SHA-256 见 roadmap 本轮节；完整 UI/UX 和质量来源全覆盖仍未完成。
+
+## Dashboard 编辑持续边缘滚动（2026-11-02）
+
+- App 单元测试 169 项通过，Debug/AndroidTest 构建与 Lint 通过（0 errors、45 warnings、7 hints）；Service/Core 本轮未改动、未重跑。
+- Redmi 竖屏默认字号 7 项精确方法通过：新增上下边缘静止持续滚动、松手/取消停止、后台恢复和完成编辑停止检查，复用既有排序、持久化、状态卡保护和编辑控件回归。不得用整类 instrumentation 替代精确方法。
+- 首轮静止滚动两项失败已定位到排序后 LazyColumn 按 key 重定位视口，修复保留视口后通过；失败和最终日志、官方 API 依据见 roadmap 本轮记录。编辑控件截图已目视，本轮未改静态截图基线。
+- 验收前后均 2 份 Profile，文件元数据一致，恢复原首页布局；未启动核心、访问在线来源、读写 1.yaml 或运行横屏/大字号。结束时服务为空、无 tun0。
+
+## Dashboard 出口 IP/质量运行态首片（2026-11-02）
+
+- App 166、Service 77、Core 22 项单元测试通过；Debug/AndroidTest 构建、Lint 通过（0 errors、45 warnings、7 hints），Go probe/outbound IP/route 本地回环定向测试通过。
+- Redmi 竖屏默认字号：IP 交互与截图 3 项、Dashboard 行为 5 项、首页截图 3 项通过；七张深浅色 PNG 已目视核对，首页原生基线更新。外部 IP 来源没有真实联通验收，固定宿主不能替代该证据。
+- 设备保留 1 份真实 Profile，前后文件元数据相同；App/AndroidTest 安装哈希与构建一致。未启动核心、访问真实在线来源、读写根目录 1.yaml 或运行横屏/大字号；结束时服务为空、无 tun0。精确命令、哈希、失败与最终日志见 roadmap 同日记录。
+- 后续若启动正式 MainActivity 的核心，首页会自动调用固定外部 IP 来源；真实验收前须明确该网络范围。当前固定宿主测试不调用 Repository 或核心。
+
+## Dashboard 运行时间与真实速度历史（2026-11-02）
+
+- 最终 App JVM 153 项、Service JVM 75 项通过；Debug/AndroidTest APK 与 Lint 通过，Lint 0 errors、45 warnings、7 hints。
+- 新增受控挂起 Bridge 的正式 ViewModel 时序测试：慢统计不阻塞时钟、前台取消不写旧样本、后台不补点、快速重启清空历史、失败读取保留历史、停止清空；格式、30 点上限、曲线非负和极值另有纯函数测试。
+- Redmi `wsvwypiz7xwslvl7`、API 36、arm64、竖屏 1080×2340、字号 1.0：5 项 Dashboard 行为与 3 项截图方法通过，5 张 PNG 已实际目视检查；固定夹具不代表真实采样证据或 Flutter 像素一致。
+- 显式 `DashboardTelemetryLiveTest#dashboardTelemetryFollowsRealCoreSession` 复用当前唯一授权 Profile，不导入新 YAML；真实请求捕获非零速度（最终峰值 5673 bytes），30 点容量、后台暂停/前台追平、Activity 重建、停止清空通过。默认 instrumentation 不显式开启时跳过真实链路。
+- 真实链路仅接收外层 `AGENTS.md` 唯一授权来源作为临时参数；地址不写入源码/报告。验收前后各核验配置 `count=1 missing=0 expected=1` 和文件元数据，结束时服务为空、可读接口目录无 `tun0`。
+- App APK `663180de06afbd46e03575431b556f8aa5ec18eda26ae0501fa62c3a4956e3b1`；AndroidTest APK `38762943393c702d46e2394a39e489fe6219ba4df510e6f4c802fbc43ee94c8e`，均与安装包哈希一致。构建、首次失败及最终真机日志位置见 `docs/roadmap.md`。
+- 不运行整类 instrumentation、横屏或大字号；出口 IP/质量、完整曲线动效及页面 parity 保持未完成。
+
+## 首页归属与单链接验收历史（2026-11-01）
 
 - Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、Android 16/API 36、`arm64-v8a`、竖屏 `1080×2340`、字号 `1.0`）：主流程 9 项、首页编辑 6 项、Dashboard 行为 5 项、截图 4 项，共 24 项精确方法 UI 回归通过；未运行横屏或大字号用例。
 - `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64` 通过；App JVM 146 项失败/错误/跳过为 0，Lint 0 errors、45 warnings、7 hints。

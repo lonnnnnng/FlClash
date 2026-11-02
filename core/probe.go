@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/metacubex/mihomo/adapter"
+	"github.com/metacubex/mihomo/adapter/outbound"
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/component/ca"
 	"github.com/metacubex/mihomo/constant"
@@ -274,7 +276,10 @@ func runProbe(parent context.Context, req probeRequest) *ProbeResult {
 	}
 
 	dialer := &probeDialer{}
-	if req.proxyName != "" {
+	if req.proxyName == "DIRECT" {
+		// 作者 long：停止态查询当前网络出口不依赖已加载配置，也不能沿旧代理组或规则发出。
+		dialer.proxy = adapter.NewProxy(outbound.NewDirect())
+	} else if req.proxyName != "" {
 		dialer.proxy = lookupProxy(req.proxyName)
 		if dialer.proxy == nil {
 			result.hits = []RouteHit{{Proxy: req.proxyName}}

@@ -140,15 +140,9 @@ class ProfilesViewModel @Inject constructor(
     val dialersEditorState: StateFlow<ProfileDialersEditorUiState> = mutableDialersEditor
 
     fun select(id: Long) {
-        val runtimeStatus = runtimeManager.state.value
-        if (runtimeStatus == CoreRuntimeStatus.RUNNING ||
-            runtimeStatus == CoreRuntimeStatus.STARTING ||
-            runtimeStatus == CoreRuntimeStatus.STOPPING
-        ) {
-            mutableErrors.tryEmit("核心运行或切换状态中，请等待核心停止后再切换配置")
-            return
-        }
-        launchAction { repository.selectProfile(id) }
+        if (busy.value) return
+        // 作者 long：配置切换由生命周期管理器串行校验并热应用，运行状态不再限制当前选择。
+        launchAction { runtimeManager.selectProfile(id, repository::selectProfile) }
     }
 
     fun addRemote(url: String, label: String) = launchAction {

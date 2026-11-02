@@ -1,14 +1,14 @@
 # KClash Dashboard fixed-state PNG baselines after the native visual shell alignment.
 # Device: Redmi Note 8 Pro, Android 16/API 36, system font scale 1.0.
 # Future Dashboard acceptance runs only portrait default/running and light-theme states.
-# 2026-11-01 目视复核：原版卡片标题、移除附加提示、无配置时隐藏代理 Tab；不宣称 Flutter 像素一致。
-state=default sha256=e99f05f3a12f04a78e85807be66162e9b6ee5d9a08bb780b9ce7bc277e3b5493
-state=system_ready sha256=e99f05f3a12f04a78e85807be66162e9b6ee5d9a08bb780b9ce7bc277e3b5493
-state=running sha256=83178f202e133235501c8eca09223338ef8a4e1877a26ccff485638f969280f8
+# 2026-11-02 目视复核：停止态真实出口成功/查询空态；出口IP/质量摘要、运行时间与30点速度历史；原版卡片标题、移除附加提示、无配置时隐藏代理 Tab；不宣称 Flutter 像素一致。
+state=default sha256=67f3dac43e2e7a5b051579146787b3164a29313a5fd3888958fb5b4007d6b899
+state=system_ready sha256=4dee58f6842acc06e76ee72a3cde10a29403a133998a7c0d385dec51542055a6
+state=running sha256=542c70643460b00bef6cd5dd37b5d7bfda45fc2440cb919eceae9302a9de45f8
 
 # Light theme.
-state=light_default sha256=95694af704996e098261e69e8848361bdb1a379adc848af0039ff19af24542a2
-state=light_running sha256=55f7251627ddfe6c94ef6c930810910d3705c4804438622ae0d022383dcf1f43
+state=light_default sha256=a99c0b07b04c73aedf62045de8b2836d5a9b0288e0573f74d81c82b3c6739fbc
+state=light_running sha256=0545fe1593f3db31ff5a2f590bd79cd3bc63634e6a51c0b50b68f149ec7c1209
 
 # Proxy summary card and picker, portrait default font. Fixed Debug fixture; no core/network.
 state=proxy_summary_dark sha256=a0c773fd53333ead00ad9af0489c00530e93532737f9e79b68f1cfcbec9b6eaa

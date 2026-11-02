@@ -255,6 +255,10 @@ func updateExternalProvider(name string, update func(cp.Provider) *MethodError) 
 	if !exist {
 		return providerError("provider_not_found", name, errors.New("external provider does not exist"))
 	}
+	return updateResolvedExternalProvider(name, p, update)
+}
+
+func updateResolvedExternalProvider(name string, p cp.Provider, update func(cp.Provider) *MethodError) error {
 	key := providerUpdateScope + name
 	if !claimUpdate(key) {
 		return providerError("provider_updating", name, errors.New("external provider is updating"))
@@ -271,6 +275,37 @@ func handleUpdateExternalProvider(name string) error {
 	return updateExternalProvider(name, func(p cp.Provider) *MethodError {
 		if err := p.Update(); err != nil {
 			return providerUpdateError(name, err)
+		}
+		return nil
+	})
+}
+
+// 作者 long：Kotlin 将更新绑定到已展示的配置版本，避免异步派发后按同名资源误更新另一份配置。
+type ScopedProviderUpdate struct {
+	Name         string `json:"name"`
+	CoreEpoch    uint64 `json:"core-epoch"`
+	RouteVersion uint64 `json:"route-version"`
+}
+
+func handleUpdateExternalProviderScoped(params ScopedProviderUpdate) error {
+	configMu.Lock()
+	epoch, version := routeStamp()
+	if epoch != params.CoreEpoch || version != params.RouteVersion {
+		configMu.Unlock()
+		return providerError("provider_stale", params.Name, errors.New("provider configuration changed"))
+	}
+	p, exist := lookupExternalProvider(params.Name)
+	configMu.Unlock()
+	if !exist {
+		return providerError("provider_not_found", params.Name, errors.New("external provider does not exist"))
+	}
+	if p.VehicleType() != cp.HTTP {
+		return providerError("provider_read_only", params.Name, errors.New("external provider is not HTTP"))
+	}
+	// 作者 long：只在配置锁内取得目标对象，网络下载在锁外完成，允许停止和配置热切继续执行。
+	return updateResolvedExternalProvider(params.Name, p, func(provider cp.Provider) *MethodError {
+		if err := provider.Update(); err != nil {
+			return providerUpdateError(params.Name, err)
 		}
 		return nil
 	})

@@ -25,6 +25,11 @@ import java.util.concurrent.ConcurrentHashMap
 import android.net.VpnService as SystemVpnService
 
 class VpnService : SystemVpnService(), ManagedService {
+    override fun onCreate() {
+        super.onCreate()
+        ServiceConfig.vpnCreated(true)
+    }
+
     private val modules = ServiceModules(this)
     private val binder = LocalBinder()
     private val tunLock = Any()
@@ -35,6 +40,7 @@ class VpnService : SystemVpnService(), ManagedService {
             cleanup()
         } finally {
             ServiceConfig.updateVpnState(VpnRuntimeState.STOPPED)
+            ServiceConfig.vpnCreated(false)
             super.onDestroy()
         }
     }

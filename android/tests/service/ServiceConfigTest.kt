@@ -88,6 +88,18 @@ class ServiceConfigTest {
 }
 
 class DefaultVpnOptionsProviderTest {
+    @Test fun vpnPreferenceSelectsProxyOnlyOptionsWithoutChangingAccessSettings() = runTest {
+        val store = object : VpnSettingsStore {
+            var enabled = false
+            override fun read() = enabled
+            override fun write(enabled: Boolean) { this.enabled = enabled }
+        }
+        val provider = DefaultVpnOptionsProvider(vpnSettingsStore = store)
+        assertEquals(false, provider.current().enable)
+        store.write(true)
+        assertEquals(true, provider.current().enable)
+    }
+
     @Test
     fun `current options include sanitized access control selection`() = runTest {
         val provider = DefaultVpnOptionsProvider(

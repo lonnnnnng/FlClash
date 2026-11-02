@@ -14,6 +14,143 @@ import kotlinx.coroutines.yield
 import com.google.gson.JsonParser
 
 class CoreBridgeParsingTest {
+    @Test fun providerDetailsParseOnlyPublicFieldsAndRfc3339Times() {
+        val bridge = CoreBridge()
+        val raw = """[{"name":"fixture","type":"Proxy","count":12,"vehicle-type":"HTTP","update-at":"2026-11-02T08:00:00.123456789+08:00","path":"private","subscription-info":{"token":"fixture-secret"}}]"""
+        val result = bridge.parseExternalProviders(JsonParser.parseString(raw).asJsonArray).single()
+        assertEquals(CoreExternalProvider("fixture", "Proxy", "HTTP", 12, 1793577600123L), result)
+        assertTrue(result.canUpdate)
+        assertFalse(result.toString().contains("secret"))
+        assertFalse(result.copy(vehicleType = "File").canUpdate)
+        assertEquals(null, bridge.parseProviderTime("0001-01-01T00:00:00Z"))
+        assertEquals(1793577600000L, bridge.parseProviderTime("2026-11-02T00:00:00Z"))
+    }
+
+    @Test fun providerDetailsRejectMalformedMetadataAndEmptyIsRealEmpty() {
+        val bridge = CoreBridge()
+        val good = """{"name":"fixture","type":"Rule","count":0,"vehicle-type":"File","update-at":"0001-01-01T00:00:00Z"}"""
+        listOf(good.replace("File", ""), good.replace("0001-01-01T00:00:00Z", "2026-02-30T00:00:00Z"),
+            good.replace("0001-01-01T00:00:00Z", "bad"), good.replace("\"vehicle-type\":\"File\",", ""),
+            good.replace("\"count\":0", "\"count\":-1")).forEach { value ->
+            assertTrue(runCatching { bridge.parseExternalProviders(JsonParser.parseString("[$value]").asJsonArray) }.isFailure)
+        }
+        assertEquals(emptyList<CoreExternalProvider>(), bridge.parseExternalProviders(JsonParser.parseString("[]").asJsonArray))
+    }
+
+    @Test fun providerCountsOnlyAddsProxyItemsAndCountsBothProviderTypes() {
+        val raw = JsonParser.parseString("""[{"name":"a","type":"Proxy","count":7},{"name":"b","type":"Rule","count":1000}]""").asJsonArray
+        assertEquals(CoreProviderCounts(7, 2), CoreBridge().parseProviderCounts(raw))
+        assertEquals(CoreProviderCounts(0, 0), CoreBridge().parseProviderCounts(JsonParser.parseString("[]").asJsonArray))
+    }
+
+    @Test fun providerCountsRejectsMissingMalformedDuplicateAndOverflowValues() {
+        val good = """{"name":"a","type":"Proxy","count":7}"""
+        val cases = listOf("[{}]", "[null]", "[$good,$good]", "[" + good.replace(":7", ":-1") + "]",
+            "[" + good.replace(":7", ":1.5") + "]", "[" + good.replace(":7", ":\"7\"") + "]",
+            "[" + good.replace("Proxy", "Future") + "]",
+            """[{"name":"a","type":"Proxy","count":9223372036854775807},{"name":"b","type":"Proxy","count":1}]""")
+        cases.forEach { raw -> assertTrue(raw, runCatching { CoreBridge().parseProviderCounts(JsonParser.parseString(raw).asJsonArray) }.isFailure) }
+        assertThrows(IllegalArgumentException::class.java) { CoreBridge().parseProviderCounts(null) }
+    }
+
+    @Test fun serviceHitsMustAllBeCompleteBeforeTheyCanBeReused() {
+        val bridge = CoreBridge()
+        fun parse(hits: String) = bridge.parseServiceChecks(JsonParser.parseString(
+            """[{"name":"github","status":"available","checked-at":1,"core-epoch":2,"route-version":3,"hits":$hits}]""").asJsonArray,
+            listOf(ServiceTarget.GITHUB)).single()
+        val valid = """{"host":"example.com:443","exit":"fixture-exit"}"""
+        assertEquals(listOf(CoreRouteHit("example.com:443", "", "fixture-exit")), parse("[$valid]").hits)
+        listOf("null", "{}", "[]", "[null]", "[$valid,{}]", "[$valid,1]",
+            """[{"host":"","exit":"fixture-exit"}]""", """[{"host":"example.com:443","exit":""}]""",
+            """[{"host":1,"exit":"fixture-exit"}]""").forEach { raw ->
+            val result = parse(raw)
+            assertEquals(ServiceStatus.AVAILABLE, result.status)
+            assertTrue(raw, result.hits.isEmpty())
+        }
+    }
+
+    @Test fun routeCheckRejectsMissingMisalignedAndCoercedFields() {
+        val bridge = CoreBridge()
+        val good = """{"core-epoch":2,"route-version":3,"held":[true,false]}"""
+        assertEquals(CoreRouteCheck(CoreRouteStamp(2, 3), listOf(true, false)),
+            bridge.parseRouteCheck(JsonParser.parseString(good).asJsonObject, 2))
+        val invalid = listOf("{}", good.replace("[true,false]", "[true]"), good.replace("[true,false]", "[true,1]"),
+            good.replace("[true,false]", "[true,null]"), good.replace(":2", ":-2"), good.replace(":2", ":2.5"),
+            good.replace(":3", ":9223372036854775808"), good.replace("true", "\"true\""))
+        invalid.forEach { raw -> assertTrue(raw, runCatching { bridge.parseRouteCheck(JsonParser.parseString(raw).asJsonObject, 2) }.isFailure) }
+        assertThrows(IllegalArgumentException::class.java) { bridge.parseRouteCheck(null, 2) }
+    }
+
+    @Test fun serviceChecksPreserveStatusRouteAndRequestedOrder() {
+        val rows = ServiceStatus.entries.map { status ->
+            """{"name":"google","status":"${status.wire}","region":"US","delay":12,"chains":["DIRECT"],"checked-at":100,"core-epoch":2,"route-version":3}"""
+        }
+        rows.zip(ServiceStatus.entries).forEach { (row, status) ->
+            val parsed = CoreBridge().parseServiceChecks(JsonParser.parseString("[$row]").asJsonArray, listOf(ServiceTarget.GOOGLE)).single()
+            assertEquals(status, parsed.status)
+            assertEquals(CoreRouteStamp(2, 3), parsed.stamp)
+            assertEquals(12L, parsed.delayMillis)
+            assertEquals(listOf("DIRECT"), parsed.chains)
+        }
+        val row = rows.first()
+        val ordered = CoreBridge().parseServiceChecks(JsonParser.parseString("[$row,${row.replace("google", "github")}]").asJsonArray, listOf(ServiceTarget.GITHUB, ServiceTarget.GOOGLE))
+        assertEquals(listOf(ServiceTarget.GITHUB, ServiceTarget.GOOGLE), ordered.map { it.target })
+        assertEquals(ServiceStatus.FAILED, CoreBridge().parseServiceChecks(JsonParser.parseString("[${row.replace("available", "future-value")}]").asJsonArray, listOf(ServiceTarget.GOOGLE)).single().status)
+    }
+
+    @Test fun serviceChecksRejectMissingDuplicateUnknownAndMalformedFields() {
+        val good = """{"name":"google","status":"available","checked-at":100,"core-epoch":2,"route-version":3}"""
+        val invalid = listOf("[]", "[$good,$good]", "[${good.replace("google", "unknown")}]", "[null]",
+            "[${good.replace("100", "-1")}]", "[${good.replace("100", "1.5")}]",
+            "[${good.replace("100", "9223372036854775808")}]", "[${good.replace("\"checked-at\":100,", "")}]",
+            "[${good.dropLast(1)},\"chains\":[1]}]", "[${good.dropLast(1)},\"delay\":\"12\"}]")
+        invalid.forEach { raw -> assertTrue(raw, runCatching { CoreBridge().parseServiceChecks(JsonParser.parseString(raw).asJsonArray, listOf(ServiceTarget.GOOGLE)) }.isFailure) }
+        assertThrows(IllegalArgumentException::class.java) { CoreBridge().parseServiceChecks(null, listOf(ServiceTarget.GOOGLE)) }
+    }
+
+    @Test fun lanFieldsRejectMalformedBooleansAndPorts() {
+        val bridge = CoreBridge()
+        val valid = com.google.gson.JsonParser.parseString("""{"allow-lan":true,"mixed-port":7890}""").asJsonObject
+        assertEquals(CoreLanConfig(true, 7890), bridge.parseLanConfig(valid))
+        for (bad in listOf(
+            """{"allow-lan":"true","mixed-port":7890}""",
+            """{"allow-lan":true,"mixed-port":-1}""",
+            """{"allow-lan":true,"mixed-port":65536}""",
+            """{"allow-lan":true,"mixed-port":1.5}""",
+            """{"mixed-port":7890}""",
+        )) assertTrue(runCatching { bridge.parseLanConfig(com.google.gson.JsonParser.parseString(bad).asJsonObject) }.isFailure)
+    }
+
+    @Test
+    fun ipInformationPreservesBodyStatusAndRouteButDoesNotLogBody() {
+        val parsed = CoreBridge().parseIpJson(JsonParser.parseString(
+            """{"url":"https://fixture.invalid","body":"sensitive-body","status-code":429,"core-epoch":3,"route-version":7}""",
+        ).asJsonObject)
+        assertEquals(429, parsed.statusCode)
+        assertEquals(CoreRouteStamp(3, 7), parsed.stamp)
+        assertEquals("sensitive-body", parsed.body)
+        assertFalse(parsed.toString().contains("sensitive-body"))
+        assertFalse(parsed.toString().contains("fixture.invalid"))
+        assertEquals(200, CoreBridge().parseIpJson(JsonParser.parseString("{}").asJsonObject).statusCode)
+        assertThrows(IllegalArgumentException::class.java) { CoreBridge().parseIpJson(null) }
+    }
+    @Test fun memoryFieldsAreExactNonNegativeAndTotalsDoNotOverflow() {
+        val bridge = CoreBridge()
+        val good = JsonParser.parseString("""{"rss":100,"heapInuse":20,"heapIdle":10,"stackInuse":5,"runtimeOther":5}""").asJsonObject
+        val memory = bridge.parseMemoryJson(good)
+        assertEquals(100L, memory.rss)
+        assertEquals(40L, memory.runtimeTotal)
+        for (bad in listOf("{}", "null", "-1", "1.5", "9223372036854775808")) {
+            if (bad == "{}") {
+                assertThrows(IllegalArgumentException::class.java) { bridge.parseMemoryJson(JsonParser.parseString(bad).asJsonObject) }
+            } else {
+                val invalid = good.deepCopy().apply { add("rss", JsonParser.parseString(bad)) }
+                assertTrue(runCatching { bridge.parseMemoryJson(invalid) }.isFailure)
+            }
+        }
+        assertEquals(Long.MAX_VALUE, CoreMemoryStats(0L, Long.MAX_VALUE, 1L, 1L, 1L).runtimeTotal)
+    }
+
     private val bridge = CoreBridge()
 
     @Test

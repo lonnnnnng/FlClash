@@ -141,6 +141,29 @@ class MainActivityInstrumentedTest {
     }
 
     @Test
+    fun mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile() {
+        val entry = EntryPointAccessors.fromApplication(composeRule.activity.application, ConnectionAcceptanceEntryPoint::class.java)
+        val repository = entry.profileRepository()
+        composeRule.waitUntil(10_000) { repository.currentProfileId.value != null }
+        val id = checkNotNull(repository.currentProfileId.value)
+        val file = repository.profileFile(id)
+        val before = file.length() to file.lastModified()
+        composeRule.onNodeWithTag("dashboard_profile_card").performScrollTo().performClick()
+        composeRule.onNodeWithTag("dashboard_profile_detail_preview").performClick()
+        lateinit var preview: com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModel
+        composeRule.activityRule.scenario.onActivity { preview = ViewModelProvider(it)[com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModel::class.java] }
+        composeRule.waitUntil(15_000) { !preview.state.value.isLoading }
+        assertTrue("只读预览应加载成功", preview.state.value.preview != null)
+        composeRule.onNodeWithTag("runtime_config_preview_content").assertIsDisplayed()
+        composeRule.activityRule.scenario.recreate()
+        composeRule.onNodeWithTag("runtime_config_preview_content").assertIsDisplayed()
+        composeRule.onNodeWithTag("runtime_config_preview_close").performClick()
+        composeRule.onNodeWithTag("runtime_config_preview_sheet").assertDoesNotExist()
+        assertEquals(before, file.length() to file.lastModified())
+        assertEquals(id, repository.currentProfileId.value)
+    }
+
+    @Test
     fun mainActivityNavigatesAcrossFlutterMobileDestinationsAndTools() {
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_profiles").performClick()

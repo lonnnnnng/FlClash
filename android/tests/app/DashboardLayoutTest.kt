@@ -38,7 +38,7 @@ class DashboardLayoutTest {
 
     @Test
     fun newlyAddedHiddenSectionStaysHiddenAfterPreferenceUpgrade() {
-        val knownSections = DashboardSection.entries.dropLast(1)
+        val knownSections = DashboardSection.entries.filter { it.visibleByDefault }
         val knownNames = knownSections.map { it.name }
         val layout = DashboardLayoutState.fromStored(
             orderNames = knownNames,

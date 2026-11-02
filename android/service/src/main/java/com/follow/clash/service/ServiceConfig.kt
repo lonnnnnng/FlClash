@@ -19,10 +19,21 @@ object ServiceConfig {
     private val mutableVpnState = MutableStateFlow(VpnRuntimeState.STOPPED)
     private val mutableVpnError = MutableStateFlow<String?>(null)
 
+    private val mutableProxyAlive = MutableStateFlow(false)
+    private val mutableVpnAlive = MutableStateFlow(false)
+    val proxyAlive = mutableProxyAlive.asStateFlow()
+    val vpnAlive = mutableVpnAlive.asStateFlow()
+    fun proxyCreated(alive: Boolean) { mutableProxyAlive.value = alive }
+    fun vpnCreated(alive: Boolean) { mutableVpnAlive.value = alive }
+
     val vpnOptions: VpnOptions?
         get() = currentVpnOptions
 
     val notificationParams = mutableNotificationParams.asStateFlow()
+    private val mutableProxyState = MutableStateFlow(VpnRuntimeState.STOPPED)
+    val proxyState = mutableProxyState.asStateFlow()
+    fun updateProxyState(state: VpnRuntimeState) { mutableProxyState.value = state }
+
     val vpnState = mutableVpnState.asStateFlow()
     val vpnError = mutableVpnError.asStateFlow()
 

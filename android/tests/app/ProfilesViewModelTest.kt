@@ -70,7 +70,7 @@ class ProfilesViewModelTest {
     }
 
     @Test
-    fun `profile selection is rejected while runtime is active or transitioning`() = runTest {
+    fun `profile selection delegates in every runtime state`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val current = Profile.custom(80L, "当前配置")
         val target = Profile.custom(81L, "目标配置")
@@ -82,14 +82,10 @@ class ProfilesViewModelTest {
         ).forEach { status ->
             val store = FakeProfileStore(current, listOf(target))
             val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(status))
-            val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
-
             viewModel.select(target.id)
             advanceUntilIdle()
 
-            assertEquals("核心运行或切换状态中，请等待核心停止后再切换配置", error.await())
-            assertEquals(current.id, store.currentProfileId.value)
-            assertTrue(store.selectedProfiles.isEmpty())
+            assertEquals(listOf(target.id), store.selectedProfiles)
         }
     }
 

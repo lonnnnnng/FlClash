@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -38,9 +40,9 @@ data class ProxyGroupsUiState(
 )
 
 internal fun visibleProxyGroups(groups: List<ProxyGroupInfo>, mode: CoreOutboundMode): List<ProxyGroupInfo> =
-    // 作者 long：Direct 不经过代理组；Rule 遵守配置的 hidden 标记，Global 保留全部组供全局出口选择。
+    // 作者 long：直连模式只改变真实路由，不隐藏节点管理；用户仍可预选节点和测速，切回代理模式立即生效。
     when (mode) {
-        CoreOutboundMode.DIRECT -> emptyList()
+        CoreOutboundMode.DIRECT -> groups.filterNot { it.hidden }
         CoreOutboundMode.RULE -> groups.filterNot { it.hidden }
         CoreOutboundMode.GLOBAL -> groups
     }
@@ -211,6 +213,8 @@ class ProxyGroupsViewModel @Inject constructor(
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private val profileViewStateMutex = Mutex()
     private var groupDelayJob: Job? = null
+    private var refreshJob: Job? = null
+    private var profileGeneration = 0L
 
     val state: StateFlow<ProxyGroupsUiState> = mutableState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProxyGroupsUiState())
@@ -218,14 +222,17 @@ class ProxyGroupsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            runtimeManager.state.collect { status ->
-                if (status == CoreRuntimeStatus.RUNNING) {
-                    refresh()
-                } else {
-                    groupDelayJob?.cancel()
-                    groupDelayJob = null
-                    mutableState.value = ProxyGroupsUiState()
-                }
+            combine(runtimeManager.state, profileStore.currentProfileId, profileStore.profiles, runtimeManager.proxyGroupsRevision) { status, id, profiles, revision ->
+                val profile = profiles.firstOrNull { it.id == id }
+                listOf(status, id, profile?.lastUpdateAt, profile?.overridesJson, profile?.scriptId, revision)
+            }.distinctUntilChanged().collect { key ->
+                profileGeneration++
+                groupDelayJob?.cancel()
+                refreshJob?.cancel()
+                groupDelayJob = null
+                // 作者 long：配置数据与代理接管状态分离，停止不清空节点；换配置先丢弃旧列表，再读取已校验的新快照。
+                mutableState.value = ProxyGroupsUiState(isLoading = key[1] != null)
+                if (key[1] != null) refresh()
             }
         }
         viewModelScope.launch {
@@ -238,10 +245,14 @@ class ProxyGroupsViewModel @Inject constructor(
     }
 
     fun refresh() {
-        viewModelScope.launch {
+        refreshJob?.cancel()
+        val generation = profileGeneration
+        val profileId = profileStore.currentProfileId.value
+        refreshJob = viewModelScope.launch {
             mutableState.value = mutableState.value.copy(isLoading = true)
             runtimeManager.getProxyGroups()
                 .onSuccess { snapshot ->
+                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
                         selectedMap = currentProfileSelectedMap(),
@@ -254,6 +265,8 @@ class ProxyGroupsViewModel @Inject constructor(
                     )
                 }
                 .onFailure { error ->
+                    if (error is CancellationException) throw error
+                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onFailure
                     mutableState.value = ProxyGroupsUiState()
                     mutableErrors.emit(error.message ?: "读取代理组失败")
                 }
@@ -321,6 +334,8 @@ class ProxyGroupsViewModel @Inject constructor(
     fun selectProxy(group: ProxyGroupInfo, proxyName: String) {
         if (mutableState.value.batchTestingGroup != null) return
         val stateBeforeSwitch = mutableState.value
+        val profileId = profileStore.currentProfileId.value
+        val generation = profileGeneration
         val target = computedSelectionTarget(group, proxyName, stateBeforeSwitch.selectedMap) ?: return
         val updatedMap = updateSelectedMap(
             current = stateBeforeSwitch.selectedMap,
@@ -332,19 +347,23 @@ class ProxyGroupsViewModel @Inject constructor(
             mutableState.value = mutableState.value.copy(switchingGroup = group.name)
             runtimeManager.changeProxy(group.name, target)
                 .onSuccess { snapshot ->
-                    val profileId = profileStore.currentProfileId.value
+                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
                     runCatching {
                         if (profileId != null) {
                             profileStore.updateProfileSelectedMap(profileId, updatedMap)
                         }
                     }.onFailure { error ->
+                        if (error is CancellationException) throw error
                         // 作者 long：核心切换已经成功时仍显示真实核心状态，但明确提示持久化失败，
                         // 避免用户误以为进程重建后仍会恢复本次选择。
                         mutableErrors.emit(error.message ?: "保存代理选择失败")
                     }
+                    // 作者 long：持久化可能让出执行权，切配置后不能把旧节点快照写回新页面。
+                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
                         selectedMap = updatedMap,
+                        unfoldSet = currentProfileUnfoldSet(),
                         delayResults = retainDelayResults(
                             snapshot.groups,
                             mutableState.value.delayResults,
@@ -352,6 +371,7 @@ class ProxyGroupsViewModel @Inject constructor(
                     )
                 }
                 .onFailure { error ->
+                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onFailure
                     mutableState.value = mutableState.value.copy(switchingGroup = null)
                     mutableErrors.emit(error.message ?: "切换代理失败")
                 }
@@ -385,6 +405,7 @@ class ProxyGroupsViewModel @Inject constructor(
     fun testDelay(group: ProxyGroupInfo, proxyName: String) {
         if (mutableState.value.batchTestingGroup != null) return
         val key = ProxyDelayKey(group.name, proxyName, group.testUrl.orDefaultTestUrl())
+        val generation = profileGeneration
         if (mutableState.value.delayResults[key]?.isTesting == true) return
         mutableState.update {
             it.copy(delayResults = it.delayResults + (key to ProxyDelayUiState(isTesting = true)))
@@ -392,6 +413,7 @@ class ProxyGroupsViewModel @Inject constructor(
         viewModelScope.launch {
             runtimeManager.testDelay(proxyName, key.testUrl)
                 .onSuccess { result ->
+                    if (generation != profileGeneration) return@onSuccess
                     mutableState.update { state ->
                         state.copy(
                             delayResults = state.delayResults + (
@@ -404,6 +426,7 @@ class ProxyGroupsViewModel @Inject constructor(
                     }
                 }
                 .onFailure { error ->
+                    if (generation != profileGeneration) return@onFailure
                     mutableState.update { state ->
                         state.copy(
                             delayResults = state.delayResults + (
@@ -430,6 +453,8 @@ class ProxyGroupsViewModel @Inject constructor(
             mutableErrors.tryEmit("当前代理组没有可测速节点")
             return
         }
+        val generation = profileGeneration
+        val profileId = profileStore.currentProfileId.value
         val keys = targets.associate { target ->
             ProxyDelayKey(group.name, target.displayName, target.request.testUrl) to
                 ProxyDelayUiState(isTesting = true)
@@ -445,6 +470,7 @@ class ProxyGroupsViewModel @Inject constructor(
             try {
                 runtimeManager.testDelayBatch(targets.map { it.request })
                     .onSuccess { results ->
+                        if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
                         val displayNames = targets.associateBy { it.request }
                         val updates = results.associate { item ->
                             val target = displayNames[item.request]
@@ -470,6 +496,8 @@ class ProxyGroupsViewModel @Inject constructor(
                         }
                     }
                     .onFailure { error ->
+                        if (error is CancellationException) throw error
+                        if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onFailure
                         val failed = keys.mapValues { (_, value) ->
                             value.copy(
                                 isTesting = false,
@@ -486,14 +514,13 @@ class ProxyGroupsViewModel @Inject constructor(
                         mutableErrors.emit(error.message ?: "批量测速失败")
                     }
             } finally {
-                mutableState.update { state ->
-                    if (state.batchTestingGroup == group.name) {
-                        state.copy(batchTestingGroup = null)
-                    } else {
-                        state
+                // 作者 long：旧任务的取消收尾不能结束新配置中同名代理组的测速。
+                if (generation == profileGeneration && profileId == profileStore.currentProfileId.value) {
+                    mutableState.update { state ->
+                        if (state.batchTestingGroup == group.name) state.copy(batchTestingGroup = null) else state
                     }
+                    groupDelayJob = null
                 }
-                groupDelayJob = null
             }
         }
     }

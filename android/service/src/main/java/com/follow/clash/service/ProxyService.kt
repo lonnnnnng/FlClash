@@ -9,6 +9,11 @@ import com.lonnnnnng.flclash.core.Core
 import com.lonnnnnng.flclash.service.modules.ServiceModules
 
 class ProxyService : Service(), ManagedService {
+    override fun onCreate() {
+        super.onCreate()
+        ServiceConfig.proxyCreated(true)
+    }
+
     private val modules = ServiceModules(this)
     private val binder = LocalBinder()
 
@@ -36,6 +41,7 @@ class ProxyService : Service(), ManagedService {
         try {
             cleanup()
         } finally {
+            ServiceConfig.proxyCreated(false)
             super.onDestroy()
         }
     }
@@ -59,9 +65,12 @@ class ProxyService : Service(), ManagedService {
 
     override fun start() {
         try {
+            ServiceConfig.updateProxyState(VpnRuntimeState.STARTING)
             modules.start()
+            ServiceConfig.updateProxyState(VpnRuntimeState.CONNECTED)
         } catch (error: Exception) {
             stop()
+            ServiceConfig.updateProxyState(VpnRuntimeState.FAILED)
             throw error
         }
     }
@@ -74,5 +83,7 @@ class ProxyService : Service(), ManagedService {
         }
     }
 
-    private fun cleanup() = modules.stop()
+    private fun cleanup() {
+        try { modules.stop() } finally { ServiceConfig.updateProxyState(VpnRuntimeState.STOPPED) }
+    }
 }

@@ -72,6 +72,21 @@ func handleGetConfig(path string) (*config.RawConfig, error) {
 	return unmarshalRawConfig(buf)
 }
 
+// 作者 long：内网卡片读取热更新后的核心状态；读取原 YAML 无法确认 allow-lan 已实际应用。
+type LanConfig struct {
+	AllowLan  bool `json:"allow-lan"`
+	MixedPort int  `json:"mixed-port"`
+}
+
+func handleGetLanConfig(_ any) (*LanConfig, error) {
+	configMu.Lock()
+	defer configMu.Unlock()
+	if currentConfig == nil {
+		return nil, errConfigNotApplied
+	}
+	return &LanConfig{AllowLan: currentConfig.General.AllowLan, MixedPort: currentConfig.General.MixedPort}, nil
+}
+
 func handleGetProxyDefinition(name string) (map[string]any, error) {
 	raw, err := handleGetConfig(runningConfigPath())
 	if err != nil {

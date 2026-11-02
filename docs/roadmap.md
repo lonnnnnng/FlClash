@@ -2,13 +2,13 @@
 
 > 文档类型：产品迁移路线图、功能矩阵、依赖图和验收门槛
 >
-> 最后核对：2026-11-01（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
+> 最后核对：2026-11-02（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 当前基线：`kotlin` 主线。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
+> 当前基线：`kotlin` 主线。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 最新验收：App JVM 146 项通过，Debug/AndroidTest 构建和 Lint 通过；Redmi 竖屏默认字号下，主流程 9 项、首页编辑 6 项、Dashboard 行为 5 项、截图 4 项共 24 项定向 UI 回归通过。九张页面/组件图已同批采集、目视查看并更新原生基线，不能据此宣称 Flutter 逐像素一致。
-> 在线验收只使用工作区外层 `AGENTS.md` 当前唯一授权链接（原第二条）。正式 Room 目前保留 1 份成功导入的真实 Profile，验收前后文件名、大小、修改时间一致；本轮没有清数据或删除真实配置。旧双链接与两份配置记录仅作历史证据。
-> 完整 Dashboard、Profiles 和 Proxy Groups UI/UX 仍为 `PARTIAL`。下一步继续主页状态/运行时间、出口 IP/质量与真实流量历史、剩余菜单和按钮；随后补 Profiles 管理菜单、导入/预览与完整结构化表单，再补 Proxy Groups 叶子协议类型、按组滚动恢复和细节视觉。Flutter 可选 VPN、服务状态、内网 IP、内存信息及持续边缘拖动滚动仍待可靠状态与行为链路。后续只验收 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
+> 最新验收：首页当前配置四项真实统计、外部 Providers 明细与 HTTP 单项更新切片完成。提交前重新执行 App 219、Service 112、Core 32、Common 31，共 394 项 JVM 单测，失败/错误/跳过均为 0；Debug/AndroidTest、Lint 与 Go 路由/出口/Provider 等定向测试通过。最近 Redmi 证据为 4 项固定界面方法、1 项正式首页停止/运行/后台/现有配置热切及真实 HTTP 规则资源更新，前后配置保护另各 1 项；本次提交核对没有重跑真机。
+> 最近真机在线验收只使用工作区外层 `AGENTS.md` 当前唯一授权链接（原第二条）。最近真机轮次开始前正式 Room 已有 2 份 Profile，结束后仍为 2 份，验收前后文件名、大小、修改时间一致；该轮没有清数据或删除真实配置。更早的双链接记录仅作历史证据。
+> 完整 Dashboard、Profiles 和 Proxy Groups UI/UX 仍为 `PARTIAL`。运行时间、30 次真实速度采样、可选内存/内网 IP/VPN、服务检测及服务出口 IP/质量首片已具备真实链路；出口 IP 停止态 DIRECT 与运行态实际代理出口已验证。服务长按排序、边缘持续滚动与服务 route hits 逐项核验复用已验收；首页出口 route hits 复用、出口质量来源全覆盖和持久缓存仍待补齐；当前配置详情已补齐四项真实统计、外部 Providers 明细和 HTTP 单项更新，详情窗口已独立于首页列表项；下一步推进 Profiles 管理菜单、导入/预览与完整结构化表单，随后 Proxy Groups 叶子协议类型、按组滚动恢复和细节视觉。持续边缘拖动滚动已完成独立真机切片。后续只验收 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
 
 这份路线图描述 KClash 从 Flutter 参考实现迁移为 Android 原生 Kotlin 应用的完整路径。它同时记录当前实现边界、功能完成度、前置依赖、验收证据和后续工作顺序。
 
@@ -52,21 +52,21 @@
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin` |
-| 远端关系 | `kotlin` 是长期主线并追踪 `origin/kotlin`；本轮为首页卡片/功能入口归属、编辑流程与唯一在线验收来源纠偏，Flutter 变更继续由 `upstream` 追踪 |
+| 远端关系 | `kotlin` 是长期主线并追踪 `origin/kotlin`；本次汇总提交首页真实状态、停止态节点管理、配置热切及 Providers 明细/更新；Flutter 变更继续由 `upstream` 追踪 |
 | 当前版本 | `versionName 0.1.0`，`versionCode 1` |
 | Gradle 工程 | 根目录 Wrapper + `app` / `core` / `service` / `common` |
 | UI 技术 | Jetpack Compose + Material 3 |
 | 状态管理 | ViewModel + StateFlow + 单向事件流 |
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
-| 核心生命周期 | `CoreRuntimeManager` 已接入启动、停止、配置应用、代理组读取、节点切换、测速和代理模式保存/应用 |
-| 单元测试 | 最新 `:app:testDebugUnitTest` 为 146 项，失败 0、错误 0、跳过 0；历史全工程 242 项仅作历史记录 |
-| 主流程真机测试 | Redmi 竖屏默认字号：MainActivity 9 项、首页编辑 6 项、Dashboard 行为 5 项和截图 4 项全部通过；覆盖退出取消/放弃/保存、重建、编辑排序、统计入口和代理选择。主流程整体仍为 `PARTIAL` |
-| Debug 构建 | `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64` 通过；Lint 0 errors、45 warnings、7 hints |
-| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `0338314cfafc8c0ce7c2cdf2ef8d2f2913dc62e4059ba5c4863de57ef2ace58f`；设备安装包与当前构建哈希一致 |
-| Debug 原生库 | APK 原生库只位于 `lib/arm64-v8a/`；AndroidTest APK SHA-256 `b2a8999e4afb59f951b54dfc3479ffd8c1e046cb1973fe71411c0cbb4f37cdf8`（无原生库），设备测试包与当前构建哈希一致 |
+| 核心生命周期 | `CoreRuntimeManager` 统一启动、停止、配置热切、停止态节点读取/选择/测速、模式、VPN/纯代理、LAN 热更新、Provider 更新与观测失效；UI 不直接调用 gomobile |
+| 单元测试 | 提交前重新执行 App 219、Service 112、Core 32、Common 31，共 394 项；失败/错误/跳过均为 0。历史 363 项只含前三模块 |
+| 主流程真机测试 | 最近 Redmi 竖屏默认字号：Provider 界面及原详情/运行态快切 4 项，正式首页 1 项覆盖停止态真实 HTTP 规则资源更新、8/90 项列表、后台与热切/恢复/停止；配置保护另各 1 项。本次提交未重跑真机，整体页面仍为 PARTIAL |
+| Debug 构建 | 提交前 test、assembleDebug、assembleDebugAndroidTest、lintDebug 通过；四模块单测另强制重新执行；Lint 0 errors、46 warnings、7 hints |
+| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `bf21d2619526594c323dc47d29ba4bf8c82fa0aabd4bb78a2a4fb247b19f4193`；本次本地重算与最近真机安装记录一致，本次未重新读取设备包 |
+| Debug 原生库 | APK 原生库仅 arm64-v8a；AndroidTest APK SHA-256 `fab7ee293e8ce2a108b5fc702d893994bb2657a8369ae8443497e0f1ef7c7a77`，无原生库；本次本地重算与最近真机安装记录一致 |
 | Release 构建 | 历史 `:app:assembleRelease :app:lintRelease` 已通过，输出为未签名预发布 APK；本轮未重建 Release，独立 release keystore 仍待发布阶段创建 |
-| 最近真机证据 | `wsvwypiz7xwslvl7`、API 36、1080×2340、字号 1.0：唯一授权 Profile 准备复用成功，验收前后 `count=1 missing=0` 且文件元数据一致；24 项定向 UI 回归通过，深浅色首页/策略组图和编辑控件已目视复核。本轮 UI 验收没有启动 VPN/Mihomo，结束时 KClash 服务条目为 0；历史真实核心与其他页面证据见下文 |
+| 最近真机证据 | Redmi API 36、1080×2340、字号 1.0：真实 HTTP 规则 Provider 单项更新、两份已有配置热切、停止后详情保持可见；恢复原配置/VPN 偏好/布局/停止态，两份原文件元数据保留；深浅色详情已目视。本次提交核对不重复设备动作 |
 
 ## 4. 目标架构图
 
@@ -88,7 +88,7 @@ flowchart TD
     BRIDGE --> VM
 ```
 
-架构目标是让 `CoreRuntimeManager` 成为唯一的核心生命周期事实来源。页面、`ProxyService` 和 `VpnService` 不各自创建或销毁 Mihomo 实例。当前代理组和测速已经遵循这条边界；VPN/TUN 仍处于基础设施存在但业务链路未完全接入的过渡状态。
+架构目标是让 `CoreRuntimeManager` 成为唯一的核心生命周期事实来源。页面、`ProxyService` 和 `VpnService` 不各自创建或销毁 Mihomo 实例。代理组、测速、VPN/TUN、纯代理和配置热切均已进入同一管理器；真实网络/权限/后台/进程恢复已有分项验收，蜂窝网络切换和完整 OEM 行为仍待补齐。
 
 ## 5. 里程碑总图
 
@@ -99,11 +99,11 @@ flowchart LR
     M2 --> M3[M3 代理组与单节点测速\nDONE-VERIFIED]
     M3 --> M4[M4 真实 VPN/TUN 连接\nPARTIAL]
     M4 --> M5[M5 运行观测\nPARTIAL]
-    M4 --> M6[M6 Profiles 高级能力\nPLANNED]
+    M4 --> M6[M6 Profiles 高级能力\nPARTIAL]
     M5 --> M7[M7 Android 平台入口\nPARTIAL]
     M6 --> M8[M8 UI/UX 完整对齐\nPARTIAL]
     M7 --> M8
-    M5 --> M9[M9 质量、签名与发布\nPLANNED]
+    M5 --> M9[M9 质量、签名与发布\nPARTIAL]
     M6 --> M9
     M8 --> M9
     M9 --> M10[持续上游同步\n持续工作]
@@ -144,7 +144,7 @@ flowchart LR
 - 配置文件原子替换写入。
 - 本地配置内容读取和基础 YAML 编辑器。
 - 远程订阅手动同步。
-- 核心运行期间阻止配置选择和编辑，避免运行输入与用户编辑内容分裂。
+- 配置选择由 CoreRuntimeManager 串行校验并热应用，停止态也加载节点；运行期间仍保护配置正文编辑。
 
 未纳入 M1 完成定义的内容：高级分区编辑；本地备份/恢复已完成首片，WebDAV 手动备份协议、Keystore 凭据、配置 UI、ZIP 仓库接入、认证失败/离线反馈和本地回环真机回归已完成；外部 WebDAV 服务验收、云端同步和完整页面级 E2E 仍待后续。订阅自动更新已完成代码、自动化验证、调度证据和当前两条授权路径的真实导入/同步回归，但周期任务等待到期后的真实自动下载仍未验证。Deep Link 基础导入及本轮冷启动、重复导入和错误反馈回归已完成。二维码图片导入已完成代码、单元测试和当前两条授权路径真机验收。
 
@@ -206,12 +206,12 @@ flowchart LR
 - `ServiceConfig` 发布 `STOPPED / STARTING / CONNECTED / FAILED` VPN 状态和失败原因。
 - `VpnService.onStartCommand()` 已进入真实 `start()`，成功建立 TUN 后才发布 `CONNECTED`。
 - `DefaultVpnOptionsProvider` 已提供 Android 手机首阶段默认 TUN 配置，并由 `CoreRuntimeManager` 注入。
-- `AndroidProxyServiceController` 已统一启动 ProxyService、VpnService，并等待 VPN 状态或 15 秒超时。
+- `AndroidProxyServiceController` 先等待 ProxyService 启动确认，启用 VPN 时再启动 VpnService 并等待 VPN 状态或 15 秒超时；关闭 VPN 时仅运行本地代理。
 - `MainActivity` 已接入 `VpnService.prepare()` 和 Activity Result 授权回调。
 - 启动失败会停止服务、清理监听器，管理器不会把失败报告为 `RUNNING`。
 - 停止时向绑定中的 `VpnService` 发送显式 stop action，再停止服务组件，避免系统绑定导致 TUN 残留。
 - `RuntimeResumeStore` 将“用户希望核心保持运行”的意图持久化到 Room；启动成功前写入，显式停止、系统撤销和启动失败时清除。
-- `KClashApplication` 在进程创建时检查恢复意图和 VPN 授权，授权有效时复用 `CoreRuntimeManager.startProxy()` 自动恢复核心。
+- `KClashApplication` 在进程创建时检查恢复意图和 VPN 选择；纯代理跳过 VPN 授权门禁，启用 VPN 且授权有效时复用 `CoreRuntimeManager.startProxy()` 恢复核心。纯代理实际杀进程恢复尚未单独验收。
 - `ProxyService` 与 `VpnService` 对系统重建传入的 `null Intent` 返回 `START_NOT_STICKY`，让 Application 先恢复进程内 `VpnOptions` 后再显式启动，避免 `START_STICKY` 服务抢跑。
 - 服务层和管理器新增失败回滚、系统撤销和撤销后重启测试；当前总计 98 项 Kotlin 单元测试通过。
 
@@ -311,7 +311,7 @@ flowchart LR
 - Deep Link 导入复用 `ProfilesViewModel.addRemote`，不在 Activity 中重复下载或写入 Profile。
 - 无效 Scheme、Host、目标协议或缺失参数会通过现有 Snackbar 错误流提示，不能创建半成品 Profile。
 - 二维码图片选择、QR 格式识别和配置链接解析已接入添加 Profile 对话框；直接 HTTP(S) 链接和四种 KClash Deep Link 统一复用同一解析器及远程订阅写入链路。
-- 核心运行期间阻止 Profile 删除；Compose 入口与 `ProfilesViewModel` 共享运行态守卫，避免当前核心继续持有已删除或被切换的配置文件。
+- 核心运行期间仍阻止 Profile 删除和正文编辑/同步；当前配置选择无论停止或运行均通过 CoreRuntimeManager 串行校验、热应用，失败回滚原选择/输入，回滚失败停止核心。
 - 自定义 Profile 新增 Rules 分区快速编辑入口；编辑器逐行校验规则类型和动作，拒绝 `SUB-RULE`，保存时只替换顶层 `rules` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 新增 Proxies 分区快速编辑入口；编辑器按 YAML 列表校验代理名称和类型，拒绝重复名称和非列表结构，保存时只替换顶层 `proxies` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 新增 Proxy Groups 分区快速编辑入口；编辑器按 YAML 列表校验代理组名称和 Flutter 支持的类型，拒绝 `relay`、重复名称和非列表结构，保存时只替换顶层 `proxy-groups` 区块并保留边界注释与其他 YAML 字段。
@@ -331,6 +331,7 @@ flowchart LR
 - 自定义 Profile 编辑器首片改为“配置概览 → Rules、Proxies、Proxy Groups、Providers、DNS、Dialers 分区入口 → 原始 YAML 高级编辑”的层级；分区按钮复用已有 ViewModel 编辑器，保存仍由对应 Repository/覆盖模型负责，输入法退出时主动收起以保持手机弹窗标题和操作可见。
 - 分区保存成功后同步父级编辑器的 YAML 正文和 Profile 元数据，避免原始 YAML 旧快照覆盖结构化修改；父级仍有未保存 YAML 时，进入分区前要求明确放弃或返回继续编辑。
 - 新建配置的未修改空草稿退出时仍删除；Rules、Proxies、Proxy Groups、Providers、DNS 或 Dialers 已持久化修改后退出则保留配置，并提供命名或保留默认名称选项。
+- 首页当前配置详情已展示最终输入与核心 Provider 四项统计、外部 Provider 明细和 HTTP 单项更新；文件类型只读，更新不持有启停锁并核对配置/会话，批量更新、编辑/侧载和资源订阅用量仍待补齐。
 
 ### 2026-10-27：Profile DNS Overrides 切片
 
@@ -406,14 +407,14 @@ flowchart LR
 
 - Tab/List 双布局、横向分组切换、节点网格、搜索、单节点/批量测速、刷新、Profile 当前组记忆和 List 三种图标样式。
 - 工具菜单排序、网格密度、卡片尺寸、隐藏超时节点、Tab 当前节点定位及应用级偏好保存；切换失败保留此前的 Profile 映射。
-- Dashboard 代理组摘要与选择弹层：Rule 过滤 hidden、Global 展示全部、Direct 空态；连续选节点不关闭，复用正式代理页偏好并隔离搜索状态。
+- Dashboard 节点弹层的键盘首排可见性和测速入口已完成切片；有效配置加载后，停止态/运行态均可显示节点、切换和测速。
+- Dashboard 代理组摘要与选择弹层：Rule/Direct 过滤 hidden，Global 展示全部；Direct 和停止态仍可管理节点、选择和测速；连续选节点不关闭，复用正式代理页偏好并隔离搜索状态。
 
 待完成：
 
 - URLTest/Fallback 的完整计算选择与优选语义、真实核心回归；当前节点和自动恢复基础交互已完成。
 - 按组滚动位置恢复、List 组内当前节点定位、叶子节点协议类型，以及更细的卡片与组标题视觉校准。
 - 按组/测速 URL 的超时统计摘要；不使用缺失模型伪造计数。递归解析仍使用完整组图，保持 Flutter 平面列表，不新增上游没有的子组下钻。
-- Dashboard 弹层在键盘出现后的首排节点已完整可见；测速入口收进摘要行后，首排节点和测速控件均未被输入法裁切。
 - 延迟结果的跨进程持久化缓存。
 
 完成门槛：
@@ -491,7 +492,7 @@ flowchart LR
 - Dashboard 默认态字号基线文件仅保留既有历史证据；按当前验收范围不再运行横屏或大字号测试。
 - Dashboard 页面视觉还原首片：用同一主题壳层覆盖正式 MainActivity 和固定视觉宿主；核心卡使用 34dp 圆角、Flutter 手机内边距和 88dp 开关，流量统计采用上传/下载双块和 22dp 内层形状，当前配置作为首屏入口；四 Tab Dock 改为浮动圆角条和 Material 矢量图标，配置添加 FAB 仅在配置页出现。Dashboard 横向内容宽度上限 560dp，系统导航安全区由 Dock 留白，按应用代理已移入工具设置分组，电池授权已移入常规/按需连接；系统 Always-on 和订阅请求诊断仅从显式 Debug 验收入口进入。
 - Dashboard 固定宿主在 Redmi Note 8 Pro（Android 16/API 36、1080×2340，serial `wsvwypiz7xwslvl7`）验证停止/运行和深色/浅色竖屏截图；测试首次采集哈希与旧版不同，已人工检查主卡、流量块、配置卡和 Dock 的布局及按钮裁切，并写入 `docs/visual-baselines/dashboard-states-redmi-api36.sha256`。历史横屏/大字号 PNG 与哈希仅保留为既有记录，不再作为后续回归门槛。截图只证明 KClash 自身回归稳定，不声称 Flutter 引擎逐像素一致；宿主使用固定夹具，不读取 Room、系统设置、已安装应用、网络、VPN、Mihomo 核心或 `1.yaml`。
-- Dashboard 视觉边界：Flutter 当前配置入口和浮动 Dock 已还原静态层级；面板动态形变/拖拽动画暂缓；出口 IP、质量与国家信息、流量历史图在 Kotlin 尚无对应数据源，需先补可靠领域状态才能完成内容 parity。浅色目前使用项目 Material 3 色板，不等同 Flutter Material You 动态取色。
+- Dashboard 视觉边界：Flutter 当前配置入口和浮动 Dock 已还原静态层级；面板动态形变/拖拽动画暂缓；出口 IP、质量与国家代码已有正式 Bridge/Repository/ViewModel 状态；停止态 DIRECT 与运行态实际代理出口已验，质量来源全覆盖仍待验证；运行时间与真实速度历史已有正式链路，曲线滚动动效及精确视觉 parity 继续保留。浅色目前使用项目 Material 3 色板，不等同 Flutter Material You 动态取色。
 - Connections 连接详情：以安全布局实际高度实现 `9/16`、`0.9` 两档，宽度超过 600dp 时使用右侧栏，宽为窗口的 40% 并限制在 360–560dp；拖柄支持点击、拖动和无障碍展开/收起，返回/下滑/遮罩/顶栏均可关闭。正文中部起手下滑回顶时，位移与剩余惯性都不收起面板。保留本地时间、`process(uid)`、元数据、空字段隐藏、复制、反序代理链和点击快照恢复。深色默认及真实系统字体 2.0x 横竖屏四份内容基线已更新；新增浅色横竖屏与 360×640dp 实际窗口顶部/底部六份基线（`docs/visual-baselines/connections-detail-light-redmi-api36.sha256`），整屏安全区已人工检查。进出场与遮罩联动已使用可测试的临界弹簧；横屏侧栏按 Flutter 的 300ms/200ms 标准减速曲线运行，关闭中旋转不会重新入场或丢失关闭回调。19 项固定宿主回归和另 1 项真实 MainActivity 核心详情 E2E 已通过。
 - Connections 运行态摘要字号矩阵：固定单条活动连接在页面注入的 1.3x/2.0x 下验证摘要换行与截断；完整长主机名、长规则及元数据的滚动另由真实系统字体 2.0x 详情测试覆盖。详情已移除 Flutter 参考没有的独立进程路径/UID 行，模型仍保留原始字段。摘要基线记录在 `docs/visual-baselines/connections-font-scale-redmi-api36.sha256`，固定宿主不读取 Room、网络、VPN、Mihomo 核心或 `1.yaml`。
 - Observation 运行态大字号视觉首片：固定 Requests、DNS、Logs 各一条记录，在 1.3x/2.0x 下保持页签切换、字段换行和滚动可达，六个基线记录在 `docs/visual-baselines/observation-page-font-scale-redmi-api36.sha256`，不读取 Room、网络、VPN、Mihomo 核心或 `1.yaml`。
@@ -500,8 +501,9 @@ flowchart LR
 待完成：
 
 - Flutter 页面信息架构和 Android 手机导航结构对齐。
-- 主流程优先：Dashboard 当前配置详情、快切/同步和 Rule/Global/Direct 模式入口已有固定宿主、状态层与真实核心方法验证；历史 Redmi 证据曾用根目录 `1.yaml` 完成文件导入、运行态三模式切换和停止/重启后模式恢复，本轮未重复访问。Profiles 远程编辑、添加来源选择、独立表单、本地文件导入、批量链接重复反馈、自定义配置结构化保存和草稿退出命名均已有首片验证；代理组 Tab/List、列表图标、分组标题、页内节点网格、搜索、选择、测速、工具菜单、排序/过滤和当前节点定位首片已验收。下一步返回 Dashboard 完成主页统计入口与运行态切换的产品链路验收，再继续 Profiles 配置管理菜单和导入/预览，最后补 Proxy Groups 叶子协议类型、按组滚动位置恢复和更细的 Flutter 卡片/分组视觉校准。主流程完成前不恢复 Requests/DNS/Logs 的次要视觉细节。
-- Dashboard 剩余出口 IP/质量状态及真实流量历史数据能力，再据此完成内容 parity；当前停止/运行两态和深浅色竖屏视觉首片已有单设备基线。
+- 主流程优先：Dashboard 当前配置详情、快切/同步和 Rule/Global/Direct 模式入口已有固定宿主、状态层与真实核心方法验证；历史 Redmi 证据曾用根目录 `1.yaml` 完成文件导入、运行态三模式切换和停止/重启后模式恢复，本轮未重复访问。Profiles 远程编辑、添加来源选择、独立表单、本地文件导入、批量链接重复反馈、自定义配置结构化保存和草稿退出命名均已有首片验证；代理组 Tab/List、列表图标、分组标题、页内节点网格、搜索、选择、测速、工具菜单、排序/过滤和当前节点定位首片已验收。Dashboard 已补齐真实状态、配置统计/运行配置预览、运行态热切以及 Providers 明细/单项更新切片；下一步继续 Profiles 配置管理菜单和导入/预览，最后补 Proxy Groups 叶子协议类型、按组滚动位置恢复和更细的 Flutter 卡片/分组视觉校准。主流程完成前不恢复 Requests/DNS/Logs 的次要视觉细节。
+- Dashboard 出口 IP 已完成停止态 DIRECT 与运行态实际代理出口验证；质量有正式链路与固定宿主，待补质量来源全覆盖、Room 持久缓存、route hits 复用与更细内容 parity；运行时间和最近 30 次真实速度采样已通过正式 MainActivity/核心验收，停止/运行两态和深浅色竖屏截图已有单设备基线。
+- 可选服务状态真实检测及出口 IP/质量首片已验收：13 目标、10 种核心状态、单项/全部检测、启用及按钮排序、至少一项、偏好重建；前台可见自动检测前两项，详情按代理链首节点共享出口查询与质量入口，路由稳定等待与旧结果保护。整行长按排序、松手保存、边缘滚动及后台取消已验收；服务 route hits 逐项核验复用已有真实 GitHub 证据，无关选择变化保留检测时间，改变出口或网络通知强制重测。服务完整 parity 继续保留 PARTIAL，不把 Google/GitHub 真机结果推广为 13 项外部服务全部验收。
 - Profiles、Proxy、Connection、Observations 页面及其 Requests、DNS、Logs 页签的完整视觉与交互对齐；Dashboard Dock 的 Flutter 拖拽/液态动效也尚未实现。
 - 暂停项：Requests/DNS 完整页面、搜索筛选视觉校准及 DNS 真实核心清理端到端验收暂不排期；先完成首页、配置和代理组主流程后再恢复。
 - Material You 动态颜色；Dashboard 已有浅色/深色静态主题截图，但全应用主题覆盖尚未完成。
@@ -531,11 +533,11 @@ flowchart LR
 
 当前已有：
 
-- 233 项 JVM 单元测试，失败 0、错误 0、跳过 0。
+- 提交前四模块 JVM 单元测试 394 项：App 219、Service 112、Core 32、Common 31，失败/错误/跳过均为 0；此前按前三模块汇总为 363 项。
 - 2026-11-01 Requests/DNS 详情与筛选：Redmi 竖屏默认字号精确筛选 9 项全部通过，DNS 深浅色八状态新增基线，记录卡片、观测页面和连接详情既有基线一致；未运行横屏/大字号用例，未启动网络/VPN/核心。
 - 2026-10-31 连接详情面板收敛：Connections 13 项 + Observation 4 项真机回归全部通过；另 1 项显式真实核心详情 E2E 通过。覆盖非空/空元数据、复制、快照恢复、两档几何与拖动、正文中部起手保护、遮罩/返回/下滑关闭、真实系统字体 2.0x 横竖屏、浅色/小窗口和禁用系统动画，共十份详情内容截图；真实请求只识别代理连接，不读取 HTTP 响应状态/正文。
 - Debug APK 构建和 arm64 产物检查。
-- `:app:lintDebug` 已通过；当前有 36 条非阻断 Warning、3 条 Hint，错误为 0；详情高度已改为实际窗口约束，消除该处 `ConfigurationScreenWidthHeight` 提示。
+- `:app:lintDebug` 提交前核对通过，0 errors、46 warnings、7 hints；数量包括当前累计改动，不将无错误等同于无警告。
 - 既有 87 项 instrumentation 稳定基线；本轮 Profiles 定向回归 29 项通过：三状态截图 1 项、ProfilesPanel 10 项、ProfileUi 11 项、MainActivity 创建/编辑/删除及 Rules/Proxies/Proxy Groups/Providers/DNS Overrides/Dialers 7 项。横屏/大字号矩阵是历史测试记录，后续不再运行；真实 MainActivity 观测页清空/导出端到端已由 Redmi 真机操作补齐。随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，出现既有宿主失败；停用干扰应用后的复跑 XML 为 `tests=0`，未形成有效类级证据，因此不替换稳定基线。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
@@ -545,9 +547,9 @@ flowchart LR
 - 完整页面级 Compose/Instrumentation 测试仍需按 Android 手机日常使用流程补齐；已完成的覆盖包括 Access 真实宿主选择/保存/恢复、观测页停止态空态和详情交互、Proxy/Dashboard/Connections 页面状态、Profiles 三状态竖屏默认字号截图、Profiles 卡片操作菜单回归及远程批量同步仅分发 URL Profile 的断言。横屏和大字号历史用例不再列入执行计划。停用前台干扰应用后已有 87 项稳定全量基线，跨设备截图仍需继续补齐。
 - VPN 权限、TUN 停止清理、后台恢复、系统撤销 VPN、Wi‑Fi 断开恢复、进程重建和 `dumpsys connectivity` 真机测试已有证据；Wi‑Fi↔移动网络切换仍待完成。
 - 连接、请求、DNS、日志端到端测试的自动化脚本和稳定断言。
-- R8、Release 构建和 APK 签名检查。
+- 当前累计变更的 Release/R8、正式签名和安装验证；未签名 Release/R8 仅有历史本地通过记录，本次未重跑。
 - 新 release keystore。
-- GitHub Actions arm64 构建。
+- 独立 Kotlin GitHub Actions arm64 workflow 已实现，分支推送触发验证、Tag/手动输入支持未签名预发布；远端运行结果仍需独立观察。
 - Release 页面、更新日志、SHA-256 和回滚材料。
 - 上游变更后的功能矩阵和回归记录。
 
@@ -588,7 +590,7 @@ flowchart LR
 4. Requests 页面。
 5. 基础日志流。
 
-当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 覆盖竖屏系统默认字号下的空态、选中自定义配置和订阅用量三态，横屏/大字号不再作为后续测试范围。Dashboard、Connections 和 Observation 的大字号矩阵属于历史验证记录，不继续执行。Dashboard 运行态已补齐统计/诊断交互断言；首页三态控件已在 Redmi 真机根目录 `1.yaml` 配置下完成真实核心切换和停止/重启恢复，不作为外网流量分流测试证据。Connections 已补齐详情快照恢复、元数据/格式/复制、Flutter 两档高度、浅色、小窗口、底部弹簧进出场、侧栏减速进出场、关闭中重建和真实核心详情 E2E。当前下一步回到主流程：完成 Profiles 添加/导入主路径，再补 Proxy Groups 递归行为和工具入口；Connections/Requests/DNS/Logs 的细节暂不推进。当前切片不代表任一完整页面 parity。
+当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 覆盖竖屏系统默认字号下的空态、选中自定义配置和订阅用量三态，横屏/大字号不再作为后续测试范围。Dashboard、Connections 和 Observation 的大字号矩阵属于历史验证记录，不继续执行。Dashboard 运行态已补齐统计/诊断交互断言；首页三态控件已在 Redmi 真机根目录 `1.yaml` 配置下完成真实核心切换和停止/重启恢复，不作为外网流量分流测试证据。Connections 已补齐详情快照恢复、元数据/格式/复制、Flutter 两档高度、浅色、小窗口、底部弹簧进出场、侧栏减速进出场、关闭中重建和真实核心详情 E2E。当前主流程已覆盖 Profiles 添加/导入首片、Proxy Groups 递归选择与工具菜单，以及首页真实状态、统计和 Provider 更新；下一步补 Profiles 管理菜单、导入/预览剩余体验和完整结构化表单，再补 Proxy Groups 叶子协议、按组滚动恢复和视觉；Connections/Requests/DNS/Logs 的细节暂不推进。当前切片不代表任一完整页面 parity。
 
 ### N3：DNS、日志和故障诊断
 
@@ -1108,7 +1110,7 @@ flowchart LR
 4. 批量测速、搜索、缓存和结果失效。
 5. 订阅自动更新和本地 SAF 备份恢复（已完成；WebDAV 手动备份的协议、凭据存储、配置 UI、ZIP 仓库接入、认证/离线反馈和本地回环真机回归已完成，外部授权服务回归仅在具备授权条件时执行，自动云端同步明确延期且不进入首发范围）。
 
-本轮已完成 Profile 排序、Profile 名称重命名、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义、嵌套组平面叶子展示、选择映射的 Room/Runtime/ViewModel 持久化闭环、代理选择 ViewModel 页面状态流真机回归、真实 Mihomo 代理选择与核心重启保持、进程重建后的选择 UI 恢复、代理选择 Activity E2E 首片、主 Activity 配置生命周期 E2E 首片、顶层导航与观测页签状态保持、Requests/DNS/Logs 详情交互回归、订阅自动更新代码/设备调度/两条授权路径真实导入同步回归、本地 SAF 备份恢复首片、WebDAV 手动备份协议层以及 WebDAV Keystore 凭据、配置 UI、ZIP 仓库接入、认证/离线反馈和本地回环真机回归、Kotlin arm64 Tag/手动未签名预发布构建入口；外部授权 WebDAV 服务回归仅在具备授权条件时执行，自动云端同步明确延期，随后进入正式发布收尾。
+本轮已完成 Profile 排序、Profile 名称重命名、Scripts 本地资源管理、远程导入/手动同步、Profile 绑定、JavaScript 执行边界、DNS Overrides、Dialers、URLTest/Fallback computed 组基础交互和自动测速事件映射、代理组搜索和延迟结果基础失效、组级批量测速真机闭环、递归选择语义、嵌套组平面叶子展示、选择映射的 Room/Runtime/ViewModel 持久化闭环、代理选择 ViewModel 页面状态流真机回归、真实 Mihomo 代理选择与核心重启保持、进程重建后的选择 UI 恢复、代理选择 Activity E2E 首片、主 Activity 配置生命周期 E2E 首片、顶层导航与观测页签状态保持、Requests/DNS/Logs 详情交互回归、订阅自动更新代码/设备调度/两条授权路径真实导入同步回归、本地 SAF 备份恢复首片、WebDAV 手动备份协议层以及 WebDAV Keystore 凭据、配置 UI、ZIP 仓库接入、认证/离线反馈和本地回环真机回归、Kotlin arm64 Tag/手动未签名预发布构建入口；外部授权 WebDAV 服务回归仅在具备授权条件时执行，自动云端同步明确延期。当前优先补 Profiles 管理菜单、导入/预览和结构化表单，再补 Proxy Groups 叶子协议/按组滚动恢复；Providers 批量、资源编辑/侧载与订阅用量仍未完成，完整主流程未收敛前不进入正式发布。
 
 ### N5：平台入口和系统集成
 
@@ -2002,6 +2004,190 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - 连接脚本 Python 语法、帮助参数和旧索引拒绝核验通过；该核验在参数阶段结束，没有启动真实核心或设备动作。实际连接流程的过滤器收敛为精确 `Class#method`，后续只运行竖屏默认字号验收。
 - 真机已成功导入的授权 Profile 保留供后续 UI/UX 调试验收；准备入口优先复用已有记录与正文，不重复导入或删除。验收前后继续核对正式 Room ID 及文件元数据。
 - 单链接准备结果 `added=0 repaired=0 reused=1 failures=0`（`/tmp/kclash-dashboard-ownership-20261101-prepare-210913.log`）。验收前 `/tmp/kclash-dashboard-ownership-20261101-before-210919.log` 与验收后 `/tmp/kclash-dashboard-ownership-20261101-after-220848.log` 均 `OK (1 test)`、`count=1 missing=0 expected=1`，同一份真实 Profile 文件的名称、大小和修改时间保持一致。结束时服务查询为 0；保留配置继续调试，不访问已撤回来源。
+
+### 2026-11-02：Dashboard 会话运行时间与真实速度历史 — `DONE-VERIFIED`
+
+- Flutter 参考基线使用本地 `main=7fd417fb9a9a277c6a9339a8ac87f907df7c25f7`；`current_outbound.dart`、`traffic.dart`、运行状态 Provider 和 `line_chart.dart` 与该基线无差异。运行时间与出口探测相互独立，网络速度卡公开缓冲为 30 点，不引入桌面峰值文案或历史详情入口。
+- `CoreRuntimeManager` 在服务与核心监听器成功就绪后记录 `SystemClock.elapsedRealtime()`，重复启动不重置，停止、失败和 VPN 撤销清空；新进程重新启动核心即建立新会话。官方 [SystemClock](https://developer.android.com/reference/android/os/SystemClock) 正文已由 `smart-search fetch` 核实（2026-11-02），明确单调时钟包含深度休眠时间；系统校时不改变时长。
+- `MainViewModel` 独立刷新运行时间，不等待统计/连接读取；前台成功读取时追加核心原始速度，最多保留 30 点。后台与读取失败不补点，取消传播到采样协程，新会话清空旧缓冲；最近 30 次采样不等于严格最近 30 秒，历史只保留内存，不持久化。
+- 正式首页接入运行时间 `HH:mm:ss`（停止显示 `—`、超过一天继续累计小时、最大 `999:59:59`）与上下行速度曲线。曲线左侧补零仅用于绘制，使用高斯平滑、非负控制点、最低 8 KiB/s 纵轴、2dp 线条和 0.14 透明度填充；停止时速度、累计和曲线一并归零。Flutter 的额外平滑缓冲、连续滚动动效、精确几何与出口 IP/质量均不在本切片完成范围。
+- 最终命令 `./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过（`/tmp/kclash-dashboard-telemetry-20261102-final-build.log`）；App 153 项、Service 75 项，失败/错误/跳过均为 0；Lint 0 errors、45 warnings、7 hints。新增覆盖慢读取期间计时、在途取消后不追加、后台不采样、快速重启状态合并、失败读取保留历史、停止清空、30 点上限、格式和曲线极值。测试替身曾将非 suspend `stop()` 误写为 suspend，编译失败日志保留于 `/tmp/kclash-dashboard-telemetry-20261102-unit-final.log`，修正后复验通过。
+- Redmi Note 8 Pro（`wsvwypiz7xwslvl7`，API 36、`arm64-v8a`、1080×2340、字号 1.0）固定宿主 5 项行为通过（`/tmp/kclash-dashboard-telemetry-20261102-behavior-001416.log`）；五张停止/运行/系统就绪与深浅色 PNG 已采集、目视检查并更新原生基线，3 项截图方法复验通过（`/tmp/kclash-dashboard-telemetry-20261102-capture-001314.log`）。首次旧哈希的 3 项失败保留于 `/tmp/kclash-dashboard-telemetry-20261102-capture.log`，不作为 Flutter 像素一致结论。
+- 正式 `MainActivity` 真实核心测试只复用唯一授权来源已导入的当前 Profile；使用该来源受控请求并捕获非零真实样本。30 点缓冲、后台暂停、回前台时长追平、Activity 重建保留会话、停止清空全部通过；最终复验峰值 5673 bytes（`/tmp/kclash-dashboard-telemetry-20261102-live-001452.log`），首次复验峰值 1507 bytes 为前一轮证据。没有访问被撤回来源、没有生成设备 YAML 或读取/修改 `1.yaml`，没有运行横屏/大字号。
+- 配置保留前后核验均通过：`count=1 missing=0 expected=1`，同一 Profile 文件名称、大小、修改时间一致（`/tmp/kclash-dashboard-telemetry-20261102-before.log`、`/tmp/kclash-dashboard-telemetry-20261102-after-001632.log`）。结束时服务条目为 0；`ip link show` 被系统拒绝 `Permission denied`，改查可读 `/sys/class/net`，确认没有 `tun0`，未提升设备权限或清数据。
+- 最终 APK：App SHA-256 `663180de06afbd46e03575431b556f8aa5ec18eda26ae0501fa62c3a4956e3b1`，AndroidTest `38762943393c702d46e2394a39e489fe6219ba4df510e6f4c802fbc43ee94c8e`，均已与真机安装包比对；App 原生库仅 `arm64-v8a`，测试包无原生库。Impeccable 对改动 UI 文件检测结果为空。
+- 本切片已验收，Dashboard/Profiles/Proxy Groups 整体仍为 `PARTIAL`。下一步先接出口 IP/质量状态与详情，再补首页剩余菜单/按钮，随后继续 Profiles 管理与导入/预览、完整结构化表单和 Proxy Groups 细节；观测页次要视觉继续暂停。
+
+### 2026-11-02：Dashboard 出口 IP 与质量详情 — 运行态链路 `DONE-UNIT`，固定宿主 `DONE-VERIFIED`
+
+- 沿用本地 Flutter `main=7fd417fb9a9a277c6a9339a8ac87f907df7c25f7` 的 `service_probe.dart`、`ip_quality.dart` 和 `current_outbound.dart`。8 个出口来源、6 个质量来源及字段解析已进入独立 Repository；外部接口当前可用性未联网确认。本轮没有同步远端 main，不宣称最新上游 parity。
+- `CoreBridge` 复用 Go `outboundIp` 与 `probe`，经空代理名按 Mihomo 规则路由；专用 IP 元数据读取最多 16 KiB 正文，诊断 API 保持 `max-body=0`。响应对象字符串不包含正文或源 URL。`CoreRuntimeManager` 在网络等待前后核对运行态、本地修订和核心 epoch/route-version，外部网络等待释放启停锁，旧会话/旧路由结果拒绝发布；路由快照读取限时 3 秒。Kotlin 取消不等于 Go 请求立即取消，后者仍受自身超时控制。
+- 仅核心 RUNNING、Activity 前台且 Dashboard 可见时查询；首页每秒刷新路由快照，模式/节点/会话变化清空旧出口。回到首页先核对路由，质量查询被后台取消后可恢复；手动刷新保留已有 IP，失败提供重试。运行时间和速度历史独立于出口服务，不以探测失败改变核心状态。
+- 质量查询沿用首波 3 源、后续每秒推进波次、每源 8 秒超时。明确类型优先，推断住宅只在全部来源结束后作兜底；Tor/滥用优先标记高风险，VPN/代理标记不单独降级。成功缓存 3 天、失败 5 分钟，当前为最多 64 个 IP 的内存缓存，不保存原始响应；持久 Room 缓存留待后续。IPv4 先校验四段数值再调用地址解析，避免无效服务响应进入 DNS；拒绝主机名、私网、环回、链路本地、CGNAT 和组播。
+- 状态卡显示国家代码、IP、类型/等级、组织或 ASN；IP 详情支持质量独立刷新、来源失败状态、风险标记、复制 IP/组织/ASN 和隐藏 IP。隐藏仅遮挡画面，复制仍取实际 IP；隐藏状态为当前页面保存状态，未扩为应用全局设置。详情在停止或出口变化时关闭，旧 IP 再次出现不会自动弹回；深浅色详情已实际目视核对。
+- 自动化：App 166、Service 77、Core 22 项，失败/错误/跳过均为 0；新增 16 项覆盖八源/六源解析、错误/风险映射、波次与输家取消、缓存/强制刷新、后台恢复、旧路由丢弃、网络等待不阻塞停止及 Bridge 正文不进入日志。`build4.log` 通过全部模块单元测试，最后 UI 调整后 `build5.log` 再次通过 App 单元测试、Debug/AndroidTest 构建与 Lint（0 errors、45 warnings、7 hints）；基线测试包重建 `test-baseline-build.log` 通过，日志均以 `/tmp/kclash-outbound-20261102-` 为前缀。Go `go test . -run 'TestHandle(Probe|OutboundIp)|Test.*Route' -count=1` 通过，`go.log` 为本地回环测试证据。
+- Redmi `wsvwypiz7xwslvl7`、API 36、arm64、竖屏 1080×2340、字号 1.0：`ip-015201.log` 3 项、`behavior-015214.log` 5 项、`capture-015230.log` 3 项均通过；五张首页 PNG 与两张质量详情 PNG 已实际查看，首页原生哈希同步更新。`ip-014822.log` 的 ASN 首屏可见断言失败保留，修正为滚动可达性断言并直接展开详情后通过；`capture-014913.log` 的旧基线 3 项失败保留为预期布局变更。早期正则转义/可空访问编译失败和越界地址解析测试失败分别保留于 `build1.log`、`build2.log`，修复后通过。
+- 配置核验 `before-014719.log`（旧 telemetry 前缀）和 `after-015258.log` 均 `count=1 missing=0 expected=1`，同一文件名称、大小和修改时间相同；覆盖安装没有清数据或改真实 Profile。App SHA-256 `56ce4869b0072bfc27782530b30bee1cd5f16ce99f81f1d60ae2426e89e429c0`，AndroidTest `c19b27acca702ad6d0d3aade309ef84f7295c0eb5c9a93420886c7c915391b9a`，均与设备安装包一致；原生库只含 arm64-v8a。结束时服务为空、`/sys/class/net` 无 tun0。
+- 本轮未访问真实订阅或外部 IP 来源、未启动 VPN/Mihomo、未读取或改写 `1.yaml`、未运行横屏/大字号；实际外部 HTTP/TLS、规则分流后的出口与质量一致性仍未验收。停止态 DIRECT、Flutter route-hits 复用/settle/throttle、国旗与精确几何、质量持久缓存及隐藏偏好全局化未完成，整体 Dashboard 仍 `PARTIAL`。Impeccable 用于原生规范和目视检查；HTML/CSS detector 不适用于 Compose，不以空扫描作为原生验收证据。
+
+### 2026-11-02：Dashboard 编辑持续边缘滚动 — `DONE-VERIFIED`
+
+- 继续按本地 Flutter `main=7fd417fb9a9a277c6a9339a8ac87f907df7c25f7` 的 `lib/views/dashboard/edit.dart` 手机原位编辑交互推进。Kotlin 原实现仅在每次 `onDrag` 时滚动 18 物理像素，手指静止就停止；改为一个受拖动生命周期约束的帧循环。手指进入上下 56dp 边缘区域时按接近程度加速，最大 640dp/s，按帧时长与屏幕密度换算；长帧最多按 32ms 推进，防止恢复画面时跳屏。
+- 滚动后持续重新判断排序目标；已写入的新顺序尚未反映到 LazyColumn 坐标时暂停交换，防止旧位置触发反向交换。每次交换保留视口索引和偏移，避免列表跟随首个可见卡片 key 跳到新位置；使用官方 `LazyListState.requestScrollToItem`，正文经 `smart-search fetch` 核实：[Android API 文档](https://developer.android.com/reference/kotlin/androidx/compose/foundation/lazy/LazyListState#requestScrollToItem(kotlin.Int,kotlin.Int))。本轮没有同步远端 Flutter 分支。
+- 松手、手势取消、完成编辑、离开首页或组件销毁都会结束滚动循环；Activity `ON_STOP` 清除正在拿起的卡片，后台回来不能继续滚动或修改排序。原有整卡长按、状态卡不可移除、移除/添加位置和应用级持久化保持不变；不写入 Profile 或 YAML。
+- App JVM 169 项失败/错误/跳过均为 0；新增 3 项纯函数测试覆盖边缘方向与钳制、时间/密度速度换算、长帧保护和旧坐标不反向交换。Debug/AndroidTest 构建及 Lint 通过，Lint 0 errors、45 warnings、7 hints。命令为 `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`，最终日志 `/tmp/kclash-dashboard-edge-20261102-final-format-build.log`；Service/Core 未改动，本轮未重跑其测试。
+- Redmi `wsvwypiz7xwslvl7`、API 36、arm64、竖屏 1080×2340、系统字号 1.0：精确选择 `DashboardLayoutEditorInstrumentedTest#dashboardDragContinuesScrollingAtBottomAndStopsOnRelease`、`#dashboardDragContinuesScrollingAtTopAndStopsOnCancel`、`#dashboardEdgeDragDoesNotResumeAfterBackgroundOrEditorExit` 和既有排序/持久化/状态保护/控件 4 项，共 `OK (7 tests)`，日志 `/tmp/kclash-dashboard-edge-20261102-edge-021919.log`。最终格式整理构建覆盖安装后复验仍 `OK (7 tests)`，日志 `/tmp/kclash-dashboard-edge-20261102-edge-022654.log`。新增静止测试在两段各 200ms 帧推进间不发送移动事件，确认第二段仍前进/后退，随后松手/取消并等待，确认滚动位置和保存顺序不再变化；后台返回和完成编辑另有检查。
+- 首轮 2 项失败保留于 `device1.log`，诊断 `diagnostic-device.log` 显示排序已改变但两段滚动位置相同；修复列表 key 导致的视口重新定位后，`device3.log` 两项通过，再扩展至上述 7 项通过。前缀均为 `/tmp/kclash-dashboard-edge-20261102-`；没有删除失败记录或把修改测试等待作为修复。
+- 编辑控件 PNG `/tmp/dashboard_editor_addable_controls-20261102.png` 已实际查看；截图为滚动后的列表可视区域，顶部卡片因列表位置部分位于视口外，不作为控件裁切或 Flutter 像素一致证据。本轮未改静态首页布局，因此不更新固定首页哈希。
+- 覆盖安装前后正式 Room 均 `count=2 missing=0 expected=1`（expected=1 是原验收脚本最低门槛，并非精确数量），两份文件名称、大小、修改时间一致；本轮开始前已经有 2 份，不沿用上一轮 1 份的旧快照。本轮未创建/删除/修改 Profile，测试结束恢复原首页布局，未访问在线来源或读写根目录 `1.yaml`，未启动 VPN/Mihomo，未运行横屏/大字号；结束时服务为空、无 `tun0`。
+- 最终 App SHA-256 `336660a72db28aaeecdad7730f68e463a41a1b9cfb58d22f21750197cf4b975a`，AndroidTest `ccf56a850f77bb5b0217ebac3b62a5f173096dbe4ad4f92cc0fbf26b169acc47`；均与 Redmi 已安装包逐一核对一致。最终配置保护复验 `/tmp/kclash-dashboard-edge-20261102-after-022818.log` 为 `OK (1 test)`、`count=2 missing=0 expected=1`；服务为空、无 `tun0`，`git diff --check` 通过。
+- Dashboard 整体仍为 `PARTIAL`；本项不代表完整拖动 overlay/动效或完整 Flutter parity。下一步继续首页剩余入口核对，再转 Profiles 管理菜单、导入/预览与结构化表单，最后补 Proxy Groups 细节；Requests/DNS/Logs 次要视觉继续暂停。
+
+### 2026-11-02：停止态节点、配置热切换与真实出口 IP 联动
+
+- 配置加载与流量接管分离：有效配置通过脚本、Provider/DNS 覆盖和 Mihomo 校验后加载节点；停止态不启动监听、ProxyService 或 VPN，但可以查看、切换节点和单项/批量测速。Direct 模式仍显示非隐藏代理组。
+- 配置页和首页均允许停止/运行时切换配置；生命周期管理器串行热应用，运行服务保持。失败回滚原选择与暂存输入，恢复失败则停止服务并显示对应错误。配置切换会拒绝旧列表、旧选择保存及旧批量测速回写。
+- 首页出口在运行态按 Mihomo 当前路由查询，停止态使用独立 DIRECT；启停、配置、节点、底层网络变化使旧结果失效。首页前台失败约五秒重试、成功约一分钟复查，离开首页或后台暂停。质量仍按实际 IP 缓存，不将旧 IP 质量套到新出口。
+- 首页配置详情新增只读“运行配置”预览：运行态读取暂存输入，停止态在内存复用启动转换顺序；有界读取、切换失效，不写原 Profile。SnakeYAML loader/dumper 独立实例避免并发解析互扰。
+- 最终构建命令：根目录 Wrapper 执行 App/Service/Core 的 testDebugUnitTest、app assembleDebug、assembleDebugAndroidTest、lintDebug，参数 --no-daemon -Ptarget-platform=android-arm64。App 176、Service 82、Core 22 项通过，失败/错误/跳过 0；Lint 0 errors、45 warnings、7 hints。Go 的 TestDirectOutboundIp、TestHandleOutboundIp、TestHandleSetupConfig 定向测试通过。
+- Redmi wsvwypiz7xwslvl7（API 36、arm64、1080×2340 竖屏、字号 1.0）真实验收复用唯一授权订阅，临时第二配置只来自外层 1.yaml 原始字节。停止态节点显示/选择/正延迟 DIRECT 测速、运行中本地与订阅配置热切换、真实代理正延迟测速、GLOBAL 切实际节点、代理链与显示 IP 独立复查、停止后直连出口、停止态切配置均通过。代理 IP 与直连 IP 实际不同，仅记录 changed=true，不记录地址或节点名。
+- 原有两份 Profile 的 ID 集合、正文大小/修改时间在用例内前后核对；临时 Profile 只删除本方法刚创建的已知 ID，恢复原选择、节点映射和模式，不清数据。实际最终日志 /tmp/kclash-profile-runtime-20261102-live-034237.log；7 项 UI 日志 /tmp/kclash-profile-runtime-20261102-ui-033907.log。
+- 失败记录保留：build6 缺少测试 import；live-033145 在独立复查期间路由变化，拒绝旧结果后增加可见态失败重试；live-033726 停止前后 IPv4/IPv6 来源竞争导致旧等值断言失败，改为当前网络独立 DIRECT 来源集合核验；live-build11 的 async 作用域错误已修正。真实失败不作为通过证据。
+- 最终生产构建日志 /tmp/kclash-profile-runtime-20261102-build10.log；最终测试包/Lint 日志 /tmp/kclash-profile-runtime-20261102-live-build13.log；Go 日志 /tmp/kclash-profile-runtime-20261102-go-final.log。Debug APK SHA-256 031f67536cd9eb4c9499cc8b0341b125202988998a7452e9dd3baafee7457244；AndroidTest 4d5f9829647a3ff8a44ba81e013a31e22bb96459b7af1a6f8018297987b3296a，均与设备安装包匹配，应用原生库仅 arm64-v8a。
+- 深浅色预览和首页停止态截图已目视核对，首页三处停止态基线随真实 IP/查询空态更新；固定宿主不作为真实网络证据或 Flutter 像素一致证据。完整 Dashboard/Profiles/Proxy Groups UI/UX 仍 PARTIAL；质量来源全覆盖、持久缓存与其他 roadmap 项仍待后续切片。
+
+- 最终首页截图基线复验 3 项通过：/tmp/kclash-dashboard-edge-20261102-capture-034348.log。
+- 最终配置保护复验 /tmp/kclash-dashboard-edge-20261102-after-034535.log 通过：count=2 missing=0，文件元数据一致；结束时服务为空、无 tun0，本轮固定临时输入已移除，git diff --check 通过。
+
+
+### 2026-11-02：可选内存信息、详情与释放内存 — DONE-VERIFIED
+
+- Flutter 参考为本地 main 的 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7，读取 memory_info.dart 与 widget_registry.dart；没有同步远端分支。新增默认隐藏的内存卡，支持首页编辑添加/移除/排序和应用级布局持久化，不写 Profile 或 YAML。
+- CoreMemoryStats 严格读取非负整数 RSS、heapInuse、heapIdle、stackInuse、runtimeOther；缺字段、负数、小数和越界拒绝，合计饱和保护。Android 同进程总量直接取 RSS，应用部分为 max(0, RSS-Go分项合计)，不再把核心重复相加；详情说明 OS/Go 口径差异。
+- MemoryRuntime 统一由 CoreRuntimeManager 提供，复用现有 getMemoryStats/forceGc 协议；读取和回收串行、有界等待，不加载配置、不启停监听或服务。回收等待回执后重新读取真实统计，提示“已请求回收，内存数据已刷新”，不承诺固定回收量或数值必然下降。
+- MemoryViewModel 只在前台、首页非编辑态且卡片实际可见时约每两秒读取，卡片和详情共用一次采样；后台、离页、隐藏卡片取消刷新，恢复立即读取。成功与异常路径均拒绝取消后的旧结果；失败保留上次采样并重试，释放中防重复点击。详情完整展开并支持滚动和重建恢复。
+- App 183、Service 84、Core 23 项 JVM 测试通过，共 290 项失败/错误/跳过 0；涵盖后台慢成功/慢失败/慢回收取消、重试、防重复、共享进程口径、协议边界和运行态回收不重载配置/不启停服务。Debug/AndroidTest 构建、Lint 通过（0 errors、45 warnings、7 hints）；Go TestHandleGetMemoryStatsReportsALiveRuntime 定向测试通过。最终构建日志 /tmp/kclash-memory-20261102-final-build.log，增补服务测试 /tmp/kclash-memory-20261102-service-final.log，最终截图测试包/Lint /tmp/kclash-memory-20261102-capture-build.log，Go /tmp/kclash-memory-20261102-go.log。
+- Redmi wsvwypiz7xwslvl7、API 36、arm64、1080×2340 竖屏、字号 1.0：DashboardInstrumentedTest 两项内存交互/深浅色截图、MemoryRuntimeLiveTest 一项真实停止态数据/回收/后台/重建/布局、DashboardLayoutEditorInstrumentedTest 三项既有编辑回归共 6 项通过。最终日志 /tmp/kclash-memory-20261102-memory-041518.log、regression-041531.log、memorylive-041548.log（后两项同前缀）。实际 RSS=600170496、Go分项合计=91682969 bytes；不把测试进程占用当普通使用基准。运行中的真机内存回收本轮未启动会话验证，服务层测试已覆盖会话保持。
+- 深浅色卡片 PNG 与完整窗口详情 /tmp/memory_detail_screen_dark-20261102.png、/tmp/memory_detail_screen_light-20261102.png 已实际目视；节点截图因独立窗口偏移不作为完整详情证据。固定宿主画面不代表 Flutter 像素一致；默认首页基线未改。
+- 失败保留：初次测试 Wrapper 目录错误退出 127；build.log 的可见性控制声明顺序导致 selectedDestination 未解析，移到导航状态后修复；memory-040943.log 的失败提示不可见由面板半展开引起，改为完整展开后两次复验通过。文件前缀均为 /tmp/kclash-memory-20261102-，不以失败记录充当通过。
+- 安装前后正式 Room 均 count=2 missing=0 expected=1（expected 是旧脚本最低门槛），两份配置文件名称、大小、修改时间一致；恢复原首页布局，不清数据或创建/删除 Profile。本轮未访问唯一授权订阅、未读取或修改外层 1.yaml、未启动 VPN/ProxyService，正式首页沿用已授权的自动出口 IP 查询；没有运行横屏/大字号。最终保护日志 /tmp/kclash-memory-20261102-after-041603.log。
+- 最终 Debug APK SHA-256 52f44c0cffd4f3b46f63f106052e5db86d1b60e30499b6caf9946ac44ba6b1e6，AndroidTest 5498e6cd4d9206783aa6c9954f2cc391a1e1e34219ca5d0127bd780e54a0fc9a；均已核对安装包哈希一致，应用原生库仅 arm64-v8a。结束时服务为空、无 tun0，git diff --check 通过。
+- Dashboard 整体仍 PARTIAL；下一步继续首页可选 VPN、服务状态、内网 IP 与剩余菜单，再转 Profiles 管理菜单/导入预览/结构化表单，最后补 Proxy Groups 细节。Requests/DNS/Logs 次要视觉继续暂停。
+
+### 2026-11-02：可选内网 IP 与局域网共享 — DONE-VERIFIED
+
+- Flutter 参考为本地 main 的 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7，核对 intranet_ip.dart、common/network.dart 与网络事件刷新链路；未同步远端分支。新增默认隐藏的内网 IP 卡，支持首页编辑添加/移除/排序及应用级布局持久化。无地址与读取中禁用复制；共享关闭复制 IP，开启复制 IP:port，IPv6 端点使用方括号；显示当前 mixed-port，本轮不增加端口编辑。
+- AndroidLocalNetworkSource 使用非 VPN 网络回调和 LinkProperties 地址；Wi-Fi、以太网优先，各网络 IPv4 优先，排除环回、未指定、链路本地和组播。离屏、编辑、离开首页或后台注销回调并撤下旧地址，返回后重建；网络丢失清空对应候选，局域网无 INTERNET 仍可展示。长 IPv6 允许换行，无地址显示“无网络”，注册失败提供重试。
+- CoreRuntimeManager 统一管理局域网设置：暂存输入校验 → updateConfig 热更新 → getLanConfig 读取当前核心值 → 偏好落盘。新增 Go getLanConfig 窄接口，只返回当前 allow-lan/mixed-port；原 getConfig(path) 读取文件，不能当作热更新确认。失败恢复核心、暂存输入和偏好，恢复失败则停止服务并回显失败。停止态仅保存/加载配置，不启用监听；运行态更新保持服务和核心会话。
+- 全局共享偏好独立保存，启动、配置热切和只读预览共用覆盖逻辑；不写原始 Profile。普通开关只 patch 当前暂存输入，避免重复执行动态脚本。未配置时仍可保存选择；端口 0 或设置未读成功时不复制代理端点。读取、保存和复制错误分开；防重复提交，超时解除忙态允许重试。
+- API 依据通过 smart-search fetch 读取 Android 官方 ConnectivityManager 与 LinkProperties 正文（2026-11-02）：https://developer.android.com/reference/android/net/ConnectivityManager 和 https://developer.android.com/reference/android/net/LinkProperties 。证据 /tmp/kclash-lan-connectivitymanager.md、/tmp/kclash-lan-linkproperties.md；使用 registerNetworkCallback/unregisterNetworkCallback/getLinkAddresses，未采用已弃用的轮询 getAllNetworks。
+- App 189、Service 89、Core 24 项 JVM 共 302 项通过，失败/错误/跳过 0；覆盖候选网络过滤与优先级、IPv6 复制、前后台/断网清理、保存防重复与失败重试、超时解除、暂存与源文件边界、部分更新失败回滚、偏好落盘失败、脚本不重复执行、全局覆盖跨配置切换/重启。最终根 Wrapper 构建含三模块 testDebugUnitTest、app assembleDebug/assembleDebugAndroidTest/lintDebug，参数 --no-daemon -Ptarget-platform=android-arm64；日志 /tmp/kclash-lan-20261102-final-build.log。Lint 0 errors、45 warnings、7 hints；Go TestGetLanConfigReflectsHotUpdate、TestGetLanConfigRejectsMissingAppliedConfig、TestUpdateConfigAppliesAllowLan 通过，日志 /tmp/kclash-lan-20261102-go2.log。
+- Redmi wsvwypiz7xwslvl7、API 36、arm64、1080×2340 竖屏、系统字号 1.0：DashboardInstrumentedTest 的 intranetCardHandlesLoadingOfflineSaveFailureAndRetry、intranetCardCapturesBothThemesAndLongIpv6 共 2 项通过；IntranetIpRuntimeLiveTest 的 realAddressCopySharingHotUpdateAndLifecyclePreserveProfiles 1 项通过；既有首页编辑 3 项和 MemoryRuntimeLiveTest 1 项通过，共 7 项。最终日志 /tmp/kclash-lan-20261102-lanui-044734.log、lanlive-044743.log、regression-044757.log、memorylive-044815.log（后面均同前缀）。
+- 真实验收仅复用当前唯一授权来源已导入的 Profile；停止态地址/剪贴板、共享保存/重建/前后台、运行中开启共享可连接手机自身内网 TCP 端口、关闭连接失败、重新开启恢复，核心运行时间标记不变；不向该 TCP 连接发送外部代理目标。首页沿用既有外部出口查询。IPv6-only 真实网络、Wi-Fi↔蜂窝实际切换和另一台局域网客户端访问未验证；对应地址格式与状态切换仅有固定宿主/单元证据。
+- 深浅色 IPv4 与长 IPv6 四张卡片 PNG 已目视，路径 /tmp/intranet_card_dark-20261102.png、intranet_card_light-20261102.png、intranet_ipv6_dark-20261102.png、intranet_ipv6_light-20261102.png（后面均位于 /tmp）；完整显示且操作可达，不作为 Flutter 像素一致证据。本轮不改变默认首页固定截图基线。
+- 失败保留：初次补测试脚本 cwd 错误未写文件；build1 的三项服务测试使用了字面换行夹具，修正真实换行后通过；lanui-044035 的端口断言位于合并语义之外，改用未合并子树后两次复验通过；service-final 的新增测试未注入 JVM 时钟，报 elapsedRealtime not mocked，注入时钟后 service-final2 和最终构建通过。日志均位于 /tmp/kclash-lan-20261102-*。
+- 配置保护 before-043935 与 after-044829 均 count=2 missing=0 expected=1（expected 为旧脚本最低门槛），原两份文件名称/大小/修改时间一致，真实用例内部也核对 ID 集合及正文元数据。恢复原局域网覆盖、原布局与停止态；不清数据、不创建/删除 Profile、不读取或修改外层 1.yaml，未运行横屏/大字号；结束服务为空、无 tun0。
+- 最终 App SHA-256 98cc6dcedf84d06330c4b4a52d16de29d7363cd99d35c810514678f6488dec96，AndroidTest 3e4a084bddbc88aada887e02f1fc970fd91008da02e3753d07993744da22754f；均与设备安装包一致，应用原生库仅 arm64-v8a。git diff --check 通过。Dashboard 整体仍 PARTIAL；下一步继续可选 VPN、服务状态及首页剩余菜单，再推进 Profiles、Proxy Groups；观测页次要视觉继续暂停。
+
+### 2026-11-02：可选 VPN 与纯代理模式 — DONE-VERIFIED
+
+- Flutter 基线为本地 main 的 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7，核对 network_takeover.dart 的 VpnCard、providers/state/system.dart 的 vpnOptions 和 vpn_manager.dart 的运行中重启提示；未同步远端。卡片默认隐藏，通过编辑仪表盘添加，整行只有一个 Switch 语义；显示保存的已启用/已停用，运行中修改提供待生效说明与“重启生效”，不把启用选择冒充当前 TUN 状态。
+- VpnSettingsStore 独立保存全局选择，默认 true，不写 Profile/暂存 YAML；保存成功才更新页面，失败保持原值并允许重试。CoreRuntimeManager 区分 enabled/appliedEnabled：停止态保存不初始化核心、不启动服务；运行中保存保留会话，改回当前模式取消待生效。显式重启共用 transitionLock，等待旧服务实例退出再启动新模式；失败撤销启动、清除应用态和会话。
+- enable=false 时仅启动 ProxyService 与核心监听，不创建 VPN/TUN；ProxyService 也发布真实启动结果，不能只凭 Intent 把核心标为运行。enable=true 继续等待 VPN CONNECTED。ServiceConfig 新增两服务实例生命周期；停止同时撤销排队启动，仅向存活实例发清理 action，避免纯代理凭空创建 VPN。MainActivity、QuickActionActivity、Application 恢复入口按保存设置决定是否 prepare；重启先授权，拒绝时保留原会话，授权回调的重启动作支持 Activity 保存恢复。ADR 0008/0017、CONTEXT、项目约定已同步。
+- 官方正文通过 smart-search fetch 获取：VpnService https://developer.android.com/reference/android/net/VpnService （prepare 后再建立 VPN），Services overview https://developer.android.com/guide/components/services （stopSelf/stopService 与 onDestroy 生命周期）。证据 /tmp/kclash-vpnservice-20261102.md、/tmp/kclash-services-20261102.md，访问日期 2026-11-02。
+- 最终命令：./gradlew :service:testDebugUnitTest :app:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64。App 189、Service 93、Core 24，共 306 项通过，失败/错误/跳过 0；Lint 0 errors、45 warnings、7 hints；日志 /tmp/kclash-vpn-final2-build.log（51s）。新增服务测试覆盖保存/重建/保存失败、运行中待生效/改回取消、双向重启与启动失败清理；Go 本轮未改动、未重跑。
+- Redmi wsvwypiz7xwslvl7、Android 16/API 36、arm64、竖屏默认字号：DashboardInstrumentedTest#vpnCardShowsSavedChoicePendingRestartAndDisabledTransitions、#vpnCardCapturesBothThemesAndPendingModes 共 2 项；VpnSettingsRuntimeLiveTest#vpnChoicePersistsAndExplicitRestartSwitchesRealTunAndProxyModes 1 项；既有首页编辑 3 项、IntranetIpRuntimeLiveTest 真实共享监听 1 项，共 7 项通过。日志 /tmp/kclash-vpn-20261102-vpnui-051534.log、vpnlive-051543.log、regression-051555.log、lanlive-051612.log（后面均同前缀）。
+- 正式首页添加 VPN 卡，关闭设置并重建后保持；纯代理启动只有 ProxyService 存活、混合端口 TCP 可连接、shell 接口列表无 tun0。运行中启用不改会话、不创建 TUN；显式重启后 VPN CONNECTED 且 shell 独立确认 tun0。随后停用仍保留旧会话/TUN，显式重启后 TUN 消失且 ProxyService 继续运行；停止后两服务退出。既有共享监听热切和同一会话回归通过。纯代理 kill-process 恢复、快捷入口无授权现场、首次授权拒绝及跨设备代理请求未单独验收，不以源码适配替代现场证据。
+- /tmp/vpn_dark-20261102.png、/tmp/vpn_light-20261102.png 已目视，开关、待生效说明与重启按钮完整可读；固定宿主只证明布局，不作为 Flutter 像素一致证据。本轮不改变默认首页截图基线。
+- 失败保留：build2 因测试缺少 assertIsOn/assertIsOff 导入和截图助手名称错误而失败，修正后通过；vpnlive-051133 的应用 File.exists 读取 sysfs 误报无 tun0，改为 instrumentation shell 独立读接口后两次复验通过（另有 vpnlive-051324）。初期检索正则错误、候选测试路径不存在及文档脚本反引号解析错误均未修改目标文件。临时脚本生成器的转义警告未影响执行。失败日志保留于 /tmp。
+- 配置保护 before-051034 与 after-051626 均 count=2 missing=0 expected=1（expected 为旧脚本最低门槛），正文文件名/大小/mtime 一致；真实用例另核对 ID 集合、当前选择和元数据。仅复用已有唯一授权来源，不下载订阅、不创建/删除 Profile、不清数据、不读写外层 1.yaml；首页继续既有自动出口查询。恢复原 VPN 选择、共享覆盖、布局及停止态；结束无服务、无 tun0，未运行横屏/大字号。
+- 最终 App SHA-256 4ebeb83f641234c7f643a634b95ac4e393bae0621d5b30f115e33d97cfecf059；AndroidTest 73112c71fbb4b35ab7a8e78335057ac77dd3223e066647768722a44e86058e50；均与设备 base.apk 哈希一致，应用原生库仅 arm64-v8a，测试包无原生库。git diff --check 通过。Dashboard 整体仍 PARTIAL；下一步服务状态与首页剩余菜单，然后 Profiles 管理菜单/导入预览/结构化表单、Proxy Groups 细节。
+
+### 2026-11-02：可选服务状态真实检测首片 — DONE-VERIFIED（完整 parity 仍 PARTIAL）
+
+- 参考本地 Flutter main 的 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7，核对 service_probe.dart、service_status.dart、routed_probe.dart 与 dashboard/widgets/service_status.dart；未 fetch/merge 上游。新增默认隐藏的服务状态卡，13 个固定目标顺序沿用 Flutter，10 种状态映射中文；正常显示延迟，详情显示地区与代理链，提供单项和全部检测。管理页启用/禁用与上下移动持久化，至少保留一项，保存失败保持原值。
+- CoreBridge 接入既有 Go serviceCheck，显式传 names（禁止空列表意外全量）、停止态 DIRECT、运行态空 proxy-name 按规则；严格验证目标完整性、重复、字段类型、非负整数和路由版本，未知状态降为失败。Go 检测器未改写，继续使用固定服务端点、全局 4 槽并发、同名替换取消、超时重试与 36 秒 sweep 预算。网络等待在 CoreRuntimeManager 启停锁外，结果回写前核对本地 revision、运行状态、core epoch 和 route version；路由过期单独抛出 ServiceRouteChangedException，不冒充服务失败。
+- 前台且卡片实际可见时自动检测启用列表前两项；详情显示内存缓存，只在用户操作时检测其他目标。后台/离屏取消 Kotlin 请求，Go 已发出的请求由其自身预算结束，不声称远端立即取消。路由变化清除缓存，等待稳定 1.5 秒再自动探测；超时/失败约 5 秒重试，成功不周期全量重测。真实网络/节点/配置/会话变化采用保守清理，尚未解析 hits 做细粒度复用；服务出口 IP/质量、长按拖动排序和更细 Flutter 视觉交互仍待补齐。
+- 最终根 Wrapper：./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64；App 196、Service 96、Core 26，共 318 项，失败/错误/跳过 0。日志 /tmp/kclash-service-status-final2-build.log（前次 final-build 也通过）；Lint 0 errors、46 warnings、7 hints，新增一项为 SharedPreferences.edit 的 UseKtx 建议，显式 commit 用于失败时保持旧页面状态。Go 在 core 模块执行服务检测、服务规则和 route/probe 定向测试通过，日志 /tmp/kclash-service-status-go2.log。
+- Redmi wsvwypiz7xwslvl7、Android 16/API 36、arm64、1080×2340 竖屏、字号 1.0：DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement 与 #serviceStatusCardAndDetailsCaptureBothThemes 共 2 项；ServiceStatusRuntimeLiveTest#realDirectAndRoutedChecksAndCardSettingsPreserveProfiles 1 项；DashboardLayoutEditorInstrumentedTest 的 dashboardLayoutEditorReordersAndPersistsSectionVisibility、dashboardStatusCardCanBeDraggedAndCannotBeRemoved、dashboardEditorUsesOverlayRemovalAndLeadingAddControls 共 3 项；VpnSettingsRuntimeLiveTest#vpnChoicePersistsAndExplicitRestartSwitchesRealTunAndProxyModes 1 项，合计 7 项通过。最终日志 /tmp/kclash-service-status-20261102-serviceui-055045.log、servicelive-054909.log、regression-055101.log、vpnlive-055118.log（后面均同前缀）。
+- 正式 MainActivity 添加服务卡，停止态自动显示检测结果；启用/禁用与排序保存后重建保持，至少一项由模型与 UI 共同保护。真实停止态 Google=timeout、GitHub=available，运行态规则检测两者 available，停止后 GitHub DIRECT available；检测不启动停止态服务，运行检测保留 session。只复用已导入的唯一授权来源，不下载订阅。其余 11 个外部服务没有真实验收，不能把固定夹具或已有 Go 单测当作当前服务联通证据。
+- 深浅色六张 PNG 已目视：/tmp/services_card_dark-20261102.png、services_card_light-20261102.png、services_details_dark-20261102.png、services_details_light-20261102.png、services_manage_dark-20261102.png、services_manage_light-20261102.png（后面均位于 /tmp）。状态、加载、异常文案、开关与排序按钮可达；仅证明当前 KClash 布局，不作为 Flutter 像素一致证据。默认首页截图基线未修改。
+- 失败保留：首轮 servicelive-054408 被“出口已变化，请重新检测”拒绝，增加独立过期异常和前台等待稳定后重试保护；servicelive-054705 的预置偏好在 Activity 重建后被保留的旧 ViewModel 覆盖，修正测试显式 reloadSettings 后最终通过。最终真实 direct 观察到一次路由过期，有限重试成功，原失败未丢弃。Go 初次从仓库根运行报 cannot find main module，改到 core 模块通过；一条含括号的 rg 正则失败，改固定字符串检索；临时脚本转义警告未影响执行。相关日志均保留于 /tmp。
+- 配置保护 before-054246 与 after-055130 均 count=2 missing=0 expected=1（expected 是脚本最低门槛）；原文件名/大小/mtime 一致，真实用例另核对 ID 集合、当前选择和元数据。恢复原服务目标设置、首页布局、VPN 选择与停止态；不清数据、不创建/删除 Profile、不读写外层 1.yaml，不运行横屏/大字号。结束 dumpsys services 为空，shell 接口列表无 tun0。
+- 最终 App SHA-256 077600611a635b248744e1a83438b012ab0431c75eacf1993b385d51ad03ad20；AndroidTest b574c134c2c86b1c672f287e55a936effb3d20de27ee482323f475dfdfb3fb04；与设备安装包一致，App 原生库仅 arm64-v8a，测试包无原生库。git diff --check 通过；未提交/推送。下一步继续服务出口 IP/质量、排序交互、route hits 复用及首页剩余菜单，然后 Profiles 与 Proxy Groups；Requests/DNS/Logs 次要视觉继续暂停。
+
+### 2026-11-02：服务详情真实出口 IP 与质量入口 — DONE-VERIFIED（完整 parity 仍 PARTIAL）
+
+- 复用既有 Go outboundIp 协议，CoreBridge 显式传 proxy-name，CoreRuntimeManager.queryServiceExit 在锁内核对路由快照、锁外等待网络、回写前再次核对本地 revision/运行态/core epoch/route version。停止态只允许 DIRECT；指定节点不存在时核心返回失败，不回退直连。UI 通过 Repository/Runtime 查询，不直接调用 gomobile；没有新增核心生命周期或改写 Go 检测器。
+- 服务详情按检测结果代理链首节点查询真实出口，相同节点共享结果、最多两节点并发；只在详情可见且前台时启动，离开/后台取消 Kotlin 等待，Go 已发请求仍由自身预算结束。出口失败保留节点名并独立重试，不改变服务可用性；用户重测成功会重取 IP，以覆盖同节点轮换出口。路由变化保守清空，细粒度 route hits 复用尚未实现。
+- 点击出口 IP 在同一个弹层进入质量页，复用首页质量 Repository、来源缓存、字段、复制和隐藏规则；详情绑定点击时 IP，返回/关闭/路由变化保护迟到结果。来源实际失败才显示逐项失败，整体异常/超时显示通用错误，不捏造来源失败；隐藏偏好仅限各自入口，不声称与首页同步。
+- 最终命令：./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64。App 204、Service 98、Core 26，共 328 项，失败/错误/跳过 0；Lint 0 errors、46 warnings、7 hints。最终构建日志 /tmp/kclash-service-exit-final2-build.log。在 core 目录执行 go test . -run 'Test.*OutboundIp|Test.*NodeHits|TestRouteCheck|TestProbeAnswersCarry' -count=1 通过，日志 /tmp/kclash-service-exit-go.log。
+- Redmi wsvwypiz7xwslvl7、Android 16/API 36、arm64、1080×2340 竖屏、字号 1.0：DashboardInstrumentedTest 的 serviceExitHandlesLoadingFailureQualityRetryHideAndReturn、serviceExitAndQualityCaptureThemesAndLongIpv6 共 2 项；ServiceStatusRuntimeLiveTest#serviceExitIpAndQualityFollowDirectAndRealProxyWithoutChangingProfiles 1 项；原首页 IP 3 项、服务管理 2 项、首页编辑 3 项回归通过，合计 11 项。仅使用精确 Class#method，不运行横屏、大字号或整类 instrumentation。
+- 最终真机日志 /tmp/kclash-service-exit-20261102-exitui-061913.log、exitlive-061929.log、ip-062329.log、serviceui-062402.log、regression-062514.log（后面均同前缀）。真实 MainActivity 只启用 GitHub 验收：DIRECT 与一个测速成功的真实代理节点出口实际不同；独立 ServiceExitStore 查询复核有效公共 IP。直连质量来源 IP_LOCATE（iplocate.io），代理质量来源 IP_QUERY（ipquery.io）；复制/隐藏/显式返回和停止清除旧出口与质量页通过。相邻查询可能为 IPv4/IPv6 或轮换出口，未断言逐字相等；系统返回键未单独真机验收。
+- 深浅色长 IPv6 服务行和完整质量窗口四张 PNG 已目视：/tmp/service_exit_ipv6_dark-20261102.png、service_exit_ipv6_light-20261102.png、service_exit_quality_dark-20261102.png、service_exit_quality_light-20261102.png（后面均位于 /tmp）。质量窗口改用整窗截图，避免弹层 captureToImage 坐标偏移；示例地址只证明布局，不作为真实 IPv6 网络或 Flutter 像素一致证据。默认首页截图基线未修改。
+- 失败保留：首轮真实 exitlive-061639.log 在独立复查时遭遇 ServiceRouteChangedException，测试改为最多 3 次重新读取当前快照后复查，生产路由保护不变；最终通过。单测首次在虚拟时钟等待 stop 文件 IO 时推进到查询超时，改为服务停止回调完成受控请求，验证停止不阻塞与旧结果拒绝。初次质量节点截图偏移，最终以完整窗口重新采集并目视。
+- 安装前 before-061350 与最终 after-062613 均 count=2 missing=0 expected=1（expected 为脚本最低门槛），文件名/大小/mtime 一致；真实用例另核对 ID 集合、当前选择和元数据，finally 恢复 GLOBAL 映射、出站模式、原布局、服务/VPN 设置和停止态。只复用已导入的唯一授权来源，不下载订阅、不清数据、不创建/删除 Profile、不读写外层 1.yaml。最终 dumpsys activity services 为空，shell 接口列表无 tun0，字号 1.0。
+- 最终 App SHA-256 0fcdf3d419e156c007fbba04d9c6df78e48f40ae1bfdb80b7263bda77e2a9e0c；AndroidTest 4c8a2c3c682a215ae3ea5d108c644d0cb2cc381aeda311c48ed1a727a4b558c1；均与设备 base.apk 哈希一致，App 原生库仅 arm64-v8a，测试包无原生库。核对记录 /tmp/kclash-service-exit-artifacts-20261102.json，git diff --check 通过。未提交/推送；服务拖动排序、route hits 复用、质量全来源覆盖/持久缓存、其余服务与节点仍待补齐，下一步继续排序与缓存复用，再补首页剩余菜单，然后 Profiles、Proxy Groups；Requests/DNS/Logs 次要视觉继续暂停。
+
+### 2026-11-02：服务管理整行长按排序 — DONE-VERIFIED（完整 Dashboard 仍 PARTIAL）
+
+- 参考本地 Flutter main 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7 的 lib/views/dashboard/widgets/service_status.dart:716-769、805-834：完整目标排列与禁用集合独立，整行 ReorderableDelayedDragStartListener 长按，至少启用一项；未 fetch 或合并上游。Kotlin 管理页新增 ServiceOrderEditor，沿用现有 Material 色板和上下移动按钮，整行长按预览、拖动提示、下边缘持续滚动与松手停止已实测。
+- 视口持有手势与同一个 LazyListState，跨项排序不依赖被回收行；旧布局 key 未对齐前不重复换位，调整顺序时保持视口。复用首页按帧/密度计算的边缘滚动。仅松手后向 ServiceStatusViewModel.reorder 提交一次完整排列；取消、后台或离开丢弃预览，前台不恢复旧拿起。保存期间锁定排序/开关，失败保留旧顺序与错误反馈；缺项、重复或相同排列不写入，禁用集合不变。
+- Android 官方 Drag, swipe, and fling 与 gestures API 正文已通过 smart-search fetch 核对，访问日期 2026-11-02：https://developer.android.com/develop/ui/compose/touch-input/pointer-input/drag-swipe-fling 和 https://developer.android.com/reference/kotlin/androidx/compose/foundation/gestures/package-summary 。detectDragGesturesAfterLongPress 在长按后消费位移，onDragEnd/onDragCancel 分开处理。证据 /tmp/kclash-service-sort-gestures-20261102.md、/tmp/kclash-service-sort-longpress-20261102.md。
+- 最终根 Wrapper：./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64，通过；App 207 项 JVM，失败/错误/跳过 0，新增 3 项覆盖完整排列校验、保存失败/重试/重建和保存并发。Lint 0 errors、46 warnings、7 hints；日志 /tmp/kclash-service-sort-final-build.log。Service/Core/Go 本轮未修改、未重跑，上一轮 98/26 项仅作基线，累计 XML 报告为 331 项，不能称本轮全量重跑。
+- Redmi wsvwypiz7xwslvl7、Android 16/API 36、arm64、1080×2340 竖屏、字号 1.0：DashboardInstrumentedTest 的 serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder、serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease、serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling 共 3 项；ServiceStatusRuntimeLiveTest#serviceOrderDragPersistsAndKeepsDisabledTargetsWithoutChangingProfiles 1 项；原服务管理及截图 2 项、出口质量 2 项共 8 项精确方法通过。上边缘持续拖动、系统返回时取消、真实进程重建未单独新增验收，Activity 重建和后台取消已有本轮证据。
+- 最终日志 /tmp/kclash-service-sort-20261102-sortui-065428.log、sortlive-065513.log、serviceui-065653.log、exitui-065728.log（后面均同前缀）；不运行包含横屏/大字号的整类 instrumentation。正式页面从唯一已启用的 Google 行长按换位，独立回读真实偏好并重建页面，确认 GitHub 位于首项、Google 仍唯一启用且不可关闭。finally 恢复原偏好与布局，检查配置 ID/current/文件名/大小/mtime。固定宿主验证预览不落盘、松手一次保存、取消恢复、下边缘无移动事件仍持续滚动和后台取消。
+- 深浅色管理页完整窗口 /tmp/services_manage_dark-20261102.png、/tmp/services_manage_light-20261102.png 已目视；未拿起时沿用弹层底色，拿起时使用 tonal elevation 强调。初次浅色截图抓到上一帧详情，等待列表实际绘制后重新采集；截图只证明当前 KClash 布局，不声称 Flutter 像素一致，默认首页基线未改。
+- 失败记录保留：build2 中测试误用 openServiceDetails 辅助方法导致 AndroidTest 编译失败，改用现有 openServices；sortui-064141、064326、064449、064621 未通过，调试确认漏接 LazyColumn.state 导致长按读取空布局，接入同一状态后解决；sortui-064806 和 sortlive-064913 在取消/重建后首项离屏断言失败，保留存储断言并先滚回首项后通过。打包过程中读取 APK 导致 INSTALL_PARSE_FAILED_NO_CERTIFICATES，等待构建完成、ZIP 完整性核对后安装成功；sortui-065010 是旧测试包失败，未计入最终验收。临时 ServiceOrderDebug 日志已移除。
+- 最终 App SHA-256 e1a98948d1d7ca2a4cc97b9c25ec46b030471e2a527cc3c957cfa206801bb61e；AndroidTest f7ecda367b427fe0d9695b55de3fcefd2fa5ca579d0506926aeeae4d35d73325；均与设备 base.apk 哈希一致。App 原生库仅 arm64-v8a，测试包无原生库；记录 /tmp/kclash-service-sort-artifacts-20261102.json。不主动启动 VPN/纯代理，不下载订阅、不读写外层 1.yaml、不清数据、不创建/删除 Profile。下一步继续服务 route hits 细粒度缓存复用，再补首页剩余菜单，然后 Profiles 与 Proxy Groups；质量全来源/持久缓存和完整视觉仍待补齐。
+- 最终配置保护 /tmp/kclash-service-sort-20261102-before-064013.log 与 after-065840.log 均为 count=2 missing=0 expected=1，文件名/大小/mtime 相同；结束服务为空、shell 接口无 tun0、字号 1.0。git diff --check 通过，未提交或推送；原有工作区改动保留。
+
+### 2026-11-02：服务 route hits 逐项核验缓存复用 — DONE-VERIFIED（完整 Dashboard 仍 PARTIAL）
+
+- 核对本地 Flutter main 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7 的 lib/providers/routed_probe.dart，以及既有 Go route.go/probe.go/service_check.go 协议；未 fetch/merge 上游。Kotlin CoreServiceCheck 保留完整 hits，CoreBridge 接入 checkRoutes 和严格结果解析，CoreRuntimeManager 为唯一核验入口。任一命中损坏就放弃该服务的整项缓存复用，但不丢弃当次可显示的检测结果；held 缺项、强制类型转换、负数/非整数/溢出版本均拒绝。
+- 新增独立 serviceCacheRevision，配置、网络、局域网重载和核心生命周期变化强制失效；手动节点/模式变化以及核心自动选择变化进入逐项核验。同一 core epoch、非 timeout/failed、完整命中且核心 held=true 的服务才保留原检测时间，仅更新已核验快照；其余目标按既有可见策略重测。每次变化先隐藏旧结果，等待 1.5 秒稳定，后台不启动检测或核验。稳定等待期间的手动检测保留意图到路由就绪，离开/后台取消；仍只自动检测卡片启用列表前两项。
+- 核验在启停锁外等待，前后核对本地 revision、缓存失效计数和核心快照，取消与迟到结果不能写回。核验使用缓存原来的失效计数，避免网络变化在 UI 消费通知前被新计数掩盖。服务结果复用不包括出口 IP/质量，后者清空后按当前快照重新获取，以覆盖同节点轮换出口。仅进程内缓存，首页出口 route hits 和持久缓存仍未实现。
+- JVM 共 344 项（App 213、Service 103、Core 28）通过，失败/错误/跳过 0，本轮新增 13 项。覆盖混合 held、检测时间保留、缺失/损坏命中、核验失败/伪造结果、epoch/会话/网络强失效、自动路由变化、后台与迟到、手动等待意图、出口质量清除、停止不阻塞和版本竞争。根 Wrapper 最终完整命令为 ./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64，日志 /tmp/kclash-service-cache-final3-build.log；后续只修 instrumentation 准备/断言，测试包最终重建日志 /tmp/kclash-service-cache-testfix2-build.log，再跑 Lint /tmp/kclash-service-cache-final-lint.log，0 errors、46 warnings、7 hints。core 目录 go test . -run 'TestRouteCheck|Test.*NodeHits|TestProbeAnswersCarry' -count=1 通过，日志 /tmp/kclash-service-cache-go.log；本轮未修改 Go。
+- Redmi wsvwypiz7xwslvl7、Android 16/API 36、arm64、1080×2340 竖屏、字号 1.0，ServiceStatusRuntimeLiveTest#serviceRouteCacheReusesUnchangedExitAndRechecksChangedExitAndNetwork 通过：正式 MainActivity 用真实 GitHub 检测取得完整 hits；DIRECT 模式修改 GLOBAL 选择，独立核心核验 held=1，页面新快照保留原时间及完整结果；手动刷新、调用正式 networkChanged 通知、改 GLOBAL 模式使用测速可用的真实代理、停止均产生新检测时间，运行会话不变。网络用例验证的是正式通知处理，未实际切换 Wi-Fi/蜂窝。日志 /tmp/kclash-service-cache-20261102-cachelive-072212.log。
+- 真实出口回归 ServiceStatusRuntimeLiveTest#serviceExitIpAndQualityFollowDirectAndRealProxyWithoutChangingProfiles 1 项通过，DIRECT 与代理公共 IP 实际不同，独立出口查询通过，质量成功来源分别为 IP_LOCATE 和 IP_QUERY，复制/隐藏/返回/停止清除通过。DashboardInstrumentedTest 服务管理与主题 2 项、长按预览/边缘滚动/后台取消 3 项、服务出口质量交互及主题 2 项通过，共 9 项精确功能方法；前后配置保护另各 1 项。不运行横屏、大字号或整类 instrumentation。日志同 /tmp/kclash-service-cache-20261102- 前缀的 exitlive-072301、serviceui-072341、sortui-072420、exitui-072458；本轮未改视觉组件，截图仅为既有回归产物，未新增 Flutter 像素一致性结论。
+- 失败保留：unit2 的停止并发夹具初始为已停止状态，不执行服务停止回调，导致受控核验等待超时；改为先启动模拟运行服务，停止回调完成受控请求后验证过期拒绝。cachelive-071752 初始页面未重建，未显示服务卡片，初始等待超时；增加重建及滚动到卡片。cachelive-072011 将结果绑定切换瞬间的精确版本，15 秒等待超时；最终改为等待后续核验快照并严格比对原结果/检测时间，另加独立核心 held 核验。工具层路径遗漏与正则括号错误已改显式工作目录/固定字符串检索，未改文件；失败日志保留，不计入通过项。
+- 配置保护 before-071512 和 after-072542 均 count=2 missing=0 expected=1（expected 为脚本最低门槛），文件名/大小/mtime 相同；真实用例另核对 Profile ID 集合、当前选择及元数据。finally 恢复原 GLOBAL 映射、模式、VPN 偏好、服务设置、首页布局与停止态。只复用设备已有授权 Profile，不下载订阅、不读写外层 1.yaml、不清数据、不创建/删除 Profile。结束 dumpsys services 为空、shell 接口无 tun0、字号 1.0。
+- 最终 App SHA-256 52a8e6de30910206e74edf534e198740d7b01d3e43f81eedeb338b0fd3a1b23f，AndroidTest 89a67beceb04883020e3c4743b5a7ba83afe184355445beb02dc1505f4036ca3，均与设备 base.apk 一致；App 仅 arm64-v8a，测试包无原生库，记录 /tmp/kclash-service-cache-artifacts-20261102.json。git diff --check 通过，未提交/推送，保留原工作区改动。下一步继续首页剩余菜单和按钮，再推进 Profiles、Proxy Groups；首页出口 route hits、质量全来源/持久缓存、13 项外部服务全覆盖与完整视觉 parity 仍待补齐，Requests/DNS/Logs 次要视觉继续暂停。
+
+### 2026-11-02：首页当前配置详情真实统计 — DONE-VERIFIED（完整 Dashboard 仍 PARTIAL）
+
+- 对照本地 Flutter main 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7 的 lib/common/task.dart:89-98 与 lib/views/dashboard/widgets/profile_detail.dart:40-54、164-208：代理组/内置节点/规则按最终配置 list 数量计数，节点再加已加载 Proxy Provider 数量，Providers 只计核心外部列表；不将 GLOBAL/DIRECT、RULE-SET 展开或 Rule Provider 条目重复算作节点。本轮未 fetch/merge 上游，Go 协议未修改。
+- CoreBridge 接入既有 getExternalProviders，仅返回 CoreProviderCounts，不将名称、路径或订阅信息传入统计 UI。严格拒绝缺失字段、未知类型、重复名称、负数/非整数/字符串/溢出数量，规则 Provider 的条目数不累加节点；空数组为真实零。CoreRuntimeManager.profileStatistics 只读已加载暂存 config.yaml（上限 8 MiB），不调用配置加载、启动、脚本执行或订阅下载；配置未加载时返回受控失败，不把源文件或旧核心数量冒充当前统计。
+- 核心快照、当前 Profile、loadedConfigKey、源/脚本元数据、本地 revision 均在读取前后核对；Provider 回调和 YAML 解析在启停锁外，停止不等待统计完成，切配置或停止期间的旧结果拒绝。底层不把配置正文放入 data class/toString 或 UI；失败只显示受控文字。预览原有 2 MiB 上限保持，统计有独立的 8 MiB 读取预算。
+- 新 ProfileStatisticsViewModel/Panel，首页详情显示代理组、节点、规则、Providers 的两列统计。只在详情可见且应用前台时每 5 秒刷新；关闭、后台、Profile/配置 revision/核心状态变化清除旧数量并取消旧读取，迟到结果不能回写。加载显示省略号、失败显示破折号与重试，真实零显示 0；详情直接展开至内容高度，底部增加导航安全区，运行配置、同步和查看全部配置保持可达。同步运行态门禁未在本轮变更。
+- 本轮 JVM 共 355 项，App 217、Service 108、Core 30，失败/错误/跳过 0，新增 11 项覆盖最终脚本输出、Provider 叠加、畸形统计、空值/溢出、未加载/错误 Profile/文件竞争、停止不阻塞、前台/可见轮询、失败重试/超时、状态变化和不可取消迟到。完整构建日志 /tmp/kclash-profile-stats-final-build.log（App/Service/Core 单测、Debug、AndroidTest、Lint）；随后仅改详情展开与导航留白，App 217 项及构建/Lint 再通过，日志 /tmp/kclash-profile-stats-final3-build.log。Lint 0 errors、46 warnings、7 hints。core 目录 go test . -run 'TestExternalProvidersSkipsInlineProviders|TestLookupExternalProviderMatchesTheListedPrecedence' -count=1 通过，日志 /tmp/kclash-profile-stats-go.log。
+- Redmi wsvwypiz7xwslvl7、Android 16/API 36、arm64、1080×2340 竖屏、字号 1.0：DashboardInstrumentedTest#profileStatisticsShowsLoadingFailureRetryAndRealZeroCounts、profileStatisticsCapturesBothThemesAndKeepsProfileActionsReachable，及原详情入口、运行配置加载重试主题、运行态快切共 5 项通过；ProfileStatisticsRuntimeLiveTest#appliedProfileStatisticsFollowStoppedRunningAndHotSwitchWithoutChangingFiles 1 项通过。最终日志 /tmp/kclash-profile-stats-20261102-statsui-074920.log、statslive-074953.log；只用精确 Class#method，不运行整类/横屏/大字号。正式 MainActivity 停止态、运行态、后台返回、两份现有配置间热切与恢复原选择、停止后统计均与管理器读取一致，热切核心会话保持。真实 Provider 非零下载/热更新未另外制造现场，不能把单元叠加夹具声称为真实外部 Provider 更新验收。
+- 深浅色完整窗口 /tmp/profile_statistics_dark-20261102.png、/tmp/profile_statistics_light-20261102.png 已实际目视，四项数值、元数据、三个底部动作及导航安全区完整。初次节点 captureToImage 发生弹层坐标偏移，改整窗采集；整窗又暴露半展开初始裁切底部动作，改为直接展开和安全区后重建复验。固定夹具只证明布局，不作为真实配置数量或 Flutter 像素一致性证据；默认首页截图基线未更改。Impeccable 用于原生呈现和目视，未以 HTML/CSS 扫描代替 Compose 验收。
+- 失败记录保留：unit1 的 semantics 漏传属性块，编译报 No value passed for parameter properties；补空属性块后单测通过。final2 加安全区时遗漏 rememberModalBottomSheetState/navigationBarsPadding 导入，补导入后 final3 构建通过，未安装未完成的 APK。旧 YamlConfigCodec 路径读取失败后定位到 service/ProfileScript.kt；两个只读子代理均因工具未传任务正文而无结果，主线程完成源码核对。
+- 配置保护 before-074140 与 after-075044 均 count=2 missing=0 expected=1（expected 是脚本最低门槛），检查两份配置完整及文件名/大小/mtime 一致，真实用例另核对 ID/current 和元数据；finally 恢复原 Profile、VPN 偏好、布局及停止态，不改变模式或节点映射。只复用设备已存在授权配置，不下载订阅、不读写外层 1.yaml、不清数据、不新建/删除 Profile。最终服务为空、shell 接口无 tun0，字号 1.0。
+- 最终 App SHA-256 7bac72305bd69ac46731e5b4c452aac6150d6153f4ceba3bb2a8009e7de1fee5，AndroidTest 670c93fa3e975a4b02f2918ed2be312323385ae86c76b7bda5aea149f777ec03，与已安装 base.apk 一致；App 仅 arm64-v8a，测试包无原生库，记录 /tmp/kclash-profile-stats-artifacts-20261102.json。git diff --check 通过，未提交/推送，原有工作区改动保留。下一步补当前配置外部 Providers 明细和单项更新入口，再推进 Profiles、Proxy Groups；首页出口 route hits、质量全来源/持久缓存和完整视觉仍待补齐，观测页次要打磨继续暂停。
+
+### 2026-11-02：首页当前配置外部 Providers 明细与 HTTP 单项更新
+
+- 当前切片 DONE-VERIFIED。参考本地 Flutter main 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7 的 lib/views/proxies/providers.dart，以及现有 Go 外部 Provider 协议；本轮未 fetch/merge 上游。详情新增名称、代理/规则类型、条目数、来源类型和更新时间，HTTP 类型提供单项更新，文件及其他类型只读；加载、失败重试、真实空态、更新中、失败后重试和成功反馈均接入。批量更新、资源编辑/侧载、订阅用量和完整 Providers parity 继续 PARTIAL。
+- CoreBridge 的明细模型不包含路径、订阅正文或订阅信息；复用严格数量校验，校验必需元数据，兼容 API 24 的 RFC3339/纳秒及 Go 零时间。单项更新仅以空字符串消息判定成功，不将缺失/错误类型结果当作成功。界面只使用受控错误分类，不透传核心错误正文。
+- CoreRuntimeManager 读取前后核对 Profile、loadedConfigKey、源/脚本元数据、revision 和核心路由版本。下载在启停锁外进行，独立更新门禁一直保留到 Go 回调结束，UI 取消不能被当作网络已经停止；停止/切配置无需等待下载。新增 updateExternalProviderScoped 协议，Go 在 configMu 内核对核心/路由版本并捕获 Provider 对象，拒绝过期版本、缺失项和非 HTTP 类型；下载在 configMu 外执行，保留旧 Flutter 字符串更新协议。返回后 Kotlin 再复核配置与会话，迟到结果不能冒充另一配置成功；同一配置完成后使代理组、统计、IP/服务路由检测失效并重读。
+- Providers 每 5 秒仅在详情前台刷新；关闭、后台或换配置清除旧列表，下载独立于轮询，重复点击不重复调用。正式首页的详情窗口提升至 KClashApp 页面持有，卡片只发出打开事件，避免 LazyColumn 前一张运行卡片高度变化时回收详情宿主、留下隐藏弹层；固定宿主保留独立入口。
+- JVM 全量 363 项通过（App 219、Service 112、Core 32，新增 8 项），失败/错误/跳过均为 0；Debug/AndroidTest 和 Lint 通过，0 errors、46 warnings、7 hints。完整日志 /tmp/kclash-providers-final-build.log；修复详情持有位置后 App 单测及两包/Lint 再通过，/tmp/kclash-providers-sheet-build.log。Go 定向 TestScopedProviderUpdate、TestUpdateExternalProvider、外部列表/查找优先级通过，/tmp/kclash-providers-go.log；覆盖版本过期、文件只读、缺失、重复更新、网络错误分类和下载不持有配置锁。
+- Redmi wsvwypiz7xwslvl7、Android 16/API 36、arm64、竖屏默认字号：DashboardInstrumentedTest 精确运行 providerDetailsSupportReadOnlyUpdatesLoadingFailureRetryAndEmpty、providerDetailsCaptureThemesWithActionsReachable、原详情入口和运行态配置快切，共 4 项通过，/tmp/kclash-providers-20261102-providersui-083355.log。深浅色整窗 PNG /tmp/profile_providers_dark-20261102.png、/tmp/profile_providers_light-20261102.png 已实际目视，长名称、HTTP 更新按钮、本地只读提示与底部三项操作完整。
+- 正式 MainActivity 的 ProfileStatisticsRuntimeLiveTest#appliedProfileStatisticsFollowStoppedRunningAndHotSwitchWithoutChangingFiles 通过，/tmp/kclash-providers-20261102-statslive-083259.log：两份已有配置分别读取 8/90 项外部 Provider；停止态通过真实按钮成功更新一个已有 HTTP 规则 Provider，保持停止态；后台返回、纯代理运行、两份配置间热切、恢复原选择及停止后列表与当前核心一致，热切保持会话；不存在项被拒绝。真实 Proxy Provider 下载和运行态下载未另外执行，不把规则资源更新推广为所有 Provider 类型在线覆盖。
+- 失败记录保留：首次错误分类测试的 cause 断言未考虑协程栈恢复包装，调整为核对异常链不含原始核心错误/敏感正文；首次真机比较不同时间快照失败，随后等待固定旧快照在运行态超时，改为比较当前一致快照；后续首行/按钮在停止后不可见，几何与截图确认弹层确实隐藏，不能仅靠增加等待解决。将正式详情持有位置提升到页面后完整链路通过。相关失败日志保留为 /tmp/kclash-providers-20261102-statslive-081401.log、081628.log、081816.log、082040.log、082308.log、082528.log、082758.log；失败截图仅作本机诊断，不作为视觉基线。
+- 验收前后 MainActivity 配置保护各 1 项通过，/tmp/kclash-providers-20261102-before-081143.log、after-083429.log；两份 Profile ID/current、文件名/大小/mtime 保留，finally 恢复原选择、VPN 偏好、首页布局与停止态。最终服务记录 0、无 tun0、字号 1.0。不下载 Profile 订阅正文、不新增/删除 Profile、不清数据、不读写外层 1.yaml；真实资源更新只复用设备现有配置。
+- 最终 App SHA-256 bf21d2619526594c323dc47d29ba4bf8c82fa0aabd4bb78a2a4fb247b19f4193；AndroidTest fab7ee293e8ce2a108b5fc702d893994bb2657a8369ae8443497e0f1ef7c7a77。均与设备 base.apk 一致；App 仅 arm64-v8a，测试包无原生库，记录 /tmp/kclash-providers-artifacts-20261102.json。git diff --check 通过，未提交/推送，保留原工作区改动。下一步继续 Profiles 配置管理菜单与 Proxy Groups 剩余行为；Providers 批量/编辑/侧载、首页出口 route hits、质量全来源/持久缓存和完整视觉 parity 继续排队，观测页次要打磨继续暂停。
+
+### 2026-11-02：提交前路线图与累计改动核对
+
+- 本次汇总首页真实运行时间/速度历史、出口 IP/质量、可选内存/内网 IP/VPN/服务状态、拖动排序、服务 route hits 复用、停止态节点管理、运行态配置热切、配置预览/统计和 Providers 明细/HTTP 单项更新的累计改动。未新增产品行为；上游行为参考继续使用本地 main 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7，不合并 Flutter 主线。
+- 对照现有实现和分项验收更新页首、当前快照、架构说明、里程碑图、7.3/7.4/7.6/7.7 与 N2/N4：M6/M9 改为 PARTIAL；移除 Direct 空态、运行中禁止选择和 VPN/TUN 未接入的旧结论，标明 Providers 明细/HTTP 单项更新已完成，完整 Providers 与 UI/UX 保持 PARTIAL。当前下一步为 Profiles 管理菜单、导入/预览和结构化表单，再推进 Proxy Groups 叶子协议、按组滚动恢复和视觉；观测页次要打磨继续暂停。
+- 本次执行 ./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64，通过；随后对 :app:testDebugUnitTest、:service:testDebugUnitTest、:core:testDebugUnitTest 使用 --rerun 强制执行，再独立强制执行 :common:testDebugUnitTest。四模块合计 394 项（219/112/32/31），失败/错误/跳过均为 0；此前记录的 363 项只包含 App/Service/Core。Lint 为 0 errors、46 warnings、7 hints。当前本机日志 /tmp/kclash-submit-20261102-gradle.log、tests.log、common.log。
+- core 目录执行 go test . -run 'TestScopedProviderUpdate|TestUpdateExternalProvider|TestExternalProvidersSkipsInlineProviders|TestLookupExternalProviderMatchesTheListedPrecedence|Test.*Lan|Test.*Memory|Test.*Route|Test.*Outbound' -count=1，通过；日志 /tmp/kclash-submit-20261102-go.log。仅代表这些定向测试，不声称全 Go 测试通过。
+- 本地重新核对 Debug/AndroidTest SHA-256 与上个 Providers 真机验收节一致（bf21d261… / fab7ee29…），App 仅 arm64-v8a，测试包无原生库；本次未重新安装、重跑真机或读取设备包，未启动服务或访问真实订阅。旧 /tmp 验收文件在本次核对时已不存在，历史日志路径和设备结果只作为当时记录保留，不能据此声称本次重验设备。
+- 确认 origin/kotlin 与提交前 HEAD 一致；本次不创建 Tag 或 Release，推送会按现有 Kotlin workflow 触发验证，远端 CI 结果与本地通过分开报告。暂存前核对累计文件范围并扫描新增内容，未发现真实订阅链接、凭据、生成物或临时日志；提交前继续执行暂存差异检查。
 
 ## 12. 路线图维护规则
 

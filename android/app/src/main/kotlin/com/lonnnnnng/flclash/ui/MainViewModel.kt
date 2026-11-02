@@ -11,6 +11,7 @@ import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import com.lonnnnnng.flclash.service.CoreRuntimeStats
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticEvent
 import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +24,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -32,12 +36,34 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     val runtimeState = runtimeManager.state
     val outboundMode = runtimeManager.outboundMode
+    val vpnSettings = runtimeManager.vpnSettings
+    private val mutableVpnSaving = MutableStateFlow(false)
+    val vpnSaving = mutableVpnSaving.asStateFlow()
+
+    fun setVpnEnabled(enabled: Boolean) {
+        if (mutableVpnSaving.value) return
+        mutableVpnSaving.value = true
+        viewModelScope.launch {
+            try {
+                runtimeManager.setVpnEnabled(enabled).onFailure { reportError("无法保存 VPN 设置，请重试") }
+            } finally { mutableVpnSaving.value = false }
+        }
+    }
+
+    fun restartForVpnSettings() {
+        viewModelScope.launch {
+            runtimeManager.restartForVpnSettings().onFailure { reportError("应用 VPN 设置失败，请重新启动") }
+        }
+    }
+
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
     val errors = mutableErrors.asSharedFlow()
 
     private val mutableStats = MutableStateFlow(RuntimeStatsUiState())
     val stats = mutableStats.asStateFlow()
+    private val mutableUptimeMillis = MutableStateFlow<Long?>(null)
+    val uptimeMillis = mutableUptimeMillis.asStateFlow()
 
     private val mutableConnections = MutableStateFlow(ConnectionsUiState())
     val connections = mutableConnections.asStateFlow()
@@ -83,19 +109,35 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            combine(runtimeState, observationVisible) { state, visible -> state to visible }
-                .collectLatest { (state, visible) ->
-                    if (!shouldPollRuntimeObservation(state, visible)) {
-                        if (!state.isRunning) {
-                            mutableStats.value = RuntimeStatsUiState()
-                            mutableConnections.value = ConnectionsUiState()
-                            mutableRequests.value = RequestsUiState()
-                            mutableDns.value = DnsUiState()
-                            mutableLogs.value = LogsUiState()
-                            mutableProbe.value = ProbeUiState()
-                            mutableDiagnostic.value = DiagnosticSessionUiState()
-                        }
+            var sampledSession: Long? = null
+            combine(runtimeState, runtimeManager.runningSinceElapsedMillis, observationVisible) { state, since, visible ->
+                Triple(state, since, visible)
+            }.collectLatest { (state, since, visible) ->
+                // 作者 long：会话起点也参与订阅，快速停止再启动即使合并了状态事件，也不会沿用旧流量历史。
+                if (sampledSession != since) {
+                    mutableStats.value = RuntimeStatsUiState()
+                    sampledSession = since
+                }
+                mutableUptimeMillis.value = runtimeManager.uptimeMillis()
+                if (!shouldPollRuntimeObservation(state, visible) || since == null) {
+                    if (!state.isRunning) {
+                        mutableStats.value = RuntimeStatsUiState()
+                        mutableConnections.value = ConnectionsUiState()
+                        mutableRequests.value = RequestsUiState()
+                        mutableDns.value = DnsUiState()
+                        mutableLogs.value = LogsUiState()
+                        mutableProbe.value = ProbeUiState()
+                        mutableDiagnostic.value = DiagnosticSessionUiState()
+                    }
                     return@collectLatest
+                }
+                coroutineScope {
+                    // 作者 long：计时不等待核心统计或连接列表，慢速 JNI 读取不能让运行时间停止刷新。
+                    launch {
+                        while (isActive) {
+                            mutableUptimeMillis.value = runtimeManager.uptimeMillis()
+                            delay(STATS_REFRESH_MILLIS)
+                        }
                     }
                     while (isActive) {
                         refreshStats()
@@ -103,6 +145,7 @@ class MainViewModel @Inject constructor(
                         delay(STATS_REFRESH_MILLIS)
                     }
                 }
+            }
         }
     }
 
@@ -213,13 +256,11 @@ class MainViewModel @Inject constructor(
 
     private suspend fun refreshStats() {
         mutableStats.value = mutableStats.value.copy(isLoading = true, error = null)
-        runtimeManager.getStats()
+        val result = runtimeManager.getStats()
+        currentCoroutineContext().ensureActive()
+        result
             .onSuccess { value ->
-                mutableStats.value = RuntimeStatsUiState(
-                    traffic = value.traffic,
-                    totalTraffic = value.totalTraffic,
-                    connectionCount = value.connectionCount,
-                )
+                mutableStats.update { it.withSample(value) }
             }
             .onFailure { error ->
                 // 作者 long：统计轮询失败不能把运行状态改成停止；只在卡片上保留可解释错误，下一轮继续恢复。
@@ -288,7 +329,18 @@ data class RuntimeStatsUiState(
     val connectionCount: Int = 0,
     val isLoading: Boolean = false,
     val error: String? = null,
-)
+    val trafficHistory: List<CoreTraffic> = emptyList(),
+) {
+    // 作者 long：只追加核心读取成功的原始速度，后台和失败轮询不补零；这代表最近 30 次采样而非严格 30 秒。
+    internal fun withSample(value: CoreRuntimeStats) = copy(
+        traffic = value.traffic,
+        totalTraffic = value.totalTraffic,
+        connectionCount = value.connectionCount,
+        trafficHistory = (trafficHistory + value.traffic).takeLast(DASHBOARD_TRAFFIC_CAPACITY),
+        isLoading = false,
+        error = null,
+    )
+}
 
 data class ConnectionsUiState(
     val connections: List<CoreConnection> = emptyList(),

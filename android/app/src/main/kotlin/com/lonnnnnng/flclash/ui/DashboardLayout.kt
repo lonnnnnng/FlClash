@@ -15,6 +15,10 @@ internal enum class DashboardSection(
     PROXY_GROUPS("策略组"),
     // 作者 long：手机首页只收录 Flutter 的仪表盘卡片，系统授权、应用代理设置和验收诊断由各自页面承载。
     CONNECTION_STATS("连接统计", "实时连接、最近请求、DNS查询", visibleByDefault = false),
+    MEMORY_INFO("内存信息", "应用与核心的内存占用", visibleByDefault = false),
+    SERVICE_STATUS("服务状态", "常用服务可用性检测", visibleByDefault = false),
+    VPN("VPN", "VPN 流量接管开关", visibleByDefault = false),
+    INTRANET_IP("内网 IP", "本机地址与局域网共享", visibleByDefault = false),
 }
 
 internal data class DashboardLayoutState(

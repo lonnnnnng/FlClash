@@ -55,6 +55,39 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    @Provides fun provideServiceExitStore(repository: com.lonnnnnng.flclash.data.ServiceExitRepository): com.lonnnnnng.flclash.data.ServiceExitStore = repository
+    @Provides fun provideProfileStatisticsRuntime(manager: CoreRuntimeManager): com.lonnnnnng.flclash.service.ProfileStatisticsRuntime = manager
+    @Provides fun provideServiceStatusRuntime(manager: CoreRuntimeManager): com.lonnnnnng.flclash.service.ServiceStatusRuntime = manager
+    @Provides @Singleton fun provideServiceSettingsStore(store: com.lonnnnnng.flclash.data.AndroidServiceSettingsStore): com.lonnnnnng.flclash.data.ServiceSettingsStore = store
+
+    @Provides @Singleton
+    fun provideVpnSettingsStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.service.VpnSettingsStore =
+        com.lonnnnnng.flclash.service.SharedPreferencesVpnSettingsStore(context)
+
+    @Provides
+    fun provideLocalNetworkSource(source: com.lonnnnnng.flclash.data.AndroidLocalNetworkSource): com.lonnnnnng.flclash.data.LocalNetworkSource = source
+
+    @Provides
+    fun provideLanSharingRuntime(manager: CoreRuntimeManager): com.lonnnnnng.flclash.service.LanSharingRuntime = manager
+
+    @Provides
+    @Singleton
+    fun provideLanSharingStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.service.LanSharingStore =
+        com.lonnnnnng.flclash.service.SharedPreferencesLanSharingStore(context)
+
+    @Provides
+    fun provideMemoryRuntime(manager: CoreRuntimeManager): com.lonnnnnng.flclash.service.MemoryRuntime = manager
+
+    @Provides
+    fun provideRuntimeConfigPreviewProvider(manager: CoreRuntimeManager):
+        com.lonnnnnng.flclash.service.RuntimeConfigPreviewProvider = manager
+
+    @Provides
+    fun provideOutboundIpRuntime(manager: CoreRuntimeManager): com.lonnnnnng.flclash.service.OutboundIpRuntime = manager
+
+    @Provides
+    fun provideIpInformationStore(repository: com.lonnnnnng.flclash.data.IpInformationRepository):
+        com.lonnnnnng.flclash.data.IpInformationStore = repository
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): KClashDatabase =
@@ -195,7 +228,8 @@ object AppModule {
     @Singleton
     fun provideVpnOptionsProvider(
         accessControlSettingsProvider: AccessControlSettingsProvider,
-    ): VpnOptionsProvider = DefaultVpnOptionsProvider(accessControlSettingsProvider)
+        vpnSettingsStore: com.lonnnnnng.flclash.service.VpnSettingsStore,
+    ): VpnOptionsProvider = DefaultVpnOptionsProvider(accessControlSettingsProvider, vpnSettingsStore)
 
     @Provides
     @Singleton
@@ -233,6 +267,8 @@ object AppModule {
         runtimeDiagnosticStore: RuntimeDiagnosticStore,
         profileScriptEvaluator: ProfileScriptEvaluator,
         outboundModeStore: OutboundModeStore,
+        lanSharingStore: com.lonnnnnng.flclash.service.LanSharingStore,
+        vpnSettingsStore: com.lonnnnnng.flclash.service.VpnSettingsStore,
     ): CoreRuntimeManager = CoreRuntimeManager(
         paths = paths,
         profileProvider = profileProvider,
@@ -243,6 +279,8 @@ object AppModule {
         runtimeDiagnosticStore = runtimeDiagnosticStore,
         profileScriptEvaluator = profileScriptEvaluator,
         outboundModeStore = outboundModeStore,
+        lanSharingStore = lanSharingStore,
+        vpnSettingsStore = vpnSettingsStore,
     )
 
     @Provides

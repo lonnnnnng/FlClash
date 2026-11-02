@@ -40,7 +40,8 @@ class KClashApplication : Application() {
             runtimeManager.restoreDiagnosticHistory(markNextStartAsRestart = shouldResume)
             if (!shouldResume) return@launch
             // 作者 long：没有可交互的 Activity 时不能弹 VPN 授权页；授权失效则保留意图，等用户回到页面后重新授权。
-            if (VpnService.prepare(this@KClashApplication) != null) return@launch
+            if (runtimeManager.vpnSettings.value.enabled &&
+                VpnService.prepare(this@KClashApplication) != null) return@launch
             runtimeManager.startProxy()
         }
     }

@@ -1181,3 +1181,48 @@ func TestDumpRuleSetRejectsText(t *testing.T) {
 		t.Fatal("dumping a text rule set succeeded")
 	}
 }
+
+// 作者 long：同名资源只允许来自读到的配置版本，且下载期间不能占住配置锁。
+func TestScopedProviderUpdateChecksStampAndDoesNotHoldConfigLock(t *testing.T) {
+	const name = "scoped-fixture"
+	p := &blockingProxyProvider{fakeProxyProvider: fakeProxyProvider{name: name, vehicle: cp.HTTP}, started: make(chan struct{}, 1), release: make(chan struct{}, 1)}
+	withTunnelProviders(t, map[string]cp.ProxyProvider{name: p}, nil)
+	t.Cleanup(func() { close(p.release) })
+	epoch, version := routeStamp()
+	stale := asMethodError(handleUpdateExternalProviderScoped(ScopedProviderUpdate{Name: name, CoreEpoch: epoch + 1, RouteVersion: version}))
+	if stale.Code != "provider_stale" || p.calls.Load() != 0 {
+		t.Fatal("stale provider update was not rejected")
+	}
+	done := make(chan error, 1)
+	go func() {
+		done <- handleUpdateExternalProviderScoped(ScopedProviderUpdate{Name: name, CoreEpoch: epoch, RouteVersion: version})
+	}()
+	select {
+	case <-p.started:
+	case <-time.After(time.Second):
+		t.Fatal("scoped update did not start")
+	}
+	locked := make(chan struct{})
+	go func() { configMu.Lock(); configMu.Unlock(); close(locked) }()
+	select {
+	case <-locked:
+	case <-time.After(time.Second):
+		t.Fatal("download held config lock")
+	}
+	p.release <- struct{}{}
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestScopedProviderUpdateRejectsFileAndMissingResource(t *testing.T) {
+	p := &fakeProxyProvider{name: "file-fixture", vehicle: cp.File}
+	withTunnelProviders(t, map[string]cp.ProxyProvider{p.name: p}, nil)
+	epoch, version := routeStamp()
+	for name, code := range map[string]string{p.name: "provider_read_only", "missing-fixture": "provider_not_found"} {
+		err := asMethodError(handleUpdateExternalProviderScoped(ScopedProviderUpdate{Name: name, CoreEpoch: epoch, RouteVersion: version}))
+		if err.Code != code {
+			t.Fatalf("unexpected scoped error code: %s", err.Code)
+		}
+	}
+}

@@ -7,6 +7,16 @@ import (
 	"time"
 )
 
+func TestDirectOutboundIpDoesNotRequireAnAppliedProfile(t *testing.T) {
+	server := probeServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("ip=203.0.113.8"))
+	})
+	result := handleOutboundIp(&OutboundIpParams{ProxyName: "DIRECT", Urls: []string{server.URL}, Timeout: 2000})
+	if result.Error != "" || result.Body != "ip=203.0.113.8" {
+		t.Fatalf("direct query failed: error=%q", result.Error)
+	}
+}
+
 func TestHandleOutboundIpTakesTheFirstUsableAnswer(t *testing.T) {
 	withProbeProxies(t, "node-a")
 	slow := probeServer(t, func(w http.ResponseWriter, _ *http.Request) {
