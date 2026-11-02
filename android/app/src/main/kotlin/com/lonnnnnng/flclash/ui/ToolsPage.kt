@@ -47,6 +47,8 @@ internal fun ToolsPanel(
     onShowUnavailable: (String) -> Unit,
     onOpenDeveloper: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    onOpenBackup: () -> Unit = { onShowUnavailable("备份与恢复") },
+    onOpenScripts: () -> Unit = { onShowUnavailable("自定义资源") },
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -87,7 +89,7 @@ internal fun ToolsPanel(
                 onShowUnavailable("主题")
             }
             ToolMenuRow("备份与恢复", Icons.Outlined.Backup, "tools_item_backup") {
-                onShowUnavailable("备份与恢复")
+                onOpenBackup()
             }
             ToolMenuRow("按应用代理", Icons.Outlined.Apps, "tools_item_access") {
                 onOpenAccessControl()
@@ -96,7 +98,7 @@ internal fun ToolsPanel(
                 onShowUnavailable("高级配置")
             }
             ToolMenuRow("自定义资源", Icons.Outlined.Layers, "tools_item_resources_settings") {
-                onShowUnavailable("自定义资源")
+                onOpenScripts()
             }
             ToolMenuRow("常规", Icons.Outlined.Settings, "tools_item_general") {
                 onOpenGeneral()

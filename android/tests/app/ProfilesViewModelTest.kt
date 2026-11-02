@@ -30,6 +30,50 @@ import org.junit.Test
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
 
+    @Test fun `file editor saves name and key together and failure retains editor`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(98, "old name").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+        val store = FakeProfileStore(profile).apply { content = "original"; fileSaveFailure = IllegalStateException("write failed") }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        model.openEditor(profile)
+        advanceUntilIdle()
+        val failure = async(start = CoroutineStart.UNDISPATCHED) { model.errors.first() }
+        model.saveFileEditor(null, "fixture-key", " new name ")
+        advanceUntilIdle()
+        assertEquals("write failed", failure.await())
+        assertEquals(profile, store.profiles.value.single())
+        assertEquals(profile.id, model.editorState.value.profile?.id)
+        store.fileSaveFailure = null
+        model.saveFileEditor(null, "fixture-key", "new name")
+        advanceUntilIdle()
+        assertEquals("new name", store.profiles.value.single().label)
+        assertEquals("fixture-key", store.profiles.value.single().ageSecretKey)
+        assertNull(store.fileUpdates.single().second)
+        assertNull(model.editorState.value.profile)
+    }
+
+    @Test fun `remote extension saves provider and dns overrides without changing source`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(99, "https://example.test/sub", "remote")
+        val store = FakeProfileStore(profile).apply { content = "proxy-providers:\n  cloud:\n    type: http\n" }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        model.openProvidersEditor(profile)
+        advanceUntilIdle()
+        assertEquals(profile.id, model.providersEditorState.value.profile?.id)
+        model.saveProviders("ignored", "ignored", mapOf("cloud" to ProxyProviderOverride(interval = 300)))
+        advanceUntilIdle()
+        assertNull(store.updatedContent)
+        val afterProvider = store.profiles.value.single()
+        model.openDnsEditor(afterProvider)
+        model.saveDns(ProfileDnsOverrides(enable = true))
+        advanceUntilIdle()
+        val saved = ProfileProviderOverrides.fromJsonString(checkNotNull(store.updatedOverridesJson))
+        assertEquals(300, saved.proxyProviders["cloud"]?.interval)
+        assertEquals(true, saved.dns.enable)
+        assertNull(store.updatedContent)
+        assertTrue(store.remoteUpdateCalls.isEmpty())
+    }
+
     @Test fun `local key only save does not submit content or download`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(91, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
@@ -1089,12 +1133,12 @@ private class FakeProfileStore(
         return profile
     }
 
-    override suspend fun updateFileProfile(id: Long, ageSecretKey: String, replacement: ByteArray?, canWrite: () -> Boolean): Profile {
+    override suspend fun updateFileProfile(id: Long, ageSecretKey: String, replacement: ByteArray?, label: String?, canWrite: () -> Boolean): Profile {
         check(canWrite())
         fileSaveFailure?.let { throw it }
         fileUpdates += ageSecretKey to replacement
         if (replacement != null) content = replacement.toString(Charsets.UTF_8)
-        val updated = profiles.value.first { it.id == id }.copy(ageSecretKey = ageSecretKey)
+        val updated = profiles.value.first { it.id == id }.copy(ageSecretKey = ageSecretKey, label = label ?: profile.label)
         profiles.value = profiles.value.map { if (it.id == id) updated else it }
         return updated
     }
@@ -1128,7 +1172,9 @@ private class FakeProfileStore(
 
     override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile {
         updatedOverridesJson = overridesJson
-        return profile.copy(overridesJson = overridesJson)
+        val updated = profiles.value.first { it.id == id }.copy(overridesJson = overridesJson)
+        profiles.value = profiles.value.map { if (it.id == id) updated else it }
+        return updated
     }
 
     override suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile =

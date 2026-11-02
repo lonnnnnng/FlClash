@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -85,6 +86,7 @@ class ProfilesViewModelPanelInstrumentedTest {
             composeRule.onAllNodesWithText("编辑 未命名配置").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("编辑 未命名配置").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("allow-lan: true\n")
         composeRule.onNodeWithText("取消").performClick()
         composeRule.onNodeWithText("放弃未保存的修改？").assertIsDisplayed()
@@ -182,6 +184,7 @@ class ProfilesViewModelPanelInstrumentedTest {
             composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isEmpty()
         }
 
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content").assertTextContains("MATCH,DIRECT", substring = true)
         composeRule.onNodeWithText("取消").performClick()
         composeRule.onNodeWithText("为配置命名").assertIsDisplayed()

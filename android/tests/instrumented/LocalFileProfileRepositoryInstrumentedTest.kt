@@ -35,8 +35,9 @@ class LocalFileProfileRepositoryInstrumentedTest {
         fixture().use { f -> runBlocking {
             val before = f.row()
             val modified = f.targetFile.lastModified()
-            val updated = f.repository.updateFileProfile(f.target.id, " new-fixture \n")
+            val updated = f.repository.updateFileProfile(f.target.id, " new-fixture \n", label = " 新文件名称 ")
             assertTrue(updated.ageSecretKey == "new-fixture")
+            assertEquals("新文件名称", updated.label)
             assertEquals(before.lastUpdateAt, f.row().lastUpdateAt)
             assertEquals(modified, f.targetFile.lastModified())
             assertTrue(f.bytes.contentEquals(f.targetFile.readBytes()))
@@ -51,7 +52,7 @@ class LocalFileProfileRepositoryInstrumentedTest {
             val before = f.row()
             val modified = f.targetFile.lastModified()
             suspend fun rejected() {
-                assertTrue(runCatching { f.repository.updateFileProfile(f.target.id, "new-fixture", f.bytes) }.isFailure)
+                assertTrue(runCatching { f.repository.updateFileProfile(f.target.id, "new-fixture", f.bytes, label = "不能半保存的名称") }.isFailure)
                 assertEquals(before, f.row())
                 assertEquals(modified, f.targetFile.lastModified())
                 assertTrue(f.bytes.contentEquals(f.targetFile.readBytes()))

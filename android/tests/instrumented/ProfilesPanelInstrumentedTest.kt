@@ -144,50 +144,21 @@ class ProfilesPanelInstrumentedTest {
         composeRule.onNodeWithText("规则").assertIsDisplayed()
         composeRule.onNodeWithText("代理组").assertIsDisplayed()
         composeRule.onNodeWithText("Provider").assertIsDisplayed()
-        composeRule.onNodeWithText("原始 YAML").performScrollTo()
-        composeRule.onNodeWithText("原始 YAML").assertIsDisplayed()
-        composeRule.onNodeWithText("规则").performClick()
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("规则").performScrollTo().performClick()
         assertEquals("Rules:${profile.id}", openedSection)
     }
 
     @Test
     fun remoteProfileAutoUpdateSwitchForwardsStateChange() {
         val profile = Profile.remote(109L, "https://example.test/subscription", "远程订阅")
-        var profiles by mutableStateOf(listOf(profile))
         var changedTo: Boolean? = null
-        composeRule.setContent {
-            KClashTheme {
-                ProfilesPanel(
-                    state = ProfilesUiState(profiles = profiles, currentProfileId = profile.id),
-                    editorState = ProfileEditorUiState(),
-                    runtimeState = CoreRuntimeStatus.STOPPED,
-                    showAddDialog = false,
-                    onShowAddDialog = {},
-                    onDismissAddDialog = {},
-                    onPickFile = {},
-                    onPickQrCode = {},
-                    onAddRemote = { _, _ -> },
-                    onAddCustom = {},
-                    onSelect = {},
-                    onEdit = {},
-                    onUpdate = {},
-                    onSetAutoUpdate = { selected, enabled ->
-                        changedTo = enabled
-                        profiles = listOf(selected.copy(autoUpdate = enabled))
-                    },
-                    onCloseEditor = {},
-                    onSaveEditor = {},
-                    onDelete = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("profile_actions_selected").performClick()
-        composeRule.onNodeWithText("自动更新（开启）").assertIsDisplayed()
-        composeRule.onNodeWithTag("profile_auto_update_${profile.id}").performClick()
-
+        composeRule.setContent { KClashTheme {
+            RemoteProfileEditorDialog(profile, false, {}, { _, _, enabled, _ -> changedTo = enabled })
+        } }
+        composeRule.onNodeWithTag("remote_profile_editor_auto_update").performClick()
+        composeRule.onNodeWithText("保存").performClick()
         assertEquals(false, changedTo)
-        composeRule.onNodeWithText("远程订阅").assertIsDisplayed()
     }
 
     @Test
@@ -239,32 +210,16 @@ class ProfilesPanelInstrumentedTest {
         var restoreCount = 0
         composeRule.setContent {
             KClashTheme {
-                ProfilesPanel(
-                    state = ProfilesUiState(),
-                    editorState = ProfileEditorUiState(),
-                    runtimeState = CoreRuntimeStatus.STOPPED,
-                    showAddDialog = false,
-                    onShowAddDialog = {},
-                    onDismissAddDialog = {},
-                    onPickFile = {},
-                    onPickQrCode = {},
-                    onAddRemote = { _, _ -> },
-                    onAddCustom = {},
-                    onSelect = {},
-                    onEdit = {},
-                    onUpdate = {},
-                    onCloseEditor = {},
-                    onSaveEditor = {},
-                    onDelete = {},
-                    onExportBackup = { exportCount++ },
-                    onImportBackup = { _, _ -> restoreCount++ },
+                ProfileMaintenancePage(
+                    canRestore = true, busy = false, credentials = null, onDismiss = {},
+                    onExport = { exportCount++ }, onImport = { _, _ -> restoreCount++ },
+                    onSaveCredentials = {}, onClearCredentials = {}, onProbe = {},
+                    onUpload = { _, _ -> }, onDownload = { _, _, _ -> },
                 )
             }
         }
 
-        composeRule.onNodeWithTag("profiles_tools").performClick()
         composeRule.onNodeWithTag("backup_export").performClick()
-        composeRule.onNodeWithTag("profiles_tools").performClick()
         composeRule.onNodeWithTag("backup_restore").performClick()
         composeRule.onNodeWithText("恢复备份").assertIsDisplayed()
         composeRule.onNodeWithText("选择备份文件").performClick()
@@ -470,7 +425,9 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("profile_actions_selected").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithText("编辑").assertIsNotEnabled()
+        composeRule.onNodeWithText("删除").assertIsNotEnabled()
         composeRule.onNodeWithTag("profiles_sort").assertIsNotEnabled()
     }
 }

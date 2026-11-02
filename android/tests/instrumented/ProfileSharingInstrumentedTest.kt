@@ -46,7 +46,8 @@ class ProfileSharingInstrumentedTest {
         composeRule.onNodeWithTag("profile_selected_${file.id}", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("profile_actions_${remote.id}").performClick()
         composeRule.onNodeWithTag("profile_edit_${remote.id}").assertIsNotEnabled()
-        composeRule.onNodeWithTag("profile_rename_${remote.id}").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_rename_${remote.id}").assertDoesNotExist()
+        composeRule.onNodeWithTag("profile_extend_${remote.id}").assertIsEnabled()
     }
 
     @Test fun fileAndCustomMenusExposeOnlySupportedActions() {
@@ -60,7 +61,8 @@ class ProfileSharingInstrumentedTest {
         composeRule.onNodeWithTag("profile_actions_${custom.id}").performClick()
         composeRule.onNodeWithTag("profile_more_${custom.id}").assertDoesNotExist()
         composeRule.onNodeWithTag("profile_export_${custom.id}").assertDoesNotExist()
-        composeRule.onNodeWithTag("profile_action_proxies").assertIsEnabled()
+        composeRule.onNodeWithTag("profile_edit_${custom.id}").assertIsEnabled()
+        composeRule.onNodeWithText("高级").assertDoesNotExist()
     }
 
     @Test fun qrDialogRendersDecodableCodeInBothThemesAndCloses() {

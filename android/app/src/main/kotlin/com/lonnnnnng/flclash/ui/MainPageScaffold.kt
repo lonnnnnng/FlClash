@@ -79,6 +79,7 @@ internal fun MainPageScaffold(
     val pageColor = when (selectedDestination) {
         MainDestination.DASHBOARD -> dashboardPageColor()
         MainDestination.PROXY -> proxyPageColor()
+        MainDestination.PROFILES -> dashboardPageColor()
         else -> MaterialTheme.colorScheme.surface
     }
     Scaffold(

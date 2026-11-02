@@ -30,11 +30,13 @@ interface ProfileStore {
     suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String = ""): Profile
     suspend fun addCustomProfile(label: String): Profile
     suspend fun readLocalProfileContent(id: Long): String
+    suspend fun readProfileSourceContent(id: Long): String = readLocalProfileContent(id)
     suspend fun updateLocalProfileContent(id: Long, content: String): Profile
     suspend fun updateFileProfile(
         id: Long,
         ageSecretKey: String,
         replacement: ByteArray? = null,
+        label: String? = null,
         canWrite: () -> Boolean = { true },
     ): Profile = error("此数据源不支持本地文件设置")
     suspend fun updateProfileLabel(id: Long, label: String): Profile =
@@ -208,6 +210,14 @@ class ProfileRepository(
         profileFile(id).takeIf(File::isFile)?.readText(Charsets.UTF_8).orEmpty()
     }
 
+    override suspend fun readProfileSourceContent(id: Long): String = withContext(Dispatchers.IO) {
+        requireNotNull(profileDao.getById(id)) { "配置不存在" }
+        // 作者 long：扩展页读取目标配置自己的缓存，远程配置只读，不能借此改写订阅正文。
+        val file = profileFile(id)
+        require(file.isFile && file.length() <= MAX_PROFILE_FILE_BYTES) { "配置缓存不存在或超过 8 MiB" }
+        file.readText(Charsets.UTF_8)
+    }
+
     override suspend fun readExport(profileId: Long): ProfileExport = withContext(Dispatchers.IO) {
         val profile = requireNotNull(profileDao.getById(profileId)) { "配置不存在" }.toDomain()
         require(profile.type != ProfileType.CUSTOM) { "自定义配置不支持文件导出" }
@@ -230,6 +240,7 @@ class ProfileRepository(
         id: Long,
         ageSecretKey: String,
         replacement: ByteArray?,
+        label: String?,
         canWrite: () -> Boolean,
     ): Profile = withContext(Dispatchers.IO) {
         // 作者 long：文件恢复发生在 Room 事务退出之后，整笔保存都要串行，避免旧事务回滚覆盖另一笔已保存的正文。
@@ -237,6 +248,11 @@ class ProfileRepository(
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
             require(current.type == ProfileType.FILE) { "只有本地文件配置支持替换文件" }
             val key = ageSecretKey.trim()
+            val normalizedLabel = label?.trim() ?: current.label
+            if (label != null) {
+                require(normalizedLabel.isNotEmpty()) { "配置名称不能为空" }
+                require(normalizedLabel.length <= MAX_PROFILE_LABEL_LENGTH) { "配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符" }
+            }
             val original = if (replacement != null) snapshotLocalProfileFile(profileFile(id)) else null
             val plaintext = replacement?.let { bytes ->
                 require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
@@ -255,6 +271,8 @@ class ProfileRepository(
                     val latest = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
                     require(latest == current) { "配置已变化，请重新打开编辑器" }
                     val updated = latest.copy(
+                        // 作者 long：名称、密钥和替换文件共用同一事务，文件失败时不能只留下新名称。
+                        label = normalizedLabel,
                         ageSecretKey = key,
                         // 作者 long：只改解密密钥属于元数据调整，不下载、不重写缓存，也不伪造正文更新时间。
                         lastUpdateAt = if (plaintext == null) latest.lastUpdateAt else System.currentTimeMillis(),

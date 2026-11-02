@@ -296,6 +296,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
@@ -322,6 +323,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
@@ -330,7 +332,8 @@ class MainActivityInstrumentedTest {
 
         // 作者 long：规则编辑必须经过真实 ProfilesViewModel 和文件写回，再次打开才能验证不是只更新了对话框内存。
         openProfileActions(label)
-        composeRule.onNodeWithText("高级").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("规则").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -341,7 +344,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithText("高级").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("规则").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -370,6 +374,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保代理分区回写时要保留同一份 Profile 的其他内容。
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
@@ -377,7 +382,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithTag("profile_action_proxies").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("代理").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -388,7 +394,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithTag("profile_action_proxies").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("代理").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -417,6 +424,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保代理组分区回写时要保留同一份 Profile 的其他内容。
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
@@ -424,7 +432,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithText("代理组").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("代理组").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -435,7 +444,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithText("代理组").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("代理组").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理组 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -464,6 +474,7 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
         // 作者 long：先写入最小基础 YAML，确保 Provider 分区回写时要保留同一份 Profile 的其他内容。
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
@@ -471,7 +482,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithText("Provider").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("Provider").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Provider · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -482,7 +494,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithText("Provider").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("Provider").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Provider · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -510,13 +523,15 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
         }
         openProfileActions(label)
-        composeRule.onNodeWithText("DNS").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("DNS").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("DNS 覆盖 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -530,7 +545,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithText("DNS").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("DNS").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("DNS 覆盖 · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -560,13 +576,15 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         startCustomProfileEditor(label)
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("mixed-port: 7890\nmode: rule")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("编辑 $label").fetchSemanticsNodes().isEmpty()
         }
         openProfileActions(label)
-        composeRule.onNodeWithText("Dialers").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("Dialers").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -577,7 +595,8 @@ class MainActivityInstrumentedTest {
         }
 
         openProfileActions(label)
-        composeRule.onNodeWithText("Dialers").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("Dialers").performScrollTo().performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isNotEmpty()
         }

@@ -1,5 +1,8 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithTag
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +12,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.room.Room
@@ -121,6 +125,7 @@ class ProfilesRepositoryPanelInstrumentedTest {
         assertEquals(createdProfile.id, repository.currentProfileId.value)
         assertTrue(repository.profileFile(createdProfile.id).isFile)
 
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890")
         composeRule.onNodeWithText("保存").performClick()
         composeRule.waitUntil(5_000) {
@@ -133,12 +138,14 @@ class ProfilesRepositoryPanelInstrumentedTest {
             database.profiles().getById(createdProfile.id)?.id
         })
 
-        composeRule.onNodeWithText("高级").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
+        composeRule.onNodeWithText("编辑").performClick()
+        composeRule.onNodeWithText("规则").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("规则 YAML").performTextInput("DOMAIN,example.com,DIRECT")
-        composeRule.onNodeWithText("保存").performClick()
+        composeRule.onNodeWithTag("profile_rules_save").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isEmpty()
         }
@@ -152,7 +159,7 @@ class ProfilesRepositoryPanelInstrumentedTest {
             composeRule.onAllNodesWithText("代理 · 未命名配置").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("代理 YAML").performTextInput("- name: node\n  type: vmess")
-        composeRule.onNodeWithText("保存").performClick()
+        composeRule.onNodeWithTag("profile_proxies_save").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("代理 · 未命名配置").fetchSemanticsNodes().isEmpty()
         }
@@ -161,10 +168,11 @@ class ProfilesRepositoryPanelInstrumentedTest {
             runBlocking { repository.readLocalProfileContent(createdProfile.id) },
         )
 
+        composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("profile_actions_selected").performClick()
         composeRule.onNodeWithText("删除").performClick()
         composeRule.onNodeWithText("确定删除“未命名配置”吗？本地配置文件也会一并删除。").assertIsDisplayed()
-        composeRule.onAllNodesWithText("删除").assertCountEquals(2)
-        composeRule.onAllNodesWithText("删除")[1].performClick()
+        composeRule.onNodeWithText("删除").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("暂无配置").fetchSemanticsNodes().isNotEmpty()
         }

@@ -36,8 +36,10 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 
 ## 当前推进顺序（2026-11-03）
 
+配置页整页首版已接入独立滚动列表、选中定位、长按菜单、锚定添加来源、远程/FILE/自定义概览整页编辑及工具备份/脚本入口；FILE 名称/密钥/正文原子保存、URL/FILE DNS/Provider 覆盖已接通。App 272 项通过；设备中间失败、定向修复及 Profile 保护证据见 roadmap 同日配置页节。标准/脚本扩展模式、创建步骤和完整主题视觉仍为 PARTIAL，下一步继续整页差异与真实密文/SAF 闭环。
+
 首页真实状态、停止态节点管理、运行态配置热切、预览/统计与 Providers 明细/HTTP 单项更新已有分项验收。Profiles 分享三项、按目标 ID 只读预览、age 表单和 FILE 密钥/系统文件替换已完成切片；真实 age 密文 Android E2E、加密 SAF 与全新 Profile 导入 SAF 仍待验。URLTest/Fallback 有效核心 now、固定/恢复自动、非法节点保护，延迟 Room 缓存真实进程重建，以及排序/搜索/密度变化后的语义锚定已完成对应验收。DNS baseline 和浏览器主链路修复已提交并推送，详见 roadmap。
 
-代理页整体首版对齐已完成：单一工具栏、Tab/List、分组溢出选择、搜索清空、定位、折叠、三档卡片、独立测速和深浅主题，Redmi 精确批次 21/21 通过。整体 UI/UX 仍为 PARTIAL，下一步回到 Profiles/Dashboard 整页对齐，并补真实密文/新增导入 SAF、URLTest/Fallback 无有效 now 的真实边界和跨进程手动优选状态。代理页连续超椭圆、精确动效/焦点、节点菜单/添加本地、远程组图标，Providers 批量/编辑/侧载与质量来源全覆盖/持久缓存仍待后续；首页服务 route hits 逐项核验复用已有分项证据。
+代理页整体首版对齐已完成：单一工具栏、Tab/List、分组溢出选择、搜索清空、定位、折叠、三档卡片、独立测速和深浅主题，Redmi 精确批次 21/21 通过。整体 UI/UX 仍为 PARTIAL，下一步继续 Profiles/Dashboard 整页差异，并补真实密文/新增导入 SAF、URLTest/Fallback 无有效 now 的真实边界和跨进程手动优选状态。代理页连续超椭圆、精确动效/焦点、节点菜单/添加本地、远程组图标，Providers 批量/编辑/侧载与质量来源全覆盖/持久缓存仍待后续；首页服务 route hits 逐项核验复用已有分项证据。
 
-Requests/DNS/Logs 次要视觉暂停，正式签名和发布单独推进。当前保留一份正式授权 Profile，不沿用旧文档 Room 为空的历史状态；不清数据、不删除配置、不访问撤回源。最新构建、定向真机与文件保护证据见 roadmap 同日代理页节。
+Requests/DNS/Logs 次要视觉暂停，正式签名和发布单独推进。当前保留一份正式授权 Profile，不沿用旧文档 Room 为空的历史状态；不清数据、不删除配置、不访问撤回源。最新构建、定向真机与文件保护证据见 roadmap 同日配置页节。

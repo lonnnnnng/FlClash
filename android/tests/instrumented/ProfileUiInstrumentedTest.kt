@@ -7,8 +7,10 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextClearance
@@ -322,6 +324,7 @@ class ProfileUiInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
         composeRule.onNodeWithTag("profile_editor_content").performTextInput("\nallow-lan: true")
         composeRule.onNodeWithTag("profile_editor_scroll").performScrollToNode(hasText("规则"))
         composeRule.onNodeWithText("规则").performClick()
@@ -400,7 +403,7 @@ class ProfileUiInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("remote_profile_editor_auto_update").performClick()
-        composeRule.onNodeWithTag("remote_profile_editor_interval").assertIsNotEnabled()
+        composeRule.onNodeWithTag("remote_profile_editor_interval").assertDoesNotExist()
         composeRule.onNodeWithText("保存").performClick()
 
         assertEquals(listOf("远程配置", profile.url, false, 1_440L), saved)
@@ -549,7 +552,7 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("批量测速").performClick()
+        composeRule.onNodeWithContentDescription("批量测速").performClick()
         assertEquals("Auto", batchGroup)
         composeRule.onNodeWithTag("proxy_group_tab_Auto").assertIsDisplayed()
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").performClick()
@@ -641,7 +644,7 @@ class ProfileUiInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("profile_actions_selected").performClick()
-        for (action in listOf("编辑", "重命名", "高级", "脚本", "删除")) {
+        for (action in listOf("编辑", "重命名", "删除")) {
             composeRule.onNodeWithText(action).assertIsNotEnabled()
         }
         composeRule.onNodeWithTag("profile_preview_10").performClick()

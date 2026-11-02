@@ -1,5 +1,11 @@
 # Testing
 
+## 配置页整页首版对齐（2026-11-03）
+
+- App JVM 272 项全通过；Debug/AndroidTest/Lint 通过。构建、设备日志及 APK 哈希见 roadmap 同日配置页节。
+- Redmi 竖屏默认字号，60 项首批 56 通过、2 失败、2 跳过；焦点/键盘及按钮路径修复后，原失败的 YAML 确认、Repository 整页流程与携授权 1.yaml 参数的两项 FILE 原子保存均通过。最终 Repository/正式 MainActivity 2/2，Profile count=1/missing=0，文件元数据与 before 一致；保留失败日志，不宣称单批全绿。
+- 六态截图采集抽查，窗口等待解决叠影；测试宿主 Activity 背景和系统栏随主题切换待统一，不更新旧 Profiles 哈希基线。完整 UI 为 PARTIAL；本轮未启动核心/VPN或访问订阅，网络未重验。
+
 ## 代理页整体首版对齐（2026-11-03）
 
 - Redmi Note 8 Pro wsvwypiz7xwslvl7（API 36、arm64-v8a、1080×2340、竖屏、字号 1.0）：最终定向 21/21 通过，覆盖代理组 8、ViewModel 面板 4、协议/滚动 4、页面 parity 2、Dashboard picker 2、正式 MainActivity 1 项。

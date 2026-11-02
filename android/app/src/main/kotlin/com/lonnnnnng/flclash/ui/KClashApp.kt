@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -38,6 +39,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -133,6 +135,7 @@ import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Deselect
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.QrCodeScanner
@@ -145,6 +148,12 @@ import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.outlined.Tune
 import java.text.SimpleDateFormat
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.roundToIntRect
 import java.util.Date
 import java.util.Locale
 import kotlin.math.PI
@@ -214,6 +223,7 @@ internal fun ProfilesTopBarActions(
     canMutate: Boolean,
     onAdd: () -> Unit,
     onAction: (ProfilesToolbarAction) -> Unit,
+    onAddAnchorChanged: (IntRect) -> Unit = {},
 ) {
     if (profiles.any { it.type == ProfileType.URL }) {
         IconButton(
@@ -231,45 +241,12 @@ internal fun ProfilesTopBarActions(
             modifier = Modifier.testTag("profiles_sort"),
         ) { Icon(Icons.AutoMirrored.Outlined.Sort, contentDescription = "排序") }
     }
-    IconButton(
+    if (profiles.isNotEmpty()) IconButton(
         onClick = onAdd,
         enabled = !busy,
-        modifier = Modifier.testTag("profiles_add_fab"),
+        modifier = Modifier.testTag("profiles_add_fab")
+            .onGloballyPositioned { onAddAnchorChanged(it.boundsInWindow().roundToIntRect()) },
     ) { Icon(Icons.Outlined.Add, contentDescription = "添加配置") }
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        IconButton(
-            onClick = { expanded = true },
-            enabled = !busy,
-            modifier = Modifier.testTag("profiles_tools"),
-        ) { Icon(Icons.Outlined.MoreVert, contentDescription = "配置工具") }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text("脚本") },
-                leadingIcon = { Icon(Icons.Outlined.Code, contentDescription = null) },
-                onClick = { expanded = false; onAction(ProfilesToolbarAction.SCRIPTS) },
-            )
-            DropdownMenuItem(
-                text = { Text("WebDAV") },
-                leadingIcon = { Icon(Icons.Outlined.Sync, contentDescription = null) },
-                onClick = { expanded = false; onAction(ProfilesToolbarAction.WEBDAV) },
-                modifier = Modifier.testTag("webdav_open"),
-            )
-            DropdownMenuItem(
-                text = { Text("备份") },
-                leadingIcon = { Icon(Icons.Outlined.Backup, contentDescription = null) },
-                onClick = { expanded = false; onAction(ProfilesToolbarAction.BACKUP_EXPORT) },
-                modifier = Modifier.testTag("backup_export"),
-            )
-            DropdownMenuItem(
-                text = { Text("恢复") },
-                leadingIcon = { Icon(Icons.Outlined.Restore, contentDescription = null) },
-                onClick = { expanded = false; onAction(ProfilesToolbarAction.BACKUP_RESTORE) },
-                modifier = Modifier.testTag("backup_restore"),
-                enabled = canMutate,
-            )
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -361,6 +338,8 @@ fun KClashApp(
     val dashboardSwayProgress = rememberDashboardEditSwayProgress(isDashboardEditing)
     val selectedProfile = profilesState.profiles.firstOrNull { it.id == profilesState.currentProfileId }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var profileAddAnchor by remember { mutableStateOf<IntRect?>(null) }
+    var showToolsBackup by rememberSaveable { mutableStateOf(false) }
     var pendingFileImport by remember { mutableStateOf<PendingProfileFileImport?>(null) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
     var showDns by rememberSaveable { mutableStateOf(false) }
@@ -783,6 +762,7 @@ fun KClashApp(
                     canMutate = !profilesState.isBusy && !runtimeState.isRunning,
                     onAdd = { showAddDialog = true },
                     onAction = { pendingProfilesToolbarAction = it },
+                    onAddAnchorChanged = { profileAddAnchor = it },
                 )
             }
         },
@@ -807,6 +787,105 @@ fun KClashApp(
                     onSelect = proxyGroupsViewModel::selectProxy,
                     onTestDelay = proxyGroupsViewModel::testDelay,
                     onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
+                )
+            } else if (selectedDestination == MainDestination.PROFILES) {
+                ProfilesPanel(
+                    modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp).testTag("page_profiles"),
+                    state = profilesState,
+                    editorState = editorState,
+                    remoteEditorState = remoteEditorState,
+                    runtimeState = runtimeState,
+                    showAddDialog = showAddDialog,
+                    toolbarAction = pendingProfilesToolbarAction,
+                    onToolbarActionHandled = { pendingProfilesToolbarAction = null },
+                    showInlineToolbar = false,
+                    onShowAddDialog = { showAddDialog = true },
+                    onDismissAddDialog = { showAddDialog = false },
+                    onPickFile = {
+                        showAddDialog = false
+                        filePicker.launch(arrayOf("*/*"))
+                    },
+                    onPickQrCode = {
+                        showAddDialog = false
+                        qrCodePicker.launch("image/*")
+                    },
+                    onAddRemote = { label, url ->
+                        showAddDialog = false
+                        profilesViewModel.addRemote(url, label)
+                    },
+                    onAddRemoteWithAgeKey = { label, url, key ->
+                        showAddDialog = false
+                        profilesViewModel.addRemote(url, label, key)
+                    },
+                    onAddRemoteBatch = { urls ->
+                        showAddDialog = false
+                        profilesViewModel.addRemoteBatch(urls)
+                    },
+                    onAddCustom = { label ->
+                        showAddDialog = false
+                        profilesViewModel.addCustom(label)
+                    },
+                    addMenuAnchor = profileAddAnchor,
+                    onSelect = profilesViewModel::select,
+                    onPreviewProfile = { runtimeConfigPreviewViewModel?.open(it) },
+                    onCopyLink = { profileSharingViewModel?.copyLink(it) },
+                    onShowQr = { profileSharingViewModel?.showQr(it) },
+                    onExportProfile = { profileSharingViewModel?.beginExport(it) },
+                    exportBusy = profileSharingViewModel?.state?.collectAsState()?.value?.exporting == true,
+                    onEdit = profilesViewModel::openEditor,
+                    onRename = profilesViewModel::rename,
+                    onUpdate = profilesViewModel::update,
+                    onSetAutoUpdate = profilesViewModel::setAutoUpdate,
+                    onCloseEditor = profilesViewModel::closeEditor,
+                    onDiscardEditor = profilesViewModel::discardEditor,
+                    onFinishNewDraftEditor = profilesViewModel::finishNewDraftEditor,
+                    onSaveEditor = profilesViewModel::saveEditor,
+                    onSaveFileEditor = profilesViewModel::saveFileEditor,
+                    onSaveFileEditorWithLabel = { content, key, label -> profilesViewModel.saveFileEditor(content, key, label) },
+                    onBeginFileReplacementPick = profilesViewModel::beginFileReplacementPick,
+                    onFileReplacementPicked = profilesViewModel::acceptFileReplacement,
+                    onClearFileReplacement = profilesViewModel::clearFileReplacement,
+                    onSaveRemoteEditor = { label, url, auto, interval -> profilesViewModel.saveRemoteEditor(label, url, auto, interval) },
+                    onSaveRemoteEditorWithAgeKey = profilesViewModel::saveRemoteEditor,
+                    onDelete = profilesViewModel::delete,
+                    rulesEditorState = rulesEditorState,
+                    onOpenRulesEditor = profilesViewModel::openRulesEditor,
+                    onCloseRulesEditor = profilesViewModel::closeRulesEditor,
+                    onSaveRules = profilesViewModel::saveRules,
+                    proxiesEditorState = proxiesEditorState,
+                    onOpenProxiesEditor = profilesViewModel::openProxiesEditor,
+                    onCloseProxiesEditor = profilesViewModel::closeProxiesEditor,
+                    onSaveProxies = profilesViewModel::saveProxies,
+                    proxyGroupsEditorState = proxyGroupsEditorState,
+                    onOpenProxyGroupsEditor = profilesViewModel::openProxyGroupsEditor,
+                    onCloseProxyGroupsEditor = profilesViewModel::closeProxyGroupsEditor,
+                    onSaveProxyGroups = profilesViewModel::saveProxyGroups,
+                    providersEditorState = providersEditorState,
+                    onOpenProvidersEditor = profilesViewModel::openProvidersEditor,
+                    onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
+                    onSaveProviders = profilesViewModel::saveProviders,
+                    onSaveProvidersWithOverrides = profilesViewModel::saveProviders,
+                    dnsEditorState = dnsEditorState,
+                    onOpenDnsEditor = profilesViewModel::openDnsEditor,
+                    onCloseDnsEditor = profilesViewModel::closeDnsEditor,
+                    onSaveDns = profilesViewModel::saveDns,
+                    dialersEditorState = dialersEditorState,
+                    onOpenDialersEditor = profilesViewModel::openDialersEditor,
+                    onCloseDialersEditor = profilesViewModel::closeDialersEditor,
+                    onSaveDialers = profilesViewModel::saveDialers,
+                    onReorderProfiles = profilesViewModel::reorder,
+                    scripts = scriptsState.scripts,
+                    onBindScript = profilesViewModel::bindScript,
+                    onOpenScripts = { showScriptsDialog = true },
+                    onExportBackup = onExportBackup,
+                    onImportBackup = onImportBackup,
+                    webDavCredentials = webDavCredentials,
+                    webDavBusy = webDavBusy,
+                    onSaveWebDavCredentials = onSaveWebDavCredentials,
+                    onClearWebDavCredentials = onClearWebDavCredentials,
+                    onProbeWebDav = onProbeWebDav,
+                    onUploadWebDav = onUploadWebDav,
+                    onDownloadWebDav = onDownloadWebDav,
                 )
             } else {
                 LazyColumn(
@@ -973,104 +1052,7 @@ fun KClashApp(
                         }
                     }
 
-                    MainDestination.PROFILES -> item {
-                        ProfilesPanel(
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 420.dp),
-                            state = profilesState,
-                            editorState = editorState,
-                            remoteEditorState = remoteEditorState,
-                            runtimeState = runtimeState,
-                            showAddDialog = showAddDialog,
-                            toolbarAction = pendingProfilesToolbarAction,
-                            onToolbarActionHandled = { pendingProfilesToolbarAction = null },
-                            showInlineToolbar = false,
-                            onShowAddDialog = { showAddDialog = true },
-                            onDismissAddDialog = { showAddDialog = false },
-                            onPickFile = {
-                                showAddDialog = false
-                                filePicker.launch(arrayOf("*/*"))
-                            },
-                            onPickQrCode = {
-                                showAddDialog = false
-                                qrCodePicker.launch("image/*")
-                            },
-                            onAddRemote = { label, url ->
-                                showAddDialog = false
-                                profilesViewModel.addRemote(url, label)
-                            },
-                            onAddRemoteWithAgeKey = { label, url, key ->
-                                showAddDialog = false
-                                profilesViewModel.addRemote(url, label, key)
-                            },
-                            onAddRemoteBatch = { urls ->
-                                showAddDialog = false
-                                profilesViewModel.addRemoteBatch(urls)
-                            },
-                            onAddCustom = { label ->
-                                showAddDialog = false
-                                profilesViewModel.addCustom(label)
-                            },
-                            onSelect = profilesViewModel::select,
-                            onPreviewProfile = { runtimeConfigPreviewViewModel?.open(it) },
-                            onCopyLink = { profileSharingViewModel?.copyLink(it) },
-                            onShowQr = { profileSharingViewModel?.showQr(it) },
-                            onExportProfile = { profileSharingViewModel?.beginExport(it) },
-                            exportBusy = profileSharingViewModel?.state?.collectAsState()?.value?.exporting == true,
-                            onEdit = profilesViewModel::openEditor,
-                            onRename = profilesViewModel::rename,
-                            onUpdate = profilesViewModel::update,
-                            onSetAutoUpdate = profilesViewModel::setAutoUpdate,
-                            onCloseEditor = profilesViewModel::closeEditor,
-                            onDiscardEditor = profilesViewModel::discardEditor,
-                    onFinishNewDraftEditor = profilesViewModel::finishNewDraftEditor,
-                            onSaveEditor = profilesViewModel::saveEditor,
-                            onSaveFileEditor = profilesViewModel::saveFileEditor,
-                            onBeginFileReplacementPick = profilesViewModel::beginFileReplacementPick,
-                            onFileReplacementPicked = profilesViewModel::acceptFileReplacement,
-                            onClearFileReplacement = profilesViewModel::clearFileReplacement,
-                            onSaveRemoteEditor = { label, url, auto, interval -> profilesViewModel.saveRemoteEditor(label, url, auto, interval) },
-                            onSaveRemoteEditorWithAgeKey = profilesViewModel::saveRemoteEditor,
-                            onDelete = profilesViewModel::delete,
-                            rulesEditorState = rulesEditorState,
-                            onOpenRulesEditor = profilesViewModel::openRulesEditor,
-                            onCloseRulesEditor = profilesViewModel::closeRulesEditor,
-                            onSaveRules = profilesViewModel::saveRules,
-                            proxiesEditorState = proxiesEditorState,
-                            onOpenProxiesEditor = profilesViewModel::openProxiesEditor,
-                            onCloseProxiesEditor = profilesViewModel::closeProxiesEditor,
-                            onSaveProxies = profilesViewModel::saveProxies,
-                            proxyGroupsEditorState = proxyGroupsEditorState,
-                            onOpenProxyGroupsEditor = profilesViewModel::openProxyGroupsEditor,
-                            onCloseProxyGroupsEditor = profilesViewModel::closeProxyGroupsEditor,
-                            onSaveProxyGroups = profilesViewModel::saveProxyGroups,
-                            providersEditorState = providersEditorState,
-                            onOpenProvidersEditor = profilesViewModel::openProvidersEditor,
-                            onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
-                            onSaveProviders = profilesViewModel::saveProviders,
-                            onSaveProvidersWithOverrides = profilesViewModel::saveProviders,
-                            dnsEditorState = dnsEditorState,
-                            onOpenDnsEditor = profilesViewModel::openDnsEditor,
-                            onCloseDnsEditor = profilesViewModel::closeDnsEditor,
-                            onSaveDns = profilesViewModel::saveDns,
-                            dialersEditorState = dialersEditorState,
-                            onOpenDialersEditor = profilesViewModel::openDialersEditor,
-                            onCloseDialersEditor = profilesViewModel::closeDialersEditor,
-                            onSaveDialers = profilesViewModel::saveDialers,
-                            onReorderProfiles = profilesViewModel::reorder,
-                            scripts = scriptsState.scripts,
-                            onBindScript = profilesViewModel::bindScript,
-                            onOpenScripts = { showScriptsDialog = true },
-                            onExportBackup = onExportBackup,
-                            onImportBackup = onImportBackup,
-                            webDavCredentials = webDavCredentials,
-                            webDavBusy = webDavBusy,
-                            onSaveWebDavCredentials = onSaveWebDavCredentials,
-                            onClearWebDavCredentials = onClearWebDavCredentials,
-                            onProbeWebDav = onProbeWebDav,
-                            onUploadWebDav = onUploadWebDav,
-                            onDownloadWebDav = onDownloadWebDav,
-                        )
-                    }
+                    MainDestination.PROFILES -> Unit
 
                     MainDestination.PROXY -> Unit
 
@@ -1088,6 +1070,8 @@ fun KClashApp(
                                     toolsSubpage = ToolsSubpage.ACCESS_CONTROL
                                 },
                                 onOpenGeneral = { toolsSubpage = ToolsSubpage.GENERAL },
+                                onOpenBackup = { showToolsBackup = true },
+                                onOpenScripts = { showScriptsDialog = true },
                                 onOpenDeveloper = if (developerToolsEnabled) ({ toolsSubpage = ToolsSubpage.DEVELOPER }) else null,
                                 onShowUnavailable = { label ->
                                     coroutineScope.launch { snackbarHostState.showSnackbar("${label}页面正在按 Flutter 参考实现补齐") }
@@ -1220,6 +1204,14 @@ fun KClashApp(
             onExport = { onExportDiagnosticHistory(diagnosticHistory) },
         )
     }
+
+    if (showToolsBackup) ProfileMaintenancePage(
+        canRestore = !profilesState.isBusy && !runtimeState.isRunning,
+        busy = webDavBusy, credentials = webDavCredentials, onDismiss = { showToolsBackup = false },
+        onExport = onExportBackup, onImport = onImportBackup,
+        onSaveCredentials = onSaveWebDavCredentials, onClearCredentials = onClearWebDavCredentials,
+        onProbe = onProbeWebDav, onUpload = onUploadWebDav, onDownload = onDownloadWebDav,
+    )
 
     if (showScriptsDialog) {
         ScriptsLibraryDialog(
@@ -1391,6 +1383,7 @@ internal fun ProfilesPanel(
     onAddRemoteWithAgeKey: ((String, String, String) -> Unit)? = null,
     onAddRemoteBatch: ((List<String>) -> Unit)? = null,
     onAddCustom: (label: String) -> Unit,
+    addMenuAnchor: IntRect? = null,
     onSelect: (id: Long) -> Unit,
     onPreviewProfile: (Long) -> Unit = {},
     onCopyLink: (Long) -> Unit = {},
@@ -1406,6 +1399,7 @@ internal fun ProfilesPanel(
     onFinishNewDraftEditor: (String?) -> Unit = { onDiscardEditor() },
     onSaveEditor: (content: String) -> Unit,
     onSaveFileEditor: (String?, String) -> Unit = { _, _ -> },
+    onSaveFileEditorWithLabel: ((String?, String, String) -> Unit)? = null,
     onBeginFileReplacementPick: () -> Long? = { null },
     onFileReplacementPicked: (Long?, String?) -> Unit = { _, _ -> },
     onClearFileReplacement: () -> Unit = {},
@@ -1459,11 +1453,13 @@ internal fun ProfilesPanel(
     var profilePendingRename by remember { mutableStateOf<Profile?>(null) }
     var showReorderDialog by remember { mutableStateOf(false) }
     var scriptBindingProfileId by remember { mutableStateOf<Long?>(null) }
+    var extensionProfileId by rememberSaveable { mutableStateOf<Long?>(null) }
     var showBackupRestoreDialog by remember { mutableStateOf(false) }
     var showWebDavDialog by remember { mutableStateOf(false) }
     var showWebDavRestoreDialog by remember { mutableStateOf(false) }
     var pendingWebDavCredentials by remember { mutableStateOf<WebDavCredentials?>(null) }
     var inlineToolbarAction by remember { mutableStateOf<ProfilesToolbarAction?>(null) }
+    var localAddAnchor by remember { mutableStateOf<IntRect?>(null) }
 
     val actionToHandle = toolbarAction ?: inlineToolbarAction
     LaunchedEffect(actionToHandle) {
@@ -1481,7 +1477,7 @@ internal fun ProfilesPanel(
     }
 
     Column(
-        modifier = modifier.testTag("profiles_page"),
+        modifier = modifier.fillMaxSize().testTag("profiles_page"),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         // 作者 long：Debug 面板单独渲染时保留同一组操作，正式页面则由 MainPageScaffold 顶栏承载。
@@ -1493,6 +1489,7 @@ internal fun ProfilesPanel(
                     canMutate = canMutateProfiles,
                     onAdd = onShowAddDialog,
                     onAction = { inlineToolbarAction = it },
+                    onAddAnchorChanged = { localAddAnchor = it },
                 )
             }
         }
@@ -1546,7 +1543,8 @@ internal fun ProfilesPanel(
                         textAlign = TextAlign.Center,
                     )
                     Spacer(Modifier.height(24.dp))
-                    androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog) {
+                    androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog,
+                        modifier = Modifier.onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
                         Icon(Icons.Outlined.Add, contentDescription = null)
                         Spacer(Modifier.size(8.dp))
                         Text("添加配置")
@@ -1554,30 +1552,56 @@ internal fun ProfilesPanel(
                 }
             }
         } else {
-            state.profiles.forEach { profile ->
-                ProfileCard(
-                    profile = profile,
-                    selected = profile.id == state.currentProfileId,
-                    canMutate = canMutateProfiles,
-                    onSelect = { onSelect(profile.id) },
-                    onPreview = { onPreviewProfile(profile.id) },
-                    onCopyLink = { onCopyLink(profile.id) },
-                    onShowQr = { onShowQr(profile.id) },
-                    onExport = { onExportProfile(profile.id) },
-                    exportBusy = exportBusy,
-                    onEdit = { onEdit(profile) },
-                    onRename = { profilePendingRename = profile },
-                    onUpdate = { onUpdate(profile) },
-                    onSetAutoUpdate = { enabled -> onSetAutoUpdate(profile, enabled) },
-                    onDelete = { profilePendingDeletion = profile },
-                    onOpenRulesEditor = { onOpenRulesEditor(profile) },
-                    onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
-                    onOpenProxyGroupsEditor = { onOpenProxyGroupsEditor(profile) },
-                    onOpenProvidersEditor = { onOpenProvidersEditor(profile) },
-                    onOpenDnsEditor = { onOpenDnsEditor(profile) },
-                    onOpenDialersEditor = { onOpenDialersEditor(profile) },
-                    onOpenScriptBinding = { scriptBindingProfileId = profile.id },
-                )
+            BoxWithConstraints(Modifier.fillMaxWidth().weight(1f).testTag("profiles_grid")) {
+                // 作者 long：Flutter 配置页按 300dp 最小卡宽自适应 1~3 列，避免手机上被强行压成细长列表。
+                val spacing = 8.dp
+                val columns = ((maxWidth + spacing) / (300.dp + spacing)).toInt().coerceIn(1, 3)
+                val list = rememberLazyListState()
+                var revealed by rememberSaveable { mutableStateOf(false) }
+                LaunchedEffect(state.profiles.map { it.id }, columns) {
+                    // 作者 long：只在页面首次拿到配置时定位选中项，后续点击不抢走用户正在查看的位置。
+                    if (!revealed && state.profiles.isNotEmpty()) {
+                        val index = state.profiles.indexOfFirst { it.id == state.currentProfileId }
+                        if (index >= 0) list.scrollToItem(index / columns)
+                        revealed = true
+                    }
+                }
+                LazyColumn(state = list, modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(spacing)) {
+                    items(state.profiles.chunked(columns), key = { it.first().id }) { row ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing)) {
+                            row.forEach { profile ->
+                                ProfileCard(
+                                    modifier = Modifier.weight(1f),
+                                    profile = profile,
+                                    selected = profile.id == state.currentProfileId,
+                                    canMutate = canMutateProfiles,
+                                    onSelect = { onSelect(profile.id) },
+                                    onPreview = { onPreviewProfile(profile.id) },
+                                    onCopyLink = { onCopyLink(profile.id) },
+                                    onShowQr = { onShowQr(profile.id) },
+                                    onExport = { onExportProfile(profile.id) },
+                                    exportBusy = exportBusy,
+                                    onEdit = { onEdit(profile) },
+                                    onRename = { profilePendingRename = profile },
+                                    onUpdate = { onUpdate(profile) },
+                                    onSetAutoUpdate = { enabled -> onSetAutoUpdate(profile, enabled) },
+                                    onDelete = { profilePendingDeletion = profile },
+                                    onOpenRulesEditor = { onOpenRulesEditor(profile) },
+                                    onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
+                                    onOpenProxyGroupsEditor = { onOpenProxyGroupsEditor(profile) },
+                                    onOpenProvidersEditor = { onOpenProvidersEditor(profile) },
+                                    onOpenDnsEditor = { onOpenDnsEditor(profile) },
+                                    onOpenDialersEditor = { onOpenDialersEditor(profile) },
+                                    onOpenScriptBinding = { scriptBindingProfileId = profile.id },
+                                    onExtend = { extensionProfileId = profile.id },
+                                )
+                            }
+                            repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+                        }
+                    }
+                }
             }
         }
     }
@@ -1597,6 +1621,7 @@ internal fun ProfilesPanel(
                 .map(Profile::url)
                 .toSet(),
             onAddCustom = onAddCustom,
+            sourceAnchor = localAddAnchor ?: addMenuAnchor,
         )
     }
 
@@ -1691,19 +1716,10 @@ internal fun ProfilesPanel(
         )
     }
 
-    scriptBindingProfileId?.let { profileId ->
-        state.profiles.firstOrNull { it.id == profileId }?.let { profile ->
-            ProfileScriptBindingDialog(
-                profile = profile,
-                scripts = scripts,
-                saving = state.isBusy,
-                onDismiss = { if (!state.isBusy) scriptBindingProfileId = null },
-                onSelect = { scriptId -> onBindScript(profile, scriptId) },
-                onOpenScripts = {
-                    scriptBindingProfileId = null
-                    onOpenScripts()
-                },
-            )
+    extensionProfileId?.let { id ->
+        state.profiles.firstOrNull { it.id == id }?.let { profile ->
+            ProfileExtensionPage(profile.realLabel, canMutateProfiles, { extensionProfileId = null },
+                { onOpenDnsEditor(profile) }, { onOpenProvidersEditor(profile) }, { scriptBindingProfileId = id })
         }
     }
 
@@ -1719,7 +1735,8 @@ internal fun ProfilesPanel(
         } else if (profile.type == ProfileType.FILE) {
             FileProfileEditorDialog(editorState, readOnly = runtimeState.isRunning, onDismiss = onCloseEditor,
                 onBeginPick = onBeginFileReplacementPick, onFilePicked = onFileReplacementPicked,
-                onClearReplacement = onClearFileReplacement, onSave = onSaveFileEditor)
+                onClearReplacement = onClearFileReplacement, onSave = onSaveFileEditor,
+                onSaveWithLabel = onSaveFileEditorWithLabel)
         } else {
             ProfileEditorDialog(
                 profile = profile,
@@ -1737,6 +1754,7 @@ internal fun ProfilesPanel(
                 onOpenProvidersEditor = onOpenProvidersEditor,
                 onOpenDnsEditor = onOpenDnsEditor,
                 onOpenDialersEditor = onOpenDialersEditor,
+                onOpenScriptBinding = { scriptBindingProfileId = it.id },
             )
         }
     }
@@ -1858,6 +1876,23 @@ internal fun ProfilesPanel(
             )
         }
     }
+
+    scriptBindingProfileId?.let { profileId ->
+        state.profiles.firstOrNull { it.id == profileId }?.let { profile ->
+            ProfileScriptBindingDialog(
+                profile = profile,
+                scripts = scripts,
+                saving = state.isBusy,
+                onDismiss = { if (!state.isBusy) scriptBindingProfileId = null },
+                onSelect = { scriptId -> onBindScript(profile, scriptId) },
+                onOpenScripts = {
+                    scriptBindingProfileId = null
+                    onOpenScripts()
+                },
+            )
+        }
+    }
+
 
 }
 
@@ -4060,19 +4095,24 @@ internal fun ProfileCard(
     onExport: () -> Unit = {},
     exportBusy: Boolean = false,
     onPreview: () -> Unit = {},
+    onExtend: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     var showActions by remember(profile.id) { mutableStateOf(false) }
     var showMore by remember(profile.id) { mutableStateOf(false) }
+    var showUpdateError by remember(profile.id) { mutableStateOf(false) }
     val expiryDate = profile.subscriptionInfo?.expireAtMillis?.let { millis ->
         SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date(millis))
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
+            .combinedClickable(onClick = onSelect, onLongClickLabel = "配置操作",
+                onLongClick = { showMore = false; showActions = true })
             .testTag("profile_card_${profile.id}"),
-        onClick = onSelect,
         shape = RoundedCornerShape(24.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = dashboardCardColor()),
     ) {
         Row(
             modifier = Modifier
@@ -4084,7 +4124,7 @@ internal fun ProfileCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = profile.realLabel,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = androidx.compose.ui.text.TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
@@ -4109,28 +4149,28 @@ internal fun ProfileCard(
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = profileSubtitle(profile),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = androidx.compose.ui.text.TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                profile.lastUpdateError?.let { error ->
-                    Text(
-                        text = "同步失败：$error",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 6.dp),
-                    )
-                } ?: profile.lastUpdateAt?.let { updatedAt ->
-                    Text(
-                        text = "更新于 ${DateUtils.getRelativeTimeSpanString(updatedAt)}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 6.dp),
-                    )
-                }
+            }
+
+            if (profile.type != ProfileType.CUSTOM) {
+                Text(
+                    text = when {
+                        profile.lastUpdateError != null -> "失败"
+                        profile.lastUpdateAt != null -> DateUtils.getRelativeTimeSpanString(profile.lastUpdateAt).toString()
+                        else -> "未同步"
+                    },
+                    modifier = Modifier.padding(start = 8.dp).widthIn(max = 80.dp)
+                        .clickable(enabled = profile.lastUpdateError != null) { showUpdateError = true }
+                        .testTag("profile_update_status_${profile.id}"),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (profile.lastUpdateError != null) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
             }
 
             if (selected) {
@@ -4155,7 +4195,7 @@ internal fun ProfileCard(
                     // 作者 long：所有类型均有只读预览，运行中仍可打开菜单，写操作继续各自受守卫保护。
                     modifier = Modifier.testTag(
                         if (selected) "profile_actions_selected" else "profile_actions_${profile.id}",
-                    ),
+                    ).size(32.dp),
                 ) { Icon(Icons.Outlined.MoreVert, contentDescription = "${profile.realLabel}的配置操作") }
                 DropdownMenu(expanded = showActions, onDismissRequest = { showActions = false }) {
                     if (showMore) {
@@ -4204,85 +4244,35 @@ internal fun ProfileCard(
                                 onClick = { showActions = false; onUpdate() },
                                 enabled = canMutate,
                             )
-                            DropdownMenuItem(
-                                text = { Text(if (profile.autoUpdate) "自动更新（开启）" else "自动更新（关闭）") },
-                                leadingIcon = { Icon(Icons.Outlined.Sync, contentDescription = null) },
-                                onClick = { showActions = false; onSetAutoUpdate(!profile.autoUpdate) },
-                                modifier = Modifier.testTag("profile_auto_update_${profile.id}"),
-                                enabled = canMutate,
-                            )
                         } else {
                             DropdownMenuItem(
                                 text = { Text("编辑") },
                                 leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
                                 onClick = { showActions = false; onEdit() },
                                 enabled = canMutate,
+                                modifier = Modifier.testTag("profile_edit_${profile.id}"),
                             )
                         }
-                        DropdownMenuItem(
-                            text = { Text("重命名") },
-                            leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-                            onClick = { showActions = false; onRename() },
-                            modifier = Modifier.testTag("profile_rename_${profile.id}"),
-                            enabled = canMutate,
-                        )
                         if (profile.type == ProfileType.CUSTOM) {
+                            DropdownMenuItem(
+                                text = { Text("重命名") },
+                                leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                                onClick = { showActions = false; onRename() },
+                                modifier = Modifier.testTag("profile_rename_${profile.id}"),
+                                enabled = canMutate,
+                            )
                             DropdownMenuItem(
                                 text = { Text("运行配置") },
                                 leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
                                 onClick = { showActions = false; onPreview() },
                                 modifier = Modifier.testTag("profile_preview_${profile.id}"),
                             )
-                            DropdownMenuItem(
-                                text = { Text("高级") },
-                                leadingIcon = { Icon(Icons.Outlined.Tune, contentDescription = null) },
-                                onClick = { showActions = false; onOpenRulesEditor() },
-                                enabled = canMutate,
-                            )
-                            DropdownMenuItem(
-                                text = { Text("代理") },
-                                leadingIcon = { Icon(Icons.Outlined.SwapVert, contentDescription = null) },
-                                onClick = { showActions = false; onOpenProxiesEditor() },
-                                enabled = canMutate,
-                                modifier = Modifier.testTag("profile_action_proxies"),
-                            )
-                            DropdownMenuItem(
-                                text = { Text("代理组") },
-                                leadingIcon = { Icon(Icons.Outlined.Hub, contentDescription = null) },
-                                onClick = { showActions = false; onOpenProxyGroupsEditor() },
-                                enabled = canMutate,
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Provider") },
-                                leadingIcon = { Icon(Icons.Outlined.Cloud, contentDescription = null) },
-                                onClick = { showActions = false; onOpenProvidersEditor() },
-                                enabled = canMutate,
-                            )
-                            DropdownMenuItem(
-                                text = { Text("DNS") },
-                                leadingIcon = { Icon(Icons.Outlined.Dns, contentDescription = null) },
-                                onClick = { showActions = false; onOpenDnsEditor() },
-                                enabled = canMutate,
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Dialers") },
-                                leadingIcon = { Icon(Icons.Outlined.Link, contentDescription = null) },
-                                onClick = { showActions = false; onOpenDialersEditor() },
-                                enabled = canMutate,
-                            )
+                        } else {
+                            DropdownMenuItem(text = { Text("扩展") },
+                                leadingIcon = { Icon(Icons.Outlined.Extension, null) },
+                                onClick = { showActions = false; onExtend() },
+                                modifier = Modifier.testTag("profile_extend_${profile.id}"))
                         }
-                        DropdownMenuItem(
-                            text = { Text("脚本") },
-                            leadingIcon = { Icon(Icons.Outlined.Code, contentDescription = null) },
-                            onClick = { showActions = false; onOpenScriptBinding() },
-                            enabled = canMutate,
-                        )
-                        DropdownMenuItem(
-                            text = { Text("删除") },
-                            leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
-                            onClick = { showActions = false; onDelete() },
-                            enabled = canMutate,
-                        )
                         if (profile.type != ProfileType.CUSTOM) {
                             DropdownMenuItem(
                                 text = { Text("更多") },
@@ -4291,11 +4281,23 @@ internal fun ProfileCard(
                                 modifier = Modifier.testTag("profile_more_${profile.id}"),
                             )
                         }
+                        DropdownMenuItem(
+                            text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                            leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                            onClick = { showActions = false; onDelete() }, enabled = canMutate,
+                        )
                     }
                 }
             }
         }
     }
+    if (showUpdateError) AlertDialog(
+        onDismissRequest = { showUpdateError = false },
+        title = { Text("同步失败") },
+        text = { Text(profile.lastUpdateError.orEmpty()) },
+        confirmButton = { TextButton(onClick = { showUpdateError = false; onUpdate() }, enabled = canMutate) { Text("重试") } },
+        dismissButton = { TextButton(onClick = { showUpdateError = false }) { Text("关闭") } },
+    )
 }
 
 @Composable
@@ -4423,15 +4425,18 @@ internal fun ProfileEditorDialog(
     onOpenProvidersEditor: (Profile) -> Unit = {},
     onOpenDnsEditor: (Profile) -> Unit = {},
     onOpenDialersEditor: (Profile) -> Unit = {},
+    onOpenScriptBinding: (Profile) -> Unit = {},
 ) {
     var content by rememberSaveable(profile.id, initialContent) { mutableStateOf(initialContent) }
     var showDiscardConfirmation by rememberSaveable(profile.id) { mutableStateOf(false) }
     var showSectionDiscardConfirmation by rememberSaveable(profile.id) { mutableStateOf(false) }
     var showDraftNameDialog by rememberSaveable(profile.id) { mutableStateOf(false) }
     var draftName by rememberSaveable(profile.id) { mutableStateOf(profile.label) }
+    var showYaml by rememberSaveable(profile.id) { mutableStateOf(false) }
     var pendingSectionAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val isDirty = content != initialContent
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
 
     // 作者 long：分区编辑即时持久化；退出时区分空草稿与已有内容，防止误删已保存配置。
     fun finishExit() {
@@ -4445,11 +4450,15 @@ internal fun ProfileEditorDialog(
 
     fun requestExit() {
         if (saving) return
+        focusManager.clearFocus(force = true)
         keyboardController?.hide()
         if (isDirty) showDiscardConfirmation = true else finishExit()
     }
 
     fun openSection(action: () -> Unit) {
+        // 作者 long：进入分区或确认弹窗前释放 YAML 输入焦点，避免键盘恢复焦点后改变点击位置。
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
         if (isDirty) {
             pendingSectionAction = action
             showSectionDiscardConfirmation = true
@@ -4458,14 +4467,13 @@ internal fun ProfileEditorDialog(
         }
     }
 
-    AlertDialog(
+    ProfileEditorPage(
         onDismissRequest = { requestExit() },
         title = { Text("编辑 ${profile.realLabel}") },
         text = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 420.dp)
                     .testTag("profile_editor_scroll")
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -4473,7 +4481,7 @@ internal fun ProfileEditorDialog(
                 if (profile.type == ProfileType.CUSTOM) {
                     Text("配置概览", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "按分区编辑自定义配置；原始 YAML 仍可用于导入或处理未覆盖的字段。",
+                        profile.realLabel,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -4513,14 +4521,20 @@ internal fun ProfileEditorDialog(
                         icon = Icons.Outlined.SwapVert,
                         onClick = { openSection { onOpenDialersEditor(profile) } },
                     )
-                    Text("原始 YAML", style = MaterialTheme.typography.titleSmall)
+                    ProfileEditorSectionButton(
+                        title = "脚本", summary = "绑定 JavaScript", icon = Icons.Outlined.Code,
+                        onClick = { openSection { onOpenScriptBinding(profile) } },
+                    )
+                    TextButton(onClick = { showYaml = !showYaml }, modifier = Modifier.testTag("custom_profile_toggle_yaml")) {
+                        Text(if (showYaml) "收起原始 YAML" else "编辑原始 YAML")
+                    }
                 } else {
                     Text(
                         "保存后会替换 KClash 本地配置文件，核心启动时仍会再次校验 YAML。",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
-                OutlinedTextField(
+                if (profile.type != ProfileType.CUSTOM || showYaml) OutlinedTextField(
                     value = content,
                     onValueChange = { content = it },
                     modifier = Modifier.fillMaxWidth().testTag("profile_editor_content"),
@@ -4639,22 +4653,8 @@ private fun ProfileEditorSectionButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     onClick: () -> Unit,
 ) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
-    ) {
-        Icon(icon, contentDescription = null)
-        Spacer(Modifier.size(10.dp))
-        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-            Text(title)
-            Text(
-                summary,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Icon(Icons.Outlined.Edit, contentDescription = "编辑$title")
+    Surface(shape = RoundedCornerShape(20.dp), color = dashboardCardColor()) {
+        ProfileSectionRow(title, summary, icon, onClick = onClick)
     }
 }
 
@@ -4676,17 +4676,18 @@ internal fun RemoteProfileEditorDialog(
         mutableStateOf((profile.autoUpdateIntervalMillis / 60_000L).coerceAtLeast(1L).toString())
     }
     val parsedInterval = intervalMinutes.toLongOrNull()
-    val canSave = !saving && label.length <= 64 && isValidRemoteProfileUrl(url) &&
+    val canSave = !saving && label.isNotBlank() && label.length <= 64 && isValidRemoteProfileUrl(url) &&
         (!autoUpdate || parsedInterval != null && parsedInterval > 0L)
 
-    AlertDialog(
+    ProfileEditorPage(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("编辑订阅") },
         text = {
             Column(
                 modifier = Modifier.testTag("remote_profile_editor_form").verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
+                ProfileFormSection {
                 OutlinedTextField(
                     value = label,
                     onValueChange = { label = it.take(64) },
@@ -4705,6 +4706,8 @@ internal fun RemoteProfileEditorDialog(
                     modifier = Modifier.fillMaxWidth().testTag("remote_profile_editor_url"),
                 )
                 AgeSecretKeyField(ageKey, { ageKey = it }, !saving, "remote_profile_editor_age_key")
+                }
+                ProfileFormSection {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -4718,7 +4721,7 @@ internal fun RemoteProfileEditorDialog(
                         modifier = Modifier.testTag("remote_profile_editor_auto_update"),
                     )
                 }
-                OutlinedTextField(
+                if (autoUpdate) OutlinedTextField(
                     value = intervalMinutes,
                     onValueChange = { intervalMinutes = it.filter(Char::isDigit).take(7) },
                     enabled = !saving && autoUpdate,
@@ -4727,6 +4730,7 @@ internal fun RemoteProfileEditorDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth().testTag("remote_profile_editor_interval"),
                 )
+                }
             }
         },
         confirmButton = {
@@ -4766,11 +4770,11 @@ internal fun ProfileRulesEditorDialog(
     onSave: (String) -> Unit,
 ) {
     var rules by rememberSaveable(profile.id) { mutableStateOf(initialRules) }
-    AlertDialog(
+    ProfileEditorPage(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("规则 · ${profile.realLabel}") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "每行一条规则，例如 DOMAIN-SUFFIX,example.com,DIRECT；SUB-RULE 需要先展开后保存。",
                     style = MaterialTheme.typography.bodyMedium,
@@ -4814,11 +4818,11 @@ internal fun ProfileProxiesEditorDialog(
     onSave: (String) -> Unit,
 ) {
     var proxies by rememberSaveable(profile.id) { mutableStateOf(initialProxies) }
-    AlertDialog(
+    ProfileEditorPage(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("代理 · ${profile.realLabel}") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "每个代理以 - name 和 type 开始，后续字段保持两格缩进；可粘贴 proxies: 区块内容。",
                     style = MaterialTheme.typography.bodyMedium,
@@ -4838,6 +4842,7 @@ internal fun ProfileProxiesEditorDialog(
             TextButton(
                 onClick = { onSave(proxies) },
                 enabled = !saving,
+                modifier = Modifier.testTag("profile_proxies_save"),
             ) {
                 if (saving) CircularProgressIndicator() else Text("保存")
             }
@@ -4861,11 +4866,11 @@ internal fun ProfileProxyGroupsEditorDialog(
     onSave: (String) -> Unit,
 ) {
     var groups by rememberSaveable(profile.id) { mutableStateOf(initialGroups) }
-    AlertDialog(
+    ProfileEditorPage(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("代理组 · ${profile.realLabel}") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "每个代理组以 - name 和 type 开始，支持 select、url-test、fallback 和 load-balance。",
                     style = MaterialTheme.typography.bodyMedium,
@@ -4923,11 +4928,12 @@ internal fun ProfileProvidersEditorDialog(
     val providerNames = remember(proxyProviders) {
         ProfileProvidersEditor.proxyProviderNames(proxyProviders)
     }
-    AlertDialog(
+    ProfileEditorPage(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("Provider · ${profile.realLabel}") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (profile.type == ProfileType.CUSTOM) {
                 Text(
                     "每个条目使用 providerName: 开始，并在下一层填写 type、url、path 等字段；两个区块分别对应代理和规则 Provider。",
                     style = MaterialTheme.typography.bodyMedium,
@@ -4950,13 +4956,14 @@ internal fun ProfileProvidersEditorDialog(
                     enabled = !saving,
                     label = { Text("rule-providers") },
                 )
+                }
                 Text(
-                    "字段化代理 Provider 覆盖",
+                    "代理 Provider 覆盖",
                     style = MaterialTheme.typography.titleSmall,
                 )
                 if (providerNames.isEmpty()) {
                     Text(
-                        "先在 proxy-providers 中定义 Provider，才能配置健康检查和节点覆盖。",
+                        if (profile.type == ProfileType.CUSTOM) "先添加代理 Provider，再配置健康检查和节点覆盖。" else "这份配置没有代理 Provider。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -5060,7 +5067,7 @@ internal fun ProfileDnsOverrideDialog(
         .toList()
         .takeIf { it.isNotEmpty() }
 
-    AlertDialog(
+    ProfileEditorPage(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("DNS 覆盖 · ${profile.realLabel}") },
         text = {
@@ -5212,11 +5219,11 @@ internal fun ProfileDialersEditorDialog(
     onSave: (String) -> Unit,
 ) {
     var dialers by remember(profile.id, initialDialers) { mutableStateOf(initialDialers) }
-    AlertDialog(
+    ProfileEditorPage(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text("Dialers · ${profile.realLabel}") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "每行填写一个代理到目标的映射；清空全部内容会移除暂存配置中的 dialer-proxy。",
                     style = MaterialTheme.typography.bodySmall,
@@ -5557,6 +5564,7 @@ internal fun AddProfileDialog(
     onAddRemoteBatch: (List<String>) -> Unit = { urls -> urls.forEach { onAddRemote("", it) } },
     existingUrls: Set<String> = emptySet(),
     onAddCustom: (label: String) -> Unit,
+    sourceAnchor: IntRect? = null,
 ) {
     var label by rememberSaveable { mutableStateOf("") }
     var url by rememberSaveable { mutableStateOf("") }
@@ -5568,6 +5576,11 @@ internal fun AddProfileDialog(
     // 作者 long：来源与表单分步呈现，避免订阅字段和自定义配置字段同时挤在添加入口。
     var step by rememberSaveable { mutableStateOf(AddProfileStep.SOURCE) }
     val busyDismiss = { if (!busy) onDismiss() }
+    if (step == AddProfileStep.SOURCE) {
+        ProfileSourceMenu(sourceAnchor, busy, busyDismiss, onPickQrCode, onPickFile,
+            { step = AddProfileStep.REMOTE }, { step = AddProfileStep.CUSTOM })
+        return
+    }
     AlertDialog(
         onDismissRequest = busyDismiss,
         title = {
@@ -5582,38 +5595,15 @@ internal fun AddProfileDialog(
         text = {
             when (step) {
                 AddProfileStep.SOURCE -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
-                        onClick = onPickQrCode,
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth().testTag("profile_add_source_qr"),
-                    ) {
-                        Icon(Icons.Outlined.QrCodeScanner, contentDescription = null)
-                        Text("从二维码图片导入")
-                    }
-                    OutlinedButton(
-                        onClick = onPickFile,
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth().testTag("profile_add_source_file"),
-                    ) {
-                        Icon(Icons.Outlined.Description, contentDescription = null)
-                        Text("从文件导入 YAML")
-                    }
-                    OutlinedButton(
-                        onClick = { step = AddProfileStep.REMOTE },
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth().testTag("profile_add_source_remote"),
-                    ) {
-                        Icon(Icons.Outlined.Link, contentDescription = null)
-                        Text("添加订阅链接")
-                    }
-                    OutlinedButton(
-                        onClick = { step = AddProfileStep.CUSTOM },
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth().testTag("profile_add_source_custom"),
-                    ) {
-                        Icon(Icons.Outlined.Edit, contentDescription = null)
-                        Text("创建自定义配置")
-                    }
+                    ProfileSectionRow("从二维码图片导入", icon = Icons.Outlined.QrCodeScanner, enabled = !busy,
+                        modifier = Modifier.testTag("profile_add_source_qr"), onClick = onPickQrCode)
+                    ProfileSectionRow("从文件导入 YAML", icon = Icons.Outlined.Description, enabled = !busy,
+                        modifier = Modifier.testTag("profile_add_source_file"), onClick = onPickFile)
+                    ProfileSectionRow("添加订阅链接", icon = Icons.Outlined.Link, enabled = !busy,
+                        modifier = Modifier.testTag("profile_add_source_remote"), onClick = { step = AddProfileStep.REMOTE })
+                    androidx.compose.material3.HorizontalDivider()
+                    ProfileSectionRow("创建自定义配置", icon = Icons.Outlined.Edit, enabled = !busy,
+                        modifier = Modifier.testTag("profile_add_source_custom"), onClick = { step = AddProfileStep.CUSTOM })
                 }
                 AddProfileStep.REMOTE -> {
                     val preview = parseProfileUrlImport(batchInput, existingUrls)

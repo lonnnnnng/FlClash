@@ -379,9 +379,17 @@ class ProfilesViewModel @Inject constructor(
     }
 
     fun saveFileEditor(editedContent: String?, ageSecretKey: String) {
+        saveFileEditor(editedContent, ageSecretKey, null)
+    }
+
+    fun saveFileEditor(editedContent: String?, ageSecretKey: String, label: String?) {
         val editor = mutableEditor.value
         val profile = editor.profile ?: return
         if (profile.type != ProfileType.FILE || editor.isSaving || editor.isReadingFile || busy.value) return
+        if (label != null && (label.isBlank() || label.trim().length > MAX_PROFILE_LABEL_LENGTH)) {
+            mutableErrors.tryEmit("配置名称不能为空，最多 64 个字符")
+            return
+        }
         if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
             return
@@ -394,7 +402,7 @@ class ProfilesViewModel @Inject constructor(
         mutableEditor.value = editor.copy(isSaving = true)
         viewModelScope.launch {
             try {
-                repository.updateFileProfile(profile.id, ageSecretKey.trim(), bytes) { !isProfileMutationBlocked(runtimeManager.state.value) }
+                repository.updateFileProfile(profile.id, ageSecretKey.trim(), bytes, label) { !isProfileMutationBlocked(runtimeManager.state.value) }
                 if (generation == localEditorGeneration) closeEditor()
             } catch (error: CancellationException) {
                 throw error
@@ -696,10 +704,6 @@ class ProfilesViewModel @Inject constructor(
     }
 
     fun openProvidersEditor(profile: Profile) {
-        if (profile.type != ProfileType.CUSTOM) {
-            mutableErrors.tryEmit("高级 Provider 编辑仅支持自定义配置")
-            return
-        }
         if (runtimeManager.state.value.isRunning) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 Provider")
             return
@@ -707,7 +711,7 @@ class ProfilesViewModel @Inject constructor(
         viewModelScope.launch {
             mutableProvidersEditor.value = ProfileProvidersEditorUiState(profile = profile, isLoading = true)
             runCatching {
-                val content = repository.readLocalProfileContent(profile.id)
+                val content = repository.readProfileSourceContent(profile.id)
                 content to ProfileProvidersEditor.extract(content)
             }.onSuccess { (content, sections) ->
                 mutableProvidersEditor.value = ProfileProvidersEditorUiState(
@@ -757,20 +761,20 @@ class ProfilesViewModel @Inject constructor(
                 proxyProviderOverrides = proxyProviderOverrides,
             )
             runCatching {
-                val updatedContent = ProfileProvidersEditor.replace(
-                    state.sourceContent,
-                    ProfileProvidersEditor.Sections(proxyProviders, ruleProviders),
-                )
-                val contentProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
-                reflectStructuredSave(profile.id, updatedContent, contentProfile)
+                // 作者 long：订阅/文件的扩展只保存覆盖元数据；只有自定义配置允许修改 Provider 定义正文。
+                if (profile.type == ProfileType.CUSTOM) {
+                    val updatedContent = ProfileProvidersEditor.replace(
+                        state.sourceContent, ProfileProvidersEditor.Sections(proxyProviders, ruleProviders),
+                    )
+                    val contentProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
+                    reflectStructuredSave(profile.id, updatedContent, contentProfile)
+                }
+                val latest = repository.profiles.value.firstOrNull { it.id == profile.id } ?: error("配置不存在")
+                val current = ProfileProviderOverrides.fromJsonString(latest.overridesJson)
                 val updatedProfile = repository.updateProfileOverrides(
                     profile.id,
-                    ProfileProviderOverrides(
+                    current.copy(
                         proxyProviders = proxyProviderOverrides,
-                        dns = ProfileProviderOverrides.fromJsonString(profile.overridesJson).dns,
-                        // 作者 long：Provider、DNS 和 Dialers 共用一份覆盖元数据；保存任一分区时必须保留其他分区，
-                        // 否则用户刚配置的出站链路会在下一次编辑 Provider 后静默消失。
-                        dialers = ProfileProviderOverrides.fromJsonString(profile.overridesJson).dialers,
                     ).toJsonString(),
                 )
                 reflectStructuredSave(profile.id, profile = updatedProfile)
@@ -784,10 +788,6 @@ class ProfilesViewModel @Inject constructor(
     }
 
     fun openDnsEditor(profile: Profile) {
-        if (profile.type != ProfileType.CUSTOM) {
-            mutableErrors.tryEmit("高级 DNS 编辑仅支持自定义配置")
-            return
-        }
         if (runtimeManager.state.value.isRunning) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 DNS")
             return
@@ -812,7 +812,9 @@ class ProfilesViewModel @Inject constructor(
         viewModelScope.launch {
             mutableDnsEditor.value = state.copy(overrides = overrides, isSaving = true)
             runCatching {
-                val current = ProfileProviderOverrides.fromJsonString(profile.overridesJson)
+                // 作者 long：扩展页可能先保存其他分区，合并最新元数据避免用打开时快照覆盖刚保存的 Provider。
+                val latest = repository.profiles.value.firstOrNull { it.id == profile.id } ?: error("配置不存在")
+                val current = ProfileProviderOverrides.fromJsonString(latest.overridesJson)
                 val updatedProfile = repository.updateProfileOverrides(
                     profile.id,
                     current.copy(dns = overrides).toJsonString(),
