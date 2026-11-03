@@ -51,6 +51,7 @@ class ProfileDocumentHostInstrumentedTest {
             compose.onNodeWithTag("remote_profile_editor_label").performTextReplacement(renamed)
             compose.onNodeWithTag("remote_profile_editor_form").performScrollToNode(hasTestTag("remote_profile_document_edit"))
             compose.onNodeWithTag("remote_profile_document_edit").performClick()
+            compose.waitUntil(15_000) { compose.onAllNodesWithTag("profile_editor_content").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("profile_editor_content").assertExists()
             compose.activityRule.scenario.recreate(); compose.waitForIdle()
             compose.onNodeWithTag("profile_document_editor").assertExists()

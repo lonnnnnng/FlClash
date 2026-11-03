@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 import java.security.MessageDigest
 
-/** 作者 long：快照保留打开时的正文指纹和时间，正文只驻留内存；日志不可展开配置中的节点凭据。 */
+/** 作者 long：快照保留打开时的正文指纹和时间；跨进程只走加密草稿，日志不可展开节点凭据。 */
 class ProfileDocumentSnapshot(val profile: Profile, val content: String, val digest: String, val modified: Long) {
     override fun toString() = "ProfileDocumentSnapshot(id=${profile.id}, size=${content.length})"
 }

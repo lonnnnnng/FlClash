@@ -1,5 +1,14 @@
 # Architecture
 
+## 配置提交、删除与加密草稿闭环（2026-11-04）
+
+- `CoreRuntimeStatusProvider.withProfileWrite`由真实管理器持启停锁执行受理后的NonCancellable提交，再重读真实当前ID并应用；页面不在保存与应用之间释放生命周期锁。`ProfileApplyAfterSaveException`仅表示源已提交，VM返回已保存结果并保留独立应用重试，避免把应用失败误当回滚成功。
+- `saveCustomDocument`沿用文件共锁、原正文CAS、Room内最新行合并和失败补偿；`patchProfileOverrides`在Room事务中读取最新覆盖，只修改DNS/链式代理分区并前后检查会话，DNS重试比较打开时基线。`reflectStructuredSave`清除过期父正文草稿，防止旧YAML覆盖已保存分区。
+- `removeProfile`先成功应用fallback再删除，删除事务失败尝试恢复旧项，恢复失败停止核心；无fallback先停止。Repository先提交Room删除/最终选择再清正文，管理器不重复持久化null选择，避免成功删除后误报失败；失败提示包含核心已停止状态。
+- `ProfileEditorDraftSnapshot`保留父表单、正文子页、打开时Profile/正文指纹、替换字节与picker令牌。`AndroidProfileDraftStore`以Android Keystore AES-256-GCM加密，AtomicFile存于noBackup；正文/密钥不入SavedState或备份。epoch与同一写锁拒绝迟到快照，关闭以UNDISPATCHED启动不可取消清理后再关闭UI。picker暂存完成才启动，系统启动失败归还令牌；loading快照不冒充已读取内容。
+- 配置排序沿用`ProfileReorderDialog`符号但以`ProfileEditorPage`整页呈现，共用`ResourceOrderList`长按/边缘滚动；本地草稿与增删ID合并，保存成功revision驱动返回，失败留页重试。
+- App414/Service182及Redmi分批15个不同方法最终通过，父/正文在后台am kill后新进程恢复；安装与失败证据见`docs/acceptance/profile-closure-redmi-20261104.json`。真实DocumentsUI两路径已验，选择器等待中进程回收再返回尚未单独E2E；运行态原1.yaml同语义保存不代表全部高级分区/脚本或外网路由变更。整体Profiles/UI仍PARTIAL。
+
 ## 配置正文父草稿与本地副本提交（2026-11-03）
 
 - `ProfileDocumentSnapshot`持有打开时Profile、正文指纹及mtime；`profileDocumentText`统一非空、8MiB、严格UTF-8/BOM/NUL边界，敏感正文不进入toString。URL/FILE使用同一快照保存路径，CUSTOM继续分区编辑。

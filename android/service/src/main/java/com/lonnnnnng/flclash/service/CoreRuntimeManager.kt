@@ -49,11 +49,26 @@ enum class CoreRuntimeStatus(
     FAILED("核心启动失败", false),
 }
 
+class ProfileApplyAfterSaveException : IllegalStateException("配置已保存，当前配置应用失败，请重试应用")
+
 interface CoreRuntimeStatusProvider {
     val state: StateFlow<CoreRuntimeStatus>
     suspend fun selectProfile(id: Long, select: suspend (Long?) -> Unit) { select(id) }
     suspend fun profileInputsApplied(id: Long): Boolean = false
     suspend fun applyCurrentProfile(id: Long) { error("此运行环境不支持配置应用") }
+    suspend fun <T> withProfileWrite(applyCurrentId: Long? = null, write: suspend () -> T): T {
+        val result = write()
+        if (applyCurrentId != null) {
+            try { applyCurrentProfile(applyCurrentId) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { throw ProfileApplyAfterSaveException() }
+        }
+        return result
+    }
+    suspend fun removeProfile(id: Long, remaining: suspend () -> List<Long>, select: suspend (Long?) -> Unit, remove: suspend () -> Unit) {
+        check(!state.value.isRunning) { "当前运行环境不支持运行中删除配置" }
+        remove()
+    }
 }
 
 /**
@@ -447,6 +462,56 @@ class CoreRuntimeManager(
 
     override suspend fun selectProfile(id: Long, select: suspend (Long?) -> Unit) = transitionLock.withLock {
         applyProfileLocked(id, select)
+    }
+
+    override suspend fun <T> withProfileWrite(applyCurrentId: Long?, write: suspend () -> T): T = transitionLock.withLock {
+        check(mutableState.value != CoreRuntimeStatus.STARTING && mutableState.value != CoreRuntimeStatus.STOPPING) { "核心正在启停，请稍后重试" }
+        // 作者 long：固定锁序为生命周期锁→文件锁；受理后的源文件提交不能被启动、切换或取消打断。
+        withContext(kotlinx.coroutines.NonCancellable) {
+            val result = write()
+            if (applyCurrentId != null) {
+                // 作者 long：提交与核心应用共持启停锁，节点轮询不能抢先加载新正文却沿用旧端口或旧TUN。
+                val selected = profileProvider.activeProfileId()
+                if (selected != null) {
+                    try { applyProfileLocked(selected) { check(it == selected) { "当前配置已变化" } } }
+                    catch (_: Exception) { throw ProfileApplyAfterSaveException() }
+                }
+            }
+            result
+        }
+    }
+
+    override suspend fun removeProfile(id: Long, remaining: suspend () -> List<Long>, select: suspend (Long?) -> Unit, remove: suspend () -> Unit) = transitionLock.withLock {
+        check(mutableState.value != CoreRuntimeStatus.STARTING && mutableState.value != CoreRuntimeStatus.STOPPING) { "核心正在启停，请稍后重试" }
+        withContext(kotlinx.coroutines.NonCancellable) {
+            val previousId = profileProvider.activeProfileId()
+            if (previousId != id) {
+                remove()
+                return@withContext
+            }
+            val fallback = remaining().firstOrNull { it != id }
+            // 作者 long：先验证并应用替代配置，再删除旧源；替代加载失败时旧配置和运行会话都可完整保留。
+            if (fallback != null) applyProfileLocked(fallback, select) else stopLocked().getOrThrow()
+            try {
+                remove()
+                if (fallback == null) {
+                    // 作者 long：删除事务已经持久化最终选择；提交后不再重复写偏好，避免删除成功却被误报为失败。
+                    loadedConfigKey = null
+                    loadedAutomaticConfigKey = null
+                    invalidateIpRoute()
+                }
+            } catch (failure: Exception) {
+                if (fallback != null) {
+                    try { applyProfileLocked(id, select) }
+                    catch (rollback: Exception) {
+                        failure.addSuppressed(rollback)
+                        stopLocked()
+                    }
+                }
+                val stopped = if (!mutableState.value.isRunning) "，核心已停止" else ""
+                throw IllegalStateException("删除配置失败，原配置已保留$stopped，请重试", failure)
+            }
+        }
     }
 
     private suspend fun applyProfileLocked(id: Long, select: suspend (Long?) -> Unit) {

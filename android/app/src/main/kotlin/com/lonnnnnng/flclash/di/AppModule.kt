@@ -139,6 +139,9 @@ object AppModule {
         com.lonnnnnng.flclash.data.AndroidProfileFileDocumentReader(context)
 
     @Provides
+    fun provideProfileDraftStore(store: com.lonnnnnng.flclash.data.AndroidProfileDraftStore): com.lonnnnnng.flclash.data.ProfileDraftStore = store
+
+    @Provides
     fun provideRuleResourceCompiler(compiler: com.lonnnnnng.flclash.data.NativeRuleResourceCompiler): com.lonnnnnng.flclash.data.RuleResourceCompiler = compiler
 
     @Provides

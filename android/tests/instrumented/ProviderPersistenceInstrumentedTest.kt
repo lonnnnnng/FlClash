@@ -70,6 +70,20 @@ class ProviderPersistenceInstrumentedTest {
             assertTrue(runCatching { repository.saveProviderOptions(resource.id, emptyMap()) { ++checks < 2 } }.isFailure)
             assertEquals(resourceRow, database.profiles().getById(resource.id))
             assertArrayEquals(original, resourceFile.readBytes()); assertEquals(resourceTime, resourceFile.lastModified())
+
+            // 作者 long：分区提交必须基于事务内最新值；后置守卫失败时连同DNS/链式代理一起回滚。
+            val dns = ProfileDnsOverrides(enable = true)
+            val dnsSaved = repository.patchProfileOverrides(custom.id, { true }) { current -> current.copy(dns = dns) }
+            assertEquals(options, ProfileProviderOverrides.fromJsonString(dnsSaved.overridesJson).proxyProviders)
+            val dialerSaved = repository.patchProfileOverrides(custom.id, { true }) { current -> current.copy(dialers = mapOf("A" to "B")) }
+            assertEquals(dns, ProfileProviderOverrides.fromJsonString(dialerSaved.overridesJson).dns)
+            val patchedRow = database.profiles().getById(custom.id)
+            checks = 0
+            assertTrue(runCatching {
+                repository.patchProfileOverrides(custom.id, { ++checks < 2 }) { current -> current.copy(dns = ProfileDnsOverrides()) }
+            }.isFailure)
+            assertEquals(patchedRow, database.profiles().getById(custom.id))
+            assertArrayEquals(bytes, file.readBytes()); assertEquals(modified, file.lastModified())
         } finally {
             database.close()
             check(directory.parentFile == context.cacheDir && directory.name.startsWith("provider-persistence-"))

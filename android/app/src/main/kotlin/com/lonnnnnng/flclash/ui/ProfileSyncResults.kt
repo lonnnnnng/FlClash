@@ -18,14 +18,14 @@ data class ProfileSyncUiState(val running: Boolean = false, val items: List<Prof
 /** 作者 long：批次结果由VM持有，页面重建不丢失败项；应用失败单列，避免用户反复下载已经保存的配置。 */
 @Composable
 internal fun ProfileSyncResults(state: ProfileSyncUiState, onDismiss: () -> Unit, onRetry: () -> Unit) {
-    if (state.items.isEmpty()) return
+    if (state.items.isEmpty() && state.applyError == null) return
     val finished = state.items.count { it.status == ProfileSyncStatus.SUCCEEDED || it.status == ProfileSyncStatus.FAILED }
     val failed = state.items.count { it.status == ProfileSyncStatus.FAILED }
     AlertDialog(onDismissRequest = { if (!state.running) onDismiss() },
-        title = { Text(if (state.running) "正在同步配置" else "同步结果") },
+        title = { Text(if (state.items.isEmpty()) "应用配置" else if (state.running) "正在同步配置" else "同步结果") },
         text = {
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).testTag("profile_sync_results"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(if (state.running) "已完成 $finished / ${state.items.size}" else "成功 ${state.items.size - failed}，失败 $failed")
+                if (state.items.isNotEmpty()) Text(if (state.running) "已完成 $finished / ${state.items.size}" else "成功 ${state.items.size - failed}，失败 $failed")
                 if (state.running) LinearProgressIndicator(Modifier.fillMaxWidth())
                 state.items.forEach { row ->
                     Text("${row.label}：${when (row.status) {

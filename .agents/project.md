@@ -1,5 +1,13 @@
 # Project Context
 
+## 配置管理本组闭环（2026-11-04）
+
+FILE/CUSTOM正文与结构化保存、脚本绑定和删除在稳定RUNNING受理，启停过渡态拒绝；提交与核心应用共持管理器锁，源配置保存与应用失败分开反馈。当前项删除先切替代项，最后项先停止；DNS/链式代理在事务内合并最新其他分区。配置排序已改整页并复用长按/边缘滚动、取消保护与失败重试。
+
+父FILE/CUSTOM/远程表单、正文子页、原文并发基线、替换字节和picker令牌走Keystore AES-GCM/AtomicFile/noBackup加密草稿；不入Bundle或备份。选择器先暂存再启动，关闭等旧写入完成后清密文，防止VM清理后旧草稿复活。父/正文后台am kill后新进程恢复已验；系统选择器等待期间进程回收后返回文件尚未单独E2E，令牌恢复有JVM回归。
+
+最终App414/Service182共596项、Debug/AndroidTest/Lint及单独Release/R8/Lint通过；Redmi首批9/13、补跑4/4、进程两阶段各1/1，15个不同方法按最后结果全部通过。含唯一授权源两临时目标真实下载/正式仓库/核心应用、FILE/CUSTOM Rules、删除回退、真实本地/远程DocumentsUI及旧入口。正式两份配置/原选择/正文哈希与mtime和原1.yaml保持，最终两包安装匹配，结束无服务/tun0并恢复旋转；4图已目视。证据`docs/acceptance/profile-closure-redmi-20261104.json`；失败日志保留，Core/Common/Go本轮未重跑。全局同步按钮、所有高级分区/脚本运行态、其他资源SAF、完整视觉及正式发布仍有独立边界，整体Profiles/UI仍PARTIAL；以下旧日期章节保留历史范围。
+
 ## Roadmap 核对与提交前集中验证（2026-11-03）
 
 当前快照/矩阵已同步累计能力，历史同日“未提交/下一组/当前包”只指各切片当时状态；真实age Bridge解密、新增明文/密文SAF与加密FILE替换此前已验，不再作为全局缺项。FILE/CUSTOM结构化运行态、实网批次、其他资源系统SAF、完整进程草稿与完整视觉仍PARTIAL。

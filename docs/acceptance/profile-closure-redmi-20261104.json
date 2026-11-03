@@ -1,0 +1,380 @@
+{
+  "verifiedAtBeijing": "2026-11-04T00:33:26+08:00",
+  "scope": "配置管理本组闭环：运行态安全提交/删除回退、排序整页、授权两目标批量下载和加密父草稿/正文跨进程恢复；整体Profiles/UI仍PARTIAL",
+  "baseCommit": "eaa6e4b568f44c8de5fea955446e131fb18410d1",
+  "sourceFingerprint": {
+    "sha256": "3477877dac612996473005d224a6c4f694e087a3b9d4ebdda8adebf4bc9366cd",
+    "pathCount": 520,
+    "scope": "git ls-files --cached --others --exclude-standard；android/、gradle/、tool/和根Gradle入口，排序后累计路径NUL与文件SHA256原始字节；不含文档/生成物"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": "1.0"
+  },
+  "package": {
+    "applicationId": "com.lonnnnnng.flclash",
+    "versionName": "0.1.0",
+    "versionCode": 1,
+    "installedVariant": "debug"
+  },
+  "build": {
+    "productionLog": "/tmp/kclash-config-closure-20261104-build5.log",
+    "productionCommand": "./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64",
+    "finalTestLog": "/tmp/kclash-config-closure-20261104-testbuild7.log",
+    "finalTestCommand": "./gradlew :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64",
+    "releaseLog": "/tmp/kclash-config-closure-20261104-release.log",
+    "releaseCommand": "./gradlew :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL",
+    "unit": {
+      "app": {
+        "tests": 414,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 182,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 62,
+        "hints": 9
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 62,
+        "hints": 8
+      }
+    },
+    "notRerun": [
+      "core/common JVM",
+      "Go core"
+    ]
+  },
+  "artifacts": {
+    "app": {
+      "sha256": "b6e9978173486fabcb8b19c8362e6d5ae833d8d9cdb15a32451d010fdb4e166f",
+      "deviceSha256": "b6e9978173486fabcb8b19c8362e6d5ae833d8d9cdb15a32451d010fdb4e166f",
+      "deviceMatches": true,
+      "abis": [
+        "arm64-v8a"
+      ],
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk"
+    },
+    "test": {
+      "sha256": "3eaba7b4f260578cb43785f8e4a5740789fb24f4def8ba54ef68d8186ec340f7",
+      "deviceSha256": "3eaba7b4f260578cb43785f8e4a5740789fb24f4def8ba54ef68d8186ec340f7",
+      "deviceMatches": true,
+      "abis": [],
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+    },
+    "release": {
+      "sha256": "0c906f66b3e6476c3e225040a202c44366994c2e400616858106b34a675f1348",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "signed": false,
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk"
+    },
+    "yamlLocalSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "yamlDeviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+  },
+  "instrumentation": {
+    "result": "15个不同精确方法按最后一次结果全部通过，分批执行",
+    "uniquePassed": 15,
+    "skipped": 0,
+    "runs": [
+      {
+        "label": "batch",
+        "log": "/tmp/kclash-config-closure-20261104-batch.log",
+        "passedCount": 9,
+        "total": 13
+      },
+      {
+        "label": "retry",
+        "log": "/tmp/kclash-config-closure-20261104-retry.log",
+        "passedCount": 4,
+        "total": 4
+      },
+      {
+        "label": "prepare2",
+        "log": "/tmp/kclash-config-closure-20261104-prepare2.log",
+        "passedCount": 1,
+        "total": 1
+      },
+      {
+        "label": "verify",
+        "log": "/tmp/kclash-config-closure-20261104-verify.log",
+        "passedCount": 1,
+        "total": 1
+      }
+    ],
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileClosureUiInstrumentedTest#applyFailureProvidesIndependentRetryWithoutDownloadRows",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileClosureUiInstrumentedTest#orderPageStagesReconcilesAndRetainsFailedSaveInBothThemes",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-retry.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest#viewportDragScrollsWithoutNewMovesCancelsAndCommitsOnlyOnDrop",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.ProviderPersistenceInstrumentedTest#metadataOnlySavesKeepBytesMtimeAndOtherOverridesAndRollbackLateGuards",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalFileProfileRepositoryInstrumentedTest#realOpenDocumentCancelsAndStagesWithoutWritingThenSavesExactAuthorizedFile",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-retry.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalFileProfileRepositoryInstrumentedTest#remoteSystemPickerCancelsAndStagesAuthorizedFileBeforeOuterSaveWithoutDownload",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-retry.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileClosureHostInstrumentedTest#authorizedTwoItemBatchDownloadsAndAppliesOnlyCurrentWithoutTouchingOriginals",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileClosureHostInstrumentedTest#runningFileAndCustomSavesApplyWithoutRestartingSession",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileClosureHostInstrumentedTest#deletingCurrentSwitchesBeforeRemovalWithoutTouchingOriginals",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileDocumentHostInstrumentedTest#runningRemoteBodyStagesAcrossRecreationAndOuterSaveAppliesWithoutDownloading",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-retry.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileRunningMetadataHostInstrumentedTest#runningProfileAllowsRemoteSettingsSyncAndSortWithoutRestartingOrRewritingBody",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.ProfileDocumentRepositoryInstrumentedTest#invalidDecodeDatabaseFailureAndLateGuardKeepOriginalBodyMetadataAndTimestamp",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.ProfileDocumentRepositoryInstrumentedTest#metadataOnlyDoesNotRewriteBodyAndChangedFileCannotBeSavedFromOldEditor",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-batch.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileDraftProcessInstrumentedTest#preparePendingFileAndBodyDraftWithoutCommitting",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-prepare2.log"
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileDraftProcessInstrumentedTest#verifyColdProcessRestoresDraftAndDiscardLeavesOriginalsUntouched",
+        "passed": true,
+        "statusCode": 0,
+        "log": "/tmp/kclash-config-closure-20261104-verify.log"
+      }
+    ],
+    "protection": {
+      "before": {
+        "mode": "before",
+        "exitCode": 0,
+        "expected": 1,
+        "okCount": 1,
+        "failedStatusCodes": [],
+        "methods": [
+          "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+        ],
+        "log": "/tmp/kclash-config-closure-20261104-before2.log",
+        "passed": true
+      },
+      "after": {
+        "mode": "after",
+        "exitCode": 0,
+        "expected": 1,
+        "okCount": 1,
+        "failedStatusCodes": [],
+        "methods": [
+          "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+        ],
+        "log": "/tmp/kclash-config-closure-20261104-after.log",
+        "passed": true
+      }
+    }
+  },
+  "processRecovery": {
+    "prepareObservedPid": "",
+    "prepareObservedAt": "2026-11-04T00:26:51+0800",
+    "preparePid": "5392",
+    "afterPrepareObservedPid": "",
+    "afterPrepareObservedAt": "2026-11-04T00:29:15+0800",
+    "backgroundKillPid": "5565",
+    "afterAmKillPid": "",
+    "backgroundKillAt": "2026-11-04T00:29:48+0800",
+    "verifiedPid": "5678"
+  },
+  "finalProtection": {
+    "noService": true,
+    "noTun0": true,
+    "rotation": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0"
+    },
+    "yamlLocalSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "yamlDeviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "process": {
+      "prepareObservedPid": "",
+      "prepareObservedAt": "2026-11-04T00:26:51+0800",
+      "preparePid": "5392",
+      "afterPrepareObservedPid": "",
+      "afterPrepareObservedAt": "2026-11-04T00:29:15+0800",
+      "backgroundKillPid": "5565",
+      "afterAmKillPid": "",
+      "backgroundKillAt": "2026-11-04T00:29:48+0800",
+      "verifiedPid": "5678"
+    }
+  },
+  "visuals": {
+    "images": [
+      {
+        "path": "/tmp/kclash-config-closure-20261104-images/profile_apply_retry.png",
+        "sha256": "e0dc17c20832ceb15bb86dda3f2a5980085ab6263e753934350f2f8e18257cfb",
+        "viewedByMainAgent": true
+      },
+      {
+        "path": "/tmp/kclash-config-closure-20261104-images/profile_order_false.png",
+        "sha256": "3d7226486ef685392ce9a8c571d97f1225b9de80fdc23330e19781048d7ea4b0",
+        "viewedByMainAgent": true
+      },
+      {
+        "path": "/tmp/kclash-config-closure-20261104-images/profile_order_true.png",
+        "sha256": "f3d5d06268d3ebdc9f992375ae5be931024786d8f885fb4b638bb49042a04201",
+        "viewedByMainAgent": true
+      },
+      {
+        "path": "/tmp/kclash-config-closure-20261104-images/resource_order_drag_saved.png",
+        "sha256": "065d6ecffce5d563e8b95b396d62738e2157acaef586fa7a78596e3ce33da25e",
+        "viewedByMainAgent": true
+      }
+    ],
+    "scope": "排序深浅、独立应用重试与共用长按排序回归；非Flutter像素等价",
+    "webDetector": "native Android，不适用web DOM机械检测"
+  },
+  "failuresRetained": [
+    "build1：注入构造器缺少draftStore默认值，已修复；build2不是最终源码。",
+    "build3：Debug Lint与Release Hilt生成并行，Lint因生成文件FileNotFoundException崩溃；Debug与Release分开构建后通过。",
+    "build4：新增picker恢复JVM未等待IO读取完成，414项中1失败；修正等待后build5全部通过。",
+    "before：MainActivity测试包名写成ui，初始化失败；before2精确正确包名通过。",
+    "batch：9/13通过；排序断言未启用substring，两picker等待未推进Compose帧，旧正文入口未等转场；只修改测试后retry4/4。",
+    "prepare：表达式测试方法推导非Unit返回值，JUnit初始化拒绝；显式Unit后prepare2/verify各1/1。",
+    "Redmi run-as被SELinux拒绝；未提权，使用应用内Room/正文/mtime/选择保护。",
+    "截图Bundle字段base64先于name，驱动初版配对丢末图；改按status bundle配对并从原日志重提取。"
+  ],
+  "limitations": [
+    "在线批次仅收窄两份临时目标，使用唯一授权源真实下载/正式仓库/核心；未点击会涉及其他历史来源的全局同步全部。",
+    "运行态FILE/CUSTOM Rules与远程本地副本使用原1.yaml同语义字节；不代表改路由后的外网流量、所有高级分区或脚本运行态E2E。",
+    "真实系统DocumentsUI两路径和父/正文草稿后台am kill后恢复分别通过；选择器等待期间进程重建并返回文件未单独E2E，令牌恢复/错配隔离有JVM回归。",
+    "最后一份配置停止后删除及删除失败分支由JVM验证；未对正式配置执行删空。",
+    "Provider/脚本/备份各自系统SAF、跨全部写者备份快照和完整Flutter视觉继续待补。",
+    "Release仅完成未签名arm64构建/R8/Lint/包元数据核实，未签名安装运行、正式发布和远端CI未验。"
+  ],
+  "localEvidence": [
+    {
+      "path": "/tmp/kclash-config-closure-20261104-build1.log",
+      "sha256": "85cdfd3afa445d0aa056483719ed8bf88e797a7962ba6ceb62c855855b106864"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-build3.log",
+      "sha256": "22ee3202655a9814511886cbe19b6b605b14abbab0c56ab8aaacdc67e706263d"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-build4.log",
+      "sha256": "484f8a058c61cefa11b2fe3aa95e1b70b07ccedd69d590a0fdc7a0dbe6023586"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-build5.log",
+      "sha256": "4ef955be674a2fe5ff189115a6144051ad1e2c4e721b097ac34e97db2d6e8341"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-release.log",
+      "sha256": "346d24077d916f802e76892fe5597ed655ab57385031f347ddfece1c428c8bfd"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-testbuild6.log",
+      "sha256": "6460b2903ac75881d2e49df8648d02932952fd3537f2e4fb5bf4aa0167972155"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-testbuild7.log",
+      "sha256": "6460b2903ac75881d2e49df8648d02932952fd3537f2e4fb5bf4aa0167972155"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-before.log",
+      "sha256": "8a29948b921046c3b0ea836e5ae1c3b9e4f44cbecaa035cef5eb32f288e8b53a"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-before2.log",
+      "sha256": "9cc2a996b8320b3728426e40c19b39f28d2f475537a980f3c30a2fe0ecec11da"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-batch.log",
+      "sha256": "01c2f2c9cc15e54116316a986e0cbbe83d13fced9a02e55f33edab041443c6d0"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-retry.log",
+      "sha256": "f78bcd10d6ce1f94eccdb3ce536a9f716599ac778e2e69865f57c968a96381ca"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-prepare.log",
+      "sha256": "485ccd3d56b9bcfcc12f68b4c6b640b8cb41c1e17efcacc5a361a3d58b4fe335"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-prepare2.log",
+      "sha256": "b1436a88c3fa220f77d7090fd289e9cd032633a5d04b3a55fce3ec7f3acdf543"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-verify.log",
+      "sha256": "23356751b68613cf18293e0521346d310f44ff4d7e5b7e5f588dcb8445884202"
+    },
+    {
+      "path": "/tmp/kclash-config-closure-20261104-after.log",
+      "sha256": "1ae2753fb611ac61edae67e7a169524ec5d7a23d12b252cc9505249e0950c279"
+    }
+  ],
+  "rawAttachments": "原始日志与截图仅保留本机/tmp，未上传仓库；JSON保存可审计索引/哈希，不含真实URL、密钥或正文"
+}

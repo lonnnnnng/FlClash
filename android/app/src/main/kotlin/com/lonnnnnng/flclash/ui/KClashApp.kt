@@ -425,6 +425,10 @@ fun KClashApp(
         }
     }
     var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
+    LaunchedEffect(editorState.profile?.id, remoteEditorState.profile?.id) {
+        // 作者 long：冷启动恢复的编辑器仍属于配置页，不能只恢复内存而让用户在首页找不到草稿。
+        if (editorState.profile != null || remoteEditorState.profile != null) selectedDestinationIndex = MainDestination.PROFILES.ordinal
+    }
     var toolsSubpage by rememberSaveable { mutableStateOf(ToolsSubpage.MENU) }
     var showAccessUnsavedChanges by rememberSaveable { mutableStateOf(false) }
     var pendingAccessExitDestination by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -837,6 +841,8 @@ fun KClashApp(
                     remoteEditorState = remoteEditorState,
                     documentEditorState = documentEditorState,
                     onDocumentChange = profilesViewModel::changeProfileDocument,
+                    onCustomDraftChange = profilesViewModel::changeCustomDraft,
+                    onPersistProfilePick = profilesViewModel::persistPickerBeforeLaunch,
                     onDocumentSave = profilesViewModel::acceptProfileDocument,
                     onDocumentClose = profilesViewModel::closeProfileDocument,
                     onOpenDocument = profilesViewModel::openProfileDocument,
@@ -1558,6 +1564,8 @@ internal fun ProfilesPanel(
     remoteEditorState: RemoteProfileEditorUiState = RemoteProfileEditorUiState(),
     documentEditorState: ProfileDocumentEditorState = ProfileDocumentEditorState(),
     onDocumentChange: (String) -> Unit = {},
+    onCustomDraftChange: (String) -> Unit = {},
+    onPersistProfilePick: suspend (Long) -> Boolean = { true },
     onDocumentSave: () -> Unit = {},
     onDocumentClose: () -> Unit = {},
     onOpenDocument: ((Boolean) -> Unit)? = null,
@@ -1796,8 +1804,8 @@ internal fun ProfilesPanel(
                                     profile = profile,
                                     selected = profile.id == state.currentProfileId,
                                     canMutate = canMutateProfiles,
-                                    canEdit = canMutateProfiles && (profile.type != ProfileType.CUSTOM || !runtimeState.isRunning),
-                                    canDelete = canChangeFiles,
+                                    canEdit = canMutateProfiles,
+                                    canDelete = canMutateProfiles,
                                     onSelect = { onSelect(profile.id) },
                                     onPreview = { onPreviewProfile(profile.id) },
                                     onCopyLink = { onCopyLink(profile.id) },
@@ -1892,10 +1900,9 @@ internal fun ProfilesPanel(
             profiles = state.profiles,
             saving = state.isBusy,
             onDismiss = { if (!state.isBusy) showReorderDialog = false },
-            onSave = { ids ->
-                showReorderDialog = false
-                onReorderProfiles(ids)
-            },
+            onSave = onReorderProfiles,
+            error = state.orderError,
+            revision = state.orderRevision,
         )
     }
 
@@ -1957,7 +1964,6 @@ internal fun ProfilesPanel(
 
     editorState.profile?.let { profile ->
         if (editorState.isLoading) {
-            if (profile.type == ProfileType.FILE) ClearAgeInputOnBackground(onCloseEditor)
             AlertDialog(
                 onDismissRequest = {},
                 title = { Text("读取配置") },
@@ -1968,11 +1974,13 @@ internal fun ProfilesPanel(
             FileProfileEditorDialog(editorState, readOnly = isProfileTransitioning(runtimeState), onDismiss = onCloseEditor,
                 onBeginPick = onBeginFileReplacementPick, onFilePicked = onFileReplacementPicked,
                 onClearReplacement = onClearFileReplacement, onSave = onSaveFileEditor,
-                onSaveWithLabel = onSaveFileEditorWithLabel, onOpenDocument = onOpenDocument?.let { open -> { open(false) } }, onMetadataChange = onFileMetadataChange)
+                onSaveWithLabel = onSaveFileEditorWithLabel, onOpenDocument = onOpenDocument?.let { open -> { open(false) } }, onMetadataChange = onFileMetadataChange, onPersistPick = onPersistProfilePick)
         } else {
             ProfileEditorDialog(
                 profile = profile,
                 initialContent = editorState.content,
+                draftContent = editorState.draftContent,
+                onContentChange = onCustomDraftChange,
                 saving = editorState.isSaving,
                 isNewDraft = editorState.isNew,
                 hasPersistedChanges = editorState.hasPersistedChanges,
@@ -2015,7 +2023,7 @@ internal fun ProfilesPanel(
             onDraftChange = onRemoteDraftChange,
             onOpenDocument = { onOpenDocument?.invoke(true) },
             onBeginPick = onBeginRemotePick, onFilePicked = onRemoteFilePicked,
-            onClearReplacement = onClearRemoteReplacement, onRetryRead = onRetryRemoteRead,
+            onClearReplacement = onClearRemoteReplacement, onRetryRead = onRetryRemoteRead, onPersistPick = onPersistProfilePick,
         )
     }
 
@@ -4056,78 +4064,36 @@ private const val MAX_REQUESTS_ON_HOME = 5
 private const val MAX_OBSERVATION_ROWS = 5
 private const val MAX_RUNTIME_HISTORY_ROWS = 3
 
-/**
- * 作者 long：排序先在弹窗内形成草稿，只有点击保存才写入 Room，避免用户拖动或调整过程中
- * 反复改变当前 Profile 的持久化顺序；上下移动按钮同时保留了无障碍和小屏设备的可操作性。
- */
+/** 作者 long：长按只调整排序草稿；取消、后台中断手势都不落库，保存失败保留顺序供重试。 */
 @Composable
 internal fun ProfileReorderDialog(
-    profiles: List<Profile>,
-    saving: Boolean,
-    onDismiss: () -> Unit,
-    onSave: (List<Long>) -> Unit,
+    profiles: List<Profile>, saving: Boolean, onDismiss: () -> Unit, onSave: (List<Long>) -> Unit,
+    error: String? = null, revision: Long = 0,
 ) {
-    var orderedProfiles by remember(profiles.map(Profile::id)) {
-        mutableStateOf(profiles)
+    var orderedIds by rememberSaveable { mutableStateOf(profiles.map(Profile::id)) }
+    val openedRevision = remember { revision }
+    LaunchedEffect(revision) { if (revision > openedRevision) onDismiss() }
+    LaunchedEffect(profiles.map(Profile::id)) {
+        val latest = profiles.map(Profile::id)
+        orderedIds = orderedIds.filter { it in latest } + latest.filterNot { it in orderedIds }
     }
-
-    fun move(index: Int, offset: Int) {
-        val target = index + offset
-        if (target !in orderedProfiles.indices) return
-        val next = orderedProfiles.toMutableList()
-        val item = next.removeAt(index)
-        next.add(target, item)
-        orderedProfiles = next
-    }
-
-    AlertDialog(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text("排序配置") },
-        text = {
-            LazyColumn(
-                modifier = Modifier.heightIn(max = 420.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                items(orderedProfiles, key = { it.id }) { profile ->
-                    val index = orderedProfiles.indexOfFirst { it.id == profile.id }
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 12.dp, top = 4.dp, end = 4.dp, bottom = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = "${index + 1}. ${profile.realLabel}",
-                                modifier = Modifier.weight(1f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            TextButton(
-                                onClick = { move(index, -1) },
-                                enabled = !saving && index > 0,
-                            ) { Text("上移") }
-                            TextButton(
-                                onClick = { move(index, 1) },
-                                enabled = !saving && index < orderedProfiles.lastIndex,
-                            ) { Text("下移") }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(orderedProfiles.map(Profile::id)) },
-                enabled = !saving,
-            ) {
-                if (saving) CircularProgressIndicator() else Text("保存排序")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
-        },
-    )
+    val latest = profiles.associateBy(Profile::id)
+    val ordered = orderedIds.mapNotNull(latest::get)
+    var discard by remember { mutableStateOf(false) }
+    fun exit() { if (!saving) { if (orderedIds != profiles.map(Profile::id)) discard = true else onDismiss() } }
+    ProfileEditorPage(::exit, { Text("排序配置") }, {
+        Column(Modifier.fillMaxSize().testTag("profiles_order_page"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("长按拖动调整顺序，保存后生效。", style = MaterialTheme.typography.bodyMedium)
+            error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profiles_order_error")) }
+            ResourceOrderList(ordered.map { ResourceOrderItem(it.id.toString(), it.realLabel, it.type.name) },
+                saving, "profiles", { ids -> orderedIds = ids.map(String::toLong) }, Modifier.weight(1f))
+        }
+    }, confirmButton = {
+        TextButton({ onSave(orderedIds) }, enabled = !saving && ordered.isNotEmpty(), modifier = Modifier.testTag("profiles_order_save")) { Text(if (saving) "正在保存" else "保存排序") }
+    }, dismissButton = { TextButton(::exit, enabled = !saving) { Text("取消") } }, backTag = "profiles_order_back")
+    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃排序修改？") },
+        confirmButton = { TextButton({ discard = false; onDismiss() }) { Text("放弃") } },
+        dismissButton = { TextButton({ discard = false }) { Text("继续排序") } })
 }
 
 /**

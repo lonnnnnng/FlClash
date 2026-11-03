@@ -32,6 +32,145 @@ import org.junit.Test
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
 
+    @Test fun persistedFileAndRemotePickerTokensAcceptOnlyMatchingResultAfterViewModelRecovery() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (remote in listOf(false, true)) {
+            val profile = if (remote) Profile.remote(815, "https://example.test/pending", "pending")
+                else Profile.custom(815, "pending").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+            val store = FakeProfileStore(profile).apply { content = "rules: []" }
+            var saved: ByteArray? = null
+            val drafts = object : com.lonnnnnng.flclash.data.ProfileDraftStore {
+                override suspend fun read() = saved
+                override suspend fun write(content: ByteArray?) { saved = content?.copyOf() }
+            }
+            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+                fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader {
+                    com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "rules: []\n".toByteArray())
+                }, overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+            first.openEditor(profile); advanceUntilIdle()
+            val token = requireNotNull(if (remote) first.beginRemoteFilePick() else first.beginFileReplacementPick())
+            assertTrue(first.persistPickerBeforeLaunch(token)); owner.clear()
+            val second = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+            advanceUntilIdle()
+            if (remote) second.acceptRemoteFilePick(token + 1, "content://fixture/pending")
+            else second.acceptFileReplacement(token + 1, "content://fixture/pending")
+            assertNull(if (remote) second.remoteEditorState.value.replacement else second.editorState.value.replacement)
+            if (remote) second.acceptRemoteFilePick(token, "content://fixture/pending")
+            else second.acceptFileReplacement(token, "content://fixture/pending")
+            if (remote) second.remoteEditorState.first { it.replacement != null }
+            else second.editorState.first { it.replacement != null }
+            advanceUntilIdle()
+            assertNotNull(if (remote) second.remoteEditorState.value.replacement else second.editorState.value.replacement)
+            assertEquals("rules: []", store.content); assertTrue(store.fileUpdates.isEmpty())
+            second.closeEditor(); advanceUntilIdle(); owner2.clear(); assertNull(saved)
+        }
+    }
+
+    @Test fun closingWaitsForDelayedDraftWriteAndClearsItEvenWhenViewModelIsDestroyed() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(813, "closing")
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        var saved: ByteArray? = null
+        var delayNext = false
+        val drafts = object : com.lonnnnnng.flclash.data.ProfileDraftStore {
+            override suspend fun read() = saved
+            override suspend fun write(content: ByteArray?) {
+                if (content != null && delayNext) {
+                    delayNext = false; entered.complete(Unit)
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { release.await() }
+                }
+                saved = content?.copyOf()
+            }
+        }
+        val model = ProfilesViewModel(FakeProfileStore(profile), FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
+        model.openEditor(profile); advanceUntilIdle(); assertNotNull(saved)
+        delayNext = true; model.changeCustomDraft("rules: ['MATCH,DIRECT']"); entered.await()
+        model.closeEditor(); owner.clear(); release.complete(Unit); advanceUntilIdle()
+        assertNull(saved); assertNull(model.editorState.value.profile)
+    }
+
+    @Test fun dnsRetryUsesOriginalBaselineAndKeepsOtherNewOverrides() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(814, "dns-retry")
+        val store = FakeProfileStore(profile)
+        var fail = true
+        val wrapper = object : ProfileStore by store {
+            override suspend fun patchProfileOverrides(id: Long, canWrite: () -> Boolean, patch: (ProfileProviderOverrides) -> ProfileProviderOverrides): Profile {
+                if (fail) error("temporary write failure")
+                return store.patchProfileOverrides(id, canWrite, patch)
+            }
+        }
+        val model = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        model.openDnsEditor(profile)
+        val dns = ProfileDnsOverrides(enable = true)
+        model.saveDns(dns); advanceUntilIdle()
+        assertEquals(dns, model.dnsEditorState.value.overrides)
+        val latest = ProfileProviderOverrides(dialers = mapOf("A" to "B"))
+        store.updateProfileOverrides(profile.id, latest.toJsonString()); fail = false
+        model.saveDns(dns); advanceUntilIdle()
+        assertNull(model.dnsEditorState.value.profile)
+        assertEquals(latest.copy(dns = dns), ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson))
+        model.openDnsEditor(profile)
+        model.saveDns(ProfileDnsOverrides(enable = false)); advanceUntilIdle()
+        assertNotNull(model.dnsEditorState.value.profile)
+        assertEquals(dns, ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).dns)
+    }
+
+    @Test fun runningCustomSaveAppliesAndRejectsStaleParentWithoutDroppingDraft() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(811, "运行编辑")
+        val store = FakeProfileStore(profile).apply { content = "rules: []" }
+        val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING)
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        model.openEditor(profile); advanceUntilIdle()
+        assertEquals(profile.id, model.editorState.value.profile?.id)
+        store.content = "rules: []\n"
+        model.saveEditor("rules: ['MATCH,DIRECT']"); advanceUntilIdle()
+        assertNotNull(model.editorState.value.error)
+        assertEquals("rules: ['MATCH,DIRECT']", model.editorState.value.draftContent)
+        assertTrue(runtime.applied.isEmpty())
+        model.closeEditor(); model.openEditor(profile); advanceUntilIdle()
+        model.saveEditor("rules: ['MATCH,DIRECT']"); advanceUntilIdle()
+        assertEquals(listOf(profile.id), runtime.applied)
+        assertNull(model.editorState.value.profile)
+        assertEquals("rules: ['MATCH,DIRECT']", store.content)
+    }
+
+    @Test fun encryptedDraftSnapshotRestoresParentChildAndOriginalConflictBaselineInNewViewModel() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(812, "https://example.test/draft", "original")
+        val store = FakeProfileStore(profile).apply { content = "rules: []" }
+        var saved: ByteArray? = null
+        val drafts = object : com.lonnnnnng.flclash.data.ProfileDraftStore {
+            override suspend fun read() = saved?.copyOf()
+            override suspend fun write(content: ByteArray?) { saved = content?.copyOf() }
+        }
+        val first = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+        first.openEditor(profile); advanceUntilIdle()
+        first.updateRemoteDraft(first.remoteEditorState.value.draft.copy(label = "pending-name", ageKey = "pending-key"))
+        first.openProfileDocument(true); first.changeProfileDocument("rules: ['MATCH,DIRECT']"); advanceUntilIdle()
+        assertNotNull(saved); owner.clear()
+        store.content = "rules: []\n"
+        val second = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+        advanceUntilIdle()
+        assertEquals("pending-name", second.remoteEditorState.value.draft.label)
+        assertEquals("pending-key", second.remoteEditorState.value.draft.ageKey)
+        assertEquals("rules: []", second.remoteEditorState.value.document?.content)
+        assertEquals("rules: ['MATCH,DIRECT']", second.documentEditorState.value.content)
+        assertEquals(0, store.documentSaves)
+        second.acceptProfileDocument(); advanceUntilIdle()
+        second.saveRemoteEditor("pending-name", profile.url, false, 60); advanceUntilIdle()
+        assertNotNull(second.remoteEditorState.value.error)
+        assertEquals(0, store.documentSaves)
+        second.closeEditor(); advanceUntilIdle(); assertNull(saved)
+        owner2.clear()
+    }
+
     @Test fun remoteDocumentStagesWithoutWritingAndFailedOuterSaveKeepsDraftForRetry() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(801, "https://example.test/source", "source")
@@ -636,20 +775,20 @@ class ProfilesViewModelTest {
     }
 
     @Test
-    fun `delete is rejected while core is running and repository is untouched`() = runTest {
+    fun `delete is rejected during a runtime transition and repository is untouched`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(1L, "运行中配置")
         val store = FakeProfileStore(profile)
         val viewModel = ProfilesViewModel(
             repository = store,
-            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING),
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STARTING),
             overviewDispatcher = mainDispatcher,
         )
         val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
 
         viewModel.delete(profile)
 
-        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, error.await())
+        assertEquals("核心正在启停，请稍后重试", error.await())
         advanceUntilIdle()
         assertEquals(0, store.deleteCalls)
     }
@@ -1093,13 +1232,13 @@ class ProfilesViewModelTest {
     }
 
     @Test
-    fun `script binding is rejected while core is running`() = runTest {
+    fun `script binding is rejected during a runtime transition`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(26L, "运行中脚本配置")
         val store = FakeProfileStore(profile)
         val viewModel = ProfilesViewModel(
             repository = store,
-            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING),
+            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STARTING),
             overviewDispatcher = mainDispatcher,
         )
         val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
@@ -1292,7 +1431,7 @@ class ProfilesViewModelTest {
     }
 
     @Test
-    fun `visual groups save refreshes parent and refuses a running runtime`() = runTest {
+    fun `visual groups save refreshes parent and refuses a runtime transition`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(77L, "Visual")
         val store = FakeProfileStore(profile).apply {
@@ -1313,12 +1452,12 @@ class ProfilesViewModelTest {
         assertEquals("Renamed", viewModel.editorState.value.overview?.groups?.single()?.name)
         viewModel.openProxyGroupsEditor(profile)
         advanceUntilIdle()
-        runtime.set(CoreRuntimeStatus.RUNNING)
+        runtime.set(CoreRuntimeStatus.STARTING)
         val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
         val before = store.updatedContent
         viewModel.saveProxyGroupsDraft(com.lonnnnnng.flclash.data.ProxyGroupsSave(groups))
         advanceUntilIdle()
-        assertEquals("核心运行中，请先停止核心后再保存代理组", error.await())
+        assertEquals("核心正在启停，请稍后重试", error.await())
         assertEquals(before, store.updatedContent)
         viewModel.closeProxyGroupsEditor()
         viewModel.saveProxyGroupsDraft(com.lonnnnnng.flclash.data.ProxyGroupsSave(groups))
@@ -1575,6 +1714,8 @@ private class FakeRuntimeStatusProvider(
 ) : CoreRuntimeStatusProvider {
     private val mutableState = MutableStateFlow(status)
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
+    val applied = mutableListOf<Long>()
+    override suspend fun applyCurrentProfile(id: Long) { applied += id }
     fun set(status: CoreRuntimeStatus) { mutableState.value = status }
 }
 

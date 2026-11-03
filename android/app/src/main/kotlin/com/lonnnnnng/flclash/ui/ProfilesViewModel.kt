@@ -41,8 +41,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -52,6 +54,8 @@ data class ProfilesUiState(
     val isBusy: Boolean = false,
     val resourceUsers: Map<Long, List<String>> = emptyMap(),
     val sync: ProfileSyncUiState = ProfileSyncUiState(),
+    val orderRevision: Long = 0,
+    val orderError: String? = null,
 )
 
 data class ProfileEditorUiState(
@@ -188,6 +192,7 @@ class ProfilesViewModel internal constructor(
     private val fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
     private val overviewDispatcher: kotlinx.coroutines.CoroutineDispatcher,
     private val groupFilterValidator: ProxyGroupFilterValidator = ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
+    private val draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
 ) : ViewModel() {
     @Inject constructor(
         repository: ProfileStore,
@@ -195,7 +200,8 @@ class ProfilesViewModel internal constructor(
         configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
         fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
         groupFilterValidator: ProxyGroupFilterValidator = ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
-    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator)
+        draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore)
     internal val globalRules = GlobalRulesController(repository, runtimeManager, viewModelScope)
     internal val extension = ProfileExtensionController(repository, runtimeManager, viewModelScope)
     internal val fileImport = ProfileFileImportController(repository, runtimeManager, fileReader, configValidator, viewModelScope, overviewDispatcher)
@@ -211,6 +217,7 @@ class ProfilesViewModel internal constructor(
     }
     private val busy = MutableStateFlow(false)
     private val mutableSync = MutableStateFlow(ProfileSyncUiState())
+    private val orderResult = MutableStateFlow(0L to (null as String?))
     val syncState: StateFlow<ProfileSyncUiState> = mutableSync
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private val mutableEditor = MutableStateFlow(ProfileEditorUiState())
@@ -251,9 +258,9 @@ class ProfilesViewModel internal constructor(
     val state: StateFlow<ProfilesUiState> = combine(
         repository.profiles,
         repository.currentProfileId,
-        busy, mutableSync,
-    ) { profiles, currentId, isBusy, sync ->
-        ProfilesUiState(profiles, currentId, isBusy, repository.proxyResourceUsage(), sync)
+        busy, mutableSync, orderResult,
+    ) { profiles, currentId, isBusy, sync, order ->
+        ProfilesUiState(profiles, currentId, isBusy, repository.proxyResourceUsage(), sync, order.first, order.second)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfilesUiState())
 
     val errors = mutableErrors.asSharedFlow()
@@ -267,6 +274,80 @@ class ProfilesViewModel internal constructor(
     val dialersEditorState: StateFlow<ProfileDialersEditorUiState> = mutableDialersEditor
     val moreEditorState: StateFlow<ProfileMoreEditorUiState> = mutableMoreEditor
     val customImportState: StateFlow<CustomImportUiState> = mutableCustomImport
+
+    private val draftRevision = MutableStateFlow(0L)
+    private val draftGson = com.google.gson.Gson()
+    private val draftWriteLock = kotlinx.coroutines.sync.Mutex()
+    private var draftEpoch = 0L
+    private var draftClosing = false
+    init {
+        if (draftStore !== com.lonnnnnng.flclash.data.NoopProfileDraftStore) viewModelScope.launch {
+            val generation = localEditorGeneration
+            try {
+                val bytes = draftStore.read()
+                val saved = bytes?.let { withContext(overviewDispatcher) { draftGson.fromJson(it.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java) } }
+                if (saved != null && generation == localEditorGeneration && mutableEditor.value.profile == null && mutableRemoteEditor.value.profile == null) {
+                    require(saved.version == 1)
+                    val id = saved.editor.profile?.id ?: saved.remote.profile?.id
+                    if (id != null && repository.extensionProfile(id) != null) {
+                        if (saved.editor.isLoading || saved.remote.isLoading) {
+                            openEditor(requireNotNull(saved.editor.profile ?: saved.remote.profile))
+                        } else {
+                            mutableEditor.value = saved.editor.copy(isLoading = false, isSaving = false, isReadingFile = false, overview = null)
+                            mutableRemoteEditor.value = saved.remote.copy(isLoading = false, isSaving = false, isReadingFile = false)
+                            mutableDocumentEditor.value = saved.document.copy(saving = false)
+                            replacementBytes = saved.fileBytes
+                            remoteReplacementBytes = saved.remoteBytes
+                            pendingFilePick = saved.filePick?.let { Triple(it.first, generation, it.third) }
+                            pendingRemotePick = saved.remotePick?.let { Triple(it.first, generation, it.third) }
+                            nextFilePickToken = saved.nextToken
+                            refreshOverview()
+                        }
+                    }
+                }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { mutableErrors.emit("无法恢复上次编辑草稿，正式配置未改动") }
+            combine(mutableEditor, mutableRemoteEditor, mutableDocumentEditor, draftRevision) { _, _, _, _ ->
+                draftEpoch to currentDraftSnapshot()
+            }.collect { (epoch, snapshot) ->
+                try {
+                    draftWriteLock.withLock {
+                        if (epoch == draftEpoch) {
+                            val bytes = snapshot?.let { withContext(overviewDispatcher) { draftGson.toJson(it).toByteArray(Charsets.UTF_8) } }
+                            if (epoch == draftEpoch) draftStore.write(bytes)
+                        }
+                    }
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { mutableErrors.emit("草稿暂存失败，请保持编辑页面并重试保存") }
+            }
+        }
+    }
+
+    private fun currentDraftSnapshot(): ProfileEditorDraftSnapshot? {
+        val editor = mutableEditor.value; val remote = mutableRemoteEditor.value
+        if (draftClosing || editor.isLoading || remote.isLoading || editor.profile == null && remote.profile == null) return null
+        return ProfileEditorDraftSnapshot(editor = editor.copy(overview = null), remote = remote, document = mutableDocumentEditor.value,
+            fileBytes = replacementBytes?.copyOf(), remoteBytes = remoteReplacementBytes?.copyOf(),
+            filePick = pendingFilePick, remotePick = pendingRemotePick, nextToken = nextFilePickToken)
+    }
+
+    suspend fun persistPickerBeforeLaunch(token: Long): Boolean {
+        val generation = localEditorGeneration
+        return try {
+            draftWriteLock.withLock {
+                check(!draftClosing && (pendingFilePick?.third == token || pendingRemotePick?.third == token))
+                val snapshot = requireNotNull(currentDraftSnapshot())
+                val bytes = withContext(overviewDispatcher) { draftGson.toJson(snapshot).toByteArray(Charsets.UTF_8) }
+                draftStore.write(bytes)
+                generation == localEditorGeneration && !draftClosing
+            }
+        } catch (cancelled: CancellationException) { throw cancelled }
+        catch (_: Exception) { mutableErrors.emit("无法暂存文件选择，请重试"); false }
+    }
+
+    fun changeCustomDraft(content: String) {
+        if (!mutableEditor.value.isSaving) mutableEditor.update { it.copy(draftContent = content) }
+    }
 
     fun select(id: Long) {
         if (busy.value) return
@@ -401,11 +482,12 @@ class ProfilesViewModel internal constructor(
     }
 
     fun openEditor(profile: Profile, isNew: Boolean = false) {
-        if (isProfileTransitioning(runtimeManager.state.value) || runtimeManager.state.value.isRunning && profile.type == ProfileType.CUSTOM) {
+        if (isProfileTransitioning(runtimeManager.state.value)) {
             mutableErrors.tryEmit("当前状态暂不支持编辑此配置")
             return
         }
-        closeEditor()
+        if (draftClosing) return
+        resetEditorMemory()
         val generation = localEditorGeneration
         if (profile.type == ProfileType.URL) {
             mutableRemoteEditor.value = RemoteProfileEditorUiState(profile, isLoading = true)
@@ -515,9 +597,10 @@ class ProfilesViewModel internal constructor(
     fun beginRemoteFilePick(): Long? {
         val state = mutableRemoteEditor.value
         val profile = state.profile ?: return null
-        if (state.isSaving || state.isLoading || state.isReadingFile || state.document == null || busy.value || pendingRemotePick != null) return null
+        if (state.isSaving || state.isLoading || state.isReadingFile || state.document == null || busy.value) return null
         val token = ++nextFilePickToken
         pendingRemotePick = Triple(profile.id, localEditorGeneration, token)
+        draftRevision.value++
         return token
     }
 
@@ -554,6 +637,29 @@ class ProfilesViewModel internal constructor(
     }
 
     fun closeEditor() {
+        if (draftClosing) return
+        if (draftStore === com.lonnnnnng.flclash.data.NoopProfileDraftStore) { resetEditorMemory(); return }
+        val generation = localEditorGeneration
+        draftClosing = true; draftEpoch++; draftRevision.value++
+        mutableEditor.update { it.copy(isSaving = true) }
+        mutableRemoteEditor.update { it.copy(isSaving = true) }
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            withContext(kotlinx.coroutines.NonCancellable) {
+                try {
+                    // 作者 long：先等旧写入结束并删除草稿，再关闭页面；VM清理不能取消已确认的放弃或让旧快照复活。
+                    draftWriteLock.withLock { draftStore.write(null) }
+                    if (generation == localEditorGeneration) resetEditorMemory()
+                } catch (_: Exception) {
+                    draftClosing = false
+                    mutableEditor.update { it.copy(isSaving = false, error = "草稿清除失败，请重试关闭") }
+                    mutableRemoteEditor.update { it.copy(isSaving = false, error = "草稿清除失败，请重试关闭") }
+                }
+            }
+        }
+    }
+
+    private fun resetEditorMemory() {
+        draftEpoch++; draftClosing = false
         localEditorGeneration++
         rulesGeneration++
         mutableRulesEditor.value = ProfileRulesEditorUiState()
@@ -676,7 +782,7 @@ class ProfilesViewModel internal constructor(
     fun beginFileReplacementPick(): Long? {
         val editor = mutableEditor.value
         val profile = editor.profile ?: return null
-        if (profile.type != ProfileType.FILE || editor.isSaving || editor.isReadingFile || busy.value || pendingFilePick != null) return null
+        if (profile.type != ProfileType.FILE || editor.isSaving || editor.isReadingFile || busy.value) return null
         if (isProfileTransitioning(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
             return null
@@ -684,6 +790,7 @@ class ProfilesViewModel internal constructor(
         // 作者 long：系统选择器回调只属于发起时的配置和编辑会话，关闭重开后即使 ID 相同也不能接收旧文件。
         val token = ++nextFilePickToken
         pendingFilePick = Triple(profile.id, localEditorGeneration, token)
+        draftRevision.value++
         return token
     }
 
@@ -752,20 +859,19 @@ class ProfilesViewModel internal constructor(
         viewModelScope.launch {
             try {
                 if (editor.document != null) {
-                    repository.saveProfileDocument(
+                    profileWrite { repository.saveProfileDocument(
                         editor.document,
                         ProfileDocumentSettings(label ?: profile.label, profile.url, ageSecretKey.trim(), profile.autoUpdate, profile.autoUpdateIntervalMillis),
                         bytes,
                     ) {
                         !isProfileTransitioning(runtimeManager.state.value) && generation == localEditorGeneration
-                    }
+                    } }
                 } else {
-                    repository.updateFileProfile(profile.id, ageSecretKey.trim(), bytes, label) {
-                        !isProfileMutationBlocked(runtimeManager.state.value)
-                    }
+                    profileWrite { repository.updateFileProfile(profile.id, ageSecretKey.trim(), bytes, label) {
+                        !isProfileTransitioning(runtimeManager.state.value)
+                    } }
                 }
                 if (generation == localEditorGeneration) closeEditor()
-                if (bytes != null) applySyncedCurrent()?.let { mutableErrors.emit(it) }
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
@@ -813,6 +919,7 @@ class ProfilesViewModel internal constructor(
         mutableEditor.value = editor.copy(
             profile = profile ?: editor.profile,
             content = content ?: editor.content,
+            draftContent = if (content != null) null else editor.draftContent,
             hasPersistedChanges = true,
             overview = null,
         )
@@ -904,17 +1011,15 @@ class ProfilesViewModel internal constructor(
         mutableRemoteEditor.value = state.copy(isSaving = true, error = null)
         viewModelScope.launch {
             try {
-                val updated = if (state.document != null) repository.saveProfileDocument(state.document, settings, bytes) {
+                val updated = if (state.document != null) profileWrite { repository.saveProfileDocument(state.document, settings, bytes) {
                     generation == localEditorGeneration && !isProfileTransitioning(runtimeManager.state.value)
-                } else {
+                } } else {
                     check(bytes == null) { "请先重新读取本地副本" }
                     repository.updateRemoteProfileSettings(profile.id, normalizedLabel, normalizedUrl, autoUpdate, interval, key)
                 }
                 if (generation == localEditorGeneration) closeEditor()
-                if (bytes != null) {
-                    // 作者 long：编辑/侧载只改本地副本，不能再下载把刚保存的正文覆盖；核心应用失败与保存成功分开提示。
-                    applySyncedCurrent()?.let { mutableErrors.emit(it) }
-                } else if (updated.url != profile.url || updated.ageSecretKey != profile.ageSecretKey) {
+                // 作者 long：改源时才重新下载；正文编辑已经在生命周期锁内应用，不能再下载覆盖刚保存的副本。
+                if (bytes == null && (updated.url != profile.url || updated.ageSecretKey != profile.ageSecretKey)) {
                     try {
                         repository.updateRemoteProfile(profile.id)
                         applySyncedCurrent()?.let { mutableErrors.emit(it) }
@@ -936,8 +1041,8 @@ class ProfilesViewModel internal constructor(
             mutableErrors.tryEmit("高级规则编辑仅支持自定义配置")
             return
         }
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑规则")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         val generation = ++rulesGeneration
@@ -976,8 +1081,8 @@ class ProfilesViewModel internal constructor(
         val state = mutableRulesEditor.value
         val profile = state.profile ?: return
         if (state.isLoading || state.isSaving) return
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            val message = "核心运行中，请先停止核心后再保存规则"
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            val message = "核心正在启停，请稍后重试"
             mutableRulesEditor.value = state.copy(error = message)
             mutableErrors.tryEmit(message)
             return
@@ -987,9 +1092,9 @@ class ProfilesViewModel internal constructor(
         viewModelScope.launch {
             runCatching {
                 val updatedContent = withContext(overviewDispatcher) { ProfileRulesEditor.replaceRules(state.sourceContent, rules) }
-                val updatedProfile = repository.saveCustomRules(profile.id, rules, state.sourceContent) {
-                    generation == rulesGeneration && !isProfileMutationBlocked(runtimeManager.state.value)
-                }
+                val updatedProfile = profileWrite { repository.saveCustomRules(profile.id, rules, state.sourceContent) {
+                    generation == rulesGeneration && !isProfileTransitioning(runtimeManager.state.value)
+                } }
                 if (generation == rulesGeneration) {
                     reflectStructuredSave(profile.id, updatedContent, updatedProfile)
                     // 作者 long：与 Flutter 一样逐操作保存并留在列表；更新正文快照供下一次保存检测过期写入。
@@ -1010,8 +1115,8 @@ class ProfilesViewModel internal constructor(
             mutableErrors.tryEmit("高级代理编辑仅支持自定义配置")
             return
         }
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑代理")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         viewModelScope.launch {
@@ -1039,15 +1144,15 @@ class ProfilesViewModel internal constructor(
     fun saveProxies(proxies: String) {
         val state = mutableProxiesEditor.value
         val profile = state.profile ?: return
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存代理")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         viewModelScope.launch {
             mutableProxiesEditor.value = state.copy(isSaving = true)
             runCatching {
                 val updatedContent = ProfileProxiesEditor.replaceProxies(state.sourceContent, proxies)
-                val updatedProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
+                val updatedProfile = profileWrite { repository.saveCustomDocument(profile.id, updatedContent, state.sourceContent) { !isProfileTransitioning(runtimeManager.state.value) } }
                 reflectStructuredSave(profile.id, updatedContent, updatedProfile)
             }.onSuccess {
                 closeProxiesEditor()
@@ -1067,8 +1172,8 @@ class ProfilesViewModel internal constructor(
             mutableErrors.tryEmit("高级代理组编辑仅支持自定义配置")
             return
         }
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑代理组")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         if (mutableProxyGroupsEditor.value.isSaving) return
@@ -1109,8 +1214,8 @@ class ProfilesViewModel internal constructor(
         val state = mutableProxyGroupsEditor.value
         val profile = state.profile ?: return
         if (state.isLoading || state.isSaving) return
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存代理组")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         val generation = proxyGroupsGeneration
@@ -1121,9 +1226,9 @@ class ProfilesViewModel internal constructor(
                 val filters = save.groups.flatMap { listOf(it.text("filter"), it.text("exclude-filter")) }
                 require(validateGroupFilters(filters).all(String::isEmpty)) { "过滤表达式无效，请打开对应策略组修复" }
                 withContext(overviewDispatcher) { ProxyGroupDrafts.apply(state.sourceContent, save, repository.localProxies().map { it.name }) }
-                val updated = repository.saveCustomProxyGroups(profile.id, save, state.sourceContent) {
-                    generation == proxyGroupsGeneration && !isProfileMutationBlocked(runtimeManager.state.value)
-                }
+                val updated = profileWrite { repository.saveCustomProxyGroups(profile.id, save, state.sourceContent) {
+                    generation == proxyGroupsGeneration && !isProfileTransitioning(runtimeManager.state.value)
+                } }
                 if (generation == proxyGroupsGeneration) {
                     reflectStructuredSave(profile.id, repository.readLocalProfileContent(profile.id), updated)
                     closeProxyGroupsEditor()
@@ -1141,15 +1246,15 @@ class ProfilesViewModel internal constructor(
     fun saveProxyGroups(groups: String) {
         val state = mutableProxyGroupsEditor.value
         val profile = state.profile ?: return
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存代理组")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         viewModelScope.launch {
             mutableProxyGroupsEditor.value = state.copy(isSaving = true)
             runCatching {
                 val updatedContent = ProfileProxyGroupsEditor.replaceGroups(state.sourceContent, groups)
-                val updatedProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
+                val updatedProfile = profileWrite { repository.saveCustomDocument(profile.id, updatedContent, state.sourceContent) { !isProfileTransitioning(runtimeManager.state.value) } }
                 reflectStructuredSave(profile.id, updatedContent, updatedProfile)
             }.onSuccess {
                 closeProxyGroupsEditor()
@@ -1161,8 +1266,8 @@ class ProfilesViewModel internal constructor(
     }
 
     fun openProvidersEditor(profile: Profile) {
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 Provider")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         val generation = ++providersGeneration
@@ -1208,8 +1313,8 @@ class ProfilesViewModel internal constructor(
         val state = mutableProvidersEditor.value
         val profile = state.profile ?: return
         if (state.isSaving || state.isLoading) return
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            mutableProvidersEditor.value = state.copy(error = "核心运行中，请先停止核心后再保存 Provider")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableProvidersEditor.value = state.copy(error = "核心正在启停，请稍后重试")
             return
         }
         val generation = providersGeneration
@@ -1222,14 +1327,14 @@ class ProfilesViewModel internal constructor(
                 require(errors.size == filters.size && errors.all(String::isEmpty)) { "Provider 过滤表达式无效，请检查后重试" }
                 check(generation == providersGeneration) { "资源编辑会话已关闭" }
                 val updated = if (profile.type == ProfileType.CUSTOM) {
-                    repository.saveCustomProviders(profile.id,
+                    profileWrite { repository.saveCustomProviders(profile.id,
                         ProfileProvidersEditor.Sections(proxyProviders, ruleProviders), proxyProviderOverrides, state.sourceContent) {
-                        generation == providersGeneration && !isProfileMutationBlocked(runtimeManager.state.value)
-                    }
+                        generation == providersGeneration && !isProfileTransitioning(runtimeManager.state.value)
+                    } }
                 } else {
-                    repository.saveProviderOptions(profile.id, proxyProviderOverrides) {
-                        generation == providersGeneration && !isProfileMutationBlocked(runtimeManager.state.value)
-                    }
+                    profileWrite { repository.saveProviderOptions(profile.id, proxyProviderOverrides) {
+                        generation == providersGeneration && !isProfileTransitioning(runtimeManager.state.value)
+                    } }
                 }
                 val content = if (profile.type == ProfileType.CUSTOM) repository.readLocalProfileContent(profile.id) else state.sourceContent
                 updated to content
@@ -1254,8 +1359,8 @@ class ProfilesViewModel internal constructor(
     }
 
     fun openDnsEditor(profile: Profile) {
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 DNS")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         mutableDnsEditor.value = ProfileDnsEditorUiState(
@@ -1271,20 +1376,21 @@ class ProfilesViewModel internal constructor(
     fun saveDns(overrides: ProfileDnsOverrides) {
         val state = mutableDnsEditor.value
         val profile = state.profile ?: return
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存 DNS")
+        if (state.isSaving) return
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         viewModelScope.launch {
             mutableDnsEditor.value = state.copy(overrides = overrides, isSaving = true)
             runCatching {
-                // 作者 long：扩展页可能先保存其他分区，合并最新元数据避免用打开时快照覆盖刚保存的 Provider。
-                val latest = repository.profiles.value.firstOrNull { it.id == profile.id } ?: error("配置不存在")
-                val current = ProfileProviderOverrides.fromJsonString(latest.overridesJson)
-                val updatedProfile = repository.updateProfileOverrides(
-                    profile.id,
-                    current.copy(dns = overrides).toJsonString(),
-                )
+                val updatedProfile = profileWrite {
+                    repository.patchProfileOverrides(profile.id, { mutableDnsEditor.value.profile?.id == profile.id && !isProfileTransitioning(runtimeManager.state.value) }) { current ->
+                        // 作者 long：失败后保留的是待提交草稿，并发基线始终取打开时的配置，才能安全重试。
+                        check(current.dns == ProfileProviderOverrides.fromJsonString(profile.overridesJson).dns) { "DNS设置已变化，请重新打开后编辑" }
+                        current.copy(dns = overrides)
+                    }
+                }
                 reflectStructuredSave(profile.id, profile = updatedProfile)
             }.onSuccess {
                 closeDnsEditor()
@@ -1300,8 +1406,8 @@ class ProfilesViewModel internal constructor(
             mutableErrors.tryEmit("Dialers 编辑仅支持自定义配置")
             return
         }
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 Dialers")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         val generation = ++dialersGeneration
@@ -1336,7 +1442,7 @@ class ProfilesViewModel internal constructor(
 
     fun openMoreEditor(profile: Profile) {
         if (profile.type != ProfileType.CUSTOM) return
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+        if (isProfileTransitioning(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
             return
         }
@@ -1356,7 +1462,7 @@ class ProfilesViewModel internal constructor(
         val state = mutableMoreEditor.value
         val profile = state.profile ?: return
         if (state.isSaving || busy.value) return
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+        if (isProfileTransitioning(runtimeManager.state.value)) {
             mutableMoreEditor.value = state.copy(error = PROFILE_MUTATION_BLOCKED_MESSAGE)
             return
         }
@@ -1371,12 +1477,12 @@ class ProfilesViewModel internal constructor(
         val parentGeneration = localEditorGeneration
         val patch = ProfileMorePatch(state.ntp, ntp, state.sniffer, sniffer)
         fun canWrite() = generation == moreGeneration && parentGeneration == localEditorGeneration &&
-            mutableMoreEditor.value.profile?.id == profile.id && !isProfileMutationBlocked(runtimeManager.state.value)
+            mutableMoreEditor.value.profile?.id == profile.id && !isProfileTransitioning(runtimeManager.state.value)
         // 作者 long：同步认领写入，阻止同一帧重复提交；保存成功后留在分区，revision让正在确认的子页安全收起。
         mutableMoreEditor.value = state.copy(isSaving = true, error = null)
         viewModelScope.launch {
             try {
-                val updated = repository.saveMoreOptions(profile.id, patch, ::canWrite)
+                val updated = profileWrite { repository.saveMoreOptions(profile.id, patch, ::canWrite) }
                 if (generation == moreGeneration && parentGeneration == localEditorGeneration) {
                     reflectStructuredSave(profile.id, profile = updated)
                     val saved = ProfileProviderOverrides.fromJsonString(updated.overridesJson)
@@ -1406,8 +1512,8 @@ class ProfilesViewModel internal constructor(
         val state = mutableDialersEditor.value
         val profile = state.profile ?: return
         if (state.isSaving || state.isLoading) return
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存 Dialers")
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         val generation = dialersGeneration
@@ -1426,11 +1532,13 @@ class ProfilesViewModel internal constructor(
                     require(target == null || catalog.selectable(changedProxy, target, mapping)) { "目标已失效或会形成循环，请重新选择" }
                     check(current.dialers == ProfileProviderOverrides.fromJsonString(profile.overridesJson).dialers) { "链式设置已变化，请重新打开后编辑" }
                 }
-                check(!isProfileMutationBlocked(runtimeManager.state.value)) { PROFILE_MUTATION_BLOCKED_MESSAGE }
-                val updatedProfile = repository.updateProfileOverrides(
-                    profile.id,
-                    current.copy(dialers = mapping).toJsonString(),
-                )
+                check(!isProfileTransitioning(runtimeManager.state.value)) { PROFILE_MUTATION_BLOCKED_MESSAGE }
+                val updatedProfile = profileWrite {
+                    repository.patchProfileOverrides(profile.id, { generation == dialersGeneration && !isProfileTransitioning(runtimeManager.state.value) }) { latest ->
+                        check(latest.dialers == current.dialers) { "链式设置已变化，请重新打开后编辑" }
+                        latest.copy(dialers = mapping)
+                    }
+                }
                 if (generation == dialersGeneration) {
                     reflectStructuredSave(profile.id, profile = updatedProfile)
                     mutableDialersEditor.value = state.copy(profile = updatedProfile, sourceContent = source, dialers = dialers, isSaving = false)
@@ -1447,23 +1555,22 @@ class ProfilesViewModel internal constructor(
     }
 
     fun saveEditor(content: String) {
-        val profile = mutableEditor.value.profile ?: return
-        if (profile.type == ProfileType.FILE) {
-            saveFileEditor(content, profile.ageSecretKey)
-            return
-        }
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存配置")
-            return
-        }
+        val editor = mutableEditor.value
+        val profile = editor.profile ?: return
+        if (profile.type == ProfileType.FILE) { saveFileEditor(content, profile.ageSecretKey); return }
+        if (editor.isSaving || editor.isLoading || isProfileTransitioning(runtimeManager.state.value)) return
+        val generation = localEditorGeneration
+        mutableEditor.value = editor.copy(isSaving = true, draftContent = content)
         viewModelScope.launch {
-            mutableEditor.value = mutableEditor.value.copy(isSaving = true)
-            runCatching { repository.updateLocalProfileContent(profile.id, content) }
-                .onSuccess { closeEditor() }
-                .onFailure { error ->
-                    mutableEditor.value = mutableEditor.value.copy(isSaving = false)
-                    mutableErrors.emit(error.message ?: "保存配置失败")
-                }
+            try {
+                profileWrite { repository.saveCustomDocument(profile.id, content, editor.content) { generation == localEditorGeneration } }
+                if (generation == localEditorGeneration) closeEditor()
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) {
+                if (generation == localEditorGeneration) mutableEditor.value = editor.copy(draftContent = content,
+                    error = "保存失败，输入已保留；配置可能已更新，请重新打开后重试")
+                mutableErrors.emit("保存失败，输入已保留；配置可能已更新，请重新打开后重试")
+            }
         }
     }
 
@@ -1482,6 +1589,20 @@ class ProfilesViewModel internal constructor(
     }
 
     fun dismissSyncResult() { if (!mutableSync.value.running) mutableSync.value = ProfileSyncUiState() }
+
+    private suspend fun <T> profileWrite(write: suspend () -> T): T {
+        var committed: Result<T>? = null
+        try {
+            return runtimeManager.withProfileWrite(repository.currentProfileId.value) {
+                write().also { committed = Result.success(it) }
+            }
+        } catch (_: com.lonnnnnng.flclash.service.ProfileApplyAfterSaveException) {
+            val message = "配置已保存，当前配置应用失败，请重试应用"
+            mutableSync.update { it.copy(applyError = message) }
+            mutableErrors.emit(message)
+            return requireNotNull(committed).getOrThrow()
+        }
+    }
 
     private suspend fun applySyncedCurrent(): String? {
         val selected = repository.currentProfileId.value ?: return null
@@ -1563,7 +1684,7 @@ class ProfilesViewModel internal constructor(
     }
 
     fun bindScript(profile: Profile, scriptId: Long?) {
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+        if (isProfileTransitioning(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
             return
         }
@@ -1580,7 +1701,7 @@ class ProfilesViewModel internal constructor(
         }
         launchAction {
             try {
-                val updated = save()
+                val updated = profileWrite(save)
                 if (generation == localEditorGeneration) reflectStructuredSave(profileId, profile = updated)
             } finally {
                 if (generation == localEditorGeneration && mutableEditor.value.profile?.id == profileId) {
@@ -1602,15 +1723,28 @@ class ProfilesViewModel internal constructor(
         val orderedIds = requested + currentIds.filterNot { it in requested }
         if (orderedIds.isEmpty()) return
         // 作者 long：把弹窗中的局部顺序补齐为当前最新 Profile 列表，避免排序期间新增订阅后丢失新条目。
-        launchAction { repository.reorder(orderedIds) }
+        if (!busy.compareAndSet(false, true)) return
+        orderResult.value = orderResult.value.first to null
+        viewModelScope.launch {
+            try {
+                runtimeManager.withProfileWrite { repository.reorder(orderedIds) }
+                orderResult.value = (orderResult.value.first + 1) to null
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { orderResult.value = orderResult.value.first to "排序保存失败，请重试" }
+            finally { busy.value = false }
+        }
     }
 
     fun delete(profile: Profile) {
-        if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+        if (isProfileTransitioning(runtimeManager.state.value)) {
+            mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
-        launchAction { repository.deleteProfile(profile.id) }
+        launchAction {
+            runtimeManager.removeProfile(profile.id, { repository.profiles.value.map(Profile::id) }, repository::selectProfile) {
+                repository.deleteProfile(profile.id)
+            }
+        }
     }
 
     private fun launchAction(action: suspend () -> Unit) {

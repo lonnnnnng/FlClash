@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.UploadFile
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -28,6 +29,7 @@ internal fun FileProfileEditorDialog(
     onSaveWithLabel: ((String?, String, String) -> Unit)? = null,
     onOpenDocument: (() -> Unit)? = null,
     onMetadataChange: (String, String) -> Unit = { _, _ -> },
+    onPersistPick: suspend (Long) -> Boolean = { true },
 ) {
     val profile = state.profile ?: return
     // 作者 long：正文和密钥只属于当前编辑会话，不写 SavedState；选择器只恢复“正在选择”标记以接收系统回调。
@@ -38,6 +40,7 @@ internal fun FileProfileEditorDialog(
     val picking = pickToken != null
     var confirmDiscard by remember { mutableStateOf(false) }
     var showYaml by remember(profile.id) { mutableStateOf(false) }
+    val pickerScope = rememberCoroutineScope()
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -48,10 +51,8 @@ internal fun FileProfileEditorDialog(
         pickToken = null
         onFilePicked(token, uri?.toString())
     }
-    ClearAgeInputOnBackground {
-        // 作者 long：选择器可能在下一帧重组前触发 ON_STOP，必须现场读取 token；捕获上一帧的 picking 会把系统选择误判为普通后台。
-        if (pickToken == null && activity?.isChangingConfigurations != true && !state.isSaving) { key = ""; onDismiss() }
-    }
+    // 作者 long：后台保留编辑会话供进程回收恢复，敏感正文/密钥由VM加密暂存，不进入SavedState。
+
     val replacement = state.replacement
     val dirty = content != state.content || key != profile.ageSecretKey || replacement != null || label != profile.label
     val locked = readOnly || state.isSaving || state.isReadingFile || picking
@@ -79,8 +80,16 @@ internal fun FileProfileEditorDialog(
                     modifier = Modifier.testTag("file_profile_replace_pick"), onClick = {
                     onBeginPick()?.let { token ->
                         pickToken = token
-                        try { picker.launch(arrayOf("*/*")) }
-                        catch (_: Exception) { pickToken = null; onFilePicked(token, null) }
+                        pickerScope.launch {
+                            try {
+                                if (onPersistPick(token)) picker.launch(arrayOf("*/*"))
+                                else { pickToken = null; onFilePicked(token, null) }
+                            } catch (failure: Exception) {
+                                // 作者 long：暂存或系统选择器启动失败时归还令牌，避免表单永久停在选择中。
+                                pickToken = null; onFilePicked(token, null)
+                                if (failure is kotlinx.coroutines.CancellationException) throw failure
+                            }
+                        }
                     }
                 })
                 if (state.isReadingFile) {

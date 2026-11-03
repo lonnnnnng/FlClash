@@ -1,5 +1,15 @@
 # Testing
 
+## 配置管理闭环集中验收（2026-11-04）
+
+- 最终生产`/tmp/kclash-config-closure-20261104-build5.log`通过App414/Service182共596项，失败/错误/跳过0，以及Debug/AndroidTest/Lint。`testbuild6`只修正设备测试断言/等待，`testbuild7`只修进程测试Unit返回与PID记录；最终测试APK/Lint通过。独立`release.log`通过未签名arm64 Release/R8/Lint和包名/版本检查，Debug Lint0/62/9、Release0/62/8；Core/Common/Go本轮未重跑。
+- Redmi API36、arm64、1080×2340竖屏/字号1.0。`batch.log`9/13，`retry.log`4/4，`prepare2.log`/`verify.log`各1/1；15个不同精确方法按最后一次结果全部通过，不称一次15/15。详单及每项最后日志在`docs/acceptance/profile-closure-redmi-20261104.json`。
+- 真实运行态FILE/CUSTOM Rules保存应用、删除fallback和授权两目标批量下载由正式仓库/核心执行，运行计时保持、inputsApplied为true；网络测试仅复用唯一授权URL的两临时ID，不点全局同步全部。Provider隔离仓库补验DNS/链式代理事务合并与后置守卫回滚；排序深浅、独立应用重试和共用长按拖动/取消通过。
+- 本地与远程真实DocumentsUI取消/选择/暂存/外层保存、旧远程正文Activity重建和运行态设置入口通过；picker先暂存令牌后的测试必须推进Compose帧，不能只Thread.sleep等窗口。JVM补验延迟草稿写入后关闭/VM清理不复活、DNS失败重试保留最新其他覆盖和FILE/远程picker令牌新VM恢复/错配隔离。
+- 进程阶段分开执行，准备PID5392；instrumentation结束后另启应用PID5565，Home→am kill→pidof为空，新instrumentation PID5678恢复父名称/密钥与正文子页。放弃后原Room行/选择/正文SHA/mtime一致，临时ID和marker回收。系统选择器等待中进程回收并返回文件尚未单独E2E，不能由父/正文测试代替。
+- before2/after首页保护各1/1，count2/missing0，原1.yaml双端哈希保持；最终App/Test设备哈希匹配，结束无服务/tun0、旋转1/字号1.0。4张PNG已主线程目视；截图按每个status bundle配对name/base64，避免字段输出顺序导致错图。原始日志/截图只留本机，仓库JSON保留哈希与索引。
+- 保留失败：build1注入默认值、build3跨变体Hilt/Lint生成文件竞争、build4新增JVM未等IO、before错误类包名、batch四项断言/等待及prepare非Unit初始化。Redmi run-as被SELinux拒绝，应用内保护替代且未提权。最后一份删除为JVM证据，其他分区/脚本运行态、资源SAF、全部实网、完整视觉和正式Release运行继续PARTIAL。
+
 ## Roadmap 核对与提交前集中验证（2026-11-03）
 
 当前快照/矩阵已同步累计能力，历史同日“未提交/下一组/当前包”只指各切片当时状态；真实age Bridge解密、新增明文/密文SAF与加密FILE替换此前已验，不再作为全局缺项。FILE/CUSTOM结构化运行态、实网批次、其他资源系统SAF、完整进程草稿与完整视觉仍PARTIAL。

@@ -57,6 +57,11 @@ interface ProfileStore {
         return updateRemoteProfileSettings(expected.profile.id, settings.label, settings.url, settings.autoUpdate, settings.intervalMillis, settings.ageSecretKey)
     }
     suspend fun updateLocalProfileContent(id: Long, content: String): Profile
+    suspend fun saveCustomDocument(id: Long, content: String, expectedContent: String, canWrite: () -> Boolean): Profile {
+        check(canWrite()) { "编辑会话已变化" }
+        check(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开编辑器" }
+        return updateLocalProfileContent(id, content)
+    }
     suspend fun saveCustomRules(id: Long, rules: String, expectedContent: String, canWrite: () -> Boolean): Profile {
         check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
         require(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开规则页" }
@@ -108,6 +113,11 @@ interface ProfileStore {
     suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
+    suspend fun patchProfileOverrides(id: Long, canWrite: () -> Boolean, patch: (ProfileProviderOverrides) -> ProfileProviderOverrides): Profile {
+        check(canWrite()) { "编辑会话已变化" }
+        val current = extensionProfile(id) ?: error("配置不存在")
+        return updateProfileOverrides(id, patch(ProfileProviderOverrides.fromJsonString(current.overridesJson)).toJsonString())
+    }
     suspend fun saveMoreOptions(id: Long, patch: ProfileMorePatch, canWrite: () -> Boolean): Profile {
         check(canWrite()) { "更多设置编辑状态已变化" }
         val current = extensionProfile(id) ?: error("配置不存在")
@@ -471,6 +481,32 @@ class ProfileRepository(
         }
     }
 
+    override suspend fun saveCustomDocument(id: Long, content: String, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        val bytes = content.toByteArray(Charsets.UTF_8)
+        profileDocumentText(bytes)
+        configValidator.validate(bytes)
+        fileMutationMutex.withLock {
+            val file = profileFile(id)
+            val original = snapshotLocalProfileFile(file)
+            check(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化，请重新打开编辑器" }
+            // 作者 long：完整正文与分区保存使用同一文件锁及Room补偿，不能把旧父草稿覆盖到新分区或新节点选择上。
+            withContext(kotlinx.coroutines.NonCancellable) {
+                replaceLocalProfileFile(file, bytes, { commit ->
+                    database.withTransaction {
+                        val latest = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                        require(latest.type == ProfileType.CUSTOM) { "只有自定义配置支持分区编辑" }
+                        check(canWrite()) { "编辑会话已变化" }
+                        val next = latest.copy(lastUpdateAt = System.currentTimeMillis())
+                        commit()
+                        profileDao.update(next.toEntity())
+                        check(canWrite()) { "编辑会话已变化" }
+                        next
+                    }
+                }, expected = original)
+            }
+        }
+    }
+
     override suspend fun saveCustomProxyGroups(id: Long, save: ProxyGroupsSave, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
         fileMutationMutex.withLock {
             save.providerProfiles.values.distinct().forEach { resourceId ->
@@ -774,6 +810,18 @@ class ProfileRepository(
         }
     }
 
+    override suspend fun patchProfileOverrides(id: Long, canWrite: () -> Boolean, patch: (ProfileProviderOverrides) -> ProfileProviderOverrides): Profile = withContext(Dispatchers.IO) {
+        database.withTransaction {
+            // 作者 long：DNS/链式代理在事务内仅合并本分区，排队保存时不能把其他分区的新值换回旧快照。
+            check(canWrite()) { "编辑会话已变化" }
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            val updated = current.copy(overridesJson = patch(ProfileProviderOverrides.fromJsonString(current.overridesJson)).toJsonString())
+            profileDao.update(updated.toEntity())
+            check(canWrite()) { "编辑会话已变化" }
+            updated
+        }
+    }
+
     override suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
         database.withTransaction {
             // 作者 long：订阅/文件配置仅更新本分区，事务内读取最新 DNS/脚本等元数据，并拒绝关闭或启停后的迟到提交。
@@ -987,15 +1035,17 @@ class ProfileRepository(
         // 作者 long：删除与本地文件保存共用锁，避免失败保存恢复旧文件时把已删除的配置正文重新留在磁盘。
         fileMutationMutex.withLock {
             val profile = profileDao.getById(id) ?: return@withLock
+            var fallback = mutableCurrentProfileId.value
             database.withTransaction {
                 profileDao.delete(profile)
-                profileFile(id).delete()
                 if (mutableCurrentProfileId.value == id) {
-                    val fallback = profileDao.getAll().firstOrNull()?.id
-                    mutableCurrentProfileId.value = fallback
+                    fallback = profileDao.getAll().firstOrNull()?.id
                     persistCurrentProfile(fallback)
                 }
             }
+            // 作者 long：先提交Room再清理正文；事务失败必须保留旧源和当前选择，供管理器恢复原运行配置。
+            mutableCurrentProfileId.value = fallback
+            profileFile(id).delete()
         }
     }
 

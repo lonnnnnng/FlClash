@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.UploadFile
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,7 @@ internal fun RemoteProfileEditorDialog(
     onFilePicked: (Long?, String?) -> Unit = { _, _ -> },
     onClearReplacement: () -> Unit = {},
     onRetryRead: () -> Unit = {},
+    onPersistPick: suspend (Long) -> Boolean = { true },
 ) {
     var draft by remember(profile.id) { mutableStateOf(state?.draft ?: RemoteProfileDraft.from(profile)) }
     LaunchedEffect(state?.draft) { state?.draft?.let { draft = it } }
@@ -45,6 +47,7 @@ internal fun RemoteProfileEditorDialog(
     var warnUpdate by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val activity = remember(context) { generateSequence(context) { (it as? ContextWrapper)?.baseContext }.filterIsInstance<Activity>().firstOrNull() }
+    val pickerScope = rememberCoroutineScope()
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val locked = saving || state?.isLoading == true || state?.isReadingFile == true || pickToken != null
@@ -68,10 +71,8 @@ internal fun RemoteProfileEditorDialog(
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         val token = pickToken; pickToken = null; onFilePicked(token, uri?.toString())
     }
-    ClearAgeInputOnBackground {
-        // 作者 long：配置变更保留VM内存草稿；系统选择文件仍属于当前会话，普通退后台才关闭敏感表单。
-        if (pickToken == null && activity?.isChangingConfigurations != true && !saving) onDismiss()
-    }
+    // 作者 long：后台保留编辑会话供进程回收恢复，敏感正文/密钥由VM加密暂存，不进入SavedState。
+
     ProfileEditorPage(::exit, { Text("编辑订阅") }, {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).testTag("remote_profile_editor_form"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             ProfileFormSection {
@@ -100,8 +101,16 @@ internal fun RemoteProfileEditorDialog(
                     !locked && state?.document != null, Modifier.testTag("remote_profile_replace_pick")) {
                     onBeginPick()?.let { token ->
                         pickToken = token
-                        try { picker.launch(arrayOf("*/*")) }
-                        catch (_: Exception) { pickToken = null; onFilePicked(token, null) }
+                        pickerScope.launch {
+                            try {
+                                if (onPersistPick(token)) picker.launch(arrayOf("*/*"))
+                                else { pickToken = null; onFilePicked(token, null) }
+                            } catch (failure: Exception) {
+                                // 作者 long：暂存或系统选择器启动失败时归还令牌，避免表单永久停在选择中。
+                                pickToken = null; onFilePicked(token, null)
+                                if (failure is kotlinx.coroutines.CancellationException) throw failure
+                            }
+                        }
                     }
                 }
                 state?.replacement?.let {

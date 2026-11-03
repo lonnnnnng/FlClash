@@ -102,7 +102,8 @@ class LocalFileProfileRepositoryInstrumentedTest {
                         onAddRemote = { _, _ -> error("文件替换不能添加订阅") }, onAddCustom = {}, onSelect = { error("文件替换不能切换配置") },
                         onEdit = model::openEditor, onUpdate = {}, onCloseEditor = model::closeEditor, onSaveEditor = model::saveEditor, onDelete = {},
                         onSaveFileEditor = model::saveFileEditor, onBeginFileReplacementPick = model::beginFileReplacementPick,
-                        onFileReplacementPicked = model::acceptFileReplacement, onClearFileReplacement = model::clearFileReplacement)
+                        onFileReplacementPicked = model::acceptFileReplacement, onClearFileReplacement = model::clearFileReplacement,
+                        onPersistProfilePick = model::persistPickerBeforeLaunch)
                 }
             }
             try {
@@ -166,7 +167,8 @@ class LocalFileProfileRepositoryInstrumentedTest {
                         onSaveWithAgeKey = { label, url, auto, interval, key -> model.saveRemoteEditor(label, url, auto, interval, key) },
                         state = state, onDraftChange = model::updateRemoteDraft,
                         onBeginPick = model::beginRemoteFilePick, onFilePicked = model::acceptRemoteFilePick,
-                        onClearReplacement = model::clearRemoteReplacement, onRetryRead = model::retryRemoteDocument) }
+                        onClearReplacement = model::clearRemoteReplacement, onRetryRead = model::retryRemoteDocument,
+                        onPersistPick = model::persistPickerBeforeLaunch) }
                 }
             }
             try {
@@ -246,6 +248,8 @@ class LocalFileProfileRepositoryInstrumentedTest {
     private fun waitFor(condition: () -> Boolean) {
         val end = SystemClock.uptimeMillis() + 10_000
         while (SystemClock.uptimeMillis() < end) {
+            // 作者 long：暂存后启动选择器会恢复到Compose协程；测试也要推进帧，不能只阻塞等待系统窗口。
+            compose.mainClock.advanceTimeByFrame()
             if (condition()) return
             SystemClock.sleep(100)
         }

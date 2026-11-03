@@ -48,13 +48,15 @@ internal fun ProfileEditorDialog(
     onImportCustomUrl: (String, String) -> Unit = { _, _ -> },
     onConfirmCustomImport: () -> Unit = {},
     onCancelCustomImport: () -> Unit = {},
+    draftContent: String? = null,
+    onContentChange: (String) -> Unit = {},
 ) {
     val initialDraftLabel by rememberSaveable(profile.id) { mutableStateOf(profile.label) }
     var showTitleActions by remember { mutableStateOf(false) }
     var showRename by rememberSaveable(profile.id) { mutableStateOf(false) }
     var showMore by rememberSaveable(profile.id) { mutableStateOf(false) }
     var moreSection by rememberSaveable(profile.id) { mutableStateOf("ntp") }
-    var content by rememberSaveable(profile.id, initialContent) { mutableStateOf(initialContent) }
+    var content by remember(profile.id, initialContent) { mutableStateOf(draftContent ?: initialContent) }
     var showDiscardConfirmation by rememberSaveable(profile.id) { mutableStateOf(false) }
     var showSectionDiscardConfirmation by rememberSaveable(profile.id) { mutableStateOf(false) }
     var showDraftNameDialog by rememberSaveable(profile.id) { mutableStateOf(false) }
@@ -152,7 +154,7 @@ internal fun ProfileEditorDialog(
                 }
                 if (profile.type != ProfileType.CUSTOM || showYaml) OutlinedTextField(
                     value = content,
-                    onValueChange = { content = it },
+                    onValueChange = { content = it; onContentChange(it) },
                     modifier = Modifier.fillMaxWidth().testTag("profile_editor_content"),
                     minLines = if (profile.type == ProfileType.CUSTOM) 3 else 12,
                     maxLines = if (profile.type == ProfileType.CUSTOM) 6 else 20,
@@ -285,6 +287,7 @@ internal fun ProfileEditorDialog(
                 TextButton(
                     onClick = {
                         content = initialContent
+                        onContentChange(initialContent)
                         showSectionDiscardConfirmation = false
                         val action = pendingSectionAction
                         pendingSectionAction = null

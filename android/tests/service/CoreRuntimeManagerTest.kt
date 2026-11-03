@@ -38,6 +38,57 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class CoreRuntimeManagerTest {
+    @Test fun profileWriteSerializesWithStopAndFinishesAcceptedCommit() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val runtime = manager(ActiveProfile(701, "write", source.path), temporaryFolder.newFolder(), FakeBridge(), FakeServiceController())
+        runtime.startProxy().getOrThrow()
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val write = async { runtime.withProfileWrite { entered.complete(Unit); release.await(); 17 } }
+        entered.await()
+        val stop = async { runtime.stop().getOrThrow() }
+        runCurrent(); assertFalse(stop.isCompleted)
+        release.complete(Unit); assertEquals(17, write.await()); stop.await()
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+    }
+
+    @Test fun removingCurrentAppliesFallbackBeforeDeletingAndDeletionFailureRestoresOriginal() = runTest {
+        val one = temporaryFolder.newFile().apply { writeText("{}") }
+        val two = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']") }
+        val profiles = mapOf(701L to ActiveProfile(701, "old", one.path), 702L to ActiveProfile(702, "fallback", two.path))
+        var selected: Long? = 701
+        val runtime = manager(profiles[701], temporaryFolder.newFolder(), FakeBridge(), FakeServiceController(), profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profiles[selected]
+        })
+        val select: suspend (Long?) -> Unit = { selected = it }
+        runtime.startProxy().getOrThrow()
+        var removed = false
+        assertTrue(runCatching { runtime.removeProfile(701, { profiles.keys.toList() }, select) {
+            assertEquals(702L, selected); assertTrue(runtime.state.value.isRunning); error("DB rejected")
+        } }.isFailure)
+        assertEquals(701L, selected); assertTrue(runtime.state.value.isRunning)
+        runtime.removeProfile(701, { profiles.keys.toList() }, select) { assertEquals(702L, selected); removed = true }
+        assertTrue(removed); assertEquals(702L, selected); assertTrue(runtime.state.value.isRunning)
+        runtime.stop().getOrThrow()
+    }
+
+    @Test fun invalidFallbackKeepsSourceAndLastProfileStopsBeforeDeletion() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val controller = FakeServiceController()
+        var selected: Long? = 701
+        val runtime = manager(ActiveProfile(701, "last", source.path), temporaryFolder.newFolder(), bridge, controller, profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = selected?.let { ActiveProfile(it, "profile", source.path) }
+        })
+        val select: suspend (Long?) -> Unit = { selected = it }
+        runtime.startProxy().getOrThrow(); bridge.failNextValidation = true
+        var removed = false
+        assertTrue(runCatching { runtime.removeProfile(701, { listOf(701, 702) }, select) { removed = true } }.isFailure)
+        assertFalse(removed); assertEquals(701L, selected); assertTrue(runtime.state.value.isRunning)
+        runtime.removeProfile(701, { listOf(701) }, select) {
+            assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value); assertFalse(controller.started); removed = true; selected = null
+        }
+        assertTrue(removed); assertNull(selected); assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+    }
+
     @Test fun stoppedRestoreRefreshesPersistedSettingsWithoutStartingAndRejectsRunningRestore() = runTest {
         val source = temporaryFolder.newFile().apply { writeText("{}") }
         val bridge = FakeBridge(); val store = FakeGeneralStore()

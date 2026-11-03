@@ -11,3 +11,15 @@
 -dontwarn java.beans.**
 
 -keep class com.lonnnnnng.flclash.service.GeneralSettings { *; }
+
+# 作者 long：加密草稿的JSON字段跨进程/发布版读取，不能由R8重命名其快照字段。
+-keep class com.lonnnnnng.flclash.ui.ProfileEditorDraftSnapshot { *; }
+-keep class com.lonnnnnng.flclash.ui.ProfileEditorUiState { *; }
+-keep class com.lonnnnnng.flclash.ui.RemoteProfileEditorUiState { *; }
+-keep class com.lonnnnnng.flclash.ui.RemoteProfileDraft { *; }
+-keep class com.lonnnnnng.flclash.ui.ProfileDocumentEditorState { *; }
+-keep class com.lonnnnnng.flclash.ui.ProfileFileReplacementPreview { *; }
+-keep class com.lonnnnnng.flclash.data.ProfileDocumentSnapshot { *; }
+-keep class com.lonnnnnng.flclash.data.Profile { *; }
+-keep enum com.lonnnnnng.flclash.data.ProfileType { *; }
+-keep class kotlin.Triple { *; }
