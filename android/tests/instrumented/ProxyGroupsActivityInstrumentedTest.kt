@@ -110,8 +110,8 @@ class ProxyGroupsActivityInstrumentedTest {
         }
 
         val expected = mapOf(
-            "page_dark" to "6741fe74d2841a187a690fe9a09778a4a7df0052b1068ba43d6f6aaf86d5c365",
-            "page_light" to "5db65d69b15ea41574e56e9209d33c420ac8b9aad7c166cd49c643a944ca3f0c",
+            "page_dark" to "187ea10b6870bfec4cfca1adf74eb585717978eb3772e23ce0c5a3a8ab28154f",
+            "page_light" to "1f752cf96f37ec08d19da1841a46845b4da087ec51f8b63a390d852b00b8402c",
         )
         val actual = buildMap {
             listOf(true, false).forEach { dark ->

@@ -1,9 +1,8 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.runtime.*
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -85,6 +84,7 @@ internal fun ProxyNodeCard(
     val colors = MaterialTheme.colorScheme
     val addLocal = LocalAddToLocalProxy.current
     var menu by remember(profileId, selectionTag, groupType) { mutableStateOf(false) }
+    val menuAnchor = remember(profileId, selectionTag) { AppContextMenuAnchor() }
     val computed = groupType.equals("URLTest", true) || groupType.equals("Fallback", true)
     val selectable = computed || groupType.equals("Selector", true)
     val canAdd = addable && addLocal != null
@@ -103,9 +103,10 @@ internal fun ProxyNodeCard(
         else -> "未使用"
     }
     Surface(
-        modifier = Modifier.fillMaxWidth().then(modifier).testTag(selectionTag).appFocusRing(ProxyNodeStyle.shape).combinedClickable(
+        modifier = Modifier.fillMaxWidth().then(modifier).testTag(selectionTag).appFocusRing(ProxyNodeStyle.shape).clip(ProxyNodeStyle.shape)
+            .appContextMenuAnchor(menuAnchor, menuEnabled && hasMenu) { menu = true }.combinedClickable(
             enabled = enabled || menuEnabled && hasMenu, onClick = { if (enabled) onSelect() },
-            onLongClick = if (menuEnabled && hasMenu) ({ menu = true }) else null,
+            onLongClick = if (menuEnabled && hasMenu) ({ menuAnchor.open(); menu = true }) else null,
             onLongClickLabel = "节点操作",
         ).semantics {
             role = Role.RadioButton
@@ -117,14 +118,15 @@ internal fun ProxyNodeCard(
         color = proxyNodeColor(insideGroup),
     ) {
         Box(Modifier.heightIn(min = minimumHeight)) {
-            DropdownMenu(menu, { menu = false }) {
+            AppDropdownMenu(menu && menuEnabled && hasMenu, { menu = false }, anchor = menuAnchor.point,
+                placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds) {
                 // 作者 long：菜单复用卡片选择回调，computed组再次优选仍清除固定，内建/组节点也可选择但不能导入。
-                if (selectable) DropdownMenuItem(text = { Text(if (computed) "优选" else "选择") },
+                if (selectable) AppDropdownMenuItem(text = { Text(if (computed) "优选" else "选择") },
                     leadingIcon = { Icon(if (computed) Icons.Outlined.PushPin else Icons.Outlined.RadioButtonChecked, null) },
                     trailingIcon = { if (if (computed) preferred else inUse) Icon(Icons.Filled.Check, "已选中") },
                     enabled = enabled,
                     onClick = { menu = false; onSelect() }, modifier = Modifier.testTag("${selectionTag}_menu_select"))
-                if (canAdd) DropdownMenuItem(text = { Text("添加到本地代理") },
+                if (canAdd) AppDropdownMenuItem(text = { Text("添加到本地代理") },
                     leadingIcon = { Icon(Icons.AutoMirrored.Outlined.PlaylistAdd, null) },
                     onClick = { menu = false; addLocal.invoke(profileId, name) }, modifier = Modifier.testTag("${selectionTag}_menu_add_local"))
             }

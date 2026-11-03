@@ -170,9 +170,9 @@ private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (I
                 modifier = Modifier.background(dashboardCardColor(), CircleShape).testTag("proxy_group_more")) {
                 Icon(Icons.Outlined.ExpandMore, "选择代理组")
             }
-            DropdownMenu(expanded = showGroups, onDismissRequest = { showGroups = false }, shape = AppSuperellipseShape(24.dp)) {
+            AppDropdownMenu(expanded = showGroups, onDismissRequest = { showGroups = false }) {
                 names.forEachIndexed { index, name ->
-                    DropdownMenuItem(text = { Text(name) },
+                    AppDropdownMenuItem(text = { Text(name) },
                         trailingIcon = { if (index == selectedIndex) Icon(Icons.Outlined.Check, "已选择") },
                         onClick = { showGroups = false; onSelect(index) }, modifier = Modifier.testTag("proxy_group_menu_" + name))
                 }
@@ -204,8 +204,8 @@ internal fun ProxyGroupsCard(
     var pageOptions by remember(optionsContext) {
         mutableStateOf(ProxyPageOptionsStore.load(optionsContext))
     }
-    var toolsExpanded by rememberSaveable { mutableStateOf(false) }
-    var toolsMenuPage by rememberSaveable { mutableStateOf(ProxyToolsMenuPage.ROOT) }
+    var toolsExpanded by remember(currentProfileId, runtimeState, state.isLoading) { mutableStateOf(false) }
+    var toolsMenuPage by remember(currentProfileId, runtimeState, state.isLoading) { mutableStateOf(ProxyToolsMenuPage.ROOT) }
     var locateSelectedRequest by rememberSaveable(currentProfileId) { mutableStateOf(0) }
     var locateTargetGroup by rememberSaveable(currentProfileId) { mutableStateOf<String?>(null) }
     val groups = visibleProxyGroups(state.groups, mode)
@@ -285,54 +285,59 @@ internal fun ProxyGroupsCard(
                     ) {
                         Icon(Icons.Outlined.MoreVert, contentDescription = "代理组工具")
                     }
-                    DropdownMenu(
+                    AppDropdownMenu(
                         expanded = toolsExpanded,
                         onDismissRequest = { toolsExpanded = false },
-                        shape = AppSuperellipseShape(24.dp),
+                        onNavigateBack = if (toolsMenuPage != ProxyToolsMenuPage.ROOT) ({ toolsMenuPage = ProxyToolsMenuPage.ROOT }) else null,
                     ) {
                         when (toolsMenuPage) {
                             ProxyToolsMenuPage.ROOT -> {
                                 selectedGroup?.let { group ->
                                     val summary = state.delaySummary(group)
-                                    if (summary.tested > 0 || summary.testing > 0) DropdownMenuItem(
+                                    if (summary.tested > 0 || summary.testing > 0) AppDropdownMenuItem(
                                         text = { ProxyDelaySummaryText(summary) }, enabled = false, onClick = {},
                                     )
                                 }
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("刷新代理组") },
                                     onClick = { toolsExpanded = false; onRefresh() },
                                     enabled = canRefresh,
                                     leadingIcon = { Icon(Icons.Outlined.Refresh, null) },
                                     modifier = Modifier.testTag("proxy_groups_refresh"),
                                 )
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("样式：${pageOptions.displayMode.label}") },
                                     onClick = { toolsMenuPage = ProxyToolsMenuPage.DISPLAY_MODE },
                                     modifier = Modifier.testTag("proxy_tools_display_mode"),
+                                    trailingIcon = { AppMenuSubmenuArrow() },
                                 )
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("排序：${pageOptions.sort.label}") },
                                     onClick = { toolsMenuPage = ProxyToolsMenuPage.SORT },
                                     modifier = Modifier.testTag("proxy_tools_sort"),
+                                    trailingIcon = { AppMenuSubmenuArrow() },
                                 )
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("布局：${pageOptions.gridDensity.label}") },
                                     onClick = { toolsMenuPage = ProxyToolsMenuPage.DENSITY },
                                     modifier = Modifier.testTag("proxy_tools_density"),
+                                    trailingIcon = { AppMenuSubmenuArrow() },
                                 )
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("尺寸：${pageOptions.cardSize.label}") },
                                     onClick = { toolsMenuPage = ProxyToolsMenuPage.CARD_SIZE },
                                     modifier = Modifier.testTag("proxy_tools_card_size"),
+                                    trailingIcon = { AppMenuSubmenuArrow() },
                                 )
                                 if (pageOptions.displayMode == ProxyDisplayMode.LIST) {
-                                    DropdownMenuItem(
+                                    AppDropdownMenuItem(
                                         text = { Text("列表图标：${pageOptions.iconStyle.label}") },
                                         onClick = { toolsMenuPage = ProxyToolsMenuPage.ICON_STYLE },
                                         modifier = Modifier.testTag("proxy_tools_icon_style"),
+                                        trailingIcon = { AppMenuSubmenuArrow() },
                                     )
                                 }
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("隐藏超时节点") },
                                     onClick = { updatePageOptions(pageOptions.copy(hideTimeout = !pageOptions.hideTimeout)) },
                                     trailingIcon = {
@@ -691,7 +696,7 @@ private fun ProxyGroupIcon(name: String, style: ProxyGroupIconStyle) {
 
 @Composable
 private fun ProxyMenuBackItem(label: String, onBack: () -> Unit) {
-    DropdownMenuItem(
+    AppDropdownMenuItem(
         text = { Text("返回：$label") },
         onClick = onBack,
         modifier = Modifier.testTag("proxy_tools_back"),
@@ -705,7 +710,7 @@ private fun ProxyMenuOptionItem(
     testTag: String,
     onClick: () -> Unit,
 ) {
-    DropdownMenuItem(
+    AppDropdownMenuItem(
         text = { Text(label) },
         onClick = onClick,
         trailingIcon = {

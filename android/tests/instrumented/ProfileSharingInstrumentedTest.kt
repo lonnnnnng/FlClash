@@ -45,9 +45,23 @@ class ProfileSharingInstrumentedTest {
         assertEquals(listOf("copy" to remote.id, "qr" to remote.id, "export" to remote.id), actions)
         composeRule.onNodeWithTag("profile_selected_${file.id}", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("profile_actions_${remote.id}").performTouchInput { longClick() }
-        composeRule.onNodeWithTag("profile_edit_${remote.id}").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_edit_${remote.id}").assertIsEnabled()
         composeRule.onNodeWithTag("profile_rename_${remote.id}").assertDoesNotExist()
         composeRule.onNodeWithTag("profile_extend_${remote.id}").assertIsEnabled()
+    }
+
+    @Test fun transitionsDisableWritesAndKeepReadOnlySharingAvailable() {
+        var status by mutableStateOf(CoreRuntimeStatus.STARTING)
+        val actions = mutableListOf<Pair<String, Long>>()
+        setPanel(listOf(file, remote), running = false, actions, status = { status })
+        for (phase in listOf(CoreRuntimeStatus.STARTING, CoreRuntimeStatus.STOPPING)) {
+            composeRule.runOnIdle { status = phase }
+            composeRule.onNodeWithTag("profile_actions_${remote.id}").performTouchInput { longClick() }
+            composeRule.onNodeWithTag("profile_edit_${remote.id}").assertIsNotEnabled()
+            composeRule.onNodeWithTag("profile_more_${remote.id}").performClick()
+            composeRule.onNodeWithTag("profile_copy_link_${remote.id}").assertIsEnabled().performClick()
+        }
+        assertEquals(listOf("copy" to remote.id, "copy" to remote.id), actions)
     }
 
     @Test fun fileAndCustomMenusExposeOnlySupportedActions() {
@@ -118,13 +132,14 @@ class ProfileSharingInstrumentedTest {
         composeRule.onNodeWithTag("profile_more_$id").performClick()
     }
 
-    private fun setPanel(profiles: List<Profile>, running: Boolean, actions: MutableList<Pair<String, Long>>) {
+    private fun setPanel(profiles: List<Profile>, running: Boolean, actions: MutableList<Pair<String, Long>>,
+        status: () -> CoreRuntimeStatus = { if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED }) {
         composeRule.setContent {
             KClashTheme {
                 ProfilesPanel(
                     state = ProfilesUiState(profiles = profiles, currentProfileId = profiles.first().id),
                     editorState = ProfileEditorUiState(),
-                    runtimeState = if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED,
+                    runtimeState = status(),
                     showAddDialog = false,
                     onShowAddDialog = {}, onDismissAddDialog = {}, onPickFile = {}, onPickQrCode = {},
                     onAddRemote = { _, _ -> }, onAddCustom = {},

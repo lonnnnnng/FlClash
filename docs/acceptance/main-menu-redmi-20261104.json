@@ -1,0 +1,799 @@
+{
+  "recordedAt": "2026-11-04T07:26:48.341660+08:00",
+  "baseCommit": "e99449f9da332834eb6782950c240bf146422f49",
+  "scope": "Main-page menu interaction and Provider single-update timeout/cancellation recovery; complete UI parity remains PARTIAL",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "sdk": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "build": {
+    "logs": {
+      "production": "/tmp/kclash-main-menu-20261104-build4.log",
+      "testOnlyFinal": "/tmp/kclash-main-menu-20261104-testbuild7.log",
+      "release": "/tmp/kclash-main-menu-20261104-release.log"
+    },
+    "unitTests": {
+      "app": {
+        "tests": 437,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 188,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "totalUnitTests": 625,
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 62,
+        "reportSha256": "6a2b241165e19dea647cbbda001e4a21a3e805b885bb3df6c86525453a8df1ed"
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 62,
+        "reportSha256": "12c70bc32e39628cc0646e119330829214e1ea86fd4d40421cbb90664554e5f5"
+      }
+    },
+    "coreCommonGoRerun": false
+  },
+  "artifacts": {
+    "app": {
+      "package": "com.lonnnnnng.flclash",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "871f86a16ff8923c3bd095058f01a1b374c04d414164ba36ce05d0ac5b43c5e5",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "deviceSha256": "871f86a16ff8923c3bd095058f01a1b374c04d414164ba36ce05d0ac5b43c5e5",
+      "matchesDevice": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "test": {
+      "package": "com.lonnnnnng.flclash.test",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "02128bc9db500116b8fbb968c795d850bee3aec24a97ee3c0b57c9e2a9abeccc",
+      "nativeAbis": [],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash.test' versionCode='' versionName='' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "deviceSha256": "02128bc9db500116b8fbb968c795d850bee3aec24a97ee3c0b57c9e2a9abeccc",
+      "matchesDevice": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "release": {
+      "package": "com.lonnnnnng.flclash",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "907b2bac16ee609252f303f88e61e8ac762e086adcc9e70011f8a0744663753d",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "installed": false,
+      "signed": false
+    }
+  },
+  "finalBatch": {
+    "methods": [
+      "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+      "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+      "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+      "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+      "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+      "com.lonnnnnng.flclash.ui.ProxyNodeMenusInstrumentedTest#selectorPreferredAndNonselectableMenusKeepSelectionAndDelayIndependentInBothThemes",
+      "com.lonnnnnng.flclash.ui.ProxyNodeMenusInstrumentedTest#customProviderAndBuiltinPoliciesApplyToBothPageLayouts",
+      "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyToolsMenuChangesGridDensityAndCurrentNodeCanBeLocated",
+      "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyListLayoutShowsGroupSectionsAndListIconMenu",
+      "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+      "com.lonnnnnng.flclash.ui.ProfileSharingInstrumentedTest#urlSharingMenuWorksForNoncurrentProfileWhileRunning",
+      "com.lonnnnnng.flclash.ui.ProfileSharingInstrumentedTest#fileAndCustomMenusExposeOnlySupportedActions",
+      "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+      "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+      "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#actualNodeMenuAddsOncePersistsAfterRecreationAndShowsDuplicateFeedback",
+      "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+      "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+      "com.lonnnnnng.flclash.ui.ProfileSharingInstrumentedTest#transitionsDisableWritesAndKeepReadOnlySharingAvailable",
+      "com.lonnnnnng.flclash.ui.ProviderUpdateRecoveryInstrumentedTest#singleUpdateTimeoutStopsSpinnerAndRetrySucceedsInSamePage"
+    ],
+    "results": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenusInstrumentedTest#selectorPreferredAndNonselectableMenusKeepSelectionAndDelayIndependentInBothThemes",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenusInstrumentedTest#customProviderAndBuiltinPoliciesApplyToBothPageLayouts",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyListLayoutShowsGroupSectionsAndListIconMenu",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyToolsMenuChangesGridDensityAndCurrentNodeCanBeLocated",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileSharingInstrumentedTest#fileAndCustomMenusExposeOnlySupportedActions",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileSharingInstrumentedTest#transitionsDisableWritesAndKeepReadOnlySharingAvailable",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileSharingInstrumentedTest#urlSharingMenuWorksForNoncurrentProfileWhileRunning",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#actualNodeMenuAddsOncePersistsAfterRecreationAndShowsDuplicateFeedback",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+        "code": 0
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderUpdateRecoveryInstrumentedTest#singleUpdateTimeoutStopsSpinnerAndRetrySucceedsInSamePage",
+        "code": 0
+      }
+    ],
+    "exitCode": 0,
+    "passed": true,
+    "log": "/tmp/kclash-main-menu-20261104-retry-final2.log",
+    "images": [
+      "/tmp/kclash-main-menu-20261104-main_menu_profile_root_false.png",
+      "/tmp/kclash-main-menu-20261104-main_menu_profile_more_false.png",
+      "/tmp/kclash-main-menu-20261104-main_menu_profile_root_true.png",
+      "/tmp/kclash-main-menu-20261104-main_menu_profile_more_true.png",
+      "/tmp/kclash-main-menu-20261104-main_menu_proxy_sort.png",
+      "/tmp/kclash-main-menu-20261104-main_menu_keyboard_context.png",
+      "/tmp/kclash-main-menu-20261104-main_menu_long_menu.png",
+      "/tmp/kclash-main-menu-20261104-node_menu_Selector_false.png",
+      "/tmp/kclash-main-menu-20261104-node_menu_URLTest_false.png",
+      "/tmp/kclash-main-menu-20261104-node_menu_Fallback_false.png",
+      "/tmp/kclash-main-menu-20261104-node_menu_LoadBalance_false.png",
+      "/tmp/kclash-main-menu-20261104-node_menu_Selector_true.png",
+      "/tmp/kclash-main-menu-20261104-node_menu_URLTest_true.png",
+      "/tmp/kclash-main-menu-20261104-node_menu_Fallback_true.png",
+      "/tmp/kclash-main-menu-20261104-node_menu_LoadBalance_true.png",
+      "/tmp/kclash-main-menu-20261104-node_provider_TAB_false.png",
+      "/tmp/kclash-main-menu-20261104-node_provider_TAB_true.png",
+      "/tmp/kclash-main-menu-20261104-node_provider_LIST_false.png",
+      "/tmp/kclash-main-menu-20261104-node_provider_LIST_true.png",
+      "/tmp/kclash-main-menu-20261104-proxy_page_dark.png",
+      "/tmp/kclash-main-menu-20261104-proxy_page_light.png",
+      "/tmp/kclash-main-menu-20261104-profiles_empty.png",
+      "/tmp/kclash-main-menu-20261104-profiles_custom_selected.png",
+      "/tmp/kclash-main-menu-20261104-profiles_remote_usage.png",
+      "/tmp/kclash-main-menu-20261104-profiles_empty_light.png",
+      "/tmp/kclash-main-menu-20261104-profiles_custom_selected_light.png",
+      "/tmp/kclash-main-menu-20261104-profiles_remote_usage_light.png",
+      "/tmp/kclash-main-menu-20261104-profiles_source_menu_light.png",
+      "/tmp/kclash-main-menu-20261104-profiles_source_menu_dark.png",
+      "/tmp/kclash-main-menu-20261104-dashboard_default.png",
+      "/tmp/kclash-main-menu-20261104-dashboard_system_ready.png",
+      "/tmp/kclash-main-menu-20261104-formal_providers_loaded.png",
+      "/tmp/kclash-main-menu-20261104-formal_providers_recreated.png",
+      "/tmp/kclash-main-menu-20261104-running_yaml_providers_loaded.png",
+      "/tmp/kclash-main-menu-20261104-running_yaml_providers_recreated.png",
+      "/tmp/kclash-main-menu-20261104-provider_update_timeout.png",
+      "/tmp/kclash-main-menu-20261104-provider_update_recovered.png"
+    ]
+  },
+  "longObservation": {
+    "batch": "/tmp/kclash-main-menu-20261104-retry-final-long.json",
+    "wholeBatchPassed": false,
+    "wholeBatchResult": "18/20; two screenshot baseline methods failed, observation method passed",
+    "result": "running-count=90 polling-window-ms=180000 recreation=passed session-preserved=true",
+    "sameProductionApkAsFinal": true,
+    "laterTestChanges": "Screenshot baselines, keyboard capture timing and fixture Surface only; final 20/20 uses 16s observation.",
+    "images": [
+      {
+        "path": "/tmp/kclash-main-menu-20261104-long-running_yaml_providers_loaded.png",
+        "sha256": "373fc07028c04dff28cf879a92ad109f7a5b40fe02d03dad0d2be18fd32e9c38"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-long-running_yaml_providers_recreated.png",
+        "sha256": "ef9605b2cc6645712d2f292846f090c12f829a85c1188f9b5c0b5f16e511098c"
+      }
+    ],
+    "rawLog": {
+      "path": "/tmp/kclash-main-menu-20261104-retry-final-long.log",
+      "sha256": "2a9d7ffa9911b38d4182cda4088efd5d2bba9e35c1c2861c83df197468ce7fca"
+    },
+    "note": "Runner reused ordinary screenshot filenames; long-observation images were separately extracted from original log."
+  },
+  "providerFix": {
+    "confirmed": "Single update timeout/cancellation bypassed busy cleanup, leaving inFlightName/updatingNames stale. Now finally cleanup, timeout message and failure retry.",
+    "reference": "lib/providers/actions/proxies.dart updateProvider try/finally",
+    "regressions": {
+      "redLog": "/tmp/kclash-providers-cancel-20261104-red.log",
+      "oldImplementationFailures": 2,
+      "finalUnitAndDeviceTestsPassed": true
+    },
+    "originalIncident": "Original minutes-long screen was not captured; root cause for that exact incident remains unconfirmed."
+  },
+  "preservation": {
+    "checks": {
+      "before": {
+        "batch": {
+          "methods": [
+            "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+              "code": 0
+            }
+          ],
+          "exitCode": 0,
+          "passed": true,
+          "log": "/tmp/kclash-main-menu-20261104-before.log",
+          "images": []
+        },
+        "metadataResult": "phase=before count=2 missing=0 expected=2"
+      },
+      "after-preflight": {
+        "batch": {
+          "methods": [
+            "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+              "code": 0
+            }
+          ],
+          "exitCode": 0,
+          "passed": true,
+          "log": "/tmp/kclash-main-menu-20261104-after-preflight.log",
+          "images": []
+        },
+        "metadataResult": "phase=after count=2 missing=0 expected=2"
+      },
+      "after-final1": {
+        "batch": {
+          "methods": [
+            "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+              "code": 0
+            }
+          ],
+          "exitCode": 0,
+          "passed": true,
+          "log": "/tmp/kclash-main-menu-20261104-after-final1.log",
+          "images": []
+        },
+        "metadataResult": "phase=after count=2 missing=0 expected=2"
+      },
+      "after-final2": {
+        "batch": {
+          "methods": [
+            "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+              "code": 0
+            }
+          ],
+          "exitCode": 0,
+          "passed": true,
+          "log": "/tmp/kclash-main-menu-20261104-after-final2.log",
+          "images": []
+        },
+        "metadataResult": "phase=after count=2 missing=0 expected=2"
+      }
+    },
+    "device": {
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "serviceRecords": 0,
+      "hasTun0": false,
+      "accelerometerRotation": "1",
+      "userRotation": "0",
+      "fontScale": "1.0"
+    },
+    "scope": "Group before/after verifies formal count, nonempty body and file name/size/mtime. Formal-host fixtures independently compare rows/current selection/body hashes and restore their own preferences; no independent group-wide row/selection/hash snapshot."
+  },
+  "visuals": {
+    "images": [
+      {
+        "path": "/tmp/kclash-main-menu-20261104-main_menu_profile_root_false.png",
+        "sha256": "b38f02600ab4a8f6313673976d8a5a41644ac4431373514743db089f1f09049f"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-main_menu_profile_more_false.png",
+        "sha256": "007a39a09aed201c8c6dd6d93591faf6cde99402368d76f527d6b1efc028d97b"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-main_menu_profile_root_true.png",
+        "sha256": "289b83d22ba8c313ac8f862e22f0b827c70313a5e9eb846a7d62e2962de532ee"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-main_menu_profile_more_true.png",
+        "sha256": "efbdf1158c7f1dd45367eb4a5ea156c0112a6b43ae043c305c315c73f9e1466e"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-main_menu_proxy_sort.png",
+        "sha256": "0455e7f7184167c38ff34a2114e4356a8ffa20c5582faf57315d7789b16ef3de"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-main_menu_keyboard_context.png",
+        "sha256": "7d9b4845539b11d342bab2eeb9ec3d31b8c862d34378be8efc3bb61f352e83a4"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-main_menu_long_menu.png",
+        "sha256": "7b0de61b0a7da1d2c770e4ed85ea2c873f579a0918d0d3623b5bbd90f56b5cac"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_menu_Selector_false.png",
+        "sha256": "dfb74b821a0c4ef30ca1e3064dc9a543e6710e855656b075f2b26dc8db3e6b29"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_menu_URLTest_false.png",
+        "sha256": "8a7cbca016553723561b83787fd6ac5db0bca85310e8d64126c302688d709de2"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_menu_Fallback_false.png",
+        "sha256": "93328bbb68289e735bba937be8bf472e6f5365b7e29b647d39872708f8ab4ad8"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_menu_LoadBalance_false.png",
+        "sha256": "e8cf8d89ecceff28e738589f78c38f1d72a13d61e80d7a08e958c1c0a4f2c8fd"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_menu_Selector_true.png",
+        "sha256": "9d5184c6bb82831e0c5afb30898012c58534f9c2bee033e1d82cfb086a65767a"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_menu_URLTest_true.png",
+        "sha256": "95a1bf6df969bbb2c8cb2179bd38b5305310668cc8822212ffe4fbcefa1a06a3"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_menu_Fallback_true.png",
+        "sha256": "364cfea192ad301f65d9c2516f37aaa1093413d846a07657c29824b55bf20344"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_menu_LoadBalance_true.png",
+        "sha256": "d8a7026b39f86942d2a7af37a451b8f7207ac6199c22ead0190660b670ee1ef1"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_provider_TAB_false.png",
+        "sha256": "79e8bb55a79add763f8f900c71830ee5ac8fd2470b9b15bd2ebfa4fa5e056109"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_provider_TAB_true.png",
+        "sha256": "9ccd8d3bad2b766e56ac220bc048fb47ad7fc44fda984510a80449bbda00f5a0"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_provider_LIST_false.png",
+        "sha256": "c826deb14d345ebf1fd801088bb4ad3cf8373099e6bc42e96e7f64715812e6e6"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-node_provider_LIST_true.png",
+        "sha256": "a199aa0f58d16c11779da8d08508352d6ba109f2503a8a1633571a5ccfcf979a"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-proxy_page_dark.png",
+        "sha256": "187ea10b6870bfec4cfca1adf74eb585717978eb3772e23ce0c5a3a8ab28154f"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-proxy_page_light.png",
+        "sha256": "1f752cf96f37ec08d19da1841a46845b4da087ec51f8b63a390d852b00b8402c"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-profiles_empty.png",
+        "sha256": "e8667f3bbd39ea6d54e6c922c4a251a200bdfad7bc111ea624b722f12ad0d87f"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-profiles_custom_selected.png",
+        "sha256": "5017976e9005c3678daa555f88547e3abde43586c00161a12e2e53f259f97962"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-profiles_remote_usage.png",
+        "sha256": "d0243b92595dc16946afd8522dbb1b1c729d260de1cceab1af66c591c42fdd5f"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-profiles_empty_light.png",
+        "sha256": "c60b8d6338c60ae953226ecdaff09ee91f71999983cdafc1dfd1163c667806db"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-profiles_custom_selected_light.png",
+        "sha256": "dba27e461b916acc1dd6ac8b24b724ab063a8cb399eb4344eda396f0cc1c71b6"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-profiles_remote_usage_light.png",
+        "sha256": "9d18109dfdd7d3fc39b03d214b48872d050109134f56c08b4018b79119e5a4b0"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-profiles_source_menu_light.png",
+        "sha256": "39226b8aa1676fe840d73dd40c785bfe821539ce9902fee76f5bd7bf075fe411"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-profiles_source_menu_dark.png",
+        "sha256": "40a7269ade38da1f69d93054ac21dad73848f3893f56ca3b81089bc926211404"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-dashboard_default.png",
+        "sha256": "92d0a662f7f5b02804b693d3d89c5e254960208b731d9dbe8d89b00012adac0c"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-dashboard_system_ready.png",
+        "sha256": "eda3da666967495280f4b1321e3859d8bcae8242f8d5a9652eeb17e9e7fb5eb5"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-formal_providers_loaded.png",
+        "sha256": "5c613c50bdde12e9c25aabc99b1cf0de5432b53d022820201350554db52ba1fd"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-formal_providers_recreated.png",
+        "sha256": "5c613c50bdde12e9c25aabc99b1cf0de5432b53d022820201350554db52ba1fd"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-running_yaml_providers_loaded.png",
+        "sha256": "981f55184956e870d908086d37bab41a31017386c0efd4226d5fd685204d7b84"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-running_yaml_providers_recreated.png",
+        "sha256": "15be4d25813167fb8d8e19e06fc1f0de5038ac74465456aceebf37eb3b72cc23"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-provider_update_timeout.png",
+        "sha256": "b5c113f26ad415d71725c498f66d98fcbc6224ac36ade318f17fcd19a30b2ac2"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-provider_update_recovered.png",
+        "sha256": "c8ae4bbab20087031a1c89f0b98175ec7801a4788ae990ac285d4125690997ae"
+      }
+    ],
+    "contacts": [
+      {
+        "path": "/tmp/kclash-main-menu-20261104-contact-final-1.jpg",
+        "sha256": "7924315a13e2a02670bdf694f36f9b42120bc20e0a3b5c6e8dcdb63c41341c72"
+      },
+      {
+        "path": "/tmp/kclash-main-menu-20261104-contact-final-2.jpg",
+        "sha256": "1bea7c4f75d34953c492e5ebad920f11013a5e1f7adddf58e49027b4d6dec608"
+      }
+    ],
+    "changedBaselines": [
+      {
+        "name": "proxy_page_dark",
+        "changedPixels": 2565,
+        "bounds": [
+          43,
+          319,
+          1036,
+          817
+        ],
+        "maxChannelDifference": 5,
+        "reason": "Explicit same-shape ripple clipping changes edge antialiasing only; old/new/diff inspected."
+      },
+      {
+        "name": "proxy_page_light",
+        "changedPixels": 2566,
+        "bounds": [
+          43,
+          319,
+          1036,
+          817
+        ],
+        "maxChannelDifference": 4,
+        "reason": "Explicit same-shape ripple clipping changes edge antialiasing only; old/new/diff inspected."
+      },
+      {
+        "name": "profiles_custom_selected",
+        "changedPixels": 727,
+        "bounds": [
+          44,
+          298,
+          1036,
+          504
+        ],
+        "maxChannelDifference": 4,
+        "reason": "Explicit same-shape ripple clipping changes edge antialiasing only; old/new/diff inspected."
+      },
+      {
+        "name": "profiles_remote_usage",
+        "changedPixels": 727,
+        "bounds": [
+          44,
+          298,
+          1036,
+          504
+        ],
+        "maxChannelDifference": 4,
+        "reason": "Explicit same-shape ripple clipping changes edge antialiasing only; old/new/diff inspected."
+      }
+    ],
+    "oldNewDifferenceContact": {
+      "path": "/tmp/kclash-main-menu-20261104-corner-diff.jpg",
+      "sha256": "f28914deb7605e0601be5265db00b8091c1a8c621953fa4eb2c635cfaec55b9a"
+    },
+    "reviewed": "Menu deep/light themes, submenu, keyboard, long menu and node Tab/List inspected; Provider fault screenshots are functional fixtures."
+  },
+  "failuresRetained": [
+    "build1: unavailable AutoMirrored ChevronRight import; used existing outlined icon and explicit RTL mirror.",
+    "batch1 16/18: keyboard mode/focus and obsolete RUNNING edit-disabled assertion. Sharing expectation corrected; transition write gates independently tested.",
+    "Provider timeout/cancellation red tests 0/2; finally cleanup fixed, final green.",
+    "retry-final-long 18/20: 4 image hashes changed only at clipped contours (max channel delta 4-5), inspected then updated.",
+    "Keyboard screenshot initially preceded popup platform draw; assertion and platform idle now precede capture."
+  ],
+  "review": {
+    "independentReviewExecuted": false,
+    "reason": "Spawned tasks received empty NEW_TASK payload; primary performed review."
+  },
+  "limits": [
+    "Original incident unique trigger unknown; no blanket claim for all external resource downloads.",
+    "No full Flutter liquid deformation, screenshot morph, carried drag interaction, stacked-submenu animation or glass parity.",
+    "Release unsigned build only, not installed or run; Core/Common/Go not rerun.",
+    "Backup/system restore and secondary observation-page polish remain deferred."
+  ],
+  "sourceManifest": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt",
+      "sha256": "a17ed0b9bcdf2d6e6d246edb465e3e247c7bc76fc470cb88086fd5b67a92bd12"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "sha256": "87ff8b60a6c14ad8dc8368d901baacf4d655a5d2f99caf2be953cce2d3d7c2bf"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt",
+      "sha256": "1b604f08ac3534cb173398eb8430e87961080ad14341c451a7dcbc4419ed5ae3"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileStatisticsViewModel.kt",
+      "sha256": "4a34c18483e01e1b51825515e612e5993f8e6415d0051fc6dccf8b9bdfa9b549"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+      "sha256": "43f9b05b9e179bd53835bb68d9b225d50d395448c71b25da226c71610e02b1c9"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyNodeVisuals.kt",
+      "sha256": "08e2b3687a73ed86cbef553325fc86033da6c75ac168fa934e1fed6c079cebbc"
+    },
+    {
+      "path": "android/tests/app/AppMenuPositionerTest.kt",
+      "sha256": "a2ede63b0cc43afb5f7bcb9fda0525d12dbbddf65e3f739b07f87a68f08f0c28"
+    },
+    {
+      "path": "android/tests/app/ProfileStatisticsViewModelTest.kt",
+      "sha256": "4b88f5ecf5b6e9a35e6c5979792c05b65a4e9c81468651da1ef1dd8440ee9214"
+    },
+    {
+      "path": "android/tests/instrumented/MainMenuInstrumentedTest.kt",
+      "sha256": "72dc08330786b89823cc118f488aa489621315c204ee851e1646bcd6285f193b"
+    },
+    {
+      "path": "android/tests/instrumented/ProfileSharingInstrumentedTest.kt",
+      "sha256": "3a79446f4ce65a48534cd4eeb843c64d0d6631c366ec9d1658a09bd7329fed97"
+    },
+    {
+      "path": "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt",
+      "sha256": "6d64259b28a069960d0dc6aa8a55e8adb8e28d8b1608b2bf360d1ef4d604670f"
+    },
+    {
+      "path": "android/tests/instrumented/ProviderUpdateRecoveryInstrumentedTest.kt",
+      "sha256": "289a9571906d2d0e04711e5cf5e9ad684380935b150464c537a5440a560043b4"
+    },
+    {
+      "path": "android/tests/instrumented/ProxyGroupsActivityInstrumentedTest.kt",
+      "sha256": "ef5eb22e89f7e55e2e5bae01613fc1f5577ec3230bcbdda39ac710cc9c74a1f4"
+    },
+    {
+      "path": "docs/visual-baselines/profiles-states-redmi-api36.sha256",
+      "sha256": "70c0905d456173bc4a464578b3d8d1c0c487885f5ec024551710bbe0b2658412"
+    },
+    {
+      "path": "docs/visual-baselines/proxy-groups-states-redmi-api36.sha256",
+      "sha256": "c4d4bda2abc50a95f2b7663329da86fa4dc035a2143839c652b3270d32f2d530"
+    }
+  ],
+  "localEvidence": [
+    {
+      "path": "/tmp/kclash-main-menu-20261104-after-final1.json",
+      "sha256": "a12e99fdf57ac1a8e548283352e5429576b847c8eadb3cd36a14f3c8ea132eaa"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-after-final1.log",
+      "sha256": "96adf4c72bf6b562658d81e25fe5a0761bf595ba71b248fad58ce2102c09e357"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-after-final2.json",
+      "sha256": "ace521d7b5840f3d1d0fc114c8c98a509704e3720b40b532cb02d10761d9c625"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-after-final2.log",
+      "sha256": "7332784bc7a0aed94acd30017034314cb349040be9c7d7c276875821e22cf74e"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-after-preflight.json",
+      "sha256": "51b8f5401065249a851f9cd4f25cb1f0fadf4b27a0df0a7e3f36e72f77692f11"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-after-preflight.log",
+      "sha256": "1acb41e6be267f9e5bebbf66199794bfb880f2549fadffe0add8898686da0f6e"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-artifacts-final.json",
+      "sha256": "dde428a811b61cffbabeca824e12eb3669c44a9c2f92e66109c51353dd7db4f8"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-before.json",
+      "sha256": "f796b611ce4cedcedfb36289d884052d1f4c6eda008c9ad3189994b5999c3a02"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-before.log",
+      "sha256": "4259ce83be9128b25554ec71229c8b11d80a27122d7bcbb8a570688d6d040f0f"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-build1.log",
+      "sha256": "2d82976d3e969a82e550d8c0d7008d923a14e318c48fb13467c467a0ccc3e712"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-build2.log",
+      "sha256": "2cc8a21317d7e2bd59f74f02b8cc56f24978407484dfba9d946a4155036e5371"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-build3.log",
+      "sha256": "9c19af2f4a2adb78b038dae4e33fbd4191e3a7456e9d9ca1398dc7b4c8250837"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-build4.log",
+      "sha256": "cbd7a0e9e508a500f2c731e9ae445d12667822aa1834be1f350b3be4551a0f84"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-contact-1.jpg",
+      "sha256": "48622c936be51c06dc0b8e8c825da04d66ceb47031d1642d6c56b039d52387af"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-contact-2.jpg",
+      "sha256": "27fd1ec9625c2ea3fd7a19b2dffaad151a698b71689f5e3112515dfe6d57f347"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-contact-final-1.jpg",
+      "sha256": "7924315a13e2a02670bdf694f36f9b42120bc20e0a3b5c6e8dcdb63c41341c72"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-contact-final-2.jpg",
+      "sha256": "1bea7c4f75d34953c492e5ebad920f11013a5e1f7adddf58e49027b4d6dec608"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-corner-diff.jpg",
+      "sha256": "f28914deb7605e0601be5265db00b8091c1a8c621953fa4eb2c635cfaec55b9a"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-install.json",
+      "sha256": "349459a299339eea856b1e2c472eb2cbe27ae3abf8524066472ac8f40557d679"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-methods.txt",
+      "sha256": "67ecd3d1a2b29226ff884ce0793636103116cef53cfc0e199f963cfcdb2e9d6b"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-release.log",
+      "sha256": "322d85c40a315f759d7ea8ab4ecb659dedf24e9f9ab65081523ce8f2cfcb545d"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-batch1.json",
+      "sha256": "e8c2dfdf65572258d114f05987a9f53b042249640eabb8aa750a9b2c07c01846"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-batch1.log",
+      "sha256": "4e30118e083586e58d0648f0a6e15edf15a425f0d2aacba521a3e0eb36cb719e"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-final-long.json",
+      "sha256": "7b69fffa6ffd720b4bea4cb8808f164bc31d140015e90cdae1445c59ccf5770e"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-final-long.log",
+      "sha256": "2a9d7ffa9911b38d4182cda4088efd5d2bba9e35c1c2861c83df197468ce7fca"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-final2.json",
+      "sha256": "027bf8090d7fd4ca6910fde74fb6f8ecf3868ad5d4c5f0059bfe5c4bd5d195f9"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-final2.log",
+      "sha256": "ccbbe03c649823e991f2ae6baa0b9ec84366e650ef115a9259f53b1f8c5e026e"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-keyboard-geometry.json",
+      "sha256": "5c8a4b47248875595740fbbd6c215cffd7dadc74daca2569ef77728e099e30bb"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-keyboard-geometry.log",
+      "sha256": "221fa77402a7630f0445ad16c4d6d0e97f301327011380d5c84ef844bb91078b"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-keyboard-sharing.json",
+      "sha256": "169873da390851bcaf375e2a3486538f2656fe4519d31143b578bac4bb6113fe"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-keyboard-sharing.log",
+      "sha256": "fdfc3e3d482f21b02099c5c2f943eb9b757581f031c0a70ca785d7e3c58f6c51"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-recovery-keyboard.json",
+      "sha256": "de36525b1ee709e4288ff8d22324a942a2ec49da04f5adc990463fe21166a60b"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-retry-recovery-keyboard.log",
+      "sha256": "95de12777aa4376f62bb3c75f3a2e5eb15ae4724aa570bb9bd4814ddbaf69d30"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-settings-before.json",
+      "sha256": "3829e1cce2426dbe5f37ef290db8cf3d01a157ca84972aa2e915d858b06fd0c9"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-testbuild5.log",
+      "sha256": "c7278e47766114d788b4019d6990d46e79fc384ad159a37c3ee4eae8a4496133"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-testbuild6.log",
+      "sha256": "8a65b5df1682293fbabcc858c1d6dc602f5d04c2e921f70d302f9d75260b746d"
+    },
+    {
+      "path": "/tmp/kclash-main-menu-20261104-testbuild7.log",
+      "sha256": "8a65b5df1682293fbabcc858c1d6dc602f5d04c2e921f70d302f9d75260b746d"
+    },
+    {
+      "path": "/tmp/kclash-providers-cancel-20261104-red.log",
+      "sha256": "75d474ae14e808c01014d7564b8795ce1fd768f2c95c023771c3435473bb38d7"
+    }
+  ]
+}

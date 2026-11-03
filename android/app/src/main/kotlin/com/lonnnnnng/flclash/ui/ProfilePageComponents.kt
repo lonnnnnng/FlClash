@@ -15,14 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
-import androidx.compose.ui.window.PopupPositionProvider
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.window.DialogWindowProvider
@@ -103,33 +96,17 @@ internal fun ProfileSourceMenu(
     onRemote: () -> Unit,
     onCustom: () -> Unit,
 ) {
-    val margin = with(LocalDensity.current) { 8.dp.roundToPx() }
-    val position = remember(anchor, margin) { object : PopupPositionProvider {
-        override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection, popupContentSize: IntSize): IntOffset {
-            val target = anchor ?: anchorBounds
-            val x = (target.right - popupContentSize.width).coerceIn(margin, (windowSize.width - popupContentSize.width - margin).coerceAtLeast(margin))
-            val below = target.bottom + margin
-            val y = if (below + popupContentSize.height <= windowSize.height - margin) below
-                else (target.top - popupContentSize.height - margin).coerceAtLeast(margin)
-            return IntOffset(x, y)
-        }
-    } }
-    Popup(popupPositionProvider = position, onDismissRequest = { if (!busy) onDismiss() },
-        properties = PopupProperties(focusable = true)) {
-        Surface(Modifier.widthIn(min = 248.dp, max = 320.dp).testTag("profile_add_source_menu"),
-            shape = AppSuperellipseShape(24.dp), color = dashboardCardColor(), tonalElevation = 3.dp, shadowElevation = 6.dp) {
-            Column(Modifier.padding(vertical = 8.dp)) {
-                DropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, null) },
-                    onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))
-                DropdownMenuItem(text = { Text("从文件导入 YAML") }, leadingIcon = { Icon(Icons.Outlined.Description, null) },
-                    onClick = onFile, enabled = !busy, modifier = Modifier.testTag("profile_add_source_file"))
-                DropdownMenuItem(text = { Text("添加订阅链接") }, leadingIcon = { Icon(Icons.Outlined.Link, null) },
-                    onClick = onRemote, enabled = !busy, modifier = Modifier.testTag("profile_add_source_remote"))
-                HorizontalDivider(Modifier.padding(vertical = 4.dp))
-                DropdownMenuItem(text = { Text("创建自定义配置") }, leadingIcon = { Icon(Icons.Outlined.Edit, null) },
-                    onClick = onCustom, enabled = !busy, modifier = Modifier.testTag("profile_add_source_custom"))
-            }
-        }
+    AppDropdownMenu(expanded = true, onDismissRequest = onDismiss, anchor = anchor,
+        modifier = Modifier.testTag("profile_add_source_menu")) {
+        AppDropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, null) },
+            onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))
+        AppDropdownMenuItem(text = { Text("从文件导入 YAML") }, leadingIcon = { Icon(Icons.Outlined.Description, null) },
+            onClick = onFile, enabled = !busy, modifier = Modifier.testTag("profile_add_source_file"))
+        AppDropdownMenuItem(text = { Text("添加订阅链接") }, leadingIcon = { Icon(Icons.Outlined.Link, null) },
+            onClick = onRemote, enabled = !busy, modifier = Modifier.testTag("profile_add_source_remote"))
+        HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
+        AppDropdownMenuItem(text = { Text("创建自定义配置") }, leadingIcon = { Icon(Icons.Outlined.Edit, null) },
+            onClick = onCustom, enabled = !busy, modifier = Modifier.testTag("profile_add_source_custom"))
     }
 }
 

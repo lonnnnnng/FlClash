@@ -41,8 +41,8 @@ class ProfilesVisualInstrumentedTest {
 
         val expected = mapOf(
             "empty" to "e8667f3bbd39ea6d54e6c922c4a251a200bdfad7bc111ea624b722f12ad0d87f",
-            "custom_selected" to "17606d708901178d81e274683f566a412384967a5d9498eec19c34dce4c7b5f8",
-            "remote_usage" to "8cace415c1199ff1f3fceaa167d249c011b1ef85b2aacf8ae14c1698fd631eca",
+            "custom_selected" to "5017976e9005c3678daa555f88547e3abde43586c00161a12e2e53f259f97962",
+            "remote_usage" to "d0243b92595dc16946afd8522dbb1b1c729d260de1cceab1af66c591c42fdd5f",
         )
         val mismatches = actual.mapNotNull { (state, hash) ->
             val baseline = expected.getValue(state)

@@ -13,6 +13,42 @@ import org.junit.Test
 class ProfileStatisticsViewModelTest {
     @After fun resetMain() = Dispatchers.resetMain()
 
+    @Test fun singleProviderTimeoutClearsBusyAndAllowsRetryWithoutReopeningDetail() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            runtime.update = { withTimeout(100) { awaitCancellation() } }
+            model.updateProvider("http"); runCurrent()
+            assertEquals(setOf("http"), model.providers.value.updatingNames)
+            advanceTimeBy(100); runCurrent()
+            assertNull(model.providers.value.updatingName)
+            assertTrue(model.providers.value.updatingNames.isEmpty())
+            assertEquals("更新超时，请重试", model.providers.value.updateMessage)
+            assertEquals(setOf("http"), model.providers.value.failedNames)
+            runtime.update = {}; model.updateProvider("http"); runCurrent()
+            assertEquals(2, runtime.updateCalls)
+            assertEquals("Provider 已更新", model.providers.value.updateMessage)
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun cancelledSingleProviderUpdateCannotLeaveStaleBusyOnAnotherDetail() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        val pending = CompletableDeferred<Unit>()
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            runtime.update = { pending.await(); throw CancellationException("fixture cancelled") }
+            model.updateProvider("http"); runCurrent()
+            model.show(2); runCurrent(); pending.complete(Unit); runCurrent()
+            assertNull(model.providers.value.updatingName)
+            assertTrue(model.providers.value.updatingNames.isEmpty())
+            assertNull(model.providers.value.updateMessage)
+            model.setForeground(false); model.setForeground(true); runCurrent()
+            assertNull(model.providers.value.updatingName)
+        } finally { pending.complete(Unit); model.viewModelScope.cancel(); runCurrent() }
+    }
+
     @Test fun providersTimeoutSurvivesNonCancellableReadAndRevisionBurstUntilExplicitRetry() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)

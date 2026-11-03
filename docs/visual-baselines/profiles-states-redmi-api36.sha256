@@ -1,7 +1,9 @@
 # KClash Profiles fixed-state PNG baselines.
 # Device: Redmi Note 8 Pro, Android 16/API 36, portrait, system font scale 1.0, dark mode.
 state=empty sha256=e8667f3bbd39ea6d54e6c922c4a251a200bdfad7bc111ea624b722f12ad0d87f
-state=custom_selected sha256=17606d708901178d81e274683f566a412384967a5d9498eec19c34dce4c7b5f8
-state=remote_usage sha256=8cace415c1199ff1f3fceaa167d249c011b1ef85b2aacf8ae14c1698fd631eca
+state=custom_selected sha256=5017976e9005c3678daa555f88547e3abde43586c00161a12e2e53f259f97962
+state=remote_usage sha256=d0243b92595dc16946afd8522dbb1b1c729d260de1cceab1af66c591c42fdd5f
 
 # 2026-11-04 主页面连续圆角、分层阴影与Dock静态态已目视；仅锁定原生回归，不表示Flutter逐像素一致。
+
+# 2026-11-04 菜单组：卡片按同一连续圆角显式裁剪涟漪；已比对仅轮廓抗锯齿变化，内部内容保持。

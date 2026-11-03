@@ -167,11 +167,15 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
             try {
                 if (resource != null && managed != null) { managed.sync(resource); managed.apply(id) } else runtime.updateProfileProvider(id, name)
                 currentCoroutineContext().ensureActive()
-            } catch (error: CancellationException) { throw error }
+            } catch (_: TimeoutCancellationException) { failure = "更新超时，请重试" }
+            catch (error: CancellationException) { throw error }
             catch (error: com.lonnnnnng.flclash.service.ProviderOperationException) { failure = error.message }
             catch (_: Exception) { failure = "更新失败，请稍后重试" }
-            inFlightName = null
-            mutableProviders.update { it.copy(updatingName = null, updatingNames = emptySet()) }
+            finally {
+                // 作者 long：与Flutter更新操作一致，超时或取消也必须释放忙态；否则已结束的任务会持续转圈并污染下一份配置。
+                inFlightName = null
+                mutableProviders.update { it.copy(updatingName = null, updatingNames = emptySet()) }
+            }
             // 作者 long：关闭、后台或换配置后，旧下载即使完成也不再向新详情写入提示或触发代理组刷新。
             if (generation == visibilityGeneration && foreground.value && profile.value == id) {
                 mutableProviders.update { it.copy(updatingName = null, updateMessage = failure ?: "Provider 已更新", updateFailed = failure != null,

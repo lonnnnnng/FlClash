@@ -49,6 +49,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
@@ -87,6 +88,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
@@ -4153,9 +4155,10 @@ internal fun ProfileCard(
     canEdit: Boolean = canMutate,
     canDelete: Boolean = canMutate,
 ) {
-    var showActions by remember(profile.id) { mutableStateOf(false) }
-    var showMore by remember(profile.id) { mutableStateOf(false) }
+    var showActions by remember(profile.id, canMutate, canEdit, canDelete, exportBusy) { mutableStateOf(false) }
+    var showMore by remember(profile.id, canMutate, canEdit, canDelete, exportBusy) { mutableStateOf(false) }
     var showUpdateError by remember(profile.id) { mutableStateOf(false) }
+    val menuAnchor = remember(profile.id) { AppContextMenuAnchor() }
     val expiryDate = profile.subscriptionInfo?.expireAtMillis?.let { millis ->
         SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date(millis))
     }
@@ -4165,8 +4168,10 @@ internal fun ProfileCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .appFocusRing(AppSuperellipseShape(24.dp))
+                .clip(AppSuperellipseShape(24.dp))
+                .appContextMenuAnchor(menuAnchor) { showMore = false; showActions = true }
                 .combinedClickable(onClick = onSelect, onLongClickLabel = "配置操作",
-                    onLongClick = { showMore = false; showActions = true })
+                    onLongClick = { menuAnchor.open(); showMore = false; showActions = true })
                 .testTag("profile_card_${profile.id}"),
             shape = AppSuperellipseShape(24.dp),
             colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = dashboardCardColor()),
@@ -4247,80 +4252,84 @@ internal fun ProfileCard(
                 }
 
                 Box {
-                    DropdownMenu(expanded = showActions, onDismissRequest = { showActions = false }, shape = AppSuperellipseShape(24.dp)) {
+                    AppDropdownMenu(expanded = showActions, onDismissRequest = { showActions = false },
+                        anchor = menuAnchor.point, placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
+                        onNavigateBack = if (showMore) ({ showMore = false }) else null) {
                         if (showMore) {
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text("返回") },
                                 leadingIcon = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null) },
                                 onClick = { showMore = false },
                             )
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text("运行配置") },
                                 leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
                                 onClick = { showActions = false; onPreview() },
                                 modifier = Modifier.testTag("profile_preview_${profile.id}"),
                             )
                             if (profile.type == ProfileType.URL) {
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("复制链接") },
                                     onClick = { showActions = false; onCopyLink() },
                                     modifier = Modifier.testTag("profile_copy_link_${profile.id}"),
                                 )
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("二维码") },
                                     leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, contentDescription = null) },
                                     onClick = { showActions = false; onShowQr() },
                                     modifier = Modifier.testTag("profile_show_qr_${profile.id}"),
                                 )
                             }
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text(if (exportBusy) "正在导出…" else "导出") },
                                 onClick = { showActions = false; onExport() },
                                 enabled = !exportBusy,
                                 modifier = Modifier.testTag("profile_export_${profile.id}"),
                             )
                         } else {
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text("编辑") },
                                 leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
                                 onClick = { showActions = false; onEdit() }, enabled = canEdit,
                                 modifier = Modifier.testTag("profile_edit_${profile.id}"),
                             )
                             if (profile.type == ProfileType.CUSTOM) {
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("重命名") },
                                     leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
                                     onClick = { showActions = false; onRename() },
                                     modifier = Modifier.testTag("profile_rename_${profile.id}"),
                                     enabled = canMutate,
                                 )
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("运行配置") },
                                     leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
                                     onClick = { showActions = false; onPreview() },
                                     modifier = Modifier.testTag("profile_preview_${profile.id}"),
                                 )
                             } else {
-                                DropdownMenuItem(text = { Text("扩展") },
+                                AppDropdownMenuItem(text = { Text("扩展") },
                                     leadingIcon = { Icon(Icons.Outlined.Extension, null) },
                                     onClick = { showActions = false; onExtend() },
                                     modifier = Modifier.testTag("profile_extend_${profile.id}"))
                             }
                             if (profile.type == ProfileType.URL) {
-                                DropdownMenuItem(text = { Text("同步") }, leadingIcon = { Icon(Icons.Outlined.Sync, null) },
+                                AppDropdownMenuItem(text = { Text("同步") }, leadingIcon = { Icon(Icons.Outlined.Sync, null) },
                                     onClick = { showActions = false; onUpdate() }, enabled = canMutate)
                             }
                             if (profile.type != ProfileType.CUSTOM) {
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("更多") },
+                                    trailingIcon = { AppMenuSubmenuArrow() },
                                     leadingIcon = { Icon(Icons.Outlined.MoreVert, contentDescription = null) },
                                     onClick = { showMore = true },
                                     modifier = Modifier.testTag("profile_more_${profile.id}"),
                                 )
                             }
-                            DropdownMenuItem(
-                                text = { Text("删除", color = MaterialTheme.colorScheme.error) },
-                                leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                            HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
+                            AppDropdownMenuItem(
+                                text = { Text("删除") }, danger = true,
+                                leadingIcon = { Icon(Icons.Outlined.Delete, null) },
                                 onClick = { showActions = false; onDelete() }, enabled = canDelete,
                             )
                         }

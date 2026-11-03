@@ -1,5 +1,13 @@
 # Architecture
 
+## 主页面共用菜单与 Provider 更新清理（2026-11-04）
+
+`AppDropdownMenu`供配置来源、配置卡片、代理工具/组选择和节点菜单共用。全窗口透明Popup区分外部点击关闭与Back/Escape返回子菜单上层；ON_STOP关闭。菜单按真实Window锚点、安全区和IME定位，长按优先避开原卡片，子菜单尺寸变化固定右上角；内容超高时内部滚动。卡片旁听Initial落点而不消费手势，并接通Shift+F10/菜单键。配置写权限、导出忙态、代理配置/运行态/刷新变化使旧菜单失效；卡片显式裁剪防止长按涟漪越出连续圆角。
+
+`ProfileStatisticsViewModel.updateProvider`对齐Flutter `ProxiesAction.updateProvider`的finally清理：超时和取消也清除inFlightName/updatingNames，防止已结束任务留下进度圈或污染下一份配置。超时显示“更新超时，请重试”并登记失败项；真实协程取消仍向上传播，不向新窗口发布旧提示。它与既有8秒Providers列表读取预算分别覆盖更新态和加载态，原始分钟级现场缺失，不能认定唯一触发原因。
+
+菜单采用浮层底色、连续圆角、阴影、弹簧缩放/淡入淡出和禁用语义；尚未实现Flutter完整液滴、截图变形、滑动携带和玻璃模式。整体页面parity仍PARTIAL，集中构建/安装/失败证据见`docs/acceptance/main-menu-redmi-20261104.json`。
+
 ## 主页面连续圆角与绘制反馈（2026-11-04）
 
 `AppSuperellipseShape`沿用Flutter engine八分弧参数，统一Dashboard、配置卡片/表单、代理节点和List组合边角；保留四个逻辑角及RTL映射。独立Flutter `Path.addRSuperellipse`输出7种轮廓的像素中心包含区间，Android按行比较LTR/RTL端点，栅格边界最多允许1px差异，不能由普通圆角截图自证。Flutter BSD声明随APK assets保留。

@@ -1,5 +1,13 @@
 # Project Context
 
+## 主页面菜单与 Provider 更新恢复（2026-11-04）
+
+配置来源、配置卡片、代理工具/组选择及节点共用菜单已接通浮层样式、真实锚点避让、安全区/IME内滚动、子菜单Back返回、外部点击/后台关闭和键盘入口；卡片涟漪按连续圆角裁剪。单项Provider超时/取消残留busy已用旧实现两项红测确认，改为finally清理，超时显示重试并登记失败项，旧任务不向新配置发布提示。
+
+最终生产build4 App437/Service188共625项零失败/错误/跳过，Debug/AndroidTest/Lint通过；testbuild7只修改测试基线/截图与夹具，独立未签名Release/R8/Lint通过，各0错误/62警告。Redmi最终同批20/20；同一生产APK前批90个Provider连续180000ms、Activity重建及会话保持通过，该前批整体18/20的两个截图失败已保留，最终批次观察为16秒。最终两包设备哈希匹配；正式两份配置非空正文及文件名/size/mtime前后保持，正式宿主fixture独立保护原行/选择/正文SHA与其偏好，原1.yaml双端哈希保持，结束无服务/tun0、旋转1/0及字号1.0。
+
+首批16/18保留：键盘先明确Keyboard模式/焦点，陈旧RUNNING编辑禁用断言纠偏，并补STARTING/STOPPING写入禁用。四个严格截图基线的变动仅为新增裁剪的轮廓抗锯齿（最大色值差4–5），已看旧/新/差异图后更新；空配置与其他基线保持。菜单深浅/子菜单/长菜单/节点两布局及超时/恢复图已目视，Popup截图等待平台绘制。原始分钟级转圈现场仍缺失，不能认定本缺陷就是当次唯一原因。完整液滴/变形/滑动携带/玻璃菜单和全页面UI仍PARTIAL；独立探子任务通道失败，Core/Common/Go未重跑，正式签名Release运行未验。证据`docs/acceptance/main-menu-redmi-20261104.json`，原始附件仅本机。
+
 ## 主页面视觉收敛与三分钟 Providers 补验（2026-11-04）
 
 主页面连续圆角/多层阴影、运行按钮与出站模式绘制按压、子树焦点和Dock弹簧拖动/释放/取消已完成本组验收；完整字素修复与Tab/List刷新忙态一致性接通。App430/Service188共618项零失败/错误/跳过，Debug/AndroidTest、独立未签名Release/R8及双变体Lint通过（各0错误/62警告）。Redmi最终同批23/23，包含90个Provider运行态连续180000ms、Activity重建及会话保持；14张严格截图基线和Profiles浅色/菜单、按压/焦点辅助图已目视。正式两份Profile/选择/正文SHA与mtime、脚本及运行态fixture偏好和原1.yaml保持，两包安装哈希匹配，结束无服务/tun0并恢复旋转1/字号1.0。证据见`docs/acceptance/main-visual-redmi-20261104.json`。
