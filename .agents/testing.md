@@ -2,6 +2,8 @@
 
 ## 首页/代理组与 Providers 最终集中验收（2026-11-04）
 
+补充复查：在已安装且App/Test哈希匹配前组的包上，正式空Providers停止态观察185.62秒、25次无障碍树采样正常；正式空列表/原1.yaml运行中90项与Activity重建同批2/2，前后保护各1/1。90项持续窗口仍为16秒，分钟级非空压力未覆盖；原始卡住页面已不在，不认定唯一根因。正式配置/原选择/偏好/正文和原1.yaml保持，结束无服务/tun0及旋转1/字号1.0。未重建、重装或重跑JVM/Lint，当前未构建视觉源不包含在证据中。详见`docs/acceptance/providers-recheck-redmi-20261104.json`；补充原始日志与截图前缀`/tmp/kclash-providers-recheck-20261104-`，独立review因子代理任务通道失败未执行。
+
 Providers/统计读取已改为版本通知合流、独立8秒页面预算和失败保留重试；同配置刷新保留列表，旧不可取消读取不阻塞新配置。首页/代理组按组patch保存、原渲染Profile ID锁内复核及独立失败重试已补齐。App426/Service188共614项单测、Debug/AndroidTest、独立未签名Release/R8及双变体Lint通过；Redmi最终同批9/9，原1.yaml运行中90个Provider连续16秒及Activity重建通过、核心会话保持。正式两份Profile/正文SHA与mtime和原1.yaml保护、最终两包哈希匹配；结束无服务/tun0并恢复旋转。证据见`docs/acceptance/home-proxy-mainflow-redmi-20261104.json`。
 
 新增三个不可取消/版本突发回归在旧实现红测、修复后15/15；最终build1 App426/Service188零失败/错误/跳过，testbuild3只补真机非空列表与截图等待。Debug Lint0/62/9、Release0/62/8；Core/Common/Go未重跑。最终batch-final2同批9/9，after-final2保护1/1，90个Provider截图及最终九图已目视；16秒窗口不是分钟压力验收。日志前缀`/tmp/kclash-providers-investigation-20261104-`。

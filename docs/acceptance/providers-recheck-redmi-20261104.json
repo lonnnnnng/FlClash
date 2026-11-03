@@ -1,0 +1,314 @@
+{
+  "recordedAt": "2026-11-04T05:21:58.109560+08:00",
+  "productionReference": "38ea12591f155bf4944d40429fc38001daf4fbb1",
+  "scope": "Supplementary recheck on already-installed prior-group package; current unbuilt visual edits not included",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "sdk": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "artifacts": {
+    "app": {
+      "package": "com.lonnnnnng.flclash",
+      "sha256": "2ad63f6090203b53439e90d1b57287b5a888123c24b3394d7e2e8e59d03ab9fa",
+      "deviceMatchesLocalAndPriorAcceptance": true,
+      "reinstalled": false
+    },
+    "test": {
+      "package": "com.lonnnnnng.flclash.test",
+      "sha256": "9c60ddfdaa8410bb554cdae8116ba697494ca1e6a5d3684bf1ca0988559fa612",
+      "deviceMatchesLocalAndPriorAcceptance": true,
+      "reinstalled": false
+    }
+  },
+  "emptyProvidersObservation": {
+    "scope": "current formal profile empty Providers, STOPPED, installed final prior-group package",
+    "durationSeconds": 185.62,
+    "samples": [
+      {
+        "elapsedSeconds": 2.6,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 10.25,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 17.92,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 25.6,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 33.24,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 40.93,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 48.55,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 56.19,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 63.75,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 71.31,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 78.97,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 86.61,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 94.22,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 101.79,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 109.41,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 116.95,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 124.52,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 132.08,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 139.74,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 147.23,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 154.79,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 162.39,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 169.97,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 177.48,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      },
+      {
+        "elapsedSeconds": 185.07,
+        "hasEmptyState": true,
+        "providersSectionProgressBars": 0,
+        "hasReadError": false
+      }
+    ],
+    "passed": true,
+    "screenshotSha256": "ed28b992919419a4279f1724b8e3008283c0db5ac375f527d4cb8bc105422940"
+  },
+  "deviceTests": {
+    "before": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-providers-recheck-20261104-before.log",
+      "images": []
+    },
+    "retry-providers": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-providers-recheck-20261104-retry-providers.log",
+      "images": [
+        "/tmp/kclash-providers-recheck-20261104-formal_providers_loaded.png",
+        "/tmp/kclash-providers-recheck-20261104-formal_providers_recreated.png",
+        "/tmp/kclash-providers-recheck-20261104-running_yaml_providers_loaded.png",
+        "/tmp/kclash-providers-recheck-20261104-running_yaml_providers_recreated.png"
+      ]
+    },
+    "after": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-providers-recheck-20261104-after.log",
+      "images": []
+    }
+  },
+  "nonemptyProvidersObservation": {
+    "count": 90,
+    "continuousWindowMs": 16000,
+    "activityRecreated": true,
+    "runtimeSessionPreserved": true,
+    "usedInput": "original workspace 1.yaml bytes in temporary FILE profiles"
+  },
+  "preservation": {
+    "formalProfileCount": 2,
+    "beforeAfterAssertionsPassed": true,
+    "fixtureRestoredSelectionAndPreferences": true,
+    "originalYamlLocalAndDeviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "finalServiceRecords": 0,
+    "finalHasTun0": false,
+    "accelerometerRotation": 1,
+    "userRotation": 0,
+    "fontScale": 1.0
+  },
+  "visuals": {
+    "inspected": [
+      "running_yaml_providers_loaded",
+      "running_yaml_providers_recreated",
+      "empty-after180s"
+    ],
+    "scope": "functional list states, not visual parity acceptance"
+  },
+  "limits": [
+    "Original minutes-long loading scene was no longer present: foreground was launcher before reopening; no unique original root cause proven",
+    "185-second observation is empty Providers under STOPPED with approximately 7.6-second sampling; it is not continuous frame-by-frame monitoring",
+    "Nonempty 90-Provider RUNNING observation remains 16 seconds, not minutes",
+    "No production source changes, rebuild, unit tests, Lint or Release in this supplementary recheck; prior build evidence remains separate",
+    "Current visual source edits remain uncompiled, uninstalled, uncommitted and outside this evidence",
+    "Subagent task delivery failed; no independent review claimed",
+    "Raw XML/logs/screenshots remain local and are not uploaded with the JSON"
+  ],
+  "localEvidence": [
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-before.log",
+      "sha256": "6a204c0b97d66bb7e6c7a62ffdd73376e8f5c2c4b19b5443b90726471927031e"
+    },
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-retry-providers.log",
+      "sha256": "d7f4d2b9b5004abe67eb2bd521e17f7c2232f8b48c4bb85e38645a50c97a5cee"
+    },
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-after.log",
+      "sha256": "2b51943fd61cc3fe15eba8221db0f4a8079763d8991ca574eed5741d7312c661"
+    },
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-empty180s.json",
+      "sha256": "bcaaf2ed7efd6636e9106145eb3e973a2cf9b5c3aaaf68c94684cf973066a17b"
+    },
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-formal_providers_loaded.png",
+      "sha256": "a7604b1976bcf2114a5832c21458dd2edb7f03b66b0627b29f019fe309c61bdc"
+    },
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-formal_providers_recreated.png",
+      "sha256": "a7604b1976bcf2114a5832c21458dd2edb7f03b66b0627b29f019fe309c61bdc"
+    },
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-running_yaml_providers_loaded.png",
+      "sha256": "79c9150238fb7276f2beb35622ca3593b26482e591b94a79d2f7788bc50613c0"
+    },
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-running_yaml_providers_recreated.png",
+      "sha256": "79c9150238fb7276f2beb35622ca3593b26482e591b94a79d2f7788bc50613c0"
+    },
+    {
+      "path": "/tmp/kclash-providers-recheck-20261104-empty-after180s.png",
+      "sha256": "ed28b992919419a4279f1724b8e3008283c0db5ac375f527d4cb8bc105422940"
+    }
+  ]
+}
