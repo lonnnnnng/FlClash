@@ -66,6 +66,7 @@ class ProfilesPageParityInstrumentedTest {
             compose.onNodeWithTag("remote_profile_editor_interval").assertDoesNotExist()
             capture("profiles_remote_editor_$theme")
             compose.onNodeWithText("取消").performClick()
+            compose.onNodeWithTag("remote_profile_discard").performClick()
         }
         assertEquals(2, openedDns)
     }
@@ -124,7 +125,7 @@ class ProfilesPageParityInstrumentedTest {
                 overview = CustomProfileSummary(), moreEditorState = more,
                 onOpenMoreEditor = { more = ProfileMoreEditorUiState(profile, savedNtp, savedSniffer) },
                 onCloseMoreEditor = { more = ProfileMoreEditorUiState() },
-                onSaveMoreEditor = { ntp, sniffer -> savedNtp = ntp; savedSniffer = sniffer; more = ProfileMoreEditorUiState() },
+                onSaveMoreEditor = { ntp, sniffer -> savedNtp = ntp; savedSniffer = sniffer; more = more.copy(ntp = ntp, sniffer = sniffer, revision = more.revision + 1) },
                 customImportState = importState,
                 onImportCustomUrl = { url, _ -> importedUrl = url; importState = CustomImportUiState(name = "配置.yaml", summary = CustomProfileSummary(rules = 16, proxies = 8)) },
                 onConfirmCustomImport = { confirmedImports++; importState = CustomImportUiState() },
@@ -153,7 +154,7 @@ class ProfilesPageParityInstrumentedTest {
                 compose.onNodeWithTag("more_port_value").performTextInput("123")
                 compose.onNodeWithTag("more_value_confirm").performClick()
             }
-            compose.onNodeWithTag("profile_more_editor_save").performClick()
+            compose.onNodeWithTag("profile_more_editor_back").performClick()
             compose.onNodeWithTag("custom_profile_sniffer").performClick()
             if (theme == "light") {
                 compose.onNodeWithTag("profile_more_add").performClick()
@@ -164,14 +165,16 @@ class ProfilesPageParityInstrumentedTest {
                 compose.onNodeWithTag("more_add_sniff.HTTP").performScrollTo().performClick()
                 compose.onNodeWithTag("profile_more_add_done").performClick()
                 compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
+                compose.onNodeWithTag("more_protocol_ports").performClick()
                 compose.onNodeWithTag("sniff_HTTP_ports").performTextInput("80\n8000-9000")
                 compose.onNodeWithTag("more_value_confirm").performClick()
+                compose.onNodeWithTag("more_protocol_back").performClick()
             }
-            compose.onNodeWithTag("profile_more_editor_save").performClick()
+            compose.onNodeWithTag("profile_more_editor_back").performClick()
             compose.onNodeWithTag("custom_profile_sniffer").performClick()
             compose.onNodeWithTag("more_field_sniff.HTTP").performScrollTo()
             capture("profiles_custom_sniffer_" + theme)
-            compose.onNodeWithTag("profile_more_editor_save").performClick()
+            compose.onNodeWithTag("profile_more_editor_back").performClick()
             compose.onNodeWithTag("custom_profile_more_back").performClick()
             compose.onNodeWithTag("custom_profile_import").performClick()
             compose.onNodeWithText("从 URL 导入").performClick()

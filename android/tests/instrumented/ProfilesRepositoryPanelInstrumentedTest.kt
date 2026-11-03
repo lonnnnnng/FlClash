@@ -309,7 +309,7 @@ class ProfilesRepositoryPanelInstrumentedTest {
         assertEquals("mixed-port: 7890\n", repository.profileFile(profile.id).readText())
         assertTrue(
             runBlocking { database.profiles().getById(profile.id)?.lastUpdateError }
-                ?.contains("YAML") == true,
+                ?.contains("订阅更新失败") == true,
         )
 
         client.bytes = "mixed-port: 7891\n".toByteArray()

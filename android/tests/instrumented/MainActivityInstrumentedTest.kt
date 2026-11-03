@@ -145,6 +145,31 @@ class MainActivityInstrumentedTest {
     }
 
     @Test
+    fun mainActivityOpensFilterPresetsAndBothResourceUrlFormsWithoutChangingProfiles() {
+        com.lonnnnnng.flclash.ui.assertPortraitDefaultFontConfiguration()
+        verifyPreservedProfileMetadata()
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("tools_item_resources_settings").performScrollTo().performClick()
+        composeRule.onNodeWithTag("custom_resources_filters").performClick()
+        composeRule.onNodeWithTag("filter_presets_page").assertIsDisplayed()
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitUntil(5000) { composeRule.onAllNodesWithTag("filter_presets_page").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("filter_presets_back").performClick()
+        composeRule.onNodeWithText("规则资源").performClick()
+        composeRule.onNodeWithTag("rule_resources_add").performClick()
+        composeRule.onNodeWithText("从 URL 导入").performClick()
+        composeRule.onNodeWithTag("resource_urls_input").assertIsDisplayed()
+        composeRule.onNodeWithTag("resource_urls_back").performClick()
+        composeRule.onNodeWithTag("rule_resources_back").performClick()
+        composeRule.onNodeWithText("图标集").performClick()
+        composeRule.onNodeWithTag("icon_sets_add").performClick()
+        composeRule.onNodeWithText("从 URL 导入").performClick()
+        composeRule.onNodeWithTag("resource_urls_input").assertIsDisplayed()
+        composeRule.onNodeWithTag("resource_urls_back").performClick()
+        composeRule.onNodeWithTag("icon_sets_back").performClick()
+    }
+
+    @Test
     fun mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile() {
         val entry = EntryPointAccessors.fromApplication(composeRule.activity.application, ConnectionAcceptanceEntryPoint::class.java)
         val repository = entry.profileRepository()
@@ -592,6 +617,8 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("编辑").performClick()
         composeRule.onNodeWithTag("custom_profile_more").performScrollTo().performClick()
         composeRule.onNodeWithTag("custom_profile_dialers").performClick()
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("profile_dialers_quick").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("profile_dialers_quick").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isNotEmpty()
         }
@@ -605,11 +632,14 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithText("编辑").performClick()
         composeRule.onNodeWithTag("custom_profile_more").performScrollTo().performClick()
         composeRule.onNodeWithTag("custom_profile_dialers").performClick()
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("profile_dialers_quick").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("profile_dialers_quick").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Dialers · $label").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText(dialer).assertIsDisplayed()
         composeRule.onNodeWithText("取消").performClick()
+        composeRule.onNodeWithTag("profile_dialers_back").performClick()
 
         openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()

@@ -19,11 +19,14 @@ data class ProxyProviderOverride(
     val udp: Boolean? = null,
     val skipCertVerify: Boolean? = null,
     val ipVersion: String? = null,
+    val filter: String? = null,
+    val excludeFilter: String? = null,
+    val memberLayout: List<String>? = null,
 ) {
     val isEmpty: Boolean
         get() = url == null && interval == null && timeout == null && lazy == null &&
             expectedStatus == null && additionalPrefix == null && additionalSuffix == null &&
-            udp == null && skipCertVerify == null && ipVersion == null
+            udp == null && skipCertVerify == null && ipVersion == null && filter == null && excludeFilter == null && memberLayout == null
 
     fun toJson(): JsonObject = JsonObject().apply {
         url?.let { addProperty("url", it) }
@@ -36,6 +39,10 @@ data class ProxyProviderOverride(
         udp?.let { addProperty("udp", it) }
         skipCertVerify?.let { addProperty("skip-cert-verify", it) }
         ipVersion?.let { addProperty("ip-version", it) }
+        filter?.let { addProperty("filter", it) }
+        excludeFilter?.let { addProperty("exclude-filter", it) }
+        // 作者 long：过滤与排除条件的混排只属于编辑器，不传给 Mihomo；备份仍须保留用户看到的顺序。
+        memberLayout?.let { add("memberLayout", com.google.gson.JsonArray().apply { it.forEach(::add) }) }
     }
 
     companion object {
@@ -51,6 +58,12 @@ data class ProxyProviderOverride(
             skipCertVerify = json.optBooleanOrNull("skip-cert-verify"),
             ipVersion = json.optStringOrNull("ip-version")
                 ?.takeIf { it in SUPPORTED_IP_VERSIONS },
+            // 作者 long：空字符串是显式清空过滤，null 才表示继续沿用源配置。
+            filter = json.get("filter")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString,
+            excludeFilter = json.get("exclude-filter")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString,
+            memberLayout = json.get("memberLayout")?.takeIf { it.isJsonArray }?.asJsonArray?.take(4096)
+                ?.mapNotNull { value -> value.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString?.takeIf { it in setOf("filter", "excludeFilter") } }
+                ?.takeIf { it.isNotEmpty() },
         )
 
         private val SUPPORTED_IP_VERSIONS = setOf("ipv4", "ipv6", "dual")
@@ -77,13 +90,14 @@ data class ProfileDnsOverrides(
     val proxyServerNameserver: List<String>? = null,
     val directNameserver: List<String>? = null,
     val fakeIpFilter: List<String>? = null,
+    val fakeIpFilterMode: String? = null,
 ) {
     val isEmpty: Boolean
         get() = enable == null && listen == null && ipv6 == null && respectRules == null &&
             preferH3 == null && useHosts == null && useSystemHosts == null &&
             enhancedMode == null && fakeIpRange == null && nameserver == null &&
             fallback == null && defaultNameserver == null && proxyServerNameserver == null &&
-            directNameserver == null && fakeIpFilter == null
+            directNameserver == null && fakeIpFilter == null && fakeIpFilterMode == null
 
     fun toJson(): JsonObject = JsonObject().apply {
         enable?.let { addProperty("enable", it) }
@@ -101,12 +115,14 @@ data class ProfileDnsOverrides(
         proxyServerNameserver?.let { addStringArray("proxy-server-nameserver", it) }
         directNameserver?.let { addStringArray("direct-nameserver", it) }
         fakeIpFilter?.let { addStringArray("fake-ip-filter", it) }
+        fakeIpFilterMode?.let { addProperty("fake-ip-filter-mode", it) }
     }
 
     companion object {
         fun fromJson(json: JsonObject): ProfileDnsOverrides = ProfileDnsOverrides(
             enable = json.optBooleanOrNull("enable"),
-            listen = json.optStringOrNull("listen"),
+            // 作者 long：空监听地址表示关闭独立 DNS 监听，不能在持久化往返时变回继承源地址。
+            listen = json.get("listen")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString,
             ipv6 = json.optBooleanOrNull("ipv6"),
             respectRules = json.optBooleanOrNull("respect-rules"),
             preferH3 = json.optBooleanOrNull("prefer-h3"),
@@ -120,6 +136,7 @@ data class ProfileDnsOverrides(
             proxyServerNameserver = json.optStringListOrNull("proxy-server-nameserver"),
             directNameserver = json.optStringListOrNull("direct-nameserver"),
             fakeIpFilter = json.optStringListOrNull("fake-ip-filter"),
+            fakeIpFilterMode = json.optStringOrNull("fake-ip-filter-mode"),
         )
     }
 }
@@ -202,10 +219,23 @@ object ProfileProviderOverrideApplier {
             .toMutableList()
         if (trailingNewline && lines.lastOrNull().isNullOrEmpty()) lines.removeAt(lines.lastIndex)
         val sectionStart = lines.indexOfFirst { topLevelKey(it) == "proxy-providers" }
-        if (sectionStart < 0) return yaml
+        val root = JsonParser.parseString(YamlConfigCodec.toJson(yaml)).asJsonObject
+        val definitions = root.get("proxy-providers")?.takeIf { it.isJsonObject }?.asJsonObject ?: return yaml
+        val applicable = proxyProviders.filterKeys { definitions.get(it)?.isJsonObject == true }
+        if (applicable.isEmpty()) return yaml
+        // 作者 long：中文/转义名称及 flow map 无法用固定缩进行可靠替换，暂存配置按语义合并，源文件仍保持原字节。
+        if (sectionStart < 0 || lines[sectionStart].substringAfter(':').trim().let { it.isNotEmpty() && !it.startsWith('#') }) {
+            return applySemanticProviders(yaml, root, definitions, applicable)
+        }
         val sectionEnd = (sectionStart + 1 until lines.size)
             .firstOrNull { topLevelKey(lines[it]) != null }
             ?: lines.size
+        if (applicable.any { (name, _) ->
+            val entry = findProviderEntry(lines, sectionStart + 1, sectionEnd, name)
+            entry == null || lines.subList(entry.first, entry.second).any { line ->
+                nestedKey(line) in setOf("health-check", "override") && line.substringAfter(':').trim().let { it.isNotEmpty() && !it.startsWith('#') }
+            }
+        }) return applySemanticProviders(yaml, root, definitions, applicable)
 
         // 从后往前替换，避免前一个 Provider 的行数变化影响后续索引。
         proxyProviders.entries
@@ -222,6 +252,26 @@ object ProfileProviderOverrideApplier {
         return lines.joinToString("\n") + if (trailingNewline) "\n" else ""
     }
 
+    private fun applySemanticProviders(original: String, root: JsonObject, definitions: JsonObject, overrides: Map<String, ProxyProviderOverride>): String {
+        var changed = false
+        overrides.forEach { (name, override) ->
+            val provider = definitions.getAsJsonObject(name)
+            fun merge(key: String, fields: Map<String, String>) {
+                if (fields.isEmpty()) return
+                val target = provider.get(key)?.takeIf { it.isJsonObject }?.asJsonObject ?: JsonObject().also { provider.add(key, it) }
+                val typed = JsonParser.parseString(YamlConfigCodec.toJson("fields:\n" + fields.entries.joinToString("\n") { "  ${it.key}: ${it.value}" })).asJsonObject.getAsJsonObject("fields")
+                typed.entrySet().forEach { target.add(it.key, it.value) }
+                changed = true
+            }
+            merge("health-check", healthCheckFields(override))
+            merge("override", providerOverrideFields(override))
+            listOf("filter" to override.filter, "exclude-filter" to override.excludeFilter).forEach { (key, value) ->
+                if (value != null) { provider.addProperty(key, value); changed = true }
+            }
+        }
+        return if (changed) YamlConfigCodec.toYaml(root.toString()) else original
+    }
+
     private fun applyToEntry(
         entryLines: List<String>,
         override: ProxyProviderOverride,
@@ -229,6 +279,17 @@ object ProfileProviderOverrideApplier {
         val result = entryLines.toMutableList()
         applyNestedBlock(result, "health-check", healthCheckFields(override))
         applyNestedBlock(result, "override", providerOverrideFields(override))
+        listOf("filter" to override.filter, "exclude-filter" to override.excludeFilter).forEach { (key, value) ->
+            if (value != null) {
+                // 作者 long：过滤位于 Provider 自身，不能写进节点 override；JSON 引号保证反斜杠、冒号与多行正则保持原值。
+                val start = result.indexOfFirst { nestedKey(it) == key }
+                if (start >= 0) {
+                    val end = (start + 1 until result.size).firstOrNull { result[it].isNotBlank() && leadingSpaces(result[it]) <= 4 && !result[it].trimStart().startsWith("#") } ?: result.size
+                    result.subList(start, end).clear()
+                    result.add(start, "    $key: ${Gson().toJson(value)}")
+                } else result.add("    $key: ${Gson().toJson(value)}")
+            }
+        }
         return result
     }
 
@@ -238,7 +299,8 @@ object ProfileProviderOverrideApplier {
                 override.lazy != null || override.expectedStatus != null
             ) {
                 put("enable", "true")
-                override.url?.let { put("url", quoteIfNeeded(it)) }
+                // 作者 long：与 Flutter 一致，只添加间隔/超时也必须补测速地址，否则核心不会执行健康检查。
+                put("url", quoteIfNeeded(override.url ?: com.lonnnnnng.flclash.core.CoreBridge.DEFAULT_TEST_URL))
                 override.interval?.let { put("interval", it.toString()) }
                 override.timeout?.let { put("timeout", it.toString()) }
                 override.lazy?.let { put("lazy", it.toString()) }
@@ -343,12 +405,8 @@ object ProfileProviderOverrideApplier {
     private fun leadingSpaces(line: String): Int = line.takeWhile { it == ' ' }.length
 
     private fun quoteIfNeeded(value: String): String {
-        if (value.isEmpty()) return "''"
-        return if (value.any { it.isWhitespace() || it == '#' }) {
-            "'${value.replace("'", "''")}'"
-        } else {
-            value
-        }
+        // 作者 long：前后缀和期望状态是字符串，数字/布尔字面量也不能被 YAML 隐式改成其他类型。
+        return Gson().toJson(value)
     }
 }
 
@@ -554,6 +612,7 @@ object ProfileDnsOverrideApplier {
         proxyServerNameserver?.let { add(RenderedField("proxy-server-nameserver", renderList("proxy-server-nameserver", it))) }
         directNameserver?.let { add(RenderedField("direct-nameserver", renderList("direct-nameserver", it))) }
         fakeIpFilter?.let { add(RenderedField("fake-ip-filter", renderList("fake-ip-filter", it))) }
+        fakeIpFilterMode?.let { add(RenderedField("fake-ip-filter-mode", listOf("  fake-ip-filter-mode: ${yamlScalar(it)}"))) }
     }
 
     private fun renderList(key: String, values: List<String>): List<String> = buildList {
@@ -638,8 +697,8 @@ private fun JsonObject.optBooleanOrNull(name: String): Boolean? =
 private fun JsonObject.optStringListOrNull(name: String): List<String>? =
     get(name)?.takeIf { it.isJsonArray }
         ?.asJsonArray
+        // 作者 long：显式空列表用于清空源 DNS 列表；只有字段缺失才继续继承。
         ?.mapNotNull { it.takeIf { item -> item.isJsonPrimitive }?.asString?.trim() }
-        ?.takeIf { it.isNotEmpty() }
 
 private fun JsonObject.addStringArray(name: String, values: List<String>) {
     add(name, com.google.gson.JsonArray().apply {

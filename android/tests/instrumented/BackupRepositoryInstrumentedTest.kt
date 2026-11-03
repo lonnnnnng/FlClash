@@ -92,6 +92,9 @@ class BackupRepositoryInstrumentedTest {
         repository.restore(archive, BackupRestoreScope.ALL_DATA, BackupRestoreStrategy.COMPATIBLE)
         assertEquals(rules, com.lonnnnnng.flclash.service.ExtensionRules.decode(database.appPreferences().get("global_extension_rules")))
         assertEquals("legacy contents", File(root, "profiles/1111.yaml").readText())
+        val rebuilt = repository.createArchive()
+        repository.restore(rebuilt, BackupRestoreScope.ALL_DATA, BackupRestoreStrategy.COMPATIBLE)
+        assertEquals("legacy contents", File(root, "profiles/1111.yaml").readText())
         repository.restore(archive, BackupRestoreScope.ALL_DATA, BackupRestoreStrategy.OVERRIDE)
         assertTrue(com.lonnnnnng.flclash.service.ExtensionRules.decode(database.appPreferences().get("global_extension_rules")).isEmpty())
     }

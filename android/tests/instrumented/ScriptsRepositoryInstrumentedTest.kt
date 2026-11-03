@@ -8,7 +8,9 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ScriptClient
 import com.lonnnnnng.flclash.data.ScriptDownload
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.async
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -22,6 +24,55 @@ import org.junit.runner.RunWith
 class ScriptsRepositoryInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun fileImportAndRemoteSourceChangesRejectStaleWritersAndKeepOldBytesOnFailure() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val db = Room.inMemoryDatabaseBuilder(context, KClashDatabase::class.java).build()
+        val root = java.io.File(context.cacheDir, "script-source-${System.nanoTime()}").apply { mkdirs() }
+        var fail = false
+        var wait: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val client = object : ScriptClient {
+            override suspend fun download(url: String): ScriptDownload {
+                if (wait != null) { entered.complete(Unit); wait!!.await() }
+                check(!fail) { "download failed" }
+                return ScriptDownload("source:$url".toByteArray(), "remote")
+            }
+        }
+        val repo = ScriptRepository(context, db, client, root)
+        try {
+            val a = repo.importFile("shared.js", " original \n".toByteArray())
+            val b = repo.importFile("shared.js", "second".toByteArray())
+            assertEquals("shared", a.label); assertEquals("shared-01", b.label)
+            assertEquals(" original \n", repo.readContent(a.id))
+            assertTrue(runCatching { repo.importFile("broken.js", byteArrayOf(0xFF.toByte())) }.isFailure)
+            assertEquals(2, db.scripts().getAll().size)
+            val remote = repo.createRemote("remote", "https://example.test/old.js")
+            val oldBytes = repo.scriptFile(remote.id).readBytes()
+            val oldMtime = repo.scriptFile(remote.id).lastModified()
+            fail = true
+            assertTrue(runCatching { repo.updateRemote(remote, "https://example.test/fail.js") }.isFailure)
+            assertEquals(remote.toEntity(), db.scripts().getById(remote.id))
+            assertArrayEquals(oldBytes, repo.scriptFile(remote.id).readBytes())
+            assertEquals(oldMtime, repo.scriptFile(remote.id).lastModified())
+            fail = false
+            val updated = repo.updateRemote(remote, "https://example.test/new.js")
+            assertEquals("https://example.test/new.js", updated.url)
+            assertEquals("source:https://example.test/new.js", repo.readContent(updated.id))
+            assertTrue(runCatching { repo.updateIfUnchanged(remote, "stale", "bad") }.isFailure)
+            wait = kotlinx.coroutines.CompletableDeferred()
+            val pending = async { runCatching { repo.updateRemote(updated, "https://example.test/late.js") } }
+            entered.await()
+            val saved = repo.updateIfUnchanged(updated, "edited", "newer text")
+            wait!!.complete(Unit)
+            assertTrue(pending.await().isFailure)
+            assertEquals(saved.toEntity(), db.scripts().getById(remote.id))
+            assertEquals("newer text", repo.readContent(remote.id))
+            assertTrue(runCatching { repo.reorder(listOf(a.id)) }.isFailure)
+            composeRule.waitUntil(5_000) { repo.scripts.value.any { it.label == "edited" } }
+        } finally { db.close(); root.deleteRecursively() }
+    }
 
     @Test
     fun repositoryPersistsScriptFilesAndOrder() {

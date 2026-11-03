@@ -235,7 +235,7 @@ private fun ExtensionTargetPicker(selected: String?, targets: List<String>, foll
 }
 
 @Composable
-private fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, saving: Boolean, saveError: String?, onDismiss: () -> Unit, onSave: (ExtensionRule) -> Unit) {
+internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, saving: Boolean, saveError: String?, onDismiss: () -> Unit, onSave: (ExtensionRule) -> Unit) {
     val fields = remember(initial) { initial?.let { ExtensionRules.fields(it.value) }.orEmpty() }
     var type by rememberSaveable { mutableStateOf(fields.firstOrNull() ?: "DOMAIN-SUFFIX") }
     var content by rememberSaveable { mutableStateOf(if (fields.size > 2) fields[1] else "") }

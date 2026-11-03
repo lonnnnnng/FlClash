@@ -1,5 +1,9 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +21,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.outlined.RadioButtonChecked
+import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -68,10 +75,21 @@ internal fun ProxyNodeCard(
     selectionTag: String,
     delayTag: String,
     modifier: Modifier = Modifier,
+    groupType: String = "Selector",
+    addable: Boolean = false,
+    profileId: Long? = null,
+    menuEnabled: Boolean = enabled,
     onSelect: () -> Unit,
     onTestDelay: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
+    val addLocal = LocalAddToLocalProxy.current
+    var menu by remember(profileId, selectionTag, groupType) { mutableStateOf(false) }
+    val computed = groupType.equals("URLTest", true) || groupType.equals("Fallback", true)
+    val selectable = computed || groupType.equals("Selector", true)
+    val canAdd = addable && addLocal != null
+    val hasMenu = selectable || canAdd
+    LaunchedEffect(menuEnabled, hasMenu) { if (!menuEnabled || !hasMenu) menu = false }
     val nameLines = if (cardSize == ProxyNodeCardSize.COMPACT) 1 else 2
     val minimumHeight = when (cardSize) {
         ProxyNodeCardSize.COMPACT -> 66.dp
@@ -85,9 +103,11 @@ internal fun ProxyNodeCard(
         else -> "未使用"
     }
     Surface(
-        onClick = onSelect,
-        enabled = enabled,
-        modifier = Modifier.fillMaxWidth().then(modifier).testTag(selectionTag).semantics {
+        modifier = Modifier.fillMaxWidth().then(modifier).testTag(selectionTag).combinedClickable(
+            enabled = enabled || menuEnabled && hasMenu, onClick = { if (enabled) onSelect() },
+            onLongClick = if (menuEnabled && hasMenu) ({ menu = true }) else null,
+            onLongClickLabel = "节点操作",
+        ).semantics {
             role = Role.RadioButton
             selected = inUse
             stateDescription = selectionDescription
@@ -97,6 +117,17 @@ internal fun ProxyNodeCard(
         color = proxyNodeColor(insideGroup),
     ) {
         Box(Modifier.heightIn(min = minimumHeight)) {
+            DropdownMenu(menu, { menu = false }) {
+                // 作者 long：菜单复用卡片选择回调，computed组再次优选仍清除固定，内建/组节点也可选择但不能导入。
+                if (selectable) DropdownMenuItem(text = { Text(if (computed) "优选" else "选择") },
+                    leadingIcon = { Icon(if (computed) Icons.Outlined.PushPin else Icons.Outlined.RadioButtonChecked, null) },
+                    trailingIcon = { if (if (computed) preferred else inUse) Icon(Icons.Filled.Check, "已选中") },
+                    enabled = enabled,
+                    onClick = { menu = false; onSelect() }, modifier = Modifier.testTag("${selectionTag}_menu_select"))
+                if (canAdd) DropdownMenuItem(text = { Text("添加到本地代理") },
+                    leadingIcon = { Icon(Icons.AutoMirrored.Outlined.PlaylistAdd, null) },
+                    onClick = { menu = false; addLocal.invoke(profileId, name) }, modifier = Modifier.testTag("${selectionTag}_menu_add_local"))
+            }
             Column(Modifier.fillMaxWidth().align(Alignment.Center).padding(horizontal = 12.dp, vertical = 10.dp)) {
                 // 作者 long：中文回退字体的实际字高可能略大于标称行高，名称只设最小高度，
                 // 不能把最大高度锁死为 40dp，否则 Compose 会把第二行裁成单行省略。

@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -353,6 +354,7 @@ class ProfilesPanelInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag("profile_dialers_quick").performClick()
         composeRule.onNodeWithText("Dialers · Dialers 配置").assertIsDisplayed()
         composeRule.onNodeWithText("保存").performClick()
 
@@ -430,6 +432,6 @@ class ProfilesPanelInstrumentedTest {
         composeRule.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
         composeRule.onNodeWithText("编辑").assertIsNotEnabled()
         composeRule.onNodeWithText("删除").assertIsNotEnabled()
-        composeRule.onNodeWithTag("profiles_sort").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profiles_sort").assertIsEnabled()
     }
 }

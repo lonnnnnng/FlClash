@@ -38,6 +38,284 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class CoreRuntimeManagerTest {
+    @Test fun stoppedRestoreRefreshesPersistedSettingsWithoutStartingAndRejectsRunningRestore() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val store = FakeGeneralStore()
+        val runtime = manager(ActiveProfile(73, "restore", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController(), generalSettingsStore = store)
+        val next = store.settings.copy(mixedPort = 18890, autoRun = true)
+        runtime.withStoppedDataRestore { store.write(next) }
+        assertEquals(next, runtime.generalSettings.value)
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+        assertFalse(bridge.calls.contains("setup"))
+        runtime.startProxy().getOrThrow()
+        var executed = false
+        assertTrue(runCatching { runtime.withStoppedDataRestore { executed = true } }.isFailure)
+        assertFalse(executed)
+        runtime.stop().getOrThrow()
+        val afterFailure = next.copy(mixedPort = 18891)
+        assertTrue(runCatching { runtime.withStoppedDataRestore { store.write(afterFailure); error("restore failed") } }.isFailure)
+        assertEquals(afterFailure, runtime.generalSettings.value)
+    }
+
+    private class FakeGeneralStore(var settings: GeneralSettings = GeneralSettings()) : GeneralSettingsStore {
+        override fun read() = settings
+        override fun write(value: GeneralSettings) { settings = value }
+    }
+
+    @Test fun generalNotificationAndLogChangesDoNotReloadCoreAndProxyStatsUseSelectedScope() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val store = FakeGeneralStore()
+        val runtime = manager(ActiveProfile(71, "general", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController(), generalSettingsStore = store)
+        runtime.startProxy().getOrThrow()
+        assertFalse(bridge.logListenerStarted)
+        val setups = bridge.calls.count { it == "setup" }
+        val next = store.settings.copy(openLogs = true, onlyStatisticsProxy = true, showNotificationStopAction = false, delayTestTimeout = 500)
+        runtime.updateGeneralSettings(store.settings, next).getOrThrow()
+        assertTrue(bridge.logListenerStarted)
+        assertEquals(setups, bridge.calls.count { it == "setup" })
+        assertFalse(ServiceConfig.notificationParams.value.showStopAction)
+        assertTrue(ServiceConfig.notificationParams.value.onlyStatisticsProxy)
+        runtime.getStats().getOrThrow(); assertEquals(true, bridge.onlyProxyStats)
+        runtime.testDelay("node", "https://example.test").getOrThrow(); assertEquals(500L, bridge.delayTimeout)
+        runtime.changeProxy("group", "node").getOrThrow(); assertEquals(1, bridge.closedConnections)
+        runtime.stop().getOrThrow()
+    }
+
+    @Test fun generalCoreChangesApplyAndRestoreAfterValidationOrLogFailure() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("dns: {enable: true, nameserver: [1.1.1.1]}\n") }
+        val original = source.readBytes(); val bridge = FakeBridge(); val store = FakeGeneralStore()
+        val runtime = manager(ActiveProfile(72, "general", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController(), generalSettingsStore = store)
+        runtime.startProxy().getOrThrow()
+        val initial = store.settings
+        bridge.failNextValidation = true
+        assertTrue(runtime.updateGeneralSettings(initial, initial.copy(mixedPort = 18890)).isFailure)
+        assertEquals(initial, store.settings); assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        bridge.failNextLogStart = true
+        assertTrue(runtime.updateGeneralSettings(initial, initial.copy(mixedPort = 18890, openLogs = true)).isFailure)
+        assertEquals(initial, store.settings); assertEquals(initial, runtime.generalSettings.value)
+        val preview = runtime.previewConfig(72)
+        assertTrue(preview.content.contains("7890")); assertFalse(preview.content.contains("18890"))
+        val next = initial.copy(checkCertificate = false, authentication = true)
+        runtime.updateGeneralSettings(initial, next).getOrThrow()
+        assertTrue(store.settings.username.isNotEmpty()); assertEquals(true, bridge.skipCertificate)
+        assertTrue(original.contentEquals(source.readBytes()))
+        assertTrue(runtime.updateGeneralSettings(initial, initial.copy(mixedPort = 18891)).isFailure)
+        runtime.stop().getOrThrow()
+    }
+
+    private class FakeGlobalDnsStore(var settings: ProfileDnsOverrides = ProfileDnsOverrides()) : GlobalDnsSettingsStore {
+        override fun read() = settings
+        override fun write(value: ProfileDnsOverrides) { settings = value }
+    }
+
+    @Test fun globalDnsPersistsWithoutProfileAndRejectsStaleSnapshot() = runTest {
+        val store = FakeGlobalDnsStore()
+        val bridge = FakeBridge()
+        val runtime = manager(null, temporaryFolder.newFolder(), bridge, FakeServiceController(), globalDnsSettingsStore = store)
+        val next = ProfileDnsOverrides(ipv6 = false, fakeIpFilterMode = "whitelist")
+        runtime.updateGlobalDns(ProfileDnsOverrides(), next).getOrThrow()
+        assertEquals(next, runtime.globalDns.value)
+        assertTrue(runtime.updateGlobalDns(ProfileDnsOverrides(), ProfileDnsOverrides(nameserver = emptyList())).isFailure)
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+    }
+
+    @Test fun globalDnsAppliesToRuntimeAndPreviewButCustomUsesItsOwnDns() = runTest {
+        val home = temporaryFolder.newFolder()
+        val source = temporaryFolder.newFile().apply { writeText("dns: {enable: true, nameserver: [1.1.1.1]}\nrules: ['MATCH,DIRECT']\n") }
+        val original = source.readBytes()
+        val store = FakeGlobalDnsStore()
+        val runtime = manager(ActiveProfile(71, "DNS", source.path), home, FakeBridge(), FakeServiceController(), globalDnsSettingsStore = store)
+        val next = ProfileDnsOverrides(nameserver = listOf("9.9.9.9"), fakeIpFilterMode = "rule")
+        runtime.updateGlobalDns(store.settings, next).getOrThrow()
+        assertTrue(runtime.previewConfig(71).content.contains("9.9.9.9"))
+        assertTrue(original.contentEquals(source.readBytes()))
+        val custom = manager(ActiveProfile(72, "CUSTOM", source.path, usesGlobalDns = false), temporaryFolder.newFolder(), FakeBridge(), FakeServiceController(), globalDnsSettingsStore = store)
+        assertFalse(custom.previewConfig(72).content.contains("9.9.9.9"))
+        assertTrue(custom.previewConfig(72).content.contains("1.1.1.1"))
+    }
+
+    @Test fun runningGlobalDnsFailureRestoresPreferenceAndService() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val store = FakeGlobalDnsStore()
+        val services = FakeServiceController()
+        val bridge = FakeBridge()
+        val runtime = manager(ActiveProfile(74, "DNS", source.path), temporaryFolder.newFolder(), bridge, services, globalDnsSettingsStore = store)
+        runtime.startProxy().getOrThrow()
+        val before = store.settings
+        bridge.failNextValidation = true
+        // 作者 long：模拟原生校验拒绝新 DNS，必须恢复落盘偏好并保留原服务。
+        val result = runtime.updateGlobalDns(before, ProfileDnsOverrides(listen = "127.0.0.1:1053"))
+        assertTrue(result.isFailure)
+        assertEquals(before, store.settings); assertEquals(before, runtime.globalDns.value)
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        runtime.stop().getOrThrow()
+    }
+
+    private class FakeNetworkStore(var settings: NetworkSettings = NetworkSettings()) : NetworkSettingsStore {
+        var fail = false
+        var rejected: NetworkSettings? = null
+        override fun read() = settings
+        override fun write(value: NetworkSettings) { check(!fail && value != rejected); settings = value }
+    }
+
+    @Test fun networkSettingsWithoutProfileSaveRejectStaleAndDoNotStartCore() = runTest {
+        val store = FakeNetworkStore()
+        val bridge = FakeBridge(); val services = FakeServiceController()
+        val runtime = manager(null, temporaryFolder.newFolder(), bridge, services, networkSettingsStore = store)
+        val initial = store.settings
+        runtime.updateNetworkSettings(initial, initial.copy(ipv6 = true)).getOrThrow()
+        assertTrue(runtime.networkSettings.value.ipv6)
+        assertTrue(bridge.calls.isEmpty()); assertTrue(services.events.isEmpty())
+        assertTrue(runtime.updateNetworkSettings(initial, initial.copy(mtu = 1400)).isFailure)
+        assertEquals(9000, store.settings.mtu)
+        store.fail = true
+        assertTrue(runtime.updateNetworkSettings(store.settings, store.settings.copy(mtu = 1400)).isFailure)
+        assertEquals(store.settings, runtime.networkSettings.value)
+    }
+
+    @Test fun runningNetworkChangeRebuildsVpnAndFailureRestoresPreferencesConfigAndServices() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\ntun: {udp-timeout: 123}\n") }
+        val original = source.readBytes(); val mtime = source.lastModified()
+        val store = FakeNetworkStore()
+        val home = temporaryFolder.newFolder(); val services = FakeServiceController()
+        val runtime = manager(ActiveProfile(71, "网络", source.path), home, FakeBridge(), services, networkSettingsStore = store)
+        runtime.startProxy().getOrThrow()
+        val next = store.settings.copy(stack = "system", mtu = 1400, ipv6 = true)
+        runtime.updateNetworkSettings(store.settings, next).getOrThrow()
+        assertEquals(next, runtime.networkSettings.value)
+        assertEquals("system", services.receivedOptions?.stack)
+        assertEquals(1400, services.receivedOptions?.mtu)
+        assertTrue(services.receivedOptions?.ipv6 == true)
+        val config = File(home, "config.yaml").readBytes()
+        services.failNextStart = true
+        assertTrue(runtime.updateNetworkSettings(next, next.copy(mtu = 1500)).isFailure)
+        assertEquals(next, store.settings); assertEquals(next, runtime.networkSettings.value)
+        assertTrue(config.contentEquals(File(home, "config.yaml").readBytes()))
+        assertEquals(1400, services.receivedOptions?.mtu)
+        assertTrue(services.started); assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        assertTrue(original.contentEquals(source.readBytes())); assertEquals(mtime, source.lastModified())
+        store.rejected = next
+        services.failNextStart = true
+        assertTrue(runtime.updateNetworkSettings(next, next.copy(mtu = 1500)).isFailure)
+        assertEquals(store.settings, runtime.networkSettings.value)
+        assertEquals(1500, store.settings.mtu)
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+        assertFalse(services.started)
+        runtime.stop().getOrThrow()
+    }
+
+    @Test fun providerDocumentSaveIsBoundToLoadedInputAndMapsErrorsWithoutLeaking() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val runtime = manager(ActiveProfile(8, "Provider", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())
+        runtime.getProxyGroups().getOrThrow()
+        val document = runtime.readProfileProvider(8, "fixture")
+        bridge.externalSave = { throw CoreBridgeException("provider_content_error", "fixture-secret") }
+        val failure = runCatching { runtime.saveProfileProvider(document, "payload: []") }.exceptionOrNull()
+        assertEquals("内容无法被此 Provider 读取，请检查格式后重试", failure?.message)
+        assertFalse(generateSequence(failure) { it.cause }.any { it is CoreBridgeException || it.toString().contains("fixture-secret") })
+        bridge.externalSave = {}
+        runtime.saveProfileProvider(document, "payload: []")
+        assertEquals(2, bridge.externalSaves)
+        val another = runtime.readProfileProvider(8, "fixture")
+        source.appendText("\n# changed")
+        assertTrue(runCatching { runtime.saveProfileProvider(another, "payload: []") }.isFailure)
+        assertEquals(2, bridge.externalSaves)
+    }
+
+    @Test fun providerBatchAllowsOwnRouteChangesButRejectsAnOldEpochAndSharesUpdateGate() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val runtime = manager(ActiveProfile(8, "Provider", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())
+        runtime.getProxyGroups().getOrThrow(); bridge.externalRead = { listOf(providerFixture()) }
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        bridge.externalBatch = { entered.complete(Unit); release.await(); listOf(com.lonnnnnng.flclash.core.CoreProviderUpdateResult("fixture", "")) }
+        val request = async { runCatching { runtime.updateProfileProviders(8, listOf("fixture")) } }
+        entered.await()
+        assertTrue(runCatching { runtime.updateProfileProvider(8, "fixture") }.isFailure)
+        bridge.ipStamp = bridge.ipStamp.copy(version = bridge.ipStamp.version + 1)
+        release.complete(Unit); assertTrue(request.await().isSuccess)
+        bridge.externalBatch = { bridge.ipStamp = bridge.ipStamp.copy(epoch = bridge.ipStamp.epoch + 1); emptyList() }
+        assertTrue(runCatching { runtime.updateProfileProviders(8, listOf("fixture")) }.isFailure)
+    }
+    @Test fun nodeDefinitionReadLoadsStoppedInputRejectsOtherProfileAndChangedSource() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val profile = ActiveProfile(8, "Node", source.path)
+        val bridge = FakeBridge()
+        val controller = FakeServiceController()
+        val runtime = manager(profile, temporaryFolder.newFolder(), bridge, controller)
+        assertTrue(runCatching { runtime.getProxyDefinition(9, "A") }.isFailure)
+        assertFalse("错误配置不能先读核心", bridge.calls.contains("definition"))
+        bridge.definitionRead = { com.google.gson.JsonParser.parseString("""{"name":"A","type":"ss","dialer-proxy":"X"}""").asJsonObject }
+        assertEquals("A", runtime.getProxyDefinition(8, "A")["name"].asString)
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value); assertTrue(controller.events.isEmpty())
+        bridge.definitionRead = { source.appendText("\n# changed"); com.google.gson.JsonObject() }
+        assertTrue(runCatching { runtime.getProxyDefinition(8, "A") }.isFailure)
+        bridge.definitionRead = { null }
+        assertTrue(runCatching { runtime.getProxyDefinition(8, "missing") }.isFailure)
+    }
+    @Test fun geoDownloadStaysPendingAfterAcceptanceAndDoesNotHoldStopLock() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val flow = kotlinx.coroutines.flow.MutableSharedFlow<CoreEvent>(extraBufferCapacity = 8)
+        val bridge = FakeBridge(eventFlow = flow)
+        val controller = FakeServiceController()
+        val runtime = manager(ActiveProfile(8, "Geo", source.path), temporaryFolder.newFolder(), bridge, controller)
+        runtime.requestGeoUpdate(GeoResourceType.MMDB)
+        assertTrue(runtime.geoUpdates.value.getValue("MMDB").updating)
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+        assertTrue(controller.events.isEmpty())
+        assertTrue(runCatching { runtime.requestGeoUpdate(GeoResourceType.MMDB) }.isFailure)
+        runtime.stop().getOrThrow()
+        assertTrue(bridge.eventListenerStarted)
+        val revision = runtime.ipRouteRevision.value
+        flow.emit(CoreEvent.GeoUpdate("MMDB", false))
+        kotlinx.coroutines.withTimeout(5000) {
+            while (runtime.geoUpdates.value["MMDB"]?.updating != false || bridge.eventListenerStarted) kotlinx.coroutines.delay(10)
+        }
+        assertTrue(runtime.ipRouteRevision.value > revision)
+        assertEquals("{}", source.readText())
+    }
+
+    @Test fun geoSettingsArePatchedIntoStagedInputAndRolledBackOnPersistenceFailure() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val home = temporaryFolder.newFolder()
+        var persisted = GeoResourceSettings()
+        var failSave = false
+        val store = object : GeoResourceSettingsStore {
+            override fun read() = persisted
+            override fun write(settings: GeoResourceSettings) { check(!failSave); persisted = settings }
+        }
+        val bridge = FakeBridge()
+        val runtime = manager(ActiveProfile(8, "Geo", source.path), home, bridge, FakeServiceController(), geoSettingsStore = store)
+        runtime.setGeoSettings(persisted.copy(intervalHours = 48))
+        runtime.getProxyGroups().getOrThrow()
+        val staged = File(home, "config.yaml").readText()
+        assertTrue(staged.contains("geo-update-interval: 48"))
+        failSave = true
+        assertTrue(runCatching { runtime.setGeoSettings(persisted.copy(autoUpdate = true)) }.isFailure)
+        assertEquals(staged, File(home, "config.yaml").readText())
+        assertFalse(runtime.geoSettings.value.autoUpdate)
+        assertEquals("{}", source.readText())
+        assertEquals(2, bridge.calls.count { it == "geo-settings" })
+    }
+    @Test fun restoredGeoSettingsInvalidatePreviouslyLoadedStoppedInputWithoutStartingService() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val home = temporaryFolder.newFolder()
+        val changes = kotlinx.coroutines.flow.MutableStateFlow(GeoResourceSettings())
+        val store = object : GeoResourceSettingsStore {
+            override val changes = changes
+            override fun read() = changes.value
+            override fun write(settings: GeoResourceSettings) { changes.value = settings }
+        }
+        val controller = FakeServiceController()
+        val runtime = manager(ActiveProfile(8, "Geo", source.path), home, FakeBridge(), controller, geoSettingsStore = store)
+        runtime.getProxyGroups().getOrThrow()
+        store.write(GeoResourceSettings(intervalHours = 96))
+        kotlinx.coroutines.withTimeout(5000) { while (runtime.geoSettings.value.intervalHours != 96) kotlinx.coroutines.delay(10) }
+        runtime.getProxyGroups().getOrThrow()
+        assertTrue(File(home, "config.yaml").readText().contains("geo-update-interval: 96"))
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+        assertTrue(controller.events.isEmpty())
+        assertEquals("{}", source.readText())
+    }
     private fun cachedService(target: ServiceTarget = ServiceTarget.GITHUB) = CoreServiceCheck(target,
         ServiceStatus.AVAILABLE, checkedAt = 123L, stamp = CoreRouteStamp(1, 1),
         hits = listOf(CoreRouteHit("example.com:443", "", "fixture-exit")))
@@ -855,6 +1133,7 @@ class CoreRuntimeManagerTest {
 
                     health-check:
                       enable: true
+                      url: "https://www.gstatic.com/generate_204"
                       timeout: 2000
                 dns:
                   enable: true
@@ -1633,6 +1912,94 @@ class CoreRuntimeManagerTest {
         assertTrue(runtime.profileInputsApplied(71)); assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
     }
 
+    @Test fun excludedStartKeepsIntentWithoutStartingServicesAndResumesSameSession() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val service = FakeServiceController(); val resume = FakeRuntimeResumeStore()
+        var clock = 50L
+        val runtime = manager(ActiveProfile(91, "on-demand", source.path), temporaryFolder.newFolder(), bridge, service,
+            runtimeResumeStore = resume, elapsedRealtimeMillis = { clock })
+        runtime.setOnDemandExcluded(true).getOrThrow()
+        runtime.startProxy().getOrThrow()
+        assertTrue(runtime.onDemandSuspended.value); assertTrue(resume.shouldResume)
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        assertFalse(service.started); assertFalse(bridge.listenerStarted)
+        clock = 250L
+        runtime.setOnDemandExcluded(false).getOrThrow()
+        assertTrue(service.started); assertTrue(bridge.listenerStarted)
+        assertEquals(50L, runtime.runningSinceElapsedMillis.value)
+        assertEquals(200L, runtime.uptimeMillis())
+        runtime.setOnDemandExcluded(false).getOrThrow()
+        assertEquals(1, service.events.count { it == "service-start" })
+    }
+
+    @Test fun runningPauseInvalidatesExitAndManualStopPreventsNetworkAutoResume() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val service = FakeServiceController(); val resume = FakeRuntimeResumeStore()
+        val runtime = manager(ActiveProfile(92, "on-demand", source.path), temporaryFolder.newFolder(), bridge, service, runtimeResumeStore = resume)
+        runtime.startProxy().getOrThrow()
+        val before = runtime.ipRouteRevision.value
+        runtime.setOnDemandExcluded(true).getOrThrow()
+        assertFalse(service.started); assertFalse(bridge.listenerStarted)
+        assertTrue(runtime.ipRouteRevision.value > before)
+        assertTrue(resume.shouldResume)
+        runtime.checkServices(listOf(ServiceTarget.GITHUB))
+        assertEquals(true, bridge.serviceDirect)
+        assertTrue(runCatching { runtime.queryServiceExit("old-proxy", bridge.ipStamp, listOf("https://example.test")) }.isFailure)
+        runtime.stop().getOrThrow()
+        runtime.setOnDemandExcluded(false).getOrThrow()
+        assertFalse(service.started); assertFalse(resume.shouldResume)
+        assertFalse(runtime.onDemandSuspended.value); assertNull(runtime.runningSinceElapsedMillis.value)
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+    }
+
+    @Test fun pausedProfileChangeOnlyProjectsConfigAndResumeUsesNewNetworkOptions() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val next = temporaryFolder.newFile().apply { writeText("mixed-port: 18900\n") }
+        var profile = ActiveProfile(93, "first", source.path)
+        val bridge = FakeBridge(); val service = FakeServiceController()
+        val home = temporaryFolder.newFolder()
+        val runtime = manager(null, home, bridge, service,
+            vpnOptionsProvider = DefaultVpnOptionsProvider(appliedConfigFile = File(home, "config.yaml")),
+            profileProvider = object : ActiveProfileProvider { override suspend fun activeProfile() = profile })
+        runtime.startProxy().getOrThrow(); runtime.setOnDemandExcluded(true).getOrThrow()
+        val starts = service.events.count { it == "service-start" }
+        runtime.selectProfile(94) { profile = ActiveProfile(94, "second", next.path) }
+        assertEquals(starts, service.events.count { it == "service-start" })
+        assertFalse(service.started); assertTrue(runtime.onDemandSuspended.value)
+        runtime.setOnDemandExcluded(false).getOrThrow()
+        assertEquals(18900, service.receivedOptions?.port)
+    }
+
+    @Test fun failedResumeAndFailedIntentPersistenceStillReturnFailureAndClearPausedState() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val service = FakeServiceController(); val resume = FakeRuntimeResumeStore()
+        val runtime = manager(ActiveProfile(95, "on-demand", source.path), temporaryFolder.newFolder(), bridge, service, runtimeResumeStore = resume)
+        runtime.setOnDemandExcluded(true).getOrThrow(); runtime.startProxy().getOrThrow()
+        service.failNextStart = true; resume.failWrite = true
+        assertTrue(runtime.setOnDemandExcluded(false).isFailure)
+        assertEquals(CoreRuntimeStatus.FAILED, runtime.state.value)
+        assertFalse(runtime.onDemandSuspended.value); assertNull(runtime.runningSinceElapsedMillis.value)
+        assertFalse(service.started); assertFalse(bridge.listenerStarted)
+        resume.failWrite = false
+        runtime.setOnDemandExcluded(true).getOrThrow()
+        runtime.setOnDemandExcluded(false).getOrThrow()
+        assertEquals(CoreRuntimeStatus.FAILED, runtime.state.value)
+    }
+
+    @Test fun pausedProfileRollbackFailureClearsSessionInsteadOfLeavingPausedFailure() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        var profile = ActiveProfile(96, "first", source.path)
+        val bridge = FakeBridge(); val service = FakeServiceController()
+        val runtime = manager(null, temporaryFolder.newFolder(), bridge, service,
+            profileProvider = object : ActiveProfileProvider { override suspend fun activeProfile() = profile })
+        runtime.startProxy().getOrThrow(); runtime.setOnDemandExcluded(true).getOrThrow()
+        bridge.failSetups = 2
+        assertTrue(runCatching { runtime.selectProfile(97) { id -> profile = ActiveProfile(id ?: 96, "changed", source.path) } }.isFailure)
+        assertEquals(CoreRuntimeStatus.FAILED, runtime.state.value)
+        assertFalse(runtime.onDemandSuspended.value); assertNull(runtime.runningSinceElapsedMillis.value)
+        assertFalse(service.started)
+    }
+
     private fun manager(
         profile: ActiveProfile?,
         homeDir: File,
@@ -1647,6 +2014,11 @@ class CoreRuntimeManagerTest {
         lanSharingStore: LanSharingStore = NoopLanSharingStore,
         vpnSettingsStore: VpnSettingsStore = DefaultVpnSettingsStore,
         profileProvider: ActiveProfileProvider? = null,
+        geoSettingsStore: GeoResourceSettingsStore? = null,
+        networkSettingsStore: NetworkSettingsStore? = null,
+        globalDnsSettingsStore: GlobalDnsSettingsStore? = null,
+        generalSettingsStore: GeneralSettingsStore? = null,
+        vpnOptionsProvider: VpnOptionsProvider? = null,
     ): CoreRuntimeManager {
         return CoreRuntimeManager(
             paths = CoreRuntimePaths(homeDir, prepare = prepareCore),
@@ -1655,7 +2027,7 @@ class CoreRuntimeManagerTest {
             },
             bridge = bridge,
             serviceController = controller,
-            vpnOptionsProvider = DefaultVpnOptionsProvider(vpnSettingsStore = vpnSettingsStore),
+            vpnOptionsProvider = vpnOptionsProvider ?: DefaultVpnOptionsProvider(vpnSettingsStore = vpnSettingsStore, networkSettingsStore = networkSettingsStore),
             runtimeResumeStore = runtimeResumeStore,
             runtimeDiagnosticStore = runtimeDiagnosticStore,
             profileScriptEvaluator = profileScriptEvaluator,
@@ -1663,6 +2035,10 @@ class CoreRuntimeManagerTest {
             elapsedRealtimeMillis = elapsedRealtimeMillis,
             lanSharingStore = lanSharingStore,
             vpnSettingsStore = vpnSettingsStore,
+            geoSettingsStore = geoSettingsStore,
+            networkSettingsStore = networkSettingsStore,
+            globalDnsSettingsStore = globalDnsSettingsStore,
+            generalSettingsStore = generalSettingsStore,
         )
     }
 
@@ -1676,10 +2052,12 @@ class CoreRuntimeManagerTest {
 
     private class FakeRuntimeResumeStore : RuntimeResumeStore {
         var shouldResume = false
+        var failWrite = false
 
         override suspend fun shouldResume(): Boolean = shouldResume
 
         override suspend fun setShouldResume(value: Boolean) {
+            if (failWrite) error("模拟恢复意图写入失败")
             shouldResume = value
         }
     }
@@ -1706,7 +2084,12 @@ class CoreRuntimeManagerTest {
         private val dnsCacheClearResult: Boolean = true,
         private val configuredMode: CoreOutboundMode = CoreOutboundMode.RULE,
         private val trafficError: Throwable? = null,
+        private val eventFlow: kotlinx.coroutines.flow.Flow<CoreEvent> = emptyFlow(),
     ) : CoreRuntimeBridge {
+        var definitionRead: suspend () -> com.google.gson.JsonObject? = { null }
+        override suspend fun getProxyDefinition(name: String): com.google.gson.JsonObject? { calls += "definition"; return definitionRead() }
+        override suspend fun updateGeoData(type: String) { calls += "geo-$type" }
+        override suspend fun updateGeoSettings(settings: GeoResourceSettings) { calls += "geo-settings" }
         var lan = com.lonnnnnng.flclash.core.CoreLanConfig(false, 0)
         var failLanUpdate = false
         private var coreHome: File? = null
@@ -1741,6 +2124,12 @@ class CoreRuntimeManagerTest {
         var externalRead: suspend () -> List<com.lonnnnnng.flclash.core.CoreExternalProvider> = { emptyList() }
         var externalUpdate: suspend () -> Unit = {}
         var externalUpdates = 0
+        var externalSaves = 0
+        var externalSave: suspend () -> Unit = {}
+        var externalBatch: suspend () -> List<com.lonnnnnng.flclash.core.CoreProviderUpdateResult> = { emptyList() }
+        override suspend fun readExternalProvider(name: String, stamp: CoreRouteStamp) = com.lonnnnnng.flclash.core.CoreProviderDocument(name, "text", "payload: []", "missing")
+        override suspend fun sideLoadExternalProvider(name: String, content: String, digest: String, stamp: CoreRouteStamp) { externalSaves++; externalSave() }
+        override suspend fun updateExternalProviders(names: List<String>, stamp: CoreRouteStamp) = externalBatch()
         override suspend fun externalProviders() = externalRead()
         override suspend fun updateExternalProvider(name: String, stamp: CoreRouteStamp) { assertEquals(ipStamp, stamp); externalUpdates++; externalUpdate() }
 
@@ -1763,7 +2152,7 @@ class CoreRuntimeManagerTest {
         override suspend fun ipRouteStamp() = ipStamp
         override suspend fun outboundIp(urls: List<String>, timeoutMs: Long) = ipRead()
         override suspend fun ipMetadata(url: String, timeoutMs: Long) = ipRead()
-        override val events = emptyFlow<CoreEvent>()
+        override val events = eventFlow
         private val mutableEventFlowStats = MutableStateFlow(CoreEventFlowStats())
         override val eventFlowStats = mutableEventFlowStats.asStateFlow()
         val calls = mutableListOf<String>()
@@ -1778,13 +2167,24 @@ class CoreRuntimeManagerTest {
             coreHome = File(homeDir)
         }
 
+        var skipCertificate: Boolean? = null
+        override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean) { skipCertificate = skipCertVerify; setupConfig(selectedMap) }
+        var closedConnections = 0
+        override suspend fun closeConnections() { closedConnections++ }
+        var onlyProxyStats: Boolean? = null
+        override suspend fun getTraffic(onlyProxy: Boolean): CoreTraffic { onlyProxyStats = onlyProxy; return getTraffic() }
+        var delayTimeout: Long? = null
+        var failNextValidation = false
         override suspend fun validateConfig(path: String) {
             calls += "validate"
+            if (failNextValidation) { failNextValidation = false; error("模拟 DNS 校验失败") }
             validationError?.let { throw it }
         }
 
+        var failSetups = 0
         override suspend fun setupConfig(selectedMap: Map<String, String>) {
             calls += "setup"
+            if (failSetups > 0) { failSetups--; error("模拟配置加载失败") }
             runCatching { lanFromFile(File(coreHome, "config.yaml").path) }.getOrNull()?.let { lan = it }
             setupSelectedMap = selectedMap
         }
@@ -1809,6 +2209,7 @@ class CoreRuntimeManagerTest {
         }
 
         override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay? {
+            delayTimeout = timeoutMs
             delayError?.let { throw it }
             if (proxyName in delayErrors) throw IllegalStateException("测速失败")
             return ProxyDelay(testUrl, proxyName, 123)
@@ -1852,7 +2253,9 @@ class CoreRuntimeManagerTest {
             eventListenerStarted = false
         }
 
+        var failNextLogStart = false
         override suspend fun startLog() {
+            if (failNextLogStart) { failNextLogStart = false; error("log start failed") }
             calls += "log-start"
             logListenerStarted = true
         }

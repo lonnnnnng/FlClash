@@ -5,6 +5,18 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ProfileMoreFieldsTest {
+    @Test fun yamlKeepsUnlistedEmptyEntriesButExplicitClearsAndFalseAreRespected() {
+        val ntp = parseMoreFieldsYaml("enable: true\nport: 123\ndialer-proxy: ''", true)
+        val changed = applyMoreFieldsYaml(ntp, "enable: false\nport: 124", true)
+        assertEquals("", changed["dialer-proxy"].asString)
+        assertFalse(changed["enable"].asBoolean)
+        assertFalse(applyMoreFieldsYaml(ntp, "dialer-proxy: null", true).has("dialer-proxy"))
+        assertFalse(applyMoreFieldsYaml(ntp, "dialer-proxy: ''", true).has("dialer-proxy"))
+        val sniffer = parseMoreFieldsYaml("skip-domain: []\nenable: true", false)
+        assertTrue(applyMoreFieldsYaml(sniffer, "enable: false", false).has("skip-domain"))
+        assertFalse(applyMoreFieldsYaml(sniffer, "skip-domain: []", false).has("skip-domain"))
+    }
+
     @Test fun hostAndAddressMatchersFollowFlutterValidationWithoutResolvingDomains() {
         for (host in listOf("time.apple.com", "ntp_server", "2001:db8::1")) {
             assertEquals(host, parseMoreFieldsYaml("server: '$host'", true)["server"].asString)
@@ -21,11 +33,11 @@ class ProfileMoreFieldsTest {
         assertFalse(ntp["enable"].asBoolean)
         assertTrue(ntp["port"].asJsonPrimitive.isNumber)
         assertEquals("", ntp["dialer-proxy"].asString)
-        assertEquals(ntp, parseMoreFieldsYaml(moreFieldsYaml(ntp), true))
+        assertEquals(effectiveMoreFields(ntp), parseMoreFieldsYaml(moreFieldsYaml(ntp), true))
         val sniffer = parseMoreFieldsYaml("enable: false\nskip-domain: []\nsniff: {}", false)
         assertEquals(0, sniffer["skip-domain"].asJsonArray.size())
         assertEquals(0, sniffer["sniff"].asJsonObject.size())
-        assertEquals(sniffer, parseMoreFieldsYaml(moreFieldsYaml(sniffer), false))
+        assertEquals(effectiveMoreFields(sniffer), parseMoreFieldsYaml(moreFieldsYaml(sniffer), false))
     }
 
     @Test fun yamlNormalizesProtocolsAndNumericPortsAndNullRestoresInheritance() {

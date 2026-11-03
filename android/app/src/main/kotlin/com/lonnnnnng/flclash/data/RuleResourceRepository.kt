@@ -97,6 +97,26 @@ class RuleResourceRepository @Inject constructor(
             next
         }
     }
+    suspend fun importUrlIfNew(input: NamedResourceUrl): ResourceImportResult = withContext(Dispatchers.IO) {
+        val url = RuleResources.normalizeUrl(input.url)
+        if (all().any { it.url == url }) return@withContext ResourceImportResult.SKIPPED
+        val staged = stage(input.suggestedName("规则资源"), url, client.download(url).bytes)
+        var committed = false
+        try {
+            lock.withLock {
+                val rows = all()
+                // 作者 long：下载期间其他批次可能已登记同源资源；再次检查后跳过，回收仅本次生成的暂存文件。
+                if (rows.any { it.url == url }) return@withLock ResourceImportResult.SKIPPED
+                if (input.label.isNotBlank()) require(rows.none { it.label == input.label }) { "资源名称已存在" }
+                val next = staged.copy(label = RuleResources.uniqueLabel(staged.label, rows))
+                withContext(NonCancellable) {
+                    preferences.put(AppPreferenceEntity(RULE_RESOURCES_KEY, RuleResources.encode(rows + next), System.currentTimeMillis()))
+                    committed = true
+                }
+                ResourceImportResult.IMPORTED
+            }
+        } finally { if (!committed) discardFile(staged.fileName) }
+    }
     suspend fun sync(expected: RuleResource): RuleResource {
         require(expected.url.isNotBlank()) { "本地资源没有远程地址" }
         return save(expected.label, expected.url, null, expected)
@@ -110,8 +130,10 @@ class RuleResourceRepository @Inject constructor(
     }
     suspend fun reorder(ids: List<String>) = lock.withLock {
         val rows = all()
-        val ordered = ids.distinct().mapNotNull { id -> rows.firstOrNull { it.id == id } }
-        preferences.put(AppPreferenceEntity(RULE_RESOURCES_KEY, RuleResources.encode(ordered + rows.filterNot { it.id in ids }), System.currentTimeMillis()))
+        // 作者 long：排序不修改资源版本和内容；目录变化后拒绝旧排列，避免忽略丢失/重复ID而悄悄改序。
+        require(ids.size == rows.size && ids.toSet().size == ids.size && ids.toSet() == rows.map { it.id }.toSet()) { "规则资源列表已变化，请重新排序" }
+        val byId = rows.associateBy { it.id }
+        preferences.put(AppPreferenceEntity(RULE_RESOURCES_KEY, RuleResources.encode(ids.map { byId.getValue(it) }), System.currentTimeMillis()))
     }
     suspend fun isUsedBy(id: Long, resource: RuleResource): Boolean = withContext(Dispatchers.IO) {
         runCatching { RuleResources.document(File(filesRoot, "profiles/$id.yaml").readText()).getAsJsonObject("rule-providers")?.entrySet()?.any { RuleResources.idOf(it.value) == resource.id } == true }.getOrDefault(false)

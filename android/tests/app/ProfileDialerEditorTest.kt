@@ -52,4 +52,22 @@ class ProfileDialerEditorTest {
         assertTrue(malformed is IllegalArgumentException)
         assertTrue(duplicate is IllegalArgumentException)
     }
+
+    @Test fun `semantic extraction and selection reject indirect and include all loops`() {
+        val yaml = """
+            proxies: [{name: A, type: direct, dialer-proxy: B}, {name: B, type: direct}, {name: C, type: direct}]
+            proxy-groups:
+              - {name: Main, type: select, proxies: [A]}
+              - {name: Relay, type: select, proxies: [B]}
+              - {name: All, type: select, include-all-proxies: true}
+        """.trimIndent()
+        assertEquals(mapOf("A" to "B"), ProfileDialerEditor.extractDialers(yaml))
+        val catalog = ProfileDialerCatalog(yaml)
+        assertTrue(catalog.wouldLoop("A", "A", emptyMap()))
+        assertTrue(catalog.wouldLoop("A", "Main", emptyMap()))
+        assertTrue(catalog.wouldLoop("A", "Relay", mapOf("B" to "C", "C" to "A")))
+        assertTrue(catalog.wouldLoop("A", "All", emptyMap()))
+        assertTrue(catalog.selectable("A", "Relay", mapOf("B" to "C")))
+        assertEquals("目标不存在，请重新选择", catalog.issue("A", "missing", emptyMap()))
+    }
 }

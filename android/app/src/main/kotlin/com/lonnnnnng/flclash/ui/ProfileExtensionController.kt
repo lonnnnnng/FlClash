@@ -133,7 +133,7 @@ internal class ProfileExtensionController(
                 val before = mutableState.value
                 mutableState.value = before.copy(saving = true, error = null)
                 try {
-                    repository.saveGlobalExtensionRules(rules)
+                    repository.compareAndSaveGlobalExtensionRules(before.globalRules, rules)
                     if (token == generation) mutableState.value = before.copy(globalRules = rules, applied = false)
                 } catch (failure: Exception) {
                     if (failure is CancellationException) throw failure

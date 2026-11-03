@@ -14,6 +14,19 @@ import kotlinx.coroutines.yield
 import com.google.gson.JsonParser
 
 class CoreBridgeParsingTest {
+    @Test fun providerMembershipOnlyKeepsValidNonemptyStringMetadata() {
+        val nodes = JsonParser.parseString("""{"a":{"provider-name":"fixture"},"inline":{"type":"Vless"},"blank":{"provider-name":" "},"number":{"provider-name":4},"object":{"provider-name":{}},"null":null}""").asJsonObject
+        assertEquals(setOf("a"), CoreBridge().parseProviderProxies(nodes))
+    }
+    @Test fun geoEventsDistinguishAcceptedProgressCompletionAndFailure() {
+        val events = CoreBridge().parseEvents("""{"method":"message","arguments":[
+            {"type":"geoUpdate","data":{"type":"MMDB","updating":true}},
+            {"type":"geoUpdate","data":{"type":"MMDB","updating":false}},
+            {"type":"geoUpdate","data":{"type":"GEOIP","updating":false,"error":"download failed"}},
+            {"type":"geoUpdate","data":{"type":"unknown","updating":true}}]}""".toByteArray())
+        assertEquals(listOf(CoreEvent.GeoUpdate("MMDB", true), CoreEvent.GeoUpdate("MMDB", false),
+            CoreEvent.GeoUpdate("GEOIP", false, error = "download failed")), events)
+    }
     @Test fun proxyTypesKeepLeavesGroupsAndUnknownProtocolsWithoutPrivateMetadata() {
         val types = CoreBridge().parseProxyTypes(JsonParser.parseString("""{
             "Main":{"type":"Selector","all":["a","b"],"now":"a"},
@@ -37,12 +50,33 @@ class CoreBridgeParsingTest {
         val bridge = CoreBridge()
         val raw = """[{"name":"fixture","type":"Proxy","count":12,"vehicle-type":"HTTP","update-at":"2026-11-02T08:00:00.123456789+08:00","path":"private","subscription-info":{"token":"fixture-secret"}}]"""
         val result = bridge.parseExternalProviders(JsonParser.parseString(raw).asJsonArray).single()
-        assertEquals(CoreExternalProvider("fixture", "Proxy", "HTTP", 12, 1793577600123L), result)
+        assertEquals(CoreExternalProvider("fixture", "Proxy", "HTTP", 12, 1793577600123L), result.copy(fileIdentity = null))
+        assertEquals(64, result.fileIdentity?.length)
+        assertFalse(result.toString().contains("private"))
         assertTrue(result.canUpdate)
         assertFalse(result.toString().contains("secret"))
         assertFalse(result.copy(vehicleType = "File").canUpdate)
         assertEquals(null, bridge.parseProviderTime("0001-01-01T00:00:00Z"))
         assertEquals(1793577600000L, bridge.parseProviderTime("2026-11-02T00:00:00Z"))
+    }
+
+    @Test fun providerDocumentsAndBatchesRejectWrongKindsDigestsAndResultOrder() {
+        val bridge = CoreBridge()
+        val source = """{"name":"rules","kind":"text","content":"fixture-secret","digest":"missing"}"""
+        val doc = bridge.parseProviderDocument(JsonParser.parseString(source).asJsonObject)
+        assertTrue(doc.editable); assertFalse(doc.toString().contains("fixture-secret"))
+        for (bad in listOf(source.replace("text", "unknown"), source.replace("missing", "bad"), source.replace("\"content\":\"fixture-secret\"", "\"content\":2"))) {
+            assertTrue(runCatching { bridge.parseProviderDocument(JsonParser.parseString(bad).asJsonObject) }.isFailure)
+        }
+        val result = JsonParser.parseString("""[{"name":"a","code":""},{"name":"b","code":"request_timeout"}]""").asJsonArray
+        assertEquals(listOf(CoreProviderUpdateResult("a", ""), CoreProviderUpdateResult("b", "request_timeout")), bridge.parseProviderUpdateResults(result, listOf("a", "b")))
+        assertTrue(runCatching { bridge.parseProviderUpdateResults(result, listOf("b", "a")) }.isFailure)
+    }
+
+    @Test fun providerSubscriptionUsesGoFieldsAndSaturatesUsedBytes() {
+        val raw = """[{"name":"a","type":"Proxy","count":1,"vehicle-type":"HTTP","update-at":"0001-01-01T00:00:00Z","subscription-info":{"Upload":9223372036854775807,"Download":4,"Total":10,"Expire":100}}]"""
+        val info = CoreBridge().parseExternalProviders(JsonParser.parseString(raw).asJsonArray).single().subscriptionInfo!!
+        assertEquals(Long.MAX_VALUE, info.used); assertEquals(1f, info.usage); assertEquals(100000L, info.expireAtMillis)
     }
 
     @Test fun providerDetailsRejectMalformedMetadataAndEmptyIsRealEmpty() {

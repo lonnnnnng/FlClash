@@ -28,6 +28,28 @@ object ProfileProvidersEditor {
     }.getOrDefault(emptyList())
 
     fun replace(yaml: String, sections: Sections): String {
+        val root = ProxyGroupDrafts.root(yaml)
+        val lines = normalizedLines(yaml)
+        val flowRoot = lines.firstOrNull { it.isNotBlank() && !it.trimStart().startsWith('#') }?.trimStart()?.startsWith('{') == true
+        // 作者 long：flow 根对象、带引号或整体缩进的分区无法按行定位，语义替换才能避免追加同名分区。
+        if (listOf("proxy-providers", "rule-providers").any { key ->
+            val line = findSectionStart(lines, key)?.let { lines[it] }
+            val value = root.get(key)
+            // 作者 long：脚本 codec 会补空代理 Provider map；只有原文分区才需要语义替换，不能把默认值当成现有定义。
+            val irregularSection = line == null && (flowRoot || value?.takeIf { it.isJsonObject }?.asJsonObject?.size()?.let { it > 0 } == true ||
+                lines.any { it.trimStart().startsWith("\"$key\":") || it.trimStart().startsWith("'$key':") ||
+                    (it.firstOrNull()?.isWhitespace() == true && it.trimStart().startsWith("$key:")) })
+            root.has(key) && (irregularSection || line?.substringAfter(':')?.trim()?.let { it.isNotEmpty() && it != "{}" && !it.startsWith('#') } == true)
+        }) {
+            listOf("proxy-providers" to sections.proxyProviders, "rule-providers" to sections.ruleProviders).forEach { (key, value) ->
+                if (root.has(key) || value.isNotBlank()) {
+                    val providers = ProxyGroupDrafts.root(renderSection(key, parseEntries(value, key)).joinToString("\n")).get(key)
+                    require(providers == null || providers.isJsonNull || providers.isJsonObject) { "Provider 分区必须是 map" }
+                    root.add(key, providers?.takeIf { it.isJsonObject } ?: com.google.gson.JsonObject())
+                }
+            }
+            return com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(root.toString())
+        }
         var updated = yaml
         listOf(
             "proxy-providers" to sections.proxyProviders,
@@ -43,8 +65,13 @@ object ProfileProvidersEditor {
 
     private fun extractSection(yaml: String, key: String): String {
         val lines = normalizedLines(yaml)
-        val start = findSectionStart(lines, key) ?: return ""
+        val start = findSectionStart(lines, key) ?: return ProxyGroupDrafts.root(yaml).get(key)?.takeIf { it.isJsonObject && it.asJsonObject.size() > 0 }
+            ?.let { com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(it.toString()).trimEnd() }.orEmpty()
         if (lines[start].substringAfter(':').trim() == "{}") return ""
+        if (lines[start].substringAfter(':').trim().let { it.isNotEmpty() && !it.startsWith('#') }) {
+            return ProxyGroupDrafts.root(yaml).get(key)?.takeIf { it.isJsonObject && it.asJsonObject.size() > 0 }
+                ?.let { com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(it.toString()).trimEnd() }.orEmpty()
+        }
         val end = findSectionEnd(lines, start)
         val contentEnd = end - trailingBoundaryLines(lines, start, end)
         return lines.subList(start + 1, contentEnd)
@@ -93,6 +120,25 @@ object ProfileProvidersEditor {
         if (firstContentIndex < 0) return emptyList()
 
         val firstContent = sourceLines[firstContentIndex].trim()
+        if (firstContent == "{}") return emptyList()
+        // 作者 long：订阅中的规则资源常用行内 map；按完整 YAML 读取后展开，不能在绑定代理资源时拒绝这些既有定义。
+        if (firstContent.startsWith('{') || sourceLines.any { line ->
+                mapEntryPattern.matchEntire(line.trimStart())?.groupValues?.get(2)?.trimStart()?.startsWith('{') == true
+            }) {
+            // 作者 long：放入独立分区，隔离脚本 codec 为完整配置补的默认 proxy-providers，避免把默认空 map 当资源条目。
+            val document = "provider-editor:\n" + editorText.lines().joinToString("\n") { "  $it" }
+            val parsed = com.google.gson.JsonParser.parseString(com.lonnnnnng.flclash.service.YamlConfigCodec.toJson(document))
+                .asJsonObject.get("provider-editor")
+            require(parsed.isJsonObject) { "Provider 分区必须是 map" }
+            val wrapped = firstContent.startsWith("$key:")
+            val providers = if (wrapped) parsed.asJsonObject.get(key) else parsed
+            require(providers?.isJsonObject == true) { "Provider 分区必须是 map" }
+            return providers.asJsonObject.entrySet().map { (name, value) ->
+                require(name.isNotBlank() && value.isJsonObject && value.asJsonObject.size() > 0) { "Provider 条目必须使用非空 map" }
+                val entry = com.google.gson.JsonObject().apply { add(name, value) }
+                normalizedLines(com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(entry.toString()))
+            }
+        }
         val body = when {
             firstContent == "$key: {}" -> return emptyList()
             firstContent == "$key:" -> sourceLines.drop(firstContentIndex + 1)

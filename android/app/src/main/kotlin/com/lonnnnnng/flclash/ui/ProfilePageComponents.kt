@@ -120,7 +120,7 @@ internal fun ProfileSourceMenu(
         Surface(Modifier.widthIn(min = 248.dp, max = 320.dp).testTag("profile_add_source_menu"),
             shape = RoundedCornerShape(24.dp), color = dashboardCardColor(), tonalElevation = 3.dp, shadowElevation = 6.dp) {
             Column(Modifier.padding(vertical = 8.dp)) {
-                DropdownMenuItem(text = { Text("从二维码图片导入") }, leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, null) },
+                DropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, null) },
                     onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))
                 DropdownMenuItem(text = { Text("从文件导入 YAML") }, leadingIcon = { Icon(Icons.Outlined.Description, null) },
                     onClick = onFile, enabled = !busy, modifier = Modifier.testTag("profile_add_source_file"))

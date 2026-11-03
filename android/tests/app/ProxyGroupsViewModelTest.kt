@@ -45,6 +45,15 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProxyGroupsViewModelTest {
+    @Test fun localImportPolicySeparatesCustomOwnedProviderBuiltinAndNestedGroups() {
+        val group = ProxyGroupInfo("nested", "Selector", "leaf", listOf("leaf"), false)
+        val remote = ProxyGroupsUiState(groups = listOf(group), proxyTypes = mapOf("leaf" to "Vless", "relay" to "Relay"))
+        assertTrue(remote.canAddToLocal("leaf"))
+        assertTrue(!remote.canAddToLocal("DIRECT") && !remote.canAddToLocal("GLOBAL") && !remote.canAddToLocal("nested") && !remote.canAddToLocal("relay"))
+        val custom = remote.copy(customProfile = true)
+        assertTrue(!custom.canAddToLocal("leaf"))
+        assertTrue(custom.copy(providerProxies = setOf("leaf")).canAddToLocal("leaf"))
+    }
     @Test fun protocolDescriptionsUseLeafTypesAndLooseNestedGroupExit() {
         val nested = ProxyGroupInfo("nested", "Selector", "leaf", listOf("leaf"), false)
         val state = ProxyGroupsUiState(groups = listOf(nested), proxyTypes = mapOf("leaf" to "Vless", "DIRECT" to "Direct"))
@@ -63,21 +72,27 @@ class ProxyGroupsViewModelTest {
         val old = Profile.custom(701, "old")
         val next = Profile.custom(702, "next")
         val store = SelectionProfileStore(old).apply { profiles.value = listOf(old, next) }
-        val first = ProxyGroupsSnapshot(listOf(group), mapOf("a" to "Trojan", "b" to "Vless"))
-        val selected = first.copy(proxyTypes = first.proxyTypes + ("b" to "Shadowsocks"))
+        val first = ProxyGroupsSnapshot(listOf(group), mapOf("a" to "Trojan", "b" to "Vless"), setOf("a"))
+        val selected = first.copy(proxyTypes = first.proxyTypes + ("b" to "Shadowsocks"), providerProxies = setOf("b"))
         val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, first, Result.success(selected))
         val model = ProxyGroupsViewModel(runtime, store)
         val observing = backgroundScope.launch { model.state.collect {} }
         try {
             runCurrent()
             assertEquals(first.proxyTypes, model.state.value.proxyTypes)
+            assertEquals(setOf("a"), model.state.value.providerProxies)
+            assertEquals(old.id, model.state.value.profileId)
+            assertTrue(model.state.value.customProfile)
             model.selectProxy(group, "b")
             runCurrent()
             assertEquals(selected.proxyTypes, model.state.value.proxyTypes)
+            assertEquals(setOf("b"), model.state.value.providerProxies)
             runtime.snapshot = ProxyGroupsSnapshot(listOf(group), mapOf("a" to "Direct"))
             store.currentProfileId.value = next.id
             runCurrent()
             assertEquals(mapOf("a" to "Direct"), model.state.value.proxyTypes)
+            assertEquals(emptySet<String>(), model.state.value.providerProxies)
+            assertEquals(next.id, model.state.value.profileId)
         } finally { observing.cancel(); model.viewModelScope.cancel(); runCurrent() }
     }
 

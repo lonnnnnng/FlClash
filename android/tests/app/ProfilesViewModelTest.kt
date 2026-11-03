@@ -22,6 +22,8 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -29,6 +31,268 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
+
+    @Test fun remoteDocumentStagesWithoutWritingAndFailedOuterSaveKeepsDraftForRetry() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(801, "https://example.test/source", "source")
+        val store = FakeProfileStore(profile).apply { content = "rules: []" }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
+        model.openEditor(profile); advanceUntilIdle()
+        model.openProfileDocument(true)
+        model.changeProfileDocument("rules: [bad")
+        model.acceptProfileDocument(); advanceUntilIdle()
+        assertNotNull(model.documentEditorState.value.error)
+        assertEquals(0, store.documentSaves)
+        model.changeProfileDocument("rules: []\n")
+        model.acceptProfileDocument(); advanceUntilIdle()
+        assertNull(model.documentEditorState.value.ownerId)
+        assertEquals("rules: []\n", model.remoteEditorState.value.draftContent)
+        assertEquals("rules: []", store.content)
+        store.documentSaveFailure = true
+        model.saveRemoteEditor("source", profile.url, false, 60)
+        advanceUntilIdle()
+        assertNotNull(model.remoteEditorState.value.error)
+        assertEquals("rules: []\n", model.remoteEditorState.value.draftContent)
+        store.documentSaveFailure = false
+        model.saveRemoteEditor("source", profile.url, false, 60)
+        advanceUntilIdle()
+        assertEquals(1, store.documentSaves)
+        assertTrue(store.remoteUpdateCalls.isEmpty())
+        assertNull(model.remoteEditorState.value.profile)
+    }
+
+    @Test fun remotePickerRejectsOldCallbackAndOuterSaveRejectsChangedBaseWithoutLosingDraft() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(802, "https://example.test/source", "source")
+        val store = FakeProfileStore(profile).apply { content = "rules: []" }
+        var reads = 0
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+            fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { reads++; com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "rules: []".toByteArray()) }, overviewDispatcher = mainDispatcher)
+        model.openEditor(profile); advanceUntilIdle()
+        val old = checkNotNull(model.beginRemoteFilePick())
+        model.closeEditor(); model.openEditor(profile); advanceUntilIdle()
+        model.acceptRemoteFilePick(old, "content://old"); advanceUntilIdle()
+        assertEquals(0, reads)
+        val token = checkNotNull(model.beginRemoteFilePick())
+        model.acceptRemoteFilePick(token, "content://current"); advanceUntilIdle()
+        assertEquals(1, reads)
+        assertNotNull(model.remoteEditorState.value.replacement)
+        store.content = "rules: []\n"
+        model.saveRemoteEditor("source", profile.url, false, 60); advanceUntilIdle()
+        assertNotNull(model.remoteEditorState.value.error)
+        assertNotNull(model.remoteEditorState.value.replacement)
+        assertEquals(0, store.documentSaves)
+        assertTrue(store.remoteUpdateCalls.isEmpty())
+    }
+
+    @Test fun batchSyncLimitsConcurrencyRejectsDuplicateOperationsAndRetriesOnlyFailures() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val rows = (1L..6L).map { Profile.remote(it, "https://example.test/$it", "订阅$it") }
+        val store = FakeProfileStore(rows.first(), rows.drop(1))
+        val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        var active = 0; var peak = 0; var reject = true
+        store.beforeRemoteUpdate = { id ->
+            active++; peak = maxOf(peak, active)
+            try { release.await(); if (id == 2L && reject) error("https://private.test/?token=secret") }
+            finally { active-- }
+        }
+        val applied = mutableListOf<Long>()
+        val runtime = object : CoreRuntimeStatusProvider {
+            override val state = MutableStateFlow(CoreRuntimeStatus.RUNNING)
+            override suspend fun applyCurrentProfile(id: Long) { applied += id }
+        }
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        model.updateAll(); model.updateAll(); model.update(rows.first()); model.rename(rows.first(), "must not run")
+        assertEquals(4, peak)
+        assertEquals(4, store.remoteUpdateCalls.size)
+        assertNull(store.updatedLabel)
+        release.complete(Unit); advanceUntilIdle()
+        assertEquals(6, store.remoteUpdateCalls.size)
+        assertEquals(1, model.syncState.value.items.count { it.status == ProfileSyncStatus.FAILED })
+        assertEquals(listOf(1L), applied)
+        assertFalse(model.syncState.value.toString().contains("secret"))
+        reject = false; model.retrySyncFailures(); advanceUntilIdle()
+        assertEquals(listOf(2L), store.remoteUpdateCalls.drop(6))
+        assertTrue(model.syncState.value.items.all { it.status == ProfileSyncStatus.SUCCEEDED })
+        assertFalse(model.syncState.value.running)
+    }
+
+    @Test fun retryingDownloadFailureKeepsEarlierSavedItemsAndUnresolvedApplyFailure() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val rows = (21L..22L).map { Profile.remote(it, "https://example.test/$it", "订阅$it") }
+        val store = FakeProfileStore(rows.first(), rows.drop(1)).apply {
+            beforeRemoteUpdate = { if (it == 22L) error("download failed") }
+        }
+        var applies = 0
+        val runtime = object : CoreRuntimeStatusProvider {
+            override val state = MutableStateFlow(CoreRuntimeStatus.RUNNING)
+            override suspend fun applyCurrentProfile(id: Long) { applies++; error("apply failed") }
+        }
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        model.updateAll(); advanceUntilIdle()
+        assertNotNull(model.syncState.value.applyError)
+        model.retrySyncFailures(); advanceUntilIdle()
+        assertEquals(2, model.syncState.value.items.size)
+        assertEquals(ProfileSyncStatus.SUCCEEDED, model.syncState.value.items.first().status)
+        assertEquals(ProfileSyncStatus.FAILED, model.syncState.value.items.last().status)
+        assertNotNull(model.syncState.value.applyError)
+        assertEquals(2, applies)
+        assertEquals(listOf(21L, 22L, 22L), store.remoteUpdateCalls)
+    }
+
+    @Test fun syncAppliesLatestSelectionAndApplyRetryDoesNotDownloadAgain() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val row = Profile.remote(10L, "https://example.test/sub", "订阅")
+        val other = Profile.custom(11L, "引用当前订阅的配置")
+        val store = FakeProfileStore(row, listOf(other))
+        val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        store.beforeRemoteUpdate = { release.await() }
+        var reject = true
+        val applied = mutableListOf<Long>()
+        val runtime = object : CoreRuntimeStatusProvider {
+            override val state = MutableStateFlow(CoreRuntimeStatus.RUNNING)
+            override suspend fun applyCurrentProfile(id: Long) { applied += id; if (reject) error("core secret") }
+        }
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        model.update(row)
+        store.currentProfileId.value = other.id
+        release.complete(Unit); advanceUntilIdle()
+        assertEquals(listOf(other.id), applied)
+        assertEquals(listOf(row.id), store.remoteUpdateCalls)
+        assertNotNull(model.syncState.value.applyError)
+        assertFalse(model.syncState.value.applyError!!.contains("secret"))
+        reject = false; model.retrySyncFailures(); advanceUntilIdle()
+        assertEquals(listOf(other.id, other.id), applied)
+        assertEquals(listOf(row.id), store.remoteUpdateCalls)
+        assertNull(model.syncState.value.applyError)
+        model.dismissSyncResult()
+        assertTrue(model.syncState.value.items.isEmpty())
+    }
+
+    @Test fun remoteSettingsAndAutoUpdateRemainAvailableWhileRunningAndTransitionsRejectSync() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val row = Profile.remote(12L, "https://example.test/sub", "订阅")
+        val store = FakeProfileStore(row)
+        val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING)
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        model.openEditor(row)
+        assertEquals(row, model.remoteEditorState.value.profile)
+        model.saveRemoteEditor("新名称", row.url, true, 60)
+        model.saveRemoteEditor("不能重复保存", row.url, false, 10)
+        advanceUntilIdle()
+        assertEquals(1, store.remoteSettingsUpdates.size)
+        assertTrue(store.remoteUpdateCalls.isEmpty())
+        model.setAutoUpdate(row, true); advanceUntilIdle()
+        assertEquals(listOf(row.id to true), store.autoUpdateChanges)
+        runtime.set(CoreRuntimeStatus.STARTING)
+        model.updateAll(); advanceUntilIdle()
+        assertTrue(store.remoteUpdateCalls.isEmpty())
+    }
+
+    @Test fun `provider in place save claims once rereads and keeps latest unrelated metadata`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(501, "资源")
+        val store = FakeProfileStore(profile).apply { content = "proxy-providers:\n  cloud:\n    type: file\n    path: cloud.yaml\n" }
+        val validation = kotlinx.coroutines.CompletableDeferred<List<String>>()
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher,
+            groupFilterValidator = com.lonnnnnng.flclash.data.ProxyGroupFilterValidator { validation.await() })
+        model.openProvidersEditor(profile); advanceUntilIdle()
+        val state = model.providersEditorState.value
+        val options = mapOf("cloud" to ProxyProviderOverride(filter = "HK", interval = 300))
+        model.saveProvidersInPlace(state.proxyProviders, state.ruleProviders, options)
+        model.saveProvidersInPlace(state.proxyProviders, state.ruleProviders, options)
+        assertTrue(model.providersEditorState.value.isSaving)
+        store.updateProfileOverrides(profile.id, ProfileProviderOverrides(dns = ProfileDnsOverrides(enable = false), dialers = emptyMap()).toJsonString())
+        validation.complete(listOf("", "")); advanceUntilIdle()
+        val saved = model.providersEditorState.value
+        assertEquals(1, store.providerSaveCalls)
+        assertEquals(1L, saved.revision); assertEquals(profile.id, saved.profile?.id)
+        assertEquals(options, saved.proxyProviderOverrides)
+        assertEquals(false, ProfileProviderOverrides.fromJsonString(saved.profile?.overridesJson).dns.enable)
+        assertEquals(emptyMap<String, String>(), ProfileProviderOverrides.fromJsonString(saved.profile?.overridesJson).dialers)
+        assertEquals(store.content, saved.sourceContent)
+    }
+
+    @Test fun `closed provider sessions reject late loading and validation results`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val first = Profile.custom(502, "旧资源")
+        val second = Profile.custom(503, "新资源")
+        val read = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val store = FakeProfileStore(first, listOf(second)).apply {
+            content = "proxy-providers:\n  cloud:\n    type: file\n"
+            beforeRead = { id -> if (id == first.id) read.await() }
+        }
+        val validation = kotlinx.coroutines.CompletableDeferred<List<String>>()
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher,
+            groupFilterValidator = com.lonnnnnng.flclash.data.ProxyGroupFilterValidator { validation.await() })
+        model.openProvidersEditor(first); model.closeProvidersEditor(); model.openProvidersEditor(second)
+        read.complete(Unit); advanceUntilIdle()
+        assertEquals(second.id, model.providersEditorState.value.profile?.id)
+        val state = model.providersEditorState.value
+        model.saveProvidersInPlace(state.proxyProviders, state.ruleProviders, mapOf("cloud" to ProxyProviderOverride(filter = "HK")))
+        model.closeProvidersEditor(); validation.complete(listOf("", "")); advanceUntilIdle()
+        assertNull(model.providersEditorState.value.profile)
+        assertEquals(0, store.providerSaveCalls)
+        assertNull(store.updatedOverridesJson)
+    }
+
+    @Test fun `provider save failure retains session and retry succeeds without changing remote source`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(504, "https://example.com", "远程")
+        val store = FakeProfileStore(profile).apply {
+            content = "proxy-providers:\n  cloud:\n    type: file\n"
+            beforeProviderSave = { error("持久化失败") }
+        }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        model.openProvidersEditor(profile); advanceUntilIdle()
+        val state = model.providersEditorState.value
+        val options = mapOf("cloud" to ProxyProviderOverride(timeout = 5000))
+        model.saveProvidersInPlace(state.proxyProviders, state.ruleProviders, options); advanceUntilIdle()
+        assertEquals("持久化失败", model.providersEditorState.value.error)
+        assertEquals(0L, model.providersEditorState.value.revision)
+        assertEquals(profile.id, model.providersEditorState.value.profile?.id)
+        store.beforeProviderSave = {}
+        model.saveProvidersInPlace(state.proxyProviders, state.ruleProviders, options); advanceUntilIdle()
+        assertEquals(1L, model.providersEditorState.value.revision)
+        assertEquals(options, model.providersEditorState.value.proxyProviderOverrides)
+        assertNull(store.updatedContent)
+    }
+
+    @Test fun moreInPlaceSaveClaimsOnceRejectsTransitionAndRetriesWithoutClosing() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(511, "更多设置")
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val store = FakeProfileStore(profile).apply { beforeMoreSave = { gate.await() } }
+        val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        model.openMoreEditor(profile)
+        val ntp = com.lonnnnnng.flclash.service.ProfileNtpOverrides(enable = false)
+        model.saveMoreEditor(ntp, com.lonnnnnng.flclash.service.ProfileSnifferOverrides())
+        model.saveMoreEditor(ntp, com.lonnnnnng.flclash.service.ProfileSnifferOverrides())
+        assertTrue(model.moreEditorState.value.isSaving)
+        runtime.set(CoreRuntimeStatus.STARTING)
+        gate.complete(Unit); advanceUntilIdle()
+        assertEquals(1, store.moreSaveCalls); assertNull(store.updatedOverridesJson)
+        assertEquals(0L, model.moreEditorState.value.revision); assertNotNull(model.moreEditorState.value.error)
+        runtime.set(CoreRuntimeStatus.STOPPED)
+        model.saveMoreEditor(ntp, com.lonnnnnng.flclash.service.ProfileSnifferOverrides()); advanceUntilIdle()
+        assertEquals(2, store.moreSaveCalls); assertEquals(1L, model.moreEditorState.value.revision)
+        assertEquals(profile.id, model.moreEditorState.value.profile?.id)
+        assertEquals(false, model.moreEditorState.value.ntp.enable); assertNull(model.moreEditorState.value.error)
+    }
+
+    @Test fun replacedMoreSessionRejectsLateCommitAndPreservesNewPage() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val first = Profile.custom(512, "旧分区"); val second = Profile.custom(513, "新分区")
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val store = FakeProfileStore(first, listOf(second)).apply { beforeMoreSave = { gate.await() } }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        model.openMoreEditor(first)
+        model.saveMoreEditor(com.lonnnnnng.flclash.service.ProfileNtpOverrides(enable = true), com.lonnnnnng.flclash.service.ProfileSnifferOverrides())
+        model.openMoreEditor(second); gate.complete(Unit); advanceUntilIdle()
+        assertNull(store.updatedOverridesJson); assertEquals(second.id, model.moreEditorState.value.profile?.id)
+        assertNull(model.moreEditorState.value.error); assertFalse(model.moreEditorState.value.isSaving)
+    }
 
     @Test fun moreSaveKeepsOtherOverridesAndRetainsNewDraft() = runTest {
         Dispatchers.setMain(mainDispatcher)
@@ -261,7 +525,7 @@ class ProfilesViewModelTest {
         assertEquals("edited", store.content)
     }
 
-    @Test fun `invalid selected file and running state cannot save file metadata or body`() = runTest {
+    @Test fun `invalid selected file is rejected but stable running metadata can save`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(96, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
         val store = FakeProfileStore(profile)
@@ -281,7 +545,7 @@ class ProfilesViewModelTest {
         runtime.set(CoreRuntimeStatus.RUNNING)
         model.saveFileEditor(null, "fixture")
         advanceUntilIdle()
-        assertTrue(store.fileUpdates.isEmpty())
+        assertEquals(1, store.fileUpdates.size)
     }
 
     @Test fun `key only edit persists trimmed key and refreshes but unchanged key does not`() = runTest {
@@ -290,7 +554,7 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(profile)
         val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
-        model.saveRemoteEditor("", profile.url, true, 60, " new-fixture \n")
+        model.saveRemoteEditor("source", profile.url, true, 60, " new-fixture \n")
         advanceUntilIdle()
         assertEquals("new-fixture", store.profiles.value.single().ageSecretKey)
         assertEquals(listOf(35L), store.remoteUpdateCalls)
@@ -737,7 +1001,7 @@ class ProfilesViewModelTest {
         )
 
         viewModel.openEditor(profile)
-        viewModel.saveRemoteEditor("", profile.url, false, 0L)
+        viewModel.saveRemoteEditor("source", profile.url, false, 0L)
         advanceUntilIdle()
 
         assertEquals(Profile.DEFAULT_UPDATE_INTERVAL_MILLIS, store.remoteSettingsUpdates.single().intervalMillis)
@@ -763,23 +1027,15 @@ class ProfilesViewModelTest {
     }
 
     @Test
-    fun `rename is rejected while core is running`() = runTest {
+    fun `rename remains available while core is running`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(5L, "运行中名称")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
-            repository = store,
-            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING),
-            overviewDispatcher = mainDispatcher,
-        )
-        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
-
+        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
         viewModel.rename(profile, "新名称")
-
-        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, error.await())
         advanceUntilIdle()
-        assertNull(store.updatedLabel)
-        assertEquals("运行中名称", store.profiles.value.single().label)
+        assertEquals("新名称", store.updatedLabel)
+        assertEquals("新名称", store.profiles.value.single().label)
     }
 
     @Test
@@ -802,23 +1058,16 @@ class ProfilesViewModelTest {
     }
 
     @Test
-    fun `reorder is rejected while core is running`() = runTest {
+    fun `reorder remains available while core is running without changing current profile`() = runTest {
         Dispatchers.setMain(mainDispatcher)
-        val first = Profile.custom(23L, "运行中第一项")
-        val second = Profile.custom(24L, "运行中第二项")
+        val first = Profile.custom(23L, "第一项")
+        val second = Profile.custom(24L, "第二项")
         val store = FakeProfileStore(first, listOf(second))
-        val viewModel = ProfilesViewModel(
-            repository = store,
-            runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING),
-            overviewDispatcher = mainDispatcher,
-        )
-        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
-
+        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
         viewModel.reorder(listOf(second.id, first.id))
-
-        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, error.await())
         advanceUntilIdle()
-        assertNull(store.reorderedIds)
+        assertEquals(listOf(second.id, first.id), store.reorderedIds)
+        assertEquals(first.id, store.currentProfileId.value)
     }
 
     @Test
@@ -1272,6 +1521,32 @@ class ProfilesViewModelTest {
         )
     }
 
+    @Test fun `dialer selection projects globals saves in place and rejects group loops`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(73, "链式列表").copy(overridesJson = ProfileProviderOverrides(dns = ProfileDnsOverrides(enable = false)).toJsonString())
+        val store = FakeProfileStore(profile).apply {
+            content = "proxy-groups: [{name: Main, type: select, proxies: [A, B]}]"
+            globalNodes = listOf("A", "B").map { com.lonnnnnng.flclash.data.LocalProxy(json = """{"name":"$it","type":"direct"}""") }
+        }
+        val vm = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        vm.openRulesEditor(profile); advanceUntilIdle()
+        assertTrue(vm.rulesEditorState.value.catalog.targets.containsAll(listOf("A", "B", "Main")))
+        assertEquals(store.content, vm.rulesEditorState.value.sourceContent)
+        vm.closeRulesEditor()
+        vm.openDialersEditor(profile); advanceUntilIdle()
+        assertEquals(2, com.lonnnnnng.flclash.data.ProfileDialerCatalog(vm.dialersEditorState.value.sourceContent).nodes.size)
+        vm.setDialerTarget("A", "B"); advanceUntilIdle()
+        assertEquals(profile.id, vm.dialersEditorState.value.profile?.id)
+        assertEquals(mapOf("A" to "B"), ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).dialers)
+        assertEquals(false, ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).dns.enable)
+        vm.setDialerTarget("A", "Main"); advanceUntilIdle()
+        assertTrue(vm.dialersEditorState.value.error!!.contains("循环"))
+        assertEquals(mapOf("A" to "B"), ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).dialers)
+        vm.setDialerTarget("A", null); advanceUntilIdle()
+        assertTrue(ProfileProviderOverrides.fromJsonString(store.updatedOverridesJson).dialers!!.isEmpty())
+        assertTrue(!store.content.contains("proxies: [{"))
+    }
+
     @Test
     fun `custom providers editor keeps dialog open when a provider is malformed`() = runTest {
         Dispatchers.setMain(mainDispatcher)
@@ -1315,12 +1590,20 @@ private class FakeProfileStore(
     var customAddCalls = 0
     var reorderedIds: List<Long>? = null
     var content = ""
+    var beforeRead: suspend (Long) -> Unit = {}
+    var beforeProviderSave: suspend () -> Unit = {}
+    var providerSaveCalls = 0
+    var beforeMoreSave: suspend () -> Unit = {}
+    var moreSaveCalls = 0
+    var globalNodes = emptyList<com.lonnnnnng.flclash.data.LocalProxy>()
+    override suspend fun localProxies() = globalNodes
     var fileSaveFailure: Exception? = null
     val fileUpdates = mutableListOf<Pair<String, ByteArray?>>()
     var updatedContent: String? = null
     var updatedLabel: String? = null
     val remoteSettingsUpdates = mutableListOf<RemoteSettingsUpdate>()
     val remoteUpdateCalls = mutableListOf<Long>()
+    var beforeRemoteUpdate: suspend (Long) -> Unit = {}
     val remoteAddCalls = mutableListOf<String>()
     val remoteAddFailures = mutableSetOf<String>()
     var requiresAgeKey = false
@@ -1352,7 +1635,22 @@ private class FakeProfileStore(
         return profile.copy(label = label)
     }
 
-    override suspend fun readLocalProfileContent(id: Long): String = content
+    override suspend fun readLocalProfileContent(id: Long): String { beforeRead(id); return content }
+
+    override suspend fun saveCustomProviders(id: Long, sections: com.lonnnnnng.flclash.data.ProfileProvidersEditor.Sections, overrides: Map<String, ProxyProviderOverride>, expectedContent: String, canWrite: () -> Boolean): Profile {
+        providerSaveCalls++; beforeProviderSave()
+        return super<ProfileStore>.saveCustomProviders(id, sections, overrides, expectedContent, canWrite)
+    }
+
+    override suspend fun saveMoreOptions(id: Long, patch: com.lonnnnnng.flclash.data.ProfileMorePatch, canWrite: () -> Boolean): Profile {
+        moreSaveCalls++; beforeMoreSave()
+        return super<ProfileStore>.saveMoreOptions(id, patch, canWrite)
+    }
+
+    override suspend fun saveProviderOptions(id: Long, overrides: Map<String, ProxyProviderOverride>, canWrite: () -> Boolean): Profile {
+        providerSaveCalls++; beforeProviderSave()
+        return super<ProfileStore>.saveProviderOptions(id, overrides, canWrite)
+    }
 
     override suspend fun downloadCustomImport(url: String): ByteArray = "rules: []".toByteArray()
 
@@ -1377,6 +1675,19 @@ private class FakeProfileStore(
         val updated = profiles.value.first { it.id == id }.copy(ageSecretKey = ageSecretKey, label = label ?: profile.label)
         profiles.value = profiles.value.map { if (it.id == id) updated else it }
         return updated
+    }
+
+    var documentSaves = 0
+    var documentSaveFailure = false
+    override suspend fun saveProfileDocument(expected: com.lonnnnnng.flclash.data.ProfileDocumentSnapshot,
+        settings: com.lonnnnnng.flclash.data.ProfileDocumentSettings, replacement: ByteArray?, canWrite: () -> Boolean): Profile {
+        check(canWrite())
+        check(content == expected.content) { "stale document" }
+        if (expected.profile.type == com.lonnnnnng.flclash.data.ProfileType.FILE) return super<ProfileStore>.saveProfileDocument(expected, settings, replacement, canWrite)
+        if (documentSaveFailure) error("save failed")
+        documentSaves++
+        if (replacement != null) content = replacement.toString(Charsets.UTF_8)
+        return updateRemoteProfileSettings(expected.profile.id, settings.label, settings.url, settings.autoUpdate, settings.intervalMillis, settings.ageSecretKey)
     }
 
     override suspend fun updateProfileLabel(id: Long, label: String): Profile {
@@ -1436,6 +1747,7 @@ private class FakeProfileStore(
 
     override suspend fun updateRemoteProfile(id: Long): Profile {
         remoteUpdateCalls += id
+        beforeRemoteUpdate(id)
         return profiles.value.single { it.id == id }
     }
 

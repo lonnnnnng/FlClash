@@ -27,51 +27,16 @@ object ProfileDialerEditor {
 
     /** 从原始 YAML 读取已有 dialer-proxy，用于第一次打开编辑器时显示有效值。 */
     fun extractDialers(yaml: String): Map<String, String> {
-        val lines = normalizedLines(yaml)
-        val start = lines.indexOfFirst { topLevelKey(it) == "proxies" }
-        if (start < 0) return emptyMap()
-        val end = sectionEnd(lines, start)
-        val entryStarts = (start + 1 until end)
-            .filter { leadingSpaces(lines[it]) == 2 && lines[it].trimStart().startsWith("-") }
+        // 作者 long：全局投影和手写配置都可能使用 flow 对象或无缩进列表，按 YAML 语义读取才能展示实际链式设置。
+        val proxies = ProxyGroupDrafts.root(yaml).get("proxies")?.takeIf { it.isJsonArray }?.asJsonArray ?: return emptyMap()
         return buildMap {
-            entryStarts.forEachIndexed { index, entryStart ->
-                val entryEnd = entryStarts.getOrNull(index + 1) ?: end
-                var name: String? = null
-                var target: String? = null
-                for (lineIndex in entryStart until entryEnd) {
-                    val line = lines[lineIndex]
-                    val candidate = line.trim().removePrefix("-").trimStart()
-                    when {
-                        candidate.startsWith("name:") -> name = scalar(candidate.substringAfter(':'))
-                        leadingSpaces(line) >= 4 && nestedKey(line) == "name" -> name = scalar(line.substringAfter(':'))
-                        leadingSpaces(line) >= 4 && nestedKey(line) == "dialer-proxy" -> {
-                            target = scalar(line.substringAfter(':'))
-                        }
-                    }
-                }
-                if (!name.isNullOrBlank() && !target.isNullOrBlank()) put(name!!, target!!)
+            proxies.forEach { entry ->
+                val node = entry.takeIf { it.isJsonObject }?.asJsonObject ?: return@forEach
+                val name = node.get("name")?.asString
+                val target = node.get("dialer-proxy")?.asString
+                if (!name.isNullOrBlank() && !target.isNullOrBlank()) put(name, target)
             }
         }
-    }
-
-    private fun normalizedLines(yaml: String): List<String> =
-        yaml.replace("\r\n", "\n").replace('\r', '\n').split('\n')
-
-    private fun sectionEnd(lines: List<String>, start: Int): Int =
-        (start + 1 until lines.size).firstOrNull { topLevelKey(lines[it]) != null } ?: lines.size
-
-    private fun topLevelKey(line: String): String? {
-        if (line.isBlank() || line.first().isWhitespace()) return null
-        val colon = line.indexOf(':')
-        return line.substring(0, colon.coerceAtLeast(0)).trim()
-            .takeIf { colon > 0 && it.matches(Regex("[A-Za-z0-9_-]+")) }
-    }
-
-    private fun nestedKey(line: String): String? {
-        if (leadingSpaces(line) < 4) return null
-        val colon = line.indexOf(':')
-        return line.substring(0, colon.coerceAtLeast(0)).trim()
-            .takeIf { colon > 0 && it.matches(Regex("[A-Za-z0-9_-]+")) }
     }
 
     private fun scalar(raw: String): String {
@@ -99,6 +64,4 @@ object ProfileDialerEditor {
         }
         return value
     }
-
-    private fun leadingSpaces(line: String): Int = line.takeWhile { it == ' ' }.length
 }

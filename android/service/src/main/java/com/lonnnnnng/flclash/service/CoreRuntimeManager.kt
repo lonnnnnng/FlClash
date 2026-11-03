@@ -17,6 +17,7 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.async
@@ -31,6 +32,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.filterIsInstance
 
 enum class CoreRuntimeStatus(
     val label: String,
@@ -66,12 +72,76 @@ class CoreRuntimeManager(
     private val elapsedRealtimeMillis: () -> Long = { SystemClock.elapsedRealtime() },
     private val lanSharingStore: LanSharingStore = NoopLanSharingStore,
     private val vpnSettingsStore: VpnSettingsStore = DefaultVpnSettingsStore,
+    private val geoSettingsStore: GeoResourceSettingsStore? = null,
+    private val networkSettingsStore: NetworkSettingsStore? = null,
+    private val globalDnsSettingsStore: GlobalDnsSettingsStore? = null,
+    private val generalSettingsStore: GeneralSettingsStore? = null,
 ) : ProxyGroupsRuntime, OutboundIpRuntime, RuntimeConfigPreviewProvider, ProfileStatisticsRuntime, MemoryRuntime, LanSharingRuntime, ServiceStatusRuntime {
     init {
         RuntimeDiagnosticHistory.configure(runtimeDiagnosticStore)
     }
 
     private val transitionLock = Mutex()
+    private var onDemandExcluded = false
+    private val mutableOnDemandSuspended = MutableStateFlow(false)
+    val onDemandSuspended = mutableOnDemandSuspended.asStateFlow()
+
+    private fun forwardingActive() = mutableState.value.isRunning && !mutableOnDemandSuspended.value
+
+    /** 作者 long：排除Wi-Fi只暂停转发，不结束用户本次运行；所有入口仍由同一启停锁决定是否恢复。 */
+    suspend fun setOnDemandExcluded(excluded: Boolean): Result<Unit> = transitionLock.withLock {
+        withContext(Dispatchers.IO + NonCancellable) {
+            onDemandExcluded = excluded
+            if (!mutableState.value.isRunning || mutableOnDemandSuspended.value == excluded) return@withContext Result.success(Unit)
+            runCatching {
+                if (excluded) {
+                    serviceController.stopAndAwait()
+                    if (listenerStarted.get()) { bridge.stopListener(); listenerStarted.set(false) }
+                } else {
+                    ensureConfigLoaded()
+                    val options = vpnOptionsProvider.current().copy(enable = appliedVpnOptions?.enable ?: mutableVpnSettings.value.enabled)
+                    serviceController.start(options)
+                    if (!listenerStarted.get()) { bridge.startListener(); listenerStarted.set(true) }
+                    appliedVpnOptions = options
+                    mutableVpnSettings.update { it.copy(appliedEnabled = options.enable) }
+                }
+                mutableOnDemandSuspended.value = excluded
+                invalidateIpRoute()
+            }.onFailure { failure ->
+                // 作者 long：暂停或恢复失败时收掉半开的系统服务，保留明确失败态，不能误报仍在接管网络。
+                mutableRunningSince.value = null
+                mutableOnDemandSuspended.value = false
+                mutableVpnSettings.update { it.copy(appliedEnabled = null) }
+                mutableState.value = CoreRuntimeStatus.FAILED
+                invalidateIpRoute()
+                // 作者 long：持久化或诊断再次失败也不能打断收尾、更不能终止应用级网络观察协程。
+                runCatching { serviceController.stopAndAwait() }.onFailure { failure.addSuppressed(it) }
+                runCatching { stopListeners() }.onFailure { failure.addSuppressed(it) }
+                runCatching { runtimeResumeStore.setShouldResume(false) }.onFailure { failure.addSuppressed(it) }
+                runCatching { RuntimeDiagnosticHistory.recordAndFlush(RuntimeDiagnosticKind.CORE_FAILED, "按需连接切换失败，请重新启动") }
+                    .onFailure { failure.addSuppressed(it) }
+            }
+        }
+    }
+
+    suspend fun <T> withStoppedDataRestore(action: suspend () -> T): T = transitionLock.withLock {
+        check(mutableState.value == CoreRuntimeStatus.STOPPED || mutableState.value == CoreRuntimeStatus.FAILED) { "请先停止服务后恢复备份" }
+        check(mutableGeoUpdates.value.values.none { it.updating }) { "请等待资源更新完成后恢复备份" }
+        withContext(Dispatchers.IO + NonCancellable) {
+            try { action() } finally {
+                // 作者 long：恢复可能成功或完成补偿，均以实际落盘值刷新；不加载新配置或启动VPN，旧预览不能继续视为有效。
+                loadedConfigKey = null; loadedAutomaticConfigKey = null
+                mutableGeneralSettings.value = generalSettingsStore?.read() ?: GeneralSettings()
+                mutableNetworkSettings.value = networkSettingsStore?.read() ?: NetworkSettings()
+                mutableGlobalDns.value = globalDnsSettingsStore?.read() ?: ProfileDnsOverrides()
+                mutableGeoSettings.value = geoSettingsStore?.read() ?: GeoResourceSettings()
+                mutableVpnSettings.value = VpnSettingsState(vpnSettingsStore.read())
+                mutableLanSharing.value = LanSharingState(com.lonnnnnng.flclash.core.CoreLanConfig(lanSharingStore.read() ?: false, 0))
+                syncGeneralRuntimeHooks(mutableGeneralSettings.value)
+                invalidateIpRoute()
+            }
+        }
+    }
 
     suspend fun compileRuleResource(name: String) = transitionLock.withLock {
         withContext(Dispatchers.IO) {
@@ -86,6 +156,118 @@ class CoreRuntimeManager(
     }
     private val mutableVpnSettings = MutableStateFlow(VpnSettingsState(vpnSettingsStore.read()))
     val vpnSettings = mutableVpnSettings.asStateFlow()
+    private val mutableNetworkSettings = MutableStateFlow(networkSettingsStore?.read() ?: NetworkSettings())
+    val networkSettings = mutableNetworkSettings.asStateFlow()
+
+    suspend fun updateNetworkSettings(expected: NetworkSettings, value: NetworkSettings): Result<Unit> = transitionLock.withLock {
+        withContext(Dispatchers.IO + kotlinx.coroutines.NonCancellable) {
+            val store = networkSettingsStore ?: return@withContext Result.failure(IllegalStateException("网络设置存储不可用"))
+            runCatching {
+                val previous = store.read()
+                check(previous == expected) { "网络设置已变化，请重新打开后保存" }
+                val next = value.validated()
+                next.vpnRoutes()
+                if (next == previous) return@runCatching
+                store.write(next)
+                try {
+                    // 作者 long：保存和核心应用共用启停锁；运行中沿用当前 VPN 启用状态，只为实际网络参数变化重建系统网络。
+                    profileProvider.activeProfileId()?.let { id -> applyProfileLocked(id) { target -> check(target == id) } }
+                    mutableNetworkSettings.value = next
+                    invalidateIpRoute()
+                } catch (failure: Throwable) {
+                    // 作者 long：核心或系统网络重建失败时，既有应用回滚恢复连接，这里同时恢复落盘偏好。
+                    try { store.write(previous) } catch (_: Exception) {
+                        // 作者 long：磁盘连回滚都无法写入时，回读真实偏好并停止服务，不能继续展示旧值却在下次启动使用新路径。
+                        mutableNetworkSettings.value = runCatching { store.read() }.getOrDefault(next)
+                        loadedConfigKey = null
+                        loadedAutomaticConfigKey = null
+                        stopLocked()
+                        error("网络设置恢复失败，服务已停止，请重新保存后启动")
+                    }
+                    throw failure
+                }
+            }
+        }
+    }
+
+    private val mutableGlobalDns = MutableStateFlow(globalDnsSettingsStore?.read() ?: ProfileDnsOverrides())
+    val globalDns = mutableGlobalDns.asStateFlow()
+
+    suspend fun updateGlobalDns(expected: ProfileDnsOverrides, value: ProfileDnsOverrides): Result<Unit> = transitionLock.withLock {
+        withContext(Dispatchers.IO + kotlinx.coroutines.NonCancellable) {
+            val store = globalDnsSettingsStore ?: return@withContext Result.failure(IllegalStateException("DNS 设置存储不可用"))
+            runCatching {
+                val previous = store.read()
+                check(previous == expected) { "DNS 设置已变化，请重新打开后保存" }
+                val next = GlobalDnsSettings.validate(value)
+                if (next == previous) return@runCatching
+                store.write(next)
+                try {
+                    // 作者 long：写盘和应用共用启停锁；先补基线再合并全局字段，运行失败由既有配置事务恢复原服务。
+                    profileProvider.activeProfileId()?.let { id ->
+                        if (profileProvider.profileById(id)?.usesGlobalDns == true) applyProfileLocked(id) { target -> check(target == id) }
+                    }
+                    mutableGlobalDns.value = next
+                    invalidateIpRoute()
+                } catch (failure: Throwable) {
+                    try { store.write(previous) } catch (_: Exception) {
+                        mutableGlobalDns.value = runCatching { store.read() }.getOrDefault(next)
+                        loadedConfigKey = null; loadedAutomaticConfigKey = null
+                        stopLocked()
+                        error("DNS 设置恢复失败，服务已停止，请重新保存后启动")
+                    }
+                    throw failure
+                }
+            }
+        }
+    }
+
+    private val mutableGeneralSettings = MutableStateFlow(generalSettingsStore?.read() ?: GeneralSettings())
+    val generalSettings = mutableGeneralSettings.asStateFlow()
+
+    suspend fun updateGeneralSettings(expected: GeneralSettings, value: GeneralSettings): Result<Unit> = transitionLock.withLock {
+        withContext(Dispatchers.IO + kotlinx.coroutines.NonCancellable) {
+            val store = generalSettingsStore ?: return@withContext Result.failure(IllegalStateException("常规设置存储不可用"))
+            runCatching {
+                val previous = store.read()
+                check(previous == expected) { "常规设置已变化，请重新打开后保存" }
+                val next = value.prepared()
+                if (next == previous) return@runCatching
+                store.write(next)
+                try {
+                    if (previous.runtimeKey() != next.runtimeKey()) {
+                        profileProvider.activeProfileId()?.let { id -> applyProfileLocked(id) { target -> check(target == id) } }
+                        invalidateIpRoute()
+                    }
+                    syncGeneralRuntimeHooks(next)
+                    mutableGeneralSettings.value = next
+                } catch (failure: Throwable) {
+                    try {
+                        store.write(previous)
+                        // 作者 long：日志订阅失败也需要恢复刚应用的核心参数，避免偏好已回滚而核心仍用新端口或新认证。
+                        if (previous.runtimeKey() != next.runtimeKey()) profileProvider.activeProfileId()?.let { id ->
+                            applyProfileLocked(id) { target -> check(target == id) }
+                        }
+                        syncGeneralRuntimeHooks(previous)
+                    } catch (_: Exception) {
+                        mutableGeneralSettings.value = runCatching { store.read() }.getOrDefault(next)
+                        loadedConfigKey = null; loadedAutomaticConfigKey = null
+                        stopLocked()
+                        error("常规设置恢复失败，服务已停止，请重新保存后启动")
+                    }
+                    throw failure
+                }
+            }
+        }
+    }
+
+    private suspend fun syncGeneralRuntimeHooks(value: GeneralSettings) {
+        ServiceConfig.updateNotificationParams(NotificationParams(title = "KClash", onlyStatisticsProxy = value.onlyStatisticsProxy,
+            showStopAction = value.showNotificationStopAction))
+        if (!mutableState.value.isRunning) return
+        if (value.openLogs && !logListenerStarted.get()) { bridge.startLog(); logListenerStarted.set(true) }
+        else if (!value.openLogs && logListenerStarted.get()) { bridge.stopLog(); logListenerStarted.set(false) }
+    }
 
     suspend fun setVpnEnabled(enabled: Boolean): Result<Unit> = transitionLock.withLock {
         withContext(Dispatchers.IO) {
@@ -128,17 +310,102 @@ class CoreRuntimeManager(
     private var loadedConfigKey: List<Any?>? = null
     private var loadedAutomaticConfigKey: List<Any?>? = null
 
+    private val resourceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val mutableGeoSettings = MutableStateFlow(geoSettingsStore?.read() ?: GeoResourceSettings())
+    val geoSettings = mutableGeoSettings.asStateFlow()
+    private val mutableGeoUpdates = MutableStateFlow<Map<String, CoreEvent.GeoUpdate>>(emptyMap())
+    val geoUpdates = mutableGeoUpdates.asStateFlow()
+
+    init {
+        // 作者 long：先订阅再发下载请求，极快的失败也必须清掉更新状态；停止 VPN 不取消核心已有下载。
+        resourceScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            bridge.events.filterIsInstance<CoreEvent.GeoUpdate>().collect { event ->
+                mutableGeoUpdates.update { it + (event.type to event) }
+                if (!event.updating) transitionLock.withLock {
+                    if (!event.skipped && event.error.isEmpty()) invalidateIpRoute()
+                    stopIdleResourceEventListener()
+                }
+            }
+        }
+        resourceScope.launch {
+            val store = geoSettingsStore ?: return@launch
+            store.changes?.collect {
+                transitionLock.withLock {
+                    // 作者 long：备份从持久层恢复设置，不在 Room 事务内反向调用核心；这里只失效加载输入，下一次应用使用新设置。
+                    val current = store.read().validated()
+                    if (current != mutableGeoSettings.value) {
+                        mutableGeoSettings.value = current
+                        loadedConfigKey = null
+                        loadedAutomaticConfigKey = null
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun requestGeoUpdate(type: GeoResourceType) = transitionLock.withLock {
+        withContext(Dispatchers.IO) {
+            check(mutableGeoUpdates.value[type.name]?.updating != true) { "此资源正在更新" }
+            ensureInitialized()
+            ensureConfigLoaded()
+            if (eventListenerStarted.compareAndSet(false, true)) bridge.startEventListener()
+            mutableGeoUpdates.update { it + (type.name to CoreEvent.GeoUpdate(type.name, true)) }
+            try { bridge.updateGeoData(type.name) }
+            catch (failure: Exception) {
+                mutableGeoUpdates.update { it + (type.name to CoreEvent.GeoUpdate(type.name, false, error = "Geo 更新请求失败")) }
+                stopIdleResourceEventListener()
+                throw failure
+            }
+        }
+    }
+
+    suspend fun setGeoSettings(settings: GeoResourceSettings) = transitionLock.withLock {
+        withContext(Dispatchers.IO) {
+            val next = settings.validated()
+            val previous = mutableGeoSettings.value
+            check(mutableGeoUpdates.value.values.none { it.updating }) { "请等待资源更新完成后修改设置" }
+            val oldContent = paths.configFile.takeIf { loadedConfigKey != null && it.isFile }?.readText()
+            try {
+                if (oldContent != null) {
+                    if (next.autoUpdate && eventListenerStarted.compareAndSet(false, true)) bridge.startEventListener()
+                    bridge.updateGeoSettings(next)
+                    paths.configFile.writeText(GeoResourceSettingsApplier.apply(oldContent, next))
+                }
+                geoSettingsStore?.write(next)
+                mutableGeoSettings.value = next
+                stopIdleResourceEventListener()
+            } catch (failure: Exception) {
+                if (oldContent != null) {
+                    val restored = runCatching {
+                        bridge.updateGeoSettings(previous)
+                        paths.configFile.writeText(oldContent)
+                    }.isSuccess
+                    if (!restored) { loadedConfigKey = null; loadedAutomaticConfigKey = null }
+                }
+                stopIdleResourceEventListener()
+                throw failure
+            }
+        }
+    }
+
+    private fun stopIdleResourceEventListener() {
+        if (mutableState.value in setOf(CoreRuntimeStatus.STOPPED, CoreRuntimeStatus.FAILED) && !needsResourceEvents() &&
+            eventListenerStarted.compareAndSet(true, false)) bridge.stopEventListener()
+    }
+
+    private fun needsResourceEvents(): Boolean = mutableGeoSettings.value.autoUpdate || mutableGeoUpdates.value.values.any { it.updating }
+
     private fun configKey(profile: ActiveProfile): List<Any?> {
         val source = File(profile.filePath)
         val script = profile.scriptPath?.let(::File)
         return listOf(profile.id, profile.filePath, source.length(), source.lastModified(),
-            profile.overridesJson, profile.standardExtension, profile.scriptPath, script?.length(), script?.lastModified(), lanSharingStore.read())
+            profile.overridesJson, profile.standardExtension, profile.scriptPath, script?.length(), script?.lastModified(), networkSettingsStore?.read(), if (profile.usesGlobalDns) globalDnsSettingsStore?.read() else null, generalSettingsStore?.read()?.runtimeKey(), lanSharingStore.read())
     }
 
     private fun automaticConfigKey(profile: ActiveProfile): List<Any?> {
         val source = File(profile.filePath)
         val overrides = ProfileProviderOverrides.fromJsonString(profile.overridesJson).copy(extension = ProfileExtensionOverrides())
-        return listOf(profile.id, profile.filePath, source.length(), source.lastModified(), overrides.toJsonString(), lanSharingStore.read())
+        return listOf(profile.id, profile.filePath, source.length(), source.lastModified(), overrides.toJsonString(), networkSettingsStore?.read(), if (profile.usesGlobalDns) globalDnsSettingsStore?.read() else null, generalSettingsStore?.read()?.runtimeKey(), lanSharingStore.read())
     }
 
     private suspend fun ensureConfigLoaded(force: Boolean = false) = withContext(Dispatchers.IO) {
@@ -153,7 +420,8 @@ class CoreRuntimeManager(
         stageConfig(profile)
         bridge.validateConfig(paths.configFile.path)
         invalidateIpRoute()
-        bridge.setupConfig(profile.selectedMap)
+        if (mutableGeoSettings.value.autoUpdate && eventListenerStarted.compareAndSet(false, true)) bridge.startEventListener()
+        bridge.setupConfig(profile.selectedMap, skipCertVerify = generalSettingsStore?.read()?.checkCertificate == false)
         val mode = preferredOutboundMode ?: bridge.getConfiguredMode(paths.configFile.path)
         if (preferredOutboundMode != null) bridge.updateMode(mode)
         mutableOutboundMode.value = mode
@@ -197,9 +465,12 @@ class CoreRuntimeManager(
                     // 作者 long：配置换端口或 TUN 参数后必须同步系统网络；待重启的 VPN 开关仍保持当前会话选择。
                     val nextOptions = vpnOptionsProvider.current().copy(enable = previousOptions.enable)
                     if (nextOptions != previousOptions) {
-                        servicesChanged = true
-                        serviceController.stopAndAwait()
-                        serviceController.start(nextOptions)
+                        // 作者 long：暂停期间仍允许配置投影更新，但不能因为端口/TUN变化重新接管排除Wi-Fi。
+                        if (!mutableOnDemandSuspended.value) {
+                            servicesChanged = true
+                            serviceController.stopAndAwait()
+                            serviceController.start(nextOptions)
+                        }
                         appliedVpnOptions = nextOptions
                     }
                 }
@@ -212,7 +483,7 @@ class CoreRuntimeManager(
                     if (previousContent != null && previousKey != null && previous != null) {
                         try {
                             paths.configFile.writeBytes(previousContent)
-                            bridge.setupConfig(previous.selectedMap)
+                            bridge.setupConfig(previous.selectedMap, skipCertVerify = !mutableGeneralSettings.value.checkCertificate)
                             bridge.updateMode(mutableOutboundMode.value)
                             if (servicesChanged && previousOptions != null) {
                                 serviceController.stopAndAwait()
@@ -223,9 +494,10 @@ class CoreRuntimeManager(
                             loadedAutomaticConfigKey = previousAutomaticKey
                         } catch (_: Exception) {
                             restored = false
-                            serviceController.stop()
-                            stopListeners()
-                            runtimeResumeStore.setShouldResume(false)
+                            runCatching { serviceController.stop() }
+                            runCatching { stopListeners() }
+                            runCatching { runtimeResumeStore.setShouldResume(false) }
+                            mutableOnDemandSuspended.value = false
                             mutableRunningSince.value = null
                             mutableVpnSettings.update { it.copy(appliedEnabled = null) }
                             mutableState.value = CoreRuntimeStatus.FAILED
@@ -279,21 +551,25 @@ class CoreRuntimeManager(
             if (eventListenerStarted.compareAndSet(false, true)) {
                 bridge.startEventListener()
             }
-            if (logListenerStarted.compareAndSet(false, true)) {
+            if (generalSettingsStore?.read()?.openLogs != false && logListenerStarted.compareAndSet(false, true)) {
                 bridge.startLog()
             }
             ServiceConfig.updateNotificationParams(
-                // 作者 long：核心在后台运行时必须保留停止入口，用户无需重新打开首页即可释放 VPN 和 TUN。
-                NotificationParams(title = "KClash", showStopAction = true),
+                // 作者 long：通知动作和流量口径跟随全局偏好，修改后由通知模块立即回读刷新。
+                NotificationParams(title = "KClash", showStopAction = mutableGeneralSettings.value.showNotificationStopAction,
+                    onlyStatisticsProxy = mutableGeneralSettings.value.onlyStatisticsProxy),
             )
             val vpnOptions = vpnOptionsProvider.current()
-            serviceController.start(vpnOptions)
             appliedVpnOptions = vpnOptions
-            if (!listenerStarted.get()) {
-                bridge.startListener()
-                listenerStarted.set(true)
+            if (!onDemandExcluded) {
+                serviceController.start(vpnOptions)
+                if (!listenerStarted.get()) {
+                    bridge.startListener()
+                    listenerStarted.set(true)
+                }
             }
-            // 作者 long：服务和核心监听器都就绪才建立会话，失败启动不能留下正在运行的计时。
+            // 作者 long：排除Wi-Fi也记录运行意图与计时，但监听保持关闭；离开后续接同一会话而非重新启动。
+            mutableOnDemandSuspended.value = onDemandExcluded
             mutableRunningSince.value = elapsedRealtimeMillis()
             mutableState.value = CoreRuntimeStatus.RUNNING
             mutableVpnSettings.update { it.copy(appliedEnabled = vpnOptions.enable) }
@@ -322,6 +598,7 @@ class CoreRuntimeManager(
             }
             runCatching { runtimeResumeStore.setShouldResume(false) }
             mutableState.value = CoreRuntimeStatus.FAILED
+            mutableOnDemandSuspended.value = false
             mutableRunningSince.value = null
             mutableVpnSettings.update { it.copy(appliedEnabled = null) }
             RuntimeDiagnosticHistory.record(
@@ -337,6 +614,7 @@ class CoreRuntimeManager(
 
     private suspend fun stopLocked(): Result<Unit> {
         invalidateIpRoute()
+        mutableOnDemandSuspended.value = false
         mutableRunningSince.value = null
         mutableVpnSettings.update { it.copy(appliedEnabled = null) }
         return runCatching {
@@ -354,7 +632,7 @@ class CoreRuntimeManager(
                 bridge.stopListener()
                 listenerStarted.set(false)
             }
-            if (eventListenerStarted.get()) {
+            if (eventListenerStarted.get() && !needsResourceEvents()) {
                 bridge.stopEventListener()
                 eventListenerStarted.set(false)
             }
@@ -381,6 +659,7 @@ class CoreRuntimeManager(
      */
     suspend fun handleVpnRevoked(): Result<Unit> = transitionLock.withLock {
         invalidateIpRoute()
+        mutableOnDemandSuspended.value = false
         mutableRunningSince.value = null
         mutableVpnSettings.update { it.copy(appliedEnabled = null) }
         runCatching {
@@ -416,6 +695,21 @@ class CoreRuntimeManager(
         }
     }
 
+    suspend fun getProxyDefinition(profileId: Long, name: String): com.google.gson.JsonObject = transitionLock.withLock {
+        // 作者 long：菜单属于打开时的配置；与切配置共用锁，防止同名节点被另一份配置的定义替换。
+        val profile = requireNotNull(profileProvider.activeProfile()) { "请先添加可用配置" }
+        check(profile.id == profileId) { "配置已切换，请重新打开节点菜单" }
+        ensureConfigLoaded()
+        val inputs = automaticConfigKey(profile)
+        check(loadedAutomaticConfigKey == inputs) { "配置已变化，请刷新代理列表后重试" }
+        val definition = bridge.getProxyDefinition(name)
+        val current = profileProvider.activeProfile()
+        check(current?.id == profileId && current == profile && automaticConfigKey(current) == inputs) {
+            "配置已变化，请刷新代理列表后重试"
+        }
+        requireNotNull(definition) { "无法读取节点定义，请刷新代理列表后重试" }.deepCopy()
+    }
+
     suspend fun setOutboundMode(mode: CoreOutboundMode): Result<Unit> = transitionLock.withLock {
         runCatching {
             check(mutableState.value != CoreRuntimeStatus.STARTING &&
@@ -437,6 +731,10 @@ class CoreRuntimeManager(
                 ensureConfigLoaded()
                 invalidateIpRoute(reusable = true)
                 bridge.changeProxy(groupName, proxyName)
+                if (generalSettingsStore?.read()?.closeConnections == true && mutableState.value.isRunning) {
+                    // 作者 long：核心已切换后关闭旧连接，让下一次请求使用新节点；关闭失败不能把已完成的切换伪装成失败。
+                    runCatching { bridge.closeConnections() }
+                }
                 // 作者 long：切换结果以核心重新返回的当前选择为准，避免 UI 只更新本地猜测而与 Mihomo 状态漂移。
                 bridge.getProxyGroups()
             }
@@ -452,7 +750,7 @@ class CoreRuntimeManager(
     ): Result<ProxyDelay?> = transitionLock.withLock {
         runCatching {
             ensureConfigLoaded()
-            bridge.testDelay(proxyName, testUrl, timeoutMs)
+            bridge.testDelay(proxyName, testUrl, if (timeoutMs == 0L) mutableGeneralSettings.value.delayTestTimeout.toLong() else timeoutMs)
         }
     }
 
@@ -467,7 +765,8 @@ class CoreRuntimeManager(
     ): Result<List<ProxyDelayBatchResult>> = transitionLock.withLock {
         try {
             ensureConfigLoaded()
-            require(timeoutMs > 0) { "测速超时必须大于 0" }
+            val effectiveTimeout = if (timeoutMs == 0L) mutableGeneralSettings.value.delayTestTimeout.toLong() else timeoutMs
+            require(effectiveTimeout > 0) { "测速超时必须大于 0" }
             require(maxConcurrent > 0) { "批量测速并发数必须大于 0" }
             if (requests.isEmpty()) return@withLock Result.success(emptyList())
             val permits = Semaphore(maxConcurrent)
@@ -478,7 +777,7 @@ class CoreRuntimeManager(
                             try {
                                 ProxyDelayBatchResult(
                                     request = request,
-                                    result = bridge.testDelay(request.proxyName, request.testUrl, timeoutMs),
+                                    result = bridge.testDelay(request.proxyName, request.testUrl, effectiveTimeout),
                                 )
                             } catch (error: CancellationException) {
                                 throw error
@@ -574,9 +873,10 @@ class CoreRuntimeManager(
                     } catch (_: Exception) {
                         restored = false
                         loadedConfigKey = null
-                        serviceController.stop()
-                        stopListeners()
-                        runtimeResumeStore.setShouldResume(false)
+                        runCatching { serviceController.stop() }
+                        runCatching { stopListeners() }
+                        runCatching { runtimeResumeStore.setShouldResume(false) }
+                        mutableOnDemandSuspended.value = false
                         mutableRunningSince.value = null
                         mutableVpnSettings.update { it.copy(appliedEnabled = null) }
                         mutableState.value = CoreRuntimeStatus.FAILED
@@ -602,8 +902,8 @@ class CoreRuntimeManager(
         try {
             check(mutableState.value == CoreRuntimeStatus.RUNNING) { "请先启动核心" }
             Result.success(CoreRuntimeStats(
-                traffic = bridge.getTraffic(),
-                totalTraffic = bridge.getTotalTraffic(),
+                traffic = bridge.getTraffic(mutableGeneralSettings.value.onlyStatisticsProxy),
+                totalTraffic = bridge.getTotalTraffic(mutableGeneralSettings.value.onlyStatisticsProxy),
                 connectionCount = bridge.getConnectionCount(),
             ))
         } catch (error: CancellationException) {
@@ -618,13 +918,13 @@ class CoreRuntimeManager(
         require(targets.isNotEmpty() && targets.distinct().size == targets.size)
         val (revision, running, stamp) = transitionLock.withLock {
             ensureInitialized()
-            Triple(mutableIpRouteRevision.value, mutableState.value.isRunning, withTimeout(3_000L) { bridge.ipRouteStamp() })
+            Triple(mutableIpRouteRevision.value, forwardingActive(), withTimeout(3_000L) { bridge.ipRouteStamp() })
         }
         // 作者 long：外部服务可能超时，网络等待不占启停锁；停止态强制直连，不沿用上次核心规则。
         val result = withTimeout(41_000L) { bridge.checkServices(targets, direct = !running, timeoutMs = 6_000L) }
         check(result.size == targets.size && result.map { it.target }.toSet() == targets.toSet()) { "服务检测结果不完整" }
         transitionLock.withLock {
-            if (mutableIpRouteRevision.value != revision || mutableState.value.isRunning != running ||
+            if (mutableIpRouteRevision.value != revision || forwardingActive() != running ||
                 withTimeout(3_000L) { bridge.ipRouteStamp() } != stamp || result.any { it.stamp != stamp }) {
                 throw ServiceRouteChangedException()
             }
@@ -670,7 +970,7 @@ class CoreRuntimeManager(
         require(proxyName.isNotBlank() && urls.isNotEmpty())
         val (revision, running) = transitionLock.withLock {
             ensureInitialized()
-            val running = mutableState.value.isRunning
+            val running = forwardingActive()
             if ((!running && proxyName != "DIRECT") || withTimeout(3_000L) { bridge.ipRouteStamp() } != expected) {
                 throw ServiceRouteChangedException()
             }
@@ -679,7 +979,7 @@ class CoreRuntimeManager(
         // 作者 long：指定出口查询不能占用启停锁；停止态只允许 DIRECT，旧运行结果不能借此重新使用代理。
         val result = withTimeout(17_000L) { bridge.outboundIpForProxy(urls, 6_000L, proxyName) }
         transitionLock.withLock {
-            if (revision != mutableIpRouteRevision.value || running != mutableState.value.isRunning ||
+            if (revision != mutableIpRouteRevision.value || running != forwardingActive() ||
                 result.stamp != expected || withTimeout(3_000L) { bridge.ipRouteStamp() } != expected) {
                 throw ServiceRouteChangedException()
             }
@@ -706,12 +1006,12 @@ class CoreRuntimeManager(
     private suspend fun queryIp(timeoutMs: Long, request: suspend (Boolean) -> CoreIpResponse): CoreIpResponse {
         val (revision, running) = transitionLock.withLock {
             ensureInitialized()
-            mutableIpRouteRevision.value to mutableState.value.isRunning
+            mutableIpRouteRevision.value to forwardingActive()
         }
         // 作者 long：外部网络等待不得占用启停锁；Kotlin 取消后 Go 请求仍由自身超时收口。
         val result = withTimeout(timeoutMs * 2 + 5_000L) { request(running) }
         transitionLock.withLock {
-            check(mutableState.value.isRunning == running && mutableIpRouteRevision.value == revision) { "出口已变化，请重新查询" }
+            check(forwardingActive() == running && mutableIpRouteRevision.value == revision) { "出口已变化，请重新查询" }
             check(withTimeout(3_000L) { bridge.ipRouteStamp() } == result.stamp) { "出口已变化，请重新查询" }
         }
         return result
@@ -755,7 +1055,7 @@ class CoreRuntimeManager(
             runCatching { bridge.stopListener() }
             listenerStarted.set(false)
         }
-        if (eventListenerStarted.get()) {
+        if (eventListenerStarted.get() && !needsResourceEvents()) {
             runCatching { bridge.stopEventListener() }
             eventListenerStarted.set(false)
         }
@@ -825,6 +1125,66 @@ class CoreRuntimeManager(
         } finally { providerUpdateLock.unlock() }
     }
 
+    override suspend fun readProfileProvider(profileId: Long, name: String): ProfileProviderDocument = withContext(Dispatchers.IO) {
+        try {
+            val snapshot = providerSnapshot(profileId)
+            val document = withTimeout(8_000L) { bridge.readExternalProvider(name, snapshot.stamp) }
+            transitionLock.withLock { verifyProviderSnapshot(snapshot) }
+            ProfileProviderDocument(profileId, document, snapshot)
+        } catch (error: kotlinx.coroutines.CancellationException) { throw error }
+        catch (_: Exception) { throw ProviderOperationException("无法读取 Provider，配置或文件可能已变化，请重试") }
+    }
+
+    override suspend fun saveProfileProvider(document: ProfileProviderDocument, content: String): Unit = withContext(Dispatchers.IO) {
+        if (!providerUpdateLock.tryLock()) throw ProviderOperationException("已有 Provider 正在更新，请稍后重试")
+        try {
+            val snapshot = document.binding as? ProviderSnapshot ?: throw ProviderOperationException("编辑会话已失效，请重新打开")
+            require(document.profileId == snapshot.profile.id)
+            require(content.toByteArray(Charsets.UTF_8).size <= 8 * 1024 * 1024 && '\u0000' !in content)
+            transitionLock.withLock { verifyProviderSnapshot(snapshot) }
+            // 作者 long：核心已受理侧载后不能因窗口取消丢弃提交结果；Go在同一配置锁内校验、写缓存并处理失败回滚。
+            withContext(kotlinx.coroutines.NonCancellable) {
+                bridge.sideLoadExternalProvider(document.document.name, content, document.document.digest, snapshot.stamp)
+                transitionLock.withLock {
+                    verifyProviderSnapshot(snapshot, allowRouteChange = true)
+                    invalidateIpRoute()
+                }
+            }
+        } catch (error: kotlinx.coroutines.CancellationException) { throw error }
+        catch (error: ProviderOperationException) { throw error }
+        catch (error: Exception) {
+            val message = when ((error as? com.lonnnnnng.flclash.core.CoreBridgeException)?.code) {
+                "provider_content_error" -> "内容无法被此 Provider 读取，请检查格式后重试"
+                "provider_updating" -> "Provider 正在更新，请稍后重试"
+                "provider_stale" -> "配置或文件已变化，请重新打开后再保存"
+                else -> "Provider 保存未完成，请检查内容并重试"
+            }
+            throw ProviderOperationException(message)
+        } finally { providerUpdateLock.unlock() }
+    }
+
+    override suspend fun updateProfileProviders(profileId: Long, names: List<String>): List<com.lonnnnnng.flclash.core.CoreProviderUpdateResult> = withContext(Dispatchers.IO) {
+        if (!providerUpdateLock.tryLock()) throw ProviderOperationException("已有 Provider 正在更新，请稍后重试")
+        try {
+            val snapshot = providerSnapshot(profileId)
+            val providers = withTimeout(3_000L) { bridge.externalProviders() }
+            require(names.isNotEmpty() && names.distinct().size == names.size && names.all { name -> providers.any { it.name == name && it.canUpdate } })
+            transitionLock.withLock { verifyProviderSnapshot(snapshot) }
+            withContext(kotlinx.coroutines.NonCancellable) {
+                val result = bridge.updateExternalProviders(names, snapshot.stamp)
+                transitionLock.withLock {
+                    // 作者 long：同一批资源各自完成会改变路由版本，最终只接受原配置和原核心会话，不把正常更新当作过期。
+                    verifyProviderSnapshot(snapshot, allowRouteChange = true)
+                    invalidateIpRoute()
+                }
+                result
+            }
+        } catch (error: kotlinx.coroutines.CancellationException) { throw error }
+        catch (error: ProviderOperationException) { throw error }
+        catch (_: Exception) { throw ProviderOperationException("批量更新未完成，配置或网络可能已变化，请重试") }
+        finally { providerUpdateLock.unlock() }
+    }
+
     override suspend fun profileStatistics(profileId: Long): ProfileStatistics = withContext(Dispatchers.IO) {
         val snapshot = transitionLock.withLock {
             val profile = requireNotNull(profileProvider.activeProfile()) { "没有可用配置" }
@@ -857,7 +1217,7 @@ class CoreRuntimeManager(
                 check(loadedConfigKey == configKey(target)) { "配置或核心状态已变化，请重试" }
                 return@withContext RuntimeConfigPreview(target.id, target.label, readPreviewFile(paths.configFile), true)
             }
-            PreviewInput(target, currentId, mutableIpRouteRevision.value, mutableState.value, lanSharingStore.read())
+            PreviewInput(target, currentId, mutableIpRouteRevision.value, mutableState.value, lanSharingStore.read(), networkSettingsStore?.read(), globalDnsSettingsStore?.read(), generalSettingsStore?.read())
         }
         val profile = snapshot.profile
         val source = File(profile.filePath)
@@ -867,7 +1227,7 @@ class CoreRuntimeManager(
         val scriptBytes = script?.let { readPreviewBytes(it) }
         // 作者 long：非当前配置与停止态都只在内存渲染，慢脚本不占启停锁，不加载 Provider 或覆盖 config.yaml。
         val content = renderProfileContent(profile, sourceBytes.toString(Charsets.UTF_8), snapshot.lanOverride,
-            scriptBytes?.toString(Charsets.UTF_8))
+            scriptBytes?.toString(Charsets.UTF_8), snapshot.networkSettings, snapshot.globalDns, snapshot.generalSettings)
         check(content.toByteArray(Charsets.UTF_8).size <= MAX_PREVIEW_BYTES) { "配置超过 2 MiB，暂不支持预览" }
         // 作者 long：比较原字节，等长且保留 mtime 的替换也必须被识别；大文件读取放在启停锁之外。
         val filesUnchanged = source.isFile && sourceBytes.contentEquals(readPreviewBytes(source)) &&
@@ -875,7 +1235,8 @@ class CoreRuntimeManager(
         transitionLock.withLock {
             check(mutableIpRouteRevision.value == snapshot.revision && mutableState.value == snapshot.runtime &&
                 profileProvider.activeProfileId() == snapshot.currentProfileId &&
-                profileProvider.profileById(profileId) == profile && lanSharingStore.read() == snapshot.lanOverride && filesUnchanged
+                profileProvider.profileById(profileId) == profile && lanSharingStore.read() == snapshot.lanOverride &&
+                networkSettingsStore?.read() == snapshot.networkSettings && globalDnsSettingsStore?.read() == snapshot.globalDns && generalSettingsStore?.read() == snapshot.generalSettings && filesUnchanged
             ) { "配置或核心状态已变化，请重试" }
         }
         RuntimeConfigPreview(profile.id, profile.label, content, false)
@@ -883,7 +1244,7 @@ class CoreRuntimeManager(
 
     // 作者 long：快照不生成 toString，避免源配置和绑定脚本的信息意外进入异常日志。
     private class PreviewInput(val profile: ActiveProfile, val currentProfileId: Long?, val revision: Long,
-        val runtime: CoreRuntimeStatus, val lanOverride: Boolean?)
+        val runtime: CoreRuntimeStatus, val lanOverride: Boolean?, val networkSettings: NetworkSettings?, val globalDns: ProfileDnsOverrides?, val generalSettings: GeneralSettings?)
 
     private fun readPreviewFile(file: File, limit: Int = MAX_PREVIEW_BYTES): String =
         readPreviewBytes(file, limit).toString(Charsets.UTF_8)
@@ -906,14 +1267,17 @@ class CoreRuntimeManager(
     }
 
     private suspend fun renderProfileContent(profile: ActiveProfile, sourceContent: String,
-        lanOverride: Boolean? = lanSharingStore.read(), scriptContent: String? = null): String {
+        lanOverride: Boolean? = lanSharingStore.read(), scriptContent: String? = null,
+        networkSettings: NetworkSettings? = networkSettingsStore?.read(), globalDns: ProfileDnsOverrides? = globalDnsSettingsStore?.read(), generalSettings: GeneralSettings? = generalSettingsStore?.read()): String {
         // 作者 long：脚本生成配置后先补 DNS 运行基线，再合并显式覆盖；预览和启动共用顺序，防止无 DNS 订阅接管后断网。
         val scriptedContent = if (scriptContent == null) profileScriptApplier.apply(sourceContent, profile.scriptPath)
             else profileScriptApplier.applyContent(sourceContent, scriptContent)
-        return patchLanSharing(ProfileProviderOverrideApplier.apply(
-            ProfileDnsBaselineApplier.apply(ProfileExtensionApplier.apply(scriptedContent, profile.standardExtension)),
+        val content = patchLanSharing(GeneralSettingsApplier.apply(patchNetworkSettings(ProfileProviderOverrideApplier.apply(
+            GlobalDnsSettings.apply(ProfileDnsBaselineApplier.apply(ProfileExtensionApplier.apply(scriptedContent, profile.standardExtension)),
+                if (profile.usesGlobalDns) globalDns ?: ProfileDnsOverrides() else ProfileDnsOverrides()),
             ProfileProviderOverrides.fromJsonString(profile.overridesJson),
-        ), lanOverride)
+        ), networkSettings), generalSettings), lanOverride)
+        return if (geoSettingsStore == null) content else GeoResourceSettingsApplier.apply(content, mutableGeoSettings.value)
     }
 
     private suspend fun stageConfig(profile: ActiveProfile, lanOverride: Boolean? = lanSharingStore.read()) {

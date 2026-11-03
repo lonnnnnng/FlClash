@@ -41,7 +41,15 @@ data class ProxyGroupsUiState(
     val batchTestingGroup: String? = null,
     val delayResults: Map<ProxyDelayKey, ProxyDelayUiState> = emptyMap(),
     val proxyTypes: Map<String, String> = emptyMap(),
+    val providerProxies: Set<String> = emptySet(),
+    val profileId: Long? = null,
+    val customProfile: Boolean = false,
 )
+
+internal fun ProxyGroupsUiState.canAddToLocal(name: String): Boolean =
+    name !in com.lonnnnnng.flclash.data.LocalProxies.reserved && groups.none { it.name == name } &&
+        proxyTypes[name]?.lowercase() !in setOf("selector", "select", "urltest", "url-test", "fallback", "loadbalance", "load-balance", "relay") &&
+        (!customProfile || name in providerProxies)
 
 internal fun ProxyGroupsUiState.proxyType(name: String, cardSize: ProxyNodeCardSize): String? {
     val group = groups.firstOrNull { it.name == name }
@@ -342,6 +350,9 @@ class ProxyGroupsViewModel @Inject constructor(
                 mutableState.value = ProxyGroupsUiState(
                     groups = snapshot.groups,
                     proxyTypes = snapshot.proxyTypes,
+                    providerProxies = snapshot.providerProxies,
+                    profileId = profileId,
+                    customProfile = profileStore.profiles.value.firstOrNull { it.id == profileId }?.type == com.lonnnnnng.flclash.data.ProfileType.CUSTOM,
                     selectedMap = currentProfileSelectedMap(),
                     unfoldSet = currentProfileUnfoldSet(),
                     batchTestingGroup = mutableState.value.batchTestingGroup,
@@ -446,7 +457,10 @@ class ProxyGroupsViewModel @Inject constructor(
                     if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
                     mutableState.value = ProxyGroupsUiState(
                         groups = snapshot.groups,
-                            proxyTypes = snapshot.proxyTypes,
+                        proxyTypes = snapshot.proxyTypes,
+                        providerProxies = snapshot.providerProxies,
+                        profileId = profileId,
+                        customProfile = profileStore.profiles.value.firstOrNull { it.id == profileId }?.type == com.lonnnnnng.flclash.data.ProfileType.CUSTOM,
                         selectedMap = updatedMap,
                         unfoldSet = currentProfileUnfoldSet(),
                         delayResults = retainDelayResults(

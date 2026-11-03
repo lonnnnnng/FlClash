@@ -13,6 +13,61 @@ import org.junit.Test
 class ProfileStatisticsViewModelTest {
     @After fun resetMain() = Dispatchers.resetMain()
 
+    @Test fun batchUpdatesTrackFailuresAndRetryOnlyFailedNames() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        runtime.providerRead = { providerSamples() + com.lonnnnnng.flclash.core.CoreExternalProvider("other", "Rule", "HTTP", 4, null) }
+        val batches = mutableListOf<List<String>>()
+        runtime.batch = { names -> batches += names; names.map { com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, if (it == "other" && batches.size == 1) "request_timeout" else "") } }
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            model.updateAllProviders(); model.updateAllProviders(); runCurrent()
+            assertEquals(listOf(listOf("http", "other")), batches)
+            assertEquals(setOf("other"), model.providers.value.failedNames)
+            model.updateAllProviders(onlyFailed = true); runCurrent()
+            assertEquals(listOf("other"), batches.last()); assertTrue(model.providers.value.failedNames.isEmpty())
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun providerDraftKeepsInputOnFailureAndRejectsOldPickerAndLateRead() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            model.openProvider("http", edit = true); runCurrent()
+            model.changeProviderContent("new-content"); runtime.save = { error("fixture-secret") }
+            model.saveProvider(); model.saveProvider(); runCurrent()
+            assertEquals(1, runtime.saves); assertEquals("new-content", model.document.value?.content)
+            assertFalse(model.document.value?.error.orEmpty().contains("fixture-secret"))
+            runtime.save = {}; model.saveProvider(); runCurrent(); assertNull(model.document.value)
+            model.openProvider("http", pickFile = true); runCurrent()
+            val token = model.document.value!!.pickerToken!!
+            model.show(2); runCurrent(); model.receiveProviderFile(token, "content://stale"); runCurrent()
+            assertEquals(2, runtime.saves)
+            val pending = CompletableDeferred<ProfileProviderDocument>()
+            runtime.documentRead = { id, name -> withContext(NonCancellable) { pending.await() } }
+            model.openProvider("http"); runCurrent(); model.closeProvider()
+            pending.complete(providerDocument(2, "http")); runCurrent(); assertNull(model.document.value)
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun filePickerKeepsOriginalBindingAcrossBackgroundAndRejectsInvalidUtf8() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture()
+        var bytes = byteArrayOf(0xff.toByte())
+        val model = ProfileStatisticsViewModel(runtime, com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("rules", bytes) })
+        try {
+            model.setForeground(true); model.show(1); runCurrent(); model.openProvider("http", pickFile = true); runCurrent()
+            val token = model.document.value!!.pickerToken!!
+            model.setForeground(false); model.receiveProviderFile(token, "content://fixture"); runCurrent()
+            assertEquals(0, runtime.saves); assertNotNull(model.document.value?.error)
+            model.setForeground(true); runCurrent(); model.openProvider("http", pickFile = true); runCurrent()
+            bytes = "payload: []".toByteArray()
+            model.receiveProviderFile(model.document.value!!.pickerToken!!, "content://fixture"); runCurrent()
+            assertEquals(1, runtime.saves); assertNull(model.document.value)
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
     @Test fun providersLoadOnlyWhenVisibleAndUpdateSurvivesPollingButRejectsDuplicateAndFile() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
@@ -116,12 +171,22 @@ private class StatisticsFixture : ProfileStatisticsRuntime {
     var updateCalls = 0
     var providerRead: suspend () -> List<com.lonnnnnng.flclash.core.CoreExternalProvider> = { providerSamples() }
     var update: suspend () -> Unit = {}
+    var batch: suspend (List<String>) -> List<com.lonnnnnng.flclash.core.CoreProviderUpdateResult> = { names -> names.map { com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, "") } }
+    override suspend fun updateProfileProviders(profileId: Long, names: List<String>) = batch(names)
+    var documentRead: suspend (Long, String) -> ProfileProviderDocument = { id, name -> providerDocument(id, name) }
+    var save: suspend () -> Unit = {}
+    var saves = 0
+    override suspend fun readProfileProvider(profileId: Long, name: String) = documentRead(profileId, name)
+    override suspend fun saveProfileProvider(document: ProfileProviderDocument, content: String) { saves++; save() }
     override suspend fun profileProviders(profileId: Long): List<com.lonnnnnng.flclash.core.CoreExternalProvider> { providerCalls++; return providerRead() }
     override suspend fun updateProfileProvider(profileId: Long, name: String) { updateCalls++; update() }
     var calls = 0
     var read: suspend (Long) -> ProfileStatistics = { sample(it) }
     override suspend fun profileStatistics(profileId: Long): ProfileStatistics { calls++; return read(profileId) }
 }
+
+private fun providerDocument(id: Long, name: String) = ProfileProviderDocument(id,
+    com.lonnnnnng.flclash.core.CoreProviderDocument(name, "text", "payload: []", "missing"))
 
 private fun providerSamples() = listOf(
     com.lonnnnnng.flclash.core.CoreExternalProvider("http", "Proxy", "HTTP", 3, null),

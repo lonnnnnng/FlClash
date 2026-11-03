@@ -1,0 +1,98 @@
+{
+  "verifiedAtBeijing": "2026-11-03T23:25:02+08:00",
+  "baseCommit": "d3ee7fc4520cad9f562a1d4de3b388bce35e2f64",
+  "branch": "kotlin",
+  "scope": "当前累计功能改动的提交前构建/静态核查；本轮只修正文档，没有新增设备验收。",
+  "gradle": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL",
+    "log": "/tmp/kclash-roadmap-push-20261103-gradle.log",
+    "logSha256": "9cc6d93cdcb335f9910a38a9d850e1280e8c54f06fb493da8ed01222f001496e"
+  },
+  "unitVariant": "debug",
+  "unitModules": {
+    "app": {
+      "tests": 409,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 179,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "common": {
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "unitTotal": 657,
+  "testExecution": "复用Gradle有效的UP-TO-DATE或缓存结果；不将历史/重复变体相加。",
+  "go": {
+    "command": "go test ./...",
+    "cwd": "core",
+    "result": "PASS",
+    "cached": true,
+    "log": "/tmp/kclash-roadmap-push-20261103-go.log",
+    "logSha256": "5aecdd822c42ce897231c5cfe80a60921e1cdd25b827a3d674e8c6a017c581b8"
+  },
+  "lint": {
+    "debug": {
+      "errors": 0,
+      "warnings": 62,
+      "hints": 9
+    },
+    "release": {
+      "errors": 0,
+      "warnings": 62,
+      "hints": 8
+    }
+  },
+  "apks": {
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "0e0cebabd79d17d02e8c13883a34bb3d3b213aab710c67cf6a80cf49014d1673",
+      "abis": [
+        "arm64-v8a"
+      ]
+    },
+    "test": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "8f72b3802248ac2f108514a4cd5c1d36e429bf653b2e8a1cedb6e0286daf46b3",
+      "abis": []
+    },
+    "unsignedRelease": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "8b5a823a17ded9dd33b5f83910eef31b485a3b79ba3e879bb95ef3a05e3c151d",
+      "abis": [
+        "arm64-v8a"
+      ]
+    }
+  },
+  "releaseIdentity": {
+    "applicationId": "com.lonnnnnng.flclash",
+    "versionName": "0.1.0",
+    "versionCode": 1,
+    "verifiedWith": "apkanalyzer manifest"
+  },
+  "changedSourceCount": 209,
+  "changedSourceDigest": "1768c0a62918dacb0c094d18939bd2f776f9d4f54af4cee8a7673de96e1befaf",
+  "deviceEvidence": "沿用profile-document-redmi-20261103.json的12/12及安装哈希；本次APK未变化，未重装/重跑真机。",
+  "notVerified": [
+    "未签名Release的真机安装/运行",
+    "正式签名/发版",
+    "本次提交触发的远端CI结果",
+    "完整产品parity及roadmap当前待办"
+  ],
+  "evidenceAvailability": "原始构建日志为本机/tmp文件，提交只携带结果与哈希，不包含原始附件。"
+}

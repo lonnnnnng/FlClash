@@ -148,6 +148,54 @@ class LocalFileProfileRepositoryInstrumentedTest {
         }
     }
 
+    @Test fun remoteSystemPickerCancelsAndStagesAuthorizedFileBeforeOuterSaveWithoutDownload() {
+        fixture().use { f ->
+            val remote = f.target.copy(type = ProfileType.URL, url = "https://example.test/local-only", autoUpdate = true)
+            runBlocking { f.database.profiles().update(remote.toEntity()) }
+            val runtime = object : CoreRuntimeStatusProvider {
+                override val state = MutableStateFlow(CoreRuntimeStatus.STOPPED)
+                override suspend fun applyCurrentProfile(id: Long) {}
+            }
+            lateinit var model: ProfilesViewModel
+            compose.runOnUiThread { model = ProfilesViewModel(f.repository, runtime, fileReader = AndroidProfileFileDocumentReader(f.context)) }
+            compose.setContent {
+                val state by model.remoteEditorState.collectAsState()
+                KClashTheme {
+                    state.profile?.let { profile -> RemoteProfileEditorDialog(profile, state.isSaving, model::closeEditor,
+                        { label, url, auto, interval -> model.saveRemoteEditor(label, url, auto, interval) },
+                        onSaveWithAgeKey = { label, url, auto, interval, key -> model.saveRemoteEditor(label, url, auto, interval, key) },
+                        state = state, onDraftChange = model::updateRemoteDraft,
+                        onBeginPick = model::beginRemoteFilePick, onFilePicked = model::acceptRemoteFilePick,
+                        onClearReplacement = model::clearRemoteReplacement, onRetryRead = model::retryRemoteDocument) }
+                }
+            }
+            try {
+                compose.runOnUiThread { model.openEditor(remote) }
+                compose.waitUntil(10_000) { model.remoteEditorState.value.document != null }
+                val before = runBlocking { f.row() }; val modified = f.targetFile.lastModified()
+                compose.onNodeWithTag("remote_profile_replace_pick").performScrollTo().performClick()
+                waitForPicker(); shell("input keyevent KEYCODE_BACK")
+                waitFor { root()?.packageName?.toString() == f.context.packageName }
+                compose.waitUntil(5_000) { compose.activity.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) }
+                assertNull(model.remoteEditorState.value.replacement)
+                assertEquals(before, runBlocking { f.row() }); assertEquals(modified, f.targetFile.lastModified())
+                compose.onNodeWithTag("remote_profile_replace_pick").performScrollTo().performClick()
+                chooseAuthorizedFile()
+                compose.waitUntil(15_000) { model.remoteEditorState.value.replacement != null }
+                assertTrue(checkNotNull(model.remoteEditorState.value.replacement).isValidYaml)
+                assertEquals(before, runBlocking { f.row() }); assertEquals(modified, f.targetFile.lastModified())
+                compose.onNodeWithTag("remote_profile_editor_save").performClick()
+                compose.onNodeWithTag("remote_profile_disable_auto_save").performClick()
+                compose.waitUntil(15_000) { model.remoteEditorState.value.profile == null }
+                assertArrayEquals(f.bytes, f.targetFile.readBytes())
+                assertEquals(ProfileType.URL, runBlocking { f.row() }.type)
+                assertEquals(remote.url, runBlocking { f.row() }.url)
+                assertFalse(runBlocking { f.row() }.autoUpdate)
+                assertEquals(f.selected.id, f.repository.currentProfileId.value)
+            } finally { compose.runOnUiThread { model.closeEditor(); model.viewModelScope.cancel() } }
+        }
+    }
+
     private fun fixture(): FileFixture {
         val args = InstrumentationRegistry.getArguments()
         assumeTrue("只使用授权 1.yaml 运行", args.getString("kclashLocalFile") == "true")

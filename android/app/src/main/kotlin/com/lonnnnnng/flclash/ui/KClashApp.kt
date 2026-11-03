@@ -172,6 +172,9 @@ private enum class ToolsSubpage {
     OBSERVATIONS,
     ACCESS_CONTROL,
     GENERAL,
+    ADVANCED,
+    NETWORK,
+    GLOBAL_DNS,
     ON_DEMAND,
     DEVELOPER,
 }
@@ -263,6 +266,9 @@ fun KClashApp(
     onImportBackup: (BackupRestoreScope, BackupRestoreStrategy) -> Unit,
     webDavCredentials: WebDavCredentials? = null,
     webDavBusy: Boolean = false,
+    backupStrategy: BackupRestoreStrategy = BackupRestoreStrategy.COMPATIBLE,
+    onBackupStrategy: (BackupRestoreStrategy) -> Unit = {},
+    webDavConnection: WebDavConnectionState = WebDavConnectionState.UNKNOWN,
     onSaveWebDavCredentials: (WebDavCredentials) -> Unit = {},
     onClearWebDavCredentials: () -> Unit = {},
     onProbeWebDav: (WebDavCredentials) -> Unit = {},
@@ -279,7 +285,35 @@ fun KClashApp(
     profileSharingViewModel: ProfileSharingViewModel? = null,
     profileStatisticsViewModel: ProfileStatisticsViewModel? = null,
     ruleResourcesViewModel: RuleResourcesViewModel? = null,
+    resourcesViewModel: ResourcesViewModel? = null,
+    localProxiesViewModel: LocalProxiesViewModel? = null,
+    filterPresetsViewModel: FilterPresetsViewModel? = null,
+    onDemandViewModel: OnDemandViewModel? = null,
+    onRequestLocation: () -> Unit = {},
 ) {
+    val demandSsids = onDemandViewModel?.ssids?.collectAsState()?.value ?: emptyList()
+    val demandNetwork = onDemandViewModel?.network?.collectAsState()?.value ?: com.lonnnnnng.flclash.data.OnDemandNetworkState()
+    val demandBusy = onDemandViewModel?.busy?.collectAsState()?.value ?: false
+    val demandSavedVersion = onDemandViewModel?.savedVersion?.collectAsState()?.value ?: 0L
+    val demandError = onDemandViewModel?.error?.collectAsState()?.value
+    val demandRuntimeError = onDemandViewModel?.runtimeError?.collectAsState()?.value
+    val demandSuspended = runtimeViewModel.onDemandSuspended.collectAsState().value
+    val filters = filterPresetsViewModel?.state?.collectAsState()?.value ?: FilterPresetsUiState(loading = false)
+    var showFilterPresets by rememberSaveable { mutableStateOf(false) }
+    var showRuleUrls by rememberSaveable { mutableStateOf(false) }
+    var showIconUrls by rememberSaveable { mutableStateOf(false) }
+    val resources = resourcesViewModel?.state?.collectAsState()?.value ?: com.lonnnnnng.flclash.data.ResourceUpdatesState(loading = false)
+    val iconBusy = resourcesViewModel?.iconBusy?.collectAsState()?.value ?: false
+    val iconError = resourcesViewModel?.iconError?.collectAsState()?.value
+    val iconCompleted = resourcesViewModel?.iconCompleted?.collectAsState()?.value ?: 0L
+    val localProxiesState = localProxiesViewModel?.state?.collectAsState()?.value ?: LocalProxiesUiState(loading = false)
+    var showLocalProxies by rememberSaveable { mutableStateOf(false) }
+    fun openLocalProxies() { localProxiesViewModel?.open(); showLocalProxies = true }
+    var showResources by rememberSaveable { mutableStateOf(false) }
+    var showIconSets by rememberSaveable { mutableStateOf(false) }
+    val iconSetFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { resourcesViewModel?.importIconsFile(it.toString()) }
+    }
     val ruleResources = ruleResourcesViewModel?.state?.collectAsState()?.value ?: RuleResourcesUiState(loading = false)
     var showRuleResources by rememberSaveable { mutableStateOf(false) }
     var showCustomResources by rememberSaveable { mutableStateOf(false) }
@@ -290,6 +324,14 @@ fun KClashApp(
     val serviceStatusState = serviceStatusViewModel?.state?.collectAsState()?.value ?: ServiceStatusUiState()
     val memoryState = memoryViewModel?.state?.collectAsState()?.value ?: MemoryUiState()
     val vpnSettings = runtimeViewModel.vpnSettings.collectAsState().value
+    val networkSettings = runtimeViewModel.networkSettings.collectAsState().value
+    val networkSaving = runtimeViewModel.networkSaving.collectAsState().value
+    val globalDns = runtimeViewModel.globalDns.collectAsState().value
+    val dnsSaving = runtimeViewModel.dnsSaving.collectAsState().value
+    val generalSettings = runtimeViewModel.generalSettings.collectAsState().value
+    val generalSaving = runtimeViewModel.generalSaving.collectAsState().value
+    val generalLan = runtimeViewModel.generalLanSharing.collectAsState().value
+    val lanSaving = runtimeViewModel.lanSaving.collectAsState().value
     val vpnSaving = runtimeViewModel.vpnSaving.collectAsState().value
     val intranetState = intranetIpViewModel?.state?.collectAsState()?.value ?: IntranetIpUiState()
     val profileStatistics = profileStatisticsViewModel?.state?.collectAsState()?.value ?: ProfileStatisticsUiState()
@@ -310,6 +352,7 @@ fun KClashApp(
     val profilesState by profilesViewModel.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val remoteEditorState by profilesViewModel.remoteEditorState.collectAsState()
+    val documentEditorState by profilesViewModel.documentEditorState.collectAsState()
     val rulesEditorState by profilesViewModel.rulesEditorState.collectAsState()
     val proxiesEditorState by profilesViewModel.proxiesEditorState.collectAsState()
     val proxyGroupsEditorState by profilesViewModel.proxyGroupsEditorState.collectAsState()
@@ -327,8 +370,14 @@ fun KClashApp(
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
     val scriptsState by scriptsViewModel.state.collectAsState()
     val scriptEditorState by scriptsViewModel.editorState.collectAsState()
+    val remoteScriptState by scriptsViewModel.remoteState.collectAsState()
     val accessControlState by accessControlViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(localProxiesState.error, localProxiesState.message, showLocalProxies) {
+        if (!showLocalProxies) (localProxiesState.error ?: localProxiesState.message)?.let {
+            snackbarHostState.showSnackbar(it); localProxiesViewModel?.clearFeedback()
+        }
+    }
     profileSharingViewModel?.let { sharing ->
         ProfileSharingHost(sharing) { snackbarHostState.showSnackbar(it) }
     }
@@ -346,6 +395,9 @@ fun KClashApp(
     val dashboardSwayProgress = rememberDashboardEditSwayProgress(isDashboardEditing)
     val selectedProfile = profilesState.profiles.firstOrNull { it.id == profilesState.currentProfileId }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var showQrScanner by rememberSaveable { mutableStateOf(false) }
+    var scannedProfileUrl by rememberSaveable { mutableStateOf<String?>(null) }
+    var scannedProfileLabel by rememberSaveable { mutableStateOf<String?>(null) }
     var profileAddAnchor by remember { mutableStateOf<IntRect?>(null) }
     var showToolsBackup by rememberSaveable { mutableStateOf(false) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
@@ -353,8 +405,25 @@ fun KClashApp(
     var showLogs by rememberSaveable { mutableStateOf(false) }
     var profileDetailId by rememberSaveable { mutableStateOf<Long?>(null) }
     var showDiagnosticHistory by rememberSaveable { mutableStateOf(false) }
+    var showGlobalRules by rememberSaveable { mutableStateOf(false) }
     var showScriptsDialog by rememberSaveable { mutableStateOf(false) }
-    var showRemoteScriptDialog by rememberSaveable { mutableStateOf(false) }
+    var scriptPickToken by rememberSaveable { mutableStateOf<Long?>(null) }
+    val scriptFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        val token = scriptPickToken
+        scriptPickToken = null
+        if (uri == null) scriptsViewModel.completeFilePick(token, null)
+        else scriptsViewModel.completeFilePick(token) {
+            withContext(Dispatchers.IO) {
+                val resolver = context.contentResolver
+                val name = resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) cursor.getString(0) else null
+                } ?: "脚本.js"
+                val bytes = resolver.openInputStream(uri)?.use { com.lonnnnnng.flclash.data.readScriptBytes(it) }
+                    ?: error("无法读取脚本文件")
+                name to bytes
+            }
+        }
+    }
     var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
     var toolsSubpage by rememberSaveable { mutableStateOf(ToolsSubpage.MENU) }
     var showAccessUnsavedChanges by rememberSaveable { mutableStateOf(false) }
@@ -477,23 +546,16 @@ fun KClashApp(
 
     val pickProfileFile = rememberProfileFilePicker(profilesViewModel.fileImport)
 
-    val qrCodePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        coroutineScope.launch {
-            runCatching {
-                val values = com.lonnnnnng.flclash.data.QrCodeImageImporter.decode(context, uri)
-                values.asSequence()
-                    .mapNotNull(com.lonnnnnng.flclash.data.DeepLinkProfileParser::parseProfileUrl)
-                    .firstOrNull()
-                    ?: error("二维码中没有可导入的配置链接")
-            }.onSuccess { url ->
-                profilesViewModel.addRemote(url, "")
-            }.onFailure { error ->
-                snackbarHostState.showSnackbar(error.message ?: "二维码解析失败")
-            }
-        }
+    if (showQrScanner) {
+        ProfileQrScannerPage(
+            onClose = { showQrScanner = false },
+            onImport = { result ->
+                showQrScanner = false
+                scannedProfileUrl = result.url
+                scannedProfileLabel = result.label
+                showAddDialog = true
+            },
+        )
     }
 
     LaunchedEffect(profilesViewModel) {
@@ -606,8 +668,14 @@ fun KClashApp(
         }
     }
 
+    LaunchedEffect(toolsSubpage) { if (toolsSubpage == ToolsSubpage.GENERAL) runtimeViewModel.refreshGeneralLan() }
+
     fun returnFromToolsSubpage() {
-        val parent = if (toolsSubpage == ToolsSubpage.ON_DEMAND) ToolsSubpage.GENERAL else ToolsSubpage.MENU
+        val parent = when (toolsSubpage) {
+            ToolsSubpage.ON_DEMAND -> ToolsSubpage.GENERAL
+            ToolsSubpage.NETWORK, ToolsSubpage.GLOBAL_DNS -> ToolsSubpage.ADVANCED
+            else -> ToolsSubpage.MENU
+        }
         if (hasUnsavedAccessChanges()) {
             requestAccessExit(MainDestination.TOOLS, toolsPage = parent)
         } else {
@@ -630,6 +698,8 @@ fun KClashApp(
         },
     )
 
+    BackHandler { if (hasUnsavedAccessChanges()) requestAccessExit() else onExitApp() }
+
     BackHandler(enabled = selectedDestination == MainDestination.DASHBOARD && isDashboardEditing) {
         isDashboardEditing = false
         dashboardDraggingSection = null
@@ -647,10 +717,12 @@ fun KClashApp(
     LaunchedEffect(selectedProfile?.id, selectedDestination) {
         if (profileDetailId != selectedProfile?.id || selectedDestination != MainDestination.DASHBOARD) profileDetailId = null
     }
+    if (selectedDestination != MainDestination.PROFILES) ProfileSyncResults(profilesState.sync,
+        profilesViewModel::dismissSyncResult, profilesViewModel::retrySyncFailures)
     if (detailProfile != null) {
         DashboardProfileDetailSheet(
             profile = detailProfile,
-            canMutate = !profilesState.isBusy && !runtimeState.isRunning && runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING,
+            canMutate = !profilesState.isBusy && !isProfileTransitioning(runtimeState),
             isBusy = profilesState.isBusy,
             onDismiss = { profileDetailId = null },
             onShowProfiles = { profileDetailId = null; navigateTo(MainDestination.PROFILES) },
@@ -661,7 +733,13 @@ fun KClashApp(
             providers = profileProviders.takeIf { it.profileId == detailProfile.id } ?: ProfileProvidersUiState(detailProfile.id, isLoading = true),
             onRetryProviders = { profileStatisticsViewModel?.retryProviders() },
             onUpdateProvider = { profileStatisticsViewModel?.updateProvider(it) },
+            onUpdateAllProviders = { profileStatisticsViewModel?.updateAllProviders() },
+            onRetryFailedProviders = { profileStatisticsViewModel?.updateAllProviders(onlyFailed = true) },
+            onPreviewProvider = { profileStatisticsViewModel?.openProvider(it) },
+            onEditProvider = { profileStatisticsViewModel?.openProvider(it, edit = true) },
+            onUploadProvider = { profileStatisticsViewModel?.openProvider(it, pickFile = true) },
         )
+        profileStatisticsViewModel?.let { ProfileProviderDocumentHost(it) }
     }
 
     MainPageScaffold(
@@ -678,6 +756,9 @@ fun KClashApp(
                 ToolsSubpage.OBSERVATIONS -> "观测"
                 ToolsSubpage.ACCESS_CONTROL -> "按应用代理"
                 ToolsSubpage.GENERAL -> "常规"
+                ToolsSubpage.ADVANCED -> "高级配置"
+                ToolsSubpage.NETWORK -> "网络"
+                ToolsSubpage.GLOBAL_DNS -> "DNS"
                 ToolsSubpage.ON_DEMAND -> "按需连接"
                 ToolsSubpage.DEVELOPER -> "开发者模式"
                 ToolsSubpage.MENU -> "工具"
@@ -690,7 +771,11 @@ fun KClashApp(
                 IconButton(onClick = ::returnFromToolsSubpage, modifier = Modifier.testTag("tools_subpage_back")) {
                     Icon(
                         Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = if (toolsSubpage == ToolsSubpage.ON_DEMAND) "返回常规" else "返回工具",
+                        contentDescription = when (toolsSubpage) {
+                            ToolsSubpage.ON_DEMAND -> "返回常规"
+                            ToolsSubpage.NETWORK, ToolsSubpage.GLOBAL_DNS -> "返回高级配置"
+                            else -> "返回工具"
+                        },
                     )
                 }
             }
@@ -715,7 +800,7 @@ fun KClashApp(
                 ProfilesTopBarActions(
                     profiles = profilesState.profiles,
                     busy = profilesState.isBusy,
-                    canMutate = !profilesState.isBusy && !runtimeState.isRunning,
+                    canMutate = !profilesState.isBusy && !isProfileTransitioning(runtimeState),
                     onAdd = { showAddDialog = true },
                     onAction = { pendingProfilesToolbarAction = it },
                     onAddAnchorChanged = { profileAddAnchor = it },
@@ -750,38 +835,62 @@ fun KClashApp(
                     state = profilesState,
                     editorState = editorState,
                     remoteEditorState = remoteEditorState,
+                    documentEditorState = documentEditorState,
+                    onDocumentChange = profilesViewModel::changeProfileDocument,
+                    onDocumentSave = profilesViewModel::acceptProfileDocument,
+                    onDocumentClose = profilesViewModel::closeProfileDocument,
+                    onOpenDocument = profilesViewModel::openProfileDocument,
+                    onRemoteDraftChange = profilesViewModel::updateRemoteDraft,
+                    onBeginRemotePick = profilesViewModel::beginRemoteFilePick,
+                    onRemoteFilePicked = profilesViewModel::acceptRemoteFilePick,
+                    onClearRemoteReplacement = profilesViewModel::clearRemoteReplacement,
+                    onRetryRemoteRead = profilesViewModel::retryRemoteDocument,
                     runtimeState = runtimeState,
                     showAddDialog = showAddDialog,
                     toolbarAction = pendingProfilesToolbarAction,
                     onToolbarActionHandled = { pendingProfilesToolbarAction = null },
                     showInlineToolbar = false,
                     onShowAddDialog = { showAddDialog = true },
-                    onDismissAddDialog = { showAddDialog = false },
+                    onDismissAddDialog = { showAddDialog = false; scannedProfileUrl = null; scannedProfileLabel = null },
                     onPickFile = {
                         showAddDialog = false
+                        scannedProfileUrl = null
+                        scannedProfileLabel = null
                         pickProfileFile()
                     },
                     onPickQrCode = {
                         showAddDialog = false
-                        qrCodePicker.launch("image/*")
+                        scannedProfileUrl = null
+                        scannedProfileLabel = null
+                        showQrScanner = true
                     },
                     onAddRemote = { label, url ->
                         showAddDialog = false
+                        scannedProfileUrl = null
+                        scannedProfileLabel = null
                         profilesViewModel.addRemote(url, label)
                     },
                     onAddRemoteWithAgeKey = { label, url, key ->
                         showAddDialog = false
+                        scannedProfileUrl = null
+                        scannedProfileLabel = null
                         profilesViewModel.addRemote(url, label, key)
                     },
                     onAddRemoteBatch = { urls ->
                         showAddDialog = false
+                        scannedProfileUrl = null
+                        scannedProfileLabel = null
                         profilesViewModel.addRemoteBatch(urls)
                     },
                     onAddCustom = { label ->
                         showAddDialog = false
+                        scannedProfileUrl = null
+                        scannedProfileLabel = null
                         profilesViewModel.addCustom(label)
                     },
                     addMenuAnchor = profileAddAnchor,
+                    initialRemoteUrl = scannedProfileUrl,
+                    initialRemoteLabel = scannedProfileLabel,
                     onSelect = profilesViewModel::select,
                     onPreviewProfile = { runtimeConfigPreviewViewModel?.open(it) },
                     onCopyLink = { profileSharingViewModel?.copyLink(it) },
@@ -791,6 +900,9 @@ fun KClashApp(
                     onEdit = profilesViewModel::openEditor,
                     onRename = profilesViewModel::rename,
                     onUpdate = profilesViewModel::update,
+                    onSyncAll = profilesViewModel::updateAll,
+                    onRetrySync = profilesViewModel::retrySyncFailures,
+                    onDismissSync = profilesViewModel::dismissSyncResult,
                     onSetAutoUpdate = profilesViewModel::setAutoUpdate,
                     onCloseEditor = profilesViewModel::closeEditor,
                     onDiscardEditor = profilesViewModel::discardEditor,
@@ -799,6 +911,7 @@ fun KClashApp(
                     onSaveFileEditor = profilesViewModel::saveFileEditor,
                     onSaveFileEditorWithLabel = { content, key, label -> profilesViewModel.saveFileEditor(content, key, label) },
                     onBeginFileReplacementPick = profilesViewModel::beginFileReplacementPick,
+                    onFileMetadataChange = profilesViewModel::updateFileMetadataDraft,
                     onFileReplacementPicked = profilesViewModel::acceptFileReplacement,
                     onClearFileReplacement = profilesViewModel::clearFileReplacement,
                     onSaveRemoteEditor = { label, url, auto, interval -> profilesViewModel.saveRemoteEditor(label, url, auto, interval) },
@@ -828,7 +941,7 @@ fun KClashApp(
                     onOpenProvidersEditor = profilesViewModel::openProvidersEditor,
                     onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
                     onSaveProviders = profilesViewModel::saveProviders,
-                    onSaveProvidersWithOverrides = profilesViewModel::saveProviders,
+                    onSaveProvidersWithOverrides = profilesViewModel::saveProvidersInPlace,
                     dnsEditorState = dnsEditorState,
                     onOpenDnsEditor = profilesViewModel::openDnsEditor,
                     onCloseDnsEditor = profilesViewModel::closeDnsEditor,
@@ -852,6 +965,7 @@ fun KClashApp(
                     onOpenDialersEditor = profilesViewModel::openDialersEditor,
                     onCloseDialersEditor = profilesViewModel::closeDialersEditor,
                     onSaveDialers = profilesViewModel::saveDialers,
+                    onSetDialerTarget = profilesViewModel::setDialerTarget,
                     onReorderProfiles = profilesViewModel::reorder,
                     extensionController = profilesViewModel.extension,
                     scripts = scriptsState.scripts,
@@ -890,6 +1004,7 @@ fun KClashApp(
                                 when (section) {
                                 DashboardSection.CURRENT_OUTBOUND -> RuntimeCard(
                                     state = runtimeState,
+                                    onDemandSuspended = demandSuspended,
                                     uptimeMillis = runtimeUptimeMillis,
                                     outboundIp = outboundIpState,
                                     onRefreshIp = { outboundIpViewModel?.refresh() },
@@ -1050,9 +1165,10 @@ fun KClashApp(
                                     toolsSubpage = ToolsSubpage.ACCESS_CONTROL
                                 },
                                 onOpenGeneral = { toolsSubpage = ToolsSubpage.GENERAL },
+                                onOpenAdvanced = { toolsSubpage = ToolsSubpage.ADVANCED },
                                 onOpenBackup = { showToolsBackup = true },
                                 onOpenScripts = { showCustomResources = true },
-                                onOpenResources = { showRuleResources = true },
+                                onOpenResources = { showResources = true },
                                 onOpenDeveloper = if (developerToolsEnabled) ({ toolsSubpage = ToolsSubpage.DEVELOPER }) else null,
                                 onShowUnavailable = { label ->
                                     coroutineScope.launch { snackbarHostState.showSnackbar("${label}页面正在按 Flutter 参考实现补齐") }
@@ -1112,12 +1228,33 @@ fun KClashApp(
                             }
                         }
                         ToolsSubpage.GENERAL -> item {
-                            GeneralSettingsPanel(onOpenOnDemand = { toolsSubpage = ToolsSubpage.ON_DEMAND })
+                            GeneralSettingsPanel(onOpenOnDemand = { toolsSubpage = ToolsSubpage.ON_DEMAND }, settings = generalSettings,
+                                busy = generalSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
+                                allowLan = generalLan.config.allowLan, lanBusy = lanSaving, onAllowLan = runtimeViewModel::saveGeneralLan,
+                                onShowLogs = { showLogs = true }, onSave = runtimeViewModel::saveGeneralSettings)
+                        }
+                        ToolsSubpage.ADVANCED -> item {
+                            AdvancedSettingsPanel(onOpenNetwork = { toolsSubpage = ToolsSubpage.NETWORK },
+                                onOpenScripts = { showScriptsDialog = true },
+                                onOpenDns = { toolsSubpage = ToolsSubpage.GLOBAL_DNS }, onOpenRules = { showGlobalRules = true })
+                        }
+                        ToolsSubpage.NETWORK -> item {
+                            NetworkSettingsPanel(networkSettings, vpnSettings,
+                                networkSaving || vpnSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
+                                runtimeViewModel::setVpnEnabled, onRestartVpn, runtimeViewModel::saveNetworkSettings)
+                        }
+                        ToolsSubpage.GLOBAL_DNS -> item {
+                            GlobalDnsSettingsPanel(globalDns, dnsSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
+                                runtimeViewModel::saveGlobalDns)
                         }
                         ToolsSubpage.ON_DEMAND -> item {
                             OnDemandSettingsPanel(
                                 batteryOptimizationIgnored = batteryOptimizationIgnored,
                                 onRequestBatteryOptimization = onRequestBatteryOptimization,
+                                network = demandNetwork, onRequestLocation = onRequestLocation, ssids = demandSsids,
+                                busy = demandBusy, error = demandError ?: demandRuntimeError, suspended = demandSuspended,
+                                savedVersion = demandSavedVersion,
+                                onSave = { expected, next -> onDemandViewModel?.save(expected, next) },
                             )
                         }
                         ToolsSubpage.DEVELOPER -> if (developerToolsEnabled) {
@@ -1199,58 +1336,94 @@ fun KClashApp(
     }
 
     if (showToolsBackup) ProfileMaintenancePage(
-        canRestore = !profilesState.isBusy && !runtimeState.isRunning,
+        canRestore = !profilesState.isBusy && runtimeState in setOf(CoreRuntimeStatus.STOPPED, CoreRuntimeStatus.FAILED),
         busy = webDavBusy, credentials = webDavCredentials, onDismiss = { showToolsBackup = false },
         onExport = onExportBackup, onImport = onImportBackup,
         onSaveCredentials = onSaveWebDavCredentials, onClearCredentials = onClearWebDavCredentials,
         onProbe = onProbeWebDav, onUpload = onUploadWebDav, onDownload = onDownloadWebDav,
+        strategy = backupStrategy, onStrategy = onBackupStrategy, connection = webDavConnection,
     )
 
+    if (showResources) ResourcesPage(resources, { showResources = false }, { resourcesViewModel?.refresh() },
+        { resourcesViewModel?.sync(it) }, { resourcesViewModel?.syncAll() }, { resourcesViewModel?.settings(it) },
+        { resourcesViewModel?.clearFeedback() })
     if (showCustomResources) {
         ProfileEditorPage(onDismissRequest = { showCustomResources = false }, title = { Text("自定义资源") }, text = {
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = ::openLocalProxies, modifier = Modifier.fillMaxWidth()) { Text("本地代理") }
                 TextButton(onClick = { showRuleResources = true }, modifier = Modifier.fillMaxWidth()) { Text("规则资源") }
+                TextButton(onClick = { showIconSets = true }, modifier = Modifier.fillMaxWidth()) { Text("图标集") }
+                TextButton(onClick = { showFilterPresets = true }, modifier = Modifier.fillMaxWidth().testTag("custom_resources_filters")) { Text("过滤预设") }
                 TextButton(onClick = { showScriptsDialog = true }, modifier = Modifier.fillMaxWidth()) { Text("脚本库") }
             }
         })
     }
+    if (showLocalProxies && localProxiesViewModel != null) LocalProxiesPage(localProxiesState,
+        { localProxiesViewModel.close(); showLocalProxies = false }, localProxiesViewModel::edit, localProxiesViewModel::save,
+        localProxiesViewModel::dismissEditor, localProxiesViewModel::links, localProxiesViewModel::applyLinks,
+        localProxiesViewModel::cancelLinks, localProxiesViewModel::reorder, localProxiesViewModel::askDelete,
+        localProxiesViewModel::delete, localProxiesViewModel::cancelDelete, localProxiesViewModel::confirmReplacement)
+    if (showIconSets) IconSetsPage(resources.iconSets, iconBusy, iconError, iconCompleted,
+        { showIconSets = false }, { name, url -> resourcesViewModel?.importIcons(name, url) }, { iconSetFilePicker.launch(arrayOf("application/json", "text/*", "application/octet-stream")) },
+        { item, name, url -> resourcesViewModel?.iconOptions(item, name, url) },
+        { item -> resources.rows.firstOrNull { it.kind == com.lonnnnnng.flclash.data.ResourceKind.ICONS && it.id == item.id }?.let { resourcesViewModel?.sync(it) } },
+        { resourcesViewModel?.deleteIcons(it) }, { id, offset -> resourcesViewModel?.moveIcons(id, offset) },
+        onImportUrls = { resourcesViewModel?.iconUrlImports?.reset(); showIconUrls = true },
+        onReorder = { resourcesViewModel?.reorderIcons(it) })
     if (showRuleResources && ruleResourcesViewModel != null) {
         RuleResourcesPage(ruleResources, { showRuleResources = false }, ruleResourcesViewModel::create,
             { ruleFilePicker.launch(arrayOf("*/*")) }, ruleResourcesViewModel::edit, ruleResourcesViewModel::sync,
             ruleResourcesViewModel::syncAll, ruleResourcesViewModel::askDelete, ruleResourcesViewModel::delete,
             ruleResourcesViewModel::cancelDelete, ruleResourcesViewModel::move, ruleResourcesViewModel::closeEditor,
-            ruleResourcesViewModel::save)
+            ruleResourcesViewModel::save, onImportUrls = { ruleResourcesViewModel.urlImports.reset(); showRuleUrls = true },
+            onReorder = ruleResourcesViewModel::reorder)
     }
+    if (showFilterPresets && filterPresetsViewModel != null) FilterPresetsPage(filters, { showFilterPresets = false },
+        filterPresetsViewModel::edit, filterPresetsViewModel::closeEditor, filterPresetsViewModel::save,
+        filterPresetsViewModel::delete, filterPresetsViewModel::reorder)
+    if (showRuleUrls && ruleResourcesViewModel != null) {
+        val batch by ruleResourcesViewModel.urlImports.state.collectAsState()
+        ResourceUrlImportPage("导入规则资源", batch, { showRuleUrls = false }, ruleResourcesViewModel.urlImports::start,
+            ruleResourcesViewModel.urlImports::cancel, ruleResourcesViewModel.urlImports::retry, ruleResourcesViewModel.urlImports::reset)
+    }
+    if (showIconUrls && resourcesViewModel != null) {
+        val batch by resourcesViewModel.iconUrlImports.state.collectAsState()
+        ResourceUrlImportPage("导入图标集", batch, { showIconUrls = false }, resourcesViewModel.iconUrlImports::start,
+            resourcesViewModel.iconUrlImports::cancel, resourcesViewModel.iconUrlImports::retry, resourcesViewModel.iconUrlImports::reset)
+    }
+    if (showGlobalRules) GlobalRulesRoute(profilesViewModel.globalRules) { showGlobalRules = false }
+
     if (showScriptsDialog) {
         ScriptsLibraryDialog(
             state = scriptsState,
             onDismiss = { showScriptsDialog = false },
-            onCreate = {
-                showScriptsDialog = false
-                scriptsViewModel.openNewEditor()
-            },
-            onEdit = { script ->
-                showScriptsDialog = false
-                scriptsViewModel.openEditor(script)
-            },
+            onCreate = scriptsViewModel::openNewEditor,
+            onEdit = scriptsViewModel::openEditor,
             onDelete = scriptsViewModel::delete,
             onReorder = scriptsViewModel::reorder,
-            onImportRemote = {
-                showScriptsDialog = false
-                showRemoteScriptDialog = true
+            onImportRemote = { scriptsViewModel.openRemote() },
+            onImportFile = {
+                scriptsViewModel.beginFilePick()?.let { token ->
+                    scriptPickToken = token
+                    try { scriptFilePicker.launch(arrayOf("*/*")) }
+                    catch (_: Exception) { scriptPickToken = null; scriptsViewModel.completeFilePick(token) { error("无法打开文件选择器") } }
+                }
             },
+            onEditUrl = scriptsViewModel::openRemote,
             onSync = scriptsViewModel::sync,
         )
     }
 
-    if (showRemoteScriptDialog) {
+    if (remoteScriptState.isOpen) {
         ScriptRemoteDialog(
             busy = scriptsState.isBusy,
-            onDismiss = { if (!scriptsState.isBusy) showRemoteScriptDialog = false },
-            onImport = { label, url ->
-                showRemoteScriptDialog = false
-                scriptsViewModel.importRemote(label, url)
-            },
+            script = remoteScriptState.script,
+            error = scriptsState.error,
+            initialLabel = remoteScriptState.label,
+            initialUrl = remoteScriptState.url,
+            onDraftChange = scriptsViewModel::editRemoteDraft,
+            onDismiss = scriptsViewModel::closeRemote,
+            onImport = scriptsViewModel::submitRemote,
         )
     }
 
@@ -1268,6 +1441,8 @@ fun KClashApp(
                     state = editor,
                     onDismiss = scriptsViewModel::closeEditor,
                     onSave = scriptsViewModel::save,
+                    onDraftChange = scriptsViewModel::editDraft,
+                    onRetry = { editor.script?.let(scriptsViewModel::openEditor) },
                 )
             }
         }
@@ -1381,6 +1556,16 @@ internal fun ProfilesPanel(
     state: ProfilesUiState,
     editorState: ProfileEditorUiState,
     remoteEditorState: RemoteProfileEditorUiState = RemoteProfileEditorUiState(),
+    documentEditorState: ProfileDocumentEditorState = ProfileDocumentEditorState(),
+    onDocumentChange: (String) -> Unit = {},
+    onDocumentSave: () -> Unit = {},
+    onDocumentClose: () -> Unit = {},
+    onOpenDocument: ((Boolean) -> Unit)? = null,
+    onRemoteDraftChange: (RemoteProfileDraft) -> Unit = {},
+    onBeginRemotePick: () -> Long? = { null },
+    onRemoteFilePicked: (Long?, String?) -> Unit = { _, _ -> },
+    onClearRemoteReplacement: () -> Unit = {},
+    onRetryRemoteRead: () -> Unit = {},
     runtimeState: CoreRuntimeStatus,
     showAddDialog: Boolean,
     onShowAddDialog: () -> Unit,
@@ -1392,6 +1577,8 @@ internal fun ProfilesPanel(
     onAddRemoteBatch: ((List<String>) -> Unit)? = null,
     onAddCustom: (label: String) -> Unit,
     addMenuAnchor: IntRect? = null,
+    initialRemoteUrl: String? = null,
+    initialRemoteLabel: String? = null,
     onSelect: (id: Long) -> Unit,
     onPreviewProfile: (Long) -> Unit = {},
     onCopyLink: (Long) -> Unit = {},
@@ -1401,6 +1588,9 @@ internal fun ProfilesPanel(
     onEdit: (profile: Profile) -> Unit,
     onRename: (profile: Profile, label: String) -> Unit = { _, _ -> },
     onUpdate: (profile: Profile) -> Unit,
+    onSyncAll: (() -> Unit)? = null,
+    onRetrySync: () -> Unit = {},
+    onDismissSync: () -> Unit = {},
     onSetAutoUpdate: (profile: Profile, enabled: Boolean) -> Unit = { _, _ -> },
     onCloseEditor: () -> Unit,
     onDiscardEditor: () -> Unit = onCloseEditor,
@@ -1409,6 +1599,7 @@ internal fun ProfilesPanel(
     onSaveFileEditor: (String?, String) -> Unit = { _, _ -> },
     onSaveFileEditorWithLabel: ((String?, String, String) -> Unit)? = null,
     onBeginFileReplacementPick: () -> Long? = { null },
+    onFileMetadataChange: (String, String) -> Unit = { _, _ -> },
     onFileReplacementPicked: (Long?, String?) -> Unit = { _, _ -> },
     onClearFileReplacement: () -> Unit = {},
     onSaveRemoteEditor: (label: String, url: String, autoUpdate: Boolean, intervalMinutes: Long) -> Unit = { _, _, _, _ -> },
@@ -1456,6 +1647,7 @@ internal fun ProfilesPanel(
     onOpenDialersEditor: (Profile) -> Unit = {},
     onCloseDialersEditor: () -> Unit = {},
     onSaveDialers: (String) -> Unit = {},
+    onSetDialerTarget: (String, String?) -> Unit = { _, _ -> },
     onReorderProfiles: (List<Long>) -> Unit = {},
     extensionController: ProfileExtensionController? = null,
     scripts: List<Script> = emptyList(),
@@ -1474,7 +1666,8 @@ internal fun ProfilesPanel(
     onToolbarActionHandled: () -> Unit = {},
     showInlineToolbar: Boolean = true,
 ) {
-    val canMutateProfiles = !state.isBusy && !runtimeState.isRunning
+    val canMutateProfiles = !state.isBusy && !isProfileTransitioning(runtimeState)
+    val canChangeFiles = !state.isBusy && !isProfileMutationBlocked(runtimeState)
     var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
     var profilePendingRename by remember { mutableStateOf<Profile?>(null) }
     var showReorderDialog by remember { mutableStateOf(false) }
@@ -1490,7 +1683,7 @@ internal fun ProfilesPanel(
     val actionToHandle = toolbarAction ?: inlineToolbarAction
     LaunchedEffect(actionToHandle) {
         when (actionToHandle) {
-            ProfilesToolbarAction.SYNC_ALL -> state.profiles.filter { it.type == ProfileType.URL }.forEach(onUpdate)
+            ProfilesToolbarAction.SYNC_ALL -> if (onSyncAll != null) onSyncAll() else state.profiles.filter { it.type == ProfileType.URL }.forEach(onUpdate)
             ProfilesToolbarAction.SORT -> showReorderDialog = true
             ProfilesToolbarAction.SCRIPTS -> onOpenScripts()
             ProfilesToolbarAction.WEBDAV -> showWebDavDialog = true
@@ -1603,6 +1796,8 @@ internal fun ProfilesPanel(
                                     profile = profile,
                                     selected = profile.id == state.currentProfileId,
                                     canMutate = canMutateProfiles,
+                                    canEdit = canMutateProfiles && (profile.type != ProfileType.CUSTOM || !runtimeState.isRunning),
+                                    canDelete = canChangeFiles,
                                     onSelect = { onSelect(profile.id) },
                                     onPreview = { onPreviewProfile(profile.id) },
                                     onCopyLink = { onCopyLink(profile.id) },
@@ -1648,21 +1843,30 @@ internal fun ProfilesPanel(
                 .toSet(),
             onAddCustom = onAddCustom,
             sourceAnchor = localAddAnchor ?: addMenuAnchor,
+            initialRemoteUrl = initialRemoteUrl,
+            initialRemoteLabel = initialRemoteLabel,
         )
     }
+
+    ProfileSyncResults(state.sync, onDismissSync, onRetrySync)
 
     profilePendingDeletion?.let { profile ->
         AlertDialog(
             onDismissRequest = { profilePendingDeletion = null },
             title = { Text("删除配置") },
-            text = { Text("确定删除“${profile.realLabel}”吗？本地配置文件也会一并删除。") },
+            text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("确定删除“${profile.realLabel}”吗？本地配置文件也会一并删除。")
+                state.resourceUsers[profile.id]?.takeIf { it.isNotEmpty() }?.let { users ->
+                    Text("以下配置仍引用此代理资源：${users.joinToString("、")}。删除后引用将显示缺失，可重新选择资源。", color = MaterialTheme.colorScheme.error)
+                }
+            } },
             confirmButton = {
                 TextButton(
                     onClick = {
                         profilePendingDeletion = null
                         onDelete(profile)
                     },
-                    enabled = canMutateProfiles,
+                    enabled = canChangeFiles,
                 ) { Text("删除") }
             },
             dismissButton = {
@@ -1744,9 +1948,9 @@ internal fun ProfilesPanel(
 
     extensionProfileId?.let { id ->
         state.profiles.firstOrNull { it.id == id }?.let { profile ->
-            if (extensionController != null) ProfileExtensionRoute(id, extensionController, scripts, canMutateProfiles,
+            if (extensionController != null) ProfileExtensionRoute(id, extensionController, scripts, canChangeFiles,
                 { extensionProfileId = null }, onOpenScripts, { onOpenDnsEditor(profile) }, { onOpenProvidersEditor(profile) })
-            else ProfileExtensionPage(profile.realLabel, canMutateProfiles, { extensionProfileId = null },
+            else ProfileExtensionPage(profile.realLabel, canChangeFiles, { extensionProfileId = null },
                 { onOpenDnsEditor(profile) }, { onOpenProvidersEditor(profile) }, { scriptBindingProfileId = id })
         }
     }
@@ -1761,10 +1965,10 @@ internal fun ProfilesPanel(
                 confirmButton = {},
             )
         } else if (profile.type == ProfileType.FILE) {
-            FileProfileEditorDialog(editorState, readOnly = runtimeState.isRunning, onDismiss = onCloseEditor,
+            FileProfileEditorDialog(editorState, readOnly = isProfileTransitioning(runtimeState), onDismiss = onCloseEditor,
                 onBeginPick = onBeginFileReplacementPick, onFilePicked = onFileReplacementPicked,
                 onClearReplacement = onClearFileReplacement, onSave = onSaveFileEditor,
-                onSaveWithLabel = onSaveFileEditorWithLabel)
+                onSaveWithLabel = onSaveFileEditorWithLabel, onOpenDocument = onOpenDocument?.let { open -> { open(false) } }, onMetadataChange = onFileMetadataChange)
         } else {
             ProfileEditorDialog(
                 profile = profile,
@@ -1807,8 +2011,15 @@ internal fun ProfilesPanel(
             onDismiss = onCloseEditor,
             onSave = onSaveRemoteEditor,
             onSaveWithAgeKey = onSaveRemoteEditorWithAgeKey,
+            state = remoteEditorState,
+            onDraftChange = onRemoteDraftChange,
+            onOpenDocument = { onOpenDocument?.invoke(true) },
+            onBeginPick = onBeginRemotePick, onFilePicked = onRemoteFilePicked,
+            onClearReplacement = onClearRemoteReplacement, onRetryRead = onRetryRemoteRead,
         )
     }
+
+    ProfileDocumentEditor(documentEditorState, onDocumentChange, onDocumentSave, onDocumentClose)
 
     rulesEditorState.profile?.let { profile ->
         if (rulesEditorState.isLoading) {
@@ -1863,6 +2074,7 @@ internal fun ProfilesPanel(
                 profile = profile,
                 initialGroups = proxyGroupsEditorState.groups,
                 sourceContent = proxyGroupsEditorState.sourceContent,
+                resourceProfiles = state.profiles,
                 initialGroupIndex = proxyGroupsEditorState.initialGroupIndex,
                 onSaveDraft = onSaveProxyGroupsDraft,
                 onValidateFilters = onValidateGroupFilters,
@@ -1888,9 +2100,13 @@ internal fun ProfilesPanel(
                 initialProxyProviders = providersEditorState.proxyProviders,
                 initialRuleProviders = providersEditorState.ruleProviders,
                 sourceContent = providersEditorState.sourceContent,
+                resourceProfiles = state.profiles,
                 ruleResources = ruleResources,
                 onManageRuleResources = onManageRuleResources,
                 initialProxyProviderOverrides = providersEditorState.proxyProviderOverrides,
+                saveRevision = providersEditorState.revision,
+                saveError = providersEditorState.error,
+                onValidateFilters = onValidateGroupFilters,
                 saving = providersEditorState.isSaving,
                 onDismiss = onCloseProvidersEditor,
                 onSave = onSaveProviders,
@@ -1918,12 +2134,11 @@ internal fun ProfilesPanel(
                 confirmButton = {},
             )
         } else {
-            ProfileDialersEditorDialog(
-                profile = profile,
-                initialDialers = dialersEditorState.dialers,
-                saving = dialersEditorState.isSaving,
+            ProfileDialersPage(
+                state = dialersEditorState,
                 onDismiss = onCloseDialersEditor,
-                onSave = onSaveDialers,
+                onSetTarget = onSetDialerTarget,
+                onSaveText = onSaveDialers,
             )
         }
     }
@@ -3919,209 +4134,6 @@ internal fun ProfileReorderDialog(
  * 作者 long：脚本正文、元数据和 Profile 绑定都通过 ViewModel 回写；核心启动时再由服务层
  * 在暂存配置上执行绑定脚本，原始 Profile 文件始终保持可编辑和可回退。
  */
-@Composable
-internal fun ScriptsLibraryDialog(
-    state: ScriptsUiState,
-    onDismiss: () -> Unit,
-    onCreate: () -> Unit,
-    onEdit: (Script) -> Unit,
-    onDelete: (Script) -> Unit,
-    onReorder: (List<Long>) -> Unit,
-    onImportRemote: () -> Unit = {},
-    onSync: (Script) -> Unit = {},
-) {
-    var pendingDelete by remember { mutableStateOf<Script?>(null) }
-    var orderedScripts by remember(state.scripts.map(Script::id)) {
-        mutableStateOf(state.scripts)
-    }
-
-    fun move(index: Int, offset: Int) {
-        val target = index + offset
-        if (target !in orderedScripts.indices) return
-        val next = orderedScripts.toMutableList()
-        val item = next.removeAt(index)
-        next.add(target, item)
-        orderedScripts = next
-        onReorder(next.map(Script::id))
-    }
-
-    AlertDialog(
-        onDismissRequest = { if (!state.isBusy) onDismiss() },
-        title = { Text("脚本库") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    "支持本地或远程脚本、Profile 绑定；核心启动时会在暂存配置上执行 JavaScript。",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (orderedScripts.isEmpty()) {
-                    Text("还没有脚本", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = 420.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(orderedScripts, key = { it.id }) { script ->
-                            val index = orderedScripts.indexOfFirst { it.id == script.id }
-                            Card(modifier = Modifier.fillMaxWidth()) {
-                                Column(modifier = Modifier.padding(12.dp)) {
-                                    Text(script.label, style = MaterialTheme.typography.titleMedium)
-                                    Text(
-                                        "${index + 1}. ${script.fileName}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    Row(horizontalArrangement = Arrangement.End) {
-                                        TextButton(
-                                            onClick = { move(index, -1) },
-                                            enabled = !state.isBusy && index > 0,
-                                        ) { Text("上移") }
-                                        TextButton(
-                                            onClick = { move(index, 1) },
-                                            enabled = !state.isBusy && index < orderedScripts.lastIndex,
-                                        ) { Text("下移") }
-                                        TextButton(
-                                            onClick = { onEdit(script) },
-                                            enabled = !state.isBusy,
-                                        ) { Text("编辑") }
-                                        if (script.url.isNotBlank()) {
-                                            TextButton(
-                                                onClick = { onSync(script) },
-                                                enabled = !state.isBusy,
-                                            ) { Text("同步") }
-                                        }
-                                        TextButton(
-                                            onClick = { pendingDelete = script },
-                                            enabled = !state.isBusy,
-                                        ) { Text("删除") }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Row {
-                TextButton(onClick = onImportRemote, enabled = !state.isBusy) { Text("导入远程脚本") }
-                TextButton(onClick = onCreate, enabled = !state.isBusy) { Text("新建脚本") }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !state.isBusy) { Text("关闭") }
-        },
-    )
-
-    pendingDelete?.let { script ->
-        AlertDialog(
-            onDismissRequest = { pendingDelete = null },
-            title = { Text("删除脚本") },
-            text = { Text("确定删除“${script.label}”及其本地文件吗？") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        pendingDelete = null
-                        onDelete(script)
-                    },
-                    enabled = !state.isBusy,
-                ) { Text("删除") }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) { Text("取消") }
-            },
-        )
-    }
-}
-
-@Composable
-internal fun ScriptRemoteDialog(
-    busy: Boolean,
-    onDismiss: () -> Unit,
-    onImport: (label: String, url: String) -> Unit,
-) {
-    var label by rememberSaveable { mutableStateOf("") }
-    var url by rememberSaveable { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text("导入远程脚本") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = label,
-                    onValueChange = { label = it },
-                    enabled = !busy,
-                    label = { Text("脚本名称（可选）") },
-                    singleLine = true,
-                )
-                OutlinedTextField(
-                    value = url,
-                    onValueChange = { url = it },
-                    enabled = !busy,
-                    label = { Text("HTTP(S) 脚本地址") },
-                    singleLine = true,
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onImport(label, url) },
-                enabled = !busy && url.isNotBlank(),
-            ) {
-                if (busy) CircularProgressIndicator() else Text("导入")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !busy) { Text("取消") }
-        },
-    )
-}
-
-@Composable
-internal fun ScriptEditorDialog(
-    state: ScriptEditorUiState,
-    onDismiss: () -> Unit,
-    onSave: (label: String, content: String) -> Unit,
-) {
-    var label by remember(state.script?.id, state.isOpen) { mutableStateOf(state.label) }
-    var content by remember(state.script?.id, state.isOpen) { mutableStateOf(state.content) }
-    AlertDialog(
-        onDismissRequest = { if (!state.isSaving) onDismiss() },
-        title = { Text(if (state.script == null) "新建脚本" else "编辑脚本") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = label,
-                    onValueChange = { label = it },
-                    enabled = !state.isSaving,
-                    label = { Text("脚本名称") },
-                    singleLine = true,
-                )
-                OutlinedTextField(
-                    value = content,
-                    onValueChange = { content = it },
-                    enabled = !state.isSaving,
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 14,
-                    maxLines = 22,
-                    label = { Text("JavaScript") },
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(label, content) },
-                enabled = !state.isSaving && label.isNotBlank() && content.isNotBlank(),
-            ) {
-                if (state.isSaving) CircularProgressIndicator() else Text("保存")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !state.isSaving) { Text("取消") }
-        },
-    )
-}
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ProfileCard(
@@ -4148,6 +4160,8 @@ internal fun ProfileCard(
     onPreview: () -> Unit = {},
     onExtend: () -> Unit = {},
     modifier: Modifier = Modifier,
+    canEdit: Boolean = canMutate,
+    canDelete: Boolean = canMutate,
 ) {
     var showActions by remember(profile.id) { mutableStateOf(false) }
     var showMore by remember(profile.id) { mutableStateOf(false) }
@@ -4278,7 +4292,7 @@ internal fun ProfileCard(
                             DropdownMenuItem(
                                 text = { Text("编辑") },
                                 leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-                                onClick = { showActions = false; onEdit() }, enabled = canMutate,
+                                onClick = { showActions = false; onEdit() }, enabled = canEdit,
                                 modifier = Modifier.testTag("profile_edit_${profile.id}"),
                             )
                             if (profile.type == ProfileType.CUSTOM) {
@@ -4316,7 +4330,7 @@ internal fun ProfileCard(
                             DropdownMenuItem(
                                 text = { Text("删除", color = MaterialTheme.colorScheme.error) },
                                 leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                                onClick = { showActions = false; onDelete() }, enabled = canMutate,
+                                onClick = { showActions = false; onDelete() }, enabled = canDelete,
                             )
                         }
                     }
@@ -4442,100 +4456,6 @@ internal fun ProfileScriptBindingDialog(
     )
 }
 
-@Composable
-internal fun RemoteProfileEditorDialog(
-    profile: Profile,
-    saving: Boolean,
-    onDismiss: () -> Unit,
-    onSave: (label: String, url: String, autoUpdate: Boolean, intervalMinutes: Long) -> Unit,
-    onSaveWithAgeKey: ((String, String, Boolean, Long, String) -> Unit)? = null,
-) {
-    var ageKey by remember(profile.id, profile.ageSecretKey) { mutableStateOf(profile.ageSecretKey) }
-    // 作者 long：后台关闭编辑而不是把空值留给保存，避免清理敏感输入时误删已经持久化的密钥。
-    ClearAgeInputOnBackground { ageKey = ""; onDismiss() }
-    var label by rememberSaveable(profile.id, profile.url) { mutableStateOf(profile.label) }
-    var url by rememberSaveable(profile.id, profile.url) { mutableStateOf(profile.url) }
-    var autoUpdate by rememberSaveable(profile.id, profile.url) { mutableStateOf(profile.autoUpdate) }
-    var intervalMinutes by rememberSaveable(profile.id, profile.url) {
-        mutableStateOf((profile.autoUpdateIntervalMillis / 60_000L).coerceAtLeast(1L).toString())
-    }
-    val parsedInterval = intervalMinutes.toLongOrNull()
-    val canSave = !saving && label.isNotBlank() && label.length <= 64 && isValidRemoteProfileUrl(url) &&
-        (!autoUpdate || parsedInterval != null && parsedInterval > 0L)
-
-    ProfileEditorPage(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text("编辑订阅") },
-        text = {
-            Column(
-                modifier = Modifier.testTag("remote_profile_editor_form").verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                ProfileFormSection {
-                OutlinedTextField(
-                    value = label,
-                    onValueChange = { label = it.take(64) },
-                    enabled = !saving,
-                    label = { Text("名称") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth().testTag("remote_profile_editor_label"),
-                )
-                OutlinedTextField(
-                    value = url,
-                    onValueChange = { url = it },
-                    enabled = !saving,
-                    label = { Text("订阅链接") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth().testTag("remote_profile_editor_url"),
-                )
-                AgeSecretKeyField(ageKey, { ageKey = it }, !saving, "remote_profile_editor_age_key")
-                }
-                ProfileFormSection {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text("自动更新")
-                    Switch(
-                        checked = autoUpdate,
-                        onCheckedChange = { autoUpdate = it },
-                        enabled = !saving,
-                        modifier = Modifier.testTag("remote_profile_editor_auto_update"),
-                    )
-                }
-                if (autoUpdate) OutlinedTextField(
-                    value = intervalMinutes,
-                    onValueChange = { intervalMinutes = it.filter(Char::isDigit).take(7) },
-                    enabled = !saving && autoUpdate,
-                    label = { Text("自动更新间隔（分钟）") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth().testTag("remote_profile_editor_interval"),
-                )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val interval = parsedInterval
-                        ?: (profile.autoUpdateIntervalMillis / 60_000L).coerceAtLeast(1L)
-                    if (onSaveWithAgeKey != null) onSaveWithAgeKey(label.trim(), url.trim(), autoUpdate, interval, ageKey.trim())
-                    else onSave(label.trim(), url.trim(), autoUpdate, interval)
-                },
-                enabled = canSave,
-            ) {
-                if (saving) CircularProgressIndicator() else Text("保存")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
-        },
-    )
-}
-
 private fun isValidRemoteProfileUrl(value: String): Boolean = runCatching {
     val uri = java.net.URI(value.trim())
     uri.scheme in setOf("http", "https") && !uri.host.isNullOrBlank()
@@ -4607,14 +4527,12 @@ internal fun ProfileProxyGroupsEditorDialog(
     recentIcons: List<String> = emptyList(),
     onRecordIcon: (String, Boolean) -> Unit = { _, _ -> },
     onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
+    resourceProfiles: List<Profile> = emptyList(),
 ) {
-    VisualProxyGroupsEditor(profile, initialGroups, sourceContent, saving, initialGroupIndex, onDismiss, onSave, onSaveDraft, onValidateFilters, recentIcons, onRecordIcon, onReadIcon)
+    VisualProxyGroupsEditor(profile, initialGroups, sourceContent, saving, initialGroupIndex, onDismiss, onSave, onSaveDraft, onValidateFilters, recentIcons, onRecordIcon, onReadIcon, resourceProfiles)
 }
 
-/**
- * 作者 long：Provider 编辑器把 proxy-providers 和 rule-providers 分成两个 map 输入区，
- * 让用户能局部调整远程资源定义，同时由 ViewModel 负责结构校验和原子回写。
- */
+/** 作者 long：Provider 入口只做页面投影，正式保存由 ViewModel 回读版本确认，不在 UI 里提前关闭子页。 */
 @Composable
 internal fun ProfileProvidersEditorDialog(
     profile: Profile,
@@ -4628,118 +4546,15 @@ internal fun ProfileProvidersEditorDialog(
     sourceContent: String = "",
     ruleResources: List<com.lonnnnnng.flclash.data.RuleResource> = emptyList(),
     onManageRuleResources: () -> Unit = {},
+    resourceProfiles: List<Profile> = emptyList(),
+    saveRevision: Long = 0,
+    saveError: String? = null,
+    onValidateFilters: suspend (List<String>) -> List<String> = { values -> values.map { "" } },
 ) {
-    var proxyProviders by rememberSaveable(profile.id, "proxyProviders") {
-        mutableStateOf(initialProxyProviders)
-    }
-    var ruleProviders by rememberSaveable(profile.id, "ruleProviders") {
-        mutableStateOf(initialRuleProviders)
-    }
-    var proxyProviderOverrides by remember(profile.id, initialProxyProviderOverrides) {
-        mutableStateOf(initialProxyProviderOverrides.toMap())
-    }
-    var editingProvider by remember { mutableStateOf<String?>(null) }
-    val providerNames = remember(proxyProviders) {
-        ProfileProvidersEditor.proxyProviderNames(proxyProviders)
-    }
-    ProfileEditorPage(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text("Provider · ${profile.realLabel}") },
-        text = {
-            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (profile.type == ProfileType.CUSTOM) {
-                RuleResourceBindings(ruleProviders, sourceContent, ruleResources, !saving, { ruleProviders = it }, onManageRuleResources)
-                Text(
-                    "每个条目使用 providerName: 开始，并在下一层填写 type、url、path 等字段；两个区块分别对应代理和规则 Provider。",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                OutlinedTextField(
-                    value = proxyProviders,
-                    onValueChange = { proxyProviders = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 6,
-                    maxLines = 12,
-                    enabled = !saving,
-                    label = { Text("proxy-providers") },
-                )
-                OutlinedTextField(
-                    value = ruleProviders,
-                    onValueChange = { ruleProviders = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 6,
-                    maxLines = 12,
-                    enabled = !saving,
-                    label = { Text("rule-providers") },
-                )
-                }
-                Text(
-                    "代理 Provider 覆盖",
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                if (providerNames.isEmpty()) {
-                    Text(
-                        if (profile.type == ProfileType.CUSTOM) "先添加代理 Provider，再配置健康检查和节点覆盖。" else "这份配置没有代理 Provider。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                } else {
-                    providerNames.forEach { name ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(name)
-                                Text(
-                                    providerOverrideSummary(proxyProviderOverrides[name]),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            TextButton(
-                                onClick = { editingProvider = name },
-                                enabled = !saving,
-                            ) { Text("编辑字段") }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val filtered = proxyProviderOverrides.filterKeys(providerNames::contains)
-                    if (onSaveWithOverrides != null) {
-                        onSaveWithOverrides(proxyProviders, ruleProviders, filtered)
-                    } else {
-                        onSave(proxyProviders, ruleProviders)
-                    }
-                },
-                enabled = !saving,
-            ) {
-                if (saving) CircularProgressIndicator() else Text("保存")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
-        },
-    )
-    editingProvider?.let { name ->
-        ProfileProxyProviderOverrideDialog(
-            providerName = name,
-            initial = proxyProviderOverrides[name] ?: ProxyProviderOverride(),
-            saving = saving,
-            onDismiss = { editingProvider = null },
-            onSave = { updated ->
-                proxyProviderOverrides = if (updated.isEmpty) {
-                    proxyProviderOverrides - name
-                } else {
-                    proxyProviderOverrides + (name to updated)
-                }
-                editingProvider = null
-            },
-        )
-    }
+    ProfileProvidersPage(profile, initialProxyProviders, initialRuleProviders, sourceContent, initialProxyProviderOverrides,
+        resourceProfiles, ruleResources, saving, saveRevision, saveError, onDismiss,
+        onSave = { proxy, rule, fields -> if (onSaveWithOverrides != null) onSaveWithOverrides(proxy, rule, fields) else onSave(proxy, rule) },
+        onManageRules = onManageRuleResources, validateFilters = onValidateFilters)
 }
 
 /**
@@ -4990,168 +4805,7 @@ internal fun ProfileProxyProviderOverrideDialog(
     onDismiss: () -> Unit,
     onSave: (ProxyProviderOverride) -> Unit,
 ) {
-    var url by remember(providerName, initial) { mutableStateOf(initial.url.orEmpty()) }
-    var interval by remember(providerName, initial) { mutableStateOf(initial.interval?.toString().orEmpty()) }
-    var timeout by remember(providerName, initial) { mutableStateOf(initial.timeout?.toString().orEmpty()) }
-    var expectedStatus by remember(providerName, initial) { mutableStateOf(initial.expectedStatus.orEmpty()) }
-    var additionalPrefix by remember(providerName, initial) { mutableStateOf(initial.additionalPrefix.orEmpty()) }
-    var additionalSuffix by remember(providerName, initial) { mutableStateOf(initial.additionalSuffix.orEmpty()) }
-    var lazySet by remember(providerName, initial) { mutableStateOf(initial.lazy != null) }
-    var lazyValue by remember(providerName, initial) { mutableStateOf(initial.lazy ?: true) }
-    var udpSet by remember(providerName, initial) { mutableStateOf(initial.udp != null) }
-    var udpValue by remember(providerName, initial) { mutableStateOf(initial.udp ?: true) }
-    var skipCertSet by remember(providerName, initial) { mutableStateOf(initial.skipCertVerify != null) }
-    var skipCertValue by remember(providerName, initial) { mutableStateOf(initial.skipCertVerify ?: true) }
-    var ipVersion by remember(providerName, initial) { mutableStateOf(initial.ipVersion) }
-    var error by remember(providerName) { mutableStateOf<String?>(null) }
-
-    AlertDialog(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text("Provider 覆盖 · $providerName") },
-        text = {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 520.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item { Text("健康检查", style = MaterialTheme.typography.titleSmall) }
-                item {
-                    OutlinedTextField(
-                        value = url,
-                        onValueChange = { url = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !saving,
-                        label = { Text("URL") },
-                    )
-                }
-                item {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = interval,
-                            onValueChange = { interval = it },
-                            modifier = Modifier.weight(1f),
-                            enabled = !saving,
-                            label = { Text("间隔（秒）") },
-                        )
-                        OutlinedTextField(
-                            value = timeout,
-                            onValueChange = { timeout = it },
-                            modifier = Modifier.weight(1f),
-                            enabled = !saving,
-                            label = { Text("超时（毫秒）") },
-                        )
-                    }
-                }
-                item {
-                    OutlinedTextField(
-                        value = expectedStatus,
-                        onValueChange = { expectedStatus = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !saving,
-                        label = { Text("期望状态") },
-                    )
-                }
-                item {
-                    BooleanOverrideRow(
-                        label = "lazy",
-                        enabled = lazySet,
-                        value = lazyValue,
-                        onEnabledChange = { lazySet = it },
-                        onValueChange = { lazyValue = it },
-                    )
-                }
-                item { Text("名称", style = MaterialTheme.typography.titleSmall) }
-                item {
-                    OutlinedTextField(
-                        value = additionalPrefix,
-                        onValueChange = { additionalPrefix = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !saving,
-                        label = { Text("前缀") },
-                    )
-                }
-                item {
-                    OutlinedTextField(
-                        value = additionalSuffix,
-                        onValueChange = { additionalSuffix = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !saving,
-                        label = { Text("后缀") },
-                    )
-                }
-                item { Text("连接", style = MaterialTheme.typography.titleSmall) }
-                item {
-                    BooleanOverrideRow(
-                        label = "UDP",
-                        enabled = udpSet,
-                        value = udpValue,
-                        onEnabledChange = { udpSet = it },
-                        onValueChange = { udpValue = it },
-                    )
-                }
-                item {
-                    BooleanOverrideRow(
-                        label = "跳过证书校验",
-                        enabled = skipCertSet,
-                        value = skipCertValue,
-                        onEnabledChange = { skipCertSet = it },
-                        onValueChange = { skipCertValue = it },
-                    )
-                }
-                item {
-                    Text("IP 版本")
-                    listOf(null to "未设置", "ipv4" to "IPv4", "ipv6" to "IPv6", "dual" to "双栈")
-                        .forEach { (value, label) ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(
-                                    selected = ipVersion == value,
-                                    onClick = { ipVersion = value },
-                                )
-                                Text(label)
-                            }
-                        }
-                }
-                error?.let { message ->
-                    item { Text(message, color = MaterialTheme.colorScheme.error) }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val parsedInterval = interval.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
-                    val parsedTimeout = timeout.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
-                    if (interval.isNotBlank() && (parsedInterval == null || parsedInterval <= 0)) {
-                        error = "间隔必须是正整数"
-                        return@TextButton
-                    }
-                    if (timeout.isNotBlank() && (parsedTimeout == null || parsedTimeout <= 0)) {
-                        error = "超时必须是正整数"
-                        return@TextButton
-                    }
-                    onSave(
-                        ProxyProviderOverride(
-                            url = url.trim().takeIf { it.isNotEmpty() },
-                            interval = parsedInterval,
-                            timeout = parsedTimeout,
-                            lazy = lazySet.takeIf { it }?.let { lazyValue },
-                            expectedStatus = expectedStatus.trim().takeIf { it.isNotEmpty() },
-                            additionalPrefix = additionalPrefix.takeIf { it.isNotEmpty() },
-                            additionalSuffix = additionalSuffix.takeIf { it.isNotEmpty() },
-                            udp = udpSet.takeIf { it }?.let { udpValue },
-                            skipCertVerify = skipCertSet.takeIf { it }?.let { skipCertValue },
-                            ipVersion = ipVersion,
-                        ),
-                    )
-                },
-                enabled = !saving,
-            ) { Text("保存") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
-        },
-    )
+    ProviderOptionsPage(providerName, initial, saving, null, onDismiss, onSave)
 }
 
 @Composable
@@ -5172,17 +4826,6 @@ private fun BooleanOverrideRow(
             TextButton(onClick = { onValueChange(!value) }) { Text(value.toString()) }
         }
     }
-}
-
-private fun providerOverrideSummary(override: ProxyProviderOverride?): String {
-    if (override == null || override.isEmpty) return "未设置覆盖"
-    val fields = buildList {
-        if (override.url != null || override.expectedStatus != null) add("健康检查")
-        if (override.interval != null || override.timeout != null || override.lazy != null) add("周期")
-        if (override.additionalPrefix != null || override.additionalSuffix != null) add("名称")
-        if (override.udp != null || override.skipCertVerify != null || override.ipVersion != null) add("连接")
-    }
-    return "已设置：${fields.joinToString("、")}"
 }
 
 private fun profileSubtitle(profile: Profile): String {
@@ -5208,22 +4851,6 @@ internal fun formatBytes(bytes: Long): String {
         index++
     }
     return "%.1f%s".format(value, units[index])
-}
-
-private fun queryDisplayName(contentResolver: ContentResolver, uri: android.net.Uri): String? {
-    return contentResolver.query(
-        uri,
-        arrayOf(OpenableColumns.DISPLAY_NAME),
-        null,
-        null,
-        null,
-    )?.use { cursor ->
-        if (cursor.moveToFirst()) {
-            cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-        } else {
-            null
-        }
-    }
 }
 
 @Composable
@@ -5282,16 +4909,18 @@ internal fun AddProfileDialog(
     existingUrls: Set<String> = emptySet(),
     onAddCustom: (label: String) -> Unit,
     sourceAnchor: IntRect? = null,
+    initialRemoteUrl: String? = null,
+    initialRemoteLabel: String? = null,
 ) {
-    var label by rememberSaveable { mutableStateOf("") }
-    var url by rememberSaveable { mutableStateOf("") }
+    var label by rememberSaveable { mutableStateOf(initialRemoteLabel.orEmpty()) }
+    var url by rememberSaveable { mutableStateOf(initialRemoteUrl.orEmpty()) }
     var ageKey by remember { mutableStateOf("") }
     // 作者 long：清理监听属于整个导入表单，切到批量或来源页后隐藏字段也不能留下密钥。
     ClearAgeInputOnBackground { ageKey = "" }
     var batchMode by rememberSaveable { mutableStateOf(false) }
     var batchInput by rememberSaveable { mutableStateOf("") }
     // 作者 long：来源与表单分步呈现，避免订阅字段和自定义配置字段同时挤在添加入口。
-    var step by rememberSaveable { mutableStateOf(AddProfileStep.SOURCE) }
+    var step by rememberSaveable { mutableStateOf(if (initialRemoteUrl != null) AddProfileStep.REMOTE else AddProfileStep.SOURCE) }
     val busyDismiss = { if (!busy) onDismiss() }
     if (step == AddProfileStep.SOURCE) {
         ProfileSourceMenu(sourceAnchor, busy, busyDismiss, onPickQrCode, onPickFile,

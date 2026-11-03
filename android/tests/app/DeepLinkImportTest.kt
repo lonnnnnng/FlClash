@@ -7,6 +7,16 @@ import org.junit.Test
 
 class DeepLinkImportTest {
     @Test
+    fun `qr candidates skip invalid codes and retain install label`() {
+        assertEquals(DeepLinkProfileImport("https://example.com/sub", "工作"), DeepLinkProfileParser.fromQrCodes(listOf(
+            "WIFI:T:WPA;S:test;;", "kclash://install-config?url=file%3A%2F%2F%2Fbad",
+            "flclash://install-config?url=https%3A%2F%2Fexample.com%2Fsub&name=工作",
+            "https://example.com/later",
+        )))
+        assertNull(DeepLinkProfileParser.fromQrCodes(listOf("", "not a profile", "file:///a.yaml")))
+        assertEquals(DeepLinkProfileImport("https://example.com/sub", null), DeepLinkProfileParser.fromQrCodes(listOf(" https://example.com/sub ")))
+    }
+    @Test
     fun `parses encoded subscription url and optional name`() {
         val result = DeepLinkProfileParser.parse(
             "kclash://install-config?url=https%3A%2F%2Fexample.com%2Fsub%3Ftoken%3Dabc%26x%3D1&name=工作配置",

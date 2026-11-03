@@ -5,6 +5,16 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ProfileProviderOverridesTest {
+    @Test fun `provider filters stay at provider level and explicit clear survives metadata`() {
+        val source = ProfileProviderOverrides(proxyProviders = mapOf("cloud" to ProxyProviderOverride(filter = "HK`(?<=a)b", excludeFilter = "")))
+        assertEquals(source, ProfileProviderOverrides.fromJsonString(source.toJsonString()))
+        val yaml = "proxy-providers:\n  cloud:\n    type: http\n    filter: |\n      old\n    exclude-filter: old\n    override:\n      udp: true\n"
+        val root = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(ProfileProviderOverrideApplier.apply(yaml, source))).asJsonObject
+        val provider = root.getAsJsonObject("proxy-providers").getAsJsonObject("cloud")
+        assertEquals("HK`(?<=a)b", provider["filter"].asString)
+        assertEquals("", provider["exclude-filter"].asString)
+        assertTrue(provider.getAsJsonObject("override")["udp"].asBoolean)
+    }
     @Test
     fun `json round trip keeps dns override fields`() {
         val source = ProfileProviderOverrides(
@@ -100,13 +110,13 @@ class ProfileProviderOverridesTest {
                     path: ./cloud.yaml
                     health-check:
                       enable: true
-                      url: https://example.com/ping
+                      url: "https://example.com/ping"
                       interval: 300
                       timeout: 5000
                       lazy: true
-                      expected-status: 200
+                      expected-status: "200"
                     override:
-                      additional-prefix: Cloud-
+                      additional-prefix: "Cloud-"
                       udp: false
                       skip-cert-verify: true
                       ip-version: ipv4
@@ -146,11 +156,43 @@ class ProfileProviderOverridesTest {
         )
 
         assertTrue(actual.contains("enable: true"))
-        assertTrue(actual.contains("url: https://old.example/ping"))
+        assertTrue(actual.contains("url: \"${com.lonnnnnng.flclash.core.CoreBridge.DEFAULT_TEST_URL}\""))
         assertTrue(actual.contains("max-failed-times: 4"))
         assertTrue(actual.contains("timeout: 2000"))
         assertTrue(actual.contains("udp: false"))
         assertTrue(actual.contains("custom-field: keep"))
+    }
+
+    @Test fun `mixed layout stays in metadata and never enters staged provider definitions`() {
+        val option = ProxyProviderOverride(filter = "HK`JP", excludeFilter = "ads", memberLayout = listOf("excludeFilter", "filter"))
+        val overrides = ProfileProviderOverrides(proxyProviders = mapOf("订阅:香港" to option))
+        assertEquals(overrides, ProfileProviderOverrides.fromJsonString(overrides.toJsonString()))
+        val source = "proxy-providers: {\"订阅:香港\": {type: file, path: cloud.yaml, custom: keep}}\nrules: [MATCH,DIRECT]\n"
+        val staged = ProfileProviderOverrideApplier.apply(source, overrides)
+        assertTrue(!staged.contains("memberLayout"))
+        val provider = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(staged)).asJsonObject.getAsJsonObject("proxy-providers").getAsJsonObject("订阅:香港")
+        assertEquals("HK`JP", provider["filter"].asString)
+        assertEquals("ads", provider["exclude-filter"].asString)
+        assertEquals("keep", provider["custom"].asString)
+        assertEquals(source, ProfileProviderOverrideApplier.apply(source, ProfileProviderOverrides(proxyProviders = mapOf("订阅:香港" to ProxyProviderOverride(memberLayout = listOf("filter"))))))
+    }
+
+    @Test fun `health checks get default url for unicode quoted flow and canonical providers`() {
+        for (source in listOf(
+            "proxy-providers:\n  cloud:\n    type: file\n    health-check: {url: https://old.example, custom: keep}\n",
+            "{proxy-providers: {cloud: {type: file, health-check: {url: https://old.example, custom: keep}}}}",
+            "proxy-providers:\n  cloud:\n    type: file\n    health-check:\n      url: https://old.example\n      custom: keep\n",
+            "'proxy-providers':\n  '中文':\n    type: file\n    health-check: {custom: keep}\n",
+        )) {
+            val root = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(source)).asJsonObject
+            val name = root.getAsJsonObject("proxy-providers").keySet().single()
+            val staged = ProfileProviderOverrideApplier.apply(source, ProfileProviderOverrides(proxyProviders = mapOf(name to ProxyProviderOverride(interval = 300, lazy = false, additionalPrefix = "true"))))
+            val provider = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(staged)).asJsonObject.getAsJsonObject("proxy-providers").getAsJsonObject(name)
+            assertEquals(com.lonnnnnng.flclash.core.CoreBridge.DEFAULT_TEST_URL, provider.getAsJsonObject("health-check")["url"].asString)
+            assertEquals("keep", provider.getAsJsonObject("health-check")["custom"].asString)
+            assertEquals(false, provider.getAsJsonObject("health-check")["lazy"].asBoolean)
+            assertTrue(provider.getAsJsonObject("override")["additional-prefix"].asJsonPrimitive.isString)
+        }
     }
 
     @Test

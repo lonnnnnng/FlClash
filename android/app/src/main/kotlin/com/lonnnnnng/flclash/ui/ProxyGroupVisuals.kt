@@ -5,6 +5,8 @@ import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -21,11 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.lonnnnnng.flclash.data.ProxyGroupIssue
+import com.lonnnnnng.flclash.data.IconRecommendations
+import com.lonnnnnng.flclash.data.GroupIconSource
+import com.lonnnnnng.flclash.data.ResourceIconSet
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -82,7 +88,7 @@ internal fun ProfileGroupIcon(value: String, name: String, modifier: Modifier = 
 }
 
 @Composable
-internal fun ProfileGroupIconPicker(value: String, groupName: String, candidates: List<String>, recent: List<String>,
+internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: List<String>,
     onRecord: (String, Boolean) -> Unit, onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
     onDismiss: () -> Unit, onSelect: (String) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -104,9 +110,22 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, candidates
             finally { reading = false }
         }
     }
-    val icons = (listOf(value) + recent + candidates).filter(String::isNotBlank).distinct()
-    fun label(icon: String): String = if (icon.startsWith("data:")) "本地图片" else icon.toUri().lastPathSegment?.substringBeforeLast('.')?.ifBlank { null } ?: "图标"
-    val shown = icons.filter { query.isBlank() || label(it).contains(query, true) }
+    val resourceIcons = LocalResourceIcons.current
+    val namedSets = LocalResourceIconSets.current
+    val sets = remember(namedSets, resourceIcons) { namedSets.ifEmpty {
+        if (resourceIcons.isEmpty()) emptyList() else listOf(ResourceIconSet("gallery", "图标集", icons = resourceIcons, updatedAt = 0))
+    } }
+    // 作者 long：完整图库的匹配放到后台，输入或资源变化会取消旧计算，迟到结果不能覆盖新来源。
+    val loadedSources by produceState<List<GroupIconSource>?>(null, sets, recent, groupName) {
+        this.value = withContext(Dispatchers.Default) { IconRecommendations.sources(sets, recent, groupName) }
+    }
+    val sources = loadedSources.orEmpty()
+    var sourceKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val source = sources.firstOrNull { it.key == sourceKey }
+        ?: sources.firstOrNull { it.key == IconRecommendations.initialKey(sources, value) }
+    val labels = remember(sets) { sets.flatMap { it.icons }.associate { it.url to IconRecommendations.label(it) } }
+    fun label(icon: String): String = labels[icon] ?: IconRecommendations.label(IconRecommendations.record(icon))
+    val shown = source?.icons.orEmpty().filter { query.isBlank() || IconRecommendations.label(it).contains(query, true) }
     ProfileEditorPage(onDismissRequest = onDismiss, title = { Text("图标") }, backTag = "group_icon_back",
         confirmButton = {
             IconButton(onClick = { try { picker.launch("image/*") } catch (_: Exception) { error = "无法打开图片选择器，请重试" } }, enabled = !reading, modifier = Modifier.testTag("group_icon_local")) { Icon(Icons.Outlined.Image, "本地图片") }
@@ -115,32 +134,37 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, candidates
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().testTag("group_icon_search"), label = { Text("搜索图标") }, singleLine = true)
                 error?.takeUnless { link }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
-                if (reading) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (reading || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (sources.isNotEmpty()) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    sources.forEach { item -> FilterChip(source?.key == item.key, onClick = { sourceKey = item.key },
+                        label = { Text(item.label) }, modifier = Modifier.testTag("group_icon_source_${item.key}")) }
+                }
                 if (value.isNotBlank()) Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = MaterialTheme.shapes.medium) {
                     Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         ProfileGroupIcon(value, groupName, Modifier.size(40.dp))
                         Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
                             Text(label(value), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text("当前图标", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(sets.firstOrNull { set -> set.icons.any { it.url == value } }?.name ?: "当前图标", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         IconButton(onClick = { onSelect("") }, modifier = Modifier.testTag("group_icon_remove")) { Icon(Icons.Outlined.RemoveCircleOutline, "移除图标") }
                     }
                 }
-                if (shown.isEmpty()) Text(if (query.isBlank()) "暂无图标，可添加图标地址或选择本地图片" else "没有匹配的图标",
+                if (shown.isEmpty() && loadedSources != null) Text(if (query.isBlank()) "暂无图标，可添加图标地址或选择本地图片" else "没有匹配的图标",
                     Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 else {
-                    Text("最近使用与配置图标", style = MaterialTheme.typography.titleSmall)
                     LazyVerticalGrid(GridCells.Adaptive(72.dp), modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(shown, key = { it }) { icon ->
+                        items(shown, key = { it.url }) { icon ->
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Surface(onClick = { choose(icon) }, shape = MaterialTheme.shapes.medium,
-                                    color = if (icon == value) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    modifier = Modifier.size(56.dp).testTag("group_icon_choice_${icons.indexOf(icon)}")) {
-                                    Box(contentAlignment = Alignment.Center) { ProfileGroupIcon(icon, groupName, Modifier.size(40.dp)) }
+                                Surface(shape = MaterialTheme.shapes.medium,
+                                    color = if (icon.url == value) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    modifier = Modifier.size(56.dp).testTag("group_icon_choice_${source?.icons?.indexOf(icon)}")
+                                        .semantics { selected = icon.url == value }.combinedClickable(onClick = { choose(icon.url) },
+                                            onLongClick = if (source?.key == IconRecommendations.RECOMMENDED && icon.url in recent) ({ deleteRecord = icon.url }) else null)) {
+                                    Box(contentAlignment = Alignment.Center) { ProfileGroupIcon(icon.url, IconRecommendations.label(icon), Modifier.size(40.dp)) }
                                 }
-                                Text(label(icon), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall)
-                                if (icon in recent) IconButton(onClick = { deleteRecord = icon }, modifier = Modifier.size(40.dp)) { Icon(Icons.Outlined.Close, "删除最近图标记录", Modifier.size(16.dp)) }
+                                Text(IconRecommendations.label(icon), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall)
+                                if (source?.key == IconRecommendations.RECOMMENDED && icon.url in recent) IconButton(onClick = { deleteRecord = icon.url }, modifier = Modifier.size(40.dp)) { Icon(Icons.Outlined.Close, "删除最近图标记录", Modifier.size(16.dp)) }
                             }
                         }
                     }

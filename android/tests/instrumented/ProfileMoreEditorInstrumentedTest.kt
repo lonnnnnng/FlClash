@@ -13,7 +13,7 @@ import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 
-/** 作者 long：一次走完整页草稿流程，确认子页和 YAML 不会在父页保存前写入配置。 */
+/** 作者 long：一次走完整页草稿流程，验证逐项保存、有效YAML返回保存和失败草稿保护。 */
 class ProfileMoreEditorInstrumentedTest {
     @get:Rule val compose = createComposeRule()
     private var dark by mutableStateOf(false)
@@ -22,6 +22,7 @@ class ProfileMoreEditorInstrumentedTest {
     private var savedNtp: ProfileNtpOverrides? = null
     private var savedSniffer: ProfileSnifferOverrides? = null
     private var exits = 0
+    private var reject = false
 
     @Test fun ntpAddsDefaultsValidatesEditsAndSavesOnlySelectedFields() {
         render()
@@ -35,8 +36,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_port_value").performTextReplacement("124")
         compose.onNodeWithTag("more_value_confirm").performClick()
         compose.onNodeWithTag("more_remove_interval").performScrollTo().performClick()
-        compose.runOnIdle { assertNull(savedNtp) }
-        compose.onNodeWithTag("profile_more_editor_save").performClick()
+        compose.onNodeWithTag("profile_more_editor_save").assertDoesNotExist()
         compose.runOnIdle {
             val saved = checkNotNull(savedNtp)
             assertEquals(true, saved.enable); assertEquals(124, saved.port)
@@ -53,26 +53,25 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_yaml_confirm").performClick()
         waitGone("more_yaml_confirm")
         compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
+        compose.onNodeWithTag("more_protocol_ports").performClick()
         compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("8000-9000", substring = true)
-        compose.onNodeWithTag("more_protocol_destination_default").performScrollTo().performClick()
-        compose.onNodeWithTag("more_value_confirm").performClick()
-        compose.onNodeWithTag("profile_more_editor_save").performClick()
+        compose.onNodeWithTag("more_value_back").performClick()
+        compose.onNodeWithTag("more_protocol_destination").performClick()
+        compose.onNodeWithTag("more_protocol_destination_default").performClick()
+        waitGone("more_protocol_destination_default")
+        compose.onNodeWithTag("more_protocol_back").performClick()
         compose.runOnIdle {
             val saved = checkNotNull(savedSniffer)
-            assertEquals(false, saved.enable); assertEquals(emptyList<String>(), saved.skipDomain)
+            assertEquals(false, saved.enable); assertNull(saved.skipDomain)
             assertEquals(listOf("geoip:cn", "rule-set:local"), saved.skipSrcAddress)
             assertNull(saved.sniff?.get("HTTP")?.overrideDestination)
             assertEquals(listOf("80", "8000-9000"), saved.sniff?.get("HTTP")?.ports)
         }
         compose.onNodeWithTag("more_remove_sniff.HTTP").performScrollTo().performClick()
-        compose.onNodeWithTag("profile_more_editor_save").performClick()
         compose.runOnIdle { assertNull(savedSniffer?.sniff) }
         yaml("sniff: {}")
         waitGone("more_yaml_confirm")
-        compose.onNodeWithTag("profile_more_protocols_cleared").assertIsDisplayed()
-        compose.onNodeWithTag("profile_more_editor_save").performClick()
-        compose.runOnIdle { assertEquals(emptyMap<String, Any>(), savedSniffer?.sniff) }
-        compose.onNodeWithText("恢复协议继承").performClick()
+        compose.runOnIdle { assertNull(savedSniffer?.sniff) }
         compose.onNodeWithTag("profile_more_empty").assertIsDisplayed()
     }
 
@@ -89,22 +88,78 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("profile_more_yaml").performClick()
         compose.onNodeWithTag("more_yaml_content").performTextReplacement("port: 999")
         compose.onNodeWithTag("more_yaml_back").performClick()
-        compose.onNodeWithText("放弃").performClick()
-        compose.onNodeWithTag("more_edit_port").assertTextContains("123", substring = true)
-        compose.onNodeWithTag("profile_more_editor_back").performClick()
+        waitGone("more_yaml_confirm")
+        compose.onNodeWithTag("more_edit_port").assertTextContains("999", substring = true)
+        compose.runOnIdle { assertEquals(999, savedNtp?.port) }
+        compose.onNodeWithTag("profile_more_yaml").performClick()
+        compose.onNodeWithTag("more_yaml_content").performTextReplacement("port: 0")
+        compose.onNodeWithTag("more_yaml_back").performClick()
+        compose.onNodeWithText("放弃 YAML 修改？").assertIsDisplayed()
         compose.onNodeWithText("继续编辑").performClick()
+        compose.onNodeWithTag("more_yaml_content").assertTextContains("port: 0")
+        compose.onNodeWithTag("more_yaml_back").performClick()
+        compose.onNodeWithText("放弃", substring = false).performClick()
         compose.onNodeWithTag("profile_more_reset").performScrollTo().performClick()
         compose.onNodeWithText("取消").performClick()
         compose.onNodeWithTag("more_field_port").assertExists()
         compose.onNodeWithTag("profile_more_editor_back").performClick()
-        compose.onNodeWithText("放弃").performClick()
-        compose.runOnIdle { assertEquals(1, exits); assertNull(savedNtp); assertNull(savedSniffer) }
+        compose.onNodeWithText("放弃未保存的修改？").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(1, exits); assertEquals(999, savedNtp?.port) }
+    }
+
+    @Test fun failedFieldSaveRetainsInputAndRetriesWithoutParentSave() {
+        render(); add("port")
+        compose.onNodeWithTag("more_open_port").performClick()
+        compose.onNodeWithTag("more_port_value").performTextReplacement("124")
+        compose.runOnIdle { reject = true }
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.onNodeWithTag("more_value_error").assertTextContains("保存失败，请重试")
+        compose.onNodeWithTag("more_port_value").assertTextContains("124")
+        compose.runOnIdle { assertEquals(123, savedNtp?.port); reject = false }
+        capture("more_field_save_failure")
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        waitGone("more_value_confirm")
+        compose.runOnIdle { assertEquals(124, savedNtp?.port) }
+        compose.onNodeWithTag("profile_more_editor_save").assertDoesNotExist()
+        compose.onNodeWithTag("more_open_port").performClick()
+        compose.onNodeWithTag("more_port_value").performTextClearance()
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        waitGone("more_value_confirm")
+        compose.onNodeWithTag("profile_more_empty").assertIsDisplayed()
+    }
+
+    @Test fun protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol() {
+        section = "sniffer"; render(); add("sniff.HTTP")
+        compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
+        compose.onNodeWithTag("more_protocol_ports").assertTextContains("默认端口", substring = true)
+        compose.onNodeWithTag("more_protocol_destination").performClick()
+        compose.runOnIdle { reject = true }
+        compose.onNodeWithTag("more_protocol_destination_false").performClick()
+        compose.onNodeWithTag("more_protocol_error").assertTextContains("保存失败，请重试")
+        compose.runOnIdle { assertNull(savedSniffer?.sniff?.get("HTTP")?.overrideDestination); reject = false }
+        compose.onNodeWithTag("more_protocol_destination_false").performClick()
+        waitGone("more_protocol_destination_false")
+        compose.onNodeWithTag("more_protocol_ports").performClick()
+        compose.onNodeWithTag("sniff_HTTP_ports").performTextReplacement("8080\n8000-9000")
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        waitGone("more_value_confirm")
+        compose.onNodeWithTag("more_protocol_destination").assertTextContains("禁用", substring = true)
+        compose.runOnIdle { assertEquals(listOf("8080", "8000-9000"), savedSniffer?.sniff?.get("HTTP")?.ports) }
+        compose.onNodeWithTag("more_protocol_ports").performClick()
+        compose.onNodeWithTag("sniff_HTTP_ports").performTextClearance()
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        waitGone("more_value_confirm")
+        compose.onNodeWithTag("more_protocol_ports").assertTextContains("默认端口", substring = true)
+        compose.runOnIdle {
+            assertEquals(emptyList<String>(), savedSniffer?.sniff?.get("HTTP")?.ports)
+            assertEquals(false, savedSniffer?.sniff?.get("HTTP")?.overrideDestination)
+        }
     }
 
     @Test fun morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes() {
         render()
         for (theme in listOf("light", "dark")) {
-            compose.runOnIdle { dark = theme == "dark"; section = "ntp"; state = state.copy(profile = Profile.custom(if (dark) 922 else 921, "更多设置")) }
+            compose.runOnIdle { dark = theme == "dark"; section = "ntp"; state = ProfileMoreEditorUiState(Profile.custom(if (dark) 922 else 921, "更多设置")) }
             capture("more_ntp_empty_$theme")
             compose.onNodeWithTag("profile_more_add").performClick()
             capture("more_ntp_add_$theme")
@@ -120,7 +175,10 @@ class ProfileMoreEditorInstrumentedTest {
             add("enable", "sniff.HTTP")
             compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
             capture("more_sniffer_protocol_$theme")
+            compose.onNodeWithTag("more_protocol_ports").performClick()
+            capture("more_sniffer_ports_$theme")
             compose.onNodeWithTag("more_value_back").performClick()
+            compose.onNodeWithTag("more_protocol_back").performClick()
             compose.onNodeWithTag("profile_more_yaml").performClick()
             capture("more_sniffer_yaml_$theme")
             compose.onNodeWithTag("more_yaml_back").performClick()
@@ -130,7 +188,10 @@ class ProfileMoreEditorInstrumentedTest {
     private fun render() {
         assertPortraitDefaultFontConfiguration()
         compose.setContent { KClashTheme(darkTheme = dark) {
-            ProfileMoreEditor(state, section, "", { exits++ }) { ntp, sniffer -> savedNtp = ntp; savedSniffer = sniffer }
+            ProfileMoreEditor(state, section, "", { exits++ }) { ntp, sniffer ->
+                if (reject) state = state.copy(error = "保存失败，请重试")
+                else { savedNtp = ntp; savedSniffer = sniffer; state = state.copy(ntp = ntp, sniffer = sniffer, revision = state.revision + 1, error = null) }
+            }
         } }
     }
     private fun add(vararg keys: String) {

@@ -81,6 +81,53 @@ class ScriptsViewModelTest {
     }
 
     @Test
+    fun `late read cannot reopen dismissed editor and read failure cannot save template`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val script = Script(11L, "原脚本")
+        val store = FakeScriptStore(script, "original")
+        store.readGate = kotlinx.coroutines.CompletableDeferred()
+        val vm = ScriptsViewModel(store, FakeScriptRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        vm.openEditor(script)
+        vm.closeEditor()
+        store.readGate!!.complete(Unit)
+        advanceUntilIdle()
+        assertFalse(vm.editorState.value.isOpen)
+        store.readFailure = true
+        vm.openEditor(script)
+        advanceUntilIdle()
+        assertTrue(vm.editorState.value.loadFailed)
+        vm.save("错误保存", "replacement")
+        advanceUntilIdle()
+        assertEquals("original", store.contents[script.id])
+    }
+
+    @Test
+    fun `file picker is single claim and drafts survive failed stale save`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val store = FakeScriptStore()
+        val vm = ScriptsViewModel(store, FakeScriptRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        val token = vm.beginFilePick()
+        assertEquals(null, vm.beginFilePick())
+        vm.completeFilePick(token) { "hello.js" to "original".toByteArray() }
+        vm.completeFilePick(token) { error("duplicate callback") }
+        advanceUntilIdle()
+        assertEquals(1, store.scripts.value.size)
+        val original = store.scripts.value.single()
+        vm.openEditor(original)
+        advanceUntilIdle()
+        vm.editDraft("draft", "edited")
+        assertEquals("original", vm.editorState.value.originalContent)
+        store.update(original.id, "external", "latest")
+        vm.save("draft", "edited")
+        advanceUntilIdle()
+        assertTrue(vm.editorState.value.isOpen)
+        assertFalse(vm.editorState.value.isSaving)
+        assertEquals("edited", vm.editorState.value.content)
+        assertTrue(vm.editorState.value.error != null)
+        assertEquals("latest", store.contents[original.id])
+    }
+
+    @Test
     fun `remote script import and sync delegate to the store`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val store = FakeScriptStore()
@@ -131,13 +178,35 @@ private class FakeScriptStore(
         return script
     }
 
-    override suspend fun readContent(id: Long): String = contents[id] ?: error("脚本内容不存在")
+    var readGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+    var readFailure: Boolean = false
+    override suspend fun readContent(id: Long): String {
+        readGate?.await()
+        check(!readFailure) { "读取失败" }
+        return contents[id] ?: error("脚本内容不存在")
+    }
 
     override suspend fun update(id: Long, label: String, content: String): Script {
         val current = mutableScripts.value.single { it.id == id }
         contents[id] = content
         val updated = current.copy(label = label, lastUpdateAt = 2L)
         mutableScripts.value = mutableScripts.value.map { if (it.id == id) updated else it }
+        return updated
+    }
+
+    override suspend fun importFile(fileName: String, bytes: ByteArray): Script =
+        create(com.lonnnnnng.flclash.data.uniqueScriptLabel(fileName.substringBeforeLast('.'), scripts.value.map { it.label }), com.lonnnnnng.flclash.data.decodeScriptBytes(bytes))
+
+    override suspend fun updateIfUnchanged(expected: Script, label: String, content: String): Script {
+        check(scripts.value.single { it.id == expected.id } == expected) { "脚本已变化" }
+        return update(expected.id, label, content)
+    }
+
+    override suspend fun updateRemote(expected: Script, url: String): Script {
+        check(scripts.value.single { it.id == expected.id } == expected)
+        val updated = expected.copy(url = url, lastUpdateAt = 4L)
+        mutableScripts.value = mutableScripts.value.map { if (it.id == expected.id) updated else it }
+        contents[expected.id] = "new remote"
         return updated
     }
 

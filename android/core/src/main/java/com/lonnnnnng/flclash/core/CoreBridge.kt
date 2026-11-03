@@ -89,6 +89,30 @@ class CoreBridge {
         return List(result.length()) { result.getString(it) }
     }
 
+    suspend fun validateProxies(definitions: List<JsonObject>): List<String> {
+        // 作者 long：复用 Go 协议解析器校验单节点，不为草稿切换或启动当前配置。
+        val values = invoke("validateProxies", JSONArray().apply { definitions.forEach { put(JSONObject(it.toString())) } }).getJSONArray("result")
+        check(values.length() == definitions.size) { "核心节点校验结果不完整" }
+        return List(values.length()) { values.getString(it) }
+    }
+
+    suspend fun encodeShareLinks(definitions: List<JsonObject>): List<String> {
+        val values = invoke("encodeShareLinks", JSONArray().apply { definitions.forEach { put(JSONObject(it.toString())) } }).getJSONArray("result")
+        check(values.length() == definitions.size) { "核心分享链接结果不完整" }
+        return List(values.length()) { values.getString(it) }
+    }
+
+    suspend fun decodeShareLinks(links: List<String>): List<List<JsonObject>> {
+        val values = invoke("decodeShareLinks", JSONArray(links)).getJSONArray("result")
+        check(values.length() == links.size) { "核心分享链接结果不完整" }
+        return List(values.length()) { index -> values.getJSONArray(index).let { rows ->
+            List(rows.length()) { JsonParser.parseString(rows.getJSONObject(it).toString()).asJsonObject }
+        } }
+    }
+
+    suspend fun getProxyDefinition(name: String): JsonObject? = invoke("getProxyDefinition", name).optJSONObject("result")
+        ?.let { JsonParser.parseString(it.toString()).asJsonObject }
+
     suspend fun decryptConfig(path: String, ageSecretKey: String): String {
         // 作者 long：解密是无核心生命周期副作用的文件转换，复用现有 Go method，不启动或重载 Mihomo。
         val response = invoke("decryptConfig", JSONObject().put("path", path).put("age-secret-key", ageSecretKey))
@@ -145,6 +169,17 @@ class CoreBridge {
 
     suspend fun updateAllowLan(value: Boolean) {
         parseMessageResult(invoke("updateConfig", JSONObject().put("allow-lan", value)).optString("result", ""), "update_lan_failed")
+    }
+
+    suspend fun updateGeoSettings(autoUpdate: Boolean, intervalHours: Int, urls: Map<String, String>) {
+        val arguments = JSONObject().put("geo-auto-update", autoUpdate).put("geo-update-interval", intervalHours)
+            .put("geox-url", JSONObject().apply { urls.forEach { (type, url) -> put(type, url) } })
+        parseMessageResult(invoke("updateConfig", arguments).optString("result", ""), "update_geo_settings_failed")
+    }
+
+    suspend fun updateGeoData(type: String) {
+        // 作者 long：空响应只表示下载已受理，最终结果由 geoUpdate 事件确认。
+        parseMessageResult(invoke("updateGeoData", type).optString("result", ""), "update_geo_failed")
     }
 
     suspend fun getProxyGroups(): ProxyGroupsSnapshot {
@@ -301,6 +336,53 @@ class CoreBridge {
         parseMessageResult(result, "provider_update_error")
     }
 
+    private fun providerScope(name: String, stamp: CoreRouteStamp) = JSONObject().put("name", name)
+        .put("core-epoch", stamp.epoch).put("route-version", stamp.version)
+
+    suspend fun readExternalProvider(name: String, stamp: CoreRouteStamp): CoreProviderDocument {
+        val result = invoke("readExternalProviderScoped", providerScope(name, stamp)).getJSONObject("result")
+        return parseProviderDocument(JsonParser.parseString(result.toString()).asJsonObject).also { require(it.name == name) }
+    }
+
+    suspend fun sideLoadExternalProvider(name: String, content: String, digest: String, stamp: CoreRouteStamp) {
+        require(content.toByteArray(Charsets.UTF_8).size <= 8 * 1024 * 1024 && '\u0000' !in content)
+        val result = invoke("sideLoadExternalProviderScoped", providerScope(name, stamp).put("data", content).put("digest", digest)).get("result")
+        check(result is String)
+        parseMessageResult(result, "provider_content_error")
+    }
+
+    suspend fun updateExternalProviders(names: List<String>, stamp: CoreRouteStamp): List<CoreProviderUpdateResult> {
+        require(names.isNotEmpty() && names.distinct().size == names.size)
+        val result = invoke("updateExternalProvidersScoped", providerScope("", stamp).put("names", JSONArray(names))).getJSONArray("result")
+        return parseProviderUpdateResults(JsonParser.parseString(result.toString()).asJsonArray, names)
+    }
+
+    internal fun parseProviderDocument(raw: JsonObject): CoreProviderDocument {
+        fun text(key: String): String {
+            val value = raw.get(key)
+            require(value != null && value.isJsonPrimitive && value.asJsonPrimitive.isString)
+            return value.asString
+        }
+        val name = text("name"); val kind = text("kind"); val content = text("content"); val digest = text("digest")
+        require(name.isNotBlank() && kind in setOf("text", "mrs", "binary"))
+        require(digest == "missing" || digest.matches(Regex("[0-9a-f]{64}")))
+        require(content.toByteArray(Charsets.UTF_8).size <= 8 * 1024 * 1024)
+        return CoreProviderDocument(name, kind, content, digest)
+    }
+
+    internal fun parseProviderUpdateResults(raw: com.google.gson.JsonArray, names: List<String>): List<CoreProviderUpdateResult> {
+        require(raw.size() == names.size)
+        return raw.mapIndexed { index, value ->
+            val row = value.asJsonObject
+            fun text(key: String): String = row.get(key).let {
+                require(it != null && it.isJsonPrimitive && it.asJsonPrimitive.isString); it.asString
+            }
+            val name = text("name"); val code = text("code")
+            require(name == names[index] && (code.isEmpty() || code.matches(Regex("[a-z_]{1,80}"))))
+            CoreProviderUpdateResult(name, code)
+        }
+    }
+
     internal fun parseExternalProviders(raw: com.google.gson.JsonArray?): List<CoreExternalProvider> {
         parseProviderCounts(raw)
         return requireNotNull(raw).map { element ->
@@ -311,9 +393,24 @@ class CoreBridge {
                 return value.asString
             }
             CoreExternalProvider(text("name"), text("type"), text("vehicle-type"), item.get("count").asBigDecimal.longValueExact(),
-                parseProviderTime(text("update-at")))
+                parseProviderTime(text("update-at")), parseProviderSubscription(item.get("subscription-info")),
+                item.get("path")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString?.takeIf(String::isNotBlank)?.let {
+                    // 作者 long：资源仓库仅比较路径指纹来识别自己登记的文件；原始核心路径不能进入页面状态。
+                    java.security.MessageDigest.getInstance("SHA-256").digest(it.toByteArray(Charsets.UTF_8)).joinToString("") { byte -> "%02x".format(byte) }
+                })
         }
     }
+
+    private fun parseProviderSubscription(value: com.google.gson.JsonElement?): CoreProviderSubscription? = runCatching {
+        val raw = requireNotNull(value).asJsonObject
+        fun number(key: String): Long = raw.get(key).let {
+            require(it != null && it.isJsonPrimitive && it.asJsonPrimitive.isNumber)
+            it.asBigDecimal.longValueExact().also { number -> require(number >= 0) }
+        }
+        val total = number("Total"); require(total > 0)
+        val expiry = number("Expire").takeIf { it in 1..Long.MAX_VALUE / 1000 }?.times(1000)
+        CoreProviderSubscription(number("Upload"), number("Download"), total, expiry)
+    }.getOrNull()
 
     internal fun parseProviderTime(value: String): Long? {
         // 作者 long：Go 的零时间表示尚未更新；兼容 API 24 并将纳秒截为毫秒，不依赖 API 26 的 java.time。
@@ -367,8 +464,8 @@ class CoreBridge {
         return CoreMemoryStats(bytes("rss"), bytes("heapInuse"), bytes("heapIdle"), bytes("stackInuse"), bytes("runtimeOther"))
     }
 
-    suspend fun getTraffic(): CoreTraffic =
-        parseTrafficResponse(invoke("getTraffic", false).optJSONObject("result"))
+    suspend fun getTraffic(onlyProxy: Boolean = false): CoreTraffic =
+        parseTrafficResponse(invoke("getTraffic", onlyProxy).optJSONObject("result"))
 
     suspend fun outboundIp(urls: List<String>, timeoutMs: Long, direct: Boolean = false): CoreIpResponse =
         outboundIpForProxy(urls, timeoutMs, if (direct) "DIRECT" else "")
@@ -413,8 +510,12 @@ class CoreBridge {
         )
     }
 
-    suspend fun getTotalTraffic(): CoreTraffic =
-        parseTrafficResponse(invoke("getTotalTraffic", false).optJSONObject("result"))
+    suspend fun getTotalTraffic(onlyProxy: Boolean = false): CoreTraffic =
+        parseTrafficResponse(invoke("getTotalTraffic", onlyProxy).optJSONObject("result"))
+
+    suspend fun closeConnections() {
+        check(invoke("closeConnections", JSONObject()).optBoolean("result", false)) { "关闭旧连接失败" }
+    }
 
     suspend fun getConnectionCount(): Int =
         invoke("getConnectionCount", JSONObject()).optInt("result", 0).coerceAtLeast(0)
@@ -508,6 +609,7 @@ class CoreBridge {
         return parseProxyGroupsPayload(names, payloads).copy(
             // 作者 long：all 只列导航分组，叶子协议在完整 proxies map 中；两者分开保存，不能把叶子加入组导航。
             proxyTypes = parseProxyTypes(JsonParser.parseString(proxies.toString()).asJsonObject),
+            providerProxies = parseProviderProxies(JsonParser.parseString(proxies.toString()).asJsonObject),
         )
     }
 
@@ -519,6 +621,12 @@ class CoreBridge {
             if (!type.isNullOrBlank()) put(name, type)
         }
     }
+
+    internal fun parseProviderProxies(proxies: JsonObject): Set<String> = proxies.entrySet().mapNotNull { (name, value) ->
+        // 作者 long：菜单只需要知道节点是否来自Provider，不向页面传递资源名称或完整节点定义。
+        val provider = value.takeIf { it.isJsonObject }?.asJsonObject?.get("provider-name")
+        name.takeIf { provider?.isJsonPrimitive == true && provider.asJsonPrimitive.isString && provider.asString.isNotBlank() }
+    }.toSet()
 
     internal fun parseProxyGroupsPayload(
         names: List<String>,
@@ -804,6 +912,12 @@ class CoreBridge {
                         ),
                     )
                 }
+                "geoUpdate" -> {
+                    val data = raw.objectValue("data") ?: return@runCatching null
+                    val resource = data.string("type")
+                    if (resource !in setOf("MMDB", "ASN", "GEOIP", "GEOSITE")) return@runCatching null
+                    CoreEvent.GeoUpdate(resource, data.bool("updating"), data.bool("skipped"), data.string("error"))
+                }
                 "delay" -> {
                     val data = raw.objectValue("data") ?: return@runCatching null
                     CoreEvent.Delay(
@@ -895,6 +1009,7 @@ data class CoreEventFlowStats(
 )
 
 sealed interface CoreEvent {
+    data class GeoUpdate(val type: String, val updating: Boolean, val skipped: Boolean = false, val error: String = "") : CoreEvent
     data class Request(val connection: CoreConnection) : CoreEvent
 
     data class RequestTraffic(val updates: List<CoreTrafficUpdate>) : CoreEvent
@@ -932,6 +1047,7 @@ data class CoreDnsQuery(
 data class ProxyGroupsSnapshot(
     val groups: List<ProxyGroupInfo>,
     val proxyTypes: Map<String, String> = emptyMap(),
+    val providerProxies: Set<String> = emptySet(),
 )
 
 data class ProxyGroupInfo(

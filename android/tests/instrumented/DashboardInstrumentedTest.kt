@@ -87,7 +87,7 @@ class DashboardInstrumentedTest {
         composeRule.runOnIdle { assertEquals(1, composeRule.activity.statisticsRetries) }
         composeRule.activityRule.scenario.onActivity { it.showProfileStatistics("empty") }
         (0..3).forEach { index -> composeRule.onNodeWithTag("profile_statistics_value_" + index, useUnmergedTree = true).assertTextEquals("0") }
-        composeRule.onNodeWithTag("dashboard_profile_detail_preview").performScrollTo().performClick()
+        composeRule.onNodeWithTag("dashboard_profile_detail_preview").performClick()
         composeRule.onNodeWithTag("runtime_config_preview_loading").assertIsDisplayed()
     }
 
@@ -126,7 +126,7 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithTag("dashboard_stats_card").assertIsDisplayed()
         composeRule.onNodeWithText("3 个连接").assertDoesNotExist()
         composeRule.onNodeWithTag("dashboard_profile_card").assertIsDisplayed()
-        composeRule.onNodeWithTag("dashboard_profile_sync").assertIsNotEnabled()
+        composeRule.onNodeWithTag("dashboard_profile_sync").assertIsEnabled()
         composeRule.onNodeWithText("固定诊断样例").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_probe_card").assertDoesNotExist()
         composeRule.onNodeWithTag("always_on_vpn_card").assertDoesNotExist()
@@ -263,16 +263,20 @@ class DashboardInstrumentedTest {
         composeRule.activityRule.scenario.onActivity { it.setDarkTheme(false); it.finishConfigPreview(true, applied = true) }
         composeRule.onNodeWithTag("runtime_config_preview_origin").assertTextEquals("当前核心加载的配置，只读。模式和节点以当前选择为准。")
         recordNodePng("runtime_config_preview_light", "runtime_config_preview_sheet")
+        composeRule.onNodeWithTag("runtime_config_preview_find").performClick()
+        composeRule.onNodeWithTag("runtime_config_preview_query").performTextInput("mixed-port")
+        composeRule.onNodeWithTag("runtime_config_preview_next").performClick()
+        composeRule.onNodeWithText("1 行匹配").assertExists()
         composeRule.onNodeWithTag("runtime_config_preview_close").performClick()
         composeRule.onNodeWithTag("runtime_config_preview_sheet").assertDoesNotExist()
     }
 
     @Test
-    fun dashboardRunningProfileDetailRemainsReadableAndDisablesSync() {
+    fun dashboardRunningProfileDetailRemainsReadableAndAllowsSync() {
         composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
         composeRule.onNodeWithTag("dashboard_profile_card").performScrollTo().performClick()
         composeRule.onNodeWithTag("dashboard_profile_detail_name").assertTextEquals("固定诊断样例")
-        composeRule.onNodeWithTag("dashboard_profile_detail_sync").assertIsNotEnabled()
+        composeRule.onNodeWithTag("dashboard_profile_detail_sync").assertIsEnabled()
         composeRule.onNodeWithTag("dashboard_profile_detail_open_profiles").performClick()
         composeRule.runOnIdle { assertEquals(1, composeRule.activity.profilesNavigationCount) }
     }
@@ -681,6 +685,9 @@ class DashboardInstrumentedTest {
 
     private fun recordWindowPng(name: String) {
         composeRule.waitForIdle()
+        // 作者 long：系统Window的主题过渡不受Compose测试时钟控制，等绘制稳定后再采图，避免将半透明中间帧当成深色页面。
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        android.os.SystemClock.sleep(450)
         val bitmap = checkNotNull(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
         val png = ByteArrayOutputStream().also { check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)) }.toByteArray()
         recordVisualPng(name, png)

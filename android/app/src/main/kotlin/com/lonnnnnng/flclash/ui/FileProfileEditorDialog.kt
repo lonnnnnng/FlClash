@@ -26,18 +26,23 @@ internal fun FileProfileEditorDialog(
     onClearReplacement: () -> Unit,
     onSave: (String?, String) -> Unit,
     onSaveWithLabel: ((String?, String, String) -> Unit)? = null,
+    onOpenDocument: (() -> Unit)? = null,
+    onMetadataChange: (String, String) -> Unit = { _, _ -> },
 ) {
     val profile = state.profile ?: return
     // 作者 long：正文和密钥只属于当前编辑会话，不写 SavedState；选择器只恢复“正在选择”标记以接收系统回调。
-    var content by remember(profile.id, state.content) { mutableStateOf(state.content) }
-    var key by remember(profile.id, profile.ageSecretKey) { mutableStateOf(profile.ageSecretKey) }
-    var label by rememberSaveable(profile.id) { mutableStateOf(profile.label) }
+    var content by remember(profile.id, state.content, state.draftContent) { mutableStateOf(state.draftContent ?: state.content) }
+    var key by remember(profile.id, profile.ageSecretKey) { mutableStateOf(state.draftAgeKey ?: profile.ageSecretKey) }
+    var label by rememberSaveable(profile.id) { mutableStateOf(state.draftLabel ?: profile.label) }
     var pickToken by rememberSaveable(profile.id) { mutableStateOf<Long?>(null) }
     val picking = pickToken != null
     var confirmDiscard by remember { mutableStateOf(false) }
     var showYaml by remember(profile.id) { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val activity = remember(context) { generateSequence(context) { (it as? android.content.ContextWrapper)?.baseContext }
+        .filterIsInstance<android.app.Activity>().firstOrNull() }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         val token = pickToken
         pickToken = null
@@ -45,7 +50,7 @@ internal fun FileProfileEditorDialog(
     }
     ClearAgeInputOnBackground {
         // 作者 long：选择器可能在下一帧重组前触发 ON_STOP，必须现场读取 token；捕获上一帧的 picking 会把系统选择误判为普通后台。
-        if (pickToken == null) { key = ""; onDismiss() }
+        if (pickToken == null && activity?.isChangingConfigurations != true && !state.isSaving) { key = ""; onDismiss() }
     }
     val replacement = state.replacement
     val dirty = content != state.content || key != profile.ageSecretKey || replacement != null || label != profile.label
@@ -64,9 +69,9 @@ internal fun FileProfileEditorDialog(
             Column(Modifier.fillMaxWidth().testTag("file_profile_editor_form")
                 .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 ProfileFormSection {
-                    OutlinedTextField(label, { label = it.take(64) }, enabled = !locked, singleLine = true,
+                    OutlinedTextField(label, { label = it.take(64); onMetadataChange(label, key) }, enabled = !locked, singleLine = true,
                         label = { Text("名称") }, modifier = Modifier.fillMaxWidth().testTag("file_profile_editor_label"))
-                    AgeSecretKeyField(key, { key = it }, !locked, "file_profile_editor_age_key")
+                    AgeSecretKeyField(key, { key = it; onMetadataChange(label, key) }, !locked, "file_profile_editor_age_key")
                 }
                 ProfileFormSection {
                 ProfileSectionRow(title = "从文件替换", detail = replacement?.name,
@@ -92,11 +97,12 @@ internal fun FileProfileEditorDialog(
                     }, color = if (replacement.isEncrypted || replacement.isValidYaml) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error)
                     TextButton(onClick = onClearReplacement, enabled = !locked, modifier = Modifier.testTag("file_profile_replacement_clear")) { Text("取消文件替换") }
                 } else {
-                    OutlinedButton(onClick = { showYaml = !showYaml }, enabled = !state.isSaving,
+                    OutlinedButton(onClick = { if (onOpenDocument != null) onOpenDocument() else showYaml = !showYaml }, enabled = !locked,
                         modifier = Modifier.testTag("file_profile_toggle_yaml")) { Text(if (showYaml) "收起原始 YAML" else "编辑原始 YAML") }
                     if (showYaml) OutlinedTextField(content, { content = it }, modifier = Modifier.fillMaxWidth().testTag("profile_editor_content"),
                         label = { Text("YAML") }, minLines = 5, maxLines = 10, enabled = !locked)
                 }
+                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("file_profile_editor_error")) }
                 }
             }
         },

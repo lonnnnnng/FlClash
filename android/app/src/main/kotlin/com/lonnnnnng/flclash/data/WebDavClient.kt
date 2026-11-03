@@ -66,6 +66,7 @@ class HttpWebDavClient(
         .followRedirects(false)
         .followSslRedirects(false)
         .build(),
+    private val generalSettingsStore: com.lonnnnnng.flclash.service.GeneralSettingsStore? = null,
 ) : WebDavClient {
     override suspend fun probe(endpoint: WebDavEndpoint) {
         withContext(Dispatchers.IO) {
@@ -134,18 +135,20 @@ class HttpWebDavClient(
         readBody: Boolean = false,
         accepted: (Int) -> Boolean,
     ): ByteArray? {
+        val settings = generalSettingsStore?.read()
+        val client = httpClient.withRequestPolicy(settings)
         var current = url
         repeat(MAX_REDIRECTS + 1) { attempt ->
             val requestBody = body?.toRequestBody(ZIP_MEDIA_TYPE)
             val requestBuilder = Request.Builder()
                 .url(current)
                 .method(method, requestBody)
-                .header("User-Agent", USER_AGENT)
+                .header("User-Agent", settings?.userAgent ?: USER_AGENT)
                 .header("Accept", "application/zip, application/octet-stream")
             basicAuthorization(endpoint)?.let { requestBuilder.header("Authorization", it) }
 
             val response = try {
-                httpClient.newCall(requestBuilder.build()).execute()
+                client.newCall(requestBuilder.build()).execute()
             } catch (error: IOException) {
                 throw networkFailure(error)
             }

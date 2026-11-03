@@ -36,27 +36,39 @@ internal fun RuleResourcesPage(
     onMove: (RuleResource, Int) -> Unit,
     onCloseEditor: () -> Unit,
     onSave: (String, String, String) -> Unit,
+    onImportUrls: (() -> Unit)? = null,
+    onReorder: ((List<String>) -> Unit)? = null,
 ) {
     var addMenu by remember { mutableStateOf(false) }
     var menuId by remember { mutableStateOf<String?>(null) }
     var query by rememberSaveable { mutableStateOf("") }
-    ProfileEditorPage(onDismissRequest = { if (!state.busy) onDismiss() }, title = { Text("规则资源") },
+    var sorting by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(state.rows.size) { if (state.rows.size < 2) sorting = false }
+    ProfileEditorPage(onDismissRequest = { if (!state.busy) { if (sorting) sorting = false else onDismiss() } }, title = { Text("规则资源") },
         backTag = "rule_resources_back",
         confirmButton = {
+            if (sorting) TextButton(onClick = { sorting = false }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_sort_done")) { Text("完成") }
+            else {
+            if (state.rows.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_sort")) { Icon(Icons.Outlined.Sort, "排序规则资源") }
             IconButton(onClick = onSyncAll, enabled = !state.busy && state.rows.any { it.url.isNotBlank() }) { Icon(Icons.Outlined.Sync, "更新全部规则资源") }
             Box {
                 IconButton(onClick = { addMenu = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_add")) { Icon(Icons.Outlined.Add, "添加资源") }
                 DropdownMenu(expanded = addMenu, onDismissRequest = { addMenu = false }) {
                     DropdownMenuItem(text = { Text("从头开始") }, onClick = { addMenu = false; onCreate(false) })
-                    DropdownMenuItem(text = { Text("从 URL 导入") }, onClick = { addMenu = false; onCreate(true) })
+                    DropdownMenuItem(text = { Text("从 URL 导入") }, onClick = { addMenu = false; if (onImportUrls != null) onImportUrls() else onCreate(true) })
                     DropdownMenuItem(text = { Text("从文件导入") }, onClick = { addMenu = false; onPickFile() })
                 }
+            }
             }
         }, text = {
             Column(Modifier.fillMaxSize().testTag("rule_resources_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (state.loading || state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 if (state.editor == null) state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 state.message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
+                if (sorting && onReorder != null) ResourceOrderList(state.rows.map {
+                    ResourceOrderItem(it.id, it.label, (if (it.url.isBlank()) "本地" else "远程") + " · " + it.behavior)
+                }, state.busy, "rule_resources", onReorder, Modifier.fillMaxWidth().weight(1f))
+                else {
                 OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索规则资源") }, modifier = Modifier.fillMaxWidth().testTag("rule_resources_search"),
                     leadingIcon = { Icon(Icons.Outlined.Search, null) }, trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, "清除搜索") } })
                 val rows = state.rows.filter { query.isBlank() || it.label.contains(query, true) }
@@ -89,6 +101,7 @@ internal fun RuleResourcesPage(
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
                     }
+                }
                 }
             }
         })

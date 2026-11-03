@@ -204,7 +204,7 @@ class VpnService : SystemVpnService(), ManagedService {
         addRoutes(
             routes = options::getIpv4RouteAddress,
             fallbackAddress = NET_ANY,
-            routeAll = options.routeAddress.isEmpty(),
+            routeAll = options.routeAll,
         )
 
         if (options.ipv6) {
@@ -217,7 +217,7 @@ class VpnService : SystemVpnService(), ManagedService {
             addRoutes(
                 routes = options::getIpv6RouteAddress,
                 fallbackAddress = NET_ANY6,
-                routeAll = options.routeAddress.isEmpty(),
+                routeAll = options.routeAll,
             )
         }
     }

@@ -55,6 +55,9 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    @Provides @Singleton
+    fun provideOnDemandSettingsStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.service.OnDemandSettingsStore =
+        com.lonnnnnng.flclash.service.SharedPreferencesOnDemandSettingsStore(context)
     @Provides fun provideServiceExitStore(repository: com.lonnnnnng.flclash.data.ServiceExitRepository): com.lonnnnnng.flclash.data.ServiceExitStore = repository
     @Provides fun provideProfileStatisticsRuntime(manager: CoreRuntimeManager): com.lonnnnnng.flclash.service.ProfileStatisticsRuntime = manager
     @Provides fun provideServiceStatusRuntime(manager: CoreRuntimeManager): com.lonnnnnng.flclash.service.ServiceStatusRuntime = manager
@@ -63,6 +66,18 @@ object AppModule {
     @Provides @Singleton
     fun provideVpnSettingsStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.service.VpnSettingsStore =
         com.lonnnnnng.flclash.service.SharedPreferencesVpnSettingsStore(context)
+
+    @Provides @Singleton
+    fun provideNetworkSettingsStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.service.NetworkSettingsStore =
+        com.lonnnnnng.flclash.service.SharedPreferencesNetworkSettingsStore(context)
+
+    @Provides @Singleton
+    fun provideGlobalDnsSettingsStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.service.GlobalDnsSettingsStore =
+        com.lonnnnnng.flclash.service.SharedPreferencesGlobalDnsSettingsStore(context)
+
+    @Provides @Singleton
+    fun provideGeneralSettingsStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.service.GeneralSettingsStore =
+        com.lonnnnnng.flclash.service.SharedPreferencesGeneralSettingsStore(context)
 
     @Provides
     fun provideLocalNetworkSource(source: com.lonnnnnng.flclash.data.AndroidLocalNetworkSource): com.lonnnnnng.flclash.data.LocalNetworkSource = source
@@ -101,7 +116,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSubscriptionClient(): SubscriptionClient = HttpSubscriptionClient()
+    fun provideSubscriptionClient(settings: com.lonnnnnng.flclash.service.GeneralSettingsStore): SubscriptionClient = HttpSubscriptionClient(settings)
 
     @Provides
     @Singleton
@@ -157,7 +172,18 @@ object AppModule {
     fun provideBackupRepository(
         @ApplicationContext context: Context,
         database: KClashDatabase,
-    ): BackupRepository = BackupRepository(database, context.filesDir)
+        geoSettingsStore: com.lonnnnnng.flclash.data.AndroidGeoResourceSettingsStore,
+        filterValidator: com.lonnnnnng.flclash.data.ProxyGroupFilterValidator,
+        general: com.lonnnnnng.flclash.service.GeneralSettingsStore,
+        network: com.lonnnnnng.flclash.service.NetworkSettingsStore,
+        dns: com.lonnnnnng.flclash.service.GlobalDnsSettingsStore,
+        vpn: com.lonnnnnng.flclash.service.VpnSettingsStore,
+        lan: com.lonnnnnng.flclash.service.LanSharingStore,
+        runtimeManager: CoreRuntimeManager,
+        backupUi: com.lonnnnnng.flclash.data.BackupUiPreferences,
+        onDemand: com.lonnnnnng.flclash.service.OnDemandSettingsStore,
+    ): BackupRepository = BackupRepository(database, context.filesDir, geoSettingsStore = geoSettingsStore, filterValidator = filterValidator,
+        applicationSettingsStore = com.lonnnnnng.flclash.data.ApplicationSettingsBackupStore(general, network, dns, vpn, lan, backupUi, onDemand), runtimeManager = runtimeManager)
 
     @Provides
     @Singleton
@@ -166,7 +192,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideWebDavClient(): WebDavClient = HttpWebDavClient()
+    fun provideWebDavClient(settings: com.lonnnnnng.flclash.service.GeneralSettingsStore): WebDavClient = HttpWebDavClient(generalSettingsStore = settings)
 
     @Provides
     @Singleton
@@ -194,7 +220,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideScriptClient(): ScriptClient = HttpScriptClient()
+    fun provideScriptClient(settings: com.lonnnnnng.flclash.service.GeneralSettingsStore): ScriptClient = HttpScriptClient(settings)
 
     @Provides
     @Singleton
@@ -263,7 +289,8 @@ object AppModule {
         accessControlSettingsProvider: AccessControlSettingsProvider,
         vpnSettingsStore: com.lonnnnnng.flclash.service.VpnSettingsStore,
         paths: CoreRuntimePaths,
-    ): VpnOptionsProvider = DefaultVpnOptionsProvider(accessControlSettingsProvider, vpnSettingsStore, paths.configFile)
+        networkSettingsStore: com.lonnnnnng.flclash.service.NetworkSettingsStore,
+    ): VpnOptionsProvider = DefaultVpnOptionsProvider(accessControlSettingsProvider, vpnSettingsStore, paths.configFile, networkSettingsStore)
 
     @Provides
     @Singleton
@@ -308,6 +335,10 @@ object AppModule {
         outboundModeStore: OutboundModeStore,
         lanSharingStore: com.lonnnnnng.flclash.service.LanSharingStore,
         vpnSettingsStore: com.lonnnnnng.flclash.service.VpnSettingsStore,
+        geoSettingsStore: com.lonnnnnng.flclash.data.AndroidGeoResourceSettingsStore,
+        networkSettingsStore: com.lonnnnnng.flclash.service.NetworkSettingsStore,
+        globalDnsSettingsStore: com.lonnnnnng.flclash.service.GlobalDnsSettingsStore,
+        generalSettingsStore: com.lonnnnnng.flclash.service.GeneralSettingsStore,
     ): CoreRuntimeManager = CoreRuntimeManager(
         paths = paths,
         profileProvider = profileProvider,
@@ -320,6 +351,10 @@ object AppModule {
         outboundModeStore = outboundModeStore,
         lanSharingStore = lanSharingStore,
         vpnSettingsStore = vpnSettingsStore,
+        geoSettingsStore = geoSettingsStore,
+        networkSettingsStore = networkSettingsStore,
+        globalDnsSettingsStore = globalDnsSettingsStore,
+        generalSettingsStore = generalSettingsStore,
     )
 
     @Provides

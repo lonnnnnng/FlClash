@@ -85,6 +85,45 @@ class ProfileProvidersEditorTest {
     }
 
     @Test
+    fun `inline and quoted provider sections replace once and accept wrapped maps`() {
+        for (source in listOf(
+            "{mixed-port: 7890, proxy-providers: {old: {type: file, path: old.yaml}}}",
+            "mixed-port: 7890\n\"proxy-providers\":\n  old:\n    type: file\n    path: old.yaml\n",
+            "mixed-port: 7890\nproxy-providers: {old: {type: file, path: old.yaml}}\n",
+        )) {
+            val result = ProfileProvidersEditor.replace(source, ProfileProvidersEditor.Sections(
+                proxyProviders = "proxy-providers:\n  cloud:\n    type: file\n    path: cloud.yaml",
+            ))
+            val root = ProxyGroupDrafts.root(result)
+            assertEquals(7890, root.get("mixed-port").asInt)
+            assertEquals(setOf("cloud"), root.getAsJsonObject("proxy-providers").keySet())
+            assertEquals("cloud.yaml", root.getAsJsonObject("proxy-providers").getAsJsonObject("cloud").get("path").asString)
+        }
+    }
+
+    @Test
+    fun `commented block headers keep unrelated yaml bytes`() {
+        val source = "# keep\nmixed-port: 7890 # port\nproxy-providers: # definitions\n  old:\n    type: file\nrules:\n  - MATCH,DIRECT\n"
+        val result = ProfileProvidersEditor.replace(source, ProfileProvidersEditor.Sections("cloud:\n  type: file\n  path: cloud.yaml"))
+        assertEquals("# keep\nmixed-port: 7890 # port\nproxy-providers:\n  cloud:\n    type: file\n    path: cloud.yaml\nrules:\n  - MATCH,DIRECT\n", result)
+    }
+
+    @Test
+    fun `binding accepts existing inline rule maps and empty semantic sections`() {
+        val source = "mixed-port: 7890\nrule-providers:\n  规则: {type: file, path: rules.yaml, behavior: domain}\nrules:\n  - MATCH,DIRECT\n"
+        val extracted = ProfileProvidersEditor.extract(source)
+        assertEquals("", extracted.proxyProviders)
+        val result = ProfileProvidersEditor.replace(source, extracted.copy(proxyProviders = "cloud: {type: file, path: cloud.yaml}"))
+        val root = ProxyGroupDrafts.root(result)
+        assertEquals("rules.yaml", root.getAsJsonObject("rule-providers").getAsJsonObject("规则").get("path").asString)
+        assertEquals("cloud.yaml", root.getAsJsonObject("proxy-providers").getAsJsonObject("cloud").get("path").asString)
+        assertEquals(listOf("cloud"), ProfileProvidersEditor.proxyProviderNames("cloud: {type: file, path: cloud.yaml}"))
+        assertEquals("", ProfileProvidersEditor.extract("{rules: [], proxy-providers: {}}").proxyProviders)
+        assertEquals(0, ProxyGroupDrafts.root(ProfileProvidersEditor.replace(result, ProfileProvidersEditor.Sections("{}", "{}")))
+            .getAsJsonObject("rule-providers").size())
+    }
+
+    @Test
     fun `rejects scalar entries and duplicate provider names`() {
         val scalar = assertThrows(IllegalArgumentException::class.java) {
             ProfileProvidersEditor.replace(

@@ -32,6 +32,7 @@ class RuleResourcesViewModel @Inject constructor(
     private val runtime: CoreRuntimeManager,
     private val profiles: ProfileStore,
 ) : ViewModel() {
+    val urlImports = ResourceUrlImportController(viewModelScope, repository::importUrlIfNew)
     private val mutable = MutableStateFlow(RuleResourcesUiState())
     val state = mutable.asStateFlow()
     private var generation = 0L
@@ -83,6 +84,7 @@ class RuleResourcesViewModel @Inject constructor(
         val rows = repository.all().toMutableList(); val from = rows.indexOfFirst { it.id == resource.id }; val target = from + offset
         if (from >= 0 && target in rows.indices) { rows.add(target, rows.removeAt(from)); repository.reorder(rows.map { it.id }) }
     }
+    fun reorder(ids: List<String>) = perform { repository.reorder(ids); mutable.value = mutable.value.copy(message = "顺序已保存") }
     private suspend fun applyIfReferenced(resource: RuleResource) {
         val id = profiles.currentProfileId.value ?: return
         if (repository.isUsedBy(id, resource)) {

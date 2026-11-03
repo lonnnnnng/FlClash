@@ -18,6 +18,16 @@ class ProfileScriptTest {
     val temporaryFolder = TemporaryFolder()
 
     @Test
+    fun editorCanRetainExplicitNullWithoutChangingDefaultScriptInput() {
+        val yaml = "settings: {server: null, enable: false}\n"
+        val defaults = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(yaml)).asJsonObject.getAsJsonObject("settings")
+        val editor = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(yaml, preserveNulls = true)).asJsonObject.getAsJsonObject("settings")
+        assertFalse(defaults.has("server"))
+        assertTrue(editor["server"].isJsonNull)
+        assertFalse(editor["enable"].asBoolean)
+    }
+
+    @Test
     fun yamlCodecAddsProviderMapAndRoundTripsNestedConfig() {
         val json = YamlConfigCodec.toJson(
             """

@@ -285,6 +285,7 @@ internal fun RuntimeCard(
     outboundIp: OutboundIpUiState = OutboundIpUiState(),
     onRefreshIp: () -> Unit = {},
     onRefreshIpQuality: () -> Unit = {},
+    onDemandSuspended: Boolean = false,
 ) {
     val busy = state == CoreRuntimeStatus.STARTING || state == CoreRuntimeStatus.STOPPING
     val colors = MaterialTheme.colorScheme
@@ -333,6 +334,7 @@ internal fun RuntimeCard(
                         ) {
                             Text(
                                 when {
+                                    state.isRunning && onDemandSuspended -> "按需暂停"
                                     state.isRunning -> "运行中"
                                     state == CoreRuntimeStatus.STOPPED -> "未运行"
                                     state == CoreRuntimeStatus.FAILED -> "启动失败"
@@ -596,11 +598,11 @@ internal fun DashboardProfileCard(
         onDispose { onDetailVisible(null) }
     }
     val hasProfiles = profiles.isNotEmpty()
-    // 作者 long：选择交给生命周期管理器串行热应用；正文同步仍受单独的写入门禁保护。
+    // 作者 long：选择与同步后的应用交给管理器串行处理，稳定运行态也可以更新订阅。
     val runtimeTransitioning = runtimeState == CoreRuntimeStatus.STARTING ||
         runtimeState == CoreRuntimeStatus.STOPPING
     val canSelectProfile = !isBusy
-    val canSyncProfile = !isBusy && !runtimeState.isRunning && !runtimeTransitioning
+    val canSyncProfile = !isBusy && !runtimeTransitioning
 
     DashboardSurface(
         modifier = Modifier.testTag("dashboard_profile_card"),
@@ -783,8 +785,7 @@ internal fun DashboardProfileCard(
 }
 
 /**
- * 作者 long：Flutter Dashboard 点击当前配置会打开轻量详情 sheet；这里先呈现 Kotlin
- * 已有的真实元数据和订阅信息，再从同一入口进入完整 Profiles 页面，避免重复下载或伪造配置统计。
+ * 作者 long：配置详情沿Flutter使用完整页面承载统计、订阅与外部资源，长列表和嵌套编辑共享完整手机视口。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -801,78 +802,81 @@ internal fun DashboardProfileDetailSheet(
     providers: ProfileProvidersUiState,
     onRetryProviders: () -> Unit,
     onUpdateProvider: (String) -> Unit,
+    onUpdateAllProviders: () -> Unit = {},
+    onRetryFailedProviders: () -> Unit = {},
+    onPreviewProvider: (String) -> Unit = {},
+    onEditProvider: (String) -> Unit = {},
+    onUploadProvider: (String) -> Unit = {},
 ) {
-    ModalBottomSheet(
+    ProfileEditorPage(
         onDismissRequest = onDismiss,
-        // 作者 long：统计增加内容高度后直接展开详情，底部操作保留系统导航安全区，避免首开时被半展开位置裁切。
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        modifier = Modifier.testTag("dashboard_profile_detail_sheet"),
-    ) {
+        title = { Text(profile.realLabel, modifier = Modifier.testTag("dashboard_profile_detail_name")) },
+        backTag = "dashboard_profile_detail_back",
+        confirmButton = {
+            IconButton(onPreview, modifier = Modifier.testTag("dashboard_profile_detail_preview")) {
+                Icon(Icons.Outlined.Description, "运行配置")
+            }
+            if (profile.type == ProfileType.URL) {
+                if (isBusy) CircularProgressIndicator(Modifier.padding(12.dp).size(24.dp).testTag("dashboard_profile_detail_sync_loading"), strokeWidth = 2.dp)
+                else IconButton(onUpdate, enabled = canMutate, modifier = Modifier.testTag("dashboard_profile_detail_sync")) { Icon(Icons.Outlined.Sync, "同步") }
+            }
+        }, text = {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
+                .testTag("dashboard_profile_detail_sheet")
                 .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text(
-                profile.realLabel,
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.testTag("dashboard_profile_detail_name"),
-            )
+            Spacer(Modifier.height(8.dp))
             ProfileStatisticsPanel(statistics, onRetryStatistics)
-            Text(
-                dashboardProfileSourceLabel(profile),
-                modifier = Modifier.testTag("dashboard_profile_detail_source"),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            profile.subscriptionInfo?.let { info ->
-                Text("用量 ${formatBytes(info.upload + info.download)} / ${formatBytes(info.total)}")
-                info.expireAtMillis?.let { expiry ->
-                    Text("到期 ${DateUtils.getRelativeTimeSpanString(expiry)}")
+            profile.subscriptionInfo?.takeIf { it.total > 0 }?.let { info ->
+                Text("订阅用量", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+                Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        val upload = info.upload.coerceAtLeast(0)
+                        val download = info.download.coerceAtLeast(0)
+                        val used = if (upload > Long.MAX_VALUE - download) Long.MAX_VALUE else upload + download
+                        Text("已用 ${formatBytes(used)} / ${formatBytes(info.total)}")
+                        androidx.compose.material3.LinearProgressIndicator(progress = { ((upload.toDouble() + download) / info.total).coerceIn(0.0, 1.0).toFloat() }, modifier = Modifier.fillMaxWidth())
+                        Text(info.expireAtMillis?.let { "到期 ${DateUtils.getRelativeTimeSpanString(it)}" } ?: "不限到期时间",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
-            profile.lastUpdateAt?.let { updatedAt ->
-                Text(
-                    "更新于 ${DateUtils.getRelativeTimeSpanString(updatedAt)}",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            Text("配置", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+            Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("来源", modifier = Modifier.weight(1f))
+                        Text(dashboardProfileSourceLabel(profile), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.testTag("dashboard_profile_detail_source"))
+                    }
+                    Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("更新时间", modifier = Modifier.weight(1f))
+                        Text(profile.lastUpdateAt?.let { DateUtils.getRelativeTimeSpanString(it).toString() } ?: "尚未更新", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (profile.type != ProfileType.CUSTOM) Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("扩展模式", modifier = Modifier.weight(1f))
+                        Text(if (profile.extendType == "script") "脚本" else "标准", color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.testTag("dashboard_profile_detail_extension"))
+                    }
+                }
             }
-            profile.currentGroupName?.takeIf(String::isNotBlank)?.let { groupName ->
-                Text("最近代理组：$groupName", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            ProfileProvidersPanel(providers, onRetryProviders, onUpdateProvider)
+            ProfileProvidersPanel(providers, onRetryProviders, onUpdateProvider, onUpdateAllProviders, onRetryFailedProviders,
+                onPreviewProvider, onEditProvider, onUploadProvider)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
             ) {
-                TextButton(onClick = onPreview, modifier = Modifier.testTag("dashboard_profile_detail_preview")) {
-                    Text("运行配置")
-                }
-                if (profile.type == ProfileType.URL) {
-                    if (isBusy) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp).align(Alignment.CenterVertically)
-                                .testTag("dashboard_profile_detail_sync_loading"),
-                            strokeWidth = 2.dp,
-                        )
-                    }
-                    TextButton(
-                        onClick = onUpdate,
-                        enabled = canMutate,
-                        modifier = Modifier.testTag("dashboard_profile_detail_sync"),
-                    ) { Text("同步") }
-                }
                 TextButton(
                     onClick = onShowProfiles,
                     modifier = Modifier.testTag("dashboard_profile_detail_open_profiles"),
                 ) { Text("查看全部配置") }
             }
         }
-    }
+    })
 }
 
 private fun dashboardProfileSourceLabel(profile: Profile): String = when (profile.type) {

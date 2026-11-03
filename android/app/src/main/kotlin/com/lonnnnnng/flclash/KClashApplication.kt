@@ -22,6 +22,8 @@ class KClashApplication : Application() {
     @Inject
     lateinit var runtimeResumeStore: RuntimeResumeStore
 
+    @Inject lateinit var onDemandCoordinator: com.lonnnnnng.flclash.data.OnDemandCoordinator
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun attachBaseContext(base: Context?) {
@@ -32,7 +34,9 @@ class KClashApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        onDemandCoordinator.start(applicationScope)
         SubscriptionAutoUpdateScheduler.schedule(this)
+        com.lonnnnnng.flclash.data.ResourceAutoUpdateScheduler.schedule(this)
         applicationScope.launch {
             val shouldResume = runtimeResumeStore.shouldResume()
             // 作者 long：先恢复上一轮诊断时间线，再决定是否自动重启核心；这样进程重建后的

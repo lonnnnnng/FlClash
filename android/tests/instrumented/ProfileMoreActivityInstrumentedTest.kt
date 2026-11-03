@@ -66,12 +66,14 @@ class ProfileMoreActivityInstrumentedTest {
             compose.onNodeWithTag("profile_more_editor_back").performClick()
             compose.onNodeWithTag("custom_profile_sniffer").performClick()
             compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
+            compose.onNodeWithTag("more_protocol_ports").performClick()
             compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("8000-9000", substring = true)
             compose.onNodeWithTag("more_value_back").performClick()
+            compose.onNodeWithTag("more_protocol_back").performClick()
             compose.onNodeWithTag("profile_more_editor_back").performClick()
             val saved = runBlocking(Dispatchers.IO) { ProfileProviderOverrides.fromJsonString(checkNotNull(entry.database().profiles().getById(profile.id)).overridesJson) }
             assertEquals(false, saved.dns.enable); assertEquals(124, saved.ntp.port)
-            assertEquals(false, saved.sniffer.enable); assertEquals(emptyList<String>(), saved.sniffer.skipDomain)
+            assertEquals(false, saved.sniffer.enable); assertNull(saved.sniffer.skipDomain)
             assertEquals(false, saved.sniffer.sniff?.get("HTTP")?.overrideDestination)
             assertEquals(selected, repository.currentProfileId.value)
             assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
@@ -94,7 +96,8 @@ class ProfileMoreActivityInstrumentedTest {
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("more_yaml_confirm").fetchSemanticsNodes().isEmpty() }
     }
     private fun saveMore() {
-        compose.onNodeWithTag("profile_more_editor_save").performClick()
-        compose.waitUntil(10_000) { compose.onAllNodesWithTag("profile_more_editor_save").fetchSemanticsNodes().isEmpty() }
+        compose.onNodeWithTag("profile_more_editor_save").assertDoesNotExist()
+        compose.onNodeWithTag("profile_more_editor_back").performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithTag("profile_more_editor_back").fetchSemanticsNodes().isEmpty() }
     }
 }

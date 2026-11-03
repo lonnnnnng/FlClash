@@ -39,21 +39,38 @@ internal fun setMoreField(root: JsonObject, field: MoreField, value: JsonElement
     } else {
         val protocols = root.getAsJsonObject("sniff") ?: JsonObject().also { root.add("sniff", it) }
         if (value == null) protocols.remove(field.protocol) else protocols.add(field.protocol, value)
-        // 作者 long：移除最后一个协议恢复继承；快捷 YAML 中显式 sniff: {} 仍可表达清空全部协议。
+        // 作者 long：没有选中协议时恢复继承；空映射不能让源配置已有的嗅探协议失效。
         if (protocols.size() == 0) root.remove("sniff")
     }
 }
 
 internal fun splitMoreList(value: String): List<String> = value.lines().map(String::trim).filter(String::isNotEmpty).distinct()
 
-internal fun moreFieldsYaml(root: JsonObject): String = if (root.size() == 0) "{}\n" else YamlConfigCodec.toYaml(root.toString())
+internal fun effectiveMoreFields(root: JsonObject): JsonObject = root.deepCopy().apply {
+    entrySet().filter { (_, value) -> value.isJsonNull || value.isJsonPrimitive && value.asJsonPrimitive.isString && value.asString.isEmpty() ||
+        value.isJsonArray && value.asJsonArray.size() == 0 || value.isJsonObject && value.asJsonObject.size() == 0 }
+        .map { it.key }.forEach(::remove)
+}
 
-internal fun parseMoreFieldsYaml(content: String, ntp: Boolean): JsonObject {
+internal fun moreFieldsYaml(root: JsonObject): String = effectiveMoreFields(root).let {
+    if (it.size() == 0) "{}\n" else YamlConfigCodec.toYaml(it.toString())
+}
+
+internal fun applyMoreFieldsYaml(initial: JsonObject, content: String, ntp: Boolean): JsonObject {
+    val supplied = parseMoreFieldsYaml(content, ntp, preserveNulls = true)
+    val next = effectiveMoreFields(supplied)
+    val listed = effectiveMoreFields(initial)
+    // 作者 long：快捷编辑未列出的空入口仍保留；用户主动写成空值或null的字段则恢复继承。
+    initial.entrySet().filter { !listed.has(it.key) && !supplied.has(it.key) }.forEach { next.add(it.key, it.value.deepCopy()) }
+    return next
+}
+
+internal fun parseMoreFieldsYaml(content: String, ntp: Boolean, preserveNulls: Boolean = false): JsonObject {
     require(content.toByteArray().size <= 2 * 1024 * 1024) { "分区 YAML 不能超过 2 MiB" }
     if (content.isBlank()) return JsonObject()
     // 作者 long：把分区片段放在独立键下，避免共享脚本 codec 自动补出的 proxy-providers 被误当成用户字段。
     val document = "settings:\n" + content.lineSequence().joinToString("\n") { "  $it" }
-    val value = runCatching { JsonParser.parseString(YamlConfigCodec.toJson(document)).asJsonObject.get("settings") }
+    val value = runCatching { JsonParser.parseString(YamlConfigCodec.toJson(document, preserveNulls = true)).asJsonObject.get("settings") }
         .getOrElse { throw IllegalArgumentException("YAML 格式无效，请检查缩进、引号和列表") }
     if (value == null || value.isJsonNull) return JsonObject()
     require(value.isJsonObject) { "分区 YAML 必须是字段映射" }
@@ -61,7 +78,8 @@ internal fun parseMoreFieldsYaml(content: String, ntp: Boolean): JsonObject {
     val definitions = if (ntp) ntpFields else snifferFields.filter { it.kind != MoreFieldKind.PROTOCOL }
     val allowed = definitions.map { it.key }.toSet() + if (ntp) emptySet() else setOf("sniff")
     require(root.keySet().all { it in allowed }) { "存在本分区不支持的字段，请只填写分区内部字段" }
-    root.entrySet().filter { it.value.isJsonNull }.map { it.key }.forEach(root::remove)
+    val nullKeys = root.entrySet().filter { it.value.isJsonNull }.map { it.key }
+    nullKeys.forEach(root::remove)
     definitions.forEach { field -> root.get(field.key)?.let { entry ->
         val valid = when (field.kind) {
             MoreFieldKind.TOGGLE -> entry.isJsonPrimitive && entry.asJsonPrimitive.isBoolean
@@ -93,6 +111,7 @@ internal fun parseMoreFieldsYaml(content: String, ntp: Boolean): JsonObject {
         root.add("sniff", normalized)
     }
     validateMoreFields(root, ntp)
+    if (preserveNulls) nullKeys.forEach { root.add(it, com.google.gson.JsonNull.INSTANCE) }
     return root
 }
 
@@ -104,6 +123,7 @@ internal fun validateMoreFields(root: JsonObject, ntp: Boolean) {
         root.get("server")?.let {
             require(it.isJsonPrimitive && it.asJsonPrimitive.isString) { "NTP 服务器格式无效" }
             val host = it.asString
+            if (host.isEmpty()) return@let
             // 作者 long：与 Flutter validateHost 一致，服务器只接受主机名或纯 IPv6，不把 URL、端口、空标签当成主机。
             val valid = if (':' in host) isMoreNumericAddress(host) else host.length <= 253 && host.split('.').all {
                 it.matches(Regex("[A-Za-z0-9_]([A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?"))

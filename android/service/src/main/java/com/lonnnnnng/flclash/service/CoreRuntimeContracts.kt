@@ -34,6 +34,7 @@ data class ActiveProfile(
     val scriptPath: String? = null,
     val standardExtension: StandardProfileExtension? = null,
     val deferExtensionApplication: Boolean = false,
+    val usesGlobalDns: Boolean = true,
 )
 
 data class ProxyDelayRequest(
@@ -124,25 +125,29 @@ class DefaultVpnOptionsProvider(
         DisabledAccessControlSettingsProvider,
     private val vpnSettingsStore: VpnSettingsStore = DefaultVpnSettingsStore,
     private val appliedConfigFile: File? = null,
+    private val networkSettingsStore: NetworkSettingsStore? = null,
 ) : VpnOptionsProvider {
     override suspend fun current(): VpnOptions {
+        val network = networkSettingsStore?.read()?.validated()
         val profileOptions = appliedConfigFile?.let(::readProfileTunOptions)
         val port = profileOptions?.mixedPort ?: DEFAULT_MIXED_PORT
         return VpnOptions(
             enable = vpnSettingsStore.read(),
             port = port,
-            ipv6 = false,
-            dnsHijacking = false,
+            ipv6 = network?.ipv6 ?: false,
+            dnsHijacking = network?.dnsHijacking ?: false,
             accessControlProps = accessControlSettingsProvider.current().sanitized(),
-            allowBypass = true,
+            allowBypass = network?.allowBypass ?: true,
             // 作者 long：与 Flutter 一样广播本地代理，让浏览器把域名交给核心解析；
             // Android 的代理广播不能携带认证信息，有认证的端口必须继续走 TUN。
-            systemProxy = port > 0 && profileOptions?.authenticated != true,
-            bypassDomain = emptyList(),
-            stack = profileOptions?.stack ?: DEFAULT_STACK,
-            routeAddress = emptyList(),
-            mtu = profileOptions?.mtu ?: 0,
-            congestionController = profileOptions?.congestionController,
+            systemProxy = network?.systemProxy != false && port > 0 && profileOptions?.authenticated != true,
+            bypassDomain = network?.bypassDomain ?: emptyList(),
+            stack = network?.stack ?: profileOptions?.stack ?: DEFAULT_STACK,
+            routeAddress = network?.vpnRoutes() ?: emptyList(),
+            mtu = network?.mtu ?: profileOptions?.mtu ?: 0,
+            congestionController = network?.congestionController ?: profileOptions?.congestionController,
+            // 作者 long：路由被全部排除也会得到空列表，此时必须保留零路由，不能误恢复为接管全部流量。
+            routeAll = network == null || (network.routeAddress.isEmpty() && network.routeExcludeAddress.isEmpty() && !network.bypassPrivateRoute),
         )
     }
 
@@ -283,21 +288,26 @@ interface ProxyGroupsRuntime : CoreRuntimeStatusProvider {
     suspend fun testDelay(
         proxyName: String,
         testUrl: String,
-        timeoutMs: Long = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+        timeoutMs: Long = 0L,
     ): Result<ProxyDelay?>
 
     suspend fun testDelayBatch(
         requests: List<ProxyDelayRequest>,
-        timeoutMs: Long = CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+        timeoutMs: Long = 0L,
         maxConcurrent: Int = 32,
     ): Result<List<ProxyDelayBatchResult>>
 }
 
 interface CoreRuntimeBridge {
+    suspend fun updateGeoData(type: String) { error("核心未提供 Geo 更新") }
+    suspend fun updateGeoSettings(settings: GeoResourceSettings) { error("核心未提供 Geo 设置") }
     suspend fun compileRuleSet(name: String): com.lonnnnnng.flclash.core.RuleSetInfo = error("规则资源编译不可用")
     suspend fun dumpRuleSet(path: String): String = error("规则资源预览不可用")
     suspend fun externalProviders(): List<com.lonnnnnng.flclash.core.CoreExternalProvider> = error("核心未提供 Provider 明细")
     suspend fun updateExternalProvider(name: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp): Unit = error("核心未提供 Provider 更新")
+    suspend fun readExternalProvider(name: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp): com.lonnnnnng.flclash.core.CoreProviderDocument = error("核心未提供Provider预览")
+    suspend fun sideLoadExternalProvider(name: String, content: String, digest: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp): Unit = error("核心未提供Provider侧载")
+    suspend fun updateExternalProviders(names: List<String>, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp): List<com.lonnnnnng.flclash.core.CoreProviderUpdateResult> = error("核心未提供批量更新")
     suspend fun providerCounts(): com.lonnnnnng.flclash.core.CoreProviderCounts = error("核心未提供 Provider 统计")
     suspend fun checkRoutes(routes: List<List<com.lonnnnnng.flclash.core.CoreRouteHit>>): com.lonnnnnng.flclash.core.CoreRouteCheck = error("核心未提供路由核验")
     suspend fun checkServices(targets: List<com.lonnnnnng.flclash.core.ServiceTarget>, direct: Boolean, timeoutMs: Long): List<com.lonnnnnng.flclash.core.CoreServiceCheck> = error("核心未提供服务检测")
@@ -322,6 +332,7 @@ interface CoreRuntimeBridge {
     suspend fun validateConfig(path: String)
 
     suspend fun setupConfig(selectedMap: Map<String, String> = emptyMap())
+    suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean) = setupConfig(selectedMap)
 
     suspend fun getConfiguredMode(path: String): CoreOutboundMode
 
@@ -329,11 +340,18 @@ interface CoreRuntimeBridge {
 
     suspend fun getProxyGroups(): ProxyGroupsSnapshot
 
+    suspend fun getProxyDefinition(name: String): com.google.gson.JsonObject? = error("核心未提供节点定义")
+
     suspend fun changeProxy(groupName: String, proxyName: String): Boolean
 
     suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay?
 
     suspend fun probe(url: String, proxyName: String, timeoutMs: Long): CoreProbeResult?
+
+    suspend fun closeConnections() {}
+
+    suspend fun getTraffic(onlyProxy: Boolean): CoreTraffic = getTraffic()
+    suspend fun getTotalTraffic(onlyProxy: Boolean): CoreTraffic = getTotalTraffic()
 
     suspend fun getTraffic(): CoreTraffic
 
@@ -361,6 +379,9 @@ interface CoreRuntimeBridge {
 class NativeCoreRuntimeBridge(
     private val coreBridge: CoreBridge,
 ) : CoreRuntimeBridge {
+    override suspend fun updateGeoData(type: String) = coreBridge.updateGeoData(type)
+    override suspend fun updateGeoSettings(settings: GeoResourceSettings) =
+        coreBridge.updateGeoSettings(settings.autoUpdate, settings.intervalHours, settings.urls.mapKeys { it.key.name })
     override suspend fun compileRuleSet(name: String) = coreBridge.compileRuleSet(name)
     override suspend fun dumpRuleSet(path: String) = coreBridge.dumpRuleSet(path)
     override suspend fun checkServices(targets: List<com.lonnnnnng.flclash.core.ServiceTarget>, direct: Boolean, timeoutMs: Long) =
@@ -370,6 +391,9 @@ class NativeCoreRuntimeBridge(
     override suspend fun updateAllowLan(value: Boolean) = coreBridge.updateAllowLan(value)
     override suspend fun externalProviders() = coreBridge.externalProviders()
     override suspend fun updateExternalProvider(name: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp) = coreBridge.updateExternalProvider(name, stamp)
+    override suspend fun readExternalProvider(name: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp) = coreBridge.readExternalProvider(name, stamp)
+    override suspend fun sideLoadExternalProvider(name: String, content: String, digest: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp) = coreBridge.sideLoadExternalProvider(name, content, digest, stamp)
+    override suspend fun updateExternalProviders(names: List<String>, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp) = coreBridge.updateExternalProviders(names, stamp)
     override suspend fun providerCounts() = coreBridge.providerCounts()
     override suspend fun getMemoryStats() = coreBridge.getMemoryStats()
     override suspend fun releaseMemory() = coreBridge.releaseMemory()
@@ -392,12 +416,15 @@ class NativeCoreRuntimeBridge(
     override suspend fun validateConfig(path: String) = coreBridge.validateConfig(path)
 
     override suspend fun setupConfig(selectedMap: Map<String, String>) = coreBridge.setupConfig(selectedMap)
+    override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean) = coreBridge.setupConfig(selectedMap, skipCertVerify = skipCertVerify)
 
     override suspend fun getConfiguredMode(path: String): CoreOutboundMode = coreBridge.getConfiguredMode(path)
 
     override suspend fun updateMode(mode: CoreOutboundMode) = coreBridge.updateMode(mode)
 
     override suspend fun getProxyGroups(): ProxyGroupsSnapshot = coreBridge.getProxyGroups()
+
+    override suspend fun getProxyDefinition(name: String) = coreBridge.getProxyDefinition(name)
 
     override suspend fun changeProxy(groupName: String, proxyName: String): Boolean =
         coreBridge.changeProxy(groupName, proxyName)
@@ -407,6 +434,10 @@ class NativeCoreRuntimeBridge(
 
     override suspend fun probe(url: String, proxyName: String, timeoutMs: Long): CoreProbeResult? =
         coreBridge.probe(url, proxyName, timeoutMs)
+
+    override suspend fun closeConnections() = coreBridge.closeConnections()
+    override suspend fun getTraffic(onlyProxy: Boolean): CoreTraffic = coreBridge.getTraffic(onlyProxy)
+    override suspend fun getTotalTraffic(onlyProxy: Boolean): CoreTraffic = coreBridge.getTotalTraffic(onlyProxy)
 
     override suspend fun getTraffic(): CoreTraffic = coreBridge.getTraffic()
 

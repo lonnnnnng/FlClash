@@ -5,7 +5,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.annotations.SerializedName
 
-/** 作者 long：null 表示继承源配置，false、空文本和空列表均是明确覆盖，清除选择才能恢复继承。 */
+/** 作者 long：null表示未添加；空值保留页面入口但不覆盖源配置，false仍是明确覆盖。 */
 data class ProfileNtpOverrides(
     val enable: Boolean? = null,
     val server: String? = null,
@@ -16,6 +16,9 @@ data class ProfileNtpOverrides(
 ) {
     val isEmpty get() = toJson().size() == 0
     fun toJson(): JsonObject = Gson().toJsonTree(this).asJsonObject
+    fun effectiveJson(): JsonObject = toJson().apply {
+        listOf("server", "dialer-proxy").forEach { key -> if (get(key)?.asString?.isEmpty() == true) remove(key) }
+    }
     companion object {
         fun fromJson(json: JsonObject): ProfileNtpOverrides = Gson().fromJson(json, ProfileNtpOverrides::class.java)
     }
@@ -39,6 +42,12 @@ data class ProfileSnifferOverrides(
 ) {
     val isEmpty get() = toJson().size() == 0
     fun toJson(): JsonObject = Gson().toJsonTree(this).asJsonObject
+    fun effectiveJson(): JsonObject = toJson().apply {
+        listOf("force-domain", "skip-domain", "skip-src-address", "skip-dst-address").forEach { key ->
+            if (get(key)?.asJsonArray?.size() == 0) remove(key)
+        }
+        if (get("sniff")?.asJsonObject?.size() == 0) remove("sniff")
+    }
     companion object {
         fun fromJson(json: JsonObject): ProfileSnifferOverrides = Gson().fromJson(json, ProfileSnifferOverrides::class.java)
     }
@@ -47,14 +56,16 @@ data class ProfileSnifferOverrides(
 /** 作者 long：更多设置在脚本与 DNS 覆盖之后合并；未选择的字段和未知扩展字段留在暂存正文中。 */
 object ProfileMoreOverrideApplier {
     fun apply(yaml: String, ntp: ProfileNtpOverrides, sniffer: ProfileSnifferOverrides): String {
-        if (ntp.isEmpty && sniffer.isEmpty) return yaml
+        val ntpFields = ntp.effectiveJson()
+        val snifferFields = sniffer.effectiveJson()
+        if (ntpFields.size() == 0 && snifferFields.size() == 0) return yaml
         val root = JsonParser.parseString(YamlConfigCodec.toJson(yaml)).asJsonObject
         fun merge(name: String, fields: JsonObject) {
             if (fields.size() == 0) return
             val section = root.get(name)?.takeIf { it.isJsonObject }?.asJsonObject ?: JsonObject().also { root.add(name, it) }
             fields.entrySet().forEach { (key, value) ->
                 if (name == "sniffer" && key == "sniff" && value.isJsonObject && value.asJsonObject.size() > 0) {
-                    // 作者 long：选中一个协议只替换该协议；其他协议继续继承，空 map 则明确清空全部协议。
+                    // 作者 long：选中一个协议只替换该协议；其他协议继续继承；空map不进入实际覆盖。
                     val protocols = section.get("sniff")?.takeIf { it.isJsonObject }?.asJsonObject
                         ?: JsonObject().also { section.add("sniff", it) }
                     // 作者 long：旧 sniffing 仅在 sniff 为空时生效；先迁入旧协议，防止新增一个协议后让其他旧协议失效。
@@ -82,15 +93,11 @@ object ProfileMoreOverrideApplier {
                     }
                 } else {
                     section.add(key, value.deepCopy())
-                    // 作者 long：明确清空协议时也屏蔽旧 sniffing，否则核心会在空 sniff 下再次启用旧列表。
-                    if (name == "sniffer" && key == "sniff" && value.isJsonObject && value.asJsonObject.size() == 0) {
-                        section.add("sniffing", com.google.gson.JsonArray())
-                    }
                 }
             }
         }
-        merge("ntp", ntp.toJson())
-        merge("sniffer", sniffer.toJson())
+        merge("ntp", ntpFields)
+        merge("sniffer", snifferFields)
         return YamlConfigCodec.toYaml(root.toString())
     }
 }

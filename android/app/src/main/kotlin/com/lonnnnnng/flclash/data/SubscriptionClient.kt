@@ -15,8 +15,9 @@ interface SubscriptionClient {
     suspend fun download(url: String): SubscriptionDownload
 }
 
-class HttpSubscriptionClient : SubscriptionClient {
+class HttpSubscriptionClient(private val generalSettingsStore: com.lonnnnnng.flclash.service.GeneralSettingsStore? = null) : SubscriptionClient {
     override suspend fun download(url: String): SubscriptionDownload {
+        val requestSettings = generalSettingsStore?.read()
         var currentUrl = runCatching { URL(url) }.getOrElse {
             throw IllegalArgumentException("订阅链接格式无效", it)
         }
@@ -32,6 +33,7 @@ class HttpSubscriptionClient : SubscriptionClient {
                 // 作者 long：订阅服务按客户端类型返回 Clash 配置，沿用原版兼容标记并保留 KClash 自身身份与版本。
                 setRequestProperty("User-Agent", "KClash/v${BuildConfig.VERSION_NAME} clash-verge Platform/android")
             }
+            applyHttpRequestPolicy(connection, requestSettings)
             try {
                 val code = connection.responseCode
                 if (code in REDIRECT_CODES) {

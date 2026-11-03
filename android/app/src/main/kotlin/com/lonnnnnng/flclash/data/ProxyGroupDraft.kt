@@ -21,7 +21,7 @@ data class ProxyGroupDraft(
 }
 
 data class ProxyGroupMember(val name: String, val provider: Boolean = false)
-data class ProxyGroupsSave(val groups: List<ProxyGroupDraft>)
+data class ProxyGroupsSave(val groups: List<ProxyGroupDraft>, val providerProfiles: Map<String, Long> = emptyMap())
 
 /** 作者 long：可视表单只修改认识的字段；原定义中的扩展字段始终随草稿保存，不能因切换类型丢失。 */
 object ProxyGroupDrafts {
@@ -107,8 +107,8 @@ object ProxyGroupDrafts {
     fun providerNames(content: String): List<String> = root(content).get("proxy-providers")
         ?.takeIf { it.isJsonObject }?.asJsonObject?.keySet()?.toList().orEmpty()
 
-    fun validate(groups: List<ProxyGroupDraft>, source: String) {
-        val proxyNames = proxyNames(source)
+    fun validate(groups: List<ProxyGroupDraft>, source: String, availableProxies: List<String> = emptyList()) {
+        val proxyNames = (proxyNames(source) + availableProxies).distinct()
         val providers = providerNames(source)
         val proxies = root(source).get("proxies")?.takeIf { it.isJsonArray }?.asJsonArray
             ?.filter { it.isJsonObject }?.associate { it.asJsonObject.get("name").asString to it.asJsonObject }.orEmpty()
@@ -148,7 +148,11 @@ object ProxyGroupDrafts {
         groups.forEach { visit(it.name) }
     }
 
-    fun apply(source: String, save: ProxyGroupsSave): String {
+    fun apply(source: String, save: ProxyGroupsSave, availableProxies: List<String> = emptyList()): String {
+        if (save.providerProfiles.isNotEmpty()) {
+            val bound = ProfileProxyResources.bindGroups(source, save.providerProfiles, save.groups)
+            return apply(bound, save.copy(providerProfiles = emptyMap()), availableProxies)
+        }
         val renames = save.groups.mapNotNull { group -> group.originalName?.takeIf { it != group.name }?.let { it to group.name } }.toMap()
         val original = root(source)
         val document = original.deepCopy()
@@ -182,7 +186,7 @@ object ProxyGroupDrafts {
                 }
             }
         }
-        validate(groups, YamlConfigCodec.toYaml(document.toString()))
+        validate(groups, YamlConfigCodec.toYaml(document.toString()), availableProxies)
         // 作者 long：手写 YAML 可能使用 flow 根对象或整体缩进；无法定位独立分区时完整序列化，避免追加出重复键破坏正文。
         if (listOf("proxy-groups", "rules", "sub-rules", "proxies", "ntp", "dns").any { key ->
             document.get(key) != original.get(key) && original.has(key) && source.lineSequence().none { topLevelKey(it) == key }

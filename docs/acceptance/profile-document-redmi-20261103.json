@@ -1,0 +1,217 @@
+{
+  "verifiedAtBeijing": "2026-11-03T23:11:43+08:00",
+  "scope": "Profile 正文保存、真实 SAF 选择、运行态本地副本应用和旧入口定向验收；整体 Profiles/UI 仍 PARTIAL",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "resolution": "1080x2340",
+    "fontScale": "1.0"
+  },
+  "package": {
+    "applicationId": "com.lonnnnnng.flclash",
+    "versionName": "0.1.0",
+    "versionCode": 1,
+    "variant": "debug"
+  },
+  "build": {
+    "log": "/tmp/kclash-profile-document-20261103-build4.log",
+    "result": "BUILD SUCCESSFUL",
+    "command": "./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64",
+    "unitModule": "app",
+    "unit": {
+      "tests": 409,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 62,
+      "hints": 9
+    }
+  },
+  "artifacts": {
+    "app": {
+      "sha256": "0e0cebabd79d17d02e8c13883a34bb3d3b213aab710c67cf6a80cf49014d1673",
+      "deviceMatches": true,
+      "abis": [
+        "arm64-v8a"
+      ]
+    },
+    "test": {
+      "sha256": "8f72b3802248ac2f108514a4cd5c1d36e429bf653b2e8a1cedb6e0286daf46b3",
+      "deviceMatches": true,
+      "abis": []
+    },
+    "yamlLocalSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "yamlDeviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "noService": true,
+    "noTun0": true,
+    "rotation": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0"
+    }
+  },
+  "apkPaths": {
+    "app": "android/app/build/outputs/apk/debug/app-debug.apk",
+    "test": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+  },
+  "instrumentation": {
+    "result": "OK (12 tests)",
+    "skipped": 0,
+    "methods": [
+      "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+      "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#remoteBodyWarningCanKeepOrDisableAutoUpdateAndFailureDoesNotDropParentDraft",
+      "com.lonnnnnng.flclash.data.ProfileDocumentRepositoryInstrumentedTest#remoteAndFileDocumentSavesMergeLiveSelectionAndOnlyCommitAtOuterSave",
+      "com.lonnnnnng.flclash.data.ProfileDocumentRepositoryInstrumentedTest#invalidDecodeDatabaseFailureAndLateGuardKeepOriginalBodyMetadataAndTimestamp",
+      "com.lonnnnnng.flclash.data.ProfileDocumentRepositoryInstrumentedTest#metadataOnlyDoesNotRewriteBodyAndChangedFileCannotBeSavedFromOldEditor",
+      "com.lonnnnnng.flclash.ui.ProfileDocumentHostInstrumentedTest#runningRemoteBodyStagesAcrossRecreationAndOuterSaveAppliesWithoutDownloading",
+      "com.lonnnnnng.flclash.ui.LocalFileProfileRepositoryInstrumentedTest#remoteSystemPickerCancelsAndStagesAuthorizedFileBeforeOuterSaveWithoutDownload",
+      "com.lonnnnnng.flclash.ui.LocalFileProfileRepositoryInstrumentedTest#realOpenDocumentCancelsAndStagesWithoutWritingThenSavesExactAuthorizedFile",
+      "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#remoteProfileMenuOpensEditorAndEditorForwardsSubscriptionSettings",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProfilePreviewLoadsRetriesAndClosesInBothThemes",
+      "com.lonnnnnng.flclash.ui.ProfilesPageParityInstrumentedTest#remoteMenuExtensionAndFullPageEditorRenderBothThemes",
+      "com.lonnnnnng.flclash.ui.ProfileRunningMetadataHostInstrumentedTest#runningProfileAllowsRemoteSettingsSyncAndSortWithoutRestartingOrRewritingBody"
+    ],
+    "log": "/tmp/kclash-profile-document-20261103-device1.log",
+    "gates": [
+      "kclashProfileDocumentAcceptance=true",
+      "kclashProfileRunningAcceptance=true",
+      "kclashLocalFile=true",
+      "kclashLocalFileSha256=<authorized 1.yaml SHA-256>",
+      "kclashAuthorizedSourceSha256=<SHA-256 of the sole authorized URL>"
+    ]
+  },
+  "profilePreservation": {
+    "before": "count=2 missing=0 expected=2",
+    "after": "count=2 missing=0 expected=2",
+    "originalSelectionAndFileMetadataPreserved": true
+  },
+  "visualReview": {
+    "newStatesReviewed": [
+      "profile_document_light_failed_search",
+      "profile_document_dark_exit",
+      "remote_document_light_auto_warning",
+      "remote_document_dark_failed_parent"
+    ],
+    "allCapturedStates": 12,
+    "flutterPixelParityVerified": false,
+    "notes": "旧列表截图宿主底色/系统栏仍有历史局限，不作为完整深色页面验收。"
+  },
+  "runtimeBoundary": "使用原 1.yaml 字节保存并重新应用临时远程 Profile 的本地副本，RUNNING、运行起点与 profileInputsApplied 均通过；没有修改原 YAML 字段或执行真实订阅下载，不证明变更节点/路由后的网络行为。",
+  "notVerified": [
+    "Service/Core/Common/Go 本组未重跑",
+    "Release/正式签名",
+    "真实订阅下载后批量应用 E2E",
+    "FILE/CUSTOM 结构化运行态安全保存/应用",
+    "完整应用进程回收后的正文草稿恢复",
+    "本12方法未重跑真实 age 密文 SAF（此前file-import切片已通过）",
+    "完整 Flutter 视觉 parity"
+  ],
+  "logs": [
+    {
+      "path": "/tmp/kclash-profile-document-20261103-build1.log",
+      "sha256": "f3eadd42c28449da3cb9331271980dfacfa4311f05ece896b76c1b9e9ffb4b82"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-build2.log",
+      "sha256": "3f927c91cafab6e2921deca4be331620b115a168c602ef6347d9c39cf14d3e6b"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-build3.log",
+      "sha256": "3620ff0d9d1605291cc11b678905960651282a67e323322fb355991108da792a"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-build4.log",
+      "sha256": "fcc63e75964c1f6d5d36fea1b79092de47f3deac92d1df86c42a3f2af2b119a0"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-before.log",
+      "sha256": "fadf449ba7ef195d9572b7311efb5e1819f08c695631e8f7a8528635a1ad41ec"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-app-install.log",
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-test-install.log",
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-device1.log",
+      "sha256": "bf6aff2f71b45aabb79ee0617f220dfd2330266c6caa88a207d94c111883e1b6"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-after.log",
+      "sha256": "90ff01882ce3ea52f93616ac51bd11f60191068aace294f92905f3880f42e043"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-artifacts.json",
+      "sha256": "035bcd87581fe788d5faaeaba89954d07b38b46c7a0f9b5b86f4bae90b5ef76a"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-services.log",
+      "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-connectivity.log",
+      "sha256": "6befe9e013cc249a62362602b8ed2ce713174b16f52144ea931cf303861a54f7"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/profile_document_dark_exit.png",
+      "sha256": "f6a3c77cdc46442c1a45a3167fa8db1a3ae72bba7a7236f0926698b87af2f50d"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/profile_document_light_failed_search.png",
+      "sha256": "8d9fcf47d6456a295c4e28f15f49fee9aa3c370e48ffaed4bb10c0016bdd14ad"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/profiles_extension_dark.png",
+      "sha256": "10f3b256a8be1da67638f5632f8edb2769a66a7b2da055804d3692f52d7e062a"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/profiles_extension_light.png",
+      "sha256": "322ca20921df496963f0c0199eeb8d38e5fff199a19016c205680f48176f9dc8"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/profiles_page_dark.png",
+      "sha256": "e53c65dfd2d8c34b03d032615610f7a4c4a5758d3d2c92db12312b365b954458"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/profiles_page_light.png",
+      "sha256": "e8a90d3e970befc8f7964df77a1e32e72643f78ab5f14b5953c0522b08986634"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/profiles_remote_editor_dark.png",
+      "sha256": "ce0fb22e455b784d9211f5de95d51c444edc2935f6dc5cd0325c525c20e646b6"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/profiles_remote_editor_light.png",
+      "sha256": "c72202db1bcc92ac6696a8e013e85d95a167bc36f084d6e0cde9f4b624df629f"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/remote_document_dark_failed_parent.png",
+      "sha256": "80806cc6dfa86ced01d1d6b6a07bad0b38b23e1788de39ec62c609de752d56ca"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/remote_document_light_auto_warning.png",
+      "sha256": "7d4c72b1ebea6ab226b72bf9e6881ddfcf206bc59d7851aac8e25b5f89559913"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/runtime_config_preview_dark.png",
+      "sha256": "21df06f1bc9f1634a8759cc2c5240ac780d9ca7ad5c3fb8664816fd0ffd16cff"
+    },
+    {
+      "path": "/tmp/kclash-profile-document-20261103-images/runtime_config_preview_light.png",
+      "sha256": "3579002540fc23291aa2e9f39ce80ff6286e566dad6a0e7bc25a79ae14ad1115"
+    }
+  ],
+  "notVerifiedScope": "仅指本记录12方法批次未覆盖范围，不是累计功能待办；累计状态见roadmap当前矩阵。",
+  "networkCleanupEvidence": "noTun0只表示引用的dumpsys connectivity日志未出现tun0；本切片未留成功接口枚举证据。",
+  "evidenceAvailability": "所列原始日志、JSON和截图为本机/tmp附件，源码提交只保留索引/结果/哈希，没有将原始附件上传远端。"
+}

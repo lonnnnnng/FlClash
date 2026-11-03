@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.service
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.google.gson.JsonObject
@@ -52,6 +53,7 @@ class ProfileScriptApplier(
 object YamlConfigCodec {
     private const val MAX_CONFIG_BYTES = 8 * 1024 * 1024
     private val gson = Gson()
+    private val editorGson = GsonBuilder().serializeNulls().create()
     // 作者 long：预览可以与启动并行解析，SnakeYAML 实例不能在不同协程间共享可变解析状态。
     private fun loader() = Yaml(SafeConstructor(LoaderOptions()))
     private fun dumper() = Yaml(
@@ -62,7 +64,7 @@ object YamlConfigCodec {
         },
     )
 
-    fun toJson(yaml: String): String {
+    fun toJson(yaml: String, preserveNulls: Boolean = false): String {
         require(yaml.toByteArray(Charsets.UTF_8).size <= MAX_CONFIG_BYTES) {
             "配置文件超过 8 MiB 限制"
         }
@@ -72,7 +74,8 @@ object YamlConfigCodec {
             override fun read(buffer: CharArray, offset: Int, length: Int): Int =
                 super.read(buffer, offset, if (offset == 0 && length == buffer.size && length > 1) length - 1 else length)
         })
-        val json = gson.toJsonTree(parsed)
+        // 作者 long：字段编辑必须区分“未填写”和“主动置空”；默认脚本契约仍沿用省略null的行为。
+        val json = (if (preserveNulls) editorGson else gson).toJsonTree(parsed)
         require(json.isJsonObject) { "脚本配置必须是 YAML 对象" }
         val objectConfig = json.asJsonObject
         // 作者 long：Flutter 在执行脚本前保证 proxy-providers 存在，脚本可以直接写入该 map。

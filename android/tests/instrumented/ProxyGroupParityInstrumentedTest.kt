@@ -106,7 +106,7 @@ class ProxyGroupParityInstrumentedTest {
         var dark by mutableStateOf(false)
         var chosen: String? = null
         compose.setContent { KClashTheme(darkTheme = dark) { key(dark) {
-            ProfileGroupIconPicker(svg, "Main", listOf(svg), listOf(svg), { _, _ -> }, onDismiss = {}, onSelect = { chosen = it })
+            ProfileGroupIconPicker(svg, "Main", listOf(svg), { _, _ -> }, onDismiss = {}, onSelect = { chosen = it })
         } } }
         for (theme in listOf("light", "dark")) {
             compose.runOnIdle { dark = theme == "dark"; chosen = null }

@@ -64,10 +64,26 @@ internal fun VisualProxyGroupsEditor(
     recentIcons: List<String> = emptyList(),
     onRecordIcon: (String, Boolean) -> Unit = { _, _ -> },
     onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
+    resourceProfiles: List<Profile> = emptyList(),
 ) {
     val source = remember(sourceContent, initialGroups) {
         sourceContent.ifBlank { if (initialGroups.isBlank()) "" else "proxy-groups:\n" + initialGroups.prependIndent("  ") }
     }
+    val globalProxies = LocalGlobalProxies.current
+    val resourceCandidates = remember(source, resourceProfiles) { runCatching { ProfileProxyResources.candidates(source, resourceProfiles) }.getOrDefault(emptyList()) }
+    val boundSource = remember(source, resourceCandidates, globalProxies) {
+        runCatching {
+            val root = ProxyGroupDrafts.root(source)
+            val providers = root.getAsJsonObject("proxy-providers") ?: com.google.gson.JsonObject()
+            providers.entrySet().filter { ProfileProxyResources.isReference(it.value) &&
+                resourceCandidates.none { candidate -> candidate.profile.id == ProfileProxyResources.idOf(it.value) } }
+                .map { it.key }.forEach(providers::remove)
+            resourceCandidates.forEach { if (!providers.has(it.alias)) providers.add(it.alias, ProfileProxyResources.reference(it.profile.id)) }
+            root.add("proxy-providers", providers)
+            LocalProxies.candidates(com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(root.toString()), globalProxies)
+        }.getOrDefault(source)
+    }
+    fun saveDraft(values: List<ProxyGroupDraft>) = ProxyGroupsSave(values, resourceCandidates.associate { it.alias to it.profile.id })
     val parsed = remember(source) { runCatching { ProxyGroupDrafts.read(source) } }
     var groups by rememberSaveable(profile.id, source, stateSaver = groupDraftSaver) { mutableStateOf(parsed.getOrDefault(emptyList())) }
     val initial = remember(source) { parsed.getOrDefault(emptyList()) }
@@ -104,8 +120,8 @@ internal fun VisualProxyGroupsEditor(
             }
         }
     }
-    val issues = remember(groups, source, listFilterIssues) { groups.associate { it.key to
-        (runCatching { ProxyGroupIssues.inspect(it, groups, source) }.getOrDefault(emptyList()) + listFilterIssues[it.key].orEmpty()) } }
+    val issues = remember(groups, boundSource, listFilterIssues) { groups.associate { it.key to
+        (runCatching { ProxyGroupIssues.inspect(it, groups, boundSource) }.getOrDefault(emptyList()) + listFilterIssues[it.key].orEmpty()) } }
     fun add() { val group = ProxyGroupDraft(); groups = groups + group; selectedKey = group.key; creating = true }
     LaunchedEffect(profile.id) {
         if (!initialized) {
@@ -118,11 +134,11 @@ internal fun VisualProxyGroupsEditor(
         if (saving) return
         runCatching {
             if (onSaveDraft != null) {
-                ProxyGroupDrafts.apply(source, ProxyGroupsSave(groups))
-                onSaveDraft(ProxyGroupsSave(groups))
+                ProxyGroupDrafts.apply(source, saveDraft(groups), globalProxies.map { it.name })
+                onSaveDraft(saveDraft(groups))
             } else if (!dirty) onSave(initialGroups)
             else {
-                val content = ProxyGroupDrafts.apply(source, ProxyGroupsSave(groups))
+                val content = ProxyGroupDrafts.apply(source, saveDraft(groups), globalProxies.map { it.name })
                 onSave(ProfileProxyGroupsEditor.extractGroups(content))
             }
         }.onFailure { error = it.message ?: "无法保存策略组" }
@@ -199,13 +215,13 @@ internal fun VisualProxyGroupsEditor(
         },
     )
     selectedKey?.let { selected -> groups.firstOrNull { it.key == selected }?.let { group ->
-        SingleProxyGroupEditor(group, groups, source, creating, onValidateFilters, recentIcons, onRecordIcon, onReadIcon,
+        SingleProxyGroupEditor(group, groups, boundSource, creating, onValidateFilters, recentIcons, onRecordIcon, onReadIcon,
             onDismiss = { if (creating) groups = groups.filterNot { it.key == selected }; selectedKey = null; if (initialGroupIndex != null) onDismiss() },
             onConfirm = { updated ->
                 val values = groups.map { if (it.key == selected) updated else if (group.name != updated.name) ProxyGroupDrafts.renameReferences(it, group.name, updated.name) else it }
                 groups = values; selectedKey = null; error = null
                 // 作者 long：从概览进入单组时，确认后直接保存并返回概览，避免额外经过一次列表保存。
-                if (initialGroupIndex != null && onSaveDraft != null) onSaveDraft(ProxyGroupsSave(values))
+                if (initialGroupIndex != null && onSaveDraft != null) onSaveDraft(saveDraft(values))
             },
             onDelete = { deleteKeys = setOf(selected) })
     } }
@@ -238,14 +254,14 @@ internal fun VisualProxyGroupsEditor(
                 val values = groups.filterNot { it.key in deleteKeys }
                 groups = values; if (selectedKey in deleteKeys) selectedKey = null
                 deleteKeys = emptySet(); selected = emptyList(); selecting = false
-                if (initialGroupIndex != null && onSaveDraft != null) onSaveDraft(ProxyGroupsSave(values))
+                if (initialGroupIndex != null && onSaveDraft != null) onSaveDraft(saveDraft(values))
             }, enabled = !saving, modifier = Modifier.testTag("proxy_group_delete_confirm")) { Text("删除") } },
             dismissButton = { TextButton(onClick = { deleteKeys = emptySet() }) { Text("取消") } })
     }
 }
 
 @Composable
-private fun GroupOrderRow(index: Int, count: Int, itemKey: String, sorting: Boolean, enabled: Boolean,
+internal fun GroupOrderRow(index: Int, count: Int, itemKey: String, sorting: Boolean, enabled: Boolean,
     onMove: (Int) -> Unit, content: @Composable RowScope.() -> Unit) {
     val currentMove by rememberUpdatedState(onMove)
     val currentIndex by rememberUpdatedState(index)
@@ -377,7 +393,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                 Spacer(Modifier.height(16.dp))
             }
         })
-    if (iconPicker) ProfileGroupIconPicker(group.text("icon"), group.name, groups.map { it.text("icon") }, recentIcons, onRecordIcon, onReadIcon,
+    if (iconPicker) ProfileGroupIconPicker(group.text("icon"), group.name, recentIcons, onRecordIcon, onReadIcon,
         onDismiss = { iconPicker = false }, onSelect = { value -> change { if (value.isEmpty()) it.remove("icon") else it.addProperty("icon", value) }; iconPicker = false })
     if (members) GroupMembersEditor(group, groups, source, onDismiss = { members = false }, onConfirm = { json = it.json; members = false; error = null })
     if (addOption) AlertDialog(onDismissRequest = { addOption = false }, title = { Text("添加设置项") }, text = {
@@ -439,8 +455,11 @@ private fun GroupValueDialog(option: GroupOption, initial: String, choices: List
     AlertDialog(onDismissRequest = onDismiss, title = { Text(option.label) }, text = {
         if (choices.isNotEmpty()) Column(Modifier.verticalScroll(rememberScrollState())) {
             choices.distinct().forEach { choice -> TextButton(onClick = { onSave(choice) }, Modifier.fillMaxWidth()) { Text(choice.ifBlank { "默认" }) } }
-        } else OutlinedTextField(value, { value = it; error = null }, Modifier.fillMaxWidth().testTag("group_value_input"), isError = error != null,
-            supportingText = { error?.let { Text(it) } }, minLines = 1, maxLines = 4)
+        } else Column(Modifier.verticalScroll(rememberScrollState())) {
+            OutlinedTextField(value, { value = it; error = null }, Modifier.fillMaxWidth().testTag("group_value_input"), isError = error != null,
+                supportingText = { error?.let { Text(it) } }, minLines = 1, maxLines = 4)
+            if (option.key in setOf("filter", "exclude-filter")) FilterPresetChoices(value) { value = it; error = null }
+        }
     }, confirmButton = { if (choices.isEmpty()) TextButton(onClick = {
         if (option.kind == "number" && value.toLongOrNull()?.let { it >= 0 } != true) error = "请输入非负整数"
         else if (option.key == "name" && value.isBlank()) error = "名称不能为空"
@@ -488,7 +507,7 @@ private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroup
                     val choices = (ProxyGroupDrafts.builtins + ProxyGroupDrafts.proxyNames(source) + groups.filter { it.key != group.key }.map { it.name }).distinct().filter { it != group.name }.map { ProxyGroupMember(it) } +
                         ProxyGroupDrafts.providerNames(source).map { ProxyGroupMember(it, true) }
                     choices.filter { it.name.contains(query, ignoreCase = true) }.forEach { member ->
-                        Row(Modifier.fillMaxWidth().clickable { change(if (member in members) members - member else members + member) }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().testTag("group_member_choice_${member.provider}_${member.name}").clickable { change(if (member in members) members - member else members + member) }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(member in members, { checked -> change(if (checked) (members + member).distinct() else members - member) })
                             Column(Modifier.weight(1f)) { Text(member.name); if (member.provider) Text("资源", style = MaterialTheme.typography.bodySmall) }
                         }

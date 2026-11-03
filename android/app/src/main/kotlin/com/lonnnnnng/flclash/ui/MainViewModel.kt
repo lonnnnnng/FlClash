@@ -37,6 +37,85 @@ class MainViewModel @Inject constructor(
     val runtimeState = runtimeManager.state
     val outboundMode = runtimeManager.outboundMode
     val vpnSettings = runtimeManager.vpnSettings
+    val networkSettings = runtimeManager.networkSettings
+    private val mutableNetworkSaving = MutableStateFlow(false)
+    val networkSaving = mutableNetworkSaving.asStateFlow()
+
+    fun saveNetworkSettings(value: com.lonnnnnng.flclash.service.NetworkSettings, onComplete: (Boolean) -> Unit) {
+        if (mutableNetworkSaving.value) return
+        val expected = networkSettings.value
+        mutableNetworkSaving.value = true
+        viewModelScope.launch {
+            try {
+                val result = runtimeManager.updateNetworkSettings(expected, value)
+                if (result.isFailure) reportError("网络设置未能应用，请检查当前状态后重试")
+                onComplete(result.isSuccess)
+            } finally { mutableNetworkSaving.value = false }
+        }
+    }
+    val globalDns = runtimeManager.globalDns
+    private val mutableDnsSaving = MutableStateFlow(false)
+    val dnsSaving = mutableDnsSaving.asStateFlow()
+
+    fun saveGlobalDns(value: com.lonnnnnng.flclash.service.ProfileDnsOverrides, onComplete: (Boolean) -> Unit) {
+        if (mutableDnsSaving.value) return
+        val expected = globalDns.value
+        mutableDnsSaving.value = true
+        viewModelScope.launch {
+            try {
+                val result = runtimeManager.updateGlobalDns(expected, value)
+                if (result.isFailure) reportError("DNS 设置未能应用，请检查当前状态后重试")
+                onComplete(result.isSuccess)
+            } finally { mutableDnsSaving.value = false }
+        }
+    }
+
+    val generalSettings = runtimeManager.generalSettings
+    val onDemandSuspended = runtimeManager.onDemandSuspended
+    private val mutableGeneralSaving = MutableStateFlow(false)
+    val generalSaving = mutableGeneralSaving.asStateFlow()
+    private var autoRunHandled = false
+
+    fun consumeAutoRunRequest(): Boolean {
+        if (autoRunHandled) return false
+        autoRunHandled = true
+        return generalSettings.value.autoRun && runtimeState.value == CoreRuntimeStatus.STOPPED
+    }
+
+    fun saveGeneralSettings(value: com.lonnnnnng.flclash.service.GeneralSettings, onComplete: (Boolean) -> Unit) {
+        if (mutableGeneralSaving.value) return
+        val expected = generalSettings.value
+        mutableGeneralSaving.value = true
+        viewModelScope.launch {
+            try {
+                val result = runtimeManager.updateGeneralSettings(expected, value)
+                if (result.isFailure) reportError("常规设置未能应用，请检查当前状态后重试")
+                onComplete(result.isSuccess)
+            } finally { mutableGeneralSaving.value = false }
+        }
+    }
+
+    val generalLanSharing = runtimeManager.lanSharing
+    private val mutableLanSaving = MutableStateFlow(false)
+    val lanSaving = mutableLanSaving.asStateFlow()
+    fun refreshGeneralLan() { viewModelScope.launch {
+        try { runtimeManager.refreshLanSharing() }
+        catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+        catch (_: Exception) { reportError("局域网设置读取失败，请重新打开常规页重试") }
+    } }
+    fun saveGeneralLan(value: Boolean) {
+        if (mutableLanSaving.value) return
+        mutableLanSaving.value = true
+        viewModelScope.launch {
+            try { runtimeManager.updateLanSharing(value) }
+            catch (_: Exception) { reportError("局域网设置未能应用，请重试") }
+            finally { mutableLanSaving.value = false }
+        }
+    }
+    suspend fun stopForExit(onStopped: () -> Unit) {
+        runtimeManager.stop().onSuccess { onStopped() }.onFailure { reportError("停止服务失败，请重试后退出") }
+    }
+
     private val mutableVpnSaving = MutableStateFlow(false)
     val vpnSaving = mutableVpnSaving.asStateFlow()
 

@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -7,6 +8,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.runtime.*
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
@@ -23,6 +26,75 @@ import org.junit.runner.RunWith
 class ScriptsUiInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun remoteMenusFileEntryProgressAndBothThemesUseWholePages() {
+        assertPortraitDefaultFontConfiguration()
+        var dark by mutableStateOf(false)
+        val remote = Script(2L, "远程脚本", "https://example.test/a.js", lastUpdateAt = System.currentTimeMillis())
+        var file = 0; var source = 0; var sync = 0
+        var busy by mutableStateOf(false)
+        composeRule.setContent { KClashTheme(darkTheme = dark) {
+            ScriptsLibraryDialog(ScriptsUiState(listOf(Script(1L, "本地脚本"), remote), busy,
+                if (busy) setOf(2L) else emptySet()), {}, {}, {}, {}, {}, {}, { sync++ }, { file++ }, { source++ })
+        } }
+        capture("scripts_light_list")
+        composeRule.onNodeWithTag("script_menu_2").performClick()
+        composeRule.onNodeWithTag("script_url_2").performClick()
+        assertEquals(1, source)
+        composeRule.onNodeWithTag("script_menu_2").performClick()
+        composeRule.onNodeWithTag("script_sync_2").performClick()
+        assertEquals(1, sync)
+        composeRule.onNodeWithTag("scripts_add").performClick()
+        composeRule.onNodeWithTag("scripts_import_file").performClick()
+        assertEquals(1, file)
+        composeRule.runOnIdle { dark = true; busy = true }
+        composeRule.onNodeWithTag("scripts_add").assertIsNotEnabled()
+        capture("scripts_dark_syncing")
+        composeRule.runOnIdle { busy = false }
+        composeRule.onNodeWithTag("scripts_sort").performClick()
+        capture("scripts_dark_order")
+    }
+
+    @Test
+    fun editorSearchReplaceUndoAndUnsavedExitKeepFailedDraft() {
+        assertPortraitDefaultFontConfiguration()
+        var dismissed = 0
+        var state by mutableStateOf(ScriptEditorUiState(isOpen = true, label = "示例", content = "const main = config => config;"))
+        composeRule.setContent { KClashTheme(darkTheme = false) {
+            ScriptEditorDialog(state, { dismissed++ }, { label, text -> state = state.copy(label = label, content = text, error = "保存失败，请重试") },
+                { label, text -> state = state.copy(label = label, content = text) })
+        } }
+        composeRule.onNodeWithTag("script_find").performClick()
+        composeRule.onNodeWithTag("script_query").performTextInput("config")
+        composeRule.onNodeWithTag("script_replacement").performTextInput("value")
+        composeRule.onNodeWithTag("script_replace_all").performClick()
+        composeRule.onNodeWithTag("script_content").assertTextContains("const main = value => value;", substring = true)
+        composeRule.onNodeWithTag("script_undo").performClick()
+        composeRule.onNodeWithTag("script_content").assertTextContains("const main = config => config;", substring = true)
+        composeRule.onNodeWithTag("script_redo").performClick()
+        capture("script_editor_light_search")
+        composeRule.onNodeWithTag("script_find").performClick()
+        composeRule.onNodeWithTag("script_editor_back").performClick()
+        composeRule.onNodeWithText("继续编辑").performClick()
+        assertEquals(0, dismissed)
+        composeRule.onNodeWithTag("script_save").performClick()
+        composeRule.onNodeWithTag("script_editor_error").assertExists()
+        capture("script_editor_light_failed")
+        composeRule.onNodeWithTag("script_editor_back").performClick()
+        composeRule.onNodeWithTag("script_discard").performClick()
+        assertEquals(1, dismissed)
+    }
+
+    private fun capture(name: String) {
+        composeRule.waitForIdle()
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.waitForIdleSync(); android.os.SystemClock.sleep(450)
+        val bitmap = checkNotNull(instrumentation.uiAutomation.takeScreenshot())
+        val output = java.io.ByteArrayOutputStream()
+        bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output)
+        recordVisualPng(name, output.toByteArray())
+    }
 
     @Test
     fun libraryShowsScriptsAndForwardsReorderAndCreate() {
@@ -46,8 +118,10 @@ class ScriptsUiInstrumentedTest {
         }
 
         composeRule.onNodeWithText("脚本库").assertIsDisplayed()
+        composeRule.onNodeWithTag("scripts_add").performClick()
         composeRule.onNodeWithText("新建脚本").performClick()
-        composeRule.onAllNodesWithText("下移")[0].performClick()
+        composeRule.onNodeWithTag("scripts_sort").performClick()
+        composeRule.onNodeWithTag("scripts_down_1").performClick()
 
         assertTrue(createClicked)
         assertEquals(listOf(2L, 1L), order)

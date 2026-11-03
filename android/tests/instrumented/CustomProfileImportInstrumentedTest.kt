@@ -107,7 +107,9 @@ class CustomProfileImportInstrumentedTest {
             val updated = repository.replaceCustomProfile(created.id, content, renamed, "") { true }
             assertEquals("新的名称", updated.label)
             assertEquals(ProfileProviderOverrides(), ProfileProviderOverrides.fromJsonString(updated.overridesJson))
-            assertEquals(content, file.readText())
+            val projected = File(repository.profileById(created.id)!!.filePath).readText()
+            assertEquals(ProxyGroupDrafts.proxyNames(content).toSet(), ProxyGroupDrafts.proxyNames(projected).toSet())
+            assertFalse(ProxyGroupDrafts.root(file.readText()).has("proxies"))
             assertEquals(updated, database.profiles().getById(created.id)?.toDomain())
             assertEquals(1, database.profiles().getAll().size)
             assertEquals(created.id, repository.currentProfileId.value)

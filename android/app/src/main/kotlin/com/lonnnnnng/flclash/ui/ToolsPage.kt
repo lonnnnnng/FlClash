@@ -16,9 +16,7 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Dns
-import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Hub
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Palette
@@ -50,6 +48,7 @@ internal fun ToolsPanel(
     onOpenBackup: () -> Unit = { onShowUnavailable("备份与恢复") },
     onOpenScripts: () -> Unit = { onShowUnavailable("自定义资源") },
     onOpenResources: () -> Unit = { onShowUnavailable("资源") },
+    onOpenAdvanced: () -> Unit = { onShowUnavailable("高级配置") },
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -96,7 +95,7 @@ internal fun ToolsPanel(
                 onOpenAccessControl()
             }
             ToolMenuRow("高级配置", Icons.Outlined.Tune, "tools_item_advanced") {
-                onShowUnavailable("高级配置")
+                onOpenAdvanced()
             }
             ToolMenuRow("自定义资源", Icons.Outlined.Layers, "tools_item_resources_settings") {
                 onOpenScripts()
@@ -106,73 +105,25 @@ internal fun ToolsPanel(
             }
         }
 
-        ToolSection(title = "其他") {
-            ToolMenuRow("免责声明", Icons.Outlined.Gavel, "tools_item_disclaimer") {
-                onShowUnavailable("免责声明")
-            }
+        if (onOpenDeveloper != null) ToolSection(title = "其他") {
             // 作者 long：额外验收工具仅在 Debug 显式入口下出现，普通启动保持 Flutter Tools 的页面清单。
             if (onOpenDeveloper != null) {
                 ToolMenuRow("开发者模式", Icons.Outlined.Code, "tools_item_developer", onOpenDeveloper)
             }
-            ToolMenuRow("关于", Icons.Outlined.Info, "tools_item_about") {
-                onShowUnavailable("关于")
-            }
-        }
-    }
-}
-
-/** 作者 long：电池授权沿用 Flutter 的“常规 → 按需连接 → 前置条件”层级，不再占用仪表盘卡片。 */
-@Composable
-internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit) {
-    Column(Modifier.fillMaxWidth().testTag("page_general")) {
-        ToolSection(title = "启动") {
-            ToolMenuRow("按需连接", null, "general_item_on_demand", onOpenOnDemand)
         }
     }
 }
 
 @Composable
-internal fun OnDemandSettingsPanel(
-    batteryOptimizationIgnored: Boolean,
-    onRequestBatteryOptimization: () -> Unit,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth().testTag("page_on_demand"),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        ToolSection(title = "前置条件") {
-            Card(Modifier.fillMaxWidth().testTag("on_demand_battery_optimization")) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "忽略电池优化",
-                        Modifier.weight(1f).padding(end = 12.dp),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-                    Button(
-                        // 作者 long：已授权时只呈现系统回读状态，重复点击不会再次发起相同授权。
-                        onClick = { if (!batteryOptimizationIgnored) onRequestBatteryOptimization() },
-                        modifier = Modifier.widthIn(min = 80.dp).heightIn(min = 40.dp)
-                            .testTag("on_demand_battery_authorize"),
-                        contentPadding = PaddingValues(horizontal = 12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (batteryOptimizationIgnored) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.errorContainer,
-                            contentColor = if (batteryOptimizationIgnored) MaterialTheme.colorScheme.onPrimary
-                                else MaterialTheme.colorScheme.onErrorContainer,
-                        ),
-                    ) { Text(if (batteryOptimizationIgnored) "已授权" else "点击授权") }
-                }
-            }
+internal fun AdvancedSettingsPanel(onOpenNetwork: () -> Unit, onOpenScripts: () -> Unit,
+    onOpenDns: () -> Unit = {}, onOpenRules: () -> Unit = {}) {
+    Column(Modifier.fillMaxWidth().testTag("page_advanced")) {
+        ToolSection(title = "高级配置") {
+            ToolMenuRow("网络", Icons.Outlined.Hub, "advanced_item_network", onOpenNetwork)
+            ToolMenuRow("DNS", Icons.Outlined.Dns, "advanced_item_dns", onOpenDns)
+            ToolMenuRow("附加规则", Icons.Outlined.Description, "advanced_item_rules", onOpenRules)
+            ToolMenuRow("脚本", Icons.Outlined.Code, "advanced_item_scripts", onOpenScripts)
         }
-        Text(
-            "忽略电池优化可保证应用在后台运行。",
-            modifier = Modifier.padding(horizontal = 4.dp),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

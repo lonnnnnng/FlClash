@@ -59,4 +59,14 @@ class CustomProfileSummaryTest {
         assertTrue(customProfileSummary("rules: [", profile).unreadable)
         assertTrue(customProfileSummary("- not-a-config", profile).unreadable)
     }
+
+    @Test fun globalReferencesCountOnlyProjectedNodesAndKeepDialerOverrides() {
+        val node = com.lonnnnnng.flclash.data.LocalProxy(json = """{"name":"A","type":"direct"}""")
+        val unused = com.lonnnnnng.flclash.data.LocalProxy(json = """{"name":"B","type":"direct"}""")
+        val profile = Profile.custom(4, "global").copy(overridesJson = ProfileProviderOverrides(dialers = mapOf("A" to "DIRECT")).toJsonString())
+        val summary = customProfileSummary("proxy-groups: [{name: Main, type: select, proxies: [A]}]", profile, localProxies = listOf(node, unused))
+        assertFalse(summary.unreadable)
+        assertEquals(1, summary.proxies)
+        assertEquals(1, summary.dialers)
+    }
 }

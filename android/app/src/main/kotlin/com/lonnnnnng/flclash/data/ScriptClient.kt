@@ -13,8 +13,9 @@ interface ScriptClient {
     suspend fun download(url: String): ScriptDownload
 }
 
-class HttpScriptClient : ScriptClient {
+class HttpScriptClient(private val generalSettingsStore: com.lonnnnnng.flclash.service.GeneralSettingsStore? = null) : ScriptClient {
     override suspend fun download(url: String): ScriptDownload {
+        val requestSettings = generalSettingsStore?.read()
         var currentUrl = runCatching { URL(url) }.getOrElse {
             throw IllegalArgumentException("脚本地址格式无效", it)
         }
@@ -29,6 +30,7 @@ class HttpScriptClient : ScriptClient {
                 requestMethod = "GET"
                 setRequestProperty("User-Agent", "KClash/0.1")
             }
+            applyHttpRequestPolicy(connection, requestSettings)
             try {
                 val code = connection.responseCode
                 if (code in REDIRECT_CODES) {

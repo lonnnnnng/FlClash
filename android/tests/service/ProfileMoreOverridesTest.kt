@@ -57,16 +57,22 @@ class ProfileMoreOverridesTest {
         val sniffer = json.getAsJsonObject("sniffer")
         assertTrue(sniffer.get("enable").asBoolean)
         assertEquals("retained", sniffer.get("custom").asString)
-        assertEquals(0, sniffer.getAsJsonArray("skip-domain").size())
+        assertFalse(sniffer.has("skip-domain"))
         assertEquals("old", sniffer.getAsJsonObject("sniff").getAsJsonObject("HTTP").get("custom").asString)
         assertEquals("8443", sniffer.getAsJsonObject("sniff").getAsJsonObject("TLS").getAsJsonArray("ports")[0].asString)
     }
 
-    @Test fun emptyOverridesReturnOriginalBytesAndEmptySniffClearsProtocols() {
+    @Test fun emptyValuesStayListedButInheritSourceAndKeepOriginalBytes() {
         val source = "sniffer: {sniff: {HTTP: {ports: [80]}}, sniffing: [http, tls]}\n"
         assertEquals(source, ProfileProviderOverrideApplier.apply(source, ProfileProviderOverrides()))
-        val updated = ProfileProviderOverrideApplier.apply(source, ProfileProviderOverrides(sniffer = ProfileSnifferOverrides(sniff = emptyMap())))
-        assertEquals(0, JsonParser.parseString(YamlConfigCodec.toJson(updated)).asJsonObject.getAsJsonObject("sniffer").getAsJsonObject("sniff").size())
-        assertEquals(0, JsonParser.parseString(YamlConfigCodec.toJson(updated)).asJsonObject.getAsJsonObject("sniffer").getAsJsonArray("sniffing").size())
+        val empty = ProfileProviderOverrides(ntp = ProfileNtpOverrides(dialerProxy = ""),
+            sniffer = ProfileSnifferOverrides(skipDomain = emptyList(), sniff = emptyMap()))
+        assertEquals(source, ProfileProviderOverrideApplier.apply(source, empty))
+        assertTrue(empty.ntp.toJson().has("dialer-proxy")); assertTrue(empty.sniffer.toJson().has("skip-domain"))
+        assertTrue(empty.ntp.effectiveJson().size() == 0); assertTrue(empty.sniffer.effectiveJson().size() == 0)
+        val changed = ProfileProviderOverrideApplier.apply(source, empty.copy(sniffer = empty.sniffer.copy(enable = false)))
+        val section = JsonParser.parseString(YamlConfigCodec.toJson(changed)).asJsonObject.getAsJsonObject("sniffer")
+        assertFalse(section["enable"].asBoolean)
+        assertTrue(section.getAsJsonObject("sniff").has("HTTP")); assertEquals(2, section.getAsJsonArray("sniffing").size())
     }
 }

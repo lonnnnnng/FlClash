@@ -420,7 +420,7 @@ internal fun ProxyGroupsCard(
                             options = pageOptions,
                             locateRequest = locateSelectedRequest,
                             locateTargetGroup = locateTargetGroup,
-                            isCurrentPage = page == pagerState.currentPage,
+                            isCurrentPage = page == pagerState.currentPage && runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING,
                             onSelect = onSelect,
                             onTestDelay = onTestDelay,
                             onContentAtTopChanged = onContentAtTopChanged,
@@ -609,6 +609,9 @@ private fun ProxyGroupsListPage(
                                     bottom = if (lastRow) 10.dp else 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     row.forEach { proxyName ->
                                         ProxyNodeCard(name = proxyName, type = state.proxyType(proxyName, options.cardSize),
+                                            groupType = group.type, addable = state.canAddToLocal(proxyName), profileId = state.profileId,
+                                            menuEnabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
+                                                state.switchingGroup == null && state.batchTestingGroup == null,
                                             cardSize = options.cardSize, insideGroup = true, inUse = proxyName == selected,
                                             preferred = group.isComputed && proxyName == state.selectedMap[group.name],
                                             enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
@@ -789,6 +792,10 @@ private fun ProxyGroupNodesPage(
                     ProxyNodeCard(
                         name = proxyName,
                         type = state.proxyType(proxyName, options.cardSize),
+                        groupType = group.type,
+                        addable = state.canAddToLocal(proxyName),
+                        profileId = state.profileId,
+                        menuEnabled = isCurrentPage && state.switchingGroup == null && state.batchTestingGroup == null,
                         cardSize = options.cardSize,
                         inUse = proxyName == inUseName,
                         preferred = group.isComputed && proxyName == state.selectedMap[group.name],

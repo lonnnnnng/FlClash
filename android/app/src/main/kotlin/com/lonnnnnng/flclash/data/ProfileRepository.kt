@@ -37,11 +37,25 @@ interface ProfileStore {
         check(canWrite()) { "导入已取消或核心状态已变化" }
         return addFileProfile(label, bytes, ageSecretKey)
     }
+    suspend fun localProxies(): List<LocalProxy> = emptyList()
     suspend fun recentGroupIcons(): List<String> = emptyList()
     suspend fun recordGroupIcon(icon: String, remove: Boolean) {}
     suspend fun addCustomProfile(label: String): Profile
     suspend fun readLocalProfileContent(id: Long): String
     suspend fun readProfileSourceContent(id: Long): String = readLocalProfileContent(id)
+    suspend fun readEditableProfileDocument(id: Long): ProfileDocumentSnapshot {
+        val profile = extensionProfile(id) ?: error("配置不存在")
+        val content = readProfileSourceContent(id)
+        return ProfileDocumentSnapshot(profile, content, profileDocumentDigest(content.toByteArray()), 0)
+    }
+    suspend fun saveProfileDocument(expected: ProfileDocumentSnapshot, settings: ProfileDocumentSettings,
+        replacement: ByteArray?, canWrite: () -> Boolean): Profile {
+        check(canWrite()) { "编辑会话已变化" }
+        check(readProfileSourceContent(expected.profile.id) == expected.content) { "配置正文已变化，请重新打开编辑器" }
+        if (expected.profile.type == ProfileType.FILE) return updateFileProfile(expected.profile.id, settings.ageSecretKey, replacement, settings.label, canWrite)
+        check(replacement == null) { "此数据源不支持远程正文替换" }
+        return updateRemoteProfileSettings(expected.profile.id, settings.label, settings.url, settings.autoUpdate, settings.intervalMillis, settings.ageSecretKey)
+    }
     suspend fun updateLocalProfileContent(id: Long, content: String): Profile
     suspend fun saveCustomRules(id: Long, rules: String, expectedContent: String, canWrite: () -> Boolean): Profile {
         check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
@@ -94,6 +108,16 @@ interface ProfileStore {
     suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?: error("配置不存在")
+    suspend fun saveMoreOptions(id: Long, patch: ProfileMorePatch, canWrite: () -> Boolean): Profile {
+        check(canWrite()) { "更多设置编辑状态已变化" }
+        val current = extensionProfile(id) ?: error("配置不存在")
+        return updateProfileOverrides(id, patch.applyTo(current.overridesJson))
+    }
+    suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, canWrite: () -> Boolean): Profile {
+        check(canWrite()) { "资源编辑状态已变化" }
+        val current = extensionProfile(id) ?: error("配置不存在")
+        return updateProfileOverrides(id, ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides).toJsonString())
+    }
     suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile
     suspend fun updateProfileCurrentGroupName(id: Long, groupName: String): Profile =
         profiles.value.firstOrNull { it.id == id }
@@ -117,10 +141,16 @@ interface ProfileStore {
     suspend fun extensionProfile(id: Long): Profile? = profiles.value.firstOrNull { it.id == id }
     suspend fun globalExtensionRules(): List<ExtensionRule> = emptyList()
     suspend fun saveGlobalExtensionRules(rules: List<ExtensionRule>) { error("此数据源不支持全局附加规则") }
+    suspend fun compareAndSaveGlobalExtensionRules(expected: List<ExtensionRule>, rules: List<ExtensionRule>) {
+        check(globalExtensionRules() == expected) { "全局规则已变化，请重新读取后保存" }
+        saveGlobalExtensionRules(rules)
+    }
     suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile =
         error("此数据源不支持扩展设置")
     suspend fun updateRemoteProfile(id: Long): Profile
     suspend fun deleteProfile(id: Long)
+    suspend fun proxyResourceUsers(id: Long): List<String> = emptyList()
+    suspend fun proxyResourceUsage(): Map<Long, List<String>> = emptyMap()
     suspend fun reorder(ids: List<Long>)
 }
 
@@ -177,6 +207,61 @@ class ProfileRepository(
             var size = 0
             val bounded = candidates.take(24).takeWhile { size += it.length; size <= 512 * 1024 }
             preferenceDao.put(AppPreferenceEntity("group_icon_history", ProxyGroupDrafts.array(bounded).toString(), System.currentTimeMillis()))
+        }
+    }
+
+    val localProxyChanges = preferenceDao.observe(LocalProxies.KEY)
+    override suspend fun localProxies(): List<LocalProxy> = LocalProxies.decode(preferenceDao.get(LocalProxies.KEY))
+
+    suspend fun localProxyUsers(names: Set<String>): List<String> = withContext(Dispatchers.IO) {
+        profileDao.getAll().filter { it.type == ProfileType.CUSTOM }.mapNotNull {
+            if (LocalProxies.referenced(profileFile(it.id).readText()).any(names::contains)) it.toDomain().realLabel else null
+        }
+    }
+
+    suspend fun saveLocalProxies(expected: List<LocalProxy>, next: List<LocalProxy>, rename: Pair<String, String>? = null) = withContext(Dispatchers.IO) {
+        fileMutationMutex.withLock {
+            check(localProxies() == expected) { "本地代理已变化，请重新打开编辑器" }
+            val custom = profileDao.getAll().filter { it.type == ProfileType.CUSTOM }
+            val sources = custom.associate { it.id to profileFile(it.id).readText() }
+            val groupNames = sources.values.flatMap { ProxyGroupDrafts.read(it).map { group -> group.name } }.toSet()
+            LocalProxies.validate(next, groupNames)
+            val changes = if (rename == null) emptyList() else custom.mapNotNull { entity ->
+                val source = sources.getValue(entity.id)
+                // 作者 long：同名组拥有自己的引用空间；与上游一样，不能把组引用误改成全局节点名。
+                if (ProxyGroupDrafts.read(source).any { it.name == rename.first || it.name == rename.second } || rename.first in ProxyGroupDrafts.proxyNames(source)) null else {
+                    val updated = LocalProxyReferences.rename(source, rename.first, rename.second)
+                    require(updated == source || rename.second !in ProxyGroupDrafts.proxyNames(source)) { "新名称与配置内节点重名，请使用其他名称" }
+                    if (ProxyGroupDrafts.root(updated) == ProxyGroupDrafts.root(source) && LocalProxyReferences.metadata(entity.toDomain(), rename.first, rename.second) == entity.toDomain()) null else {
+                        val snapshot = snapshotLocalProfileFile(profileFile(entity.id))
+                        check(snapshot.bytes?.toString(Charsets.UTF_8) == source) { "配置正文已变化，请重试" }
+                        Triple(entity, updated, snapshot)
+                    }
+                }
+            }
+            // 作者 long：多份配置的引用和全局目录共同提交；任意文件或数据库失败，沿嵌套提交逐层恢复原正文与时间。
+            withContext(kotlinx.coroutines.NonCancellable) {
+                val commits = mutableListOf<() -> Unit>()
+                suspend fun commitAt(index: Int) {
+                    if (index < changes.size) {
+                        val (entity, content, snapshot) = changes[index]
+                        replaceLocalProfileFile(profileFile(entity.id), content.toByteArray(), { commit ->
+                            commits += commit
+                            commitAt(index + 1)
+                        }, expected = snapshot)
+                    } else database.withTransaction {
+                        check(localProxies() == expected && profileDao.getAll().filter { it.type == ProfileType.CUSTOM } == custom) { "配置已变化，请重试" }
+                        changes.forEach { (entity, _, _) ->
+                            val updated = LocalProxyReferences.metadata(entity.toDomain(), rename!!.first, rename.second)
+                                .copy(lastUpdateAt = System.currentTimeMillis())
+                            profileDao.update(updated.toEntity())
+                        }
+                        preferenceDao.put(AppPreferenceEntity(LocalProxies.KEY, LocalProxies.encode(next), System.currentTimeMillis()))
+                        commits.forEach { it() }
+                    }
+                }
+                commitAt(0)
+            }
         }
     }
 
@@ -283,6 +368,65 @@ class ProfileRepository(
         file.readText(Charsets.UTF_8)
     }
 
+    override suspend fun readEditableProfileDocument(id: Long): ProfileDocumentSnapshot = withContext(Dispatchers.IO) {
+        fileMutationMutex.withLock {
+            val profile = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            require(profile.type != ProfileType.CUSTOM) { "请从自定义配置分区编辑" }
+            val snapshot = snapshotLocalProfileFile(profileFile(id))
+            val bytes = requireNotNull(snapshot.bytes) { "配置缓存不存在" }
+            ProfileDocumentSnapshot(profile, profileDocumentText(bytes), profileDocumentDigest(bytes), snapshot.modified)
+        }
+    }
+
+    override suspend fun saveProfileDocument(expected: ProfileDocumentSnapshot, settings: ProfileDocumentSettings,
+        replacement: ByteArray?, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        val before = expected.profile
+        require(before.type == ProfileType.FILE || before.type == ProfileType.URL)
+        val label = settings.label.trim()
+        require(label.isNotEmpty() && label.length <= MAX_PROFILE_LABEL_LENGTH) { "配置名称不能为空，最多 64 个字符" }
+        val url = if (before.type == ProfileType.URL) normalizeSubscriptionUrl(settings.url) else before.url
+        val key = settings.ageSecretKey.trim()
+        val plaintext = replacement?.let { bytes ->
+            require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
+            val decoded = contentDecoder.decode(bytes, key)
+            profileDocumentText(decoded)
+            try { configValidator.validate(decoded) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { throw IllegalArgumentException("配置不是有效的 YAML，请检查文件内容") }
+            decoded
+        }
+        kotlinx.coroutines.currentCoroutineContext().ensureActive()
+        fileMutationMutex.withLock {
+            val file = profileFile(before.id)
+            val original = snapshotLocalProfileFile(file)
+            check(original.bytes != null && original.modified == expected.modified && profileDocumentDigest(original.bytes) == expected.digest) {
+                "配置正文已变化，请重新打开编辑器"
+            }
+            withContext(kotlinx.coroutines.NonCancellable) {
+                suspend fun persist(commit: () -> Unit) = database.withTransaction {
+                    check(canWrite()) { "编辑会话已变化，请重试" }
+                    val latest = requireNotNull(profileDao.getById(before.id)) { "配置不存在" }.toDomain()
+                    // 作者 long：仅比较表单所属字段，运行中选节点/组页记忆/覆盖设置保留最新值；外部改源、改名和同步必须重开。
+                    check(latest.type == before.type && latest.documentSettings() == before.documentSettings() && latest.lastUpdateAt == before.lastUpdateAt) {
+                        "配置设置已变化，请重新打开编辑器"
+                    }
+                    if (latest.type == ProfileType.URL) require(profileDao.getAll().none { it.id != latest.id && it.url == url }) { "该订阅已经添加" }
+                    val next = latest.copy(label = label, url = url, ageSecretKey = key,
+                        autoUpdate = if (latest.type == ProfileType.URL) settings.autoUpdate else latest.autoUpdate,
+                        autoUpdateIntervalMillis = if (latest.type == ProfileType.URL) settings.intervalMillis.coerceAtLeast(MIN_AUTO_UPDATE_INTERVAL_MILLIS) else latest.autoUpdateIntervalMillis,
+                        lastUpdateAt = if (plaintext != null) System.currentTimeMillis() else latest.lastUpdateAt,
+                        lastUpdateError = if (plaintext != null) null else latest.lastUpdateError)
+                    commit()
+                    profileDao.update(next.toEntity())
+                    check(canWrite()) { "编辑会话已变化，请重试" }
+                    next
+                }
+                // 作者 long：元数据与新正文一起提交；Room失败由同一文件工具恢复原字节和mtime，取消也不能只写一半。
+                if (plaintext == null) persist {} else replaceLocalProfileFile(file, plaintext, ::persist, expected = original)
+            }
+        }
+    }
+
     override suspend fun readExport(profileId: Long): ProfileExport = withContext(Dispatchers.IO) {
         val profile = requireNotNull(profileDao.getById(profileId)) { "配置不存在" }.toDomain()
         require(profile.type != ProfileType.CUSTOM) { "自定义配置不支持文件导出" }
@@ -329,7 +473,12 @@ class ProfileRepository(
 
     override suspend fun saveCustomProxyGroups(id: Long, save: ProxyGroupsSave, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
         fileMutationMutex.withLock {
-            val content = ProxyGroupDrafts.apply(expectedContent, save)
+            save.providerProfiles.values.distinct().forEach { resourceId ->
+                require(profileDao.getById(resourceId)?.type?.let { it != ProfileType.CUSTOM } == true) { "代理资源已删除，请重新选择" }
+            }
+            val candidates = LocalProxies.candidates(expectedContent, localProxies())
+            ProxyGroupDrafts.validate(save.groups, candidates)
+            val content = ProxyGroupDrafts.apply(expectedContent, save, localProxies().map { it.name })
             configValidator.validate(content.toByteArray(Charsets.UTF_8))
             val file = profileFile(id)
             val original = snapshotLocalProfileFile(file)
@@ -355,7 +504,8 @@ class ProfileRepository(
 
     override suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
         fileMutationMutex.withLock {
-            val content = ProfileProvidersEditor.replace(expectedContent, sections)
+            // 作者 long：只保存选项覆盖时正文应逐字节保持，避免一次字段确认无意义地重排资源定义。
+            val content = if (sections == ProfileProvidersEditor.extract(expectedContent)) expectedContent else ProfileProvidersEditor.replace(expectedContent, sections)
             configValidator.validate(content.toByteArray())
             val file = profileFile(id)
             val original = snapshotLocalProfileFile(file)
@@ -363,20 +513,22 @@ class ProfileRepository(
             kotlinx.coroutines.currentCoroutineContext().ensureActive()
             // 作者 long：资源引用和字段覆盖一次提交；事务读取最新元数据，不能覆盖另一个分区刚保存的 DNS 或脚本。
             withContext(kotlinx.coroutines.NonCancellable) {
-                replaceLocalProfileFile(file, content.toByteArray(), { commit ->
-                    database.withTransaction {
-                        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-                        require(current.type == ProfileType.CUSTOM) { "只有自定义配置支持资源绑定" }
-                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
-                        val merged = ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides)
-                        val updated = current.copy(overridesJson = merged.toJsonString(), lastUpdateAt = System.currentTimeMillis())
-                        profileDao.update(updated.toEntity())
-                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
-                        commit()
-                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
-                        updated
-                    }
-                }, expected = original)
+                suspend fun updateMetadata(commit: () -> Unit): Profile = database.withTransaction {
+                    val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                    require(current.type == ProfileType.CUSTOM) { "只有自定义配置支持资源绑定" }
+                    check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                    val merged = ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides)
+                    val updated = current.copy(overridesJson = merged.toJsonString(), lastUpdateAt = System.currentTimeMillis())
+                    profileDao.update(updated.toEntity())
+                    check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                    commit()
+                    check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                    updated
+                }
+                // 作者 long：仅字段确认不触碰源文件与 mtime；资源定义变更才进入原子文件/Room 共同提交。
+                if (content == expectedContent) updateMetadata {} else {
+                    replaceLocalProfileFile(file, content.toByteArray(), { commit -> updateMetadata(commit) }, expected = original)
+                }
             }
         }
     }
@@ -393,12 +545,23 @@ class ProfileRepository(
         require(content.toByteArray(Charsets.UTF_8).size <= MAX_PROFILE_FILE_BYTES && content.isNotBlank()) { "配置为空或超过 8 MiB" }
         configValidator.validate(content.toByteArray(Charsets.UTF_8))
         check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
+        val localBefore = localProxies()
+        val groupNames = profileDao.getAll().filter { it.type == ProfileType.CUSTOM && it.id != id }
+            .flatMap { ProxyGroupDrafts.read(profileFile(it.id).readText()).map { group -> group.name } }.toSet() + ProxyGroupDrafts.read(content).map { it.name }
+        val localImport = planLocalProxyImport(content, localBefore, groupNames)
+        LocalProxies.validate(localImport.after, groupNames)
+        val proxyImport = prepareProxyImport(localImport.source)
+        val createdFiles = mutableListOf<File>()
         // 作者 long：下载和核心编译不能持有配置文件锁，否则核心读取配置时会与编译初始化形成反向等待。
         val commit: suspend (String, suspend () -> Unit) -> Profile = { mappedContent, persistResources ->
             fileMutationMutex.withLock {
                 val file = profileFile(id)
                 val original = snapshotLocalProfileFile(file)
                 require(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化或缺失，请重新导入" }
+                // 作者 long：导入下载期间其他配置可能改了策略组名称，提交前复核所有名称空间，避免新全局节点遮蔽策略组。
+                val currentGroups = profileDao.getAll().filter { it.type == ProfileType.CUSTOM && it.id != id }
+                    .flatMap { ProxyGroupDrafts.read(profileFile(it.id).readText()).map { group -> group.name } } + ProxyGroupDrafts.read(mappedContent).map { it.name }
+                LocalProxies.validate(localImport.after, currentGroups.toSet())
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 // 作者 long：导入同时替换正文、全局资源、覆盖与旧节点选择，文件和 Room 共同提交或回滚。
                 withContext(kotlinx.coroutines.NonCancellable) {
@@ -407,8 +570,18 @@ class ProfileRepository(
                             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
                             require(current.type == ProfileType.CUSTOM && current == expected) { "配置已变化，请重新导入" }
                             check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
+                            require(profileDao.getAll() == proxyImport.before) { "配置资源已变化，请重新确认导入" }
+                            proxyImport.added.forEach { (resource, bytes) ->
+                                val target = profileFile(resource.id)
+                                require(!target.exists()) { "代理资源文件已存在，请重新导入" }
+                                createdFiles += target
+                                replaceFileAtomically(resource.id, bytes)
+                                profileDao.insert(resource.toEntity())
+                            }
+                            check(localProxies() == localImport.before) { "本地代理已变化，请重新确认导入" }
+                            preferenceDao.put(AppPreferenceEntity(LocalProxies.KEY, LocalProxies.encode(localImport.after), System.currentTimeMillis()))
                             persistResources()
-                            val updated = current.copy(overridesJson = ProfileProviderOverrides().toJsonString(),
+                            val updated = current.copy(overridesJson = ProfileProviderOverrides(dialers = localImport.dialers.takeIf { it.isNotEmpty() }).toJsonString(),
                                 selectedMapJson = "{}", currentGroupName = "", unfoldSetJson = "[]", lastUpdateAt = System.currentTimeMillis())
                             profileDao.update(updated.toEntity())
                             check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
@@ -420,7 +593,68 @@ class ProfileRepository(
                 }
             }
         }
-        resources?.importResources(content, commit) ?: commit(content) {}
+        var committed = false
+        try {
+            (resources?.importResources(proxyImport.content, commit) ?: commit(proxyImport.content) {}).also { committed = true }
+        } finally {
+            // 作者 long：Room 回滚后只回收本次新分配的代理文件，已有订阅和当前配置始终保留。
+            if (!committed) createdFiles.forEach { it.delete() }
+        }
+    }
+
+    private data class ProxyImportPlan(val content: String, val before: List<ProfileEntity>, val added: List<Pair<Profile, ByteArray>>)
+
+    private suspend fun prepareProxyImport(content: String): ProxyImportPlan {
+        val before = profileDao.getAll()
+        val root = ProxyGroupDrafts.root(content)
+        val definitions = root.get("proxy-providers")?.takeIf { it.isJsonObject }?.asJsonObject
+            ?: return ProxyImportPlan(content, before, emptyList())
+        if (definitions.size() == 0) return ProxyImportPlan(content, before, emptyList())
+        val profiles = before.map { it.toDomain() }.toMutableList()
+        val held = profiles.flatMap { listOf(it.label, it.realLabel) }.toMutableSet()
+        val names = linkedMapOf<String, String>()
+        val mapped = com.google.gson.JsonObject()
+        val added = mutableListOf<Pair<Profile, ByteArray>>()
+        for ((name, definition) in definitions.entrySet()) {
+            if (ProfileProxyResources.idOf(definition) != null) { mapped.add(name, definition.deepCopy()); continue }
+            require(definition.isJsonObject) { "代理资源定义无效" }
+            val fields = definition.asJsonObject
+            val type = fields.get("type")?.asString
+            val url = if (type == "http") normalizeSubscriptionUrl(fields.get("url")?.asString.orEmpty()) else ""
+            val key = if (url.isNotEmpty()) fields.get("age-secret-key")?.asString.orEmpty().trim() else ""
+            val existing = profiles.firstOrNull { it.type != ProfileType.CUSTOM && url.isNotEmpty() && it.url == url && (key.isEmpty() || it.ageSecretKey == key) }
+            val resource = existing ?: run {
+                val label = ProfileProxyResources.uniqueLabel(name, held)
+                val downloaded = if (url.isNotEmpty()) subscriptionClient.download(url) else null
+                val bytes = if (downloaded != null) contentDecoder.decode(downloaded.bytes, key) else {
+                    require(type == "inline" && fields.get("payload")?.isJsonArray == true) { "本地代理资源缺少节点正文，请先导入该资源后重新绑定" }
+                    com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(com.google.gson.JsonObject().apply {
+                        add("proxies", fields.get("payload").deepCopy())
+                    }.toString()).toByteArray()
+                }
+                require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "代理资源为空或超过 8 MiB" }
+                configValidator.validate(bytes)
+                val resourceId = generateSequence { newId() }.first { candidate -> candidate > 0 && profiles.none { it.id == candidate } && !profileFile(candidate).exists() }
+                val profile = Profile.remote(resourceId, url, label).copy(
+                    type = if (url.isEmpty()) ProfileType.FILE else ProfileType.URL,
+                    ageSecretKey = key, autoUpdate = url.isNotEmpty(), lastUpdateAt = System.currentTimeMillis(),
+                    subscriptionInfo = downloaded?.subscriptionInfo, orderIndex = profiles.size,
+                )
+                profiles += profile; held += label; added += profile to bytes
+                profile
+            }
+            val alias = mapped.entrySet().firstOrNull { ProfileProxyResources.idOf(it.value) == resource.id }?.key
+                ?: ProfileProxyResources.uniqueLabel(resource.realLabel, mapped.keySet() + definitions.entrySet().filter { ProfileProxyResources.idOf(it.value) != null }.map { it.key })
+            names[name] = alias
+            // 作者 long：来源字段转为稳定绑定，其余核心选项留在配置内，两个配置引用同一订阅仍可独立过滤和测速。
+            val options = fields.deepCopy()
+            listOf("url", "payload", "age-secret-key", "path", "interval").forEach(options::remove)
+            ProfileProxyResources.reference(resource.id).entrySet().forEach { options.add(it.key, it.value) }
+            mapped.add(alias, options)
+        }
+        root.add("proxy-providers", mapped)
+        ProfileProxyResources.renameUses(root, names)
+        return ProxyImportPlan(com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(root.toString()), before, added)
     }
 
     override suspend fun updateFileProfile(
@@ -475,14 +709,16 @@ class ProfileRepository(
     }
 
     override suspend fun updateProfileLabel(id: Long, label: String): Profile = withContext(Dispatchers.IO) {
-        val normalized = label.trim()
-        require(normalized.isNotEmpty()) { "配置名称不能为空" }
-        require(normalized.length <= MAX_PROFILE_LABEL_LENGTH) { "配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符" }
-        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-        val updated = current.copy(label = normalized)
-        // 作者 long：名称只属于 Room 元数据，独立更新不会重写 YAML 或触发订阅下载，避免改名影响正在使用的配置内容。
-        profileDao.update(updated.toEntity())
-        updated
+        database.withTransaction {
+            val normalized = label.trim()
+            require(normalized.isNotEmpty()) { "配置名称不能为空" }
+            require(normalized.length <= MAX_PROFILE_LABEL_LENGTH) { "配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符" }
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            val updated = current.copy(label = normalized)
+            // 作者 long：名称只属于 Room 元数据，独立更新不会重写 YAML 或触发订阅下载，避免改名影响正在使用的配置内容。
+            profileDao.update(updated.toEntity())
+            updated
+        }
     }
 
     override suspend fun updateRemoteProfileSettings(
@@ -493,40 +729,71 @@ class ProfileRepository(
         intervalMillis: Long,
         ageSecretKey: String,
     ): Profile = withContext(Dispatchers.IO) {
-        val normalizedLabel = label.trim()
-        require(normalizedLabel.length <= MAX_PROFILE_LABEL_LENGTH) {
-            "配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符"
+        database.withTransaction {
+            val normalizedLabel = label.trim()
+            require(normalizedLabel.length <= MAX_PROFILE_LABEL_LENGTH) {
+                "配置名称不能超过 ${MAX_PROFILE_LABEL_LENGTH} 个字符"
+            }
+            val normalizedUrl = normalizeSubscriptionUrl(url)
+            require(profileDao.getAll().none { it.id != id && it.url == normalizedUrl }) { "该订阅已经添加" }
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            require(current.type == ProfileType.URL) { "只有远程订阅支持编辑订阅信息" }
+            val updated = current.copy(
+                label = normalizedLabel,
+                url = normalizedUrl,
+                autoUpdate = autoUpdate,
+                autoUpdateIntervalMillis = intervalMillis.coerceAtLeast(MIN_AUTO_UPDATE_INTERVAL_MILLIS),
+                ageSecretKey = ageSecretKey.trim(),
+            )
+            // 作者 long：沿用原版先保存元数据；地址或密钥变化后再下载，失败时保留旧缓存并允许修正密钥后重试。
+            profileDao.update(updated.toEntity())
+            updated
         }
-        val normalizedUrl = normalizeSubscriptionUrl(url)
-        require(mutableProfiles.value.none { it.id != id && it.url == normalizedUrl }) { "该订阅已经添加" }
-        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-        require(current.type == ProfileType.URL) { "只有远程订阅支持编辑订阅信息" }
-        val updated = current.copy(
-            label = normalizedLabel,
-            url = normalizedUrl,
-            autoUpdate = autoUpdate,
-            autoUpdateIntervalMillis = intervalMillis.coerceAtLeast(MIN_AUTO_UPDATE_INTERVAL_MILLIS),
-            ageSecretKey = ageSecretKey.trim(),
-        )
-        // 作者 long：沿用原版先保存元数据；地址或密钥变化后再下载，失败时保留旧缓存并允许修正密钥后重试。
-        profileDao.update(updated.toEntity())
-        updated
     }
 
     override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
         withContext(Dispatchers.IO) {
+            database.withTransaction {
+                val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                val updated = current.copy(overridesJson = overridesJson)
+                profileDao.update(updated.toEntity())
+                updated
+            }
+        }
+
+    override suspend fun saveMoreOptions(id: Long, patch: ProfileMorePatch, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        database.withTransaction {
+            // 作者 long：事务内重读最新整行，仅提交本次差异；启停或会话变更必须回滚，且不重写原YAML文件。
+            check(canWrite()) { "更多设置编辑状态已变化，请停止核心后重试" }
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-            val updated = current.copy(overridesJson = overridesJson)
+            require(current.type == ProfileType.CUSTOM) { "请从自定义配置编辑更多设置" }
+            val updated = current.copy(overridesJson = patch.applyTo(current.overridesJson))
             profileDao.update(updated.toEntity())
+            check(canWrite()) { "更多设置编辑状态已变化，请停止核心后重试" }
             updated
         }
+    }
+
+    override suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        database.withTransaction {
+            // 作者 long：订阅/文件配置仅更新本分区，事务内读取最新 DNS/脚本等元数据，并拒绝关闭或启停后的迟到提交。
+            check(canWrite()) { "资源编辑状态已变化" }
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            val updated = current.copy(overridesJson = ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides).toJsonString())
+            profileDao.update(updated.toEntity())
+            check(canWrite()) { "资源编辑状态已变化" }
+            updated
+        }
+    }
 
     override suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile =
         withContext(Dispatchers.IO) {
-            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-            val updated = current.copy(selectedMapJson = encodeSelectedMap(selectedMap))
-            profileDao.update(updated.toEntity())
-            updated
+            database.withTransaction {
+                val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                val updated = current.copy(selectedMapJson = encodeSelectedMap(selectedMap))
+                profileDao.update(updated.toEntity())
+                updated
+            }
         }
 
     override suspend fun updateProfileGroupViewState(
@@ -535,23 +802,27 @@ class ProfileRepository(
         unfoldSet: Set<String>,
     ): Profile =
         withContext(Dispatchers.IO) {
-            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-            // 作者 long：当前组和折叠状态由同一次 Room 更新保存，避免并发写整行时互相覆盖。
-            val updated = current.copy(
-                currentGroupName = groupName,
-                unfoldSetJson = encodeUnfoldSet(unfoldSet),
-            )
-            profileDao.update(updated.toEntity())
-            updated
+            database.withTransaction {
+                val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                // 作者 long：当前组和折叠状态由同一次 Room 更新保存，避免并发写整行时互相覆盖。
+                val updated = current.copy(
+                    currentGroupName = groupName,
+                    unfoldSetJson = encodeUnfoldSet(unfoldSet),
+                )
+                profileDao.update(updated.toEntity())
+                updated
+            }
         }
 
     override suspend fun updateProfileCurrentGroupName(id: Long, groupName: String): Profile =
         withContext(Dispatchers.IO) {
-            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-            // 作者 long：组页记忆按 Profile 隔离，切回同一配置时可恢复上次查看的组，不改动核心 YAML。
-            val updated = current.copy(currentGroupName = groupName)
-            profileDao.update(updated.toEntity())
-            updated
+            database.withTransaction {
+                val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                // 作者 long：组页记忆按 Profile 隔离，切回同一配置时可恢复上次查看的组，不改动核心 YAML。
+                val updated = current.copy(currentGroupName = groupName)
+                profileDao.update(updated.toEntity())
+                updated
+            }
         }
 
     override suspend fun updateProfileAutoUpdate(
@@ -559,14 +830,16 @@ class ProfileRepository(
         enabled: Boolean,
         intervalMillis: Long,
     ): Profile = withContext(Dispatchers.IO) {
-        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-        require(current.type == ProfileType.URL) { "只有订阅配置支持自动更新" }
-        val updated = current.copy(
-            autoUpdate = enabled,
-            autoUpdateIntervalMillis = intervalMillis.coerceAtLeast(MIN_AUTO_UPDATE_INTERVAL_MILLIS),
-        )
-        profileDao.update(updated.toEntity())
-        updated
+        database.withTransaction {
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            require(current.type == ProfileType.URL) { "只有订阅配置支持自动更新" }
+            val updated = current.copy(
+                autoUpdate = enabled,
+                autoUpdateIntervalMillis = intervalMillis.coerceAtLeast(MIN_AUTO_UPDATE_INTERVAL_MILLIS),
+            )
+            profileDao.update(updated.toEntity())
+            updated
+        }
     }
 
     override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
@@ -594,6 +867,15 @@ class ProfileRepository(
         preferenceDao.put(AppPreferenceEntity(ExtensionRules.PREFERENCE_KEY, ExtensionRules.toJson(rules).toString(), System.currentTimeMillis()))
     }
 
+    override suspend fun compareAndSaveGlobalExtensionRules(expected: List<ExtensionRule>, rules: List<ExtensionRule>) = withContext(Dispatchers.IO) {
+        ExtensionRules.validate(rules)
+        // 作者 long：全局管理页和配置扩展页共享目录；事务内复核完整旧快照，拒绝迟到页面覆盖新的规则或排序。
+        database.withTransaction {
+            check(globalExtensionRules() == expected) { "全局规则已变化，请重新读取后保存" }
+            saveGlobalExtensionRules(rules)
+        }
+    }
+
     override suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile =
         withContext(Dispatchers.IO) {
             require(mode in setOf("standard", "script")) { "未知扩展模式" }
@@ -612,29 +894,39 @@ class ProfileRepository(
         }
 
     override suspend fun updateRemoteProfile(id: Long): Profile = withContext(Dispatchers.IO) {
-        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-        require(current.type == ProfileType.URL) { "只有订阅配置支持更新" }
+        val (current, original) = fileMutationMutex.withLock {
+            val row = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            require(row.type == ProfileType.URL) { "只有订阅配置支持更新" }
+            row to snapshotLocalProfileFile(profileFile(id))
+        }
         try {
+            // 作者 long：下载不占目录锁；完成后重新核验来源和最新整行，运行中切节点/改名不能被旧请求覆盖。
             val downloaded = subscriptionClient.download(current.url)
-            // 作者 long：下载内容必须先通过 YAML 根对象校验，之后才允许替换旧文件，
-            // 这样网络返回 HTML、空内容或损坏配置时不会破坏上一份可运行订阅。
             val plaintext = contentDecoder.decode(downloaded.bytes, current.ageSecretKey)
+            require(plaintext.isNotEmpty() && plaintext.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
             configValidator.validate(plaintext)
-            val latest = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-            // 作者 long：下载期间用户可能改了地址或密钥，旧请求不能把过期来源的明文覆盖到新设置下。
-            require(latest.url == current.url && latest.ageSecretKey == current.ageSecretKey) { "订阅设置已变化，请重新更新" }
-            replaceFileAtomically(id, plaintext)
-            val updated = latest.copy(
-                label = latest.label.ifBlank { downloaded.suggestedLabel.orEmpty() },
-                lastUpdateAt = System.currentTimeMillis(),
-                lastUpdateError = null,
-                subscriptionInfo = downloaded.subscriptionInfo.takeIf { it != SubscriptionInfo() },
-            )
-            profileDao.update(updated.toEntity())
-            updated
+            fileMutationMutex.withLock {
+                withContext(kotlinx.coroutines.NonCancellable) {
+                    replaceLocalProfileFile(profileFile(id), plaintext, persist = { commit ->
+                        database.withTransaction {
+                            val latest = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                            require(latest.type == ProfileType.URL && latest.url == current.url && latest.ageSecretKey == current.ageSecretKey) { "订阅设置已变化，请重新更新" }
+                            val updated = latest.copy(
+                                label = latest.label.ifBlank { downloaded.suggestedLabel.orEmpty() },
+                                lastUpdateAt = System.currentTimeMillis(), lastUpdateError = null,
+                                subscriptionInfo = downloaded.subscriptionInfo.takeIf { it != SubscriptionInfo() },
+                            )
+                            // 作者 long：先替换文件再写Room；数据库拒绝时既有文件工具会恢复原字节和mtime。
+                            commit()
+                            profileDao.update(updated.toEntity())
+                            updated
+                        }
+                    }, expected = original)
+                }
+            }
         } catch (error: Throwable) {
             if (error is CancellationException) throw error
-            recordRemoteUpdateFailure(id, error)
+            recordRemoteUpdateFailure(id, current.url, current.ageSecretKey, current.lastUpdateAt)
             throw error
         }
     }
@@ -672,6 +964,23 @@ class ProfileRepository(
             succeeded = succeeded,
             failures = failures,
         )
+    }
+
+    override suspend fun proxyResourceUsers(id: Long): List<String> = proxyResourceUsage()[id].orEmpty()
+
+    override suspend fun proxyResourceUsage(): Map<Long, List<String>> = withContext(Dispatchers.IO) {
+        val usage = linkedMapOf<Long, MutableList<String>>()
+        // 作者 long：配置列表一次扫描引用关系，不能为每张订阅卡重复解析全部自定义配置。
+        profileDao.getAll().filter { it.type == ProfileType.CUSTOM }.forEach { row ->
+            val ids = runCatching {
+                val root = ProxyGroupDrafts.root(profileFile(row.id).readText())
+                val used = ProfileProxyResources.referenced(root)
+                root.getAsJsonObject("proxy-providers")?.entrySet()?.filter { it.key in used }
+                    ?.mapNotNull { ProfileProxyResources.idOf(it.value) }?.toSet().orEmpty()
+            }.getOrDefault(emptySet())
+            ids.forEach { id -> usage.getOrPut(id) { mutableListOf() }.add(row.toDomain().realLabel) }
+        }
+        usage
     }
 
     override suspend fun deleteProfile(id: Long) = withContext(Dispatchers.IO) {
@@ -729,10 +1038,10 @@ class ProfileRepository(
         // 作者 long：旧绑定在引入模式前始终执行，未明确选择新模式的配置保留旧行为；CUSTOM 的既有绑定继续兼容。
         val useScript = profile.type == ProfileType.CUSTOM || profile.extendType == "script" || !extension.configured && profile.scriptId != null
         val standard = profile.type != ProfileType.CUSTOM && !useScript
-        val sourcePath = if (profile.type == ProfileType.CUSTOM && resources != null) {
+        val sourcePath = if (profile.type == ProfileType.CUSTOM) {
             fileMutationMutex.withLock {
                 val source = profileFile(profile.id).readText()
-                val resolved = resources.resolve(source)
+                val resolved = LocalProxies.project(resolveProxyResources(resources?.resolve(source) ?: source), localProxies())
                 if (resolved == source) profileFile(profile.id).path else {
                     // 作者 long：投影按内容变动才替换，后台刷新不能因每次读取重写 mtime 而重复加载核心。
                     val digest = java.security.MessageDigest.getInstance("SHA-256").digest(resolved.toByteArray()).joinToString("") { "%02x".format(it) }
@@ -760,8 +1069,38 @@ class ProfileRepository(
                 }.path
             },
             deferExtensionApplication = profile.type != ProfileType.CUSTOM,
+            usesGlobalDns = profile.type != ProfileType.CUSTOM,
             standardExtension = if (standard) StandardProfileExtension(extension.rules + globalExtensionRules().filterNot { it.id in extension.disabledGlobalRuleIds }, profile.matchTarget) else null,
         )
+    }
+
+    private suspend fun resolveProxyResources(source: String): String {
+        if (!source.contains(PROFILE_RESOURCE_PREFIX)) return source
+        val root = ProxyGroupDrafts.root(source)
+        val used = ProfileProxyResources.referenced(root)
+        val providers = root.getAsJsonObject("proxy-providers") ?: return source
+        for ((alias, definition) in providers.entrySet().toList()) {
+            if (!ProfileProxyResources.isReference(definition)) continue
+            // 作者 long：include-all-providers 只包含配置显式引用的资源，未使用绑定不能引发额外加载或缺失错误。
+            if (alias !in used) { providers.remove(alias); continue }
+            val resourceId = requireNotNull(ProfileProxyResources.idOf(definition)) { "代理资源标识无效：$alias，请重新选择资源" }
+            val resource = profileDao.getById(resourceId)
+            require(resource != null && resource.type != ProfileType.CUSTOM) { "代理资源缺失：$alias，请重新选择资源" }
+            val file = profileFile(resourceId)
+            require(file.isFile && file.length() in 1..MAX_PROFILE_FILE_BYTES.toLong()) { "代理资源缓存缺失，请同步或重新导入" }
+            val bytes = file.readBytes()
+            val digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+            val snapshot = File(appContext.filesDir, "mihomo/providers/profiles/$resourceId-$digest.yaml")
+            // 作者 long：Mihomo 读取整个订阅缓存，和 Flutter 一致，不执行该资源配置绑定的脚本或 DNS 扩展。
+            if (!snapshot.isFile) {
+                snapshot.parentFile?.mkdirs()
+                val temporary = File(snapshot.parentFile, ".$resourceId.tmp")
+                temporary.writeBytes(bytes)
+                check(temporary.renameTo(snapshot)) { "无法写入代理资源投影" }
+            }
+            definition.asJsonObject.addProperty("path", snapshot.path)
+        }
+        return com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(root.toString())
     }
 
     private suspend fun ensureCurrentProfile(id: Long) {
@@ -795,12 +1134,15 @@ class ProfileRepository(
         }
     }
 
-    private suspend fun recordRemoteUpdateFailure(id: Long, error: Throwable) {
+    private suspend fun recordRemoteUpdateFailure(id: Long, sourceUrl: String, sourceKey: String, updatedAt: Long?) {
         runCatching {
-            val latest = profileDao.getById(id)?.toDomain() ?: return@runCatching
-            val message = error.message.orEmpty().trim().take(MAX_UPDATE_ERROR_LENGTH)
-                .ifBlank { "订阅更新失败" }
-            profileDao.update(latest.copy(lastUpdateError = message).toEntity())
+            database.withTransaction {
+                val latest = profileDao.getById(id)?.toDomain() ?: return@withTransaction
+                // 作者 long：旧来源的失败不污染用户刚改好的订阅，错误文本不持久化URL/核心原文。
+                if (latest.url == sourceUrl && latest.ageSecretKey == sourceKey && latest.lastUpdateAt == updatedAt) {
+                    profileDao.update(latest.copy(lastUpdateError = "订阅更新失败，请检查网络、订阅地址或解密密钥").toEntity())
+                }
+            }
         }
     }
 

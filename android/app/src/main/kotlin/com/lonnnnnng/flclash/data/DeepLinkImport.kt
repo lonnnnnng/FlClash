@@ -52,6 +52,11 @@ object DeepLinkProfileParser {
         return parse(text)?.url
     }
 
+    // 作者 long：相机和相册共享候选解析，忽略无效码并保留安装链接中的名称；确认表单前不下载或写配置。
+    fun fromQrCodes(values: List<String>): DeepLinkProfileImport? = values.firstNotNullOfOrNull { raw ->
+        parse(raw) ?: parseProfileUrl(raw)?.let { DeepLinkProfileImport(it, null) }
+    }
+
     private fun isHttpUrl(value: String): Boolean {
         val uri = runCatching { URI(value) }.getOrNull() ?: return false
         return uri.scheme?.lowercase() in setOf("http", "https") &&

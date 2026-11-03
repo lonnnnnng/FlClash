@@ -531,8 +531,10 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("Provider · Provider 配置").assertIsDisplayed()
-        composeRule.onNodeWithText("保存").performClick()
+        composeRule.onNodeWithTag("profile_providers_page").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_providers_menu").performClick()
+        composeRule.onNodeWithText("快捷 YAML").performClick()
+        composeRule.onNodeWithTag("providers_yaml_save").performClick()
 
         assertEquals("cloud:\n  type: http", savedProxy)
         assertEquals("ads:\n  type: http", savedRule)
@@ -580,6 +582,7 @@ class ProfileUiInstrumentedTest {
     @Test
     fun providerOverrideDialogEditsTypedFieldsBeforeParentSave() {
         var savedOverrides: Map<String, ProxyProviderOverride>? = null
+        var revision by mutableStateOf(0L)
         composeRule.setContent {
             KClashTheme {
                 ProfileProvidersEditorDialog(
@@ -589,23 +592,21 @@ class ProfileUiInstrumentedTest {
                     saving = false,
                     onDismiss = {},
                     onSave = { _, _ -> },
-                    onSaveWithOverrides = { _, _, overrides -> savedOverrides = overrides },
+                    sourceContent = "proxy-groups:\n  - name: Select\n    type: select\n    use: [cloud]\n",
+                    saveRevision = revision,
+                    onSaveWithOverrides = { _, _, overrides -> savedOverrides = overrides; revision++ },
                 )
             }
         }
 
-        composeRule.onNodeWithText("编辑字段").performClick()
-        composeRule.onNodeWithText("Provider 覆盖 · cloud").assertIsDisplayed()
-        composeRule.onNodeWithText("间隔（秒）").performTextInput("300")
-        composeRule.onNodeWithText("超时（毫秒）").performTextInput("5000")
-
-        val saveButtons = composeRule.onAllNodesWithText("保存")
-        saveButtons[saveButtons.fetchSemanticsNodes().lastIndex].performClick()
-        assertTrue(
-            composeRule.onAllNodesWithText("Provider 覆盖 · cloud")
-                .fetchSemanticsNodes().isEmpty(),
-        )
-        composeRule.onAllNodesWithText("保存")[0].performClick()
+        composeRule.onNodeWithTag("profile_provider_edit_cloud").performClick()
+        composeRule.onNodeWithTag("provider_option_add").performScrollTo().performClick()
+        composeRule.onNodeWithTag("provider_option_pick_INTERVAL").performClick()
+        composeRule.onNodeWithTag("provider_option_pick_TIMEOUT").performClick()
+        composeRule.onNodeWithTag("provider_option_picker_back").performClick()
+        composeRule.onNodeWithTag("provider_options_save").performClick()
+        composeRule.waitUntil(5000) { composeRule.onAllNodesWithText("cloud").fetchSemanticsNodes().size == 1 }
+        composeRule.onNodeWithTag("profile_providers_page").assertIsDisplayed()
 
         assertEquals(
             mapOf("cloud" to ProxyProviderOverride(interval = 300, timeout = 5_000)),
