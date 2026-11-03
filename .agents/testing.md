@@ -1,5 +1,15 @@
 # Testing
 
+## 主页面视觉/交互最终集中验收（2026-11-04）
+
+- **实现**：沿Flutter engine八分弧参数实现四逻辑角/RTL/零角/超大半径连续圆角，BSD声明随APK保留；主页面卡片/节点/菜单接入，Dashboard多层阴影和Dock阴影按Flutter参数表达。运行按钮/出站模式绘制按压、短按先升后落、原位命中/语义、子树焦点和最后按下项置顶接通；Dock滑块/放大染色/拉伸分别驱动，松手才导航，取消退回当前入口。组图标按完整字素显示并修复非法代理字符；Tab/List刷新保留列表并统一禁用选择/菜单/测速。
+- **构建与参考**：最终生产build3 App430/Service188共618项零失败/错误/跳过，Debug/AndroidTest/Lint通过；testbuild6仅补截图外层偏好保存恢复，生产APK未变；此前testbuild5修复触摸模式恢复；独立Release/R8/Lint通过，各0错误/62警告。真实Flutter Path.addRSuperellipse导出7种轮廓，Android LTR/RTL逐行端点允许1px栅格差；几何oracle不等于全页面像素一致。
+- **集中验收**：Redmi API36/arm64/竖屏默认字号，retry-final3-long同批23/23，无跳过。七项新交互涵盖真实Dock拖动/取消/语义/外扩命中、长按不误释放及静态bounds、键盘子树焦点、系统无障碍完整emoji和两布局忙态。主页/配置/代理组深浅截图、模式/选择持久化/旧ID隔离/失败重试及旧入口一同通过。原1.yaml运行态90项每250ms检查、连续180000ms，Activity重建后数量及会话保持；正式配置空Providers回归通过。
+- **视觉与保护**：14张既有主页面严格基线已目视并更新，5张新增Profiles浅色/来源菜单及3张按压/焦点图作人工辅助参考；运行态/失败态图只证明功能。before、after-preflight、after-final保护各1/1，正式count2/missing0，原选择/文件SHA与mtime、脚本及运行态fixture偏好与原1.yaml双端哈希保持；最终App/Test与设备匹配，App仅arm64、测试包无原生库。结束无服务/tun0，旋转恢复1/0、字号1.0。
+- **失败保留**：build1 ColorScheme.shadow未定义修为Black；review1为2/12，真实Dock取消误提交已修，RTL像素镜像/Touch焦点/未就绪无障碍窗口分别修正。interaction2为7/8，List误用Tab标签已修；final-long为18/23，五项整页截图差异仅为继承键盘焦点。本机Compose字节码确认requestInputMode(Touch)只查询，测试改用平台setInTouchMode并等待恢复，保留原14个批准基线后最终通过，未靠更新焦点污染哈希判绿。早期视觉批次沿用的旧代理页截图宿主会清展示偏好，未独立持久化组前快照，不能宣称最初代理页展示偏好完整保持；最终测试已在Activity规则之外保存并恢复该选项，回读断言通过。
+- **证据与边界**：`docs/acceptance/main-visual-redmi-20261104.json`保存包/源码摘要、方法结果、失败与本机附件索引；原始日志/PNG/XML未上传。原始转圈现场缺失，无法认定唯一触发因；三分钟非空纯代理观察不证明所有资源更新/外网或完整进程恢复。Flutter默认非玻璃Dock及主页面基础切片通过，全部菜单/面板/玻璃模式和完整页面parity仍PARTIAL。Core/Common/Go未重跑，Release仅未签名构建、未安装运行，独立review因任务通道故障未执行。备份/系统恢复和观测页次要视觉继续暂缓。
+
+
 ## 首页/代理组与 Providers 最终集中验收（2026-11-04）
 
 补充复查：在已安装且App/Test哈希匹配前组的包上，正式空Providers停止态观察185.62秒、25次无障碍树采样正常；正式空列表/原1.yaml运行中90项与Activity重建同批2/2，前后保护各1/1。90项持续窗口仍为16秒，分钟级非空压力未覆盖；原始卡住页面已不在，不认定唯一根因。正式配置/原选择/偏好/正文和原1.yaml保持，结束无服务/tun0及旋转1/字号1.0。未重建、重装或重跑JVM/Lint，当前未构建视觉源不包含在证据中。详见`docs/acceptance/providers-recheck-redmi-20261104.json`；补充原始日志与截图前缀`/tmp/kclash-providers-recheck-20261104-`，独立review因子代理任务通道失败未执行。

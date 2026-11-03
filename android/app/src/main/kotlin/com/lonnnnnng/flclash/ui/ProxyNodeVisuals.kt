@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PushPin
@@ -54,7 +53,7 @@ import com.lonnnnnng.flclash.ui.theme.proxyDelayWarningColor
 
 // 作者 long：节点几何由文字行高决定，测速只扩展命中范围，不把按钮默认高度计入详情行。
 private object ProxyNodeStyle {
-    val shape = RoundedCornerShape(20.dp)
+    val shape = AppSuperellipseShape(20.dp)
     val name = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, letterSpacing = 0.sp,
         platformStyle = PlatformTextStyle(includeFontPadding = false))
     val type = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, letterSpacing = 0.sp)
@@ -79,6 +78,7 @@ internal fun ProxyNodeCard(
     addable: Boolean = false,
     profileId: Long? = null,
     menuEnabled: Boolean = enabled,
+    busy: Boolean = false,
     onSelect: () -> Unit,
     onTestDelay: () -> Unit,
 ) {
@@ -103,14 +103,14 @@ internal fun ProxyNodeCard(
         else -> "未使用"
     }
     Surface(
-        modifier = Modifier.fillMaxWidth().then(modifier).testTag(selectionTag).combinedClickable(
+        modifier = Modifier.fillMaxWidth().then(modifier).testTag(selectionTag).appFocusRing(ProxyNodeStyle.shape).combinedClickable(
             enabled = enabled || menuEnabled && hasMenu, onClick = { if (enabled) onSelect() },
             onLongClick = if (menuEnabled && hasMenu) ({ menu = true }) else null,
             onLongClickLabel = "节点操作",
         ).semantics {
             role = Role.RadioButton
             selected = inUse
-            stateDescription = selectionDescription
+            stateDescription = if (busy) "$selectionDescription，正在刷新，操作暂不可用" else selectionDescription
         },
         shape = ProxyNodeStyle.shape,
         // 作者 long：Flutter 节点选中态不填主色、不加描边，当前使用与优选分别交给徽标表达。
@@ -136,7 +136,7 @@ internal fun ProxyNodeCard(
                         name,
                         Modifier.weight(1f),
                         style = ProxyNodeStyle.name,
-                        color = colors.onSurface,
+                        color = colors.onSurface.copy(alpha = if (busy) .38f else 1f),
                         minLines = nameLines,
                         maxLines = nameLines,
                         overflow = TextOverflow.Ellipsis,

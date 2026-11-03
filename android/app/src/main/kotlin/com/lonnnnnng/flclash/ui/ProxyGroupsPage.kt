@@ -17,7 +17,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -171,7 +170,7 @@ private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (I
                 modifier = Modifier.background(dashboardCardColor(), CircleShape).testTag("proxy_group_more")) {
                 Icon(Icons.Outlined.ExpandMore, "选择代理组")
             }
-            DropdownMenu(expanded = showGroups, onDismissRequest = { showGroups = false }) {
+            DropdownMenu(expanded = showGroups, onDismissRequest = { showGroups = false }, shape = AppSuperellipseShape(24.dp)) {
                 names.forEachIndexed { index, name ->
                     DropdownMenuItem(text = { Text(name) },
                         trailingIcon = { if (index == selectedIndex) Icon(Icons.Outlined.Check, "已选择") },
@@ -289,6 +288,7 @@ internal fun ProxyGroupsCard(
                     DropdownMenu(
                         expanded = toolsExpanded,
                         onDismissRequest = { toolsExpanded = false },
+                        shape = AppSuperellipseShape(24.dp),
                     ) {
                         when (toolsMenuPage) {
                             ProxyToolsMenuPage.ROOT -> {
@@ -391,6 +391,8 @@ internal fun ProxyGroupsCard(
                 }
             },
         )
+        // 作者 long：刷新保留旧节点时仍明确展示忙态，卡片选择、菜单和测速一起停用，不能看起来可点却静默拒绝。
+        if (state.isLoading && groups.isNotEmpty()) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("proxy_groups_refreshing"))
         state.error?.let { message ->
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("proxy_groups_error"), verticalAlignment = Alignment.CenterVertically) {
                 Text(message, Modifier.weight(1f), color = MaterialTheme.colorScheme.error)
@@ -539,12 +541,12 @@ private fun ProxyGroupsListPage(
                     // 展开后才显示定位与批量测速，保证标题、当前节点和操作各自有稳定层级。
                     Surface(
                         modifier = Modifier.fillMaxWidth().padding(top = if (groupIndex == 0) 0.dp else 16.dp).testTag("proxy_list_group_${group.name}"),
-                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp,
+                        shape = AppSuperellipseShape(topStart = 24.dp, topEnd = 24.dp,
                             bottomStart = if (expanded) 0.dp else 24.dp, bottomEnd = if (expanded) 0.dp else 24.dp),
                         color = dashboardCardColor(),
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable { onToggleGroup(group.name) }
+                            modifier = Modifier.fillMaxWidth().clickable(enabled = !state.isLoading) { onToggleGroup(group.name) }
                                 .onSizeChanged { headerHeights[group.name] = it.height }
                                 .heightIn(min = 62.dp).padding(horizontal = 10.dp, vertical = 10.dp)
                                 .semantics { role = Role.Button; stateDescription = if (expanded) "已展开" else "已折叠" }
@@ -572,7 +574,7 @@ private fun ProxyGroupsListPage(
                                 IconButton(
                                     onClick = { onTestGroupDelay(group) },
                                     enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                                        state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
+                                        !state.isLoading && state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
                                     modifier = Modifier.size(32.dp).testTag("proxy_list_group_batch_${group.name}"),
                                 ) {
                                     if (state.batchTestingGroup == group.name) {
@@ -586,7 +588,7 @@ private fun ProxyGroupsListPage(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
-                            IconButton(onClick = { onToggleGroup(group.name) },
+                            IconButton(onClick = { onToggleGroup(group.name) }, enabled = !state.isLoading,
                                 modifier = Modifier.padding(start = 6.dp).size(32.dp).testTag("proxy_list_group_toggle_${group.name}")) {
                                 Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                                     contentDescription = if (expanded) "收起 ${group.name}" else "展开 ${group.name}")
@@ -597,7 +599,7 @@ private fun ProxyGroupsListPage(
                 if (expanded) {
                     if (visible.isEmpty()) item(key = "empty:${group.name}") {
                         Surface(color = dashboardCardColor(),
-                            shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)) {
+                            shape = AppSuperellipseShape(bottomStart = 24.dp, bottomEnd = 24.dp)) {
                             Text(if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
                                 modifier = Modifier.fillMaxWidth().padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -608,22 +610,22 @@ private fun ProxyGroupsListPage(
                             val lastRow = rowIndex == rows.lastIndex
                             Surface(
                                 color = dashboardCardColor(),
-                                shape = RoundedCornerShape(bottomStart = if (lastRow) 24.dp else 0.dp,
+                                shape = AppSuperellipseShape(bottomStart = if (lastRow) 24.dp else 0.dp,
                                     bottomEnd = if (lastRow) 24.dp else 0.dp),
                             ) {
                                 Row(Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp,
                                     bottom = if (lastRow) 10.dp else 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     row.forEach { proxyName ->
                                         ProxyNodeCard(name = proxyName, type = state.proxyType(proxyName, options.cardSize),
-                                            groupType = group.type, addable = state.canAddToLocal(proxyName), profileId = state.profileId,
+                                            groupType = group.type, addable = state.canAddToLocal(proxyName), profileId = state.profileId, busy = state.isLoading,
                                             menuEnabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                                                state.switchingGroup == null && state.batchTestingGroup == null,
+                                                !state.isLoading && state.switchingGroup == null && state.batchTestingGroup == null,
                                             cardSize = options.cardSize, insideGroup = true, inUse = proxyName == selected,
                                             preferred = group.isComputed && proxyName == state.selectedMap[group.name],
                                             enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                                                group.isSelectable && state.switchingGroup == null && state.batchTestingGroup == null,
+                                                group.isSelectable && !state.isLoading && state.switchingGroup == null && state.batchTestingGroup == null,
                                             delayEnabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                                                state.switchingGroup == null && state.batchTestingGroup == null,
+                                                !state.isLoading && state.switchingGroup == null && state.batchTestingGroup == null,
                                             delay = state.delayState(group, proxyName),
                                             selectionTag = "proxy_list_node_${group.name}_$proxyName",
                                             delayTag = "proxy_list_node_delay_${group.name}_$proxyName",
@@ -668,7 +670,7 @@ private fun ProxyGroupIcon(name: String, style: ProxyGroupIconStyle) {
     when (style) {
         ProxyGroupIconStyle.HIDDEN -> Unit
         ProxyGroupIconStyle.PLAIN -> Text(
-            name.takeIf { it.isNotEmpty() }?.let { String(Character.toChars(it.codePointAt(0))).uppercase() } ?: "?",
+            remember(name) { groupInitial(name).uppercase() },
             modifier = Modifier.size(39.dp),
             color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center,
@@ -676,12 +678,12 @@ private fun ProxyGroupIcon(name: String, style: ProxyGroupIconStyle) {
         )
         ProxyGroupIconStyle.FILLED -> Surface(
             modifier = Modifier.size(39.dp),
-            shape = RoundedCornerShape(14.dp),
+            shape = AppSuperellipseShape(14.dp),
             color = proxyNodeColor(true),
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Text(name.takeIf { it.isNotEmpty() }?.let { String(Character.toChars(it.codePointAt(0))).uppercase() } ?: "?", style = MaterialTheme.typography.titleSmall)
+                Text(remember(name) { groupInitial(name).uppercase() }, style = MaterialTheme.typography.titleSmall)
             }
         }
     }
@@ -801,13 +803,14 @@ private fun ProxyGroupNodesPage(
                         groupType = group.type,
                         addable = state.canAddToLocal(proxyName),
                         profileId = state.profileId,
-                        menuEnabled = isCurrentPage && state.switchingGroup == null && state.batchTestingGroup == null,
+                        busy = state.isLoading,
+                        menuEnabled = isCurrentPage && !state.isLoading && state.switchingGroup == null && state.batchTestingGroup == null,
                         cardSize = options.cardSize,
                         inUse = proxyName == inUseName,
                         preferred = group.isComputed && proxyName == state.selectedMap[group.name],
                         enabled = isCurrentPage && group.isSelectable &&
-                            state.switchingGroup == null && state.batchTestingGroup == null,
-                        delayEnabled = isCurrentPage && state.switchingGroup == null && state.batchTestingGroup == null,
+                            !state.isLoading && state.switchingGroup == null && state.batchTestingGroup == null,
+                        delayEnabled = isCurrentPage && !state.isLoading && state.switchingGroup == null && state.batchTestingGroup == null,
                         delay = delay,
                         selectionTag = "proxy_node_${group.name}_$proxyName",
                         delayTag = "proxy_node_delay_${group.name}_$proxyName",

@@ -1,0 +1,1138 @@
+{
+  "recordedAt": "2026-11-04T06:34:01.420521+08:00",
+  "baseCommit": "1423e4ca3ca2ccf638c6b0e962e7e3267e837e42",
+  "scope": "Main page shape, paint interaction, navigation, grapheme, busy-state closure; not complete Flutter UI parity",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "sdk": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "build": {
+    "productionLog": "/tmp/kclash-main-visual-20261104-build3.log",
+    "testOnlyFinalLog": "/tmp/kclash-main-visual-20261104-testbuild6.log",
+    "releaseLog": "/tmp/kclash-main-visual-20261104-release.log",
+    "unitTests": {
+      "app": {
+        "tests": 430,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 188,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "totalUnitTests": 618,
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 62,
+        "reportSha256": "f1210f02b7ffb8e8a8f2d74c0a37378a3f4d2703bf31b85712a1eba323400a68"
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 62,
+        "reportSha256": "e634f83e4e3cf95b42fd5563c098fbc7096f0b0312bf6e21b6ef55fc5c1395d7"
+      }
+    },
+    "debugAndroidTestReleaseR8Passed": true,
+    "coreCommonGoRerun": false
+  },
+  "artifacts": {
+    "app": {
+      "package": "com.lonnnnnng.flclash",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "df24e6a2903700ecd904c6877beca859e23f0ba993c49ab8ef098138d8484369",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "deviceSha256": "df24e6a2903700ecd904c6877beca859e23f0ba993c49ab8ef098138d8484369",
+      "matchesDevice": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "test": {
+      "package": "com.lonnnnnng.flclash.test",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "a04878457eafe626f0052711c9408c7cf5dea45ffcc7da7d819a12991a96b7fd",
+      "nativeAbis": [],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash.test' versionCode='' versionName='' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "deviceSha256": "a04878457eafe626f0052711c9408c7cf5dea45ffcc7da7d819a12991a96b7fd",
+      "matchesDevice": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "release": {
+      "package": "com.lonnnnnng.flclash",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "6e04bd7de7c1e8b14ad668b96d27bb9cb59459324734ca441024aefafcab9de5",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "installed": false,
+      "signed": false
+    }
+  },
+  "deviceTests": {
+    "before": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-main-visual-20261104-before.log",
+      "images": []
+    },
+    "retry-review1": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+        "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "code": -2
+        }
+      ],
+      "exitCode": 0,
+      "passed": false,
+      "log": "/tmp/kclash-main-visual-20261104-retry-review1.log",
+      "images": [
+        "/tmp/kclash-main-visual-20261104-dashboard_light_default.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_light_running.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_running.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_default.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_system_ready.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_dark.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_dark.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_light.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_empty.png",
+        "/tmp/kclash-main-visual-20261104-profiles_custom_selected.png",
+        "/tmp/kclash-main-visual-20261104-profiles_remote_usage.png",
+        "/tmp/kclash-main-visual-20261104-proxy_page_dark.png",
+        "/tmp/kclash-main-visual-20261104-proxy_page_light.png"
+      ]
+    },
+    "retry-interaction2": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingListNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingListNodesAndShowsProgress",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": false,
+      "log": "/tmp/kclash-main-visual-20261104-retry-interaction2.log",
+      "images": [
+        "/tmp/kclash-main-visual-20261104-surface_dock_drag_held.png",
+        "/tmp/kclash-main-visual-20261104-surface_elastic_held.png",
+        "/tmp/kclash-main-visual-20261104-surface_focus_descendant.png",
+        "/tmp/kclash-main-visual-20261104-profiles_empty_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_custom_selected_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_remote_usage_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_source_menu_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_source_menu_dark.png"
+      ]
+    },
+    "after-preflight": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-main-visual-20261104-after-preflight.log",
+      "images": []
+    },
+    "retry-final-long": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+        "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingListNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+        "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingListNodesAndShowsProgress",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "code": -2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": false,
+      "log": "/tmp/kclash-main-visual-20261104-retry-final-long.log",
+      "images": [
+        "/tmp/kclash-main-visual-20261104-surface_dock_drag_held.png",
+        "/tmp/kclash-main-visual-20261104-surface_elastic_held.png",
+        "/tmp/kclash-main-visual-20261104-surface_focus_descendant.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_light_default.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_light_running.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_running.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_default.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_system_ready.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_dark.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_dark.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_light.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_empty.png",
+        "/tmp/kclash-main-visual-20261104-profiles_custom_selected.png",
+        "/tmp/kclash-main-visual-20261104-profiles_remote_usage.png",
+        "/tmp/kclash-main-visual-20261104-profiles_empty_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_custom_selected_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_remote_usage_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_source_menu_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_source_menu_dark.png",
+        "/tmp/kclash-main-visual-20261104-proxy_page_dark.png",
+        "/tmp/kclash-main-visual-20261104-proxy_page_light.png",
+        "/tmp/kclash-main-visual-20261104-proxy_delay_running.png",
+        "/tmp/kclash-main-visual-20261104-formal_providers_loaded.png",
+        "/tmp/kclash-main-visual-20261104-formal_providers_recreated.png",
+        "/tmp/kclash-main-visual-20261104-proxy_selection_running.png",
+        "/tmp/kclash-main-visual-20261104-home_proxy_selection_running.png",
+        "/tmp/kclash-main-visual-20261104-running_yaml_providers_loaded.png",
+        "/tmp/kclash-main-visual-20261104-running_yaml_providers_recreated.png",
+        "/tmp/kclash-main-visual-20261104-home_proxy_read_failure.png",
+        "/tmp/kclash-main-visual-20261104-proxy_read_failure.png"
+      ]
+    },
+    "retry-final2-long": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+        "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingListNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+        "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingListNodesAndShowsProgress",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-main-visual-20261104-retry-final2-long.log",
+      "images": [
+        "/tmp/kclash-main-visual-20261104-surface_dock_drag_held.png",
+        "/tmp/kclash-main-visual-20261104-surface_elastic_held.png",
+        "/tmp/kclash-main-visual-20261104-surface_focus_descendant.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_light_default.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_light_running.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_running.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_default.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_system_ready.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_dark.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_dark.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_light.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_empty.png",
+        "/tmp/kclash-main-visual-20261104-profiles_custom_selected.png",
+        "/tmp/kclash-main-visual-20261104-profiles_remote_usage.png",
+        "/tmp/kclash-main-visual-20261104-profiles_empty_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_custom_selected_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_remote_usage_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_source_menu_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_source_menu_dark.png",
+        "/tmp/kclash-main-visual-20261104-proxy_page_dark.png",
+        "/tmp/kclash-main-visual-20261104-proxy_page_light.png",
+        "/tmp/kclash-main-visual-20261104-proxy_delay_running.png",
+        "/tmp/kclash-main-visual-20261104-formal_providers_loaded.png",
+        "/tmp/kclash-main-visual-20261104-formal_providers_recreated.png",
+        "/tmp/kclash-main-visual-20261104-proxy_selection_running.png",
+        "/tmp/kclash-main-visual-20261104-home_proxy_selection_running.png",
+        "/tmp/kclash-main-visual-20261104-running_yaml_providers_loaded.png",
+        "/tmp/kclash-main-visual-20261104-running_yaml_providers_recreated.png",
+        "/tmp/kclash-main-visual-20261104-home_proxy_read_failure.png",
+        "/tmp/kclash-main-visual-20261104-proxy_read_failure.png"
+      ]
+    },
+    "retry-final3-long": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+        "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingListNodesAndShowsProgress",
+        "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+        "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingListNodesAndShowsProgress",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#superellipseContoursMatchNativeFlutterIncludingAsymmetricAndZeroCorners",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#emojiInitialKeepsFullGraphemeAndAccessibilityHasNoBrokenSurrogate",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#dockDragCommitsOnceCancelKeepsSelectionAndSemanticsStillActivate",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#consumedDownKeepsElasticPressUntilReleaseAndDoesNotMoveHitBounds",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#proxyRefreshDisablesExistingTabNodesAndShowsProgress",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSurfaceInteractionInstrumentedTest#focusRingFollowsDescendantRatherThanSelectedState",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-main-visual-20261104-retry-final3-long.log",
+      "images": [
+        "/tmp/kclash-main-visual-20261104-surface_dock_drag_held.png",
+        "/tmp/kclash-main-visual-20261104-surface_elastic_held.png",
+        "/tmp/kclash-main-visual-20261104-surface_focus_descendant.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_light_default.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_light_running.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_running.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_default.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_system_ready.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_dark.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_dark.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_light.png",
+        "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_empty.png",
+        "/tmp/kclash-main-visual-20261104-profiles_custom_selected.png",
+        "/tmp/kclash-main-visual-20261104-profiles_remote_usage.png",
+        "/tmp/kclash-main-visual-20261104-profiles_empty_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_custom_selected_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_remote_usage_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_source_menu_light.png",
+        "/tmp/kclash-main-visual-20261104-profiles_source_menu_dark.png",
+        "/tmp/kclash-main-visual-20261104-proxy_page_dark.png",
+        "/tmp/kclash-main-visual-20261104-proxy_page_light.png",
+        "/tmp/kclash-main-visual-20261104-proxy_delay_running.png",
+        "/tmp/kclash-main-visual-20261104-formal_providers_loaded.png",
+        "/tmp/kclash-main-visual-20261104-formal_providers_recreated.png",
+        "/tmp/kclash-main-visual-20261104-proxy_selection_running.png",
+        "/tmp/kclash-main-visual-20261104-home_proxy_selection_running.png",
+        "/tmp/kclash-main-visual-20261104-running_yaml_providers_loaded.png",
+        "/tmp/kclash-main-visual-20261104-running_yaml_providers_recreated.png",
+        "/tmp/kclash-main-visual-20261104-home_proxy_read_failure.png",
+        "/tmp/kclash-main-visual-20261104-proxy_read_failure.png"
+      ]
+    },
+    "after-final": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-main-visual-20261104-after-final.log",
+      "images": []
+    }
+  },
+  "finalBatch": {
+    "uniqueMethods": 23,
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0,
+    "phase": "retry-final3-long"
+  },
+  "providersObservation": {
+    "count": 90,
+    "continuousWindowMs": 180000,
+    "samplingIntervalMs": 250,
+    "runtime": "RUNNING pure proxy, original 1.yaml bytes in temporary FILE profiles",
+    "activityRecreated": true,
+    "runtimeSessionPreserved": true,
+    "formalEmptyProvidersPassed": true,
+    "originalIncidentCaptured": false
+  },
+  "geometry": {
+    "reference": "Flutter SDK engine 00b0c91f06209d9e4a41f71b7a512d6eb3b9c694, native dart:ui Path.addRSuperellipse",
+    "referenceCases": 7,
+    "referenceRows": 594,
+    "ltrRtlRowEndpointTolerancePx": 1,
+    "includesAsymmetricOversizedAndZeroCorners": true,
+    "generator": "/tmp/kclash-main-visual-reference-20261104/test/geometry_test.dart"
+  },
+  "preservation": {
+    "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "serviceRecords": 0,
+    "hasTun0": false,
+    "accelerometerRotation": "1",
+    "userRotation": "0",
+    "fontScale": "1.0",
+    "formalProfileCount": 2,
+    "beforeAfterAssertionsPassed": true,
+    "formalRowsBodyShaMtimeAndScriptsUnchanged": true,
+    "temporaryFixtureSelectionVpnAndProxyOptionsRestored": true,
+    "proxyPageOptionsBeforeFirstVisualBatchCaptured": false,
+    "finalProxyScreenshotRuleRestoresOptions": true
+  },
+  "visuals": {
+    "strictBaselineImageCount": 14,
+    "newManualProfileLightAndMenuImageCount": 5,
+    "interactionImages": 3,
+    "inspectedNames": [
+      "surface_dock_drag_held",
+      "surface_elastic_held",
+      "surface_focus_descendant",
+      "dashboard_light_default",
+      "dashboard_light_running",
+      "dashboard_running",
+      "dashboard_default",
+      "dashboard_system_ready",
+      "dashboard_proxy_summary_dark",
+      "dashboard_proxy_picker_dark",
+      "dashboard_proxy_summary_light",
+      "dashboard_proxy_picker_light",
+      "profiles_empty",
+      "profiles_custom_selected",
+      "profiles_remote_usage",
+      "profiles_empty_light",
+      "profiles_custom_selected_light",
+      "profiles_remote_usage_light",
+      "profiles_source_menu_light",
+      "profiles_source_menu_dark",
+      "proxy_page_dark",
+      "proxy_page_light",
+      "proxy_delay_running",
+      "formal_providers_loaded",
+      "formal_providers_recreated",
+      "proxy_selection_running",
+      "home_proxy_selection_running",
+      "running_yaml_providers_loaded",
+      "running_yaml_providers_recreated",
+      "home_proxy_read_failure",
+      "proxy_read_failure"
+    ],
+    "fullFlutterPixelParity": false,
+    "elasticHeldFixture": "Blank hit-test fixture; motion is proved by spring targets and unchanged bounds assertions, not by visible content in this PNG"
+  },
+  "failuresRetained": [
+    "build1: ColorScheme.shadow unresolved; replaced by Color.Black before successful production builds",
+    "review1: 2/12; real Dock cancel committed navigation; test geometry RTL exact pixels, touch-mode focus and unavailable accessibility root also failed; old screenshot hashes intentionally mismatch",
+    "interaction2: 7/8; List fixture used Tab semantics tag, corrected to proxy_list_node",
+    "final-long: 18/23; five full-page screenshot methods differed solely by inherited keyboard focus. Local Compose bytecode proves requestInputMode(Touch) only queries touch mode. Platform setInTouchMode plus explicit capture preparation fixed the test state; approved 14 baseline hashes retained"
+  ],
+  "review": {
+    "independentSubagentReviewExecuted": false,
+    "reason": "Task transport returned empty payloads; no agent read code",
+    "primaryReview": "Production implementation and changed code read directly; local Flutter source and Android/Compose implementation used as evidence"
+  },
+  "limits": [
+    "Original minutes-long loading scene was no longer present; no unique original trigger proven",
+    "Three-minute nonempty observation is RUNNING pure-proxy list polling plus Activity recreation, not all Provider update/network or process-kill scenarios",
+    "14 PNG hashes lock native repeatability; shadow/lens/motion whole-page Flutter pixel parity is not claimed",
+    "Five new Profiles light/menu screenshots and three interaction screenshots are manually reviewed references, not additional strict golden assertions",
+    "Pre-existing screenshot host cleared proxy page options in early batches without a persisted preimage; original pre-visual proxy display preference preservation is not proven. Final test rule saves/restores options outside the Activity lifecycle",
+    "Core/Common/Go not rerun in this visual slice; Release is unsigned build/R8/Lint only, not installed or production-signed",
+    "Backup/system recovery and secondary observation-page polish remain deferred; complete page parity remains PARTIAL",
+    "Raw logs, XML and screenshots are local only; committed JSON contains indices and hashes"
+  ],
+  "sourceManifest": [
+    {
+      "path": "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/ProfilesTestActivity.kt",
+      "sha256": "0463e6a83344924cebb5de5d6ea90a7a1916ec9c84bfd9115ac1e6984adabd15"
+    },
+    {
+      "path": "android/app/src/main/assets/licenses/flutter-superellipse.txt",
+      "sha256": "9cf8a90285852fc3ed066a0aa7469f70a2d44bda65e0a224e153a7fa54b50bd5"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppShadows.kt",
+      "sha256": "674d74ce0c1805d9168c0c963c156e9a8c666dac258e9d9b7a745d1ab55048f3"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppSuperellipseShape.kt",
+      "sha256": "a7e84e4270cd2a0363b27644fc6ba921b3f8ba5490de0ec4c5411fc1d281a15e"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppSurfaceInteraction.kt",
+      "sha256": "a45a119a7cda49c1c2c8cf4411e84ca8e115516a31bcccd5d9ac7649b7db9260"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt",
+      "sha256": "9f59c6ca25958073b7d9959ab9d8aae068c1695d3fa6f80b93a2c8e008acaca3"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "sha256": "a0ce03d65a2e9d8839ae78d44f39214dd7f2e9e14a23a6567498761f4c95bdd7"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MainNavigationDock.kt",
+      "sha256": "9a08874afc73550fe10c6cf40ab009edf08a954b540456f48ad1f49495581f9b"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MainPageScaffold.kt",
+      "sha256": "76f20136fa84ee907a8f86c0322e807694698b7027db2d6c6e311c79a6d67ab5"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt",
+      "sha256": "d696b2d51b5195fa14b271c3cfc96c60422c5822aa8b56ccc318ba19eb20013b"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupVisuals.kt",
+      "sha256": "15e2652dc9ddfd752334d64c90eefeb829d22142e6f681bd58c12fe9be2e9222"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+      "sha256": "02e4ac1a580b4d6c633016baed19711ea6f314598d79aedee82e59d841c5432d"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyNodeVisuals.kt",
+      "sha256": "69f5e05eb6888f44f3154a87a3e78c415939d6b4897e115f1d17ae193b684b26"
+    },
+    {
+      "path": "android/tests/app/AppSurfacePhysicsTest.kt",
+      "sha256": "f25edd643e187bfd3562fa600851eb3990f216d9a5bc3f202d6a79de01e09cc8"
+    },
+    {
+      "path": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+      "sha256": "f477be8bf44471bd624ccb9d9292269bc0a17a761064de28065f2bb7b5a51b08"
+    },
+    {
+      "path": "android/tests/instrumented/HomeProxyMainFlowInstrumentedTest.kt",
+      "sha256": "4306090cf923844a38c88e37a6c0cd1e9550e39a0847f2d800ee8557f83a4c2b"
+    },
+    {
+      "path": "android/tests/instrumented/MainSurfaceInteractionInstrumentedTest.kt",
+      "sha256": "5f99d56cac728094c3023791dc250df2838a341dfd719feb0c83e89c005ac996"
+    },
+    {
+      "path": "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt",
+      "sha256": "b328125f3f9dc10b5bcff05e1809169c56db19daf69ae8562961dcb5e1e93a07"
+    },
+    {
+      "path": "android/tests/instrumented/ProxyGroupsActivityInstrumentedTest.kt",
+      "sha256": "448aaebb09d122540a949969a1b159d841470de6f32a04f07952514aca55ddb0"
+    },
+    {
+      "path": "android/tests/instrumented/VisualTestArtifacts.kt",
+      "sha256": "3cb23247926ca08d4e0cfcc694b72cbc8aea8b6ebd61c7ff1219670e2fdd634b"
+    },
+    {
+      "path": "android/tests/instrumented/resources/superellipse-flutter-reference.json",
+      "sha256": "5b8dff5e8c0d34bcc833549ff1fd3480ed504b3d91966e73a93e8ca00b842843"
+    }
+  ],
+  "localEvidence": [
+    {
+      "path": "/tmp/kclash-main-visual-20261104-build1.log",
+      "sha256": "8a89ccb1838151ed3962c07064e44d7b9b6bf03f072a73af63b3492a1a57d3eb"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-build2.log",
+      "sha256": "d31efd3dac14bbbb8c2defe6936beeb94ab0d5c8fa39c4635484e35593f3d085"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-build3.log",
+      "sha256": "416a80b8674de91eb18eae15e33f8071f184d36abda1b7d7b07ce5487b048488"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-testbuild4.log",
+      "sha256": "8a65b5df1682293fbabcc858c1d6dc602f5d04c2e921f70d302f9d75260b746d"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-testbuild5.log",
+      "sha256": "8a65b5df1682293fbabcc858c1d6dc602f5d04c2e921f70d302f9d75260b746d"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-release.log",
+      "sha256": "e1b4462d8395dcb892491b9e20a7406a0ee51c96e5aa068fa65584bfff9014d0"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-testbuild6.log",
+      "sha256": "e55f08668c966a0fe94f3553745bde07327ded7128d098171831d24d74046649"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-before.log",
+      "sha256": "ab30b4e218e8607085c4704dfa513e2fcfa657492fd2b676e8f4a09e005b14e4"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-retry-review1.log",
+      "sha256": "4956e73289788bb2cb5a0aaf3c75962ec38480e5c9eff9881f0f2018a2a52d22"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-retry-interaction2.log",
+      "sha256": "00dc7bf1c3eba1f574d45507ac8db08fd3545a498f5cc362cb45bceaf2a3febe"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-after-preflight.log",
+      "sha256": "8ced7e2e747e03549c916995746f2af144d4c1a133a3fa34f35003e299d3c4c7"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-retry-final-long.log",
+      "sha256": "9cb09f8979fc13caed703bddde70681491fa8b0d563bc7a24624c4d3d43f1ba7"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-retry-final2-long.log",
+      "sha256": "94e5f46130b7106fd25e1d1039f4c1a46e638d27da40963cf769500ff40855d0"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-retry-final3-long.log",
+      "sha256": "1316d1ff05ec178f4f0ebb970a4f33840849282280631b7d85c9a06452bf7780"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-after-final.log",
+      "sha256": "df66d2c178d3606d307a41147494300344180643ff95859e821f47416cbabdd1"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-surface_dock_drag_held.png",
+      "sha256": "6e4e0711eb2318656be978de3730bb90c4b49ebdebf1b33a2990c4d92a583a30"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-surface_elastic_held.png",
+      "sha256": "3adb7ee9ada0e8a3be0c615ceeb1d978ed84d3d70172490ea8322ab79909fe51"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-surface_focus_descendant.png",
+      "sha256": "5cde18adc0b8d214f1029bdd414c0e5775ab5f73f9bcdb8663f9476c152ddc9d"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_light_default.png",
+      "sha256": "a87a88b4170da233053a7ab075a3d920600bb6dd7b8631cfdec256ca6d457a7c"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_light_running.png",
+      "sha256": "a251bd3d7b0dd6d56eba6ec2a6c111e4f1f087437073a69d034847811e7ed65f"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_running.png",
+      "sha256": "76acca4aa29674089a53eb3019729a1182bba185bfd3cc6384bf574a278b7d41"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_default.png",
+      "sha256": "92d0a662f7f5b02804b693d3d89c5e254960208b731d9dbe8d89b00012adac0c"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_system_ready.png",
+      "sha256": "eda3da666967495280f4b1321e3859d8bcae8242f8d5a9652eeb17e9e7fb5eb5"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_dark.png",
+      "sha256": "6c7e9f8388a4691d3f54658edf001e0ea084a981a8adf6abcf18cbe0e6ac0e32"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_dark.png",
+      "sha256": "b9ad482e2e92ebe56599cc82cafd757028ea961f278c9fa828ac203583897fb6"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_proxy_summary_light.png",
+      "sha256": "4317d23bfb172bd708da28aaddf03083060c5d2a05a289507dcd3530039fd180"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-dashboard_proxy_picker_light.png",
+      "sha256": "cdd6355fd2ad0d1bbad0eacc0ac3a1e1fe2950c251d9437e1786193aafb818c1"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-profiles_empty.png",
+      "sha256": "e8667f3bbd39ea6d54e6c922c4a251a200bdfad7bc111ea624b722f12ad0d87f"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-profiles_custom_selected.png",
+      "sha256": "17606d708901178d81e274683f566a412384967a5d9498eec19c34dce4c7b5f8"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-profiles_remote_usage.png",
+      "sha256": "8cace415c1199ff1f3fceaa167d249c011b1ef85b2aacf8ae14c1698fd631eca"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-profiles_empty_light.png",
+      "sha256": "c60b8d6338c60ae953226ecdaff09ee91f71999983cdafc1dfd1163c667806db"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-profiles_custom_selected_light.png",
+      "sha256": "b8521de3373fd4e32ee432d5a9f0a847c7b7da3e4d9b422b39487110512962d8"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-profiles_remote_usage_light.png",
+      "sha256": "b3e4b090f9b466a04e10ee3172e0bce7b3f3106c60dbbc873d443eb33a7ecdb3"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-profiles_source_menu_light.png",
+      "sha256": "bff65695df5bbc93278e40caac7487a07a8556de6f47349de7b84720558ea7b3"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-profiles_source_menu_dark.png",
+      "sha256": "26b39c54c85fcafc8058d9831921bb79492e4dd69756133cef3dc915decff6ed"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-proxy_page_dark.png",
+      "sha256": "6741fe74d2841a187a690fe9a09778a4a7df0052b1068ba43d6f6aaf86d5c365"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-proxy_page_light.png",
+      "sha256": "5db65d69b15ea41574e56e9209d33c420ac8b9aad7c166cd49c643a944ca3f0c"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-proxy_delay_running.png",
+      "sha256": "f44cafe0de4f116091f6d8a2b3d667067b25fef6b6833da72e2bd723f6a2b5c0"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-formal_providers_loaded.png",
+      "sha256": "6e3d57a2236a8eb2a9616a188d4652fcbc8a57dd2128b1c489009084d017edee"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-formal_providers_recreated.png",
+      "sha256": "8968d8c15a5f473470932d1d500ffdd339041122ff706dd1740b22a676eb836e"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-proxy_selection_running.png",
+      "sha256": "f120d9a90aff7cc77116be9dffbc35719354725375659b641adf309f93c29d6b"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-home_proxy_selection_running.png",
+      "sha256": "c23600a183171dd87657682f193b190e2c7ce82d9bdf71de4f5cc547d244cf3d"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-running_yaml_providers_loaded.png",
+      "sha256": "096eaef6ba480ccb78a8ecbddfc835ce373fc2e1d86a19cf35547373e8a987b5"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-running_yaml_providers_recreated.png",
+      "sha256": "fef2a47c88aa6a86e6441982302d6d81bdf3203631887ac8321c96bc003958c8"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-home_proxy_read_failure.png",
+      "sha256": "fbbf763a948907232740753b010f619ed5ae939e60b6e7290fe74995aa7e0dfa"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-proxy_read_failure.png",
+      "sha256": "0a681bc628c145db9c9964c715263d7f6b0ff9f51a16a09eb7fd73809c524428"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-artifacts-final.json",
+      "sha256": "6d8c4659ef5a8bff3ba4220defc2a205cadb1fde559710559e52eed921d0d0db"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-final-xml.log",
+      "sha256": "57c1306fda4ce39c66413f6b8fc74dfdfacc86d5505fdfb33492559a7f0dc2b1"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-final-home.xml",
+      "sha256": "ef120fabe87a849f5aa72c4ad8673f07015cc1e12c9d98035cb9e9fc4c9e2c97"
+    },
+    {
+      "path": "/tmp/kclash-main-visual-20261104-final-xml.json",
+      "sha256": "62a68d6619b2b5065fc165e9f30e85bf25e7ab5f5fd93da058d34c51bdf45d25"
+    }
+  ],
+  "accessibility": {
+    "xmlParsed": true,
+    "nodeCount": 75,
+    "packageFound": true,
+    "scope": "Current formal home window; complete emoji system text separately asserted in instrumented fixture"
+  }
+}

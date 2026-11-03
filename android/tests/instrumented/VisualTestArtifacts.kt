@@ -14,6 +14,12 @@ internal fun assertPortraitDefaultFontConfiguration() {
     }
 }
 
+internal fun prepareTouchVisualCapture() {
+    assertPortraitDefaultFontConfiguration()
+    // 作者 long：Compose的requestInputMode(Touch)只查询模式，不会退出键盘模式；固定截图须通过平台恢复触摸模式，避免前一焦点测试污染基线。
+    InstrumentationRegistry.getInstrumentation().apply { setInTouchMode(true); waitForIdleSync() }
+}
+
 internal fun recordVisualPng(name: String, png: ByteArray) {
     if (InstrumentationRegistry.getArguments().getString("kclashCapturePng") != "true") return
     // 作者 long：图片仅来自固定夹具；显式采集时复用测试结果通道，避免截图验收依赖 run-as 或设备存储权限。

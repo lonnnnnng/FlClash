@@ -20,6 +20,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.rules.ExternalResource
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 
@@ -29,7 +30,23 @@ import java.security.MessageDigest
  */
 @RunWith(AndroidJUnit4::class)
 class ProxyGroupsActivityInstrumentedTest {
-    @get:Rule
+    // 作者 long：旧截图宿主启动时会重置布局选项，必须在Activity规则之外保存并在宿主销毁后恢复，不能把测试默认值留给用户。
+    @get:Rule(order = 0)
+    val preservePageOptions = object : ExternalResource() {
+        private var original: ProxyPageOptions? = null
+        override fun before() {
+            original = ProxyPageOptionsStore.load(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext)
+        }
+        override fun after() {
+            val context = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+            original?.let { options ->
+                ProxyPageOptionsStore.save(context, options)
+                assertEquals(options, ProxyPageOptionsStore.load(context))
+            }
+        }
+    }
+
+    @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<ProxyGroupsTestActivity>()
 
     @Test
@@ -78,6 +95,7 @@ class ProxyGroupsActivityInstrumentedTest {
         }
 
         fun captureHash(name: String): String {
+            prepareTouchVisualCapture()
             composeRule.waitForIdle()
             val bitmap = composeRule
                 .onNodeWithTag("proxy_groups_page")
@@ -92,8 +110,8 @@ class ProxyGroupsActivityInstrumentedTest {
         }
 
         val expected = mapOf(
-            "page_dark" to "167f41b4df3c1602e0be8e11a13e35a5e7c3c07c5c9ef0c4abb2323a75866623",
-            "page_light" to "d84a4b882e795cff01901d00c0e34c48f29ea082467ca97d7a12779756e7fbac",
+            "page_dark" to "6741fe74d2841a187a690fe9a09778a4a7df0052b1068ba43d6f6aaf86d5c365",
+            "page_light" to "5db65d69b15ea41574e56e9209d33c420ac8b9aad7c166cd49c643a944ca3f0c",
         )
         val actual = buildMap {
             listOf(true, false).forEach { dark ->

@@ -34,8 +34,8 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.zIndex
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
@@ -124,21 +124,23 @@ internal fun DashboardSurface(
 ) {
     Card(
         modifier = modifier
+            .appDashboardShadow()
             .fillMaxWidth()
             .then(
                 if (onClick == null) {
                     Modifier
                 } else {
                     Modifier
+                        .appFocusRing(AppSuperellipseShape(34.dp))
                         // 作者 long：首页卡片本身就是 Flutter 手机端的进入详情入口，
                         // 保留内部同步、切换等按钮的独立点击语义。
                         .clickable(onClick = onClick)
                         .semantics { role = Role.Button }
                 },
             ),
-        shape = RoundedCornerShape(34.dp),
+        shape = AppSuperellipseShape(34.dp),
         colors = CardDefaults.cardColors(containerColor = dashboardCardColor()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 18.dp), content = content)
     }
@@ -195,7 +197,7 @@ internal fun DashboardProxyGroupsCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Box(
-                    Modifier.size(64.dp).background(dashboardBlockColor(), RoundedCornerShape(24.dp)),
+                    Modifier.size(64.dp).background(dashboardBlockColor(), AppSuperellipseShape(24.dp)),
                     contentAlignment = Alignment.Center,
                 ) { Icon(Icons.Outlined.Layers, null, Modifier.size(26.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Spacer(Modifier.height(6.dp))
@@ -226,13 +228,13 @@ internal fun DashboardProxyGroupsCard(
                     repeat(badgeCount) { index ->
                         Box(
                             Modifier.offset(x = (index * 32).dp).size(40.dp)
-                                .border(3.dp, dashboardCardColor(), RoundedCornerShape(14.dp))
-                                .padding(3.dp).background(dashboardBlockColor(), RoundedCornerShape(11.dp)),
+                                .border(3.dp, dashboardCardColor(), AppSuperellipseShape(14.dp))
+                                .padding(3.dp).background(dashboardBlockColor(), AppSuperellipseShape(11.dp)),
                             contentAlignment = Alignment.Center,
                         ) {
-                            // 作者 long：核心暂未提供自定义 icon，使用上游同样的组名首字回退，不伪造远程图标数据。
+                            // 作者 long：摘要仅使用已提供的组名回退，保留完整字素，不能把emoji截成非法代理字符。
                             Text(
-                                if (index < shown.size) shown[index].name.take(1) else "+$rest",
+                                if (index < shown.size) groupInitial(shown[index].name) else "+$rest",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -303,10 +305,10 @@ internal fun RuntimeCard(
     }
     val largeText = LocalDensity.current.fontScale > 1.4f
     Card(
-        Modifier.fillMaxWidth().testTag("dashboard_runtime_card"),
-        shape = RoundedCornerShape(34.dp),
+        Modifier.fillMaxWidth().testTag("dashboard_runtime_card").appDashboardShadow(),
+        shape = AppSuperellipseShape(34.dp),
         colors = CardDefaults.cardColors(containerColor = dashboardCardColor()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Box(Modifier.fillMaxWidth()) {
             // 作者 long：主控背景只作装饰，出口信息由独立状态提供，不能从运行状态推测国家或质量。
@@ -364,7 +366,9 @@ internal fun RuntimeCard(
                     Surface(
                         onClick = if (state.isRunning) onStop else onStart,
                         enabled = !busy,
-                        modifier = Modifier.size(88.dp).testTag("dashboard_runtime_toggle").semantics {
+                        modifier = Modifier.size(88.dp).testTag("dashboard_runtime_toggle")
+                            .appElasticPress(enabled = !busy)
+                            .appFocusRing(CircleShape, standsOff = true).semantics {
                             role = Role.Button
                             contentDescription = actionLabel
                         },
@@ -438,10 +442,10 @@ internal fun DashboardConnectionStatsCard(
         Triple("DNS", dnsCount, onDns),
     )
     Card(
-        modifier = Modifier.fillMaxWidth().testTag("dashboard_connection_stats_card"),
-        shape = RoundedCornerShape(34.dp),
+        modifier = Modifier.fillMaxWidth().testTag("dashboard_connection_stats_card").appDashboardShadow(),
+        shape = AppSuperellipseShape(34.dp),
         colors = CardDefaults.cardColors(containerColor = dashboardCardColor()),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
             Modifier.fillMaxWidth().padding(8.dp),
@@ -451,7 +455,8 @@ internal fun DashboardConnectionStatsCard(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 66.dp)
-                        .clip(RoundedCornerShape(26.dp))
+                        .appFocusRing(AppSuperellipseShape(26.dp))
+                        .clip(AppSuperellipseShape(26.dp))
                         .clickable(onClick = onClick)
                         .semantics {
                             role = Role.Button
@@ -498,6 +503,7 @@ internal fun OutboundModeCard(
         Triple(CoreOutboundMode.GLOBAL, "全局", DashboardModeGlyphs.proxies),
         Triple(CoreOutboundMode.DIRECT, "直连", DashboardModeGlyphs.target),
     )
+    var lastPressed by remember { mutableStateOf(-1) }
     DashboardSurface(Modifier.testTag("dashboard_outbound_mode_card")) {
         DashboardHeader("出站模式", DashboardModeGlyphs.split)
         Row(
@@ -521,10 +527,14 @@ internal fun OutboundModeCard(
                     if (selected) MaterialTheme.colorScheme.primary else dashboardBlockColor(),
                     tween(240, easing = easing), label = "modeBackground",
                 )
+                val shape = AppSuperellipseShape(startRadius, endRadius, endRadius, startRadius)
                 Surface(
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp)
+                        .zIndex(if (lastPressed == index) 1f else 0f)
+                        .appElasticPress(onPress = { lastPressed = index })
+                        .appFocusRing(shape, standsOff = selected)
                         .selectable(
                             selected = selected,
                             role = Role.RadioButton,
@@ -532,7 +542,7 @@ internal fun OutboundModeCard(
                         )
                         .semantics { contentDescription = label }
                         .testTag("dashboard_mode_${option.wireValue}"),
-                    shape = RoundedCornerShape(startRadius, endRadius, endRadius, startRadius),
+                    shape = shape,
                     color = background,
                     contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 ) {
@@ -557,7 +567,7 @@ internal fun OutboundModeCard(
 
 @Composable
 private fun DashboardSpeedTile(label: String, icon: ImageVector, speed: Long, total: Long, samples: List<Long>, chartTag: String, modifier: Modifier) {
-    Surface(modifier, shape = RoundedCornerShape(22.dp), color = dashboardBlockColor()) {
+    Surface(modifier, shape = AppSuperellipseShape(22.dp), color = dashboardBlockColor()) {
         Column {
             Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -740,7 +750,7 @@ internal fun DashboardProfileCard(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(AppSuperellipseShape(14.dp))
                                 .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
                                 .clickable(enabled = canSelectProfile) {
                                     // 作者 long：切换立即关闭面板，配置应用与运行态校验统一由 ProfilesViewModel 处理。
@@ -839,7 +849,7 @@ internal fun DashboardProfileDetailSheet(
             ProfileStatisticsPanel(statistics, onRetryStatistics)
             profile.subscriptionInfo?.takeIf { it.total > 0 }?.let { info ->
                 Text("订阅用量", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
-                Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                Surface(shape = AppSuperellipseShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         val upload = info.upload.coerceAtLeast(0)
                         val download = info.download.coerceAtLeast(0)
@@ -852,7 +862,7 @@ internal fun DashboardProfileDetailSheet(
                 }
             }
             Text("配置", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
-            Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+            Surface(shape = AppSuperellipseShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                 Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
                     Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text("来源", modifier = Modifier.weight(1f))

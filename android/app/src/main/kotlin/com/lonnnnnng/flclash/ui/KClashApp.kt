@@ -4164,10 +4164,11 @@ internal fun ProfileCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .appFocusRing(AppSuperellipseShape(24.dp))
                 .combinedClickable(onClick = onSelect, onLongClickLabel = "配置操作",
                     onLongClick = { showMore = false; showActions = true })
                 .testTag("profile_card_${profile.id}"),
-            shape = RoundedCornerShape(24.dp),
+            shape = AppSuperellipseShape(24.dp),
             colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = dashboardCardColor()),
         ) {
             Row(
@@ -4188,7 +4189,7 @@ internal fun ProfileCard(
                         expiryDate?.let { date ->
                             Surface(
                                 modifier = Modifier.padding(start = 8.dp),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = AppSuperellipseShape(8.dp),
                                 color = MaterialTheme.colorScheme.tertiaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             ) {
@@ -4246,7 +4247,7 @@ internal fun ProfileCard(
                 }
 
                 Box {
-                    DropdownMenu(expanded = showActions, onDismissRequest = { showActions = false }) {
+                    DropdownMenu(expanded = showActions, onDismissRequest = { showActions = false }, shape = AppSuperellipseShape(24.dp)) {
                         if (showMore) {
                             DropdownMenuItem(
                                 text = { Text("返回") },

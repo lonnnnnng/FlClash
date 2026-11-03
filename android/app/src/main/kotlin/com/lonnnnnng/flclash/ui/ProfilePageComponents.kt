@@ -1,7 +1,6 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -88,7 +87,7 @@ internal fun ProfileFormSection(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface(modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
+    Surface(modifier.fillMaxWidth(), shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
     }
 }
@@ -118,7 +117,7 @@ internal fun ProfileSourceMenu(
     Popup(popupPositionProvider = position, onDismissRequest = { if (!busy) onDismiss() },
         properties = PopupProperties(focusable = true)) {
         Surface(Modifier.widthIn(min = 248.dp, max = 320.dp).testTag("profile_add_source_menu"),
-            shape = RoundedCornerShape(24.dp), color = dashboardCardColor(), tonalElevation = 3.dp, shadowElevation = 6.dp) {
+            shape = AppSuperellipseShape(24.dp), color = dashboardCardColor(), tonalElevation = 3.dp, shadowElevation = 6.dp) {
             Column(Modifier.padding(vertical = 8.dp)) {
                 DropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, null) },
                     onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))
@@ -169,7 +168,7 @@ internal fun ProfileExtensionPage(
     ProfileEditorPage(onDismissRequest = onDismiss, title = { Text("扩展") }, text = {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(label, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.titleMedium)
-            Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
+            Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
                 Column {
                     ProfileSectionRow("DNS", "覆盖当前配置的 DNS 设置", Icons.Outlined.Dns, canMutate,
                         Modifier.testTag("profile_extension_dns"), onDns)

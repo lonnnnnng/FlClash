@@ -71,6 +71,16 @@ internal fun profileGroupIconModel(value: String): Any? = when {
     else -> null
 }
 
+internal fun groupInitial(name: String): String {
+    // 作者 long：组名允许旗帜、肤色及ZWJ emoji，按完整字素取首项；非法代理字符仅在显示副本中替换，避免系统无障碍序列化崩溃。
+    val display = name.trimStart().toByteArray(Charsets.UTF_8).toString(Charsets.UTF_8)
+    if (display.isEmpty()) return "?"
+    val iterator = android.icu.text.BreakIterator.getCharacterInstance(java.util.Locale.ROOT)
+    iterator.setText(display)
+    val end = iterator.next().takeIf { it > 0 } ?: display.length
+    return display.substring(0, end)
+}
+
 @Composable
 internal fun ProfileGroupIcon(value: String, name: String, modifier: Modifier = Modifier) {
     val model = remember(value) { profileGroupIconModel(value) }
@@ -79,7 +89,7 @@ internal fun ProfileGroupIcon(value: String, name: String, modifier: Modifier = 
     Box(modifier.semantics { stateDescription = if (loaded) "图标已加载" else if (failed) "图标加载失败" else if (model == null) "默认图标" else "图标加载中" }, contentAlignment = Alignment.Center) {
         if (!loaded) {
             if (failed) Icon(Icons.Outlined.BrokenImage, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            else Text(remember(name) { name.takeIf(String::isNotBlank)?.let { String(Character.toChars(it.codePointAt(0))) } ?: "?" },
+            else Text(remember(name) { groupInitial(name) },
                 style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
         }
         if (model != null) AsyncImage(model, null, Modifier.fillMaxSize(), contentScale = ContentScale.Fit,

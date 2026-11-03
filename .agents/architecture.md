@@ -1,5 +1,13 @@
 # Architecture
 
+## 主页面连续圆角与绘制反馈（2026-11-04）
+
+`AppSuperellipseShape`沿用Flutter engine八分弧参数，统一Dashboard、配置卡片/表单、代理节点和List组合边角；保留四个逻辑角及RTL映射。独立Flutter `Path.addRSuperellipse`输出7种轮廓的像素中心包含区间，Android按行比较LTR/RTL端点，栅格边界最多允许1px差异，不能由普通圆角截图自证。Flutter BSD声明随APK assets保留。
+
+`AppSpring`在连续更新目标时保留速度，`appElasticPress`只变换绘制，静态命中/语义/菜单锚点不随按压膨胀；短按先升至0.975再回落，关闭动画时收敛到目标。`appFocusRing`跟随子树焦点，选中本身不画焦点。Dashboard投影使用Flutter多层参数，配置与节点沿各自卡片反馈，不给CommonCard额外套按压。
+
+`MainNavigationDock`单一指针受理拖动和释放，滑块/抬升/拉伸/形变分别用物理状态更新；取消合成的已消费抬手退回当前入口，不提交导航。语义入口仍由selectable提供，外扩8dp命中区和绘制增长不移动入口语义矩形。代理页刷新保留原列表，同时统一禁用Tab/List的选择、菜单和测速，并显示忙态；组图标按完整字素取首项，显示副本修复非法代理字符，保护系统无障碍序列化。构建、真机与视觉边界见`docs/acceptance/main-visual-redmi-20261104.json`，完整页面parity继续PARTIAL。
+
 ## 代理选择隔离与详情读取预算（2026-11-04）
 
 ProfileRepository在Room事务中只patch当前代理组映射并合并最新其他组/元数据。ProxyGroupsViewModel仅实际输入变更使generation失效，revision不丢保存，重复选择同步认领；页面回调携原渲染Profile ID。管理器的读取/切节点/单与批测速在transitionLock内复核原ID，代理Bridge读取5秒、页面独立8秒等待，首页摘要与代理页各有失败重试。

@@ -24,6 +24,8 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
 class ProfilesTestActivity : ComponentActivity() {
     private var scenario by mutableStateOf(ProfilesScenario.EMPTY)
     private var toolbarAction by mutableStateOf<ProfilesToolbarAction?>(null)
+    private var darkTheme by mutableStateOf(true)
+    private var showAdd by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +35,7 @@ class ProfilesTestActivity : ComponentActivity() {
                 ProfilesScenario.CUSTOM_SELECTED -> listOf(sampleProfile())
                 ProfilesScenario.REMOTE_USAGE -> listOf(sampleRemoteProfile())
             }
-            KClashTheme {
+            KClashTheme(darkTheme = darkTheme) {
                 MainPageScaffold(
                     selectedDestination = MainDestination.PROFILES,
                     onDestinationSelected = {},
@@ -43,7 +45,7 @@ class ProfilesTestActivity : ComponentActivity() {
                             profiles = profiles,
                             busy = false,
                             canMutate = true,
-                            onAdd = {},
+                            onAdd = { showAdd = true },
                             onAction = { toolbarAction = it },
                         )
                     },
@@ -60,9 +62,9 @@ class ProfilesTestActivity : ComponentActivity() {
                             showInlineToolbar = false,
                             editorState = ProfileEditorUiState(),
                             runtimeState = CoreRuntimeStatus.STOPPED,
-                            showAddDialog = false,
-                            onShowAddDialog = {},
-                            onDismissAddDialog = {},
+                            showAddDialog = showAdd,
+                            onShowAddDialog = { showAdd = true },
+                            onDismissAddDialog = { showAdd = false },
                             onPickFile = {},
                             onPickQrCode = {},
                             onAddRemote = { _, _ -> },
@@ -87,6 +89,8 @@ class ProfilesTestActivity : ComponentActivity() {
     fun showRemoteUsageScenario() {
         scenario = ProfilesScenario.REMOTE_USAGE
     }
+
+    fun showTheme(dark: Boolean) { darkTheme = dark }
 
     private fun sampleProfile() = Profile.custom(601L, "家庭配置").copy(
         // 作者 long：截图必须避免相对时间随设备时钟变化，因此固定为无更新时间的稳定状态。

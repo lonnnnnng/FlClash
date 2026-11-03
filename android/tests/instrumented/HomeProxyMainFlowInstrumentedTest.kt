@@ -107,7 +107,10 @@ class HomeProxyMainFlowInstrumentedTest {
             compose.onNodeWithTag("dashboard_profile_detail_sheet").performScrollToNode(hasTestTag("profile_provider_row_0"))
             compose.onNodeWithTag("profile_providers_loading").assertDoesNotExist()
             capture("running_yaml_providers_loaded")
-            val deadline = android.os.SystemClock.elapsedRealtime() + 16_000
+            val observationMs = androidx.test.platform.app.InstrumentationRegistry.getArguments()
+                .getString("kclashProvidersObservationMs")?.toLong()?.also { require(it in 16_000L..300_000L) } ?: 16_000L
+            // 作者 long：分钟级卡住必须用分钟级非空列表观察验收；保持每250ms检查一次，不能用空列表或几轮轮询代替。
+            val deadline = android.os.SystemClock.elapsedRealtime() + observationMs
             while (android.os.SystemClock.elapsedRealtime() < deadline) {
                 assertTrue(ready()); assertEquals(count, model.providers.value.providers!!.size)
                 kotlinx.coroutines.delay(250)
@@ -119,7 +122,7 @@ class HomeProxyMainFlowInstrumentedTest {
             capture("running_yaml_providers_recreated")
             assertEquals(since, manager.runningSinceElapsedMillis.value)
             androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
-                putString("kclash_providers_polling", "running-count=$count polling-window-ms=16000 recreation=passed session-preserved=true")
+                putString("kclash_providers_polling", "running-count=$count polling-window-ms=$observationMs recreation=passed session-preserved=true")
             })
             compose.onNodeWithTag("dashboard_profile_detail_back").performClick()
         }

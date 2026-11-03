@@ -1,5 +1,13 @@
 # Project Context
 
+## 主页面视觉收敛与三分钟 Providers 补验（2026-11-04）
+
+主页面连续圆角/多层阴影、运行按钮与出站模式绘制按压、子树焦点和Dock弹簧拖动/释放/取消已完成本组验收；完整字素修复与Tab/List刷新忙态一致性接通。App430/Service188共618项零失败/错误/跳过，Debug/AndroidTest、独立未签名Release/R8及双变体Lint通过（各0错误/62警告）。Redmi最终同批23/23，包含90个Provider运行态连续180000ms、Activity重建及会话保持；14张严格截图基线和Profiles浅色/菜单、按压/焦点辅助图已目视。正式两份Profile/选择/正文SHA与mtime、脚本及运行态fixture偏好和原1.yaml保持，两包安装哈希匹配，结束无服务/tun0并恢复旋转1/字号1.0。证据见`docs/acceptance/main-visual-redmi-20261104.json`。
+
+原始分钟级转圈现场未保存，不认定唯一触发因；三分钟为原1.yaml非空列表的纯代理运行态观察，不推广到全部Provider实网/进程回收。Flutter7种轮廓LTR/RTL每行端点±1px已验，阴影和整页动效不宣称Flutter逐像素一致。独立探子任务通道失败，未执行独立review；Core/Common/Go本组未重跑，正式签名Release运行未验。完整Profiles/UI继续PARTIAL，备份/系统恢复与观测页次要打磨继续暂缓。
+
+早期视觉批次沿用的旧代理页截图宿主会清展示偏好，未独立持久化组前快照，不能宣称最初代理页展示偏好完整保持；最终测试已在Activity规则之外保存并恢复该选项，回读断言通过。
+
 ## 首页/代理组与 Providers 有界读取闭环（2026-11-04）
 
 Providers/统计读取已改为版本通知合流、独立8秒页面预算和失败保留重试；同配置刷新保留列表，旧不可取消读取不阻塞新配置。首页/代理组按组patch保存、原渲染Profile ID锁内复核及独立失败重试已补齐。App426/Service188共614项单测、Debug/AndroidTest、独立未签名Release/R8及双变体Lint通过；Redmi最终同批9/9，原1.yaml运行中90个Provider连续16秒及Activity重建通过、核心会话保持。正式两份Profile/正文SHA与mtime和原1.yaml保护、最终两包哈希匹配；结束无服务/tun0并恢复旋转。证据见`docs/acceptance/home-proxy-mainflow-redmi-20261104.json`。

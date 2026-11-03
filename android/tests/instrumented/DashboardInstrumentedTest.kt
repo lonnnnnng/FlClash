@@ -722,7 +722,7 @@ class DashboardInstrumentedTest {
     }
 
     private fun captureHash(name: String): String {
-        assertPortraitDefaultFontConfiguration()
+        prepareTouchVisualCapture()
         composeRule.waitForIdle()
         val bitmap = composeRule.onNodeWithTag("dashboard_page").captureToImage().asAndroidBitmap()
         val png = ByteArrayOutputStream().also { output ->
@@ -742,16 +742,16 @@ class DashboardInstrumentedTest {
 }
 
 private val baselines = mapOf(
-    "default" to "67f3dac43e2e7a5b051579146787b3164a29313a5fd3888958fb5b4007d6b899",
-    "system_ready" to "4dee58f6842acc06e76ee72a3cde10a29403a133998a7c0d385dec51542055a6",
-    "running" to "542c70643460b00bef6cd5dd37b5d7bfda45fc2440cb919eceae9302a9de45f8",
-    "light_default" to "a99c0b07b04c73aedf62045de8b2836d5a9b0288e0573f74d81c82b3c6739fbc",
-    "light_running" to "0545fe1593f3db31ff5a2f590bd79cd3bc63634e6a51c0b50b68f149ec7c1209",
+    "default" to "92d0a662f7f5b02804b693d3d89c5e254960208b731d9dbe8d89b00012adac0c",
+    "system_ready" to "eda3da666967495280f4b1321e3859d8bcae8242f8d5a9652eeb17e9e7fb5eb5",
+    "running" to "76acca4aa29674089a53eb3019729a1182bba185bfd3cc6384bf574a278b7d41",
+    "light_default" to "a87a88b4170da233053a7ab075a3d920600bb6dd7b8631cfdec256ca6d457a7c",
+    "light_running" to "a251bd3d7b0dd6d56eba6ec2a6c111e4f1f087437073a69d034847811e7ed65f",
 )
 
 private val proxyPickerBaselines = mapOf(
-    "summary_dark" to "a0c773fd53333ead00ad9af0489c00530e93532737f9e79b68f1cfcbec9b6eaa",
-    "summary_light" to "6db47c9c907197889f31b18509fe2b5ec0587104ea7d5d6dfe4ee1ee5061d6d9",
-    "picker_dark" to "62847a1e78ebf50115e56f5a8a0ba18393251f7d51002cd4fd55f4bc6db05d46",
-    "picker_light" to "43e3cb2030ed1f63c927dfb187c964ab3a09bf5e34ffc4c8f275b39c5016ecdc",
+    "summary_dark" to "6c7e9f8388a4691d3f54658edf001e0ea084a981a8adf6abcf18cbe0e6ac0e32",
+    "summary_light" to "4317d23bfb172bd708da28aaddf03083060c5d2a05a289507dcd3530039fd180",
+    "picker_dark" to "b9ad482e2e92ebe56599cc82cafd757028ea961f278c9fa828ac203583897fb6",
+    "picker_light" to "cdd6355fd2ad0d1bbad0eacc0ac3a1e1fe2950c251d9437e1786193aafb818c1",
 )
