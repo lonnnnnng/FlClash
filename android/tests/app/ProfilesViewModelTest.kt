@@ -32,6 +32,44 @@ import org.junit.Test
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
 
+    @Test fun earlySystemResultWaitsForEncryptedDraftAndFreshLaunchReleasesOrphanPicker() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (remote in listOf(false, true)) {
+            val profile = if (remote) Profile.remote(816, "https://example.test/pending", "pending")
+                else Profile.custom(816, "pending").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
+            val store = FakeProfileStore(profile).apply { content = "rules: []" }
+            val drafts = PickerMemoryStore()
+            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+                fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader {
+                    com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "rules: []\n".toByteArray())
+                }, overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+            first.openEditor(profile); advanceUntilIdle()
+            val token = requireNotNull(if (remote) first.beginRemoteFilePick() else first.beginFileReplacementPick())
+            assertTrue(first.persistPickerBeforeLaunch(token))
+            val pendingBytes = drafts.bytes!!.copyOf(); owner.clear()
+            val readGate = kotlinx.coroutines.CompletableDeferred<Unit>(); drafts.readGate = readGate
+            val second = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+            val reconcile = async { second.reconcileFilePicker(remote, token) }
+            second.receiveFilePickerResult(remote, token + 1, "content://wrong")
+            second.receiveFilePickerResult(remote, token, "content://fixture")
+            second.receiveFilePickerResult(remote, token, "content://duplicate")
+            assertNull(second.editorState.value.profile)
+            readGate.complete(Unit); reconcile.await(); advanceUntilIdle()
+            if (remote) second.remoteEditorState.first { it.replacement != null }
+            else second.editorState.first { it.replacement != null }
+            assertFalse(if (remote) second.remoteEditorState.value.isPickingFile else second.editorState.value.isPickingFile)
+            assertTrue(store.fileUpdates.isEmpty()); assertEquals("rules: []", store.content)
+            owner2.clear()
+            drafts.bytes = pendingBytes; drafts.readGate = null
+            val fresh = model(); val owner3 = androidx.lifecycle.ViewModelStore().apply { put("draft", fresh) }
+            assertFalse(fresh.reconcileFilePicker(remote, null)); advanceUntilIdle()
+            assertFalse(if (remote) fresh.remoteEditorState.value.isPickingFile else fresh.editorState.value.isPickingFile)
+            assertNotNull(if (remote) fresh.beginRemoteFilePick() else fresh.beginFileReplacementPick())
+            fresh.closeEditor(); advanceUntilIdle(); owner3.clear()
+        }
+    }
+
     @Test fun persistedFileAndRemotePickerTokensAcceptOnlyMatchingResultAfterViewModelRecovery() = runTest {
         Dispatchers.setMain(mainDispatcher)
         for (remote in listOf(false, true)) {

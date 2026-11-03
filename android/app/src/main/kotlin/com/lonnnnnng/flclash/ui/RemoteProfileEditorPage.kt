@@ -39,6 +39,7 @@ internal fun RemoteProfileEditorDialog(
     onClearReplacement: () -> Unit = {},
     onRetryRead: () -> Unit = {},
     onPersistPick: suspend (Long) -> Boolean = { true },
+    onLaunchPick: ((Long) -> Unit)? = null,
 ) {
     var draft by remember(profile.id) { mutableStateOf(state?.draft ?: RemoteProfileDraft.from(profile)) }
     LaunchedEffect(state?.draft) { state?.draft?.let { draft = it } }
@@ -50,7 +51,8 @@ internal fun RemoteProfileEditorDialog(
     val pickerScope = rememberCoroutineScope()
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
-    val locked = saving || state?.isLoading == true || state?.isReadingFile == true || pickToken != null
+    val locked = saving || state?.isLoading == true || state?.isReadingFile == true ||
+        (if (onLaunchPick != null) state?.isPickingFile == true else pickToken != null)
     val hasBody = state?.draftContent != null || state?.replacement != null
     val dirty = draft != RemoteProfileDraft.from(profile) || hasBody
     val interval = draft.intervalMinutes.toLongOrNull()
@@ -100,6 +102,7 @@ internal fun RemoteProfileEditorDialog(
                 ProfileSectionRow("从文件替换", state?.replacement?.name, Icons.Outlined.UploadFile,
                     !locked && state?.document != null, Modifier.testTag("remote_profile_replace_pick")) {
                     onBeginPick()?.let { token ->
+                        if (onLaunchPick != null) { onLaunchPick(token); return@let }
                         pickToken = token
                         pickerScope.launch {
                             try {

@@ -28,8 +28,12 @@ object NoopProfileDraftStore : ProfileDraftStore {
 
 /** 作者 long：未确认正文和密钥只能进入本机Keystore密文，不能写Bundle、备份或正式配置。 */
 @Singleton
-class AndroidProfileDraftStore @Inject constructor(@ApplicationContext context: Context) : ProfileDraftStore {
-    private val file = AtomicFile(File(context.noBackupFilesDir, "profile-editor-draft.v1"))
+class AndroidProfileDraftStore @Inject constructor(@ApplicationContext context: Context) : ProfileDraftStore by EncryptedDraftFile(
+    context, "profile-editor-draft.v1", "com.lonnnnnng.flclash.profile.draft.v1")
+
+/** 作者 long：不同资源的未确认会话分文件加密，清除脚本选择不能覆盖配置正文草稿。 */
+internal class EncryptedDraftFile(context: Context, fileName: String, private val keyAlias: String) : ProfileDraftStore {
+    private val file = AtomicFile(File(context.noBackupFilesDir, fileName))
     private val lock = Any()
 
     override suspend fun read(): ByteArray? = withContext(Dispatchers.IO) {
@@ -69,16 +73,15 @@ class AndroidProfileDraftStore @Inject constructor(@ApplicationContext context: 
 
     private fun key(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        (store.getKey(KEY_ALIAS, null) as? SecretKey)?.let { return it }
+        (store.getKey(keyAlias, null) as? SecretKey)?.let { return it }
         return KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore").apply {
-            init(KeyGenParameterSpec.Builder(KEY_ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+            init(KeyGenParameterSpec.Builder(keyAlias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .setKeySize(256).build())
         }.generateKey()
     }
 
     private companion object {
-        const val KEY_ALIAS = "com.lonnnnnng.flclash.profile.draft.v1"
         const val MAX_BYTES = 64 * 1024 * 1024
     }
 }

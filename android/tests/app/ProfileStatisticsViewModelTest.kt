@@ -13,6 +13,79 @@ import org.junit.Test
 class ProfileStatisticsViewModelTest {
     @After fun resetMain() = Dispatchers.resetMain()
 
+    @Test fun coldPickerResultWaitsForRestoreKeepsSameDetailAndRejectsChangedInput() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        for (changed in listOf(false, true)) {
+            val runtime = StatisticsFixture(); val drafts = PickerMemoryStore()
+            val reader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader {
+                com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "payload: []".toByteArray())
+            }
+            val first = ProfileStatisticsViewModel(runtime, reader, pickerStore = drafts)
+            first.setForeground(true); first.show(1); runCurrent()
+            first.openProvider("http", pickFile = true); runCurrent()
+            val token = first.document.value!!.pickerToken!!
+            assertNotNull(drafts.bytes); first.viewModelScope.cancel(); runCurrent()
+            val gate = CompletableDeferred<Unit>(); drafts.readGate = gate
+            if (changed) runtime.documentRead = { id, name -> ProfileProviderDocument(id,
+                com.lonnnnnng.flclash.core.CoreProviderDocument(name, "text", "payload: []", "missing"), recoveryKey = "changed") }
+            val restored = ProfileStatisticsViewModel(runtime, reader, pickerStore = drafts)
+            try {
+                restored.show(null); restored.show(1); restored.setForeground(true)
+                restored.receiveProviderFile(token, "content://fixture")
+                restored.receiveProviderFile(token, "content://duplicate")
+                runCurrent(); assertEquals(0, runtime.saves)
+                gate.complete(Unit); runCurrent()
+                assertEquals(if (changed) 0 else 1, runtime.saves)
+                assertNull(drafts.bytes)
+                if (changed) assertNotNull(restored.document.value?.error) else assertNull(restored.document.value)
+            } finally { restored.viewModelScope.cancel(); runCurrent() }
+        }
+    }
+
+    @Test fun committedFailureOnlyRetriesReadbackAndDoesNotPromptForUnsavedChanges() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        for (runtimePostCommitFailure in listOf(false, true)) {
+            val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+            try {
+                model.setForeground(true); model.show(1); runCurrent()
+                model.openProvider("http", edit = true); runCurrent()
+                model.changeProviderContent("payload: [new]")
+                runtime.save = {
+                    if (runtimePostCommitFailure) throw ProviderOperationException("已提交", committed = true)
+                    runtime.documentRead = { _, _ -> error("fixture-secret") }
+                }
+                model.saveProvider(); runCurrent()
+                assertTrue(model.document.value!!.committed); assertFalse(model.document.value!!.dirty)
+                assertFalse(model.document.value!!.error.orEmpty().contains("fixture-secret"))
+                model.saveProvider(); runCurrent(); assertEquals(1, runtime.saves)
+                runtime.documentRead = { id, name -> ProfileProviderDocument(id,
+                    com.lonnnnnng.flclash.core.CoreProviderDocument(name, "text", "payload: [new]", "new-digest"), recoveryKey = "fixture-input") }
+                model.retryProviderReadback(); runCurrent()
+                assertEquals(1, runtime.saves); assertNull(model.document.value)
+            } finally { model.viewModelScope.cancel(); runCurrent() }
+        }
+    }
+
+    @Test fun lateRestoreFailureCannotReplaceAnotherDocument() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val drafts = PickerMemoryStore()
+        val first = ProfileStatisticsViewModel(runtime, pickerStore = drafts)
+        first.setForeground(true); first.show(1); runCurrent(); first.openProvider("http", pickFile = true); runCurrent()
+        val token = first.document.value!!.pickerToken!!; first.viewModelScope.cancel(); runCurrent()
+        val gate = CompletableDeferred<Unit>()
+        runtime.documentRead = { _, _ -> withContext(NonCancellable) { gate.await(); error("late fixture failure") } }
+        val restored = ProfileStatisticsViewModel(runtime, pickerStore = drafts)
+        try {
+            restored.setForeground(true); runCurrent(); restored.receiveProviderFile(token, "content://fixture"); runCurrent()
+            restored.show(2); runCurrent()
+            runtime.documentRead = { id, name -> providerDocument(id, name) }
+            restored.openProvider("file"); runCurrent()
+            gate.complete(Unit); runCurrent()
+            assertEquals("file", restored.document.value?.name); assertNull(restored.document.value?.error)
+            assertEquals(0, runtime.saves)
+        } finally { gate.complete(Unit); restored.viewModelScope.cancel(); runCurrent() }
+    }
+
     @Test fun batchUpdatesTrackFailuresAndRetryOnlyFailedNames() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
@@ -173,11 +246,13 @@ private class StatisticsFixture : ProfileStatisticsRuntime {
     var update: suspend () -> Unit = {}
     var batch: suspend (List<String>) -> List<com.lonnnnnng.flclash.core.CoreProviderUpdateResult> = { names -> names.map { com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, "") } }
     override suspend fun updateProfileProviders(profileId: Long, names: List<String>) = batch(names)
-    var documentRead: suspend (Long, String) -> ProfileProviderDocument = { id, name -> providerDocument(id, name) }
+    private var content = "payload: []"
+    var documentRead: suspend (Long, String) -> ProfileProviderDocument = { id, name -> ProfileProviderDocument(id,
+        com.lonnnnnng.flclash.core.CoreProviderDocument(name, "text", content, "missing"), recoveryKey = "fixture-input") }
     var save: suspend () -> Unit = {}
     var saves = 0
     override suspend fun readProfileProvider(profileId: Long, name: String) = documentRead(profileId, name)
-    override suspend fun saveProfileProvider(document: ProfileProviderDocument, content: String) { saves++; save() }
+    override suspend fun saveProfileProvider(document: ProfileProviderDocument, content: String) { saves++; save(); this.content = content }
     override suspend fun profileProviders(profileId: Long): List<com.lonnnnnng.flclash.core.CoreExternalProvider> { providerCalls++; return providerRead() }
     override suspend fun updateProfileProvider(profileId: Long, name: String) { updateCalls++; update() }
     var calls = 0
@@ -186,7 +261,7 @@ private class StatisticsFixture : ProfileStatisticsRuntime {
 }
 
 private fun providerDocument(id: Long, name: String) = ProfileProviderDocument(id,
-    com.lonnnnnng.flclash.core.CoreProviderDocument(name, "text", "payload: []", "missing"))
+    com.lonnnnnng.flclash.core.CoreProviderDocument(name, "text", "payload: []", "missing"), recoveryKey = "fixture-input")
 
 private fun providerSamples() = listOf(
     com.lonnnnnng.flclash.core.CoreExternalProvider("http", "Proxy", "HTTP", 3, null),

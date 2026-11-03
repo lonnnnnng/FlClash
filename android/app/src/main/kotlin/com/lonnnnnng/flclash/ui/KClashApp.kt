@@ -407,12 +407,18 @@ fun KClashApp(
     var showDiagnosticHistory by rememberSaveable { mutableStateOf(false) }
     var showGlobalRules by rememberSaveable { mutableStateOf(false) }
     var showScriptsDialog by rememberSaveable { mutableStateOf(false) }
+    val launchFileReplacement = rememberProfileFilePicker(profilesViewModel, remote = false)
+    val launchRemoteReplacement = rememberProfileFilePicker(profilesViewModel, remote = true)
     var scriptPickToken by rememberSaveable { mutableStateOf<Long?>(null) }
+    val restoredScriptPickToken = remember { scriptPickToken }
+    LaunchedEffect(Unit) {
+        if (!scriptsViewModel.reconcileFilePicker(restoredScriptPickToken) && scriptPickToken == restoredScriptPickToken) scriptPickToken = null
+    }
     val scriptFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         val token = scriptPickToken
         scriptPickToken = null
-        if (uri == null) scriptsViewModel.completeFilePick(token, null)
-        else scriptsViewModel.completeFilePick(token) {
+        if (uri == null) scriptsViewModel.receiveFilePick(token, null)
+        else scriptsViewModel.receiveFilePick(token) {
             withContext(Dispatchers.IO) {
                 val resolver = context.contentResolver
                 val name = resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
@@ -714,12 +720,12 @@ fun KClashApp(
 
     // 作者 long：详情窗口由页面持有，不能随 LazyColumn 卡片被回收；启停改变前一张卡片高度也应保留正在查看的列表。
     val detailProfile = selectedProfile?.takeIf { it.id == profileDetailId && selectedDestination == MainDestination.DASHBOARD }
-    DisposableEffect(detailProfile?.id) {
+    LaunchedEffect(detailProfile?.id) {
         profileStatisticsViewModel?.show(detailProfile?.id)
-        onDispose { profileStatisticsViewModel?.show(null) }
     }
     LaunchedEffect(selectedProfile?.id, selectedDestination) {
-        if (profileDetailId != selectedProfile?.id || selectedDestination != MainDestination.DASHBOARD) profileDetailId = null
+        // 作者 long：冷进程先显示空仓库快照；等当前配置真正到达后再判定切换，否则选择器返回时会丢失已恢复的详情入口。
+        if (selectedDestination != MainDestination.DASHBOARD || selectedProfile != null && profileDetailId != selectedProfile.id) profileDetailId = null
     }
     if (selectedDestination != MainDestination.PROFILES) ProfileSyncResults(profilesState.sync,
         profilesViewModel::dismissSyncResult, profilesViewModel::retrySyncFailures)
@@ -743,8 +749,8 @@ fun KClashApp(
             onEditProvider = { profileStatisticsViewModel?.openProvider(it, edit = true) },
             onUploadProvider = { profileStatisticsViewModel?.openProvider(it, pickFile = true) },
         )
-        profileStatisticsViewModel?.let { ProfileProviderDocumentHost(it) }
     }
+    profileStatisticsViewModel?.let { ProfileProviderDocumentHost(it) }
 
     MainPageScaffold(
         selectedDestination = selectedDestination,
@@ -843,6 +849,8 @@ fun KClashApp(
                     onDocumentChange = profilesViewModel::changeProfileDocument,
                     onCustomDraftChange = profilesViewModel::changeCustomDraft,
                     onPersistProfilePick = profilesViewModel::persistPickerBeforeLaunch,
+                    onLaunchFilePick = launchFileReplacement,
+                    onLaunchRemotePick = launchRemoteReplacement,
                     onDocumentSave = profilesViewModel::acceptProfileDocument,
                     onDocumentClose = profilesViewModel::closeProfileDocument,
                     onOpenDocument = profilesViewModel::openProfileDocument,
@@ -1410,9 +1418,19 @@ fun KClashApp(
             onImportRemote = { scriptsViewModel.openRemote() },
             onImportFile = {
                 scriptsViewModel.beginFilePick()?.let { token ->
-                    scriptPickToken = token
-                    try { scriptFilePicker.launch(arrayOf("*/*")) }
-                    catch (_: Exception) { scriptPickToken = null; scriptsViewModel.completeFilePick(token) { error("无法打开文件选择器") } }
+                    coroutineScope.launch {
+                        try {
+                            if (scriptsViewModel.persistFilePick(token)) {
+                                scriptPickToken = token
+                                scriptFilePicker.launch(arrayOf("*/*"))
+                            }
+                            else { scriptPickToken = null; scriptsViewModel.receiveFilePick(token, null) }
+                        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                            scriptsViewModel.receiveFilePick(token, null)
+                            throw cancelled
+                        }
+                        catch (_: Exception) { scriptPickToken = null; scriptsViewModel.receiveFilePick(token) { error("无法打开文件选择器") } }
+                    }
                 }
             },
             onEditUrl = scriptsViewModel::openRemote,
@@ -1566,6 +1584,8 @@ internal fun ProfilesPanel(
     onDocumentChange: (String) -> Unit = {},
     onCustomDraftChange: (String) -> Unit = {},
     onPersistProfilePick: suspend (Long) -> Boolean = { true },
+    onLaunchFilePick: ((Long) -> Unit)? = null,
+    onLaunchRemotePick: ((Long) -> Unit)? = null,
     onDocumentSave: () -> Unit = {},
     onDocumentClose: () -> Unit = {},
     onOpenDocument: ((Boolean) -> Unit)? = null,
@@ -1974,7 +1994,8 @@ internal fun ProfilesPanel(
             FileProfileEditorDialog(editorState, readOnly = isProfileTransitioning(runtimeState), onDismiss = onCloseEditor,
                 onBeginPick = onBeginFileReplacementPick, onFilePicked = onFileReplacementPicked,
                 onClearReplacement = onClearFileReplacement, onSave = onSaveFileEditor,
-                onSaveWithLabel = onSaveFileEditorWithLabel, onOpenDocument = onOpenDocument?.let { open -> { open(false) } }, onMetadataChange = onFileMetadataChange, onPersistPick = onPersistProfilePick)
+                onSaveWithLabel = onSaveFileEditorWithLabel, onOpenDocument = onOpenDocument?.let { open -> { open(false) } }, onMetadataChange = onFileMetadataChange, onPersistPick = onPersistProfilePick,
+                onLaunchPick = onLaunchFilePick)
         } else {
             ProfileEditorDialog(
                 profile = profile,
@@ -2024,6 +2045,7 @@ internal fun ProfilesPanel(
             onOpenDocument = { onOpenDocument?.invoke(true) },
             onBeginPick = onBeginRemotePick, onFilePicked = onRemoteFilePicked,
             onClearReplacement = onClearRemoteReplacement, onRetryRead = onRetryRemoteRead, onPersistPick = onPersistProfilePick,
+            onLaunchPick = onLaunchRemotePick,
         )
     }
 

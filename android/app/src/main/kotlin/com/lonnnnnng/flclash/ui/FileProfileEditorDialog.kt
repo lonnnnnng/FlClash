@@ -30,6 +30,7 @@ internal fun FileProfileEditorDialog(
     onOpenDocument: (() -> Unit)? = null,
     onMetadataChange: (String, String) -> Unit = { _, _ -> },
     onPersistPick: suspend (Long) -> Boolean = { true },
+    onLaunchPick: ((Long) -> Unit)? = null,
 ) {
     val profile = state.profile ?: return
     // 作者 long：正文和密钥只属于当前编辑会话，不写 SavedState；选择器只恢复“正在选择”标记以接收系统回调。
@@ -37,7 +38,7 @@ internal fun FileProfileEditorDialog(
     var key by remember(profile.id, profile.ageSecretKey) { mutableStateOf(state.draftAgeKey ?: profile.ageSecretKey) }
     var label by rememberSaveable(profile.id) { mutableStateOf(state.draftLabel ?: profile.label) }
     var pickToken by rememberSaveable(profile.id) { mutableStateOf<Long?>(null) }
-    val picking = pickToken != null
+    val picking = if (onLaunchPick != null) state.isPickingFile else pickToken != null
     var confirmDiscard by remember { mutableStateOf(false) }
     var showYaml by remember(profile.id) { mutableStateOf(false) }
     val pickerScope = rememberCoroutineScope()
@@ -79,6 +80,7 @@ internal fun FileProfileEditorDialog(
                     icon = Icons.Outlined.UploadFile, enabled = !locked,
                     modifier = Modifier.testTag("file_profile_replace_pick"), onClick = {
                     onBeginPick()?.let { token ->
+                        if (onLaunchPick != null) { onLaunchPick(token); return@let }
                         pickToken = token
                         pickerScope.launch {
                             try {

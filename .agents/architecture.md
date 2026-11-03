@@ -1,5 +1,11 @@
 # Architecture
 
+## 文件选择器冷恢复与核心通知时机（2026-11-04）
+
+根部稳定注册FILE/remote、脚本、Provider launcher；系统受理前持久化加密令牌，结果等待VM恢复再按原目标单次消费，无对应launcher的孤立pending解锁。Provider快照只存profile/name/输入与缓存摘要，冷进程重新建立核心binding；保存后核心回读，已提交而回读失败仅允许重读确认。
+
+`ensureConfigLoaded`仅在校验后以NonCancellable完成已受理setup、模式与loaded keys登记，再invalidateIpRoute通知观察者；刷新取消等待也不能丢失Go已完成输入。此前通知在登记之前会触发ProxyGroupsViewModel取消自身加载、统计/Provider collectLatest反复重置。Flutter参考setup.dart的登记后onUpdated语义，两个gated异步setup回归覆盖。详情保存ID在初始空Profile快照时保留。只读运行预览仍在后台/宿主销毁清除正文，不套用父编辑草稿恢复规则。
+
 ## 配置提交、删除与加密草稿闭环（2026-11-04）
 
 - `CoreRuntimeStatusProvider.withProfileWrite`由真实管理器持启停锁执行受理后的NonCancellable提交，再重读真实当前ID并应用；页面不在保存与应用之间释放生命周期锁。`ProfileApplyAfterSaveException`仅表示源已提交，VM返回已保存结果并保留独立应用重试，避免把应用失败误当回滚成功。

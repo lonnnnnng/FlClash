@@ -142,6 +142,18 @@ object AppModule {
     fun provideProfileDraftStore(store: com.lonnnnnng.flclash.data.AndroidProfileDraftStore): com.lonnnnnng.flclash.data.ProfileDraftStore = store
 
     @Provides
+    @Singleton
+    @javax.inject.Named("script-picker")
+    fun provideScriptPickerStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "script-picker.v1", "com.lonnnnnng.flclash.script.picker.v1")
+
+    @Provides
+    @Singleton
+    @javax.inject.Named("provider-picker")
+    fun provideProviderPickerStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "provider-picker.v1", "com.lonnnnnng.flclash.provider.picker.v1")
+
+    @Provides
     fun provideRuleResourceCompiler(compiler: com.lonnnnnng.flclash.data.NativeRuleResourceCompiler): com.lonnnnnng.flclash.data.RuleResourceCompiler = compiler
 
     @Provides

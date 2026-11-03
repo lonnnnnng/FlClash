@@ -73,6 +73,7 @@ data class ProfileEditorUiState(
     val error: String? = null,
     val draftLabel: String? = null,
     val draftAgeKey: String? = null,
+    val isPickingFile: Boolean = false,
 ) {
     override fun toString() = "ProfileEditorUiState(id=${profile?.id}, saving=$isSaving)"
 }
@@ -86,6 +87,7 @@ data class RemoteProfileEditorUiState(
     val isReadingFile: Boolean = false,
     val document: ProfileDocumentSnapshot? = null,
     val draft: RemoteProfileDraft = RemoteProfileDraft.from(profile),
+    val isPickingFile: Boolean = false,
     val draftContent: String? = null,
     val replacement: ProfileFileReplacementPreview? = null,
     val error: String? = null,
@@ -280,6 +282,11 @@ class ProfilesViewModel internal constructor(
     private val draftWriteLock = kotlinx.coroutines.sync.Mutex()
     private var draftEpoch = 0L
     private var draftClosing = false
+    private val draftRestored = kotlinx.coroutines.CompletableDeferred<Unit>().apply {
+        if (draftStore === com.lonnnnnng.flclash.data.NoopProfileDraftStore) complete(Unit)
+    }
+    private var restoredFilePick: Long? = null
+    private var restoredRemotePick: Long? = null
     init {
         if (draftStore !== com.lonnnnnng.flclash.data.NoopProfileDraftStore) viewModelScope.launch {
             val generation = localEditorGeneration
@@ -293,13 +300,15 @@ class ProfilesViewModel internal constructor(
                         if (saved.editor.isLoading || saved.remote.isLoading) {
                             openEditor(requireNotNull(saved.editor.profile ?: saved.remote.profile))
                         } else {
-                            mutableEditor.value = saved.editor.copy(isLoading = false, isSaving = false, isReadingFile = false, overview = null)
-                            mutableRemoteEditor.value = saved.remote.copy(isLoading = false, isSaving = false, isReadingFile = false)
+                            mutableEditor.value = saved.editor.copy(isLoading = false, isSaving = false, isReadingFile = false, overview = null, isPickingFile = saved.filePick != null)
+                            mutableRemoteEditor.value = saved.remote.copy(isLoading = false, isSaving = false, isReadingFile = false, isPickingFile = saved.remotePick != null)
                             mutableDocumentEditor.value = saved.document.copy(saving = false)
                             replacementBytes = saved.fileBytes
                             remoteReplacementBytes = saved.remoteBytes
                             pendingFilePick = saved.filePick?.let { Triple(it.first, generation, it.third) }
                             pendingRemotePick = saved.remotePick?.let { Triple(it.first, generation, it.third) }
+                            restoredFilePick = pendingFilePick?.third
+                            restoredRemotePick = pendingRemotePick?.third
                             nextFilePickToken = saved.nextToken
                             refreshOverview()
                         }
@@ -307,6 +316,7 @@ class ProfilesViewModel internal constructor(
                 }
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { mutableErrors.emit("无法恢复上次编辑草稿，正式配置未改动") }
+            finally { draftRestored.complete(Unit) }
             combine(mutableEditor, mutableRemoteEditor, mutableDocumentEditor, draftRevision) { _, _, _, _ ->
                 draftEpoch to currentDraftSnapshot()
             }.collect { (epoch, snapshot) ->
@@ -343,6 +353,26 @@ class ProfilesViewModel internal constructor(
             }
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { mutableErrors.emit("无法暂存文件选择，请重试"); false }
+    }
+
+    fun receiveFilePickerResult(remote: Boolean, token: Long?, uri: String?) {
+        // 作者 long：系统可能先交付URI再完成Keystore读取；等待草稿后按原令牌消费，不能把结果交给新开的表单。
+        viewModelScope.launch {
+            draftRestored.await()
+            if (remote) acceptRemoteFilePick(token, uri) else acceptFileReplacement(token, uri)
+        }
+    }
+
+    suspend fun reconcileFilePicker(remote: Boolean, launcherToken: Long?): Boolean {
+        draftRestored.await()
+        val pending = if (remote) pendingRemotePick else pendingFilePick
+        val restored = if (remote) restoredRemotePick else restoredFilePick
+        if (pending != null && pending.third == launcherToken) return true
+        // 作者 long：磁盘草稿不代表系统任务仍存在；从桌面新开而没有对应launcher时解除孤立选择，不锁死父表单。
+        if (pending != null && pending.third == restored) {
+            if (remote) acceptRemoteFilePick(pending.third, null) else acceptFileReplacement(pending.third, null)
+        }
+        return false
     }
 
     fun changeCustomDraft(content: String) {
@@ -597,9 +627,10 @@ class ProfilesViewModel internal constructor(
     fun beginRemoteFilePick(): Long? {
         val state = mutableRemoteEditor.value
         val profile = state.profile ?: return null
-        if (state.isSaving || state.isLoading || state.isReadingFile || state.document == null || busy.value) return null
+        if (state.isSaving || state.isLoading || state.isReadingFile || state.isPickingFile || state.document == null || busy.value) return null
         val token = ++nextFilePickToken
         pendingRemotePick = Triple(profile.id, localEditorGeneration, token)
+        mutableRemoteEditor.update { it.copy(isPickingFile = true) }
         draftRevision.value++
         return token
     }
@@ -608,6 +639,8 @@ class ProfilesViewModel internal constructor(
         val request = pendingRemotePick ?: return
         if (token != request.third) return
         pendingRemotePick = null
+        mutableRemoteEditor.update { it.copy(isPickingFile = false) }
+        draftRevision.value++
         if (uri == null || request.first != mutableRemoteEditor.value.profile?.id || request.second != localEditorGeneration) return
         mutableRemoteEditor.update { it.copy(isReadingFile = true, error = null) }
         viewModelScope.launch {
@@ -782,7 +815,7 @@ class ProfilesViewModel internal constructor(
     fun beginFileReplacementPick(): Long? {
         val editor = mutableEditor.value
         val profile = editor.profile ?: return null
-        if (profile.type != ProfileType.FILE || editor.isSaving || editor.isReadingFile || busy.value) return null
+        if (profile.type != ProfileType.FILE || editor.isSaving || editor.isReadingFile || editor.isPickingFile || busy.value) return null
         if (isProfileTransitioning(runtimeManager.state.value)) {
             mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
             return null
@@ -790,6 +823,7 @@ class ProfilesViewModel internal constructor(
         // 作者 long：系统选择器回调只属于发起时的配置和编辑会话，关闭重开后即使 ID 相同也不能接收旧文件。
         val token = ++nextFilePickToken
         pendingFilePick = Triple(profile.id, localEditorGeneration, token)
+        mutableEditor.update { it.copy(isPickingFile = true) }
         draftRevision.value++
         return token
     }
@@ -798,6 +832,8 @@ class ProfilesViewModel internal constructor(
         val request = pendingFilePick ?: return
         if (token != request.third) return
         pendingFilePick = null
+        mutableEditor.update { it.copy(isPickingFile = false) }
+        draftRevision.value++
         if (uri == null || request.first != mutableEditor.value.profile?.id || request.second != localEditorGeneration) return
         val generation = localEditorGeneration
         mutableEditor.value = mutableEditor.value.copy(isReadingFile = true)

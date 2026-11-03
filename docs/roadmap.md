@@ -8,14 +8,23 @@
 >
 > 当前基线：本文件所在的 `kotlin` 主线提交，追踪 `origin/kotlin`；DNS/浏览器修复 `cab92464` 和规则资源 `d3ee7fc4` 为已同步历史基线，当前累计能力以第3/7节和最新切片为准，远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 本轮最新（11-04）：FILE/CUSTOM运行态安全保存与当前项删除回退、配置整页排序和Keystore加密父草稿/正文恢复已接通。App414/Service182共596项单测、Debug/AndroidTest、Release/R8及双变体Lint通过；Redmi分批15个不同方法最终全部通过，含真实DocumentsUI、唯一授权源两临时目标真实下载后应用和后台am kill后新进程恢复。两包安装哈希匹配，正式两份配置/原选择/正文及原1.yaml保持，结束无服务/tun0并恢复旋转；见`docs/acceptance/profile-closure-redmi-20261104.json`。选择器等待期间进程重建后返回文件的完整E2E、其他资源SAF、全部高级分区实网和完整视觉仍待补，整体PARTIAL；语言/主题暂缓，免责声明/关于永久移除。
-> 前序验收：配置详情与外部Provider管理首版已接通整页、全部更新/失败重试、正文预览/编辑、文件侧载与订阅用量。App387/Core38/Service151共576项单测、Go全量测试、Debug/AndroidTest/Lint通过；Redmi最终6/6，9图已目视，正式Profile前后count2/missing0。详情见下节。整体Profiles/UI仍PARTIAL，系统文件选择器侧载E2E、真实远程规则同步、运行态更新与完整Flutter视觉仍待补；继续整组还原剩余主流程和常用设置。
+> 本轮最新（11-04）：修复核心加载提前发出缓存通知导致代理组自取消、详情 Providers 持续转圈的反馈环；先完成核心加载和输入登记，再通知刷新。FILE/远程本地副本/脚本/Provider 的真实 DocumentsUI 进程回收后返回与取消均通过；分阶段覆盖12个不同精确方法，包含旧入口最终3/3。App419/Service185共604项单测、Debug/AndroidTest、Release/R8及双变体Lint通过；两包安装哈希匹配。详见最新切片和 `docs/acceptance/file-entry-process-redmi-20261104.json`。高级配置/脚本运行态逐项实网、其他资源SAF及完整视觉继续PARTIAL；备份与系统恢复暂缓。
+> 前序闭环（11-04）：FILE/CUSTOM运行态安全保存、当前项删除回退、整页排序、Keystore加密父草稿/正文恢复及唯一授权源两临时目标真实下载后应用已验，见 `profile-closure-redmi-20261104.json`。Providers首版和历史6/6不包含本轮真实侧载；各批测试数量不相加，历史切片的未验项按最新节核对。
 > 代理页与延迟缓存历史验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，代理页整体首版已完成工具栏、分组溢出选择、搜索、Tab/List、固定组头、三档卡片与独立测速，21 项定向真机回归通过；Providers批量/编辑/侧载首版进展见最新节，真实运行态及质量来源全覆盖/持久缓存和完整UI parity仍待后续。
 > 前序延迟缓存验收时 Android 包尚未安装，正式 Room 为空；通过工作区外层 `AGENTS.md` 唯一授权入口导入并保留一份 Profile，未触碰外层 `1.yaml`、未清数据或删除 Profile。延迟缓存用例验证同一 Profile/组/节点/测试 URL 的正延迟跨真实应用进程恢复，并向正式 Room 写入不同 Profile 与旧测试 URL 探针，确认均不进入当前页面；成功后删除的只有测试探针行和应用内标记。核心保持 `STOPPED`，没有 ProxyService、VpnService 或 TUN。
-> 完整 ProfileRuntimeParity 长流程仍曾在停止态 `DIRECT` 默认测速阶段失败，不能推广为通过。Dashboard、Profiles 和 Proxy Groups 的完整 UI/UX 仍为 `PARTIAL`；节点菜单及停止态添加本地目录已有正式宿主验收，仍待代理页连续圆角/动效、Provider真实系统侧载/运行态、质量来源全覆盖/持久缓存及完整页面parity；Provider管理首版与首页route hits见对应记录。验收限定 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
+> 完整 ProfileRuntimeParity 长流程仍曾在停止态 `DIRECT` 默认测速阶段失败，不能推广为通过。Dashboard、Profiles 和 Proxy Groups 的完整 UI/UX 仍为 `PARTIAL`；节点菜单及停止态添加本地目录已有正式宿主验收，仍待代理页连续圆角/动效、Provider运行态批量/侧载、质量来源全覆盖/持久缓存及完整页面parity；Provider管理首版与首页route hits见对应记录。验收限定 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
 
 > 2026-11-03 主链路修复补充：真实订阅本身可用，Kotlin 缺少 Flutter 的 DNS baseline，导致 Android 虚拟 DNS 无应答；已补齐脚本后 baseline → 用户覆盖 → LAN 暂存链路，并按已应用配置读取 mixed-port/TUN 参数和发布系统 HTTP 代理。有认证或禁用 mixed-port 时不广播代理，运行态配置改变网络参数时同步重建并支持失败回滚。Redmi 上 UDP/TCP 53 与系统解析均通过；X 浏览器百度与 Cloudflare 页面实测成功。详情及最终构建校验见下方“DNS 基线与浏览器主链路修复”。本段之后较早的“核心 STOPPED、未启动 TUN”等记录只适用于各自历史切片。
 
+
+### 真实文件入口进程恢复与 Providers 持续加载修复（2026-11-04）
+
+- **故障与修复**：用户真机发现 Providers 持续数分钟转圈。`ensureConfigLoaded`在setup完成前发布serviceCacheRevision，代理组观察者取消自身refresh、输入key始终未登记，统计/Providers的collectLatest也被反复取消。对照Flutter setup完成后登记输入再onUpdated，改为NonCancellable完成已受理加载/模式/输入登记后通知；冷恢复详情不再被初始空Profile列表清掉。新增两个异步setup回归先在旧实现确认断言失败，再随全量单测通过。
+- **入口闭环**：FILE/远程两个独立launcher在根部稳定注册，Keystore草稿写入成功后才启动系统选择器；回调等待恢复、按原令牌单次消费，孤立pending解锁。脚本持久化导入令牌、保留同名文件；Provider仅持久化恢复摘要，冷进程重建binding并比较原配置/脚本/缓存，已提交而回读失败只允许重新确认，不重复提交。
+- **统一构建**：最终App419/Service185共604项，失败/错误/跳过0，Debug/AndroidTest/Lint及单独Release/R8/LintRelease通过；Lint分别0/62/9和0/62/8。仅修正旧只读预览用例后testbuild3与Lint通过，生产APK未变。Core/Common/Go未重跑。证据`docs/acceptance/file-entry-process-redmi-20261104.json`，日志前缀`/tmp/kclash-provider-loading-20261104-`与`/tmp/kclash-file-entry-20261104-`。
+- **真机结果**：同一最终生产APK上，FILE/远程本地副本/脚本/Provider导入及四类取消均通过，每次确认DocumentsUI仍前台、宿主PID消失、返回产生新PID。FILE/远程先只暂存、外层保存才提交，脚本同名新增后缀、原脚本不变，Provider缓存mtime变化且真实核心重新读取原1.yaml字节。分阶段覆盖12个不同精确方法；旧首页/代理/预览三项最终同批3/3，不称一次12/12。Provider导入夹具由前一包prepare，实际冷恢复/侧载/回读在最终包；取消夹具重新prepare。
+- **失败与保护**：虚拟时间测试等待、错误测试包名、UI XML非法代理字符及旧预览用例重建保留预期均保留日志。只读预览原有规则是在后台/销毁时清除敏感正文，旧用例改为核对清除、重开和原文件/选择保持，未改生产行为。正式两份Profile/原选择/正文SHA与mtime、原1.yaml双端SHA保持，最终两包安装匹配；自己的配置/脚本/缓存和Download临时JS已回收，结束无服务/tun0，字号1.0/旋转1。
+- **边界与后续顺序**：当前文件入口组通过，整体Profiles/UI仍PARTIAL。下一组高级配置/脚本运行态逐项应用，再集中首页与代理组主流程、主页面视觉；备份与系统恢复暂缓。其他资源SAF、外部资源实网、正式签名/Release运行及完整视觉仍未验。首页策略组缩略文字`DashboardVisuals.kt`的`name.take(1)`会截断非BMP emoji，已观测系统uiautomator XML序列化失败并按截图点击绕过；作为主页面视觉组的明确待修项，未把该页宣称完整通过。
 
 ### 配置管理闭环集中验收（2026-11-04）
 
@@ -420,13 +429,13 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 统一启动、停止、配置热切、停止态节点读取/选择/测速、模式、VPN/纯代理、LAN 热更新、Provider 更新与观测失效；UI 不直接调用 gomobile |
-| 单元测试 | 本轮App414、Service182共596项，失败/错误/跳过0；Core38/Common31及Go沿用11-03证据，本轮未重跑，不混加成一次验证 |
-| 主流程真机测试 | 11-04分批15个不同方法最终通过、无跳过：FILE/CUSTOM运行态保存、删除回退、授权两目标真实下载后应用、父/正文草稿后台am kill后恢复、真实DocumentsUI及旧入口；不是一次15/15全量运行 |
+| 单元测试 | 本轮App419、Service185共604项，失败/错误/跳过0；Core38/Common31及Go沿用11-03证据，本轮未重跑 |
+| 主流程真机测试 | 文件入口分阶段覆盖12个不同精确方法，含4类真实DocumentsUI进程回收后导入/取消及旧入口最终3/3；前序运行态15个不同方法见独立证据，不混称一次全量运行 |
 | Debug 构建 | Debug/AndroidTest及lintDebug通过；Lint 0 errors、62 warnings、9 hints |
-| Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；SHA-256 b6e9978173486fabcb8b19c8362e6d5ae833d8d9cdb15a32451d010fdb4e166f，11-04已安装并匹配设备 |
-| Debug 原生库 | App仅arm64-v8a；最终AndroidTest SHA-256 3eaba7b4f260578cb43785f8e4a5740789fb24f4def8ba54ef68d8186ec340f7，匹配设备，测试包无原生库；首批13项使用build5测试包，4项补跑使用testbuild6，进程两阶段使用testbuild7，生产APK相同 |
+| Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；SHA-256 44b37361d7904a2863496ae0815f958fa1681e4d9d8969522ee13e648409d2c1，11-04已安装并匹配设备 |
+| Debug 原生库 | App仅arm64-v8a；最终AndroidTest SHA-256 0be4410078e7d059a90a3d37edad023b5ffe84d572470529939e2508ee10231e，匹配设备、无原生库；文件入口使用此前同生产包的测试APK，最终仅修正旧预览测试并重跑3/3，详见证据 |
 | Release 构建 | 本次assembleRelease/R8/lintRelease通过；Lint 0 errors、62 warnings、8 hints；未签名arm64 APK，版本0.1.0 (1)，正式签名与真机运行未验 |
-| 最近真机证据 | Redmi API36、1080×2340、竖屏字号1.0；15个不同方法及before2/after各1项通过，正式两份Profile/原选择/正文哈希和mtime/原1.yaml保持；服务为空，connectivity未见tun0，旋转恢复。见profile-closure-redmi-20261104.json |
+| 最近真机证据 | Redmi API36、1080×2340竖屏/字号1.0；四类文件入口及取消、Provider核心侧载回读和旧入口最终3/3通过；正式两份Profile/原选择/正文哈希与mtime/原1.yaml保持，服务为空且connectivity未见tun0；见file-entry-process-redmi-20261104.json |
 
 ## 4. 目标架构图
 
@@ -676,7 +685,7 @@ flowchart LR
 - 本地文件选择后先异步校验 YAML 语法并展示文件名、大小与结果；有效文件需用户确认才提交，无效/空文件不可导入且取消不写入。`ProfileRepository.addFileProfile` 在生成 ID、写文件和 Room 插入前再次复核；该预检只证明 YAML 可解析，不等同于 Mihomo 核心语义校验。
 - FILE 本地配置编辑提供可选掩码 age 密钥和系统文件替换，原始 YAML 默认折叠；只改密钥保留正文与更新时间。替换按原字节暂存，确认后解密/语法校验，再在同一保存流程更新文件与 Room；异常恢复旧正文/mtime，保存与删除串行，确认前取消零写入。真实 DocumentsUI 已完成授权 `1.yaml` 明文新增与替换，以及同一原字节生成的真实 age 密文新增与替换；错钥原位重试、持久密钥复用、Activity 重建和失败回滚通过，CUSTOM 保持原分区编辑器。
 - 稳定RUNNING已开放首页/配置单项和批量同步、排序、重命名、远程/FILE/CUSTOM正文与结构化保存、脚本绑定及删除；STARTING/STOPPING暂禁。提交与应用共持CoreRuntimeManager锁，保存成功但应用失败提供独立重试。删除当前项先切替代项、最后项先停核心，失败保留旧源并尝试恢复；FILE/CUSTOM Rules及授权两目标实下载已验，其余分区/脚本运行态完整E2E仍待补。
-- 父表单/正文子页和原始并发基线、文件替换及picker令牌保存在noBackup加密草稿；后台am kill后恢复及放弃清除已验。真实DocumentsUI取消/选择/外层保存通过；选择器等待期间进程回收再返回文件尚未单独E2E。
+- 父表单/正文子页和原始并发基线、文件替换及picker令牌保存在noBackup加密草稿；后台am kill后恢复及放弃清除已验。FILE/远程本地副本、脚本和Provider的真实DocumentsUI前台回收进程后返回/取消均已验；FILE/远程外层保存才提交，脚本同名不覆盖，Provider重建绑定并严格复核原输入/缓存摘要后侧载、核心回读。
 - 自定义 Profile 新增 Rules 分区快速编辑入口；编辑器逐行校验规则类型和动作，拒绝 `SUB-RULE`，保存时只替换顶层 `rules` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 新增 Proxies 分区快速编辑入口；编辑器按 YAML 列表校验代理名称和类型，拒绝重复名称和非列表结构，保存时只替换顶层 `proxies` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 的 Proxy Groups 已有可视列表/单组/成员/可选设置首版，保留整列表与单组快捷 YAML；支持复制、删除、排序、引用跟随改名和原子保存，保留未知字段与未编辑分区。批量操作、结构问题提示、核心过滤校验、图标选择、图库/推荐、过滤预设和全局资源映射已有后续首版；真实远程/运行态资源更新和完整视觉仍PARTIAL，证据见顶部相关切片。
@@ -696,7 +705,7 @@ flowchart LR
 - 自定义 Profile 编辑器首片改为“配置概览 → Rules、Proxies、Proxy Groups、Providers、DNS、Dialers 分区入口 → 原始 YAML 高级编辑”的层级；分区按钮复用已有 ViewModel 编辑器，保存仍由对应 Repository/覆盖模型负责，输入法退出时主动收起以保持手机弹窗标题和操作可见。
 - 分区保存成功后同步父级编辑器的 YAML 正文和 Profile 元数据，避免原始 YAML 旧快照覆盖结构化修改；父级仍有未保存 YAML 时，进入分区前要求明确放弃或返回继续编辑。
 - 新建配置的未修改空草稿退出时仍删除；Rules、Proxies、Proxy Groups、Providers、DNS 或 Dialers 已持久化修改后退出则保留配置，并提供命名或保留默认名称选项。
-- 首页当前配置详情已接通最终输入/核心Provider四项统计、外部明细、HTTP单项/全部更新与失败重试、正文预览/编辑、文件侧载和订阅用量首版；MRS只读，文本可编辑。更新不持有启停锁并复核配置/会话；系统OpenDocument到真实Provider写入、运行态批量/侧载与实际外部资源下载仍待验。
+- 首页当前配置详情已接通最终输入/核心Provider四项统计、外部明细、HTTP单项/全部更新与失败重试、正文预览/编辑、文件侧载和订阅用量首版；MRS只读，文本可编辑。冷进程加载自取消反馈环已修，真实OpenDocument→进程回收→侧载→核心回读已验；运行态批量/侧载、实际外部资源下载与完整视觉仍待验。
 
 ### 2026-10-27：Profile DNS Overrides 切片
 

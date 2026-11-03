@@ -7,6 +7,7 @@ import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +27,40 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ScriptsViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
+
+    @Test fun `persisted picker waits for restore consumes once and releases orphan or cancelled requests`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val store = FakeScriptStore(); val drafts = PickerMemoryStore()
+        fun model() = ScriptsViewModel(store, FakeScriptRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), drafts)
+        val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("scripts", first) }
+        val token = requireNotNull(first.beginFilePick()); assertTrue(first.persistFilePick(token))
+        val pending = drafts.bytes!!.copyOf(); owner.clear()
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>(); drafts.readGate = gate
+        val restored = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("scripts", restored) }
+        backgroundScope.launch(mainDispatcher) { restored.state.collect {} }
+        restored.receiveFilePick(token + 1) { error("wrong token") }
+        restored.receiveFilePick(token) { "fixture.js" to "const main = config => config;".toByteArray() }
+        restored.receiveFilePick(token) { error("duplicate") }
+        assertTrue(store.scripts.value.isEmpty())
+        gate.complete(Unit); advanceUntilIdle()
+        assertEquals(1, store.scripts.value.size); assertEquals(null, drafts.bytes)
+        val cancelled = requireNotNull(restored.beginFilePick()); assertTrue(restored.persistFilePick(cancelled))
+        restored.receiveFilePick(cancelled, null); advanceUntilIdle()
+        assertEquals(1, store.scripts.value.size); assertEquals(null, drafts.bytes)
+        val failed = requireNotNull(restored.beginFilePick()); assertTrue(restored.persistFilePick(failed))
+        restored.receiveFilePick(failed) { error("无法读取脚本文件") }; advanceUntilIdle()
+        assertNotBusy(restored); assertTrue(restored.state.value.error != null)
+        owner2.clear(); drafts.bytes = pending; drafts.readGate = null
+        val fresh = model(); val owner3 = androidx.lifecycle.ViewModelStore().apply { put("scripts", fresh) }
+        backgroundScope.launch(mainDispatcher) { fresh.state.collect {} }
+        assertFalse(fresh.reconcileFilePicker(null)); advanceUntilIdle()
+        assertNotBusy(fresh); assertEquals(null, drafts.bytes); assertTrue(fresh.beginFilePick() != null)
+        owner3.clear()
+    }
+
+    private suspend fun assertNotBusy(model: ScriptsViewModel) {
+        assertFalse(model.state.first().isBusy)
+    }
 
     @After
     fun tearDown() {

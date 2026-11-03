@@ -1,0 +1,457 @@
+{
+  "date": "2026-11-04",
+  "status": "DONE-VERIFIED for this file-entry slice; overall PARTIAL",
+  "sourceBaseHead": "564dcbd3c5b905d8a6e421e64da77aea433daab4",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "sdk": 36,
+    "abi": "arm64-v8a",
+    "portrait": true,
+    "fontScale": "1.0"
+  },
+  "bug": {
+    "symptom": "Providers and proxy groups remained loading for minutes",
+    "cause": "ensureConfigLoaded published serviceCacheRevision before setup/loadedConfigKey commit; proxy-group observer cancelled its own loader repeatedly; detail collectLatest kept resetting",
+    "fix": "finish accepted setup and input registration under NonCancellable, then publish invalidation",
+    "upstreamReference": "lib/providers/actions/setup.dart:801-808",
+    "redRegressionLog": "/tmp/kclash-provider-loading-20261104-red2.log",
+    "redFailures": [
+      "expected revision 0 but was 1 while setup pending",
+      "cancelled caller left applied input unregistered"
+    ],
+    "deviceAfterFix": {
+      "fixtureGroups": 33,
+      "fixtureNodes": 14,
+      "fixtureProviders": 91,
+      "providerListVisible": true
+    }
+  },
+  "build": {
+    "command": "./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64",
+    "log": "/tmp/kclash-provider-loading-20261104-build2.log",
+    "result": "BUILD SUCCESSFUL",
+    "unit": {
+      "app": {
+        "tests": 419,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 185,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "finalTestOnlyBuildLog": "/tmp/kclash-provider-loading-20261104-testbuild3.log",
+    "finalTestOnlyChange": "Correct obsolete read-only preview recreation expectation: clear sensitive body, reopen, preserve source and selection",
+    "releaseLog": "/tmp/kclash-provider-loading-20261104-release.log",
+    "release": "unsigned arm64 Release/R8/lintRelease passed; not installed or formally signed",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 62,
+        "hints": 9
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 62,
+        "hints": 8
+      }
+    },
+    "notRerun": [
+      "Core/Common JVM",
+      "Go core"
+    ]
+  },
+  "artifacts": {
+    "app": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "44b37361d7904a2863496ae0815f958fa1681e4d9d8969522ee13e648409d2c1",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "deviceSha256": "44b37361d7904a2863496ae0815f958fa1681e4d9d8969522ee13e648409d2c1",
+      "deviceMatches": true
+    },
+    "test": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "0be4410078e7d059a90a3d37edad023b5ffe84d572470529939e2508ee10231e",
+      "abis": [],
+      "deviceSha256": "0be4410078e7d059a90a3d37edad023b5ffe84d572470529939e2508ee10231e",
+      "deviceMatches": true
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "484cd23228a2b7424aa5dc35b45defddf4e98be0318cd9f341637a2462bce784",
+      "abis": [
+        "arm64-v8a"
+      ]
+    }
+  },
+  "fileEntryTestApkSha256": "a1c27b82737b38d23c305e93713917540878bfcabf87f729bc5dfd6b6326e8a7",
+  "sameProductionApkForAllScenariosAndLegacyTests": true,
+  "scenarios": [
+    {
+      "entry": "file",
+      "action": "import",
+      "passed": true,
+      "pids": {
+        "oldPid": "11384",
+        "hostAbsentWhileDocumentsUiStayedForeground": true,
+        "newPid": "11664"
+      },
+      "caseLog": "/tmp/kclash-file-entry-20261104-file-final-case.log"
+    },
+    {
+      "entry": "file",
+      "action": "cancel",
+      "passed": true,
+      "pids": {
+        "oldPid": "13655",
+        "hostAbsentWhileDocumentsUiStayedForeground": true,
+        "newPid": "13899"
+      },
+      "caseLog": "/tmp/kclash-file-entry-20261104-file-final-cancel-case.log"
+    },
+    {
+      "entry": "remote",
+      "action": "import",
+      "passed": true,
+      "pids": {
+        "oldPid": "12211",
+        "hostAbsentWhileDocumentsUiStayedForeground": true,
+        "newPid": "12508"
+      },
+      "caseLog": "/tmp/kclash-file-entry-20261104-remote-final-case.log"
+    },
+    {
+      "entry": "remote",
+      "action": "cancel",
+      "passed": true,
+      "pids": {
+        "oldPid": "14130",
+        "hostAbsentWhileDocumentsUiStayedForeground": true,
+        "newPid": "14379"
+      },
+      "caseLog": "/tmp/kclash-file-entry-20261104-remote-final-cancel-case.log"
+    },
+    {
+      "entry": "script",
+      "action": "import",
+      "passed": true,
+      "pids": {
+        "oldPid": "13002",
+        "hostAbsentWhileDocumentsUiStayedForeground": true,
+        "newPid": "13360"
+      },
+      "caseLog": "/tmp/kclash-file-entry-20261104-script-final-case.log"
+    },
+    {
+      "entry": "script",
+      "action": "cancel",
+      "passed": true,
+      "pids": {
+        "oldPid": "14610",
+        "hostAbsentWhileDocumentsUiStayedForeground": true,
+        "newPid": "14938"
+      },
+      "caseLog": "/tmp/kclash-file-entry-20261104-script-final-cancel-case.log"
+    },
+    {
+      "entry": "provider",
+      "action": "import",
+      "passed": true,
+      "pids": {
+        "oldPid": "9981",
+        "hostAbsentWhileDocumentsUiStayedForeground": true,
+        "newPid": "10890"
+      },
+      "prepareUsesPreviousTestApk": true,
+      "verify": {
+        "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyProviderSideLoadReadbackAndCleanup",
+        "log": "/tmp/kclash-file-entry-20261104-provider-final-verify-cleanup.log",
+        "exitCode": 0,
+        "statusCodes": [
+          1,
+          0
+        ],
+        "passed": true
+      }
+    },
+    {
+      "entry": "provider",
+      "action": "cancel",
+      "passed": true,
+      "pids": {
+        "oldPid": "16031",
+        "hostAbsentWhileDocumentsUiStayedForeground": true,
+        "newPid": "16557"
+      },
+      "caseLog": "/tmp/kclash-file-entry-20261104-provider-final-cancel-retry-case.log"
+    }
+  ],
+  "finalLegacyMethodsPassed": 3,
+  "exactMethods": [
+    "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+    "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+    "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareLocalFileDraft",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareProviderSideLoad",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareRemoteFileDraft",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareScriptImport",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyCancelledPickerAndCleanup",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyProfileOuterSaveAndCleanup",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyProviderSideLoadReadbackAndCleanup",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyReturnedProfileFileIsOnlyStaged",
+    "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyScriptImportedWithoutOverwritingAndCleanup"
+  ],
+  "phases": [
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareLocalFileDraft",
+      "log": "/tmp/kclash-file-entry-20261104-file-final-import-prepare.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyReturnedProfileFileIsOnlyStaged",
+      "log": "/tmp/kclash-file-entry-20261104-file-final-import-staged.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyProfileOuterSaveAndCleanup",
+      "log": "/tmp/kclash-file-entry-20261104-file-final-import-save-cleanup.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareLocalFileDraft",
+      "log": "/tmp/kclash-file-entry-20261104-file-final-cancel-prepare.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyCancelledPickerAndCleanup",
+      "log": "/tmp/kclash-file-entry-20261104-file-final-cancel-verify-cleanup.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareRemoteFileDraft",
+      "log": "/tmp/kclash-file-entry-20261104-remote-final-import-prepare.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyReturnedProfileFileIsOnlyStaged",
+      "log": "/tmp/kclash-file-entry-20261104-remote-final-import-staged.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyProfileOuterSaveAndCleanup",
+      "log": "/tmp/kclash-file-entry-20261104-remote-final-import-save-cleanup.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareRemoteFileDraft",
+      "log": "/tmp/kclash-file-entry-20261104-remote-final-cancel-prepare.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyCancelledPickerAndCleanup",
+      "log": "/tmp/kclash-file-entry-20261104-remote-final-cancel-verify-cleanup.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareScriptImport",
+      "log": "/tmp/kclash-file-entry-20261104-script-final-import-prepare.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyScriptImportedWithoutOverwritingAndCleanup",
+      "log": "/tmp/kclash-file-entry-20261104-script-final-import-verify-cleanup.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareScriptImport",
+      "log": "/tmp/kclash-file-entry-20261104-script-final-cancel-prepare.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyCancelledPickerAndCleanup",
+      "log": "/tmp/kclash-file-entry-20261104-script-final-cancel-verify-cleanup.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyProviderSideLoadReadbackAndCleanup",
+      "log": "/tmp/kclash-file-entry-20261104-provider-final-verify-cleanup.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#prepareProviderSideLoad",
+      "log": "/tmp/kclash-file-entry-20261104-provider-final-cancel-prepare.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.ui.FileEntryProcessInstrumentedTest#verifyCancelledPickerAndCleanup",
+      "log": "/tmp/kclash-file-entry-20261104-provider-final-cancel-verify-cleanup.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry,com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile,com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+      "log": "/tmp/kclash-file-entry-20261104-final-legacy-host-final.log",
+      "exitCode": 0,
+      "statusCodes": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "passed": true
+    }
+  ],
+  "protection": {
+    "authorizedLocalYaml": {
+      "bytes": 34814,
+      "sha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceMatches": true
+    },
+    "fontScale": "1.0",
+    "accelerometerRotation": "1",
+    "userRotation": "0",
+    "formalProfileCount": 2,
+    "formalProfileFilesAndSelectionPreservedByEveryFixtureCleanup": true,
+    "servicesEmpty": true,
+    "connectivityHasTun0": false,
+    "temporaryScriptDownloadRemoved": true
+  },
+  "visualEvidence": [
+    {
+      "path": "/tmp/kclash-provider-loading-20261104-detail.png",
+      "sha256": "6f1c9aaa3ab586dfb3e6cbbee076657eae9ff544e3cca7ed23348887bb3464a5",
+      "reviewed": true
+    },
+    {
+      "path": "/tmp/kclash-file-entry-20261104-file-final-now.png",
+      "sha256": "995ed83e5a06e03b8f59b1708bd4c0ce6dc298ff464d8347e8eda83d6b11c537",
+      "reviewed": true
+    }
+  ],
+  "failedAttemptsRetained": [
+    {
+      "log": "/tmp/kclash-provider-loading-20261104-red.log",
+      "reason": "invalid virtual-time waits; not a product reproduction"
+    },
+    {
+      "log": "/tmp/kclash-provider-loading-20261104-build.log",
+      "reason": "same test wait defect left worker hung; terminated verified test worker"
+    },
+    {
+      "log": "/tmp/kclash-file-entry-20261104-provider-final-cancel-case.log",
+      "reason": "uiautomator XML serialization failed; fixture safely cleaned, screenshot-based entry retried successfully"
+    },
+    {
+      "log": "/tmp/kclash-file-entry-20261104-final-legacy-host.log",
+      "reason": "wrong test package; not executed"
+    },
+    {
+      "log": "/tmp/kclash-file-entry-20261104-final-legacy-host-retry.log",
+      "reason": "2/3 passed; preview test contradicted deliberate sensitive-body clearing on lifecycle disposal; corrected test and 3/3 passed"
+    }
+  ],
+  "boundaries": [
+    "Only original authorized 1.yaml bytes used; no replacement YAML generated",
+    "Provider import prepare preceded final APK installation; actual picker death/return, side-load and readback ran on final APK; cancellation prepare reran on final APK",
+    "Backup/system recovery remains deferred",
+    "Other resource SAF, advanced-section/script running-state real-network coverage and full visual parity remain partial",
+    "DashboardVisuals.kt group name.take(1) truncates non-BMP emoji; observed uiautomator Illegal character U+d83d; queued for homepage visual group",
+    "Raw logs/screenshots remain local /tmp; only sanitized index and hashes committed"
+  ]
+}

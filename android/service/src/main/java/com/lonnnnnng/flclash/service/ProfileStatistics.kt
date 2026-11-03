@@ -13,12 +13,18 @@ interface ProfileStatisticsRuntime {
     suspend fun profileProviders(profileId: Long): List<com.lonnnnnng.flclash.core.CoreExternalProvider> = error("Provider 明细不可用")
     suspend fun updateProfileProvider(profileId: Long, name: String): Unit = error("Provider 更新不可用")
     suspend fun readProfileProvider(profileId: Long, name: String): ProfileProviderDocument = error("Provider 预览不可用")
+    suspend fun restoreProfileProvider(profileId: Long, name: String, recoveryKey: String, digest: String): ProfileProviderDocument {
+        val loaded = readProfileProvider(profileId, name)
+        check(recoveryKey.isNotBlank() && loaded.recoveryKey == recoveryKey && loaded.document.digest == digest)
+        return loaded
+    }
     suspend fun saveProfileProvider(document: ProfileProviderDocument, content: String): Unit = error("Provider 侧载不可用")
     suspend fun updateProfileProviders(profileId: Long, names: List<String>): List<com.lonnnnnng.flclash.core.CoreProviderUpdateResult> = error("Provider 批量更新不可用")
 }
 
 /** 作者 long：窗口只使用正文和可展示元数据；绑定令牌由生命周期管理器持有，不暴露配置路径。 */
-class ProfileProviderDocument(val profileId: Long, val document: com.lonnnnnng.flclash.core.CoreProviderDocument, internal val binding: Any? = null)
+class ProfileProviderDocument(val profileId: Long, val document: com.lonnnnnng.flclash.core.CoreProviderDocument,
+    internal val binding: Any? = null, val recoveryKey: String = "")
 
 internal fun profileStatisticsOf(profileId: Long, yaml: String, providers: CoreProviderCounts): ProfileStatistics {
     require(providers.proxies >= 0 && providers.providers >= 0)
@@ -30,4 +36,4 @@ internal fun profileStatisticsOf(profileId: Long, yaml: String, providers: CoreP
 }
 
 /** 作者 long：仅安全分类文案可以跨入界面，不携带核心原始错误、URL 或文件路径。 */
-class ProviderOperationException(message: String) : IllegalStateException(message)
+class ProviderOperationException(message: String, val committed: Boolean = false) : IllegalStateException(message)

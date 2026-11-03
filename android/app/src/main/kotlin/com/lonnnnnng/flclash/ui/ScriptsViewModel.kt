@@ -46,6 +46,7 @@ internal const val SCRIPT_TEMPLATE = "const main = (config) => {\n  return confi
 class ScriptsViewModel @Inject constructor(
     private val repository: ScriptStore,
     private val runtimeManager: CoreRuntimeStatusProvider,
+    @javax.inject.Named("script-picker") private val pickerStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
 ) : ViewModel() {
     private val operations = MutableStateFlow(ScriptsUiState())
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -53,6 +54,26 @@ class ScriptsViewModel @Inject constructor(
     private val mutableRemote = MutableStateFlow(ScriptRemoteUiState())
     private var generation = 0L
     private var pendingPick: Long? = null
+    private var restoredPick: Long? = null
+    private val pickerLock = kotlinx.coroutines.sync.Mutex()
+    private val pickerRestored = kotlinx.coroutines.CompletableDeferred<Unit>()
+
+    init {
+        viewModelScope.launch {
+            try {
+                val token = pickerStore.read()?.toString(Charsets.UTF_8)?.toLongOrNull()
+                if (token != null && token > 0) {
+                    pendingPick = token
+                    restoredPick = token
+                    generation = maxOf(generation, token)
+                    operations.value = operations.value.copy(isBusy = true)
+                }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+            catch (_: Exception) {
+                operations.value = operations.value.copy(error = "无法恢复上次文件选择，请重新选择")
+            } finally { pickerRestored.complete(Unit) }
+        }
+    }
 
     val state: StateFlow<ScriptsUiState> = combine(repository.scripts, operations) { scripts, operation ->
         operation.copy(scripts = scripts)
@@ -139,6 +160,7 @@ class ScriptsViewModel @Inject constructor(
     fun importFile(fileName: String, bytes: ByteArray) = launchAction { repository.importFile(fileName, bytes) }
 
     fun beginFilePick(): Long? {
+        if (!pickerRestored.isCompleted) return null
         if (operations.value.isBusy || mutableEditor.value.isSaving || isBlocked()) return null
         val token = ++generation
         pendingPick = token
@@ -152,6 +174,50 @@ class ScriptsViewModel @Inject constructor(
         operations.value = operations.value.copy(isBusy = false)
         if (load == null) return
         launchAction { val (name, bytes) = load(); repository.importFile(name, bytes) }
+    }
+
+    suspend fun persistFilePick(token: Long): Boolean {
+        pickerRestored.await()
+        return try {
+            pickerLock.lock()
+            try {
+                check(pendingPick == token)
+                pickerStore.write(token.toString().toByteArray(Charsets.UTF_8))
+                pendingPick == token
+            } finally { pickerLock.unlock() }
+        } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+        catch (_: Exception) {
+            operations.value = operations.value.copy(error = "无法暂存文件选择，请重试")
+            false
+        }
+    }
+
+    suspend fun reconcileFilePicker(launcherToken: Long?): Boolean {
+        pickerRestored.await()
+        val pending = pendingPick
+        if (pending != null && pending == launcherToken) return true
+        if (pending != null && pending == restoredPick) receiveFilePick(pending, null)
+        return false
+    }
+
+    fun receiveFilePick(token: Long?, load: (suspend () -> Pair<String, ByteArray>)?) {
+        viewModelScope.launch {
+            pickerRestored.await()
+            if (token == null || pendingPick != token) return@launch
+            try {
+                // 作者 long：先清除持久令牌再受理导入，重复系统回调或下次启动不能重复创建脚本。
+                pickerLock.lock()
+                try {
+                    if (pendingPick != token) return@launch
+                    pickerStore.write(null)
+                    completeFilePick(token, load)
+                } finally { pickerLock.unlock() }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+            catch (_: Exception) {
+                pendingPick = null
+                operations.value = operations.value.copy(isBusy = false, error = "文件选择未完成，请重新选择")
+            }
+        }
     }
 
     fun reorder(ids: List<Long>) {

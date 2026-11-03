@@ -217,6 +217,14 @@ class MainActivityInstrumentedTest {
         assertTrue("只读预览应加载成功", preview.state.value.preview != null)
         composeRule.onNodeWithTag("runtime_config_preview_content").assertIsDisplayed()
         composeRule.activityRule.scenario.recreate()
+        // 作者 long：只读预览在宿主销毁时必须丢弃敏感正文；重建后应重新打开读取，不能沿用父编辑器的草稿恢复规则。
+        composeRule.waitUntil(10_000) { preview.state.value.profileId == null }
+        composeRule.onNodeWithTag("runtime_config_preview_sheet").assertDoesNotExist()
+        composeRule.onNodeWithTag("runtime_config_preview_content").assertDoesNotExist()
+        composeRule.onNodeWithTag("dashboard_profile_card").performScrollTo().performClick()
+        composeRule.onNodeWithTag("dashboard_profile_detail_preview").performClick()
+        composeRule.waitUntil(15_000) { !preview.state.value.isLoading }
+        assertTrue("重建后应能重新读取预览", preview.state.value.preview != null)
         composeRule.onNodeWithTag("runtime_config_preview_content").assertIsDisplayed()
         composeRule.onNodeWithTag("runtime_config_preview_close").performClick()
         composeRule.onNodeWithTag("runtime_config_preview_sheet").assertDoesNotExist()

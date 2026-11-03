@@ -23,3 +23,4 @@
 -keep class com.lonnnnnng.flclash.data.Profile { *; }
 -keep enum com.lonnnnnng.flclash.data.ProfileType { *; }
 -keep class kotlin.Triple { *; }
+-keep class com.lonnnnnng.flclash.ui.ProviderPickerSnapshot { *; }

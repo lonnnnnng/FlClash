@@ -38,6 +38,43 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class CoreRuntimeManagerTest {
+    @Test fun coldConfigPublishesRevisionOnlyAfterCommittingLoadedInput() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val bridge = FakeBridge().apply { beforeSetup = { entered.complete(Unit); release.await() } }
+        val runtime = manager(ActiveProfile(701, "cold", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())
+        val revision = runtime.proxyGroupsRevision.value
+        val loading = async { runtime.getProxyGroups().getOrThrow() }
+        try {
+            kotlinx.coroutines.withTimeout(5_000) { entered.await() }
+            // 作者 long：异步核心尚未回调时若发布刷新，代理组观察者会取消加载并再次提交同一份配置。
+            assertEquals(revision, runtime.proxyGroupsRevision.value)
+        } finally { release.complete(Unit) }
+        loading.await()
+        assertTrue(runtime.proxyGroupsRevision.value > revision)
+        assertTrue(runtime.profileInputsApplied(701))
+        runtime.getProxyGroups().getOrThrow()
+        assertEquals(1, bridge.calls.count { it == "setup" })
+    }
+
+    @Test fun cancellingPageWaitDoesNotAbandonAcceptedCoreConfig() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val bridge = FakeBridge().apply { beforeSetup = { entered.complete(Unit); release.await() } }
+        val runtime = manager(ActiveProfile(701, "cold", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())
+        val loading = async { runtime.getProxyGroups() }
+        kotlinx.coroutines.withTimeout(5_000) { entered.await() }
+        loading.cancel()
+        release.complete(Unit)
+        loading.join()
+        // 作者 long：Go 不支持取消已受理的 setup；页面退出后仍须登记完成结果，后续读取才能复用核心输入。
+        assertTrue(runtime.profileInputsApplied(701))
+        runtime.getProxyGroups().getOrThrow()
+        assertEquals(1, bridge.calls.count { it == "setup" })
+    }
+
     @Test fun profileWriteSerializesWithStopAndFinishesAcceptedCommit() = runTest {
         val source = temporaryFolder.newFile().apply { writeText("{}") }
         val runtime = manager(ActiveProfile(701, "write", source.path), temporaryFolder.newFolder(), FakeBridge(), FakeServiceController())
@@ -271,6 +308,24 @@ class CoreRuntimeManagerTest {
         source.appendText("\n# changed")
         assertTrue(runCatching { runtime.saveProfileProvider(another, "payload: []") }.isFailure)
         assertEquals(2, bridge.externalSaves)
+    }
+
+    @Test fun providerRecoveryRebindsColdInputRejectsChangedBytesAndReportsPostCommitFailure() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val profile = ActiveProfile(8, "Provider", source.path)
+        val bridge = FakeBridge()
+        val first = manager(profile, temporaryFolder.newFolder(), bridge, FakeServiceController())
+        first.getProxyGroups().getOrThrow()
+        val original = first.readProfileProvider(8, "fixture")
+        assertTrue(original.recoveryKey.isNotBlank())
+        val cold = manager(profile, temporaryFolder.newFolder(), bridge, FakeServiceController())
+        val rebound = cold.restoreProfileProvider(8, "fixture", original.recoveryKey, original.document.digest)
+        bridge.externalSave = { bridge.ipStamp = bridge.ipStamp.copy(epoch = bridge.ipStamp.epoch + 1) }
+        val committed = runCatching { cold.saveProfileProvider(rebound, "payload: []") }.exceptionOrNull()
+        assertTrue(committed is ProviderOperationException && committed.committed)
+        source.appendText("\n# new source")
+        assertTrue(runCatching { cold.restoreProfileProvider(8, "fixture", original.recoveryKey, original.document.digest) }.isFailure)
+        assertEquals(1, bridge.externalSaves)
     }
 
     @Test fun providerBatchAllowsOwnRouteChangesButRejectsAnOldEpochAndSharesUpdateGate() = runTest {
@@ -2233,8 +2288,10 @@ class CoreRuntimeManagerTest {
         }
 
         var failSetups = 0
+        var beforeSetup: suspend () -> Unit = {}
         override suspend fun setupConfig(selectedMap: Map<String, String>) {
             calls += "setup"
+            beforeSetup()
             if (failSetups > 0) { failSetups--; error("模拟配置加载失败") }
             runCatching { lanFromFile(File(coreHome, "config.yaml").path) }.getOrNull()?.let { lan = it }
             setupSelectedMap = selectedMap

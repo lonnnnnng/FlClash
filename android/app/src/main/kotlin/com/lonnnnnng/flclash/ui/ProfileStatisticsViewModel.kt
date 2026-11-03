@@ -15,6 +15,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.withLock
+
+/** 作者 long：只持久化重建会话所需的目标与摘要，不序列化管理器内部绑定。 */
+internal class ProviderPickerSnapshot(val profileId: Long, val name: String, val recoveryKey: String,
+    val digest: String, val token: Long, val version: Int = 1)
 
 data class ProfileStatisticsUiState(val profileId: Long? = null, val counts: ProfileStatistics? = null,
     val isLoading: Boolean = false, val error: String? = null)
@@ -30,14 +35,15 @@ data class ProfileProvidersUiState(val profileId: Long? = null,
 class ProviderDocumentUiState(val name: String, val loading: Boolean = true,
     val document: ProfileProviderDocument? = null, val content: String = "", val editing: Boolean = false,
     val saving: Boolean = false, val error: String? = null, val picking: Boolean = false,
-    val pickerToken: Long? = null) {
-    val dirty: Boolean get() = editing && document != null && content != document.document.content
+    val pickerToken: Long? = null, val committed: Boolean = false) {
+    val dirty: Boolean get() = !committed && editing && document != null && content != document.document.content
 }
 
 @HiltViewModel
 class ProfileStatisticsViewModel @Inject constructor(private val runtime: ProfileStatisticsRuntime,
     private val reader: ProfileFileDocumentReader = ProfileFileDocumentReader { error("文件读取不可用") },
-    private val managed: ManagedProfileProviders? = null) : ViewModel() {
+    private val managed: ManagedProfileProviders? = null,
+    @javax.inject.Named("provider-picker") private val pickerStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore) : ViewModel() {
     private val mutableState = MutableStateFlow(ProfileStatisticsUiState())
     val state = mutableState.asStateFlow()
     private val mutableProviders = MutableStateFlow(ProfileProvidersUiState())
@@ -52,9 +58,34 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
     private var documentJob: Job? = null
     private var documentGeneration = 0L
     private var nextPickerToken = 0L
+    private var pendingPicker: ProviderPickerSnapshot? = null
+    private var recoveringPicker: ProviderPickerSnapshot? = null
+    private val pickerLock = kotlinx.coroutines.sync.Mutex()
+    private val pickerRestored = CompletableDeferred<Unit>()
+    private val pickerGson = com.google.gson.Gson()
     private val foreground = MutableStateFlow(false)
     private val profile = MutableStateFlow<Long?>(null)
     private val retries = MutableStateFlow(0L)
+
+    init {
+        viewModelScope.launch {
+            try {
+                pendingPicker = pickerStore.read()?.let { pickerGson.fromJson(it.toString(Charsets.UTF_8), ProviderPickerSnapshot::class.java) }
+                pendingPicker?.let { check(it.version == 1 && it.token > 0 && it.recoveryKey.isNotBlank()); nextPickerToken = it.token }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { pendingPicker = null }
+            finally { pickerRestored.complete(Unit) }
+        }
+    }
+
+    private suspend fun writePicker(snapshot: ProviderPickerSnapshot?) = pickerLock.withLock {
+        if (pendingPicker === snapshot) pickerStore.write(snapshot?.let { pickerGson.toJson(it).toByteArray(Charsets.UTF_8) })
+    }
+
+    private fun invalidatePicker() {
+        pendingPicker = null
+        viewModelScope.launch { withContext(NonCancellable) { writePicker(null) } }
+    }
 
     init {
         viewModelScope.launch {
@@ -188,9 +219,10 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
 
     fun openProvider(name: String, edit: Boolean = false, pickFile: Boolean = false) {
         val id = profile.value ?: return
-        if (!foreground.value || updateJob?.isActive == true || document.value?.saving == true ||
+        if (!pickerRestored.isCompleted || !foreground.value || updateJob?.isActive == true || document.value?.saving == true ||
             providers.value.providers?.none { it.name == name } != false) return
         documentJob?.cancel()
+        invalidatePicker()
         val generation = ++documentGeneration
         val window = visibilityGeneration
         mutableDocument.value = ProviderDocumentUiState(name, editing = edit, picking = pickFile)
@@ -200,9 +232,16 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
                 currentCoroutineContext().ensureActive()
                 check(loaded.profileId == id && loaded.document.name == name)
                 if (generation != documentGeneration || window != visibilityGeneration) return@launch
+                val token = if (pickFile) ++nextPickerToken else null
+                if (token != null) {
+                    pendingPicker = ProviderPickerSnapshot(id, name, loaded.recoveryKey, loaded.document.digest, token)
+                    writePicker(pendingPicker)
+                    currentCoroutineContext().ensureActive()
+                    if (generation != documentGeneration || window != visibilityGeneration) return@launch
+                }
                 mutableDocument.value = ProviderDocumentUiState(name, false, loaded, loaded.document.content,
                     editing = edit && loaded.document.editable, picking = pickFile,
-                    pickerToken = if (pickFile) ++nextPickerToken else null)
+                    pickerToken = token)
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { if (generation == documentGeneration && window == visibilityGeneration)
                 mutableDocument.value = ProviderDocumentUiState(name, false, editing = edit, picking = pickFile, error = "读取失败，请重试") }
@@ -211,22 +250,54 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
 
     fun changeProviderContent(content: String) {
         val old = document.value ?: return
-        if (!old.editing || old.saving || old.document == null) return
+        if (!old.editing || old.saving || old.committed || old.document == null) return
         mutableDocument.value = ProviderDocumentUiState(old.name, false, old.document, content, true)
     }
 
     fun closeProvider() {
         if (document.value?.saving == true) return
         documentGeneration++; documentJob?.cancel(); mutableDocument.value = null
+        invalidatePicker()
     }
 
     fun saveProvider() {
         val old = document.value ?: return
-        if (!old.editing || old.saving || old.document == null || !foreground.value || updateJob?.isActive == true) return
+        if (!old.editing || old.saving || old.committed || old.document == null || !foreground.value || updateJob?.isActive == true) return
         submitProvider(old, old.content)
     }
 
     fun receiveProviderFile(token: Long, uri: String?) {
+        viewModelScope.launch {
+            pickerRestored.await()
+            val saved = pendingPicker ?: return@launch
+            if (saved.token != token) return@launch
+            val generation = documentGeneration
+            documentJob = currentCoroutineContext()[Job]
+            recoveringPicker = saved
+            pendingPicker = null
+            try {
+                writePicker(null)
+                if (generation != documentGeneration) return@launch
+                if (document.value == null && uri != null) {
+                    mutableDocument.value = ProviderDocumentUiState(saved.name, saving = true, picking = true)
+                    val rebound = runtime.restoreProfileProvider(saved.profileId, saved.name, saved.recoveryKey, saved.digest)
+                    currentCoroutineContext().ensureActive()
+                    if (generation != documentGeneration) return@launch
+                    check(profile.value == null || profile.value == saved.profileId)
+                    profile.value = saved.profileId
+                    mutableDocument.value = ProviderDocumentUiState(saved.name, false, rebound, rebound.document.content,
+                        picking = true, pickerToken = token)
+                }
+                consumeProviderFile(token, uri)
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) {
+                if (generation == documentGeneration) mutableDocument.value = ProviderDocumentUiState(saved.name, false, picking = true,
+                    error = "配置或文件已变化，未导入文件，请重新打开资源后选择")
+            } finally { if (recoveringPicker === saved) recoveringPicker = null }
+        }
+    }
+
+    private fun consumeProviderFile(token: Long, uri: String?) {
         val old = document.value ?: return
         if (!old.picking || old.pickerToken != token || old.saving || old.document?.profileId != profile.value) return
         if (uri == null) { closeProvider(); return }
@@ -256,8 +327,11 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
     }
 
     private suspend fun persistProvider(old: ProviderDocumentUiState, content: String, generation: Long) {
+        var committed = false
         try {
             runtime.saveProfileProvider(checkNotNull(old.document), content)
+            committed = true
+            verifyProviderReadback(old, content)
             currentCoroutineContext().ensureActive()
             if (generation == documentGeneration) {
                 mutableDocument.value = null
@@ -265,13 +339,55 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
                 retryProviders(); retry()
             }
         } catch (cancelled: CancellationException) { throw cancelled }
-        catch (error: Exception) { if (generation == documentGeneration) mutableDocument.value = ProviderDocumentUiState(old.name, false,
-            old.document, content, old.editing, error = (error as? ProviderOperationException)?.message ?: "保存失败，请检查内容后重试", picking = old.picking) }
+        catch (error: Exception) {
+            committed = committed || (error as? ProviderOperationException)?.committed == true
+            if (generation == documentGeneration) mutableDocument.value = ProviderDocumentUiState(old.name, false,
+            old.document, content, old.editing,
+            error = if (committed) "Provider 已提交，但回读确认失败，请重新读取确认" else (error as? ProviderOperationException)?.message ?: "保存失败，请检查内容后重试",
+            picking = old.picking, committed = committed) }
+    }
+
+    private suspend fun verifyProviderReadback(old: ProviderDocumentUiState, content: String) {
+        val loaded = runtime.readProfileProvider(checkNotNull(old.document).profileId, old.name)
+        check(loaded.profileId == old.document.profileId && loaded.recoveryKey == old.document.recoveryKey &&
+            loaded.document.name == old.name && loaded.document.content == content)
+    }
+
+    fun retryProviderReadback() {
+        val old = document.value ?: return
+        if (!old.committed || old.saving) return
+        val generation = documentGeneration
+        mutableDocument.value = ProviderDocumentUiState(old.name, false, old.document, old.content, old.editing, saving = true, committed = true)
+        documentJob = viewModelScope.launch {
+            try {
+                verifyProviderReadback(old, old.content)
+                if (generation == documentGeneration) {
+                    mutableDocument.value = null
+                    mutableProviders.update { it.copy(updateMessage = "Provider 已保存并回读确认", updateFailed = false) }
+                    retryProviders(); retry()
+                }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { if (generation == documentGeneration) mutableDocument.value = ProviderDocumentUiState(old.name, false,
+                old.document, old.content, old.editing, error = "Provider 已提交，但回读确认失败，请稍后重新读取", committed = true) }
+        }
     }
 
     fun retryProviders() { if (foreground.value && profile.value != null && !providers.value.isLoading) providerRetries.update { it + 1 } }
     fun show(profileId: Long?) {
+        if (!pickerRestored.isCompleted) {
+            viewModelScope.launch { pickerRestored.await(); show(profileId) }
+            return
+        }
+        // 作者 long：Activity组合被销毁不是用户关闭；系统选择器和冷恢复仍持有原目标，不能由暂时空页面清掉。
+        val pickerTarget = pendingPicker ?: recoveringPicker
+        if (profileId == null && (pickerTarget != null || document.value?.picking == true || document.value?.saving == true)) return
         if (profile.value != profileId) {
+            if (profileId != null && pickerTarget?.profileId == profileId) {
+                profile.value = profileId
+                mutableProviders.value = ProfileProvidersUiState(profileId, updatingName = inFlightName)
+                return
+            }
+            invalidatePicker()
             visibilityGeneration++; documentGeneration++; documentJob?.cancel(); mutableDocument.value = null; managedBindings = emptyMap()
             mutableProviders.value = ProfileProvidersUiState(profileId, updatingName = inFlightName)
         }
@@ -281,7 +397,7 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
         if (foreground.value != value) {
             visibilityGeneration++
             // 作者 long：系统文件选择器会遮挡应用，保留其绑定；其他后台状态作废未提交文档，已受理保存仍等待核心结果。
-            if (!value && document.value?.pickerToken == null && document.value?.saving != true) {
+            if (!value && document.value?.pickerToken == null && document.value?.saving != true && document.value?.committed != true) {
                 documentGeneration++; documentJob?.cancel(); mutableDocument.value = null
             }
             mutableProviders.value = ProfileProvidersUiState(profile.value, updatingName = inFlightName, updatingNames = providers.value.updatingNames)

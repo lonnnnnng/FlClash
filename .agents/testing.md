@@ -1,5 +1,11 @@
 # Testing
 
+## 文件入口与 Providers 挂起集中验收（2026-11-04）
+
+App419/Service185共604项单测，失败/错误/跳过0；Debug/AndroidTest/Lint与单独Release/R8/LintRelease通过，0errors/62warnings/9或8hints。gated异步setup在旧实现红测确认提前通知与取消后输入未登记，再在最终源码通过。Core/Common/Go未重跑。
+
+Redmi仅竖屏/字号1.0/arm64，四类真实DocumentsUI导入与取消均确认宿主PID消失再新进程返回，FILE/remote外层保存、脚本同名保护、Provider缓存写入/真实核心回读及fixture回收通过。分阶段12个不同精确方法，旧入口最终同批3/3；非一次12/12。预览旧测试改核对宿主销毁清正文并可重开，生产APK相同，仅最后Test包变化。正式两份配置/原选择/正文SHA和mtime/1.yaml保持、两包哈希匹配、无服务/tun0、旋转1；失败尝试与包哈希对应详见`docs/acceptance/file-entry-process-redmi-20261104.json`。首页take(1)产生非法代理字符导致系统XML失败，Provider取消按截图确认点击后重跑通过，首页视觉整体未验。
+
 ## 配置管理闭环集中验收（2026-11-04）
 
 - 最终生产`/tmp/kclash-config-closure-20261104-build5.log`通过App414/Service182共596项，失败/错误/跳过0，以及Debug/AndroidTest/Lint。`testbuild6`只修正设备测试断言/等待，`testbuild7`只修进程测试Unit返回与PID记录；最终测试APK/Lint通过。独立`release.log`通过未签名arm64 Release/R8/Lint和包名/版本检查，Debug Lint0/62/9、Release0/62/8；Core/Common/Go本轮未重跑。

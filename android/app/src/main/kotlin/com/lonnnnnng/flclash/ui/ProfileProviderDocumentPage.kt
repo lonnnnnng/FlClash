@@ -33,7 +33,7 @@ internal fun ProfileProviderDocumentHost(model: ProfileStatisticsViewModel) {
         }
     }
     state?.let { draft -> ProfileProviderDocumentPage(draft, model::closeProvider, model::changeProviderContent,
-        model::saveProvider, { model.openProvider(draft.name, draft.editing, draft.picking) }) }
+        model::saveProvider, { if (draft.committed) model.retryProviderReadback() else model.openProvider(draft.name, draft.editing, draft.picking) }) }
 }
 
 @Composable
@@ -44,19 +44,19 @@ internal fun ProfileProviderDocumentPage(state: ProviderDocumentUiState, onClose
     ProfileEditorPage(onDismissRequest = close, backTag = "profile_provider_document_back", title = { Text(state.name) },
         confirmButton = {
             if (state.saving) CircularProgressIndicator(Modifier.padding(12.dp).size(24.dp).testTag("profile_provider_document_saving"), strokeWidth = 2.dp)
-            else if (state.editing && state.document?.document?.editable == true) TextButton(onSave, enabled = !state.loading,
+            else if (state.editing && !state.committed && state.document?.document?.editable == true) TextButton(onSave, enabled = !state.loading,
                 modifier = Modifier.testTag("profile_provider_document_save")) { Text("保存") }
         }, text = {
             Column(Modifier.fillMaxSize().testTag("profile_provider_document"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
                 state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_provider_document_error"))
-                    if (state.document == null || state.picking) TextButton(onRetry, enabled = !state.saving) { Text("重试") } }
+                    if (state.document == null || state.picking || state.committed) TextButton(onRetry, enabled = !state.saving) { Text(if (state.committed) "重新读取确认" else "重试") } }
                 val document = state.document?.document
                 when {
                     state.picking -> Text(if (state.saving) "正在导入文件…" else "选择文件后将替换此 Provider 的缓存内容")
                     document?.kind == "binary" -> Text("此资源为二进制文件，无法预览或编辑；可返回后从文件导入")
                     document != null && state.editing && document.editable -> OutlinedTextField(state.content, onChange,
-                        enabled = !state.saving, textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                        enabled = !state.saving && !state.committed, textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                         modifier = Modifier.fillMaxSize().testTag("profile_provider_document_content"))
                     document != null -> {
                         if (!document.editable) Text("MRS 规则只读预览", style = MaterialTheme.typography.labelMedium)

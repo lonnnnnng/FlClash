@@ -434,19 +434,24 @@ class CoreRuntimeManager(
         ensureInitialized()
         stageConfig(profile)
         bridge.validateConfig(paths.configFile.path)
-        invalidateIpRoute()
-        if (mutableGeoSettings.value.autoUpdate && eventListenerStarted.compareAndSet(false, true)) bridge.startEventListener()
-        bridge.setupConfig(profile.selectedMap, skipCertVerify = generalSettingsStore?.read()?.checkCertificate == false)
-        val mode = preferredOutboundMode ?: bridge.getConfiguredMode(paths.configFile.path)
-        if (preferredOutboundMode != null) bridge.updateMode(mode)
-        mutableOutboundMode.value = mode
-        if (preferredOutboundMode == null) {
-            preferredOutboundMode = mode
-            outboundModeStore.write(mode)
+        // 作者 long：Go 已受理的加载不能随页面刷新取消；先完成核心与输入登记，再通知观察者，避免刷新取消自身并循环重载。
+        withContext(NonCancellable) {
+            loadedConfigKey = null
+            loadedAutomaticConfigKey = null
+            if (mutableGeoSettings.value.autoUpdate && eventListenerStarted.compareAndSet(false, true)) bridge.startEventListener()
+            bridge.setupConfig(profile.selectedMap, skipCertVerify = generalSettingsStore?.read()?.checkCertificate == false)
+            val mode = preferredOutboundMode ?: bridge.getConfiguredMode(paths.configFile.path)
+            if (preferredOutboundMode != null) bridge.updateMode(mode)
+            mutableOutboundMode.value = mode
+            if (preferredOutboundMode == null) {
+                preferredOutboundMode = mode
+                outboundModeStore.write(mode)
+            }
+            // 作者 long：配置加载不启用监听或 VPN，停止态也能读取真实节点、选择和测速。
+            loadedConfigKey = key
+            loadedAutomaticConfigKey = automaticConfigKey(profile)
+            invalidateIpRoute()
         }
-        // 作者 long：配置加载不启用监听或 VPN，停止态也能读取真实节点、选择和测速。
-        loadedConfigKey = key
-        loadedAutomaticConfigKey = automaticConfigKey(profile)
     }
 
     override suspend fun profileInputsApplied(id: Long): Boolean = transitionLock.withLock {
@@ -1195,9 +1200,30 @@ class CoreRuntimeManager(
             val snapshot = providerSnapshot(profileId)
             val document = withTimeout(8_000L) { bridge.readExternalProvider(name, snapshot.stamp) }
             transitionLock.withLock { verifyProviderSnapshot(snapshot) }
-            ProfileProviderDocument(profileId, document, snapshot)
+            ProfileProviderDocument(profileId, document, snapshot, providerRecoveryKey(snapshot))
         } catch (error: kotlinx.coroutines.CancellationException) { throw error }
         catch (_: Exception) { throw ProviderOperationException("无法读取 Provider，配置或文件可能已变化，请重试") }
+    }
+
+    private fun providerRecoveryKey(snapshot: ProviderSnapshot): String {
+        // 作者 long：进程恢复只能重建绑定；持久摘要同时覆盖配置、脚本与全局输入，不能复用上个进程的核心令牌。
+        val hash = java.security.MessageDigest.getInstance("SHA-256")
+        hash.update(com.google.gson.Gson().toJson(snapshot.key).toByteArray(Charsets.UTF_8))
+        listOfNotNull(snapshot.profile.filePath, snapshot.profile.scriptPath).forEach { path ->
+            File(path).inputStream().use { input ->
+                val buffer = ByteArray(8192)
+                while (true) { val count = input.read(buffer); if (count < 0) break; hash.update(buffer, 0, count) }
+            }
+        }
+        return hash.digest().joinToString("") { "%02x".format(it) }
+    }
+
+    override suspend fun restoreProfileProvider(profileId: Long, name: String, recoveryKey: String, digest: String): ProfileProviderDocument {
+        transitionLock.withLock {
+            check(profileProvider.activeProfile()?.id == profileId)
+            ensureConfigLoaded()
+        }
+        return super<ProfileStatisticsRuntime>.restoreProfileProvider(profileId, name, recoveryKey, digest)
     }
 
     override suspend fun saveProfileProvider(document: ProfileProviderDocument, content: String): Unit = withContext(Dispatchers.IO) {
@@ -1210,9 +1236,14 @@ class CoreRuntimeManager(
             // 作者 long：核心已受理侧载后不能因窗口取消丢弃提交结果；Go在同一配置锁内校验、写缓存并处理失败回滚。
             withContext(kotlinx.coroutines.NonCancellable) {
                 bridge.sideLoadExternalProvider(document.document.name, content, document.document.digest, snapshot.stamp)
-                transitionLock.withLock {
-                    verifyProviderSnapshot(snapshot, allowRouteChange = true)
-                    invalidateIpRoute()
+                try {
+                    transitionLock.withLock {
+                        verifyProviderSnapshot(snapshot, allowRouteChange = true)
+                        invalidateIpRoute()
+                    }
+                } catch (_: Exception) {
+                    // 作者 long：核心已写入缓存，后置绑定校验失败不能再报告为可安全重交的保存失败。
+                    throw ProviderOperationException("Provider 已提交，但配置已变化，请重新读取确认", committed = true)
                 }
             }
         } catch (error: kotlinx.coroutines.CancellationException) { throw error }
