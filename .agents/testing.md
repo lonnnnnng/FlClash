@@ -1,5 +1,13 @@
 # Testing
 
+## 更多 NTP／Sniffer 字段与快捷 YAML 整页首版（2026-11-03）
+
+- 根 Wrapper App/Service 单测、Debug/AndroidTest、Lint 全部成功；App 304、Service 139，失败/错误/跳过 0，Lint 0 errors、53 warnings、9 hints。最终构建 `/tmp/kclash-more-fields-20261103-final-build.log`；Core/Common/Go、Release 和 VPN/浏览器网络未重跑。
+- Redmi API 36、1080×2340、竖屏字号 1.0；最终精确方法 7/7，方法清单 `/tmp/kclash-more-fields-20261103-methods.txt`，日志 `/tmp/kclash-more-fields-20261103-final-device.log`。涵盖字段默认值/校验/移除、YAML/协议继承、三层返回保护、主题与旧导入菜单；正式 MainActivity 以授权原 `1.yaml` 创建临时 CUSTOM，保存 NTP/Sniffer 后重开和 Activity 重建，保持原 DNS 覆盖/选择/源字节，只回收自己创建的临时行。
+- 正式 Profile 前后保护各 1/1，count=1/missing=0/expected=1，文件名/size/mtime 不变；before 与 final-after 日志同 `/tmp/kclash-more-fields-20261103-` 前缀。原 `1.yaml` 本机/设备哈希不变，未启动核心/VPN或访问订阅，结束服务为空、无 tun0。
+- 两包哈希与设备一致、App 仅 arm64、测试包无原生库，记录 `/tmp/kclash-more-fields-20261103-artifacts.json`。新更多页深浅 12 态集中目视、旧更多/导入 8 态回归，图片 `/tmp/kclash-more-fields-20261103-final-images/`。首批 7/7 后补主机名/地址匹配与旧协议清空，最终完整批次再次 7/7。
+- 本切片 DONE-VERIFIED，完整 UI/PARTIAL；父页显式保存及明确空文本/空列表仍与 Flutter 有差异。下一整页 CUSTOM 规则，再继续真实 age/SAF 闭环。
+
 ## 标准／脚本扩展整页与自动应用首版（2026-11-03）
 
 - 统一根 Wrapper App/Service 单测、Debug、AndroidTest、Lint 通过；App JVM 299、Service JVM 137，失败/错误/跳过均 0，Lint 0 errors、53 warnings、9 hints。日志 `/tmp/kclash-extension-20261103-final14-build.log`；之后仅调整真实配置断言脱敏，AndroidTest 增量构建 `/tmp/kclash-extension-20261103-final15-testbuild.log` 成功并重跑 12/12，生产/UI 未变；Core/Common/Go、真实运行态 VPN/浏览器网络未重跑。

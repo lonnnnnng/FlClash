@@ -37,3 +37,9 @@ Compose 使用 Material 3 作为基础，并由独立 Design System 保存 Flutt
 - `ProfileExtensionController` 用串行队列处理元数据、显式应用和退出自动应用，真实应用只能进入 `CoreRuntimeManager.applyCurrentProfile`，并在启停锁内复核当前 ID；应用失败保留已保存编辑并由管理器恢复旧配置/服务。
 - `loadedConfigKey` 表示已交给核心的完整输入，普通配置另有 `loadedAutomaticConfigKey` 比较源文件、非扩展覆盖和 LAN。后台节点刷新不能因扩展元数据/脚本变化提前加载；显式应用、选用或启动走完整加载。LAN 布尔热切只更新旧输入的 LAN 指纹，不把待应用扩展标为已应用；待应用时恢复继承 LAN 会提示先应用扩展，避免重新执行未提交脚本。
 - `YamlConfigCodec` 通过安全构造器按调用创建解析器；Reader 在普通整缓冲读取时预留一格，供 SnakeYAML 2.3 在末尾遇到 UTF-16 高代理项时补读低代理项，避免包含 emoji 的节点名在扩展/脚本重序列化后触发越界。字符内容不变，源配置不回写。
+
+## 更多分区编辑与暂存合并
+
+- `ProfileMoreFields` 定义 NTP/Sniffer 字段、Flutter 默认值、裸分区 YAML 编解码及校验；`ProfileMoreEditor` 只维护父草稿/字段子页/快捷 YAML，父页保存统一经 ViewModel 合并最新覆盖，源正文不回写。
+- 协议移除最后一项代表继承；显式空 sniff 映射代表清空协议。`ProfileMoreOverrideApplier` 先将旧 sniffing/port-whitelist 搬入，再按忽略大小写的协议名替换；明确清空同时屏蔽旧 sniffing，保留未选协议与未知配置字段。
+- 当前父页显式保存、空文本/空列表明确覆盖是 Kotlin 既有契约；Flutter 的逐项持久化/部分空值移除行为仍待收敛，不能把本切片作为完整 parity。

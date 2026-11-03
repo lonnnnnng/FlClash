@@ -57,13 +57,36 @@ object ProfileMoreOverrideApplier {
                     // 作者 long：选中一个协议只替换该协议；其他协议继续继承，空 map 则明确清空全部协议。
                     val protocols = section.get("sniff")?.takeIf { it.isJsonObject }?.asJsonObject
                         ?: JsonObject().also { section.add("sniff", it) }
+                    // 作者 long：旧 sniffing 仅在 sniff 为空时生效；先迁入旧协议，防止新增一个协议后让其他旧协议失效。
+                    if (protocols.size() == 0) {
+                        val legacy = section.get("sniffing")?.takeIf { it.isJsonArray }?.asJsonArray
+                        val ports = section.get("port-whitelist")?.takeIf { it.isJsonArray }
+                        legacy?.forEach { protocol ->
+                            if (protocol.isJsonPrimitive && protocol.asJsonPrimitive.isString) {
+                                protocols.add(protocol.asString.uppercase(java.util.Locale.ROOT), JsonObject().apply {
+                                    if (ports != null) add("ports", ports.deepCopy())
+                                })
+                            }
+                        }
+                    }
                     value.asJsonObject.entrySet().forEach { (protocol, config) ->
-                        val entry = protocols.get(protocol)?.takeIf { it.isJsonObject }?.asJsonObject ?: JsonObject().also { protocols.add(protocol, it) }
+                        // 作者 long：Mihomo 与 Flutter 按不区分大小写的协议名匹配；替换 HTTP 时不能留下另一份 http 抢占旧设置。
+                        val name = protocol.uppercase(java.util.Locale.ROOT)
+                        val aliases = protocols.keySet().filter { it.equals(name, ignoreCase = true) }
+                        val entry = aliases.firstOrNull()?.let { protocols.get(it) }?.takeIf { it.isJsonObject }?.asJsonObject?.deepCopy() ?: JsonObject()
+                        aliases.forEach(protocols::remove)
+                        protocols.add(name, entry)
                         // 作者 long：默认目标继承全局嗅探设置；清掉协议原有的独立目标开关，但保留未知协议参数。
                         entry.remove("override-destination")
                         config.asJsonObject.entrySet().forEach { (key, field) -> entry.add(key, field.deepCopy()) }
                     }
-                } else section.add(key, value.deepCopy())
+                } else {
+                    section.add(key, value.deepCopy())
+                    // 作者 long：明确清空协议时也屏蔽旧 sniffing，否则核心会在空 sniff 下再次启用旧列表。
+                    if (name == "sniffer" && key == "sniff" && value.isJsonObject && value.asJsonObject.size() == 0) {
+                        section.add("sniffing", com.google.gson.JsonArray())
+                    }
+                }
             }
         }
         merge("ntp", ntp.toJson())
