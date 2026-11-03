@@ -1,5 +1,9 @@
 # Project Context
 
+## 高级配置运行态本组闭环（2026-11-04）
+
+脚本运行态保存/同步/删除只应用当前绑定，提交与应用共持生命周期锁；正文摘要/mtime CAS和失败回滚、Provider覆盖分区CAS、全局规则共锁已补齐。最终App420/Service187共607项单测，Debug/AndroidTest、独立Release/R8和双变体Lint通过；Redmi最终同批13/13，含运行中脚本失败修正/独立重试、全局DNS/规则、Provider覆盖/更多设置/侧载及原1.yaml两HTTP资源实更新。两份正式Profile/原选择/脚本/正文SHA与mtime及原1.yaml保持，最终两包哈希匹配，结束无服务/tun0并恢复旋转。后续首页与代理组主流程→主页面视觉；备份/系统恢复暂缓，其他资源SAF/外部脚本完整E2E/全字段实网与正式Release运行继续PARTIAL。
+
 ## 真实文件入口与加载循环修复（2026-11-04）
 
 FILE/远程本地副本/脚本/Provider的系统选择器前台进程回收后返回及取消已验；Provider冷绑定复核、提交后核心回读与不重复提交语义接通。用户发现的Providers持续加载已修为核心加载/输入登记完成后再通知，避免观察者取消自身。最终App419/Service185共604项、Debug/AndroidTest、Release/R8/Lint通过，分阶段12个不同精确方法含旧入口最终3/3；安装、失败与保护证据见`docs/acceptance/file-entry-process-redmi-20261104.json`。下一组高级配置/脚本运行态，再首页/代理组主流程及主页面视觉；备份/系统恢复暂缓。首页name.take(1)截断非BMP emoji待视觉组修复；其他资源SAF/外部实网/完整视觉继续PARTIAL。

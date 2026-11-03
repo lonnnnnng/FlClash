@@ -116,10 +116,12 @@ class ResourceUpdatesRepository @Inject constructor(
                         catch (_: Exception) { return ResourceUpdateFailure(row.label, "资源已保存，但当前配置应用失败，请在配置页重试应用") }
                     }
                 }
-                // 作者 long：脚本与上游一样只同步资源，绑定配置在下一次显式应用时执行，下载不能隐式运行远程代码。
+                // 作者 long：脚本仓库统一处理当前绑定的应用和回滚，无关脚本更新不能重载正在运行的配置。
                 ResourceKind.SCRIPT -> scripts.sync(row.id.toLong())
             }
             null
+        } catch (_: com.lonnnnnng.flclash.service.ProfileApplyAfterSaveException) {
+            ResourceUpdateFailure(row.label, "脚本已保存，但当前配置应用失败，请在脚本库修正或在配置页重试应用")
         } catch (_: TimeoutCancellationException) { ResourceUpdateFailure(row.label, "等待超时；下载可能仍在后台进行，请稍后查看") }
         catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { ResourceUpdateFailure(row.label, "更新失败，请检查网络或资源地址后重试") }

@@ -1364,11 +1364,13 @@ class ProfilesViewModel internal constructor(
                 check(generation == providersGeneration) { "资源编辑会话已关闭" }
                 val updated = if (profile.type == ProfileType.CUSTOM) {
                     profileWrite { repository.saveCustomProviders(profile.id,
-                        ProfileProvidersEditor.Sections(proxyProviders, ruleProviders), proxyProviderOverrides, state.sourceContent) {
+                        ProfileProvidersEditor.Sections(proxyProviders, ruleProviders), proxyProviderOverrides, state.sourceContent,
+                        ProfileProviderOverrides.fromJsonString(profile.overridesJson).proxyProviders) {
                         generation == providersGeneration && !isProfileTransitioning(runtimeManager.state.value)
                     } }
                 } else {
-                    profileWrite { repository.saveProviderOptions(profile.id, proxyProviderOverrides) {
+                    profileWrite { repository.saveProviderOptions(profile.id, proxyProviderOverrides,
+                        ProfileProviderOverrides.fromJsonString(profile.overridesJson).proxyProviders) {
                         generation == providersGeneration && !isProfileTransitioning(runtimeManager.state.value)
                     } }
                 }

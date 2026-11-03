@@ -1435,6 +1435,7 @@ fun KClashApp(
             },
             onEditUrl = scriptsViewModel::openRemote,
             onSync = scriptsViewModel::sync,
+            onRetryApply = scriptsViewModel::retryApply,
         )
     }
 

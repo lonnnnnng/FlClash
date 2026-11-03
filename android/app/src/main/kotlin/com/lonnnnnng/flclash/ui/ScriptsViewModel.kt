@@ -4,7 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.data.ScriptStore
+import com.lonnnnnng.flclash.data.ScriptDocument
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
+import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import com.lonnnnnng.flclash.service.ProfileApplyAfterSaveException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.*
@@ -16,6 +19,8 @@ data class ScriptsUiState(
     val updatingIds: Set<Long> = emptySet(),
     val completed: Long = 0,
     val error: String? = null,
+    val applyError: String? = null,
+    val applyTargetId: Long? = null,
 )
 
 data class ScriptEditorUiState(
@@ -39,7 +44,7 @@ data class ScriptRemoteUiState(
     val url: String = "",
 )
 
-private const val SCRIPT_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改脚本"
+private const val SCRIPT_MUTATION_BLOCKED_MESSAGE = "核心正在启停，请稍后重试"
 internal const val SCRIPT_TEMPLATE = "const main = (config) => {\n  return config;\n};"
 
 @HiltViewModel
@@ -55,6 +60,7 @@ class ScriptsViewModel @Inject constructor(
     private var generation = 0L
     private var pendingPick: Long? = null
     private var restoredPick: Long? = null
+    private var editorDocument: ScriptDocument? = null
     private val pickerLock = kotlinx.coroutines.sync.Mutex()
     private val pickerRestored = kotlinx.coroutines.CompletableDeferred<Unit>()
 
@@ -106,17 +112,23 @@ class ScriptsViewModel @Inject constructor(
 
     fun openNewEditor() {
         if (isBlocked() || operations.value.isBusy || mutableEditor.value.isSaving) return
+        editorDocument = null
         mutableEditor.value = ScriptEditorUiState(isOpen = true, session = ++generation)
     }
 
     fun openEditor(script: Script) {
         if (isBlocked() || operations.value.isBusy || mutableEditor.value.isSaving) return
         val token = ++generation
+        editorDocument = null
         mutableEditor.value = ScriptEditorUiState(isOpen = true, script = script, label = script.label, isLoading = true, session = token)
         viewModelScope.launch {
-            runCatching { repository.readContent(script.id) }.onSuccess { content ->
+            runCatching { repository.readDocument(script.id) }.onSuccess { document ->
                 // 作者 long：关闭或改开另一脚本后，旧读取结果不能重新弹出编辑页或覆盖新草稿。
-                if (generation == token) mutableEditor.value = mutableEditor.value.copy(content = content, originalContent = content, isLoading = false)
+                if (generation == token) {
+                    editorDocument = document
+                    mutableEditor.value = mutableEditor.value.copy(script = document.script, label = document.script.label,
+                        originalLabel = document.script.label, content = document.content, originalContent = document.content, isLoading = false)
+                }
             }.onFailure { error ->
                 if (generation == token) mutableEditor.value = mutableEditor.value.copy(isLoading = false, loadFailed = true, error = "无法读取脚本，请重试")
                 report(error, "无法读取脚本")
@@ -132,6 +144,7 @@ class ScriptsViewModel @Inject constructor(
     fun closeEditor() {
         if (mutableEditor.value.isSaving) return
         generation++
+        editorDocument = null
         mutableEditor.value = ScriptEditorUiState()
     }
 
@@ -140,13 +153,25 @@ class ScriptsViewModel @Inject constructor(
         if (!editor.isOpen || editor.isLoading || editor.loadFailed || editor.isSaving || operations.value.isBusy || isBlocked()) return
         // 作者 long：同步认领保存，连续点击和退出不能触发同一草稿两次写入；失败保留当前文本。
         mutableEditor.value = editor.copy(label = label, content = content, isSaving = true, error = null)
+        val document = editorDocument
         viewModelScope.launch {
             runCatching {
-                editor.script?.let { repository.updateIfUnchanged(it, label, content) } ?: repository.create(label, content)
+                if (editor.script != null) repository.updateDocument(requireNotNull(document), label, content) else repository.create(label, content)
             }.onSuccess {
                 mutableEditor.value = ScriptEditorUiState()
+                editorDocument = null
                 generation++
+                refreshAppliedState()
             }.onFailure { error ->
+                if (error is kotlinx.coroutines.CancellationException) throw error
+                if (error is ProfileApplyAfterSaveException) {
+                    // 作者 long：正文已经提交，关闭编辑并保留单独应用入口，不能让重试再次写入或创建重复资源。
+                    mutableEditor.value = ScriptEditorUiState()
+                    editorDocument = null
+                    generation++
+                    recordApplyFailure(error)
+                    return@onFailure
+                }
                 mutableEditor.value = mutableEditor.value.copy(isSaving = false, error = safeMessage(error, "保存脚本失败，请重试"))
                 report(error, "保存脚本失败")
             }
@@ -226,9 +251,32 @@ class ScriptsViewModel @Inject constructor(
     }
 
     private fun isBlocked(): Boolean {
-        if (!runtimeManager.state.value.isRunning) return false
+        if (runtimeManager.state.value != CoreRuntimeStatus.STARTING && runtimeManager.state.value != CoreRuntimeStatus.STOPPING) return false
         mutableErrors.tryEmit(SCRIPT_MUTATION_BLOCKED_MESSAGE)
         return true
+    }
+
+    fun retryApply() {
+        val target = operations.value.applyTargetId ?: return
+        if (operations.value.isBusy || mutableEditor.value.isSaving || isBlocked()) return
+        operations.value = operations.value.copy(isBusy = true)
+        viewModelScope.launch {
+            try {
+                runtimeManager.applyCurrentProfile(target)
+                operations.value = operations.value.copy(applyError = null, applyTargetId = null)
+            } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+            catch (_: Exception) { operations.value = operations.value.copy(applyError = "脚本已保存，应用失败或当前配置已切换，请重试") }
+            finally { operations.value = operations.value.copy(isBusy = false) }
+        }
+    }
+
+    private fun recordApplyFailure(error: ProfileApplyAfterSaveException) {
+        operations.value = operations.value.copy(applyError = "脚本已保存，当前配置应用失败，请重试应用", applyTargetId = error.profileId)
+    }
+
+    private suspend fun refreshAppliedState() {
+        val target = operations.value.applyTargetId ?: return
+        if (runtimeManager.profileInputsApplied(target)) operations.value = operations.value.copy(applyError = null, applyTargetId = null)
     }
 
     private fun safeMessage(error: Throwable, fallback: String): String =
@@ -242,9 +290,17 @@ class ScriptsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 action()
+                refreshAppliedState()
                 operations.value = operations.value.copy(completed = operations.value.completed + 1)
                 onSuccess()
             } catch (error: Exception) {
+                if (error is kotlinx.coroutines.CancellationException) throw error
+                if (error is ProfileApplyAfterSaveException) {
+                    recordApplyFailure(error)
+                    operations.value = operations.value.copy(completed = operations.value.completed + 1)
+                    onSuccess()
+                    return@launch
+                }
                 operations.value = operations.value.copy(error = safeMessage(error, "脚本操作失败，请重试"))
                 report(error, "脚本操作失败")
             } finally {

@@ -1816,9 +1816,9 @@ private class FakeProfileStore(
 
     override suspend fun readLocalProfileContent(id: Long): String { beforeRead(id); return content }
 
-    override suspend fun saveCustomProviders(id: Long, sections: com.lonnnnnng.flclash.data.ProfileProvidersEditor.Sections, overrides: Map<String, ProxyProviderOverride>, expectedContent: String, canWrite: () -> Boolean): Profile {
+    override suspend fun saveCustomProviders(id: Long, sections: com.lonnnnnng.flclash.data.ProfileProvidersEditor.Sections, overrides: Map<String, ProxyProviderOverride>, expectedContent: String, expectedOverrides: Map<String, ProxyProviderOverride>?, canWrite: () -> Boolean): Profile {
         providerSaveCalls++; beforeProviderSave()
-        return super<ProfileStore>.saveCustomProviders(id, sections, overrides, expectedContent, canWrite)
+        return super<ProfileStore>.saveCustomProviders(id, sections, overrides, expectedContent, expectedOverrides, canWrite)
     }
 
     override suspend fun saveMoreOptions(id: Long, patch: com.lonnnnnng.flclash.data.ProfileMorePatch, canWrite: () -> Boolean): Profile {
@@ -1826,9 +1826,9 @@ private class FakeProfileStore(
         return super<ProfileStore>.saveMoreOptions(id, patch, canWrite)
     }
 
-    override suspend fun saveProviderOptions(id: Long, overrides: Map<String, ProxyProviderOverride>, canWrite: () -> Boolean): Profile {
+    override suspend fun saveProviderOptions(id: Long, overrides: Map<String, ProxyProviderOverride>, expectedOverrides: Map<String, ProxyProviderOverride>?, canWrite: () -> Boolean): Profile {
         providerSaveCalls++; beforeProviderSave()
-        return super<ProfileStore>.saveProviderOptions(id, overrides, canWrite)
+        return super<ProfileStore>.saveProviderOptions(id, overrides, expectedOverrides, canWrite)
     }
 
     override suspend fun downloadCustomImport(url: String): ByteArray = "rules: []".toByteArray()

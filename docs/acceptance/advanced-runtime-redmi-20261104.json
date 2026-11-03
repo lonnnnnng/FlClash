@@ -1,0 +1,296 @@
+{
+  "date": "2026-11-04",
+  "status": "DONE-VERIFIED for advanced runtime write/apply slice; overall UI PARTIAL",
+  "sourceBaseHead": "abafa611e75d3adbcc95b313d69ff9b3b8a87318",
+  "upstreamReference": "main 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7 lib/providers/actions/scripts.dart:8-29",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "sdk": 36,
+    "portrait": true,
+    "fontScale": "1.0",
+    "abi": "arm64-v8a"
+  },
+  "changes": [
+    "Script writes share runtime lifecycle lock, allow stable RUNNING, apply only currently bound script; deletion remembers pre-commit binding",
+    "Script document metadata plus digest/mtime CAS; remote downloads stay outside locks; atomic replacement and rollback restore bytes/mtime; failed deletion rolls back bindings",
+    "Script save success and apply failure are separate; retry applies current target without repeating save; resource overview reports committed script apply failure separately",
+    "Provider partition CAS inside Room preserves latest other partitions; custom metadata-only save leaves source bytes/mtime untouched",
+    "Global rules commit and target-scoped apply share lifecycle lock, stale target never reselected"
+  ],
+  "build": {
+    "debugCommand": "./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64",
+    "finalDebugLog": "/tmp/kclash-advanced-runtime-20261104-build4.log",
+    "finalTestOnlyLog": "/tmp/kclash-advanced-runtime-20261104-testbuild3.log",
+    "releaseCommand": "./gradlew :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "finalReleaseLog": "/tmp/kclash-advanced-runtime-20261104-release2.log",
+    "unit": {
+      "app": {
+        "tests": 420,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 187,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lint": {
+      "debug": {
+        "Error": 0,
+        "Warning": 62,
+        "Hint": 9
+      },
+      "release": {
+        "Error": 0,
+        "Warning": 62,
+        "Hint": 8
+      }
+    },
+    "notRerun": [
+      "Core/Common JVM",
+      "Go core"
+    ],
+    "releaseBoundary": "unsigned arm64 Release/R8/lintRelease passed; version 0.1.0 (1); not installed or formally signed"
+  },
+  "artifacts": {
+    "app": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "c52826623474b52790e5099b83a7860aae6bf113127dde1b071dd540c06b8c75",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "deviceSha256": "c52826623474b52790e5099b83a7860aae6bf113127dde1b071dd540c06b8c75",
+      "deviceMatches": true,
+      "certificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "test": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "c7a95afc2c0c09af442c66bcee19dcd44c0fa4ab59897f811b11b5553daee10d",
+      "abis": [],
+      "deviceSha256": "c7a95afc2c0c09af442c66bcee19dcd44c0fa4ab59897f811b11b5553daee10d",
+      "deviceMatches": true,
+      "certificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "c0eb3ea6437218b9be9225a90481bbbb579dd110df5b9ef34aa553e64df3673e",
+      "abis": [
+        "arm64-v8a"
+      ]
+    }
+  },
+  "deviceTests": {
+    "finalBatch": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningBoundScriptSavesApplyRecoverAndDeleteWithoutRestartingSession",
+        "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningGlobalDnsAndRulesApplyAndCustomKeepsOwnDns",
+        "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningProviderOptionsMoreAndSideLoadReachCoreWithoutChangingSource",
+        "com.lonnnnnng.flclash.data.ScriptsRepositoryInstrumentedTest#documentDigestRejectsExternalWritesAndFailedTransactionsRestoreBytesAndMtime",
+        "com.lonnnnnng.flclash.data.ScriptsRepositoryInstrumentedTest#fileImportAndRemoteSourceChangesRejectStaleWritersAndKeepOldBytesOnFailure",
+        "com.lonnnnnng.flclash.data.ProviderPersistenceInstrumentedTest#metadataOnlySavesKeepBytesMtimeAndOtherOverridesAndRollbackLateGuards",
+        "com.lonnnnnng.flclash.data.ProfileMorePersistenceInstrumentedTest#fieldPatchesPreserveOtherWritesAndRollbackLateGuardWithoutTouchingSource",
+        "com.lonnnnnng.flclash.ui.GlobalSettingsHostInstrumentedTest#actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles",
+        "com.lonnnnnng.flclash.ui.ScriptsPageHostInstrumentedTest#actualScriptPageRetainsDraftAcrossRecreationAndReturnsToLibraryAfterSave",
+        "com.lonnnnnng.flclash.ui.ProviderHostInstrumentedTest#actualProfileProviderOptionsSaveInPlaceSurviveRecreationAndKeepSource",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+        "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningAuthorizedProviderBatchUpdatesOnlyExistingResourcesAndKeepsSession"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningAuthorizedProviderBatchUpdatesOnlyExistingResourcesAndKeepsSession",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningGlobalDnsAndRulesApplyAndCustomKeepsOwnDns",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningProviderOptionsMoreAndSideLoadReachCoreWithoutChangingSource",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningBoundScriptSavesApplyRecoverAndDeleteWithoutRestartingSession",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ScriptsRepositoryInstrumentedTest#fileImportAndRemoteSourceChangesRejectStaleWritersAndKeepOldBytesOnFailure",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ScriptsRepositoryInstrumentedTest#documentDigestRejectsExternalWritesAndFailedTransactionsRestoreBytesAndMtime",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProviderPersistenceInstrumentedTest#metadataOnlySavesKeepBytesMtimeAndOtherOverridesAndRollbackLateGuards",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileMorePersistenceInstrumentedTest#fieldPatchesPreserveOtherWritesAndRollbackLateGuardWithoutTouchingSource",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlobalSettingsHostInstrumentedTest#actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ScriptsPageHostInstrumentedTest#actualScriptPageRetainsDraftAcrossRecreationAndReturnsToLibraryAfterSave",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderHostInstrumentedTest#actualProfileProviderOptionsSaveInPlaceSurviveRecreationAndKeepSource",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-advanced-runtime-20261104-batch-final.log",
+      "images": [
+        "/tmp/kclash-advanced-runtime-20261104-advanced_global_rules_running.png",
+        "/tmp/kclash-advanced-runtime-20261104-advanced_script_apply_failure.png",
+        "/tmp/kclash-advanced-runtime-20261104-global_dns_actual.png",
+        "/tmp/kclash-advanced-runtime-20261104-global_rules_actual.png"
+      ]
+    },
+    "before": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-advanced-runtime-20261104-before.log",
+      "images": []
+    },
+    "after": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-advanced-runtime-20261104-after-final.log",
+      "images": []
+    },
+    "previousBatchPassed": 11,
+    "previousBatchTotal": 12,
+    "correctedBatch2Passed": 12,
+    "httpAdditionPassed": 1
+  },
+  "failuresRetained": [
+    {
+      "log": "/tmp/kclash-advanced-runtime-20261104-batch.log",
+      "cause": "Test read Provider root interval instead of health-check.interval; NullPointerException at AdvancedRuntimeHostInstrumentedTest.kt:125",
+      "productionChangeRequired": false
+    }
+  ],
+  "batch2TestApkSha256": "2d0bc34d280ac96a8bca34ef6e77b626781f26aaf0bf553c98156b98ad9ead58",
+  "finalProductionCorrection": "Resource overview distinguishes script already saved but application failed; rebuilt production and repeated final 13-case batch",
+  "protection": {
+    "profileCount": 2,
+    "originalRowsSelectionBytesAndMtimePreserved": true,
+    "originalScriptsRowsBytesAndMtimePreserved": true,
+    "cleanup": "only fixture IDs and exact fixture cache paths; preferences/global rules restored by finally",
+    "finalDevice": {
+      "restoredSettings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0"
+      },
+      "applicationServicesPresent": false,
+      "tun0PresentInConnectivity": false,
+      "local1YamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "device1YamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+    }
+  },
+  "images": [
+    {
+      "path": "/tmp/kclash-advanced-runtime-20261104-advanced_global_rules_running.png",
+      "sha256": "401a38c1820577bf8754b59c3eaa94115f6a3a894b126963a752db57d4113c4f",
+      "reviewed": true
+    },
+    {
+      "path": "/tmp/kclash-advanced-runtime-20261104-advanced_script_apply_failure.png",
+      "sha256": "5f9c496e4f32d6c6fb4093a6a19793a58df1f43edc154be81281604749d9968b",
+      "reviewed": true
+    },
+    {
+      "path": "/tmp/kclash-advanced-runtime-20261104-global_dns_actual.png",
+      "sha256": "b9a0f228da56085226a09d25701ad405804784a18fd734de61cc5a3c8ec191bd",
+      "reviewed": true
+    },
+    {
+      "path": "/tmp/kclash-advanced-runtime-20261104-global_rules_actual.png",
+      "sha256": "5f0c1382cf680b01ea745a644f0759cae768770469f0a68bb260faf9fc924d14",
+      "reviewed": true
+    }
+  ],
+  "localLogsSha256": {
+    "/tmp/kclash-advanced-runtime-20261104-build1.log": "647e16751a0b74f31b2a1a951e4f4e7f9a913dbe8c46d54b5e5fd9527504f421",
+    "/tmp/kclash-advanced-runtime-20261104-build4.log": "9d53e2ac1d45cbc0b27a299d30a8d97515ac6e3bbbbfb42ef43232c07da5c654",
+    "/tmp/kclash-advanced-runtime-20261104-testbuild2.log": "46e90633ff84f5702299a068c768b62dca5fab59cffc780ca1bc377c10bc8d65",
+    "/tmp/kclash-advanced-runtime-20261104-testbuild3.log": "c7278e47766114d788b4019d6990d46e79fc384ad159a37c3ee4eae8a4496133",
+    "/tmp/kclash-advanced-runtime-20261104-release1.log": "d674e99aad6de6ef23ec87de48599be3ca1414ce2cd55b1c331458bf27d7c9df",
+    "/tmp/kclash-advanced-runtime-20261104-release2.log": "c2d986473dd480f72f21e1e2c31cfbfe6514fd8f98407f1272a6119257ccc6cc",
+    "/tmp/kclash-advanced-runtime-20261104-batch.log": "27144644a2f96516435f6afbe84df7aabee4f22c86c2ce79d63dcc3fce314190",
+    "/tmp/kclash-advanced-runtime-20261104-batch2.log": "1485607fed8cb3015066cd09dc9570d812eb14423c34baf4e04543740f3cabdd",
+    "/tmp/kclash-advanced-runtime-20261104-retry-http.log": "1032db73d86fadc8b5507d4724e21f9c96a61176ac95d92c3af9fe9eb9f21c14",
+    "/tmp/kclash-advanced-runtime-20261104-batch-final.log": "5c35af12d96872847928305134aebf1981e2d494d5b2a300a403891f93a4cf06",
+    "/tmp/kclash-advanced-runtime-20261104-before.log": "a55204a88217d697aeac0575c34a0c2cbfe5811ede0fef042509cd45e77068da",
+    "/tmp/kclash-advanced-runtime-20261104-after.log": "b2a1676800b789909696b7833a402aac3729a0847b8e260c7fc7359474d30fa3",
+    "/tmp/kclash-advanced-runtime-20261104-after-final.log": "dea398a42b1602d8fe67e5762d5aeaf360e51f8face8ea7202b9070673f33803"
+  },
+  "evidenceBoundary": "Raw local logs and PNGs are not committed; hashes/index only. Four frames reviewed, not complete Flutter visual parity.",
+  "remaining": [
+    "Home and proxy-group main-flow group",
+    "Main-page visual group, including non-BMP initial truncation",
+    "Other resource SAF and external script source full E2E; exhaustive external Provider and network parameter behavior",
+    "Formal signed Release on-device; backup and system restore postponed"
+  ],
+  "review": {
+    "mainThread": "Reviewed production diff and four final frames; git diff --check passed",
+    "independent": "Not completed: delegated tasks arrived with empty payload; no independent-review pass claimed"
+  },
+  "sourceFilesSha256": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileRepository.kt": "bcfa24e201034f2ee050e8c99ce5e9f6d137d215ea5d6bd044ba64c877a53614",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ResourceUpdatesRepository.kt": "a4b73360bde869cba3bdfcd99a6b8d7cdd47d0a4f1475720b8fc5c7b7d7485fb",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/Script.kt": "87ebb42d62d4e6aafe9ebbef7c47011d1a92dd2f77ae206380d3604c75c926bc",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ScriptRepository.kt": "5596418bf748652ebb4f30f644da876654f3d7a8a23fb7c8c54aad2223bee517",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/di/AppModule.kt": "07d40177dd37c1fbf79e71474d572ed9d680948d69e81e17e21b7dad76f34ea2",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/GlobalRulesController.kt": "38da379ad5110ebafe70fbb267e54d1a4e2d49dbf1ff02db3f106abe8d3cb0d2",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "a49d544b57a00f5612c2ad27a9c6b02878fc0d6f89547d210e2cdc75fe8f5313",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt": "edfbf8e3cfa72178706c15eba7e476a04e3a4e07d5096cb42abeedfc3dd81320",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ScriptsPage.kt": "074e661021b03eb6421d8768425b073f544f6bccd984b2987b491baa95464ec8",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ScriptsViewModel.kt": "d6df6ab3dce0eeb3080bce71d1e01bd9d7cc68ad80af667176c8f4903562b309",
+    "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt": "9922ddb4a91d092d29ad72367bc94d9dea90e22096b7ae99d9c45098f8903122",
+    "android/tests/app/GlobalRulesControllerTest.kt": "a8d572769865b54fb3e76af0667d970f1ea5dfe38f924d9e465374c247128025",
+    "android/tests/app/ProfilesViewModelTest.kt": "c42bcbd44b513a2bef3ff8d3803ee07563fed7d24104ce502cb8fbb1ac917cda",
+    "android/tests/app/ScriptsViewModelTest.kt": "b1d8d72617476c2d013f4fdd24e8bdf0747506fa5ad030b47c4d09e163992175",
+    "android/tests/instrumented/ProviderPersistenceInstrumentedTest.kt": "f0bf466c11a905f60adcb5f598110e7ce26aaba1b41b89f83fba04be6f002f87",
+    "android/tests/instrumented/ScriptsRepositoryInstrumentedTest.kt": "c599fe9ccb7181aecff86a8298f4dd522bc3080174722ffe22ccb4437b56b7bf",
+    "android/tests/service/CoreRuntimeManagerTest.kt": "0f082c7bafea20762ceac94e003563acb1d8276cd0cac65be7726e3ade9db6f2",
+    "android/tests/instrumented/AdvancedRuntimeHostInstrumentedTest.kt": "58e143b5d96347427c5aae9eb49337b36136cc93e91ba921748cc0aa7a8b259b"
+  }
+}

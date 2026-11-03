@@ -101,18 +101,44 @@ class ScriptsViewModelTest {
     }
 
     @Test
-    fun `script mutation is rejected while core is running`() = runTest {
+    fun `script mutation is allowed while running and rejected during transitions`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val store = FakeScriptStore()
         val viewModel = ScriptsViewModel(store, FakeScriptRuntimeStatusProvider(CoreRuntimeStatus.RUNNING))
-        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
-
         viewModel.openNewEditor()
-
-        assertEquals("核心运行中，请先停止核心后再修改脚本", error.await())
+        assertTrue(viewModel.editorState.value.isOpen)
+        viewModel.save("运行中", "valid")
         advanceUntilIdle()
-        assertFalse(viewModel.editorState.value.isOpen)
-        assertTrue(store.scripts.value.isEmpty())
+        assertEquals(1, store.scripts.value.size)
+        for (status in listOf(CoreRuntimeStatus.STARTING, CoreRuntimeStatus.STOPPING)) {
+            val transitioning = ScriptsViewModel(store, FakeScriptRuntimeStatusProvider(status))
+            val error = async(start = CoroutineStart.UNDISPATCHED) { transitioning.errors.first() }
+            transitioning.openNewEditor()
+            assertEquals("核心正在启停，请稍后重试", error.await())
+            assertFalse(transitioning.editorState.value.isOpen)
+        }
+    }
+
+    @Test fun `committed script apply failure closes editor and retries only application`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val script = Script(11, "绑定脚本")
+        val store = FakeScriptStore(script, "original")
+        val runtime = FakeScriptRuntimeStatusProvider(CoreRuntimeStatus.RUNNING)
+        val vm = ScriptsViewModel(store, runtime)
+        backgroundScope.launch(mainDispatcher) { vm.state.collect {} }
+        vm.openEditor(script); advanceUntilIdle()
+        store.failApply = true
+        vm.save("绑定脚本", "saved"); advanceUntilIdle()
+        assertFalse(vm.editorState.value.isOpen)
+        assertEquals("saved", store.contents[11])
+        assertEquals(71L, vm.state.value.applyTargetId)
+        vm.importFile("other.js", "unrelated".toByteArray()); advanceUntilIdle()
+        assertTrue(vm.state.value.applyError != null)
+        vm.retryApply(); advanceUntilIdle()
+        assertEquals(1, runtime.applies)
+        assertEquals(null, vm.state.value.applyError)
+        assertEquals("saved", store.contents[11])
+        assertEquals(2, store.scripts.value.size)
     }
 
     @Test
@@ -185,6 +211,8 @@ private class FakeScriptRuntimeStatusProvider(
 ) : CoreRuntimeStatusProvider {
     private val mutableState = MutableStateFlow(status)
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
+    var applies = 0
+    override suspend fun applyCurrentProfile(id: Long) { assertEquals(71L, id); applies++ }
 }
 
 private class FakeScriptStore(
@@ -196,6 +224,7 @@ private class FakeScriptStore(
         if (initial != null) put(initial.id, initialContent)
     }
     private var nextId = 100L
+    var failApply = false
 
     override val scripts: StateFlow<List<Script>> = mutableScripts.asStateFlow()
 
@@ -226,6 +255,7 @@ private class FakeScriptStore(
         contents[id] = content
         val updated = current.copy(label = label, lastUpdateAt = 2L)
         mutableScripts.value = mutableScripts.value.map { if (it.id == id) updated else it }
+        if (failApply) { failApply = false; throw com.lonnnnnng.flclash.service.ProfileApplyAfterSaveException(71) }
         return updated
     }
 

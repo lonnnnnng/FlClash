@@ -25,6 +25,60 @@ class ScriptsRepositoryInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
 
+    @Test fun documentDigestRejectsExternalWritesAndFailedTransactionsRestoreBytesAndMtime() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val db = Room.inMemoryDatabaseBuilder(context, KClashDatabase::class.java).build()
+        val root = java.io.File(context.cacheDir, "script-cas-${System.nanoTime()}").apply { mkdirs() }
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>(); val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        var delayed = false
+        val repo = ScriptRepository(context, db, object : ScriptClient {
+            override suspend fun download(url: String): ScriptDownload {
+                if (delayed) { entered.complete(Unit); release.await() }
+                return ScriptDownload("remote-original".toByteArray(), "remote")
+            }
+        }, root)
+        try {
+            val local = repo.create("CAS", "original")
+            val snapshot = repo.readDocument(local.id); val file = repo.scriptFile(local.id)
+            val modified = file.lastModified()
+            file.writeText("external"); assertTrue(file.setLastModified(modified))
+            assertTrue(runCatching { repo.updateDocument(snapshot, "CAS", "stale") }.isFailure)
+            assertEquals("external", file.readText())
+            val current = repo.readDocument(local.id); val bytes = file.readBytes(); val mtime = file.lastModified()
+            db.openHelper.writableDatabase.execSQL("CREATE TRIGGER reject_script_update BEFORE UPDATE ON scripts WHEN OLD.id = ${local.id} BEGIN SELECT RAISE(ABORT, 'test rollback'); END")
+            assertTrue(runCatching { repo.updateDocument(current, "changed", "new-body") }.isFailure)
+            assertArrayEquals(bytes, file.readBytes()); assertEquals(mtime, file.lastModified())
+            assertEquals(local.toEntity(), db.scripts().getById(local.id))
+            db.openHelper.writableDatabase.execSQL("DROP TRIGGER reject_script_update")
+
+            val bound = Profile.custom(801, "bound").copy(scriptId = local.id)
+            db.profiles().insert(bound.toEntity())
+            val backup = java.io.File(file.parentFile, "delete-backup.js")
+            assertTrue(file.renameTo(backup)); assertTrue(file.mkdir())
+            java.io.File(file, "block").writeText("block")
+            assertTrue(runCatching { repo.delete(local.id) }.isFailure)
+            assertEquals(local.toEntity(), db.scripts().getById(local.id))
+            assertEquals(local.id, db.profiles().getById(801)?.scriptId)
+            assertTrue(java.io.File(file, "block").delete()); assertTrue(file.delete()); assertTrue(backup.renameTo(file))
+
+            val remote = repo.createRemote("remote", "https://example.test/script.js")
+            val remoteFile = repo.scriptFile(remote.id); val remoteTime = remoteFile.lastModified()
+            delayed = true
+            val pending = async { runCatching { repo.sync(remote.id) } }
+            entered.await()
+            remoteFile.writeText("external-remote"); assertTrue(remoteFile.setLastModified(remoteTime))
+            release.complete(Unit)
+            assertTrue(pending.await().isFailure)
+            assertEquals("external-remote", remoteFile.readText())
+            assertEquals(remote.toEntity(), db.scripts().getById(remote.id))
+        } finally {
+            release.complete(Unit)
+            db.close()
+            check(root.parentFile == context.cacheDir && root.name.startsWith("script-cas-"))
+            root.deleteRecursively()
+        }
+    }
+
     @Test
     fun fileImportAndRemoteSourceChangesRejectStaleWritersAndKeepOldBytesOnFailure() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()

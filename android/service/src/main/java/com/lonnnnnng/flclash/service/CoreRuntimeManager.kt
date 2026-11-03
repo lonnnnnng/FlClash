@@ -49,7 +49,7 @@ enum class CoreRuntimeStatus(
     FAILED("核心启动失败", false),
 }
 
-class ProfileApplyAfterSaveException : IllegalStateException("配置已保存，当前配置应用失败，请重试应用")
+class ProfileApplyAfterSaveException(val profileId: Long? = null) : IllegalStateException("配置已保存，当前配置应用失败，请重试应用")
 
 interface CoreRuntimeStatusProvider {
     val state: StateFlow<CoreRuntimeStatus>
@@ -65,6 +65,11 @@ interface CoreRuntimeStatusProvider {
         }
         return result
     }
+    suspend fun <T> withScriptWrite(scriptPath: String?, write: suspend () -> T): T {
+        check(state.value != CoreRuntimeStatus.STARTING && state.value != CoreRuntimeStatus.STOPPING) { "核心正在启停，请稍后重试" }
+        return write()
+    }
+    suspend fun <T> withExtensionWrite(targetId: Long?, write: suspend () -> T): T = withProfileWrite(targetId, write)
     suspend fun removeProfile(id: Long, remaining: suspend () -> List<Long>, select: suspend (Long?) -> Unit, remove: suspend () -> Unit) {
         check(!state.value.isRunning) { "当前运行环境不支持运行中删除配置" }
         remove()
@@ -479,8 +484,35 @@ class CoreRuntimeManager(
                 val selected = profileProvider.activeProfileId()
                 if (selected != null) {
                     try { applyProfileLocked(selected) { check(it == selected) { "当前配置已变化" } } }
-                    catch (_: Exception) { throw ProfileApplyAfterSaveException() }
+                    catch (_: Exception) { throw ProfileApplyAfterSaveException(selected) }
                 }
+            }
+            result
+        }
+    }
+
+    override suspend fun <T> withScriptWrite(scriptPath: String?, write: suspend () -> T): T = transitionLock.withLock {
+        check(mutableState.value != CoreRuntimeStatus.STARTING && mutableState.value != CoreRuntimeStatus.STOPPING) { "核心正在启停，请稍后重试" }
+        // 作者 long：删除会先解除绑定，因此在提交前记住当前使用者；只改无关脚本或排序不应重载当前配置。
+        val target = if (scriptPath == null) null else profileProvider.activeProfile()?.takeIf { it.scriptPath == scriptPath }?.id
+        withContext(NonCancellable) {
+            val result = write()
+            if (target != null) {
+                try { applyProfileLocked(target) { check(it == profileProvider.activeProfileId()) { "当前配置已变化" } } }
+                catch (_: Exception) { throw ProfileApplyAfterSaveException(target) }
+            }
+            result
+        }
+    }
+
+    override suspend fun <T> withExtensionWrite(targetId: Long?, write: suspend () -> T): T = transitionLock.withLock {
+        check(mutableState.value != CoreRuntimeStatus.STARTING && mutableState.value != CoreRuntimeStatus.STOPPING) { "核心正在启停，请稍后重试" }
+        withContext(NonCancellable) {
+            val result = write()
+            // 作者 long：全局目录提交与应用共持锁，但编辑期间切换过配置时只保存目录，不把旧目标重新选中。
+            if (targetId != null && profileProvider.activeProfileId() == targetId) {
+                try { applyProfileLocked(targetId) { check(it == targetId) { "当前配置已变化" } } }
+                catch (_: Exception) { throw ProfileApplyAfterSaveException(targetId) }
             }
             result
         }

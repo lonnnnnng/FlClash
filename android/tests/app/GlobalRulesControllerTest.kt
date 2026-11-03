@@ -40,7 +40,7 @@ class GlobalRulesControllerTest {
     }
 
     @Test fun profileSwitchDuringSaveDoesNotApplyToNewSelection() = runTest {
-        val store = Store(); val runtime = Runtime()
+        val store = Store(); val runtime = Runtime { store.currentProfileId.value }
         val model = GlobalRulesController(store, runtime, backgroundScope)
         model.open(); runCurrent()
         val gate = CompletableDeferred<Unit>(); store.saveGate = gate
@@ -51,10 +51,17 @@ class GlobalRulesControllerTest {
         assertEquals(next, store.global); assertEquals(0, runtime.applies)
     }
 
-    private class Runtime : CoreRuntimeStatusProvider {
+    private class Runtime(private val selected: () -> Long? = { 1 }) : CoreRuntimeStatusProvider {
         override val state = MutableStateFlow(CoreRuntimeStatus.STOPPED)
         var applies = 0; var fail = false
         override suspend fun applyCurrentProfile(id: Long) { applies++; if (fail) error("apply failed") }
+        override suspend fun <T> withExtensionWrite(targetId: Long?, write: suspend () -> T): T {
+            val result = write()
+            if (targetId != null && targetId == selected()) {
+                try { applyCurrentProfile(targetId) } catch (_: Exception) { throw ProfileApplyAfterSaveException(targetId) }
+            }
+            return result
+        }
     }
     private class Store : ProfileStore {
         override val profiles = MutableStateFlow(listOf(Profile.remote(1, "https://example.test/sub", "test")))

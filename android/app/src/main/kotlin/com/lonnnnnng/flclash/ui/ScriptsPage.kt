@@ -34,6 +34,7 @@ internal fun ScriptsLibraryDialog(
     onSync: (Script) -> Unit = {},
     onImportFile: () -> Unit = {},
     onEditUrl: (Script) -> Unit = {},
+    onRetryApply: () -> Unit = {},
 ) {
     var add by remember { mutableStateOf(false) }
     var sorting by rememberSaveable { mutableStateOf(false) }
@@ -60,6 +61,10 @@ internal fun ScriptsLibraryDialog(
             Column(Modifier.fillMaxSize().testTag("scripts_page")) {
                 if (state.isBusy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 state.error?.let { Text(it, Modifier.padding(vertical = 8.dp).testTag("scripts_error"), color = MaterialTheme.colorScheme.error) }
+                state.applyError?.let {
+                    Text(it, Modifier.padding(vertical = 8.dp).testTag("scripts_apply_error"), color = MaterialTheme.colorScheme.error)
+                    TextButton(onRetryApply, enabled = !state.isBusy, modifier = Modifier.testTag("scripts_retry_apply")) { Text("重试应用") }
+                }
                 if (state.scripts.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("还没有脚本", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else if (sorting) {

@@ -35,6 +35,9 @@ data class Script(
     )
 }
 
+/** 作者 long：编辑快照同时绑定目录版本和实际文件，正文不参与日志对象输出，避免同元数据下覆盖外部改写。 */
+class ScriptDocument(val script: Script, val content: String, internal val digest: String? = null, internal val modified: Long? = null)
+
 fun ScriptEntity.toDomain() = Script(
     id = id,
     label = label,

@@ -72,9 +72,11 @@ interface ProfileStore {
         require(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开策略组" }
         return updateLocalProfileContent(id, ProxyGroupDrafts.apply(expectedContent, save))
     }
-    suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, canWrite: () -> Boolean): Profile {
+    suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, expectedOverrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>? = null, canWrite: () -> Boolean): Profile {
         check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
         require(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开资源页" }
+        val baseline = extensionProfile(id) ?: error("配置不存在")
+        check(expectedOverrides == null || ProfileProviderOverrides.fromJsonString(baseline.overridesJson).proxyProviders == expectedOverrides) { "Provider 选项已变化，请重新打开资源页" }
         updateLocalProfileContent(id, ProfileProvidersEditor.replace(expectedContent, sections))
         val latest = extensionProfile(id) ?: error("配置不存在")
         return updateProfileOverrides(id, ProfileProviderOverrides.fromJsonString(latest.overridesJson).copy(proxyProviders = overrides).toJsonString())
@@ -123,9 +125,10 @@ interface ProfileStore {
         val current = extensionProfile(id) ?: error("配置不存在")
         return updateProfileOverrides(id, patch.applyTo(current.overridesJson))
     }
-    suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, canWrite: () -> Boolean): Profile {
+    suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedOverrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>? = null, canWrite: () -> Boolean): Profile {
         check(canWrite()) { "资源编辑状态已变化" }
         val current = extensionProfile(id) ?: error("配置不存在")
+        check(expectedOverrides == null || ProfileProviderOverrides.fromJsonString(current.overridesJson).proxyProviders == expectedOverrides) { "Provider 选项已变化，请重新打开资源页" }
         return updateProfileOverrides(id, ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides).toJsonString())
     }
     suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile
@@ -538,7 +541,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, expectedOverrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>?, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
         fileMutationMutex.withLock {
             // 作者 long：只保存选项覆盖时正文应逐字节保持，避免一次字段确认无意义地重排资源定义。
             val content = if (sections == ProfileProvidersEditor.extract(expectedContent)) expectedContent else ProfileProvidersEditor.replace(expectedContent, sections)
@@ -553,7 +556,10 @@ class ProfileRepository(
                     val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
                     require(current.type == ProfileType.CUSTOM) { "只有自定义配置支持资源绑定" }
                     check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
-                    val merged = ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides)
+                    val latestOverrides = ProfileProviderOverrides.fromJsonString(current.overridesJson)
+                    // 作者 long：正文未变也可能有另一个窗口修改同一Provider，必须在事务内比较本分区，其他分区仍按最新值合并。
+                    check(expectedOverrides == null || latestOverrides.proxyProviders == expectedOverrides) { "Provider 选项已变化，请重新打开资源页" }
+                    val merged = latestOverrides.copy(proxyProviders = overrides)
                     val updated = current.copy(overridesJson = merged.toJsonString(), lastUpdateAt = System.currentTimeMillis())
                     profileDao.update(updated.toEntity())
                     check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
@@ -822,12 +828,14 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedOverrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>?, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
         database.withTransaction {
             // 作者 long：订阅/文件配置仅更新本分区，事务内读取最新 DNS/脚本等元数据，并拒绝关闭或启停后的迟到提交。
             check(canWrite()) { "资源编辑状态已变化" }
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-            val updated = current.copy(overridesJson = ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides).toJsonString())
+            val latest = ProfileProviderOverrides.fromJsonString(current.overridesJson)
+            check(expectedOverrides == null || latest.proxyProviders == expectedOverrides) { "Provider 选项已变化，请重新打开资源页" }
+            val updated = current.copy(overridesJson = latest.copy(proxyProviders = overrides).toJsonString())
             profileDao.update(updated.toEntity())
             check(canWrite()) { "资源编辑状态已变化" }
             updated

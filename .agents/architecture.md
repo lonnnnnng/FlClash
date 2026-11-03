@@ -1,5 +1,9 @@
 # Architecture
 
+## 脚本写入与全局规则生命周期（2026-11-04）
+
+ScriptRepository通过延迟Provider取得唯一管理器，下载锁外、提交固定transitionLock→fileLock。withScriptWrite在提交前识别实际scriptPath使用者，提交后应用；删除解绑也刷新原使用者，无关脚本/排序不重载。ScriptDocument保存目录/正文digest/mtime，更新和下载提交CAS；原子rename失败不覆盖，Room失败恢复原字节/mtime，文件删除失败回滚绑定。ScriptsViewModel仅挡启停过渡态，ProfileApplyAfterSaveException携目标ID表示源已提交，关闭编辑并保留独立应用重试；资源总览区分同类失败。Provider保存把打开时proxyProviders基线带入Room事务，只比较该分区并合并最新其他覆盖；metadata-only不改正文。GlobalRulesController经withExtensionWrite共持提交/应用锁，仅受理目标仍当前时应用，切换不重选旧项。实际证据见advanced-runtime-redmi-20261104.json，后续首页/代理组及视觉仍待推进。
+
 ## 文件选择器冷恢复与核心通知时机（2026-11-04）
 
 根部稳定注册FILE/remote、脚本、Provider launcher；系统受理前持久化加密令牌，结果等待VM恢复再按原目标单次消费，无对应launcher的孤立pending解锁。Provider快照只存profile/name/输入与缓存摘要，冷进程重新建立核心binding；保存后核心回读，已提交而回读失败仅允许重读确认。
@@ -139,7 +143,7 @@
 - `ResourceUpdatesRepository` 汇总 Geo 核心事件、规则文件、脚本和全局图标集，下载前认领资源 key，结束后重读真实文件信息；`ResourcesViewModel`/`ResourcesPage` 只转发操作和渲染。工具资源总览与自定义资源管理分开导航。
 - `GeoResourceSettingsStore` 使用 App SharedPreferences；`CoreRuntimeManager` 持久化/热切并将全局设置补到运行/预览输入。Bridge 的 `geoUpdate` 才是异步下载完成依据，受理响应不能提前结束状态。Geo 下载不占启停锁，停止服务仍保留未完成下载和自动更新的事件监听。
 - `IconSetRepository` 使用 Room `app_preferences.global_icon_sets` 保存有界图库 JSON 与稳定 ID，HTTP 使用既有有界客户端；下载后复核 URL/版本，允许并发改名。图库和推荐现通过`LocalResourceIconSets`提供完整来源，详见上方最新节；配置仍保存实际图标 URL。
-- `ResourceAutoUpdateWorker` 与订阅任务独立；到期扫描不含 Geo、不启动 VPN，Geo 由核心 updater 执行。脚本下载提交在文件锁内复核版本，正文与 Room 同事务写入并在异常时恢复旧文件；资源同步不隐式执行脚本。图标集/Geo 偏好已在后续 v5 备份接通，范围与补偿边界见上方最新节。
+- `ResourceAutoUpdateWorker` 与订阅任务独立；到期扫描不含 Geo、不启动 VPN，Geo 由核心 updater 执行。脚本下载提交在文件锁内复核版本，正文与 Room 同事务写入并在异常时恢复旧文件；脚本更新按顶部当前运行态规则处理当前绑定的应用。图标集/Geo 偏好已在后续 v5 备份接通，范围与补偿边界见上方最新节。
 
 ## Target modules
 

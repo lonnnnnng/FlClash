@@ -1,5 +1,9 @@
 # Testing
 
+## 高级配置运行态集中验收（2026-11-04）
+
+脚本运行态保存/同步/删除只应用当前绑定，提交与应用共持生命周期锁；正文摘要/mtime CAS和失败回滚、Provider覆盖分区CAS、全局规则共锁已补齐。最终App420/Service187共607项单测，Debug/AndroidTest、独立Release/R8和双变体Lint通过；Redmi最终同批13/13，含运行中脚本失败修正/独立重试、全局DNS/规则、Provider覆盖/更多设置/侧载及原1.yaml两HTTP资源实更新。两份正式Profile/原选择/脚本/正文SHA与mtime及原1.yaml保持，最终两包哈希匹配，结束无服务/tun0并恢复旋转。最终`/tmp/kclash-advanced-runtime-20261104-build4.log`、`release2.log`、`batch-final.log`；初批11/12的health-check断言失败保留，最终四图目视。Core/Common/Go未重跑，完整Flutter视觉及正式签名运行未验。
+
 ## 文件入口与 Providers 挂起集中验收（2026-11-04）
 
 App419/Service185共604项单测，失败/错误/跳过0；Debug/AndroidTest/Lint与单独Release/R8/LintRelease通过，0errors/62warnings/9或8hints。gated异步setup在旧实现红测确认提前通知与取消后输入未登记，再在最终源码通过。Core/Common/Go未重跑。

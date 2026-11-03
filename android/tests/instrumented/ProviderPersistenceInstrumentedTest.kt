@@ -43,6 +43,10 @@ class ProviderPersistenceInstrumentedTest {
             val saved = repository.saveCustomProviders(custom.id, currentSections, options, before) { true }
             assertArrayEquals(bytes, file.readBytes()); assertEquals(modified, file.lastModified())
             assertEquals(other.copy(proxyProviders = options), ProfileProviderOverrides.fromJsonString(saved.overridesJson))
+            // 作者 long：仅选项变化时正文完全相同，旧窗口也必须被事务内CAS拒绝；定义变化同样不能绕过覆盖版本。
+            assertTrue(runCatching { repository.saveCustomProviders(custom.id, currentSections, emptyMap(), before, emptyMap()) { true } }.isFailure)
+            assertArrayEquals(bytes, file.readBytes()); assertEquals(modified, file.lastModified())
+            assertEquals(options, ProfileProviderOverrides.fromJsonString(database.profiles().getById(custom.id)!!.overridesJson).proxyProviders)
 
             val row = database.profiles().getById(custom.id)
             var checks = 0
@@ -65,6 +69,7 @@ class ProviderPersistenceInstrumentedTest {
             repository.updateProfileOverrides(resource.id, other.toJsonString())
             val resourceSaved = repository.saveProviderOptions(resource.id, options) { true }
             assertEquals(other.copy(proxyProviders = options), ProfileProviderOverrides.fromJsonString(resourceSaved.overridesJson))
+            assertTrue(runCatching { repository.saveProviderOptions(resource.id, emptyMap(), emptyMap()) { true } }.isFailure)
             val resourceRow = database.profiles().getById(resource.id)
             checks = 0
             assertTrue(runCatching { repository.saveProviderOptions(resource.id, emptyMap()) { ++checks < 2 } }.isFailure)

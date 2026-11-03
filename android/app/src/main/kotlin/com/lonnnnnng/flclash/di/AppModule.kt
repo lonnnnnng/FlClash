@@ -231,7 +231,8 @@ object AppModule {
         @ApplicationContext context: Context,
         database: KClashDatabase,
         scriptClient: ScriptClient,
-    ): ScriptRepository = ScriptRepository(context, database, scriptClient)
+        runtime: javax.inject.Provider<CoreRuntimeManager>,
+    ): ScriptRepository = ScriptRepository(context, database, scriptClient, runtime = { runtime.get() })
 
     @Provides
     @Singleton

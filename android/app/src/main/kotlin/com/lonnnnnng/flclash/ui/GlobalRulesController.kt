@@ -4,6 +4,7 @@ import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.service.ExtensionRule
 import com.lonnnnnng.flclash.service.ExtensionRules
+import com.lonnnnnng.flclash.service.ProfileApplyAfterSaveException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,17 +51,15 @@ internal class GlobalRulesController(private val store: ProfileStore, private va
                 withContext(NonCancellable) {
                     try {
                         ExtensionRules.validate(value)
-                        store.compareAndSaveGlobalExtensionRules(before.rules, value)
-                        mutableState.value = before.copy(rules = value, applying = true)
+                        runtime.withExtensionWrite(target?.takeIf { store.currentProfileId.value == it }) {
+                            store.compareAndSaveGlobalExtensionRules(before.rules, value)
+                            mutableState.value = before.copy(rules = value, applying = true)
+                        }
+                        mutableState.value = mutableState.value.copy(applying = false)
+                    } catch (_: ProfileApplyAfterSaveException) {
+                        mutableState.value = before.copy(rules = value, error = "规则已保存，当前配置应用失败；可重试应用")
                     } catch (_: Exception) {
                         mutableState.value = before.copy(error = "保存失败或规则已变化，输入已保留；可重试或重新读取")
-                        return@withContext
-                    }
-                    try {
-                        if (target != null && store.currentProfileId.value == target) runtime.applyCurrentProfile(target)
-                        mutableState.value = mutableState.value.copy(applying = false)
-                    } catch (_: Exception) {
-                        mutableState.value = mutableState.value.copy(applying = false, error = "规则已保存，当前配置应用失败；可重试应用")
                     }
                 }
             }

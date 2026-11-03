@@ -38,6 +38,63 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class CoreRuntimeManagerTest {
+    @Test fun boundScriptWritesApplyOnlyCurrentKeepSessionAndRecoverCommittedFailure() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
+        val script = temporaryFolder.newFile().apply { writeText("old") }
+        var profile = ActiveProfile(701, "script", source.path, scriptPath = script.path, deferExtensionApplication = true)
+        val home = temporaryFolder.newFolder(); val bridge = FakeBridge(); val services = FakeServiceController()
+        val runtime = manager(profile, home, bridge, services, profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profile
+        }, profileScriptEvaluator = object : ProfileScriptEvaluator {
+            override suspend fun evaluate(script: String, configJson: String): String {
+                check(script != "broken") { "script failed" }
+                return "{\"rules\":[\"DOMAIN,$script.invalid,DIRECT\",\"MATCH,DIRECT\"]}"
+            }
+        })
+        runtime.startProxy().getOrThrow()
+        val since = runtime.runningSinceElapsedMillis.value; val setups = bridge.calls.count { it == "setup" }
+        runtime.withScriptWrite("unrelated.js") { Unit }
+        assertEquals(setups, bridge.calls.count { it == "setup" })
+        runtime.withScriptWrite(script.path) { script.writeText("new-content") }
+        assertTrue(File(home, "config.yaml").readText().contains("new-content.invalid"))
+        val applied = File(home, "config.yaml").readBytes()
+        val error = runCatching { runtime.withScriptWrite(script.path) { script.writeText("broken") } }.exceptionOrNull()
+        assertTrue(error is ProfileApplyAfterSaveException)
+        assertEquals(701L, (error as ProfileApplyAfterSaveException).profileId)
+        assertEquals("broken", script.readText()); assertFalse(runtime.profileInputsApplied(701))
+        assertTrue(applied.contentEquals(File(home, "config.yaml").readBytes()))
+        runtime.withScriptWrite(script.path) { script.writeText("fixed-content") }
+        assertTrue(runtime.profileInputsApplied(701))
+        // 作者 long：删除先解除绑定，仍须按提交前的使用者刷新，不能留下正在运行的旧脚本投影。
+        runtime.withScriptWrite(script.path) { profile = profile.copy(scriptPath = null); script.delete(); Unit }
+        assertFalse(File(home, "config.yaml").readText().contains("fixed-content.invalid"))
+        assertEquals(since, runtime.runningSinceElapsedMillis.value)
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        runtime.stop().getOrThrow()
+    }
+
+    @Test fun extensionCommitAndApplyHoldLifecycleLockAcrossConcurrentStop() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
+        var profile = ActiveProfile(701, "rules", source.path)
+        val runtime = manager(profile, temporaryFolder.newFolder(), FakeBridge(), FakeServiceController(), profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profile
+        })
+        runtime.startProxy().getOrThrow()
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val saving = async { runtime.withExtensionWrite(701) {
+            entered.complete(Unit); release.await()
+            profile = profile.copy(standardExtension = StandardProfileExtension(listOf(ExtensionRule("x", "DOMAIN,live.invalid,DIRECT"))))
+        } }
+        kotlinx.coroutines.withTimeout(5_000) { entered.await() }
+        val stopping = async { runtime.stop().getOrThrow() }
+        try {
+            kotlinx.coroutines.yield()
+            assertFalse(stopping.isCompleted)
+        } finally { release.complete(Unit) }
+        saving.await(); stopping.await()
+        assertTrue(runtime.profileInputsApplied(701)); assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+    }
+
     @Test fun coldConfigPublishesRevisionOnlyAfterCommittingLoadedInput() = kotlinx.coroutines.runBlocking {
         val source = temporaryFolder.newFile().apply { writeText("{}") }
         val entered = CompletableDeferred<Unit>()
