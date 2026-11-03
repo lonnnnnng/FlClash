@@ -33,6 +33,10 @@ interface ProfileStore {
     suspend fun selectProfile(id: Long?)
     suspend fun addRemoteProfile(url: String, label: String = "", ageSecretKey: String = ""): Profile
     suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String = ""): Profile
+    suspend fun importFileProfile(label: String, bytes: ByteArray, ageSecretKey: String, canWrite: () -> Boolean): Profile {
+        check(canWrite()) { "导入已取消或核心状态已变化" }
+        return addFileProfile(label, bytes, ageSecretKey)
+    }
     suspend fun addCustomProfile(label: String): Profile
     suspend fun readLocalProfileContent(id: Long): String
     suspend fun readProfileSourceContent(id: Long): String = readLocalProfileContent(id)
@@ -187,32 +191,38 @@ class ProfileRepository(
         profile
     }
 
-    override suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String): Profile = withContext(Dispatchers.IO) {
-        require(bytes.isNotEmpty()) { "配置文件为空" }
-        // 作者 long：外部文件必须先通过订阅更新共用的 YAML 解析校验，避免无效内容先写入文件或 Room 并成为当前配置。
+    override suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String): Profile =
+        importFileProfile(label, bytes, ageSecretKey) { true }
+
+    override suspend fun importFileProfile(label: String, bytes: ByteArray, ageSecretKey: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
         val plaintext = contentDecoder.decode(bytes, ageSecretKey)
+        require(plaintext.isNotEmpty() && plaintext.size <= MAX_PROFILE_FILE_BYTES) { "解密后的配置为空或超过 8 MiB" }
         configValidator.validate(plaintext)
-        val id = newId()
-        val profile = Profile(
-            id = id,
-            type = ProfileType.FILE,
-            label = label.trim(),
-            url = "",
-            ageSecretKey = ageSecretKey.trim(),
-            lastUpdateAt = System.currentTimeMillis(),
-            autoUpdate = false,
-            autoUpdateIntervalMillis = Profile.DEFAULT_UPDATE_INTERVAL_MILLIS,
-            subscriptionInfo = null,
-            orderIndex = mutableProfiles.value.size,
-        )
-        replaceFileAtomically(id, plaintext)
-        runCatching { profileDao.insert(profile.toEntity()) }
-            .onFailure {
-                profileFile(id).delete()
-                throw it
+        kotlinx.coroutines.currentCoroutineContext().ensureActive()
+        fileMutationMutex.withLock {
+            check(canWrite()) { "导入已取消或核心状态已变化" }
+            val profile = Profile(
+                id = newId(), type = ProfileType.FILE, label = label.trim(), url = "", ageSecretKey = ageSecretKey.trim(),
+                lastUpdateAt = System.currentTimeMillis(), autoUpdate = false,
+                autoUpdateIntervalMillis = Profile.DEFAULT_UPDATE_INTERVAL_MILLIS, subscriptionInfo = null,
+                orderIndex = profileDao.getAll().size,
+            )
+            // 作者 long：解密和校验期间不创建 Profile；确认写入后让文件与 Room 一起完成或回滚，取消不能留下半份导入。
+            withContext(kotlinx.coroutines.NonCancellable) {
+                replaceLocalProfileFile(profileFile(profile.id), plaintext, { commit ->
+                    database.withTransaction {
+                        check(canWrite()) { "导入已取消或核心状态已变化" }
+                        profileDao.insert(profile.toEntity())
+                        commit()
+                        check(canWrite()) { "导入已取消或核心状态已变化" }
+                        profile
+                    }
+                }, expected = LocalProfileFileSnapshot(null, 0L))
+                ensureCurrentProfile(profile.id)
+                profile
             }
-        ensureCurrentProfile(profile.id)
-        profile
+        }
     }
 
     override suspend fun addCustomProfile(label: String): Profile = withContext(Dispatchers.IO) {

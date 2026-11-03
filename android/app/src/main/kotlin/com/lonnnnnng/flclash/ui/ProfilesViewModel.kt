@@ -151,6 +151,7 @@ class ProfilesViewModel internal constructor(
         fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
     ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default)
     internal val extension = ProfileExtensionController(repository, runtimeManager, viewModelScope)
+    internal val fileImport = ProfileFileImportController(repository, runtimeManager, fileReader, configValidator, viewModelScope, overviewDispatcher)
     private val busy = MutableStateFlow(false)
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private val mutableEditor = MutableStateFlow(ProfileEditorUiState())

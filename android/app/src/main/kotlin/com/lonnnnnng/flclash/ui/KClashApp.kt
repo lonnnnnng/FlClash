@@ -198,13 +198,6 @@ internal enum class ProfilesToolbarAction {
     BACKUP_RESTORE,
 }
 
-private data class PendingProfileFileImport(
-    val fileName: String,
-    val label: String,
-    val bytes: ByteArray,
-    val isValidYaml: Boolean,
-)
-
 private val ProfileIllustrationShape = GenericShape { size, _ ->
     val radius = minOf(size.width, size.height) * 0.48f
     repeat(7) { index ->
@@ -348,7 +341,6 @@ fun KClashApp(
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var profileAddAnchor by remember { mutableStateOf<IntRect?>(null) }
     var showToolsBackup by rememberSaveable { mutableStateOf(false) }
-    var pendingFileImport by remember { mutableStateOf<PendingProfileFileImport?>(null) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
     var showDns by rememberSaveable { mutableStateOf(false) }
     var showLogs by rememberSaveable { mutableStateOf(false) }
@@ -402,22 +394,6 @@ fun KClashApp(
         } finally { memoryViewModel?.setVisible(false) }
     }
     val previewProfile = profilesState.profiles.firstOrNull { it.id == configPreview.profileId }
-    pendingFileImport?.let { pending ->
-        ProfileFileImportPreviewDialog(
-            fileName = pending.fileName,
-            fileSizeBytes = pending.bytes.size,
-            isValidYaml = pending.isValidYaml,
-            isEncrypted = com.lonnnnnng.flclash.data.isAgeEncryptedProfile(pending.bytes),
-            busy = profilesState.isBusy,
-            onConfirm = {
-                if (pending.isValidYaml || com.lonnnnnng.flclash.data.isAgeEncryptedProfile(pending.bytes)) {
-                    profilesViewModel.addFile(pending.label, pending.bytes)
-                    pendingFileImport = null
-                }
-            },
-            onDismiss = { pendingFileImport = null },
-        )
-    }
     // 作者 long：下载可能在页面退到后台后才报告缺钥，作废补输会话，避免恢复时弹出已离开的导入请求。
     ClearAgeInputOnBackground(profilesViewModel::cancelAgeImport)
     if (profilesViewModel.ageKeyRequired.collectAsState().value) {
@@ -492,32 +468,7 @@ fun KClashApp(
         }
     }
 
-    val filePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument(),
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        // 作者 long：外部文档先在后台完成读取和格式预检，用户确认前不改变 Profile 列表或持久化文件。
-        coroutineScope.launch {
-            val result = runCatching {
-                val (displayName, bytes) = withContext(Dispatchers.IO) {
-                    val content = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-                        ?: error("无法读取所选配置文件")
-                    val name = queryDisplayName(context.contentResolver, uri).orEmpty().ifBlank { "本地配置.yaml" }
-                    name to content
-                }
-                val label = displayName.substringBeforeLast('.', displayName).trim().ifEmpty { "本地配置" }
-                PendingProfileFileImport(
-                    fileName = displayName,
-                    label = label,
-                    bytes = bytes,
-                    isValidYaml = profilesViewModel.validateFileImport(bytes),
-                )
-            }
-            result.onSuccess { pendingFileImport = it }.onFailure { error ->
-                snackbarHostState.showSnackbar(error.message ?: "导入配置失败")
-            }
-        }
-    }
+    val pickProfileFile = rememberProfileFilePicker(profilesViewModel.fileImport)
 
     val qrCodePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -801,7 +752,7 @@ fun KClashApp(
                     onDismissAddDialog = { showAddDialog = false },
                     onPickFile = {
                         showAddDialog = false
-                        filePicker.launch(arrayOf("*/*"))
+                        pickProfileFile()
                     },
                     onPickQrCode = {
                         showAddDialog = false
@@ -5236,6 +5187,7 @@ internal fun ProfileFileImportPreviewDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     isEncrypted: Boolean = false,
+    error: String? = null,
 ) {
     AlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
@@ -5244,6 +5196,7 @@ internal fun ProfileFileImportPreviewDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(fileName, maxLines = 2)
                 Text("文件大小：$fileSizeBytes 字节")
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_file_import_error")) }
                 Text(
                     if (isEncrypted) "age 加密配置，导入时输入密钥并校验"
                     else if (isValidYaml) "YAML 格式校验通过" else "无法读取 YAML 配置，文件未导入",

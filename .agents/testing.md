@@ -1,5 +1,12 @@
 # Testing
 
+## 新增文件与真实 age／SAF 闭环（2026-11-03）
+
+- App 319 项，失败/错误/跳过 0；Debug/AndroidTest/Lint 通过，0 errors、53 warnings、9 hints。最终 `/tmp/kclash-file-import-20261103-build3.log`；Service/Core/Common/Go 单测、Release 和网络未重跑。
+- Redmi API 36、1080×2340 竖屏默认字号，最终精确 8/8，方法与日志同 `/tmp/kclash-file-import-20261103-` 前缀。真实 DocumentsUI 明文新增/取消、真实 age 错钥重试/正确解密新增、持久密钥和 Activity 重建后加密替换通过；隔离 Room/cache 验证提交后守卫回滚、错接收者失败保留旧缓存/mtime及到期更新复用密钥。下载器只返回本地真实密文，不代表真实加密在线订阅。
+- 正式配置 before/after 各 1/1，count=1/missing=0，文件名/size/mtime 不变；仅回收本次测试新增且核对 ID/名称的 FILE。两包设备哈希一致、App 仅 arm64，原 1.yaml 两端哈希不变，结束无服务/tun0。制品 `/tmp/kclash-file-import-20261103-artifacts.json`；深色预览/缺钥/错钥三态已目视，不能宣称完整主题 parity。
+- 真实密文来自授权原 1.yaml 完整字节，Go helper 不生成或修改 YAML，临时 identity 不进入源码/输出。新增导入预检仍仅 YAML 可解析，完整 Mihomo 语义与真实加密在线订阅待验。整体 UI 保持 PARTIAL，下一整页继续策略组批量/图标/问题提示。
+
 ## CUSTOM 规则可视整页与逐操作保存（2026-11-03）
 
 - 根 Wrapper App 单测、Debug/AndroidTest、Lint 通过；App 313 项，失败/错误/跳过 0，Lint 0 errors、53 warnings、9 hints。最终 `/tmp/kclash-custom-rules-20261103-build8.log`；Service/Core/Common/Go、Release 与 DNS/浏览器网络未重跑。

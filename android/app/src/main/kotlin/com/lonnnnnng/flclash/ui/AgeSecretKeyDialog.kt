@@ -50,7 +50,7 @@ internal fun ClearAgeInputOnBackground(onClear: () -> Unit) {
 }
 
 @Composable
-internal fun AgeSecretKeyDialog(onSubmit: (String) -> Unit, onDismiss: () -> Unit) {
+internal fun AgeSecretKeyDialog(onSubmit: (String) -> Unit, onDismiss: () -> Unit, busy: Boolean = false, error: String? = null) {
     // 作者 long：密钥只保留在当前弹窗内存，退出或后台即清除，不进入 SavedState 或恢复后的表单。
     var key by remember { mutableStateOf("") }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -68,12 +68,15 @@ internal fun AgeSecretKeyDialog(onSubmit: (String) -> Unit, onDismiss: () -> Uni
         onDispose { lifecycle.removeObserver(observer) }
     }
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!busy) onDismiss() },
         title = { Text("age 加密配置") },
-        text = { AgeSecretKeyField(key, { key = it }, true, "profile_age_required_key", optional = false) },
+        text = { androidx.compose.foundation.layout.Column {
+            AgeSecretKeyField(key, { key = it }, !busy, "profile_age_required_key", optional = false)
+            error?.let { Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_age_required_error")) }
+        } },
         confirmButton = {
-            TextButton(onClick = { onSubmit(key.trim()); key = "" }, enabled = key.isNotBlank()) { Text("解密并导入") }
+            TextButton(onClick = { onSubmit(key.trim()); key = "" }, enabled = !busy && key.isNotBlank()) { Text(if (busy) "解密中…" else "解密并导入") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text("取消") } },
     )
 }
