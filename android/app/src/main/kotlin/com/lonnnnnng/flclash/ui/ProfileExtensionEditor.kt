@@ -299,7 +299,7 @@ private val extensionPresets = listOf(
 )
 
 @Composable
-private fun ExtensionPresets(onDismiss: () -> Unit, onAdd: (List<String>) -> Unit) {
+internal fun ExtensionPresets(onDismiss: () -> Unit, onAdd: (List<String>) -> Unit) {
     var selected by rememberSaveable { mutableStateOf(listOf<Int>()) }
     ProfileEditorPage(onDismiss, { Text("规则预设") }, {
         Column(Modifier.verticalScroll(rememberScrollState())) {

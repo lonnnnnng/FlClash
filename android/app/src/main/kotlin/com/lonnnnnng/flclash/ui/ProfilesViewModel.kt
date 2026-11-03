@@ -11,6 +11,7 @@ import com.lonnnnnng.flclash.data.ProfileProxyGroupsEditor
 import com.lonnnnnng.flclash.data.ProfileProxiesEditor
 import com.lonnnnnng.flclash.data.ProfileProvidersEditor
 import com.lonnnnnng.flclash.data.ProfileRulesEditor
+import com.lonnnnnng.flclash.data.CustomRuleCatalog
 import com.lonnnnnng.flclash.data.ProfileStore
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.data.YamlProfileConfigValidator
@@ -66,6 +67,8 @@ data class ProfileRulesEditorUiState(
     val rules: String = "",
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
+    val catalog: CustomRuleCatalog = CustomRuleCatalog(),
+    val error: String? = null,
 )
 
 data class ProfileProxiesEditorUiState(
@@ -127,11 +130,11 @@ data class CustomImportUiState(
 internal const val PROFILE_MUTATION_BLOCKED_MESSAGE = "核心运行中，请先停止核心后再修改配置"
 
 /**
- * 作者 long：核心运行期间配置文件已经被 Mihomo 打开，阻止会改变文件或当前选择的操作，
- * 避免删除/编辑后运行中的核心继续持有失效路径，导致页面状态与实际代理配置分裂。
+ * 作者 long：核心启停期间也可能正在读取配置文件，文件编辑必须等到稳定停止状态，
+ * 避免启动拿到半途变更的输入；配置选择另由生命周期管理器串行处理，不受此写锁限制。
  */
 internal fun isProfileMutationBlocked(runtimeStatus: CoreRuntimeStatus): Boolean =
-    runtimeStatus.isRunning
+    runtimeStatus == CoreRuntimeStatus.STARTING || runtimeStatus == CoreRuntimeStatus.RUNNING || runtimeStatus == CoreRuntimeStatus.STOPPING
 
 @HiltViewModel
 class ProfilesViewModel internal constructor(
@@ -170,6 +173,7 @@ class ProfilesViewModel internal constructor(
     private var ageImportGeneration = 0L
     private var localEditorGeneration = 0L
     private var proxyGroupsGeneration = 0L
+    private var rulesGeneration = 0L
     private var pendingFilePick: Triple<Long, Long, Long>? = null
     private var nextFilePickToken = 0L
     private var replacementBytes: ByteArray? = null
@@ -362,6 +366,8 @@ class ProfilesViewModel internal constructor(
 
     fun closeEditor() {
         localEditorGeneration++
+        rulesGeneration++
+        mutableRulesEditor.value = ProfileRulesEditorUiState()
         closeProxyGroupsEditor()
         cancelCustomImport()
         overviewJob?.cancel()
@@ -708,54 +714,73 @@ class ProfilesViewModel internal constructor(
     }
 
     fun openRulesEditor(profile: Profile) {
+        if (mutableRulesEditor.value.isSaving) return
         if (profile.type != ProfileType.CUSTOM) {
             mutableErrors.tryEmit("高级规则编辑仅支持自定义配置")
             return
         }
-        if (runtimeManager.state.value.isRunning) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑规则")
             return
         }
+        val generation = ++rulesGeneration
+        mutableRulesEditor.value = ProfileRulesEditorUiState(profile = profile, isLoading = true)
         viewModelScope.launch {
-            mutableRulesEditor.value = ProfileRulesEditorUiState(profile = profile, isLoading = true)
             runCatching {
                 val content = repository.readLocalProfileContent(profile.id)
-                content to ProfileRulesEditor.extractRules(content)
-            }.onSuccess { (content, rules) ->
-                mutableRulesEditor.value = ProfileRulesEditorUiState(
+                withContext(overviewDispatcher) { Triple(content, ProfileRulesEditor.extractRules(content), CustomRuleCatalog.fromSource(content)) }
+            }.onSuccess { (content, rules, catalog) ->
+                if (generation == rulesGeneration) mutableRulesEditor.value = ProfileRulesEditorUiState(
                     profile = profile,
                     sourceContent = content,
                     rules = rules,
+                    catalog = catalog,
                 )
             }.onFailure { error ->
-                mutableRulesEditor.value = ProfileRulesEditorUiState()
-                mutableErrors.emit(error.message ?: "无法读取规则配置")
+                if (error is CancellationException) throw error
+                if (generation == rulesGeneration) {
+                    mutableRulesEditor.value = ProfileRulesEditorUiState()
+                    mutableErrors.emit("无法读取规则配置，请检查 YAML 格式")
+                }
             }
         }
     }
 
     fun closeRulesEditor() {
+        if (mutableRulesEditor.value.isSaving) return
+        rulesGeneration++
         mutableRulesEditor.value = ProfileRulesEditorUiState()
     }
 
     fun saveRules(rules: String) {
         val state = mutableRulesEditor.value
         val profile = state.profile ?: return
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再保存规则")
+        if (state.isLoading || state.isSaving) return
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
+            val message = "核心运行中，请先停止核心后再保存规则"
+            mutableRulesEditor.value = state.copy(error = message)
+            mutableErrors.tryEmit(message)
             return
         }
+        val generation = rulesGeneration
+        mutableRulesEditor.value = state.copy(isSaving = true, error = null)
         viewModelScope.launch {
-            mutableRulesEditor.value = state.copy(isSaving = true)
             runCatching {
-                val updatedContent = ProfileRulesEditor.replaceRules(state.sourceContent, rules)
-                val updatedProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
-                reflectStructuredSave(profile.id, updatedContent, updatedProfile)
-            }.onSuccess {
-                closeRulesEditor()
+                val updatedContent = withContext(overviewDispatcher) { ProfileRulesEditor.replaceRules(state.sourceContent, rules) }
+                val updatedProfile = repository.saveCustomRules(profile.id, rules, state.sourceContent) {
+                    generation == rulesGeneration && !isProfileMutationBlocked(runtimeManager.state.value)
+                }
+                if (generation == rulesGeneration) {
+                    reflectStructuredSave(profile.id, updatedContent, updatedProfile)
+                    // 作者 long：与 Flutter 一样逐操作保存并留在列表；更新正文快照供下一次保存检测过期写入。
+                    mutableRulesEditor.value = state.copy(profile = updatedProfile, sourceContent = updatedContent,
+                        rules = ProfileRulesEditor.extractRules(updatedContent), isSaving = false, error = null)
+                }
             }.onFailure { error ->
-                mutableRulesEditor.value = mutableRulesEditor.value.copy(isSaving = false, rules = rules)
-                mutableErrors.emit(error.message ?: "保存规则失败")
+                if (error is CancellationException) throw error
+                if (generation == rulesGeneration) {
+                    mutableRulesEditor.value = state.copy(isSaving = false, error = error.message ?: "保存规则失败，原配置已保留")
+                }
             }
         }
     }

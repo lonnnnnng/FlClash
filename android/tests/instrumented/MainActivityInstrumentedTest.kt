@@ -339,20 +339,22 @@ class MainActivityInstrumentedTest {
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · $label").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("规则 YAML").performTextInput(rule)
-        composeRule.onNodeWithText("保存").performClick()
+        composeRule.onNodeWithTag("custom_rules_menu").performClick()
+        composeRule.onNodeWithTag("custom_rules_yaml").performClick()
+        composeRule.onNodeWithTag("profile_rules_yaml").performTextClearance()
+        composeRule.onNodeWithTag("profile_rules_yaml").performTextInput(rule)
+        composeRule.onNodeWithTag("custom_rules_yaml_confirm").performClick()
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("custom_rules_yaml_confirm").fetchSemanticsNodes().isEmpty() }
+        composeRule.onNodeWithTag("custom_rules_back").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · $label").fetchSemanticsNodes().isEmpty()
         }
 
-        openProfileActions(label)
-        composeRule.onNodeWithText("编辑").performClick()
         composeRule.onNodeWithText("规则").performScrollTo().performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("规则 · $label").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText(rule).assertIsDisplayed()
-        composeRule.onNodeWithText("取消").performClick()
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("custom_rule_edit_0").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("custom_rule_edit_0").assertTextContains("example.com", substring = true)
+        composeRule.onNodeWithTag("custom_rules_back").performClick()
+        composeRule.onNodeWithTag("custom_profile_back").performClick()
 
         openProfileActions(label)
         composeRule.onNodeWithText("删除").performClick()

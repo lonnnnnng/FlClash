@@ -11,10 +11,11 @@ import org.junit.Test
 
 class ProfileTest {
     @Test
-    fun `profile mutation is blocked only while core is running`() {
+    fun `profile file mutation waits until startup running and shutdown finish`() {
         assertFalse(isProfileMutationBlocked(CoreRuntimeStatus.STOPPED))
-        assertFalse(isProfileMutationBlocked(CoreRuntimeStatus.STARTING))
+        assertTrue(isProfileMutationBlocked(CoreRuntimeStatus.STARTING))
         assertTrue(isProfileMutationBlocked(CoreRuntimeStatus.RUNNING))
+        assertTrue(isProfileMutationBlocked(CoreRuntimeStatus.STOPPING))
         assertFalse(isProfileMutationBlocked(CoreRuntimeStatus.FAILED))
         assertEquals("核心运行中，请先停止核心后再修改配置", PROFILE_MUTATION_BLOCKED_MESSAGE)
     }

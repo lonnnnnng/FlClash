@@ -886,7 +886,8 @@ class ProfilesViewModelTest {
             "mixed-port: 7890\nrules:\n  - MATCH,DIRECT\ndns:\n  enable: true\n",
             store.updatedContent,
         )
-        assertNull(viewModel.rulesEditorState.value.profile)
+        assertEquals(profile.id, viewModel.rulesEditorState.value.profile?.id)
+        assertEquals(store.updatedContent, viewModel.rulesEditorState.value.sourceContent)
     }
 
     @Test
@@ -901,14 +902,68 @@ class ProfilesViewModelTest {
         )
         viewModel.openRulesEditor(profile)
         advanceUntilIdle()
-        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
-
         viewModel.saveRules("SUB-RULE,local,DIRECT")
         advanceUntilIdle()
 
-        assertEquals("第 1 行不支持 SUB-RULE，请展开为具体规则", error.await())
+        assertEquals("第 1 行：不支持 SUB-RULE，请展开为具体规则", viewModel.rulesEditorState.value.error)
         assertNull(store.updatedContent)
         assertEquals(profile.id, viewModel.rulesEditorState.value.profile?.id)
+    }
+
+    @Test
+    fun closingRulesWhileLoadingDoesNotReopenTheOldEditor() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(40L, "规则配置")
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val store = object : ProfileStore by FakeProfileStore(profile) {
+            override suspend fun readLocalProfileContent(id: Long): String {
+                gate.await()
+                return "rules: ['MATCH,DIRECT']"
+            }
+        }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        model.openRulesEditor(profile)
+        testScheduler.runCurrent()
+        assertTrue(model.rulesEditorState.value.isLoading)
+        model.closeRulesEditor()
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertNull(model.rulesEditorState.value.profile)
+    }
+
+    @Test
+    fun rulesSaveRejectsRuntimeAndStaleSourceThenCanRetryAfterReopening() = runTest {
+        val dispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val profile = Profile.custom(41L, "规则配置")
+        val original = "rules: ['MATCH,DIRECT']"
+        val store = FakeProfileStore(profile).apply { content = original }
+        val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
+        val model = ProfilesViewModel(store, runtime, overviewDispatcher = dispatcher)
+        model.openRulesEditor(profile)
+        advanceUntilIdle()
+        model.saveRules("MATCH,REJECT")
+        assertTrue(model.rulesEditorState.value.isSaving)
+        runtime.set(CoreRuntimeStatus.STARTING)
+        advanceUntilIdle()
+        org.junit.Assert.assertNotNull(model.rulesEditorState.value.error)
+        assertEquals(original, store.content)
+        assertNull(store.updatedContent)
+
+        runtime.set(CoreRuntimeStatus.STOPPED)
+        store.content = "rules: ['DOMAIN,external.test,DIRECT']"
+        model.saveRules("MATCH,REJECT")
+        advanceUntilIdle()
+        assertEquals("配置正文已变化，请重新打开规则页", model.rulesEditorState.value.error)
+        assertNull(store.updatedContent)
+        model.closeRulesEditor()
+        model.openRulesEditor(profile)
+        advanceUntilIdle()
+        model.saveRules("MATCH,REJECT")
+        advanceUntilIdle()
+        assertNull(model.rulesEditorState.value.error)
+        assertEquals(profile.id, model.rulesEditorState.value.profile?.id)
+        assertEquals("rules:\n  - MATCH,REJECT\n", store.content)
     }
 
     @Test

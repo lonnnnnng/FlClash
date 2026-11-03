@@ -1,5 +1,12 @@
 # Testing
 
+## CUSTOM 规则可视整页与逐操作保存（2026-11-03）
+
+- 根 Wrapper App 单测、Debug/AndroidTest、Lint 通过；App 313 项，失败/错误/跳过 0，Lint 0 errors、53 warnings、9 hints。最终 `/tmp/kclash-custom-rules-20261103-build8.log`；Service/Core/Common/Go、Release 与 DNS/浏览器网络未重跑。
+- Redmi API 36、1080×2340 竖屏字号 1.0，精确 12/12。覆盖列表/搜索/批选/复制/删除、规则表单与资源选择、src/no-resolve、YAML/旧 SUB-RULE、排序与失败恢复、草稿返回、预设和原入口。真实 MainActivity 仅读授权原 1.yaml 创建临时 CUSTOM，自动保存、重开/Activity 重建及其他分区/覆盖/选择保护通过，只回收自己的临时行；隔离 Room/cache 验证过期/运行守卫和最新名称保留。
+- 正式 Profile 前后保护各 1/1，count=1/missing=0/expected=1、文件名/size/mtime 不变；两包安装哈希一致、App 仅 arm64，原 1.yaml 本机/设备哈希不变，最终无服务/tun0。方法、日志、制品与中间失败记录见 roadmap 同日规则页节。
+- 12 态深浅截图已集中目视，未更新旧基线；仅证明原生布局。整页首版 DONE-VERIFIED，长列表边缘拖动、全局资源映射和精确视觉/动效待补，整体 UI 仍 PARTIAL；下一步真实密文/SAF 闭环。
+
 ## 更多 NTP／Sniffer 字段与快捷 YAML 整页首版（2026-11-03）
 
 - 根 Wrapper App/Service 单测、Debug/AndroidTest、Lint 全部成功；App 304、Service 139，失败/错误/跳过 0，Lint 0 errors、53 warnings、9 hints。最终构建 `/tmp/kclash-more-fields-20261103-final-build.log`；Core/Common/Go、Release 和 VPN/浏览器网络未重跑。

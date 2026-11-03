@@ -1837,6 +1837,8 @@ internal fun ProfilesPanel(
                 profile = profile,
                 initialRules = rulesEditorState.rules,
                 saving = rulesEditorState.isSaving,
+                catalog = rulesEditorState.catalog,
+                saveError = rulesEditorState.error,
                 onDismiss = onCloseRulesEditor,
                 onSave = onSaveRules,
             )
@@ -4547,54 +4549,6 @@ private fun isValidRemoteProfileUrl(value: String): Boolean = runCatching {
     val uri = java.net.URI(value.trim())
     uri.scheme in setOf("http", "https") && !uri.host.isNullOrBlank()
 }.getOrDefault(false)
-
-/**
- * 作者 long：规则编辑器只回写顶层规则区块，保留自定义 Profile 中未编辑的端口、代理和 DNS 字段，
- * 让用户可以逐步完善配置而不必承担整份 YAML 重排的风险。
- */
-@Composable
-internal fun ProfileRulesEditorDialog(
-    profile: Profile,
-    initialRules: String,
-    saving: Boolean,
-    onDismiss: () -> Unit,
-    onSave: (String) -> Unit,
-) {
-    var rules by rememberSaveable(profile.id) { mutableStateOf(initialRules) }
-    ProfileEditorPage(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text("规则 · ${profile.realLabel}") },
-        text = {
-            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    "每行一条规则，例如 DOMAIN-SUFFIX,example.com,DIRECT；SUB-RULE 需要先展开后保存。",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                OutlinedTextField(
-                    value = rules,
-                    onValueChange = { rules = it },
-                    modifier = Modifier.fillMaxWidth().testTag("profile_rules_yaml"),
-                    minLines = 10,
-                    maxLines = 18,
-                    enabled = !saving,
-                    label = { Text("规则 YAML") },
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(rules) },
-                enabled = !saving,
-                modifier = Modifier.testTag("profile_rules_save"),
-            ) {
-                if (saving) CircularProgressIndicator() else Text("保存")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
-        },
-    )
-}
 
 /**
  * 作者 long：代理编辑器只负责代理列表的 YAML 片段，保存时由 ViewModel 校验并回写原始 Profile，

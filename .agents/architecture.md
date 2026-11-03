@@ -43,3 +43,10 @@ Compose 使用 Material 3 作为基础，并由独立 Design System 保存 Flutt
 - `ProfileMoreFields` 定义 NTP/Sniffer 字段、Flutter 默认值、裸分区 YAML 编解码及校验；`ProfileMoreEditor` 只维护父草稿/字段子页/快捷 YAML，父页保存统一经 ViewModel 合并最新覆盖，源正文不回写。
 - 协议移除最后一项代表继承；显式空 sniff 映射代表清空协议。`ProfileMoreOverrideApplier` 先将旧 sniffing/port-whitelist 搬入，再按忽略大小写的协议名替换；明确清空同时屏蔽旧 sniffing，保留未选协议与未知配置字段。
 - 当前父页显式保存、空文本/空列表明确覆盖是 Kotlin 既有契约；Flutter 的逐项持久化/部分空值移除行为仍待收敛，不能把本切片作为完整 parity。
+
+## CUSTOM 规则整页
+
+- `CustomRules` 保留原始规则文本与稳定行标识，解析正则/逻辑规则的逗号 payload、src/no-resolve 和裸行/列表 YAML；`CustomRuleCatalog` 从当前源正文提取策略组、本地代理与规则资源，失效引用可见并可修复。类型选择不提供 SUB-RULE；已存在的旧规则可保留、复制、排序和删除，快捷 YAML 确认会按 Flutter 行为移除 SUB-RULE。
+- `CustomRulesEditor` 列表、搜索、批选、复制/删除、预设、排序和表单共用逐操作保存；子页独立保留草稿，回读成功才关闭，写入失败恢复列表顺序。搜索与排序互斥，拖动取消恢复已保存顺序；快捷 YAML 在后台解析。
+- `ProfilesViewModel` 用规则页 generation 丢弃关闭后的迟到读取，以同步 saving 状态抑制重复提交；成功刷新父概览及源正文快照并留在列表。`ProfileRepository.saveCustomRules` 复用文件 mutex、正文快照、原子文件替换和 Room 事务，取最新元数据后仅更新规则及时间，过期正文或启停/运行状态变化拒绝写入。配置选择仍由核心管理器串行处理，不使用文件写锁阻止热切。
+- 普通分区 YAML 保留其余原文与分区边界说明；flow 根对象或整体缩进按语义替换，避免重复 rules。空规则保存为列表 `rules: []`，不把空值变为 null；全局资源选择映射与长列表边缘拖动仍需后续补齐。

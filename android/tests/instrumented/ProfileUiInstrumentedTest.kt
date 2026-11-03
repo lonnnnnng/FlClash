@@ -464,8 +464,8 @@ class ProfileUiInstrumentedTest {
         }
 
         composeRule.onNodeWithText("规则 · 规则配置").assertIsDisplayed()
-        composeRule.onNodeWithText("保存").performClick()
-
+        composeRule.onNodeWithTag("custom_rule_edit_0").performClick()
+        composeRule.onNodeWithTag("custom_rule_confirm").performClick()
         assertEquals("DOMAIN,example.com,DIRECT", saved)
     }
 

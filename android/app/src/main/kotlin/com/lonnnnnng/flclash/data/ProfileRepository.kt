@@ -37,6 +37,11 @@ interface ProfileStore {
     suspend fun readLocalProfileContent(id: Long): String
     suspend fun readProfileSourceContent(id: Long): String = readLocalProfileContent(id)
     suspend fun updateLocalProfileContent(id: Long, content: String): Profile
+    suspend fun saveCustomRules(id: Long, rules: String, expectedContent: String, canWrite: () -> Boolean): Profile {
+        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+        require(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开规则页" }
+        return updateLocalProfileContent(id, ProfileRulesEditor.replaceRules(expectedContent, rules))
+    }
     suspend fun saveCustomProxyGroups(id: Long, save: ProxyGroupsSave, expectedContent: String, canWrite: () -> Boolean): Profile {
         check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
         require(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开策略组" }
@@ -253,6 +258,32 @@ class ProfileRepository(
         val updated = current.copy(lastUpdateAt = System.currentTimeMillis())
         profileDao.update(updated.toEntity())
         updated
+    }
+
+    override suspend fun saveCustomRules(id: Long, rules: String, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        fileMutationMutex.withLock {
+            val content = ProfileRulesEditor.replaceRules(expectedContent, rules)
+            configValidator.validate(content.toByteArray(Charsets.UTF_8))
+            val file = profileFile(id)
+            val original = snapshotLocalProfileFile(file)
+            require(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化，请重新打开规则页" }
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            // 作者 long：每次规则操作只提交该分区；事务内读取最新元数据，正文过期或运行状态变化时回滚文件与 Room。
+            withContext(kotlinx.coroutines.NonCancellable) {
+                replaceLocalProfileFile(file, content.toByteArray(Charsets.UTF_8), { commit ->
+                    database.withTransaction {
+                        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                        require(current.type == ProfileType.CUSTOM) { "只有自定义配置支持规则编辑" }
+                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                        val updated = current.copy(lastUpdateAt = System.currentTimeMillis())
+                        profileDao.update(updated.toEntity())
+                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                        commit()
+                        updated
+                    }
+                }, expected = original)
+            }
+        }
     }
 
     override suspend fun saveCustomProxyGroups(id: Long, save: ProxyGroupsSave, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {

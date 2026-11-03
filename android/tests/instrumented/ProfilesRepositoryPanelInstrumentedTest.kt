@@ -15,6 +15,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.room.Room
@@ -145,8 +146,13 @@ class ProfilesRepositoryPanelInstrumentedTest {
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isNotEmpty()
         }
+        composeRule.onNodeWithTag("custom_rules_menu").performClick()
+        composeRule.onNodeWithTag("custom_rules_yaml").performClick()
+        composeRule.onNodeWithTag("profile_rules_yaml").performTextClearance()
         composeRule.onNodeWithText("规则 YAML").performTextInput("DOMAIN,example.com,DIRECT")
-        composeRule.onNodeWithTag("profile_rules_save").performClick()
+        composeRule.onNodeWithTag("custom_rules_yaml_confirm").performClick()
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("custom_rules_yaml_confirm").fetchSemanticsNodes().isEmpty() }
+        composeRule.onNodeWithTag("custom_rules_back").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isEmpty()
         }

@@ -45,7 +45,7 @@ class ProfileRulesEditorTest {
         val subRuleError = assertThrows(IllegalArgumentException::class.java) {
             ProfileRulesEditor.replaceRules("", "SUB-RULE,local,DIRECT")
         }
-        assertEquals("第 1 行不支持 SUB-RULE，请展开为具体规则", subRuleError.message)
+        assertEquals("第 1 行：不支持 SUB-RULE，请展开为具体规则", subRuleError.message)
 
         assertThrows(IllegalArgumentException::class.java) {
             ProfileRulesEditor.replaceRules("", "DOMAIN-SUFFIX")

@@ -179,8 +179,13 @@ class ProfilesViewModelPanelInstrumentedTest {
         }
         composeRule.onNodeWithText("规则").performClick()
         composeRule.onNodeWithText("规则 · 未命名配置").assertIsDisplayed()
+        composeRule.onNodeWithTag("custom_rules_menu").performClick()
+        composeRule.onNodeWithTag("custom_rules_yaml").performClick()
+        composeRule.onNodeWithTag("profile_rules_yaml").performTextClearance()
         composeRule.onNodeWithTag("profile_rules_yaml").performTextInput("MATCH,DIRECT")
-        composeRule.onNodeWithTag("profile_rules_save").performClick()
+        composeRule.onNodeWithTag("custom_rules_yaml_confirm").performClick()
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("custom_rules_yaml_confirm").fetchSemanticsNodes().isEmpty() }
+        composeRule.onNodeWithTag("custom_rules_back").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("规则 · 未命名配置").fetchSemanticsNodes().isEmpty()
         }
