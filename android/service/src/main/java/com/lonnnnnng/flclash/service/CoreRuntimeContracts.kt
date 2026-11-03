@@ -283,7 +283,12 @@ interface ProxyGroupsRuntime : CoreRuntimeStatusProvider {
 
     suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot>
 
+    suspend fun getProxyGroups(profileId: Long): Result<ProxyGroupsSnapshot> = getProxyGroups()
+
     suspend fun changeProxy(groupName: String, proxyName: String): Result<ProxyGroupsSnapshot>
+
+    suspend fun changeProxy(profileId: Long, groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> =
+        changeProxy(groupName, proxyName)
 
     suspend fun testDelay(
         proxyName: String,
@@ -291,11 +296,17 @@ interface ProxyGroupsRuntime : CoreRuntimeStatusProvider {
         timeoutMs: Long = 0L,
     ): Result<ProxyDelay?>
 
+    suspend fun testDelay(profileId: Long, proxyName: String, testUrl: String, timeoutMs: Long = 0L): Result<ProxyDelay?> =
+        testDelay(proxyName, testUrl, timeoutMs)
+
     suspend fun testDelayBatch(
         requests: List<ProxyDelayRequest>,
         timeoutMs: Long = 0L,
         maxConcurrent: Int = 32,
     ): Result<List<ProxyDelayBatchResult>>
+
+    suspend fun testDelayBatch(profileId: Long, requests: List<ProxyDelayRequest>, timeoutMs: Long = 0L, maxConcurrent: Int = 32): Result<List<ProxyDelayBatchResult>> =
+        testDelayBatch(requests, timeoutMs, maxConcurrent)
 }
 
 interface CoreRuntimeBridge {

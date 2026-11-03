@@ -13,6 +13,59 @@ import org.junit.Test
 class ProfileStatisticsViewModelTest {
     @After fun resetMain() = Dispatchers.resetMain()
 
+    @Test fun providersTimeoutSurvivesNonCancellableReadAndRevisionBurstUntilExplicitRetry() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        val gate = CompletableDeferred<Unit>()
+        runtime.providerRead = { withContext(NonCancellable) { gate.await() }; providerSamples() }
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            repeat(8) {
+                advanceTimeBy(1_000); runtime.profileStatisticsRevision.value++; runCurrent()
+            }
+            assertFalse(model.providers.value.isLoading)
+            assertEquals("读取 Providers 超时，请重试", model.providers.value.error)
+            val calls = runtime.providerCalls
+            advanceTimeBy(15_000); runCurrent()
+            assertEquals(calls, runtime.providerCalls)
+            runtime.providerRead = { providerSamples() }
+            model.retryProviders(); runCurrent()
+            assertEquals(2, model.providers.value.providers?.size)
+            assertNull(model.providers.value.error)
+        } finally { gate.complete(Unit); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun stalledOldProviderReadDoesNotBlockNewProfileAndCannotOverwriteIt() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        val gate = CompletableDeferred<Unit>()
+        runtime.providerRead = { withContext(NonCancellable) { gate.await() }; providerSamples() }
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            runtime.providerRead = { emptyList() }; model.show(2); runCurrent()
+            assertEquals(2L, model.providers.value.profileId)
+            assertEquals(emptyList<com.lonnnnnng.flclash.core.CoreExternalProvider>(), model.providers.value.providers)
+            gate.complete(Unit); runCurrent()
+            assertTrue(model.providers.value.providers!!.isEmpty())
+        } finally { gate.complete(Unit); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun statisticsTimeoutAlsoLeavesErrorVisibleUntilRetryForNonCancellableRead() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        val gate = CompletableDeferred<Unit>()
+        runtime.read = { id -> withContext(NonCancellable) { gate.await() }; sample(id) }
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            advanceTimeBy(8_000); runCurrent()
+            assertFalse(model.state.value.isLoading)
+            assertEquals("读取配置统计超时，请重试", model.state.value.error)
+            advanceTimeBy(15_000); runCurrent(); assertEquals(1, runtime.calls)
+            runtime.read = { sample(it) }; model.retry(); runCurrent()
+            assertEquals(sample(1), model.state.value.counts)
+        } finally { gate.complete(Unit); model.viewModelScope.cancel(); runCurrent() }
+    }
+
     @Test fun coldPickerResultWaitsForRestoreKeepsSameDetailAndRejectsChangedInput() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         for (changed in listOf(false, true)) {

@@ -391,10 +391,16 @@ internal fun ProxyGroupsCard(
                 }
             },
         )
+        state.error?.let { message ->
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("proxy_groups_error"), verticalAlignment = Alignment.CenterVertically) {
+                Text(message, Modifier.weight(1f), color = MaterialTheme.colorScheme.error)
+                TextButton(onRefresh, enabled = canRefresh, modifier = Modifier.testTag("proxy_groups_retry")) { Text("重试") }
+            }
+        }
         if (groups.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (state.isLoading) CircularProgressIndicator()
-                else Text("添加有效配置后显示代理组。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                else if (state.error == null) Text("添加有效配置后显示代理组。", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             if (pageOptions.displayMode == ProxyDisplayMode.TAB) {

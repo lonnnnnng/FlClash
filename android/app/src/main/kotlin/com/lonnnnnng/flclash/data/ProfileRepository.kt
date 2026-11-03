@@ -132,6 +132,13 @@ interface ProfileStore {
         return updateProfileOverrides(id, ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides).toJsonString())
     }
     suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile
+    suspend fun updateProfileProxySelection(id: Long, groupName: String, proxyName: String?): Profile {
+        val current = profiles.value.first { it.id == id }
+        val selected = decodeSelectedMap(current.selectedMapJson).toMutableMap().apply {
+            if (proxyName == null) remove(groupName) else put(groupName, proxyName)
+        }
+        return updateProfileSelectedMap(id, selected)
+    }
     suspend fun updateProfileCurrentGroupName(id: Long, groupName: String): Profile =
         profiles.value.firstOrNull { it.id == id }
             ?.copy(currentGroupName = groupName)
@@ -851,6 +858,19 @@ class ProfileRepository(
                 updated
             }
         }
+
+    override suspend fun updateProfileProxySelection(id: Long, groupName: String, proxyName: String?): Profile = withContext(Dispatchers.IO) {
+        database.withTransaction {
+            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+            // 作者 long：一次节点点击只修改自己的组，保留其他入口刚保存的选择和配置元数据。
+            val selected = decodeSelectedMap(current.selectedMapJson).toMutableMap().apply {
+                if (proxyName == null) remove(groupName) else put(groupName, proxyName)
+            }
+            val updated = current.copy(selectedMapJson = encodeSelectedMap(selected))
+            profileDao.update(updated.toEntity())
+            updated
+        }
+    }
 
     override suspend fun updateProfileGroupViewState(
         id: Long,

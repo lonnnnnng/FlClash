@@ -269,6 +269,15 @@ class ProfilesRepositoryPanelInstrumentedTest {
             repository.updateProfileGroupViewState(profile.id, "节点选择", unfoldSet)
         }
 
+        runBlocking {
+            repository.updateProfileProxySelection(profile.id, "节点选择", "A")
+            repository.updateProfileProxySelection(profile.id, "自动选择", "B")
+            val selected = repository.updateProfileProxySelection(profile.id, "节点选择", null)
+            assertEquals(mapOf("自动选择" to "B"), decodeSelectedMap(selected.selectedMapJson))
+            assertEquals("节点选择", selected.currentGroupName)
+            assertEquals(unfoldSet, selected.unfoldSet)
+        }
+
         assertEquals("节点选择", updated.currentGroupName)
         assertEquals(unfoldSet, updated.unfoldSet)
         assertEquals(

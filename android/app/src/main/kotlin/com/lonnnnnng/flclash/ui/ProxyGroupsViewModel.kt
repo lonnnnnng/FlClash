@@ -18,6 +18,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,12 +33,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 
 data class ProxyGroupsUiState(
     val groups: List<ProxyGroupInfo> = emptyList(),
     val selectedMap: Map<String, String> = emptyMap(),
     val unfoldSet: Set<String> = emptySet(),
     val isLoading: Boolean = false,
+    val error: String? = null,
     val switchingGroup: String? = null,
     val batchTestingGroup: String? = null,
     val delayResults: Map<ProxyDelayKey, ProxyDelayUiState> = emptyMap(),
@@ -290,7 +294,9 @@ class ProxyGroupsViewModel @Inject constructor(
     private val profileViewStateMutex = Mutex()
     private var groupDelayJob: Job? = null
     private var refreshJob: Job? = null
+    private var snapshotReadJob: Job? = null
     private var profileGeneration = 0L
+    private var refreshAfterSelection = false
 
     val state: StateFlow<ProxyGroupsUiState> = mutableState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProxyGroupsUiState())
@@ -298,16 +304,26 @@ class ProxyGroupsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            var observedInputs: List<Any?>? = null
             combine(runtimeManager.state, profileStore.currentProfileId, profileStore.profiles, runtimeManager.proxyGroupsRevision) { status, id, profiles, revision ->
                 val profile = profiles.firstOrNull { it.id == id }
                 listOf(status, id, profile?.lastUpdateAt, profile?.overridesJson, profile?.scriptId, revision)
             }.distinctUntilChanged().collect { key ->
-                profileGeneration++
-                groupDelayJob?.cancel()
-                refreshJob?.cancel()
-                groupDelayJob = null
-                // 作者 long：配置数据与代理接管状态分离，停止不清空节点；换配置先丢弃旧列表，再读取已校验的新快照。
-                mutableState.value = ProxyGroupsUiState(isLoading = key[1] != null)
+                val inputs = key.dropLast(1)
+                if (inputs != observedInputs) {
+                    observedInputs = inputs
+                    profileGeneration++
+                    refreshAfterSelection = false
+                    groupDelayJob?.cancel()
+                    refreshJob?.cancel()
+                    groupDelayJob = null
+                    // 作者 long：只有实际配置输入或运行状态变化才作废操作；节点切换自身的刷新通知不能丢掉待保存选择。
+                    mutableState.value = ProxyGroupsUiState(profileId = key[1] as Long?, isLoading = key[1] != null)
+                } else if (mutableState.value.switchingGroup != null) {
+                    // 作者 long：先完成选择的保存，再消费期间的刷新通知；既不抢先显示旧映射，也不漏掉并发资源更新。
+                    refreshAfterSelection = true
+                    return@collect
+                }
                 if (key[1] != null) refresh()
             }
         }
@@ -329,12 +345,26 @@ class ProxyGroupsViewModel @Inject constructor(
     }
 
     fun refresh() {
+        if (mutableState.value.switchingGroup != null) return
         refreshJob?.cancel()
+        snapshotReadJob?.cancel()
         val generation = profileGeneration
         val profileId = profileStore.currentProfileId.value
+        // 作者 long：页面等待与已受理的核心加载分开；8秒后可显示重试，管理器仍负责原子完成不可取消的配置登记。
+        val reading = viewModelScope.async { if (profileId == null) runtimeManager.getProxyGroups() else runtimeManager.getProxyGroups(profileId) }
+        snapshotReadJob = reading
         refreshJob = viewModelScope.launch {
-            mutableState.value = mutableState.value.copy(isLoading = true)
-            val result = runtimeManager.getProxyGroups()
+            mutableState.value = mutableState.value.copy(isLoading = true, error = null)
+            val result = try {
+                withTimeout(8_000L) { reading.await() }
+            } catch (timeout: TimeoutCancellationException) {
+                Result.failure(timeout)
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (error: Exception) { Result.failure(error) }
+            finally {
+                reading.cancel()
+                if (snapshotReadJob === reading) snapshotReadJob = null
+            }
             if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
             if (result.isSuccess) {
                 val snapshot = result.getOrThrow()
@@ -347,31 +377,47 @@ class ProxyGroupsViewModel @Inject constructor(
                     retainDelayResults(snapshot.groups, mutableState.value.delayResults)
                 }
                 if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+                val profile = try {
+                    withTimeout(3_000L) { profileId?.let { profileStore.extensionProfile(it) } }
+                } catch (error: Exception) {
+                    if (error is CancellationException && error !is TimeoutCancellationException) throw error
+                    if (generation == profileGeneration && profileId == profileStore.currentProfileId.value) {
+                        mutableState.value = mutableState.value.copy(isLoading = false, error = "无法读取配置选择，请重试")
+                    }
+                    return@launch
+                }
+                if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
                 mutableState.value = ProxyGroupsUiState(
                     groups = snapshot.groups,
                     proxyTypes = snapshot.proxyTypes,
                     providerProxies = snapshot.providerProxies,
                     profileId = profileId,
                     customProfile = profileStore.profiles.value.firstOrNull { it.id == profileId }?.type == com.lonnnnnng.flclash.data.ProfileType.CUSTOM,
-                    selectedMap = currentProfileSelectedMap(),
-                    unfoldSet = currentProfileUnfoldSet(),
+                    selectedMap = profile?.let { decodeSelectedMap(it.selectedMapJson) }.orEmpty(),
+                    unfoldSet = profile?.unfoldSet.orEmpty(),
                     batchTestingGroup = mutableState.value.batchTestingGroup,
                     delayResults = delayResults,
                 )
             } else {
                 val error = result.exceptionOrNull() ?: IllegalStateException("读取代理组失败")
-                if (error is CancellationException) throw error
+                if (error is CancellationException && error !is TimeoutCancellationException) throw error
                 if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
-                mutableState.value = ProxyGroupsUiState()
-                mutableErrors.emit(error.message ?: "读取代理组失败")
+                val message = if (error is TimeoutCancellationException) "读取代理组超时，请重试" else "无法读取代理组，请重试"
+                mutableState.value = mutableState.value.copy(isLoading = false, error = message)
+                mutableErrors.emit(message)
             }
         }
     }
 
-    fun selectGroup(name: String) {
+    fun selectGroup(name: String) = selectGroup(mutableState.value.profileId, name)
+
+    fun selectGroup(expectedProfileId: Long?, name: String) {
         if (name.isBlank() || mutableState.value.groups.none { it.name == name }) return
         val profileId = profileStore.currentProfileId.value ?: return
+        if (expectedProfileId != profileId) return
+        val generation = profileGeneration
         viewModelScope.launch {
+            if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
             // 作者 long：只把当前核心快照中的组名记入当前 Profile，避免无效标签覆盖重启恢复位置。
             try {
                 profileStore.updateProfileCurrentGroupName(profileId, name)
@@ -397,9 +443,14 @@ class ProxyGroupsViewModel @Inject constructor(
         }
     }
 
-    fun toggleGroupExpanded(name: String) {
+    fun toggleGroupExpanded(name: String) = toggleGroupExpanded(mutableState.value.profileId, name)
+
+    fun toggleGroupExpanded(expectedProfileId: Long?, name: String) {
         if (name.isBlank() || mutableState.value.groups.none { it.name == name }) return
         val profileId = profileStore.currentProfileId.value ?: return
+        if (expectedProfileId != profileId) return
+        if (mutableState.value.profileId != profileId) return
+        val generation = profileGeneration
         val previous = mutableState.value.unfoldSet
         val updated = previous.toMutableSet().apply {
             if (!add(name)) remove(name)
@@ -409,27 +460,29 @@ class ProxyGroupsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 profileViewStateMutex.withLock {
-                    profileStore.updateProfileGroupViewState(
-                        profileId,
-                        name,
-                        mutableState.value.unfoldSet,
-                    )
+                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@withLock
+                    // 作者 long：持锁后提交本次手势的快照，不能从已经换配置的页面重新取展开集合。
+                    profileStore.updateProfileGroupViewState(profileId, name, updated)
                 }
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
                 mutableState.update { state ->
-                    if (state.unfoldSet == updated) state.copy(unfoldSet = previous) else state
+                    if (generation == profileGeneration && profileId == profileStore.currentProfileId.value && state.unfoldSet == updated) state.copy(unfoldSet = previous) else state
                 }
                 mutableErrors.emit(error.message ?: "保存代理组展开状态失败")
             }
         }
     }
 
-    fun selectProxy(group: ProxyGroupInfo, proxyName: String) {
-        if (mutableState.value.batchTestingGroup != null) return
+    fun selectProxy(group: ProxyGroupInfo, proxyName: String) = selectProxy(mutableState.value.profileId, group, proxyName)
+
+    fun selectProxy(expectedProfileId: Long?, group: ProxyGroupInfo, proxyName: String) {
         val stateBeforeSwitch = mutableState.value
-        val profileId = profileStore.currentProfileId.value
+        if (stateBeforeSwitch.batchTestingGroup != null || stateBeforeSwitch.switchingGroup != null || stateBeforeSwitch.isLoading) return
+        val profileId = profileStore.currentProfileId.value ?: return
+        if (expectedProfileId != profileId) return
+        if (stateBeforeSwitch.profileId != profileId || stateBeforeSwitch.groups.none { it == group }) return
         val generation = profileGeneration
         val target = computedSelectionTarget(group, proxyName, stateBeforeSwitch.selectedMap) ?: return
         val updatedMap = updateSelectedMap(
@@ -438,16 +491,17 @@ class ProxyGroupsViewModel @Inject constructor(
             proxyName = proxyName,
             target = target,
         )
+        // 作者 long：在派发协程前认领操作，连续点击只能受理一次，后续请求仍由核心锁核验原配置。
+        mutableState.value = mutableState.value.copy(switchingGroup = group.name)
         viewModelScope.launch {
-            mutableState.value = mutableState.value.copy(switchingGroup = group.name)
-            runtimeManager.changeProxy(group.name, target)
+            if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+            runtimeManager.changeProxy(profileId, group.name, target)
                 .onSuccess { snapshot ->
-                    if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onSuccess
+                    // 作者 long：核心已受理的选择仍保存到原配置；随后切到另一配置只阻止旧快照回写页面。
+                    var savedMap = updatedMap
                     runCatching {
-                        if (profileId != null) {
-                            profileStore.updateProfileSelectedMap(profileId, updatedMap)
-                        }
-                    }.onFailure { error ->
+                        profileStore.updateProfileProxySelection(profileId, group.name, target.takeIf { it.isNotEmpty() })
+                    }.onSuccess { saved -> savedMap = decodeSelectedMap(saved.selectedMapJson) }.onFailure { error ->
                         if (error is CancellationException) throw error
                         // 作者 long：核心切换已经成功时仍显示真实核心状态，但明确提示持久化失败，
                         // 避免用户误以为进程重建后仍会恢复本次选择。
@@ -461,18 +515,20 @@ class ProxyGroupsViewModel @Inject constructor(
                         providerProxies = snapshot.providerProxies,
                         profileId = profileId,
                         customProfile = profileStore.profiles.value.firstOrNull { it.id == profileId }?.type == com.lonnnnnng.flclash.data.ProfileType.CUSTOM,
-                        selectedMap = updatedMap,
+                        selectedMap = savedMap,
                         unfoldSet = currentProfileUnfoldSet(),
                         delayResults = retainDelayResults(
                             snapshot.groups,
                             mutableState.value.delayResults,
                         ),
                     )
+                    if (refreshAfterSelection) { refreshAfterSelection = false; refresh() }
                 }
                 .onFailure { error ->
                     if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@onFailure
                     mutableState.value = mutableState.value.copy(switchingGroup = null)
                     mutableErrors.emit(error.message ?: "切换代理失败")
+                    if (refreshAfterSelection) { refreshAfterSelection = false; refresh() }
                 }
         }
     }
@@ -568,17 +624,22 @@ class ProxyGroupsViewModel @Inject constructor(
     /**
      * 作者 long：结果键包含代理组、节点和测试地址，避免同名节点在不同代理组之间串用延迟结果。
      */
-    fun testDelay(group: ProxyGroupInfo, proxyName: String) {
-        if (mutableState.value.batchTestingGroup != null) return
+    fun testDelay(group: ProxyGroupInfo, proxyName: String) = testDelay(mutableState.value.profileId, group, proxyName)
+
+    fun testDelay(expectedProfileId: Long?, group: ProxyGroupInfo, proxyName: String) {
+        if (mutableState.value.batchTestingGroup != null || mutableState.value.switchingGroup != null || mutableState.value.isLoading) return
+        val profileId = profileStore.currentProfileId.value ?: return
+        if (expectedProfileId != profileId) return
+        if (mutableState.value.profileId != profileId || mutableState.value.groups.none { it == group } || proxyName !in group.all) return
         val key = ProxyDelayKey(group.name, proxyName, group.testUrl.orDefaultTestUrl())
         val generation = profileGeneration
-        val profileId = profileStore.currentProfileId.value
         if (mutableState.value.delayResults[key]?.isTesting == true) return
         mutableState.update {
             it.copy(delayResults = it.delayResults + (key to ProxyDelayUiState(isTesting = true)))
         }
         viewModelScope.launch {
-            val outcome = runtimeManager.testDelay(proxyName, key.testUrl)
+            if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+            val outcome = runtimeManager.testDelay(profileId, proxyName, key.testUrl)
             if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
             val updated: ProxyDelayUiState
             if (outcome.isSuccess) {
@@ -596,7 +657,7 @@ class ProxyGroupsViewModel @Inject constructor(
                 state.copy(delayResults = state.delayResults + (key to updated))
             }
             try {
-                if (generation == profileGeneration && profileId == profileStore.currentProfileId.value && profileId != null) {
+                if (generation == profileGeneration && profileId == profileStore.currentProfileId.value) {
                     persistDelayResult(profileId, key, updated)
                 }
             } catch (persistError: CancellationException) {
@@ -614,15 +675,19 @@ class ProxyGroupsViewModel @Inject constructor(
      * 作者 long：批量测速的 UI 状态按原始组成员展示，实际请求使用递归解析后的叶子节点；
      * 这样嵌套代理组不会把组名误传给核心，也能在单个节点失败时保留其他节点结果。
      */
-    fun testDelayGroup(group: ProxyGroupInfo) {
-        if (mutableState.value.batchTestingGroup != null || group.all.isEmpty()) return
+    fun testDelayGroup(group: ProxyGroupInfo) = testDelayGroup(mutableState.value.profileId, group)
+
+    fun testDelayGroup(expectedProfileId: Long?, group: ProxyGroupInfo) {
+        if (mutableState.value.batchTestingGroup != null || mutableState.value.switchingGroup != null || mutableState.value.isLoading || group.all.isEmpty()) return
+        val profileId = profileStore.currentProfileId.value ?: return
+        if (expectedProfileId != profileId) return
+        if (mutableState.value.profileId != profileId || mutableState.value.groups.none { it == group }) return
         val targets = resolveDelayTargets(group, mutableState.value.groups, mutableState.value.selectedMap)
         if (targets.isEmpty()) {
             mutableErrors.tryEmit("当前代理组没有可测速节点")
             return
         }
         val generation = profileGeneration
-        val profileId = profileStore.currentProfileId.value
         val keys = targets.associate { target ->
             ProxyDelayKey(group.name, target.displayName, target.request.testUrl) to
                 ProxyDelayUiState(isTesting = true)
@@ -636,7 +701,8 @@ class ProxyGroupsViewModel @Inject constructor(
         groupDelayJob?.cancel()
         groupDelayJob = viewModelScope.launch {
             try {
-                val outcome = runtimeManager.testDelayBatch(targets.map { it.request })
+                if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
+                val outcome = runtimeManager.testDelayBatch(profileId, targets.map { it.request })
                 if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
                 if (outcome.isSuccess) {
                     val results = outcome.getOrThrow()

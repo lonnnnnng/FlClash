@@ -368,6 +368,7 @@ fun KClashApp(
         profilesViewModel.acceptCustomImportFile(token, uri?.toString())
     }
     val proxyGroupsState by proxyGroupsViewModel.state.collectAsState()
+    val renderedProxyProfileId = proxyGroupsState.profileId
     val scriptsState by scriptsViewModel.state.collectAsState()
     val scriptEditorState by scriptsViewModel.editorState.collectAsState()
     val remoteScriptState by scriptsViewModel.remoteState.collectAsState()
@@ -833,11 +834,11 @@ fun KClashApp(
                     currentProfileId = selectedProfile?.id,
                     currentGroupName = selectedProfile?.currentGroupName,
                     onRefresh = proxyGroupsViewModel::refresh,
-                    onSelectGroup = proxyGroupsViewModel::selectGroup,
-                    onToggleGroup = proxyGroupsViewModel::toggleGroupExpanded,
-                    onSelect = proxyGroupsViewModel::selectProxy,
-                    onTestDelay = proxyGroupsViewModel::testDelay,
-                    onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
+                    onSelectGroup = { name -> proxyGroupsViewModel.selectGroup(renderedProxyProfileId, name) },
+                    onToggleGroup = { name -> proxyGroupsViewModel.toggleGroupExpanded(renderedProxyProfileId, name) },
+                    onSelect = { group, node -> proxyGroupsViewModel.selectProxy(renderedProxyProfileId, group, node) },
+                    onTestDelay = { group, node -> proxyGroupsViewModel.testDelay(renderedProxyProfileId, group, node) },
+                    onTestGroupDelay = { group -> proxyGroupsViewModel.testDelayGroup(renderedProxyProfileId, group) },
                 )
             } else if (selectedDestination == MainDestination.PROFILES) {
                 ProfilesPanel(
@@ -1095,11 +1096,11 @@ fun KClashApp(
                                     currentProfileId = selectedProfile?.id,
                                     currentGroupName = selectedProfile?.currentGroupName,
                                     onRefresh = proxyGroupsViewModel::refresh,
-                                    onSelectGroup = proxyGroupsViewModel::selectGroup,
-                                    onToggleGroup = proxyGroupsViewModel::toggleGroupExpanded,
-                                    onSelect = proxyGroupsViewModel::selectProxy,
-                                    onTestDelay = proxyGroupsViewModel::testDelay,
-                                    onTestGroupDelay = proxyGroupsViewModel::testDelayGroup,
+                                    onSelectGroup = { name -> proxyGroupsViewModel.selectGroup(renderedProxyProfileId, name) },
+                                    onToggleGroup = { name -> proxyGroupsViewModel.toggleGroupExpanded(renderedProxyProfileId, name) },
+                                    onSelect = { group, node -> proxyGroupsViewModel.selectProxy(renderedProxyProfileId, group, node) },
+                                    onTestDelay = { group, node -> proxyGroupsViewModel.testDelay(renderedProxyProfileId, group, node) },
+                                    onTestGroupDelay = { group -> proxyGroupsViewModel.testDelayGroup(renderedProxyProfileId, group) },
                                 )
                                 }
                             }

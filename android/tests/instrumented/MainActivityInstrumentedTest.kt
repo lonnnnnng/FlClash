@@ -193,6 +193,7 @@ class MainActivityInstrumentedTest {
                 composeRule.onNodeWithTag(if (layout == "LIST") "proxy_groups_list" else "proxy_groups_pager").assertIsDisplayed()
             }
             composeRule.onNodeWithTag("nav_dashboard").performClick()
+            composeRule.onNodeWithTag("page_dashboard").performScrollToNode(androidx.compose.ui.test.hasContentDescription("启动核心"))
             composeRule.onNodeWithContentDescription("启动核心").assertIsDisplayed()
             assertEquals(currentId, repository.currentProfileId.value)
             assertEquals(metadata, file.length() to file.lastModified())

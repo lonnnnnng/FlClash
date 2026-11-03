@@ -790,10 +790,20 @@ class CoreRuntimeManager(
         }
     }
 
-    override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = transitionLock.withLock {
+    override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = readProxyGroups(null)
+
+    override suspend fun getProxyGroups(profileId: Long): Result<ProxyGroupsSnapshot> = readProxyGroups(profileId)
+
+    private suspend fun checkProxyProfile(profileId: Long?) {
+        // 作者 long：页面操作可能排在切配置之后，必须在同一生命周期锁内复核原目标，不能操作新配置中的同名组。
+        check(profileId == null || profileProvider.activeProfileId() == profileId) { "配置已切换，请刷新代理列表后重试" }
+    }
+
+    private suspend fun readProxyGroups(profileId: Long?): Result<ProxyGroupsSnapshot> = transitionLock.withLock {
         runCatching {
+            checkProxyProfile(profileId)
             ensureConfigLoaded()
-            bridge.getProxyGroups()
+            withTimeout(5_000L) { bridge.getProxyGroups() }
         }
     }
 
@@ -828,8 +838,15 @@ class CoreRuntimeManager(
     }
 
     override suspend fun changeProxy(groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> =
+        changeProfileProxy(null, groupName, proxyName)
+
+    override suspend fun changeProxy(profileId: Long, groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> =
+        changeProfileProxy(profileId, groupName, proxyName)
+
+    private suspend fun changeProfileProxy(profileId: Long?, groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> =
         transitionLock.withLock {
             runCatching {
+                checkProxyProfile(profileId)
                 ensureConfigLoaded()
                 invalidateIpRoute(reusable = true)
                 bridge.changeProxy(groupName, proxyName)
@@ -849,8 +866,14 @@ class CoreRuntimeManager(
         proxyName: String,
         testUrl: String,
         timeoutMs: Long,
-    ): Result<ProxyDelay?> = transitionLock.withLock {
+    ): Result<ProxyDelay?> = testProfileDelay(null, proxyName, testUrl, timeoutMs)
+
+    override suspend fun testDelay(profileId: Long, proxyName: String, testUrl: String, timeoutMs: Long): Result<ProxyDelay?> =
+        testProfileDelay(profileId, proxyName, testUrl, timeoutMs)
+
+    private suspend fun testProfileDelay(profileId: Long?, proxyName: String, testUrl: String, timeoutMs: Long): Result<ProxyDelay?> = transitionLock.withLock {
         runCatching {
+            checkProxyProfile(profileId)
             ensureConfigLoaded()
             bridge.testDelay(proxyName, testUrl, if (timeoutMs == 0L) mutableGeneralSettings.value.delayTestTimeout.toLong() else timeoutMs)
         }
@@ -864,8 +887,14 @@ class CoreRuntimeManager(
         requests: List<ProxyDelayRequest>,
         timeoutMs: Long,
         maxConcurrent: Int,
-    ): Result<List<ProxyDelayBatchResult>> = transitionLock.withLock {
+    ): Result<List<ProxyDelayBatchResult>> = testProfileDelayBatch(null, requests, timeoutMs, maxConcurrent)
+
+    override suspend fun testDelayBatch(profileId: Long, requests: List<ProxyDelayRequest>, timeoutMs: Long, maxConcurrent: Int): Result<List<ProxyDelayBatchResult>> =
+        testProfileDelayBatch(profileId, requests, timeoutMs, maxConcurrent)
+
+    private suspend fun testProfileDelayBatch(profileId: Long?, requests: List<ProxyDelayRequest>, timeoutMs: Long, maxConcurrent: Int): Result<List<ProxyDelayBatchResult>> = transitionLock.withLock {
         try {
+            checkProxyProfile(profileId)
             ensureConfigLoaded()
             val effectiveTimeout = if (timeoutMs == 0L) mutableGeneralSettings.value.delayTestTimeout.toLong() else timeoutMs
             require(effectiveTimeout > 0) { "测速超时必须大于 0" }

@@ -181,6 +181,12 @@ internal fun DashboardProxyGroupsCard(
             if (groups.isNotEmpty()) Icon(Icons.Outlined.ChevronRight, null, Modifier.size(20.dp))
         }
         Spacer(Modifier.height(12.dp))
+        state.error?.let { message ->
+            Row(Modifier.fillMaxWidth().testTag("dashboard_proxy_groups_error"), verticalAlignment = Alignment.CenterVertically) {
+                Text(message, Modifier.weight(1f), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                TextButton(onRefresh, enabled = !state.isLoading, modifier = Modifier.testTag("dashboard_proxy_groups_retry")) { Text("重试") }
+            }
+        }
         if (groups.isEmpty()) {
             Column(
                 Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 36.dp)
@@ -194,7 +200,7 @@ internal fun DashboardProxyGroupsCard(
                 ) { Icon(Icons.Outlined.Layers, null, Modifier.size(26.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    if (state.isLoading) "正在加载代理组" else "没有代理组",
+                    if (state.isLoading) "正在加载代理组" else if (state.error != null) "代理组加载失败" else "没有代理组",
                     style = MaterialTheme.typography.titleSmall,
                 )
                 if (currentProfileId == null) Text(

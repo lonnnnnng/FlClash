@@ -38,6 +38,31 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class CoreRuntimeManagerTest {
+    @Test fun queuedProxyActionsRejectTheirOldProfileBeforeTouchingCore() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
+        var profile = ActiveProfile(701, "old", source.path)
+        val bridge = FakeBridge()
+        val runtime = manager(profile, temporaryFolder.newFolder(), bridge, FakeServiceController(), profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profile
+        })
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val changing = async { runtime.withExtensionWrite(null) {
+            entered.complete(Unit); release.await(); profile = profile.copy(id = 702)
+        } }
+        entered.await()
+        val reading = async { runtime.getProxyGroups(701) }
+        val selecting = async { runtime.changeProxy(701, "Shared", "b") }
+        val single = async { runtime.testDelay(701, "a", "https://example.test/delay") }
+        val batch = async { runtime.testDelayBatch(701, listOf(ProxyDelayRequest("a", "https://example.test/delay"))) }
+        kotlinx.coroutines.yield()
+        try { assertFalse(selecting.isCompleted); assertFalse(single.isCompleted) }
+        finally { release.complete(Unit) }
+        changing.await()
+        assertTrue(reading.await().isFailure); assertTrue(selecting.await().isFailure)
+        assertTrue(single.await().isFailure); assertTrue(batch.await().isFailure)
+        assertTrue(bridge.calls.isEmpty())
+    }
+
     @Test fun boundScriptWritesApplyOnlyCurrentKeepSessionAndRecoverCommittedFailure() = kotlinx.coroutines.runBlocking {
         val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
         val script = temporaryFolder.newFile().apply { writeText("old") }

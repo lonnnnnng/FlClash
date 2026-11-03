@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.runCurrent
@@ -45,6 +46,78 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProxyGroupsViewModelTest {
+    @Test fun selectionRevisionDoesNotDiscardPersistenceAndDoubleTapIsClaimedSynchronously() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val group = ProxyGroupInfo("Shared", "Selector", "a", listOf("a", "b"), false)
+        val store = SelectionProfileStore(Profile.custom(601, "选择"))
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(group)))
+        val release = CompletableDeferred<Unit>()
+        runtime.beforeChange = { runtime.revision.value++; release.await() }
+        val model = ProxyGroupsViewModel(runtime, store)
+        val observing = backgroundScope.launch { model.state.collect {} }
+        try {
+            runCurrent()
+            model.selectProxy(group, "b"); model.selectProxy(group, "a")
+            runCurrent()
+            assertEquals(1, runtime.changes)
+            assertEquals("Shared", model.state.value.switchingGroup)
+            release.complete(Unit); runCurrent()
+            assertEquals("b", decodeSelectedMap(store.profiles.value.single().selectedMapJson)["Shared"])
+            assertEquals("b", model.state.value.selectedMap["Shared"])
+            assertNull(model.state.value.switchingGroup)
+        } finally { release.complete(Unit); observing.cancel(); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun oldRenderedActionsCannotChangeOrTestSameNamedNewProfileGroups() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val group = ProxyGroupInfo("Shared", "Selector", "a", listOf("a", "b"), false)
+        val old = Profile.custom(602, "旧配置"); val next = Profile.custom(603, "新配置")
+        val store = SelectionProfileStore(old).apply { profiles.value = listOf(old, next) }
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(group)))
+        val model = ProxyGroupsViewModel(runtime, store)
+        val observing = backgroundScope.launch { model.state.collect {} }
+        try {
+            runCurrent()
+            model.toggleGroupExpanded(old.id, group.name)
+            store.currentProfileId.value = next.id
+            runCurrent()
+            model.selectProxy(old.id, group, "b"); model.testDelay(old.id, group, "a")
+            model.testDelayGroup(old.id, group); model.selectGroup(old.id, group.name)
+            runCurrent()
+            assertEquals(0, runtime.changes)
+            assertTrue(model.state.value.delayResults.isEmpty())
+            assertEquals(listOf(old, next), store.profiles.value)
+            assertTrue(model.state.value.unfoldSet.isEmpty())
+        } finally { observing.cancel(); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun failedAndTimedOutRefreshKeepSnapshotAndExplicitRetryRecovers() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val group = ProxyGroupInfo("Shared", "Selector", "a", listOf("a", "b"), false)
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(group)))
+        val model = ProxyGroupsViewModel(runtime, SelectionProfileStore(Profile.custom(604, "恢复")))
+        val observing = backgroundScope.launch { model.state.collect {} }
+        try {
+            runCurrent()
+            runtime.beforeRead = { error("private path must not be shown") }
+            model.refresh(); runCurrent()
+            assertEquals(listOf(group), model.state.value.groups)
+            assertEquals("无法读取代理组，请重试", model.state.value.error)
+            assertTrue(!model.state.value.isLoading)
+            val acceptedRead = CompletableDeferred<Unit>()
+            runtime.beforeRead = { withContext(NonCancellable) { acceptedRead.await() } }
+            try {
+                model.refresh(); runCurrent(); advanceTimeBy(8_001); runCurrent()
+                assertEquals("读取代理组超时，请重试", model.state.value.error)
+                assertTrue(!model.state.value.isLoading)
+            } finally { acceptedRead.complete(Unit) }
+            runtime.beforeRead = {}
+            model.refresh(); runCurrent()
+            assertNull(model.state.value.error)
+            assertEquals(listOf(group), model.state.value.groups)
+        } finally { observing.cancel(); model.viewModelScope.cancel(); runCurrent() }
+    }
+
     @Test fun localImportPolicySeparatesCustomOwnedProviderBuiltinAndNestedGroups() {
         val group = ProxyGroupInfo("nested", "Selector", "leaf", listOf("leaf"), false)
         val remote = ProxyGroupsUiState(groups = listOf(group), proxyTypes = mapOf("leaf" to "Vless", "relay" to "Relay"))
@@ -761,12 +834,19 @@ private class FakeProxyGroupsRuntime(
     override val state: StateFlow<CoreRuntimeStatus> = mutableState.asStateFlow()
     override val events: Flow<CoreEvent> = emptyFlow()
     var lastProxyName: String? = null
+    val revision = MutableStateFlow(0L)
+    override val proxyGroupsRevision: Flow<Long> = revision
+    var beforeChange: suspend () -> Unit = {}
+    var beforeRead: suspend () -> Unit = {}
+    var changes = 0
     var beforeBatch: suspend () -> Unit = {}
     var singleDelayResult: Result<ProxyDelay?>? = null
 
-    override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> = Result.success(snapshot)
+    override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> { beforeRead(); return Result.success(snapshot) }
 
     override suspend fun changeProxy(groupName: String, proxyName: String): Result<ProxyGroupsSnapshot> {
+        changes++
+        beforeChange()
         lastProxyName = proxyName
         return changeResult
     }

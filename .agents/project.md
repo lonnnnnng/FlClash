@@ -1,5 +1,11 @@
 # Project Context
 
+## 首页/代理组与 Providers 有界读取闭环（2026-11-04）
+
+Providers/统计读取已改为版本通知合流、独立8秒页面预算和失败保留重试；同配置刷新保留列表，旧不可取消读取不阻塞新配置。首页/代理组按组patch保存、原渲染Profile ID锁内复核及独立失败重试已补齐。App426/Service188共614项单测、Debug/AndroidTest、独立未签名Release/R8及双变体Lint通过；Redmi最终同批9/9，原1.yaml运行中90个Provider连续16秒及Activity重建通过、核心会话保持。正式两份Profile/正文SHA与mtime和原1.yaml保护、最终两包哈希匹配；结束无服务/tun0并恢复旋转。证据见`docs/acceptance/home-proxy-mainflow-redmi-20261104.json`。
+
+原始分钟级现场未完整捕获，不能认定唯一根因；首批4/7及两临时配置遗留/定点恢复保留审计。首批未独立保存原选择/VPN偏好，不宣称该失败批次完整偏好保护；后续成功fixture各自保存并恢复状态。下一组主页面视觉，备份/系统恢复暂缓，整体Profiles/UI仍PARTIAL。
+
 ## 高级配置运行态本组闭环（2026-11-04）
 
 脚本运行态保存/同步/删除只应用当前绑定，提交与应用共持生命周期锁；正文摘要/mtime CAS和失败回滚、Provider覆盖分区CAS、全局规则共锁已补齐。最终App420/Service187共607项单测，Debug/AndroidTest、独立Release/R8和双变体Lint通过；Redmi最终同批13/13，含运行中脚本失败修正/独立重试、全局DNS/规则、Provider覆盖/更多设置/侧载及原1.yaml两HTTP资源实更新。两份正式Profile/原选择/脚本/正文SHA与mtime及原1.yaml保持，最终两包哈希匹配，结束无服务/tun0并恢复旋转。后续首页与代理组主流程→主页面视觉；备份/系统恢复暂缓，其他资源SAF/外部脚本完整E2E/全字段实网与正式Release运行继续PARTIAL。

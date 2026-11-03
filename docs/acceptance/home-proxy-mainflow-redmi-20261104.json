@@ -1,0 +1,484 @@
+{
+  "date": "2026-11-04",
+  "status": "DONE-VERIFIED for home/proxy mainflow and Providers bounded-wait slice; overall Profiles/UI PARTIAL",
+  "sourceBaseHead": "42cca0eb5807025a174c4be39916e1c058fa0d9c",
+  "sourceDigestAlgorithm": "SHA-256 of sorted modified/untracked android/*.kt relative-path + NUL + file-bytes + NUL",
+  "sourceDigest": "573087a895963d8ef73d6effc5d38cd3ed458cc83a2f33371646afdfaa532843",
+  "sourceFiles": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileRepository.kt": "868d045d86036232385cd54137e597fa62633373ea455e703fdf6543797c9d74",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt": "2152a61d6b85cbc8d58521e53a6936fd13ad8129fa283809163b94893c931b85",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "c2ae67d6759faabd5308a2a80715f19230856e18eb042ecc79f121e2e140956b",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileStatisticsViewModel.kt": "38ca0752f8bdd325f5aec9a5aad49e3f893cbb4425c3048e7fef95ea6f3e4d30",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt": "e32016777aa888418e61b86c692c6cb075883560adaa3d1f5edea5a2e8263d3e",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsViewModel.kt": "e138a3bc44fed3df9d33c7289364c65635e9459c95eb6b974aad0669fb630133",
+    "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeContracts.kt": "c22952522224fef86bad8f69c3cce90311c77e932df5fc740751e6eacaffa254",
+    "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt": "e806239708b928244a08ccf85bfcf191dcfc94f29a29412251f784839bbd80c8",
+    "android/tests/app/ProfileStatisticsViewModelTest.kt": "5104f866c22089794cf66d82187da3439056493ee730b39e85e90b8b1e32b8b5",
+    "android/tests/app/ProxyGroupsViewModelTest.kt": "1e8606fda0c9f4054bf0cf8c2268560b0c9d06c652da72eb16d41b19c326662d",
+    "android/tests/instrumented/HomeProxyMainFlowInstrumentedTest.kt": "7596901f7bc2503befc5e3da5f26305d932ef4d80aab9fca4a3dacb8ad148baa",
+    "android/tests/instrumented/MainActivityInstrumentedTest.kt": "bbe2371882be00fde2b367f588785b2a06fda7911cb40c27fa7bc1dd9dc62775",
+    "android/tests/instrumented/ProfilesRepositoryPanelInstrumentedTest.kt": "c6de8449a7f44125d32f01c8991ffe94e22282ac5d672d77c9cb31be3523525d",
+    "android/tests/instrumented/ProxyGroupsRecoveryInstrumentedTest.kt": "abfe919ae0f0415e4450d37d7febb413df8fb67c58ebf22c17d5495b9549f02b",
+    "android/tests/service/CoreRuntimeManagerTest.kt": "7cb2a292b8a334087623c2e119d2c84215b7e361e383387ab27bc3cb0a753b27"
+  },
+  "upstreamReference": "local main lib/views/proxies/providers.dart; lib/providers/actions/clash_providers.dart; no network fetch for this slice",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "sdk": 36,
+    "acceptance": "portrait 1080x2340, font_scale 1.0, arm64-v8a"
+  },
+  "changes": [
+    "Providers/statistics window identity excludes revisions; tick/revision/retry signals merge and conflate without cancelling active reads",
+    "Independent read job gives page one 8-second budget including managed binding lookup; non-cancellable old reads cannot block new profile or publish stale results",
+    "Same-profile Providers refresh keeps rows; failures stop automatic reads and keep retry visible until explicit retry or window identity changes",
+    "Proxy selection persistence patches one group inside Room transaction and merges latest unrelated selections and metadata",
+    "Proxy generation changes only for actual inputs; duplicate selections retain persistence ownership; UI callbacks carry rendered profile ID",
+    "Read/select/single and batch delay APIs revalidate original profile ID under transition lock; bounded proxy reads and independent home/page retry states",
+    "Instrumented fixture cleanup continues after UI failure, preserves original exception, and only removes explicitly identified original-1.yaml copies"
+  ],
+  "build": {
+    "debugCommand": "./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64",
+    "debugLog": "/tmp/kclash-providers-investigation-20261104-build1.log",
+    "finalTestOnlyLog": "/tmp/kclash-providers-investigation-20261104-testbuild3.log",
+    "unit": {
+      "app": {
+        "tests": 426,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 188,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 614,
+    "lint": {
+      "debug": {
+        "error": 0,
+        "warning": 62,
+        "note": 9
+      },
+      "release": {
+        "error": 0,
+        "warning": 62,
+        "note": 8
+      }
+    },
+    "redGreen": {
+      "oldImplementationLog": "/tmp/kclash-providers-investigation-20261104-red.log",
+      "oldFailedNewRegressions": 3,
+      "fixedLog": "/tmp/kclash-providers-investigation-20261104-green1.log",
+      "fixedFocusedTests": 15
+    },
+    "regressions": [
+      "providersTimeoutSurvivesNonCancellableReadAndRevisionBurstUntilExplicitRetry",
+      "stalledOldProviderReadDoesNotBlockNewProfileAndCannotOverwriteIt",
+      "statisticsTimeoutAlsoLeavesErrorVisibleUntilRetryForNonCancellableRead"
+    ],
+    "releaseCommand": "./gradlew :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "releaseLog": "/tmp/kclash-providers-investigation-20261104-release1.log",
+    "releaseBoundary": "unsigned Release/R8/lintRelease passed separately from Debug; arm64-v8a; version 0.1.0 (1); not installed/run or formally signed",
+    "notRerun": [
+      "Core/Common JVM",
+      "Go core"
+    ]
+  },
+  "artifacts": {
+    "app": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "2ad63f6090203b53439e90d1b57287b5a888123c24b3394d7e2e8e59d03ab9fa",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "deviceSha256": "2ad63f6090203b53439e90d1b57287b5a888123c24b3394d7e2e8e59d03ab9fa",
+      "deviceMatches": true,
+      "certificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "test": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "9c60ddfdaa8410bb554cdae8116ba697494ca1e6a5d3684bf1ca0988559fa612",
+      "abis": [],
+      "deviceSha256": "9c60ddfdaa8410bb554cdae8116ba697494ca1e6a5d3684bf1ca0988559fa612",
+      "deviceMatches": true,
+      "certificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "0406992f9886ef7ca8d6de2b0c246e4cf8103bfe14bf6c168fbdff58f7bfe3a4",
+      "abis": [
+        "arm64-v8a"
+      ]
+    }
+  },
+  "deviceTests": {
+    "finalBatch": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+        "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningOriginalYamlProvidersRemainLoadedAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-providers-investigation-20261104-batch-final2.log",
+      "images": [
+        "/tmp/kclash-providers-investigation-20261104-proxy_delay_running.png",
+        "/tmp/kclash-providers-investigation-20261104-formal_providers_loaded.png",
+        "/tmp/kclash-providers-investigation-20261104-formal_providers_recreated.png",
+        "/tmp/kclash-providers-investigation-20261104-proxy_selection_running.png",
+        "/tmp/kclash-providers-investigation-20261104-home_proxy_selection_running.png",
+        "/tmp/kclash-providers-investigation-20261104-running_yaml_providers_loaded.png",
+        "/tmp/kclash-providers-investigation-20261104-running_yaml_providers_recreated.png",
+        "/tmp/kclash-providers-investigation-20261104-home_proxy_read_failure.png",
+        "/tmp/kclash-providers-investigation-20261104-proxy_read_failure.png"
+      ]
+    },
+    "finalAfterProtection": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-providers-investigation-20261104-after-final2.log",
+      "images": []
+    },
+    "before": {
+      "methods": [
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-home-proxy-20261104-before.log",
+      "images": []
+    },
+    "providersObservation": {
+      "formalProfile": "loaded empty list, 0 external Providers",
+      "originalYamlRunningCount": 90,
+      "continuousWindowMs": 16000,
+      "recreated": true,
+      "coreSessionPreserved": true
+    },
+    "earlierEightTestBatch": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+        "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+        "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningModeDelayAndOldRenderedActionsKeepNewProfileAndSession",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#dashboardReadFailureHasIndependentRetryAndRecoversSummary",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest#proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesRepositoryPanelInstrumentedTest#repositoryPersistsCurrentProxyGroupForPageRestore",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPreviewsCurrentConfigWithoutStartingOrWritingProfile",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityProxyPageUsesOneToolbarAndKeepsStoppedProfile",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-providers-investigation-20261104-batch-final.log",
+      "images": [
+        "/tmp/kclash-providers-investigation-20261104-proxy_delay_running.png",
+        "/tmp/kclash-providers-investigation-20261104-formal_providers_loaded.png",
+        "/tmp/kclash-providers-investigation-20261104-formal_providers_recreated.png",
+        "/tmp/kclash-providers-investigation-20261104-proxy_selection_running.png",
+        "/tmp/kclash-providers-investigation-20261104-home_proxy_selection_running.png",
+        "/tmp/kclash-providers-investigation-20261104-home_proxy_read_failure.png",
+        "/tmp/kclash-providers-investigation-20261104-proxy_read_failure.png"
+      ]
+    },
+    "countsBoundary": "Final nine methods ran together on final App/Test package; earlier batches are retained and never added to the final count"
+  },
+  "preservation": {
+    "formalProfileCount": 2,
+    "missing": 0,
+    "checks": [
+      "formal Profile rows and body SHA-256/mtime",
+      "scripts rows and body SHA-256/mtime in successful fixture",
+      "successful fixture restores selected profile, mode, VPN and proxy page options",
+      "final after check compares original formal file name/size/mtime snapshot",
+      "local and device original 1.yaml SHA-256 unchanged"
+    ],
+    "interruptedFixtureRecovery": {
+      "temporaryIds": [
+        137444933244652,
+        137444933248960
+      ],
+      "guard": "explicit IDs, FILE type, exact mainflow-<id> label, original 1.yaml bytes; two formal rows and body SHA/mtime protected",
+      "firstAttempt": "failed before device mutation: stored empty label differs from derived realLabel",
+      "secondAttempt": {
+        "methods": [
+          "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#recoverExplicitInterruptedFixtureWithoutChangingFormalProfiles"
+        ],
+        "results": [
+          {
+            "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#recoverExplicitInterruptedFixtureWithoutChangingFormalProfiles",
+            "code": 0
+          }
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "/tmp/kclash-providers-investigation-20261104-retry-recover2.log",
+        "images": []
+      },
+      "selectionPolicy": "selected formal jkun.1qqdg.cn as previously announced default; not evidence of original pre-failure selected ID"
+    },
+    "initialFailedBatchLimit": "initial failed batch did not independently persist original selected ID/VPN preference; cannot claim complete preference preservation for that failed batch",
+    "finalDevice": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "model": "Redmi Note 8 Pro",
+      "sdk": "36",
+      "local1YamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "device1YamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "serviceRecords": 0,
+      "hasTun0": false
+    }
+  },
+  "failuresRetained": [
+    {
+      "log": "/tmp/kclash-home-proxy-20261104-batch1.log",
+      "result": "4/7 passed",
+      "causes": [
+        "legal current-group auto-memory raced whole-row equality after profile switch",
+        "Activity back dispatcher bypassed overlay and exited host; cleanup UI error hid original failure and left two temporary profiles",
+        "restored dashboard scroll put startup control outside viewport"
+      ],
+      "resolution": "navigate home before switch, close overlay by explicit control, scroll target into view, robust cleanup, guarded recovery, final 9/9 passed"
+    },
+    {
+      "log": "/tmp/kclash-providers-investigation-20261104-retry-recover.log",
+      "result": "0/1; realLabel matching fixed; no mutation before failure"
+    },
+    {
+      "log": "/tmp/kclash-providers-investigation-20261104-red.log",
+      "result": "3 intentional failures on old production implementation; 15/15 after fix"
+    },
+    {
+      "operation": "earlier evidence document script generation",
+      "result": "Python nested-quote SyntaxError before script/repository writes; replaced with independent script"
+    }
+  ],
+  "visuals": {
+    "images": [
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-proxy_delay_running.png",
+        "sha256": "aa81dad47829cd2fcce216fb275732b582378127839de941864377126405caf8"
+      },
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-formal_providers_loaded.png",
+        "sha256": "11a2fdf0edc23c518eac38ff212a469b8decf39f954218c2f4ff8b32edf4e475"
+      },
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-formal_providers_recreated.png",
+        "sha256": "11a2fdf0edc23c518eac38ff212a469b8decf39f954218c2f4ff8b32edf4e475"
+      },
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-proxy_selection_running.png",
+        "sha256": "2780eaf86625e524b11b3ccee931beb12c9976b77920ece30d919297457a41e2"
+      },
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-home_proxy_selection_running.png",
+        "sha256": "646e9668a9f34fc0803940b15eac5c4d31ced278ce40e6566f1e6725128f82f3"
+      },
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-running_yaml_providers_loaded.png",
+        "sha256": "43ebeb0e1766423efd2af16148b5b6638eae65355867e560b57c46587c521565"
+      },
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-running_yaml_providers_recreated.png",
+        "sha256": "95b4dd4a438e7a17c6af8f634f048cc5139069733bc0f9a6abb414d387da7f76"
+      },
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-home_proxy_read_failure.png",
+        "sha256": "5d3afc355a0b8ab12653f960d60258f22eaa218bb8f1b77977fc2968f6f21dee"
+      },
+      {
+        "path": "/tmp/kclash-providers-investigation-20261104-proxy_read_failure.png",
+        "sha256": "bc0b2125fd16c0bb42938fb005076ded02d04fc2138195012af6285079dd5b98"
+      }
+    ],
+    "inspected": "primary agent viewed final 3x3 contact sheet including 90-row count before/after recreation",
+    "boundary": "functional states only; fixed failure host white lower surface and Flutter exact visuals remain outside completed slice"
+  },
+  "limits": [
+    "Original minutes-long user incident was not fully captured; reopening the old package showed 90 Providers, so these fixes are not proof of a unique original trigger",
+    "profileProviders is a read; do not describe this page polling as downloading/reloading configuration",
+    "16-second observed window covers several polls, not minutes-long stress testing",
+    "Subagent dispatch unavailable earlier; no independent review claimed",
+    "All external resources/network fields, external script full E2E, quality source coverage/persistent cache, complete Flutter UI parity and signed Release runtime remain separate work",
+    "Backup/system restore deferred; next group is main page visual alignment",
+    "Raw /tmp logs/screenshots are local only and not uploaded with this JSON; remote paths alone do not reproduce attachments"
+  ],
+  "localEvidence": [
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-after-final.log",
+      "sha256": "2850b6a24751d132ed4fad39e65d585313d85bed58ca52feac3e0c9b3e5fd4f3"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-after-final2.log",
+      "sha256": "05671c193facd36b6b7acb29d70f4c9aa99398d4329fa6e80635a0efc0fc2081"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-batch-final.log",
+      "sha256": "8a3412e10526cb542f311934c2128b594fd63d770d568759f15527dd62690acc"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-batch-final2.log",
+      "sha256": "939650541848afa9b6f6773ac7780d2104047bbeebf1e844eb0af70da26e5473"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-build1.log",
+      "sha256": "8d353abcfb7b293ba33b41fb06852bfec0bd344ddca56ff7d82501a3f9cf0493"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-green1.log",
+      "sha256": "2b9fd9ff625b256ea095d895067c3a529ec33cbc747a00c258d2b7ea4967858a"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-logcat.log",
+      "sha256": "0153c0bd4097c3f37d9f57ed445f64c3ce774921d519f2aaa19627f709dbb179"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-red.log",
+      "sha256": "6f00c4422386ad0995c50eca894e3519cedde489c61230c562a120858261e17f"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-release1.log",
+      "sha256": "2e425fe5d307a636bd463c5882e72b74ed0e0b8e27cfec2fead9616c17793274"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-retry-recover.log",
+      "sha256": "f58c3e0a816701edff72abd40c4ed303ef953e943bf6dccce9074b06b413a79e"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-retry-recover2.log",
+      "sha256": "2d47270cc46323876029b99aa5e5e660c9ad9bcee88fa66db1add4f768646e65"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-testbuild2.log",
+      "sha256": "46e90633ff84f5702299a068c768b62dca5fab59cffc780ca1bc377c10bc8d65"
+    },
+    {
+      "path": "/tmp/kclash-providers-investigation-20261104-testbuild3.log",
+      "sha256": "6ef1cb35b48a2474144699de26f48facfda00fa0135f600537bccaf48e8af5ee"
+    },
+    {
+      "path": "/tmp/kclash-home-proxy-20261104-before.log",
+      "sha256": "3097dcc0d580ff83356392fb96e2d438486ae3c425c8d72772d3509a5f1aa78a"
+    },
+    {
+      "path": "/tmp/kclash-home-proxy-20261104-batch1.log",
+      "sha256": "4141b8056ec9817dd572e643de0ed1b6e5924bf0a5fb76f0b462331fb20d3247"
+    },
+    {
+      "path": "/tmp/kclash-home-proxy-20261104-build1.log",
+      "sha256": "06d3654e8985c9f52efd28d67dbb8f12a8472126e6c9ea3a59a97ee7a0a3540b"
+    },
+    {
+      "path": "/tmp/kclash-home-proxy-20261104-build2.log",
+      "sha256": "0b0c81c609b849e360b7c69be2b7d8a19e911daebeeb7d464aed36edb95fe6ab"
+    },
+    {
+      "path": "/tmp/kclash-home-proxy-20261104-build3.log",
+      "sha256": "5547270f2bf7dd38c67f5bfac308672afc02e764d43cecc37afbb27b3209ba21"
+    },
+    {
+      "path": "/tmp/kclash-home-proxy-20261104-release1.log",
+      "sha256": "790fe434a2c1cbb0d8b7407c08c22a3ef21056d249b3500e2bd4c1bd5ece388d"
+    },
+    {
+      "path": "/tmp/kclash-home-proxy-20261104-testbuild4.log",
+      "sha256": "46e90633ff84f5702299a068c768b62dca5fab59cffc780ca1bc377c10bc8d65"
+    }
+  ]
+}

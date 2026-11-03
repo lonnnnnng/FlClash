@@ -89,63 +89,67 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
 
     init {
         viewModelScope.launch {
-            combine(foreground, profile, runtime.profileStatisticsRevision, runtime.state, retries) { front, id, revision, status, retry ->
-                listOf(front, id, revision, status, retry)
-            }.collectLatest {
-                val id = profile.value
-                mutableState.value = ProfileStatisticsUiState(id)
-                if (!foreground.value || id == null || runtime.state.value in listOf(CoreRuntimeStatus.STARTING, CoreRuntimeStatus.STOPPING)) return@collectLatest
-                // 作者 long：仅当前详情可见且应用前台时刷新 Provider 数量，关闭/切配置/后台取消整轮读取并清除旧统计。
-                while (isActive) {
-                    mutableState.update { it.copy(isLoading = it.counts == null, error = null) }
-                    try {
-                        val answer = withTimeout(8_000L) { runtime.profileStatistics(id) }
-                        currentCoroutineContext().ensureActive()
-                        check(answer.profileId == id)
-                        mutableState.value = ProfileStatisticsUiState(id, answer)
-                    } catch (_: TimeoutCancellationException) {
-                        currentCoroutineContext().ensureActive()
-                        mutableState.value = ProfileStatisticsUiState(id, error = "读取配置统计超时，请重试")
-                    } catch (error: CancellationException) { throw error }
-                    catch (_: Exception) {
-                        currentCoroutineContext().ensureActive()
-                        // 作者 long：配置解析错误可能夹带节点或密码，页面只显示受控提示，不将错误正文向 UI 透传。
-                        mutableState.value = ProfileStatisticsUiState(id, error = "读取配置统计失败，请重试")
+            pollProfile(retries,
+                clear = { id -> mutableState.value = ProfileStatisticsUiState(id) },
+                loading = { mutableState.update { it.copy(isLoading = it.counts == null, error = null) } },
+                read = { id -> runtime.profileStatistics(id).also { check(it.profileId == id) } },
+                publish = { id, result ->
+                    mutableState.value = result.fold(
+                        { ProfileStatisticsUiState(id, it) },
+                        { ProfileStatisticsUiState(id, error = if (it is TimeoutCancellationException)
+                            "读取配置统计超时，请重试" else "读取配置统计失败，请重试") })
+                })
+        }
+        viewModelScope.launch {
+            pollProfile(providerRetries,
+                clear = { id -> mutableProviders.update { old -> if (old.profileId == id && foreground.value)
+                    old.copy(providers = null, isLoading = false, error = null) else ProfileProvidersUiState(id, updatingName = inFlightName) } },
+                loading = { mutableProviders.update { it.copy(isLoading = it.providers == null, error = null) } },
+                read = { id ->
+                    val rows = runtime.profileProviders(id)
+                    rows to managed?.bindings(id, rows).orEmpty()
+                },
+                publish = { _, result ->
+                    result.onSuccess { (rows, bindings) ->
+                        managedBindings = bindings
+                        mutableProviders.update { it.copy(providers = rows, isLoading = false, error = null, managedNames = bindings.keys) }
+                    }.onFailure { error ->
+                        mutableProviders.update { it.copy(isLoading = false, error = if (error is TimeoutCancellationException)
+                            "读取 Providers 超时，请重试" else "读取 Providers 失败，请重试") }
                     }
-                    delay(5_000L)
-                }
-            }
+                })
         }
     }
 
-    init {
-        viewModelScope.launch {
-            combine(foreground, profile, runtime.profileStatisticsRevision, runtime.state, providerRetries) { front, id, revision, status, retry ->
-                listOf(front, id, revision, status, retry)
-            }.collectLatest {
-                val id = profile.value
-                mutableProviders.update { old -> if (old.profileId == id && foreground.value)
-                    old.copy(providers = null, isLoading = false, error = null) else ProfileProvidersUiState(id, updatingName = inFlightName) }
-                if (!foreground.value || id == null || runtime.state.value in listOf(CoreRuntimeStatus.STARTING, CoreRuntimeStatus.STOPPING)) return@collectLatest
-                while (isActive) {
-                    mutableProviders.update { it.copy(isLoading = it.providers == null, error = null) }
-                    try {
-                        val rows = withTimeout(8_000L) { runtime.profileProviders(id) }
-                        currentCoroutineContext().ensureActive()
-                        val bindings = managed?.bindings(id, rows).orEmpty()
-                        currentCoroutineContext().ensureActive()
-                        managedBindings = bindings
-                        mutableProviders.update { it.copy(providers = rows, isLoading = false, error = null, managedNames = bindings.keys) }
-                    } catch (error: CancellationException) {
-                        if (error !is TimeoutCancellationException) throw error
-                        currentCoroutineContext().ensureActive()
-                        mutableProviders.update { it.copy(providers = null, isLoading = false, error = "读取 Providers 超时，请重试") }
-                    } catch (_: Exception) {
-                        currentCoroutineContext().ensureActive()
-                        mutableProviders.update { it.copy(providers = null, isLoading = false, error = "读取 Providers 失败，请重试") }
-                    }
-                    delay(5_000L)
+    private suspend fun <T> pollProfile(retry: StateFlow<Long>, clear: (Long?) -> Unit, loading: () -> Unit,
+        read: suspend (Long) -> T, publish: (Long, Result<T>) -> Unit) {
+        combine(foreground, profile, runtime.state) { front, id, status -> Triple(front, id, status) }.collectLatest { (front, id, status) ->
+            clear(id)
+            if (!front || id == null || status in listOf(CoreRuntimeStatus.STARTING, CoreRuntimeStatus.STOPPING)) return@collectLatest
+            var failed = false
+            var lastRetry = retry.value
+            // 作者 long：版本通知只排队一次后续刷新，不能取消正在等待的读取并反复重置超时；换配置或退后台仍立即作废旧页面。
+            val ticks = flow {
+                emit(Unit)
+                while (currentCoroutineContext().isActive) { delay(5_000L); if (!failed) emit(Unit) }
+            }
+            merge(ticks, runtime.profileStatisticsRevision.drop(1).map { Unit }, retry.drop(1).map { Unit }).conflate().collect {
+                // 作者 long：失败后暂停自动轮询，版本通知也不能抹掉错误；手动重试或重新打开详情才重新读取。
+                if (failed && retry.value == lastRetry) return@collect
+                lastRetry = retry.value
+                loading()
+                // 作者 long：页面只等待独立任务的结果，核心不可取消阶段和资源归属识别都受同一个8秒页面预算约束。
+                val reading = viewModelScope.async {
+                    try { Result.success(read(id)) }
+                    catch (cancelled: CancellationException) { throw cancelled }
+                    catch (error: Exception) { Result.failure(error) }
                 }
+                val result = try { withTimeout(8_000L) { reading.await() } }
+                catch (timeout: TimeoutCancellationException) { Result.failure(timeout) }
+                finally { reading.cancel() }
+                currentCoroutineContext().ensureActive()
+                failed = result.isFailure
+                publish(id, result)
             }
         }
     }

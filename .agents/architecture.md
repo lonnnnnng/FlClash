@@ -1,5 +1,11 @@
 # Architecture
 
+## 代理选择隔离与详情读取预算（2026-11-04）
+
+ProfileRepository在Room事务中只patch当前代理组映射并合并最新其他组/元数据。ProxyGroupsViewModel仅实际输入变更使generation失效，revision不丢保存，重复选择同步认领；页面回调携原渲染Profile ID。管理器的读取/切节点/单与批测速在transitionLock内复核原ID，代理Bridge读取5秒、页面独立8秒等待，首页摘要与代理页各有失败重试。
+
+ProfileStatisticsViewModel的窗口身份只含前台/配置/运行状态；5秒tick、revision、retry合流并conflate，revision不取消正在读取的任务。独立viewModelScope读取涵盖核心只读及managed bindings，页面8秒后返回失败并取消读取等待；底层不可取消阶段结束后不能覆盖旧页面或阻塞新配置。同配置Providers刷新保留列表，失败暂停自动读直到显式重试或窗口身份变化。该路径不下载或重载配置。三个旧实现红测/修复绿测与90资源真机窗口见本组验收JSON；整体UI仍PARTIAL。
+
 ## 脚本写入与全局规则生命周期（2026-11-04）
 
 ScriptRepository通过延迟Provider取得唯一管理器，下载锁外、提交固定transitionLock→fileLock。withScriptWrite在提交前识别实际scriptPath使用者，提交后应用；删除解绑也刷新原使用者，无关脚本/排序不重载。ScriptDocument保存目录/正文digest/mtime，更新和下载提交CAS；原子rename失败不覆盖，Room失败恢复原字节/mtime，文件删除失败回滚绑定。ScriptsViewModel仅挡启停过渡态，ProfileApplyAfterSaveException携目标ID表示源已提交，关闭编辑并保留独立应用重试；资源总览区分同类失败。Provider保存把打开时proxyProviders基线带入Room事务，只比较该分区并合并最新其他覆盖；metadata-only不改正文。GlobalRulesController经withExtensionWrite共持提交/应用锁，仅受理目标仍当前时应用，切换不重选旧项。实际证据见advanced-runtime-redmi-20261104.json，后续首页/代理组及视觉仍待推进。
