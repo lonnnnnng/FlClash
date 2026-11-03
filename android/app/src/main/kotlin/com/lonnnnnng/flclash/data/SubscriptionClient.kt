@@ -46,7 +46,7 @@ class HttpSubscriptionClient : SubscriptionClient {
                 if (code !in 200..299) {
                     throw IOException("订阅服务器返回 HTTP $code")
                 }
-                val bytes = connection.inputStream.use { it.readBytes() }
+                val bytes = connection.inputStream.use { readProfileFileBytes(it) }
                 if (bytes.isEmpty()) throw IOException("订阅内容为空")
                 return SubscriptionDownload(
                     bytes = bytes,

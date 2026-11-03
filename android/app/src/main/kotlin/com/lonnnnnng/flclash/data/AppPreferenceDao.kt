@@ -8,6 +8,8 @@ import androidx.room.Query
 @Dao
 interface AppPreferenceDao {
     @Query("SELECT value FROM app_preferences WHERE `key` = :key LIMIT 1")
+    fun observe(key: String): kotlinx.coroutines.flow.Flow<String?>
+    @Query("SELECT value FROM app_preferences WHERE `key` = :key LIMIT 1")
     suspend fun get(key: String): String?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -1,5 +1,12 @@
 # Testing
 
+## 全局规则资源与配置引用首版（2026-11-03）
+
+- App 328、Service 139、Core 34 项，失败/错误/跳过 0；Debug/AndroidTest/Lint 通过，0 errors、56 warnings、9 hints；最终 `/tmp/kclash-resources-20261103-build6.log`。Common/Go 单测、Release 与 DNS/浏览器网络未重跑。
+- Redmi API 36、竖屏1080×2340、字号1.0，最终精确10/10；正式 MainActivity 两处入口、真实 Go Text/MRS 识别/编译/预览/拒绝非法规则，新页面深浅搜索/菜单/编辑/草稿退出/删除、缺失资源绑定、隔离 Room 事务回滚/过期下载/投影/备份恢复，旧配置/备份四项回归均通过。方法、device3.log、before2/after2.log、artifacts.json、images/ 同 `/tmp/kclash-resources-20261103-` 前缀。
+- 正式配置 before/after 各1/1、count1/missing0，原文件元数据保持；两包设备哈希相同、App仅arm64；授权原1.yaml两端哈希不变，结束无服务/tun0。10态集中目视。首批5/6的测试宿主布局失败与首次快照包名错误已修正，保留日志。
+- 规则资源和配置引用首版 DONE-VERIFIED，完整资源/Profiles/UI仍PARTIAL。事务/同步回归使用 fake compiler/downloader，真实 Go 转换独立验；尚未做真实运行态资源更新、远程规则下载或规则文件系统选择器E2E。全局代理映射、Geo/图标集总览、批量URL与拖动、缓存回收、过滤预设待补，详见 roadmap。
+
 ## 策略组批量、问题与图标选择首版（2026-11-03）
 
 - App 324、Core 34 项，失败/错误/跳过 0；Debug/AndroidTest/Lint 通过，0 errors、56 warnings、9 hints。生产最终 `/tmp/kclash-group-parity-20261103-build4.log`，最终测试增量 build5 成功；Service/Common/Go 单测、Release 与 DNS/浏览器网络未重跑。

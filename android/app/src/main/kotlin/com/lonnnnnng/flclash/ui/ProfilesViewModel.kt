@@ -481,7 +481,7 @@ class ProfilesViewModel internal constructor(
                     !isProfileMutationBlocked(runtimeManager.state.value) && generation == localEditorGeneration && token == customImportToken
                 }
                 if (generation == localEditorGeneration) {
-                    reflectStructuredSave(profile.id, content, updated)
+                    reflectStructuredSave(profile.id, repository.readLocalProfileContent(profile.id), updated)
                     cancelCustomImport()
                 }
             } catch (error: CancellationException) {
@@ -955,7 +955,7 @@ class ProfilesViewModel internal constructor(
     }
 
     fun openProvidersEditor(profile: Profile) {
-        if (runtimeManager.state.value.isRunning) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再编辑 Provider")
             return
         }
@@ -1000,7 +1000,7 @@ class ProfilesViewModel internal constructor(
     ) {
         val state = mutableProvidersEditor.value
         val profile = state.profile ?: return
-        if (runtimeManager.state.value.isRunning) {
+        if (isProfileMutationBlocked(runtimeManager.state.value)) {
             mutableErrors.tryEmit("核心运行中，请先停止核心后再保存 Provider")
             return
         }
@@ -1012,23 +1012,19 @@ class ProfilesViewModel internal constructor(
                 proxyProviderOverrides = proxyProviderOverrides,
             )
             runCatching {
-                // 作者 long：订阅/文件的扩展只保存覆盖元数据；只有自定义配置允许修改 Provider 定义正文。
                 if (profile.type == ProfileType.CUSTOM) {
-                    val updatedContent = ProfileProvidersEditor.replace(
-                        state.sourceContent, ProfileProvidersEditor.Sections(proxyProviders, ruleProviders),
-                    )
-                    val contentProfile = repository.updateLocalProfileContent(profile.id, updatedContent)
-                    reflectStructuredSave(profile.id, updatedContent, contentProfile)
+                    val updated = repository.saveCustomProviders(profile.id,
+                        ProfileProvidersEditor.Sections(proxyProviders, ruleProviders), proxyProviderOverrides, state.sourceContent) {
+                        !isProfileMutationBlocked(runtimeManager.state.value)
+                    }
+                    reflectStructuredSave(profile.id, repository.readLocalProfileContent(profile.id), updated)
+                } else {
+                    // 作者 long：URL/FILE 的资源定义保持源文件只读，只更新用户明确选中的字段覆盖。
+                    val latest = repository.extensionProfile(profile.id) ?: error("配置不存在")
+                    val current = ProfileProviderOverrides.fromJsonString(latest.overridesJson)
+                    val updated = repository.updateProfileOverrides(profile.id, current.copy(proxyProviders = proxyProviderOverrides).toJsonString())
+                    reflectStructuredSave(profile.id, profile = updated)
                 }
-                val latest = repository.profiles.value.firstOrNull { it.id == profile.id } ?: error("配置不存在")
-                val current = ProfileProviderOverrides.fromJsonString(latest.overridesJson)
-                val updatedProfile = repository.updateProfileOverrides(
-                    profile.id,
-                    current.copy(
-                        proxyProviders = proxyProviderOverrides,
-                    ).toJsonString(),
-                )
-                reflectStructuredSave(profile.id, profile = updatedProfile)
             }.onSuccess {
                 closeProvidersEditor()
             }.onFailure { error ->

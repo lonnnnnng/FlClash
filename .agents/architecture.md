@@ -61,3 +61,10 @@ Compose 使用 Material 3 作为基础，并由独立 Design System 保存 Flutt
 - `ProxyGroupIssues` 为列表/表单提供结构错误与可保留的失效引用警告；复制生成新 key 并清除 originalName，避免副本引发旧引用改名。删除提示按名称解析规则目标、成员与链式代理引用，不进行全文替换。
 - `NativeProxyGroupFilterValidator` 通过 Bridge 的既有 validateFilters method 使用 Go regexp2。UI 防抖、单组确认与 ViewModel 保存均校验；异步确认冻结 JSON，期间修改后必须重新确认，取消后的协程不继续提交。此操作不启动、加载或改写核心配置。
 - `ProfileGroupIcon` 使用 Coil 位图/SVG/网络管线和默认/失败回退；本地图片经 ViewModel 的有界 reader 和 ProfileGroupIconData 签名识别后转为 data URI，128 KiB 上限。最近图标通过 ProfileStore/Repository 的 AppPreference 保存，串行更新并限制 24 条/512 KiB，无 schema 变更。UI 不直接读写数据库或配置文件；图标集管理与推荐尚未接入。
+
+## 全局规则资源与配置引用
+
+- `RuleResourceRepository` 在 `app_preferences.global_rule_resources` 保存有界元数据，原文与 MRS 位于 Mihomo `providers/rules` 私有 UUID 文件。`NativeRuleResourceCompiler` 延迟取得管理器，避免 ProfileRepository→资源→核心管理器→ProfileRepository 构造环；初始化/编译/预览都归 `CoreRuntimeManager`，不启动服务。
+- CUSTOM YAML 中 `path: kclash-resource:<id>` 是稳定引用，配置别名独立于全局名称。`toActiveProfile` 解析到当前原文或编译 MRS 的绝对路径，生成哈希命名输入投影；原配置正文不回写。更新资源为新文件，旧文件/投影暂保留供已应用配置读取，回收待补。
+- CUSTOM 导入在配置文件锁外下载/编译规则资源，目录锁内复核全局快照；由配置文件替换事务调用资源登记回调，共同提交或回滚。普通/嵌套 RULE-SET 及 DNS/Sniffer 引用按语义改名，源代理凭据与 URL 不作字符串全局替换。`saveCustomProviders` 对正文和覆盖做原子保存，复核旧正文与运行守卫，合并最新元数据。
+- 备份v3携带资源元数据、原文、所需MRS，兼容v1/v2；仅配置备份也携带所引用资源，稳定ID使跨设备路径重新解析。全局代理、非CUSTOM Profile资源映射、Geo/图标集/过滤等仍不在此已完成切片内。

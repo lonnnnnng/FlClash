@@ -6,12 +6,25 @@
 >
 > 当前基线：`kotlin` 主线，DNS 基线和浏览器主链路修复已提交并同步到 `origin/kotlin`（代码提交 `cab92464`）；远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 最新验收：策略组编辑页已补批选/全选/批量复制删除、引用警告、列表/表单问题提示、核心 regexp2 过滤校验和图标选择首版。App 324、Core 34 项通过，Redmi 最终 12/12，正式 Profile 前后保护各 1/1。位图/SVG/失败回退、迟到校验保护和真实宿主保存通过，深浅 18 态已目视。完整 UI 仍 PARTIAL；后续继续全局资源映射、图标集管理/推荐、过滤预设与其余整页差异。
+> 最新验收：全局规则资源管理与配置引用首版已接通，含 CRUD、URL/文件导入入口、核心识别/MRS、引用选择/缺失提示、CUSTOM 导入重名映射与备份 v3。App 328、Service 139、Core 34 项通过，Redmi 最终 10/10；完整资源页/Profiles/UI 仍 PARTIAL。全局代理映射、Geo 更新总览、图标集/过滤预设、批量 URL 与系统资源文件选择器 E2E 继续推进。
 > 代理页与延迟缓存历史验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，代理页整体首版已完成工具栏、分组溢出选择、搜索、Tab/List、固定组头、三档卡片与独立测速，21 项定向真机回归通过；Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
 > 前序延迟缓存验收时 Android 包尚未安装，正式 Room 为空；通过工作区外层 `AGENTS.md` 唯一授权入口导入并保留一份 Profile，未触碰外层 `1.yaml`、未清数据或删除 Profile。延迟缓存用例验证同一 Profile/组/节点/测试 URL 的正延迟跨真实应用进程恢复，并向正式 Room 写入不同 Profile 与旧测试 URL 探针，确认均不进入当前页面；成功后删除的只有测试探针行和应用内标记。核心保持 `STOPPED`，没有 ProxyService、VpnService 或 TUN。
 > 完整 ProfileRuntimeParity 长流程仍曾在停止态 `DIRECT` 默认测速阶段失败，不能推广为通过。Dashboard、Profiles 和 Proxy Groups 的完整 UI/UX 仍为 `PARTIAL`；后续仍需完成代理页连续圆角/动效/节点菜单、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity。验收限定 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
 
 > 2026-11-03 主链路修复补充：真实订阅本身可用，Kotlin 缺少 Flutter 的 DNS baseline，导致 Android 虚拟 DNS 无应答；已补齐脚本后 baseline → 用户覆盖 → LAN 暂存链路，并按已应用配置读取 mixed-port/TUN 参数和发布系统 HTTP 代理。有认证或禁用 mixed-port 时不广播代理，运行态配置改变网络参数时同步重建并支持失败回滚。Redmi 上 UDP/TCP 53 与系统解析均通过；X 浏览器百度与 Cloudflare 页面实测成功。详情及最终构建校验见下方“DNS 基线与浏览器主链路修复”。本段之后较早的“核心 STOPPED、未启动 TUN”等记录只适用于各自历史切片。
+
+
+### 全局规则资源管理、配置引用与导入映射首版（2026-11-03）
+
+- **上游基线**：沿用本地 Flutter `7fd417fb9a9a277c6a9339a8ac87f907df7c25f7` 的 `views/config/providers.dart`、`views/profiles/custom/providers.dart`、`providers/actions/clash_providers.dart`、`providers/state/custom_import.dart`，本轮未 fetch 或合并 Flutter。全局规则资源是独立注册表，代理资源在 Flutter 中来自非 CUSTOM Profiles，后者本轮尚未迁移。
+- **整页与入口**：工具“资源”当前进入规则资源首版；“自定义资源”增加规则资源与既有脚本库入口。规则管理页补新建、单 URL/文件读取入口、搜索、编辑/只读预览、选项、单项/全部远程规则同步、上下移动、引用删除提示和草稿退出确认。MRS 读入保留原始字节，远程资源正文只读；实际文件读取复用 8 MiB reader，HTTP 下载改为同一有界读取。当前导航“资源”仍不是完整 Flutter Geo/图标集/脚本更新总览，自定义资源页也尚未齐备所有上游入口。
+- **核心与数据**：`RuleResourceRepository` 使用 Room AppPreference 保存有界全局元数据，私有 UUID 文件保存原文和编译 MRS。通过 `CoreRuntimeManager` 的初始化/串行边界复用既有 Go `compileRuleSet`/`dumpRuleSet`，识别行为与格式；停止态不启动服务或监听。运行输入对 domain/ipcidr 使用编译 MRS，classical 与原生 MRS 使用原格式。原配置保存稳定资源 ID/别名，`toActiveProfile` 生成按内容哈希命名的投影文件，资源改名/同步不回写原配置。资源保存后仅当前引用配置进入统一 apply；旧缓存/投影暂保留以保护已应用版本，缓存回收仍待补。
+- **引用与导入**：CUSTOM Provider 页新增全局资源选择和缺失引用修复，保留原 YAML/覆盖编辑。绑定按配置别名选择，可在全局改名后保持引用。`saveCustomProviders` 将正文/代理覆盖原子提交，复核正文快照及启停/运行守卫，保留最新 DNS/脚本元数据。CUSTOM 配置导入确认后才下载/编译/登记规则资源，同 URL 复用，重名分配新标签，并改写普通/嵌套 RULE-SET、DNS/Sniffer rule-set 引用；代理密码和 URL 不做全文替换。资源登记与配置正文共享 Room/文件事务，编译和下载在文件锁外，过期/取消/运行状态变化失败均保留旧文件与目录。
+- **备份**：归档 v3 携带资源元数据、原文及所需 MRS，兼容读取 v1/v2；“仅配置”也带引用依赖。恢复按稳定 ID 合并，重名仅调整全局显示名；原生规则、脚本、选择及 v1 恢复回归一起验收。不备份运行投影或旧缓存，不将源文件中的真实路径带到另一台设备。
+- **统一构建**：根 Wrapper `:app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 成功，App **328**、Service **139**、Core **34**，失败/错误/跳过均 0；Lint **0 errors、56 warnings、9 hints**。最终 `/tmp/kclash-resources-20261103-build6.log`。Common/Go 单测、Release、DNS/浏览器网络本轮未重跑。
+- **真机**：Redmi API 36、1080×2340、竖屏默认字号 1.0，最终精确 **10/10**，方法清单 `/tmp/kclash-resources-20261103-methods.txt`、日志 `device3.log`（同前缀）。新页面深浅主题搜索/菜单/编辑/取消/删除、缺失引用绑定、隔离 Room 原子保存/导入提交后守卫回滚、过期同步拒绝、资源投影与备份恢复通过；既有 Provider/CUSTOM 导入及四项备份回归通过。真实 MainActivity 打开两处入口，真实 Go 完成 Text→MRS、MRS 识别/预览与非法规则拒绝，核心保持 STOPPED。原授权 `1.yaml` 只用于隔离配置原字节，未访问真实订阅或修改正式 Profile。
+- **证据与边界**：正式 Profile before/after 各 1/1，count=1/missing=0/expected=1，文件名/size/mtime 保持；`before2.log`、`after2.log`、`artifacts.json`、`images/` 均为 `/tmp/kclash-resources-20261103-` 前缀。两包设备哈希相同、App 仅 arm64；原 `1.yaml` 两端哈希不变，结束无服务/tun0。10 态截图集中目视，仅证明本地整页布局，不宣称 Flutter 像素等价。URL/同步仓库回归用 fake downloader，事务回归用 fake compiler；真实 Go 转换另有正式宿主证据，尚未做真实运行态资源更新、真实远程规则下载或规则文件系统 picker E2E。
+- **失败记录与后续**：首次快照筛选误用了 `.ui.MainActivityInstrumentedTest`，ClassNotFoundException，改实际包名后 1/1；首批 5/6，缺失引用测试宿主未提供布局容器导致点击落在重叠节点上，补实际布局后 device2、最终 device3 均 10/10。build1–6 均成功，保留首批失败日志。规则资源与引用首版 **DONE-VERIFIED**；全局代理/非 CUSTOM Profile 映射、批量 URL/排序手势、Geo/图标集更新总览、全局本地代理/图标集/过滤预设、缓存回收、父页逐项持久化和完整资源/Profiles/UI 继续 **PARTIAL**，下一阶段继续资源与配置整页剩余链路。
 
 ### 策略组批量操作、问题提示与图标选择首版（2026-11-03）
 

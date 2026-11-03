@@ -278,7 +278,14 @@ fun KClashApp(
     runtimeConfigPreviewViewModel: RuntimeConfigPreviewViewModel? = null,
     profileSharingViewModel: ProfileSharingViewModel? = null,
     profileStatisticsViewModel: ProfileStatisticsViewModel? = null,
+    ruleResourcesViewModel: RuleResourcesViewModel? = null,
 ) {
+    val ruleResources = ruleResourcesViewModel?.state?.collectAsState()?.value ?: RuleResourcesUiState(loading = false)
+    var showRuleResources by rememberSaveable { mutableStateOf(false) }
+    var showCustomResources by rememberSaveable { mutableStateOf(false) }
+    val ruleFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { ruleResourcesViewModel?.importFile(it.toString()) }
+    }
     val proxyScrollStateHolder = rememberSaveableStateHolder()
     val serviceStatusState = serviceStatusViewModel?.state?.collectAsState()?.value ?: ServiceStatusUiState()
     val memoryState = memoryViewModel?.state?.collectAsState()?.value ?: MemoryUiState()
@@ -816,6 +823,8 @@ fun KClashApp(
                     onReadGroupIcon = profilesViewModel::readGroupIcon,
                     onOpenSingleProxyGroupEditor = profilesViewModel::openSingleProxyGroupEditor,
                     providersEditorState = providersEditorState,
+                    ruleResources = ruleResources.rows,
+                    onManageRuleResources = { showRuleResources = true },
                     onOpenProvidersEditor = profilesViewModel::openProvidersEditor,
                     onCloseProvidersEditor = profilesViewModel::closeProvidersEditor,
                     onSaveProviders = profilesViewModel::saveProviders,
@@ -1042,7 +1051,8 @@ fun KClashApp(
                                 },
                                 onOpenGeneral = { toolsSubpage = ToolsSubpage.GENERAL },
                                 onOpenBackup = { showToolsBackup = true },
-                                onOpenScripts = { showScriptsDialog = true },
+                                onOpenScripts = { showCustomResources = true },
+                                onOpenResources = { showRuleResources = true },
                                 onOpenDeveloper = if (developerToolsEnabled) ({ toolsSubpage = ToolsSubpage.DEVELOPER }) else null,
                                 onShowUnavailable = { label ->
                                     coroutineScope.launch { snackbarHostState.showSnackbar("${label}页面正在按 Flutter 参考实现补齐") }
@@ -1196,6 +1206,21 @@ fun KClashApp(
         onProbe = onProbeWebDav, onUpload = onUploadWebDav, onDownload = onDownloadWebDav,
     )
 
+    if (showCustomResources) {
+        ProfileEditorPage(onDismissRequest = { showCustomResources = false }, title = { Text("自定义资源") }, text = {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { showRuleResources = true }, modifier = Modifier.fillMaxWidth()) { Text("规则资源") }
+                TextButton(onClick = { showScriptsDialog = true }, modifier = Modifier.fillMaxWidth()) { Text("脚本库") }
+            }
+        })
+    }
+    if (showRuleResources && ruleResourcesViewModel != null) {
+        RuleResourcesPage(ruleResources, { showRuleResources = false }, ruleResourcesViewModel::create,
+            { ruleFilePicker.launch(arrayOf("*/*")) }, ruleResourcesViewModel::edit, ruleResourcesViewModel::sync,
+            ruleResourcesViewModel::syncAll, ruleResourcesViewModel::askDelete, ruleResourcesViewModel::delete,
+            ruleResourcesViewModel::cancelDelete, ruleResourcesViewModel::move, ruleResourcesViewModel::closeEditor,
+            ruleResourcesViewModel::save)
+    }
     if (showScriptsDialog) {
         ScriptsLibraryDialog(
             state = scriptsState,
@@ -1408,6 +1433,8 @@ internal fun ProfilesPanel(
     onReadGroupIcon: suspend (String) -> String = { error("图片读取不可用") },
     onOpenSingleProxyGroupEditor: ((Profile, Int) -> Unit)? = null,
     providersEditorState: ProfileProvidersEditorUiState = ProfileProvidersEditorUiState(),
+    ruleResources: List<com.lonnnnnng.flclash.data.RuleResource> = emptyList(),
+    onManageRuleResources: () -> Unit = {},
     onOpenProvidersEditor: (profile: Profile) -> Unit = {},
     onCloseProvidersEditor: () -> Unit = {},
     onSaveProviders: (proxyProviders: String, ruleProviders: String) -> Unit = { _, _ -> },
@@ -1860,6 +1887,9 @@ internal fun ProfilesPanel(
                 profile = profile,
                 initialProxyProviders = providersEditorState.proxyProviders,
                 initialRuleProviders = providersEditorState.ruleProviders,
+                sourceContent = providersEditorState.sourceContent,
+                ruleResources = ruleResources,
+                onManageRuleResources = onManageRuleResources,
                 initialProxyProviderOverrides = providersEditorState.proxyProviderOverrides,
                 saving = providersEditorState.isSaving,
                 onDismiss = onCloseProvidersEditor,
@@ -4595,6 +4625,9 @@ internal fun ProfileProvidersEditorDialog(
     onDismiss: () -> Unit,
     onSave: (proxyProviders: String, ruleProviders: String) -> Unit,
     onSaveWithOverrides: ((String, String, Map<String, ProxyProviderOverride>) -> Unit)? = null,
+    sourceContent: String = "",
+    ruleResources: List<com.lonnnnnng.flclash.data.RuleResource> = emptyList(),
+    onManageRuleResources: () -> Unit = {},
 ) {
     var proxyProviders by rememberSaveable(profile.id, "proxyProviders") {
         mutableStateOf(initialProxyProviders)
@@ -4615,6 +4648,7 @@ internal fun ProfileProvidersEditorDialog(
         text = {
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (profile.type == ProfileType.CUSTOM) {
+                RuleResourceBindings(ruleProviders, sourceContent, ruleResources, !saving, { ruleProviders = it }, onManageRuleResources)
                 Text(
                     "每个条目使用 providerName: 开始，并在下一层填写 type、url、path 等字段；两个区块分别对应代理和规则 Provider。",
                     style = MaterialTheme.typography.bodyMedium,

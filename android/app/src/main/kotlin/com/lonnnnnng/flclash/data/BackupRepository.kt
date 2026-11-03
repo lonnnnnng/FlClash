@@ -40,6 +40,7 @@ private data class ParsedBackup(
     val currentProfileId: Long?,
     val files: Map<String, ByteArray>,
     val globalRules: List<ExtensionRule> = emptyList(),
+    val resources: List<RuleResource> = emptyList(),
 )
 
 /**
@@ -73,6 +74,13 @@ class BackupRepository(
                 null
             }
             val globalRules = if (scope == BackupRestoreScope.ALL_DATA) ExtensionRules.decode(preferenceDao.get(ExtensionRules.PREFERENCE_KEY)) else emptyList()
+            val allResources = RuleResources.decode(preferenceDao.get(RULE_RESOURCES_KEY))
+            val resources = if (scope == BackupRestoreScope.ALL_DATA) allResources else {
+                val ids = profiles.flatMap { profile ->
+                    Regex("kclash-resource:([a-zA-Z0-9-]{1,80})").findAll(profileFile(profile.id).readText()).map { it.groupValues[1] }.toList()
+                }.toSet()
+                allResources.filter { it.id in ids }
+            }
             val manifest = BackupManifest(
                 version = CURRENT_VERSION,
                 createdAtMillis = System.currentTimeMillis(),
@@ -83,6 +91,8 @@ class BackupRepository(
                 ZipOutputStream(output).use { zip ->
                     putText(zip, MANIFEST_ENTRY, gson.toJson(manifest))
                     putText(zip, PROFILES_ENTRY, gson.toJson(profiles))
+                    putText(zip, RESOURCE_METADATA_ENTRY, RuleResources.encode(resources))
+                    resources.forEach { resource -> resourceFileNames(resource).forEach { putFile(zip, resourceEntry(it), resourceFile(it)) } }
                     if (manifest.includesScripts) {
                         putText(zip, SCRIPTS_ENTRY, gson.toJson(scripts))
                         putText(zip, GLOBAL_RULES_ENTRY, ExtensionRules.toJson(globalRules).toString())
@@ -127,6 +137,12 @@ class BackupRepository(
                         if (scope == BackupRestoreScope.ALL_DATA) scriptDao.deleteAll()
                     }
                     profilesToRestore.forEach { profileDao.insert(it) }
+                    // 作者 long：仅配置备份也携带被引用资源；稳定 ID 保护配置引用，重名只调整全局列表显示名。
+                    val oldResources = if (scope == BackupRestoreScope.ALL_DATA && strategy == BackupRestoreStrategy.OVERRIDE) emptyList() else RuleResources.decode(preferenceDao.get(RULE_RESOURCES_KEY))
+                    val incomingIds = parsed.resources.map { it.id }.toSet()
+                    val mergedResources = oldResources.filterNot { it.id in incomingIds }.toMutableList()
+                    parsed.resources.forEach { resource -> mergedResources += resource.copy(label = RuleResources.uniqueLabel(resource.label, mergedResources)) }
+                    preferenceDao.put(AppPreferenceEntity(RULE_RESOURCES_KEY, RuleResources.encode(mergedResources), System.currentTimeMillis()))
                     if (scope == BackupRestoreScope.ALL_DATA) {
                         parsed.scripts.forEach { scriptDao.insert(it) }
                         // 作者 long：规则 ID 随完整备份保留，兼容恢复只合并同 ID，避免各配置的禁用集合错位。
@@ -191,8 +207,11 @@ class BackupRepository(
             null
         }
         validateRows(profiles, scripts, entries, manifest)
+        val resources = RuleResources.decode(entries[RESOURCE_METADATA_ENTRY]?.toString(Charsets.UTF_8))
+        require(manifest.version < 3 || entries.containsKey(RESOURCE_METADATA_ENTRY)) { "备份缺少资源目录" }
+        resources.forEach { resource -> resourceFileNames(resource).forEach { require(entries.containsKey(resourceEntry(it))) { "备份缺少规则资源正文或 MRS 缓存" } } }
         return ParsedBackup(manifest, profiles, scripts, currentProfileId, entries,
-            ExtensionRules.decode(entries[GLOBAL_RULES_ENTRY]?.toString(Charsets.UTF_8)))
+            ExtensionRules.decode(entries[GLOBAL_RULES_ENTRY]?.toString(Charsets.UTF_8)), resources)
     }
 
     private fun validateRows(
@@ -215,6 +234,7 @@ class BackupRepository(
     }
 
     private fun stageIncomingFiles(parsed: ParsedBackup, scope: BackupRestoreScope, staged: File) {
+        parsed.resources.forEach { resource -> resourceFileNames(resource).forEach { writeStaged(staged, resourceEntry(it), parsed.files.getValue(resourceEntry(it))) } }
         parsed.profiles.forEach { profile ->
             writeStaged(staged, profileEntry(profile.id), parsed.files.getValue(profileEntry(profile.id)))
         }
@@ -227,6 +247,7 @@ class BackupRepository(
 
     private fun incomingFileNames(parsed: ParsedBackup, scope: BackupRestoreScope): Set<String> =
         buildSet {
+            parsed.resources.forEach { resource -> resourceFileNames(resource).forEach { add(resourceEntry(it)) } }
             parsed.profiles.forEach { add(profileEntry(it.id)) }
             if (scope == BackupRestoreScope.ALL_DATA) parsed.scripts.forEach { add(scriptEntry(it.id)) }
         }
@@ -311,8 +332,13 @@ class BackupRepository(
     private fun resolveAppFile(name: String): File = when {
         name.startsWith("$PROFILES_DIRECTORY/") -> File(profileDirectory(), name.substringAfter('/'))
         name.startsWith("$SCRIPTS_DIRECTORY/") -> File(scriptDirectory(), name.substringAfter('/'))
+        name.startsWith("rule_resources/") -> resourceFile(name.substringAfter('/'))
         else -> throw IllegalArgumentException("备份文件路径不受支持")
     }
+
+    private fun resourceFileNames(resource: RuleResource): List<String> = if (resource.compiled) listOf(resource.fileName, resource.coreFileName) else listOf(resource.fileName)
+
+    private fun resourceFile(name: String): File = File(filesRoot, "mihomo/providers/rules/$name")
 
     private fun profileFile(id: Long): File = File(profileDirectory(), "$id.yaml")
 
@@ -347,6 +373,8 @@ class BackupRepository(
                 name == SCRIPTS_ENTRY ||
                 name == CURRENT_PROFILE_ENTRY ||
                 name == GLOBAL_RULES_ENTRY ||
+                name == RESOURCE_METADATA_ENTRY ||
+                name.matches(Regex("rule_resources/[a-zA-Z0-9-]{1,80}\\.rules(?:\\.mrs)?")) ||
                 name.matches(Regex("(?:profiles|scripts)/[0-9]+\\.(?:yaml|js)")),
         ) { "备份包含未知条目" }
     }
@@ -373,12 +401,14 @@ class BackupRepository(
     }
 
     private companion object {
-        const val CURRENT_VERSION = 2
+        const val CURRENT_VERSION = 3
         const val MAX_ENTRY_BYTES = 16L * 1024L * 1024L
         const val CURRENT_PROFILE_KEY = "current_profile_id"
         const val MANIFEST_ENTRY = "manifest.json"
         const val PROFILES_ENTRY = "profiles.json"
         const val SCRIPTS_ENTRY = "scripts.json"
+        const val RESOURCE_METADATA_ENTRY = "rule_resources.json"
+        fun resourceEntry(name: String): String = "rule_resources/$name"
         const val GLOBAL_RULES_ENTRY = "global_extension_rules.json"
         const val CURRENT_PROFILE_ENTRY = "current_profile_id.txt"
         const val PROFILES_DIRECTORY = "profiles"

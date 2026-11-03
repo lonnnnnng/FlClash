@@ -53,6 +53,13 @@ interface ProfileStore {
         require(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开策略组" }
         return updateLocalProfileContent(id, ProxyGroupDrafts.apply(expectedContent, save))
     }
+    suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, canWrite: () -> Boolean): Profile {
+        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+        require(readLocalProfileContent(id) == expectedContent) { "配置正文已变化，请重新打开资源页" }
+        updateLocalProfileContent(id, ProfileProvidersEditor.replace(expectedContent, sections))
+        val latest = extensionProfile(id) ?: error("配置不存在")
+        return updateProfileOverrides(id, ProfileProviderOverrides.fromJsonString(latest.overridesJson).copy(proxyProviders = overrides).toJsonString())
+    }
     suspend fun downloadCustomImport(url: String): ByteArray = error("此数据源不支持 URL 导入")
     suspend fun decodeCustomImport(bytes: ByteArray, ageSecretKey: String): CustomProfileImportContent = customProfileImportContent(PlainProfileContentDecoder.decode(bytes, ageSecretKey))
     suspend fun replaceCustomProfile(id: Long, content: String, expected: Profile, expectedContent: String, canWrite: () -> Boolean): Profile =
@@ -123,6 +130,7 @@ class ProfileRepository(
     private val subscriptionClient: SubscriptionClient,
     private val configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
     private val contentDecoder: ProfileContentDecoder = PlainProfileContentDecoder,
+    private val resources: RuleResourceRepository? = null,
 ) : ActiveProfileProvider, ProfileStore, RemoteProfileUpdater, ProfileExportReader {
     private val appContext = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -345,6 +353,34 @@ class ProfileRepository(
         }
     }
 
+    override suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        fileMutationMutex.withLock {
+            val content = ProfileProvidersEditor.replace(expectedContent, sections)
+            configValidator.validate(content.toByteArray())
+            val file = profileFile(id)
+            val original = snapshotLocalProfileFile(file)
+            require(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化，请重新打开资源页" }
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            // 作者 long：资源引用和字段覆盖一次提交；事务读取最新元数据，不能覆盖另一个分区刚保存的 DNS 或脚本。
+            withContext(kotlinx.coroutines.NonCancellable) {
+                replaceLocalProfileFile(file, content.toByteArray(), { commit ->
+                    database.withTransaction {
+                        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                        require(current.type == ProfileType.CUSTOM) { "只有自定义配置支持资源绑定" }
+                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                        val merged = ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(proxyProviders = overrides)
+                        val updated = current.copy(overridesJson = merged.toJsonString(), lastUpdateAt = System.currentTimeMillis())
+                        profileDao.update(updated.toEntity())
+                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                        commit()
+                        check(canWrite()) { "核心状态已变化，请停止核心后重新编辑" }
+                        updated
+                    }
+                }, expected = original)
+            }
+        }
+    }
+
     override suspend fun downloadCustomImport(url: String): ByteArray = withContext(Dispatchers.IO) {
         subscriptionClient.download(normalizeSubscriptionUrl(url)).bytes
     }
@@ -354,30 +390,37 @@ class ProfileRepository(
     }
 
     override suspend fun replaceCustomProfile(id: Long, content: String, expected: Profile, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
-        fileMutationMutex.withLock {
-            require(content.toByteArray(Charsets.UTF_8).size <= MAX_PROFILE_FILE_BYTES && content.isNotBlank()) { "配置为空或超过 8 MiB" }
-            configValidator.validate(content.toByteArray(Charsets.UTF_8))
-            val file = profileFile(id)
-            val original = snapshotLocalProfileFile(file)
-            require(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化或缺失，请重新导入" }
-            kotlinx.coroutines.currentCoroutineContext().ensureActive()
-            // 作者 long：导入同时替换正文、覆盖与旧节点选择；文件和 Room 必须共同提交或回滚。
-            withContext(kotlinx.coroutines.NonCancellable) {
-                replaceLocalProfileFile(file, content.toByteArray(Charsets.UTF_8), { commit ->
-                    database.withTransaction {
-                        val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
-                        require(current.type == ProfileType.CUSTOM && current == expected) { "配置已变化，请重新导入" }
-                        check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
-                        val updated = current.copy(overridesJson = ProfileProviderOverrides().toJsonString(),
-                            selectedMapJson = "{}", currentGroupName = "", unfoldSetJson = "[]", lastUpdateAt = System.currentTimeMillis())
-                        profileDao.update(updated.toEntity())
-                        check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
-                        commit()
-                        updated
-                    }
-                }, expected = original)
+        require(content.toByteArray(Charsets.UTF_8).size <= MAX_PROFILE_FILE_BYTES && content.isNotBlank()) { "配置为空或超过 8 MiB" }
+        configValidator.validate(content.toByteArray(Charsets.UTF_8))
+        check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
+        // 作者 long：下载和核心编译不能持有配置文件锁，否则核心读取配置时会与编译初始化形成反向等待。
+        val commit: suspend (String, suspend () -> Unit) -> Profile = { mappedContent, persistResources ->
+            fileMutationMutex.withLock {
+                val file = profileFile(id)
+                val original = snapshotLocalProfileFile(file)
+                require(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化或缺失，请重新导入" }
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                // 作者 long：导入同时替换正文、全局资源、覆盖与旧节点选择，文件和 Room 共同提交或回滚。
+                withContext(kotlinx.coroutines.NonCancellable) {
+                    replaceLocalProfileFile(file, mappedContent.toByteArray(Charsets.UTF_8), { commitFile ->
+                        database.withTransaction {
+                            val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
+                            require(current.type == ProfileType.CUSTOM && current == expected) { "配置已变化，请重新导入" }
+                            check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
+                            persistResources()
+                            val updated = current.copy(overridesJson = ProfileProviderOverrides().toJsonString(),
+                                selectedMapJson = "{}", currentGroupName = "", unfoldSetJson = "[]", lastUpdateAt = System.currentTimeMillis())
+                            profileDao.update(updated.toEntity())
+                            check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
+                            commitFile()
+                            check(canWrite()) { "导入已取消或核心状态已变化" }
+                            updated
+                        }
+                    }, expected = original)
+                }
             }
         }
+        resources?.importResources(content, commit) ?: commit(content) {}
     }
 
     override suspend fun updateFileProfile(
@@ -686,10 +729,28 @@ class ProfileRepository(
         // 作者 long：旧绑定在引入模式前始终执行，未明确选择新模式的配置保留旧行为；CUSTOM 的既有绑定继续兼容。
         val useScript = profile.type == ProfileType.CUSTOM || profile.extendType == "script" || !extension.configured && profile.scriptId != null
         val standard = profile.type != ProfileType.CUSTOM && !useScript
+        val sourcePath = if (profile.type == ProfileType.CUSTOM && resources != null) {
+            fileMutationMutex.withLock {
+                val source = profileFile(profile.id).readText()
+                val resolved = resources.resolve(source)
+                if (resolved == source) profileFile(profile.id).path else {
+                    // 作者 long：投影按内容变动才替换，后台刷新不能因每次读取重写 mtime 而重复加载核心。
+                    val digest = java.security.MessageDigest.getInstance("SHA-256").digest(resolved.toByteArray()).joinToString("") { "%02x".format(it) }
+                    val projection = File(appContext.filesDir, "resolved-profiles/${profile.id}-$digest.yaml")
+                    if (!projection.isFile || projection.readText() != resolved) {
+                        projection.parentFile?.mkdirs()
+                        val temporary = File(projection.parentFile, ".${profile.id}.tmp")
+                        temporary.writeText(resolved)
+                        check(temporary.renameTo(projection)) { "无法写入资源投影配置" }
+                    }
+                    projection.path
+                }
+            }
+        } else profileFile(profile.id).path
         return ActiveProfile(
             id = profile.id,
             label = profile.realLabel,
-            filePath = profileFile(profile.id).path,
+            filePath = sourcePath,
             selectedMap = decodeSelectedMap(profile.selectedMapJson),
             overridesJson = profile.overridesJson,
             scriptPath = profile.scriptId?.takeIf { useScript }?.let { scriptId ->

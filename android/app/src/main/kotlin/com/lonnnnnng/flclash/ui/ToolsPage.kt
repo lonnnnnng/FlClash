@@ -49,6 +49,7 @@ internal fun ToolsPanel(
     modifier: Modifier = Modifier,
     onOpenBackup: () -> Unit = { onShowUnavailable("备份与恢复") },
     onOpenScripts: () -> Unit = { onShowUnavailable("自定义资源") },
+    onOpenResources: () -> Unit = { onShowUnavailable("资源") },
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -77,7 +78,7 @@ internal fun ToolsPanel(
                 title = "资源",
                 icon = Icons.Outlined.Storage,
                 tag = "tools_item_resources",
-                onClick = { onShowUnavailable("资源") },
+                onClick = onOpenResources,
             )
         }
 

@@ -124,6 +124,9 @@ object AppModule {
         com.lonnnnnng.flclash.data.AndroidProfileFileDocumentReader(context)
 
     @Provides
+    fun provideRuleResourceCompiler(compiler: com.lonnnnnng.flclash.data.NativeRuleResourceCompiler): com.lonnnnnng.flclash.data.RuleResourceCompiler = compiler
+
+    @Provides
     @Singleton
     fun provideProfileRepository(
         @ApplicationContext context: Context,
@@ -131,7 +134,8 @@ object AppModule {
         subscriptionClient: SubscriptionClient,
         configValidator: ProfileConfigValidator,
         contentDecoder: com.lonnnnnng.flclash.data.ProfileContentDecoder,
-    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient, configValidator, contentDecoder)
+        resources: com.lonnnnnng.flclash.data.RuleResourceRepository,
+    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient, configValidator, contentDecoder, resources)
 
     @Provides
     @Singleton

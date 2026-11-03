@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
     private val profileSharingViewModel: com.lonnnnnng.flclash.ui.ProfileSharingViewModel by viewModels()
     private val accessControlViewModel: AccessControlViewModel by viewModels()
     private val proxyGroupsViewModel: ProxyGroupsViewModel by viewModels()
+    private val ruleResourcesViewModel: com.lonnnnnng.flclash.ui.RuleResourcesViewModel by viewModels()
     private val scriptsViewModel: ScriptsViewModel by viewModels()
     private val networkCallback = object : android.net.ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: android.net.Network) { outboundIpViewModel.networkChanged() }
@@ -198,6 +199,7 @@ class MainActivity : ComponentActivity() {
                     accessControlViewModel = accessControlViewModel,
                     proxyGroupsViewModel = proxyGroupsViewModel,
                     scriptsViewModel = scriptsViewModel,
+                    ruleResourcesViewModel = ruleResourcesViewModel,
                     onStartRuntime = { requestRuntimeStart() },
                     onRestartVpn = { requestRuntimeStart(restart = true) },
                     onStopRuntime = viewModel::stopRuntime,

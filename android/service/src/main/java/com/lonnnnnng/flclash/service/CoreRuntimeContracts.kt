@@ -294,6 +294,8 @@ interface ProxyGroupsRuntime : CoreRuntimeStatusProvider {
 }
 
 interface CoreRuntimeBridge {
+    suspend fun compileRuleSet(name: String): com.lonnnnnng.flclash.core.RuleSetInfo = error("规则资源编译不可用")
+    suspend fun dumpRuleSet(path: String): String = error("规则资源预览不可用")
     suspend fun externalProviders(): List<com.lonnnnnng.flclash.core.CoreExternalProvider> = error("核心未提供 Provider 明细")
     suspend fun updateExternalProvider(name: String, stamp: com.lonnnnnng.flclash.core.CoreRouteStamp): Unit = error("核心未提供 Provider 更新")
     suspend fun providerCounts(): com.lonnnnnng.flclash.core.CoreProviderCounts = error("核心未提供 Provider 统计")
@@ -359,6 +361,8 @@ interface CoreRuntimeBridge {
 class NativeCoreRuntimeBridge(
     private val coreBridge: CoreBridge,
 ) : CoreRuntimeBridge {
+    override suspend fun compileRuleSet(name: String) = coreBridge.compileRuleSet(name)
+    override suspend fun dumpRuleSet(path: String) = coreBridge.dumpRuleSet(path)
     override suspend fun checkServices(targets: List<com.lonnnnnng.flclash.core.ServiceTarget>, direct: Boolean, timeoutMs: Long) =
         coreBridge.checkServices(targets, direct, timeoutMs)
     override suspend fun checkRoutes(routes: List<List<com.lonnnnnng.flclash.core.CoreRouteHit>>) = coreBridge.checkRoutes(routes)

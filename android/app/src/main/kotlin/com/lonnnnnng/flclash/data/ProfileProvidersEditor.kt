@@ -11,7 +11,8 @@ object ProfileProvidersEditor {
     )
 
     private val topLevelKeyPattern = Regex("^[A-Za-z0-9_-]+$")
-    private val mapEntryPattern = Regex("^([A-Za-z0-9_.-]+|['\"][^'\"]+['\"])\\s*:\\s*(.*)$")
+    // 作者 long：全局资源常用中文名称，YAML 会不加引号输出；同时保留带冒号与转义引号的合法键。
+    private val mapEntryPattern = Regex("""^('(?:[^']|'')*'|"(?:[^"\\]|\\.)*"|[^:]+?)\s*:\s*(.*)$""")
 
     fun extract(yaml: String): Sections = Sections(
         proxyProviders = extractSection(yaml, "proxy-providers"),
@@ -152,14 +153,9 @@ object ProfileProvidersEditor {
     }
 
     private fun normalizeKey(line: String): String {
-        val key = line.substringBefore(':').trim()
-        return if (key.length >= 2 && key.first() == '\'' && key.last() == '\'') {
-            key.substring(1, key.length - 1)
-        } else if (key.length >= 2 && key.first() == '"' && key.last() == '"') {
-            key.substring(1, key.length - 1)
-        } else {
-            key
-        }
+        val key = mapEntryPattern.matchEntire(line)?.groupValues?.get(1)?.trim() ?: return ""
+        val json = com.lonnnnnng.flclash.service.YamlConfigCodec.toJson("providers:\n  $key: {}\n")
+        return com.google.gson.JsonParser.parseString(json).asJsonObject.getAsJsonObject("providers").keySet().single()
     }
 
     private fun dedent(lines: List<String>): List<String> {

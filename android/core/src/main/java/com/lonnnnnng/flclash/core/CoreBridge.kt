@@ -74,6 +74,13 @@ class CoreBridge {
         parseMessageResult(response.optString("result", ""), "invalid_config")
     }
 
+    suspend fun compileRuleSet(name: String): RuleSetInfo {
+        val result = invoke("compileRuleSet", JSONObject().put("name", name).put("url", "")).getJSONObject("result")
+        return RuleSetInfo(result.getString("behavior"), result.getString("format"))
+    }
+
+    suspend fun dumpRuleSet(path: String): String = invoke("dumpRuleSet", path).getString("result")
+
     suspend fun validateFilters(filters: List<String>): List<String> {
         // 作者 long：只编译表达式，不读取或修改当前配置，停止态也可检查策略组草稿。
         val result = invoke("validateFilters", JSONArray(filters)).optJSONArray("result")

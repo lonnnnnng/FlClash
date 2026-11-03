@@ -72,6 +72,18 @@ class CoreRuntimeManager(
     }
 
     private val transitionLock = Mutex()
+
+    suspend fun compileRuleResource(name: String) = transitionLock.withLock {
+        withContext(Dispatchers.IO) {
+            // 作者 long：资源编译只需要初始化核心，不能为编辑资源启动监听、服务或 VPN。
+            ensureInitialized()
+            bridge.compileRuleSet(name)
+        }
+    }
+
+    suspend fun previewRuleResource(path: String) = transitionLock.withLock {
+        withContext(Dispatchers.IO) { ensureInitialized(); bridge.dumpRuleSet(path) }
+    }
     private val mutableVpnSettings = MutableStateFlow(VpnSettingsState(vpnSettingsStore.read()))
     val vpnSettings = mutableVpnSettings.asStateFlow()
 
