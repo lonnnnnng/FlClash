@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.ProfileConfigValidator
 import com.lonnnnnng.flclash.data.Profile
+import com.lonnnnnng.flclash.data.ProxyGroupFilterValidator
 import com.lonnnnnng.flclash.data.ProfileDialerEditor
 import com.lonnnnnng.flclash.data.ProxyGroupDrafts
 import com.lonnnnnng.flclash.data.ProxyGroupsSave
@@ -143,15 +144,27 @@ class ProfilesViewModel internal constructor(
     private val configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
     private val fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
     private val overviewDispatcher: kotlinx.coroutines.CoroutineDispatcher,
+    private val groupFilterValidator: ProxyGroupFilterValidator = ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
 ) : ViewModel() {
     @Inject constructor(
         repository: ProfileStore,
         runtimeManager: CoreRuntimeStatusProvider,
         configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
         fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
-    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default)
+        groupFilterValidator: ProxyGroupFilterValidator = ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
+    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator)
     internal val extension = ProfileExtensionController(repository, runtimeManager, viewModelScope)
     internal val fileImport = ProfileFileImportController(repository, runtimeManager, fileReader, configValidator, viewModelScope, overviewDispatcher)
+    private val mutableRecentGroupIcons = MutableStateFlow<List<String>>(emptyList())
+    val recentGroupIcons: StateFlow<List<String>> = mutableRecentGroupIcons
+    init { viewModelScope.launch { mutableRecentGroupIcons.value = repository.recentGroupIcons() } }
+    fun recordGroupIcon(icon: String, remove: Boolean) {
+        viewModelScope.launch {
+            try { repository.recordGroupIcon(icon, remove); mutableRecentGroupIcons.value = repository.recentGroupIcons() }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { mutableErrors.emit("无法更新最近图标记录，请重试") }
+        }
+    }
     private val busy = MutableStateFlow(false)
     private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private val mutableEditor = MutableStateFlow(ProfileEditorUiState())
@@ -878,6 +891,14 @@ class ProfilesViewModel internal constructor(
         mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState()
     }
 
+    suspend fun readGroupIcon(uri: String): String = withContext(overviewDispatcher) {
+        com.lonnnnnng.flclash.data.ProfileGroupIconData.encode(fileReader.read(uri).bytes)
+    }
+
+    suspend fun validateGroupFilters(filters: List<String>): List<String> = withContext(overviewDispatcher) {
+        if (filters.all(String::isBlank)) List(filters.size) { "" } else groupFilterValidator.validate(filters)
+    }
+
     fun saveProxyGroupsDraft(save: ProxyGroupsSave) {
         val state = mutableProxyGroupsEditor.value
         val profile = state.profile ?: return
@@ -890,6 +911,9 @@ class ProfilesViewModel internal constructor(
         mutableProxyGroupsEditor.value = state.copy(isSaving = true)
         viewModelScope.launch {
             runCatching {
+                // 作者 long：快捷 YAML 和列表保存也必须经过核心校验，不能仅依赖表单的防抖预检。
+                val filters = save.groups.flatMap { listOf(it.text("filter"), it.text("exclude-filter")) }
+                require(validateGroupFilters(filters).all(String::isEmpty)) { "过滤表达式无效，请打开对应策略组修复" }
                 val content = withContext(overviewDispatcher) { ProxyGroupDrafts.apply(state.sourceContent, save) }
                 val updated = repository.saveCustomProxyGroups(profile.id, save, state.sourceContent) {
                     generation == proxyGroupsGeneration && !isProfileMutationBlocked(runtimeManager.state.value)

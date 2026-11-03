@@ -55,3 +55,9 @@ Compose 使用 Material 3 作为基础，并由独立 Design System 保存 Flutt
 
 - `ProfilesViewModel.fileImport` 持有独立 controller，Host 只负责 OpenDocument、生命周期和预览/密钥弹窗。8 MiB 有界读取后冻结源字节；界面 StateFlow 只包含文件元数据和操作状态，错钥保留源快照原位重试，取消/后台通过 generation 和 Job 作废迟到结果。系统选择器自身遮挡保留令牌；其他后台清理导入会话和密钥输入。
 - `ProfileRepository.importFileProfile` 在解密/YAML 校验之后再进入文件 mutex，NonCancellable 包住原子文件替换与 Room 事务，插入前及文件提交后复核会话/运行守卫，异常回滚新文件与新增行。成功保留已有当前选择；密钥复用既有 Room 字段，不新增 schema。完整 Mihomo 语义预检仍未接入。
+
+## 策略组问题、过滤与图标
+
+- `ProxyGroupIssues` 为列表/表单提供结构错误与可保留的失效引用警告；复制生成新 key 并清除 originalName，避免副本引发旧引用改名。删除提示按名称解析规则目标、成员与链式代理引用，不进行全文替换。
+- `NativeProxyGroupFilterValidator` 通过 Bridge 的既有 validateFilters method 使用 Go regexp2。UI 防抖、单组确认与 ViewModel 保存均校验；异步确认冻结 JSON，期间修改后必须重新确认，取消后的协程不继续提交。此操作不启动、加载或改写核心配置。
+- `ProfileGroupIcon` 使用 Coil 位图/SVG/网络管线和默认/失败回退；本地图片经 ViewModel 的有界 reader 和 ProfileGroupIconData 签名识别后转为 data URI，128 KiB 上限。最近图标通过 ProfileStore/Repository 的 AppPreference 保存，串行更新并限制 24 条/512 KiB，无 schema 变更。UI 不直接读写数据库或配置文件；图标集管理与推荐尚未接入。

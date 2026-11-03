@@ -151,6 +151,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.gson)
     implementation(libs.okhttp)
+    // 作者 long：策略组图标复用同一图片管线，远程位图与 SVG 都保留加载失败的回退状态。
+    implementation("io.coil-kt.coil3:coil-compose:3.6.3")
+    implementation("io.coil-kt.coil3:coil-svg:3.6.3")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.3")
     implementation(libs.zxing.core)
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     testImplementation(libs.junit)

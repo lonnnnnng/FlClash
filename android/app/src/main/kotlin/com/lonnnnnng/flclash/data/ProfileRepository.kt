@@ -37,6 +37,8 @@ interface ProfileStore {
         check(canWrite()) { "导入已取消或核心状态已变化" }
         return addFileProfile(label, bytes, ageSecretKey)
     }
+    suspend fun recentGroupIcons(): List<String> = emptyList()
+    suspend fun recordGroupIcon(icon: String, remove: Boolean) {}
     suspend fun addCustomProfile(label: String): Profile
     suspend fun readLocalProfileContent(id: Long): String
     suspend fun readProfileSourceContent(id: Long): String = readLocalProfileContent(id)
@@ -146,6 +148,27 @@ class ProfileRepository(
                     persistCurrentProfile(fallback)
                 }
             }
+        }
+    }
+
+    private val iconHistoryMutex = Mutex()
+
+    override suspend fun recentGroupIcons(): List<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            com.google.gson.JsonParser.parseString(preferenceDao.get("group_icon_history") ?: "[]").asJsonArray
+                .filter { it.isJsonPrimitive && it.asJsonPrimitive.isString }.map { it.asString }
+        }.getOrDefault(emptyList())
+    }
+
+    override suspend fun recordGroupIcon(icon: String, remove: Boolean) = withContext(Dispatchers.IO) {
+        if (icon.isBlank() || icon.length > 256 * 1024) return@withContext
+        iconHistoryMutex.withLock {
+            val previous = recentGroupIcons().filterNot { it == icon }
+            val candidates = if (remove) previous else listOf(icon) + previous
+            // 作者 long：最近图标只存有界记录，避免本地 data 图片把单行偏好撑过 SQLite CursorWindow。
+            var size = 0
+            val bounded = candidates.take(24).takeWhile { size += it.length; size <= 512 * 1024 }
+            preferenceDao.put(AppPreferenceEntity("group_icon_history", ProxyGroupDrafts.array(bounded).toString(), System.currentTimeMillis()))
         }
     }
 

@@ -108,6 +108,10 @@ object AppModule {
     fun provideProfileConfigValidator(): ProfileConfigValidator = YamlProfileConfigValidator()
 
     @Provides
+    fun provideProxyGroupFilterValidator(validator: com.lonnnnnng.flclash.data.NativeProxyGroupFilterValidator):
+        com.lonnnnnng.flclash.data.ProxyGroupFilterValidator = validator
+
+    @Provides
     @Singleton
     fun provideProfileContentDecoder(
         @ApplicationContext context: Context,

@@ -74,6 +74,14 @@ class CoreBridge {
         parseMessageResult(response.optString("result", ""), "invalid_config")
     }
 
+    suspend fun validateFilters(filters: List<String>): List<String> {
+        // 作者 long：只编译表达式，不读取或修改当前配置，停止态也可检查策略组草稿。
+        val result = invoke("validateFilters", JSONArray(filters)).optJSONArray("result")
+            ?: throw CoreBridgeException("invalid_filter_result", "核心未返回过滤表达式校验结果")
+        if (result.length() != filters.size) throw CoreBridgeException("invalid_filter_result", "核心过滤表达式校验结果不完整")
+        return List(result.length()) { result.getString(it) }
+    }
+
     suspend fun decryptConfig(path: String, ageSecretKey: String): String {
         // 作者 long：解密是无核心生命周期副作用的文件转换，复用现有 Go method，不启动或重载 Mihomo。
         val response = invoke("decryptConfig", JSONObject().put("path", path).put("age-secret-key", ageSecretKey))

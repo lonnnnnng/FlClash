@@ -1,5 +1,12 @@
 # Testing
 
+## 策略组批量、问题与图标选择首版（2026-11-03）
+
+- App 324、Core 34 项，失败/错误/跳过 0；Debug/AndroidTest/Lint 通过，0 errors、56 warnings、9 hints。生产最终 `/tmp/kclash-group-parity-20261103-build4.log`，最终测试增量 build5 成功；Service/Common/Go 单测、Release 与 DNS/浏览器网络未重跑。
+- Redmi API 36、1080×2340 竖屏默认字号最终精确 12/12。批选/复制删除/返回、缺失成员警告、真实核心 regexp2 与迟到校验、图标地址/搜索/移除、回环 HTTP PNG/SVG/404、隔离 Room 最近记录、旧成员/排序/YAML及真实 MainActivity 保存回归通过。方法、device2.log、before/after、artifacts.json、images/ 均为 `/tmp/kclash-group-parity-20261103-` 前缀。
+- 正式配置 before/after 各 1/1，count=1/missing=0，正文文件名/size/mtime 不变；两包哈希与设备一致，App 仅 arm64。原 1.yaml 两端哈希不变，结束无服务/tun0；未清数据、访问订阅或改写正式配置。18 态截图已集中目视，不宣称 Flutter 像素 parity。
+- 首批 8/10、遗漏 import 的 build1 失败和 Base64 NewApi 的 build3 Lint 失败均保留，最终 12/12。真实本地图片系统选择器和真实宿主图标保存/重建尚未验收；全局图标集/推荐、过滤预设、资源映射与完整 UI 仍 PARTIAL。
+
 ## 新增文件与真实 age／SAF 闭环（2026-11-03）
 
 - App 319 项，失败/错误/跳过 0；Debug/AndroidTest/Lint 通过，0 errors、53 warnings、9 hints。最终 `/tmp/kclash-file-import-20261103-build3.log`；Service/Core/Common/Go 单测、Release 和网络未重跑。

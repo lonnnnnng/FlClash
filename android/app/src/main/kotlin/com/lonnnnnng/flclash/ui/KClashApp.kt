@@ -810,6 +810,10 @@ fun KClashApp(
                     onCloseProxyGroupsEditor = profilesViewModel::closeProxyGroupsEditor,
                     onSaveProxyGroups = profilesViewModel::saveProxyGroups,
                     onSaveProxyGroupsDraft = profilesViewModel::saveProxyGroupsDraft,
+                    onValidateGroupFilters = profilesViewModel::validateGroupFilters,
+                    recentGroupIcons = profilesViewModel.recentGroupIcons.collectAsState().value,
+                    onRecordGroupIcon = profilesViewModel::recordGroupIcon,
+                    onReadGroupIcon = profilesViewModel::readGroupIcon,
                     onOpenSingleProxyGroupEditor = profilesViewModel::openSingleProxyGroupEditor,
                     providersEditorState = providersEditorState,
                     onOpenProvidersEditor = profilesViewModel::openProvidersEditor,
@@ -1398,6 +1402,10 @@ internal fun ProfilesPanel(
     onCloseProxyGroupsEditor: () -> Unit = {},
     onSaveProxyGroups: (groups: String) -> Unit = {},
     onSaveProxyGroupsDraft: ((com.lonnnnnng.flclash.data.ProxyGroupsSave) -> Unit)? = null,
+    onValidateGroupFilters: suspend (List<String>) -> List<String> = { error("过滤表达式校验不可用") },
+    recentGroupIcons: List<String> = emptyList(),
+    onRecordGroupIcon: (String, Boolean) -> Unit = { _, _ -> },
+    onReadGroupIcon: suspend (String) -> String = { error("图片读取不可用") },
     onOpenSingleProxyGroupEditor: ((Profile, Int) -> Unit)? = null,
     providersEditorState: ProfileProvidersEditorUiState = ProfileProvidersEditorUiState(),
     onOpenProvidersEditor: (profile: Profile) -> Unit = {},
@@ -1830,6 +1838,8 @@ internal fun ProfilesPanel(
                 sourceContent = proxyGroupsEditorState.sourceContent,
                 initialGroupIndex = proxyGroupsEditorState.initialGroupIndex,
                 onSaveDraft = onSaveProxyGroupsDraft,
+                onValidateFilters = onValidateGroupFilters,
+                recentIcons = recentGroupIcons, onRecordIcon = onRecordGroupIcon, onReadIcon = onReadGroupIcon,
                 saving = proxyGroupsEditorState.isSaving,
                 onDismiss = onCloseProxyGroupsEditor,
                 onSave = onSaveProxyGroups,
@@ -4563,8 +4573,12 @@ internal fun ProfileProxyGroupsEditorDialog(
     sourceContent: String = "",
     initialGroupIndex: Int? = null,
     onSaveDraft: ((com.lonnnnnng.flclash.data.ProxyGroupsSave) -> Unit)? = null,
+    onValidateFilters: suspend (List<String>) -> List<String> = { error("过滤表达式校验不可用") },
+    recentIcons: List<String> = emptyList(),
+    onRecordIcon: (String, Boolean) -> Unit = { _, _ -> },
+    onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
 ) {
-    VisualProxyGroupsEditor(profile, initialGroups, sourceContent, saving, initialGroupIndex, onDismiss, onSave, onSaveDraft)
+    VisualProxyGroupsEditor(profile, initialGroups, sourceContent, saving, initialGroupIndex, onDismiss, onSave, onSaveDraft, onValidateFilters, recentIcons, onRecordIcon, onReadIcon)
 }
 
 /**

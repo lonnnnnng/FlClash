@@ -6,12 +6,23 @@
 >
 > 当前基线：`kotlin` 主线，DNS 基线和浏览器主链路修复已提交并同步到 `origin/kotlin`（代码提交 `cab92464`）；远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 最新验收：新增文件与真实 age/SAF 闭环已完成。App 319 项、Redmi 精确批次 8/8、正式 Profile 前后保护各 1/1 通过；明文新增、缺钥/错钥重试、真实 Bridge 解密新增、持久密钥的加密 FILE 替换、Activity 重建与提交后守卫回滚均已验。下一阶段继续策略组批量/图标/问题提示和全局资源映射；完整 UI 保持 PARTIAL，真实加密在线订阅及完整 Mihomo 语义预检仍待验。
+> 最新验收：策略组编辑页已补批选/全选/批量复制删除、引用警告、列表/表单问题提示、核心 regexp2 过滤校验和图标选择首版。App 324、Core 34 项通过，Redmi 最终 12/12，正式 Profile 前后保护各 1/1。位图/SVG/失败回退、迟到校验保护和真实宿主保存通过，深浅 18 态已目视。完整 UI 仍 PARTIAL；后续继续全局资源映射、图标集管理/推荐、过滤预设与其余整页差异。
 > 代理页与延迟缓存历史验收：Proxy Groups 已补齐叶子协议、按 Profile/组隔离的滚动恢复、List 组内定位和排序/搜索/密度变化后的语义锚定。URLTest/Fallback 的核心 `now` 优先、手动固定/清除固定及非法成员拒绝已有真实 Mihomo 回归。测速结果按 Profile/组/节点/测速 URL 写入 Room，含 45 秒 TTL 与失效清理；本轮新增正式 Profile 真机测速、应用 `force-stop` 后新进程恢复、旧 Profile/旧测速 URL 隔离验收 1/1，Room DAO instrumentation 3/3，App/Core 强制 JVM 测试 270/34 项通过，Debug/AndroidTest 构建与 Lint 通过。Proxy Groups 页面仍为 `PARTIAL`，代理页整体首版已完成工具栏、分组溢出选择、搜索、Tab/List、固定组头、三档卡片与独立测速，21 项定向真机回归通过；Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存和完整 UI parity 仍待后续。
 > 前序延迟缓存验收时 Android 包尚未安装，正式 Room 为空；通过工作区外层 `AGENTS.md` 唯一授权入口导入并保留一份 Profile，未触碰外层 `1.yaml`、未清数据或删除 Profile。延迟缓存用例验证同一 Profile/组/节点/测试 URL 的正延迟跨真实应用进程恢复，并向正式 Room 写入不同 Profile 与旧测试 URL 探针，确认均不进入当前页面；成功后删除的只有测试探针行和应用内标记。核心保持 `STOPPED`，没有 ProxyService、VpnService 或 TUN。
 > 完整 ProfileRuntimeParity 长流程仍曾在停止态 `DIRECT` 默认测速阶段失败，不能推广为通过。Dashboard、Profiles 和 Proxy Groups 的完整 UI/UX 仍为 `PARTIAL`；后续仍需完成代理页连续圆角/动效/节点菜单、Providers 批量/编辑/侧载、首页出口 route hits、质量来源全覆盖/持久缓存及完整页面 parity。验收限定 Redmi 竖屏、系统默认字号和 `arm64-v8a`。
 
 > 2026-11-03 主链路修复补充：真实订阅本身可用，Kotlin 缺少 Flutter 的 DNS baseline，导致 Android 虚拟 DNS 无应答；已补齐脚本后 baseline → 用户覆盖 → LAN 暂存链路，并按已应用配置读取 mixed-port/TUN 参数和发布系统 HTTP 代理。有认证或禁用 mixed-port 时不广播代理，运行态配置改变网络参数时同步重建并支持失败回滚。Redmi 上 UDP/TCP 53 与系统解析均通过；X 浏览器百度与 Cloudflare 页面实测成功。详情及最终构建校验见下方“DNS 基线与浏览器主链路修复”。本段之后较早的“核心 STOPPED、未启动 TUN”等记录只适用于各自历史切片。
+
+### 策略组批量操作、问题提示与图标选择首版（2026-11-03）
+
+- **上游基线**：本地 `upstream/main` `7fd417fb9a9a277c6a9339a8ac87f907df7c25f7`，亲读 `profiles/custom/groups.dart`、`icon.dart`、`providers/state/custom.dart:proxyGroupIssues` 与 `features/form/filter.dart`；本轮未 fetch/合并 Flutter。保留既有列表显式保存，单组从概览进入仍直接保存返回；完整逐项持久化 parity 另待收敛。
+- **列表与问题**：增加常驻选择框、批选/全选/退出、批量复制和删除；返回先退出批选或排序。副本按源组相邻插入，分配独立 key、清空 originalName 并规避保留/代理/批内重名，原引用不误映射到副本。删除确认提示仍被规则、组成员或链式代理引用的目标，保留失效引用供后续修复。`ProxyGroupIssues` 在列表按钮/详情和单组横幅区分缺失成员/资源警告与名称、无来源、循环引用、非法回退等阻断项；单组确认只检查当前草稿，便于逐个修复旧配置。
+- **过滤与保存**：Kotlin Bridge 接入已有 Go `validateFilters`，复用 Mihomo regexp2 与反引号分段语义，不替换成 Java 正则。列表/表单防抖检查，表单确认与 ViewModel 最终保存再次校验；异步结果只提交同一 JSON 快照，草稿变化后提示再次确认，关闭后协程取消。真实核心支持 lookbehind 并拒绝分段中的未闭合表达式。原文件 mutex/正文快照/运行守卫与 Room 原子保存继续沿用。
+- **图标**：列表/表单/独立选择页使用 Coil 3.6.3 位图与 SVG 管线，默认首字符回退、加载失败状态、当前图标移除、搜索、HTTP(S) 地址和本地图片入口接通；地址拒绝非 HTTP(S)、内嵌认证及超长输入。本地 reader 经 ViewModel 有界读取，PNG/JPEG/GIF/WebP/SVG 签名识别、128 KiB 上限，嵌入 data URI；最近记录复用 Room 偏好表，最多 24 条/512 KiB，不新增 schema。最近记录删除不改已应用图标。仅使用已配置/最近图标，不预置图标集。官方 Compose/SVG/network 文档经 smart-search 抓取，地址为 `https://coil-kt.github.io/coil/compose/`、`/svgs/`、`/network/`，证据 `/tmp/kclash-coil-*.md`。
+- **统一构建**：根 Wrapper `:app:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64` 通过，App **324**、Core **34**，失败/错误/跳过 0，Lint **0 errors、56 warnings、9 hints**；生产最终 `/tmp/kclash-group-parity-20261103-build4.log`。之后只补迟到校验测试，`assembleDebugAndroidTest :app:lintDebug` 增量 `/tmp/kclash-group-parity-20261103-build5.log` 成功。Service/Common/Go 单测、Release 与 DNS/浏览器网络未重跑。
+- **真机与视觉**：Redmi Note 8 Pro `wsvwypiz7xwslvl7`，API 36、1080×2340 竖屏、字号 1.0，最终精确 **12/12**；方法 `/tmp/kclash-group-parity-20261103-methods.txt`，日志 `device2.log`（同前缀）。包含批选/复制/批删/退出、警告保留、真实核心过滤/迟到保护、图标搜索/移除/地址校验、回环 HTTP PNG/SVG 成功与 404 回退、隔离 Room 最近记录及原有成员/排序/YAML/真实 MainActivity 保存重开。仅真实宿主创建并回收核对 ID/名称的临时空 CUSTOM；没有访问订阅或启动核心监听/VPN。最终 `images/` 共 18 态（同前缀）已集中目视，无明显裁切/重叠，不宣称 Flutter 像素 parity；图标搜索截图保留键盘可见态。
+- **保护与制品**：before/after 各 **1/1**，count=1/missing=0/expected=1、正文文件名/size/mtime 不变；日志同前缀 `before.log`/`after.log`。原 `1.yaml` 两端 SHA-256 仍为 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`。App `f393e05d3f71b28425ec053f052b91c14c54ca5343f4e3c4c64d4c424aa7fa6b`、AndroidTest `c53dc1e5807ce23ec2dd458d27d6ba5bae75c9798319e02417c70087825276ff` 均与设备匹配；App 仅 arm64-v8a，测试包无原生库；同前缀 `artifacts.json`，结束无服务/tun0，未清数据或修改正式配置。
+- **失败记录与边界**：build1 漏 import 编译失败，build2 成功；首批 **8/10**，图标地址错误重复出现在父页与弹窗、图片测试数字回环地址不在既有 Debug 明文策略内，分别修为弹窗内显示和 localhost；build3 的 Java Base64 高于 minSdk 24 被 Lint 阻止，改用现有 Okio 后 build4 成功，最终整批 12/12。失败日志保留。批选/问题/核心过滤与远程图标分项 **DONE-VERIFIED**；本地图片系统选择器与真实宿主图标保存/Activity 重建未做 E2E，不将编码单测视为完整图片导入验收。全局图标集导入/同步/推荐、过滤预设、全局资源映射、长列表边缘拖动、父页逐项持久化和完整 Profiles/UI 仍 **PARTIAL**。下一阶段继续全局资源管理和映射的整页还原，再集中验证。
 
 ### 新增文件与真实 age／SAF 导入闭环（2026-11-03）
 
@@ -167,9 +178,9 @@
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 统一启动、停止、配置热切、停止态节点读取/选择/测速、模式、VPN/纯代理、LAN 热更新、Provider 更新与观测失效；UI 不直接调用 gomobile |
-| 单元测试 | 最新文件导入切片 App 319 项，失败/错误/跳过 0；Service 139、Core 34 为前序结果，本轮 Service/Core/Common/Go 未重跑 |
-| 主流程真机测试 | Redmi 竖屏默认字号：最新文件导入精确批次 8/8，含真实明文/加密 SAF 新增、加密替换与 Activity 重建；前序 CUSTOM 规则 12/12；前序更多字段 7/7、标准/脚本扩展 12/12、策略组 12/12、自定义配置导入/更多 26/26、代理页 21/21；完整 ProfileRuntimeParity 长流程仍受停止态 DIRECT 默认测速失败影响 |
-| Debug 构建 | Debug/AndroidTest 构建与 `lintDebug` 通过；Lint 0 errors、53 warnings、9 hints |
+| 单元测试 | 最新策略组切片 App 324、Core 34 项，失败/错误/跳过 0；Service 139 为前序结果，本轮 Service/Common/Go 未重跑 |
+| 主流程真机测试 | Redmi 竖屏默认字号：最新策略组批量/问题/过滤/图标精确批次 12/12，真实 MainActivity 保存回归通过；前序文件导入 8/8；前序 CUSTOM 规则 12/12；前序更多字段 7/7、标准/脚本扩展 12/12、策略组 12/12、自定义配置导入/更多 26/26、代理页 21/21；完整 ProfileRuntimeParity 长流程仍受停止态 DIRECT 默认测速失败影响 |
+| Debug 构建 | Debug/AndroidTest 构建与 `lintDebug` 通过；Lint 0 errors、56 warnings、9 hints |
 | Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；当前规则页版本 SHA-256 16d2c7a7a1227764a13d9c10b2e3e481469eec25f1835426db818f2b1c9fa518，与 Redmi 安装包一致；DNS/浏览器验收哈希见对应历史节 |
 | Debug 原生库 | App 仅 arm64-v8a；AndroidTest SHA-256 e12fa969d7e3032efa872e1e6ab9fbf5c58e76c036e435732c9b0c398d536484，与设备一致且无原生库 |
 | Release 构建 | 历史 `:app:assembleRelease :app:lintRelease` 已通过，输出为未签名预发布 APK；本轮未重建 Release，独立 release keystore 仍待发布阶段创建 |
@@ -423,7 +434,7 @@ flowchart LR
 - 核心运行期间仍阻止 Profile 删除和正文编辑/同步；当前配置选择无论停止或运行均通过 CoreRuntimeManager 串行校验、热应用，失败回滚原选择/输入，回滚失败停止核心。
 - 自定义 Profile 新增 Rules 分区快速编辑入口；编辑器逐行校验规则类型和动作，拒绝 `SUB-RULE`，保存时只替换顶层 `rules` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 新增 Proxies 分区快速编辑入口；编辑器按 YAML 列表校验代理名称和类型，拒绝重复名称和非列表结构，保存时只替换顶层 `proxies` 区块，不改写其他 YAML 字段。
-- 自定义 Profile 的 Proxy Groups 已有可视列表/单组/成员/可选设置首版，保留整列表与单组快捷 YAML；支持复制、删除、排序、引用跟随改名和原子保存，保留未知字段与未编辑分区。完整问题校验、批量与图标等边界见顶部策略组首版节，整体仍 PARTIAL。
+- 自定义 Profile 的 Proxy Groups 已有可视列表/单组/成员/可选设置首版，保留整列表与单组快捷 YAML；支持复制、删除、排序、引用跟随改名和原子保存，保留未知字段与未编辑分区。批量操作、结构问题提示、核心过滤校验与图标选择首版现已接通；图标集/推荐、预设和完整资源映射仍 PARTIAL，证据见顶部最新策略组节。
 - 自定义 Profile 新增 Providers 分区快速编辑入口；分别编辑顶层 `proxy-providers`/`rule-providers` map，校验嵌套 map、非空字段和唯一名称，保存时局部替换并保留边界注释与其他 YAML 字段。
 - 自定义 Profile 的代理 Provider 新增字段化覆盖表单；支持健康检查 URL、间隔、超时、lazy、期望状态、名称前缀/后缀、UDP、跳过证书校验和 IP 版本，并将覆盖按 Provider 名称持久化到 Kotlin 自有 `overridesJson`。
 - Provider 覆盖只作用于核心启动时生成的暂存 YAML，原始 Profile 文件保持不变；已有 `health-check`/`override` 子字段会局部合并并保留未覆盖字段，避免编辑覆盖后丢失用户配置。
