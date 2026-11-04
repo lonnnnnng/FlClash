@@ -1,6 +1,18 @@
 # Testing
 
-## 规则/策略组加密草稿与冷进程（2026-11-05，最新）
+## Proxies/本地代理加密草稿与冷进程（2026-11-05，最新）
+
+App481/Service195/Core38/Common31共745项单测零失败/错误/跳过；最终build8 Debug/Test、未签名Release/R8及独立lint8双变体通过，各0错误/66警告（Debug10/Release9提示）。Redmi最终同套App/Test十场景各prepare/verify通过，外部确认旧PID消失、恢复PID不同；旧入口14/14，Proxies正式MainActivity保存回读独立1/1。30张PNG与5张拼图已目视，App/Test回拉哈希匹配；正式1份配置/选择/正文SHA-size-mtime及逐字段摘要、本地目录、原1.yaml双端、Flutter包与设置保持，结束无服务/tun0。各verify在应用内部确认Store为空且主文件/.bak/.new均不存在；不使用受SELinux拒绝的run-as退出码判断。证据`docs/acceptance/local-proxy-draft-cold-redmi-20261105.json`。原始日志/PNG/驱动仅本机/tmp。
+
+- `LocalProxyColdProcessInstrumentedTest`两个精确方法，case为proxies/proxies-conflict/local-node/local-map/local-list/local-links-single/local-links-batch/local-replacement/local-conflict/local-selection；prepare/verify分开运行，中间正式MainActivity→Home→am kill，外部确认旧PID消失，恢复PID不同。verify不主动open。
+- 原1.yaml只按独有ID克隆到临时CUSTOM；节点夹具沿用授权节点后白名单保留必要字段并覆盖服务器/认证，真实Proxies正文及正式目录链接不采图。另用固定脱敏宿主验选区与放弃窗口；不另造替代配置。
+- 恢复精确正文/选区、返回层级、错误/替换确认、目录搜索/选择；外部源或目录变化由原CAS拒绝，放弃不改正式数据。每项清理检查主文件/.bak/.new在应用内部完成，Bundle与物理密文不含测试凭据。
+- 同套App/Test回归14/14，覆盖checkpoint失败拦截、Proxies选区/放弃、映射/ALPN重建、分享链接、目录拖动/菜单及正式MainActivity Proxies/策略组保存。Proxies保存回读另有精确1/1；不与旧13/14相加。
+- 首次恢复read/metadata两处竞态，以及行内map、顶层flow列表/注释包装均有旧实现红测与修复后绿测；集合checkpoint不覆盖最新字段。相关定向100项、完整745项通过；build7通过后补充flow边界，最终以build8为准。
+- 失败历史regression2、regression3和proxies-save6独立保留；最终cold3/回归4/保存8均使用最终build8。旧cold2节点图不作最终脱敏视觉证据。
+- 规则YAML/保持打开的类型选择器、策略组成员/选择/排序/批选及保存中/落盘后UI收尾前死亡窗口仍待真实冷验。在线age/CUSTOM引用源、其他资源SAF/外部脚本、Provider剩余来源/故障恢复/规则命中、质量来源/持久缓存、Fallback/蜂窝/第三方OEM和第三步视觉/性能保持待办；玻璃默认关闭，原暂缓项保持。
+
+## 规则/策略组加密草稿与冷进程（2026-11-05，历史切片）
 
 最终生产build9与最终测试testbuild10：App462/Service195/Core38/Common31共726项零失败/错误/跳过；Debug/Test、未签名Release/R8成功；lint2双变体和testbuild10的lintDebug通过，各0错误/66警告（Debug10/Release9提示）。生产App与build8字节相同，test10只将YAML测试选区基准改为校验后真实选区，并新增完整正文SHA断言。证据`docs/acceptance/structured-editor-cold-redmi-20261105.json`，原始附件仅本机/tmp。
 
@@ -10,7 +22,7 @@
 - 父级`ProfileDraftProcessInstrumentedTest`prepare/verify分开运行，中间同样确认真实PID消失；各1/1，父表单密钥/名称及正文恢复、放弃清理与原数据保护通过。不跨批累计成一个大批次。
 - before/after正式保护各1/1，count1及聚合SHA相同，逐字段摘要比较通过并另由inspect诊断回读；inspect不算额外保护验收。原1.yaml、Flutter APK、设置保持，最终App/Test回拉SHA匹配；结束无服务/tun0。各verify断言草稿Store为空且删除自己的marker；run-as被设备SELinux拒绝，原after-final10.json的pendingArtifacts判断作废，未独立检查.bak/.new物理文件，最终采用after-verified10.json。
 - 主代理目视最终35张PNG（冷恢复17、回归18）和9张拼图；不推广完整Flutter视觉或动效性能。registry1测试保存键改变、registry2/3/4实际DefaultLazyKey白名单缺口、registry5安装与测试重叠0项、cold1错误选区预期均保留；不累计旧批成功数。
-- 尚未接入加密持久恢复：配置内Proxies、本地代理/集合/链接映射。已接入但本组未冷验：规则YAML/保持打开的类型选择器、策略组成员/选择/排序/批选；保存中与落盘后UI收尾前死亡窗口仍只有JVM/组件覆盖。未重跑实网、VPN、低API、Go、正式签名运行或远端CI；第二步其他场景及第三步保持待办。
+- 当时尚未接入加密持久恢复：配置内Proxies、本地代理/集合/链接映射；现已由顶部新组覆盖。已接入但本组未冷验：规则YAML/保持打开的类型选择器、策略组成员/选择/排序/批选；保存中与落盘后UI收尾前死亡窗口仍只有JVM/组件覆盖。未重跑实网、VPN、低API、Go、正式签名运行或远端CI；第二步其他场景及第三步保持待办。
 
 ## 后台订阅自然周期与运行态节点（2026-11-05，历史切片）
 

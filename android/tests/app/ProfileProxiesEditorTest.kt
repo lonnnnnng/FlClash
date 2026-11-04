@@ -6,6 +6,57 @@ import org.junit.Test
 
 class ProfileProxiesEditorTest {
     @Test
+    fun `top level flow lists keep nodes after opening and saving`() {
+        val source = "proxies: [{name: flow, type: http}]\nrules: []\n"
+        val extracted = ProfileProxiesEditor.extractProxies(source)
+        assertEquals("[{name: flow, type: http}]", extracted)
+        val saved = ProfileProxiesEditor.replaceProxies(source, extracted)
+        assertEquals(ProxyGroupDrafts.root(source), ProxyGroupDrafts.root(saved))
+        val multiline = "proxies: [\n  {name: flow, type: http}\n]\nrules: []\n"
+        assertEquals(ProxyGroupDrafts.root(multiline), ProxyGroupDrafts.root(
+            ProfileProxiesEditor.replaceProxies(multiline, ProfileProxiesEditor.extractProxies(multiline)),
+        ))
+    }
+
+    @Test
+    fun `commented wrappers retain list indentation and comments`() {
+        val saved = ProfileProxiesEditor.replaceProxies(
+            "rules: []\n", "# keep leading\nproxies: # keep wrapper\n  - {name: wrapped, type: http}\n",
+        )
+        assertEquals(1, ProxyGroupDrafts.root(saved).getAsJsonArray("proxies").size())
+        org.junit.Assert.assertTrue(saved.contains("# keep leading"))
+        org.junit.Assert.assertTrue(saved.contains("# keep wrapper"))
+    }
+
+    @Test
+    fun `flow maps quoted names nested fields and aliases retain yaml semantics`() {
+        val source = """
+            defaults: &transport {type: trojan, server: example.test}
+            proxies:
+              - {name: 'flow:a#b', <<: *transport, password: test-only, headers: {name: nested}}
+              - name: block
+                type: http
+                headers:
+                  name: nested
+                  type: ignored
+            rules: [MATCH,DIRECT]
+        """.trimIndent() + "\n"
+        val extracted = ProfileProxiesEditor.extractProxies(source)
+        assertEquals(source, ProfileProxiesEditor.replaceProxies(source, extracted))
+        val edited = extracted + "\n# saved flow-map nodes"
+        assertEquals(source.replace("rules: [MATCH,DIRECT]", "  # saved flow-map nodes\nrules: [MATCH,DIRECT]"),
+            ProfileProxiesEditor.replaceProxies(source, edited))
+    }
+
+    @Test
+    fun `semantic duplicate names reject mixed flow and block entries`() {
+        val duplicate = assertThrows(IllegalArgumentException::class.java) {
+            ProfileProxiesEditor.replaceProxies("rules: []", "- {name: 'same', type: http}\n- name: same\n  type: trojan")
+        }
+        assertEquals("代理名称重复：same", duplicate.message)
+    }
+
+    @Test
     fun `extracts proxy list and keeps unrelated yaml when replacing`() {
         val source = """
             mixed-port: 7890

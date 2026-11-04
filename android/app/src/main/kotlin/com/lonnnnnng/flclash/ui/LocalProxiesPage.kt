@@ -28,9 +28,28 @@ internal fun LocalProxiesPage(state: LocalProxiesUiState, onDismiss: () -> Unit,
     onSave: (LocalProxy) -> Unit, onCloseEditor: () -> Unit, onLinks: (LocalProxy?) -> Unit,
     onApplyLinks: (String) -> Unit, onCancelLinks: () -> Unit, onReorder: (List<String>) -> Unit,
     onAskDelete: (Set<String>) -> Unit, onDelete: () -> Unit, onCancelDelete: () -> Unit, onConfirmReplacement: () -> Unit,
-    onUpdateEditor: (LocalProxyDraft) -> Unit) {
+    onUpdateEditor: (LocalProxyDraft) -> Unit,
+    onUiDraftChange: (EditorSaveableState) -> Unit = {},
+    onLinksUiDraftChange: (String, EditorSaveableState) -> Unit = { _, _ -> },
+    onDraftFailure: () -> Unit = {},
+    onEditorUiDraftChange: (String, EditorSaveableState) -> Unit = { _, _ -> }) {
+    EncryptedEditorState(state.session, state.uiDraft, onUiDraftChange, onDraftFailure) { checkpoint ->
+        LocalProxiesPageContent(state, { if (checkpoint()) onDismiss() }, onEdit, onSave, onCloseEditor, onLinks,
+            onApplyLinks, onCancelLinks, onReorder, onAskDelete, onDelete, onCancelDelete, onConfirmReplacement,
+            onUpdateEditor, onLinksUiDraftChange, onDraftFailure, onEditorUiDraftChange)
+    }
+}
+
+@Composable
+private fun LocalProxiesPageContent(state: LocalProxiesUiState, onDismiss: () -> Unit, onEdit: (LocalProxy?) -> Unit,
+    onSave: (LocalProxy) -> Unit, onCloseEditor: () -> Unit, onLinks: (LocalProxy?) -> Unit,
+    onApplyLinks: (String) -> Unit, onCancelLinks: () -> Unit, onReorder: (List<String>) -> Unit,
+    onAskDelete: (Set<String>) -> Unit, onDelete: () -> Unit, onCancelDelete: () -> Unit, onConfirmReplacement: () -> Unit,
+    onUpdateEditor: (LocalProxyDraft) -> Unit, onLinksUiDraftChange: (String, EditorSaveableState) -> Unit,
+    onDraftFailure: () -> Unit, onEditorUiDraftChange: (String, EditorSaveableState) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
-    var selected by remember { mutableStateOf(emptySet<String>()) }
+    var selected by rememberSaveable(stateSaver = androidx.compose.runtime.saveable.Saver<Set<String>, List<String>>(
+        save = { it.toList() }, restore = { it.toSet() })) { mutableStateOf(emptySet<String>()) }
     var sorting by rememberSaveable { mutableStateOf(false) }
     val shown = state.rows.filter { listOf(it.name, it.type, it.fields.get("server")?.asString.orEmpty()).any { value -> value.contains(query, true) } }
     val visibleIds = shown.map { it.id }.toSet()
@@ -64,7 +83,7 @@ internal fun LocalProxiesPage(state: LocalProxiesUiState, onDismiss: () -> Unit,
                 }
                 if (sorting) ResourceOrderList(state.rows.map { ResourceOrderItem(it.id, it.name, it.type) }, state.busy,
                     "local_proxies", onReorder, Modifier.weight(1f))
-                else LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                else LazyColumn(Modifier.weight(1f).testTag("local_proxies_list"), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                     itemsIndexed(shown, key = { _, row -> row.id }) { _, row ->
                         ListItem(headlineContent = { Text(row.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                             supportingContent = { Text(row.type, maxLines = 1) },
@@ -78,15 +97,20 @@ internal fun LocalProxiesPage(state: LocalProxiesUiState, onDismiss: () -> Unit,
                 if (state.editor == null && state.links == null) LocalProxyConfirmations(state, onCancelDelete, onDelete, onConfirmReplacement)
             }
         })
-    state.editor?.let { draft -> LocalProxyEditor(draft, state.busy, state.error, onCloseEditor, onSave, onLinks, { onAskDelete(setOf(it.id)) }, onUpdateEditor) {
+    state.editor?.let { draft ->
+      // 作者 long：子页有独立注册表，父页滚动不携带凭据；放弃一个节点后不能在下一窗口恢复它的输入。
+      EncryptedEditorState(draft.session, draft.uiDraft, { onEditorUiDraftChange(draft.session, it) }, onDraftFailure) { checkpoint ->
+      LocalProxyEditor(draft, state.busy, state.error, { if (checkpoint()) onCloseEditor() }, { if (checkpoint()) onSave(it) }, onLinks, { onAskDelete(setOf(it.id)) }, onUpdateEditor) {
         if (state.links == null) LocalProxyConfirmations(state, onCancelDelete, onDelete, onConfirmReplacement)
-    } }
+      } }
+    }
     state.links?.let { draft ->
-        var text by remember(draft) { mutableStateOf(draft.text) }
-        var discard by remember { mutableStateOf(false) }
+      EncryptedEditorState(draft.session, draft.uiDraft, { onLinksUiDraftChange(draft.session, it) }, onDraftFailure) { checkpoint ->
+        var text by rememberSaveable(draft.session) { mutableStateOf(draft.text) }
+        var discard by rememberSaveable { mutableStateOf(false) }
         fun exitLinks() { if (!state.busy) { if (text != draft.text) discard = true else onCancelLinks() } }
         ProfileEditorPage(onDismissRequest = ::exitLinks, title = { Text("分享链接快捷编辑") }, backTag = "local_proxy_links_back",
-            confirmButton = { TextButton(onClick = { onApplyLinks(text) }, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_links_save")) { Text("确认") } }, text = {
+            confirmButton = { TextButton(onClick = { if (checkpoint()) onApplyLinks(text) }, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_links_save")) { Text("确认") } }, text = {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(if (draft.single) "输入一个分享链接" else "每行一个分享链接。无法转换为链接的节点会保留。")
                     state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxy_links_error")) }
@@ -96,16 +120,17 @@ internal fun LocalProxiesPage(state: LocalProxiesUiState, onDismiss: () -> Unit,
                 LocalProxyConfirmations(state, onCancelDelete, onDelete, onConfirmReplacement)
             })
         if (discard) DiscardLocalProxyDialog({ discard = false }, onCancelLinks)
+      }
     }
 }
 
 /** 作者 long：确认窗口必须依附当前整页编辑窗口，否则 Android 会把父页面的弹窗遮在子编辑器下面。 */
 @Composable
 private fun LocalProxyConfirmations(state: LocalProxiesUiState, onCancelDelete: () -> Unit, onDelete: () -> Unit, onConfirmReplacement: () -> Unit) {
-    if (state.deleting.isNotEmpty()) AlertDialog(onDismissRequest = onCancelDelete, title = { Text("删除 ${state.deleting.size} 个节点？") },
+    if (state.deleting.isNotEmpty()) EditorAlertDialog(onDismissRequest = onCancelDelete, title = { Text("删除 ${state.deleting.size} 个节点？") },
         text = { Text(if (state.users.isEmpty()) "删除后可重新添加。" else "以下配置正在引用节点：${state.users.joinToString("、")}。删除后引用会保留为缺失状态。") },
         confirmButton = { TextButton(onClick = onDelete, enabled = !state.busy) { Text("删除") } }, dismissButton = { TextButton(onClick = onCancelDelete, enabled = !state.busy) { Text("取消") } })
-    if (state.replacement != null) AlertDialog(onDismissRequest = onCancelDelete, title = { Text("确认替换节点？") },
+    if (state.replacement != null) EditorAlertDialog(onDismissRequest = onCancelDelete, title = { Text("确认替换节点？") },
         text = {
             val existed = state.rows.map { it.id }.toSet()
             val added = state.replacement.filter { it.id !in existed }.map { it.name }
@@ -313,6 +338,6 @@ private fun ProxyCollectionEditor(row: LocalProxy, draft: LocalProxyCollectionDr
 
 @Composable
 private fun DiscardLocalProxyDialog(onCancel: () -> Unit, onDiscard: () -> Unit) {
-    AlertDialog(onDismissRequest = onCancel, title = { Text("放弃修改？") }, text = { Text("尚未保存的节点修改会丢失。") },
+    EditorAlertDialog(onDismissRequest = onCancel, title = { Text("放弃修改？") }, text = { Text("尚未保存的节点修改会丢失。") },
         confirmButton = { TextButton(onClick = onDiscard) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = onCancel) { Text("继续编辑") } })
 }

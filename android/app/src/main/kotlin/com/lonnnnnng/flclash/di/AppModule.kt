@@ -154,6 +154,12 @@ object AppModule {
         com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "provider-picker.v1", "com.lonnnnnng.flclash.provider.picker.v1")
 
     @Provides
+    @Singleton
+    @javax.inject.Named("local-proxy-draft")
+    fun provideLocalProxyDraftStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "local-proxy-draft.v1", "com.lonnnnnng.flclash.local.proxy.draft.v1")
+
+    @Provides
     fun provideRuleResourceCompiler(compiler: com.lonnnnnng.flclash.data.NativeRuleResourceCompiler): com.lonnnnnng.flclash.data.RuleResourceCompiler = compiler
 
     @Provides

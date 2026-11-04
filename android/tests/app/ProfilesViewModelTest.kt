@@ -32,6 +32,181 @@ import org.junit.Test
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
 
+    @Test fun earlyEditorOpenWaitsForFirstReadAndPreservesRecoveredDraft() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (hasSaved in listOf(false, true)) for (entry in 0..3) {
+            val profile = Profile.custom(827, "initial-draft-read")
+            val content = "proxies: []\nproxy-groups: []\nrules: []"
+            val store = FakeProfileStore(profile).apply { this.content = content }
+            val ui = EditorSaveableState(mapOf("private" to listOf(EditorSavedValue.capture("original-private-draft"))))
+            val snapshot = ProfileEditorDraftSnapshot(editor = ProfileEditorUiState(profile = profile, content = content),
+                proxies = ProfileProxiesEditorUiState(profile = profile, sourceContent = content, proxies = "[]", uiDraft = ui))
+            val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+            val drafts = PickerMemoryStore().apply {
+                if (hasSaved) bytes = com.google.gson.Gson().toJson(snapshot).toByteArray()
+                readGate = gate
+            }
+            val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
+            when (entry) {
+                0 -> model.openEditor(profile)
+                1 -> model.openRulesEditor(profile)
+                2 -> model.openProxiesEditor(profile)
+                else -> model.openSingleProxyGroupEditor(profile, 0)
+            }
+            assertNull(model.editorState.value.profile)
+            assertNull(model.rulesEditorState.value.profile)
+            assertNull(model.proxiesEditorState.value.profile)
+            assertNull(model.proxyGroupsEditorState.value.profile)
+            gate.complete(Unit); advanceUntilIdle()
+            if (hasSaved) {
+                assertEquals(ui, model.proxiesEditorState.value.uiDraft)
+                val recovered = com.google.gson.Gson().fromJson(drafts.bytes!!.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java)
+                assertEquals(ui, recovered.proxies!!.uiDraft)
+            } else assertEquals(profile.id, when (entry) {
+                0 -> model.editorState.value.profile?.id
+                1 -> model.rulesEditorState.value.profile?.id
+                2 -> model.proxiesEditorState.value.profile?.id
+                else -> model.proxyGroupsEditorState.value.profile?.id
+            })
+            model.closeEditor(); advanceUntilIdle(); owner.clear()
+        }
+    }
+
+    @Test fun closingDuringFirstMetadataReadCannotResurrectRecoveredParentOrProxies() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(828, "metadata-restore-race")
+        val content = "proxies: []\nrules: []"
+        val store = FakeProfileStore(profile).apply { this.content = content }
+        val snapshot = ProfileEditorDraftSnapshot(editor = ProfileEditorUiState(profile = profile, content = content),
+            proxies = ProfileProxiesEditorUiState(profile = profile, sourceContent = content, proxies = "[]"))
+        val drafts = PickerMemoryStore().apply { bytes = com.google.gson.Gson().toJson(snapshot).toByteArray() }
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>(); val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val wrapper = object : ProfileStore by store {
+            override suspend fun extensionProfile(id: Long): Profile? { entered.complete(Unit); release.await(); return profile }
+        }
+        val model = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
+        entered.await(); model.closeEditor(); release.complete(Unit); advanceUntilIdle()
+        assertNull(model.editorState.value.profile)
+        assertNull(model.proxiesEditorState.value.profile)
+        assertNull(drafts.bytes); owner.clear()
+    }
+
+    @Test fun failedProxiesRecoveryNeverDeletesCiphertextAndOpeningAgainRetriesWholeDraft() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (failStore in listOf(true, false)) {
+            val profile = Profile.custom(826, "proxies-recovery-io")
+            val original = "proxies: [{name: original, type: direct}]\nrules: [MATCH,DIRECT]"
+            val store = FakeProfileStore(profile).apply { content = original }
+            var failRead = false; var writes = 0; var bytes: ByteArray? = null
+            val drafts = object : com.lonnnnnng.flclash.data.ProfileDraftStore {
+                override suspend fun read(): ByteArray? { check(!failRead); return bytes?.copyOf() }
+                override suspend fun write(content: ByteArray?) { writes++; bytes = content?.copyOf() }
+            }
+            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+            first.openEditor(profile); advanceUntilIdle(); first.openProxiesEditor(profile); advanceUntilIdle()
+            val ui = EditorSaveableState(mapOf("private" to listOf(EditorSavedValue.capture("private-proxies-io"))))
+            first.updateProxiesUiDraft(profile.id, first.proxiesEditorState.value.session, ui); advanceUntilIdle(); owner.clear()
+            val gson = com.google.gson.Gson()
+            val saved = gson.fromJson(bytes!!.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java)
+            bytes = gson.toJson(saved.copy(proxies = saved.proxies!!.copy(isSaving = true, pendingContent = original + "\n# pending"))).toByteArray()
+            val expected = bytes!!.copyOf(); writes = 0
+            failRead = failStore
+            store.beforeRead = { check(failStore) { "temporary source read failed" } }
+            val second = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+            try {
+                advanceUntilIdle()
+                assertEquals(0, writes); org.junit.Assert.assertArrayEquals(expected, bytes)
+                second.openProxiesEditor(profile); second.saveProxies("- name: replaced\n  type: direct")
+                second.closeProxiesEditor(); second.closeEditor(); advanceUntilIdle()
+                assertEquals(0, writes); org.junit.Assert.assertArrayEquals(expected, bytes); assertNull(store.updatedContent)
+                failRead = false; store.beforeRead = {}
+                second.openEditor(profile); advanceUntilIdle()
+                assertEquals(ui, second.proxiesEditorState.value.uiDraft)
+                assertEquals(original, second.proxiesEditorState.value.sourceContent)
+                assertTrue(second.proxiesEditorState.value.error.orEmpty().contains("保存已中断"))
+                assertNull(store.updatedContent)
+                second.closeEditor(); advanceUntilIdle(); assertNull(bytes)
+            } finally { owner2.clear() }
+        }
+    }
+
+    @Test fun proxiesColdRecoveryRetainsEncryptedUiAndOriginalConflictBaseline() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(823, "proxies-draft")
+        val original = "proxies: [{name: original, type: direct}]\nrules: [MATCH,DIRECT]\n"
+        val store = FakeProfileStore(profile).apply { content = original }
+        val drafts = PickerMemoryStore()
+        fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+        first.openEditor(profile); advanceUntilIdle(); first.openProxiesEditor(profile); advanceUntilIdle()
+        val session = first.proxiesEditorState.value.session
+        val ui = EditorSaveableState(mapOf("body" to listOf(EditorSavedValue.capture("node-private-input"))))
+        first.updateProxiesUiDraft(profile.id, session, ui); advanceUntilIdle(); owner.clear()
+        store.content = original + "# external change\n"
+        val second = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+        advanceUntilIdle()
+        assertEquals(ui, second.proxiesEditorState.value.uiDraft)
+        assertEquals(original, second.proxiesEditorState.value.sourceContent)
+        assertTrue(second.proxiesEditorState.value.error!!.contains("正文已变化"))
+        second.saveProxies("- name: renamed\n  type: direct"); advanceUntilIdle()
+        assertNull(store.updatedContent); assertNotNull(second.proxiesEditorState.value.error)
+        assertFalse(second.proxiesEditorState.value.toString().contains("node-private-input"))
+        second.closeProxiesEditor(); advanceUntilIdle()
+        second.updateProxiesUiDraft(profile.id, session, ui); advanceUntilIdle()
+        assertNull(com.google.gson.Gson().fromJson(drafts.bytes!!.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java).proxies)
+        second.closeEditor(); advanceUntilIdle(); owner2.clear(); assertNull(drafts.bytes)
+    }
+
+    @Test fun proxiesInterruptedSaveConfirmsCommittedBodyWithoutSubmittingTwice() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (committed in listOf(false, true)) {
+            val profile = Profile.custom(824, "proxies-interrupted")
+            val store = FakeProfileStore(profile).apply { content = "proxies: [{name: original, type: direct}]" }
+            val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+            val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+            var writes = 0
+            val wrapper = object : ProfileStore by store {
+                override suspend fun saveCustomDocument(id: Long, content: String, expectedContent: String, canWrite: () -> Boolean): Profile {
+                    writes++; if (committed) store.updateLocalProfileContent(id, content)
+                    entered.complete(Unit); release.await(); return profile
+                }
+            }
+            val drafts = PickerMemoryStore()
+            fun model() = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+            first.openEditor(profile); advanceUntilIdle(); first.openProxiesEditor(profile); advanceUntilIdle()
+            first.saveProxies("- name: renamed\n  type: direct"); entered.await()
+            first.saveProxies("- name: duplicate\n  type: direct")
+            assertEquals(1, writes)
+            assertNotNull(com.google.gson.Gson().fromJson(drafts.bytes!!.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java).proxies?.pendingContent)
+            owner.clear(); advanceUntilIdle()
+            val second = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }; advanceUntilIdle()
+            assertEquals(1, writes)
+            if (committed) assertNull(second.proxiesEditorState.value.profile) else {
+                assertEquals(profile.id, second.proxiesEditorState.value.profile?.id)
+                assertTrue(second.proxiesEditorState.value.error!!.contains("保存已中断"))
+            }
+            second.closeEditor(); advanceUntilIdle(); owner2.clear()
+        }
+    }
+
+    @Test fun proxiesClosedWhileReadingCannotReopenFromLateResult() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(825, "proxies-read")
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>(); val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val store = FakeProfileStore(profile).apply {
+            content = "proxies: []"
+            beforeRead = { entered.complete(Unit); release.await() }
+        }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
+        model.openProxiesEditor(profile); entered.await(); model.closeProxiesEditor(); advanceUntilIdle()
+        release.complete(Unit); advanceUntilIdle(); assertNull(model.proxiesEditorState.value.profile); owner.clear()
+    }
+
     @Test fun earlySystemResultWaitsForEncryptedDraftAndFreshLaunchReleasesOrphanPicker() = runTest {
         Dispatchers.setMain(mainDispatcher)
         for (remote in listOf(false, true)) {

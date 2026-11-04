@@ -1,0 +1,1731 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "status": "DONE_VERIFIED_FOR_LISTED_SCOPE_OVERALL_PARTIAL",
+  "title": "Proxies与本地代理加密草稿及真实冷进程恢复",
+  "baseCommit": "80f822fec867b08e98687498d13aba7d8098ea98",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": "1.0"
+  },
+  "changes": [
+    "父草稿v3纳入Proxies原CAS基线、TextFieldValue正文/选区、放弃确认UI树和pendingContent；先加密保存意图再CAS提交，恢复只确认已提交、不自动重放。",
+    "本地代理、列表/映射、单/批分享链接、替换确认与目录搜索/选择使用独立Keystore AES-GCM/noBackup AtomicFile，保留原目录CAS、提交/退出意图及已见名称。正式入口由恢复后的isOpen驱动。",
+    "关闭先持久移除子草稿或清除密文再退场；epoch/session/closing及同写锁拒绝迟到恢复或旧凭据复活，关闭等待期间只更新最新state、不会回放旧目录。",
+    "UI checkpoint失败阻止正式保存；本地节点快照单独按session合并保存树，迟到捕获不再覆盖最新集合输入或错误反馈。",
+    "草稿Store或源正文暂时读取失败时禁止collector/显式持久化覆盖原密文，重新打开先完整重读；首次恢复完成前延后新开编辑器，元数据查询返回后复核最初generation/epoch。",
+    "Release保留新增Gson草稿类型，mapping及DEX描述符已核对；恢复不向Activity Bundle保存正文或凭据。",
+    "先对照Flutter common/yaml.dart、providers/actions/profiles.dart及models/clash_config.dart，节点name/type改为完整替换结果的YAML语义校验；支持行内map、顶层flow列表、嵌套字段和跨分区anchor，保持其它分区原文。",
+    "Proxies正式MainActivity保存回归使用授权1.yaml临时副本和当前控件，回读已保存正文；只按本测试ID回收，不另造配置或改正式源。"
+  ],
+  "builds": {
+    "productionFinal": "最终build8同套生产与测试包，包含Proxies完整YAML语义校验、顶层flow列表与带注释包装修复",
+    "build8": {
+      "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease --no-daemon -Ptarget-platform=android-arm64",
+      "log": {
+        "path": "/tmp/kclash-local-draft-20261105-build8.log",
+        "sha256": "cbc628e8ea29af817d563a45fe90e16bd08ba5390c5ecaec9d1cc9c80d89a4c8",
+        "bytes": 19980
+      }
+    },
+    "lint8": {
+      "command": "./gradlew :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+      "log": {
+        "path": "/tmp/kclash-local-draft-20261105-lint8.log",
+        "sha256": "7a29194b6a3465cb07ad6755f96d16da94e02fd4d917d102d36c6fd41f1d70ab",
+        "bytes": 14683
+      },
+      "variants": {
+        "debug": {
+          "counts": {
+            "Warning": 66,
+            "Hint": 10
+          },
+          "report": {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-debug.xml",
+            "sha256": "e7ded0d72c527a987f3bca83bc76c9efbe3a103564dd1ec09b7f6a6069a18024",
+            "bytes": 85144
+          }
+        },
+        "release": {
+          "counts": {
+            "Warning": 66,
+            "Hint": 9
+          },
+          "report": {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-release.xml",
+            "sha256": "8d10ebe3fd68f6349a715d9f38554b718792af0b18346e7257853f191c504e7e",
+            "bytes": 83939
+          }
+        }
+      }
+    },
+    "unitTests": {
+      "total": 745,
+      "modules": [
+        {
+          "module": "app",
+          "tests": 481,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "module": "service",
+          "tests": 195,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "module": "core",
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "module": "common",
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "targetedProfilesLocalAndProxies": 100,
+      "targetedLog": {
+        "path": "/tmp/kclash-local-draft-20261105-unit8.log",
+        "sha256": "5a3b035ae554949addcbcf7284ba4ab878935c7e1ff99fab18ff34e4e2bad4a3",
+        "bytes": 5560
+      }
+    },
+    "redTests": [
+      {
+        "scope": "恢复读取失败后旧实现会写空/半份密文",
+        "log": {
+          "path": "/tmp/kclash-local-draft-20261105-recovery-red.log",
+          "sha256": "36893b686ce1144c4fef4a2639f8115c2ee18f732e648747727206fb5c5f3558",
+          "bytes": 6325
+        }
+      },
+      {
+        "scope": "首次密文读取前新开编辑器、第一次元数据查询中关闭两项均旧实现红测；修复后84项Profiles测试通过",
+        "log": {
+          "path": "/tmp/kclash-local-draft-20261105-recovery-race-red.log",
+          "sha256": "970b48bdea30660d7997bcbd14ea2e546e8b9dc63bf4b5fd19f5a2f4b301b66f",
+          "bytes": 6471
+        }
+      },
+      {
+        "scope": "按Flutter完整YAML语义读取节点，行内map/merge与语义重复名字旧实现红测",
+        "log": {
+          "path": "/tmp/kclash-local-draft-20261105-flow-red.log",
+          "sha256": "830adefd0b88ce07c45c2e7049010624d2336f91c1f3945bf13382328611d2a7",
+          "bytes": 6229
+        }
+      },
+      {
+        "scope": "顶层flow列表提取为空、带注释包装破坏缩进，两项旧实现红测",
+        "log": {
+          "path": "/tmp/kclash-local-draft-20261105-flow-wrapper-red.log",
+          "sha256": "277c690292a7c3403a4a5cf69171e7b02c3f401e24b982cc448e459e479e7bd0",
+          "bytes": 6307
+        }
+      }
+    ],
+    "artifacts": {
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+          "size": 90682722,
+          "sha256": "be73e953372c7bd52de18e9a577c8220fa03f37c182f0b9e4af85f0e7d42f80e",
+          "abis": [
+            "arm64-v8a"
+          ]
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+          "size": 4808674,
+          "sha256": "b9e9adc646797cf83facab3f92588e8fd580584dd87b3e781d12a2f3e8763a12",
+          "abis": []
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+          "size": 48176952,
+          "sha256": "7e23c50cf4db1f4927b413d4229049515fe2adffa3df4be9907480bd4617ba98",
+          "abis": [
+            "arm64-v8a"
+          ]
+        }
+      ],
+      "r8KeptClasses": [
+        "com.lonnnnnng.flclash.ui.ProfileProxiesEditorUiState",
+        "com.lonnnnnng.flclash.ui.LocalProxyDraftSnapshot",
+        "com.lonnnnnng.flclash.ui.LocalProxyPendingWrite",
+        "com.lonnnnnng.flclash.ui.LocalProxiesUiState",
+        "com.lonnnnnng.flclash.ui.LocalProxyDraft",
+        "com.lonnnnnng.flclash.ui.LocalProxyCollectionDraft",
+        "com.lonnnnnng.flclash.ui.ProxyLinksDraft",
+        "com.lonnnnnng.flclash.data.LocalProxy",
+        "com.lonnnnnng.flclash.data.ProxyField",
+        "com.lonnnnnng.flclash.data.ProxyFieldKind",
+        "kotlin.Pair"
+      ],
+      "releaseDexKeptClassDescriptors": true
+    },
+    "installation": {
+      "epochMs": 1793835231308,
+      "rows": [
+        {
+          "package": "com.lonnnnnng.flclash",
+          "apk": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+          "pulled": "/tmp/kclash-local-draft-20261105-installed8-app.apk",
+          "sha256": "be73e953372c7bd52de18e9a577c8220fa03f37c182f0b9e4af85f0e7d42f80e",
+          "installOutput": "Performing Streamed Install\nSuccess"
+        },
+        {
+          "package": "com.lonnnnnng.flclash.test",
+          "apk": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+          "pulled": "/tmp/kclash-local-draft-20261105-installed8-test.apk",
+          "sha256": "b9e9adc646797cf83facab3f92588e8fd580584dd87b3e781d12a2f3e8763a12",
+          "installOutput": "Performing Streamed Install\nSuccess"
+        }
+      ]
+    },
+    "finalSourceDescriptors": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/proguard-rules.pro",
+        "size": 2746,
+        "sha256": "c86f85af97aafde0d968fb54aed1ddd209d5c5dce58979fb1e804dfae4a9d12e"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/debug/kotlin/com/lonnnnnng/flclash/ConnectionAcceptanceEntryPoint.kt",
+        "size": 2430,
+        "sha256": "48a57f528cfed964c04474c3afdcd8ee682b91111597b9f12e654d09778eba0f"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/LocalProxyDraftTestActivity.kt",
+        "size": 3469,
+        "sha256": "29b49e019ae4b74f460be209cd7b466de94cc97aa7ba437af5088a0a0d24784d"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileProxiesEditor.kt",
+        "size": 5765,
+        "sha256": "f334c801c590cbd31d806f0396e87b2f34f47e259579dba1f426be3541f26850"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/di/AppModule.kt",
+        "size": 18629,
+        "sha256": "2cc519d491ce32a80880111707237e1c05f3b73f67aefeb0ba8056c1a9a34250"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/EditorSaveableState.kt",
+        "size": 11190,
+        "sha256": "d5144b9bf20bb1a62a28800a8378f8702cbcf153d3f2757850a774d6f5ceb5b0"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+        "size": 249574,
+        "sha256": "7e6809856992b45530df8b846aca36677bdb168c164f47ddb124c1d5bcfc500b"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxiesPage.kt",
+        "size": 28996,
+        "sha256": "74c545bbe3ca39c2c60b844196cec52b291d4a68f28d3585a30d7ca40966227a"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxiesViewModel.kt",
+        "size": 21974,
+        "sha256": "f2916879defe7423d09274feb9936976160671bd4ac99ffee3119a8a1cad2d56"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxyDraftSnapshot.kt",
+        "size": 779,
+        "sha256": "dfc6a09d66006ce5d8b1ecac9474dce6393a3b46569c1064f85b717774ea1d3b"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxyEditorOperations.kt",
+        "size": 2730,
+        "sha256": "5958adbdf2918b2698b57976c365912a4d78330fa0b9d282b98a96784fdfbf5e"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEditorDraftSnapshot.kt",
+        "size": 913,
+        "sha256": "f26c57e8d05667137f0f1bd5a2313ddd8d77f60dc50c8b860b54ebeaf952c2cc"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt",
+        "size": 112084,
+        "sha256": "2cb358ce37307e00087235b7ce1618bd861cf1e885adb9bd3ac7b4b2b24629e0"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/app/LocalProxyDraftRecoveryTest.kt",
+        "size": 13222,
+        "sha256": "8dbae2a4addc2fcb669bcd5fe7174352cb0c760c49f89ba992a6355624e1c3c8"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/app/ProfileProxiesEditorTest.kt",
+        "size": 4916,
+        "sha256": "80d934da81786b44a51062afafc4cb1db1a69875fcd69c63bcf05bbf52b77341"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/app/ProfilesViewModelTest.kt",
+        "size": 122963,
+        "sha256": "81b33cac6c034cf54dee46da7fbdc65af4be62ae2f10c65e8a13a49eb93f5910"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/EncryptedEditorStateInstrumentedTest.kt",
+        "size": 9776,
+        "sha256": "b701dc515cdfc83f76bdab2f917c0dc20c5435561a5b54ac1c8e0265e49fd083"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/LocalProxyColdProcessInstrumentedTest.kt",
+        "size": 20603,
+        "sha256": "b1910ca76ffd0a30c21b48b3172978d041887e637fefa7a60055ef426054d889"
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/MainActivityInstrumentedTest.kt",
+        "size": 69956,
+        "sha256": "8b818b424118e71095005c44f5b07559b61c316dd746f1e9a1095ae3cc945cca"
+      }
+    ]
+  },
+  "coldProcess": {
+    "processReport": {
+      "path": "/tmp/kclash-local-draft-20261105-cold3-processes.json",
+      "sha256": "029e457cf3597254ce8dd759372ee2d07d95e67e5b25a509a34ed9baa4731228",
+      "bytes": 4662
+    },
+    "cases": [
+      {
+        "case": "proxies",
+        "startedAtEpochMs": 1793835271423,
+        "prepareBatch": "cold3-proxies-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "26001",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835286358,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-proxies-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835297072,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-proxies-prepare.json",
+            "sha256": "545c7d3eb98c953f73d6e48ce2dce50539ffa7a5a8639ef80cb7937b3abc01a0",
+            "bytes": 491
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "proxies",
+          "seconds": 12.609,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-proxies-prepare.log",
+            "sha256": "c4314e5fde72bf0e82d6688b578c7e37316e0fe2fe5d8a8c7693c68893cea090",
+            "bytes": 915
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-proxies-verify.json",
+            "sha256": "2b6eac58ff600ac1bfa33ee315f454262fee9d575c9f96dfada808c76988c2dc",
+            "bytes": 526
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "proxies",
+          "seconds": 10.631,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-proxies-verify.log",
+            "sha256": "c11a0d7bbfb3c253ab125cd6e6288ee506f8c9338d2ffdcb2b0d21fb2dc183e6",
+            "bytes": 951
+          }
+        },
+        "preparedPid": "25881",
+        "recoveredPid": "26058"
+      },
+      {
+        "case": "proxies-conflict",
+        "startedAtEpochMs": 1793835297072,
+        "prepareBatch": "cold3-proxies-conflict-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "26275",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835311326,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-proxies-conflict-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835322811,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-proxies-conflict-prepare.json",
+            "sha256": "2e336e54125bd049e5212e3f8706a34bb05852670fe21e7cc85a88080a311214",
+            "bytes": 509
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "proxies-conflict",
+          "seconds": 11.863,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-proxies-conflict-prepare.log",
+            "sha256": "b6a67ddec90e6eeafb570cd9082e069ec52d056e97d5b5578d290f666cdf6112",
+            "bytes": 915
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-proxies-conflict-verify.json",
+            "sha256": "d35ddeb283ff8db3b358418657fae89b62d053b2ad335784f4b1cc7e08f19129",
+            "bytes": 544
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "proxies-conflict",
+          "seconds": 11.411,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-proxies-conflict-verify.log",
+            "sha256": "ad98a9225a7417101196d49f0f2e59b3336efb7c6195b6a673e29237477cfa3c",
+            "bytes": 951
+          }
+        },
+        "preparedPid": "26163",
+        "recoveredPid": "26332"
+      },
+      {
+        "case": "local-node",
+        "startedAtEpochMs": 1793835322812,
+        "prepareBatch": "cold3-local-node-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "26568",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835338426,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-local-node-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835349281,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-node-prepare.json",
+            "sha256": "f8ca473bd453ac1ec2bc5aabeb5d675ab0a82ce276c1b5b78ac4231d43979eeb",
+            "bytes": 705
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-node-prepare-local_cold_local-node_prepared.png",
+              "sha256": "8ec3cbeff293b01436fffd26bcfcd332445673acb0926d2a04fe4ce85dcba601"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-node",
+          "seconds": 13.201,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-node-prepare.log",
+            "sha256": "63eb4336f2477802b7a1caa80bd861302fb6725564f0a6220d2b1cbd3406dd8a",
+            "bytes": 1117
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-node-verify.json",
+            "sha256": "7a4387e42ed5812b2ad4d0c0d967358fcb9f0df71b30f1f13433c570267ddca0",
+            "bytes": 739
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-node-verify-local_cold_local-node_restored.png",
+              "sha256": "cdb1b9576656a36df4193e6a7f426c00217a6cf372f198cd3045ba610936d535"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-node",
+          "seconds": 10.794,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-node-verify.log",
+            "sha256": "46018bf766deb668815ee444c71fa859ce7cbe705035f89e9df179808e79ef03",
+            "bytes": 1151
+          }
+        },
+        "preparedPid": "26440",
+        "recoveredPid": "26634"
+      },
+      {
+        "case": "local-map",
+        "startedAtEpochMs": 1793835349281,
+        "prepareBatch": "cold3-local-map-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "26868",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835364956,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-local-map-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835376900,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-map-prepare.json",
+            "sha256": "fc6944423609b033ee984a7ceec90aa833d19d79aa11d935ebe8ecf9627a1199",
+            "bytes": 701
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-map-prepare-local_cold_local-map_prepared.png",
+              "sha256": "00cd054840ce1807d5ee2233756d8f3d5e23637416463b255c4505901334a773"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-map",
+          "seconds": 13.303,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-map-prepare.log",
+            "sha256": "310ad5587e81fc69bcb7d0cb88bcd8daac2e2dec3bb5786a6cebca8e2041c2d6",
+            "bytes": 1114
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-map-verify.json",
+            "sha256": "792f4d0d95a35703d466e23e3fbc4e10d83febd65cfd5d7da0106454d67a9d08",
+            "bytes": 735
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-map-verify-local_cold_local-map_restored.png",
+              "sha256": "e7e9ba5952ef653ee3bf113c70a5608a3d44605c804e62007e9b7b16be5db5f2"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-map",
+          "seconds": 11.881,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-map-verify.log",
+            "sha256": "7ae089e79c8f7f858847fde68cebda4869112c4a5f5f75ff77e9be81a5cdea1d",
+            "bytes": 1148
+          }
+        },
+        "preparedPid": "26743",
+        "recoveredPid": "26925"
+      },
+      {
+        "case": "local-list",
+        "startedAtEpochMs": 1793835376900,
+        "prepareBatch": "cold3-local-list-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "27161",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835392403,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-local-list-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835403725,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-list-prepare.json",
+            "sha256": "959220a8d5dba19564bfc1dab139047c0434649988291a068d8338b5d71f80a8",
+            "bytes": 705
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-list-prepare-local_cold_local-list_prepared.png",
+              "sha256": "8ff746de374c4ddcaac74150929cf4c7640cceba84a7604d0a83e6aad30d5543"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-list",
+          "seconds": 13.091,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-list-prepare.log",
+            "sha256": "0c4d7eceb502723498d7fbc91aee9b89f1156bcdaedf9adc53209e7eaf7a418d",
+            "bytes": 1117
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-list-verify.json",
+            "sha256": "259af0bc201d2086b67f29bf8b81f70a0463798bf2c2f36416ee1879b312d83f",
+            "bytes": 739
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-list-verify-local_cold_local-list_restored.png",
+              "sha256": "5556dec780c4b36e6ddbc1fb3dc615bcfc90effb7458b23c8cc5a53f32a06898"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-list",
+          "seconds": 11.258,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-list-verify.log",
+            "sha256": "ad0f421a22c53c3063ca0326f285b3665fc5785585c7b4ac42b8bbff5f18586e",
+            "bytes": 1151
+          }
+        },
+        "preparedPid": "27037",
+        "recoveredPid": "27219"
+      },
+      {
+        "case": "local-links-single",
+        "startedAtEpochMs": 1793835403725,
+        "prepareBatch": "cold3-local-links-single-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "27453",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835419097,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-local-links-single-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835430318,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-links-single-prepare.json",
+            "sha256": "cc6934b39f011bcfd17da19ef40ae7482223bf5acc37ff270c4d7d5cc0565739",
+            "bytes": 513
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "local-links-single",
+          "seconds": 12.935,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-links-single-prepare.log",
+            "sha256": "c7cfed97b6add53cfc5aa125ad06ce77d7fb69c86282a4c9de1cdca8a9e1f8b9",
+            "bytes": 916
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-links-single-verify.json",
+            "sha256": "ffb9e1da429f658557fb645a629c00803ceae766e35730e3cd132b5a6d982d01",
+            "bytes": 548
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "local-links-single",
+          "seconds": 11.152,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-links-single-verify.log",
+            "sha256": "21d0e6b1aed22140e12978ea8c3b22163889afce3bc3038db82afe425298784e",
+            "bytes": 951
+          }
+        },
+        "preparedPid": "27333",
+        "recoveredPid": "27518"
+      },
+      {
+        "case": "local-links-batch",
+        "startedAtEpochMs": 1793835430318,
+        "prepareBatch": "cold3-local-links-batch-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "27740",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835443711,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-local-links-batch-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835453107,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-links-batch-prepare.json",
+            "sha256": "1c0527e2397c65267b663ea930b92512cd1639d297994969235ed22229908e9e",
+            "bytes": 511
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "local-links-batch",
+          "seconds": 10.983,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-links-batch-prepare.log",
+            "sha256": "94c0f806da3bbba7426c2942d33c055d90070e57bea0da5921e9f08472fd555a",
+            "bytes": 915
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-links-batch-verify.json",
+            "sha256": "fe014b680d83b586c9449dfeffb6b9fe189a7d5bb1ab952ac24dc6fa659a8c59",
+            "bytes": 545
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "local-links-batch",
+          "seconds": 9.318,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-links-batch-verify.log",
+            "sha256": "0a60cd47f7dad3cd53681ea693bf30d18c3dee7fe923a92d6e60a7b2cbcad623",
+            "bytes": 951
+          }
+        },
+        "preparedPid": "27625",
+        "recoveredPid": "27795"
+      },
+      {
+        "case": "local-replacement",
+        "startedAtEpochMs": 1793835453107,
+        "prepareBatch": "cold3-local-replacement-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "28014",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835466663,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-local-replacement-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835476853,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-replacement-prepare.json",
+            "sha256": "e8df3b26aeda5a6730d803902970a9e6be7bdd0cc16dbfa2fa089f39f1cc25ba",
+            "bytes": 511
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "local-replacement",
+          "seconds": 11.108,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-replacement-prepare.log",
+            "sha256": "c8f283bc3f2f07223618edb320bc52c0412a171aa2f0615180653045b5ea7f74",
+            "bytes": 915
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-replacement-verify.json",
+            "sha256": "766437ec79e478231c27380eae1d372c5fae5520718b6f2fc3a4b37bc05655aa",
+            "bytes": 546
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [],
+          "exitCode": 0,
+          "case": "local-replacement",
+          "seconds": 10.117,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-replacement-verify.log",
+            "sha256": "a801101836ab53ae5d118aa643baed3c811c7f8cb0bf76a571234f08c7f02cc2",
+            "bytes": 950
+          }
+        },
+        "preparedPid": "27901",
+        "recoveredPid": "28074"
+      },
+      {
+        "case": "local-conflict",
+        "startedAtEpochMs": 1793835476853,
+        "prepareBatch": "cold3-local-conflict-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "28377",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835493281,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-local-conflict-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835505385,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-prepare.json",
+            "sha256": "220edb8fc3692f28e2534e93428f7553adac2fce2a582c47d4aaa2e59a592423",
+            "bytes": 721
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-prepare-local_cold_local-conflict_prepared.png",
+              "sha256": "6251da194ba5a672334a04e85076a49df9f87c80f0af11a73881bac0b0183f11"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-conflict",
+          "seconds": 13.998,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-prepare.log",
+            "sha256": "016c0af8d764d3afd1d75c2005683bc7ce2db24c869156542cc7384fc4b92d30",
+            "bytes": 1129
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-verify.json",
+            "sha256": "e42635b44cbe10d9d5fb31f8b86fa6137cc77b619307a48d7ac908be3f29d723",
+            "bytes": 968
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-verify-local_cold_local-conflict_restored.png",
+              "sha256": "6251da194ba5a672334a04e85076a49df9f87c80f0af11a73881bac0b0183f11"
+            },
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-verify-local_cold_local-conflict_rejected.png",
+              "sha256": "47d5c917715cfebe5071acca2a908f3f40f9ce479c1673f9022a041516818564"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-conflict",
+          "seconds": 12.039,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-verify.log",
+            "sha256": "f1cfde77cbdf542e432b748bc439f5f34796409ef98488d3e04be7f626fb0cfb",
+            "bytes": 1375
+          }
+        },
+        "preparedPid": "28213",
+        "recoveredPid": "28433"
+      },
+      {
+        "case": "local-selection",
+        "startedAtEpochMs": 1793835505386,
+        "prepareBatch": "cold3-local-selection-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "28655",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793835518559,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold3-local-selection-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793835527200,
+        "prepare": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-selection-prepare.json",
+            "sha256": "b762a5463b25d0d9e886a1b0b8afd3680bf9ea03608638046488ab595890ef0c",
+            "bytes": 725
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#prepareEncryptedDraftWithoutCommitting",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-selection-prepare-local_cold_local-selection_prepared.png",
+              "sha256": "46448ad03bd9cd00695a23f05fad1f821a6d51ce9a0281a86c337b057ddbc0d1"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-selection",
+          "seconds": 10.783,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-selection-prepare.log",
+            "sha256": "31d756329efbf994ed041c64332c561285b0a7c78cfaedd010cf75168142dcae",
+            "bytes": 1131
+          }
+        },
+        "verify": {
+          "report": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-selection-verify.json",
+            "sha256": "1af7c8814eac9138c81a0959673d01ab0cd6a8f9f751fcbf5af64a8a3b748768",
+            "bytes": 758
+          },
+          "requested": [
+            "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.LocalProxyColdProcessInstrumentedTest#verifyAutomaticRecoveryAndDiscardWithoutChangingUserData",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "images": [
+            {
+              "path": "/tmp/kclash-local-draft-20261105-cold3-local-selection-verify-local_cold_local-selection_restored.png",
+              "sha256": "c2454dffa9992c87abae676ede7bc9ba067469cdfe671c0a977db412c80378c2"
+            }
+          ],
+          "exitCode": 0,
+          "case": "local-selection",
+          "seconds": 8.577,
+          "log": {
+            "path": "/tmp/kclash-local-draft-20261105-cold3-local-selection-verify.log",
+            "sha256": "784c992a624fd2ec4f2065ff36b1112e1365aaf31e1f08f399a8fc1b3c154b48",
+            "bytes": 1166
+          }
+        },
+        "preparedPid": "28542",
+        "recoveredPid": "28711"
+      }
+    ],
+    "scope": "10场景每项prepare/verify独立运行；中间正式MainActivity到后台am kill，外部确认PID消失，恢复PID不同；verify不主动open"
+  },
+  "regressionFinal": {
+    "report": {
+      "path": "/tmp/kclash-local-draft-20261105-regression4.json",
+      "sha256": "b69e7b91a5f6a93bc62c9cb90bb53f366b4202f70a3e52e33b1334feda8418f8",
+      "bytes": 8487
+    },
+    "requested": [
+      "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#nestedDialogDraftRestoresFromEncryptedTreeWithoutActivityRestoration",
+      "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#interruptedBatchKeepsOperationAndWaitsForExplicitRetry",
+      "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#failedCheckpointBlocksCommitUntilValueCanBeCaptured",
+      "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#proxiesTextSelectionAndDiscardWindowRestoreWithoutReplayingOldCredentials",
+      "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+      "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+      "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#realCodecAndViewModelKeepDraftOptionsRejectStaleSaveAndConfirmBatchReplacement",
+      "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#localDirectoryDragScrollsCancelsAndSavesOnceThenSearchDisablesSorting",
+      "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#linkDraftErrorsReplacementAndDiscardRenderInBothThemes",
+      "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+      "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+      "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPersistsCustomProfileProxiesThroughRealViewModels",
+      "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPersistsCustomProfileProxyGroupsThroughRealViewModels",
+      "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+    ],
+    "results": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#interruptedBatchKeepsOperationAndWaitsForExplicitRetry",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#failedCheckpointBlocksCommitUntilValueCanBeCaptured",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#nestedDialogDraftRestoresFromEncryptedTreeWithoutActivityRestoration",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#proxiesTextSelectionAndDiscardWindowRestoreWithoutReplayingOldCredentials",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#realCodecAndViewModelKeepDraftOptionsRejectStaleSaveAndConfirmBatchReplacement",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#localDirectoryDragScrollsCancelsAndSavesOnceThenSearchDisablesSorting",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#linkDraftErrorsReplacementAndDiscardRenderInBothThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPersistsCustomProfileProxiesThroughRealViewModels",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPersistsCustomProfileProxyGroupsThroughRealViewModels",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      }
+    ],
+    "images": [
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-proxies_private_tree_discard.png",
+        "sha256": "6e046c9ecccde38cdb1f587e60c466bca3cc59ca99fd8d0ffec56fa6d735d340"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxies_drag_saved.png",
+        "sha256": "4ec2d886f7b4996a99e137f072e33b91773a9e09af897ef687e6f2970951e49d"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_error_false.png",
+        "sha256": "672349fee90e304584f81860b1847ec53c6034fa45dd7c1187fa2f014296bfe3"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_discard_false.png",
+        "sha256": "7e5b5db4c569a946934eb19ac992c2c5f87ded78bf261d3634924b1ab27a0b37"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_replacement_false.png",
+        "sha256": "620998f003b2767bd7b142f4f61fac2f1aafcb1c1198983e0da1e515a98940f7"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_error_true.png",
+        "sha256": "329396d996bd9255236ce57f71b224c7a3c94425ba5f70fe26333a001c00d038"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_discard_true.png",
+        "sha256": "e4731918630bfef827e49ee4cb32589df5e2260f6a6b2cda67655eead747ca09"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_replacement_true.png",
+        "sha256": "705738c0e5c3ef02f1ab4830a83815a7a62330a08eb2bb380ea329bd4bbe4544"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_discard.png",
+        "sha256": "bd67cd91358c2b8267c7b32eae9567b578339722028fa51ce276775b31fc1396"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_delete_references.png",
+        "sha256": "fd3e3326c6d853663167cc1772b0db5270ef32ace9ffeba7d330d8c117b32c4d"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_empty.png",
+        "sha256": "e21faff379349aa6ed0620637ed1b9370976101c276824187ee94370d2a0fb0d"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxies_list_false.png",
+        "sha256": "79da75eb06788b92d1ef5b52964a4349d635c413b88d86db66da022768e600b3"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_ss_editor_false.png",
+        "sha256": "526ec470dd545c2af7086e191bae6c9513b8f1fe581723d5a9f51cf7bd4bef8c"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_options_false.png",
+        "sha256": "b972a41799d513fd4c8e2de2939133c3cad7a4223cb9a16ea67870b362639de7"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_transport_false.png",
+        "sha256": "6f7571a5e1e4113310a8c3a3762a6ca7d77a1103a4ac68b85b595acc917c83e2"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxies_list_true.png",
+        "sha256": "8f3775c0e6b166b5f6420ad43b78930997ffdb6ea41abe5f76545592248d24c9"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_ss_editor_true.png",
+        "sha256": "82f1bbac0323eb1a3cd9a4bfcba7cdf925372ff2630f5e83d02a9956bdcc425f"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_options_true.png",
+        "sha256": "fc9c5e4b40558527163e0ec8795a27e784bbc3a877a90ae67c489a9e7a034514"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_transport_true.png",
+        "sha256": "695375044943a68a420bbdc65b514879f9563b0b8471717dae8b949dc4a72ea6"
+      }
+    ],
+    "exitCode": 0,
+    "case": "local-node",
+    "seconds": 93.503,
+    "log": {
+      "path": "/tmp/kclash-local-draft-20261105-regression4.log",
+      "sha256": "8a78ef1793b0190515b45a9a13fe697151122c9c3158e7480501ef0aaeb6e5d7",
+      "bytes": 14872
+    }
+  },
+  "proxiesSaveTargeted": {
+    "report": {
+      "path": "/tmp/kclash-local-draft-20261105-proxies-save8.json",
+      "sha256": "1286564584363655ff31f05d937a2d511a6e5b69232ce8a76d22e88ed86315c7",
+      "bytes": 508
+    },
+    "requested": [
+      "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPersistsCustomProfileProxiesThroughRealViewModels"
+    ],
+    "results": [
+      {
+        "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPersistsCustomProfileProxiesThroughRealViewModels",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      }
+    ],
+    "images": [],
+    "exitCode": 0,
+    "case": "local-node",
+    "seconds": 12.063,
+    "log": {
+      "path": "/tmp/kclash-local-draft-20261105-proxies-save8.log",
+      "sha256": "56ed2b7a3f47c73522ed33829139cda347ce720817b69c59ceecf486ed9413da",
+      "bytes": 838
+    }
+  },
+  "previousBatches": [
+    {
+      "batch": "regression2",
+      "requested": 14,
+      "passed": 11,
+      "results": 13,
+      "failures": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession"
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainActivityInstrumentedTest#initializationError"
+        }
+      ],
+      "report": {
+        "path": "/tmp/kclash-local-draft-20261105-regression2.json",
+        "sha256": "a78fbc9b0efe61af85a0a75cad665c734ec7bdb71df98d6fcad984ff5849cf93",
+        "bytes": 14354
+      },
+      "log": {
+        "path": "/tmp/kclash-local-draft-20261105-regression2.log",
+        "sha256": "14a92adb5032bdfcb594fa89e44e263f50a5dd151a665bd71c5b105b9948e61d",
+        "bytes": 23251
+      }
+    },
+    {
+      "batch": "regression3",
+      "requested": 14,
+      "passed": 13,
+      "results": 14,
+      "failures": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPersistsCustomProfileProxiesThroughRealViewModels"
+        }
+      ],
+      "report": {
+        "path": "/tmp/kclash-local-draft-20261105-regression3.json",
+        "sha256": "ade2622e123d1a1a44347cf81c371ad1911f8ac3e1edb4c1785cd0fc90be7337",
+        "bytes": 10442
+      },
+      "log": {
+        "path": "/tmp/kclash-local-draft-20261105-regression3.log",
+        "sha256": "3ce177ceca1ce82ef585aa795d386a418fa7d8e850fe6b7c482d40b3efe16983",
+        "bytes": 17883
+      }
+    },
+    {
+      "batch": "proxies-save6",
+      "requested": 1,
+      "passed": 0,
+      "results": 1,
+      "failures": [
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityPersistsCustomProfileProxiesThroughRealViewModels"
+        }
+      ],
+      "report": {
+        "path": "/tmp/kclash-local-draft-20261105-proxies-save6.json",
+        "sha256": "2ffc0c67cda04e70b8cad9354e9a02752d3b40f8c2bdfb9f3b77e455edf1b1c1",
+        "bytes": 1615
+      },
+      "log": {
+        "path": "/tmp/kclash-local-draft-20261105-proxies-save6.log",
+        "sha256": "d5a1a0e876b0e5b825c6a622d2f26956b42eb039fc637a3713661f6cb3164056",
+        "bytes": 2608
+      }
+    },
+    {
+      "batch": "cold2",
+      "scope": "旧生产包10场景通过；夹具后来移除无关原配置可选字段，最终以cold3为准；旧节点PNG不作最终脱敏视觉证据",
+      "report": {
+        "path": "/tmp/kclash-local-draft-20261105-cold2-processes.json",
+        "sha256": "3d2b32db0b3f89286bb9f18603d1c13e4895847a71f95ef74a6cb5cc8e5f655a",
+        "bytes": 4662
+      }
+    }
+  ],
+  "preservation": {
+    "before": {
+      "report": {
+        "path": "/tmp/kclash-local-draft-20261105-preserve-before.json",
+        "sha256": "55f1032c6f7938ad8267541ea2ab6f8b2365d00b1696b39b6ee66deced13d78d",
+        "bytes": 465
+      },
+      "requested": [
+        "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "images": [],
+      "exitCode": 0,
+      "case": "local-node",
+      "seconds": 7.265,
+      "log": {
+        "path": "/tmp/kclash-local-draft-20261105-preserve-before.log",
+        "sha256": "8f183631438cb02159cae24f8513b12fc08d52e5d0704b91f1f17b1909fadd0f",
+        "bytes": 962
+      },
+      "formalCount": 1,
+      "formalDigest": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2"
+    },
+    "after": {
+      "report": {
+        "path": "/tmp/kclash-local-draft-20261105-preserve-after-final8.json",
+        "sha256": "b0db047d79e7fe250530b24e3f0b68eaf88fbc5f105f29f53eb9653769f3a039",
+        "bytes": 471
+      },
+      "requested": [
+        "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "images": [],
+      "exitCode": 0,
+      "case": "local-node",
+      "seconds": 7.011,
+      "log": {
+        "path": "/tmp/kclash-local-draft-20261105-preserve-after-final8.log",
+        "sha256": "ab6e5447905ba53dbfbf84a781b76f8198353e14c57995c7b43bc419aa4b798c",
+        "bytes": 961
+      },
+      "formalCount": 1,
+      "formalDigest": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2"
+    },
+    "deviceBefore": {
+      "report": {
+        "path": "/tmp/kclash-local-draft-20261105-before.json",
+        "sha256": "ce003b8be80bca63b55efe4ba97c22baaed44c17170e7c6bde3c6c91ee5652e8",
+        "bytes": 1233
+      },
+      "epochMs": 1793832175671,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~uIEByd7icVmBZlgJTTkGDg==/com.lonnnnnng.flclash-CkPlpwOrEk2tWiFheElOPA==/base.apk",
+          "sha256": "72e6178c60607b8b2ede9e84783fcd3afce442782416b6c85afc8f241bd2fbcc"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~VJkPSPN0_I28nPJEPkwJ0w==/com.lonnnnnng.flclash.test-DKnU0_5RgcXerJN4sXgGBw==/base.apk",
+          "sha256": "91a597db9d3db13fd21908dfaeee22e6fdade39fd14a23b8bca33cd00405f818"
+        }
+      ],
+      "noKotlinServiceOrTun0": true
+    },
+    "deviceAfter": {
+      "report": {
+        "path": "/tmp/kclash-local-draft-20261105-after-final8.json",
+        "sha256": "35bb67793886b1351d143f16819fb5d5de2abf13a245604ad3ed18ada2ebeaf4",
+        "bytes": 1461
+      },
+      "epochMs": 1793835685785,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~rOkc68GaZ4rzMNsDnKM59A==/com.lonnnnnng.flclash-_zTphOJzqNrAMgGE7T1L1A==/base.apk",
+          "sha256": "be73e953372c7bd52de18e9a577c8220fa03f37c182f0b9e4af85f0e7d42f80e"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~3f-B5uZEvnYAYXi8fLNCFQ==/com.lonnnnnng.flclash.test-NU_02129upF6fELZNXmTGA==/base.apk",
+          "sha256": "b9e9adc646797cf83facab3f92588e8fd580584dd87b3e781d12a2f3e8763a12"
+        }
+      ],
+      "noKotlinServiceOrTun0": true,
+      "preserved": true,
+      "builtAppSha256": "be73e953372c7bd52de18e9a577c8220fa03f37c182f0b9e4af85f0e7d42f80e",
+      "builtTestSha256": "b9e9adc646797cf83facab3f92588e8fd580584dd87b3e781d12a2f3e8763a12",
+      "installedApksMatch": true
+    },
+    "scope": "正式1份配置、当前选择、源正文SHA/size/mtime及逐字段聚合摘要和本地目录保持；原1.yaml双端、Flutter APK、旋转/字号/动画设置保持；App/Test回拉哈希匹配，结束无服务/tun0",
+    "physicalDraftCleanup": "每个verify在应用内部等待Store为空后检查主文件、.bak、.new均不存在；不使用ROM拒绝的run-as退出码判定"
+  },
+  "visualReview": {
+    "reviewedBy": "主代理目视",
+    "observations": [
+      "local-conflict_rejected图仍处于保存到错误的过渡帧；冲突拒绝、草稿保留和正文不变由状态/数据断言证明，不将该图当稳定错误终态或Flutter像素一致证据。"
+    ],
+    "images": [
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-node-prepare-local_cold_local-node_prepared.png",
+        "sha256": "8ec3cbeff293b01436fffd26bcfcd332445673acb0926d2a04fe4ce85dcba601"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-node-verify-local_cold_local-node_restored.png",
+        "sha256": "cdb1b9576656a36df4193e6a7f426c00217a6cf372f198cd3045ba610936d535"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-map-prepare-local_cold_local-map_prepared.png",
+        "sha256": "00cd054840ce1807d5ee2233756d8f3d5e23637416463b255c4505901334a773"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-map-verify-local_cold_local-map_restored.png",
+        "sha256": "e7e9ba5952ef653ee3bf113c70a5608a3d44605c804e62007e9b7b16be5db5f2"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-list-prepare-local_cold_local-list_prepared.png",
+        "sha256": "8ff746de374c4ddcaac74150929cf4c7640cceba84a7604d0a83e6aad30d5543"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-list-verify-local_cold_local-list_restored.png",
+        "sha256": "5556dec780c4b36e6ddbc1fb3dc615bcfc90effb7458b23c8cc5a53f32a06898"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-prepare-local_cold_local-conflict_prepared.png",
+        "sha256": "6251da194ba5a672334a04e85076a49df9f87c80f0af11a73881bac0b0183f11"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-verify-local_cold_local-conflict_restored.png",
+        "sha256": "6251da194ba5a672334a04e85076a49df9f87c80f0af11a73881bac0b0183f11"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-conflict-verify-local_cold_local-conflict_rejected.png",
+        "sha256": "47d5c917715cfebe5071acca2a908f3f40f9ce479c1673f9022a041516818564"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-selection-prepare-local_cold_local-selection_prepared.png",
+        "sha256": "46448ad03bd9cd00695a23f05fad1f821a6d51ce9a0281a86c337b057ddbc0d1"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-cold3-local-selection-verify-local_cold_local-selection_restored.png",
+        "sha256": "c2454dffa9992c87abae676ede7bc9ba067469cdfe671c0a977db412c80378c2"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-proxies_private_tree_discard.png",
+        "sha256": "6e046c9ecccde38cdb1f587e60c466bca3cc59ca99fd8d0ffec56fa6d735d340"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxies_drag_saved.png",
+        "sha256": "4ec2d886f7b4996a99e137f072e33b91773a9e09af897ef687e6f2970951e49d"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_error_false.png",
+        "sha256": "672349fee90e304584f81860b1847ec53c6034fa45dd7c1187fa2f014296bfe3"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_discard_false.png",
+        "sha256": "7e5b5db4c569a946934eb19ac992c2c5f87ded78bf261d3634924b1ab27a0b37"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_replacement_false.png",
+        "sha256": "620998f003b2767bd7b142f4f61fac2f1aafcb1c1198983e0da1e515a98940f7"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_error_true.png",
+        "sha256": "329396d996bd9255236ce57f71b224c7a3c94425ba5f70fe26333a001c00d038"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_discard_true.png",
+        "sha256": "e4731918630bfef827e49ee4cb32589df5e2260f6a6b2cda67655eead747ca09"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_links_replacement_true.png",
+        "sha256": "705738c0e5c3ef02f1ab4830a83815a7a62330a08eb2bb380ea329bd4bbe4544"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_discard.png",
+        "sha256": "bd67cd91358c2b8267c7b32eae9567b578339722028fa51ce276775b31fc1396"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_delete_references.png",
+        "sha256": "fd3e3326c6d853663167cc1772b0db5270ef32ace9ffeba7d330d8c117b32c4d"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_empty.png",
+        "sha256": "e21faff379349aa6ed0620637ed1b9370976101c276824187ee94370d2a0fb0d"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxies_list_false.png",
+        "sha256": "79da75eb06788b92d1ef5b52964a4349d635c413b88d86db66da022768e600b3"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_ss_editor_false.png",
+        "sha256": "526ec470dd545c2af7086e191bae6c9513b8f1fe581723d5a9f51cf7bd4bef8c"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_options_false.png",
+        "sha256": "b972a41799d513fd4c8e2de2939133c3cad7a4223cb9a16ea67870b362639de7"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_transport_false.png",
+        "sha256": "6f7571a5e1e4113310a8c3a3762a6ca7d77a1103a4ac68b85b595acc917c83e2"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxies_list_true.png",
+        "sha256": "8f3775c0e6b166b5f6420ad43b78930997ffdb6ea41abe5f76545592248d24c9"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_ss_editor_true.png",
+        "sha256": "82f1bbac0323eb1a3cd9a4bfcba7cdf925372ff2630f5e83d02a9956bdcc425f"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_options_true.png",
+        "sha256": "fc9c5e4b40558527163e0ec8795a27e784bbc3a877a90ae67c489a9e7a034514"
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-regression4-local_proxy_transport_true.png",
+        "sha256": "695375044943a68a420bbdc65b514879f9563b0b8471717dae8b949dc4a72ea6"
+      }
+    ],
+    "contacts": [
+      {
+        "path": "/tmp/kclash-local-draft-20261105-contact-final8-0.jpg",
+        "sha256": "29d7a4dcec8d000f7371eccbda2e5d48748712974b164719061cd0adb90a1702",
+        "bytes": 169011
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-contact-final8-1.jpg",
+        "sha256": "b8baee35da9addf00bd9dfc4326aa3fe93b0f822680aa461f11596cc9aa3591b",
+        "bytes": 210826
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-contact-final8-2.jpg",
+        "sha256": "713e7de2b9eb19cb8df27b5b1552dff7ff0907cd08bab12ebe6562983b1cf780",
+        "bytes": 268376
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-contact-final8-3.jpg",
+        "sha256": "338f7e4b330b28a3a709d03c461446fa2bc2aec1058573c959c7fa5f6662889f",
+        "bytes": 187694
+      },
+      {
+        "path": "/tmp/kclash-local-draft-20261105-contact-final8-4.jpg",
+        "sha256": "0795677ca5408c4fcd5d6400e967b5dd7dfa226c9354a9c002477e72377d2c24",
+        "bytes": 248248
+      }
+    ],
+    "scope": "最终30张PNG及5张拼图；真实Proxies正文/正式目录链接不采图，另用固定脱敏宿主验证选区/放弃窗口；不推广全应用Flutter像素一致性"
+  },
+  "independentReview": [
+    "local_draft_final_code_audit：本地session合并、Noop、关闭锁/CAS/isOpen边界未发现阻断，仅静态复核。",
+    "proxies_draft_final_code_audit：定位首次read与第一次extensionProfile挂起的两处竞态；两项红测复现后修复。",
+    "draft_recovery_token_recheck：原令牌跨元数据/子页返回复核、早到打开延后及写入等待无新阻断，仅静态复核。",
+    "proxies_yaml_final_check：完整YAML语义校验主路径无新增阻断；另发现顶层flow列表和注释包装旧边界，随后红测复现并修复。静态复核不替代最终JVM与正式MainActivity验收。",
+    "local_draft_evidence_final8_audit：154条本机文件descriptor哈希/大小一致，6条设备APK快照与原保护报告一致；745项实际XML、build8/lint8、cold3十场景PID链、regression4 14/14、保存8 1/1、最终安装/数据保护与当前文档口径一致，无新增阻断。只读证据核验，未独立重看PNG或重跑设备。"
+  ],
+  "limitations": [
+    "本组10场景不覆盖规则YAML/保持打开的类型选择器、策略组成员/选择/排序/批选及真实保存中/落盘后UI收尾前死亡窗口；这些仍需冷验。",
+    "提交意图的未提交/已提交与不自动重放有JVM覆盖；本组真机冷恢复在编辑/确认/冲突状态回收，不推广所有保存死亡时点。",
+    "ALPN列表和映射另有隔离Activity+正式VM重建回归；Proxies保存由正式MainActivity的实际VM打开，保存按钮/Repository回读通过，不将此称为所有产品导航入口全覆盖。",
+    "仅Redmi API36竖屏默认字号arm64离线草稿；未重跑实网、VPN、Fallback、低API、Go、正式签名Release运行或远端CI。",
+    "在线age/CUSTOM引用源实网、其他资源SAF/外部脚本、Provider剩余来源/故障恢复/实际流量命中、质量来源/持久缓存、Fallback/蜂窝/第三方OEM仍待推进。",
+    "完整Flutter视觉/缓动、morph/orbit、live背景/触点光效、玻璃采样品质及8MiB/动效性能未完成；玻璃默认关闭。",
+    "备份/系统恢复、观测次要打磨、语言/主题暂缓；TalkBack/自定义无障碍、早期Room兼容、横屏/大字号不纳入，其他ABI不在当前交付范围。",
+    "原始日志、截图和驱动脚本只在本机/tmp，未随源码上传；路径/哈希不等于远端附件可复核。"
+  ]
+}

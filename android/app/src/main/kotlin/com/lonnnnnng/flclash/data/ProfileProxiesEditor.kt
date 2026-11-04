@@ -5,7 +5,6 @@ package com.lonnnnnng.flclash.data
  * 保留端口、DNS、规则和其他未编辑字段，避免局部编辑重排整份配置。
  */
 object ProfileProxiesEditor {
-    private val fieldPattern = Regex("^([A-Za-z0-9_-]+)\\s*:\\s*(.*)$")
     private val topLevelKeyPattern = Regex("^[A-Za-z0-9_-]+$")
 
     fun extractProxies(yaml: String): String {
@@ -13,27 +12,21 @@ object ProfileProxiesEditor {
         val start = findProxiesStart(lines) ?: return ""
         if (lines[start].substringAfter(':').trim() == "[]") return ""
         val end = findSectionEnd(lines, start)
-        return lines
-            .subList(start + 1, end)
-            .joinToString("\n") { line ->
-                when {
-                    line.startsWith("  ") -> line.removePrefix("  ")
-                    line.isBlank() -> ""
-                    else -> line.trim()
-                }
-            }
-            .trim('\n')
+        // 作者 long：顶层flow列表的首行也含节点；漏掉冒号后的值会让未修改保存误清空节点。
+        val inline = lines[start].substringAfter(':').trimStart()
+        val body = dedent(lines.subList(start + 1, end))
+        return ((if (inline.isNotEmpty()) listOf(inline) else emptyList()) + body).joinToString("\n").trim('\n')
     }
 
     fun replaceProxies(yaml: String, editorText: String): String {
-        val entries = parseEntries(editorText)
+        val entries = editorLines(editorText)
         val lines = normalizedLines(yaml)
         val start = findProxiesStart(lines)
         val rendered = renderSection(entries)
 
-        if (start == null) {
+        val replaced = if (start == null) {
             val prefix = lines.joinToString("\n").trimEnd()
-            return buildString {
+            buildString {
                 if (prefix.isNotEmpty()) {
                     append(prefix)
                     append("\n")
@@ -41,99 +34,57 @@ object ProfileProxiesEditor {
                 append(rendered.joinToString("\n"))
                 append("\n")
             }
+        } else {
+            val end = findSectionEnd(lines, start)
+            buildList {
+                addAll(lines.subList(0, start))
+                addAll(rendered)
+                addAll(lines.subList(end, lines.size))
+            }.joinToString("\n").trimEnd() + "\n"
         }
-
-        val end = findSectionEnd(lines, start)
-        return buildList {
-            addAll(lines.subList(0, start))
-            addAll(rendered)
-            addAll(lines.subList(end, lines.size))
-        }.joinToString("\n").trimEnd() + "\n"
+        validateProxies(replaced)
+        return replaced
     }
 
-    private fun parseEntries(editorText: String): List<List<String>> {
+    private fun editorLines(editorText: String): List<String> {
         val sourceLines = normalizedLines(editorText)
         val firstContentIndex = sourceLines.indexOfFirst { it.isNotBlank() && !it.trimStart().startsWith("#") }
         if (firstContentIndex < 0) return emptyList()
-
         val firstContent = sourceLines[firstContentIndex].trim()
-        val body = when {
-            firstContent == "proxies: []" -> return emptyList()
-            firstContent == "proxies:" -> sourceLines.drop(firstContentIndex + 1)
-            else -> sourceLines.drop(firstContentIndex)
-        }
+        val body = if (firstContent.startsWith("proxies:")) {
+            val inline = firstContent.substringAfter(':').trimStart()
+            // 作者 long：包装行注释不参与列表缩进计算，否则粘贴带注释的proxies包装会破坏节点结构。
+            dedent(sourceLines.take(firstContentIndex)) +
+                (if (inline.isNotEmpty()) listOf(inline) else emptyList()) +
+                dedent(sourceLines.drop(firstContentIndex + 1))
+        } else sourceLines
         val lines = dedent(body)
-        val entries = mutableListOf<MutableList<String>>()
-        var current: MutableList<String>? = null
+        val content = lines.filter { it.isNotBlank() && !it.trimStart().startsWith("#") }
+        return if (content.isEmpty() || content == listOf("[]")) emptyList() else lines
+    }
 
-        lines.forEachIndexed { index, line ->
-            val trimmed = line.trimStart()
-            if (line.isBlank() || trimmed.startsWith("#")) {
-                current?.add(line.trimEnd())
-                return@forEachIndexed
-            }
-            if (line == trimmed && trimmed.startsWith("-")) {
-                require(trimmed == "-" || trimmed.startsWith("- ")) {
-                    "第 ${index + 1} 行代理条目格式无效"
-                }
-                current = mutableListOf(line.trimEnd())
-                entries += current
-                return@forEachIndexed
-            }
-            val entry = requireNotNull(current) {
-                "第 ${index + 1} 行必须从列表条目开始"
-            }
-            require(line.length - trimmed.length >= 2) {
-                "第 ${index + 1} 行代理字段必须缩进"
-            }
-            entry.add(line.trimEnd())
-        }
-
+    private fun validateProxies(yaml: String) {
+        // 作者 long：Flutter按解析后的节点定义读取name/type；文本行扫描会误拒绝行内映射，也会把嵌套headers字段当成节点字段。
+        // 在完整替换结果中校验，才能解析节点引用的其他分区锚点，同时保留用户分区原文、注释和未编辑配置。
+        val root = try { ProxyGroupDrafts.root(yaml) }
+        catch (error: Exception) { throw IllegalArgumentException("代理 YAML 格式无效", error) }
+        val values = root.get("proxies")
+        require(values != null && values.isJsonArray) { "代理分区必须是列表" }
         val names = mutableSetOf<String>()
-        entries.forEachIndexed { index, entry ->
-            val fields = entryFields(entry)
-            val name = fields["name"].orEmpty().trim()
-            val type = fields["type"].orEmpty().trim()
-            require(name.isNotEmpty()) {
-                "第 ${index + 1} 个代理缺少 name"
-            }
-            require(type.isNotEmpty()) {
-                "第 ${index + 1} 个代理缺少 type"
-            }
-            require(names.add(name)) {
-                "代理名称重复：$name"
-            }
-        }
-        return entries
-    }
-
-    private fun entryFields(entry: List<String>): Map<String, String> = buildMap {
-        entry.forEachIndexed { index, rawLine ->
-            val candidate = if (index == 0) {
-                rawLine.trim().removePrefix("-").trimStart()
-            } else {
-                rawLine.trim()
-            }
-            val match = fieldPattern.matchEntire(candidate) ?: return@forEachIndexed
-            put(match.groupValues[1], match.groupValues[2])
+        values.asJsonArray.forEachIndexed { index, value ->
+            require(value.isJsonObject) { "第 ${index + 1} 个代理必须是对象" }
+            val fields = value.asJsonObject
+            val name = fields.get("name")?.takeIf { it.isJsonPrimitive }?.asString.orEmpty().trim()
+            val type = fields.get("type")?.takeIf { it.isJsonPrimitive }?.asString.orEmpty().trim()
+            require(name.isNotEmpty()) { "第 ${index + 1} 个代理缺少 name" }
+            require(type.isNotEmpty()) { "第 ${index + 1} 个代理缺少 type" }
+            require(names.add(name)) { "代理名称重复：$name" }
         }
     }
 
-    private fun renderSection(entries: List<List<String>>): List<String> {
-        if (entries.isEmpty()) return listOf("proxies: []")
-        return buildList {
-            add("proxies:")
-            entries.forEach { entry ->
-                entry.forEach { line ->
-                    if (line.isBlank()) {
-                        add("")
-                    } else {
-                        add("  $line")
-                    }
-                }
-            }
-        }
-    }
+    private fun renderSection(lines: List<String>): List<String> =
+        if (lines.isEmpty()) listOf("proxies: []")
+        else listOf("proxies:") + lines.map { if (it.isBlank()) "" else "  $it" }
 
     private fun dedent(lines: List<String>): List<String> {
         val indent = lines
@@ -142,7 +93,7 @@ object ProfileProxiesEditor {
             ?: 0
         if (indent == 0) return lines
         return lines.map { line ->
-            if (line.length >= indent) line.drop(indent) else ""
+            line.drop(minOf(indent, line.length - line.trimStart().length))
         }
     }
 

@@ -29,6 +29,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -404,52 +405,50 @@ class MainActivityInstrumentedTest {
 
     @Test
     fun mainActivityPersistsCustomProfileProxiesThroughRealViewModels() {
-        val label = "Activity E2E 代理"
-        val proxy = "- name: DIRECT-TEST\n  type: direct"
-
-        composeRule.onNodeWithTag("nav_profiles").performClick()
-        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        startCustomProfileEditor(label)
-        // 作者 long：先写入最小基础 YAML，确保代理分区回写时要保留同一份 Profile 的其他内容。
-        composeRule.onNodeWithTag("custom_profile_toggle_yaml").performScrollTo().performClick()
-        composeRule.onNodeWithText("YAML").performTextInput("mixed-port: 7890\nmode: rule")
-        composeRule.onNodeWithText("保存").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isEmpty()
+        com.lonnnnnng.flclash.ui.assertPortraitDefaultFontConfiguration()
+        val entryPoint = EntryPointAccessors.fromApplication(composeRule.activity.application, ConnectionAcceptanceEntryPoint::class.java)
+        val repository = entryPoint.profileRepository()
+        val id = System.nanoTime().and(Long.MAX_VALUE)
+        val profile = com.lonnnnnng.flclash.data.Profile.custom(id, "Activity E2E 代理")
+        val original = com.lonnnnnng.flclash.data.readAuthorizedProxyProfile().toString(Charsets.UTF_8)
+        val model = ViewModelProvider(composeRule.activity)[com.lonnnnnng.flclash.ui.ProfilesViewModel::class.java]
+        val selected = repository.currentProfileId.value
+        try {
+            runBlocking(Dispatchers.IO) {
+                check(entryPoint.database().profiles().getById(id) == null)
+                entryPoint.database().profiles().insert(profile.toEntity())
+                // 作者 long：本地验收只克隆授权1.yaml，不再向旧控件写入另造配置；正式源和当前选择保持原样。
+                repository.profileFile(id).apply { parentFile!!.mkdirs(); writeText(original) }
+            }
+            composeRule.onNodeWithTag("nav_profiles").performClick()
+            composeRule.runOnIdle { model.openProxiesEditor(profile) }
+            composeRule.waitUntil(15_000) { model.proxiesEditorState.value.profile?.id == id && !model.proxiesEditorState.value.isLoading }
+            val edited = model.proxiesEditorState.value.proxies + "\n# proxies-save-regression\n"
+            composeRule.onNodeWithTag("profile_proxies_content").performTextReplacement(edited)
+            androidx.test.espresso.Espresso.closeSoftKeyboard()
+            composeRule.onNodeWithTag("profile_proxies_save").performClick()
+            composeRule.waitUntil(15_000) { !model.proxiesEditorState.value.isSaving &&
+                (model.proxiesEditorState.value.profile == null || model.proxiesEditorState.value.error != null) }
+            org.junit.Assert.assertNull("代理分区保存失败", model.proxiesEditorState.value.error)
+            val persisted = runBlocking(Dispatchers.IO) { repository.readLocalProfileContent(id) }
+            val expected = com.lonnnnnng.flclash.data.ProfileProxiesEditor.replaceProxies(original, edited)
+            assertTrue("保存必须保留原配置其他分区", persisted == expected)
+            composeRule.runOnIdle { model.openProxiesEditor(profile) }
+            composeRule.waitUntil(15_000) { model.proxiesEditorState.value.profile?.id == id && !model.proxiesEditorState.value.isLoading }
+            assertTrue("重新打开必须回读已保存正文", model.proxiesEditorState.value.proxies.contains("proxies-save-regression"))
+            composeRule.onNodeWithTag("profile_proxies_back").performClick()
+            composeRule.waitUntil(15_000) { model.proxiesEditorState.value.profile == null }
+        } finally {
+            composeRule.runOnIdle { model.closeEditor() }
+            composeRule.waitUntil(15_000) { model.editorState.value.profile == null && model.proxiesEditorState.value.profile == null }
+            runBlocking(Dispatchers.IO) {
+                // 作者 long：只回收本方法分配且名称核对一致的ID，不能按名称或全表清理已有配置。
+                entryPoint.database().profiles().getById(id)?.let { row ->
+                    check(row.label == profile.label); repository.deleteProfile(id)
+                }
+                repository.selectProfile(selected)
+            }
         }
-
-        openProfileActions(label)
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("代理").performScrollTo().performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText("代理 YAML").performTextInput(proxy)
-        composeRule.onNodeWithText("保存").performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isEmpty()
-        }
-
-        openProfileActions(label)
-        composeRule.onNodeWithText("编辑").performClick()
-        composeRule.onNodeWithText("代理").performScrollTo().performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText("代理 · $label").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText(proxy).assertIsDisplayed()
-        composeRule.onNodeWithText("取消").performClick()
-
-        openProfileActions(label)
-        composeRule.onNodeWithText("删除").performClick()
-        composeRule.onNodeWithText("确定删除“$label”吗？本地配置文件也会一并删除。").assertIsDisplayed()
-        val deleteButtons = composeRule.onAllNodesWithText("删除")
-        deleteButtons[deleteButtons.fetchSemanticsNodes().lastIndex].performClick()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithText(label).fetchSemanticsNodes().isEmpty()
-        }
-
-        composeRule.onNodeWithText("首页").performClick()
-        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }
 
     @Test

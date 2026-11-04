@@ -298,8 +298,8 @@ fun KClashApp(
     val iconError = resourcesViewModel?.iconError?.collectAsState()?.value
     val iconCompleted = resourcesViewModel?.iconCompleted?.collectAsState()?.value ?: 0L
     val localProxiesState = localProxiesViewModel?.state?.collectAsState()?.value ?: LocalProxiesUiState(loading = false)
-    var showLocalProxies by rememberSaveable { mutableStateOf(false) }
-    fun openLocalProxies() { localProxiesViewModel?.open(); showLocalProxies = true }
+    val showLocalProxies = localProxiesState.isOpen
+    fun openLocalProxies() { localProxiesViewModel?.open() }
     var showResources by rememberSaveable { mutableStateOf(false) }
     var showIconSets by rememberSaveable { mutableStateOf(false) }
     val iconSetFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -928,6 +928,7 @@ fun KClashApp(
                         onSaveRules = profilesViewModel::saveRules,
                         onRulesUiDraftChange = profilesViewModel::updateRulesUiDraft,
                         onGroupsUiDraftChange = profilesViewModel::updateGroupsUiDraft,
+                        onProxiesUiDraftChange = profilesViewModel::updateProxiesUiDraft,
                         onEditorDraftFailure = { profilesViewModel.reportError("草稿暂存失败，请保持编辑页面并重试保存") },
                         onDiscardInterruptedRules = profilesViewModel::discardInterruptedRules,
                         proxiesEditorState = proxiesEditorState,
@@ -1369,10 +1370,12 @@ fun KClashApp(
         })
     }
     if (showLocalProxies && localProxiesViewModel != null) LocalProxiesPage(localProxiesState,
-        { localProxiesViewModel.close(); showLocalProxies = false }, localProxiesViewModel::edit, localProxiesViewModel::save,
+        localProxiesViewModel::close, localProxiesViewModel::edit, localProxiesViewModel::save,
         localProxiesViewModel::dismissEditor, localProxiesViewModel::links, localProxiesViewModel::applyLinks,
         localProxiesViewModel::cancelLinks, localProxiesViewModel::reorder, localProxiesViewModel::askDelete,
-        localProxiesViewModel::delete, localProxiesViewModel::cancelDelete, localProxiesViewModel::confirmReplacement, localProxiesViewModel::updateEditor)
+        localProxiesViewModel::delete, localProxiesViewModel::cancelDelete, localProxiesViewModel::confirmReplacement, localProxiesViewModel::updateEditor,
+        { localProxiesViewModel.updateUiDraft(localProxiesState.session, it) }, localProxiesViewModel::updateLinksUiDraft, localProxiesViewModel::reportDraftFailure,
+        localProxiesViewModel::updateEditorUiDraft)
     if (showIconSets) IconSetsPage(resources.iconSets, iconBusy, iconError, iconCompleted,
         { showIconSets = false }, { name, url -> resourcesViewModel?.importIcons(name, url) }, { iconSetFilePicker.launch(arrayOf("application/json", "text/*", "application/octet-stream")) },
         { item, name, url -> resourcesViewModel?.iconOptions(item, name, url) },
@@ -1637,6 +1640,7 @@ internal fun ProfilesPanel(
     onSaveRules: (rules: String) -> Unit = {},
     onRulesUiDraftChange: (Long, Long, EditorSaveableState) -> Unit = { _, _, _ -> },
     onGroupsUiDraftChange: (Long, Long, EditorSaveableState) -> Unit = { _, _, _ -> },
+    onProxiesUiDraftChange: (Long, Long, EditorSaveableState) -> Unit = { _, _, _ -> },
     onEditorDraftFailure: () -> Unit = {},
     onDiscardInterruptedRules: () -> Unit = {},
     proxiesEditorState: ProfileProxiesEditorUiState = ProfileProxiesEditorUiState(),
@@ -2046,7 +2050,7 @@ internal fun ProfilesPanel(
                 catalog = rulesEditorState.catalog,
                 saveError = rulesEditorState.error,
                 onDismiss = onCloseRulesEditor,
-                onSave = { checkpoint(); onSaveRules(it) },
+                onSave = { if (checkpoint()) onSaveRules(it) },
                 interruptedRules = rulesEditorState.interruptedRules,
                 onDiscardInterrupted = onDiscardInterruptedRules,
             )
@@ -2063,13 +2067,17 @@ internal fun ProfilesPanel(
                 confirmButton = {},
             )
         } else {
+            EncryptedEditorState(proxiesEditorState.session, proxiesEditorState.uiDraft,
+                { onProxiesUiDraftChange(profile.id, proxiesEditorState.session, it) }, onEditorDraftFailure) { checkpoint ->
             ProfileProxiesEditorDialog(
                 profile = profile,
                 initialProxies = proxiesEditorState.proxies,
                 saving = proxiesEditorState.isSaving,
                 onDismiss = onCloseProxiesEditor,
-                onSave = onSaveProxies,
+                onSave = { if (checkpoint()) onSaveProxies(it) },
+                saveError = proxiesEditorState.error,
             )
+            }
         }
     }
 
@@ -2090,12 +2098,12 @@ internal fun ProfilesPanel(
                 sourceContent = proxyGroupsEditorState.sourceContent,
                 resourceProfiles = state.profiles,
                 initialGroupIndex = proxyGroupsEditorState.initialGroupIndex,
-                onSaveDraft = onSaveProxyGroupsDraft?.let { save -> { checkpoint(); save(it) } },
+                onSaveDraft = onSaveProxyGroupsDraft?.let { save -> { if (checkpoint()) save(it) } },
                 onValidateFilters = onValidateGroupFilters,
                 recentIcons = recentGroupIcons, onRecordIcon = onRecordGroupIcon, onReadIcon = onReadGroupIcon,
                 saving = proxyGroupsEditorState.isSaving,
                 onDismiss = onCloseProxyGroupsEditor,
-                onSave = { checkpoint(); onSaveProxyGroups(it) },
+                onSave = { if (checkpoint()) onSaveProxyGroups(it) },
                 saveError = proxyGroupsEditorState.error,
             )
             }
@@ -4441,13 +4449,23 @@ internal fun ProfileProxiesEditorDialog(
     saving: Boolean,
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
+    saveError: String? = null,
 ) {
-    var proxies by rememberSaveable(profile.id) { mutableStateOf(initialProxies) }
+    val baseline = rememberSaveable(profile.id) { initialProxies }
+    var proxies by rememberSaveable(profile.id, stateSaver = androidx.compose.ui.text.input.TextFieldValue.Saver) {
+        mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(initialProxies))
+    }
+    var discarding by rememberSaveable { mutableStateOf(false) }
+    val scroll = rememberScrollState()
+    LaunchedEffect(saving, saveError) { if (!saving && saveError != null) scroll.animateScrollTo(0) }
+    fun exit() { if (!saving) { if (proxies.text != baseline) discarding = true else onDismiss() } }
     ProfileEditorPage(
-        onDismissRequest = { if (!saving) onDismiss() },
+        onDismissRequest = ::exit,
+        backTag = "profile_proxies_back",
         title = { Text("代理 · ${profile.realLabel}") },
         text = {
-            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.fillMaxWidth().verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                saveError?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_proxies_error")) }
                 Text(
                     "每个代理以 - name 和 type 开始，后续字段保持两格缩进；可粘贴 proxies: 区块内容。",
                     style = MaterialTheme.typography.bodyMedium,
@@ -4455,7 +4473,7 @@ internal fun ProfileProxiesEditorDialog(
                 OutlinedTextField(
                     value = proxies,
                     onValueChange = { proxies = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("profile_proxies_content"),
                     minLines = 12,
                     maxLines = 20,
                     enabled = !saving,
@@ -4465,7 +4483,7 @@ internal fun ProfileProxiesEditorDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { onSave(proxies) },
+                onClick = { onSave(proxies.text) },
                 enabled = !saving,
                 modifier = Modifier.testTag("profile_proxies_save"),
             ) {
@@ -4473,9 +4491,13 @@ internal fun ProfileProxiesEditorDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+            TextButton(onClick = ::exit, enabled = !saving) { Text("取消") }
         },
     )
+    if (discarding) EditorAlertDialog(onDismissRequest = { discarding = false }, title = { Text("放弃代理修改？") },
+        text = { Text("尚未保存的代理正文会丢失。") },
+        confirmButton = { TextButton(onClick = onDismiss, enabled = !saving, modifier = Modifier.testTag("profile_proxies_discard")) { Text("放弃修改") } },
+        dismissButton = { TextButton(onClick = { discarding = false }) { Text("继续编辑") } })
 }
 
 /**

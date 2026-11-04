@@ -2,13 +2,21 @@
 
 用户已取消 Kotlin 的 TalkBack/自定义无障碍适配，不再实现或列为验收门槛。保留原生 Compose 控件、正常交互、隐藏退场页面的交互防护和测试标识。
 
-## 规则与策略组真实冷进程（2026-11-05，当前快照）
+## Proxies与本地代理真实冷进程（2026-11-05，当前快照）
+
+Proxies父草稿v3及本地代理独立加密草稿已接入正式入口，保留原CAS基线、UI树、保存/退出意图，恢复不自动重放；首次读取与元数据迟到恢复竞态已修，集合checkpoint不再回写旧正文。代理YAML改按Flutter语义校验，修复行内map、顶层flow列表及注释包装。
+
+App481/Service195/Core38/Common31共745项单测零失败/错误/跳过；最终build8 Debug/Test、未签名Release/R8及独立lint8双变体通过，各0错误/66警告（Debug10/Release9提示）。Redmi最终同套App/Test十场景各prepare/verify通过，外部确认旧PID消失、恢复PID不同；旧入口14/14，Proxies正式MainActivity保存回读独立1/1。30张PNG与5张拼图已目视，App/Test回拉哈希匹配；正式1份配置/选择/正文SHA-size-mtime及逐字段摘要、本地目录、原1.yaml双端、Flutter包与设置保持，结束无服务/tun0。各verify在应用内部确认Store为空且主文件/.bak/.new均不存在；不使用受SELinux拒绝的run-as退出码判断。证据`docs/acceptance/local-proxy-draft-cold-redmi-20261105.json`。
+
+规则YAML/保持打开的类型选择器、策略组成员/选择/排序/批选及保存中/落盘后UI收尾前死亡窗口仍待真实冷验。在线age/CUSTOM引用源、其他资源SAF/外部脚本、Provider剩余来源/故障恢复/规则命中、质量来源/持久缓存、Fallback/蜂窝/第三方OEM和第三步视觉/性能保持待办；玻璃默认关闭，原暂缓项保持。
+
+## 规则与策略组真实冷进程（2026-11-05，历史切片）
 
 规则/策略组正式入口、CAS基线、子窗口UI树及提交意图已纳入v2加密父草稿；独立注册表不向Activity Bundle登记正文，每个Dialog重新提供稳定窗口命名空间。规则中断操作保留供显式重试；已提交只回读确认，源变化不替换旧CAS基线；关闭等密文清理后退场，迟到写入/恢复不能复活草稿。真实类型选择器暴露DefaultLazyKey白名单缺口，现仅将精确框架类编码为整数索引并保留Release成员，不开放任意Parcelable。
 
 最终build9生产包、testbuild10测试包：App462/Service195/Core38/Common31共726项零失败/错误/跳过，Debug/Test、未签名Release/R8及双Lint通过，各0错误/66警告（Debug10/Release9提示）。Redmi八个场景各prepare/verify通过（规则表单/批选/冲突、整组/单组YAML、图标/添加选项/值），旧进程确实消失且恢复PID不同；最终旧入口回归15/15，父正文冷进程两阶段另各1/1。35张PNG已目视，两包安装哈希匹配；正式1份配置/选择/正文与逐字段摘要、原1.yaml双端、Flutter包及设置保持，结束无服务/tun0。各verify内部确认草稿Store清空并删除marker；设备SELinux拒绝run-as，未独立检查AtomicFile .bak/.new，不将退出码当文件不存在。证据`docs/acceptance/structured-editor-cold-redmi-20261105.json`；失败批次独立保留，原始附件只在本机/tmp。
 
-配置内Proxies、本地代理/集合/链接映射仍只VM内存；规则YAML/打开的类型选择器、策略组成员/选择/排序/批选及保存中/落盘后收尾前死亡窗口仍缺真实冷进程覆盖。第二步其他实网/系统边界和第三步完整视觉/性能继续待办；玻璃默认关闭，原暂缓项保持。
+当时配置内Proxies、本地代理/集合/链接映射仍只VM内存（现已由顶部新组覆盖）；规则YAML/打开的类型选择器、策略组成员/选择/排序/批选及保存中/落盘后收尾前死亡窗口仍缺真实冷进程覆盖。第二步其他实网/系统边界和第三步完整视觉/性能继续待办；玻璃默认关闭，原暂缓项保持。
 
 ## 后台订阅与运行态节点（2026-11-05，历史切片）
 

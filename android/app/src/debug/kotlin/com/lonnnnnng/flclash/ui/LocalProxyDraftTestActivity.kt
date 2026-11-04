@@ -38,7 +38,8 @@ class LocalProxyDraftTestActivity : ComponentActivity() {
         setContent { val state by model.state.collectAsState(); KClashTheme {
             LocalProxiesPage(state, model::close, model::edit, model::save, model::dismissEditor, model::links,
                 model::applyLinks, model::cancelLinks, model::reorder, model::askDelete, model::delete, model::cancelDelete,
-                model::confirmReplacement, model::updateEditor)
+                model::confirmReplacement, model::updateEditor, { model.updateUiDraft(state.session, it) },
+                model::updateLinksUiDraft, model::reportDraftFailure, model::updateEditorUiDraft)
         } }
     }
     override fun onSaveInstanceState(outState: Bundle) {

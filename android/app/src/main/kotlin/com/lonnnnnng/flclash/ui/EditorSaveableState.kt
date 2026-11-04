@@ -177,11 +177,11 @@ internal fun EditorAlertDialog(
 /** 作者 long：独立注册表隔离 Activity 的保存树；snapshotFlow 同步读取纯值后，VM 才异步写入 Keystore 密文。 */
 @Composable
 internal fun EncryptedEditorState(
-    session: Long,
+    session: Any,
     restored: EditorSaveableState?,
     onChange: (EditorSaveableState) -> Unit,
     onFailure: () -> Unit,
-    content: @Composable (checkpoint: () -> Unit) -> Unit,
+    content: @Composable (checkpoint: () -> Boolean) -> Unit,
 ) {
     val registry = remember(session) { EditorStateRegistry(restored) }
     val changed by rememberUpdatedState(onChange)
@@ -199,6 +199,6 @@ internal fun EncryptedEditorState(
         onDispose { owner.lifecycle.removeObserver(observer) }
     }
     CompositionLocalProvider(LocalSaveableStateRegistry provides registry, LocalEncryptedRegistry provides registry) {
-        content { runCatching { registry.capture() }.onSuccess(changed).onFailure { failed() } }
+        content { runCatching { registry.capture() }.fold(onSuccess = { changed(it); true }, onFailure = { failed(); false }) }
     }
 }

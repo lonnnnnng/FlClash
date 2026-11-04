@@ -15,6 +15,17 @@
 # 作者 long：加密草稿的JSON字段跨进程/发布版读取，不能由R8重命名其快照字段。
 -keep class com.lonnnnnng.flclash.ui.ProfileEditorDraftSnapshot { *; }
 -keep class com.lonnnnnng.flclash.ui.ProfileRulesEditorUiState { *; }
+-keep class com.lonnnnnng.flclash.ui.ProfileProxiesEditorUiState { *; }
+-keep class com.lonnnnnng.flclash.ui.LocalProxyDraftSnapshot { *; }
+-keep class com.lonnnnnng.flclash.ui.LocalProxyPendingWrite { *; }
+-keep class com.lonnnnnng.flclash.ui.LocalProxiesUiState { *; }
+-keep class com.lonnnnnng.flclash.ui.LocalProxyDraft { *; }
+-keep class com.lonnnnnng.flclash.ui.LocalProxyCollectionDraft { *; }
+-keep class com.lonnnnnng.flclash.ui.ProxyLinksDraft { *; }
+-keep class com.lonnnnnng.flclash.data.LocalProxy { *; }
+-keep class com.lonnnnnng.flclash.data.ProxyField { *; }
+-keep enum com.lonnnnnng.flclash.data.ProxyFieldKind { *; }
+-keep class kotlin.Pair { *; }
 -keep class com.lonnnnnng.flclash.ui.ProfileProxyGroupsEditorUiState { *; }
 -keep class com.lonnnnnng.flclash.ui.EditorSaveableState { *; }
 -keep class com.lonnnnnng.flclash.ui.EditorSavedValue { *; }

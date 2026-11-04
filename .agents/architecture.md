@@ -1,6 +1,16 @@
 # Architecture
 
-## 规则/策略组加密子树与提交恢复（2026-11-05）
+## Proxies/本地代理加密持久恢复（2026-11-05，当前）
+
+`ProfileEditorDraftSnapshot` v3纳入Proxies原CAS基线、正文/选区UI树及pendingContent；本地目录使用named `local-proxy-draft`独立Keystore AES-GCM/noBackup AtomicFile，快照保存opened/expected/seenNames/pending/pendingClose。正式导航由恢复后的isOpen驱动，节点、集合和分享链接窗口有独立注册表。Release保留新增Gson类型及Pair，mapping/DEX另验。
+
+配置与目录写入前先持久保存意图，恢复只比较正式正文/目录确认是否已提交，未提交等待显式重试，不自动重放。退出先落关闭意图，再应用/清草稿；同写锁和epoch/session/closing拒绝旧写入复活。checkpoint返回false阻止保存；本地UI捕获只按当前session合并uiDraft，不回写旧集合/错误。Noop store跳过空持久化，保留无持久层的同步关闭语义。
+
+初次read结束前的新开入口延后；metadata及子页读取返回后复核最初generation/epoch。store或源正文暂时读取失败保留旧密文并禁止collector/显式写入覆盖，重试需先恢复完整快照。Proxies参考Flutter解析后的节点定义，在完整替换结果校验顶层name/type及重名，保留跨分区anchor、行内map、顶层flow列表及其它分区原文。
+
+745单测、最终10场景双阶段/14项回归及Proxies正式宿主保存回读见`docs/acceptance/local-proxy-draft-cold-redmi-20261105.json`。规则YAML/保持打开的类型选择器、策略组成员/选择/排序/批选及保存中/落盘后UI收尾前死亡窗口仍待真实冷验。在线age/CUSTOM引用源、其他资源SAF/外部脚本、Provider剩余来源/故障恢复/规则命中、质量来源/持久缓存、Fallback/蜂窝/第三方OEM和第三步视觉/性能保持待办；玻璃默认关闭，原暂缓项保持。
+
+## 规则/策略组加密子树与提交恢复（2026-11-05，历史切片）
 
 `ProfileEditorDraftSnapshot` v2纳入rules/groups的正式入口、原CAS基线、纯值UI树和pendingContent，继续复用Keystore AES-GCM/noBackup AtomicFile。`EditorStateRegistry`只接受明确值类型/标准MutableState policy；状态变化、ON_STOP与保存前checkpoint捕获，不向Activity父保存树登记。Compose的Dialog新建ComposeView会覆盖注册表，`rememberEditorWindowRegistry`以可恢复UUID命名空间隔离窗口，`ProvideEditorWindowRegistry`在各窗口内容中重新提供。
 
@@ -8,7 +18,7 @@ LazyColumn内部`DefaultLazyKey`会出现在保存树Map键中；只接受精确
 
 保存前同写锁落盘pendingContent，恢复比较磁盘正文确认是否已提交；未提交保留规则操作供显式重试，源变化保留旧基线使CAS拒绝覆盖。collector拿锁后重取最新快照，防排队旧快照擦pending；关闭以UNDISPATCHED+NonCancellable等写锁清子页后才关闭UI。generation/epoch/closing守卫覆盖迟到回调和恢复读取。
 
-726单测、最终8场景双阶段真实冷进程、15/15旧入口及父正文两阶段各1/1见`docs/acceptance/structured-editor-cold-redmi-20261105.json`。配置内Proxies/本地代理仍VM内存，规则YAML/打开的选择器、策略组成员/批选和保存死亡窗口未全面冷验；不推广全部编辑器或Release真机运行。
+726单测、最终8场景双阶段真实冷进程、15/15旧入口及父正文两阶段各1/1见`docs/acceptance/structured-editor-cold-redmi-20261105.json`。当时配置内Proxies/本地代理仍VM内存（现已由顶部新组覆盖），规则YAML/打开的选择器、策略组成员/批选和保存死亡窗口未全面冷验；不推广全部编辑器或Release真机运行。
 
 ## 后台订阅提交与受影响配置应用（2026-11-05）
 
