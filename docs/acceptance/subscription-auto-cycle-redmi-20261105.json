@@ -1,0 +1,1275 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "scope": "第二步首组：既有后台周期自然到期下载/应用、自动提交失败恢复及运行态节点落库",
+  "baseCommit": "6517d8fb222f3ac95e0d37af418535b8e71b4f7f",
+  "branch": "kotlin",
+  "upstreamBaseline": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+  "glassDefaultEnabled": false,
+  "changes": [
+    "自动更新下载/解密/校验在核心锁外，文件与Room提交及受影响当前配置应用共持生命周期锁；CUSTOM仅实际use的稳定资源ID触发刷新。",
+    "正文与待应用摘要同事务提交，应用失败保留新源与旧核心，下次只重试应用；来源/密钥/正文版本变化使旧pending失效。",
+    "自动批次互斥；最近16次Worker安全审计不含地址、标签、正文、密钥或异常原文。",
+    "隔离仓库观察协程由拥有者取消并等待后再关Room，避免迟到观察访问已关闭连接池。",
+    "运行态节点菜单以原1.yaml副本、正式MainActivity和真实触摸验证新增落库、重复反馈、Activity重建回读及核心会话保持。"
+  ],
+  "unitTests": {
+    "app": {
+      "tests": 454,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ApplicationSettingsBackupTest.xml",
+          "sha256": "34fa812754601f5a28139fd288325d7ef81b3badd9924925ee48b6cd8651396c",
+          "bytes": 847
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomProfileImportTest.xml",
+          "sha256": "55b6c3399a38df106b4c7af38c44c212c4743dc116d4566224545a42c7e64a9f",
+          "bytes": 943
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomRuleDraftTest.xml",
+          "sha256": "391934710f055b3debd444825f030848af0ff120edd056aefa876f75840bd6c7",
+          "bytes": 1411
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.DeepLinkImportTest.xml",
+          "sha256": "a5dfd0302480edd0c96a97386adea57ef084c9465d9afeedd4528ddff07e90d6",
+          "bytes": 1328
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.FilterPresetsTest.xml",
+          "sha256": "a2eed6e9475c19a4e3a04df42f26183b9f1a63b2c350e929a0d7b22287d2ca69",
+          "bytes": 986
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.HttpRequestPolicyTest.xml",
+          "sha256": "71c8fab7fb7fede88a8adea97760742511ff0586f327d62106bc0b5f9992c114",
+          "bytes": 667
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconRecommendationsTest.xml",
+          "sha256": "185e9a511573355c1ff8b3f779e7ca620219d98357ce57e56517038fad4eb335",
+          "bytes": 890
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconSetCodecTest.xml",
+          "sha256": "390ae553e16817a43b5ff043b5eafbf996580c9ae6a93a2c652a8306a217ab91",
+          "bytes": 783
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationRepositoryTest.xml",
+          "sha256": "0cc22acf35029e0bda0cba1347ecb3dcbea4e03745f3918cc6efce7948e3ca15",
+          "bytes": 995
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationTest.xml",
+          "sha256": "7fbb15bdb91449ff48b58632959b2fe3f6741105c0025a556649b579a6c6b0ea",
+          "bytes": 1006
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProfileFileWriteTest.xml",
+          "sha256": "d84c74aeed8bb3769637ba6adfadd697a309c8cb87e3dd6575a075dee2bcab54",
+          "bytes": 1886
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxiesTest.xml",
+          "sha256": "7306eaed86a1463b864f92e07e60cb01ee6eb79e74f2be323b2f3293501ba08f",
+          "bytes": 1533
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyAdditionTest.xml",
+          "sha256": "45701b6824682606f9329296cdf52222fb53e486c562f172a470c5b998be53ab",
+          "bytes": 987
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyLinkEditTest.xml",
+          "sha256": "64a9f8ebd0d07eec56a6ffbae4da8725d65295aba687ec80f601985a456f602e",
+          "bytes": 1331
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.OnDemandSsidTrackerTest.xml",
+          "sha256": "8ae30dad36545dc784043931967c42dd80d3e8173707af328777f133084b12f7",
+          "bytes": 807
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileContentDecoderTest.xml",
+          "sha256": "e20e39bfe20ddcd85304401b5bc325cbc3a5b702149e2c20e20a3d47db32dd1f",
+          "bytes": 1517
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDialerEditorTest.xml",
+          "sha256": "9ced55bdefbdfcdac461ffd135776bf4316e887ea5cf296381cb1734b1f049c1",
+          "bytes": 964
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDocumentTest.xml",
+          "sha256": "819ef210fe631d0cd1934c334248f6f8b69ac41879579a0fad826453dccf9ffd",
+          "bytes": 508
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileExportTest.xml",
+          "sha256": "b2fc95f313946b0321ab0498300a727cdd9a8426035eaca3a189a372679823d0",
+          "bytes": 813
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileMorePatchTest.xml",
+          "sha256": "eaf6c5d77914d9301f0c1adbb97b5c05209a6616e5419f21aec2fa5cfa424816",
+          "bytes": 810
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProvidersEditorTest.xml",
+          "sha256": "ce4589365dacc606affa49d4357d6d182cbc5f43e6329b69b9a0c3365a5813d4",
+          "bytes": 1459
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxiesEditorTest.xml",
+          "sha256": "1ac1557bea3269fb38c51da4ce3ebc71b41679f68f5ae667e047ff63da9b8111",
+          "bytes": 813
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyGroupsEditorTest.xml",
+          "sha256": "22d9006388f1fabe486b0bed22e9d01609fd3203e07778626403bd05597e6319",
+          "bytes": 1142
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyResourcesTest.xml",
+          "sha256": "2dc4883aec97d0cab6bcc5e7bb359e838a28df102a151b98ba2805ce36e3f044",
+          "bytes": 943
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileRulesEditorTest.xml",
+          "sha256": "46d196b26c225d233d5f1a96caf2e4e4e81dd32d98b606ad03721d2ebf2ce7a7",
+          "bytes": 784
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileSelectionTest.xml",
+          "sha256": "32d364df4bdae878e934969da3320f9c67a4965d1377d7cef689933459889793",
+          "bytes": 795
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileTest.xml",
+          "sha256": "363b3ed390779de782674cfcb51079b998ab8ead7dba23332ea2374f3adafd88",
+          "bytes": 996
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProviderEditingTest.xml",
+          "sha256": "f335b6dab8ce4d3cbd410b8eae99afc603a737a1e60de7fd47edbf57bd1a135c",
+          "bytes": 1179
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupDraftsTest.xml",
+          "sha256": "f52a3a26ff4d261b58bf937a9029e86ce12ad6c3d2521303e6ec6a64d6faa553",
+          "bytes": 1914
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupIssuesTest.xml",
+          "sha256": "463999efc4d7f7bb6d46ca006dca634c81878701fa86995dec2f3906b6c3555e",
+          "bytes": 1105
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.RuleResourcesTest.xml",
+          "sha256": "4a1c6745a891ee8c6c0498f2800b5e45992408b288873aa48c83b659dafea6d3",
+          "bytes": 937
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ScriptImportTest.xml",
+          "sha256": "e57124c9cfa8c0f95be0a0870b687d2588ff3440d2d845cc93f9c2dadcadf407",
+          "bytes": 623
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ServiceExitRepositoryTest.xml",
+          "sha256": "e250d6a9936bb849284f22e941747220ca192b36f99ed8a4bd144a2b8e6f89d4",
+          "bytes": 805
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionAutoUpdateTest.xml",
+          "sha256": "0656d73d4331017d560df33a3dd6be5eb86111ec0abbc6add5f062ea359a30e1",
+          "bytes": 772
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionClientTest.xml",
+          "sha256": "df96a69ff39b706801b75115c0528f21681a5ff0179bcf3e4730127fa0bfbc3a",
+          "bytes": 503
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.WebDavClientTest.xml",
+          "sha256": "a43032acc9e9006c25e621359f3746adbf9079ffcd1b6de0a48c5587f488cb99",
+          "bytes": 1193
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AccessControlViewModelTest.xml",
+          "sha256": "3ed453b721dc68020858e0f8c8091ac8cfc3f9719c74aaa6bd5e95c89326c624",
+          "bytes": 1354
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuMotionTest.xml",
+          "sha256": "1815c18efbdc0a306ec270b1c9b28f144fe92a59decd824ed07c28a52af84a8f",
+          "bytes": 1616
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuPositionerTest.xml",
+          "sha256": "ff0ba32565ff6308a8d68649c9b3d564c4245309d829a975f7e6d79908fb3de0",
+          "bytes": 1048
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppSurfacePhysicsTest.xml",
+          "sha256": "6c47a3b51a626aa64b6deb7b9db05bf6a2b2645343f30565ca8fed9239272675",
+          "bytes": 904
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionDetailFormattingTest.xml",
+          "sha256": "b488fcb66a0aeaaae6fa17bcd9bd93f3d716f32a4287e83a5015a903a53c2d55",
+          "bytes": 995
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest.xml",
+          "sha256": "6abc069d8286958562505c9e0a3bf0eb5b82a4730c0df1a3aff0b9cf5776a24c",
+          "bytes": 1628
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.CustomProfileSummaryTest.xml",
+          "sha256": "e427543a0deec32dbe0dbecede5e72fc85533bed23d9a60ff7d89d49779ea511",
+          "bytes": 961
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardDragTest.xml",
+          "sha256": "3c0937b9ca4ea3329ea20b22c2f7519a18e68e04444ca9894fb56346f2f5c6f3",
+          "bytes": 764
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardLayoutTest.xml",
+          "sha256": "c9d9509e304378bebfe8e00341228c66b2fa545e52e0ab2bb5c6f3a855c0f3f4",
+          "bytes": 1933
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardTelemetryTest.xml",
+          "sha256": "cad3054315cc47175dd17f47bbc0dda5bf68544ef285c1e1e9f0d786a5905014",
+          "bytes": 1006
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.GlobalRulesControllerTest.xml",
+          "sha256": "3fcfd832e8d9f90dbf274f7da107b36ff36ef0ce6e10929311b4975bbaf7590a",
+          "bytes": 800
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.IntranetIpViewModelTest.xml",
+          "sha256": "661579a638859c7d013b95adb6a0f2c11f353a2f282d6c4ecd51302827ceceba",
+          "bytes": 1288
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainPageScaffoldTest.xml",
+          "sha256": "e84f0b28d769a0a7f622f3631cbfb26c6de876f70db8d3aceea93f1476c1f9b5",
+          "bytes": 675
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTelemetryTest.xml",
+          "sha256": "4ece5b17a6693c50fa7bd14ffb83af0611ce5019d50b05f9a65150db6c5da0a3",
+          "bytes": 844
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTest.xml",
+          "sha256": "3e0d9d11e5dc18f70bb87a3e2d9c8f9b200b1edc6e3c67367563cfe1392c03dc",
+          "bytes": 3292
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MemoryViewModelTest.xml",
+          "sha256": "1208dd8a72ddeb73fd19f29886780e342e15a8ba474a8722746b5a9e5343c36d",
+          "bytes": 1345
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.OutboundIpViewModelTest.xml",
+          "sha256": "34f208464af5b16519002d1eae57c9110646c3ae1e7e8c4d8264ada0a5962ad4",
+          "bytes": 1259
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileExtensionControllerTest.xml",
+          "sha256": "12e63ed234fa7ee81a7866d57f1950d61300a4cf7c67fe12f39b3dfed6fc7d62",
+          "bytes": 1184
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileFileImportControllerTest.xml",
+          "sha256": "f3decbed27fd4eaffd3cfc45f8b3df754c1e56a9a144be5ca2d65d6a03e61c9b",
+          "bytes": 1292
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileMoreFieldsTest.xml",
+          "sha256": "e1e887d3db50294d8a1f656d079c4efc0547d286a597caaba730acbeae9d7d44",
+          "bytes": 1263
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileSharingViewModelTest.xml",
+          "sha256": "71f993c60b5fc9a1451410022e8f471b56b5b6595100536fc6b9524c8b49fb0f",
+          "bytes": 1885
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileStatisticsViewModelTest.xml",
+          "sha256": "a137b6c25f4fa3fb373396a8c7c139a2692f456050726887cc73384289afa8c3",
+          "bytes": 3196
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileUrlImportTest.xml",
+          "sha256": "b887ff711785228ce8160abc08d468bc73a7d8d9db2024325f9e4f28ab34c421",
+          "bytes": 771
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfilesViewModelTest.xml",
+          "sha256": "3dc026915502b8ddf3fe7aeaf790c93744c679ac097916ab02b679e6a34a8ef4",
+          "bytes": 12047
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProxyGroupsViewModelTest.xml",
+          "sha256": "a0adc5cb7ac47537b504b3acc0f1c521db4e91a18770a1f56c2a9b7541123a5f",
+          "bytes": 5755
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ResourceUrlImportControllerTest.xml",
+          "sha256": "bfbca2e4a12bac4665cd77a14576dc52f72bf196d891e5bc43b6cbfbdff10f8b",
+          "bytes": 829
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModelTest.xml",
+          "sha256": "615f8c7f4360146d8926450fc19be6960ad00a765ca82c00c17e75126b8ccfbd",
+          "bytes": 879
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ScriptsViewModelTest.xml",
+          "sha256": "b94a2eff31a35b74abd2a72f1d461303219d5b5dfd40619826104362645c3719",
+          "bytes": 1790
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ServiceStatusViewModelTest.xml",
+          "sha256": "ae15d2d10acde9703002c703b148003e394635e428fcb23beab6355866cafb25",
+          "bytes": 3749
+        }
+      ]
+    },
+    "service": {
+      "tests": 195,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml",
+          "sha256": "e93af58075dca4777caf9c8f9d312d1eff3dd587b9596561aa7fb7087accdef1",
+          "bytes": 17243
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.DefaultVpnOptionsProviderTest.xml",
+          "sha256": "917e3385b0c59305ca671eea1e00fbf76dafb0e1b3ab6861e99832981a2b6706",
+          "bytes": 1170
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeneralSettingsTest.xml",
+          "sha256": "e8aed0c9f39f4499ad1994e85d64c702905f1c27f49c075da4f0537e31ec5520",
+          "bytes": 955
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeoResourceSettingsTest.xml",
+          "sha256": "28f9c3e2f176dfe5785df2672471de7e8cd4d8e40e769cc1c7cfea2154f0e79c",
+          "bytes": 692
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GlobalDnsSettingsTest.xml",
+          "sha256": "3e8594b73d18e062036c0d6f6731311b5c76fae1eb5b21097e075bd43d0562ae",
+          "bytes": 954
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.NetworkSettingsTest.xml",
+          "sha256": "573b05f1e64ab93fb95a62501f7febff6caba0c3d45a0ab17c8496d32bd2c85a",
+          "bytes": 1155
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.OnDemandSettingsTest.xml",
+          "sha256": "85f11ec44628404055bddfb85018001aed9ec92115741d9a8d502e93b6664c9e",
+          "bytes": 656
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileDnsBaselineTest.xml",
+          "sha256": "e653837905507212d81da1e6bcd8da9d92474a60e923537baf820dfac6f090e3",
+          "bytes": 1127
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileExtensionTest.xml",
+          "sha256": "e3f7cd46cbb9eba3d855768c93b2ba9fc5a343a234b34440cfc51196c25a23ca",
+          "bytes": 1159
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileMoreOverridesTest.xml",
+          "sha256": "19c130ef00a56c76889e8e0e299a5a8a8a279256f09cc8504c6ea8a2fea13983",
+          "bytes": 1129
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileProviderOverridesTest.xml",
+          "sha256": "d129d33298d6189c141a82f925ea97034706a3a51cb19c5700d24c42f4304d09",
+          "bytes": 2553
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileScriptTest.xml",
+          "sha256": "f00beb5d449ec4290beb3d8c1792a11c316d1e5d43d272b28fc7502d0491970f",
+          "bytes": 1549
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileStatisticsTest.xml",
+          "sha256": "0cd3952c12ce9422c7bbf705cb12aba3b51c57736316fdd6b40524ebcce3d590",
+          "bytes": 651
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.RuntimeDiagnosticsTest.xml",
+          "sha256": "1cf2c5fe5c0196af7ef9049a00df6a735bd6330c7a21fc66062bebb951b2ee77",
+          "bytes": 960
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ServiceConfigTest.xml",
+          "sha256": "18d10c96f0be25ba3fbe979819fe32952a1d5521e4bc681fc341ef35b51a6f34",
+          "bytes": 1077
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.RouteAddressTest.xml",
+          "sha256": "5c5ae8b6ca0cb5dd1e51e4eab003d925d95ffd0f88b371163a7bd905937a2010",
+          "bytes": 942
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.ToCIDRTest.xml",
+          "sha256": "07ec504c1cb87bc3603d89b5fb4b1ba3b3e98cab105bbb9dc13620572b5a7063",
+          "bytes": 1456
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TrafficTest.xml",
+          "sha256": "955c8130f8fc493457bc03233b56ff17aec6f087c2694a5cbb64e976c42ec6be",
+          "bytes": 1120
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TunOptionsTest.xml",
+          "sha256": "57670cad503a1d7518d703597b97d579603f11b0f616e71f76368ecdad6c024d",
+          "bytes": 784
+        }
+      ]
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/core/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.core.CoreBridgeParsingTest.xml",
+          "sha256": "ed43fc79351981139e36741e4d10f449be3ab9154f8479dedc380f7adb1f58a1",
+          "bytes": 6076
+        }
+      ]
+    },
+    "common": {
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.BroadcastLeaseTest.xml",
+          "sha256": "606a80b1a6aae9fd37f857bd57c35158cbd03204bf1a6ab611dcfb455326611f",
+          "bytes": 1307
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.EnumsTest.xml",
+          "sha256": "cc7639d2e5dc4405b1cadfeed107c3a8e6a6932db6920cb579ebd3776f592788",
+          "bytes": 1049
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.PendingCallbackTest.xml",
+          "sha256": "8651a94e8dc5490568e19a91afc3c6fbd90156fbe655774ef7cff1d689feebb5",
+          "bytes": 1613
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.RunIntentArbiterTest.xml",
+          "sha256": "226b0d451e7c9c8a6d24717b59e3fc4918de0858302c6ee924fefc69f81bc93e",
+          "bytes": 1745
+        }
+      ]
+    }
+  },
+  "unitTotal": 718,
+  "lint": {
+    "debug": {
+      "errors": 0,
+      "warnings": 66,
+      "hints": 10,
+      "report": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-debug.xml",
+        "sha256": "7eb54996366f9bb382c1a80942bea84c6fd302a4cd5dd7d80821ebbd0808b3f0",
+        "bytes": 85144
+      }
+    },
+    "release": {
+      "errors": 0,
+      "warnings": 66,
+      "hints": 9,
+      "report": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-release.xml",
+        "sha256": "20e0e44b9d0bd6a63b8ce0c24839cae407729f4a37cf3ee3ecfc5332f74ab325",
+        "bytes": 83939
+      }
+    }
+  },
+  "artifacts": {
+    "app": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "27cef6fc775d47084a267db3dc8359e2b1672eeb824646e9fac3dc9db9d86ba1",
+      "bytes": 90682722,
+      "metadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "signed": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899",
+      "installedSha256": "27cef6fc775d47084a267db3dc8359e2b1672eeb824646e9fac3dc9db9d86ba1"
+    },
+    "test": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "9070a8978eb6b4d485126af79ed98420f37e36d3e8fa9cf87da14b3db7589836",
+      "bytes": 3160946,
+      "metadata": "package: name='com.lonnnnnng.flclash.test' versionCode='' versionName='' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "nativeAbis": [],
+      "signed": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899",
+      "installedSha256": "9070a8978eb6b4d485126af79ed98420f37e36d3e8fa9cf87da14b3db7589836"
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "ad94c6bd55e4026149e73e96191e644634c9ba8f58585f91252024fe7b5971f0",
+      "bytes": 48143328,
+      "metadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "signed": false,
+      "installed": false
+    }
+  },
+  "buildLogs": [
+    {
+      "path": "/tmp/kclash-auto-cycle-20261105-build1.log",
+      "sha256": "8ec0ba26cc468b10ae2b7b09772b0ffdeba05d7241ee847f089490fedbaaaa29",
+      "bytes": 22670
+    },
+    {
+      "path": "/tmp/kclash-auto-cycle-20261105-build2.log",
+      "sha256": "170170296cf62c7cd1e4c03b9fb9855c32edfd837a23fb8464a9e8e32160a50b",
+      "bytes": 21165
+    },
+    {
+      "path": "/tmp/kclash-auto-cycle-20261105-build4.log",
+      "sha256": "53342bf3e6d2160148c139163ecd0ab76715335cb7c0254f2e61a53e6602300a",
+      "bytes": 21232
+    },
+    {
+      "path": "/tmp/kclash-auto-cycle-20261105-lint1.log",
+      "sha256": "326bd87c1b8d8b64e8ab63bb92e47dd180424a29693592100ded74fcaf5cf53a",
+      "bytes": 14563
+    },
+    {
+      "path": "/tmp/kclash-auto-cycle-20261105-testbuild3-lint2.log",
+      "sha256": "56f322dad5b5fdd5642239f15357240b20ba0557c780e5d5fca2934fc23b1d1d",
+      "bytes": 17298
+    },
+    {
+      "path": "/tmp/kclash-auto-cycle-20261105-testbuild5-lint3.log",
+      "sha256": "2b70e40cde0403f3113aae66889fcc7ebfd270931a6481a5f109cc5560405415",
+      "bytes": 17765
+    },
+    {
+      "path": "/tmp/kclash-auto-cycle-20261105-testbuild6-lint4.log",
+      "sha256": "56f322dad5b5fdd5642239f15357240b20ba0557c780e5d5fca2934fc23b1d1d",
+      "bytes": 17298
+    }
+  ],
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": "1.0"
+  },
+  "finalBatch": {
+    "images": [
+      {
+        "path": "/tmp/kclash-auto-cycle-20261105-final6-running_node_tools_before_resources_touch.png",
+        "sha256": "1cf9251b67952a7f1544ee31f712cd73b85b5b4ed1038a0353e5cf76485cdcbf"
+      },
+      {
+        "path": "/tmp/kclash-auto-cycle-20261105-final6-running_node_local_directory_after_recreate.png",
+        "sha256": "1fb9f631382979f66481766ac71a7f8a34b0057b2ced0d1365a4aae0e9065516"
+      }
+    ],
+    "requested": [
+      "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+      "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+      "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+      "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+      "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+      "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+      "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation"
+    ],
+    "results": [
+      {
+        "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      }
+    ],
+    "exitCode": 0,
+    "seconds": 34.018,
+    "log": {
+      "path": "/tmp/kclash-auto-cycle-20261105-final6.log",
+      "sha256": "1c0b7866fa2f3fc996a0d6e888e13af7b857f3ba4ab26e99e71767b05ab823b3",
+      "bytes": 6165
+    },
+    "report": {
+      "path": "/tmp/kclash-auto-cycle-20261105-final6.json",
+      "sha256": "1ed45d90edcdbeb4964a4bbb91e3724522fe2ab59b161de4da0dd8755baf1701",
+      "bytes": 3195
+    }
+  },
+  "naturalCycle": {
+    "images": [],
+    "requested": [
+      "com.lonnnnnng.flclash.data.SubscriptionNaturalCycleInstrumentedTest#duePeriodicWorkerDownloadsAndAppliesInBackgroundWithoutChangingFormalProfiles"
+    ],
+    "results": [
+      {
+        "method": "com.lonnnnnng.flclash.data.SubscriptionNaturalCycleInstrumentedTest#duePeriodicWorkerDownloadsAndAppliesInBackgroundWithoutChangingFormalProfiles",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      }
+    ],
+    "exitCode": 0,
+    "seconds": 1570.294,
+    "log": {
+      "path": "/tmp/kclash-auto-cycle-20261105-natural-cycle1.log",
+      "sha256": "90b72b60ab5e0fb597b3bee5b4a6358ac4a30a8ebef35c530e984c1a68c295ef",
+      "bytes": 10240
+    },
+    "report": {
+      "path": "/tmp/kclash-auto-cycle-20261105-natural-cycle1.json",
+      "sha256": "d2be68f4e859cf1a09a728563bfbc561f8b548bff6cbb637d96a43219bf93f88",
+      "bytes": 551
+    },
+    "assertions": {
+      "t0": 1793821544656,
+      "t1": 1793823085513,
+      "elapsedMillis": 1540857,
+      "beforeSignature": "34815:1793821544636:9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368",
+      "afterSignature": "34815:1793823085492:9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368",
+      "audit": {
+        "workId": "29b0f321-f17c-4ca2-8337-43a0b59e8e16",
+        "attempt": 0,
+        "checkedAt": 1793823084278,
+        "startedElapsed": 224895915,
+        "finishedAt": 1793823086886,
+        "finishedElapsed": 224898523,
+        "attempted": 1,
+        "downloadedIds": [
+          220973605634093
+        ],
+        "handledSourceIds": [
+          220973605634093
+        ],
+        "downloadFailureIds": [],
+        "applyFailureIds": [],
+        "checks": [
+          {
+            "profileId": 220973605634093,
+            "lastUpdateAt": 1793821544656,
+            "intervalMillis": 900000,
+            "due": true
+          }
+        ]
+      },
+      "formalRestored": true
+    }
+  },
+  "previousBatches": {
+    "regression1": {
+      "requested": [
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+        "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation",
+          "code": -2,
+          "passed": false,
+          "stack": "java.lang.AssertionError: Failed to inject touch input.\nReason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '本地代理' (ignoreCase: false))\n\n\tat androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)\n\tat androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)\n\tat androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)\n\tat androidx.compose.ui.test.ActionsKt.performTouchInput(Actions.kt:403)\n\tat androidx.compose.ui.test.AndroidActions.performClickImpl(Actions.android.kt:23)\n\tat androidx.compose.ui.test.ActionsKt.performClick(Actions.kt:61)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest$exercise$1.invokeSuspend(ProxyNodeMenuHostInstrumentedTest.kt:95)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.exercise(ProxyNodeMenuHostInstrumentedTest.kt:21)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(ProxyNodeMenuHostInstrumentedTest.kt:19)\n\nError in runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest):\njava.lang.AssertionError: Failed to inject touch input.\nReason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '本地代理' (ignoreCase: false))\n\n\tat androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)\n\tat androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)\n\tat androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)\n\tat androidx.compose.ui.test.ActionsKt.performTouchInput(Actions.kt:403)\n\tat androidx.compose.ui.test.AndroidActions.performClickImpl(Actions.android.kt:23)\n\tat androidx.compose.ui.test.ActionsKt.performClick(Actions.kt:61)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest$exercise$1.invokeSuspend(ProxyNodeMenuHostInstrumentedTest.kt:95)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.exercise(ProxyNodeMenuHostInstrumentedTest.kt:21)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(ProxyNodeMenuHostInstrumentedTest.kt:19)\n"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 25.37,
+      "log": {
+        "path": "/tmp/kclash-auto-cycle-20261105-regression1.log",
+        "sha256": "6746cc9c516979c665b24f80c6917e20c406a3a0f9a4e61417b8b002b4e3e69c",
+        "bytes": 11777
+      },
+      "report": {
+        "path": "/tmp/kclash-auto-cycle-20261105-regression1.json",
+        "sha256": "7e9f516df72fee948701ad69808fe900c2d0bbb9606150f51dfc2c84ec019932",
+        "bytes": 6913
+      }
+    },
+    "final-regression": {
+      "images": [],
+      "requested": [
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+        "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+          "code": -2,
+          "passed": false,
+          "stack": "java.lang.IllegalStateException: Cannot perform this operation because the connection pool has been closed.\n\tat android.database.sqlite.SQLiteConnectionPool.throwIfClosedLocked(SQLiteConnectionPool.java:1112)\n\tat android.database.sqlite.SQLiteConnectionPool.waitForConnection(SQLiteConnectionPool.java:725)\n\tat android.database.sqlite.SQLiteConnectionPool.acquireConnection(SQLiteConnectionPool.java:402)\n\tat android.database.sqlite.SQLiteSession.acquireConnection(SQLiteSession.java:931)\n\tat android.database.sqlite.SQLiteSession.executeForCursorWindow(SQLiteSession.java:871)\n\tat android.database.sqlite.SQLiteQuery.fillWindow(SQLiteQuery.java:62)\n\tat android.database.sqlite.SQLiteCursor.fillWindow(SQLiteCursor.java:145)\n\tat android.database.sqlite.SQLiteCursor.getCount(SQLiteCursor.java:132)\n\tat android.database.AbstractCursor.moveToPosition(AbstractCursor.java:252)\n\tat android.database.AbstractCursor.moveToNext(AbstractCursor.java:301)\n\tat androidx.sqlite.driver.SupportSQLiteStatement$RowSQLiteStatement.step(SupportSQLiteStatement.android.kt:405)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl.lambda$observeAll$3(ProfileDao_Impl.java:286)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl.$r8$lambda$s4lemVm4g9E9vxi4BoXsCnMclkU(Unknown Source:0)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl$$ExternalSyntheticLambda4.invoke(D8$$SyntheticClass:0)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invokeSuspend(DBUtil.kt:173)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invoke(Unknown Source:8)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invoke(Unknown Source:4)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invokeSuspend(PassthroughConnectionPool.kt:59)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invoke(Unknown Source:8)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invoke(Unknown Source:4)\n\tat kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatched(Undispatched.kt:66)\n\tat kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatchedOrReturn(Undispatched.kt:43)\n\tat kotlinx.coroutines.BuildersKt__Builders_commonKt.withContext(Builders.common.kt:497)\n\tat kotlinx.coroutines.BuildersKt.withContext(Unknown Source:1)\n\tat androidx.room.coroutines.PassthroughConnectionPool.useConnection(PassthroughConnectionPool.kt:59)\n\tat androidx.room.RoomConnectionManager.useConnection(RoomConnectionManager.android.kt:138)\n\tat androidx.room.RoomDatabase.useConnection(RoomDatabase.android.kt:620)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$$inlined$compatCoroutineExecute$DBUtil__DBUtil_androidKt$1.invokeSuspend(DBUtil.android.kt:261)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)\n\tat java.lang.Thread.run(Thread.java:1563)\n\tSuppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@df5d05f, Dispatchers.IO]\nCaused by: java.lang.Exception: SQLiteConnectionPool.close()\n\tat android.database.sqlite.SQLiteConnectionPool.dispose(SQLiteConnectionPool.java:270)\n\tat android.database.sqlite.SQLiteConnectionPool.close(SQLiteConnectionPool.java:250)\n\tat android.database.sqlite.SQLiteDatabase.dispose(SQLiteDatabase.java:559)\n\tat android.database.sqlite.SQLiteDatabase.onAllReferencesReleased(SQLiteDatabase.java:536)\n\tat android.database.sqlite.SQLiteClosable.releaseReference(SQLiteClosable.java:92)\n\tat android.database.sqlite.SQLiteClosable.close(SQLiteClosable.java:124)\n\tat androidx.sqlite.db.framework.FrameworkSQLiteDatabase.close(FrameworkSQLiteDatabase.android.kt:316)\n\tat androidx.sqlite.driver.SupportSQLiteConnection.close(SupportSQLiteConnection.android.kt:42)\n\tat androidx.room.coroutines.PassthroughConnectionPool.close(PassthroughConnectionPool.kt:64)\n\tat androidx.room.RoomConnectionManager.close(RoomConnectionManager.android.kt:150)\n\tat androidx.room.RoomDatabase.onClosed(RoomDatabase.android.kt:579)\n\tat androidx.room.RoomDatabase.access$onClosed(RoomDatabase.android.kt:95)\n\tat androidx.room.RoomDatabase$closeBarrier$1.invoke(RoomDatabase.android.kt:163)\n\tat androidx.room.RoomDatabase$closeBarrier$1.invoke(RoomDatabase.android.kt:163)\n\tat androidx.room.concurrent.CloseBarrier.close$room_runtime(CloseBarrier.kt:92)\n\tat androidx.room.RoomDatabase.close(RoomDatabase.android.kt:573)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest$fixture$1.invokeSuspend(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:33)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest.fixture(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:16)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest.changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:82)\n\tat java.lang.reflect.Method.invoke(Native Method)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)\n\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.junit.runners.Suite.runChild(Suite.java:128)\n\tat org.junit.runners.Suite.runChild(Suite.java:27)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.junit.runner.JUnitCore.run(JUnitCore.java:137)\n\tat org.junit.runner.JUnitCore.run(JUnitCore.java:115)\n\tat androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:68)\n\tat androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:59)\n\tat androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:467)\n\tat android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2627)\n\nProcess crashed while executing olderSameSourceDownloadCannotReplaceNewerCompletedFile(com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest):\njava.lang.IllegalStateException: Cannot perform this operation because the connection pool has been closed.\n\tat android.database.sqlite.SQLiteConnectionPool.throwIfClosedLocked(SQLiteConnectionPool.java:1112)\n\tat android.database.sqlite.SQLiteConnectionPool.waitForConnection(SQLiteConnectionPool.java:725)\n\tat android.database.sqlite.SQLiteConnectionPool.acquireConnection(SQLiteConnectionPool.java:402)\n\tat android.database.sqlite.SQLiteSession.acquireConnection(SQLiteSession.java:931)\n\tat android.database.sqlite.SQLiteSession.executeForCursorWindow(SQLiteSession.java:871)\n\tat android.database.sqlite.SQLiteQuery.fillWindow(SQLiteQuery.java:62)\n\tat android.database.sqlite.SQLiteCursor.fillWindow(SQLiteCursor.java:145)\n\tat android.database.sqlite.SQLiteCursor.getCount(SQLiteCursor.java:132)\n\tat android.database.AbstractCursor.moveToPosition(AbstractCursor.java:252)\n\tat android.database.AbstractCursor.moveToNext(AbstractCursor.java:301)\n\tat androidx.sqlite.driver.SupportSQLiteStatement$RowSQLiteStatement.step(SupportSQLiteStatement.android.kt:405)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl.lambda$observeAll$3(ProfileDao_Impl.java:286)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl.$r8$lambda$s4lemVm4g9E9vxi4BoXsCnMclkU(Unknown Source:0)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl$$ExternalSyntheticLambda4.invoke(D8$$SyntheticClass:0)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invokeSuspend(DBUtil.kt:173)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invoke(Unknown Source:8)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invoke(Unknown Source:4)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invokeSuspend(PassthroughConnectionPool.kt:59)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invoke(Unknown Source:8)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invoke(Unknown Source:4)\n\tat kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatched(Undispatched.kt:66)\n\tat kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatchedOrReturn(Undispatched.kt:43)\n\tat kotlinx.coroutines.BuildersKt__Builders_commonKt.withContext(Builders.common.kt:497)\n\tat kotlinx.coroutines.BuildersKt.withContext(Unknown Source:1)\n\tat androidx.room.coroutines.PassthroughConnectionPool.useConnection(PassthroughConnectionPool.kt:59)\n\tat androidx.room.RoomConnectionManager.useConnection(RoomConnectionManager.android.kt:138)\n\tat androidx.room.RoomDatabase.useConnection(RoomDatabase.android.kt:620)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$$inlined$compatCoroutineExecute$DBUtil__DBUtil_androidKt$1.invokeSuspend(DBUtil.android.kt:261)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)\n\tat java.lang.Thread.run(Thread.java:1563)\n\tSuppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@df5d05f, Dispatchers.IO]\nCaused by: java.lang.Exception: SQLiteConnectionPool.close()\n\tat android.database.sqlite.SQLiteConnectionPool.dispose(SQLiteConnectionPool.java:270)\n\tat android.database.sqlite.SQLiteConnectionPool.close(SQLiteConnectionPool.java:250)\n\tat android.database.sqlite.SQLiteDatabase.dispose(SQLiteDatabase.java:559)\n\tat android.database.sqlite.SQLiteDatabase.onAllReferencesReleased(SQLiteDatabase.java:536)\n\tat android.database.sqlite.SQLiteClosable.releaseReference(SQLiteClosable.java:92)\n\tat android.database.sqlite.SQLiteClosable.close(SQLiteClosable.java:124)\n\tat androidx.sqlite.db.framework.FrameworkSQLiteDatabase.close(FrameworkSQLiteDatabase.android.kt:316)\n\tat androidx.sqlite.driver.SupportSQLiteConnection.close(SupportSQLiteConnection.android.kt:42)\n\tat androidx.room.coroutines.PassthroughConnectionPool.close(PassthroughConnectionPool.kt:64)\n\tat androidx.room.RoomConnectionManager.close(RoomConnectionManager.android.kt:150)\n\tat androidx.room.RoomDatabase.onClosed(RoomDatabase.android.kt:579)\n\tat androidx.room.RoomDatabase.access$onClosed(RoomDatabase.android.kt:95)\n\tat androidx.room.RoomDatabase$closeBarrier$1.invoke(RoomDatabase.android.kt:163)\n\tat androidx.room.RoomDatabase$closeBarrier$1.invoke(RoomDatabase.android.kt:163)\n\tat androidx.room.concurrent.CloseBarrier.close$room_runtime(CloseBarrier.kt:92)\n\tat androidx.room.RoomDatabase.close(RoomDatabase.android.kt:573)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest$fixture$1.invokeSuspend(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:33)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest.fixture(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:16)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest.changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:82)\n\tat java.lang.reflect.Method.invoke(Native Method)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)\n\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.junit.runners.Suite.runChild(Suite.java:128)\n\tat org.junit.runners.Suite.runChild(Suite.java:27)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.junit.runner.JUnitCore.run(JUnitCore.java:137)\n\tat org.junit.runner.JUnitCore.run(JUnitCore.java:115)\n\tat androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:68)\n\tat androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:59)\n\tat androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:467)\n\tat android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2627)\n"
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+          "code": -2,
+          "passed": false,
+          "stack": "java.lang.IllegalStateException: Cannot perform this operation because the connection pool has been closed.\n\tat android.database.sqlite.SQLiteConnectionPool.throwIfClosedLocked(SQLiteConnectionPool.java:1112)\n\tat android.database.sqlite.SQLiteConnectionPool.waitForConnection(SQLiteConnectionPool.java:725)\n\tat android.database.sqlite.SQLiteConnectionPool.acquireConnection(SQLiteConnectionPool.java:402)\n\tat android.database.sqlite.SQLiteSession.acquireConnection(SQLiteSession.java:931)\n\tat android.database.sqlite.SQLiteSession.executeForCursorWindow(SQLiteSession.java:871)\n\tat android.database.sqlite.SQLiteQuery.fillWindow(SQLiteQuery.java:62)\n\tat android.database.sqlite.SQLiteCursor.fillWindow(SQLiteCursor.java:145)\n\tat android.database.sqlite.SQLiteCursor.getCount(SQLiteCursor.java:132)\n\tat android.database.AbstractCursor.moveToPosition(AbstractCursor.java:252)\n\tat android.database.AbstractCursor.moveToNext(AbstractCursor.java:301)\n\tat androidx.sqlite.driver.SupportSQLiteStatement$RowSQLiteStatement.step(SupportSQLiteStatement.android.kt:405)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl.lambda$observeAll$3(ProfileDao_Impl.java:286)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl.$r8$lambda$s4lemVm4g9E9vxi4BoXsCnMclkU(Unknown Source:0)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl$$ExternalSyntheticLambda4.invoke(D8$$SyntheticClass:0)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invokeSuspend(DBUtil.kt:173)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invoke(Unknown Source:8)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invoke(Unknown Source:4)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invokeSuspend(PassthroughConnectionPool.kt:59)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invoke(Unknown Source:8)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invoke(Unknown Source:4)\n\tat kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatched(Undispatched.kt:66)\n\tat kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatchedOrReturn(Undispatched.kt:43)\n\tat kotlinx.coroutines.BuildersKt__Builders_commonKt.withContext(Builders.common.kt:497)\n\tat kotlinx.coroutines.BuildersKt.withContext(Unknown Source:1)\n\tat androidx.room.coroutines.PassthroughConnectionPool.useConnection(PassthroughConnectionPool.kt:59)\n\tat androidx.room.RoomConnectionManager.useConnection(RoomConnectionManager.android.kt:138)\n\tat androidx.room.RoomDatabase.useConnection(RoomDatabase.android.kt:620)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$$inlined$compatCoroutineExecute$DBUtil__DBUtil_androidKt$1.invokeSuspend(DBUtil.android.kt:261)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)\n\tat java.lang.Thread.run(Thread.java:1563)\n\tSuppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@df5d05f, Dispatchers.IO]\nCaused by: java.lang.Exception: SQLiteConnectionPool.close()\n\tat android.database.sqlite.SQLiteConnectionPool.dispose(SQLiteConnectionPool.java:270)\n\tat android.database.sqlite.SQLiteConnectionPool.close(SQLiteConnectionPool.java:250)\n\tat android.database.sqlite.SQLiteDatabase.dispose(SQLiteDatabase.java:559)\n\tat android.database.sqlite.SQLiteDatabase.onAllReferencesReleased(SQLiteDatabase.java:536)\n\tat android.database.sqlite.SQLiteClosable.releaseReference(SQLiteClosable.java:92)\n\tat android.database.sqlite.SQLiteClosable.close(SQLiteClosable.java:124)\n\tat androidx.sqlite.db.framework.FrameworkSQLiteDatabase.close(FrameworkSQLiteDatabase.android.kt:316)\n\tat androidx.sqlite.driver.SupportSQLiteConnection.close(SupportSQLiteConnection.android.kt:42)\n\tat androidx.room.coroutines.PassthroughConnectionPool.close(PassthroughConnectionPool.kt:64)\n\tat androidx.room.RoomConnectionManager.close(RoomConnectionManager.android.kt:150)\n\tat androidx.room.RoomDatabase.onClosed(RoomDatabase.android.kt:579)\n\tat androidx.room.RoomDatabase.access$onClosed(RoomDatabase.android.kt:95)\n\tat androidx.room.RoomDatabase$closeBarrier$1.invoke(RoomDatabase.android.kt:163)\n\tat androidx.room.RoomDatabase$closeBarrier$1.invoke(RoomDatabase.android.kt:163)\n\tat androidx.room.concurrent.CloseBarrier.close$room_runtime(CloseBarrier.kt:92)\n\tat androidx.room.RoomDatabase.close(RoomDatabase.android.kt:573)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest$fixture$1.invokeSuspend(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:33)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest.fixture(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:16)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest.changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:82)\n\tat java.lang.reflect.Method.invoke(Native Method)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)\n\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.junit.runners.Suite.runChild(Suite.java:128)\n\tat org.junit.runners.Suite.runChild(Suite.java:27)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.junit.runner.JUnitCore.run(JUnitCore.java:137)\n\tat org.junit.runner.JUnitCore.run(JUnitCore.java:115)\n\tat androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:68)\n\tat androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:59)\n\tat androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:467)\n\tat android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2627)\n\nProcess crashed while executing olderSameSourceDownloadCannotReplaceNewerCompletedFile(com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest):\njava.lang.IllegalStateException: Cannot perform this operation because the connection pool has been closed.\n\tat android.database.sqlite.SQLiteConnectionPool.throwIfClosedLocked(SQLiteConnectionPool.java:1112)\n\tat android.database.sqlite.SQLiteConnectionPool.waitForConnection(SQLiteConnectionPool.java:725)\n\tat android.database.sqlite.SQLiteConnectionPool.acquireConnection(SQLiteConnectionPool.java:402)\n\tat android.database.sqlite.SQLiteSession.acquireConnection(SQLiteSession.java:931)\n\tat android.database.sqlite.SQLiteSession.executeForCursorWindow(SQLiteSession.java:871)\n\tat android.database.sqlite.SQLiteQuery.fillWindow(SQLiteQuery.java:62)\n\tat android.database.sqlite.SQLiteCursor.fillWindow(SQLiteCursor.java:145)\n\tat android.database.sqlite.SQLiteCursor.getCount(SQLiteCursor.java:132)\n\tat android.database.AbstractCursor.moveToPosition(AbstractCursor.java:252)\n\tat android.database.AbstractCursor.moveToNext(AbstractCursor.java:301)\n\tat androidx.sqlite.driver.SupportSQLiteStatement$RowSQLiteStatement.step(SupportSQLiteStatement.android.kt:405)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl.lambda$observeAll$3(ProfileDao_Impl.java:286)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl.$r8$lambda$s4lemVm4g9E9vxi4BoXsCnMclkU(Unknown Source:0)\n\tat com.lonnnnnng.flclash.data.ProfileDao_Impl$$ExternalSyntheticLambda4.invoke(D8$$SyntheticClass:0)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invokeSuspend(DBUtil.kt:173)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invoke(Unknown Source:8)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$lambda$1$$inlined$internalPerform$1.invoke(Unknown Source:4)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invokeSuspend(PassthroughConnectionPool.kt:59)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invoke(Unknown Source:8)\n\tat androidx.room.coroutines.PassthroughConnectionPool$useConnection$2.invoke(Unknown Source:4)\n\tat kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatched(Undispatched.kt:66)\n\tat kotlinx.coroutines.intrinsics.UndispatchedKt.startUndispatchedOrReturn(Undispatched.kt:43)\n\tat kotlinx.coroutines.BuildersKt__Builders_commonKt.withContext(Builders.common.kt:497)\n\tat kotlinx.coroutines.BuildersKt.withContext(Unknown Source:1)\n\tat androidx.room.coroutines.PassthroughConnectionPool.useConnection(PassthroughConnectionPool.kt:59)\n\tat androidx.room.RoomConnectionManager.useConnection(RoomConnectionManager.android.kt:138)\n\tat androidx.room.RoomDatabase.useConnection(RoomDatabase.android.kt:620)\n\tat androidx.room.util.DBUtil__DBUtil_androidKt$performSuspending$$inlined$compatCoroutineExecute$DBUtil__DBUtil_androidKt$1.invokeSuspend(DBUtil.android.kt:261)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)\n\tat java.lang.Thread.run(Thread.java:1563)\n\tSuppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@df5d05f, Dispatchers.IO]\nCaused by: java.lang.Exception: SQLiteConnectionPool.close()\n\tat android.database.sqlite.SQLiteConnectionPool.dispose(SQLiteConnectionPool.java:270)\n\tat android.database.sqlite.SQLiteConnectionPool.close(SQLiteConnectionPool.java:250)\n\tat android.database.sqlite.SQLiteDatabase.dispose(SQLiteDatabase.java:559)\n\tat android.database.sqlite.SQLiteDatabase.onAllReferencesReleased(SQLiteDatabase.java:536)\n\tat android.database.sqlite.SQLiteClosable.releaseReference(SQLiteClosable.java:92)\n\tat android.database.sqlite.SQLiteClosable.close(SQLiteClosable.java:124)\n\tat androidx.sqlite.db.framework.FrameworkSQLiteDatabase.close(FrameworkSQLiteDatabase.android.kt:316)\n\tat androidx.sqlite.driver.SupportSQLiteConnection.close(SupportSQLiteConnection.android.kt:42)\n\tat androidx.room.coroutines.PassthroughConnectionPool.close(PassthroughConnectionPool.kt:64)\n\tat androidx.room.RoomConnectionManager.close(RoomConnectionManager.android.kt:150)\n\tat androidx.room.RoomDatabase.onClosed(RoomDatabase.android.kt:579)\n\tat androidx.room.RoomDatabase.access$onClosed(RoomDatabase.android.kt:95)\n\tat androidx.room.RoomDatabase$closeBarrier$1.invoke(RoomDatabase.android.kt:163)\n\tat androidx.room.RoomDatabase$closeBarrier$1.invoke(RoomDatabase.android.kt:163)\n\tat androidx.room.concurrent.CloseBarrier.close$room_runtime(CloseBarrier.kt:92)\n\tat androidx.room.RoomDatabase.close(RoomDatabase.android.kt:573)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest$fixture$1.invokeSuspend(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:33)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest.fixture(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:16)\n\tat com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest.changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload(SubscriptionAutoUpdateRepositoryInstrumentedTest.kt:82)\n\tat java.lang.reflect.Method.invoke(Native Method)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)\n\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.junit.runners.Suite.runChild(Suite.java:128)\n\tat org.junit.runners.Suite.runChild(Suite.java:27)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.junit.runner.JUnitCore.run(JUnitCore.java:137)\n\tat org.junit.runner.JUnitCore.run(JUnitCore.java:115)\n\tat androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:68)\n\tat androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:59)\n\tat androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:467)\n\tat android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2627)\n"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 5.641,
+      "log": {
+        "path": "/tmp/kclash-auto-cycle-20261105-final-regression.log",
+        "sha256": "7f56f37a399e5f3abb8809abfe13aa14894caafb7c724d842e450a84000ba514",
+        "bytes": 37153
+      },
+      "report": {
+        "path": "/tmp/kclash-auto-cycle-20261105-final-regression.json",
+        "sha256": "30a60f067ec79da1f612fc42463d7594543b5613440a2d9ee7606e71eefea2a7",
+        "bytes": 36572
+      }
+    },
+    "final4": {
+      "images": [],
+      "requested": [
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+        "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation",
+          "code": -2,
+          "passed": false,
+          "stack": "androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms\n\tat androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:901)\n\tat androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:500)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest$exercise$1.invokeSuspend(ProxyNodeMenuHostInstrumentedTest.kt:96)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.exercise(ProxyNodeMenuHostInstrumentedTest.kt:21)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(ProxyNodeMenuHostInstrumentedTest.kt:19)\n\nError in runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest):\nandroidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms\n\tat androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:901)\n\tat androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:500)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest$exercise$1.invokeSuspend(ProxyNodeMenuHostInstrumentedTest.kt:96)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.exercise(ProxyNodeMenuHostInstrumentedTest.kt:21)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(ProxyNodeMenuHostInstrumentedTest.kt:19)\n"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 36.396,
+      "log": {
+        "path": "/tmp/kclash-auto-cycle-20261105-final4.log",
+        "sha256": "1d60d09556dc54f528e22f0d8fc257ae4ea771670c9663cf208b63ee2dfe4353",
+        "bytes": 10496
+      },
+      "report": {
+        "path": "/tmp/kclash-auto-cycle-20261105-final4.json",
+        "sha256": "e0320ebadc7f012fdc9bb0cc0478c861c0d11ec1d4e7113016ec6a8c7dcb384f",
+        "bytes": 6051
+      }
+    },
+    "final5": {
+      "images": [
+        {
+          "path": "/tmp/kclash-auto-cycle-20261105-final5-screenshot.png",
+          "sha256": "9c9170df3e6e70a45daaee13db27b3e0916c0ca605e41a6cd6122b7400aa4236"
+        }
+      ],
+      "requested": [
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+        "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+        "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+        "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#committedApplyFailureSurvivesRepositoryRecreationAndRetriesWithoutDownloading",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#databaseFailureRollsBackBodyAndPendingMarkerAndCancellationIsNotReportedAsDownloadFailure",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.SubscriptionAutoUpdateRepositoryInstrumentedTest#changedSourceInvalidatesOldPendingApplyAndAllowsNewDueDownload",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#olderSameSourceDownloadCannotReplaceNewerCompletedFile",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#staleSourceDeletedRowAndDatabaseFailurePreserveExistingFileAndLatestSettings",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.data.ProfileSyncRepositoryInstrumentedTest#delayedDownloadMergesLatestMetadataAndSelectedNodeInsteadOfOverwritingThem",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest#runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation",
+          "code": -2,
+          "passed": false,
+          "stack": "java.lang.AssertionError: 节点菜单验收失败：重建与本地管理页回读/ComposeTimeoutException\ncom.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest$exercise$1.invokeSuspend:98\ncom.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.exercise:21\ncom.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation:19\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest$exercise$1.invokeSuspend(ProxyNodeMenuHostInstrumentedTest.kt:112)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.exercise(ProxyNodeMenuHostInstrumentedTest.kt:21)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(ProxyNodeMenuHostInstrumentedTest.kt:19)\n\nError in runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest):\njava.lang.AssertionError: 节点菜单验收失败：重建与本地管理页回读/ComposeTimeoutException\ncom.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest$exercise$1.invokeSuspend:98\ncom.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.exercise:21\ncom.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation:19\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest$exercise$1.invokeSuspend(ProxyNodeMenuHostInstrumentedTest.kt:112)\n\tat kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)\n\tat kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)\n\tat kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:256)\n\tat kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:54)\n\tat kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl(Builders.kt:30)\n\tat kotlinx.coroutines.BuildersKt.runBlockingImpl(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK(Builders.concurrent.kt:172)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK(Unknown Source:1)\n\tat kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK$default(Builders.concurrent.kt:157)\n\tat kotlinx.coroutines.BuildersKt.runBlockingK$default(Unknown Source:1)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.exercise(ProxyNodeMenuHostInstrumentedTest.kt:21)\n\tat com.lonnnnnng.flclash.ui.ProxyNodeMenuHostInstrumentedTest.runningNodeMenuAddsOnceAndKeepsCoreSessionAcrossRecreation(ProxyNodeMenuHostInstrumentedTest.kt:19)\n"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 37.171,
+      "log": {
+        "path": "/tmp/kclash-auto-cycle-20261105-final5.log",
+        "sha256": "c27a24f27018b1aacb1c1e6ee67e1e92d24f0e9d38e1acc8b8e93e4b28155c1a",
+        "bytes": 10840
+      },
+      "report": {
+        "path": "/tmp/kclash-auto-cycle-20261105-final5.json",
+        "sha256": "c8bf34cdc732aaf46503c525b1e378c9e3a0743edc964421954eccfbab4914dc",
+        "bytes": 6336
+      }
+    }
+  },
+  "previousBatchNotes": [
+    "regression1/final4/final5各6/7；运行态节点重建后的重复Snackbar覆盖工具卡片中心，等待其自然退场后真实点击通过，未改生产Snackbar。",
+    "final-regression请求7项，隔离Room观察者读取关闭连接池导致进程崩溃；3项完整通过后出现重复失败结果，不记为完整3/5批次。",
+    "最初采集器将中间状态误算测试结果；原JSON保留preserve-before-collector1，修正为只统计带class/test完整结果。"
+  ],
+  "preservation": {
+    "before": {
+      "count": 1,
+      "aggregateSha256": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+      "batch": {
+        "requested": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ],
+        "results": [
+          {
+            "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          }
+        ],
+        "exitCode": 0,
+        "seconds": 7.735,
+        "log": {
+          "path": "/tmp/kclash-auto-cycle-20261105-preserve-before.log",
+          "sha256": "9ed52681a4119c8df5849eb1bdfe9f554232db40cbf7e3f4cc8fd1ab515966f7",
+          "bytes": 962
+        },
+        "collectorCorrection": "Count only complete class/test result bundles, not application sendStatus(0) notifications.",
+        "report": {
+          "path": "/tmp/kclash-auto-cycle-20261105-preserve-before.json",
+          "sha256": "ccf825f666b1de37e6f6da57eb2326a2b93347a03c11e4e84fdeb2564130efc3",
+          "bytes": 543
+        }
+      }
+    },
+    "after": {
+      "count": 1,
+      "aggregateSha256": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+      "batch": {
+        "images": [],
+        "requested": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ],
+        "results": [
+          {
+            "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          }
+        ],
+        "exitCode": 0,
+        "seconds": 6.855,
+        "log": {
+          "path": "/tmp/kclash-auto-cycle-20261105-preserve-after-natural.log",
+          "sha256": "88626ea1716e75dfea2fe2eb496017c51c20c220fd23d415c500e26e0fe80f3e",
+          "bytes": 961
+        },
+        "report": {
+          "path": "/tmp/kclash-auto-cycle-20261105-preserve-after-natural.json",
+          "sha256": "88d702135b1e6afadf454e02d57be2663d59ce49b403332b22d3dd2e125a3dab",
+          "bytes": 446
+        }
+      }
+    },
+    "roomRowsSelectionFilesAndFieldDigestsVerified": true,
+    "flutterApkUnchanged": true,
+    "localAndDeviceYamlUnchanged": true,
+    "deviceSettingsUnchanged": true,
+    "noKotlinServiceOrTun0": true
+  },
+  "snapshots": {
+    "before": {
+      "authorizedSourceSha256": "0471389dac92c66fc42b66703eddc1eb36189002cba60d7f0b61f7648f5522b8",
+      "local1": {
+        "bytes": 34814,
+        "sha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+      },
+      "device1": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898  /sdcard/Download/1.yaml",
+      "settings": {
+        "system.accelerometer_rotation": "1",
+        "system.user_rotation": "0",
+        "system.font_scale": "1.0",
+        "global.window_animation_scale": "1.0",
+        "global.transition_animation_scale": "1.0",
+        "global.animator_duration_scale": "1.0"
+      },
+      "flutterApkSha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+    },
+    "duringNaturalCycle": {
+      "capturedAt": "2026-11-04T19:58:31.999289+00:00",
+      "serial": "wsvwypiz7xwslvl7",
+      "pid": "6988",
+      "elapsedSinceT0": 767420,
+      "foreground": [
+        "topResumedActivity=ActivityRecord{97450915 u0 com.android.launcher3/.uioverrides.QuickstepLauncher t13386}"
+      ]
+    },
+    "after": {
+      "device": {
+        "serial": "wsvwypiz7xwslvl7",
+        "model": "Redmi Note 8 Pro",
+        "api": "36",
+        "abi": "arm64-v8a",
+        "orientation": "portrait",
+        "fontScale": "1.0"
+      },
+      "settings": {
+        "system.accelerometer_rotation": "1",
+        "system.user_rotation": "0",
+        "system.font_scale": "1.0",
+        "global.window_animation_scale": "1.0",
+        "global.transition_animation_scale": "1.0",
+        "global.animator_duration_scale": "1.0"
+      },
+      "local1": {
+        "bytes": 34814,
+        "sha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+      },
+      "device1": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898  /sdcard/Download/1.yaml",
+      "packages": {
+        "com.follow.clash": {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        },
+        "com.lonnnnnng.flclash": {
+          "path": "/data/app/~~SY0brQU53Mapml0FfbdLbQ==/com.lonnnnnng.flclash-OOA5d7Pm_l5Uih76vVpyHQ==/base.apk",
+          "sha256": "27cef6fc775d47084a267db3dc8359e2b1672eeb824646e9fac3dc9db9d86ba1"
+        },
+        "com.lonnnnnng.flclash.test": {
+          "path": "/data/app/~~5jqmXwauVRB61FdO1sUODA==/com.lonnnnnng.flclash.test-y7IjYF8LqAFxbgjdryeIMA==/base.apk",
+          "sha256": "9070a8978eb6b4d485126af79ed98420f37e36d3e8fa9cf87da14b3db7589836"
+        }
+      },
+      "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+      "interfaces": [
+        "ap0",
+        "ccmni-lan",
+        "ccmni0",
+        "ccmni1",
+        "ccmni10",
+        "ccmni11",
+        "ccmni12",
+        "ccmni13",
+        "ccmni14",
+        "ccmni15",
+        "ccmni16",
+        "ccmni17",
+        "ccmni18",
+        "ccmni19",
+        "ccmni2",
+        "ccmni20",
+        "ccmni3",
+        "ccmni4",
+        "ccmni5",
+        "ccmni6",
+        "ccmni7",
+        "ccmni8",
+        "ccmni9",
+        "dummy0",
+        "ifb0",
+        "ifb1",
+        "ip6_vti0",
+        "ip6tnl0",
+        "ip_vti0",
+        "lo",
+        "p2p0",
+        "sit0",
+        "wlan0",
+        "wlan1"
+      ],
+      "preserved": true,
+      "noKotlinServiceOrTun0": true
+    }
+  },
+  "sources": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/AppPreferenceDao.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/data/AppPreferenceDao.kt",
+      "sha256": "2fed78e004636fca03888fe999f13bb3ab3f0043d1a504099c1329def791d162",
+      "bytes": 806
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileProxyResources.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileProxyResources.kt",
+      "sha256": "b0baf1e2d23621d81c7856dc403f92f77a9b92c2317dcf57021e5283b5723b01",
+      "bytes": 5623
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileRepository.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileRepository.kt",
+      "sha256": "55dddac5453494d2d623975d907fb3b81f30a68291c66c74b7ee35b0f4e5ed19",
+      "bytes": 82777
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/SubscriptionAutoUpdate.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/data/SubscriptionAutoUpdate.kt",
+      "sha256": "5471dcf06e271c012f7f5254ad5c5529b4e560f1545a15ca7107ff0f3d2cb9be",
+      "bytes": 1313
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/SubscriptionAutoUpdateAudit.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/data/SubscriptionAutoUpdateAudit.kt",
+      "sha256": "55f7d1d649828f5b09971ca395ed46769fafebbccad18d2fa6109f836a9da55e",
+      "bytes": 2164
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/SubscriptionAutoUpdateWorker.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/data/SubscriptionAutoUpdateWorker.kt",
+      "sha256": "cb1ab5d22878355815de4d978c3e966db29d8d8d2fc4fd4feb44ed2486fc9f0e",
+      "bytes": 4544
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/di/AppModule.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/di/AppModule.kt",
+      "sha256": "1ef60fecf8074a094e9ad957d4f2bce37e132b8a8da54eba3372ff62a200b17a",
+      "bytes": 18299
+    },
+    "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeContracts.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeContracts.kt",
+      "sha256": "8057d62778dc833431e6526fc2ded22e0784f99fac935531702bad9dfd324013",
+      "bytes": 23200
+    },
+    "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt",
+      "sha256": "60823a6a4b40fb2ecb04c7b7947ba305263c39e7f452403abf3cebea1a91119a",
+      "bytes": 85975
+    },
+    "android/tests/app/ProfileProxyResourcesTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/app/ProfileProxyResourcesTest.kt",
+      "sha256": "15ff7c1c66f7eb8ea944972f6dd6259a24b238e40de06aa48337191ab02a78b1",
+      "bytes": 3071
+    },
+    "android/tests/instrumented/ProfileSyncRepositoryInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/ProfileSyncRepositoryInstrumentedTest.kt",
+      "sha256": "68941353d59afb4de63cd262076d479937f168db0e2a5de50b54fb539a15d00a",
+      "bytes": 6563
+    },
+    "android/tests/instrumented/ProxyNodeMenuHostInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/ProxyNodeMenuHostInstrumentedTest.kt",
+      "sha256": "eca9b4582f1a26da873b228620ee96a9741834b2aedd5d0218faf7d0fe69486b",
+      "bytes": 11369
+    },
+    "android/tests/instrumented/SubscriptionAutoUpdateRepositoryInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/SubscriptionAutoUpdateRepositoryInstrumentedTest.kt",
+      "sha256": "ee6bd4d44f7ea527a0e0fc0adf122e6f6d8b3dec14d762872ba15f6358c154db",
+      "bytes": 6147
+    },
+    "android/tests/instrumented/SubscriptionNaturalCycleInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/SubscriptionNaturalCycleInstrumentedTest.kt",
+      "sha256": "389d4dc52197caf76481088534b60e1cc1930e8c11105d57dd57225e9b77f236",
+      "bytes": 10421
+    },
+    "android/tests/service/CoreRuntimeManagerTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/service/CoreRuntimeManagerTest.kt",
+      "sha256": "8b29e81f1f26784e1fdff2fd38ccceff3509cc5dd455c32c0e38faa280ed885d",
+      "bytes": 139049
+    }
+  },
+  "independentReviews": [
+    "automatic_update_commit_audit：无新增阻断问题；已受理下载不因随后关闭autoUpdate而取消，屏障只供显式冻结批次使用。",
+    "automatic_update_runtime_audit2：未发现可确认新缺陷；确认实际use引用、延迟Hilt回边、应用回滚与自然周期证据边界。",
+    "auto_cycle_final_evidence_review：718、最终7/7及自然1/1、25分40秒、attempt0、同正文哈希边界、保护及旧失败一致；本地证据哈希匹配，未发现真实来源或明文密钥泄露。"
+  ],
+  "visualReview": {
+    "reviewedBy": "primary agent",
+    "images": 2,
+    "note": "本组两张运行态工具页/重建本地目录截图已目视；不推广完整Flutter视觉。"
+  },
+  "limitations": [
+    "自然测试从真实同步t0等待订阅15分钟到期，由既有生产20分钟周期调度自然检查；没有调时、伪造更新时间、直接调用Worker或强制Job。",
+    "只证明一次既有调度中的自然到期下载保存应用，不证明严格每20分钟调度或上游返回不同正文；签名不等包含mtime变化。",
+    "本次授权来源未证明为在线age密文，真实加密在线下载/解密/应用仍待条件。",
+    "CUSTOM实际资源引用判断与runtime模拟引用分别有JVM覆盖，本组自然实网仅验证当前订阅，不推广真实CUSTOM引用资源全链路。",
+    "手动updateRemoteProfile保持原语义，不宣称手动同步也改走新增automaticCommitter。",
+    "关闭autoUpdate阻止未来批次选择，不取消已受理的下载；任务整体取消/异常未返回时审计可能没有该次记录。",
+    "仅Redmi API36竖屏默认字号arm64纯代理，未重跑VPN、低API、Go、正式签名运行或远端CI。",
+    "第二步其他资源SAF/外部脚本、Provider其余来源/故障恢复/流量命中、编辑器冷进程、质量来源/持久缓存及Fallback/蜂窝/第三方OEM仍未整体完成。",
+    "第三步视觉与性能未开始本组验收；玻璃默认关闭，备份/系统恢复、观测次要打磨、语言/主题暂缓。",
+    "原始日志和PNG仅本机/tmp留存，未随源码上传。"
+  ]
+}

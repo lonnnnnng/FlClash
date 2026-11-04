@@ -55,6 +55,9 @@ interface ActiveProfileProvider {
     suspend fun profileById(id: Long): ActiveProfile? = activeProfile()?.takeIf { it.id == id }
 
     suspend fun activeProfileId(): Long? = activeProfile()?.id
+
+    // 作者 long：后台更新资源只刷新实际引用者，不能因同名标签或未使用的Provider定义重载当前会话。
+    suspend fun referencesProfile(profileId: Long, resourceId: Long): Boolean = false
 }
 
 /**

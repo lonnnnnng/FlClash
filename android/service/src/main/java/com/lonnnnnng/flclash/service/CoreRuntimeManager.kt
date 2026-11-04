@@ -474,19 +474,26 @@ class CoreRuntimeManager(
         applyProfileLocked(id, select)
     }
 
-    override suspend fun <T> withProfileWrite(applyCurrentId: Long?, write: suspend () -> T): T = transitionLock.withLock {
+    override suspend fun <T> withProfileWrite(applyCurrentId: Long?, write: suspend () -> T): T =
+        writeProfileAndApply({ true }, write, inspectCurrent = applyCurrentId != null)
+
+    suspend fun <T> withProfileSourceWrite(sourceId: Long, write: suspend () -> T): T =
+        writeProfileAndApply({ selected -> selected == sourceId || profileProvider.referencesProfile(selected, sourceId) }, write)
+
+    private suspend fun <T> writeProfileAndApply(affectsCurrent: suspend (Long) -> Boolean, write: suspend () -> T, inspectCurrent: Boolean = true): T = transitionLock.withLock {
         check(mutableState.value != CoreRuntimeStatus.STARTING && mutableState.value != CoreRuntimeStatus.STOPPING) { "核心正在启停，请稍后重试" }
         // 作者 long：固定锁序为生命周期锁→文件锁；受理后的源文件提交不能被启动、切换或取消打断。
         withContext(kotlinx.coroutines.NonCancellable) {
             val result = write()
-            if (applyCurrentId != null) {
-                // 作者 long：提交与核心应用共持启停锁，节点轮询不能抢先加载新正文却沿用旧端口或旧TUN。
-                val selected = profileProvider.activeProfileId()
-                if (selected != null) {
-                    try { applyProfileLocked(selected) { check(it == selected) { "当前配置已变化" } } }
-                    catch (_: Exception) { throw ProfileApplyAfterSaveException(selected) }
+            var selected: Long? = null
+            try {
+                selected = if (inspectCurrent) profileProvider.activeProfileId() else null
+                val target = selected
+                if (target != null) {
+                    // 作者 long：提交与核心应用共持启停锁，节点轮询不能抢先加载新正文却沿用旧端口或旧TUN。
+                    if (affectsCurrent(target)) applyProfileLocked(target) { check(it == target) { "当前配置已变化" } }
                 }
-            }
+            } catch (_: Exception) { throw ProfileApplyAfterSaveException(selected) }
             result
         }
     }

@@ -12,6 +12,9 @@ interface AppPreferenceDao {
     @Query("SELECT value FROM app_preferences WHERE `key` = :key LIMIT 1")
     suspend fun get(key: String): String?
 
+    @Query("SELECT * FROM app_preferences WHERE `key` LIKE :prefix || '%'")
+    suspend fun getByPrefix(prefix: String): List<AppPreferenceEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun put(preference: AppPreferenceEntity)
 

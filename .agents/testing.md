@@ -1,6 +1,19 @@
 # Testing
 
-## 第一阶段页面交互闭环（2026-11-05，当前快照）
+## 后台订阅自然周期与运行态节点（2026-11-05，最新）
+
+App454/Service195/Core38/Common31共718项单测零失败/错误/跳过；build4 Debug/Test和未签名Release/R8、最终testbuild6及独立lint4双变体通过，各0错误/66警告（Debug10/Release9提示）。Redmi最终同套App4/Test6回归7/7，自然周期独立1/1，两张PNG已目视，安装哈希匹配。证据`docs/acceptance/subscription-auto-cycle-redmi-20261105.json`；原始日志/PNG只在本机/tmp。
+
+- 最终精确回归7/7：自动提交/应用分离3项、原同步并发/回滚3项、运行态节点菜单正式落库及真实recreate 1项，见本组final6日志与JSON。
+- 自然周期方法SubscriptionNaturalCycleInstrumentedTest#duePeriodicWorkerDownloadsAndAppliesInBackgroundWithoutChangingFormalProfiles：kclashNaturalCycleAcceptance=true，使用外层唯一授权来源摘要；不创建Activity、不调时、不改lastUpdateAt、不直调Worker、不force Job。真实同步t0、订阅15分钟到期，观察既有生产20分钟周期work ID的审计和核心应用；只证明该次自然到期流程，不能推广严格周期或正文变化。
+- 自然测试用同授权来源临时副本并暂停正式配置自动更新；automatic屏障内快照/恢复，Keystore加密中断记录subscription-cycle-acceptance.v1。恢复入口restoreInterruptedNaturalCycle仅在前一任务确实终止后使用，不能打断live用例。
+- before/after正式保护聚合摘要一致；同批原1.yaml双端、Flutter com.follow.clash APK、设置与安装SHA核对，结束无应用服务/tun0。Flutter只读不修改。
+- 失败历史：regression1/final4/final5各6/7；final-regression因关闭隔离Room后观察者迟到读取崩溃，不能记为完整3/5。最终关闭前cancelAndJoin，节点真实触摸等待覆盖卡片的Snackbar自然退场；未改生产提示行为。
+- 真实在线age密文、CUSTOM引用资源实网全链路、低API/VPN/Go/正式签名运行/远端CI不在本组通过范围；其他第二步及第三步保持原待办。
+- 规则/批选及策略组子页当前只有VM内存/Compose保存状态，父加密快照未包含正式入口；下组需要实现安全持久化和入口恢复，不能只加一个StateRestorationTester用例后声称冷进程通过。
+
+
+## 第一阶段页面交互闭环（2026-11-05，历史切片）
 
 整策略组原始YAML返回先校验并更新父草稿，失败可继续/放弃，长正文错误定位已验；单组图标/添加选项/值子页保存状态与返回层级恢复。本地代理列表/映射由VM保留草稿及会话边界，隔离Activity真实重建后保持，凭据测试标记不入Bundle。服务管理/质量拖回提交、取消、快甩、反向与后台中断已验，质量页退场保留最后正文，修复空白帧。
 

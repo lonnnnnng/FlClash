@@ -165,7 +165,12 @@ object AppModule {
         configValidator: ProfileConfigValidator,
         contentDecoder: com.lonnnnnng.flclash.data.ProfileContentDecoder,
         resources: com.lonnnnnng.flclash.data.RuleResourceRepository,
-    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient, configValidator, contentDecoder, resources)
+        runtime: javax.inject.Provider<CoreRuntimeManager>,
+    ): ProfileRepository = ProfileRepository(context, database, subscriptionClient, configValidator, contentDecoder, resources,
+        automaticCommitter = com.lonnnnnng.flclash.data.RemoteProfileCommitter { id, write ->
+            // 作者 long：仓库也是核心的输入提供者，延迟取得管理器可避免Hilt环依赖；网络阶段已在此回调之前完成。
+            runtime.get().withProfileSourceWrite(id, write)
+        })
 
     @Provides
     @Singleton

@@ -1,5 +1,15 @@
 # Architecture
 
+## 后台订阅提交与受影响配置应用（2026-11-05）
+
+ProfileRepository先在核心锁外下载、解密、校验；automaticCommitter通过Provider延迟取得唯一CoreRuntimeManager，避免runtime→repository→runtime的构造环。withProfileSourceWrite只应用当前源或CUSTOM正文中实际use引用的稳定资源ID；无关资源不重载。固定锁序automaticUpdateMutex→transitionLock→fileMutationMutex，手动updateRemoteProfile保留原调用语义。
+
+原子文件/Room提交时同事务写subscription-pending-apply摘要，绑定来源、密钥、更新时间和正文SHA；核心应用失败独立反馈，保留新源与旧核心，下轮先重试应用，不重复下载。改源或正文版本变化使旧pending失效。关闭自动更新只阻止未来批次选择，不取消已经受理的下载；显式冻结批次可用withAutomaticUpdateBarrier等待旧批退出。隔离仓库拥有observationScope，取消并等待观察者后才能关库。
+
+Worker记录最近16次work ID、attempt、时间、到期输入和结果ID，不记录地址、标签、正文、密钥或异常原文；同步落盘保证正常返回前审计存在，取消或整体异常未返回时可能无记录。
+
+718项单测、最终Redmi回归7/7与自然周期独立1/1、正式数据保护及安装证据见`docs/acceptance/subscription-auto-cycle-redmi-20261105.json`。自然更新为既有生产20分钟调度中的单次到期流程，t0到t1为25分40秒，不证明严格周期、上游正文变化或在线age密文；CUSTOM引用源实网全链路仍待验。
+
 ## 策略组与本地代理草稿、服务拖回（2026-11-05，第一步）
 
 整组YAML与单组图标/选项子页各有保存状态；返回解析成功只更新父草稿，失败可继续或放弃。ProxyGroupDraft统一包装分区与正文错误行列换算。本地代理列表/映射放在LocalProxiesViewModel内存，父窗口session拒绝旧回写，凭据草稿不写Bundle；隔离宿主真实recreate已验，冷进程另列。

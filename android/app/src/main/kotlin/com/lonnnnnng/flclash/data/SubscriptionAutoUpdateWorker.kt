@@ -38,13 +38,16 @@ class SubscriptionAutoUpdateWorker(
     workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
+        val checkedAt = System.currentTimeMillis()
+        val startedElapsed = android.os.SystemClock.elapsedRealtime()
         val updater = EntryPointAccessors.fromApplication(
             applicationContext,
             SubscriptionAutoUpdateEntryPoint::class.java,
         ).remoteProfileUpdater()
-        val result = updater.updateDueProfiles()
+        val result = updater.updateDueProfiles(checkedAt)
+        SubscriptionAutoUpdateAudit.record(applicationContext, id.toString(), runAttemptCount, checkedAt, startedElapsed, result)
         if (result.failed == 0) return Result.success()
-        AutoUpdateNotifier.notifyFailures(applicationContext, result.failures)
+        AutoUpdateNotifier.notifyFailures(applicationContext, result.failures + result.applyFailures)
         return if (runAttemptCount < MAX_RETRY_ATTEMPTS) Result.retry() else Result.success()
     }
 

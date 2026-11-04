@@ -91,18 +91,35 @@ class ProxyNodeMenuHostInstrumentedTest {
             stage = "重建与本地管理页回读"
             compose.activityRule.scenario.recreate(); compose.waitForIdle()
             compose.onNodeWithTag("nav_tools").performClick()
-            compose.onNodeWithTag("tools_item_resources_settings").performScrollTo().performClick()
+            compose.waitForIdle()
+            compose.onNodeWithTag("tools_item_resources_settings").performScrollTo()
+            if (running) {
+                val target = compose.onNodeWithTag("tools_item_resources_settings").fetchSemanticsNode().boundsInRoot
+                val feedback = compose.onAllNodesWithText("${added.name} 已在本地代理中").fetchSemanticsNodes().map { it.boundsInRoot }
+                androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
+                    putString("kclash_touch_bounds", "target=$target feedback=$feedback")
+                })
+                capture("running_node_tools_before_resources_touch")
+            }
+            // 作者 long：重建可能重播仍未消费的重复提示；提示覆盖卡片时不能向其后方注入点击，再用等待窗口掩盖漏触。
+            compose.waitUntil(10_000) { compose.onAllNodesWithText("${added.name} 已在本地代理中").fetchSemanticsNodes().isEmpty() }
+            compose.onNodeWithTag("tools_item_resources_settings").performClick()
+            // 作者 long：整页Dialog由Android Window异步加入；运行态轮询时必须等新窗口就绪，不能把首帧未注册当成入口缺失。
+            compose.waitUntil(10_000) { compose.onAllNodesWithText("本地代理").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("本地代理").performClick()
+            compose.waitUntil(10_000) { compose.onAllNodesWithTag("local_proxies_page").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("local_proxy_$addedId").performScrollTo().assertIsDisplayed()
+            if (running) capture("running_node_local_directory_after_recreate")
             compose.onNodeWithTag("local_proxies_back").performClick()
             compose.onNodeWithTag("profile_editor_back").performClick()
             assertTrue("原Profile行不得被节点导入修改", entry.database().profiles().getAll().filter { it.id != temporary.id } == beforeProfiles)
             assertEquals(if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED, runtime.state.value)
             assertEquals(since, runtime.runningSinceElapsedMillis.value)
             if (running) assertTrue(runtime.profileInputsApplied(profile.id))
-        } catch (failure: Exception) {
+        } catch (failure: Throwable) {
+            runCatching { capture("running_node_failure_before_cleanup") }
             // 作者 long：核心异常可能含真实订阅凭据，只记录阶段、异常类型和本项目代码位置。
-            throw IllegalStateException("节点菜单验收失败：$stage/${failure.javaClass.simpleName}\n" + failure.stackTrace.filter { it.className.startsWith("com.lonnnnnng") }.take(8).joinToString("\n") { "${it.className}.${it.methodName}:${it.lineNumber}" })
+            throw AssertionError("节点菜单验收失败：$stage/${failure.javaClass.simpleName}\n" + failure.stackTrace.filter { it.className.startsWith("com.lonnnnnng") }.take(8).joinToString("\n") { "${it.className}.${it.methodName}:${it.lineNumber}" })
         } finally {
             // 作者 long：宿主断言失败时也必须继续回收自己创建的夹具，导航异常不能阻断正式配置和偏好的恢复。
             runCatching { compose.onNodeWithTag("nav_dashboard").performClick(); compose.waitForIdle() }
@@ -125,4 +142,15 @@ class ProxyNodeMenuHostInstrumentedTest {
 
     private fun signature(file: java.io.File) = file.lastModified() to
         java.security.MessageDigest.getInstance("SHA-256").digest(file.readBytes()).toList()
+
+    private fun capture(name: String) {
+        val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        val screenshot = instrumentation.uiAutomation.takeScreenshot()
+        val bytes = java.io.ByteArrayOutputStream().also { screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
+        screenshot.recycle()
+        instrumentation.sendStatus(2, android.os.Bundle().apply {
+            putString("kclash_png_name", name)
+            putString("kclash_png_base64", android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP))
+        })
+    }
 }

@@ -28,18 +28,20 @@ class ProfileSyncRepositoryInstrumentedTest {
         }
         val db = Room.inMemoryDatabaseBuilder(context, KClashDatabase::class.java).build()
         var beforeDownload: suspend () -> Unit = {}
+        val observationJob = SupervisorJob()
         val repo = ProfileRepository(isolated, db, object : SubscriptionClient {
             override suspend fun download(url: String): SubscriptionDownload {
                 beforeDownload()
                 return SubscriptionDownload(bytes, "downloaded", SubscriptionInfo())
             }
-        })
+        }, observationScope = CoroutineScope(observationJob + Dispatchers.IO))
         try {
             val row = Profile.remote(41, "https://example.test/source", "original").copy(lastUpdateAt = 1)
             db.profiles().insert(row.toEntity())
             repo.profileFile(row.id).apply { parentFile!!.mkdirs(); writeBytes(bytes); setLastModified(1_600_000_000_000) }
             action(repo, db, bytes) { beforeDownload = it }
         } finally {
+            observationJob.cancelAndJoin()
             db.close()
             check(directory.parentFile == context.cacheDir && directory.name.startsWith("profile-sync-"))
             directory.deleteRecursively()

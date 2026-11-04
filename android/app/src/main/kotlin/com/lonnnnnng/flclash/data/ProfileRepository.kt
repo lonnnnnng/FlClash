@@ -181,15 +181,19 @@ class ProfileRepository(
     private val configValidator: ProfileConfigValidator = YamlProfileConfigValidator(),
     private val contentDecoder: ProfileContentDecoder = PlainProfileContentDecoder,
     private val resources: RuleResourceRepository? = null,
+    private val automaticCommitter: RemoteProfileCommitter? = null,
+    observationScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) : ActiveProfileProvider, ProfileStore, RemoteProfileUpdater, ProfileExportReader {
     private val appContext = context.applicationContext
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // 作者 long：观察生命周期由仓库拥有者管理；隔离数据库关闭前先取消并等待观察结束，不能让迟到读取拖垮后续任务。
+    private val scope = observationScope
     private val profileDao = database.profiles()
     private val preferenceDao = database.appPreferences()
     private val mutableProfiles = MutableStateFlow<List<Profile>>(emptyList())
     private val mutableCurrentProfileId = MutableStateFlow<Long?>(null)
     // 作者 long：锁覆盖文件替换、Room 提交和失败恢复，后续保存不能在旧正文回滚完成前写入同一路径。
     private val fileMutationMutex = Mutex()
+    private val automaticUpdateMutex = Mutex()
 
     override val profiles: StateFlow<List<Profile>> = mutableProfiles.asStateFlow()
     override val currentProfileId: StateFlow<Long?> = mutableCurrentProfileId.asStateFlow()
@@ -969,7 +973,9 @@ class ProfileRepository(
             }
         }
 
-    override suspend fun updateRemoteProfile(id: Long): Profile = withContext(Dispatchers.IO) {
+    override suspend fun updateRemoteProfile(id: Long): Profile = updateRemoteProfile(id, automatic = false)
+
+    private suspend fun updateRemoteProfile(id: Long, automatic: Boolean): Profile = withContext(Dispatchers.IO) {
         val (current, original) = fileMutationMutex.withLock {
             val row = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
             require(row.type == ProfileType.URL) { "只有订阅配置支持更新" }
@@ -981,7 +987,7 @@ class ProfileRepository(
             val plaintext = contentDecoder.decode(downloaded.bytes, current.ageSecretKey)
             require(plaintext.isNotEmpty() && plaintext.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
             configValidator.validate(plaintext)
-            fileMutationMutex.withLock {
+            val commit: suspend () -> Profile = { fileMutationMutex.withLock {
                 withContext(kotlinx.coroutines.NonCancellable) {
                     replaceLocalProfileFile(profileFile(id), plaintext, persist = { commit ->
                         database.withTransaction {
@@ -995,52 +1001,84 @@ class ProfileRepository(
                             // 作者 long：先替换文件再写Room；数据库拒绝时既有文件工具会恢复原字节和mtime。
                             commit()
                             profileDao.update(updated.toEntity())
+                            if (automatic && automaticCommitter != null) {
+                                // 作者 long：待应用标记与正文元数据一起提交；进程在核心应用前退出，下一次只重试应用而不重复下载。
+                                preferenceDao.put(AppPreferenceEntity(automaticApplyKey(id), automaticApplyVersion(updated, plaintext), System.currentTimeMillis()))
+                            }
                             updated
                         }
                     }, expected = original)
                 }
-            }
+            } }
+            val result = if (automatic && automaticCommitter != null) automaticCommitter.commit(id, commit) else commit()
+            if (automatic && automaticCommitter != null) preferenceDao.delete(automaticApplyKey(id))
+            result
         } catch (error: Throwable) {
             if (error is CancellationException) throw error
+            if (error is com.lonnnnnng.flclash.service.ProfileApplyAfterSaveException) throw error
             recordRemoteUpdateFailure(id, current.url, current.ageSecretKey, current.lastUpdateAt)
             throw error
         }
     }
 
     override suspend fun updateDueProfiles(nowMillis: Long): AutoUpdateResult = withContext(Dispatchers.IO) {
-        val due = profileDao.getAll()
-            .map(ProfileEntity::toDomain)
-            .filter { profile ->
-                profile.type == ProfileType.URL &&
-                    profile.autoUpdate &&
-                    isAutoUpdateDue(profile, nowMillis)
-            }
-        var succeeded = 0
-        val failures = buildList {
-            due.forEach { profile ->
+        automaticUpdateMutex.withLock {
+            val failures = mutableListOf<AutoUpdateFailure>()
+            val applyFailures = mutableListOf<AutoUpdateFailure>()
+            val downloaded = mutableListOf<Long>()
+            val applied = mutableListOf<Long>()
+            val pending = if (automaticCommitter == null) emptyList() else preferenceDao.getByPrefix(AUTOMATIC_APPLY_PREFIX)
+            val pendingIds = mutableSetOf<Long>()
+            for (marker in pending) {
+                val id = marker.key.removePrefix(AUTOMATIC_APPLY_PREFIX).toLongOrNull() ?: continue
+                val profile = profileDao.getById(id)?.toDomain()
+                if (profile == null) { preferenceDao.delete(automaticApplyKey(id)); continue }
+                // 作者 long：改源、换密钥或另一次同步后，旧正文的待应用任务失效，不能永久挡住修正来源的下载。
+                val version = runCatching { automaticApplyVersion(profile, profileFile(id).readBytes()) }.getOrNull()
+                if (marker.value != version) { preferenceDao.delete(marker.key); continue }
+                pendingIds += id
                 try {
-                    updateRemoteProfile(profile.id)
-                    succeeded++
-                } catch (error: CancellationException) {
-                    // 作者 long：Worker 被系统停止时必须把取消继续向上传递，不能把生命周期取消伪装成订阅失败。
-                    throw error
-                } catch (error: Throwable) {
-                    add(
-                        AutoUpdateFailure(
-                            profileId = profile.id,
-                            label = profile.realLabel,
-                            message = error.message ?: "订阅更新失败",
-                        ),
-                    )
+                    automaticCommitter!!.commit(id) { requireNotNull(profileDao.getById(id)) { "配置已删除" }.toDomain() }
+                    preferenceDao.delete(automaticApplyKey(id))
+                    applied += id
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { applyFailures += AutoUpdateFailure(id, profile.realLabel, "订阅已保存，当前配置应用失败，将重试应用") }
+            }
+            val candidates = profileDao.getAll().map(ProfileEntity::toDomain).filter { it.type == ProfileType.URL && it.autoUpdate }
+            val checks = candidates.map { AutoUpdateCheck(it.id, it.lastUpdateAt, it.autoUpdateIntervalMillis.coerceAtLeast(MIN_AUTO_UPDATE_INTERVAL_MILLIS), isAutoUpdateDue(it, nowMillis)) }
+            // 作者 long：已保存但应用失败的资源先走上面的恢复链，本轮不能再次联网覆盖仍待应用的正文。
+            val due = candidates.filter { it.id !in pendingIds && isAutoUpdateDue(it, nowMillis) }
+            for (profile in due) {
+                try {
+                    updateRemoteProfile(profile.id, automatic = true)
+                    downloaded += profile.id
+                    if (automaticCommitter != null) applied += profile.id
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: com.lonnnnnng.flclash.service.ProfileApplyAfterSaveException) {
+                    downloaded += profile.id
+                    applyFailures += AutoUpdateFailure(profile.id, profile.realLabel, "订阅已保存，当前配置应用失败，将重试应用")
+                } catch (_: Exception) {
+                    // 作者 long：下载错误可能包含带凭据的地址，通知只给出可重试阶段，具体来源不进入日志。
+                    failures += AutoUpdateFailure(profile.id, profile.realLabel, "订阅下载或保存失败，将重试更新")
                 }
             }
+            AutoUpdateResult(due.size, downloaded.size, failures, applyFailures, downloaded, applied, checks)
         }
-        AutoUpdateResult(
-            attempted = due.size,
-            succeeded = succeeded,
-            failures = failures,
-        )
     }
+
+    override suspend fun referencesProfile(profileId: Long, resourceId: Long): Boolean = withContext(Dispatchers.IO) {
+        val row = profileDao.getById(profileId) ?: return@withContext false
+        if (row.type != ProfileType.CUSTOM) return@withContext false
+        ProfileProxyResources.referencesProfile(profileFile(profileId).readText(), resourceId)
+    }
+
+    private fun automaticApplyKey(id: Long) = "$AUTOMATIC_APPLY_PREFIX$id"
+
+    private fun automaticApplyVersion(profile: Profile, bytes: ByteArray): String = profileDocumentDigest(
+        "${profile.url}\u0000${profile.ageSecretKey}\u0000${profile.lastUpdateAt}\u0000${profileDocumentDigest(bytes)}".toByteArray())
+
+    /** 作者 long：需要冻结自动更新的批处理先等待已受理下载结束，避免只改开关却仍有旧请求提交正文。 */
+    suspend fun <T> withAutomaticUpdateBarrier(action: suspend () -> T): T = automaticUpdateMutex.withLock { action() }
 
     override suspend fun proxyResourceUsers(id: Long): List<String> = proxyResourceUsage()[id].orEmpty()
 
@@ -1227,6 +1265,7 @@ class ProfileRepository(
     private fun newId(): Long = UUID.randomUUID().mostSignificantBits and Long.MAX_VALUE
 
     private companion object {
+        const val AUTOMATIC_APPLY_PREFIX = "subscription-pending-apply:"
         const val CURRENT_PROFILE_KEY = "current_profile_id"
         const val PROFILES_DIRECTORY = "profiles"
         const val SCRIPTS_DIRECTORY = "scripts"

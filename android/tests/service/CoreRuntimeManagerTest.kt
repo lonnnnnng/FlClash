@@ -38,6 +38,52 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class CoreRuntimeManagerTest {
+    @Test fun backgroundSourceCommitRefreshesCurrentOrReferencedProfileWithoutRestartingSession() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
+        val projection = temporaryFolder.newFile().apply { writeText("rules: ['DOMAIN,resource.invalid,DIRECT','MATCH,DIRECT']\n") }
+        var profile = ActiveProfile(701, "current", source.path)
+        val bridge = FakeBridge(); val services = FakeServiceController()
+        val runtime = manager(profile, temporaryFolder.newFolder(), bridge, services, profileProvider = object : ActiveProfileProvider {
+            override suspend fun activeProfile() = profile
+            override suspend fun referencesProfile(profileId: Long, resourceId: Long) = profileId == 701L && resourceId == 702L
+        })
+        runtime.startProxy().getOrThrow()
+        val since = runtime.runningSinceElapsedMillis.value
+        val setups = bridge.calls.count { it == "setup" }
+        runtime.withProfileSourceWrite(703) { Unit }
+        assertEquals(setups, bridge.calls.count { it == "setup" })
+        runtime.withProfileSourceWrite(701) { source.appendText("# updated current source\n") }
+        assertEquals(setups + 1, bridge.calls.count { it == "setup" })
+        runtime.withProfileSourceWrite(702) { profile = profile.copy(filePath = projection.path) }
+        assertEquals(setups + 2, bridge.calls.count { it == "setup" })
+        assertTrue(runtime.profileInputsApplied(701))
+        assertEquals(701L, profile.id)
+        assertEquals(since, runtime.runningSinceElapsedMillis.value)
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        runtime.stop().getOrThrow()
+    }
+
+    @Test fun backgroundApplicationFailurePreservesSavedSourceAndAllowsApplicationOnlyRetry() = kotlinx.coroutines.runBlocking {
+        val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
+        val profile = ActiveProfile(701, "current", source.path)
+        val home = temporaryFolder.newFolder(); val bridge = FakeBridge()
+        val runtime = manager(profile, home, bridge, FakeServiceController())
+        runtime.startProxy().getOrThrow()
+        val applied = File(home, "config.yaml").readBytes()
+        val since = runtime.runningSinceElapsedMillis.value
+        bridge.failSetups = 1
+        val failure = runCatching { runtime.withProfileSourceWrite(701) { source.appendText("# committed update\n") } }.exceptionOrNull()
+        assertTrue(failure is ProfileApplyAfterSaveException)
+        assertTrue(source.readText().contains("committed update"))
+        assertTrue(applied.contentEquals(File(home, "config.yaml").readBytes()))
+        assertFalse(runtime.profileInputsApplied(701))
+        runtime.withProfileSourceWrite(701) { Unit }
+        assertTrue(runtime.profileInputsApplied(701))
+        assertEquals(since, runtime.runningSinceElapsedMillis.value)
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        runtime.stop().getOrThrow()
+    }
+
     @Test fun queuedProxyActionsRejectTheirOldProfileBeforeTouchingCore() = kotlinx.coroutines.runBlocking {
         val source = temporaryFolder.newFile().apply { writeText("rules: ['MATCH,DIRECT']\n") }
         var profile = ActiveProfile(701, "old", source.path)

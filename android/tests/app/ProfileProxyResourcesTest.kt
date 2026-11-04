@@ -6,6 +6,20 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ProfileProxyResourcesTest {
+    @Test fun runtimeRefreshUsesResourceIdsAndOnlyActuallyUsedAliases() {
+        val source = """
+            proxy-providers:
+              used: {type: file, path: 'kclash-profile:12'}
+              unused: {type: file, path: 'kclash-profile:13'}
+              same-label: {type: http, url: 'https://example.test/source'}
+            proxy-groups:
+              - {name: Main, type: select, use: [used, same-label]}
+        """.trimIndent()
+        assertTrue(ProfileProxyResources.referencesProfile(source, 12))
+        assertFalse(ProfileProxyResources.referencesProfile(source, 13))
+        assertFalse(ProfileProxyResources.referencesProfile(source, 14))
+    }
+
     private val file = Profile.remote(12, "", "同名资源").copy(type = ProfileType.FILE)
 
     @Test fun candidatesExcludeCustomAndDisambiguateDuplicateLabels() {

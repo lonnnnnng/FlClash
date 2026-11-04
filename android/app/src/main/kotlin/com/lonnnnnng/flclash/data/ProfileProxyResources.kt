@@ -31,6 +31,14 @@ object ProfileProxyResources {
     fun definitions(section: String): JsonObject = ProxyGroupDrafts.root("proxy-providers:\n" + section.lines().joinToString("\n") { "  $it" })
         .get("proxy-providers")?.takeIf { it.isJsonObject }?.asJsonObject ?: JsonObject()
 
+    fun referencesProfile(source: String, resourceId: Long): Boolean {
+        val root = ProxyGroupDrafts.root(source)
+        val used = referenced(root)
+        return root.getAsJsonObject("proxy-providers")?.entrySet()?.any { (alias, definition) ->
+            alias in used && idOf(definition) == resourceId
+        } == true
+    }
+
     fun candidates(source: String, profiles: List<Profile>): List<ProfileProxyResource> {
         val definitions = ProxyGroupDrafts.root(source).get("proxy-providers")?.takeIf { it.isJsonObject }?.asJsonObject ?: JsonObject()
         val held = definitions.keySet().toMutableSet()
