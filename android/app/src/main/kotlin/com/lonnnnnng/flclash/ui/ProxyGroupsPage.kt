@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -150,13 +152,16 @@ private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (I
         ) {
             itemsIndexed(names, key = { _, name -> name }) { index, name ->
                 val active = index == selectedIndex
+                val tabColor by animateColorAsState(if (active) MaterialTheme.colorScheme.primary else dashboardCardColor(), tween(200), label = "groupTabBackground")
+                val tabContent by animateColorAsState(if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, tween(200), label = "groupTabContent")
                 Surface(
                     modifier = Modifier.height(36.dp).widthIn(min = 64.dp)
+                        .appFocusRing(CircleShape)
                         .selectable(active, role = Role.Tab, onClick = { onSelect(index) })
                         .testTag("proxy_group_tab_" + name),
                     shape = CircleShape,
-                    color = if (active) MaterialTheme.colorScheme.primary else dashboardCardColor(),
-                    contentColor = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = tabColor,
+                    contentColor = tabContent,
                 ) {
                     Box(Modifier.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
                         Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis,
@@ -288,6 +293,7 @@ internal fun ProxyGroupsCard(
                     AppDropdownMenu(
                         expanded = toolsExpanded,
                         onDismissRequest = { toolsExpanded = false },
+                        pageKey = toolsMenuPage,
                         onNavigateBack = if (toolsMenuPage != ProxyToolsMenuPage.ROOT) ({ toolsMenuPage = ProxyToolsMenuPage.ROOT }) else null,
                     ) {
                         when (toolsMenuPage) {
@@ -614,6 +620,7 @@ private fun ProxyGroupsListPage(
                         item(key = "row:${group.name.length}:${group.name}:${row.first()}") {
                             val lastRow = rowIndex == rows.lastIndex
                             Surface(
+                                modifier = Modifier.animateItem(),
                                 color = dashboardCardColor(),
                                 shape = AppSuperellipseShape(bottomStart = if (lastRow) 24.dp else 0.dp,
                                     bottomEnd = if (lastRow) 24.dp else 0.dp),
@@ -803,6 +810,7 @@ private fun ProxyGroupNodesPage(
                 gridItems(visibleProxies, key = { it }) { proxyName ->
                     val delay = state.delayState(group, proxyName)
                     ProxyNodeCard(
+                        modifier = Modifier.animateItem(),
                         name = proxyName,
                         type = state.proxyType(proxyName, options.cardSize),
                         groupType = group.type,

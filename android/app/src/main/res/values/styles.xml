@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 作者 long：整页关闭由Window完成，只有真正离开才播放；脏草稿弹出确认时不先隐藏页面。系统移除动画设置仍控制该窗口动画。 -->
+    <style name="KClash.ProfilePageAnimation" parent="@android:style/Animation">
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:windowExitAnimation">@anim/profile_page_exit</item>
+    </style>
     <style name="Theme.KClash" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowActionModeOverlay">true</item>

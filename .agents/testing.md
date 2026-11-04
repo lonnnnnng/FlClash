@@ -1,5 +1,14 @@
 # Testing
 
+## 配置页与代理组菜单、面板及冷进程收尾（2026-11-04）
+
+- 最终源码构建 `/tmp/kclash-profiles-proxy-motion-20261104-final-build.log` 通过：App440、Service188、Core38、Common31，共697项，失败/错误/跳过0；Debug、AndroidTest、未签名arm64 Release/R8与双变体Lint通过。Debug/Release Lint各0 errors、62 warnings（hints分别9/8）；Go测试本组未重跑。
+- Redmi Note 8 Pro `wsvwypiz7xwslvl7`、API36、arm64-v8a、1080×2340竖屏、字号1.0。独立精确批次分别为页面/菜单24项、正文入口2项、菜单/预览交互3项、停止态节点菜单1项、运行态节点菜单1项、URLTest跨进程prepare 1项和verify 1项，最终各批均通过；这些结果不是一次合并的33项批次。完整结果和每批日志SHA见 `docs/acceptance/profiles-proxy-motion-redmi-20261104.json`。
+- URLTest使用工作区原 `1.yaml` 字节建立临时FILE配置，验证正延迟优选持久化、不同应用进程恢复Room `selectedMap`/核心`fixed`与`now`、恢复后真实正延迟及清除固定后回到自动选择；prepare和冷进程verify各1/1。原 `1.yaml` 不含Fallback，因此Fallback跨进程和真实核心无有效`now`边界仍未验。
+- 设备App SHA-256 `4555d698231b3d49af03638386059f39612685b120d37d7fef07b15858d685e5`、AndroidTest `e614fdc27905900e09874f9d01eb2c5285416fc6f7745acd593031a623963cc6`与设备安装包匹配；未签名Release SHA-256 `db4f64461f3d401ff4615f23f3081b0b9d738e823631b2d4d6011b303cd5b8a1`，仅构建、未安装。App仅arm64，测试包无原生库。
+- `connectedDebugAndroidTest`在测试开始时卸载了应用和测试包，故正式Room起始为空；本批不宣称此前安装的Profile/偏好得到保留。原 `1.yaml` 本机/设备SHA-256均为 `bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898`，未被改写。结束服务数0、tun0不存在，自动旋转/字号均恢复。
+- 失败保留：节点菜单首轮/中间批次有5项失败及1项测试修正；另一批因instrumentation卸载导致旧Profile前置条件不成立。最终停止/运行态定向用例在显式准备临时配置后通过。45张本机截图中仅抽查四张；截图仅证明可见状态，不证明连续动画时间曲线或Flutter逐像素一致。完整连续动效、Fallback与完整页面parity仍为PARTIAL。
+
 ## 主页共用面板与 Providers 正式入口复查（2026-11-04）
 
 - 最终生产`/tmp/kclash-dashboard-sheets-20261104-build2.log`：App440/Service188共628项，失败/错误/跳过0，Debug/AndroidTest/Lint通过。独立`release1.log`：未签名arm64 Release/R8/Lint通过；两变体Lint各0错误/62警告。`testbuild4`最终面板测试包通过，后续只新增Providers测试，`providers-testbuild6`测试包/Lint通过，生产APK未变化。Core/Common/Go本组未重跑，正式签名运行未验。

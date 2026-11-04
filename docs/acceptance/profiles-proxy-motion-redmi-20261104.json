@@ -1,0 +1,195 @@
+{
+  "verifiedAtBeijing": "2026-11-04",
+  "baseCommit": "9911bef4245b1b9861314d3102736712a0359974",
+  "scope": "配置页与代理组剩余菜单、面板和动效收尾；补验URLTest真实运行态选择与新进程恢复",
+  "sourceManifest": [
+    { "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt", "sha256": "eb5dcb01889d27129e4e878c4dd261829e7ab4d2806b47c4c43a36aa1dd95fb5" },
+    { "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt", "sha256": "957d75f36677304e5e93333251cd7c28eeb7e3aae7a294781fa68bb00ed0df37" },
+    { "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt", "sha256": "5348ba39805641d91dc6e7d48b4786e530e53658cf23b260bba0c2dd61b7cc9e" },
+    { "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt", "sha256": "a4b8e8bf0274a718410061a0f486e8064fdc9d7f2ef4d2ddd65af27ce70f09b6" },
+    { "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuntimeConfigPreviewSheet.kt", "sha256": "6ec43f5beceffda0ee7f00d8f7586cd25fcb020b82e74fc95f8614fe0a1a62f7" },
+    { "path": "android/app/src/main/res/values/styles.xml", "sha256": "ea5b80451364584125f7334a5894f5ea0305e3458ac75d3d815ddaca8d27bbe3" },
+    { "path": "android/app/src/main/res/anim/profile_page_exit.xml", "sha256": "df523082d3be5e1027ef326daf5dd2add91f60f9f6ac3e55cd594be4a7459ab3" },
+    { "path": "android/tests/instrumented/ProfilesProxyMotionInstrumentedTest.kt", "sha256": "edc1b478aff96f1295f4c55b463a8478f11b4e69d38bcc325e45bb22eb7bc6f1" },
+    { "path": "android/tests/instrumented/ProxyNodeMenuHostInstrumentedTest.kt", "sha256": "68b9de03d1e37a4ebc19f12e409f9cf36c1715d5c58ca71979f22c5ac90daa0d" },
+    { "path": "android/tests/instrumented/ProxyPreferenceProcessInstrumentedTest.kt", "sha256": "6c980263d12091b3a019c52f11dbee213048ec38781f7b0dbb34e8b3053389b3" }
+  ],
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": "1.0"
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "log": "/tmp/kclash-profiles-proxy-motion-20261104-final-build.log",
+    "logSha256": "3bdf0b605f0cd49047a2487e28c00cc3cb74971d2e2bc4c2c7f77f5f81e333de",
+    "result": "BUILD SUCCESSFUL",
+    "unitTests": {
+      "app": 440,
+      "service": 188,
+      "core": 38,
+      "common": 31,
+      "total": 697,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "debug": { "errors": 0, "warnings": 62 },
+      "release": { "errors": 0, "warnings": 62 }
+    },
+    "release": "R8 arm64 APK built, unsigned and not installed",
+    "goTests": "not rerun"
+  },
+  "artifacts": {
+    "app": {
+      "package": "com.lonnnnnng.flclash",
+      "sha256": "4555d698231b3d49af03638386059f39612685b120d37d7fef07b15858d685e5",
+      "deviceSha256": "4555d698231b3d49af03638386059f39612685b120d37d7fef07b15858d685e5",
+      "matchesDevice": true,
+      "abis": ["arm64-v8a"]
+    },
+    "test": {
+      "package": "com.lonnnnnng.flclash.test",
+      "sha256": "e614fdc27905900e09874f9d01eb2c5285416fc6f7745acd593031a623963cc6",
+      "deviceSha256": "e614fdc27905900e09874f9d01eb2c5285416fc6f7745acd593031a623963cc6",
+      "matchesDevice": true,
+      "abis": []
+    },
+    "releaseUnsignedSha256": "db4f64461f3d401ff4615f23f3081b0b9d738e823631b2d4d6011b303cd5b8a1"
+  },
+  "instrumentation": {
+    "passed": {
+      "profilesProxyMenuAndPage": {
+        "count": 24,
+        "log": "/tmp/kclash-profiles-proxy-motion-20261104-pages.log",
+        "logSha256": "61c4bfacba41ce2859c87ee1cc8a89be72ebb1b42b072eed806fa0f8ed1808eb",
+        "resultsSha256": "a79f6bd3b02964bff3b0cdaaa98a098f32328ec0e941a5665c2a10c49c7c328b"
+      },
+      "profileDocumentUi": {
+        "count": 2,
+        "log": "/tmp/kclash-profiles-proxy-motion-20261104-documents.log",
+        "logSha256": "bb21e7609318fa27df835a40931c9d736b5ef4a49b8fdd6ba88ced1935699ccd",
+        "resultsSha256": "e107721c841c73e079c94e52583bcb11d04676cee47a862ed615c1f71f460507"
+      },
+      "profileMenuAndPreviewMotion": {
+        "count": 3,
+        "log": "/tmp/kclash-profiles-proxy-motion-20261104-motion.log",
+        "logSha256": "0b73fb724bf4577f6181b0d446906d5b92abd9a6243acf23c4deae472b141b9a",
+        "resultsSha256": "214b8d52945cb7c16ca43b3dd67566522fad0f289669ed075b063eba7a8431bf"
+      },
+      "proxyNodeMenuStopped": {
+        "count": 1,
+        "result": "passed",
+        "log": "/tmp/kclash-profiles-proxy-motion-20261104-node-class3.log",
+        "logSha256": "437a0da906296b55b3ccf23b66324a5f654a98b691b6a16f3fda93dcfd3fdaee",
+        "resultsXml": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml",
+        "resultsSha256": "c4e4e4bc7ef18e34799b8d9330ffd19a2ea7c968bbe8ccb5ea0228cf0edf5f05"
+      },
+      "proxyNodeMenuRunning": {
+        "count": 1,
+        "result": "passed",
+        "log": "/tmp/kclash-profiles-proxy-motion-20261104-node-class3.log",
+        "logSha256": "437a0da906296b55b3ccf23b66324a5f654a98b691b6a16f3fda93dcfd3fdaee",
+        "resultsXml": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml",
+        "resultsSha256": "c4e4e4bc7ef18e34799b8d9330ffd19a2ea7c968bbe8ccb5ea0228cf0edf5f05"
+      },
+      "urlTestColdProcessPrepare": {
+        "count": 1,
+        "result": "passed",
+        "log": "/tmp/kclash-profiles-proxy-motion-20261104-proxy-process-prepare-final.log",
+        "logSha256": "669c171885fb0adf1862a470eb366a3a01104225a8272fbef2543564fed2183b"
+      },
+      "urlTestColdProcessVerify": {
+        "count": 1,
+        "result": "passed",
+        "log": "/tmp/kclash-profiles-proxy-motion-20261104-proxy-process-verify-final.log",
+        "logSha256": "a4e80eeefa94c6d91fdd16992f19ec3a21ca304c7566225c0875e144b9984f56"
+      }
+    },
+    "runsAreIndependent": true,
+    "notOneCombinedBatch": true
+  },
+  "processRecovery": {
+    "fixture": "original workspace 1.yaml bytes, local temporary FILE profile",
+    "configSha256LocalAndDevice": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "groupsCovered": ["URLTest"],
+    "checks": [
+      "real positive delay before persisting the preferred leaf",
+      "Room selectedMap, core fixed/now and preferred UI state restored in a distinct app process",
+      "real positive delay after restart",
+      "clearing the preference removes selectedMap/fixed and returns the group to automatic",
+      "running session start time remains stable"
+    ],
+    "result": "prepare 1/1 and cold-process verify 1/1 passed"
+  },
+  "preservation": {
+    "formalDatabaseAtStart": "empty after connectedAndroidTest had uninstalled app and test packages",
+    "formalProfilesOrPreferencesPreserved": false,
+    "claimBoundary": "device run validates temporary fixture creation and cleanup against the empty Room state; it does not prove preservation of Profiles/preferences from the earlier installation",
+    "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "servicesAtEnd": 0,
+    "tun0AtEnd": false,
+    "accelerometerRotation": "1",
+    "userRotation": "0",
+    "fontScale": "1.0"
+  },
+  "visuals": {
+    "screenshotsInLocalEvidenceSet": 45,
+    "reviewedByMainAgent": [
+      {
+        "path": "/tmp/kclash-profiles-proxy-motion-20261104-proxy_page_dark.png",
+        "sha256": "187ea10b6870bfec4cfca1adf74eb585717978eb3772e23ce0c5a3a8ab28154f"
+      },
+      {
+        "path": "/tmp/kclash-profiles-proxy-motion-20261104-node_menu_URLTest_true.png",
+        "sha256": "d4154e04128663ba61cc5a2038e05109701baf8f9adc7c98f0f71da2b41b5dc5"
+      },
+      {
+        "path": "/tmp/kclash-profiles-proxy-motion-20261104-profiles_custom_more_dark.png",
+        "sha256": "a21efc990ba16eaa8b39e0e5b9cf80e02583738828b52724eb59f4e8fae61012"
+      },
+      {
+        "path": "/tmp/kclash-profiles-proxy-motion-20261104-main_menu_long_menu.png",
+        "sha256": "a150d0efaa3c10d5c01ce4749911ede2b2c683cac442a2df06df8c38605f1eba"
+      }
+    ],
+    "claimBoundary": "static layout and visible states only; not continuous animation capture or Flutter pixel parity"
+  },
+  "limitations": [
+    "The original 1.yaml fixture contains URLTest but no Fallback group; only URLTest cross-process recovery was verified.",
+    "Real-core no-valid-now behavior remains untested; fallback logic has JVM coverage only.",
+    "Proxy-node menu real-host tests passed in stopped and running states, but full ProfilesProxyMotionActivityTest did not pass on the current empty Room fixture; see failuresRetained.",
+    "System picker process-death return boundary, other resource SAF and full external script E2E remain separate work.",
+    "Complete screen-by-screen continuous motion and Flutter visual parity remain PARTIAL.",
+    "Core/Common/Go behavior outside this focused slice was not exercised on device; Go tests were not rerun."
+  ],
+  "failuresRetained": [
+    {
+      "run": "node-class1/node-class2",
+      "result": "5 initial failures and 1 test-only repair were retained in local logs; later targeted methods passed",
+      "productionChangeRequired": false
+    },
+    {
+      "run": "node-class3",
+      "result": "connectedDebugAndroidTest uninstalled the app/test packages; setup expected a preexisting Profile and failed on the now-empty Room database",
+      "impact": "formal Profile preservation from the former installation is not claimed; fixture was changed to accept empty Room and wait for restore when rows exist"
+    },
+    {
+      "run": "proxy node real-host",
+      "result": "initial host methods ran against an unsuitable empty fixture; final stopped/running methods passed after explicitly preparing and cleaning a temporary original-1.yaml profile"
+    }
+  ],
+  "localEvidence": {
+    "artifacts": "/tmp/kclash-profiles-proxy-motion-20261104-artifacts-final.json",
+    "artifactsSha256": "251c24e6a1eef93ddd09ee0031179b332e2148afc0ef1cd1a89551bbd907e6cc",
+    "methods": "/tmp/kclash-profiles-proxy-motion-20261104-methods.json",
+    "screenshots": "/tmp/kclash-profiles-proxy-motion-20261104-*.png"
+  },
+  "rawAttachments": "Raw logs and screenshots stay under local /tmp; this record contains hashes and paths, not subscription URLs, credentials or configuration body."
+}

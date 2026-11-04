@@ -5,10 +5,10 @@ import android.view.KeyEvent as AndroidKeyEvent
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -134,6 +134,7 @@ internal fun AppDropdownMenu(
     anchor: IntRect? = null,
     placement: AppMenuPlacement = AppMenuPlacement.OVER_ANCHOR_END,
     avoid: IntRect? = null,
+    pageKey: Any? = Unit,
     onNavigateBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -187,7 +188,10 @@ internal fun AppDropdownMenu(
                             color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp)))
                         .testTag("app_popup_menu").semantics { paneTitle = "菜单" }, shape = shape, color = surface) {
                         CompositionLocalProvider(LocalAppMenuEnabled provides expanded) {
-                            Column(Modifier.verticalScroll(rememberScrollState()).padding(8.dp), content = content)
+                            // 作者 long：子菜单内容增减时保留右上角停靠并平滑调整高度；切页另起滚动位置，避免根菜单滚到底后遮住子页的返回入口。
+                            val scroll = remember(pageKey) { ScrollState(0) }
+                            Column(Modifier.animateContentSize(spring(dampingRatio = .85f, stiffness = 500f), Alignment.TopEnd)
+                                .verticalScroll(scroll).padding(8.dp), content = content)
                         }
                     }
                 }

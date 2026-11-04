@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -84,26 +83,25 @@ internal fun RuntimeConfigPreviewSheet(
     var match by remember(state.profileId) { mutableIntStateOf(0) }
     val list = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    ModalBottomSheet(
+    // 作者 long：运行配置沿Flutter预览进入完整只读页，长正文和搜索共享编辑页安全区，不再嵌套固定高度的底部面板。
+    ProfileEditorPage(
         onDismissRequest = onClose,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        modifier = Modifier.testTag("runtime_config_preview_sheet"),
-    ) {
-        Column(Modifier.fillMaxWidth().fillMaxHeight(0.94f).padding(horizontal = 20.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text("运行配置", style = MaterialTheme.typography.titleLarge)
-                    state.preview?.let { Text(it.label, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis) }
-                }
+        backTag = "runtime_config_preview_close",
+        title = {
+            Column {
+                Text("运行配置", style = MaterialTheme.typography.titleLarge)
+                state.preview?.let { Text(it.label, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+            }
+        },
+        confirmButton = {
                 TextButton(onClick = onRetry, enabled = !state.isLoading, modifier = Modifier.testTag("runtime_config_preview_retry")) {
                     Text(if (state.error != null) "重试" else "刷新")
                 }
                 IconButton({ searching = !searching }, enabled = state.preview != null,
                     modifier = Modifier.testTag("runtime_config_preview_find")) { Icon(Icons.Outlined.Search, "查找正文") }
-                IconButton(onClick = onClose, modifier = Modifier.testTag("runtime_config_preview_close")) {
-                    Icon(Icons.Outlined.Close, contentDescription = "关闭运行配置")
-                }
-            }
+        },
+        text = {
+        Column(Modifier.fillMaxSize().testTag("runtime_config_preview_sheet")) {
             when {
                 state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(Modifier.testTag("runtime_config_preview_loading"))
@@ -147,5 +145,5 @@ internal fun RuntimeConfigPreviewSheet(
                 }
             }
         }
-    }
+    })
 }

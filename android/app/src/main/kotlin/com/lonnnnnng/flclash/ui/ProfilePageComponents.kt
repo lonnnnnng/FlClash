@@ -7,6 +7,10 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -18,8 +22,10 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
+import com.lonnnnnng.flclash.R
 
 /** 作者 long：配置编辑和扩展使用整页导航层级，让键盘、长表单和子编辑器共享完整手机视口。 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +44,9 @@ internal fun ProfileEditorPage(
     ) {
         val view = LocalView.current
         val window = (view.parent as? DialogWindowProvider)?.window
+        val entrance = remember { Animatable(0f) }
+        LaunchedEffect(Unit) { entrance.animateTo(1f, tween(450, easing = LinearEasing)) }
+        SideEffect { window?.setWindowAnimations(R.style.KClash_ProfilePageAnimation) }
         val lightBars = MaterialTheme.colorScheme.surface.luminance() > 0.5f
         DisposableEffect(window, lightBars) {
             val controller = window?.let { WindowCompat.getInsetsController(it, view) }
@@ -52,7 +61,12 @@ internal fun ProfileEditorPage(
             }
         }
         Scaffold(
-            modifier = Modifier.fillMaxSize().testTag("profile_editor_page"),
+            modifier = Modifier.fillMaxSize().graphicsLayer {
+                // 作者 long：沿Flutter整页共享X轴的四分之一页宽进入，保留原页面状态；Compose时钟遵循系统动画缩放，不延迟返回确认或保存回调。
+                translationX = size.width * .25f * (1f - FastOutSlowInEasing.transform(entrance.value))
+                val fade = ((entrance.value - .15f) / .4f).coerceIn(0f, 1f)
+                alpha = 1f - (1f - fade) * (1f - fade) * (1f - fade)
+            }.testTag("profile_editor_page"),
             containerColor = dashboardPageColor(),
             contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {

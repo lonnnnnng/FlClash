@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 作者 long：退出沿共享X轴返回，Window保留退场画面，业务关闭不必等待动画或保留敏感正文快照。 -->
+<set xmlns:android="http://schemas.android.com/apk/res/android" android:shareInterpolator="false">
+    <translate android:fromXDelta="0" android:toXDelta="25%p" android:duration="450"
+        android:interpolator="@android:interpolator/fast_out_slow_in" />
+    <alpha android:fromAlpha="1" android:toAlpha="0" android:duration="135" />
+</set>

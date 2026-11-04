@@ -1821,7 +1821,7 @@ internal fun ProfilesPanel(
                     contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(spacing)) {
                     items(state.profiles.chunked(columns), key = { it.first().id }) { row ->
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing)) {
+                        Row(Modifier.animateItem().fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing)) {
                             row.forEach { profile ->
                                 ProfileCard(
                                     modifier = Modifier.weight(1f),
@@ -4254,6 +4254,7 @@ internal fun ProfileCard(
                 Box {
                     AppDropdownMenu(expanded = showActions, onDismissRequest = { showActions = false },
                         anchor = menuAnchor.point, placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
+                        pageKey = showMore,
                         onNavigateBack = if (showMore) ({ showMore = false }) else null) {
                         if (showMore) {
                             AppDropdownMenuItem(
