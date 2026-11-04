@@ -1,5 +1,13 @@
 # Testing
 
+## 主页共用面板与 Providers 正式入口复查（2026-11-04）
+
+- 最终生产`/tmp/kclash-dashboard-sheets-20261104-build2.log`：App440/Service188共628项，失败/错误/跳过0，Debug/AndroidTest/Lint通过。独立`release1.log`：未签名arm64 Release/R8/Lint通过；两变体Lint各0错误/62警告。`testbuild4`最终面板测试包通过，后续只新增Providers测试，`providers-testbuild6`测试包/Lint通过，生产APK未变化。Core/Common/Go本组未重跑，正式签名运行未验。
+- `retry-final`同批26/26覆盖新5项面板（含100份固定Profile长列表、增长收缩/双主题/拖动/系统Back）、IP/内存/服务/排序/配置切换、代理摘要/严格首页截图、连接详情3项、真实内存回收和Provider故障恢复。首批`retry-first`24/25中旧隐藏IP断言未先滚到新正文位置，修正后最终通过，原失败保留。
+- `retry-providers-real-long`独立2/2：正式当前Profile空列表/重建；原1.yaml原字节临时FILE的90项从正式配置卡进入，停止态首次/重开、运行态首次/重开均完成；仅点击前两已有HTTP资源，3.535/3.495秒结束且核心更新时间严格前进。第二项包含Activity CREATED/RESUMED，随后180063ms每250ms检查读取/更新busy均正常，重建后数量及核心会话保持；不称全部90项实网下载或进程回收通过，原转圈现场本次未复现。
+- before/after-panels/after-final各1/1保护正式两份配置非空正文及文件名/size/mtime；真实fixture另外比较原Room行/选择/正文SHA与mtime、脚本及其偏好。原1.yaml双端哈希保持，最终App/Test设备哈希匹配，结束无服务/tun0、旋转1/0/字号1.0。最终测试包仅对应最后2项，早期testbuild4包哈希未独立归档，两批共享生产APK。
+- 长短面板、配置两主题、IP/内存/服务子页和Providers复现图已主线程目视；严格首页基线未改，独立探子任务传递为空，未计作review通过。持久JSON为`docs/acceptance/dashboard-sheets-redmi-20261104.json`，原日志/PNG仅本机留存。整体页面仍PARTIAL，备份/系统恢复及观测页次要视觉继续暂缓。
+
 ## 主页面菜单集中验收与 Provider 更新恢复（2026-11-04）
 
 配置来源、配置卡片、代理工具/组选择及节点共用菜单已接通浮层样式、真实锚点避让、安全区/IME内滚动、子菜单Back返回、外部点击/后台关闭和键盘入口；卡片涟漪按连续圆角裁剪。单项Provider超时/取消残留busy已用旧实现两项红测确认，改为finally清理，超时显示重试并登记失败项，旧任务不向新配置发布提示。

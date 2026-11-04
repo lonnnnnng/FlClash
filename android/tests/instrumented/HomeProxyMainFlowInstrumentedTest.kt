@@ -128,6 +128,103 @@ class HomeProxyMainFlowInstrumentedTest {
         }
     }
 
+    @Test fun providersRealPageOpenUpdateAndResumeFinishWithoutStaleBusy() = runBlocking {
+        fixture { e, ids ->
+            val manager = e.runtimeManager()
+            fun model(): ProfileStatisticsViewModel {
+                lateinit var value: ProfileStatisticsViewModel
+                compose.runOnIdle { value = ViewModelProvider(compose.activity)[ProfileStatisticsViewModel::class.java] }
+                return value
+            }
+            var model = model()
+            fun ready() = model.providers.value.let {
+                it.profileId == ids[0] && !it.isLoading && !it.providers.isNullOrEmpty() && it.error == null
+            }
+            fun idle() = model.providers.value.let { it.updatingName == null && it.updatingNames.isEmpty() }
+            fun report(phase: String, elapsed: Long, failed: Boolean = false) {
+                // 作者 long：只记录阶段、数量和耗时，不把真实资源名称或地址写进验收日志。
+                androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
+                    putString("kclash_providers_reproduction", "phase=$phase elapsed-ms=$elapsed count=${model.providers.value.providers?.size} update-failed=$failed")
+                })
+            }
+            fun open(phase: String) {
+                compose.onNodeWithTag("nav_dashboard").performClick()
+                compose.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("dashboard_profile_card"))
+                val started = android.os.SystemClock.elapsedRealtime()
+                compose.onNodeWithTag("dashboard_profile_card").performClick()
+                compose.waitUntil(15_000) { ready() }
+                compose.onNodeWithTag("dashboard_profile_detail_sheet").performScrollToNode(hasTestTag("profile_provider_row_0"))
+                compose.onNodeWithTag("profile_providers_loading").assertDoesNotExist()
+                assertTrue(idle())
+                report(phase, android.os.SystemClock.elapsedRealtime() - started)
+            }
+            fun close() {
+                compose.onNodeWithTag("dashboard_profile_detail_back").performClick()
+                compose.waitUntil(5_000) { compose.onAllNodesWithTag("dashboard_profile_detail_sheet").fetchSemanticsNodes().isEmpty() }
+            }
+            open("stopped-first-open")
+            capture("providers_real_stopped_loaded")
+            close(); open("stopped-reopen"); close()
+            manager.startProxy().getOrThrow()
+            val since = manager.runningSinceElapsedMillis.value
+            open("running-first-open")
+            val count = model.providers.value.providers!!.size
+            // 作者 long：只点击原1.yaml已有的两个HTTP资源，避免全量90项下载掩盖单项更新忙态的触发条件。
+            val targets = model.providers.value.providers!!.filter { it.canUpdate }.take(2)
+            assertEquals(2, targets.size)
+            targets.forEachIndexed { ordinal, target ->
+                val index = model.providers.value.providers!!.indexOfFirst { it.name == target.name }
+                compose.onNodeWithTag("dashboard_profile_detail_sheet").performScrollToNode(hasTestTag("profile_provider_update_$index"))
+                val started = android.os.SystemClock.elapsedRealtime()
+                compose.onNodeWithTag("profile_provider_update_$index").assertIsDisplayed().assertIsEnabled().performClick()
+                compose.waitUntil(5_000) { model.providers.value.updatingName != null || model.providers.value.updateMessage != null }
+                if (ordinal == 1) {
+                    compose.activityRule.scenario.moveToState(androidx.lifecycle.Lifecycle.State.CREATED)
+                    kotlinx.coroutines.delay(1_000)
+                    compose.activityRule.scenario.moveToState(androidx.lifecycle.Lifecycle.State.RESUMED)
+                }
+                // 作者 long：保留真实下载的结束条件；超过两分钟直接失败并保留现场，不能靠关闭页面消除转圈后宣称通过。
+                compose.waitUntil(120_000) { idle() }
+                compose.waitUntil(15_000) { ready() }
+                val elapsed = android.os.SystemClock.elapsedRealtime() - started
+                compose.onNodeWithTag("profile_provider_updating_$index").assertDoesNotExist()
+                compose.onNodeWithTag("dashboard_profile_detail_sheet").performScrollToNode(hasTestTag("profile_provider_update_$index"))
+                compose.onNodeWithTag("profile_provider_update_$index").assertIsEnabled()
+                val updated = manager.profileProviders(ids[0]).single { it.name == target.name }
+                assertNotNull(updated.updatedAtMillis)
+                assertTrue("真实更新必须推进核心资源时间", updated.updatedAtMillis!! > (target.updatedAtMillis ?: 0))
+                assertTrue(updated.count > 0)
+                if (ordinal == 0) {
+                    assertNotNull(model.providers.value.updateMessage)
+                    assertFalse(model.providers.value.updateFailed)
+                }
+                report("ui-update-${ordinal + 1}", elapsed, model.providers.value.updateFailed)
+                capture("providers_real_update_${ordinal + 1}_finished")
+                close(); open("running-reopen-${ordinal + 1}")
+            }
+            val observationMs = androidx.test.platform.app.InstrumentationRegistry.getArguments()
+                .getString("kclashProvidersObservationMs")?.toLong()?.also { require(it in 16_000L..300_000L) } ?: 16_000L
+            val started = android.os.SystemClock.elapsedRealtime()
+            while (android.os.SystemClock.elapsedRealtime() - started < observationMs) {
+                assertTrue("Providers读取不能重新挂起", ready())
+                assertTrue("已结束的资源更新不能恢复忙态", idle())
+                assertEquals(count, model.providers.value.providers!!.size)
+                kotlinx.coroutines.delay(250)
+            }
+            report("continuous-polling", android.os.SystemClock.elapsedRealtime() - started)
+            compose.activityRule.scenario.recreate(); model = model()
+            compose.waitUntil(15_000) { ready() && idle() }
+            compose.onNodeWithTag("dashboard_profile_detail_sheet").performScrollToNode(hasTestTag("profile_provider_row_0"))
+            compose.onNodeWithTag("profile_providers_loading").assertDoesNotExist()
+            assertEquals(count, model.providers.value.providers!!.size)
+            assertEquals(since, manager.runningSinceElapsedMillis.value)
+            assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
+            assertTrue(manager.profileInputsApplied(ids[0]))
+            capture("providers_real_recreated")
+            close()
+        }
+    }
+
     @Test fun runningHomeAndProxySelectionsPersistAcrossRevisionAndRecreation() = runBlocking {
         fixture { e, ids ->
             val repo = e.profileRepository(); val manager = e.runtimeManager()

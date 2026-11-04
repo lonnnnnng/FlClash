@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.CubicBezierEasing
@@ -156,20 +157,29 @@ internal data class ConnectionSheetSuperellipseShape(val radius: Dp = Connection
     }
 }
 
-internal class ConnectionSheetGeometry(val availableHeight: Float) {
-    init { require(availableHeight > 0f && availableHeight.isFinite()) }
+internal class ConnectionSheetGeometry(val availableHeight: Float, naturalContentHeight: Float? = null) {
+    init {
+        require(availableHeight > 0f && availableHeight.isFinite())
+        require(naturalContentHeight == null || naturalContentHeight > 0f && naturalContentHeight.isFinite())
+    }
 
-    fun offset(detent: ConnectionSheetDetent): Float = availableHeight * when (detent) {
-        ConnectionSheetDetent.EXPANDED -> 0.1f
-        ConnectionSheetDetent.PARTIAL -> 7f / 16f
-        ConnectionSheetDetent.HIDDEN -> 1f
+    private val contentHeight = naturalContentHeight ?: availableHeight
+    val hasExpandedDetent = min(contentHeight, availableHeight * 0.9f) - min(contentHeight, availableHeight * 9f / 16f) > 0.5f
+    // 作者 long：短内容的两档高度重合时只登记一档，避免拖动归档到同坐标的另一个状态后不断跳动。
+    val detents = if (hasExpandedDetent) ConnectionSheetDetent.entries.toList()
+        else listOf(ConnectionSheetDetent.PARTIAL, ConnectionSheetDetent.HIDDEN)
+
+    fun offset(detent: ConnectionSheetDetent): Float = availableHeight - when (detent) {
+        ConnectionSheetDetent.EXPANDED -> min(contentHeight, availableHeight * 0.9f)
+        ConnectionSheetDetent.PARTIAL -> min(contentHeight, availableHeight * 9f / 16f)
+        ConnectionSheetDetent.HIDDEN -> 0f
     }
 
     fun projectedTarget(position: Float, velocity: Float): ConnectionSheetDetent {
         // 作者 long：松手按 Flutter 的 99ms 投影选择最近停靠点，慢拖可停在两档，快速下甩仍能关闭。
         val projected = (position + velocity * ConnectionSheetMotion.projectionTimeSeconds)
             .coerceIn(offset(ConnectionSheetDetent.EXPANDED), availableHeight)
-        return ConnectionSheetDetent.entries.minBy { abs(offset(it) - projected) }
+        return detents.minBy { abs(offset(it) - projected) }
     }
 }
 
@@ -180,6 +190,10 @@ internal fun ConnectionModalSheet(
     accessibilityTitle: String = "连接详情",
     isContentAtTop: () -> Boolean = { contentScrollState.value == 0 },
     avoidIme: Boolean = false,
+    naturalContentHeight: Int? = null,
+    sheetTag: String = "connections_detail_sheet",
+    sheetShape: Shape = ConnectionSheetSuperellipseShape(),
+    onBackRequest: (() -> Boolean)? = null,
     content: @Composable ColumnScope.(onDismissRequest: () -> Unit) -> Unit,
 ) {
     var savedDetent by rememberSaveable { mutableStateOf(ConnectionSheetDetent.PARTIAL) }
@@ -187,6 +201,7 @@ internal fun ConnectionModalSheet(
     val scope = rememberCoroutineScope()
     val dismissSheet by rememberUpdatedState(onDismiss)
     val contentAtTop by rememberUpdatedState(isContentAtTop)
+    val backRequest by rememberUpdatedState(onBackRequest)
     val presentation = remember { Animatable(0f) }
     val presentationSpec = remember { ConnectionSheetMotion.presentationSpec() }
     var hasEntered by remember { mutableStateOf(false) }
@@ -196,7 +211,7 @@ internal fun ConnectionModalSheet(
     var scrimFade by remember { mutableFloatStateOf(1f) }
     val requestDismiss: () -> Unit = { dismissalStarted = true }
     Dialog(
-        onDismissRequest = requestDismiss,
+        onDismissRequest = { if (backRequest?.invoke() != true) requestDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
         val view = LocalView.current
@@ -233,8 +248,15 @@ internal fun ConnectionModalSheet(
             ) {
                 val density = LocalDensity.current
                 val imeVisible = WindowInsets.ime.getBottom(density) > 0
-                val geometry = remember(constraints.maxHeight) { ConnectionSheetGeometry(constraints.maxHeight.toFloat()) }
                 val settleSpec = remember { ConnectionSheetMotion.settleSpec() }
+                // 作者 long：数据到达、错误提示或子页改变内容高度时沿用面板弹簧重排，不能突然跳动或截断新增操作。
+                val fitHeight by animateFloatAsState(
+                    naturalContentHeight?.toFloat() ?: constraints.maxHeight.toFloat(),
+                    animationSpec = settleSpec, label = "sheetContentHeight",
+                )
+                val geometry = remember(constraints.maxHeight, fitHeight, naturalContentHeight == null) {
+                    ConnectionSheetGeometry(constraints.maxHeight.toFloat(), if (naturalContentHeight == null) null else fitHeight)
+                }
                 val sidePanel = maxWidth > 600.dp
                 // 作者 long：进出场只由弹层生命周期驱动；窗口高度变化不能重新入场并取消正在执行的退出。
                 LaunchedEffect(dismissalStarted) {
@@ -262,7 +284,7 @@ internal fun ConnectionModalSheet(
                         modifier = Modifier.align(Alignment.CenterEnd)
                             .width((maxWidth * 0.4f).coerceIn(360.dp, 560.dp)).fillMaxHeight()
                             .graphicsLayer { translationX = size.width * (1f - presentation.value) }
-                            .testTag("connections_detail_sheet").semantics {
+                            .testTag(sheetTag).semantics {
                                 paneTitle = accessibilityTitle; stateDescription = "侧面板"
                                 dismiss { requestDismiss(); true }
                             },
@@ -275,9 +297,9 @@ internal fun ConnectionModalSheet(
                 } else {
                     var dragStartedAtTop by remember { mutableStateOf(true) }
                     val anchors = remember(geometry) {
-                        DraggableAnchors { ConnectionSheetDetent.entries.forEach { it at geometry.offset(it) } }
+                        DraggableAnchors { geometry.detents.forEach { it at geometry.offset(it) } }
                     }
-                    SideEffect { state.updateAnchors(anchors, savedDetent) }
+                    SideEffect { state.updateAnchors(anchors, if (savedDetent in geometry.detents) savedDetent else ConnectionSheetDetent.PARTIAL) }
                     LaunchedEffect(avoidIme, imeVisible, geometry, dismissalStarted) {
                         // 作者 long：键盘压缩可用高度后半展开只剩工具栏，搜索时展开到键盘上方，保留可操作的节点结果。
                         if (avoidIme && imeVisible && !dismissalStarted) {
@@ -312,9 +334,10 @@ internal fun ConnectionModalSheet(
                             override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
                                 // 作者 long：控件已持有 anchoredDrag 锁；在此再调用 animateTo 会取消自己，必须通过当前滚动作用域归档。
                                 // 作者 long：控件可能保留初始 fling 对象，安全区或窗口变化后必须读当前锚点，不能捕获首次布局高度。
-                                val currentGeometry = ConnectionSheetGeometry(state.anchors.positionOf(ConnectionSheetDetent.HIDDEN))
                                 val start = state.requireOffset()
-                                val target = currentGeometry.offset(currentGeometry.projectedTarget(start, initialVelocity))
+                                val projected = start + initialVelocity * ConnectionSheetMotion.projectionTimeSeconds
+                                val target = ConnectionSheetDetent.entries.map { state.anchors.positionOf(it) }
+                                    .filter { it.isFinite() }.minBy { abs(it - projected) }
                                 var previous = start
                                 animate(start, target, animationSpec = settleSpec) { value, _ ->
                                     scrollBy(value - previous)
@@ -371,24 +394,24 @@ internal fun ConnectionModalSheet(
                                 enabled = hasEntered && !dismissalStarted,
                                 flingBehavior = fling,
                             )
-                            .testTag("connections_detail_sheet").semantics {
+                            .testTag(sheetTag).semantics {
                                 paneTitle = accessibilityTitle
-                                stateDescription = if (savedDetent == ConnectionSheetDetent.EXPANDED) "已展开" else "半展开"
+                                stateDescription = if (!geometry.hasExpandedDetent) "适应内容" else if (savedDetent == ConnectionSheetDetent.EXPANDED) "已展开" else "半展开"
                                 dismiss { requestDismiss(); true }
-                                if (savedDetent != ConnectionSheetDetent.EXPANDED) expand {
+                                if (geometry.hasExpandedDetent && savedDetent != ConnectionSheetDetent.EXPANDED) expand {
                                     scope.launch { state.animateTo(ConnectionSheetDetent.EXPANDED, ConnectionSheetMotion.settleSpec()) }; true
-                                } else collapse {
+                                } else if (geometry.hasExpandedDetent) collapse {
                                     scope.launch { state.animateTo(ConnectionSheetDetent.PARTIAL, ConnectionSheetMotion.settleSpec()) }; true
                                 }
                             },
-                        shape = ConnectionSheetSuperellipseShape(),
+                        shape = sheetShape,
                         color = MaterialTheme.colorScheme.surfaceContainer,
                     ) {
                         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
                             Box(
                                 Modifier.fillMaxWidth().height(48.dp).testTag("connection_detail_handle")
                                     .clickable(
-                                        enabled = hasEntered && !dismissalStarted,
+                                        enabled = geometry.hasExpandedDetent && hasEntered && !dismissalStarted,
                                         onClickLabel = if (savedDetent == ConnectionSheetDetent.EXPANDED) "收起详情" else "展开详情",
                                     ) {
                                         scope.launch {

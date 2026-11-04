@@ -1,0 +1,1176 @@
+{
+  "recordedAt": "2026-11-04T08:12:35.726977+08:00",
+  "baseCommit": "5eaab04793fbe82cf9327f467f80364186daa10d",
+  "branch": "kotlin",
+  "scope": [
+    "Dashboard共用面板：配置切换、内存、IP质量、服务详情/管理",
+    "自然高度与重合锚点去重、长内容双停靠、固定标题、正文滚动、系统Back子页返回",
+    "Providers正式页面重新操作复现：停止/运行态打开、两项真实HTTP更新、后台恢复、三分钟轮询、Activity重建"
+  ],
+  "upstream": {
+    "ref": "main",
+    "sha": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+    "references": [
+      "lib/ui/sheet.dart",
+      "lib/ui/snap_sheet.dart",
+      "lib/views/dashboard/widgets/memory_info.dart",
+      "lib/features/ip_quality/ip_quality_sheet.dart"
+    ],
+    "fetchedOrMerged": false
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "size": "1080x2340",
+    "fontScale": "1.0"
+  },
+  "build": {
+    "runs": {
+      "build1": {
+        "evidence": {
+          "path": "/tmp/kclash-dashboard-sheets-20261104-build1.log",
+          "sha256": "ee7fa463daa61c5b8ae0b06ed8b45cdea2bd234eb4b1830591a4014744a7d40e",
+          "bytes": 13777
+        },
+        "result": "BUILD SUCCESSFUL in 1m 58s"
+      },
+      "build2": {
+        "evidence": {
+          "path": "/tmp/kclash-dashboard-sheets-20261104-build2.log",
+          "sha256": "14fe029c08ddaf788648d991e035c8657912b616567737241bd74ca8052110f9",
+          "bytes": 13843
+        },
+        "result": "BUILD SUCCESSFUL in 1m 35s"
+      },
+      "testbuild4": {
+        "evidence": {
+          "path": "/tmp/kclash-dashboard-sheets-20261104-testbuild4.log",
+          "sha256": "0881e70b40800457c2d0c4646c596116be816ff5a7955c93eb8646ee930544d7",
+          "bytes": 8296
+        },
+        "result": "BUILD SUCCESSFUL in 13s"
+      },
+      "release1": {
+        "evidence": {
+          "path": "/tmp/kclash-dashboard-sheets-20261104-release1.log",
+          "sha256": "b39f9e844304d0f7662225d1390d912df9bd4ab90dfa5a6a4985e58adcaec230",
+          "bytes": 10592
+        },
+        "result": "BUILD SUCCESSFUL in 2m 18s"
+      },
+      "lint-final": {
+        "evidence": {
+          "path": "/tmp/kclash-dashboard-sheets-20261104-lint-final.log",
+          "sha256": "1780f3480c3dfaf206eb7aa6758ba406d00b6f49e29b5b06bfa0054ea01919e8",
+          "bytes": 8834
+        },
+        "result": "BUILD SUCCESSFUL in 33s"
+      },
+      "providers-testbuild5": {
+        "evidence": {
+          "path": "/tmp/kclash-dashboard-sheets-20261104-providers-testbuild5.log",
+          "sha256": "68e108eba3700b7092a4090e7f0269f38186bfd3da4bef286c6399f964130933",
+          "bytes": 11915
+        },
+        "result": "BUILD SUCCESSFUL in 38s"
+      },
+      "providers-testbuild6": {
+        "evidence": {
+          "path": "/tmp/kclash-dashboard-sheets-20261104-providers-testbuild6.log",
+          "sha256": "9e3f192b03f38509c8f9b3e6e57ed4e23cfc76c635642e9115e39eb62aa52698",
+          "bytes": 11915
+        },
+        "result": "BUILD SUCCESSFUL in 39s"
+      }
+    },
+    "unitTests": {
+      "app": {
+        "tests": 440,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 188,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "unitTotal": 628,
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 62,
+        "reportSha256": "72f3fa94eee9032d3ba7fe1cbf41d6b808010118d8929334cff5b6abc8345e39"
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 62,
+        "reportSha256": "01d71ed3951e3a4b7793e8620880ebd0260ab3119377bc67f51d74dd3eb61e43"
+      }
+    },
+    "notRerun": [
+      "Core unit tests",
+      "Common unit tests",
+      "Go tests"
+    ]
+  },
+  "artifacts": {
+    "app": {
+      "package": "com.lonnnnnng.flclash",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "973ac4b33042acdfb9adb76c1067a1ef15a73cf13b185ac703945ca56d2987db",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "deviceSha256": "973ac4b33042acdfb9adb76c1067a1ef15a73cf13b185ac703945ca56d2987db",
+      "matchesDevice": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "test": {
+      "package": "com.lonnnnnng.flclash.test",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "23e618a052e3dfad7db3d522e1a6cd4a494af0d7fe003d1de8887a9f184869f3",
+      "nativeAbis": [],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash.test' versionCode='' versionName='' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "deviceSha256": "23e618a052e3dfad7db3d522e1a6cd4a494af0d7fe003d1de8887a9f184869f3",
+      "matchesDevice": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899"
+    },
+    "release": {
+      "package": "com.lonnnnnng.flclash",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "e399a84a306761dea3e631842b22f2c9c364668b1f0212d23a20162df522934d",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "packageMetadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "installed": false,
+      "signed": false
+    }
+  },
+  "panelBatch": {
+    "batch": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+        "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+        "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longProfilePickerKeepsDetentsAndSelectsLastRowOnce",
+        "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+        "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProfilePickerChangesCurrentProfile",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningProfilePickerSwitchesWithoutStopping",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsCaptureDarkAndLight",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryDetailsKeepSampleDuringReleaseAndAllowRetryAcrossRecreation",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerKeepsOpenForRepeatedSelectionAndResetsSearch",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerInheritsListLayoutAndMiddleDragKeepsSheetOpen",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#sheetDetentsSupportTapDragSemanticsAndScrimDismissal",
+        "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#scrollingFromContentMiddleDoesNotCollapseSheetWithRemainingFling",
+        "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#sheetEntranceAndExitAnimateTogetherWithTheModalBarrier",
+        "com.lonnnnnng.flclash.ui.MemoryRuntimeLiveTest#optionalMemoryCardReadsReleasesAndRestoresWithoutStartingRuntime",
+        "com.lonnnnnng.flclash.ui.ProviderUpdateRecoveryInstrumentedTest#singleUpdateTimeoutStopsSpinnerAndRetrySucceedsInSamePage"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longProfilePickerKeepsDetentsAndSelectsLastRowOnce",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryDetailsKeepSampleDuringReleaseAndAllowRetryAcrossRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerInheritsListLayoutAndMiddleDragKeepsSheetOpen",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProfilePickerChangesCurrentProfile",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsCaptureDarkAndLight",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerKeepsOpenForRepeatedSelectionAndResetsSearch",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningProfilePickerSwitchesWithoutStopping",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#sheetEntranceAndExitAnimateTogetherWithTheModalBarrier",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#scrollingFromContentMiddleDoesNotCollapseSheetWithRemainingFling",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#sheetDetentsSupportTapDragSemanticsAndScrimDismissal",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MemoryRuntimeLiveTest#optionalMemoryCardReadsReleasesAndRestoresWithoutStartingRuntime",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderUpdateRecoveryInstrumentedTest#singleUpdateTimeoutStopsSpinnerAndRetrySucceedsInSamePage",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-dashboard-sheets-20261104-retry-final.log",
+      "images": [
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_short_false.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_long_false.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_short_true.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_long_true.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_long.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_service_quality.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_service_manage.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_picker_true.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_picker_false.png",
+        "/tmp/kclash-dashboard-sheets-20261104-memory_card_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-memory_detail_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-memory_detail_screen_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-memory_card_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-memory_detail_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-memory_detail_screen_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_default.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_system_ready.png",
+        "/tmp/kclash-dashboard-sheets-20261104-ip_quality_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-ip_quality_screen_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-ip_quality_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-ip_quality_screen_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-service_exit_ipv6_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-service_exit_quality_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-service_exit_ipv6_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-service_exit_quality_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-dashboard_proxy_picker_search_keyboard_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-services_card_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-services_details_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-services_manage_dark.png",
+        "/tmp/kclash-dashboard-sheets-20261104-services_card_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-services_details_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-services_manage_light.png",
+        "/tmp/kclash-dashboard-sheets-20261104-provider_update_timeout.png",
+        "/tmp/kclash-dashboard-sheets-20261104-provider_update_recovered.png"
+      ]
+    },
+    "testBuild": "testbuild4",
+    "testApkSha256": null,
+    "hashBoundary": "该批测试包已被后续新增Providers方法的包替换，早期APK哈希未独立归档；日志和最终测试源码保留。两批使用同一生产App APK。"
+  },
+  "providersReproduction": {
+    "batch": {
+      "methods": [
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#providersRealPageOpenUpdateAndResumeFinishWithoutStaleBusy",
+        "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#formalProvidersFinishLoadingAcrossPollingAndRecreation",
+          "code": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.HomeProxyMainFlowInstrumentedTest#providersRealPageOpenUpdateAndResumeFinishWithoutStaleBusy",
+          "code": 0
+        }
+      ],
+      "exitCode": 0,
+      "passed": true,
+      "log": "/tmp/kclash-dashboard-sheets-20261104-retry-providers-real-long.log",
+      "images": [
+        "/tmp/kclash-dashboard-sheets-20261104-formal_providers_loaded.png",
+        "/tmp/kclash-dashboard-sheets-20261104-formal_providers_recreated.png",
+        "/tmp/kclash-dashboard-sheets-20261104-providers_real_stopped_loaded.png",
+        "/tmp/kclash-dashboard-sheets-20261104-providers_real_update_1_finished.png",
+        "/tmp/kclash-dashboard-sheets-20261104-providers_real_update_2_finished.png",
+        "/tmp/kclash-dashboard-sheets-20261104-providers_real_recreated.png"
+      ]
+    },
+    "testBuild": "providers-testbuild6",
+    "testApkSha256": "23e618a052e3dfad7db3d522e1a6cd4a494af0d7fe003d1de8887a9f184869f3",
+    "stages": [
+      {
+        "phase": "stopped-first-open",
+        "elapsedMs": 2637,
+        "providerCount": 90,
+        "updateFailed": false
+      },
+      {
+        "phase": "stopped-reopen",
+        "elapsedMs": 2015,
+        "providerCount": 90,
+        "updateFailed": false
+      },
+      {
+        "phase": "running-first-open",
+        "elapsedMs": 2008,
+        "providerCount": 90,
+        "updateFailed": false
+      },
+      {
+        "phase": "ui-update-1",
+        "elapsedMs": 3535,
+        "providerCount": 90,
+        "updateFailed": false
+      },
+      {
+        "phase": "running-reopen-1",
+        "elapsedMs": 1622,
+        "providerCount": 90,
+        "updateFailed": false
+      },
+      {
+        "phase": "ui-update-2",
+        "elapsedMs": 3495,
+        "providerCount": 90,
+        "updateFailed": false
+      },
+      {
+        "phase": "running-reopen-2",
+        "elapsedMs": 1454,
+        "providerCount": 90,
+        "updateFailed": false
+      },
+      {
+        "phase": "continuous-polling",
+        "elapsedMs": 180063,
+        "providerCount": 90,
+        "updateFailed": false
+      }
+    ],
+    "formalCurrentProfileProviders": "empty list, polling and recreation passed",
+    "localProfileInput": "外层原1.yaml原字节副本，临时FILE，由fixture清理；正式配置不重导",
+    "networkTargets": "仅原1.yaml已有的两个HTTP Provider，通过正式UI点击单项更新",
+    "coreReadback": "两项updatedAtMillis均严格大于更新前，count > 0；RUNNING、profileInputsApplied和runningSince保持",
+    "observation": "每250ms检查90项已加载、无读取错误和更新busy；持续180063ms后Activity重建再检查",
+    "outcome": "本次未复现持续转圈；不认定原现场唯一触发原因。未执行全部90资源下载。"
+  },
+  "preservation": {
+    "checks": {
+      "before": {
+        "batch": {
+          "methods": [
+            "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+              "code": 0
+            }
+          ],
+          "exitCode": 0,
+          "passed": true,
+          "log": "/tmp/kclash-dashboard-sheets-20261104-before.log",
+          "images": []
+        },
+        "metadataResult": "phase=before count=2 missing=0 expected=2"
+      },
+      "after-first": {
+        "batch": {
+          "methods": [
+            "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+              "code": 0
+            }
+          ],
+          "exitCode": 0,
+          "passed": true,
+          "log": "/tmp/kclash-dashboard-sheets-20261104-after-first.log",
+          "images": []
+        },
+        "metadataResult": "phase=after count=2 missing=0 expected=2"
+      },
+      "after-panels": {
+        "batch": {
+          "methods": [
+            "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+              "code": 0
+            }
+          ],
+          "exitCode": 0,
+          "passed": true,
+          "log": "/tmp/kclash-dashboard-sheets-20261104-after-panels.log",
+          "images": []
+        },
+        "metadataResult": "phase=after count=2 missing=0 expected=2"
+      },
+      "after-final": {
+        "batch": {
+          "methods": [
+            "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+              "code": 0
+            }
+          ],
+          "exitCode": 0,
+          "passed": true,
+          "log": "/tmp/kclash-dashboard-sheets-20261104-after-final.log",
+          "images": []
+        },
+        "metadataResult": "phase=after count=2 missing=0 expected=2"
+      }
+    },
+    "fixture": "原Room行/当前选择/正文SHA与mtime/脚本SHA与mtime/VPN与出站模式/代理页偏好独立保存恢复并断言；只回收两个自身mainflow ID",
+    "final": {
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "serviceRecords": 0,
+      "hasTun0": false,
+      "accelerometerRotation": "1",
+      "userRotation": "0",
+      "fontScale": "1.0"
+    }
+  },
+  "visuals": {
+    "panelImages": [
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_short_false.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_long_false.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_short_true.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_long_true.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_long.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_service_quality.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_service_manage.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_picker_true.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_picker_false.png",
+      "/tmp/kclash-dashboard-sheets-20261104-memory_card_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-memory_detail_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-memory_detail_screen_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-memory_card_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-memory_detail_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-memory_detail_screen_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_default.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_system_ready.png",
+      "/tmp/kclash-dashboard-sheets-20261104-ip_quality_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-ip_quality_screen_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-ip_quality_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-ip_quality_screen_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-service_exit_ipv6_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-service_exit_quality_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-service_exit_ipv6_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-service_exit_quality_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-dashboard_proxy_picker_search_keyboard_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-services_card_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-services_details_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-services_manage_dark.png",
+      "/tmp/kclash-dashboard-sheets-20261104-services_card_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-services_details_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-services_manage_light.png",
+      "/tmp/kclash-dashboard-sheets-20261104-provider_update_timeout.png",
+      "/tmp/kclash-dashboard-sheets-20261104-provider_update_recovered.png"
+    ],
+    "providerImages": [
+      "/tmp/kclash-dashboard-sheets-20261104-formal_providers_loaded.png",
+      "/tmp/kclash-dashboard-sheets-20261104-formal_providers_recreated.png",
+      "/tmp/kclash-dashboard-sheets-20261104-providers_real_stopped_loaded.png",
+      "/tmp/kclash-dashboard-sheets-20261104-providers_real_update_1_finished.png",
+      "/tmp/kclash-dashboard-sheets-20261104-providers_real_update_2_finished.png",
+      "/tmp/kclash-dashboard-sheets-20261104-providers_real_recreated.png"
+    ],
+    "reviewedContactSheets": [
+      "/tmp/kclash-dashboard-sheets-20261104-contact-1.jpg",
+      "/tmp/kclash-dashboard-sheets-20261104-contact-2.jpg",
+      "/tmp/kclash-dashboard-sheets-20261104-contact-final-review.jpg",
+      "/tmp/kclash-dashboard-sheets-20261104-providers-contact-final.jpg"
+    ],
+    "reviewedBy": "主线程目视；含长短/深浅/服务子页、IP/内存、Providers正式页面",
+    "strictBaselineChanged": false,
+    "limit": "KClash单设备渲染回归，不代表Flutter完整逐像素parity"
+  },
+  "failuresRetained": [
+    {
+      "batch": {
+        "methods": [
+          "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+          "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+          "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+          "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProfilePickerChangesCurrentProfile",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningProfilePickerSwitchesWithoutStopping",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsCaptureDarkAndLight",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryDetailsKeepSampleDuringReleaseAndAllowRetryAcrossRecreation",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerKeepsOpenForRepeatedSelectionAndResetsSearch",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerInheritsListLayoutAndMiddleDragKeepsSheetOpen",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#sheetDetentsSupportTapDragSemanticsAndScrimDismissal",
+          "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#scrollingFromContentMiddleDoesNotCollapseSheetWithRemainingFling",
+          "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#sheetEntranceAndExitAnimateTogetherWithTheModalBarrier",
+          "com.lonnnnnng.flclash.ui.MemoryRuntimeLiveTest#optionalMemoryCardReadsReleasesAndRestoresWithoutStartingRuntime",
+          "com.lonnnnnng.flclash.ui.ProviderUpdateRecoveryInstrumentedTest#singleUpdateTimeoutStopsSpinnerAndRetrySucceedsInSamePage"
+        ],
+        "results": [
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryDetailsKeepSampleDuringReleaseAndAllowRetryAcrossRecreation",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerInheritsListLayoutAndMiddleDragKeepsSheetOpen",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProfilePickerChangesCurrentProfile",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+            "code": -2
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsCaptureDarkAndLight",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerKeepsOpenForRepeatedSelectionAndResetsSearch",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningProfilePickerSwitchesWithoutStopping",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#sheetEntranceAndExitAnimateTogetherWithTheModalBarrier",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#scrollingFromContentMiddleDoesNotCollapseSheetWithRemainingFling",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest#sheetDetentsSupportTapDragSemanticsAndScrimDismissal",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.MemoryRuntimeLiveTest#optionalMemoryCardReadsReleasesAndRestoresWithoutStartingRuntime",
+            "code": 0
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderUpdateRecoveryInstrumentedTest#singleUpdateTimeoutStopsSpinnerAndRetrySucceedsInSamePage",
+            "code": 0
+          }
+        ],
+        "exitCode": 0,
+        "passed": false,
+        "log": "/tmp/kclash-dashboard-sheets-20261104-retry-first.log",
+        "images": [
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_short_false.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_long_false.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_short_true.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_long_true.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_service_quality.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_service_manage.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_picker.png",
+          "/tmp/kclash-dashboard-sheets-20261104-memory_card_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-memory_detail_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-memory_detail_screen_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-memory_card_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-memory_detail_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-memory_detail_screen_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_default.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_system_ready.png",
+          "/tmp/kclash-dashboard-sheets-20261104-ip_quality_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-ip_quality_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-service_exit_ipv6_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-service_exit_quality_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-service_exit_ipv6_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-service_exit_quality_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-dashboard_proxy_picker_search_keyboard_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-services_card_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-services_details_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-services_manage_dark.png",
+          "/tmp/kclash-dashboard-sheets-20261104-services_card_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-services_details_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-services_manage_light.png",
+          "/tmp/kclash-dashboard-sheets-20261104-provider_update_timeout.png",
+          "/tmp/kclash-dashboard-sheets-20261104-provider_update_recovered.png"
+        ]
+      },
+      "cause": "旧serviceExitHandlesLoadingFailureQualityRetryHideAndReturn未先滚动到隐藏IP的新正文位置，点击后找不到掩码。补performScrollTo/assertIsDisplayed/assertIsOn并滚回地址断言，最终通过。"
+    }
+  ],
+  "review": {
+    "primary": "复核共用面板geometry/有效anchors、正文测量、配置单次选择、服务Back和真实复现的核心更新时间断言",
+    "independent": "子代理NEW_TASK Payload为空，未执行独立读取或review，不计作通过"
+  },
+  "limits": [
+    "面板26/26与后续Providers2/2为两个批次，不宣称同批28/28",
+    "正式签名Release未安装运行；未签名Release仅构建/R8/Lint/包检查",
+    "无原始分钟级卡住现场，本次无复现不能证明唯一根因",
+    "未测全部90资源下载、Provider实网全覆盖或此流程进程回收",
+    "完整菜单液滴/变形/滑动携带/玻璃、其他面板与全页面动效仍PARTIAL",
+    "备份/系统恢复、Requests/DNS/Logs次要视觉与语言/主题继续暂缓",
+    "原始/tmp附件未上传，仅持久保存哈希及索引"
+  ],
+  "sourceManifest": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ConnectionModalSheet.kt",
+      "sha256": "1893889385a6553c964f8c7753213db439ff9bd885c98a5edf1191c26b8a8d13"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardModalSheet.kt",
+      "sha256": "f44be5de67732aaae93a78a64631bfd5e640df40db4097886a59d89ecb036796"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt",
+      "sha256": "39bc6e598817b221069cf87ef795b3dedd30b2e6598e9a1515a85746379b235b"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MemoryPanel.kt",
+      "sha256": "2a134e877b8b52596254a38751b0da9025aa3b905e567b8507dc95552822d11b"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/OutboundIpPanel.kt",
+      "sha256": "ce02509f4609d255b22a4f1cf1e0bb9b9a2904856d70864ec8293e089ac89bd7"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ServiceOrderEditor.kt",
+      "sha256": "6daba3503a417d67b2b1236b18191036e1b32c594d24834da48804fa9a7a13d4"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ServiceStatusPanel.kt",
+      "sha256": "603ce338f324bd29fc452e6846dbe6c17a89e48bf4c3b4e91cb2e15bd8248200"
+    },
+    {
+      "path": "android/tests/app/ConnectionSheetGeometryTest.kt",
+      "sha256": "d01507df27cc50fe1a1a5afdc78a093f11b584011ea6cf68024854092673c8cb"
+    },
+    {
+      "path": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+      "sha256": "f4ab1295a67cb3dbde551bca1a47e7bdfaaaf9094098c76511336313e9840ebf"
+    },
+    {
+      "path": "android/tests/instrumented/DashboardSheetInstrumentedTest.kt",
+      "sha256": "ab915ee8f39e660f7df8596cf6d5748fd9a24985fecec3a7f085ad7ec477314b"
+    },
+    {
+      "path": "android/tests/instrumented/HomeProxyMainFlowInstrumentedTest.kt",
+      "sha256": "03bb2bab91dffd0806fccc936595ec9c3eb0d6a25f4015f3b6eb2f840feb9523"
+    },
+    {
+      "path": "android/tests/instrumented/MemoryRuntimeLiveTest.kt",
+      "sha256": "7244c79820afd6e42e5677e0982d916435e7b4425858fff0ea25c55f58ddc708"
+    }
+  ],
+  "localEvidence": [
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-after-final.json",
+      "sha256": "fbfed60b468518d64e8c4ea550df61eea1f11cc19ff06da106a6b7658b8ff46f",
+      "bytes": 392
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-after-final.log",
+      "sha256": "196069aa4e4757956ca66cd6f762640ba1ade419aec248b832ba251a9a6f7066",
+      "bytes": 914
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-after-first.json",
+      "sha256": "3260df1102af1d6e88e0dcf25aa0a1bfbd0b42f35698eb32970e5ba701487f37",
+      "bytes": 392
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-after-first.log",
+      "sha256": "4c32f4963a277039f0ef84f98e4636bf56b1b0b8919be3bb3bddc7ab5c439c30",
+      "bytes": 914
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-after-panels.json",
+      "sha256": "3911a4ac38043fd248ee85f573a2504423b898e97e903c657777f997a66490b8",
+      "bytes": 393
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-after-panels.log",
+      "sha256": "0f4cb2ad487133cde58451f303ec3570341d85fc1e50ca5ad2e6722d251f5887",
+      "bytes": 914
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-artifact-check.py",
+      "sha256": "283394b1317ddbfedd0718d132a2d346f286b46d4715f6675766014f57f15e2e",
+      "bytes": 3584
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-artifacts-final.json",
+      "sha256": "ab5cfa723832e14d1a2ef8d0d655ae687a4b4b37f56766b984070908273816e1",
+      "bytes": 3073
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-before.json",
+      "sha256": "7057a050e6385b811ea8245b03122a92a8108ae94649219a7864507978c1088b",
+      "bytes": 387
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-before.log",
+      "sha256": "0f46acc448f211150e5c07e69f8c22f884aca1b42d9e427aa6541b7d5d267d9b",
+      "bytes": 915
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-build1.log",
+      "sha256": "ee7fa463daa61c5b8ae0b06ed8b45cdea2bd234eb4b1830591a4014744a7d40e",
+      "bytes": 13777
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-build2.log",
+      "sha256": "14fe029c08ddaf788648d991e035c8657912b616567737241bd74ca8052110f9",
+      "bytes": 13843
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-contact-1.jpg",
+      "sha256": "434bc15d1e4ea8c62f80ef7f2c7af44418e9e8ed4f618a9e61138bd3e7447187",
+      "bytes": 155024
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-contact-2.jpg",
+      "sha256": "ba23b39060b568cd7d473568f2a20ee756bc870b4b4d5078bf78bc833b8bcf9a",
+      "bytes": 176646
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-contact-final-review.jpg",
+      "sha256": "ff1c243bae365f3159c40c2f2c76ffac6939864202648f7294c05ba4a40c103d",
+      "bytes": 121985
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_default.png",
+      "sha256": "92d0a662f7f5b02804b693d3d89c5e254960208b731d9dbe8d89b00012adac0c",
+      "bytes": 178412
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_proxy_picker_search_keyboard_dark.png",
+      "sha256": "a1717a90bb5df86c71730479e39a45f8bd3b836005ccf4bd9d21ab30efec7057",
+      "bytes": 51039
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_long_false.png",
+      "sha256": "147c9d27af77ee0559b99ac9fd43dc998022ff5714fc3d240543a2d716fde5f7",
+      "bytes": 141705
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_long_true.png",
+      "sha256": "f35528b1a47366ae344b513d0941fa79698b4da9776bdb726294cdec11533ec2",
+      "bytes": 142361
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_long.png",
+      "sha256": "d08b9a3d42e51db29055920677244ce0b43ebf6db9a150c084c5308d6828af76",
+      "bytes": 292308
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_picker.png",
+      "sha256": "79908f279503dae035a5f26a160c9de2af25f870b4a7c47c5ec3565b6a416a6a",
+      "bytes": 153149
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_picker_false.png",
+      "sha256": "1005090dfec4f63540f2aa565a80d4e3f193a254d493832dc3fe19ab3f7b5a78",
+      "bytes": 160385
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_profile_picker_true.png",
+      "sha256": "03352b16da792e92e67e83f47c6858cd260f26136d25abe2687724212e460d94",
+      "bytes": 152717
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_service_manage.png",
+      "sha256": "081ed7d82c76cc24761756da8c0787b5538b56d6034c146be94d4afb99142cc9",
+      "bytes": 131777
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_service_quality.png",
+      "sha256": "50cf1d8a227582ace4740654de3728a677246e83303958d4538e15222587f82d",
+      "bytes": 136558
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_short_false.png",
+      "sha256": "d5706eb536ed5c3ba36b3d1883eadcc9a4be487fc098fabfbbb76a93e7bacccd",
+      "bytes": 37564
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_sheet_short_true.png",
+      "sha256": "49c2624249a5fa1090bbff4a69919e38aaa7dffc8f0f80c587ab81da28df9401",
+      "bytes": 37790
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-dashboard_system_ready.png",
+      "sha256": "eda3da666967495280f4b1321e3859d8bcae8242f8d5a9652eeb17e9e7fb5eb5",
+      "bytes": 168361
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-formal_providers_loaded.png",
+      "sha256": "7a9125c6b5194ea3b3924a2aad589c7581d4f5790c380fb2b8ff2713f2c83ca3",
+      "bytes": 128839
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-formal_providers_recreated.png",
+      "sha256": "7a9125c6b5194ea3b3924a2aad589c7581d4f5790c380fb2b8ff2713f2c83ca3",
+      "bytes": 128839
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-ip_quality_dark.png",
+      "sha256": "e89f5a4cfbbf5f713d744b2d3bee96cf07c11c49cece067473b91258f10b6408",
+      "bytes": 74108
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-ip_quality_light.png",
+      "sha256": "cccb06978ea067bdc37623dd9e69073554667852ba4121a71ac8a45565dd2cc7",
+      "bytes": 73690
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-ip_quality_screen_dark.png",
+      "sha256": "e1b827d07a67f1ff22adc4bf9bc2764117663d5e9aef2df2019e608dfd873e62",
+      "bytes": 152163
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-ip_quality_screen_light.png",
+      "sha256": "f030f4035cd64deb34b946289de027196e9501923e872865504aea3533e5c369",
+      "bytes": 155821
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-lint-final.log",
+      "sha256": "1780f3480c3dfaf206eb7aa6758ba406d00b6f49e29b5b06bfa0054ea01919e8",
+      "bytes": 8834
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-memory_card_dark.png",
+      "sha256": "0956293d5a0e1bfdcdf8fd104c073cb27ef9e1d1be34bb5c5c5ad7d33f9d6112",
+      "bytes": 35614
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-memory_card_light.png",
+      "sha256": "cd828c39d15d0a8f60ca69c3f115ae534988101818f15a317e5a4cc0002dcd84",
+      "bytes": 36794
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-memory_detail_dark.png",
+      "sha256": "e1edd85917860e149daf57ee4c8603067999b73d9adc24084c753a61a23c9418",
+      "bytes": 88703
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-memory_detail_light.png",
+      "sha256": "2738bb70826e39527fcb4cbb0f2e1b635e7b62ea115e652db1c2ebbd4e42b22b",
+      "bytes": 88254
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-memory_detail_screen_dark.png",
+      "sha256": "1d9a2d000c4241a63b8b091040c0087497b15e54dc6df2b1d60ec826318cb871",
+      "bytes": 157807
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-memory_detail_screen_light.png",
+      "sha256": "9c1d43aeead82f2b668214ccfb954932120db65b290fdf16d4126e9ff6907191",
+      "bytes": 162097
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-methods.json",
+      "sha256": "28db92ea5259703676e797d7bd7f731e358e4e164c4d474e1471eb7e0cbf1493",
+      "bytes": 2930
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-provider_update_recovered.png",
+      "sha256": "fd4a4f846f9f96378584fbae9218284284bef726f09df3a7a72fa36154ae56bd",
+      "bytes": 60915
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-provider_update_timeout.png",
+      "sha256": "8796fbc3da4359ad47dee68c1a55dda8726c7b1b12cf7190e0006e289de50d3b",
+      "bytes": 62007
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers-contact-final.jpg",
+      "sha256": "a60928ad5de8ed1f1da8de4fdd01f1bae02fdb3b18d50a8d3f8d30e07ed2f188",
+      "bytes": 142811
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers-observation-live.png",
+      "sha256": "403131c994dd4f9749d68701d6bb53a4f89409672cb2fc8073925793ff35b24e",
+      "bytes": 180030
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers-observation-live2.png",
+      "sha256": "f7ce996abb4106829e07afbec145425ec1ab5e2b64187f1a417822ba6f67f7a7",
+      "bytes": 152271
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers-testbuild5.log",
+      "sha256": "68e108eba3700b7092a4090e7f0269f38186bfd3da4bef286c6399f964130933",
+      "bytes": 11915
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers-testbuild6.log",
+      "sha256": "9e3f192b03f38509c8f9b3e6e57ed4e23cfc76c635642e9115e39eb62aa52698",
+      "bytes": 11915
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers_real_recreated.png",
+      "sha256": "b4ba4d038f11121f3971827eab17b61b2c9c4a52a0201129c99bb7cecd4cc440",
+      "bytes": 138591
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers_real_stopped_loaded.png",
+      "sha256": "4337a4e1037dfa9abaad6faafaf9b8329664be41688535fef2a8bebeac1a2cee",
+      "bytes": 136769
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers_real_update_1_finished.png",
+      "sha256": "bb911cceea866894d71cbd081f02befc22b56e5c0519051d1e4991dbc8d423ce",
+      "bytes": 137740
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-providers_real_update_2_finished.png",
+      "sha256": "972c817ac6d0e019544cfc9d5e8599bc049afaaab296258e83bfcf63cb88548c",
+      "bytes": 138713
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-release1.log",
+      "sha256": "b39f9e844304d0f7662225d1390d912df9bd4ab90dfa5a6a4985e58adcaec230",
+      "bytes": 10592
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-retry-final.json",
+      "sha256": "04b1766c0909cbe074f1eb1e506f3d73fddb6bc66662fa5828c63dd01e8f0940",
+      "bytes": 9693
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-retry-final.log",
+      "sha256": "4beccc3854bb58556fe75c406e479f04d313623cc5de2cd42939f74282b373d4",
+      "bytes": 5089537
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-retry-first.json",
+      "sha256": "7736e233c7c48afbdf643960ccd1e37fa63734ea7ecc72aba0594b107803de47",
+      "bytes": 9112
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-retry-first.log",
+      "sha256": "473b65ecc9477ec974d340e5406692b3a2f024d98635107e9cb135dd1511c1c7",
+      "bytes": 4073147
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-retry-providers-real-long.json",
+      "sha256": "6df734afd1fb3ae1611a7302a984eff1bbcfd8cb364cc9b0b4e55c407ec107f6",
+      "bytes": 1213
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-retry-providers-real-long.log",
+      "sha256": "62e5f7e1c4ad18f7722e892cce487f846fa9ee4ebfe5110f9f6d04b6d683a15a",
+      "bytes": 1082970
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-run.py",
+      "sha256": "dbf9cc139fe0fc309d17854e5a8f82ca554b8e39ae9e7e2e0d94c9ad796e85c7",
+      "bytes": 3427
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-service_exit_ipv6_dark.png",
+      "sha256": "af632e1cec94d092c6e04929007b55f6af9e257cf05e29ac65836c6cfff4e89f",
+      "bytes": 86002
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-service_exit_ipv6_light.png",
+      "sha256": "dc60b89f186979b378cad18ef93a74339d3f9e11f70713933efc54d6997e773b",
+      "bytes": 84849
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-service_exit_quality_dark.png",
+      "sha256": "81eea362c6bb3eab489e627950e97ccb3dfd0849b156705f27ee5de03dd8cfa6",
+      "bytes": 150527
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-service_exit_quality_light.png",
+      "sha256": "077f511d191ae07797c0956fa87ba5a1607dac24079bb7f88592064608157ec9",
+      "bytes": 150370
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-services_card_dark.png",
+      "sha256": "278328a4139153f65464d45fe50b638b07a68228b14857eb8ef4d12dc0733389",
+      "bytes": 35084
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-services_card_light.png",
+      "sha256": "4e32a4a540166b184d34f2ac799646ecf691b902d46be1bed6506ed1806bc195",
+      "bytes": 36052
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-services_details_dark.png",
+      "sha256": "13b07d722c7ea806118262f96382b4417e18d2a7d69d95a8bbcb7619d939bb08",
+      "bytes": 69652
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-services_details_light.png",
+      "sha256": "abdd05365bc92491b3241dac4322e93cfd8a44ff447f717e0ac0c7f5236454ba",
+      "bytes": 69023
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-services_manage_dark.png",
+      "sha256": "0ee806da406dbc453a6a2dddba546568604592fe24561d247a1328b8ae46eb86",
+      "bytes": 167951
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-services_manage_light.png",
+      "sha256": "7ba6df2151e78dfa35d6fea4f6a417d51c8fd85673986674de3e22a7308e50fa",
+      "bytes": 171087
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-source-final.json",
+      "sha256": "e7e3c8a7125176b59d1ab6d1fff857093c8c76e5706cb0176e805fa24590fbeb",
+      "bytes": 2060
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-source.json",
+      "sha256": "df791bda2870649cfa80742c5ce0c31773fd9f3edc74b7bff98b8c0ea3b36f60",
+      "bytes": 1891
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-testbuild3.log",
+      "sha256": "b01f4f311c5c8b0a34740b9c415653dc9554c83015f2386d300c2f767d28efea",
+      "bytes": 8296
+    },
+    {
+      "path": "/tmp/kclash-dashboard-sheets-20261104-testbuild4.log",
+      "sha256": "0881e70b40800457c2d0c4646c596116be816ff5a7955c93eb8646ee930544d7",
+      "bytes": 8296
+    }
+  ]
+}

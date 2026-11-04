@@ -2,11 +2,8 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -56,6 +53,9 @@ internal fun DashboardServiceStatusCard(
     var detail by rememberSaveable { mutableStateOf(false) }
     var manage by rememberSaveable { mutableStateOf(false) }
     var hiddenIp by rememberSaveable { mutableStateOf(false) }
+    val detailScroll = rememberScrollState()
+    val qualityScroll = rememberScrollState()
+    var managementAtTop by remember { mutableStateOf(true) }
     val quality = state.qualityNode?.let { state.exits[it] }
     // 作者 long：弹层打开后仍需前台/路由保护，但展示全部目标不会自动触发一轮全量外部请求。
     DisposableEffect(detail) { onDetailVisible(detail); onDispose { onDetailVisible(false) } }
@@ -85,18 +85,20 @@ internal fun DashboardServiceStatusCard(
         verdict?.let { Text(it, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 10.dp)) }
         state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
     }
-    if (detail) ModalBottomSheet(onDismissRequest = { onCloseQuality(); detail = false; manage = false },
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        modifier = Modifier.testTag("service_detail_sheet")) {
-        BackHandler(enabled = quality != null || manage) { if (quality != null) onCloseQuality() else manage = false }
-        Column(Modifier.fillMaxWidth().then(if (manage && quality == null) Modifier.fillMaxHeight(0.9f) else Modifier.verticalScroll(rememberScrollState())).testTag("service_detail_scroll")
-            .padding(horizontal = 20.dp).padding(bottom = 28.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                if (manage || quality != null) IconButton(onClick = { if (quality != null) onCloseQuality() else manage = false }, modifier = Modifier.testTag("service_manage_back")) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回服务状态") }
-                Text(if (quality != null) "IP 质量" else if (manage) "管理服务" else "服务状态", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-                if (quality != null) IconButton(onClick = onRefreshQuality, enabled = !quality.qualityLoading, modifier = Modifier.testTag("service_quality_refresh")) { Icon(Icons.Outlined.Refresh, "刷新 IP 质量") }
-                IconButton(onClick = { onCloseQuality(); detail = false; manage = false }, modifier = Modifier.testTag("service_detail_close")) { Icon(Icons.Outlined.Close, "关闭服务状态") }
-            }
+    if (detail) DashboardModalSheet(
+        title = if (quality != null) "IP 质量" else if (manage) "管理服务" else "服务状态",
+        sheetTag = "service_detail_sheet", closeTag = "service_detail_close", scrollTag = "service_detail_scroll",
+        onDismiss = { onCloseQuality(); detail = false; manage = false },
+        scrollState = if (quality != null) qualityScroll else detailScroll,
+        scrollable = !manage || quality != null, fitsContent = !manage || quality != null,
+        isContentAtTop = { if (quality != null) qualityScroll.value == 0 else if (manage) managementAtTop else detailScroll.value == 0 },
+        // 作者 long：系统返回与标题返回遵循同一层级，质量详情和管理页先回服务列表，不直接丢弃整个面板。
+        onNavigateBack = if (quality != null || manage) ({ if (quality != null) onCloseQuality() else manage = false }) else null,
+        backTag = "service_manage_back", actions = {
+            if (quality != null) IconButton(onClick = onRefreshQuality, enabled = !quality.qualityLoading,
+                modifier = Modifier.testTag("service_quality_refresh")) { Icon(Icons.Outlined.Refresh, "刷新 IP 质量") }
+        },
+    ) {
             state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("service_error")) }
             if (quality != null) {
                 Column(Modifier.testTag("service_quality_details"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -104,7 +106,8 @@ internal fun DashboardServiceStatusCard(
                 }
             } else if (state.settingsLoading) TextButton(onClick = onRetrySettings) { Text("重新读取设置") }
             else if (manage) {
-                ServiceOrderEditor(state.settings, state.saving, onToggle, onMove, onReorder, Modifier.weight(1f))
+                ServiceOrderEditor(state.settings, state.saving, onToggle, onMove, onReorder, Modifier.weight(1f),
+                    onContentAtTopChanged = { managementAtTop = it })
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextButton(onClick = { onCheck(state.settings.enabled) }, enabled = state.entries.values.none { it.loading }, modifier = Modifier.testTag("service_check_all")) { Text("检测全部") }
@@ -137,7 +140,6 @@ internal fun DashboardServiceStatusCard(
                     }
                 }
             }
-        }
     }
 }
 

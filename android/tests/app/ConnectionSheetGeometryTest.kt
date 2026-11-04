@@ -6,6 +6,29 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ConnectionSheetGeometryTest {
+    @Test fun `short content has one visible anchor and can still be flung closed`() {
+        val geometry = ConnectionSheetGeometry(1000f, 280f)
+        assertEquals(720f, geometry.offset(ConnectionSheetDetent.PARTIAL), 0.001f)
+        assertEquals(listOf(ConnectionSheetDetent.PARTIAL, ConnectionSheetDetent.HIDDEN), geometry.detents)
+        assertEquals(ConnectionSheetDetent.PARTIAL, geometry.projectedTarget(720f, -4000f))
+        assertEquals(ConnectionSheetDetent.HIDDEN, geometry.projectedTarget(720f, 4000f))
+    }
+
+    @Test fun `content between two normal detents expands only to its natural height`() {
+        val geometry = ConnectionSheetGeometry(1000f, 700f)
+        assertTrue(geometry.hasExpandedDetent)
+        assertEquals(437.5f, geometry.offset(ConnectionSheetDetent.PARTIAL), 0.001f)
+        assertEquals(300f, geometry.offset(ConnectionSheetDetent.EXPANDED), 0.001f)
+        assertEquals(ConnectionSheetDetent.EXPANDED, geometry.projectedTarget(400f, -3000f))
+        assertEquals(100f, ConnectionSheetGeometry(1000f, 5000f).offset(ConnectionSheetDetent.EXPANDED), 0.001f)
+    }
+
+    @Test fun `invalid measured content cannot poison drag anchors`() {
+        for (height in listOf(0f, -1f, Float.NaN, Float.POSITIVE_INFINITY)) {
+            assertThrows(IllegalArgumentException::class.java) { ConnectionSheetGeometry(1000f, height) }
+        }
+    }
+
     @Test
     fun `superellipse corner starts on the side and ends on the top`() {
         val points = superellipseQuarterPoints(radius = 28f, exponent = 4f, samples = 20)

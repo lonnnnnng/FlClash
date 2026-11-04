@@ -1,7 +1,6 @@
 package com.lonnnnnng.flclash.ui
 
 import android.text.format.DateUtils
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.animation.animateColorAsState
@@ -33,6 +32,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.zIndex
@@ -56,7 +56,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -731,20 +730,20 @@ internal fun DashboardProfileCard(
     }
 
     if (showProfilePicker) {
-        ModalBottomSheet(
-            onDismissRequest = { showProfilePicker = false },
-            modifier = Modifier.testTag("dashboard_profile_picker"),
-        ) {
-            Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
-                Text("切换配置", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(12.dp))
+        val pickerList = rememberLazyListState()
+        var selectionSubmitted by remember { mutableStateOf(false) }
+        DashboardModalSheet(title = "切换配置", sheetTag = "dashboard_profile_picker", closeTag = "dashboard_profile_picker_close",
+            onDismiss = { showProfilePicker = false }, scrollable = false,
+            fitsContent = !pickerList.canScrollForward && !pickerList.canScrollBackward,
+            isContentAtTop = { pickerList.firstVisibleItemIndex == 0 && pickerList.firstVisibleItemScrollOffset == 0 },
+        ) { requestDismiss ->
                 if (runtimeState.isRunning) Text(
                     "切换配置会立即应用到当前连接",
                     modifier = Modifier.padding(bottom = 12.dp),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                LazyColumn(Modifier.heightIn(max = 560.dp)) {
+                LazyColumn(Modifier.fillMaxWidth().weight(1f, fill = false).selectableGroup(), state = pickerList) {
                     items(profiles, key = Profile::id) { item ->
                         val selected = item.id == currentProfileId
                         Row(
@@ -752,10 +751,11 @@ internal fun DashboardProfileCard(
                                 .fillMaxWidth()
                                 .clip(AppSuperellipseShape(14.dp))
                                 .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
-                                .clickable(enabled = canSelectProfile) {
-                                    // 作者 long：切换立即关闭面板，配置应用与运行态校验统一由 ProfilesViewModel 处理。
+                                .selectable(selected, enabled = canSelectProfile && !selectionSubmitted, role = Role.RadioButton) {
+                                    // 作者 long：关闭动画期间只认领一次切换，配置应用与运行态校验仍统一由 ProfilesViewModel 处理。
+                                    selectionSubmitted = true
                                     if (item.id != currentProfileId) onSelectProfile(item.id)
-                                    showProfilePicker = false
+                                    requestDismiss()
                                 }
                                 .padding(horizontal = 14.dp, vertical = 14.dp)
                                 .testTag("dashboard_profile_option_${item.id}"),
@@ -772,7 +772,6 @@ internal fun DashboardProfileCard(
                         }
                     }
                 }
-            }
         }
     }
 

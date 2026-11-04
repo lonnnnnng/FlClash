@@ -37,6 +37,7 @@ internal fun ServiceOrderEditor(
     onMove: (ServiceTarget, Int) -> Unit,
     onReorder: (List<ServiceTarget>) -> Unit,
     modifier: Modifier = Modifier,
+    onContentAtTopChanged: (Boolean) -> Unit = {},
 ) {
     val list = rememberLazyListState()
     val density = LocalDensity.current.density
@@ -49,6 +50,12 @@ internal fun ServiceOrderEditor(
     var top by remember { mutableFloatStateOf(0f) }
     var height by remember { mutableIntStateOf(0) }
     var pointerY by remember { mutableFloatStateOf(0f) }
+    val reportContentAtTop by rememberUpdatedState(onContentAtTopChanged)
+    LaunchedEffect(list) {
+        // 作者 long：服务排序页嵌入双停靠面板后，只有列表顶部且未拿起条目时，外层才能接管下拉关闭。
+        snapshotFlow { list.firstVisibleItemIndex == 0 && list.firstVisibleItemScrollOffset == 0 && dragged == null }
+            .collect { reportContentAtTop(it) }
+    }
 
     fun cancel() { dragged = null; preview = latestSettings.order }
     fun reorder() {

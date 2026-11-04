@@ -10,8 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.ContentCopy
@@ -20,8 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -37,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,21 +93,14 @@ internal fun OutboundIpPanel(
     }
     // 作者 long：详情只跟随点击时的 IP；停止或出口已变化时关闭，禁止把新出口数据填进旧 IP 面板。
     if (info != null && detailIp != null && detailIp == info.ip) {
-        ModalBottomSheet(onDismissRequest = { detailIp = null }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-            Column(
-                Modifier.fillMaxWidth().testTag("ip_quality_sheet").verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("IP 质量", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                    IconButton(onClick = onRefreshQuality, enabled = !state.qualityLoading && !state.isLoading,
-                        modifier = Modifier.testTag("ip_quality_refresh")) {
-                        Icon(Icons.Outlined.Refresh, "刷新 IP 质量")
-                    }
+        DashboardModalSheet(title = "IP 质量", sheetTag = "ip_quality_sheet", closeTag = "ip_quality_close",
+            onDismiss = { detailIp = null }, actions = {
+                IconButton(onClick = onRefreshQuality, enabled = !state.qualityLoading && !state.isLoading,
+                    modifier = Modifier.testTag("ip_quality_refresh")) {
+                    Icon(Icons.Outlined.Refresh, "刷新 IP 质量")
                 }
-                IpQualityContent(state, hidden, { hidden = it })
-            }
+            }) {
+            IpQualityContent(state, hidden, { hidden = it })
         }
     }
 }
@@ -122,25 +111,34 @@ internal fun OutboundIpPanel(
 internal fun IpQualityContent(state: OutboundIpUiState, hidden: Boolean, onHiddenChange: (Boolean) -> Unit) {
     val info = state.info ?: return
     Text("检测结果仅供参考", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    IpDetailRow("IP 地址", if (hidden) "*****" else info.ip, copyText = info.ip, tag = "ip_quality_address")
-    if (state.qualityLoading) CircularProgressIndicator(Modifier.size(24.dp).testTag("ip_quality_loading"), strokeWidth = 2.dp)
     val quality = state.quality
-    if (quality != null) {
-        IpDetailRow("质量等级", quality.levelLabel)
-        IpDetailRow("IP 类型", quality.type.label)
-        IpDetailRow("风险标记", quality.flags.joinToString(" · ").ifBlank { "无" })
-        IpDetailRow("组织", quality.organization ?: "—", quality.organization)
-        IpDetailRow("ASN", quality.asn?.let { "AS$it" } ?: "—", quality.asn?.let { "AS$it" })
-        IpDetailRow("查询来源", quality.source.label)
+    DashboardDetailSection("基本信息") {
+        IpDetailRow("IP 地址", if (hidden) "*****" else info.ip, copyText = info.ip, tag = "ip_quality_address")
+        if (state.qualityLoading) CircularProgressIndicator(Modifier.padding(vertical = 8.dp).size(24.dp).testTag("ip_quality_loading"), strokeWidth = 2.dp)
+        if (quality != null || state.qualityLoading) {
+            // 作者 long：首次查询先保留结果行，返回数据后不改变分组结构；已有结果刷新时继续展示上次内容。
+            IpDetailRow("质量等级", quality?.levelLabel ?: "读取中…")
+            IpDetailRow("IP 类型", quality?.type?.label ?: "读取中…")
+            IpDetailRow("风险标记", quality?.flags?.joinToString(" · ")?.ifBlank { "无" } ?: "读取中…")
+        } else Text("IP 类型查询失败", Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.error)
+    }
+    if (quality != null || state.qualityLoading) DashboardDetailSection("网络") {
+        IpDetailRow("组织", quality?.organization ?: if (state.qualityLoading) "读取中…" else "—", quality?.organization)
+        IpDetailRow("ASN", quality?.asn?.let { "AS$it" } ?: if (state.qualityLoading) "读取中…" else "—", quality?.asn?.let { "AS$it" })
+        quality?.let { IpDetailRow("查询来源", it.source.label) }
     }
     if (state.qualityFailures.isNotEmpty()) {
-        Text("IP 类型查询失败", color = MaterialTheme.colorScheme.error)
-        state.qualityFailures.forEach { (source, failure) -> IpDetailRow(source.label, failure.label) }
+        DashboardDetailSection("查询来源") {
+            state.qualityFailures.forEach { (source, failure) -> IpDetailRow(source.label, failure.label) }
+        }
     }
     state.qualityError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text("隐藏 IP", Modifier.weight(1f))
-        Switch(checked = hidden, onCheckedChange = onHiddenChange, modifier = Modifier.testTag("ip_quality_hide"))
+    DashboardDetailSection("其他") {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(hidden, role = Role.Switch, onValueChange = onHiddenChange)
+            .testTag("ip_quality_hide"), verticalAlignment = Alignment.CenterVertically) {
+            Text("隐藏 IP", Modifier.weight(1f))
+            Switch(checked = hidden, onCheckedChange = null)
+        }
     }
 }
 

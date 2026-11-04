@@ -50,14 +50,14 @@ class MemoryRuntimeLiveTest {
             assertTrue("Go 运行时应为真实正值", first.runtimeTotal > 0)
             assertEquals(CoreRuntimeStatus.STOPPED, runtime.runtimeState.value)
             compose.onNodeWithTag("dashboard_memory_card").performClick()
-            compose.onNodeWithTag("memory_release").performScrollTo().performClick()
+            compose.onNodeWithTag("memory_release").assertIsDisplayed().performClick()
             compose.waitUntil(10_000) { memory.state.value.feedback != null || memory.state.value.error != null }
             assertNull(memory.state.value.error)
             compose.onNodeWithTag("memory_detail_feedback").performScrollTo().assertIsDisplayed()
             assertEquals(CoreRuntimeStatus.STOPPED, runtime.runtimeState.value)
             compose.activityRule.scenario.recreate()
             compose.onNodeWithTag("memory_detail_sheet").assertIsDisplayed()
-            compose.onNodeWithTag("memory_detail_close").performScrollTo().performClick()
+            compose.onNodeWithTag("memory_detail_close").assertIsDisplayed().performClick()
             compose.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
             InstrumentationRegistry.getInstrumentation().waitForIdleSync()
             val background = memory.state.value.snapshot

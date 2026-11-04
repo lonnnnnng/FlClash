@@ -178,7 +178,7 @@ class DashboardInstrumentedTest {
             val clipboard = composeRule.activity.getSystemService(android.content.ClipboardManager::class.java)
             assertEquals("203.0.113.7", clipboard.primaryClip?.getItemAt(0)?.text?.toString())
         }
-        composeRule.onNodeWithTag("ip_quality_refresh").performScrollTo().performClick()
+        composeRule.onNodeWithTag("ip_quality_refresh").assertIsDisplayed().performClick()
         composeRule.onNodeWithTag("ip_quality_loading").assertIsDisplayed()
         composeRule.runOnIdle {
             assertEquals(1, composeRule.activity.qualityRefreshCount)
@@ -216,9 +216,15 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithTag("dashboard_outbound_ip").performClick()
         composeRule.waitForIdle()
         recordNodePng("ip_quality_dark", "ip_quality_sheet")
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        android.os.SystemClock.sleep(150)
+        recordWindowPng("ip_quality_screen_dark")
         composeRule.activityRule.scenario.onActivity { it.setDarkTheme(false) }
         composeRule.waitForIdle()
         recordNodePng("ip_quality_light", "ip_quality_sheet")
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        android.os.SystemClock.sleep(150)
+        recordWindowPng("ip_quality_screen_light")
     }
 
     @Test
@@ -405,18 +411,18 @@ class DashboardInstrumentedTest {
         composeRule.activityRule.scenario.onActivity { it.showMemoryScenario() }
         composeRule.onNodeWithTag("dashboard_memory_card").performClick()
         composeRule.onNodeWithTag("memory_detail_total").assertTextEquals(formatBytes(128L * 1024 * 1024))
-        composeRule.onNodeWithTag("memory_release").performScrollTo().performClick().assertIsNotEnabled()
+        composeRule.onNodeWithTag("memory_release").assertIsDisplayed().performClick().assertIsNotEnabled()
         composeRule.onNodeWithTag("memory_detail_total").performScrollTo().assertTextEquals(formatBytes(128L * 1024 * 1024))
         composeRule.runOnIdle { assertEquals(1, composeRule.activity.memoryReleaseCount) }
         composeRule.activityRule.scenario.onActivity { it.finishMemoryRelease(false) }
         composeRule.onNodeWithTag("memory_detail_error").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithTag("memory_release").performScrollTo().performClick()
+        composeRule.onNodeWithTag("memory_release").assertIsDisplayed().performClick()
         composeRule.activityRule.scenario.onActivity { it.finishMemoryRelease(true) }
         composeRule.onNodeWithTag("memory_detail_feedback").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("memory_detail_total").performScrollTo().assertTextEquals(formatBytes(96L * 1024 * 1024))
         composeRule.activityRule.scenario.recreate()
         composeRule.onNodeWithTag("memory_detail_sheet").assertIsDisplayed()
-        composeRule.onNodeWithTag("memory_detail_close").performScrollTo().performClick()
+        composeRule.onNodeWithTag("memory_detail_close").assertIsDisplayed().performClick()
         composeRule.onNodeWithTag("memory_detail_sheet").assertDoesNotExist()
     }
 
@@ -429,7 +435,7 @@ class DashboardInstrumentedTest {
             val theme = if (dark) "dark" else "light"
             recordNodePng("memory_card_" + theme, "dashboard_memory_card")
             composeRule.onNodeWithTag("dashboard_memory_card").performClick()
-            composeRule.onNodeWithText("堆保留空闲").assertIsDisplayed()
+            composeRule.onNodeWithText("堆保留空闲").performScrollTo().assertIsDisplayed()
             recordNodePng("memory_detail_" + theme, "memory_detail_sheet")
             // 作者 long：底部面板位于独立窗口，保留屏幕截图核对完整详情，避免节点截图偏移裁切。
             val screen = checkNotNull(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
@@ -660,8 +666,8 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithTag("service_quality_refresh").performClick().assertIsNotEnabled()
         composeRule.activityRule.scenario.onActivity { it.finishServiceQuality(true) }
         composeRule.onNodeWithText("数据中心").assertExists()
-        composeRule.onNodeWithTag("ip_quality_hide").performClick()
-        composeRule.onNodeWithText("*****").assertExists()
+        composeRule.onNodeWithTag("ip_quality_hide").performScrollTo().assertIsDisplayed().performClick().assertIsOn()
+        composeRule.onNodeWithTag("ip_quality_address").performScrollTo().assertTextContains("*****")
         composeRule.onNodeWithTag("service_manage_back").performClick()
         composeRule.onNodeWithTag("service_exit_google").assertTextEquals("US · *****")
         composeRule.onNodeWithTag("service_detail_close").performClick()
@@ -677,7 +683,7 @@ class DashboardInstrumentedTest {
             composeRule.onNodeWithTag("service_exit_google").performClick()
             composeRule.activityRule.scenario.onActivity { it.finishServiceQuality(true) }
             composeRule.onNodeWithTag("ip_quality_hide").performScrollTo().assertIsDisplayed()
-            composeRule.onNodeWithTag("service_manage_back").performScrollTo()
+            composeRule.onNodeWithTag("service_manage_back").assertIsDisplayed()
             recordWindowPng("service_exit_quality_$suffix")
             composeRule.onNodeWithTag("service_detail_close").performClick()
         }
