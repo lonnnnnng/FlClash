@@ -46,9 +46,9 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
         confirmButton = {
         if (sorting) TextButton(onClick = { sorting = false }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort_done")) { Text("完成") }
         else {
-        if (sets.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort")) { Icon(Icons.Outlined.Sort, "排序图标集") }
+        if (sets.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort")) { Icon(Icons.Outlined.Sort, null) }
         Box {
-            IconButton(onClick = { addMenu = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_add")) { Icon(Icons.Outlined.AddCircleOutline, "添加图标集") }
+            IconButton(onClick = { addMenu = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_add")) { Icon(Icons.Outlined.AddCircleOutline, null) }
             DropdownMenu(addMenu, { addMenu = false }) {
                 DropdownMenuItem(text = { Text("从 URL 导入") }, onClick = { addMenu = false; if (onImportUrls != null) onImportUrls() else importing = true })
                 DropdownMenuItem(text = { Text("从文件导入") }, onClick = { addMenu = false; onPickFile() })

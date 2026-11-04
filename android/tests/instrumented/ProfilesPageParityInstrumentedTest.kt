@@ -57,7 +57,7 @@ class ProfilesPageParityInstrumentedTest {
             compose.onNodeWithTag("profile_extend_801").performClick()
             compose.onNodeWithTag("profile_extension_dns").assertIsDisplayed().performClick()
             capture("profiles_extension_$theme")
-            compose.onNodeWithContentDescription("返回").performClick()
+            compose.onActionMarker("返回").performClick()
             compose.onNodeWithTag("profile_actions_selected").performTouchInput { longClick() }
             compose.onNodeWithTag("profile_edit_801").performClick()
             compose.onNodeWithTag("profile_editor_page").assertIsDisplayed()

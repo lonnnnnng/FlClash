@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.SemanticsMatcher
@@ -16,7 +17,6 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsActions
@@ -106,7 +106,7 @@ class ConnectionsInstrumentedTest {
         assertDetailVisibleAfterScroll("com.example.client(10000)")
         assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
 
-        composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+        composeRule.onNodeWithTag("connections_detail_close").performClick()
         composeRule.onNodeWithText("连接详情").assertDoesNotExist()
         composeRule.onNodeWithTag("connections_row_0").assertIsDisplayed()
         composeRule.onNodeWithText("活动连接（1）").assertIsDisplayed()
@@ -154,7 +154,7 @@ class ConnectionsInstrumentedTest {
             expandDetailSheet()
             assertLongDetailFields()
             val landscapeHash = captureHash("detail_long_font20_landscape", dialog = true)
-            composeRule.onNodeWithContentDescription("关闭连接详情").assertIsDisplayed().performClick()
+            composeRule.onNodeWithTag("connections_detail_close").assertIsDisplayed().performClick()
             composeRule.onNodeWithTag("connections_detail_dialog").assertDoesNotExist()
             // 作者 long：两种方向都采样后再报告差异，首次截图变化不能阻断横屏可达性的独立检查。
             assertEquals(
@@ -219,7 +219,7 @@ class ConnectionsInstrumentedTest {
     }
 
     @Test
-    fun sheetDetentsSupportTapDragSemanticsAndScrimDismissal() {
+    fun sheetDetentsSupportTapDragAndScrimDismissal() {
         composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
         composeRule.onNodeWithTag("connections_row_0").performClick()
         assertSheetHeight(9f / 16f)
@@ -227,7 +227,7 @@ class ConnectionsInstrumentedTest {
         assertSheetHeight(0.9f)
         composeRule.activityRule.scenario.recreate()
         assertSheetHeight(0.9f)
-        composeRule.onNodeWithTag("connections_detail_sheet").performSemanticsAction(SemanticsActions.Collapse) { it() }
+        composeRule.onNodeWithTag("connection_detail_handle").performClick()
         assertSheetHeight(9f / 16f)
         val height = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot.height
         composeRule.onNodeWithTag("connections_detail_sheet").performTouchInput {
@@ -287,7 +287,7 @@ class ConnectionsInstrumentedTest {
             actual["light_landscape_bottom"] = captureHash("detail_light_landscape_bottom", dialog = true)
             composeRule.onNodeWithTag("connection_detail_DNS 模式").performScrollTo().performClick()
             assertEquals("fake-ip", composeRule.activity.lastCopiedValue)
-            composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+            composeRule.onNodeWithTag("connections_detail_close").performClick()
         } finally {
             restorePortrait()
         }
@@ -320,7 +320,7 @@ class ConnectionsInstrumentedTest {
             actual["small_light_top"] = captureHash("detail_small_light_top", dialog = true)
             assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
             actual["small_light_bottom"] = captureHash("detail_small_light_bottom", dialog = true)
-            composeRule.onNodeWithContentDescription("关闭连接详情").assertIsDisplayed().performClick()
+            composeRule.onNodeWithTag("connections_detail_close").assertIsDisplayed().performClick()
         } finally {
             shell("wm size ${previousOverride ?: "reset"}")
             composeRule.waitUntil(10_000) { composeRule.activity.window.decorView.width == previousWidth }
@@ -361,11 +361,7 @@ class ConnectionsInstrumentedTest {
             composeRule.mainClock.autoAdvance = false
             composeRule.onNodeWithTag("connections_row_0").performClick()
             composeRule.mainClock.advanceTimeByFrame()
-            assertEquals(
-                "进入中",
-                composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
-                    .config[SemanticsProperties.StateDescription],
-            )
+
             // 作者 long：必须检查真实中间帧的位移与遮罩像素，只有状态标签变化不能证明面板实际在移动。
             composeRule.mainClock.advanceTimeBy(96)
             composeRule.waitForIdle()
@@ -377,20 +373,12 @@ class ConnectionsInstrumentedTest {
             val restingScrimAlpha = composeRule.onNodeWithTag("connection_detail_scrim").captureToImage().toPixelMap()[2, 2].alpha
             assertTrue("入场中面板尚未到达停靠点", enteringTop > restingTop + 5f)
             assertTrue("入场中遮罩应逐步变深", enteringScrimAlpha < restingScrimAlpha - 0.01f)
-            assertEquals(
-                "已打开",
-                composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
-                    .config[SemanticsProperties.StateDescription],
-            )
 
-            composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+
+            composeRule.onNodeWithTag("connections_detail_close").performClick()
             composeRule.mainClock.advanceTimeByFrame()
             composeRule.waitForIdle()
-            assertEquals(
-                "关闭中",
-                composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
-                    .config[SemanticsProperties.StateDescription],
-            )
+
             composeRule.mainClock.advanceTimeBy(96)
             composeRule.waitForIdle()
             assertTrue(
@@ -402,7 +390,7 @@ class ConnectionsInstrumentedTest {
                 composeRule.onNodeWithTag("connection_detail_scrim").captureToImage().toPixelMap()[2, 2].alpha < restingScrimAlpha - 0.01f,
             )
             // 作者 long：重复关闭或退出中旋转都不能重新入场，也不能丢掉最终移除 Dialog 的回调。
-            composeRule.onNodeWithTag("connections_detail_sheet").performSemanticsAction(SemanticsActions.Dismiss) { it() }
+            androidx.test.espresso.Espresso.pressBack()
             composeRule.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
             composeRule.waitUntil(5_000) { composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
             composeRule.mainClock.advanceTimeByFrame()
@@ -431,11 +419,7 @@ class ConnectionsInstrumentedTest {
             composeRule.mainClock.autoAdvance = false
             composeRule.onNodeWithTag("connections_row_0").performClick()
             composeRule.mainClock.advanceTimeByFrame()
-            assertEquals(
-                "进入中",
-                composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
-                    .config[SemanticsProperties.StateDescription],
-            )
+
             val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
             composeRule.mainClock.advanceTimeBy(120)
             val enteringRight = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot.right
@@ -444,16 +428,14 @@ class ConnectionsInstrumentedTest {
             composeRule.waitForIdle()
             val resting = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot
             assertEquals(viewport.right, resting.right, 2f)
-            assertEquals("已打开", composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
-                .config[SemanticsProperties.StateDescription])
 
-            composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+
+            composeRule.onNodeWithTag("connections_detail_close").performClick()
             composeRule.mainClock.advanceTimeByFrame()
             composeRule.mainClock.advanceTimeBy(80)
             val exitingRight = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot.right
             assertTrue("侧栏退场应向屏幕右侧滑出", exitingRight > resting.right + 5f)
-            assertEquals("关闭中", composeRule.onNodeWithTag("connection_detail_scrim").fetchSemanticsNode()
-                .config[SemanticsProperties.StateDescription])
+
             composeRule.mainClock.advanceTimeBy(180)
             composeRule.waitForIdle()
             composeRule.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
@@ -473,8 +455,7 @@ class ConnectionsInstrumentedTest {
         composeRule.waitUntil(5_000) {
             val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
             val panel = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode()
-            panel.config[SemanticsProperties.StateDescription] == (if (fraction == 0.9f) "已展开" else "半展开") &&
-                kotlin.math.abs(viewport.height * fraction - panel.boundsInRoot.height) <= 2f
+            kotlin.math.abs(viewport.height * fraction - panel.boundsInRoot.height) <= 2f
         }
         val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
         val panel = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot
@@ -529,7 +510,7 @@ class ConnectionsInstrumentedTest {
         assertDetailVisibleAfterScroll("api.example.test:443")
         assertDetailVisibleAfterScroll("com.example.client(10000)")
         assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
-        composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+        composeRule.onNodeWithTag("connections_detail_close").performClick()
         composeRule.activityRule.scenario.recreate()
         composeRule.onNodeWithTag("connections_detail_dialog").assertDoesNotExist()
         composeRule.onNodeWithText("启动核心后显示当前活动连接。").assertIsDisplayed()
@@ -544,14 +525,13 @@ class ConnectionsInstrumentedTest {
         composeRule.onNodeWithTag("connection_detail_特殊代理").performScrollTo().assertIsDisplayed()
         assertDetailVisibleAfterScroll("special-rule")
         assertDetailVisibleAfterScroll("DIRECT → GLOBAL")
-        composeRule.onNodeWithContentDescription("关闭连接详情").assertIsDisplayed()
+        composeRule.onNodeWithTag("connections_detail_close").assertIsDisplayed()
     }
 
     private fun assertDetailVisibleAfterScroll(value: String) {
         // 作者 long：限定详情子树并主动滚动，避免背景摘要或屏外语义节点让可达性检查误通过。
         if (value == "DIRECT → GLOBAL") {
             composeRule.onNodeWithTag("connection_detail_chains").performScrollTo().assertIsDisplayed()
-            composeRule.onNodeWithContentDescription(value).assertIsDisplayed()
             return
         }
         composeRule.onNode(
@@ -561,10 +541,11 @@ class ConnectionsInstrumentedTest {
     }
 
     private fun expandDetailSheet() {
-        // 作者 long：半展开面板的底部尚在屏外；先使用真实展开语义，再验证字段滚动，不能把屏外存在当成可见。
-        val actions = composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsActions.Expand) and hasTestTag("connections_detail_sheet"))
-        if (actions.fetchSemanticsNodes().isNotEmpty()) {
-            actions[0].performSemanticsAction(SemanticsActions.Expand) { it() }
+        // 作者 long：先点拖柄展开，再验证字段滚动，不能把屏外存在当成可见；侧栏没有拖柄。
+        val handles = composeRule.onAllNodes(hasTestTag("connection_detail_handle") and isEnabled())
+        if (handles.fetchSemanticsNodes().isNotEmpty() && composeRule.onNodeWithTag("connections_detail_sheet")
+                .fetchSemanticsNode().boundsInRoot.height < composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot.height * .8f) {
+            handles[0].performClick()
             assertSheetHeight(0.9f)
         }
         composeRule.waitForIdle()

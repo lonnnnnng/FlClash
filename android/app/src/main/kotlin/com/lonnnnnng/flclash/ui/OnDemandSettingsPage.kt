@@ -70,15 +70,15 @@ internal fun OnDemandSettingsPanel(
             Text("排除 SSID", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (selecting) {
                 IconButton(onClick = { selected = if (selected.containsAll(ssids)) emptySet() else ssids.toSet() }, enabled = !busy,
-                    modifier = Modifier.testTag("on_demand_select_all")) { Icon(Icons.Outlined.SelectAll, "全选") }
-                IconButton(onClick = { deleteExpected = ssids.toList(); deleting = true }, enabled = !busy && selected.isNotEmpty(), modifier = Modifier.testTag("on_demand_delete")) { Icon(Icons.Outlined.Delete, "删除所选") }
+                    modifier = Modifier.testTag("on_demand_select_all")) { Icon(Icons.Outlined.SelectAll, null) }
+                IconButton(onClick = { deleteExpected = ssids.toList(); deleting = true }, enabled = !busy && selected.isNotEmpty(), modifier = Modifier.testTag("on_demand_delete")) { Icon(Icons.Outlined.Delete, null) }
                 TextButton(onClick = { selecting = false; selected = emptySet() }, enabled = !busy) { Text("完成") }
             } else {
                 if (ssids.isNotEmpty()) {
-                    IconButton(onClick = { selecting = true }, enabled = !busy, modifier = Modifier.testTag("on_demand_select")) { Icon(Icons.Outlined.Checklist, "选择") }
-                    if (ssids.size > 1) IconButton(onClick = { sortExpected = ssids.toList(); sorting = true }, enabled = !busy, modifier = Modifier.testTag("on_demand_sort")) { Icon(Icons.Outlined.SwapVert, "排序") }
+                    IconButton(onClick = { selecting = true }, enabled = !busy, modifier = Modifier.testTag("on_demand_select")) { Icon(Icons.Outlined.Checklist, null) }
+                    if (ssids.size > 1) IconButton(onClick = { sortExpected = ssids.toList(); sorting = true }, enabled = !busy, modifier = Modifier.testTag("on_demand_sort")) { Icon(Icons.Outlined.SwapVert, null) }
                 }
-                IconButton(onClick = { edit(null) }, enabled = !busy, modifier = Modifier.testTag("on_demand_add")) { Icon(Icons.Outlined.AddCircleOutline, "添加 SSID") }
+                IconButton(onClick = { edit(null) }, enabled = !busy, modifier = Modifier.testTag("on_demand_add")) { Icon(Icons.Outlined.AddCircleOutline, null) }
             }
         }
         if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -93,7 +93,7 @@ internal fun OnDemandSettingsPanel(
                     }.padding(horizontal = 16.dp).testTag("on_demand_ssid_$index"), verticalAlignment = Alignment.CenterVertically) {
                         if (selecting) Checkbox(ssid in selected, null, modifier = Modifier.padding(end = 12.dp))
                         Text(ssid, Modifier.weight(1f), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        if (!selecting) Icon(Icons.Outlined.ChevronRight, "编辑 SSID")
+                        if (!selecting) Icon(Icons.Outlined.ChevronRight, null)
                     }
                 }
             }

@@ -46,7 +46,7 @@ class ProviderPagesInstrumentedTest {
             capture("provider_ip_picker_$theme")
             compose.onNodeWithTag("provider_ip_ipv6").performClick()
             compose.onNodeWithTag("provider_options_save").performClick()
-            compose.onNodeWithTag("provider_options_error").assertTextContains("保存失败", substring = true)
+            compose.onNodeWithTag("provider_options_error").assertIsDisplayed().assertTextContains("保存失败", substring = true)
             compose.onNodeWithTag("provider_option_INTERVAL").performScrollTo().assertTextContains("450")
             capture("provider_options_error_$theme")
             compose.onNodeWithTag("provider_options_save").performClick()

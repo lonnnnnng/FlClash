@@ -39,7 +39,7 @@ class FilterAndImportPagesInstrumentedTest {
             compose.runOnIdle { assertEquals("地区", state.rows.first().label) }
             compose.onNodeWithTag("filter_presets_select").performClick()
             compose.onNodeWithText("低延迟").performClick()
-            compose.onNodeWithContentDescription("删除所选预设").performClick()
+            compose.onActionMarker("删除所选预设").performClick()
             compose.onNodeWithText("删除", useUnmergedTree = true).performClick()
             compose.runOnIdle { assertEquals(1, state.rows.size); choosing = true }
             compose.onNodeWithTag("filter_preset_choice_地区").performClick()

@@ -99,7 +99,7 @@ internal fun RuntimeConfigPreviewSheet(
                     Text(if (state.error != null) "重试" else "刷新")
                 }
                 IconButton({ searching = !searching }, enabled = state.preview != null,
-                    modifier = Modifier.testTag("runtime_config_preview_find")) { Icon(Icons.Outlined.Search, "查找正文") }
+                    modifier = Modifier.testTag("runtime_config_preview_find")) { Icon(Icons.Outlined.Search, null) }
         },
         contentPadding = PaddingValues(),
         text = {

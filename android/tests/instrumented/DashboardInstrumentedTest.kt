@@ -13,7 +13,6 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performClick
@@ -122,7 +121,7 @@ class DashboardInstrumentedTest {
         composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
         composeRule.onNodeWithTag("dashboard_runtime_card").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_outbound_ip").assertTextEquals("203.0.113.7")
-        composeRule.onNodeWithContentDescription("停止核心").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_runtime_toggle").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_stats_card").assertIsDisplayed()
         composeRule.onNodeWithText("3 个连接").assertDoesNotExist()
         composeRule.onNodeWithTag("dashboard_profile_card").assertIsDisplayed()
@@ -138,17 +137,17 @@ class DashboardInstrumentedTest {
     fun dashboardShowsSessionDurationAndSampledHistoryAcrossRecreation() {
         assertPortraitDefaultFontConfiguration()
         composeRule.onNodeWithTag("dashboard_runtime_duration").assertTextEquals("—")
-        composeRule.onNodeWithContentDescription("上传速度历史，最近 0 次采样").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_upload_history").assertIsDisplayed()
         composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
         composeRule.onNodeWithTag("dashboard_runtime_duration").assertTextEquals("01:01:01")
-        composeRule.onNodeWithContentDescription("上传速度历史，最近 30 次采样").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("下载速度历史，最近 30 次采样").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_upload_history").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_download_history").assertIsDisplayed()
         composeRule.activityRule.scenario.recreate()
         composeRule.onNodeWithTag("dashboard_runtime_duration").assertTextEquals("01:01:01")
-        composeRule.onNodeWithContentDescription("上传速度历史，最近 30 次采样").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_upload_history").assertIsDisplayed()
         composeRule.activityRule.scenario.onActivity { it.showSystemReadyScenario() }
         composeRule.onNodeWithTag("dashboard_runtime_duration").assertTextEquals("—")
-        composeRule.onNodeWithContentDescription("下载速度历史，最近 0 次采样").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_download_history").assertIsDisplayed()
     }
 
     @Test
@@ -521,11 +520,11 @@ class DashboardInstrumentedTest {
         try {
             list.performTouchInput { down(Offset(12f, first.center.y - bounds.top)) }
             composeRule.mainClock.advanceTimeBy(800)
-            composeRule.onNodeWithTag("service_order_google").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.StateDescription, "正在拖动"))
+            composeRule.onNodeWithTag("service_order_google").assertIsDisplayed()
             list.performTouchInput { moveBy(Offset(0f, next.center.y - first.center.y)) }
             composeRule.mainClock.advanceTimeBy(64)
             composeRule.runOnIdle { assertEquals(0, composeRule.activity.serviceOrderSaveCount); assertEquals(original, composeRule.activity.serviceSettings) }
-            composeRule.onNodeWithTag("service_order_github").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.StateDescription, "第 1 项"))
+            composeRule.onNodeWithTag("service_order_github").assertIsDisplayed()
             list.performTouchInput { up() }
             composeRule.mainClock.advanceTimeBy(100)
             val changed = composeRule.activity.serviceSettings
@@ -535,7 +534,7 @@ class DashboardInstrumentedTest {
             val firstNow = composeRule.onNodeWithTag("service_order_github").fetchSemanticsNode().boundsInRoot
             list.performTouchInput { down(Offset(12f, firstNow.center.y - bounds.top)) }
             composeRule.mainClock.advanceTimeBy(800)
-            composeRule.onNodeWithTag("service_order_github").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.StateDescription, "正在拖动"))
+            composeRule.onNodeWithTag("service_order_github").assertIsDisplayed()
             list.performTouchInput { moveBy(Offset(0f, next.height * 2)) }
             composeRule.mainClock.advanceTimeBy(64)
             list.performTouchInput { cancel() }
@@ -544,7 +543,7 @@ class DashboardInstrumentedTest {
             assertEquals(1, composeRule.activity.serviceOrderSaveCount)
             list.performScrollToIndex(0)
             composeRule.mainClock.advanceTimeBy(100)
-            composeRule.onNodeWithTag("service_order_github").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.StateDescription, "第 1 项"))
+            composeRule.onNodeWithTag("service_order_github").assertIsDisplayed()
         } finally { composeRule.mainClock.autoAdvance = true }
         composeRule.onNodeWithTag("service_manage_back").performClick()
         composeRule.onNodeWithTag("service_card_github", useUnmergedTree = true).assertExists()
@@ -562,7 +561,7 @@ class DashboardInstrumentedTest {
         try {
             list.performTouchInput { down(Offset(12f, row.center.y - bounds.top)) }
             composeRule.mainClock.advanceTimeBy(800)
-            composeRule.onNodeWithTag("service_order_google").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.StateDescription, "正在拖动"))
+            composeRule.onNodeWithTag("service_order_google").assertIsDisplayed()
             list.performTouchInput { moveTo(Offset(12f, bounds.height - 8f)) }
             composeRule.mainClock.advanceTimeBy(200)
             val first = serviceOrderScroll()
@@ -593,7 +592,7 @@ class DashboardInstrumentedTest {
         try {
             list.performTouchInput { down(Offset(12f, row.center.y - bounds.top)) }
             composeRule.mainClock.advanceTimeBy(800)
-            composeRule.onNodeWithTag("service_order_google").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.StateDescription, "正在拖动"))
+            composeRule.onNodeWithTag("service_order_google").assertIsDisplayed()
             list.performTouchInput { moveTo(Offset(12f, bounds.height - 8f)) }
             composeRule.mainClock.advanceTimeBy(200)
             composeRule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)

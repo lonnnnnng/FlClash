@@ -11,9 +11,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.core.CoreMemoryStats
@@ -26,7 +23,7 @@ internal fun DashboardMemoryCard(state: MemoryUiState, onRelease: () -> Unit) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.Memory, contentDescription = null)
             Text("内存信息", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-            Icon(Icons.Outlined.ChevronRight, contentDescription = "查看内存详情")
+            Icon(Icons.Outlined.ChevronRight, contentDescription = null)
         }
         Spacer(Modifier.height(12.dp))
         Text(state.snapshot?.rss?.let(::formatBytes) ?: if (state.isLoading) "读取中…" else "—",
@@ -47,12 +44,9 @@ internal fun DashboardMemoryCard(state: MemoryUiState, onRelease: () -> Unit) {
     if (detail) DashboardModalSheet(title = "内存信息", sheetTag = "memory_detail_sheet", closeTag = "memory_detail_close",
         onDismiss = { detail = false }, actions = {
             // 作者 long：回收属于详情主操作，固定在标题栏，失败提示变长或正文滚动后仍能立即重试。
-            IconButton(onClick = onRelease, enabled = !state.isReleasing, modifier = Modifier.testTag("memory_release").semantics {
-                contentDescription = "释放内存"
-                stateDescription = if (state.isReleasing) "正在释放" else "可释放"
-            }) {
+            IconButton(onClick = onRelease, enabled = !state.isReleasing, modifier = Modifier.testTag("memory_release")) {
                 if (state.isReleasing) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
-                else Icon(Icons.Outlined.DeleteSweep, "释放内存")
+                else Icon(Icons.Outlined.DeleteSweep, null)
             }
         }) {
             Text(state.snapshot?.rss?.let(::formatBytes) ?: "—", style = MaterialTheme.typography.headlineLarge,

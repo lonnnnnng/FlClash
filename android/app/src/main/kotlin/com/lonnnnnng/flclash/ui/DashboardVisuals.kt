@@ -73,10 +73,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -134,7 +130,7 @@ internal fun DashboardSurface(
                         // 作者 long：首页卡片本身就是 Flutter 手机端的进入详情入口，
                         // 保留内部同步、切换等按钮的独立点击语义。
                         .clickable(onClick = onClick)
-                        .semantics { role = Role.Button }
+
                 },
             ),
         shape = AppSuperellipseShape(34.dp),
@@ -185,7 +181,7 @@ internal fun DashboardProxyGroupsCard(
         state.error?.let { message ->
             Row(Modifier.fillMaxWidth().testTag("dashboard_proxy_groups_error"), verticalAlignment = Alignment.CenterVertically) {
                 Text(message, Modifier.weight(1f), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-                TextButton(onRefresh, enabled = !state.isLoading, modifier = Modifier.testTag("dashboard_proxy_groups_retry")) { Text("重试") }
+                TextButton(onRefresh, enabled = state.canRefresh(runtimeState), modifier = Modifier.testTag("dashboard_proxy_groups_retry")) { Text("重试") }
             }
         }
         if (groups.isEmpty()) {
@@ -202,6 +198,7 @@ internal fun DashboardProxyGroupsCard(
                 Spacer(Modifier.height(6.dp))
                 Text(
                     if (state.isLoading) "正在加载代理组" else if (state.error != null) "代理组加载失败" else "没有代理组",
+                    modifier = Modifier,
                     style = MaterialTheme.typography.titleSmall,
                 )
                 if (currentProfileId == null) Text(
@@ -248,7 +245,7 @@ internal fun DashboardProxyGroupsCard(
         ConnectionModalSheet(
             onDismiss = { showPicker = false },
             contentScrollState = rememberScrollState(),
-            accessibilityTitle = "代理",
+
             isContentAtTop = { contentAtTop },
             avoidIme = true,
         ) { requestDismiss ->
@@ -259,7 +256,7 @@ internal fun DashboardProxyGroupsCard(
                 ) {
                     Text("代理", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
                     IconButton(onClick = requestDismiss, modifier = Modifier.testTag("dashboard_proxy_picker_close")) {
-                        Icon(Icons.Outlined.Close, "关闭代理")
+                        Icon(Icons.Outlined.Close, null)
                     }
                 }
                 // 作者 long：弹层和完整代理页共用真实操作入口；选择节点不关闭弹层，当前分组继续写回 Profile。
@@ -367,10 +364,7 @@ internal fun RuntimeCard(
                         enabled = !busy,
                         modifier = Modifier.size(88.dp).testTag("dashboard_runtime_toggle")
                             .appElasticPress(enabled = !busy)
-                            .appFocusRing(CircleShape, standsOff = true).semantics {
-                            role = Role.Button
-                            contentDescription = actionLabel
-                        },
+                            .appFocusRing(CircleShape, standsOff = true),
                         shape = CircleShape,
                         color = if (state.isRunning) colors.primary else colors.primaryContainer,
                         contentColor = if (state.isRunning) colors.onPrimary else colors.onPrimaryContainer,
@@ -457,10 +451,6 @@ internal fun DashboardConnectionStatsCard(
                         .appFocusRing(AppSuperellipseShape(26.dp))
                         .clip(AppSuperellipseShape(26.dp))
                         .clickable(onClick = onClick)
-                        .semantics {
-                            role = Role.Button
-                            contentDescription = label + "，" + dashboardCount(count) + " 条"
-                        }
                         .testTag(
                             when (index) {
                                 0 -> "dashboard_connection_stats_connections"
@@ -536,10 +526,8 @@ internal fun OutboundModeCard(
                         .appFocusRing(shape, standsOff = selected)
                         .selectable(
                             selected = selected,
-                            role = Role.RadioButton,
                             onClick = { if (!selected) onModeChange(option) },
                         )
-                        .semantics { contentDescription = label }
                         .testTag("dashboard_mode_${option.wireValue}"),
                     shape = shape,
                     color = background,
@@ -579,7 +567,7 @@ private fun DashboardSpeedTile(label: String, icon: ImageVector, speed: Long, to
                 Text("${formatted.drop(numericEnd)}/s", style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("累计 ${formatBytes(total)}", style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            DashboardTrafficChart(label, samples, chartTag)
+            DashboardTrafficChart(samples, chartTag)
         }
     }
 }
@@ -657,7 +645,7 @@ internal fun DashboardProfileCard(
                         enabled = canSyncProfile,
                         modifier = Modifier.testTag("dashboard_profile_sync"),
                     ) {
-                        Icon(Icons.Outlined.Sync, contentDescription = "同步当前配置")
+                        Icon(Icons.Outlined.Sync, contentDescription = null)
                     }
                 }
             }
@@ -667,7 +655,7 @@ internal fun DashboardProfileCard(
                     enabled = !isBusy,
                     modifier = Modifier.testTag("dashboard_profile_switch"),
                 ) {
-                    Icon(Icons.Outlined.SwapHoriz, contentDescription = "切换配置")
+                    Icon(Icons.Outlined.SwapHoriz, contentDescription = null)
                 }
             }
             TextButton(
@@ -751,7 +739,7 @@ internal fun DashboardProfileCard(
                                 .fillMaxWidth()
                                 .clip(AppSuperellipseShape(14.dp))
                                 .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
-                                .selectable(selected, enabled = canSelectProfile && !selectionSubmitted, role = Role.RadioButton) {
+                                .selectable(selected, enabled = canSelectProfile && !selectionSubmitted, ) {
                                     // 作者 long：关闭动画期间只认领一次切换，配置应用与运行态校验仍统一由 ProfilesViewModel 处理。
                                     selectionSubmitted = true
                                     if (item.id != currentProfileId) onSelectProfile(item.id)
@@ -763,7 +751,7 @@ internal fun DashboardProfileCard(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                                if (selected) Icon(Icons.Outlined.Check, contentDescription = "当前配置", tint = MaterialTheme.colorScheme.primary)
+                                if (selected) Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             }
                             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                 Text(item.realLabel, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleSmall)
@@ -829,11 +817,11 @@ internal fun DashboardProfileDetailSheet(
         backTag = "dashboard_profile_detail_back",
         confirmButton = {
             IconButton(onPreview, modifier = Modifier.testTag("dashboard_profile_detail_preview")) {
-                Icon(Icons.Outlined.Description, "运行配置")
+                Icon(Icons.Outlined.Description, null)
             }
             if (profile.type == ProfileType.URL) {
                 if (isBusy) CircularProgressIndicator(Modifier.padding(12.dp).size(24.dp).testTag("dashboard_profile_detail_sync_loading"), strokeWidth = 2.dp)
-                else IconButton(onUpdate, enabled = canMutate, modifier = Modifier.testTag("dashboard_profile_detail_sync")) { Icon(Icons.Outlined.Sync, "同步") }
+                else IconButton(onUpdate, enabled = canMutate, modifier = Modifier.testTag("dashboard_profile_detail_sync")) { Icon(Icons.Outlined.Sync, null) }
             }
         }, text = {
         Column(

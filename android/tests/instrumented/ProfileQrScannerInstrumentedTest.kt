@@ -24,6 +24,7 @@ import com.google.zxing.MultiFormatWriter
 import com.lonnnnnng.flclash.data.DeepLinkProfileParser
 import com.lonnnnnng.flclash.data.QrCodeImageImporter
 import com.lonnnnnng.flclash.ui.assertPortraitDefaultFontConfiguration
+import com.lonnnnnng.flclash.ui.onAllActionMarkers
 import com.lonnnnnng.flclash.ui.recordVisualPng
 import dagger.hilt.android.EntryPointAccessors
 import java.io.ByteArrayOutputStream
@@ -61,9 +62,9 @@ class ProfileQrScannerInstrumentedTest {
             waitFor { available[id] == false }
             capture("profile_qr_camera")
             compose.onNodeWithTag("profile_qr_torch").performClick()
-            compose.waitUntil(5000) { compose.onAllNodesWithContentDescription("关闭手电筒").fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(5000) { compose.onAllActionMarkers("关闭手电筒").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("profile_qr_torch").performClick()
-            compose.waitUntil(5000) { compose.onAllNodesWithContentDescription("打开手电筒").fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(5000) { compose.onAllActionMarkers("打开手电筒").fetchSemanticsNodes().isNotEmpty() }
             compose.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
             waitFor { available[id] == true }
             compose.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)

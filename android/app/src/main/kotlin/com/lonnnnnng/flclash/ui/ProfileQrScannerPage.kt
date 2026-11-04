@@ -31,9 +31,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -224,8 +221,8 @@ internal fun ProfileQrScannerOverlay(
     }
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            FilledTonalIconButton(onClose, Modifier.testTag("profile_qr_close")) { Icon(Icons.Outlined.Close, "关闭扫码") }
-            FilledTonalIconButton(onAlbum, Modifier.testTag("profile_qr_album"), enabled = !decoding) { Icon(Icons.Outlined.PhotoLibrary, "从相册选择") }
+            FilledTonalIconButton(onClose, Modifier.testTag("profile_qr_close")) { Icon(Icons.Outlined.Close, null) }
+            FilledTonalIconButton(onAlbum, Modifier.testTag("profile_qr_album"), enabled = !decoding) { Icon(Icons.Outlined.PhotoLibrary, null) }
         }
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             if (denied || cameraError) Column(
@@ -240,9 +237,9 @@ internal fun ProfileQrScannerOverlay(
             } else if (!cameraReady || decoding) CircularProgressIndicator(Modifier.testTag("profile_qr_loading"))
         }
         Text(hint ?: if (decoding) "正在识别图片…" else "将配置二维码放入框内，识别后确认导入", color = Color.White, textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp).semantics { liveRegion = LiveRegionMode.Polite }.testTag("profile_qr_hint"))
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp).testTag("profile_qr_hint"))
         FilledTonalIconButton(onTorch, Modifier.size(64.dp).testTag("profile_qr_torch"), enabled = hasFlash && cameraReady && !decoding, shape = CircleShape) {
-            Icon(if (torch) Icons.Outlined.FlashlightOff else Icons.Outlined.FlashlightOn, if (torch) "关闭手电筒" else "打开手电筒", Modifier.size(30.dp))
+            Icon(if (torch) Icons.Outlined.FlashlightOff else Icons.Outlined.FlashlightOn, null, Modifier.size(30.dp).testTag("action:" + (if (torch) "关闭手电筒" else "打开手电筒")))
         }
         Spacer(Modifier.height(32.dp))
     }

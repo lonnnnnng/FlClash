@@ -12,9 +12,11 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.lonnnnnng.flclash.service.YamlErrorLocation
 
 data class ProfileDocumentEditorState(val ownerId: Long? = null, val session: Long = 0, val remote: Boolean = false,
-    val title: String = "配置正文", val original: String = "", val content: String = "", val saving: Boolean = false, val error: String? = null) {
+    val title: String = "配置正文", val original: String = "", val content: String = "", val saving: Boolean = false,
+    val error: String? = null, val errorLocation: YamlErrorLocation? = null) {
     override fun toString() = "ProfileDocumentEditorState(id=$ownerId, saving=$saving)"
 }
 
@@ -32,14 +34,25 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
     val undo = remember(state.session) { mutableStateListOf<String>() }
     val redo = remember(state.session) { mutableStateListOf<String>() }
     val keyboard = LocalSoftwareKeyboardController.current
+    fun locateError() {
+        val location = state.errorLocation ?: return
+        if (value.text != state.content) return
+        value = value.copy(selection = TextRange(location.offset.coerceIn(0, value.text.length)))
+        keyboard?.hide()
+    }
+    // 作者 long：校验失败只移动选区，不走正文变更回调；原输入、撤销栈和父草稿必须完整保留。
+    LaunchedEffect(state.session, state.errorLocation) { locateError() }
     fun change(next: TextFieldValue) {
-        if (next.text != value.text) {
+        val textChanged = next.text != value.text
+        if (textChanged) {
             undo.add(value.text)
             // 作者 long：配置可达8MiB，历史有总字符预算，不能把每次按键的整份副本无限保留。
             while (undo.size > 20 || undo.sumOf { it.length.toLong() } > 2_000_000) undo.removeAt(0)
             redo.clear()
         }
-        value = next; onChange(next.text)
+        value = next
+        // 作者 long：选择文字、移动光标和复制只改变选区；清错误与写加密草稿只由正文编辑触发。
+        if (textChanged) onChange(next.text)
     }
     fun find(forward: Boolean) {
         if (query.isEmpty()) return
@@ -53,7 +66,13 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
     ProfileEditorPage(::back, { Text(state.title) }, {
         Column(Modifier.fillMaxSize().testTag("profile_document_editor"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("保存仅返回配置草稿，外层保存后才替换本地副本。", Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.bodySmall)
-            state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp).testTag("profile_document_error")) }
+            state.error?.let { message ->
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text(message, color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.weight(1f).testTag("profile_document_error"))
+                    if (state.errorLocation != null) TextButton(::locateError, Modifier.testTag("profile_document_locate_error")) { Text("定位") }
+                }
+            }
             if (search) {
                 OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("profile_document_query"), label = { Text("查找") }, singleLine = true)
                 Row(Modifier.padding(horizontal = 16.dp)) {
@@ -77,7 +96,7 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
         }
     }, confirmButton = {
         Box {
-            IconButton({ history = true }, modifier = Modifier.appMenuSource(historySource).testTag("profile_document_history")) { AppGlyphIcon(AppGlyphs.more, "编辑操作") }
+            IconButton({ history = true }, modifier = Modifier.appMenuSource(historySource).testTag("profile_document_history")) { AppGlyphIcon(AppGlyphs.more) }
             AppDropdownMenu(history, { history = false }, source = historySource) {
                 AppDropdownMenuItem({ Text("撤销") }, {
                     history = false; redo.add(value.text); value = TextFieldValue(undo.removeAt(undo.lastIndex)); onChange(value.text)
@@ -87,7 +106,7 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
                 }, enabled = !state.saving && redo.isNotEmpty(), modifier = Modifier.testTag("profile_document_redo"))
             }
         }
-        IconButton({ search = !search }, enabled = !state.saving, modifier = Modifier.testTag("profile_document_find")) { Icon(Icons.Outlined.Search, "查找替换") }
+        IconButton({ search = !search }, enabled = !state.saving, modifier = Modifier.testTag("profile_document_find")) { Icon(Icons.Outlined.Search, null) }
         TextButton(onSave, enabled = !state.saving && value.text.isNotBlank(), modifier = Modifier.testTag("profile_document_save")) { Text("保存") }
     }, backTag = "profile_document_back", contentPadding = PaddingValues())
     if (exiting) AlertDialog(onDismissRequest = { exiting = false }, title = { Text("保存正文修改？") },

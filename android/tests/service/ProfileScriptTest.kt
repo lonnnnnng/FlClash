@@ -17,6 +17,28 @@ class ProfileScriptTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
+    @Test fun yamlErrorLocationUsesUtf16OffsetForEmojiAndCrLfWithoutExposingSource() {
+        for (newline in listOf("\n", "\r\n", "\r")) {
+            val source = "name: \"😀中文\"${newline}rules: [ok, }"
+            val failure = runCatching { YamlConfigCodec.toJson(source) }.exceptionOrNull()!!
+            val location = requireNotNull(YamlConfigCodec.errorLocation(source, IllegalArgumentException("wrapper", failure)))
+            assertEquals(2, location.line)
+            assertEquals(13, location.column)
+            assertEquals(source.indexOf('}'), location.offset)
+            assertEquals('}', source[location.offset])
+            assertFalse(location.toString().contains("中文"))
+        }
+    }
+
+    @Test fun yamlErrorLocationSupportsEndOfDocumentAndLeavesUnmarkedErrorsUnlocated() {
+        val source = "name: 😀\nrules: [bad"
+        val failure = runCatching { YamlConfigCodec.toJson(source) }.exceptionOrNull()!!
+        val location = requireNotNull(YamlConfigCodec.errorLocation(source, failure))
+        assertEquals(source.length, location.offset)
+        assertEquals(2, location.line)
+        assertEquals(null, YamlConfigCodec.errorLocation("[]", IllegalArgumentException("not a mapping")))
+    }
+
     @Test
     fun editorCanRetainExplicitNullWithoutChangingDefaultScriptInput() {
         val yaml = "settings: {server: null, enable: false}\n"

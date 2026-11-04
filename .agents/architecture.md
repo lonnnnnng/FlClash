@@ -14,7 +14,7 @@
 - `AppMenuCarry`区分长按、跨slop拖动、释放与取消；源手指未释放前Popup不抢Window焦点，源持续更新Window坐标。语义长按没有物理指针，不进入携带状态，由Popup接管系统返回。可滚动菜单不抢竖向手势；取消路径撤销悬停，不执行最后条目。
 - 玻璃开关默认关闭，开启时用宿主Window的PixelCopy内存背景，先隐藏源绘制后抓帧；API33+使用折射shader，旧API保留fallback。API27离线材质、Window捕获、菜单与子页已通过；API24/25、31/32、其他ABI及低API网络/VPN/核心路径未测。
 - `ProfileCodeField`用显示span保持OffsetMapping.Identity，行号独立Canvas；超过512Ki字符跳过着色扫描。查找选区显式驱动滚动，预览行号DisableSelection；正文只返回父草稿，不增加直接文件写入。BasicTextField仍整体测量，极限正文性能另验。
-- 排序列表保留既有暂存/真实拖动链路，视觉统一72dp行和单尾部拖柄，上下移动改为CustomAccessibilityAction；身份验证分组和Provider选项不改变协议字段/保存边界。
+- 排序列表保留既有暂存/真实拖动链路，视觉统一72dp行和单尾部拖柄，只由真实长按拖动调整；身份验证分组和Provider选项不改变协议字段/保存边界。
 
 ## Provider列表路由重读与默认视觉（2026-11-04）
 
@@ -54,7 +54,7 @@ Fallback真实Bridge协议边界通过，但授权订阅与本地原1.yaml均未
 
 `AppSpring`在连续更新目标时保留速度，`appElasticPress`只变换绘制，静态命中/语义/菜单锚点不随按压膨胀；短按先升至0.975再回落，关闭动画时收敛到目标。`appFocusRing`跟随子树焦点，选中本身不画焦点。Dashboard投影使用Flutter多层参数，配置与节点沿各自卡片反馈，不给CommonCard额外套按压。
 
-`MainNavigationDock`单一指针受理拖动和释放，滑块/抬升/拉伸/形变分别用物理状态更新；取消合成的已消费抬手退回当前入口，不提交导航。语义入口仍由selectable提供，外扩8dp命中区和绘制增长不移动入口语义矩形。代理页刷新保留原列表，同时统一禁用Tab/List的选择、菜单和测速，并显示忙态；组图标按完整字素取首项，显示副本修复非法代理字符，保护系统无障碍序列化。构建、真机与视觉边界见`docs/acceptance/main-visual-redmi-20261104.json`，完整页面parity继续PARTIAL。
+`MainNavigationDock`单一指针受理拖动和释放，滑块/抬升/拉伸/形变分别用物理状态更新；取消合成的已消费抬手退回当前入口，不提交导航。语义入口仍由selectable提供，外扩8dp命中区和绘制增长不移动入口语义矩形。代理页刷新保留原列表，同时统一禁用Tab/List的选择、菜单和测速，并显示忙态；组图标按完整字素取首项，显示副本修复非法代理字符，保护显示字符有效性。构建、真机与视觉边界见`docs/acceptance/main-visual-redmi-20261104.json`，完整页面parity继续PARTIAL。
 
 ## 代理选择隔离与详情读取预算（2026-11-04）
 

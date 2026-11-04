@@ -30,7 +30,7 @@ class RuleResourcesPageInstrumentedTest {
             compose.onNodeWithTag("rule_resources_search").performTextInput("不存在")
             compose.onNodeWithText("没有匹配的结果").assertIsDisplayed()
             capture("rule_resources_no_results_" + theme)
-            compose.onNodeWithContentDescription("清除搜索").performClick()
+            compose.onActionMarker("清除搜索").performClick()
             compose.onNodeWithTag("rule_resources_add").performClick()
             compose.onNodeWithText("从头开始").performClick()
             compose.onNodeWithTag("rule_resource_label").performTextInput("新增规则")
@@ -41,7 +41,7 @@ class RuleResourcesPageInstrumentedTest {
             compose.onNodeWithText("继续编辑").performClick()
             compose.onNodeWithTag("rule_resource_save").performClick()
             compose.runOnIdle { assertEquals("新增规则", saved) }
-            compose.onNodeWithContentDescription("资源操作 · 常用规则").performClick()
+            compose.onNodeWithTag("rule_resource_menu_page-rule").performClick()
             compose.onNodeWithText("删除").performClick()
             compose.onNodeWithText("以下配置仍引用此资源：引用配置。删除后引用将显示缺失，可重新选择资源。").assertIsDisplayed()
             capture("rule_resources_delete_" + theme)

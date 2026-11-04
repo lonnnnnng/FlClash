@@ -14,6 +14,10 @@ import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
+import org.yaml.snakeyaml.error.MarkedYAMLException
+
+/** 作者 long：只把行列与选区偏移传给编辑器，解析器的原文摘录可能包含订阅凭据，不能作为界面错误或草稿日志。 */
+data class YamlErrorLocation(val line: Int, val column: Int, val offset: Int)
 
 /**
  * 作者 long：Profile 脚本接收的是 Flutter 侧同样的 JSON 配置对象，执行结果再回到 YAML，
@@ -63,6 +67,15 @@ object YamlConfigCodec {
             width = 120
         },
     )
+
+    fun errorLocation(yaml: String, error: Throwable): YamlErrorLocation? {
+        val marked = generateSequence(error) { it.cause }.take(8).filterIsInstance<MarkedYAMLException>().firstOrNull()
+            ?: return null
+        val mark = marked.problemMark ?: marked.contextMark ?: return null
+        // 作者 long：SnakeYAML按Unicode码点计数，Compose选区按UTF-16计数；emoji前缀不能把错误光标错移到代理项中间。
+        val offset = yaml.offsetByCodePoints(0, mark.index.coerceIn(0, yaml.codePointCount(0, yaml.length)))
+        return YamlErrorLocation(mark.line + 1, mark.column + 1, offset)
+    }
 
     fun toJson(yaml: String, preserveNulls: Boolean = false): String {
         require(yaml.toByteArray(Charsets.UTF_8).size <= MAX_CONFIG_BYTES) {

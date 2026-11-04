@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,7 +45,7 @@ internal fun ScriptsLibraryDialog(
                 modifier = Modifier.testTag("scripts_sort")) { Text(if (sorting) "完成" else "排序") }
             Box {
                 IconButton(onClick = { add = true }, enabled = !state.isBusy && !sorting, modifier = Modifier.testTag("scripts_add")) {
-                    Icon(Icons.Outlined.AddCircleOutline, "添加脚本")
+                    Icon(Icons.Outlined.AddCircleOutline, null)
                 }
                 DropdownMenu(expanded = add, onDismissRequest = { add = false }) {
                     DropdownMenuItem(text = { Text("新建脚本") }, leadingIcon = { Icon(Icons.Outlined.Edit, null) },
@@ -85,7 +84,7 @@ internal fun ScriptsLibraryDialog(
                                 style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1) }
                             Box {
                                 IconButton(onClick = { menu = script.id }, enabled = !state.isBusy, modifier = Modifier.testTag("script_menu_${script.id}")) {
-                                    Icon(Icons.Outlined.MoreVert, "${script.label}菜单")
+                                    Icon(Icons.Outlined.MoreVert, null)
                                 }
                                 DropdownMenu(expanded = menu == script.id, onDismissRequest = { menu = null }) {
                                     DropdownMenuItem(text = { Text("编辑") }, onClick = { menu = null; onEdit(script) })
@@ -134,7 +133,7 @@ internal fun ScriptRemoteDialog(
                     label = { Text("脚本名称（可选）") }, singleLine = true)
                 OutlinedTextField(url, { url = it; onDraftChange(label, it) }, Modifier.fillMaxWidth().testTag("script_remote_url"), enabled = !busy,
                     label = { Text("HTTP(S) 脚本地址") }, singleLine = true)
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier) }
                 if (script != null) Text("新地址下载成功后才会替换当前脚本。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         })
@@ -162,9 +161,10 @@ internal fun ScriptEditorDialog(
             undo.add(value.text)
             while (undo.size > 20 || (undo.sumOf { it.length.toLong() } > 2_000_000 && undo.size > 1)) undo.removeAt(0)
             redo.clear()
+            // 作者 long：仅选区移动不代表草稿变化，光标定位和查找不能清掉尚未修正的保存错误。
+            onDraftChange(label, next.text)
         }
         value = next
-        onDraftChange(label, next.text)
     }
     fun back() {
         if (state.isSaving) return
@@ -182,7 +182,7 @@ internal fun ScriptEditorDialog(
     }
     ProfileEditorPage(onDismissRequest = ::back, title = { Text(if (state.script == null) "新建脚本" else "编辑脚本") },
         backTag = "script_editor_back", confirmButton = {
-            IconButton(onClick = { searching = !searching }, enabled = !state.isSaving, modifier = Modifier.testTag("script_find")) { Icon(Icons.Outlined.Search, "查找和替换") }
+            IconButton(onClick = { searching = !searching }, enabled = !state.isSaving, modifier = Modifier.testTag("script_find")) { Icon(Icons.Outlined.Search, null) }
             TextButton(onClick = { onSave(label, value.text) }, enabled = !state.isSaving && !state.loadFailed && label.isNotBlank() && value.text.isNotBlank(),
                 modifier = Modifier.testTag("script_save")) { if (state.isSaving) CircularProgressIndicator(Modifier.size(20.dp)) else Text("保存") }
         }, text = {
@@ -217,9 +217,9 @@ internal fun ScriptEditorDialog(
                     TextButton(onClick = { undo.add(value.text); value = TextFieldValue(redo.removeAt(redo.lastIndex)); onDraftChange(label, value.text) },
                         enabled = redo.isNotEmpty() && !state.isSaving, modifier = Modifier.testTag("script_redo")) { Text("重做") }
                 }
-                OutlinedTextField(value, ::change, Modifier.fillMaxWidth().weight(1f).testTag("script_content"),
-                    enabled = !state.isSaving && !state.loadFailed, textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                    label = { Text("JavaScript") })
+                ProfileCodeField(value, ::change, enabled = !state.isSaving && !state.loadFailed,
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    contentTag = "script_content", highlightYaml = false)
             }
         })
     if (confirmExit) AlertDialog(onDismissRequest = { confirmExit = false }, title = { Text("保存脚本修改？") },

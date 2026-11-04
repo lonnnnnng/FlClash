@@ -7,7 +7,6 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performTouchInput
@@ -568,7 +567,7 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithContentDescription("批量测速").performClick()
+        composeRule.onActionMarker("批量测速").performClick()
         assertEquals("Auto", batchGroup)
         composeRule.onNodeWithTag("proxy_group_tab_Auto").assertIsDisplayed()
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").performClick()

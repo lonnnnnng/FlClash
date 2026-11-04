@@ -595,7 +595,7 @@ class ProfilesViewModel internal constructor(
     }
 
     fun changeProfileDocument(content: String) {
-        mutableDocumentEditor.update { if (it.saving) it else it.copy(content = content, error = null) }
+        mutableDocumentEditor.update { if (it.saving || it.content == content) it else it.copy(content = content, error = null, errorLocation = null) }
     }
 
     fun closeProfileDocument() { if (!mutableDocumentEditor.value.saving) mutableDocumentEditor.value = ProfileDocumentEditorState() }
@@ -604,7 +604,7 @@ class ProfilesViewModel internal constructor(
         val state = mutableDocumentEditor.value
         if (state.ownerId == null || state.saving) return
         val generation = localEditorGeneration
-        mutableDocumentEditor.value = state.copy(saving = true, error = null)
+        mutableDocumentEditor.value = state.copy(saving = true, error = null, errorLocation = null)
         viewModelScope.launch {
             try {
                 withContext(overviewDispatcher) {
@@ -618,8 +618,13 @@ class ProfilesViewModel internal constructor(
                 } else mutableEditor.update { it.copy(draftContent = state.content, error = null) }
                 mutableDocumentEditor.value = ProfileDocumentEditorState()
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) {
-                if (generation == localEditorGeneration) mutableDocumentEditor.value = state.copy(error = "正文不是有效的 YAML，输入已保留，请修改后重试")
+            catch (error: Exception) {
+                if (generation == localEditorGeneration && mutableDocumentEditor.value.session == state.session) {
+                    val location = com.lonnnnnng.flclash.service.YamlConfigCodec.errorLocation(state.content, error)
+                    val message = if (location == null) "正文校验失败，输入已保留，请检查格式与文件大小后重试"
+                        else "YAML 语法错误：第 ${location.line} 行，第 ${location.column} 列；输入已保留，请修改后重试"
+                    mutableDocumentEditor.value = state.copy(error = message, errorLocation = location)
+                }
             }
         }
     }

@@ -1,0 +1,1750 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-04",
+  "scope": "首页/配置/代理组空态、操作守卫、共用面板和子页标题语义、正文YAML错误定位、真实IME避让及旧入口集中验收",
+  "baseCommit": "7e7a8df131902734d058499a990fc2e654b0d7fe",
+  "branch": "kotlin",
+  "flutterReferenceCommit": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+  "glassDefaultEnabled": false,
+  "unitTests": {
+    "app": {
+      "tests": 450,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ApplicationSettingsBackupTest.xml",
+          "sha256": "30b7e07ee13b7ecd6e14f5cf09b5dc13ad589c454fe06ca2347ed9041025ed95",
+          "bytes": 847
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomProfileImportTest.xml",
+          "sha256": "9ccec04aa5626ec75b2358a5bbbac619d9c8713eaba131af0384f2cced40ee6c",
+          "bytes": 943
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomRuleDraftTest.xml",
+          "sha256": "05ccf3dddd9ed88ddddaf9dea46711a715e490da157a6209e195592eaa608622",
+          "bytes": 1413
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.DeepLinkImportTest.xml",
+          "sha256": "c4ea40ed172f7258f38f092fe9f7127fe66e2eed0e4761a0779633d4e39cb3cc",
+          "bytes": 1328
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.FilterPresetsTest.xml",
+          "sha256": "dd48c2e951c820e6b60701d8a2b8b8328241c93fbd7e8c404fac9aa917d18a10",
+          "bytes": 988
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.HttpRequestPolicyTest.xml",
+          "sha256": "d4f067e7d529851775c57f2fc2b71b55f0e5c621e3fbadde259f5ef84016cb30",
+          "bytes": 667
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconRecommendationsTest.xml",
+          "sha256": "051830818ad841b4bfcd4ea43308574fe0ac9261e573d21158bc97073408f5a5",
+          "bytes": 892
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconSetCodecTest.xml",
+          "sha256": "126f9ce554ecb2f64f89050a7864c6f37616519c90a7af96c19a57ce5faccda4",
+          "bytes": 781
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationRepositoryTest.xml",
+          "sha256": "b29eccbaf54481420727d87b24e56a0bb5e1ed2a74d5c13f5135c674b3567c35",
+          "bytes": 996
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationTest.xml",
+          "sha256": "d5492b162e83f32451ee2b17b89411eab3028b4cf8ca501a21d7208fbc6a4cfc",
+          "bytes": 1004
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProfileFileWriteTest.xml",
+          "sha256": "5c1c4c6088c51562c4e7650f35b5e3fc9a3facfae7b26294f5a6b1c0ac259fc1",
+          "bytes": 1886
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxiesTest.xml",
+          "sha256": "cf3b8230b98edbc73f4e9add27a8f8ecf1027fca406f75731ace7befb5fca28c",
+          "bytes": 1531
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyAdditionTest.xml",
+          "sha256": "cf7f26bfa057303c6f64ff489ba87ae76288dc2caf416e6b7af5e69d9cf93843",
+          "bytes": 987
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyLinkEditTest.xml",
+          "sha256": "13d621953cf345ac88dc8ec8442eed82d7ea8317c9ab220b94865550d7dea2cd",
+          "bytes": 1331
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.OnDemandSsidTrackerTest.xml",
+          "sha256": "88493123337119e87c15395ebccb72cc4791f770dbfef528dd548cba9f936b14",
+          "bytes": 805
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileContentDecoderTest.xml",
+          "sha256": "6be402cba106ded6e84dc833d9ef61018096d3146c8e73664d24f5a6d4a838e9",
+          "bytes": 1516
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDialerEditorTest.xml",
+          "sha256": "b9ac91472de9f2c2f6b8bc18704b764e10d9fe434061e777e1cbbb66216531da",
+          "bytes": 964
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDocumentTest.xml",
+          "sha256": "ffca0c290f71f9112634903c3a8245f8e77f12e2510d8c1084ea252557ef3481",
+          "bytes": 508
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileExportTest.xml",
+          "sha256": "388679a82988458c3757ca324933116c09e3a09f4af2ed9ca3264a885d07abc4",
+          "bytes": 813
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileMorePatchTest.xml",
+          "sha256": "82fd192bfff9b5009acfff8b6b9262d3c554e0c5959efacf55e6bfd5c4ec56a4",
+          "bytes": 808
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProvidersEditorTest.xml",
+          "sha256": "3a30cdb64c50c1f49b3771cc388bb9957dbd99763f231bc59d5bed45d7537140",
+          "bytes": 1457
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxiesEditorTest.xml",
+          "sha256": "e0fb08957367520d3e34ed5c903266757ebdbdd42bf1911f34b70decd78fe34e",
+          "bytes": 811
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyGroupsEditorTest.xml",
+          "sha256": "48c1d983c5748bf0e9d7d27e6310ab75134e87fa3bf415d2c9c040b2762ac3e8",
+          "bytes": 1140
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyResourcesTest.xml",
+          "sha256": "e7daee63e0a0b64db0b6351ce07ddba3116f513ecef5433d930f887ab2658d77",
+          "bytes": 788
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileRulesEditorTest.xml",
+          "sha256": "4be722faca17ea29d6c33d4f04d86a5c15032ab4432e2d1178c80649481f7f50",
+          "bytes": 784
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileSelectionTest.xml",
+          "sha256": "6293601c25d618344d9ea660b7752d728b1273a761486a62bd6565af3e3d3339",
+          "bytes": 793
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileTest.xml",
+          "sha256": "1b13b97d29c3cfaf4a93947f898293301e8800f1fd27ce55f601ccdf45a4db37",
+          "bytes": 994
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProviderEditingTest.xml",
+          "sha256": "3a78aed18174ae17cbdd4600e3d785b833f1dddd8396cdd8f6fece3af156099a",
+          "bytes": 1181
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupDraftsTest.xml",
+          "sha256": "da9d6fc27ef34dc9eab9ad60b78269a24fa6f97a39b76de7771a73d94e089b89",
+          "bytes": 1598
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupIssuesTest.xml",
+          "sha256": "aa09b12a80f33f3bc92664defeffcfaa30217468069a8605787e1b9dd8966e92",
+          "bytes": 1107
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.RuleResourcesTest.xml",
+          "sha256": "e017a3bc10a710edbdd3e85b3de21ba6de472f951d720e7ab078c0d73cf254f1",
+          "bytes": 937
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ScriptImportTest.xml",
+          "sha256": "cf5b17101044fdaa72ded02e85644fc7730ef5834e058ab7caa3188d7bb4a5c3",
+          "bytes": 625
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ServiceExitRepositoryTest.xml",
+          "sha256": "a1e4492b232b2ed9c75ea2ccbf71c084ce440503d03b321e28cf14fcfd5ae3da",
+          "bytes": 805
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionAutoUpdateTest.xml",
+          "sha256": "5bc9518d7386bae056ecbc8de24541e8088ed6a13ebee31a06f8174fb4ca819b",
+          "bytes": 772
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionClientTest.xml",
+          "sha256": "0347ac368997e0b8c52de0312d7dd67b1ec9c50156aa2063cd1534d2b461b177",
+          "bytes": 503
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.WebDavClientTest.xml",
+          "sha256": "16a89fb0c668f14a7f24e109f01fc4a371853e8a1c070dcdfae8b32492c70873",
+          "bytes": 1193
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AccessControlViewModelTest.xml",
+          "sha256": "b7396981831abe0a45b04edc26a73303c21ac74a8d8e8e795e722d5111acfda2",
+          "bytes": 1354
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuMotionTest.xml",
+          "sha256": "b09d9fd83c7a1eaab5763fc72d8d98acd380b911982f50bc645ce824f79b60b9",
+          "bytes": 1618
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuPositionerTest.xml",
+          "sha256": "c96599bfaedd1d210476dd341c1e9a310f7b561e90183bc17fe31c11a43bf2c7",
+          "bytes": 1048
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppSurfacePhysicsTest.xml",
+          "sha256": "00311266bfed5e296b09ec75059bbb2d0b7e234608b231dfd2064ae98c013afe",
+          "bytes": 904
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionDetailFormattingTest.xml",
+          "sha256": "86eb2c454857647928a7b1a38acbd357d7e35189f8723e2439b8161f06789391",
+          "bytes": 993
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest.xml",
+          "sha256": "617631228b60920fa77a846e3bae1c310c176a95edcfb7286800a85b77131b84",
+          "bytes": 1628
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.CustomProfileSummaryTest.xml",
+          "sha256": "c469416578cb25ad26ae7a733eeb8d866c17957650a48ca19ee56436d0ad70c8",
+          "bytes": 961
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardDragTest.xml",
+          "sha256": "657217e0338213637151b046d7b9b87706025113f32526fd552c19d1954642cb",
+          "bytes": 768
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardLayoutTest.xml",
+          "sha256": "0d48d19b7119428a797b5bc833e6334f381f66e8908859a3f0b7359c7242777d",
+          "bytes": 1931
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardTelemetryTest.xml",
+          "sha256": "8a357534b35d0a0e9a56358f205648505bbc362ecd7e1db8ed3a32b6872e98d0",
+          "bytes": 1004
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.GlobalRulesControllerTest.xml",
+          "sha256": "d97d089eb023de7a2b99b10a93e5759b269b8a2c467dd0e8809de17a5f4d9e58",
+          "bytes": 799
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.IntranetIpViewModelTest.xml",
+          "sha256": "617f3a261eb03ee14c5c3fd5fd1f28926708b7b22c8de9f969d5558f6fa934bd",
+          "bytes": 1288
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainPageScaffoldTest.xml",
+          "sha256": "abc8250957e0ba2d9b37f0a5d3a923107cadf9b47fea71da3f9123afc5d5e72e",
+          "bytes": 675
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTelemetryTest.xml",
+          "sha256": "fe3eb8c41fde43c623ce6e060ab91bb8133a2d015a6af96938b9e80b9629416c",
+          "bytes": 844
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTest.xml",
+          "sha256": "96e1c0e67ed5a715678f8962780463ae47c0ebb1d8588ca292fa40ccbb304eb0",
+          "bytes": 3290
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MemoryViewModelTest.xml",
+          "sha256": "7a0e32df76b95e50f15e661f6db515db90b70b9a13b866ad30c9b59b85682e51",
+          "bytes": 1348
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.OutboundIpViewModelTest.xml",
+          "sha256": "dfb1725ef92fb67b2d78d3f78208a6b4fc15795dce848a19a90ff10e7de4e4db",
+          "bytes": 1258
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileExtensionControllerTest.xml",
+          "sha256": "c8043adf4ef79e63e2e941b048fe46a7953bb3cc0a793b0b8f92a53a608fe8ac",
+          "bytes": 1184
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileFileImportControllerTest.xml",
+          "sha256": "e2025bb3a868e3cb035e91d5ce94a99d17f8277fcf1aa65ae602cd2803ffcc19",
+          "bytes": 1292
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileMoreFieldsTest.xml",
+          "sha256": "bd81f98dd90fb0616d5f37bd69875d0cf57ee31fbc7e585148102011bc95e6ac",
+          "bytes": 1261
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileSharingViewModelTest.xml",
+          "sha256": "cf7f351fb5f50af973b26179c35f1344436038334fcafbfbc871570a8aae300e",
+          "bytes": 1885
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileStatisticsViewModelTest.xml",
+          "sha256": "33b7e224e6766db80740b47cbea17921f2a1f155e6d8a6d2d3512d51492b8201",
+          "bytes": 3197
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileUrlImportTest.xml",
+          "sha256": "4a8c2513b77fc2e7361586637a1aa39e46f4819138ad504ef8f0635d51a72b06",
+          "bytes": 773
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfilesViewModelTest.xml",
+          "sha256": "06d6cdc040865bc2b32d9a8f789bf6f2442dbc02c71308c00af1cf922c56dde7",
+          "bytes": 12041
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProxyGroupsViewModelTest.xml",
+          "sha256": "f942c3497897987b7c0a80c94cd521d2bbdcfecfb450cac3ea592dd61e752f43",
+          "bytes": 5753
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ResourceUrlImportControllerTest.xml",
+          "sha256": "efab19edcf7408b47cb6b5b25166b0af630942a1fe5655be53de0b6f0e921d1a",
+          "bytes": 829
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModelTest.xml",
+          "sha256": "72dc170fad1f28b4248893fab5c8aee6e082a0aae71dac7909543f160e68f4b7",
+          "bytes": 881
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ScriptsViewModelTest.xml",
+          "sha256": "f4fc7ecd8d84012f2ba2c69ee0034e2423f2ac5553702dc6b92dc146f14ee3ac",
+          "bytes": 1608
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ServiceStatusViewModelTest.xml",
+          "sha256": "db163951c1027f97af2fe379acd8ce22a568d88e2b6424d6030617627b0743fe",
+          "bytes": 3749
+        }
+      ]
+    },
+    "service": {
+      "tests": 193,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml",
+          "sha256": "70c2ac724cd9e0525b225cd8ade708f38aec701e2a5dca76e944f180bc36157f",
+          "bytes": 16890
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.DefaultVpnOptionsProviderTest.xml",
+          "sha256": "f4ca5ca5c2b470d25db95aa8a40b86947f398a4cda38f06dfde2c82a0194638e",
+          "bytes": 1170
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeneralSettingsTest.xml",
+          "sha256": "cd51dd5da89c4f5bbc5c661400030e9ae7abaac3046407ebfb0da40e987d2bab",
+          "bytes": 955
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeoResourceSettingsTest.xml",
+          "sha256": "75abd8c01d144e37bd8b49781cae4855b125923abb094a970d845cfa20278600",
+          "bytes": 692
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GlobalDnsSettingsTest.xml",
+          "sha256": "5194c8da6c5343b3acb8c59708bf13f47ac95b4ef92620e68808ae36c35705d7",
+          "bytes": 954
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.NetworkSettingsTest.xml",
+          "sha256": "3648945cd6544f7221de0c26a798a76c9ec1badd59baf3cd42bbf0298fb8cfad",
+          "bytes": 1153
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.OnDemandSettingsTest.xml",
+          "sha256": "188cae24475d12daf62cc2889c2a1c605285497a8eccfa1418a4a238dacdc48e",
+          "bytes": 654
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileDnsBaselineTest.xml",
+          "sha256": "cad627854eb13375550e440d3188b193ebbcafad59a34bd7c2096f0d140cf370",
+          "bytes": 1125
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileExtensionTest.xml",
+          "sha256": "717813cace0012eb4efc654b42084b11ba98bf66185ea526b434708768dc95f6",
+          "bytes": 1157
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileMoreOverridesTest.xml",
+          "sha256": "a071d1011ecd73854d2ff8486ffabe01219a8ced22d3aa5d7e3b4061e7802224",
+          "bytes": 1127
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileProviderOverridesTest.xml",
+          "sha256": "d5f1613d8e91c3d191496cda8f79551fef991575dface19228ca3be02684cf89",
+          "bytes": 2550
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileScriptTest.xml",
+          "sha256": "469b472cc5f49eea963784ed77edacdfb7a00d83d0761447b105e7d687d174c8",
+          "bytes": 1547
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileStatisticsTest.xml",
+          "sha256": "3546ad75425243a3be9fcfb1213e2556c6b269bd8f3f12524ee724dfb5a7ab55",
+          "bytes": 655
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.RuntimeDiagnosticsTest.xml",
+          "sha256": "e1b7f58298db275088b5dbad36a9ddc770aeee52f66aba6c7125ea4597e6d3d2",
+          "bytes": 960
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ServiceConfigTest.xml",
+          "sha256": "ee3363bbcefd9bfa906703accb270a2efd71d0c1f00c6de0c5e393aea119397a",
+          "bytes": 1077
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.RouteAddressTest.xml",
+          "sha256": "4dac70a5d6a59cb7d144dd400bead11cd098c5465ad51e807772be9cc1cc392f",
+          "bytes": 942
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.ToCIDRTest.xml",
+          "sha256": "226eb49d2ec5f4675a3161bd695555ce5d33c16d1a8746d502caef7e8a5ccdf2",
+          "bytes": 1458
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TrafficTest.xml",
+          "sha256": "64065524b2943d82ea0bda6e447bcafb058271dfb45681a84d473e62c780dc09",
+          "bytes": 1120
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TunOptionsTest.xml",
+          "sha256": "055e1e9617855d00cca1268646f9ac5b8d81fc76c250071c4ee7e825f5081408",
+          "bytes": 782
+        }
+      ]
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/core/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.core.CoreBridgeParsingTest.xml",
+          "sha256": "ed43fc79351981139e36741e4d10f449be3ab9154f8479dedc380f7adb1f58a1",
+          "bytes": 6076
+        }
+      ]
+    },
+    "common": {
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.BroadcastLeaseTest.xml",
+          "sha256": "606a80b1a6aae9fd37f857bd57c35158cbd03204bf1a6ab611dcfb455326611f",
+          "bytes": 1307
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.EnumsTest.xml",
+          "sha256": "cc7639d2e5dc4405b1cadfeed107c3a8e6a6932db6920cb579ebd3776f592788",
+          "bytes": 1049
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.PendingCallbackTest.xml",
+          "sha256": "8651a94e8dc5490568e19a91afc3c6fbd90156fbe655774ef7cff1d689feebb5",
+          "bytes": 1613
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.RunIntentArbiterTest.xml",
+          "sha256": "226b0d451e7c9c8a6d24717b59e3fc4918de0858302c6ee924fefc69f81bc93e",
+          "bytes": 1745
+        }
+      ]
+    }
+  },
+  "unitTotal": 712,
+  "builds": {
+    "build1": {
+      "path": "/private/tmp/kclash-main-state-20261104-build1.log",
+      "sha256": "8a37f2ab517079b0c8ecfc8c2d0fdc9314c1d82501f85bdd5e9c69093979e48d",
+      "bytes": 11668,
+      "passed": false,
+      "failed": true
+    },
+    "build2": {
+      "path": "/private/tmp/kclash-main-state-20261104-build2.log",
+      "sha256": "d7b8a837f983b08c3da5b5b8e066075a4010b4ae7f9f104b023a0309ad87b575",
+      "bytes": 13246,
+      "passed": true,
+      "failed": false
+    },
+    "build3": {
+      "path": "/private/tmp/kclash-main-state-20261104-build3.log",
+      "sha256": "474571d62b47f1cf34be5e8ac8f0e161c9123d96a7a141b1342151f47d3ac36c",
+      "bytes": 10907,
+      "passed": true,
+      "failed": false
+    },
+    "build4": {
+      "path": "/private/tmp/kclash-main-state-20261104-build4.log",
+      "sha256": "b69a67311a6481eabeeace9f4b1999fe1aa0a21584b7fc8152c290557989967a",
+      "bytes": 10929,
+      "passed": true,
+      "failed": false
+    },
+    "release1": {
+      "path": "/private/tmp/kclash-main-state-20261104-release1.log",
+      "sha256": "762bfac88b5d1fb0ff858e0654ceab1d8351804ca6e4d1609703ac34ecf57b97",
+      "bytes": 9915,
+      "passed": true,
+      "failed": false
+    },
+    "release2": {
+      "path": "/private/tmp/kclash-main-state-20261104-release2.log",
+      "sha256": "02e59dbeedfefae4feb6975e81c32b4955928e43c09e1498cb36666b57290502",
+      "bytes": 10080,
+      "passed": true,
+      "failed": false
+    },
+    "release3": {
+      "path": "/private/tmp/kclash-main-state-20261104-release3.log",
+      "sha256": "57013c8d623af5e8f4ad9ddbeee1154cdf37ddca4740695a992368b44a2c63a9",
+      "bytes": 10080,
+      "passed": true,
+      "failed": false
+    },
+    "lint1": {
+      "path": "/private/tmp/kclash-main-state-20261104-lint1.log",
+      "sha256": "de5c5f8bb04f821b68f7e8867ea6e2e55125ad6ff45189beac0555e4b55d7214",
+      "bytes": 14563,
+      "passed": true,
+      "failed": false
+    },
+    "lint2": {
+      "path": "/private/tmp/kclash-main-state-20261104-lint2.log",
+      "sha256": "0e18d672e3f0a68ffeb29f7053517ae439707ec5200223f46a9d075c283cdcd9",
+      "bytes": 14684,
+      "passed": true,
+      "failed": false
+    },
+    "lint3": {
+      "path": "/private/tmp/kclash-main-state-20261104-lint3.log",
+      "sha256": "64fefbf43382d297f2281fa38324842c00007b08c8a17ea65639b7ab248622b9",
+      "bytes": 14683,
+      "passed": true,
+      "failed": false
+    }
+  },
+  "finalBuildLabels": [
+    "build4",
+    "release3",
+    "lint3"
+  ],
+  "lint": {
+    "debug": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-debug.xml",
+      "sha256": "52f654c9e5ca0c4efb5b2117df11b834b6237a92a5e8d339d7e3684d22246875",
+      "bytes": 83101,
+      "counts": {
+        "Warning": 64,
+        "Hint": 10
+      }
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-release.xml",
+      "sha256": "a58ea99f86b15a4b7f148c889196d04bcfe2e5704c0aa4ad142b8cb986b25ad4",
+      "bytes": 81896,
+      "counts": {
+        "Warning": 64,
+        "Hint": 9
+      }
+    }
+  },
+  "artifacts": {
+    "com.lonnnnnng.flclash": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "3c4ebf5679ae86ea275799896d3b94e63a241b76cdeba71c5a177418cb12d549",
+      "bytes": 90682722,
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "installedSha256": "3c4ebf5679ae86ea275799896d3b94e63a241b76cdeba71c5a177418cb12d549"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "b5097de39f91b5ce522a7987b13b00963bf4b6c8f471d63de31bc325bb67d334",
+      "bytes": 4069211,
+      "nativeAbis": [],
+      "installedSha256": "b5097de39f91b5ce522a7987b13b00963bf4b6c8f471d63de31bc325bb67d334"
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "4dd937ee1311521e863223171adffbc8b07ba79796fce051a619ce4b07e7e792",
+      "bytes": 48127396,
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "signed": false,
+      "installed": false
+    }
+  },
+  "releaseMetadata": {
+    "version": 3,
+    "artifactType": {
+      "type": "APK",
+      "kind": "Directory"
+    },
+    "applicationId": "com.lonnnnnng.flclash",
+    "variantName": "release",
+    "elements": [
+      {
+        "type": "SINGLE",
+        "filters": [],
+        "attributes": [],
+        "versionCode": 1,
+        "versionName": "0.1.0",
+        "outputFile": "app-release-unsigned.apk"
+      }
+    ],
+    "elementType": "File",
+    "baselineProfiles": [
+      {
+        "minApi": 28,
+        "maxApi": 30,
+        "baselineProfiles": [
+          "baselineProfiles/1/app-release-unsigned.dm"
+        ]
+      },
+      {
+        "minApi": 31,
+        "maxApi": 2147483647,
+        "baselineProfiles": [
+          "baselineProfiles/0/app-release-unsigned.dm"
+        ]
+      }
+    ],
+    "minSdkVersionForDexing": 24
+  },
+  "batches": {
+    "redmi-first": {
+      "label": "redmi-first",
+      "command": [
+        "adb",
+        "-s",
+        "wsvwypiz7xwslvl7",
+        "shell",
+        "am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "class",
+        "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndHeadingRemainAccessible,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#validationLocationScrollsToUnicodeErrorAndCanBeRevisitedWithoutChangingDraft,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#longDocumentSearchScrollsToMatchAndCopyExcludesGutter,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#remoteBodyWarningCanKeepOrDisableAutoUpdateAndFailureDoesNotDropParentDraft,com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes,com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable,com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection,com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#profileEditorSavesInitialYamlAndShowsProfileLabel,com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+        "-e",
+        "kclashCapturePng",
+        "true",
+        "com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner"
+      ],
+      "seconds": 67.09,
+      "passed": false,
+      "expected": 15,
+      "observed": 15,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+          "passed": false,
+          "code": -2,
+          "stack": "java.lang.AssertionError: Assert failed: The component with TestTag = 'proxy_node_测试组_alpha' is not displayed!"
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndHeadingRemainAccessible",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#remoteBodyWarningCanKeepOrDisableAutoUpdateAndFailureDoesNotDropParentDraft",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#validationLocationScrollsToUnicodeErrorAndCanBeRevisitedWithoutChangingDraft",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#longDocumentSearchScrollsToMatchAndCopyExcludesGutter",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#profileEditorSavesInitialYamlAndShowsProfileLabel",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        }
+      ],
+      "log": "/tmp/kclash-main-state-20261104-redmi-first.log",
+      "sha256": "716c547150abb38e97507e5b338b6f258c1500edd1abf8ecfa1d323cbf715fb9",
+      "images": [
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-proxy_search_empty_TAB.png",
+          "sha256": "41e0b9fc4ec8b8e8bc7e0a827db12799fbe19f3a42d1cf18af2782d24df00f49"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-proxy_search_empty_LIST.png",
+          "sha256": "540b5d9e1153e8e2a0f79ce5ac116086923ca52a732bbb2a22151733a51ba2a9"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-proxy_empty_failed_false.png",
+          "sha256": "54c2185d997d488259a3409a1cfc5106598fa7953ac2d146967f0352007f2cad"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-proxy_empty_plain_false.png",
+          "sha256": "c9713925f201bcd99e4266c634485f57ab3078acc2d768466c4e0f7ecb388cb7"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-proxy_empty_failed_true.png",
+          "sha256": "c6dc20c4716f7b485ba48758ac7f8fdad51ebd66adacd223341fd578620c50f1"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-proxy_empty_plain_true.png",
+          "sha256": "f82ecc70bd02afb1dae4f8402f09b58735703d691ba5aaca1afd7ec4cc3b8cb7"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-profile_document_light_failed_search.png",
+          "sha256": "e3f5afe757643b993eccdbbf19da754e81a293ab5d68cfbf0d7e7e4a20cac8e7"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-profile_document_dark_exit.png",
+          "sha256": "9bcf708056fdda6768ea4bd846f4634d0e48f14eefc45b55d3894dd5f288be44"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-remote_document_light_auto_warning.png",
+          "sha256": "7c431e046c7c0a83054944194f0a36073dfdef391129cf67d77730f75b91c5c4"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-remote_document_dark_failed_parent.png",
+          "sha256": "f3196a6dc916e3fccee8a59087a09cda090b54616ca2e70bc2ff347618714ef1"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-profile_document_error_location.png",
+          "sha256": "bd5642b7f02c6e6644bc665ce07703d6af87d626082a0b8f4c0217fdb03f7ab5"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-profile_document_long_match.png",
+          "sha256": "1ea25454e7e634b6877db2171cd42af55143df4bb112e750f3ecc990b898f62a"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-dashboard_sheet_short_false.png",
+          "sha256": "9409f96ebf6e3aab736a0aff6e5144d847c605c0fe880a86c3a98881993993fd"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-dashboard_sheet_long_false.png",
+          "sha256": "ce04f7427e59d3d94959978708671e4edd1e688eba9f8f4aac94bf6340181e7f"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-dashboard_sheet_short_true.png",
+          "sha256": "973da151265613d96409819c7dc75233775e31bb8d1d7fed8bc8db84afb31f55"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-dashboard_sheet_long_true.png",
+          "sha256": "7f38d8768cf2310ca975dce4e4607332558bf5c38fdb6ae340bdb8da5f920caa"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-proxy_page_dark.png",
+          "sha256": "083fcc865ac4ef5e4b20e1217107b50600e4819f024b97c89326c39fac7f9c0c"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-proxy_page_light.png",
+          "sha256": "930cd68a2ee1974ac42ec246a165ef0b2a7032147df03693f7248f02e717d122"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-dashboard_default.png",
+          "sha256": "9e15f92b825a7380cd7279e4b80a14825a845fc13351a3b12f1071db8d3d2280"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-first-dashboard_system_ready.png",
+          "sha256": "d44421dd7257b6520abc6d5c377180718040d38ece1bb20990c899783d89cd3f"
+        }
+      ],
+      "final": false,
+      "installedArtifacts": {
+        "com.lonnnnnng.flclash": {
+          "path": "/data/app/~~pDVNazxgpnwA3tZzYIEiuQ==/com.lonnnnnng.flclash-qhKlnB_-oqLCOem1zdhB1g==/base.apk",
+          "sha256": "9927fd521140aa048646cef1e94a7716b825adef368ff5f01ae73577da25093d"
+        },
+        "com.lonnnnnng.flclash.test": {
+          "path": "/data/app/~~wtvb04YywNFhIY7wJPofsg==/com.lonnnnnng.flclash.test-8M_A0EvHpv3Vn-IFg4Sd1Q==/base.apk",
+          "sha256": "790c357757620ac394ebab4f783d54bcca913e4184e1b5d0912c76342fe5bfe5"
+        },
+        "com.follow.clash": {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      },
+      "summary": {
+        "path": "/private/tmp/kclash-main-state-20261104-redmi-first.json",
+        "sha256": "4554a54c4c6a1f3758c27e87e0558e5b1134d6e18516c7b610d4f73042d26691",
+        "bytes": 9187
+      }
+    },
+    "redmi-ime3": {
+      "label": "redmi-ime3",
+      "command": [
+        "adb",
+        "-s",
+        "wsvwypiz7xwslvl7",
+        "shell",
+        "am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "class",
+        "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+        "-e",
+        "kclashCapturePng",
+        "true",
+        "com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner"
+      ],
+      "seconds": 13.52,
+      "passed": true,
+      "expected": 1,
+      "observed": 1,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        }
+      ],
+      "log": "/tmp/kclash-main-state-20261104-redmi-ime3.log",
+      "sha256": "fb3a8775af482a4efde342152e75de0c2ca54a16262915567f3053aeaf088f2f",
+      "images": [
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-ime3-proxy_search_empty_TAB.png",
+          "sha256": "5fb5c3076386d9f6bc97cf0f500e943998195efbfa46c9ca220ab5035db96d0f"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-ime3-proxy_search_cleared_TAB.png",
+          "sha256": "a4d585f6b9d321141f57b56fcf2b5db617ddf0638d77238a31532cdd17fbace2"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-ime3-proxy_search_empty_LIST.png",
+          "sha256": "853c61ebad4125074caa32f7a261f9930369b1e5b95f4a37daa0c901b332d772"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-ime3-proxy_search_cleared_LIST.png",
+          "sha256": "c8f2120d3c153cf141707226ae0367eb86cedbb17b1c548638dea0b11a179877"
+        }
+      ],
+      "final": false,
+      "installedArtifacts": {
+        "com.lonnnnnng.flclash": {
+          "path": "/data/app/~~51q8RcYLlGIXe71xWeslig==/com.lonnnnnng.flclash-Pd9jLmca38BROQCrRWnIsA==/base.apk",
+          "sha256": "1b417d4e7871a3676015b5301f1ad4d5ad6a60c6e4f2733a84da21256b25f390"
+        },
+        "com.lonnnnnng.flclash.test": {
+          "path": "/data/app/~~1qmlHsK57ZVqHHIXFqkOgg==/com.lonnnnnng.flclash.test-GrwHa8G_IUnQxYFtsFuzcg==/base.apk",
+          "sha256": "d6c56b5e2f1c6107b6387fe6aec002834201b7856418e9640266308588167314"
+        },
+        "com.follow.clash": {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      },
+      "summary": {
+        "path": "/private/tmp/kclash-main-state-20261104-redmi-ime3.json",
+        "sha256": "813fa02253383c5979946a39f02374086742443baf0ea4afa5df0a5fcb1380c5",
+        "bytes": 1605
+      }
+    },
+    "redmi-final3": {
+      "label": "redmi-final3",
+      "command": [
+        "adb",
+        "-s",
+        "wsvwypiz7xwslvl7",
+        "shell",
+        "am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "class",
+        "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndHeadingRemainAccessible,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#validationLocationScrollsToUnicodeErrorAndCanBeRevisitedWithoutChangingDraft,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#longDocumentSearchScrollsToMatchAndCopyExcludesGutter,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#remoteBodyWarningCanKeepOrDisableAutoUpdateAndFailureDoesNotDropParentDraft,com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes,com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable,com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection,com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#profileEditorSavesInitialYamlAndShowsProfileLabel,com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+        "-e",
+        "kclashCapturePng",
+        "true",
+        "com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner"
+      ],
+      "seconds": 68.39,
+      "passed": true,
+      "expected": 15,
+      "observed": 15,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndHeadingRemainAccessible",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#remoteBodyWarningCanKeepOrDisableAutoUpdateAndFailureDoesNotDropParentDraft",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#validationLocationScrollsToUnicodeErrorAndCanBeRevisitedWithoutChangingDraft",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#longDocumentSearchScrollsToMatchAndCopyExcludesGutter",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#profileEditorSavesInitialYamlAndShowsProfileLabel",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        }
+      ],
+      "log": "/tmp/kclash-main-state-20261104-redmi-final3.log",
+      "sha256": "8072b6b10631ebbb2cbddb5bd5f5379ee7dcc004ed7ce6fa48f89f75273d599f",
+      "images": [
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_search_empty_TAB.png",
+          "sha256": "5fb5c3076386d9f6bc97cf0f500e943998195efbfa46c9ca220ab5035db96d0f"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_search_cleared_TAB.png",
+          "sha256": "a4d585f6b9d321141f57b56fcf2b5db617ddf0638d77238a31532cdd17fbace2"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_search_empty_LIST.png",
+          "sha256": "853c61ebad4125074caa32f7a261f9930369b1e5b95f4a37daa0c901b332d772"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_search_cleared_LIST.png",
+          "sha256": "c8f2120d3c153cf141707226ae0367eb86cedbb17b1c548638dea0b11a179877"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_empty_failed_false.png",
+          "sha256": "9b72e842bc5500e62a48ea767fd7dcc647e204237b0be37095158cf10b30b59d"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_empty_plain_false.png",
+          "sha256": "dae3fe7cbe0907c6d694a5d5e75387aa7611f62eead5f3efdefc264de5e526bf"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_empty_failed_true.png",
+          "sha256": "d57af4306c1ee336a7b4c4d533f13c8e7a0ea2e5fc2b60dce9d1355c834549cd"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_empty_plain_true.png",
+          "sha256": "fc901b6b92b0e8f281e34a842ab59c552dc6bd0f3b02d91e31e0463d01b1db4c"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-profile_document_light_failed_search.png",
+          "sha256": "075e12c999f814320708fc98456e38bfd7b0dbe4573c4e4a1d2b20edc6b37659"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-profile_document_dark_exit.png",
+          "sha256": "887cac1db3a35af5ba8549b80eb8b0ce437329b7d0520bb75eea4c25c54a24a3"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-remote_document_light_auto_warning.png",
+          "sha256": "1d358f7651f1668647445097b662c4c7a2fe45347c538de7ea70582149237643"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-remote_document_dark_failed_parent.png",
+          "sha256": "1b731a38d4a7f07aee9d2569d1e2af2fdbdbb54bb455b47370fcb0cc9014a043"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-profile_document_error_location.png",
+          "sha256": "f92735964d74498cf9df92ed470f77cee43e5ecef5efcb21a84734a942e68ddd"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-profile_document_long_match.png",
+          "sha256": "53161649c2a230f3795d56b51baf5d2b26b3e987f7575fde9aa4353f9ea12a95"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-dashboard_sheet_short_false.png",
+          "sha256": "e123692619acf6eacd8a32c39e8384cf075c0d2a233ddc4e33c4199593411b42"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-dashboard_sheet_long_false.png",
+          "sha256": "ae0b8d6f5fcbdd3c56d6f9a61a5de30b55775f45f660855e139082578695b71c"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-dashboard_sheet_short_true.png",
+          "sha256": "74c29173610a100989f6867e3a6db68e3eb87b559ada8b63f466f99fb5dde8d1"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-dashboard_sheet_long_true.png",
+          "sha256": "2f3747cad77e2b2eacc09ef6246c90c0c202d65fae6d69f03afa8ca28e219215"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_page_dark.png",
+          "sha256": "083fcc865ac4ef5e4b20e1217107b50600e4819f024b97c89326c39fac7f9c0c"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-proxy_page_light.png",
+          "sha256": "930cd68a2ee1974ac42ec246a165ef0b2a7032147df03693f7248f02e717d122"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-dashboard_default.png",
+          "sha256": "9e15f92b825a7380cd7279e4b80a14825a845fc13351a3b12f1071db8d3d2280"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final3-dashboard_system_ready.png",
+          "sha256": "d44421dd7257b6520abc6d5c377180718040d38ece1bb20990c899783d89cd3f"
+        }
+      ],
+      "final": false,
+      "installedArtifacts": {
+        "com.lonnnnnng.flclash": {
+          "path": "/data/app/~~51q8RcYLlGIXe71xWeslig==/com.lonnnnnng.flclash-Pd9jLmca38BROQCrRWnIsA==/base.apk",
+          "sha256": "1b417d4e7871a3676015b5301f1ad4d5ad6a60c6e4f2733a84da21256b25f390"
+        },
+        "com.lonnnnnng.flclash.test": {
+          "path": "/data/app/~~1qmlHsK57ZVqHHIXFqkOgg==/com.lonnnnnng.flclash.test-GrwHa8G_IUnQxYFtsFuzcg==/base.apk",
+          "sha256": "d6c56b5e2f1c6107b6387fe6aec002834201b7856418e9640266308588167314"
+        },
+        "com.follow.clash": {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      },
+      "summary": {
+        "path": "/private/tmp/kclash-main-state-20261104-redmi-final3.json",
+        "sha256": "30f53cf112761f3712473700dcfa9728e2ee129ad1c62a912b56abc2a2aa3416",
+        "bytes": 9467
+      }
+    },
+    "redmi-final4": {
+      "label": "redmi-final4",
+      "command": [
+        "adb",
+        "-s",
+        "wsvwypiz7xwslvl7",
+        "shell",
+        "am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "class",
+        "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode,com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndHeadingRemainAccessible,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#validationLocationScrollsToUnicodeErrorAndCanBeRevisitedWithoutChangingDraft,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#longDocumentSearchScrollsToMatchAndCopyExcludesGutter,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts,com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#remoteBodyWarningCanKeepOrDisableAutoUpdateAndFailureDoesNotDropParentDraft,com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes,com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable,com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection,com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#profileEditorSavesInitialYamlAndShowsProfileLabel,com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+        "-e",
+        "kclashCapturePng",
+        "true",
+        "com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner"
+      ],
+      "seconds": 71.12,
+      "passed": true,
+      "expected": 15,
+      "observed": 15,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndHeadingRemainAccessible",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#remoteBodyWarningCanKeepOrDisableAutoUpdateAndFailureDoesNotDropParentDraft",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#validationLocationScrollsToUnicodeErrorAndCanBeRevisitedWithoutChangingDraft",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#longDocumentSearchScrollsToMatchAndCopyExcludesGutter",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#profileEditorSavesInitialYamlAndShowsProfileLabel",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "code": 0,
+          "stack": null
+        }
+      ],
+      "log": "/tmp/kclash-main-state-20261104-redmi-final4.log",
+      "sha256": "1fad3c22b41b02f997b55a4e6653aa88fe3f0aa2c9d90642950936bdf51e563e",
+      "images": [
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_search_empty_TAB.png",
+          "sha256": "d1a6d8f983b43e788cd4d0f6042d41bec78f559b2dd4ab1736bfb4dbee4ac91f"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_search_cleared_TAB.png",
+          "sha256": "21e376ba7675e3ec79a2313e964d71e9050cb88b01b0781f65f2cc96f3ad9b1b"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_search_empty_LIST.png",
+          "sha256": "a1f563d43ec30b4751e132a03f4a7deb72280b2a6a77c812d4d4b968bf2efef1"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_search_cleared_LIST.png",
+          "sha256": "4ae5785e4a9f519b61ac25f29b85dd4cf345a2a4e59528f3193f85ceea73a5e9"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_empty_failed_false.png",
+          "sha256": "1f424bb626e634e5df790ed28ef1089013e47804a778d7fefb9ea8b5b079d0c9"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_empty_plain_false.png",
+          "sha256": "e7715df0f2780adbadf663fd16b9493157d1b7b7f00776a9338115788de243d0"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_empty_failed_true.png",
+          "sha256": "0b784495c92edbd6cc3df74e5e4243d2580aa43d234c5ab8b548a76b072472b3"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_empty_plain_true.png",
+          "sha256": "bfc2c5680d75a00b132550f77ee57277dc911bdaa011b060e5c9b5e5521f1433"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-profiles_empty_false.png",
+          "sha256": "65db2ad8d2a632408296f3384190cdc2c82cd044508dfecbfdc8911a4997daa7"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-profiles_empty_true.png",
+          "sha256": "62f42b4b2be63dcaa0ddd8fd000c67fb30c5e9cfc1fc77fe577712b9c7700431"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-profile_document_light_failed_search.png",
+          "sha256": "e99efceb87096738c83da0d5cdbff29a54abb810f303b24e28c7216099fbc76d"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-profile_document_dark_exit.png",
+          "sha256": "147a7c56e00b39951911169873aad6973ef27b9003cc44c8718ea08ecbae8b67"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-remote_document_light_auto_warning.png",
+          "sha256": "b4324e471d101e9bf3ffe49b3f6e615900e67182c1075a26d2c3f5fc3c59eb55"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-remote_document_dark_failed_parent.png",
+          "sha256": "dd57f154a008929ff1b537ff25a3160a98c52cdb10249b6cfe60190b672544cc"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-profile_document_error_location.png",
+          "sha256": "08e99eb1f8c2ec70aacf3d7b9d18c5e24a338741297c71fec2dffbe2465e2c87"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-profile_document_long_match.png",
+          "sha256": "01a6191f28e8b2d79234034f7fe8899afa255557c826333bb314b482af8ffa8b"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-dashboard_sheet_short_false.png",
+          "sha256": "df2e8c2bf8e994a7fcca5023f81c0b979df8753889e3ff83b9d43ed81a01b278"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-dashboard_sheet_long_false.png",
+          "sha256": "d6bed45deec28cf5afac7dd391e5f11d03eb7a4b9219910c8c92e6bb65e428be"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-dashboard_sheet_short_true.png",
+          "sha256": "39182a8022d65236f0a3925d80314999e854b43aedefe929f2105356aca0b975"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-dashboard_sheet_long_true.png",
+          "sha256": "b4799952798155e3eadcf11e1c7f1ddb3253f45442cf29fc9961fe4658225118"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_page_dark.png",
+          "sha256": "083fcc865ac4ef5e4b20e1217107b50600e4819f024b97c89326c39fac7f9c0c"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-proxy_page_light.png",
+          "sha256": "930cd68a2ee1974ac42ec246a165ef0b2a7032147df03693f7248f02e717d122"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-dashboard_default.png",
+          "sha256": "9e15f92b825a7380cd7279e4b80a14825a845fc13351a3b12f1071db8d3d2280"
+        },
+        {
+          "path": "/tmp/kclash-main-state-20261104-redmi-final4-dashboard_system_ready.png",
+          "sha256": "d44421dd7257b6520abc6d5c377180718040d38ece1bb20990c899783d89cd3f"
+        }
+      ],
+      "final": true,
+      "installedArtifacts": {
+        "com.lonnnnnng.flclash": {
+          "path": "/data/app/~~ArBFYhaOllPh3kZpL8ldug==/com.lonnnnnng.flclash-x55_6J98zfbywA8S4rp03g==/base.apk",
+          "sha256": "3c4ebf5679ae86ea275799896d3b94e63a241b76cdeba71c5a177418cb12d549"
+        },
+        "com.lonnnnnng.flclash.test": {
+          "path": "/data/app/~~vYHwCTR4tdwNB2kYFx0a8w==/com.lonnnnnng.flclash.test-ASLZ1U29EYt0KWU5PGGfiQ==/base.apk",
+          "sha256": "b5097de39f91b5ce522a7987b13b00963bf4b6c8f471d63de31bc325bb67d334"
+        },
+        "com.follow.clash": {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      },
+      "summary": {
+        "path": "/private/tmp/kclash-main-state-20261104-redmi-final4.json",
+        "sha256": "818d2ebdb0bb2e41bb8e33ac6fe70cec5bfb7cbf16ff4ad9161d64ed44bb0b18",
+        "bytes": 9832
+      }
+    }
+  },
+  "failureAnalysis": [
+    "build1测试编译失败：SemanticsConfiguration.getOrNull不可用，改为contains和[]后build2通过。",
+    "redmi-first为14/15：LIST误断言TAB的节点标签。截图另发现空态未避让IME和深色标题缺少主题色，生产修复后ime3 1/1、final3 15/15。",
+    "build4补充共用标题合并文字语义、配置空态显式主题色及深浅截图，最终final4同批15/15；历史批次不相加。",
+    "本组未更改严格截图golden。"
+  ],
+  "deviceBefore": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "packages": {
+      "com.lonnnnnng.flclash": {
+        "path": "/data/app/~~Sr8iCEpqLa_o0BZTsGDa8Q==/com.lonnnnnng.flclash-s_v7smHZr2svO7G0Rez4Tg==/base.apk",
+        "sha256": "0160fb18c666529df9494f233d01cefdbbca2163bfec43bef5b19ed9211ebbc4"
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "/data/app/~~ue6RAT3RrfyYwEqfvW5F2w==/com.lonnnnnng.flclash.test-r8vPy3AMBOFRiMw8f3WXXA==/base.apk",
+        "sha256": "e10e6b93915b3fee9c9a83c16a215ef67ba0b1ecfe4c056a927a4a5c0cbfc90c"
+      },
+      "com.follow.clash": {
+        "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+        "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+      }
+    },
+    "settings": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "interfaces": [
+      "ap0",
+      "ccmni-lan",
+      "ccmni0",
+      "ccmni1",
+      "ccmni10",
+      "ccmni11",
+      "ccmni12",
+      "ccmni13",
+      "ccmni14",
+      "ccmni15",
+      "ccmni16",
+      "ccmni17",
+      "ccmni18",
+      "ccmni19",
+      "ccmni2",
+      "ccmni20",
+      "ccmni3",
+      "ccmni4",
+      "ccmni5",
+      "ccmni6",
+      "ccmni7",
+      "ccmni8",
+      "ccmni9",
+      "dummy0",
+      "ifb0",
+      "ifb1",
+      "ip6_vti0",
+      "ip6tnl0",
+      "ip_vti0",
+      "lo",
+      "p2p0",
+      "sit0",
+      "wlan0",
+      "wlan1"
+    ],
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+    "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+  },
+  "deviceAfter": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "packages": {
+      "com.lonnnnnng.flclash": {
+        "path": "/data/app/~~ArBFYhaOllPh3kZpL8ldug==/com.lonnnnnng.flclash-x55_6J98zfbywA8S4rp03g==/base.apk",
+        "sha256": "3c4ebf5679ae86ea275799896d3b94e63a241b76cdeba71c5a177418cb12d549"
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "/data/app/~~vYHwCTR4tdwNB2kYFx0a8w==/com.lonnnnnng.flclash.test-ASLZ1U29EYt0KWU5PGGfiQ==/base.apk",
+        "sha256": "b5097de39f91b5ce522a7987b13b00963bf4b6c8f471d63de31bc325bb67d334"
+      },
+      "com.follow.clash": {
+        "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+        "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+      }
+    },
+    "settings": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "interfaces": [
+      "ap0",
+      "ccmni-lan",
+      "ccmni0",
+      "ccmni1",
+      "ccmni10",
+      "ccmni11",
+      "ccmni12",
+      "ccmni13",
+      "ccmni14",
+      "ccmni15",
+      "ccmni16",
+      "ccmni17",
+      "ccmni18",
+      "ccmni19",
+      "ccmni2",
+      "ccmni20",
+      "ccmni3",
+      "ccmni4",
+      "ccmni5",
+      "ccmni6",
+      "ccmni7",
+      "ccmni8",
+      "ccmni9",
+      "dummy0",
+      "ifb0",
+      "ifb1",
+      "ip6_vti0",
+      "ip6tnl0",
+      "ip_vti0",
+      "lo",
+      "p2p0",
+      "sit0",
+      "wlan0",
+      "wlan1"
+    ],
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+    "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+  },
+  "preservation": {
+    "session": "main-states-20261104",
+    "before": {
+      "path": "/private/tmp/kclash-main-state-20261104-before.log",
+      "sha256": "a5e22a1e7c15bc52797254b7b90b2674c6c3dfc9ff20dee9697e9ab68739fcea",
+      "bytes": 962,
+      "phase": "before",
+      "count": 1,
+      "aggregateSha256": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+      "passed": true
+    },
+    "after": {
+      "path": "/private/tmp/kclash-main-state-20261104-after4.log",
+      "sha256": "cc64ea33680a79e6b0544376234411769c1ad71d7eed640aefc19c709f67ee8d",
+      "bytes": 961,
+      "phase": "after",
+      "count": 1,
+      "aggregateSha256": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+      "passed": true
+    },
+    "intermediateAfter3": {
+      "path": "/private/tmp/kclash-main-state-20261104-after.log",
+      "sha256": "fb6f943f2038fb2dd28c8ed93d57b9b556efb242a65c720f645e74b0f962e208",
+      "bytes": 961,
+      "phase": "after",
+      "count": 1,
+      "aggregateSha256": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+      "passed": true
+    },
+    "formalProfileCount": 1,
+    "description": "真实Repository非空配置/选择与正文SHA-size-mtime组合摘要一致；测试同时写入并比较逐字段元数据摘要，原文字段和摘要文件未内嵌本JSON。",
+    "settingsEqual": true,
+    "flutterApkEqual": true,
+    "localYamlEqual": true,
+    "noServicesAndTunAfter": true,
+    "clearedData": false
+  },
+  "flutterOracle": {
+    "provenance": {
+      "reference": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+      "seed": "FF007AFF",
+      "style": "vivid",
+      "material_color_utilities": "0.13.0",
+      "material_new_shapes": "1.0.0",
+      "glyphGrid": 24,
+      "rasterScale": 3
+    },
+    "tests": 3,
+    "passed": true,
+    "log": {
+      "path": "/private/tmp/kclash-main-empty-oracle-20261104.log",
+      "sha256": "3c270673785479aa616f5d2626a0bd7692c6dc1a0d906093c3bc0c25810656d1",
+      "bytes": 1348
+    },
+    "generatedPaths": {
+      "path": "/private/tmp/kclash-main-empty-oracle-20261104/ProfileIllustrationPaths.kt",
+      "sha256": "dcb5f8ffb2cc3d960a5056d68c6ec66fced92c346d9a9175a0558a403818cbe6",
+      "bytes": 12253
+    },
+    "shapes": {
+      "path": "/private/tmp/kclash-main-empty-oracle-20261104/shapes.json",
+      "sha256": "1af602800434b4651342baca506b1e76a7461d49521098e28e8caf3026f455e0",
+      "bytes": 18725
+    }
+  },
+  "visualReview": {
+    "reviewer": "主代理",
+    "finalPngCount": 24,
+    "status": "全部最终PNG经四张联系表目视，错误定位、搜索IME和配置深浅空态另用原图复核。",
+    "contactSheets": [
+      {
+        "path": "/private/tmp/kclash-main-state-20261104-redmi-final4-contact0.jpg",
+        "sha256": "4c2cd0ebc53223ceb4a5934fda6b33e36a2defb4a78528d240a1a79f2541a491",
+        "bytes": 168173
+      },
+      {
+        "path": "/private/tmp/kclash-main-state-20261104-redmi-final4-contact1.jpg",
+        "sha256": "e71814361e5e55790a0f763085d742d62744c977169f4b85d21bb25b8ac6a51f",
+        "bytes": 146430
+      },
+      {
+        "path": "/private/tmp/kclash-main-state-20261104-redmi-final4-contact2.jpg",
+        "sha256": "a35cf863a5b25c629a252517e53a35d7513889f2d637360324b0ebade03d4974",
+        "bytes": 233981
+      },
+      {
+        "path": "/private/tmp/kclash-main-state-20261104-redmi-final4-contact3.jpg",
+        "sha256": "d38c76b22bc3cd4f50afb7ed098b756efc705f1c9ea4ee8ea0e03a75fe7b7ab3",
+        "bytes": 150501
+      }
+    ],
+    "note": "截图含系统栏/输入法；部分面板图含前项复制触发的系统剪贴板浮层。静态截图/语义断言不代表真实TalkBack逐项验收或Flutter全页面逐像素一致。"
+  },
+  "limitations": [
+    "本组是Redmi API36竖屏/字号1.0/arm64离线UI验收；未访问授权订阅、Provider或外部脚本，未启动核心/VPN。",
+    "前组API27 final6的10/10保留在general-glass-subpages-api27-20261104.json；不是本组最终APK的低API结果。API24/25、31/32及低API核心/VPN/实网未验。",
+    "YAML错误定位针对配置正文编辑器；其他资源/脚本编辑入口当时仍需按入口补验；后续结果见editor-errors-recovery-redmi-20261104.json。",
+    "8MiB正文性能、全应用动效和玻璃完整采样品质、常驻Dock/按钮/其他面板live背景及触点glow未全面覆盖；整体Flutter视觉仍PARTIAL。",
+    "Fallback无有效now的实核/冷进程仍受现有授权输入无非空组限制。Provider实网沿用此前分批结果，未计为本组重验。",
+    "Go、远端CI、正式签名和Release设备运行未验；其他ABI不属于当前arm64-only交付范围。",
+    "备份/系统恢复、观测次要打磨、语言/主题继续暂缓；早期Room元数据兼容不作为开发阶段待办。",
+    "原始日志、截图与JUnit位于本机临时/构建目录，仓库仅保留哈希及索引，不保证远端可获取原始附件。"
+  ],
+  "sourceFiles": {
+    "android/app/proguard-rules.pro": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/proguard-rules.pro",
+      "sha256": "7593b906120d76cd0879e2b9ca164d20dd920af95322573ae919227ca30affa5",
+      "bytes": 1529
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardModalSheet.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardModalSheet.kt",
+      "sha256": "b9cdcf0803ef1dbb16b16e258e5820f2e031d141e943ef6e1e9b515cda2fda04",
+      "bytes": 4411
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt",
+      "sha256": "e07a9ccb08096a56205fa7d8b97f07607117b1bd34f4bcc1cc829f205c4a5131",
+      "bytes": 47363
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "sha256": "10c0f4fc5b435aaeefdbfbbdcff868a720f9d9f6633d07f7a63bf8f914f05725",
+      "bytes": 248566
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileCodeField.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileCodeField.kt",
+      "sha256": "e84e99401feca332789f4a8418b1548aebcd8ac0bb1246fdd719a937be581255",
+      "bytes": 5641
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDocumentEditor.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDocumentEditor.kt",
+      "sha256": "07db1d76d01b3db58a625755e8133f7970b6bf43500ace417c1f3e08efdbf529",
+      "bytes": 8739
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEmptyIllustration.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEmptyIllustration.kt",
+      "sha256": "0a8ad467ddf3681ca675c47d81a7084420e5d059fbfaa31cd8df3b71aa666d17",
+      "bytes": 3517
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileIllustrationPaths.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileIllustrationPaths.kt",
+      "sha256": "dcb5f8ffb2cc3d960a5056d68c6ec66fced92c346d9a9175a0558a403818cbe6",
+      "bytes": 12253
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt",
+      "sha256": "f2970f2a6026e0dd94c60799ac7fbce9a9a66d7a879bf6cdf346ec5b168cdbb6",
+      "bytes": 10510
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt",
+      "sha256": "dcee87dd3155802b84a322f3d9e7589849f07e21802aa4f63d7aa468579f5c46",
+      "bytes": 93402
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+      "sha256": "7726b61e836f5b7d77aa68c5aafe56fe1b61b7463ad5f0ae1d535e6e4130bd86",
+      "bytes": 54089
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsViewModel.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsViewModel.kt",
+      "sha256": "134b6c6cc6bffc11b7d7a818eadcf611cb2139b4efb6b1168262a63d5d03d020",
+      "bytes": 38619
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyPageEmptyState.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyPageEmptyState.kt",
+      "sha256": "dac0164a648e66ee11f132756df801b74d18248eb5981f411baa46a10ac417ac",
+      "bytes": 2878
+    },
+    "android/service/src/main/java/com/lonnnnnng/flclash/service/ProfileScript.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/src/main/java/com/lonnnnnng/flclash/service/ProfileScript.kt",
+      "sha256": "1e19fa6dc316cc0b874d457ade26e5259ed9294993f63fd78135b7907639a8c1",
+      "bytes": 6380
+    },
+    "android/tests/app/ProfilesViewModelTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/app/ProfilesViewModelTest.kt",
+      "sha256": "7be10e2d2ec4d05550577b815f5fedd4b185d0373475554c6fd1c61cb2279c21",
+      "bytes": 100243
+    },
+    "android/tests/instrumented/DashboardSheetInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/DashboardSheetInstrumentedTest.kt",
+      "sha256": "71805048e7d2db53cdf8bbf8546561ae0bb511fd243fa91acf587d91f3e6553e",
+      "bytes": 9081
+    },
+    "android/tests/instrumented/MainPageStatesInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/MainPageStatesInstrumentedTest.kt",
+      "sha256": "5c8ba86939f10bd5b3db6f0908f5391699e7e9c01af3ac7eae1d6ad976883e74",
+      "bytes": 10178
+    },
+    "android/tests/instrumented/ProfileDocumentUiInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/ProfileDocumentUiInstrumentedTest.kt",
+      "sha256": "81e1dcc0ec87eb606b3928b9e2598709429458edc277c25c05b1a9b902b4b5e8",
+      "bytes": 9480
+    },
+    "android/tests/service/ProfileScriptTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/service/ProfileScriptTest.kt",
+      "sha256": "256fe0ddc836a94945c79514e814cd40073c2f8b1ef8abd5c95a7ad57b0ad933",
+      "bytes": 6263
+    },
+    "tool/export_flutter_visual_reference.py": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/tool/export_flutter_visual_reference.py",
+      "sha256": "847f58a3fc1802dc95f3bb7a91b9e2e7c0a434eeb7fc07fb87edb587ccd5f9e4",
+      "bytes": 8831
+    }
+  }
+}

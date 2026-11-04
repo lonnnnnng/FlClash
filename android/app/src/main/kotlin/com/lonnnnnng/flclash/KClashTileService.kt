@@ -75,9 +75,6 @@ class KClashTileService : android.service.quicksettings.TileService() {
                     CoreRuntimeStatus.FAILED -> "启动失败"
                 }
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                contentDescription = "KClash：${status.label}"
-            }
             updateTile()
         }
     }

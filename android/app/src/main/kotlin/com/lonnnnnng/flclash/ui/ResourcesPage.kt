@@ -39,7 +39,7 @@ internal fun ResourcesPage(state: ResourceUpdatesState, onDismiss: () -> Unit, o
         confirmButton = {
             IconButton(onClick = onSyncAll, enabled = !state.loading && state.updating.isEmpty(), modifier = Modifier.testTag("resources_update_all")) {
                 if (state.updating.isNotEmpty()) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                else Icon(Icons.Outlined.Sync, "全部更新")
+                else Icon(Icons.Outlined.Sync, null)
             }
         }, text = {
             LazyColumn(Modifier.fillMaxSize().testTag("resources_page"), contentPadding = PaddingValues(bottom = 24.dp)) {

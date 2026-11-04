@@ -107,8 +107,8 @@ private class AppGlyphPainter(private val glyph: AppGlyph, private val fill: Flo
 }
 
 @Composable
-internal fun AppGlyphIcon(glyph: AppGlyph, contentDescription: String?, modifier: Modifier = Modifier,
+internal fun AppGlyphIcon(glyph: AppGlyph, modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current, filled: Boolean = false, fillProgress: Float = if (filled) 1f else 0f) {
     // 作者 long：Painter的intrinsicSize是像素，不能当作dp；外部显式尺寸和菜单容器约束仍优先。
-    Icon(remember(glyph, fillProgress) { AppGlyphPainter(glyph, fillProgress) }, contentDescription, modifier.size(24.dp), tint)
+    Icon(remember(glyph, fillProgress) { AppGlyphPainter(glyph, fillProgress) }, null, modifier.size(24.dp), tint)
 }

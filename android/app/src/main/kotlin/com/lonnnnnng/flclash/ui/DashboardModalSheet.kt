@@ -41,7 +41,7 @@ internal fun DashboardModalSheet(
     ConnectionModalSheet(
         onDismiss = onDismiss,
         contentScrollState = scrollState,
-        accessibilityTitle = title,
+
         isContentAtTop = isContentAtTop,
         naturalContentHeight = if (fitsContent && bodyHeight > 0 && headerHeight > 0) bodyHeight + headerHeight + chromeHeight else null,
         sheetTag = sheetTag,
@@ -52,11 +52,11 @@ internal fun DashboardModalSheet(
             .padding(start = if (onNavigateBack == null) 20.dp else 4.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically) {
             if (onNavigateBack != null) IconButton(onNavigateBack, Modifier.testTag(backTag)) {
-                Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回上一级")
+                Icon(Icons.AutoMirrored.Outlined.ArrowBack, null)
             }
-            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(title, Modifier.weight(1f).testTag("dashboard_sheet_title"), style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             actions()
-            IconButton(requestDismiss, Modifier.testTag(closeTag)) { Icon(Icons.Outlined.Close, "关闭$title") }
+            IconButton(requestDismiss, Modifier.testTag(closeTag)) { Icon(Icons.Outlined.Close, null) }
         }
         Column(Modifier.fillMaxWidth().weight(1f, fill = !fitsContent)
             .then(if (scrollable) Modifier.verticalScroll(scrollState) else Modifier)

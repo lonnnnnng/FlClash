@@ -16,6 +16,37 @@ import org.junit.Test
 class ProfileDocumentUiInstrumentedTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun validationLocationScrollsToUnicodeErrorAndCanBeRevisitedWithoutChangingDraft() {
+        assertPortraitDefaultFontConfiguration()
+        // 作者 long：使用真实解析器错误标记，验证屏外错误、emoji/CRLF换算和重复定位，不用手工偏移冒充校验结果。
+        val content = (1..300).joinToString("\r\n") { "# 第 $it 行 😀" } + "\r\nrules: [ok, }"
+        val error = runCatching { com.lonnnnnng.flclash.service.YamlConfigCodec.toJson(content) }.exceptionOrNull()!!
+        val location = requireNotNull(com.lonnnnnng.flclash.service.YamlConfigCodec.errorLocation(content, error))
+        var state by mutableStateOf(ProfileDocumentEditorState(1, 2, original = content, content = content))
+        var changes = 0
+        compose.setContent { KClashTheme { ProfileDocumentEditor(state, {
+            changes++; state = state.copy(content = it, error = null, errorLocation = null)
+        }, { state = state.copy(error = "YAML 语法错误：第 ${location.line} 行，第 ${location.column} 列；输入已保留", errorLocation = location) }, {}) } }
+        compose.onNodeWithTag("profile_document_save").performClick()
+        val editor = compose.onNodeWithTag("profile_editor_content")
+        editor.assert(SemanticsMatcher.expectValue(SemanticsProperties.TextSelectionRange, TextRange(content.indexOf('}'))))
+        editor.assertIsDisplayed()
+        compose.onNodeWithTag("profile_page_title").assertIsDisplayed()
+        compose.onNodeWithText("配置正文").assertIsDisplayed()
+        compose.onNodeWithTag("profile_document_error").assertIsDisplayed()
+        assertTrue(compose.onAllNodes(hasScrollAction()).fetchSemanticsNodes().any {
+            it.config.contains(SemanticsProperties.VerticalScrollAxisRange) && it.config[SemanticsProperties.VerticalScrollAxisRange].value() > 0
+        })
+        capture("profile_document_error_location")
+        editor.performSemanticsAction(SemanticsActions.SetSelection) { it(0, 0, false) }
+        compose.onNodeWithTag("profile_document_locate_error").performClick()
+        editor.assert(SemanticsMatcher.expectValue(SemanticsProperties.TextSelectionRange, TextRange(content.indexOf('}'))))
+        assertEquals(0, changes); assertEquals(content, state.content)
+        editor.performTextReplacement("rules: []")
+        compose.onNodeWithTag("profile_document_locate_error").assertDoesNotExist()
+        assertNull(state.errorLocation)
+    }
+
     @Test fun longDocumentSearchScrollsToMatchAndCopyExcludesGutter() {
         assertPortraitDefaultFontConfiguration()
         // 作者 long：长正文的屏外匹配必须真实进入视口；行号只用于阅读，复制不能污染返回父草稿的原始字节。

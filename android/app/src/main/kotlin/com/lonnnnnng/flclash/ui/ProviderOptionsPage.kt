@@ -3,6 +3,9 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -39,7 +42,10 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
     var localError by remember { mutableStateOf<String?>(null) }
     var validating by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val scroll = rememberScrollState()
     val busy = saving || validating
+    // 作者 long：用户可能在长选项页底部保存，失败后回到提示位置，避免只在屏外出现错误而像按钮无响应。
+    LaunchedEffect(localError, error, busy) { if (!busy && (localError ?: error) != null) scroll.animateScrollTo(0) }
     val initialValues = remember(initial) { ProviderOption.entries.mapNotNull { option -> option.value(initial)?.let { option.name to it } }.toMap() }
     val dirty = filters != initial || values != initialValues
     val close = { if (!busy) { if (dirty) discard = true else onDismiss() } }
@@ -68,20 +74,21 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                 require(errors.size == 2 && errors.all(String::isEmpty)) { "过滤表达式无效，请检查后重试" }
                 onSave(frozen)
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (failure: Exception) { localError = failure.message ?: "选项校验失败，请重试" }
+            // 作者 long：校验器可能附带原始表达式或地址；只公布恢复办法，草稿仍保留在当前子页。
+            catch (_: Exception) { localError = "过滤表达式校验失败，请检查表达式后重试" }
             finally { validating = false }
         }
     }
     ProfileEditorPage(onDismissRequest = close, backTag = "provider_options_back", title = { Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         confirmButton = { TextButton(onClick = ::save, enabled = !busy, modifier = Modifier.testTag("provider_options_save")) { Text(if (validating) "校验中…" else if (saving) "保存中…" else "保存") } }, text = {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("provider_options_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.fillMaxSize().verticalScroll(scroll).testTag("provider_options_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 (localError ?: error)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("provider_options_error")) }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("过滤", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                     Box {
                         val source = rememberAppMenuSource()
-                        IconButton(onClick = { menu = true }, enabled = !busy, modifier = Modifier.testTag("provider_filter_menu").appMenuSource(source)) { Icon(Icons.Outlined.MoreVert, "过滤选项") }
+                        IconButton(onClick = { menu = true }, enabled = !busy, modifier = Modifier.testTag("provider_filter_menu").appMenuSource(source)) { Icon(Icons.Outlined.MoreVert, null) }
                         AppDropdownMenu(menu && !busy, { menu = false }, source = source) {
                             AppDropdownMenuItem(text = { Text("沿用源过滤") }, enabled = filters.filter != null, onClick = { menu = false; changeFilters(filters.copy(filter = null, memberLayout = null)) })
                             AppDropdownMenuItem(text = { Text("沿用源排除过滤") }, enabled = filters.excludeFilter != null, onClick = { menu = false; changeFilters(filters.copy(excludeFilter = null, memberLayout = null)) })
@@ -94,7 +101,7 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                         GroupOrderRow(index, rows.size, member.key, sorting = true, enabled = !busy,
                             onMove = { to -> changeFilters(ProviderFilters.replace(filters, rows.toMutableList().apply { add(to, removeAt(index)) })) }) {
                             IconButton(onClick = { changeFilters(ProviderFilters.replace(filters, rows - member)) }, enabled = !busy,
-                                modifier = Modifier.testTag("provider_filter_remove_$index")) { Icon(Icons.Outlined.RemoveCircleOutline, "移除条件") }
+                                modifier = Modifier.testTag("provider_filter_remove_$index")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                             Column(Modifier.weight(1f).heightIn(min = 72.dp).padding(vertical = 8.dp)) {
                                 Text(LocalFilterPresets.current.firstOrNull { it.regex == member.value }?.label ?: member.value,
                                     maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("provider_filter_row_$index"))
@@ -111,12 +118,12 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                     ProviderOption.entries.filter { it.name in values }.forEach { option -> key(option) {
                         ProfileFormRow(option.title, leading = {
                             IconButton(onClick = { set(option, null) }, enabled = !busy, modifier = Modifier.testTag("provider_option_remove_${option.name}")) {
-                                Icon(Icons.Outlined.RemoveCircleOutline, "移除${option.title}", Modifier.size(24.dp))
+                                Icon(Icons.Outlined.RemoveCircleOutline, null, Modifier.size(24.dp))
                             }
                         }) {
                             when {
                                 option.boolean -> Switch(values[option.name] == "true", { set(option, it.toString()) }, enabled = !busy, modifier = Modifier.testTag("provider_option_${option.name}"))
-                                option == ProviderOption.IP_VERSION -> Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(!busy) { choosingIp = true }.testTag("provider_option_${option.name}"),
+                                option == ProviderOption.IP_VERSION -> Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(enabled = !busy) { choosingIp = true }.testTag("provider_option_${option.name}"),
                                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
                                     Text(values[option.name].orEmpty()); Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow()
                                 }
@@ -125,7 +132,7 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                                         textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = androidx.compose.ui.text.style.TextAlign.End, color = MaterialTheme.colorScheme.onSurface),
                                         cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
                                         keyboardOptions = KeyboardOptions(keyboardType = if (option.number) KeyboardType.Number else KeyboardType.Text),
-                                        modifier = Modifier.weight(1f).testTag("provider_option_${option.name}"))
+                                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).wrapContentHeight().testTag("provider_option_${option.name}"))
                                     if (option.number) { Spacer(Modifier.width(4.dp)); Text(if (option == ProviderOption.INTERVAL) "s" else "ms") }
                                 }
                             }
@@ -148,8 +155,8 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
         }
     })
     if (choosingIp) ProfileEditorPage(onDismissRequest = { choosingIp = false }, backTag = "provider_ip_back", title = { Text("IP 版本") }, text = {
-        Column { listOf("dual" to "双栈", "ipv4" to "IPv4", "ipv6" to "IPv6").forEach { (value, title) ->
-            Row(Modifier.fillMaxWidth().clickable { set(ProviderOption.IP_VERSION, value); choosingIp = false }.padding(12.dp).testTag("provider_ip_$value"), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.selectableGroup()) { listOf("dual" to "双栈", "ipv4" to "IPv4", "ipv6" to "IPv6").forEach { (value, title) ->
+            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(values[ProviderOption.IP_VERSION.name] == value, enabled = !busy, ) { set(ProviderOption.IP_VERSION, value); choosingIp = false }.padding(12.dp).testTag("provider_ip_$value"), verticalAlignment = Alignment.CenterVertically) {
                 Text(title, Modifier.weight(1f)); RadioButton(values[ProviderOption.IP_VERSION.name] == value, null)
             }
         } }
@@ -191,13 +198,13 @@ private fun ProviderFilterPicker(initial: ProxyProviderOverride, enabled: Boolea
                     val value = if (category == ProviderFilterKind.FILTER) base.filter.orEmpty() else base.excludeFilter.orEmpty()
                     val choices = presets.filterNot { FilterPresets.isApplied(it, value) }.filter { it.label.contains(query, true) || it.regex.contains(query, true) }
                     if (choices.isNotEmpty()) {
-                        Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(vertical = 8.dp).testTag("provider_filter_category_${category.name}"), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(enabled = enabled, ) { expanded = !expanded }.padding(vertical = 8.dp).testTag("provider_filter_category_${category.name}"), verticalAlignment = Alignment.CenterVertically) {
                             Text(category.title, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                             Icon(if (expanded || query.isNotBlank()) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null)
                         }
                         if (expanded || query.isNotBlank()) ProfileFormSection { choices.forEach { preset ->
                             val id = category.layout + ":" + preset.label
-                            Row(Modifier.fillMaxWidth().clickable(enabled) { selected = if (id in selected) selected - id else selected + id; publish() }
+                            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(id in selected, enabled = enabled, ) { checked -> selected = if (checked) selected + id else selected - id; publish() }
                                 .padding(vertical = 8.dp).testTag("provider_filter_pick_${category.name}_${preset.label}"), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) { Text(preset.label); Text(preset.regex, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis) }
                                 Checkbox(id in selected, null, enabled = enabled)

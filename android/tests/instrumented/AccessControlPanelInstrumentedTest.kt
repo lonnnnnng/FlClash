@@ -10,7 +10,6 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.captureToImage
@@ -84,7 +83,7 @@ class AccessControlPanelInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("access_control_search_toggle").performClick()
-        composeRule.onNodeWithContentDescription("关闭搜索").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_search_toggle").assertIsDisplayed()
         composeRule.onNodeWithTag("access_control_search").assertIsDisplayed()
         composeRule.onNodeWithTag("access_control_search").performTextInput("视频")
         composeRule.waitForIdle()
@@ -413,10 +412,10 @@ class AccessControlPanelInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
-        composeRule.onNodeWithContentDescription("取消全选当前结果").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_toggle_visible").assertIsDisplayed()
         assertEquals(setOf("com.example.mail", "com.example.video"), currentPackageList(state.settings).toSet())
         composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
-        composeRule.onNodeWithContentDescription("全选当前结果").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_toggle_visible").assertIsDisplayed()
         assertEquals(emptySet<String>(), currentPackageList(state.settings).toSet())
     }
 

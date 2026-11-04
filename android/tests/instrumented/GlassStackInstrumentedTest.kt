@@ -149,7 +149,8 @@ class GlassStackInstrumentedTest {
         for (theme in listOf(false,true)) {
             compose.runOnIdle { dark = theme }
             compose.onNodeWithTag("glass_stack_open").performClick()
-            compose.waitUntil(10_000) { compose.onAllNodes(hasStateDescription("已展开")).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithTag("app_popup_menu").assertIsDisplayed()
+            compose.mainClock.advanceTimeBy(600)
             compose.onNodeWithTag("glass_stack_next").performClick()
             compose.onNodeWithTag("glass_stack_back").assertIsDisplayed()
             compose.onNodeWithTag("app_menu_level_1", useUnmergedTree = true).assertExists()

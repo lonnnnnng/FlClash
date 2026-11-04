@@ -42,7 +42,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Popup
@@ -103,7 +102,7 @@ internal class AppContextMenuAnchor {
     fun record(position: Offset) { pointer = position; pointerAt = SystemClock.uptimeMillis(); pointerPressed = true }
     fun finishPointer(cancelled: Boolean) { pointerPressed = false; if (cancelled) carry.cancel() else carry.finish() }
     fun open(fromKeyboard: Boolean = false) {
-        // 作者 long：读屏长按也会调用此入口，但没有按下的物理指针；只能真实按住时保留宿主焦点，否则菜单无法接管系统返回。
+        // 作者 long：只有真实按住时才保留宿主焦点并携带指针；键盘入口由菜单接管系统返回，避免等待不存在的抬手。
         val touchHeld = !fromKeyboard && pointerPressed
         val p = if (touchHeld && SystemClock.uptimeMillis() - pointerAt < 1_500) pointer
             else Offset(0f, bounds.height.toFloat())
@@ -145,7 +144,7 @@ private val LocalAppMenuAction = staticCompositionLocalOf<(((()->Unit)) -> Unit)
 
 @Composable
 internal fun AppMenuSubmenuArrow() {
-    AppGlyphIcon(AppGlyphs.chevronForward, null)
+    AppGlyphIcon(AppGlyphs.chevronForward)
 }
 
 /** 作者 long：全窗口透明拦截层区分“点外部关闭全部”和“返回上层菜单”，不把返回键误当成点外部。 */
@@ -307,10 +306,7 @@ internal fun AppDropdownMenu(
                         .appMenuMorph(surface, morph, sourceImage, backdrop,
                             Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()),
                             drawSurface = { opening.value < .45f || !active })
-                        .testTag("app_popup_menu").semantics {
-                            paneTitle = "菜单"
-                            stateDescription = if (active && opening.value >= .45f) "已展开" else "过渡中"
-                        }) {
+                        .testTag("app_popup_menu")) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
                             LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
                             LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {
@@ -392,7 +388,7 @@ internal fun AppDropdownMenuItem(
             else if (!isBack && level?.owner != null) ((checkNotNull(stack).unfold.value - .05f) / .35f).coerceIn(0f, 1f) else 1f
     }.appFocusRing(shape).clip(shape)
         .background(if (registry?.hovered == identity) MaterialTheme.colorScheme.onSurface.copy(alpha = .08f) else Color.Transparent)
-        .clickable(enabled = active, role = Role.Button, onClick = action)
+        .clickable(enabled = active, onClick = action)
         .heightIn(min = 48.dp).padding(horizontal = 12.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         CompositionLocalProvider(LocalContentColor provides color, LocalTextStyle provides TextStyle(fontSize = 15.sp, lineHeight = 20.sp)) {
             val lead = owner?.leading ?: leadingIcon

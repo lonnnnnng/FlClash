@@ -46,10 +46,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -134,10 +130,6 @@ internal fun DashboardEditableSection(
             Box(
                 Modifier.matchParentSize()
                     .testTag("dashboard_drag_${section.name.lowercase()}")
-                    .semantics {
-                        contentDescription = "长按${section.title}卡片调整顺序"
-                        role = Role.Button
-                    }
                     .pointerInput(section) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = { onDragStart(it.y) },
@@ -158,7 +150,7 @@ internal fun DashboardEditableSection(
             if (onRemove != null && !isDragging) {
                 DashboardEditorRoundButton(
                     icon = DashboardModeGlyphs.remove,
-                    label = "移除${section.title}",
+
                     background = MaterialTheme.colorScheme.errorContainer,
                     foreground = MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.align(Alignment.TopEnd)
@@ -201,7 +193,7 @@ internal fun DashboardAddableSectionRow(
         ) {
             DashboardEditorRoundButton(
                 icon = DashboardModeGlyphs.add,
-                label = "添加${section.title}",
+
                 background = MaterialTheme.colorScheme.primary,
                 foreground = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.testTag("dashboard_add_${section.name.lowercase()}"),
@@ -239,7 +231,6 @@ internal fun DashboardAddableSectionRow(
 @Composable
 private fun DashboardEditorRoundButton(
     icon: ImageVector,
-    label: String,
     background: Color,
     foreground: Color,
     modifier: Modifier,
@@ -248,8 +239,7 @@ private fun DashboardEditorRoundButton(
     // 作者 long：Flutter 编辑器使用 28dp 增删圆按钮，徽标叠在卡片上，不占用额外的顶端操作行。
     Box(
         modifier.size(28.dp).clip(CircleShape).background(background)
-            .clickable(role = Role.Button, onClick = onClick)
-            .semantics { contentDescription = label },
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, contentDescription = null, Modifier.size(16.dp), tint = foreground)

@@ -38,18 +38,18 @@ internal fun LocalProxiesPage(state: LocalProxiesUiState, onDismiss: () -> Unit,
     ProfileEditorPage(onDismissRequest = ::exit, backTag = "local_proxies_back", title = { Text(if (keptSelected.isEmpty()) "本地代理" else "已选择 ${keptSelected.size} 项") },
         confirmButton = { Row {
             if (keptSelected.isNotEmpty()) {
-                IconButton(onClick = { selected = if (keptSelected.containsAll(visibleIds)) keptSelected - visibleIds else keptSelected + visibleIds }, enabled = !state.busy) { Icon(Icons.Outlined.SelectAll, "全选可见节点") }
-                IconButton(onClick = { onAskDelete(keptSelected.intersect(visibleIds)) }, enabled = !state.busy && keptSelected.any { it in visibleIds }) { Icon(Icons.Outlined.Delete, "删除选中节点") }
+                IconButton(onClick = { selected = if (keptSelected.containsAll(visibleIds)) keptSelected - visibleIds else keptSelected + visibleIds }, enabled = !state.busy) { Icon(Icons.Outlined.SelectAll, null) }
+                IconButton(onClick = { onAskDelete(keptSelected.intersect(visibleIds)) }, enabled = !state.busy && keptSelected.any { it in visibleIds }) { Icon(Icons.Outlined.Delete, null, modifier = Modifier.testTag("action:删除选中节点")) }
             } else {
-                IconButton(onClick = { sorting = !sorting }, enabled = !state.busy && query.isEmpty(), modifier = Modifier.testTag("local_proxies_sort")) { Icon(Icons.AutoMirrored.Outlined.Sort, if (sorting) "完成排序" else "排序") }
-                IconButton(onClick = { onLinks(null) }, enabled = !state.busy, modifier = Modifier.testTag("local_proxies_links")) { Icon(Icons.Outlined.EditNote, "快捷编辑分享链接") }
-                IconButton(onClick = { onEdit(null) }, enabled = !state.busy, modifier = Modifier.testTag("local_proxies_add")) { Icon(Icons.Outlined.Add, "添加节点") }
+                IconButton(onClick = { sorting = !sorting }, enabled = !state.busy && query.isEmpty(), modifier = Modifier.testTag("local_proxies_sort")) { Icon(Icons.AutoMirrored.Outlined.Sort, null) }
+                IconButton(onClick = { onLinks(null) }, enabled = !state.busy, modifier = Modifier.testTag("local_proxies_links")) { Icon(Icons.Outlined.EditNote, null) }
+                IconButton(onClick = { onEdit(null) }, enabled = !state.busy, modifier = Modifier.testTag("local_proxies_add")) { Icon(Icons.Outlined.Add, null) }
             }
         } }, text = {
             Column(Modifier.fillMaxSize().testTag("local_proxies_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(query, { query = it; sorting = false }, Modifier.fillMaxWidth().testTag("local_proxies_search"), singleLine = true,
                     label = { Text("搜索名称、类型或服务器") }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
-                    trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, "清空搜索") } })
+                    trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, null, modifier = Modifier.testTag("action:清空搜索")) } })
                 if (state.loading || state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxies_error")) }
                 state.message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
@@ -133,7 +133,7 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
     fun update(field: ProxyField, value: JsonElement?) { row = LocalProxyFields.change(row, field, value) }
     ProfileEditorPage(onDismissRequest = ::exit, backTag = "local_proxy_editor_back", title = { Text(if (draft.original == null) "添加本地代理" else "编辑代理") },
         confirmButton = { Row {
-            IconButton(onClick = { onLinks(row) }, enabled = !busy) { Icon(Icons.Outlined.EditNote, "从分享链接填写") }
+            IconButton(onClick = { onLinks(row) }, enabled = !busy) { Icon(Icons.Outlined.EditNote, null, modifier = Modifier.testTag("action:从分享链接填写")) }
             TextButton(onClick = { onSave(row) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_save")) { Text("保存") }
         } }, text = {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -216,7 +216,7 @@ private fun ProxyTextField(label: String, path: String, row: LocalProxy, busy: B
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = if (number) androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),
             enabled = !busy, singleLine = true, visualTransformation = if (secret && !revealed) PasswordVisualTransformation() else VisualTransformation.None)
         if (secret) IconButton(onClick = { revealed = !revealed }) {
-            Icon(if (revealed) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, if (revealed) "隐藏密码" else "显示密码")
+            Icon(if (revealed) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, null, modifier = Modifier.testTag("action:" + (if (revealed) "隐藏密码" else "显示密码")))
         }
     }
 }
@@ -224,7 +224,7 @@ private fun ProxyTextField(label: String, path: String, row: LocalProxy, busy: B
 @Composable
 private fun ProxyFieldRow(row: LocalProxy, field: ProxyField, busy: Boolean, removable: Boolean, onValue: (JsonElement?) -> Unit, onChoice: () -> Unit, onCollection: () -> Unit, onRemove: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        if (removable) IconButton(onClick = onRemove, enabled = !busy) { Icon(Icons.Outlined.RemoveCircleOutline, "移除 ${field.label}") }
+        if (removable) IconButton(onClick = onRemove, enabled = !busy) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
         Box(Modifier.weight(1f)) {
             when (field.kind) {
                 ProxyFieldKind.TEXT, ProxyFieldKind.SECRET, ProxyFieldKind.NUMBER -> ProxyTextField(field.label, field.path, row, busy,
@@ -260,7 +260,7 @@ private fun ProxyCollectionEditor(row: LocalProxy, field: ProxyField, onDismiss:
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             itemsIndexed(values) { i, (key, value) -> Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { values = values.toMutableList().apply { removeAt(i) } }) { Icon(Icons.Outlined.RemoveCircleOutline, "移除条目") }
+                    IconButton(onClick = { values = values.toMutableList().apply { removeAt(i) } }) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (field.kind == ProxyFieldKind.MAP) OutlinedTextField(key, { values = values.toMutableList().apply { set(i, it to value) } }, label = { Text("名称") }, singleLine = true)
                         OutlinedTextField(value, { values = values.toMutableList().apply { set(i, key to it) } }, label = { Text("值") }, singleLine = true)

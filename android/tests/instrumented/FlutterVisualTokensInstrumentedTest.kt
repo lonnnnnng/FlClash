@@ -42,7 +42,7 @@ class FlutterVisualTokensInstrumentedTest {
                 Column(Modifier.size(240.dp, 160.dp).background(Color(0xFFEEEEEE)).testTag("glyph_atlas")) {
                     repeat(4) { row -> Row {
                         repeat(6) { col -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
-                            glyphs.getOrNull(row * 6 + col)?.let { AppGlyphIcon(it, null, Modifier.size(24.dp), Color(0xFF007AFF), filled) }
+                            glyphs.getOrNull(row * 6 + col)?.let { AppGlyphIcon(it, Modifier.size(24.dp), Color(0xFF007AFF), filled) }
                         } }
                     } }
                 }

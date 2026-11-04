@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +57,7 @@ internal fun OutboundIpPanel(
             if (state.isLoading) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
             else Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(info?.countryCode ?: "—", style = MaterialTheme.typography.labelMedium)
-                Icon(Icons.Outlined.Refresh, "刷新出口 IP", Modifier.size(18.dp))
+                Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp))
             }
         }
         Column(Modifier.weight(1f).padding(start = 4.dp)) {
@@ -69,7 +68,7 @@ internal fun OutboundIpPanel(
                     else -> "正在查询出口…"
                 },
                 Modifier.testTag("dashboard_outbound_ip").then(
-                    if (info != null) Modifier.clickable(role = Role.Button, onClickLabel = "出口 IP 详情") { detailIp = info.ip }
+                    if (info != null) Modifier.clickable { detailIp = info.ip }
                     else Modifier,
                 ),
                 style = MaterialTheme.typography.titleMedium,
@@ -97,7 +96,7 @@ internal fun OutboundIpPanel(
             onDismiss = { detailIp = null }, actions = {
                 IconButton(onClick = onRefreshQuality, enabled = !state.qualityLoading && !state.isLoading,
                     modifier = Modifier.testTag("ip_quality_refresh")) {
-                    Icon(Icons.Outlined.Refresh, "刷新 IP 质量")
+                    Icon(Icons.Outlined.Refresh, null)
                 }
             }) {
             IpQualityContent(state, hidden, { hidden = it })
@@ -134,7 +133,7 @@ internal fun IpQualityContent(state: OutboundIpUiState, hidden: Boolean, onHidde
     }
     state.qualityError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     DashboardDetailSection("其他") {
-        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(hidden, role = Role.Switch, onValueChange = onHiddenChange)
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(hidden, onValueChange = onHiddenChange)
             .testTag("ip_quality_hide"), verticalAlignment = Alignment.CenterVertically) {
             Text("隐藏 IP", Modifier.weight(1f))
             Switch(checked = hidden, onCheckedChange = null)
@@ -149,14 +148,14 @@ private fun IpDetailRow(label: String, value: String, copyText: String? = null, 
         Row(
             Modifier.fillMaxWidth().heightIn(min = 48.dp)
                 .then(if (tag != null) Modifier.testTag(tag) else Modifier)
-                .then(if (copyText != null) Modifier.clickable(role = Role.Button, onClickLabel = "复制$label") {
+                .then(if (copyText != null) Modifier.clickable {
                     context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText(label, copyText))
                 } else Modifier).padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(label, Modifier.weight(0.4f), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(value, Modifier.weight(0.6f), style = MaterialTheme.typography.bodyMedium)
-            if (copyText != null) Icon(Icons.Outlined.ContentCopy, "复制$label", Modifier.size(18.dp))
+            if (copyText != null) Icon(Icons.Outlined.ContentCopy, null, Modifier.size(18.dp))
         }
     }
 }

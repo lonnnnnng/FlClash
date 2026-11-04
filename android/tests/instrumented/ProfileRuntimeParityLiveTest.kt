@@ -172,7 +172,7 @@ class ProfileRuntimeParityLiveTest {
             assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
             compose.onNodeWithTag("nav_dashboard").performClick()
             stage = "start"
-            compose.onNodeWithContentDescription("启动核心").performClick()
+            compose.onNodeWithTag("dashboard_runtime_toggle").performClick()
             compose.waitUntil(30_000) {
                 val root = instrumentation.uiAutomation.rootInActiveWindow
                 if (root?.packageName?.toString() == "com.android.vpndialogs") root.findAccessibilityNodeInfosByViewId("android:id/button1").firstOrNull()?.performAction(AccessibilityNodeInfo.ACTION_CLICK)

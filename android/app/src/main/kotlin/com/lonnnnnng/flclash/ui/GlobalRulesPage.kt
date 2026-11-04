@@ -58,16 +58,16 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
                 Text(if (selecting) "已选 ${selected.size} 项" else "共 ${state.rules.size} 条规则", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 if (selecting) {
                     IconButton({ selected = if (visible.all { it.id in selected }) emptySet() else visible.map { it.id }.toSet() }, enabled = !busy,
-                        modifier = Modifier.testTag("global_rules_all")) { Icon(Icons.Outlined.SelectAll, "全选") }
+                        modifier = Modifier.testTag("global_rules_all")) { Icon(Icons.Outlined.SelectAll, null) }
                     IconButton({ delete = selected.intersect(visible.map { it.id }.toSet()) }, enabled = !busy && selected.isNotEmpty(),
-                        modifier = Modifier.testTag("global_rules_delete")) { Icon(Icons.Outlined.Delete, "删除所选规则") }
-                    IconButton({ selecting = false; selected = emptySet() }, enabled = !busy) { Icon(Icons.Outlined.Close, "取消选择") }
+                        modifier = Modifier.testTag("global_rules_delete")) { Icon(Icons.Outlined.Delete, null) }
+                    IconButton({ selecting = false; selected = emptySet() }, enabled = !busy) { Icon(Icons.Outlined.Close, null, modifier = Modifier.testTag("action:取消选择")) }
                 } else if (sorting) TextButton({ sorting = false }, enabled = !busy) { Text("完成") }
                 else {
-                    IconButton({ selecting = true }, enabled = !busy && visible.isNotEmpty(), modifier = Modifier.testTag("global_rules_select")) { Icon(Icons.Outlined.Checklist, "选择规则") }
-                    IconButton({ sorting = true }, enabled = !busy && query.isBlank() && state.rules.size > 1, modifier = Modifier.testTag("global_rules_sort")) { Icon(Icons.Outlined.SwapVert, "排序") }
-                    IconButton({ presets = true }, enabled = !busy && state.loaded, modifier = Modifier.testTag("global_rules_presets")) { Icon(Icons.Outlined.AutoAwesome, "规则预设") }
-                    IconButton({ form = "new" }, enabled = !busy && state.loaded, modifier = Modifier.testTag("global_rules_add")) { Icon(Icons.Outlined.Add, "添加规则") }
+                    IconButton({ selecting = true }, enabled = !busy && visible.isNotEmpty(), modifier = Modifier.testTag("global_rules_select")) { Icon(Icons.Outlined.Checklist, null) }
+                    IconButton({ sorting = true }, enabled = !busy && query.isBlank() && state.rules.size > 1, modifier = Modifier.testTag("global_rules_sort")) { Icon(Icons.Outlined.SwapVert, null) }
+                    IconButton({ presets = true }, enabled = !busy && state.loaded, modifier = Modifier.testTag("global_rules_presets")) { Icon(Icons.Outlined.AutoAwesome, null) }
+                    IconButton({ form = "new" }, enabled = !busy && state.loaded, modifier = Modifier.testTag("global_rules_add")) { Icon(Icons.Outlined.Add, null) }
                 }
             }
             state.error?.let {
@@ -90,7 +90,7 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
                     }.padding(vertical = 12.dp).testTag("global_rule_${rule.id}"), verticalAlignment = Alignment.CenterVertically) {
                         if (selecting) Checkbox(rule.id in selected, null, enabled = !busy)
                         Text(rule.value, Modifier.weight(1f), maxLines = 3, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
-                        if (!selecting) Icon(Icons.Outlined.ChevronRight, "编辑规则", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (!selecting) Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }

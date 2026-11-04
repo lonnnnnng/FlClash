@@ -49,9 +49,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -111,7 +108,7 @@ internal fun ObservationListPage(
                                     onClick = onDismiss,
                                     modifier = Modifier
                                         .testTag("observation_list_back")
-                                        .semantics { contentDescription = "返回${title}列表" },
+                                        ,
                                 ) {
                                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null)
                                 }
@@ -179,7 +176,7 @@ internal fun ObservationListPage(
                                                     onClick = { onSearchQueryChange("") },
                                                     modifier = Modifier.size(44.dp)
                                                         .testTag("observation_search_clear")
-                                                        .semantics { contentDescription = "清除搜索" },
+                                                        ,
                                                 ) {
                                                     Icon(Icons.Outlined.Close, contentDescription = null)
                                                 }
@@ -202,7 +199,7 @@ internal fun ObservationListPage(
                                     modifier = Modifier
                                         .background(toolbarSurfaceColor, CircleShape)
                                         .testTag("observation_search_toggle")
-                                        .semantics { contentDescription = "关闭搜索" },
+                                        ,
                                 ) {
                                     Icon(Icons.Outlined.Close, contentDescription = null)
                                 }
@@ -212,7 +209,7 @@ internal fun ObservationListPage(
                                     modifier = Modifier
                                         .background(toolbarSurfaceColor, CircleShape)
                                         .testTag("observation_search_toggle")
-                                        .semantics { contentDescription = "搜索" },
+                                        ,
                                 ) {
                                     Icon(Icons.Outlined.Search, contentDescription = null)
                                 }
@@ -223,7 +220,7 @@ internal fun ObservationListPage(
                                         modifier = Modifier
                                             .background(toolbarSurfaceColor, CircleShape)
                                             .testTag("observation_clear")
-                                            .semantics { contentDescription = "清除 DNS 缓存" },
+                                            ,
                                     ) {
                                         Icon(Icons.Outlined.DeleteSweep, contentDescription = null)
                                     }
@@ -234,7 +231,7 @@ internal fun ObservationListPage(
                                         modifier = Modifier
                                             .background(toolbarSurfaceColor, CircleShape)
                                             .testTag("observation_export")
-                                            .semantics { contentDescription = "导出日志" },
+                                            ,
                                     ) {
                                         Icon(Icons.Outlined.FileDownload, contentDescription = null)
                                     }
@@ -257,11 +254,8 @@ internal fun ObservationListPage(
                                         modifier = Modifier
                                             .height(36.dp)
                                             .widthIn(max = maxWidth - 32.dp)
-                                            .semantics(mergeDescendants = true) {
-                                                contentDescription = "移除筛选 $keyword"
-                                            }
                                             .testTag("observation_keyword_$keyword")
-                                            .clickable(role = Role.Button) { onRemoveKeyword(keyword) },
+                                            .clickable { onRemoveKeyword(keyword) },
                                         shape = CircleShape,
                                         color = if (LocalKClashDarkTheme.current) {
                                             MaterialTheme.colorScheme.surfaceContainer

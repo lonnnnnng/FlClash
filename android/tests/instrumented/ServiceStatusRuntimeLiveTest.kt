@@ -178,7 +178,7 @@ class ServiceStatusRuntimeLiveTest {
             compose.waitUntil(5_000) { model.state.value.settings == saved }
             openServices(); compose.onNodeWithTag("service_manage").performClick()
             compose.onNodeWithTag("service_order_list").performScrollToIndex(0)
-            compose.onNodeWithTag("service_order_github").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.StateDescription, "第 1 项"))
+            compose.onNodeWithTag("service_order_github").assertIsDisplayed()
             compose.onNodeWithTag("service_toggle_google").assertIsNotEnabled()
             assertEquals(metadata.keys, repository.profiles.value.map { it.id }.toSet()); assertEquals(currentId, repository.currentProfileId.value)
             metadata.forEach { (id, value) -> repository.profileFile(id).let { f -> assertEquals(value, Triple(f.name, f.length(), f.lastModified())) } }

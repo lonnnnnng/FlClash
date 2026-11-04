@@ -2,7 +2,6 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,7 +29,7 @@ internal fun ProfileDialersPage(state: ProfileDialersEditorUiState, onDismiss: (
     ProfileEditorPage(onDismissRequest = { if (!state.isSaving) onDismiss() }, backTag = "profile_dialers_back",
         title = { Text("链式代理") }, contentPadding = PaddingValues(0.dp), confirmButton = {
             IconButton(onClick = { quick = true }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_dialers_quick")) {
-                Icon(Icons.Outlined.EditNote, "快捷编辑映射")
+                Icon(Icons.Outlined.EditNote, null)
             }
         }, text = {
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -81,15 +80,15 @@ internal fun ProfileDialersPage(state: ProfileDialersEditorUiState, onDismiss: (
 private fun DialerRow(name: String, detail: String?, tag: String, enabled: Boolean = true, issue: String? = null,
     selected: Boolean? = null, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag(tag).then(if (selected == null) Modifier.clickable(enabled = enabled, onClick = onClick)
-            else Modifier.selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick))
+            else Modifier.selectable(selected = selected, enabled = enabled, onClick = onClick))
         .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyLarge)
             detail?.let { Text(it, style = MaterialTheme.typography.bodyMedium,
                 color = if (issue != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant) }
         }
-        if (issue != null) Icon(Icons.Outlined.ErrorOutline, issue, Modifier.padding(start = 8.dp).size(24.dp), tint = MaterialTheme.colorScheme.error)
-        else if (selected == true) Icon(Icons.Outlined.Check, "已选择", Modifier.padding(start = 8.dp).size(24.dp), tint = MaterialTheme.colorScheme.primary)
+        if (issue != null) Icon(Icons.Outlined.ErrorOutline, null, Modifier.padding(start = 8.dp).size(24.dp), tint = MaterialTheme.colorScheme.error)
+        else if (selected == true) Icon(Icons.Outlined.Check, null, Modifier.padding(start = 8.dp).size(24.dp), tint = MaterialTheme.colorScheme.primary)
     }
 }
 

@@ -22,7 +22,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.longClick
@@ -123,7 +122,7 @@ class MainActivityInstrumentedTest {
         verifyPreservedProfileMetadata()
         composeRule.onNodeWithText("仪表盘").assertIsDisplayed()
         composeRule.onNodeWithText("状态").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("启动核心").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_runtime_toggle").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_stats_card").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_profile_card").assertIsDisplayed()
         composeRule.onNodeWithTag("main_navigation_dock").assertIsDisplayed()
@@ -193,8 +192,8 @@ class MainActivityInstrumentedTest {
                 composeRule.onNodeWithTag(if (layout == "LIST") "proxy_groups_list" else "proxy_groups_pager").assertIsDisplayed()
             }
             composeRule.onNodeWithTag("nav_dashboard").performClick()
-            composeRule.onNodeWithTag("page_dashboard").performScrollToNode(androidx.compose.ui.test.hasContentDescription("启动核心"))
-            composeRule.onNodeWithContentDescription("启动核心").assertIsDisplayed()
+            composeRule.onNodeWithTag("page_dashboard").performScrollToNode(androidx.compose.ui.test.hasTestTag("dashboard_runtime_toggle"))
+            composeRule.onNodeWithTag("dashboard_runtime_toggle").assertIsDisplayed()
             assertEquals(currentId, repository.currentProfileId.value)
             assertEquals(metadata, file.length() to file.lastModified())
         } finally {
@@ -803,14 +802,14 @@ class MainActivityInstrumentedTest {
             composeRule.waitForIdle()
         }
         composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
-        composeRule.onNodeWithContentDescription("取消全选当前结果").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_toggle_visible").assertIsDisplayed()
         assertEquals(
             ToggleableState.On,
             appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
         )
 
         composeRule.onNodeWithTag("access_control_clear_visible").performClick()
-        composeRule.onNodeWithContentDescription("全选当前结果").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_toggle_visible").assertIsDisplayed()
         assertEquals(
             ToggleableState.Off,
             appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
@@ -822,7 +821,7 @@ class MainActivityInstrumentedTest {
             appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],
         )
         composeRule.onNodeWithTag("access_control_toggle_visible").performClick()
-        composeRule.onNodeWithContentDescription("全选当前结果").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_toggle_visible").assertIsDisplayed()
         assertEquals(
             ToggleableState.Off,
             appNode.fetchSemanticsNode().config[SemanticsProperties.ToggleableState],

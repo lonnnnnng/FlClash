@@ -18,6 +18,7 @@
 -keep class com.lonnnnnng.flclash.ui.RemoteProfileEditorUiState { *; }
 -keep class com.lonnnnnng.flclash.ui.RemoteProfileDraft { *; }
 -keep class com.lonnnnnng.flclash.ui.ProfileDocumentEditorState { *; }
+-keep class com.lonnnnnng.flclash.service.YamlErrorLocation { *; }
 -keep class com.lonnnnnng.flclash.ui.ProfileFileReplacementPreview { *; }
 -keep class com.lonnnnnng.flclash.data.ProfileDocumentSnapshot { *; }
 -keep class com.lonnnnnng.flclash.data.Profile { *; }

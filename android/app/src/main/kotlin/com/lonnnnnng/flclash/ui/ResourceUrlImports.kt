@@ -81,7 +81,7 @@ internal fun ResourceUrlImportPage(title: String, state: UrlImportState, onDismi
     val single = text.trim().split(Regex("\\s+")).count(String::isNotEmpty) <= 1
     ProfileEditorPage(onDismissRequest = close, title = { Text(title) }, backTag = "resource_urls_back", confirmButton = {
         when {
-            state.running -> IconButton(onClick = onCancel, modifier = Modifier.testTag("resource_urls_cancel")) { Icon(Icons.Outlined.Close, "取消剩余导入") }
+            state.running -> IconButton(onClick = onCancel, modifier = Modifier.testTag("resource_urls_cancel")) { Icon(Icons.Outlined.Close, null) }
             state.rows.isEmpty() -> TextButton(onClick = { onStart(text, label) }, enabled = text.isNotBlank(), modifier = Modifier.testTag("resource_urls_start")) { Text("导入") }
             else -> TextButton(onClick = onDismiss) { Text("完成") }
         }

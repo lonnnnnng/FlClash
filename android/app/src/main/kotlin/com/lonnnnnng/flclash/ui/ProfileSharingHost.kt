@@ -23,8 +23,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -78,9 +76,7 @@ internal fun ProfileQrDialog(state: ProfileQrUiState, onCopy: () -> Unit, onClos
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 state.matrix?.let { matrix ->
-                    Canvas(Modifier.size(280.dp).testTag("profile_qr_image").semantics {
-                        contentDescription = "订阅二维码"
-                    }) {
+                    Canvas(Modifier.size(280.dp).testTag("profile_qr_image")) {
                         // 作者 long：深浅主题均保持黑码白底，并以整数像素绘制模块和四格静区，避免缩放模糊影响扫码。
                         drawRect(Color.White)
                         val scale = (minOf(size.width, size.height) / matrix.width).toInt().coerceAtLeast(1)

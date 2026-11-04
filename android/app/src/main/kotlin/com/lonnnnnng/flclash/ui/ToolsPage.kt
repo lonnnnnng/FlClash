@@ -164,11 +164,7 @@ private fun ToolMenuRow(
                 modifier = Modifier.weight(1f).padding(start = if (icon == null) 0.dp else 16.dp),
                 style = MaterialTheme.typography.bodyLarge,
             )
-            Icon(
-                Icons.Outlined.ChevronRight,
-                contentDescription = "打开$title",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

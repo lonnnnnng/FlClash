@@ -71,8 +71,8 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
         val next = root.deepCopy(); setMoreField(next, field, value); submit(next, child)
     }
     ProfileEditorPage({ if (!state.isSaving) onDismiss() }, title = { Text(if (ntp) "NTP" else "Sniffer") }, backTag = "profile_more_editor_back", confirmButton = {
-        IconButton(onClick = { adding = true }, enabled = !state.isSaving && remaining.isNotEmpty(), modifier = Modifier.testTag("profile_more_add")) { Icon(Icons.Outlined.AddCircleOutline, "添加设置项") }
-        IconButton(onClick = { yaml = true }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_yaml")) { Icon(Icons.Outlined.Code, "快捷 YAML") }
+        IconButton(onClick = { adding = true }, enabled = !state.isSaving && remaining.isNotEmpty(), modifier = Modifier.testTag("profile_more_add")) { Icon(Icons.Outlined.AddCircleOutline, null) }
+        IconButton(onClick = { yaml = true }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_yaml")) { Icon(Icons.Outlined.Code, null) }
     }, text = {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("profile_more_editor_scroll"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("profile_more_saving"))
@@ -218,7 +218,7 @@ private fun MoreProtocolRow(title: String, detail: String, modifier: Modifier, e
 private fun MoreSettingRow(field: MoreField, value: JsonElement, enabled: Boolean, onRemove: () -> Unit, onEdit: () -> Unit, onToggle: (Boolean) -> Unit) {
     val toggle = field.kind == MoreFieldKind.TOGGLE
     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("more_field_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onRemove, enabled = enabled, modifier = Modifier.testTag("more_remove_${field.key}")) { Icon(Icons.Outlined.RemoveCircleOutline, "移除${field.label}", tint = MaterialTheme.colorScheme.error) }
+        IconButton(onClick = onRemove, enabled = enabled, modifier = Modifier.testTag("more_remove_${field.key}")) { Icon(Icons.Outlined.RemoveCircleOutline, null, tint = MaterialTheme.colorScheme.error) }
         Column(Modifier.weight(1f).clickable(enabled) { if (toggle) onToggle(!value.asBoolean) else onEdit() }.padding(vertical = 10.dp).testTag("more_edit_${field.key}")) {
             Text(field.label)
             val detail = when {
@@ -231,7 +231,7 @@ private fun MoreSettingRow(field: MoreField, value: JsonElement, enabled: Boolea
             if (detail.isNotEmpty()) Text(detail, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (toggle) Switch(value.asBoolean, onToggle, enabled = enabled, modifier = Modifier.padding(end = 16.dp).testTag("more_${field.key}_value"))
-        else IconButton(onClick = onEdit, enabled = enabled, modifier = Modifier.testTag("more_open_${field.key}")) { Icon(Icons.Outlined.ChevronRight, "编辑${field.label}") }
+        else IconButton(onClick = onEdit, enabled = enabled, modifier = Modifier.testTag("more_open_${field.key}")) { Icon(Icons.Outlined.ChevronRight, null) }
     }
 }
 

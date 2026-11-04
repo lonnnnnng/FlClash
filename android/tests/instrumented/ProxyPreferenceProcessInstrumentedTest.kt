@@ -140,7 +140,7 @@ class ProxyPreferenceProcessInstrumentedTest {
                 compose.onNodeWithTag("proxy_group_tab_$name").performScrollTo().performClick()
                 val tag = "proxy_node_${name}_$node"
                 compose.onNodeWithTag("proxy_group_members_$name").performScrollToNode(hasTestTag(tag))
-                compose.onNodeWithTag(tag).assertIsSelected().performTouchInput { longClick() }
+                compose.onNodeWithTag(tag).assertProxyInUse(compose).performTouchInput { longClick() }
                 compose.onNodeWithTag("${tag}_menu_select").performClick()
                 compose.waitUntil(30_000) { model.state.value.switchingGroup == null && model.state.value.selectedMap[name] == null }
                 assertNull(decodeSelectedMap(e.database().profiles().getById(id)!!.selectedMapJson)[name])

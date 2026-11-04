@@ -55,7 +55,7 @@ class VpnSettingsRuntimeLiveTest {
             assertFalse(entry.vpnSettingsStore().read())
             compose.activityRule.scenario.recreate()
             vpn().assertIsOff()
-            compose.onNodeWithContentDescription("启动核心").performScrollTo().performClick()
+            compose.onNodeWithTag("dashboard_runtime_toggle").performScrollTo().performClick()
             waitForRuntime()
             assertFalse(ServiceConfig.vpnAlive.value)
             assertFalse(hasTunInterface())

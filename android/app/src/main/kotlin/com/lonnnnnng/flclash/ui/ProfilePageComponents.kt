@@ -72,9 +72,9 @@ internal fun ProfileEditorPage(
             contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 TopAppBar(
-                    title = title,
+                    title = { Box(Modifier.testTag("profile_page_title")) { title() } },
                     navigationIcon = { IconButton(onClick = onDismissRequest, modifier = Modifier.testTag(backTag)) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, modifier = Modifier.testTag("action:返回"))
                     } },
                     actions = { confirmButton() },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = dashboardPageColor()),
@@ -132,14 +132,14 @@ internal fun ProfileSourceMenu(
 ) {
     AppDropdownMenu(expanded = true, onDismissRequest = onDismiss, anchor = anchor, source = source,
         modifier = Modifier.testTag("profile_add_source_menu")) {
-        AppDropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode, null) },
+        AppDropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode) },
             onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))
-        AppDropdownMenuItem(text = { Text("从文件导入 YAML") }, leadingIcon = { AppGlyphIcon(AppGlyphs.profiles, null) },
+        AppDropdownMenuItem(text = { Text("从文件导入 YAML") }, leadingIcon = { AppGlyphIcon(AppGlyphs.profiles) },
             onClick = onFile, enabled = !busy, modifier = Modifier.testTag("profile_add_source_file"))
-        AppDropdownMenuItem(text = { Text("添加订阅链接") }, leadingIcon = { AppGlyphIcon(AppGlyphs.link, null) },
+        AppDropdownMenuItem(text = { Text("添加订阅链接") }, leadingIcon = { AppGlyphIcon(AppGlyphs.link) },
             onClick = onRemote, enabled = !busy, modifier = Modifier.testTag("profile_add_source_remote"))
         HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
-        AppDropdownMenuItem(text = { Text("创建自定义配置") }, leadingIcon = { AppGlyphIcon(AppGlyphs.edit, null) },
+        AppDropdownMenuItem(text = { Text("创建自定义配置") }, leadingIcon = { AppGlyphIcon(AppGlyphs.edit) },
             onClick = onCustom, enabled = !busy, modifier = Modifier.testTag("profile_add_source_custom"))
     }
 }

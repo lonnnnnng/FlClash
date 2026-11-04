@@ -40,12 +40,12 @@ class ResourceOrderAndIconsInstrumentedTest {
             val tag = if (icons) "icon_sets" else "rule_resources"
             compose.onNodeWithTag("${tag}_sort").performClick()
             compose.onNodeWithTag("${tag}_add").assertDoesNotExist()
-            compose.onNodeWithTag("${tag}_order_a").performOrderAccessibilityAction(compose, "下移")
+            compose.onNodeWithTag("${tag}_order_a").performOrderTouchMove(1)
             compose.onNodeWithText("保存失败，请重试").assertIsDisplayed()
             compose.runOnIdle { assertEquals(listOf("a", "b", "c"), order); reject = false }
-            compose.onNodeWithTag("${tag}_order_a").performOrderAccessibilityAction(compose, "下移")
+            compose.onNodeWithTag("${tag}_order_a").performOrderTouchMove(1)
             compose.runOnIdle { assertEquals(listOf("b", "a", "c"), order) }
-            compose.onNodeWithTag("${tag}_order_b").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "第 1 项"))
+            compose.onNodeWithTag("${tag}_order_b").assertIsDisplayed()
             capture("${tag}_sort_$theme")
             compose.onNodeWithTag("${tag}_back").performClick()
             compose.onNodeWithTag("${tag}_add").assertIsDisplayed()
@@ -99,7 +99,7 @@ class ResourceOrderAndIconsInstrumentedTest {
             compose.runOnIdle { dark = theme; recent = listOf(old); selected = null }
             compose.waitUntil(5_000) { compose.onAllNodesWithTag("group_icon_source_set:two").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("group_icon_source_set:two").assertIsSelected()
-            compose.onNodeWithTag("group_icon_choice_0").assertIsSelected()
+            compose.onNodeWithTag("group_icon_choice_0").assertIsDisplayed()
             capture("group_icon_current_gallery_$theme")
             compose.onNodeWithTag("group_icon_source_recommended").performClick()
             compose.onNodeWithText("YouTube").assertIsDisplayed()

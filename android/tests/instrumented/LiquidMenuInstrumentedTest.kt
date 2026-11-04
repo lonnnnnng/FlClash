@@ -171,22 +171,6 @@ class LiquidMenuInstrumentedTest {
         } finally { send(android.view.MotionEvent.ACTION_CANCEL, point) }
     }
 
-    @Test fun accessibilityLongPressKeepsSystemBackAndDoesNotSelectSource() {
-        var selections = 0
-        compose.setContent { KClashTheme {
-            Box(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.Center) {
-                ProxyNodeCard("节点", "Vless", inUse = false, preferred = false, enabled = true, delay = null,
-                    selectionTag = "accessible_source", delayTag = "delay", onSelect = { selections++ }, onTestDelay = {})
-            }
-        } }
-        // 作者 long：语义长按不发送MotionEvent，必须与真实手指携带分开覆盖，不能让Popup一直等待不存在的抬手。
-        compose.onNodeWithTag("accessible_source").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnLongClick) { assertTrue(it()) }
-        compose.onNodeWithText("选择").assertIsDisplayed()
-        androidx.test.espresso.Espresso.pressBack()
-        compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
-        compose.runOnIdle { assertEquals(0, selections) }
-    }
-
     private fun capture(name: String) {
         val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
         instrumentation.waitForIdleSync(); android.os.SystemClock.sleep(100)

@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.compose.ui.graphics.asAndroidBitmap
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -152,11 +153,15 @@ class ProxyGroupParityInstrumentedTest {
                 ProfileGroupIcon("$base/icon.png", "PNG", Modifier.size(56.dp).testTag("png_icon"))
                 ProfileGroupIcon("$base/missing", "Missing", Modifier.size(56.dp).testTag("missing_icon"))
             } } }
-            val loaded = SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "图标已加载")
-            val failed = SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "图标加载失败")
-            compose.waitUntil(15_000) { compose.onAllNodes(hasTestTag("svg_icon") and loaded).fetchSemanticsNodes().isNotEmpty() &&
-                compose.onAllNodes(hasTestTag("png_icon") and loaded).fetchSemanticsNodes().isNotEmpty() &&
-                compose.onAllNodes(hasTestTag("missing_icon") and failed).fetchSemanticsNodes().isNotEmpty() }
+            // 作者 long：核对真实图像中心像素及失败占位，避免仅以加载文案代替解码和显示成功。
+            fun centerColor(tag: String): Int {
+                val bitmap = compose.onNodeWithTag(tag).captureToImage().asAndroidBitmap()
+                return bitmap.getPixel(bitmap.width / 2, bitmap.height / 2)
+            }
+            compose.waitUntil(15_000) { centerColor("svg_icon") == 0xff7258a6.toInt() &&
+                centerColor("png_icon") == 0xff338855.toInt() &&
+                compose.onAllNodes(hasTestTag("group_icon_failed") and hasAnyAncestor(hasTestTag("missing_icon")), useUnmergedTree = true)
+                    .fetchSemanticsNodes().isNotEmpty() }
         } finally { server.close(); worker.join(1000) }
     }
 

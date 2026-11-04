@@ -138,7 +138,8 @@ class ScriptsViewModel @Inject constructor(
 
     fun editDraft(label: String, content: String) {
         val old = mutableEditor.value
-        if (old.isOpen && !old.isSaving && !old.isLoading) mutableEditor.value = old.copy(label = label, content = content, error = null)
+        if (old.isOpen && !old.isSaving && !old.isLoading && (old.label != label || old.content != content))
+            mutableEditor.value = old.copy(label = label, content = content, error = null)
     }
 
     fun closeEditor() {
@@ -279,8 +280,17 @@ class ScriptsViewModel @Inject constructor(
         if (runtimeManager.profileInputsApplied(target)) operations.value = operations.value.copy(applyError = null, applyTargetId = null)
     }
 
-    private fun safeMessage(error: Throwable, fallback: String): String =
-        error.message?.takeIf { !it.contains("://") && it.length < 160 } ?: fallback
+    private fun safeMessage(error: Throwable, fallback: String): String {
+        // 作者 long：文件系统和下载异常可能包含正文或私有路径；仅展示仓库定义的固定业务提示。
+        val message = error.message
+        return message?.takeIf { it in setOf(
+            "脚本名称已经存在", "该远程脚本已经添加", "脚本不存在", "脚本文件不存在", "脚本已删除",
+            "脚本已变化，请重新打开后保存", "脚本正文已变化，请重新打开后保存", "脚本已变化，请重新修改地址",
+            "脚本已变化，请重新同步", "脚本列表已变化，请重新排序", "脚本已变化，请重试",
+            "脚本名称不能为空", "脚本内容不能为空", "脚本内容必须是非空文本", "脚本文件超过 2 MiB 限制",
+            "脚本地址不能为空", "脚本地址格式无效", "仅支持 HTTP/HTTPS 脚本地址", "本地脚本没有远程地址",
+        ) } ?: fallback
+    }
 
     private fun report(error: Throwable, fallback: String) { mutableErrors.tryEmit(safeMessage(error, fallback)) }
 

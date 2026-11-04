@@ -44,7 +44,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -103,12 +102,13 @@ private fun ProxyPageToolbar(
             if (searchExpanded) {
                 Surface(Modifier.weight(1f).height(44.dp), shape = CircleShape, color = dashboardCardColor()) {
                     Row(Modifier.fillMaxSize().padding(start = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        AppGlyphIcon(AppGlyphs.search, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        AppGlyphIcon(AppGlyphs.search, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.width(9.dp))
                         BasicTextField(
                             value = query,
                             onValueChange = onQueryChange,
-                            modifier = Modifier.weight(1f).fillMaxHeight().focusRequester(focus).testTag("proxy_group_search"),
+                            modifier = Modifier.weight(1f).fillMaxHeight().focusRequester(focus)
+                                .testTag("proxy_group_search"),
                             singleLine = true,
                             textStyle = TextStyle(fontSize = 16.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -123,13 +123,13 @@ private fun ProxyPageToolbar(
                         )
                         if (query.isNotEmpty()) IconButton(onClick = { onQueryChange("") },
                             modifier = Modifier.size(44.dp).testTag("proxy_search_clear")) {
-                            AppGlyphIcon(AppGlyphs.close, "清除搜索", Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            AppGlyphIcon(AppGlyphs.close, Modifier.size(20.dp).testTag("action:清除搜索"), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         } else Spacer(Modifier.width(12.dp))
                     }
                 }
                 if (!picker) IconButton(onClick = { onSearchExpandedChange(false) },
                     modifier = Modifier.testTag("proxy_group_search_toggle")) {
-                    AppGlyphIcon(AppGlyphs.close, "关闭节点搜索", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    AppGlyphIcon(AppGlyphs.close, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 primaryAction()
             } else {
@@ -138,7 +138,7 @@ private fun ProxyPageToolbar(
                 Surface(shape = CircleShape, color = dashboardCardColor()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { onSearchExpandedChange(true) }, modifier = Modifier.size(44.dp).testTag("proxy_group_search_toggle")) {
-                            AppGlyphIcon(AppGlyphs.search, "搜索节点", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            AppGlyphIcon(AppGlyphs.search, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         primaryAction()
                     }
@@ -202,7 +202,7 @@ private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (I
                 Surface(
                     modifier = Modifier.height(36.dp).widthIn(min = 64.dp)
                         .appFocusRing(CircleShape)
-                        .selectable(active, role = Role.Tab, onClick = { onSelect(index) })
+                        .selectable(active, onClick = { onSelect(index) })
                         .testTag("proxy_group_tab_" + name),
                     shape = CircleShape,
                     color = tabColor,
@@ -219,13 +219,14 @@ private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (I
             val source = rememberAppMenuSource()
             IconButton(onClick = { showGroups = true },
                 modifier = Modifier.appMenuSource(source).background(dashboardCardColor(), CircleShape).testTag("proxy_group_more")) {
-                AppGlyphIcon(AppGlyphs.chevronDown, "选择代理组")
+                AppGlyphIcon(AppGlyphs.chevronDown)
             }
             AppDropdownMenu(expanded = showGroups, onDismissRequest = { showGroups = false }, source = source) {
                 names.forEachIndexed { index, name ->
                     AppDropdownMenuItem(text = { Text(name) },
-                        trailingIcon = { if (index == selectedIndex) AppGlyphIcon(AppGlyphs.check, "已选择") },
-                        onClick = { showGroups = false; onSelect(index) }, modifier = Modifier.testTag("proxy_group_menu_" + name))
+                        trailingIcon = { if (index == selectedIndex) AppGlyphIcon(AppGlyphs.check) },
+                        onClick = { showGroups = false; onSelect(index) },
+                        modifier = Modifier.testTag("proxy_group_menu_" + name))
                 }
             }
         }
@@ -285,10 +286,7 @@ internal fun ProxyGroupsCard(
     }
     val selectedGroupIndex = if (groupNames.isEmpty()) 0 else pagerState.currentPage.coerceIn(groupNames.indices)
     val selectedGroup = groups.getOrNull(selectedGroupIndex)
-    val canRefresh = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-        !state.isLoading &&
-        state.switchingGroup == null &&
-        state.batchTestingGroup == null
+    val canRefresh = state.canRefresh(runtimeState)
     fun updatePageOptions(updated: ProxyPageOptions) {
         pageOptions = updated
         ProxyPageOptionsStore.save(optionsContext, updated)
@@ -298,7 +296,8 @@ internal fun ProxyGroupsCard(
         searchExpanded = false
     }
     Column(
-        modifier = modifier.fillMaxSize().background(proxyPageColor()).testTag("proxy_groups_page"),
+        // 作者 long：外层已消费 Dock 的空间，这里只避让剩余 IME，搜索空态和节点操作才能留在键盘上方。
+        modifier = modifier.fillMaxSize().background(proxyPageColor()).imePadding().testTag("proxy_groups_page"),
     ) {
         ProxyPageToolbar(
             query = proxyQuery,
@@ -317,7 +316,7 @@ internal fun ProxyGroupsCard(
                         modifier = Modifier.size(44.dp).testTag("proxy_group_batch_${group.name}"),
                     ) {
                         if (state.batchTestingGroup == group.name) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                        else AppGlyphIcon(AppGlyphs.bolt, contentDescription = "批量测速")
+                        else AppGlyphIcon(AppGlyphs.bolt, modifier = Modifier.testTag("action:批量测速"))
                     }
                 }
             },
@@ -331,7 +330,7 @@ internal fun ProxyGroupsCard(
                         },
                         modifier = Modifier.appMenuSource(source).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("proxy_tools"),
                     ) {
-                        AppGlyphIcon(AppGlyphs.more, contentDescription = "代理组工具")
+                        AppGlyphIcon(AppGlyphs.more)
                     }
                     AppDropdownMenu(
                         expanded = toolsExpanded,
@@ -346,7 +345,7 @@ internal fun ProxyGroupsCard(
                                 if (pageOptions.displayMode == ProxyDisplayMode.TAB) selectedGroup?.let { group ->
                                     AppDropdownMenuItem(text = { Text("定位当前节点") },
                                         onClick = { toolsExpanded = false; locateTargetGroup = group.name; locateSelectedRequest++ },
-                                        enabled = group.all.isNotEmpty(), leadingIcon = { AppGlyphIcon(AppGlyphs.locate, null) },
+                                        enabled = group.all.isNotEmpty(), leadingIcon = { AppGlyphIcon(AppGlyphs.locate) },
                                         modifier = Modifier.testTag("proxy_scroll_to_selected"))
                                 }
                                 selectedGroup?.let { group ->
@@ -359,7 +358,7 @@ internal fun ProxyGroupsCard(
                                     text = { Text("刷新代理组") },
                                     onClick = { toolsExpanded = false; onRefresh() },
                                     enabled = canRefresh,
-                                    leadingIcon = { AppGlyphIcon(AppGlyphs.refresh, null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.refresh) },
                                     modifier = Modifier.testTag("proxy_groups_refresh"),
                                 )
                                 AppDropdownMenuItem(
@@ -398,7 +397,7 @@ internal fun ProxyGroupsCard(
                                     text = { Text("隐藏超时节点") },
                                     onClick = { updatePageOptions(pageOptions.copy(hideTimeout = !pageOptions.hideTimeout)) }, dismissOnClick = false,
                                     trailingIcon = {
-                                        if (pageOptions.hideTimeout) AppGlyphIcon(AppGlyphs.check, contentDescription = "已启用")
+                                        if (pageOptions.hideTimeout) AppGlyphIcon(AppGlyphs.check)
                                     },
                                     modifier = Modifier.testTag("proxy_tools_hide_timeout"),
                                 )
@@ -456,7 +455,7 @@ internal fun ProxyGroupsCard(
         if (!picker) Spacer(Modifier.height(12.dp))
         // 作者 long：刷新保留旧节点时仍明确展示忙态，卡片选择、菜单和测速一起停用，不能看起来可点却静默拒绝。
         if (state.isLoading && groups.isNotEmpty()) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("proxy_groups_refreshing"))
-        state.error?.let { message ->
+        state.error?.takeIf { groups.isNotEmpty() }?.let { message ->
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("proxy_groups_error"), verticalAlignment = Alignment.CenterVertically) {
                 Text(message, Modifier.weight(1f), color = MaterialTheme.colorScheme.error)
                 TextButton(onRefresh, enabled = canRefresh, modifier = Modifier.testTag("proxy_groups_retry")) { Text("重试") }
@@ -464,8 +463,14 @@ internal fun ProxyGroupsCard(
         }
         if (groups.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (state.isLoading) CircularProgressIndicator()
-                else if (state.error == null) Text("添加有效配置后显示代理组。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                ProxyPageEmptyState(
+                    title = if (state.isLoading) "正在加载代理组" else if (state.error != null) "代理组加载失败" else "没有代理组",
+                    description = if (state.isLoading) null else state.error ?: "添加有效配置后显示代理组。",
+                    tag = "proxy_groups_empty", loading = state.isLoading,
+                    actionLabel = if (state.isLoading) null else if (state.error == null) "刷新" else "重试",
+                    actionTag = if (state.error != null) "proxy_groups_retry" else "proxy_groups_empty_action",
+                    actionEnabled = canRefresh, onAction = onRefresh,
+                )
             }
         } else {
             if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
@@ -501,6 +506,7 @@ internal fun ProxyGroupsCard(
                             isCurrentPage = page == pagerState.currentPage && runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING,
                             onSelect = onSelect,
                             onTestDelay = onTestDelay,
+                            onClearSearch = { proxyQuery = "" },
                             onContentAtTopChanged = onContentAtTopChanged,
                         )
                     }
@@ -520,6 +526,7 @@ internal fun ProxyGroupsCard(
                         onSelect = onSelect,
                         onTestDelay = onTestDelay,
                         onTestGroupDelay = onTestGroupDelay,
+                        onClearSearch = { proxyQuery = "" },
                         onContentAtTopChanged = onContentAtTopChanged,
                     )
                 }
@@ -544,6 +551,7 @@ private fun ProxyGroupsListPage(
     onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestGroupDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo) -> Unit,
+    onClearSearch: () -> Unit,
     onContentAtTopChanged: (Boolean) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
@@ -619,7 +627,6 @@ private fun ProxyGroupsListPage(
                             modifier = Modifier.fillMaxWidth().clickable(enabled = !state.isLoading) { onToggleGroup(group.name) }
                                 .onSizeChanged { headerHeights[group.name] = it.height }
                                 .heightIn(min = 62.dp).padding(horizontal = 10.dp, vertical = 10.dp)
-                                .semantics { role = Role.Button; stateDescription = if (expanded) "已展开" else "已折叠" }
                                 .testTag("proxy_list_group_header_${group.name}"),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -639,7 +646,7 @@ private fun ProxyGroupsListPage(
                             if (expanded) {
                                 IconButton(onClick = { locate(group.name) },
                                     modifier = Modifier.size(32.dp).testTag("proxy_list_group_locate_${group.name}")) {
-                                    AppGlyphIcon(AppGlyphs.locate, contentDescription = "定位 ${group.name} 的当前节点")
+                                    AppGlyphIcon(AppGlyphs.locate)
                                 }
                                 IconButton(
                                     onClick = { onTestGroupDelay(group) },
@@ -650,7 +657,7 @@ private fun ProxyGroupsListPage(
                                     if (state.batchTestingGroup == group.name) {
                                         CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                                     } else {
-                                        AppGlyphIcon(AppGlyphs.bolt, contentDescription = "批量测速")
+                                        AppGlyphIcon(AppGlyphs.bolt, modifier = Modifier.testTag("action:批量测速"))
                                     }
                                 }
                             } else {
@@ -660,8 +667,7 @@ private fun ProxyGroupsListPage(
                             }
                             IconButton(onClick = { onToggleGroup(group.name) }, enabled = !state.isLoading,
                                 modifier = Modifier.padding(start = 6.dp).size(32.dp).testTag("proxy_list_group_toggle_${group.name}")) {
-                                AppGlyphIcon(if (expanded) AppGlyphs.chevronUp else AppGlyphs.chevronDown,
-                                    contentDescription = if (expanded) "收起 ${group.name}" else "展开 ${group.name}")
+                                AppGlyphIcon(if (expanded) AppGlyphs.chevronUp else AppGlyphs.chevronDown)
                             }
                         }
                     }
@@ -670,8 +676,12 @@ private fun ProxyGroupsListPage(
                     if (visible.isEmpty()) item(key = "empty:${group.name}") {
                         Surface(color = dashboardCardColor(),
                             shape = AppSuperellipseShape(bottomStart = 24.dp, bottomEnd = 24.dp)) {
-                            Text(if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
-                                modifier = Modifier.fillMaxWidth().padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Column(Modifier.fillMaxWidth().padding(16.dp).testTag("proxy_group_empty_${group.name}")) {
+                                Text(if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
+                                    modifier = Modifier,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                if (query.isNotBlank()) TextButton(onClearSearch, Modifier.testTag("proxy_group_empty_${group.name}_action")) { Text("清除搜索") }
+                            }
                         }
                     }
                     val rows = visible.chunked(columns)
@@ -780,9 +790,9 @@ private fun ProxyMenuOptionItem(
         text = { Text(label) },
         onClick = onClick,
         trailingIcon = {
-            if (isSelected) AppGlyphIcon(AppGlyphs.check, contentDescription = "已选择")
+            if (isSelected) AppGlyphIcon(AppGlyphs.check)
         },
-        modifier = Modifier.testTag(testTag).semantics { selected = isSelected },
+        modifier = Modifier.testTag(testTag),
     )
 }
 
@@ -798,6 +808,7 @@ private fun ProxyGroupNodesPage(
     locateTargetGroup: String?,
     onSelect: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
     onTestDelay: (com.lonnnnnng.flclash.core.ProxyGroupInfo, String) -> Unit,
+    onClearSearch: () -> Unit,
     onContentAtTopChanged: (Boolean) -> Unit = {},
 ) {
     val gridState = rememberLazyGridState()
@@ -852,9 +863,11 @@ private fun ProxyGroupNodesPage(
                 modifier = Modifier.fillMaxSize().testTag("proxy_group_members_${group.name}"),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ProxyPageEmptyState(
+                    title = if (query.isBlank()) "该组没有可用节点" else "没有匹配的节点",
+                    description = if (query.isBlank()) "可以切换其他代理组或检查配置资源" else "尝试其他关键词，或清除搜索查看该组节点",
+                    tag = "proxy_group_empty_${group.name}", searching = query.isNotBlank(),
+                    actionLabel = if (query.isBlank()) null else "清除搜索", onAction = onClearSearch,
                 )
             }
         } else {

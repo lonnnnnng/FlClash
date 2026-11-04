@@ -26,7 +26,6 @@ import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -196,12 +195,12 @@ internal fun MainNavigationDock(selected: MainDestination, destinations: List<Ma
                     destinations.forEachIndexed { item, destination ->
                         val active = item == index
                         Column(Modifier.weight(1f).fillMaxHeight().appFocusRing(shape)
-                            .selectable(active, role = Role.Tab, indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                            .selectable(active, indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                                 onClick = { latestSelection(destination) }).testTag("nav_${destination.name.lowercase()}"),
                             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                             Column(Modifier.fillMaxWidth().dockLensTint(motion, geometry, item, rtl, colors.primary),
                                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                AppGlyphIcon(destination.icon, null, Modifier.size(28.dp), tint = colors.onSurfaceVariant, filled = true)
+                                AppGlyphIcon(destination.icon, Modifier.size(28.dp), tint = colors.onSurfaceVariant, filled = true)
                                 Text(destination.label, style = TextStyle(fontSize = 10.sp, lineHeight = 14.5.sp, fontWeight = FontWeight.Medium),
                                     color = colors.onSurfaceVariant, maxLines = 1)
                             }
@@ -230,7 +229,7 @@ private fun Modifier.dockLensTint(motion: DockMotion, geometry: DockGeometry, in
     clipPath(path) {
         val scale = 1f + .16f * motion.lift.value
         withTransform({ scale(scale, scale, Offset(rect.center.x - left, rect.center.y - top)) }) {
-            // 作者 long：滑块逐部分染色和放大图文，布局与无障碍仍只有原来的一份入口。
+            // 作者 long：滑块逐部分染色和放大图文，布局与命中仍只有原来的一份入口。
             val paint = Paint().apply { colorFilter = ColorFilter.tint(tint) }
             drawContext.canvas.saveLayer(Rect(Offset.Zero, size), paint)
             this@drawWithContent.drawContent()

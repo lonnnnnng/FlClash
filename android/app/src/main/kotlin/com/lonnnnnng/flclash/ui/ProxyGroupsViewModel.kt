@@ -50,6 +50,11 @@ data class ProxyGroupsUiState(
     val customProfile: Boolean = false,
 )
 
+// 作者 long：首页卡片与完整代理页共用受理条件，入口不同不能绕过启停、节点切换或批量测速的忙状态。
+internal fun ProxyGroupsUiState.canRefresh(runtime: CoreRuntimeStatus): Boolean =
+    runtime != CoreRuntimeStatus.STARTING && runtime != CoreRuntimeStatus.STOPPING &&
+        !isLoading && switchingGroup == null && batchTestingGroup == null
+
 internal fun ProxyGroupsUiState.canAddToLocal(name: String): Boolean =
     name !in com.lonnnnnng.flclash.data.LocalProxies.reserved && groups.none { it.name == name } &&
         proxyTypes[name]?.lowercase() !in setOf("selector", "select", "urltest", "url-test", "fallback", "loadbalance", "load-balance", "relay") &&

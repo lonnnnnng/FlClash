@@ -117,7 +117,7 @@ class ProxyGroupsActivityInstrumentedTest {
             listOf(true, false).forEach { dark ->
                 val theme = if (dark) "dark" else "light"
                 composeRule.activityRule.scenario.onActivity { it.showResultsScenario(dark) }
-                composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsSelected()
+                composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertProxyInUse(composeRule)
                 composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsDisplayed()
                 put("page_$theme", captureHash("page_$theme"))
             }
@@ -152,7 +152,7 @@ class ProxyGroupsActivityInstrumentedTest {
             composeRule.onAllNodesWithTag("proxy_node_Auto_node-a").fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsSelected()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertProxyInUse(composeRule)
         // 作者 long：直接触摸卡片内独立测速区，确认它不会冒泡成节点选择。
         composeRule.onNodeWithTag("proxy_node_delay_Auto_node-b", useUnmergedTree = true)
             .assertIsDisplayed().performTouchInput { click() }

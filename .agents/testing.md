@@ -1,5 +1,13 @@
 # Testing
 
+## 编辑器错误恢复与交互回归（2026-11-04，当前快照）
+
+脚本、Provider正文、选项、过滤预设和规则资源错误体验已补齐本组范围；选区移动不清失败，长文查找显式滚动，已提交回读失败只允许重新读取，保存失败自动回到错误且保留草稿。
+
+App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；最终build4 Debug/Test、未签名Release/R8及独立lint4双变体通过，各0错误/64警告（Debug10/Release9提示）。Redmi最终App/Test同批final4 43/43，69张PNG已目视，安装哈希匹配；首批40/43独立保留、不累计。正式1份配置/原选择/正文SHA-size-mtime及逐字段摘要保持，原1.yaml、Flutter APK和设备设置保持，结束无服务/tun0。证据`docs/acceptance/editor-errors-recovery-redmi-20261104.json`。
+
+完整Flutter视觉仍PARTIAL：未覆盖页面/面板、全应用动效与玻璃采样品质、常驻Dock/按钮/其他面板live背景和触点glow、8MiB正文性能仍待补；低API核心/VPN/实网、Fallback实核/冷进程、Go/正式签名运行/远端CI边界保持。玻璃默认关闭；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。以下旧切片只证明当时范围。
+
 ## 共享玻璃材质、层栈、子页及 API27（2026-11-04）
 
 regular/pill/menu/alert/tinted/lens六种共享材质和STANDARD/ULTRA质量等级可渲染，生产默认关闭；菜单使用独立原图/预模糊背景与API33+ AGSL折射/bevel/高光，旧API走fallback。深色tint由Flutter实际导出#343537。多层子菜单保留所有父卡/独立滚动、可反向收回并隔离后层命中；策略组/更多/链式代理覆盖子页与同行表单已验。
@@ -10,9 +18,9 @@ App449/Service191/Core38/Common31共709项单测零失败/错误/跳过；Debug/
 
 ## 液滴菜单与配置子页集中验收（2026-11-04）
 
-最终生产build14根Wrapper `test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64`成功：App445/Service191/Core38/Common31共705项，失败/错误/跳过0；Debug/Test、未签名arm64 Release/R8及双Lint通过，各0错误/63警告（Debug10/Release9 hints）。新增1条UseKtx风格警告来自PixelCopy背景Bitmap创建。此前testbuild13只补截图同步/长正文；随后补真实指针与读屏语义长按区分，再以build14完整重建。
+最终生产build14根Wrapper `test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64`成功：App445/Service191/Core38/Common31共705项，失败/错误/跳过0；Debug/Test、未签名arm64 Release/R8及双Lint通过，各0错误/63警告（Debug10/Release9 hints）。新增1条UseKtx风格警告来自PixelCopy背景Bitmap创建。此前testbuild13只补截图同步/长正文；随后补真实指针区分，再以build14完整重建。
 
-Redmi final14最终生产/测试包同批24/24：深浅×两材质源快照开场/回源/中断、拖选/后台撤销、长菜单滚动、原指针长按跨Popup、读屏语义长按系统返回、既有菜单/子菜单/键盘、正文草稿/撤销重做、预览、Provider选项、本地目录/链接、资源排序/取消/失败、正式添加取消、1201行查找复制及旧资源入口。38张PNG（8张菜单帧、29张菜单/子页、1张长正文）已主线程目视，不等于Flutter逐像素一致。此前build12的21/21、testbuild13独立3/3只作为历史批次，各包哈希分别归档。
+Redmi final14最终生产/测试包同批24/24：深浅×两材质源快照开场/回源/中断、拖选/后台撤销、长菜单滚动、原指针长按跨Popup、既有菜单/子菜单/键盘、正文草稿/撤销重做、预览、Provider选项、本地目录/链接、资源排序/取消/失败、正式添加取消、1201行查找复制及旧资源入口。38张PNG（8张菜单帧、29张菜单/子页、1张长正文）已主线程目视，不等于Flutter逐像素一致。此前build12的21/21、testbuild13独立3/3只作为历史批次，各包哈希分别归档。
 
 新Repository保护before2、after12、final-after及final14-after各1/1：正式1份配置的Room行摘要/选择/正文文件名、SHA/size/mtime一致；原1.yaml双端哈希保持。旧首页guard依赖隐藏统计卡失败，首次新guard遇到横屏，均保留且不计通过；run-as被SELinux拒绝，未绕过。仅install-r安装指定Kotlin包，两包最终哈希匹配，Flutter原版未操作；结束无服务/tun0、旋转恢复1/0、字号1.0，剪贴板恢复。本组未跑订阅/Provider网络，不宣称全量脚本/偏好快照核验。
 
@@ -84,9 +92,9 @@ App/Test已用install -r安装且设备哈希匹配；最终Test为testbuild5，
 
 - **实现**：沿Flutter engine八分弧参数实现四逻辑角/RTL/零角/超大半径连续圆角，BSD声明随APK保留；主页面卡片/节点/菜单接入，Dashboard多层阴影和Dock阴影按Flutter参数表达。运行按钮/出站模式绘制按压、短按先升后落、原位命中/语义、子树焦点和最后按下项置顶接通；Dock滑块/放大染色/拉伸分别驱动，松手才导航，取消退回当前入口。组图标按完整字素显示并修复非法代理字符；Tab/List刷新保留列表并统一禁用选择/菜单/测速。
 - **构建与参考**：最终生产build3 App430/Service188共618项零失败/错误/跳过，Debug/AndroidTest/Lint通过；testbuild6仅补截图外层偏好保存恢复，生产APK未变；此前testbuild5修复触摸模式恢复；独立Release/R8/Lint通过，各0错误/62警告。真实Flutter Path.addRSuperellipse导出7种轮廓，Android LTR/RTL逐行端点允许1px栅格差；几何oracle不等于全页面像素一致。
-- **集中验收**：Redmi API36/arm64/竖屏默认字号，retry-final3-long同批23/23，无跳过。七项新交互涵盖真实Dock拖动/取消/语义/外扩命中、长按不误释放及静态bounds、键盘子树焦点、系统无障碍完整emoji和两布局忙态。主页/配置/代理组深浅截图、模式/选择持久化/旧ID隔离/失败重试及旧入口一同通过。原1.yaml运行态90项每250ms检查、连续180000ms，Activity重建后数量及会话保持；正式配置空Providers回归通过。
+- **集中验收**：Redmi API36/arm64/竖屏默认字号，retry-final3-long同批23/23，无跳过。七项新交互涵盖真实Dock拖动/取消/语义/外扩命中、长按不误释放及静态bounds、键盘子树焦点、完整emoji显示和两布局忙态。主页/配置/代理组深浅截图、模式/选择持久化/旧ID隔离/失败重试及旧入口一同通过。原1.yaml运行态90项每250ms检查、连续180000ms，Activity重建后数量及会话保持；正式配置空Providers回归通过。
 - **视觉与保护**：14张既有主页面严格基线已目视并更新，5张新增Profiles浅色/来源菜单及3张按压/焦点图作人工辅助参考；运行态/失败态图只证明功能。before、after-preflight、after-final保护各1/1，正式count2/missing0，原选择/文件SHA与mtime、脚本及运行态fixture偏好与原1.yaml双端哈希保持；最终App/Test与设备匹配，App仅arm64、测试包无原生库。结束无服务/tun0，旋转恢复1/0、字号1.0。
-- **失败保留**：build1 ColorScheme.shadow未定义修为Black；review1为2/12，真实Dock取消误提交已修，RTL像素镜像/Touch焦点/未就绪无障碍窗口分别修正。interaction2为7/8，List误用Tab标签已修；final-long为18/23，五项整页截图差异仅为继承键盘焦点。本机Compose字节码确认requestInputMode(Touch)只查询，测试改用平台setInTouchMode并等待恢复，保留原14个批准基线后最终通过，未靠更新焦点污染哈希判绿。早期视觉批次沿用的旧代理页截图宿主会清展示偏好，未独立持久化组前快照，不能宣称最初代理页展示偏好完整保持；最终测试已在Activity规则之外保存并恢复该选项，回读断言通过。
+- **失败保留**：build1 ColorScheme.shadow未定义修为Black；review1为2/12，真实Dock取消误提交已修，RTL像素镜像/Touch焦点/未就绪系统窗口分别修正。interaction2为7/8，List误用Tab标签已修；final-long为18/23，五项整页截图差异仅为继承键盘焦点。本机Compose字节码确认requestInputMode(Touch)只查询，测试改用平台setInTouchMode并等待恢复，保留原14个批准基线后最终通过，未靠更新焦点污染哈希判绿。早期视觉批次沿用的旧代理页截图宿主会清展示偏好，未独立持久化组前快照，不能宣称最初代理页展示偏好完整保持；最终测试已在Activity规则之外保存并恢复该选项，回读断言通过。
 - **证据与边界**：`docs/acceptance/main-visual-redmi-20261104.json`保存包/源码摘要、方法结果、失败与本机附件索引；原始日志/PNG/XML未上传。原始转圈现场缺失，无法认定唯一触发因；三分钟非空纯代理观察不证明所有资源更新/外网或完整进程恢复。Flutter默认非玻璃Dock及主页面基础切片通过，全部菜单/面板/玻璃模式和完整页面parity仍PARTIAL。Core/Common/Go未重跑，Release仅未签名构建、未安装运行，独立review因任务通道故障未执行。备份/系统恢复和观测页次要视觉继续暂缓。
 
 
@@ -264,7 +272,7 @@ Redmi仅竖屏/字号1.0/arm64，四类真实DocumentsUI导入与取消均确认
 - Redmi API36/arm64/1080×2340竖屏/字号1.0，按最后一次结果分批15个精确方法通过。device4为11/13，受影响项和旧备份扩展回归device5为6/6；results-final.json与methods2.txt/methods5.txt同上述前缀。不是一次15/15整批。隔离仓库事务/回滚/过期/备份改名及同名冲突、native validate/codec、表单深浅/删除/返回、链式候选过滤与清除、真实MainActivity快捷映射保存重开和四项备份回归通过。
 - 真实STOPPED Mihomo由授权原1.yaml规划全局节点，加载组成员并在改名后刷新，结束恢复选择/原全局目录并回收临时CUSTOM。完整远程导入的资源下载超时已保留，不算网络导入通过；native codec测试不等于分享链接复杂VM/E2E。
 - 正式Profile before/final-after各1/1，count1/missing0/expected1，原文件元数据保持；原1.yaml双端哈希不变。App `82dc77fc93e0d296c4e0881070cbd0b1f016c899886ff73886348eaf37011021`、Test `ac12ed39afa066e3d657ce0803493e75f08c0dc06e778b904ac5e3ec7a292664`均匹配设备；App仅arm64，Test无native。artifacts.json同前缀，结束无服务/tun0。
-- images-final/的19态已集中目视，保留IME可见态，无明显重叠裁切；不宣称Flutter像素一致。字段添加项受IME动画影响改用无障碍点击，选择页仍触摸，不能推广为全触摸E2E。device1–4失败及build1终止/build3编译失败保留，详情见roadmap。
+- images-final/的19态已集中目视，保留IME可见态，无明显重叠裁切；不宣称Flutter像素一致。字段添加项受IME动画影响改用自动化点击，选择页仍触摸，不能推广为全触摸E2E。device1–4失败及build1终止/build3编译失败保留，详情见roadmap。
 - 分享链接复杂替换/保留、节点菜单正式保存、排序边缘滚动/全协议真实保存、运行态修改与失败自动应用、链式页并发覆盖等未验或待实现，整体UI/Profiles保持PARTIAL。本轮代码未提交/推送。
 
 ## 资源更新总览与图标集首版（2026-11-03）
@@ -676,7 +684,7 @@ UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号�
 - 安装 Debug APK 后，`adb -s wsvwypiz7xwslvl7 shell cmd shortcut get-shortcuts --user 0 --flags 15 com.lonnnnnng.flclash` 返回 `start`、`stop`、`toggle` 三个静态快捷方式；启动器长按 KClash 图标显示三个对应中文入口。
 - 真机 `wsvwypiz7xwslvl7`（Redmi Note 8 Pro，Android 16/API 36）从启动器点击“启动 KClash 核心”后，`VpnService`、`ProxyService`、`tun0` 和 `198.18.0.0/30` 路由出现；点击“停止 KClash 核心”后全部清理。
 - 从启动器两次点击“切换 KClash 核心运行状态”，分别验证启动和停止；停止后 `dumpsys activity services` 无 KClash 服务，`ip route` 无 `tun0` 路由。
-- 通过 `adb -s wsvwypiz7xwslvl7 shell cmd statusbar add-tile com.lonnnnnng.flclash/.KClashTileService` 将 Tile 加入系统快捷设置；点击 Tile 启动核心后，系统面板无障碍描述为“`KClash：核心运行中`”。再次点击 Tile 停止核心后，面板描述为“`KClash：核心已停止`”。
+- 通过 `adb -s wsvwypiz7xwslvl7 shell cmd statusbar add-tile com.lonnnnnng.flclash/.KClashTileService` 将 Tile 加入系统快捷设置；点击 Tile 启动核心后，系统面板系统描述为“`KClash：核心运行中`”。再次点击 Tile 停止核心后，面板描述为“`KClash：核心已停止`”。
 - Tile 组件由 `android.permission.BIND_QUICK_SETTINGS_TILE` 保护；`dumpsys package` 显示 `android.service.quicksettings.action.QS_TILE` resolver 指向 `.KClashTileService`，没有出现 `SecurityException` 或 `FATAL EXCEPTION`。
 - 通过 `adb -s wsvwypiz7xwslvl7 shell am start -a` 分别发送 `com.lonnnnnng.flclash.action.START`、`STOP`、`TOGGLE` 验证外部 Action：`START` 建立两个前台服务、`tun0` 和 `198.18.0.0/30` 路由，`STOP` 清理，`TOGGLE` 可往返切换。
 - 外部入口 `ExternalActionActivity` 只接受固定 action；使用 `--es unexpected value` 发送额外参数时直接结束，服务和路由保持停止；验收后删除测试 Profile，首页恢复“还没有配置”。
@@ -1181,7 +1189,7 @@ UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号�
 ## Access 卡片顶栏搜索与全选入口验收记录（2026-10-29）
 
 - Access 卡片标题栏新增搜索入口和“全选当前结果 / 取消全选当前结果”入口；全选依据当前搜索、排序和来源过滤后的可见应用集合执行，搜索入口展开后显示应用名/包名输入框。
-- 关闭按应用代理时保留搜索入口可用，搜索框展开后可查看已保留选择；模式、筛选、应用勾选、批量操作和保存仍按关闭状态规则锁定。原正文批量按钮继续保留，作为小屏和无障碍备用入口。
+- 关闭按应用代理时保留搜索入口可用，搜索框展开后可查看已保留选择；模式、筛选、应用勾选、批量操作和保存仍按关闭状态规则锁定。原正文批量按钮继续保留，作为小屏备用入口。
 - `AccessControlPanelInstrumentedTest` 新增 `topBarToggleSelectsAndClearsVisibleApps`，并同步验证关闭状态搜索入口展开；已有搜索、剪贴板、空状态和未保存确认测试均通过。
 - `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0、跳过 0，Lint 错误 0。
 - `adb devices -l` 确认目标为 Redmi Note 8 Pro（Android 16/API 36，serial `wsvwypiz7xwslvl7`）；`ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64`：通过，78 项 instrumentation 失败 0、错误 0、跳过 0。
@@ -1220,7 +1228,7 @@ UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号�
 ## Access Flutter 顶栏菜单层级首片验收记录（2026-10-29）
 
 - 顶栏“更多操作”按 Flutter 结构拆为主菜单、设置层和操作层：主菜单提供开启/关闭、设置和操作；设置层提供白名单/黑名单、默认/名称/更新时间排序及系统/无网络应用显示开关；操作层提供智能选择、剪贴板导入和导出。
-- 正文“更多操作”保留为直接进入操作层的文字入口，保证小屏和无障碍路径不依赖顶栏图标；所有菜单项沿用核心运行、读取中、保存中和智能选择中的既有锁定边界。
+- 正文“更多操作”保留为直接进入操作层的文字入口，保证小屏路径不依赖顶栏图标；所有菜单项沿用核心运行、读取中、保存中和智能选择中的既有锁定边界。
 - `AccessControlPanelInstrumentedTest.topBarMenuMatchesFlutterAccessControlHierarchy` 覆盖主菜单进入设置/操作层、模式切换、排序、来源显示开关、智能选择和关闭入口；定向 Access 类 10 项失败 0、错误 0、跳过 0。
 - `./gradlew :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin --no-daemon -Ptarget-platform=android-arm64`：通过；JVM 单元测试 220 项失败 0、错误 0。
 - `./gradlew :app:assembleDebug :app:lintDebug --no-daemon -Ptarget-platform=android-arm64`：通过；Lint 错误 0。
@@ -1229,7 +1237,7 @@ UI 验收只使用竖屏和系统默认字号。不要运行横屏或大字号�
 - Debug APK SHA-256：`acaf5a9dee122262c41e901976e50608cbcfe4fb71a471072f766bc9d2b249a2`；APK 原生库仅包含 `lib/arm64-v8a/`。
 - 本轮未访问两条真实在线路径、未使用工作区根目录 `1.yaml`、未启动 VPN 或 Mihomo 核心；当前切片状态：`DONE-VERIFIED`（定向真机证据），全量回归待设备稳定后补验。
 
-## Access 顶栏图标和无障碍视觉收敛验收记录（2026-10-29）
+## Access 顶栏图标视觉收敛验收记录（2026-10-29）
 
 - 搜索、全选/取消全选和关闭搜索改用 Material 3 矢量图标，移除 Unicode 结构性图标；按钮保留原有 48dp 触控区域，并暴露动作名称、按钮角色和全选状态描述。
 - 搜索框使用 `AnimatedVisibility` 展开/收起；正文批量入口保留，未改变关闭状态、核心运行锁定和未保存变更语义。

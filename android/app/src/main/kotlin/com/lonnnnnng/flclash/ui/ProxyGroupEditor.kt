@@ -159,17 +159,17 @@ internal fun VisualProxyGroupsEditor(
                     Text(if (selecting) "已选择 ${selected.size} 项" else "策略组 · ${groups.size}", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                     if (selecting) {
                         IconButton(onClick = { groups = ProxyGroupIssues.duplicate(groups, selected.toSet(), source); selected = emptyList(); selecting = false },
-                            enabled = !saving && selected.isNotEmpty(), modifier = Modifier.testTag("proxy_group_batch_copy")) { Icon(Icons.Outlined.ContentCopy, "复制所选") }
-                        IconButton(onClick = { deleteKeys = selected.toSet() }, enabled = !saving && selected.isNotEmpty(), modifier = Modifier.testTag("proxy_group_batch_delete")) { Icon(Icons.Outlined.DeleteOutline, "删除所选") }
+                            enabled = !saving && selected.isNotEmpty(), modifier = Modifier.testTag("proxy_group_batch_copy")) { Icon(Icons.Outlined.ContentCopy, null) }
+                        IconButton(onClick = { deleteKeys = selected.toSet() }, enabled = !saving && selected.isNotEmpty(), modifier = Modifier.testTag("proxy_group_batch_delete")) { Icon(Icons.Outlined.DeleteOutline, null) }
                         IconButton(onClick = { selected = if (selected.size == groups.size) emptyList() else groups.map { it.key } }, enabled = !saving,
-                            modifier = Modifier.testTag("proxy_group_select_all")) { Icon(Icons.Outlined.SelectAll, "全选或取消全选") }
-                        IconButton(onClick = { selecting = false; selected = emptyList() }, enabled = !saving, modifier = Modifier.testTag("proxy_group_selection_done")) { Icon(Icons.Outlined.Close, "退出批选") }
+                            modifier = Modifier.testTag("proxy_group_select_all")) { Icon(Icons.Outlined.SelectAll, null) }
+                        IconButton(onClick = { selecting = false; selected = emptyList() }, enabled = !saving, modifier = Modifier.testTag("proxy_group_selection_done")) { Icon(Icons.Outlined.Close, null) }
                     } else {
                         if (groups.size > 1) IconButton(onClick = { sorting = !sorting }, enabled = !saving,
-                            modifier = Modifier.testTag("proxy_group_sort")) { Icon(if (sorting) Icons.Outlined.Done else Icons.AutoMirrored.Outlined.Sort, "排序") }
+                            modifier = Modifier.testTag("proxy_group_sort")) { Icon(if (sorting) Icons.Outlined.Done else Icons.AutoMirrored.Outlined.Sort, null) }
                         if (!sorting) IconButton(onClick = { selecting = true }, enabled = !saving && groups.isNotEmpty(),
-                            modifier = Modifier.testTag("proxy_group_select")) { Icon(Icons.Outlined.Checklist, "批量选择") }
-                        IconButton(onClick = ::add, enabled = !saving && parsed.isSuccess, modifier = Modifier.testTag("proxy_group_add")) { Icon(Icons.Outlined.Add, "添加策略组") }
+                            modifier = Modifier.testTag("proxy_group_select")) { Icon(Icons.Outlined.Checklist, null) }
+                        IconButton(onClick = ::add, enabled = !saving && parsed.isSuccess, modifier = Modifier.testTag("proxy_group_add")) { Icon(Icons.Outlined.Add, null) }
                     }
                 }
                 if (sorting) Text("长按拖动调整顺序", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -199,7 +199,7 @@ internal fun VisualProxyGroupsEditor(
                                 Box {
                                     IconButton(onClick = { menuAnchor.open(); menu = true }, enabled = !saving,
                                         modifier = Modifier.appContextMenuAnchor(menuAnchor, enabled = !saving) { menu = true }
-                                            .testTag("proxy_group_menu_$index")) { Icon(Icons.Outlined.MoreVert, "策略组操作") }
+                                            .testTag("proxy_group_menu_$index")) { Icon(Icons.Outlined.MoreVert, null) }
                                     AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                                         placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
                                         modifier = Modifier.testTag("proxy_group_actions_$index")) {
@@ -286,8 +286,8 @@ internal fun GroupOrderRow(index: Int, count: Int, itemKey: String, sorting: Boo
     } else Modifier), verticalAlignment = Alignment.CenterVertically) {
         content()
         if (sorting) {
-            IconButton(onClick = { currentMove(index - 1) }, enabled = enabled && index > 0, modifier = Modifier.testTag("group_move_up_$index")) { Icon(Icons.Outlined.KeyboardArrowUp, "上移") }
-            IconButton(onClick = { currentMove(index + 1) }, enabled = enabled && index < count - 1, modifier = Modifier.testTag("group_move_down_$index")) { Icon(Icons.Outlined.KeyboardArrowDown, "下移") }
+            IconButton(onClick = { currentMove(index - 1) }, enabled = enabled && index > 0, modifier = Modifier.testTag("group_move_up_$index")) { Icon(Icons.Outlined.KeyboardArrowUp, null) }
+            IconButton(onClick = { currentMove(index + 1) }, enabled = enabled && index < count - 1, modifier = Modifier.testTag("group_move_down_$index")) { Icon(Icons.Outlined.KeyboardArrowDown, null) }
         }
     }
 }
@@ -356,7 +356,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     } }
     ProfileEditorPage(onDismissRequest = ::exit, title = { Text(if (creating) "添加策略组" else "编辑策略组") }, backTag = "proxy_group_form_back", contentPadding = PaddingValues(0.dp),
         confirmButton = {
-            IconButton(onClick = { clearFocus[0]?.invoke(); yaml = true }, modifier = Modifier.testTag("proxy_group_quick_yaml")) { Icon(Icons.Outlined.Code, "快捷 YAML") }
+            IconButton(onClick = { clearFocus[0]?.invoke(); yaml = true }, modifier = Modifier.testTag("proxy_group_quick_yaml")) { Icon(Icons.Outlined.Code, null) }
             TextButton(onClick = ::confirm, enabled = !confirming, modifier = Modifier.testTag("proxy_group_form_confirm")) { Text(if (confirming) "校验中…" else "确认") }
         }, text = {
             val focus = LocalFocusManager.current
@@ -389,7 +389,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     applicable.filter { group.fields.has(it.key) }.forEach { option ->
                         Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { change { it.remove(option.key) } }, modifier = Modifier.testTag("group_remove_" + option.key)) { Icon(Icons.Outlined.RemoveCircleOutline, "移除" + option.label) }
+                            IconButton(onClick = { change { it.remove(option.key) } }, modifier = Modifier.testTag("group_remove_" + option.key)) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                             if (option.kind == "boolean") {
                                 Text(option.label, Modifier.weight(1f).padding(start = 16.dp)); Switch(group.flag(option.key), { value -> change { it.addProperty(option.key, value) } }, modifier = Modifier.padding(end = 16.dp))
                             } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { "默认" }, "group_option_" + option.key) { editing = option } }
@@ -512,8 +512,8 @@ private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroup
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(members.size.toString() + " 个成员", Modifier.weight(1f))
-                    IconButton(onClick = { sorting = !sorting }, Modifier.testTag("group_members_sort")) { Icon(Icons.AutoMirrored.Outlined.Sort, "排序") }
-                    IconButton(onClick = { picker = true }, Modifier.testTag("group_members_add")) { Icon(Icons.Outlined.Add, "添加节点") }
+                    IconButton(onClick = { sorting = !sorting }, Modifier.testTag("group_members_sort")) { Icon(Icons.AutoMirrored.Outlined.Sort, null) }
+                    IconButton(onClick = { picker = true }, Modifier.testTag("group_members_add")) { Icon(Icons.Outlined.Add, null) }
                 }
                 if (sorting) Text("长按拖动调整代理与资源顺序", style = MaterialTheme.typography.bodySmall)
                 members.forEachIndexed { index, member -> key(member) {
@@ -523,7 +523,7 @@ private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroup
                             Text(member.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             Text(if (member.provider) "资源" else "代理 / 策略组", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        if (!sorting) IconButton(onClick = { change(members.filterIndexed { i, _ -> i != index }) }, Modifier.testTag("group_member_remove_$index")) { Icon(Icons.Outlined.RemoveCircleOutline, "移除成员") }
+                        if (!sorting) IconButton(onClick = { change(members.filterIndexed { i, _ -> i != index }) }, Modifier.testTag("group_member_remove_$index")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                     }
                 } }
                 if (members.isEmpty()) Text("添加代理节点、其他策略组或资源", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)

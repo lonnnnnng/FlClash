@@ -124,12 +124,12 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                             Text(if (selected.isEmpty()) "附加规则 · ${rules.size}" else "已选 ${selected.size} 项", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                             if (selected.isNotEmpty()) {
                                 IconButton(onClick = { selected = if (visible.all { it.id in selected }) emptySet() else visible.map { it.id }.toSet() }, enabled = !busy,
-                                    modifier = Modifier.testTag("extension_select_all")) { Icon(Icons.Outlined.SelectAll, "全选") }
-                                IconButton(onClick = { confirmDelete = true }, enabled = !busy, modifier = Modifier.testTag("extension_delete_selected")) { Icon(Icons.Outlined.Delete, "删除所选规则") }
+                                    modifier = Modifier.testTag("extension_select_all")) { Icon(Icons.Outlined.SelectAll, null) }
+                                IconButton(onClick = { confirmDelete = true }, enabled = !busy, modifier = Modifier.testTag("extension_delete_selected")) { Icon(Icons.Outlined.Delete, null) }
                             } else {
-                                IconButton(onClick = { sorting = !sorting }, enabled = !busy && rules.size > 1, modifier = Modifier.testTag("extension_sort")) { Icon(Icons.Outlined.SwapVert, "排序") }
-                                IconButton(onClick = { showPresets = true }, enabled = !busy, modifier = Modifier.testTag("extension_presets")) { Icon(Icons.Outlined.AutoAwesome, "规则预设") }
-                                IconButton(onClick = { formId = "new" }, enabled = !busy, modifier = Modifier.testTag("extension_rule_add")) { Icon(Icons.Outlined.Add, "添加规则") }
+                                IconButton(onClick = { sorting = !sorting }, enabled = !busy && rules.size > 1, modifier = Modifier.testTag("extension_sort")) { Icon(Icons.Outlined.SwapVert, null) }
+                                IconButton(onClick = { showPresets = true }, enabled = !busy, modifier = Modifier.testTag("extension_presets")) { Icon(Icons.Outlined.AutoAwesome, null) }
+                                IconButton(onClick = { formId = "new" }, enabled = !busy, modifier = Modifier.testTag("extension_rule_add")) { Icon(Icons.Outlined.Add, null) }
                             }
                         }
                         if (sorting) Text("长按拖动调整顺序，或使用上下移动按钮", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -212,8 +212,8 @@ private fun ExtensionRuleRow(rule: ExtensionRule, index: Int, count: Int, sortin
         Text(rule.value, Modifier.weight(1f).clickable(enabled) { onEdit() }.padding(vertical = 12.dp).testTag("extension_rule_${rule.id}"), maxLines = 3, overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium)
         if (sorting) {
-            IconButton(onClick = { move(index - 1); drop() }, enabled = enabled && index > 0, modifier = Modifier.testTag("extension_up_${rule.id}")) { Icon(Icons.Outlined.KeyboardArrowUp, "上移") }
-            IconButton(onClick = { move(index + 1); drop() }, enabled = enabled && index < count - 1, modifier = Modifier.testTag("extension_down_${rule.id}")) { Icon(Icons.Outlined.KeyboardArrowDown, "下移") }
+            IconButton(onClick = { move(index - 1); drop() }, enabled = enabled && index > 0, modifier = Modifier.testTag("extension_up_${rule.id}")) { Icon(Icons.Outlined.KeyboardArrowUp, null) }
+            IconButton(onClick = { move(index + 1); drop() }, enabled = enabled && index < count - 1, modifier = Modifier.testTag("extension_down_${rule.id}")) { Icon(Icons.Outlined.KeyboardArrowDown, null) }
         }
     }
 }
@@ -227,7 +227,7 @@ private fun ExtensionTargetPicker(selected: String?, targets: List<String>, foll
             if (follow && query.isBlank()) TextButton(onClick = { onSelect(null) }, modifier = Modifier.testTag("extension_follow_profile")) { Text("跟随配置") }
             targets.filter { it.contains(query, true) }.forEach { target ->
                 Row(Modifier.fillMaxWidth().clickable { onSelect(target) }.padding(vertical = 12.dp).testTag("extension_target_$target"), verticalAlignment = Alignment.CenterVertically) {
-                    Text(target, Modifier.weight(1f)); if (target == selected) Icon(Icons.Outlined.Check, "已选择")
+                    Text(target, Modifier.weight(1f)); if (target == selected) Icon(Icons.Outlined.Check, null)
                 }
             }
         }

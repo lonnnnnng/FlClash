@@ -161,7 +161,7 @@ class ProxyPageParityInstrumentedTest {
         compose.onNodeWithTag("proxy_tools").assertDoesNotExist()
         compose.onNodeWithTag("proxy_group_batch_分组12").assertIsDisplayed()
         compose.onNodeWithTag("proxy_search_clear").performClick()
-        compose.onNodeWithTag("proxy_node_分组12_node-a").assertIsDisplayed().assertIsSelected()
+        compose.onNodeWithTag("proxy_node_分组12_node-a").assertIsDisplayed().assertProxyInUse(compose)
         compose.onNodeWithTag("proxy_group_search_toggle").performClick()
         compose.onNodeWithTag("proxy_group_search").assertDoesNotExist()
         compose.onNodeWithTag("proxy_group_tab_分组12").assertIsSelected()

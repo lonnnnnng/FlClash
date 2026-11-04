@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.testTag
 import android.graphics.Paint
 
@@ -41,15 +40,23 @@ internal fun profileYamlText(text: String, key: Color, comment: Color, literal: 
 }
 
 @Composable
-internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) -> Unit, enabled: Boolean, modifier: Modifier = Modifier) {
+internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) -> Unit, enabled: Boolean, modifier: Modifier = Modifier,
+    contentTag: String = "profile_editor_content",
+    highlightYaml: Boolean = true) {
     val style = profileCodeStyle().copy(color = MaterialTheme.colorScheme.onSurface)
     val colors = MaterialTheme.colorScheme
-    val transformation = remember(colors.primary, colors.onSurfaceVariant, colors.tertiary) {
-        VisualTransformation { TransformedText(profileYamlText(it.text, colors.primary, colors.onSurfaceVariant, colors.tertiary), OffsetMapping.Identity) }
+    val transformation = remember(colors.primary, colors.onSurfaceVariant, colors.tertiary, highlightYaml) {
+        VisualTransformation { TransformedText(if (highlightYaml) profileYamlText(it.text, colors.primary, colors.onSurfaceVariant, colors.tertiary) else it, OffsetMapping.Identity) }
     }
     val scroll = rememberScrollState()
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
-    val starts = remember(value.text) { buildList { add(0); value.text.forEachIndexed { index, char -> if (char == '\n') add(index + 1) } } }
+    val starts = remember(value.text) { buildList {
+        add(0)
+        value.text.forEachIndexed { index, char ->
+            // 作者 long：保留源字节的CR/CRLF也需要正确行号；不能为显示行号先把配置换行格式改写。
+            if (char == '\n' || char == '\r' && value.text.getOrNull(index + 1) != '\n') add(index + 1)
+        }
+    } }
     // 作者 long：查找时焦点仍在查询框，必须显式定位正文选区，不能依赖输入法的光标跟随。
     LaunchedEffect(value.selection, layout) {
         val result = layout ?: return@LaunchedEffect
@@ -78,7 +85,7 @@ internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) 
                     drawContext.canvas.nativeCanvas.drawText((line + 1).toString(), size.width - 12.dp.toPx(), result.getLineBaseline(visual), paint)
                 }
             }
-            BasicTextField(value, onChange, Modifier.weight(1f).padding(end = 16.dp).testTag("profile_editor_content"), enabled = enabled,
+            BasicTextField(value, onChange, Modifier.weight(1f).padding(end = 16.dp).testTag(contentTag), enabled = enabled,
                 textStyle = style, cursorBrush = SolidColor(colors.primary), visualTransformation = transformation,
                 onTextLayout = { layout = it })
         }

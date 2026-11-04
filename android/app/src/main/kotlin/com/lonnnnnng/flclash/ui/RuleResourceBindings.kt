@@ -41,7 +41,7 @@ internal fun RuleResourceBindings(section: String, source: String, resources: Li
                 Text(if (missing) "资源缺失，请重新选择" else if (resource != null) "全局资源 · ${resource.label}" else "配置自有资源", style = MaterialTheme.typography.bodySmall,
                     color = if (missing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (missing) Icon(Icons.Outlined.WarningAmber, "资源缺失", tint = MaterialTheme.colorScheme.error)
+            if (missing) Icon(Icons.Outlined.WarningAmber, null, tint = MaterialTheme.colorScheme.error)
             TextButton(onClick = { alias = name; choosing = true }, enabled = enabled) { Text("选择") }
         }
     }

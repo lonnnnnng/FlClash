@@ -77,7 +77,7 @@ class FallbackPayloadBoundaryInstrumentedTest {
                         for (name in listOf("node-a", "node-b")) {
                             val tag = if (layout == "TAB") "proxy_node_" else "proxy_list_node_"
                             val node = compose.onNodeWithTag("${tag}Fallback边界_$name").assertIsDisplayed()
-                            if (case.expected == name) node.assertIsSelected() else node.assertIsNotSelected()
+                            if (case.expected == name) node.assertProxyInUse(compose) else node.assertProxyNotInUse(compose)
                         }
                         if (index == 3) {
                             val bitmap = checkNotNull(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())

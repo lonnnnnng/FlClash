@@ -64,7 +64,7 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
                             onSave(settings.changed(key, JsonPrimitive(enabled))) { if (!it) error = "保存失败，请重试" }
                         }, enabled = !busy)
                         IconButton({ remove(key) }, enabled = !busy, modifier = Modifier.testTag("global_dns_remove_$key")) {
-                            Icon(Icons.Outlined.RemoveCircleOutline, "移除${dnsLabels.getValue(key)}覆盖")
+                            Icon(Icons.Outlined.RemoveCircleOutline, null)
                         }
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

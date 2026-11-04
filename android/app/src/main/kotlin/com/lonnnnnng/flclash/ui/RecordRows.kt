@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -88,7 +87,7 @@ private fun RecordCard(
     val colors = MaterialTheme.colorScheme
     Surface(
         modifier = modifier.fillMaxWidth().clip(RecordStyle.shape)
-            .then(if (onClick == null) Modifier else Modifier.clickable(role = Role.Button, onClick = onClick)),
+            .then(if (onClick == null) Modifier else Modifier.clickable(onClick = onClick)),
         shape = RecordStyle.shape,
         color = if (LocalKClashDarkTheme.current) colors.surfaceContainer else colors.surfaceBright,
     ) {
@@ -178,7 +177,7 @@ private fun RecordKeywordLabel(
             modifier = Modifier
                 .then(if (testTag == null) Modifier else Modifier.testTag(testTag))
                 .clip(RecordStyle.labelShape)
-                .clickable(role = Role.Button, onClick = onClick),
+                .clickable(onClick = onClick),
             shape = RecordStyle.labelShape,
             color = background,
             contentColor = foreground,

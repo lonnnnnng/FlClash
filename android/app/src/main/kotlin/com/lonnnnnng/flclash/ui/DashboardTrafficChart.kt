@@ -13,21 +13,17 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 import kotlin.math.max
 
 @Composable
-internal fun DashboardTrafficChart(label: String, samples: List<Long>, tag: String) {
+internal fun DashboardTrafficChart(samples: List<Long>, tag: String) {
     val heights = remember(samples) { dashboardTrafficHeights(samples) }
     val slopes = remember(heights) { dashboardTrafficSlopes(heights) }
     val color = MaterialTheme.colorScheme.primary
     Canvas(
-        Modifier.fillMaxWidth().height(36.dp).testTag(tag).semantics {
-            contentDescription = "${label}速度历史，最近 ${samples.size} 次采样"
-        },
+        Modifier.fillMaxWidth().height(36.dp).testTag(tag),
     ) {
         val stroke = 2.dp.toPx()
         val step = size.width / (DASHBOARD_TRAFFIC_CAPACITY - 1)

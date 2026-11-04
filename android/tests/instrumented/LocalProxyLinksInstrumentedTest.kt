@@ -73,7 +73,7 @@ class LocalProxyLinksInstrumentedTest {
             compose.runOnIdle { model.open() }
             stage = "链接填充父页草稿"
             compose.onNodeWithTag("local_proxy_link-a").performClick()
-            compose.onNodeWithContentDescription("从分享链接填写").performClick(); idle()
+            compose.onActionMarker("从分享链接填写").performClick(); idle()
             val changed = a.fields.apply { addProperty("name", unsupported.name); remove("tfo"); remove("x-kclash-option") }
             val link = bridge.encodeShareLinks(listOf(changed)).single()
             compose.onNodeWithTag("local_proxy_links_content").performTextReplacement(link)

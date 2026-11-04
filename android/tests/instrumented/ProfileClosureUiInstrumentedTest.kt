@@ -32,9 +32,9 @@ class ProfileClosureUiInstrumentedTest {
         } } }
         for (theme in listOf(false, true)) {
             compose.runOnIdle { dark = theme; error = null; submitted = emptyList(); reject = true; profiles = profiles.take(2) }
-            compose.onNodeWithTag("profiles_order_1").performOrderAccessibilityAction(compose, "下移")
+            compose.onNodeWithTag("profiles_order_1").performOrderTouchMove(1)
             compose.runOnIdle { assertTrue(submitted.isEmpty()); profiles = profiles + Profile.custom(3, "新增配置") }
-            compose.onNodeWithTag("profiles_order_2").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "第 1 项"))
+            compose.onNodeWithTag("profiles_order_2").assertIsDisplayed()
             compose.onNodeWithTag("profiles_order_save").performClick()
             compose.onNodeWithTag("profiles_order_error").assertTextContains("排序保存失败", substring = true)
             compose.runOnIdle { assertEquals(listOf(2L, 1L, 3L), submitted); reject = false }

@@ -83,14 +83,14 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
         backTag = "custom_rules_back", confirmButton = {
             if (busy) CircularProgressIndicator(Modifier.padding(12.dp).size(20.dp))
             else if (selecting) {
-                IconButton(onClick = { selected = if (visible.all { it.key in selected }) selected - visible.map { it.key }.toSet() else selected + visible.map { it.key } }, modifier = Modifier.testTag("custom_rules_select_all")) { Icon(Icons.Outlined.SelectAll, "全选当前结果") }
-                IconButton(onClick = { duplicate(selected) }, enabled = selected.isNotEmpty(), modifier = Modifier.testTag("custom_rules_duplicate_selected")) { Icon(Icons.Outlined.ContentCopy, "复制所选规则") }
-                IconButton(onClick = { delete = selected }, enabled = selected.isNotEmpty(), modifier = Modifier.testTag("custom_rules_delete_selected")) { Icon(Icons.Outlined.Delete, "删除所选规则") }
+                IconButton(onClick = { selected = if (visible.all { it.key in selected }) selected - visible.map { it.key }.toSet() else selected + visible.map { it.key } }, modifier = Modifier.testTag("custom_rules_select_all")) { Icon(Icons.Outlined.SelectAll, null, modifier = Modifier.testTag("action:全选当前结果")) }
+                IconButton(onClick = { duplicate(selected) }, enabled = selected.isNotEmpty(), modifier = Modifier.testTag("custom_rules_duplicate_selected")) { Icon(Icons.Outlined.ContentCopy, null) }
+                IconButton(onClick = { delete = selected }, enabled = selected.isNotEmpty(), modifier = Modifier.testTag("custom_rules_delete_selected")) { Icon(Icons.Outlined.Delete, null) }
             } else {
                 // 作者 long：筛选后的行号不代表完整规则位置，进入搜索即结束排序，避免把过滤位置写入源列表。
-                IconButton(onClick = { sorting = false; search = !search; if (!search) query = "" }, modifier = Modifier.testTag("custom_rules_search_toggle")) { Icon(if (search) Icons.Outlined.Close else Icons.Outlined.Search, "搜索规则") }
+                IconButton(onClick = { sorting = false; search = !search; if (!search) query = "" }, modifier = Modifier.testTag("custom_rules_search_toggle")) { Icon(if (search) Icons.Outlined.Close else Icons.Outlined.Search, null) }
                 Box {
-                    IconButton(onClick = { menu = true }, modifier = Modifier.testTag("custom_rules_menu")) { Icon(Icons.Outlined.MoreVert, "更多操作") }
+                    IconButton(onClick = { menu = true }, modifier = Modifier.testTag("custom_rules_menu")) { Icon(Icons.Outlined.MoreVert, null) }
                     DropdownMenu(menu, { menu = false }) {
                         DropdownMenuItem(text = { Text("快捷 YAML") }, onClick = { menu = false; yaml = true }, modifier = Modifier.testTag("custom_rules_yaml"))
                         DropdownMenuItem(text = { Text("规则预设") }, onClick = { menu = false; presets = true }, modifier = Modifier.testTag("custom_rules_presets"))
@@ -98,7 +98,7 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
                         DropdownMenuItem(text = { Text(if (sorting) "完成排序" else "排序") }, onClick = { menu = false; sorting = !sorting; search = false; query = "" }, enabled = rows.size > 1, modifier = Modifier.testTag("custom_rules_sort"))
                     }
                 }
-                IconButton(onClick = { form = "new" }, modifier = Modifier.testTag("custom_rules_add")) { Icon(Icons.Outlined.Add, "添加规则") }
+                IconButton(onClick = { form = "new" }, modifier = Modifier.testTag("custom_rules_add")) { Icon(Icons.Outlined.Add, null) }
             }
         }, text = {
             Column(Modifier.fillMaxSize()) {
@@ -167,10 +167,10 @@ private fun CustomRuleRow(rule: CustomRuleDraft, index: Int, count: Int, issue: 
             issue?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, maxLines = 2, overflow = TextOverflow.Ellipsis) }
         }
         if (sorting) {
-            IconButton(onClick = { move(index - 1); drop() }, enabled = enabled && index > 0, modifier = Modifier.testTag("custom_rule_up_$index")) { Icon(Icons.Outlined.KeyboardArrowUp, "上移") }
-            IconButton(onClick = { move(index + 1); drop() }, enabled = enabled && index < count - 1, modifier = Modifier.testTag("custom_rule_down_$index")) { Icon(Icons.Outlined.KeyboardArrowDown, "下移") }
+            IconButton(onClick = { move(index - 1); drop() }, enabled = enabled && index > 0, modifier = Modifier.testTag("custom_rule_up_$index")) { Icon(Icons.Outlined.KeyboardArrowUp, null) }
+            IconButton(onClick = { move(index + 1); drop() }, enabled = enabled && index < count - 1, modifier = Modifier.testTag("custom_rule_down_$index")) { Icon(Icons.Outlined.KeyboardArrowDown, null) }
         } else if (!selecting) Box {
-            IconButton(onClick = { menu = true }, enabled = enabled, modifier = Modifier.testTag("custom_rule_menu_$index")) { Icon(Icons.Outlined.MoreVert, "规则操作") }
+            IconButton(onClick = { menu = true }, enabled = enabled, modifier = Modifier.testTag("custom_rule_menu_$index")) { Icon(Icons.Outlined.MoreVert, null) }
             DropdownMenu(menu, { menu = false }) {
                 DropdownMenuItem(text = { Text("复制") }, onClick = { menu = false; onDuplicate() }, modifier = Modifier.testTag("custom_rule_duplicate_$index"))
                 DropdownMenuItem(text = { Text("删除") }, onClick = { menu = false; onDelete() }, modifier = Modifier.testTag("custom_rule_delete_$index"))

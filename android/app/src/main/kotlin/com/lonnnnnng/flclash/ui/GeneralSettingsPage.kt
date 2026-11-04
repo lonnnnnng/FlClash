@@ -14,7 +14,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
@@ -102,7 +101,7 @@ private fun GeneralSection(title: String, content: @Composable ColumnScope.() ->
 
 @Composable
 private fun GeneralToggle(title: String, value: Boolean, busy: Boolean, tag: String, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().toggleable(value, role = Role.Switch, enabled = !busy, onValueChange = onChange).testTag(tag)
+    Row(Modifier.fillMaxWidth().toggleable(value, enabled = !busy, onValueChange = onChange).testTag(tag)
         .padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(title, Modifier.weight(1f).padding(end = 12.dp)); Switch(value, null, enabled = !busy)
     }
@@ -112,7 +111,7 @@ private fun GeneralToggle(title: String, value: Boolean, busy: Boolean, tag: Str
 private fun GeneralOpenRow(title: String, subtitle: String?, tag: String, busy: Boolean, onOpen: () -> Unit) {
     Row(Modifier.fillMaxWidth().clickable(enabled = !busy, onClick = onOpen).testTag(tag).padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) { Text(title); subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2) } }
-        Icon(Icons.Outlined.ChevronRight, "打开$title", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -173,7 +172,7 @@ private fun GeneralTextEditor(field: String, initial: String, busy: Boolean, onD
         Column { OutlinedTextField(value, { if (it.length <= 1024 && it.none(Char::isISOControl)) value = it }, enabled = !busy, singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = if (field in listOf("secret", "password")) KeyboardType.Password else KeyboardType.Text),
             visualTransformation = if (field in listOf("secret", "password") && !revealed) PasswordVisualTransformation() else VisualTransformation.None,
-            trailingIcon = { if (field in listOf("secret", "password")) IconButton({ revealed = !revealed }) { Icon(Icons.Outlined.Visibility, "显示或隐藏") } },
+            trailingIcon = { if (field in listOf("secret", "password")) IconButton({ revealed = !revealed }) { Icon(Icons.Outlined.Visibility, null) } },
             modifier = Modifier.fillMaxWidth().testTag("general_text_input"))
             error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_editor_error")) }
         }
@@ -205,8 +204,8 @@ private fun GeneralUserAgentsPage(settings: GeneralSettings, busy: Boolean, onDi
                 entries.forEachIndexed { index, value ->
                     Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { save(settings.copy(userAgent = value)) }.padding(vertical = 8.dp).testTag("general_ua_$index"), verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(settings.userAgent == value, null); Text(value, Modifier.weight(1f).padding(start = 12.dp), maxLines = 3)
-                        IconButton({ editing = value }, enabled = !busy) { Icon(Icons.Outlined.Edit, "编辑") }
-                        IconButton({ save(settings.copy(userAgents = entries - value, userAgent = settings.userAgent.takeUnless { it == value })) }, enabled = !busy) { Icon(Icons.Outlined.Delete, "删除") }
+                        IconButton({ editing = value }, enabled = !busy) { Icon(Icons.Outlined.Edit, null) }
+                        IconButton({ save(settings.copy(userAgents = entries - value, userAgent = settings.userAgent.takeUnless { it == value })) }, enabled = !busy) { Icon(Icons.Outlined.Delete, null) }
                     }
                 }
             }
@@ -233,7 +232,7 @@ private fun GeneralHostsPage(settings: GeneralSettings, busy: Boolean, onDismiss
                 settings.hosts.filter { (k, v) -> k.contains(query, true) || v.contains(query, true) }.forEach { (name, value) ->
                     Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { editing = name }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) { Text(name); Text(value, style = MaterialTheme.typography.bodySmall) }
-                        IconButton({ onSave(settings.copy(hosts = settings.hosts - name)) { if (!it) error = "删除失败，请重试" } }, enabled = !busy) { Icon(Icons.Outlined.Delete, "删除$name") }
+                        IconButton({ onSave(settings.copy(hosts = settings.hosts - name)) { if (!it) error = "删除失败，请重试" } }, enabled = !busy) { Icon(Icons.Outlined.Delete, null) }
                     }
                 }
             }

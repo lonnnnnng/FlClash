@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -85,9 +86,9 @@ internal fun RemoteProfileEditorDialog(
                 AgeSecretKeyField(draft.ageKey, { change(draft.copy(ageKey = it)) }, !locked, "remote_profile_editor_age_key")
             }
             ProfileFormSection {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(draft.autoUpdate, enabled = !locked, onValueChange = { change(draft.copy(autoUpdate = it)) }).testTag("remote_profile_editor_auto_update"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("自动更新")
-                    Switch(draft.autoUpdate, { change(draft.copy(autoUpdate = it)) }, enabled = !locked, modifier = Modifier.testTag("remote_profile_editor_auto_update"))
+                    Switch(draft.autoUpdate, null, enabled = !locked)
                 }
                 if (draft.autoUpdate) OutlinedTextField(draft.intervalMinutes, { change(draft.copy(intervalMinutes = it.filter(Char::isDigit).take(7))) },
                     Modifier.fillMaxWidth().testTag("remote_profile_editor_interval"), enabled = !locked,

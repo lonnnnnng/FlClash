@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -49,18 +50,18 @@ internal fun FilterPresetsPage(state: FilterPresetsUiState, onDismiss: () -> Uni
     ProfileEditorPage(onDismissRequest = { if (!state.busy) onDismiss() }, title = { Text(if (selecting) "已选择 ${selected.size} 项" else "过滤预设") }, backTag = "filter_presets_back",
         confirmButton = {
             if (selecting) {
-                IconButton(onClick = { selected = state.rows.filter { it.label.contains(query, true) || it.regex.contains(query, true) }.map { it.label }.toSet() }) { Icon(Icons.Outlined.SelectAll, "全选") }
-                IconButton(onClick = { deleting = true }, enabled = selected.isNotEmpty() && !state.busy) { Icon(Icons.Outlined.Delete, "删除所选预设") }
+                IconButton(onClick = { selected = state.rows.filter { it.label.contains(query, true) || it.regex.contains(query, true) }.map { it.label }.toSet() }) { Icon(Icons.Outlined.SelectAll, null) }
+                IconButton(onClick = { deleting = true }, enabled = selected.isNotEmpty() && !state.busy) { Icon(Icons.Outlined.Delete, null, modifier = Modifier.testTag("action:删除所选预设")) }
             }
-            IconButton(onClick = { selecting = !selecting; sorting = false; selected = emptySet() }, enabled = !state.busy, modifier = Modifier.testTag("filter_presets_select")) { Icon(Icons.Outlined.Checklist, if (selecting) "完成选择" else "批量选择") }
-            IconButton(onClick = { sorting = !sorting; selecting = false; query = "" }, enabled = !state.busy, modifier = Modifier.testTag("filter_presets_sort")) { Icon(Icons.Outlined.SwapVert, "排序") }
-            IconButton(onClick = { onEdit(null) }, enabled = !state.busy, modifier = Modifier.testTag("filter_presets_add")) { Icon(Icons.Outlined.Add, "添加预设") }
+            IconButton(onClick = { selecting = !selecting; sorting = false; selected = emptySet() }, enabled = !state.busy, modifier = Modifier.testTag("filter_presets_select")) { Icon(Icons.Outlined.Checklist, null) }
+            IconButton(onClick = { sorting = !sorting; selecting = false; query = "" }, enabled = !state.busy, modifier = Modifier.testTag("filter_presets_sort")) { Icon(Icons.Outlined.SwapVert, null) }
+            IconButton(onClick = { onEdit(null) }, enabled = !state.busy, modifier = Modifier.testTag("filter_presets_add")) { Icon(Icons.Outlined.Add, null) }
         }, text = {
             Column(Modifier.fillMaxSize().testTag("filter_presets_page")) {
                 if (state.loading || state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                if (!state.creating && state.editing == null) state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                if (!state.creating && state.editing == null) state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier) }
                 OutlinedTextField(query, { query = it }, singleLine = true, enabled = !sorting, label = { Text("搜索名称或表达式") }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
-                    trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, "清除搜索") } }, modifier = Modifier.fillMaxWidth().testTag("filter_presets_search"))
+                    trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, null, modifier = Modifier.testTag("action:清除搜索")) } }, modifier = Modifier.fillMaxWidth().testTag("filter_presets_search"))
                 if (sorting) Text("长按拖动调整顺序", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 12.dp))
                 val rows = state.rows.filter { it.label.contains(query, true) || it.regex.contains(query, true) }
                 if (!state.loading && rows.isEmpty()) Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { Text(if (query.isBlank()) "暂无过滤预设" else "没有匹配的结果", color = MaterialTheme.colorScheme.onSurfaceVariant) }
@@ -69,9 +70,11 @@ internal fun FilterPresetsPage(state: FilterPresetsUiState, onDismiss: () -> Uni
                         GroupOrderRow(state.rows.indexOf(row), state.rows.size, row.label, sorting, !state.busy, onMove = { target ->
                             onReorder(state.rows.toMutableList().apply { add(target, removeAt(indexOf(row))) }.map { it.label })
                         }) {
-                            Row(Modifier.weight(1f).heightIn(min = 72.dp).clickable(enabled = !state.busy && !sorting) {
-                                if (selecting) selected = if (row.label in selected) selected - row.label else selected + row.label else onEdit(row)
-                            }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            // 作者 long：批选由整行统一切换，复选框只显示状态，避免一次点击触发两次切换。
+                            val action = if (selecting) Modifier.toggleable(row.label in selected, enabled = !state.busy && !sorting, ) { checked ->
+                                selected = if (checked) selected + row.label else selected - row.label
+                            } else Modifier.clickable(enabled = !state.busy && !sorting, ) { onEdit(row) }
+                            Row(Modifier.weight(1f).heightIn(min = 72.dp).then(action).testTag("filter_preset_row_${row.label}").padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                                 if (selecting) Checkbox(row.label in selected, null)
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Text(row.label, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -96,7 +99,7 @@ internal fun FilterPresetsPage(state: FilterPresetsUiState, onDismiss: () -> Uni
         ProfileEditorPage(onDismissRequest = close, title = { Text(if (original == null) "添加过滤预设" else "编辑过滤预设") }, backTag = "filter_preset_editor_back",
             confirmButton = { TextButton(onClick = { onSave(label, regex) }, enabled = !state.busy && label.isNotBlank() && regex.isNotBlank(), modifier = Modifier.testTag("filter_preset_save")) { Text(if (state.busy) "校验中…" else "保存") } }, text = {
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                    state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier) }
                     OutlinedTextField(label, { label = it }, enabled = !state.busy, singleLine = true, label = { Text("名称") }, modifier = Modifier.fillMaxWidth().testTag("filter_preset_label"))
                     OutlinedTextField(regex, { regex = it }, enabled = !state.busy, minLines = 3, label = { Text("过滤表达式") }, modifier = Modifier.fillMaxWidth().testTag("filter_preset_regex"))
                     Text("多个表达式用反引号 ` 分隔。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

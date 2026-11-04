@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 
@@ -40,6 +41,7 @@ internal fun ProfileProviderDocumentHost(model: ProfileStatisticsViewModel) {
 internal fun ProfileProviderDocumentPage(state: ProviderDocumentUiState, onClose: () -> Unit,
     onChange: (String) -> Unit, onSave: () -> Unit, onRetry: () -> Unit) {
     var askDiscard by remember(state.name) { mutableStateOf(false) }
+    var value by remember(state.document) { mutableStateOf(TextFieldValue(state.content)) }
     val close = { if (!state.saving) { if (state.dirty) askDiscard = true else onClose() } }
     ProfileEditorPage(onDismissRequest = close, backTag = "profile_provider_document_back", title = { Text(state.name) },
         confirmButton = {
@@ -55,9 +57,12 @@ internal fun ProfileProviderDocumentPage(state: ProviderDocumentUiState, onClose
                 when {
                     state.picking -> Text(if (state.saving) "正在导入文件…" else "选择文件后将替换此 Provider 的缓存内容")
                     document?.kind == "binary" -> Text("此资源为二进制文件，无法预览或编辑；可返回后从文件导入")
-                    document != null && state.editing && document.editable -> OutlinedTextField(state.content, onChange,
-                        enabled = !state.saving && !state.committed, textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                        modifier = Modifier.fillMaxSize().testTag("profile_provider_document_content"))
+                    document != null && state.editing && document.editable -> ProfileCodeField(value, { next ->
+                        // 作者 long：缓存写入失败后保留正文和选区；选择文字不会触发新的草稿或擦掉失败提示。
+                        if (next.text != value.text) onChange(next.text)
+                        value = next
+                    }, enabled = !state.saving && !state.committed, modifier = Modifier.fillMaxSize(),
+                        contentTag = "profile_provider_document_content")
                     document != null -> {
                         if (!document.editable) Text("MRS 规则只读预览", style = MaterialTheme.typography.labelMedium)
                         SelectionContainer { Text(state.content, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),

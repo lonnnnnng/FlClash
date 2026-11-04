@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -26,7 +25,7 @@ internal fun DashboardIntranetIpCard(state: IntranetIpUiState, onAllowLan: (Bool
             Text("内网 IP", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
             IconButton(onClick = onCopy, enabled = state.copyText != null && !state.saving,
                 modifier = Modifier.testTag("intranet_copy")) {
-                Icon(Icons.Outlined.ContentCopy, "复制内网地址")
+                Icon(Icons.Outlined.ContentCopy, null)
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -41,7 +40,7 @@ internal fun DashboardIntranetIpCard(state: IntranetIpUiState, onAllowLan: (Bool
         // 作者 long：整行共用一个开关语义和点击事件，屏幕阅读器与直接点开关都不会重复提交。
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .toggleable(state.sharing.config.allowLan, enabled = enabled, role = Role.Switch, onValueChange = onAllowLan)
+            .toggleable(state.sharing.config.allowLan, enabled = enabled, onValueChange = onAllowLan)
             .testTag("intranet_allow_lan").padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(Icons.Outlined.Wifi, null)

@@ -34,12 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -96,23 +90,13 @@ internal fun ProxyNodeCard(
         ProxyNodeCardSize.STANDARD -> 86.dp
         ProxyNodeCardSize.LOOSE -> 105.dp
     }
-    val selectionDescription = when {
-        inUse && preferred -> "当前使用，优选节点"
-        preferred -> "优选节点"
-        inUse -> "当前使用"
-        else -> "未使用"
-    }
     Surface(
         modifier = Modifier.fillMaxWidth().then(modifier).testTag(selectionTag).appFocusRing(ProxyNodeStyle.shape).clip(ProxyNodeStyle.shape)
             .appContextMenuAnchor(menuAnchor, menuEnabled && hasMenu) { menu = true }.combinedClickable(
             enabled = enabled || menuEnabled && hasMenu, onClick = { if (enabled) onSelect() },
             onLongClick = if (menuEnabled && hasMenu) ({ menuAnchor.open(); menu = true }) else null,
-            onLongClickLabel = "节点操作",
-        ).semantics {
-            role = Role.RadioButton
-            selected = inUse
-            stateDescription = if (busy) "$selectionDescription，正在刷新，操作暂不可用" else selectionDescription
-        },
+
+        ),
         shape = ProxyNodeStyle.shape,
         // 作者 long：Flutter 节点选中态不填主色、不加描边，当前使用与优选分别交给徽标表达。
         color = proxyNodeColor(insideGroup),
@@ -123,7 +107,7 @@ internal fun ProxyNodeCard(
                 // 作者 long：菜单复用卡片选择回调，computed组再次优选仍清除固定，内建/组节点也可选择但不能导入。
                 if (selectable) AppDropdownMenuItem(text = { Text(if (computed) "优选" else "选择") },
                     leadingIcon = { Icon(if (computed) Icons.Outlined.PushPin else Icons.Outlined.RadioButtonChecked, null) },
-                    trailingIcon = { if (if (computed) preferred else inUse) Icon(Icons.Filled.Check, "已选中") },
+                    trailingIcon = { if (if (computed) preferred else inUse) Icon(Icons.Filled.Check, null, modifier = Modifier.testTag("action:已选中")) },
                     enabled = enabled,
                     onClick = { menu = false; onSelect() }, modifier = Modifier.testTag("${selectionTag}_menu_select"))
                 if (canAdd) AppDropdownMenuItem(text = { Text("添加到本地代理") },
@@ -145,7 +129,7 @@ internal fun ProxyNodeCard(
                     )
                     if (inUse || preferred) {
                         Surface(
-                            modifier = Modifier.size(22.dp),
+                            modifier = Modifier.size(22.dp).testTag(if (inUse) "${selectionTag}_in_use" else "${selectionTag}_preferred"),
                             shape = CircleShape,
                             color = if (inUse) colors.primary else colors.primary.copy(alpha = 0.14f),
                             contentColor = if (inUse) colors.onPrimary else colors.primary,
@@ -165,7 +149,6 @@ internal fun ProxyNodeCard(
                     ProxyNodeType(type, Modifier.fillMaxWidth(), colors.onSurface.copy(alpha = 0.8f))
                     Spacer(Modifier.height(6.dp))
                     ProxyDelayAction(
-                        name = name,
                         delay = delay,
                         enabled = delayEnabled,
                         delayTag = delayTag,
@@ -177,8 +160,7 @@ internal fun ProxyNodeCard(
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         ProxyNodeType(type, Modifier.weight(1f), colors.onSurface.copy(alpha = 0.8f))
                         ProxyDelayAction(
-                            name = name,
-                            delay = delay,
+                                delay = delay,
                             enabled = delayEnabled,
                             delayTag = delayTag,
                             modifier = Modifier,
@@ -210,7 +192,6 @@ private fun ProxyNodeType(type: String?, modifier: Modifier, color: androidx.com
 
 @Composable
 private fun ProxyDelayAction(
-    name: String,
     delay: ProxyDelayUiState?,
     enabled: Boolean,
     delayTag: String,
@@ -225,9 +206,7 @@ private fun ProxyDelayAction(
             onClick = onTestDelay,
             enabled = enabled && delay?.isTesting != true,
             contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
-            modifier = modifier.height(13.dp).width(58.dp).testTag(delayTag).semantics {
-                contentDescription = "$name，${proxyDelayLabel(delay)}"
-            },
+            modifier = modifier.height(13.dp).width(58.dp).testTag(delayTag),
         ) {
             when {
                 delay?.isTesting == true -> CircularProgressIndicator(Modifier.size(13.dp), strokeWidth = 2.dp)

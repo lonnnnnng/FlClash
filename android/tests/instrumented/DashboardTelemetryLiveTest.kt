@@ -7,7 +7,6 @@ import android.view.accessibility.AccessibilityNodeInfo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.Lifecycle
@@ -51,7 +50,7 @@ class DashboardTelemetryLiveTest {
         var requestedStart = false
         try {
             requestedStart = true
-            compose.onNodeWithContentDescription("启动核心").performClick()
+            compose.onNodeWithTag("dashboard_runtime_toggle").performClick()
             compose.waitUntil(20_000) {
                 val root = instrumentation.uiAutomation.rootInActiveWindow
                 if (root?.packageName?.toString() == "com.android.vpndialogs") {
@@ -82,13 +81,13 @@ class DashboardTelemetryLiveTest {
             assertTrue("Activity 重建必须保留核心会话", runtime === restored)
             compose.waitUntil(5_000) { (restored.uptimeMillis.value ?: 0L) >= elapsed + 2_000L }
             compose.waitUntil(45_000) { runtime.stats.value.trafficHistory.size == DASHBOARD_TRAFFIC_CAPACITY }
-            compose.onNodeWithContentDescription("上传速度历史，最近 30 次采样").assertIsDisplayed()
+            compose.onNodeWithTag("dashboard_upload_history").assertIsDisplayed()
             val peak = runtime.stats.value.trafficHistory.maxOf { it.up + it.down }
             compose.runOnIdle { runtime.stopRuntime() }
             compose.waitUntil(10_000) { runtime.runtimeState.value == CoreRuntimeStatus.STOPPED && runtime.uptimeMillis.value == null }
             compose.waitUntil(5_000) { runtime.stats.value.trafficHistory.isEmpty() }
             compose.onNodeWithTag("dashboard_runtime_duration").assertTextEquals("—")
-            compose.onNodeWithContentDescription("下载速度历史，最近 0 次采样").assertIsDisplayed()
+            compose.onNodeWithTag("dashboard_download_history").assertIsDisplayed()
             instrumentation.sendStatus(2, Bundle().apply {
                 putString("kclash_dashboard_telemetry", "real-core-uptime-history-background-recreate-stop-passed")
                 putLong("kclash_observed_peak_bytes", peak)

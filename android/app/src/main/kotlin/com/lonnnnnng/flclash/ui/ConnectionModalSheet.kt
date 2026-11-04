@@ -72,13 +72,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.collapse
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.dismiss
-import androidx.compose.ui.semantics.expand
-import androidx.compose.ui.semantics.paneTitle
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
@@ -187,7 +180,6 @@ internal class ConnectionSheetGeometry(val availableHeight: Float, naturalConten
 internal fun ConnectionModalSheet(
     onDismiss: () -> Unit,
     contentScrollState: ScrollState,
-    accessibilityTitle: String = "连接详情",
     isContentAtTop: () -> Boolean = { contentScrollState.value == 0 },
     avoidIme: Boolean = false,
     naturalContentHeight: Int? = null,
@@ -229,14 +221,7 @@ internal fun ConnectionModalSheet(
                         enabled = !dismissalStarted,
                         onClick = requestDismiss,
                     )
-                    .semantics {
-                        contentDescription = "关闭${accessibilityTitle}遮罩"
-                        stateDescription = when {
-                            dismissalStarted -> "关闭中"
-                            hasEntered -> "已打开"
-                            else -> "进入中"
-                        }
-                    },
+                    ,
             )
             // 作者 long：停靠比例以顶部及左右安全区后的窗口为分母；底部安全区属于面板，再由内容避让导航栏。
             BoxWithConstraints(
@@ -284,10 +269,7 @@ internal fun ConnectionModalSheet(
                         modifier = Modifier.align(Alignment.CenterEnd)
                             .width((maxWidth * 0.4f).coerceIn(360.dp, 560.dp)).fillMaxHeight()
                             .graphicsLayer { translationX = size.width * (1f - presentation.value) }
-                            .testTag(sheetTag).semantics {
-                                paneTitle = accessibilityTitle; stateDescription = "侧面板"
-                                dismiss { requestDismiss(); true }
-                            },
+                            .testTag(sheetTag),
                         color = MaterialTheme.colorScheme.surfaceContainer,
                     ) {
                         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
@@ -394,16 +376,7 @@ internal fun ConnectionModalSheet(
                                 enabled = hasEntered && !dismissalStarted,
                                 flingBehavior = fling,
                             )
-                            .testTag(sheetTag).semantics {
-                                paneTitle = accessibilityTitle
-                                stateDescription = if (!geometry.hasExpandedDetent) "适应内容" else if (savedDetent == ConnectionSheetDetent.EXPANDED) "已展开" else "半展开"
-                                dismiss { requestDismiss(); true }
-                                if (geometry.hasExpandedDetent && savedDetent != ConnectionSheetDetent.EXPANDED) expand {
-                                    scope.launch { state.animateTo(ConnectionSheetDetent.EXPANDED, ConnectionSheetMotion.settleSpec()) }; true
-                                } else if (geometry.hasExpandedDetent) collapse {
-                                    scope.launch { state.animateTo(ConnectionSheetDetent.PARTIAL, ConnectionSheetMotion.settleSpec()) }; true
-                                }
-                            },
+                            .testTag(sheetTag),
                         shape = sheetShape,
                         color = MaterialTheme.colorScheme.surfaceContainer,
                     ) {
@@ -412,7 +385,7 @@ internal fun ConnectionModalSheet(
                                 Modifier.fillMaxWidth().height(48.dp).testTag("connection_detail_handle")
                                     .clickable(
                                         enabled = geometry.hasExpandedDetent && hasEntered && !dismissalStarted,
-                                        onClickLabel = if (savedDetent == ConnectionSheetDetent.EXPANDED) "收起详情" else "展开详情",
+
                                     ) {
                                         scope.launch {
                                             state.animateTo(if (savedDetent == ConnectionSheetDetent.EXPANDED)

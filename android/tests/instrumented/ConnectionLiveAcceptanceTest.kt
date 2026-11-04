@@ -13,9 +13,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -143,7 +143,7 @@ class ConnectionLiveAcceptanceTest {
                 compose.onNodeWithTag("connection_detail_DNS 模式").performScrollTo().assertIsDisplayed()
                 compose.onNodeWithText(snapshot.metadata.dnsMode, useUnmergedTree = true).assertIsDisplayed()
             }
-            compose.onNodeWithContentDescription("关闭连接详情").performClick()
+            compose.onNodeWithTag("connections_detail_close").performClick()
             compose.onNodeWithTag("connections_detail_sheet").assertDoesNotExist()
             verifiedSnapshot = snapshot
         } catch (error: Throwable) {
@@ -175,10 +175,7 @@ class ConnectionLiveAcceptanceTest {
                 else if (android.os.Build.VERSION.SDK_INT >= 28) clipboard.clearPrimaryClip()
             }
             cleanup("返回首页") {
-                val close = compose.onAllNodes(SemanticsMatcher.expectValue(
-                    androidx.compose.ui.semantics.SemanticsProperties.ContentDescription,
-                    listOf("关闭连接详情"),
-                ))
+                val close = compose.onAllNodes(hasTestTag("connections_detail_close"))
                 if (close.fetchSemanticsNodes().isNotEmpty()) close[0].performClick()
                 compose.onNodeWithText("首页").performClick()
             }
@@ -199,8 +196,9 @@ class ConnectionLiveAcceptanceTest {
     }
 
     private fun expandSheet() {
-        val actions = compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsActions.Expand) and hasTestTag("connections_detail_sheet"))
-        if (actions.fetchSemanticsNodes().isNotEmpty()) actions[0].performSemanticsAction(SemanticsActions.Expand) { it() }
+        val handles = compose.onAllNodes(hasTestTag("connection_detail_handle") and isEnabled())
+        if (handles.fetchSemanticsNodes().isNotEmpty() && compose.onNodeWithTag("connections_detail_sheet")
+                .fetchSemanticsNode().boundsInRoot.height < compose.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot.height * .8f) handles[0].performClick()
         compose.waitForIdle()
     }
 

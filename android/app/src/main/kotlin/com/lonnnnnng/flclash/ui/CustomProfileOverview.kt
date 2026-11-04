@@ -50,9 +50,9 @@ internal fun CustomProfileOverview(
     Row(Modifier.fillMaxWidth().padding(top = 18.dp), verticalAlignment = Alignment.CenterVertically) {
         Text("策略组", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
         if (!readable?.groups.isNullOrEmpty()) IconButton(onClick = onGroups, enabled = enabled,
-            modifier = Modifier.testTag("custom_profile_manage_groups")) { Icon(Icons.Outlined.Settings, "管理策略组") }
+            modifier = Modifier.testTag("custom_profile_manage_groups")) { Icon(Icons.Outlined.Settings, null) }
         IconButton(onClick = { onGroup?.invoke(-1) ?: onGroups() }, enabled = enabled, modifier = Modifier.testTag("custom_profile_add_group")) {
-            Icon(Icons.Outlined.Add, "添加策略组")
+            Icon(Icons.Outlined.Add, null)
         }
     }
     Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {

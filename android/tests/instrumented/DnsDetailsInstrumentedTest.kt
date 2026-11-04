@@ -13,7 +13,6 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -95,19 +94,17 @@ class DnsDetailsInstrumentedTest {
             for (isFailed in listOf(false, true)) {
                 composeRule.runOnIdle { dark = isDark; failed = isFailed; rejectCopy = false; copiedText = null }
                 composeRule.onNodeWithText("DNS 详情").assertIsDisplayed()
-                composeRule.onNodeWithTag("connections_detail_sheet").assert(
-                    SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "DNS 详情"),
-                )
-                composeRule.onNodeWithContentDescription("关闭DNS 详情遮罩").assertExists()
+                composeRule.onNodeWithTag("connections_detail_sheet").assertIsDisplayed()
+                composeRule.onNodeWithTag("connection_detail_scrim").assertExists()
                 val name = "${if (isFailed) "error" else "answers"}_${if (isDark) "dark" else "light"}"
                 capture("${name}_partial")
-                // 作者 long：截图核对停靠后的布局，使用展开语义避免把拖柄点击波纹的中间帧写入基线。
-                composeRule.onNodeWithTag("connections_detail_sheet").performSemanticsAction(SemanticsActions.Expand) { it() }
+                // 作者 long：通过正式拖柄展开，截图前等待点击波纹结束，避免把瞬时反馈写入稳定基线。
+                composeRule.onNodeWithTag("connection_detail_handle").performClick()
+                composeRule.mainClock.advanceTimeBy(600)
                 composeRule.waitUntil(5_000) {
                     val viewport = composeRule.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
                     val sheet = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode()
-                    sheet.config[SemanticsProperties.StateDescription] == "已展开" &&
-                        kotlin.math.abs(viewport.height * 0.9f - sheet.boundsInRoot.height) <= 2f
+                    kotlin.math.abs(viewport.height * 0.9f - sheet.boundsInRoot.height) <= 2f
                 }
                 if (isFailed) {
                     // 作者 long：缺失来源与发起方应隐藏，错误场景没有答案时不保留空标题占位。

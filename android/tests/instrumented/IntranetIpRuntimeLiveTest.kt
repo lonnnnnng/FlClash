@@ -89,7 +89,7 @@ class IntranetIpRuntimeLiveTest {
             compose.waitUntil(10_000) { model.state.value.local.address != null && !model.state.value.settingsLoading }
             // 作者 long：只建立本机内网 TCP 连接，不向代理发送外部目标；验证监听是否真的随共享开关切换。
             requestedStart = true
-            compose.onNodeWithContentDescription("启动核心").performScrollTo().performClick()
+            compose.onNodeWithTag("dashboard_runtime_toggle").performScrollTo().performClick()
             compose.waitUntil(30_000) {
                 val root = instrumentation.uiAutomation.rootInActiveWindow
                 if (root?.packageName?.toString() == "com.android.vpndialogs") root.findAccessibilityNodeInfosByViewId("android:id/button1").firstOrNull()?.performAction(AccessibilityNodeInfo.ACTION_CLICK)

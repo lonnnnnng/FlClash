@@ -77,7 +77,7 @@ class GlobalSettingsInstrumentedTest {
         compose.onNodeWithTag("global_rules_delete").performClick()
         compose.onNodeWithTag("global_rules_delete_confirm").performClick()
         compose.runOnIdle { assertTrue(state.rules.isEmpty()) }
-        compose.onNodeWithContentDescription("取消选择").performClick()
+        compose.onActionMarker("取消选择").performClick()
         compose.onNodeWithTag("global_rules_presets").performClick()
         compose.onNodeWithText("阻止 QUIC").performClick()
         compose.onNodeWithTag("extension_preset_confirm").performClick()

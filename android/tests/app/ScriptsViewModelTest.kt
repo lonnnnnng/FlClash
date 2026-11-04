@@ -185,7 +185,28 @@ class ScriptsViewModelTest {
         assertFalse(vm.editorState.value.isSaving)
         assertEquals("edited", vm.editorState.value.content)
         assertTrue(vm.editorState.value.error != null)
+        val failure = vm.editorState.value.error
+        vm.editDraft("draft", "edited")
+        assertEquals(failure, vm.editorState.value.error)
+        vm.editDraft("draft", "corrected")
+        assertEquals(null, vm.editorState.value.error)
         assertEquals("latest", store.contents[original.id])
+    }
+
+    @Test fun `unexpected failure never exposes script excerpt while known business error stays actionable`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val store = FakeScriptStore()
+        val vm = ScriptsViewModel(store, FakeScriptRuntimeStatusProvider(CoreRuntimeStatus.STOPPED))
+        vm.openNewEditor()
+        store.writeFailure = "private script excerpt"
+        vm.save("draft", "const secret = 1;")
+        advanceUntilIdle()
+        assertEquals("保存脚本失败，请重试", vm.editorState.value.error)
+        assertEquals("const secret = 1;", vm.editorState.value.content)
+        store.writeFailure = "脚本名称已经存在"
+        vm.save("draft", "const secret = 1;")
+        advanceUntilIdle()
+        assertEquals("脚本名称已经存在", vm.editorState.value.error)
     }
 
     @Test
@@ -225,10 +246,12 @@ private class FakeScriptStore(
     }
     private var nextId = 100L
     var failApply = false
+    var writeFailure: String? = null
 
     override val scripts: StateFlow<List<Script>> = mutableScripts.asStateFlow()
 
     override suspend fun create(label: String, content: String): Script {
+        writeFailure?.let { error(it) }
         val script = Script(nextId++, label, lastUpdateAt = 1L, orderIndex = mutableScripts.value.size)
         contents[script.id] = content
         mutableScripts.value = mutableScripts.value + script

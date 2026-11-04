@@ -12,7 +12,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.service.NetworkSettings
@@ -87,7 +86,7 @@ private fun NetworkSection(title: String? = null, content: @Composable ColumnSco
 
 @Composable
 private fun NetworkToggle(title: String, subtitle: String?, tag: String, value: Boolean, busy: Boolean, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().toggleable(value, enabled = !busy, role = Role.Switch, onValueChange = onChange)
+    Row(Modifier.fillMaxWidth().toggleable(value, enabled = !busy, onValueChange = onChange)
         .testTag(tag).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f).padding(end = 12.dp)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
@@ -105,7 +104,7 @@ private fun NetworkOpenRow(title: String, subtitle: String, tag: String, busy: B
             Text(title, style = MaterialTheme.typography.bodyLarge)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Icon(Icons.Outlined.ChevronRight, "打开$title", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

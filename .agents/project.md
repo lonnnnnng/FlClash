@@ -1,5 +1,15 @@
 # Project Context
 
+用户已取消 Kotlin 的 TalkBack/自定义无障碍适配，不再实现或列为验收门槛。保留原生 Compose 控件、正常交互、隐藏退场页面的交互防护和测试标识。
+
+## 编辑器错误恢复与交互回归（2026-11-04，当前快照）
+
+脚本、Provider正文、选项、过滤预设和规则资源错误体验已补齐本组范围；选区移动不清失败，长文查找显式滚动，已提交回读失败只允许重新读取，保存失败自动回到错误且保留草稿。
+
+App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；最终build4 Debug/Test、未签名Release/R8及独立lint4双变体通过，各0错误/64警告（Debug10/Release9提示）。Redmi最终App/Test同批final4 43/43，69张PNG已目视，安装哈希匹配；首批40/43独立保留、不累计。正式1份配置/原选择/正文SHA-size-mtime及逐字段摘要保持，原1.yaml、Flutter APK和设备设置保持，结束无服务/tun0。证据`docs/acceptance/editor-errors-recovery-redmi-20261104.json`。
+
+完整Flutter视觉仍PARTIAL：未覆盖页面/面板、全应用动效与玻璃采样品质、常驻Dock/按钮/其他面板live背景和触点glow、8MiB正文性能仍待补；低API核心/VPN/实网、Fallback实核/冷进程、Go/正式签名运行/远端CI边界保持。玻璃默认关闭；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。以下旧切片只证明当时范围。
+
 ## 共享玻璃材质、层栈、子页及 API27（2026-11-04）
 
 六种共享玻璃样式regular/pill/menu/alert/tinted/lens与STANDARD/ULTRA质量等级已接入，默认关闭；API33+使用AGSL折射/bevel/高光，旧系统走预模糊fallback。深色tint由Flutter实际导出#343537。多层子菜单保留所有父卡/独立滚动，从触发行展开；收回弹簧可反向，退完才移除，外部祖先/后层命中语义隔离。策略组/更多/链式代理覆盖子页和同行排版已验。
@@ -12,9 +22,9 @@ App449/Service191/Core38/Common31共709项零失败/错误/跳过，Debug/Test�
 
 源按钮内存快照驱动液滴开场与500ms回源，关闭中断从当前帧继续；文字blur、原按钮绘制交接、长按原指针跨Popup拖动与单次释放、400ms子菜单停留及长菜单滚动分流已接通。子菜单退场层不再命中或暴露语义，后台撤销等待执行动作。玻璃默认关闭；组件可用基础背景磨砂/透色/高光，尚无完整折射shader/ultra分级，主题设置未扩展。
 
-正文和运行预览改用14sp等宽、着色和行号沟槽，撤销重做收纳菜单；查找显式滚到选区，复制不带行号。排序改72dp单拖柄行并保留读屏上下移动；本地代理身份验证分组、Provider轻量选项及filter共用菜单收敛。
+正文和运行预览改用14sp等宽、着色和行号沟槽，撤销重做收纳菜单；查找显式滚到选区，复制不带行号。排序改72dp单拖柄行，只保留真实触摸拖动；本地代理身份验证分组、Provider轻量选项及filter共用菜单收敛。
 
-最终build14 App445/Service191/Core38/Common31共705项零失败/错误/跳过，Debug/Test、未签名Release/R8及双Lint通过，各0错误/63警告（Debug10/Release9 hints）。Redmi最终生产/测试包同批24/24，含原指针拖选、读屏语义长按系统返回、1201行查找复制和旧入口。前期build12的21/21及测试补充3/3独立保留，未套用到最终包。正式1份配置/选择/正文SHA-size-mtime前后保持，两包安装哈希匹配，原1.yaml双端哈希保持；结束无服务/tun0、旋转1/0、字号1.0。Flutter原版未改动，本组未重跑Provider网络。安装/失败/截图索引见`docs/acceptance/liquid-menu-subpages-redmi-20261104.json`。
+最终build14 App445/Service191/Core38/Common31共705项零失败/错误/跳过，Debug/Test、未签名Release/R8及双Lint通过，各0错误/63警告（Debug10/Release9 hints）。Redmi最终生产/测试包同批24/24，含原指针拖选、1201行查找复制和旧入口。前期build12的21/21及测试补充3/3独立保留，未套用到最终包。正式1份配置/选择/正文SHA-size-mtime前后保持，两包安装哈希匹配，原1.yaml双端哈希保持；结束无服务/tun0、旋转1/0、字号1.0。Flutter原版未改动，本组未重跑Provider网络。安装/失败/截图索引见`docs/acceptance/liquid-menu-subpages-redmi-20261104.json`。
 
 完整Flutter视觉仍PARTIAL：完整玻璃折射、多层卡片物理展开/收回、其他空态入场和更多子页精确排版待补；正文仍整体测量，8MiB极限性能未验。Fallback实核/冷进程仍受现有输入限制；Go、正式签名运行和远端CI未验。备份/系统恢复、观测次要打磨、语言和主题继续暂缓。下文各旧切片只代表当时状态。
 
@@ -208,9 +218,9 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 
 第一阶段根目录原生化已落地：根目录使用 Gradle Wrapper，`app`、`core`、`service`、`common` 通过 Android Gradle 工程组装；Compose、Hilt、Room、StateFlow 和 `CoreRuntimeManager` 已接入，Go Mihomo 只生成 `arm64-v8a` AAR。Debug APK 已在 Redmi Note 8 Pro（API 36）安装并完成启动、前台服务启动/停止和界面检查。
 
-当前已完成的 Android 手机功能切片包括：Profiles 的新 Room 模型、远程订阅下载和订阅用量解析、文件导入、基础 YAML 编辑、自定义 Profile 的 Rules、Proxies、Proxy Groups、Providers map、字段化 proxy provider override 和 DNS Overrides 分区编辑、Profile 列表排序、Profile 名称重命名、脚本本地资源管理（Room 元数据、应用私有正文文件、新建/读取/编辑/删除/排序）、远程脚本导入与手动同步、Profile 脚本绑定、Profile JavaScript 执行边界、本地 SAF 备份/恢复首片、配置文件原子写入、当前配置持久化、Mihomo 配置校验与应用、代理组读取、Selector 节点切换以及 Selector 对话框中的单节点手动延迟测试；Provider 和 DNS 覆盖按 Profile 自有 `overridesJson` 持久化，并在核心启动时只合并到暂存 YAML，不改写原始配置文件。VPN/TUN 启停、运行统计、活动连接、请求、DNS、日志和真实请求诊断也已经统一经过 `CoreRuntimeManager`，并在 Compose 页面通过 StateFlow 渲染；Requests、DNS 和核心日志详情对话框已支持搜索、日志级别筛选、跟随最新事件滚动、核心日志脱敏导出、诊断会话证据包导出以及核心/网络/DNS 运行事件关联；按应用代理选择器首片（Room 设置、应用列表、搜索、白名单/黑名单和运行中锁定）、智能选择首片（国内包名前缀分类、双列表生成和后台执行锁定）、剪贴板导入/导出首片、真实核心流量过滤回归及真实 MainActivity 页面级剪贴板导入/导出 E2E、Access 返回未保存确认、Access 卡片顶栏搜索/全选入口、Material 矢量图标/无障碍语义收敛和窄屏 `FlowRow` 响应式操作区、Access 直接选择保存后 Room 重建恢复、横屏重排、1.5/2.0 倍字体可达性、系统 1.3/2.0 字体回归、Flutter 顶栏保存/菜单层级、完整搜索态、默认卡片截图基线、1.3/1.5/1.8/2.0 倍字体截图矩阵和竖屏/横屏截图矩阵首片、通知栏 STOP、桌面启动/停止/切换快捷方式、Quick Settings Tile、外部 Action 契约与组件导出/权限自动化审计、电池优化系统引导和 Always-on VPN 系统设置引导首片也已接入并完成 Redmi 真机验收。
+当前已完成的 Android 手机功能切片包括：Profiles 的新 Room 模型、远程订阅下载和订阅用量解析、文件导入、基础 YAML 编辑、自定义 Profile 的 Rules、Proxies、Proxy Groups、Providers map、字段化 proxy provider override 和 DNS Overrides 分区编辑、Profile 列表排序、Profile 名称重命名、脚本本地资源管理（Room 元数据、应用私有正文文件、新建/读取/编辑/删除/排序）、远程脚本导入与手动同步、Profile 脚本绑定、Profile JavaScript 执行边界、本地 SAF 备份/恢复首片、配置文件原子写入、当前配置持久化、Mihomo 配置校验与应用、代理组读取、Selector 节点切换以及 Selector 对话框中的单节点手动延迟测试；Provider 和 DNS 覆盖按 Profile 自有 `overridesJson` 持久化，并在核心启动时只合并到暂存 YAML，不改写原始配置文件。VPN/TUN 启停、运行统计、活动连接、请求、DNS、日志和真实请求诊断也已经统一经过 `CoreRuntimeManager`，并在 Compose 页面通过 StateFlow 渲染；Requests、DNS 和核心日志详情对话框已支持搜索、日志级别筛选、跟随最新事件滚动、核心日志脱敏导出、诊断会话证据包导出以及核心/网络/DNS 运行事件关联；按应用代理选择器首片（Room 设置、应用列表、搜索、白名单/黑名单和运行中锁定）、智能选择首片（国内包名前缀分类、双列表生成和后台执行锁定）、剪贴板导入/导出首片、真实核心流量过滤回归及真实 MainActivity 页面级剪贴板导入/导出 E2E、Access 返回未保存确认、Access 卡片顶栏搜索/全选入口、Material 矢量图标收敛和窄屏 `FlowRow` 响应式操作区、Access 直接选择保存后 Room 重建恢复、横屏重排、1.5/2.0 倍字体可达性、系统 1.3/2.0 字体回归、Flutter 顶栏保存/菜单层级、完整搜索态、默认卡片截图基线、1.3/1.5/1.8/2.0 倍字体截图矩阵和竖屏/横屏截图矩阵首片、通知栏 STOP、桌面启动/停止/切换快捷方式、Quick Settings Tile、外部 Action 契约与组件导出/权限自动化审计、电池优化系统引导和 Always-on VPN 系统设置引导首片也已接入并完成 Redmi 真机验收。
 
-仍未完成的产品能力包括：Wi‑Fi↔移动网络切换、Tasker/MacroDroid 实际应用回归、完整 Flutter Access 页面 parity（关闭状态遮罩、一键开启、排序、系统/无网络过滤、智能选择、剪贴板导入/导出首片、Access 卡片顶栏搜索/全选、Material 矢量图标与无障碍语义首片、窄屏 FlowRow、横屏重排、1.5/2.0 倍字体可达性、系统 1.3/2.0 字体回归、真实宿主保存后 Room 重建恢复、Flutter 顶栏保存/菜单层级、完整搜索态、默认卡片截图基线和 1.3/1.5/1.8/2.0 倍字体截图矩阵首片已完成，更多系统字体档位、跨设备截图差异和完整视觉交互仍待补齐，页面级 E2E 仍需继续扩展）、Always‑on VPN 状态回读、OEM 兼容性和完整系统行为回归、完整主题和响应式布局，以及正式发布签名和 Release 流程。订阅自动更新的调度、失败重试、YAML 校验、旧文件保护、失败摘要和通知已完成代码与自动化验证；两条授权路径的真实导入、HTTP 重定向、手动同步和自动更新开关回归也已完成，但周期任务等待到期后的真实自动下载仍未验证。本地 SAF 备份/恢复首片已完成代码、自动化验证和 Redmi 真机导出/导入回归；WebDAV 已完成 Keystore 凭据存储、手动配置 UI、上传/下载恢复接入、认证/权限/离线/超时错误反馈以及 Redmi 真机本地回环 WebDAV 回归，外部授权 WebDAV 服务回归仅在具备授权条件时执行，自动云端同步明确延期且不进入首发范围。Kotlin 主线已新增独立 GitHub Actions arm64 验证 workflow，并支持 `kclash-vMAJOR.MINOR.PATCH` Tag 与手动版本输入来生成可审计的未签名 Release artifact；正式签名和发布资产仍待后续阶段。Wi‑Fi 断开恢复、后台恢复、系统撤销 VPN 后的服务清理、失败态回显、再次启动、进程重建、通知栏 STOP、桌面快捷入口、Quick Settings Tile、外部 Action 的 ADB 契约和电池优化系统引导已完成真机验收；当前设备蜂窝网络未注册，移动网络切换仍待具备条件后验证。二维码图片选择、QR 识别、两条授权路径真机导入和重复导入错误反馈已完成，Deep Link 基础导入、冷启动、重复导入和错误反馈回归已经完成。现有观测卡片已经能展示真实请求诊断的 HTTP 状态、延迟、代理链和规则归因；观测详情的搜索、日志级别筛选、自动跟随和脱敏导出已完成，仪表盘、代理、配置、工具四个手机主 Tab 已接入，无配置时隐藏代理，连接和观测从工具或可选连接统计卡进入，观测页包含 Requests、DNS、Logs 三个页签，Rules、Proxies、Proxy Groups、Providers map、字段化 Provider override 和 DNS Overrides 分区快速编辑已完成，脚本 Profile 绑定与删除清理已完成，其他高级配置分区和完整页面级交互 E2E 仍待补齐。
+仍未完成的产品能力包括：Wi‑Fi↔移动网络切换、Tasker/MacroDroid 实际应用回归、完整 Flutter Access 页面 parity（关闭状态遮罩、一键开启、排序、系统/无网络过滤、智能选择、剪贴板导入/导出首片、Access 卡片顶栏搜索/全选、Material 矢量图标首片、窄屏 FlowRow、横屏重排、1.5/2.0 倍字体可达性、系统 1.3/2.0 字体回归、真实宿主保存后 Room 重建恢复、Flutter 顶栏保存/菜单层级、完整搜索态、默认卡片截图基线和 1.3/1.5/1.8/2.0 倍字体截图矩阵首片已完成，更多系统字体档位、跨设备截图差异和完整视觉交互仍待补齐，页面级 E2E 仍需继续扩展）、Always‑on VPN 状态回读、OEM 兼容性和完整系统行为回归、完整主题和响应式布局，以及正式发布签名和 Release 流程。订阅自动更新的调度、失败重试、YAML 校验、旧文件保护、失败摘要和通知已完成代码与自动化验证；两条授权路径的真实导入、HTTP 重定向、手动同步和自动更新开关回归也已完成，但周期任务等待到期后的真实自动下载仍未验证。本地 SAF 备份/恢复首片已完成代码、自动化验证和 Redmi 真机导出/导入回归；WebDAV 已完成 Keystore 凭据存储、手动配置 UI、上传/下载恢复接入、认证/权限/离线/超时错误反馈以及 Redmi 真机本地回环 WebDAV 回归，外部授权 WebDAV 服务回归仅在具备授权条件时执行，自动云端同步明确延期且不进入首发范围。Kotlin 主线已新增独立 GitHub Actions arm64 验证 workflow，并支持 `kclash-vMAJOR.MINOR.PATCH` Tag 与手动版本输入来生成可审计的未签名 Release artifact；正式签名和发布资产仍待后续阶段。Wi‑Fi 断开恢复、后台恢复、系统撤销 VPN 后的服务清理、失败态回显、再次启动、进程重建、通知栏 STOP、桌面快捷入口、Quick Settings Tile、外部 Action 的 ADB 契约和电池优化系统引导已完成真机验收；当前设备蜂窝网络未注册，移动网络切换仍待具备条件后验证。二维码图片选择、QR 识别、两条授权路径真机导入和重复导入错误反馈已完成，Deep Link 基础导入、冷启动、重复导入和错误反馈回归已经完成。现有观测卡片已经能展示真实请求诊断的 HTTP 状态、延迟、代理链和规则归因；观测详情的搜索、日志级别筛选、自动跟随和脱敏导出已完成，仪表盘、代理、配置、工具四个手机主 Tab 已接入，无配置时隐藏代理，连接和观测从工具或可选连接统计卡进入，观测页包含 Requests、DNS、Logs 三个页签，Rules、Proxies、Proxy Groups、Providers map、字段化 Provider override 和 DNS Overrides 分区快速编辑已完成，脚本 Profile 绑定与删除清理已完成，其他高级配置分区和完整页面级交互 E2E 仍待补齐。
 
 后续按“先建立真实代理连接，再补观测和平台入口，最后做 Flutter 行为与视觉收敛”的顺序推进；Flutter 代码只作为行为参考，不作为 Kotlin 运行时依赖。诊断会话证据包已经覆盖一次 probe 的 HTTP 状态、代理链、Requests、DNS、核心日志和运行诊断事件收集与脱敏导出，后续继续补充跨进程重建后的历史关联、背压治理和长期运行自动化。
 
@@ -228,7 +238,7 @@ Android Kotlin 需要覆盖 Flutter Android 端已有的 Profiles/订阅、配�
 
 更多NTP/Sniffer逐项保存和Provider详情整组首版均已接通，当前证据见最新章节。继续优先整组还原主页/配置/代理组及常用设置剩余差异，随后集中补运行态、系统文件侧载/真实远程资源与整页视觉验收；Requests/DNS/Logs次要视觉仍暂停。不要将历史待办或组件夹具测试推广为当前功能缺失或完整E2E通过。整体UI保持PARTIAL。
 
-当前正式Profile为两份，原文件及当前选择保持，不清数据、不删除正式配置、不访问撤回源。唯一在线授权路径仍以外层AGENTS为准，本地只用原1.yaml；Redmi竖屏默认字号。正式签名与发布单独推进，最新制品和文件保护证据见roadmap。本轮及前序修改未提交/推送。
+当前正式Profile数量以最新保护快照为准，本组before/after4均为1份；原文件及当前选择保持，不清数据、不删除正式配置、不访问撤回源。唯一在线授权路径仍以外层AGENTS为准，本地只用原1.yaml；Redmi竖屏默认字号。正式签名与发布单独推进，最新制品和文件保护证据见roadmap。本轮及前序修改未提交/推送。
 
 ## 全局资源最新切片（2026-11-03）
 

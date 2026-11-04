@@ -107,7 +107,7 @@ internal fun ProfileEditorDialog(
                     modifier = Modifier.testTag("custom_profile_title_menu")) {
                     Text(profile.realLabel, maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false))
-                    Icon(Icons.Outlined.ArrowDropDown, "配置操作")
+                    Icon(Icons.Outlined.ArrowDropDown, null)
                 }
                 DropdownMenu(showTitleActions, { showTitleActions = false }) {
                     DropdownMenuItem(text = { Text("重命名") }, onClick = { showTitleActions = false; showRename = true },
@@ -166,7 +166,7 @@ internal fun ProfileEditorDialog(
         confirmButton = {
             if (profile.type == ProfileType.CUSTOM) Box {
                         IconButton(onClick = { showImportMenu = true }, enabled = !saving && !customImportState.isLoading,
-                            modifier = Modifier.testTag("custom_profile_import")) { Icon(Icons.Outlined.FileDownload, "导入") }
+                            modifier = Modifier.testTag("custom_profile_import")) { Icon(Icons.Outlined.FileDownload, null) }
                         DropdownMenu(showImportMenu, { showImportMenu = false }) {
                             DropdownMenuItem(text = { Text("从 URL 导入") }, onClick = { showImportMenu = false; openSection { showCustomImport = true } })
                             DropdownMenuItem(text = { Text("从文件导入") }, onClick = {

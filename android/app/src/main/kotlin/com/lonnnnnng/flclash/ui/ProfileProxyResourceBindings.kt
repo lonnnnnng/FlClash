@@ -37,7 +37,7 @@ internal fun ProfileProxyResourceBindings(section: String, source: String, profi
                     style = MaterialTheme.typography.bodySmall,
                     color = if (missing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (missing) Icon(Icons.Outlined.WarningAmber, "代理资源缺失", tint = MaterialTheme.colorScheme.error)
+            if (missing) Icon(Icons.Outlined.WarningAmber, null, tint = MaterialTheme.colorScheme.error)
             TextButton(onClick = { alias = name; choosing = true }, enabled = enabled) { Text("选择") }
         }
     }

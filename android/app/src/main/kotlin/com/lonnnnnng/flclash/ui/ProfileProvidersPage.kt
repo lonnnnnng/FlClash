@@ -54,7 +54,7 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
         confirmButton = { if (profile.type == ProfileType.CUSTOM) Box {
             IconButton(onClick = { menuAnchor.open(); menu = true }, enabled = !saving,
                 modifier = Modifier.appContextMenuAnchor(menuAnchor, enabled = !saving) { menu = true }
-                    .testTag("profile_providers_menu")) { Icon(Icons.Outlined.MoreVert, "资源操作") }
+                    .testTag("profile_providers_menu")) { Icon(Icons.Outlined.MoreVert, null) }
             AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                 placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
                 modifier = Modifier.testTag("profile_providers_actions")) {
@@ -80,10 +80,10 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                             ProviderResourceRow(name, if (missing) "资源缺失，请重新选择" else resource?.lastUpdateAt?.let { "更新于 " + DateUtils.getRelativeTimeSpanString(it) }?.toString(), missing,
                                 "profile_provider_proxy_$name", onClick = { if (missing) info = "代理资源“$name”不可用，请重新选择订阅或文件配置。" else editing = name },
                                 enabled = !saving, trailing = {
-                                    if (missing) IconButton(onClick = { info = "代理资源“$name”不可用，请重新选择订阅或文件配置。" }) { Icon(Icons.Outlined.Info, "资源缺失", tint = MaterialTheme.colorScheme.error) }
-                                    else IconButton(onClick = { editing = name }, enabled = !saving, modifier = Modifier.testTag("profile_provider_edit_$name")) { Icon(Icons.Outlined.Edit, "编辑代理资源选项") }
+                                    if (missing) IconButton(onClick = { info = "代理资源“$name”不可用，请重新选择订阅或文件配置。" }) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.error) }
+                                    else IconButton(onClick = { editing = name }, enabled = !saving, modifier = Modifier.testTag("profile_provider_edit_$name")) { Icon(Icons.Outlined.Edit, null) }
                                     if (profile.type == ProfileType.CUSTOM) IconButton(onClick = { bindingProxy = true; binding = name }, enabled = !saving,
-                                        modifier = Modifier.testTag("profile_provider_bind_proxy_$name")) { Icon(Icons.Outlined.SwapHoriz, "选择代理资源") }
+                                        modifier = Modifier.testTag("profile_provider_bind_proxy_$name")) { Icon(Icons.Outlined.SwapHoriz, null) }
                                 })
                             if (index < catalog.proxies.lastIndex) HorizontalDivider(Modifier.padding(start = 14.dp))
                         }
@@ -100,9 +100,9 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                             ProviderResourceRow(name, if (missing) "资源缺失，请重新选择" else resource?.updatedAt?.let { "更新于 " + DateUtils.getRelativeTimeSpanString(it) }?.toString(), missing,
                                 "profile_provider_rule_$name", enabled = !saving,
                                 onClick = if (missing) ({ info = "规则资源“$name”不可用，请重新选择规则资源。" }) else null, trailing = {
-                                    if (missing) IconButton(onClick = { info = "规则资源“$name”不可用，请重新选择规则资源。" }) { Icon(Icons.Outlined.Info, "资源缺失", tint = MaterialTheme.colorScheme.error) }
+                                    if (missing) IconButton(onClick = { info = "规则资源“$name”不可用，请重新选择规则资源。" }) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.error) }
                                     if (profile.type == ProfileType.CUSTOM) IconButton(onClick = { bindingProxy = false; binding = name }, enabled = !saving,
-                                        modifier = Modifier.testTag("profile_provider_bind_rule_$name")) { Icon(Icons.Outlined.SwapHoriz, "选择规则资源") }
+                                        modifier = Modifier.testTag("profile_provider_bind_rule_$name")) { Icon(Icons.Outlined.SwapHoriz, null) }
                                 })
                             if (index < catalog.rules.lastIndex) HorizontalDivider(Modifier.padding(start = 14.dp))
                         }

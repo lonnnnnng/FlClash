@@ -6,7 +6,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -18,7 +17,7 @@ internal fun ProfileStatisticsPanel(state: ProfileStatisticsUiState, onRetry: ()
         items.chunked(2).forEachIndexed { row, pair ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 pair.forEachIndexed { column, (label, count) ->
-                    Surface(Modifier.weight(1f).semantics(mergeDescendants = true) {}, shape = RoundedCornerShape(16.dp),
+                    Surface(Modifier.weight(1f), shape = RoundedCornerShape(16.dp),
                         color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
                             // 作者 long：加载和失败均不显示伪造的零；真实空配置的零值仍明确可见。

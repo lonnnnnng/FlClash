@@ -219,8 +219,11 @@ class ProfilesViewModelTest {
         model.changeProfileDocument("rules: [bad")
         model.acceptProfileDocument(); advanceUntilIdle()
         assertNotNull(model.documentEditorState.value.error)
+        assertEquals(1, model.documentEditorState.value.errorLocation?.line)
+        assertEquals("rules: [bad".length, model.documentEditorState.value.errorLocation?.offset)
         assertEquals(0, store.documentSaves)
         model.changeProfileDocument("rules: []\n")
+        assertNull(model.documentEditorState.value.errorLocation)
         model.acceptProfileDocument(); advanceUntilIdle()
         assertNull(model.documentEditorState.value.ownerId)
         assertEquals("rules: []\n", model.remoteEditorState.value.draftContent)
@@ -236,6 +239,26 @@ class ProfilesViewModelTest {
         assertEquals(1, store.documentSaves)
         assertTrue(store.remoteUpdateCalls.isEmpty())
         assertNull(model.remoteEditorState.value.profile)
+    }
+
+    @Test fun invalidDocumentKeepsParentBytesAndLocatesParserErrorWithoutLeakingYaml() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(817, "正文定位")
+        val store = FakeProfileStore(profile).apply { content = "rules: []" }
+        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        model.openEditor(profile); advanceUntilIdle(); model.openProfileDocument(false)
+        val invalid = "name: 😀\r\nrules: [ok, }"
+        model.changeProfileDocument(invalid); model.acceptProfileDocument(); advanceUntilIdle()
+        assertEquals(invalid, model.documentEditorState.value.content)
+        assertEquals(invalid.indexOf('}'), model.documentEditorState.value.errorLocation?.offset)
+        assertTrue(model.documentEditorState.value.error.orEmpty().contains("第 2 行，第 13 列"))
+        assertFalse(model.documentEditorState.value.error.orEmpty().contains("😀"))
+        assertEquals("rules: []", store.content)
+        assertNull(model.editorState.value.draftContent)
+        model.changeProfileDocument("rules: []\n"); model.acceptProfileDocument(); advanceUntilIdle()
+        assertNull(model.documentEditorState.value.ownerId)
+        assertEquals("rules: []\n", model.editorState.value.draftContent)
+        assertEquals("rules: []", store.content)
     }
 
     @Test fun remotePickerRejectsOldCallbackAndOuterSaveRejectsChangedBaseWithoutLosingDraft() = runTest {

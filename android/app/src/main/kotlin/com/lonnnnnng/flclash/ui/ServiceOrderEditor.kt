@@ -17,9 +17,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
@@ -124,13 +121,13 @@ internal fun ServiceOrderEditor(
                 val locked = saving || dragged != null
                 Surface(Modifier.fillMaxWidth().zIndex(if (picked) 1f else 0f)
                     .graphicsLayer { translationY = if (picked) top - (list.layoutInfo.visibleItemsInfo.firstOrNull { it.key == target.id }?.offset ?: top.toInt()) else 0f }
-                    .testTag("service_order_" + target.id).semantics { stateDescription = if (picked) "正在拖动" else "第 " + (index + 1) + " 项" },
+                    .testTag("service_order_" + target.id),
                     color = if (picked) MaterialTheme.colorScheme.surfaceContainerHigh else androidx.compose.ui.graphics.Color.Transparent,
                     tonalElevation = if (picked) 4.dp else 0.dp,
                 ) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.DragHandle, "长按 " + target.label + " 调整顺序", Modifier.padding(end = 8.dp).size(24.dp).testTag("service_drag_" + target.id), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Row(Modifier.weight(1f).toggleable(enabled, enabled = !locked && !(enabled && settings.enabled.size == 1), role = Role.Switch, onValueChange = { onToggle(target, it) })
+                        Icon(Icons.Outlined.DragHandle, null, Modifier.padding(end = 8.dp).size(24.dp).testTag("service_drag_" + target.id), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(Modifier.weight(1f).toggleable(enabled, enabled = !locked && !(enabled && settings.enabled.size == 1), onValueChange = { onToggle(target, it) })
                             .testTag("service_toggle_" + target.id).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(target.label, style = MaterialTheme.typography.bodyLarge)
@@ -138,8 +135,8 @@ internal fun ServiceOrderEditor(
                             }
                             Switch(enabled, onCheckedChange = null, enabled = !locked && !(enabled && settings.enabled.size == 1))
                         }
-                        IconButton(onClick = { onMove(target, -1) }, enabled = !locked && index > 0, modifier = Modifier.testTag("service_up_" + target.id)) { Icon(Icons.Outlined.KeyboardArrowUp, "上移 " + target.label) }
-                        IconButton(onClick = { onMove(target, 1) }, enabled = !locked && index < preview.lastIndex, modifier = Modifier.testTag("service_down_" + target.id)) { Icon(Icons.Outlined.KeyboardArrowDown, "下移 " + target.label) }
+                        IconButton(onClick = { onMove(target, -1) }, enabled = !locked && index > 0, modifier = Modifier.testTag("service_up_" + target.id)) { Icon(Icons.Outlined.KeyboardArrowUp, null) }
+                        IconButton(onClick = { onMove(target, 1) }, enabled = !locked && index < preview.lastIndex, modifier = Modifier.testTag("service_down_" + target.id)) { Icon(Icons.Outlined.KeyboardArrowDown, null) }
                     }
                 }
             }

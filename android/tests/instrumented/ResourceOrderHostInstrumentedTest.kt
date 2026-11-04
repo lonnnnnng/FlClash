@@ -40,7 +40,7 @@ class ResourceOrderHostInstrumentedTest {
                 compose.waitUntil(5_000) { compose.onAllNodesWithTag("${tag}_sort").fetchSemanticsNodes().isNotEmpty() }
                 compose.onNodeWithTag("${tag}_sort").performClick()
                 compose.onNodeWithTag("${tag}_order_list").performScrollToNode(hasTestTag("${tag}_order_${ids.last()}"))
-                compose.onNodeWithTag("${tag}_order_${ids.last()}").performOrderAccessibilityAction(compose, "上移")
+                compose.onNodeWithTag("${tag}_order_${ids.last()}").performOrderTouchMove(-1)
                 compose.waitUntil(5_000) { runBlocking {
                     val now = if (gallery) entry.icons().all().map { it.id } else entry.rules().all().map { it.id }
                     now.takeLast(2) == ids.reversed()

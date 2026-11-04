@@ -49,10 +49,10 @@ internal fun RuleResourcesPage(
         confirmButton = {
             if (sorting) TextButton(onClick = { sorting = false }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_sort_done")) { Text("完成") }
             else {
-            if (state.rows.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_sort")) { Icon(Icons.Outlined.Sort, "排序规则资源") }
-            IconButton(onClick = onSyncAll, enabled = !state.busy && state.rows.any { it.url.isNotBlank() }) { Icon(Icons.Outlined.Sync, "更新全部规则资源") }
+            if (state.rows.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_sort")) { Icon(Icons.Outlined.Sort, null) }
+            IconButton(onClick = onSyncAll, enabled = !state.busy && state.rows.any { it.url.isNotBlank() }) { Icon(Icons.Outlined.Sync, null) }
             Box {
-                IconButton(onClick = { addMenu = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_add")) { Icon(Icons.Outlined.Add, "添加资源") }
+                IconButton(onClick = { addMenu = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_add")) { Icon(Icons.Outlined.Add, null) }
                 DropdownMenu(expanded = addMenu, onDismissRequest = { addMenu = false }) {
                     DropdownMenuItem(text = { Text("从头开始") }, onClick = { addMenu = false; onCreate(false) })
                     DropdownMenuItem(text = { Text("从 URL 导入") }, onClick = { addMenu = false; if (onImportUrls != null) onImportUrls() else onCreate(true) })
@@ -63,14 +63,14 @@ internal fun RuleResourcesPage(
         }, text = {
             Column(Modifier.fillMaxSize().testTag("rule_resources_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (state.loading || state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                if (state.editor == null) state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                if (state.editor == null) state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier) }
                 state.message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
                 if (sorting && onReorder != null) ResourceOrderList(state.rows.map {
                     ResourceOrderItem(it.id, it.label, (if (it.url.isBlank()) "本地" else "远程") + " · " + it.behavior)
                 }, state.busy, "rule_resources", onReorder, Modifier.fillMaxWidth().weight(1f))
                 else {
                 OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索规则资源") }, modifier = Modifier.fillMaxWidth().testTag("rule_resources_search"),
-                    leadingIcon = { Icon(Icons.Outlined.Search, null) }, trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, "清除搜索") } })
+                    leadingIcon = { Icon(Icons.Outlined.Search, null) }, trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, null, modifier = Modifier.testTag("action:清除搜索")) } })
                 val rows = state.rows.filter { query.isBlank() || it.label.contains(query, true) }
                 if (!state.loading && rows.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(if (query.isBlank()) "暂无规则资源" else "没有匹配的结果", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -86,7 +86,7 @@ internal fun RuleResourcesPage(
                                     Text("更新于 " + DateUtils.getRelativeTimeSpanString(resource.updatedAt), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Box {
-                                    IconButton(onClick = { menuId = resource.id }, enabled = !state.busy) { Icon(Icons.Outlined.MoreVert, "资源操作 · ${resource.label}") }
+                                    IconButton(onClick = { menuId = resource.id }, enabled = !state.busy, modifier = Modifier.testTag("rule_resource_menu_${resource.id}")) { Icon(Icons.Outlined.MoreVert, null) }
                                     DropdownMenu(expanded = menuId == resource.id, onDismissRequest = { menuId = null }) {
                                         DropdownMenuItem(text = { Text(if (resource.editable) "编辑" else "预览") }, onClick = { menuId = null; onEdit(resource, false) })
                                         if (resource.url.isNotBlank()) DropdownMenuItem(text = { Text("同步") }, onClick = { menuId = null; onSync(resource) })
@@ -117,15 +117,18 @@ private fun RuleResourceEditor(draft: RuleResourceDraft, busy: Boolean, error: S
     var url by rememberSaveable(draft) { mutableStateOf(draft.url) }
     var content by rememberSaveable(draft) { mutableStateOf(draft.content) }
     var discard by remember { mutableStateOf(false) }
+    val scroll = rememberScrollState()
+    // 作者 long：长规则正文保存失败时先展示恢复提示，滚动只移动视口，不重建或改写本地草稿。
+    LaunchedEffect(error, busy) { if (!busy && error != null) scroll.animateScrollTo(0) }
     val dirty = label != draft.label || url != draft.url || content != draft.content
     val close = { if (!busy) { if (dirty) discard = true else onDismiss() } }
     ProfileEditorPage(onDismissRequest = close, title = { Text(if (draft.options) "资源选项" else if (draft.readOnly && draft.original != null) "预览资源" else "编辑资源") },
         backTag = "rule_resource_editor_back", confirmButton = {
             if (!draft.readOnly || draft.original == null || draft.options) TextButton(onClick = { onSave(label, url, content) }, enabled = !busy && label.isNotBlank(), modifier = Modifier.testTag("rule_resource_save")) { Text("保存") }
         }, text = {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.fillMaxSize().verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("rule_resource_editor_error")) }
                 OutlinedTextField(label, { label = it }, label = { Text("名称") }, singleLine = true, enabled = !busy && (!draft.readOnly || draft.original == null), modifier = Modifier.fillMaxWidth().testTag("rule_resource_label"))
                 if (!draft.readOnly || draft.url.isNotBlank()) OutlinedTextField(url, { url = it }, label = { Text("URL（留空为本地资源）") }, enabled = !busy && !draft.readOnly, modifier = Modifier.fillMaxWidth().testTag("rule_resource_url"))
                 if (!draft.options) {

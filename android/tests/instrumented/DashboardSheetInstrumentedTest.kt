@@ -38,20 +38,21 @@ class DashboardSheetInstrumentedTest {
         } }
         for (theme in listOf(false, true)) {
             compose.runOnIdle { dark = theme; rows = 1 }
-            compose.onNodeWithTag("fit_sheet").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "适应内容"))
+            compose.onNodeWithTag("dashboard_sheet_title").assertIsDisplayed()
+            compose.onNodeWithTag("fit_sheet").assertIsDisplayed()
             val short = compose.onNodeWithTag("fit_sheet").fetchSemanticsNode().boundsInRoot.height
             val viewport = compose.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot.height
             assertTrue(short < viewport * 9f / 16f)
             captureSheetWindow("dashboard_sheet_short_$theme")
             compose.runOnIdle { rows = 80 }
-            compose.onNodeWithTag("fit_sheet").performSemanticsAction(SemanticsActions.Expand) { it() }
+            compose.onNodeWithTag("connection_detail_handle").performClick()
             val expanded = compose.onNodeWithTag("fit_sheet").fetchSemanticsNode().boundsInRoot.height
             assertEquals(viewport * 0.9f, expanded, 2f)
             compose.onNodeWithTag("fit_row_79").performScrollTo().assertIsDisplayed()
             compose.onNodeWithTag("fit_close").assertIsDisplayed()
             captureSheetWindow("dashboard_sheet_long_$theme")
             compose.runOnIdle { rows = 1 }
-            compose.onNodeWithTag("fit_sheet").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "适应内容"))
+            compose.onNodeWithTag("fit_sheet").assertIsDisplayed()
             assertEquals(short, compose.onNodeWithTag("fit_sheet").fetchSemanticsNode().boundsInRoot.height, 2f)
         }
         pressBack()
@@ -66,7 +67,7 @@ class DashboardSheetInstrumentedTest {
                 repeat(120) { Text("第 ${it + 1} 项", Modifier.fillMaxWidth().testTag("long_row_$it")) }
             }
         } }
-        compose.onNodeWithTag("long_sheet").performSemanticsAction(SemanticsActions.Expand) { it() }
+        compose.onNodeWithTag("connection_detail_handle").performClick()
         compose.onNodeWithTag("long_row_80").performScrollTo()
         val before = compose.onNodeWithTag("long_sheet").fetchSemanticsNode().boundsInRoot.top
         compose.onNodeWithTag("dashboard_sheet_scroll").performTouchInput { swipeDown() }
@@ -87,7 +88,7 @@ class DashboardSheetInstrumentedTest {
             }
         } }
         compose.onNodeWithTag("dashboard_profile_switch").performClick()
-        compose.onNodeWithTag("dashboard_profile_picker").performSemanticsAction(SemanticsActions.Expand) { it() }
+        compose.onNodeWithTag("connection_detail_handle").performClick()
         compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)).performScrollToIndex(99)
         compose.onNodeWithTag("dashboard_profile_option_100").assertIsDisplayed()
         compose.onNodeWithTag("dashboard_profile_picker_close").assertIsDisplayed()
@@ -107,7 +108,7 @@ class DashboardSheetHostInstrumentedTest {
         compose.onNodeWithTag("dashboard_service_card").performClick()
         compose.onNodeWithTag("service_exit_google").performClick()
         compose.activityRule.scenario.onActivity { it.finishServiceQuality(true) }
-        compose.onNodeWithTag("service_detail_sheet").performSemanticsAction(SemanticsActions.Expand) { it() }
+        compose.onNodeWithTag("connection_detail_handle").performClick()
         compose.onNodeWithTag("ip_quality_hide").performScrollTo()
         compose.onNodeWithTag("service_manage_back").assertIsDisplayed()
         captureSheetWindow("dashboard_sheet_service_quality")
@@ -128,7 +129,7 @@ class DashboardSheetHostInstrumentedTest {
         for (dark in listOf(true, false)) {
             compose.activityRule.scenario.onActivity { it.setDarkTheme(dark) }
             compose.onNodeWithTag("dashboard_profile_switch").performScrollTo().performClick()
-            compose.onNodeWithTag("dashboard_profile_picker").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "适应内容"))
+            compose.onNodeWithTag("dashboard_profile_picker").assertIsDisplayed()
             compose.onNodeWithTag("dashboard_profile_option_101").assertIsSelected()
             compose.onNodeWithTag("dashboard_profile_option_102").assertIsDisplayed()
             captureSheetWindow("dashboard_sheet_profile_picker_$dark")

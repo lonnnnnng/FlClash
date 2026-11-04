@@ -91,12 +91,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
@@ -222,13 +216,13 @@ internal fun ProfilesTopBarActions(
                         onClick = { onAction(ProfilesToolbarAction.SYNC_ALL) },
                         enabled = canMutate,
                         modifier = Modifier.size(44.dp).testTag("profiles_sync_all"),
-                    ) { AppGlyphIcon(AppGlyphs.sync, contentDescription = "同步全部配置") }
+                    ) { AppGlyphIcon(AppGlyphs.sync) }
                 }
                 IconButton(
                     onClick = { onAction(ProfilesToolbarAction.SORT) },
                     enabled = canMutate,
                     modifier = Modifier.size(44.dp).testTag("profiles_sort"),
-                ) { AppGlyphIcon(AppGlyphs.sort, contentDescription = "排序") }
+                ) { AppGlyphIcon(AppGlyphs.sort) }
             }
         }
         Spacer(Modifier.size(8.dp))
@@ -237,7 +231,7 @@ internal fun ProfilesTopBarActions(
             enabled = !busy,
             modifier = (if (addSource != null) Modifier.appMenuSource(addSource) else Modifier).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("profiles_add_fab")
                 .onGloballyPositioned { onAddAnchorChanged(it.boundsInWindow().roundToIntRect()) },
-        ) { AppGlyphIcon(AppGlyphs.addCircle, contentDescription = "添加配置") }
+        ) { AppGlyphIcon(AppGlyphs.addCircle) }
         Spacer(Modifier.size(12.dp))
     }
 }
@@ -784,14 +778,7 @@ fun KClashApp(
             topBarNavigationIcon = if (pageDestination == MainDestination.TOOLS && toolsSubpage != ToolsSubpage.MENU) {
                 {
                     IconButton(onClick = ::returnFromToolsSubpage, modifier = Modifier.testTag("tools_subpage_back")) {
-                        Icon(
-                            Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = when (toolsSubpage) {
-                                ToolsSubpage.ON_DEMAND -> "返回常规"
-                                ToolsSubpage.NETWORK, ToolsSubpage.GLOBAL_DNS -> "返回高级配置"
-                                else -> "返回工具"
-                            },
-                        )
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null)
                     }
                 }
             } else {
@@ -806,10 +793,7 @@ fun KClashApp(
                         },
                         modifier = Modifier.testTag("dashboard_edit_layout"),
                     ) {
-                        Icon(
-                            imageVector = if (isDashboardEditing) Icons.Outlined.Check else Icons.Outlined.Edit,
-                            contentDescription = if (isDashboardEditing) "完成" else "编辑仪表盘",
-                        )
+                        Icon(imageVector = if (isDashboardEditing) Icons.Outlined.Check else Icons.Outlined.Edit, contentDescription = null)
                     }
                 } else if (pageDestination == MainDestination.PROFILES) {
                     ProfilesTopBarActions(
@@ -1758,12 +1742,13 @@ internal fun ProfilesPanel(
                 contentAlignment = Alignment.Center,
             ) {
                 Column(
-                    modifier = Modifier.widthIn(max = 320.dp).padding(horizontal = 32.dp, vertical = 24.dp),
+                    modifier = Modifier.widthIn(max = 320.dp).padding(horizontal = 32.dp, vertical = 24.dp).testTag("profiles_empty"),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     ProfileEmptyIllustration()
                     Spacer(Modifier.height(16.dp))
-                    Text("暂无配置", style = MaterialTheme.typography.titleMedium)
+                    Text("暂无配置", Modifier, color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
                     Text(
                         "添加一个配置文件后即可开始使用",
@@ -1772,9 +1757,10 @@ internal fun ProfilesPanel(
                         textAlign = TextAlign.Center,
                     )
                     Spacer(Modifier.height(24.dp))
-                    androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog,
-                        modifier = Modifier.appMenuSource(localAddSource).onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
-                        AppGlyphIcon(AppGlyphs.addCircle, contentDescription = null)
+                    // 作者 long：空态和顶栏共享同一受理条件，启停/导入期间不能通过第二个入口重复开启配置操作。
+                    androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog, enabled = canMutateProfiles,
+                        modifier = Modifier.testTag("profiles_empty_add").appMenuSource(localAddSource).onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
+                        AppGlyphIcon(AppGlyphs.addCircle)
                         Spacer(Modifier.size(8.dp))
                         Text("添加配置")
                     }
@@ -2527,10 +2513,7 @@ internal fun AccessControlCard(
                         enabled = canEdit,
                         modifier = Modifier
                             .testTag("access_control_search_toggle")
-                            .semantics {
-                                role = Role.Button
-                                contentDescription = if (searchExpanded) "关闭搜索" else "搜索应用"
-                            },
+                            ,
                     ) {
                         Icon(
                             imageVector = if (searchExpanded) Icons.Outlined.Close else Icons.Outlined.Search,
@@ -2542,11 +2525,7 @@ internal fun AccessControlCard(
                         enabled = contentCanEdit && hasVisibleApps,
                         modifier = Modifier
                             .testTag("access_control_toggle_visible")
-                            .semantics {
-                                role = Role.Button
-                                contentDescription = if (state.allVisibleAppsSelected) "取消全选当前结果" else "全选当前结果"
-                                stateDescription = if (state.allVisibleAppsSelected) "已全选" else "未全选"
-                            },
+                            ,
                     ) {
                         Icon(
                             imageVector = if (state.allVisibleAppsSelected) Icons.Outlined.Deselect else Icons.Outlined.SelectAll,
@@ -2559,10 +2538,7 @@ internal fun AccessControlCard(
                             enabled = canEdit,
                             modifier = Modifier
                                 .testTag("access_control_topbar_save")
-                                .semantics {
-                                    role = Role.Button
-                                    contentDescription = "保存按应用代理"
-                                },
+                                ,
                         ) {
                             Icon(Icons.Outlined.Check, contentDescription = null)
                         }
@@ -2573,10 +2549,7 @@ internal fun AccessControlCard(
                             enabled = actionsCanEdit,
                             modifier = Modifier
                                 .testTag("access_control_topbar_actions")
-                                .semantics {
-                                    role = Role.Button
-                                    contentDescription = "更多操作"
-                                },
+                                ,
                         ) {
                             Icon(Icons.Outlined.MoreVert, contentDescription = null)
                         }
@@ -2593,7 +2566,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (state.settings.enable) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "当前状态") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -2607,7 +2580,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (!state.settings.enable) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "当前状态") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -2644,7 +2617,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (state.settings.mode == AccessControlMode.ACCEPT_SELECTED) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "当前模式") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -2658,7 +2631,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (state.settings.mode == AccessControlMode.REJECT_SELECTED) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "当前模式") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -2672,7 +2645,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (state.settings.sort == AccessSortType.NONE) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "当前排序") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -2686,7 +2659,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (state.settings.sort == AccessSortType.NAME) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "当前排序") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -2700,7 +2673,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (state.settings.sort == AccessSortType.TIME) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "当前排序") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -2714,7 +2687,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (!state.settings.isFilterSystemApp) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "已显示") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -2728,7 +2701,7 @@ internal fun AccessControlCard(
                                 },
                                 enabled = canEdit,
                                 trailingIcon = if (!state.settings.isFilterNonInternetApp) {
-                                    { Icon(Icons.Outlined.Check, contentDescription = "已显示") }
+                                    { Icon(Icons.Outlined.Check, contentDescription = null) }
                                 } else {
                                     null
                                 },
@@ -3439,8 +3412,8 @@ private fun ConnectionDetailSheet(
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.weight(1f),
                 )
-                IconButton(onClick = requestDismiss) {
-                    Icon(Icons.Outlined.Close, contentDescription = "关闭连接详情")
+                IconButton(onClick = requestDismiss, modifier = Modifier.testTag("connections_detail_close")) {
+                    Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.testTag("action:关闭连接详情"))
                 }
             }
             copyMessage?.let { Text(it, modifier = Modifier.testTag("connections_copy_feedback")) }
@@ -3505,7 +3478,7 @@ private fun ConnectionDetailSection(
                     .fillMaxWidth()
                     .testTag("connection_detail_$label")
                     .heightIn(min = 48.dp)
-                    .clickable(role = Role.Button, onClickLabel = "复制$label") { onCopyText(value) }
+                    .clickable { onCopyText(value) }
                     .padding(vertical = 6.dp),
                 verticalAlignment = Alignment.Top,
             ) {
@@ -3531,9 +3504,7 @@ private fun ConnectionDetailSection(
 private fun ConnectionChainRow(chains: List<String>) {
     val displayed = chains.asReversed()
     Row(
-        modifier = Modifier.fillMaxWidth().semantics {
-            contentDescription = displayed.joinToString(" → ")
-        }.testTag("connection_detail_chains"),
+        modifier = Modifier.fillMaxWidth().testTag("connection_detail_chains"),
     ) {
         Text("代理链", modifier = Modifier.weight(0.42f), style = MaterialTheme.typography.labelMedium)
         FlowRow(
@@ -3945,7 +3916,7 @@ internal fun DnsQueryDetailSheet(
     ConnectionModalSheet(
         onDismiss = onDismiss,
         contentScrollState = contentScrollState,
-        accessibilityTitle = "DNS 详情",
+
     ) { requestDismiss ->
         // 作者 long：Flutter DNS 详情列表两侧留白为 16dp，保持基本信息、错误和答案共用该对齐线。
         Column(
@@ -3953,8 +3924,8 @@ internal fun DnsQueryDetailSheet(
         ) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("DNS 详情", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-                IconButton(onClick = requestDismiss) {
-                    Icon(Icons.Outlined.Close, contentDescription = "关闭 DNS 详情")
+                IconButton(onClick = requestDismiss, modifier = Modifier.testTag("dns_detail_close")) {
+                    Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.testTag("action:关闭 DNS 详情"))
                 }
             }
             copyMessage?.let { Text(it, modifier = Modifier.testTag("dns_copy_feedback")) }
@@ -3984,7 +3955,7 @@ internal fun DnsQueryDetailSheet(
                             query.error,
                             modifier = Modifier.fillMaxWidth().testTag("connection_detail_错误")
                                 .heightIn(min = 48.dp)
-                                .clickable(role = Role.Button, onClickLabel = "复制错误") { copyValue(query.error) }
+                                .clickable { copyValue(query.error) }
                                 .padding(vertical = 14.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error,
@@ -3999,7 +3970,7 @@ internal fun DnsQueryDetailSheet(
                                 answer,
                                 modifier = Modifier.fillMaxWidth().testTag("dns_detail_answer_$index")
                                     .heightIn(min = 48.dp)
-                                    .clickable(role = Role.Button, onClickLabel = "复制答案") { copyValue(answer) }
+                                    .clickable { copyValue(answer) }
                                     .padding(vertical = 14.dp),
                                 style = MaterialTheme.typography.bodyMedium,
                             )
@@ -4149,7 +4120,7 @@ internal fun ProfileCard(
                 .appFocusRing(AppSuperellipseShape(24.dp))
                 .clip(AppSuperellipseShape(24.dp))
                 .appContextMenuAnchor(menuAnchor) { showMore = false; showActions = true }
-                .combinedClickable(onClick = onSelect, onLongClickLabel = "配置操作",
+                .combinedClickable(onClick = onSelect,
                     onLongClick = { menuAnchor.open(); showMore = false; showActions = true })
                 .testTag("profile_card_${profile.id}"),
             shape = AppSuperellipseShape(24.dp),
@@ -4225,7 +4196,7 @@ internal fun ProfileCard(
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            AppGlyphIcon(AppGlyphs.check, contentDescription = "已选中", modifier = Modifier.size(18.dp), filled = true)
+                            AppGlyphIcon(AppGlyphs.check, modifier = Modifier.size(18.dp).testTag("action:已选中"), filled = true)
                         }
                     }
                 }
@@ -4242,27 +4213,27 @@ internal fun ProfileCard(
                             )
                             AppDropdownMenuItem(
                                 text = { Text("运行配置") },
-                                leadingIcon = { AppGlyphIcon(AppGlyphs.eye, contentDescription = null) },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.eye) },
                                 onClick = { showActions = false; onPreview() },
                                 modifier = Modifier.testTag("profile_preview_${profile.id}"),
                             )
                             if (profile.type == ProfileType.URL) {
                                 AppDropdownMenuItem(
                                     text = { Text("复制链接") },
-                                    leadingIcon = { AppGlyphIcon(AppGlyphs.copy, null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.copy) },
                                     onClick = { showActions = false; onCopyLink() },
                                     modifier = Modifier.testTag("profile_copy_link_${profile.id}"),
                                 )
                                 AppDropdownMenuItem(
                                     text = { Text("二维码") },
-                                    leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode, contentDescription = null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode) },
                                     onClick = { showActions = false; onShowQr() },
                                     modifier = Modifier.testTag("profile_show_qr_${profile.id}"),
                                 )
                             }
                             AppDropdownMenuItem(
                                 text = { Text(if (exportBusy) "正在导出…" else "导出") },
-                                leadingIcon = { AppGlyphIcon(AppGlyphs.export, null) },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.export) },
                                 onClick = { showActions = false; onExport() },
                                 enabled = !exportBusy,
                                 modifier = Modifier.testTag("profile_export_${profile.id}"),
@@ -4270,39 +4241,39 @@ internal fun ProfileCard(
                         } else {
                             AppDropdownMenuItem(
                                 text = { Text("编辑") },
-                                leadingIcon = { AppGlyphIcon(AppGlyphs.edit, contentDescription = null) },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.edit) },
                                 onClick = { showActions = false; onEdit() }, enabled = canEdit,
                                 modifier = Modifier.testTag("profile_edit_${profile.id}"),
                             )
                             if (profile.type == ProfileType.CUSTOM) {
                                 AppDropdownMenuItem(
                                     text = { Text("重命名") },
-                                    leadingIcon = { AppGlyphIcon(AppGlyphs.textShort, contentDescription = null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.textShort) },
                                     onClick = { showActions = false; onRename() },
                                     modifier = Modifier.testTag("profile_rename_${profile.id}"),
                                     enabled = canMutate,
                                 )
                                 AppDropdownMenuItem(
                                     text = { Text("运行配置") },
-                                    leadingIcon = { AppGlyphIcon(AppGlyphs.eye, contentDescription = null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.eye) },
                                     onClick = { showActions = false; onPreview() },
                                     modifier = Modifier.testTag("profile_preview_${profile.id}"),
                                 )
                             } else {
                                 AppDropdownMenuItem(text = { Text("扩展") },
-                                    leadingIcon = { AppGlyphIcon(AppGlyphs.puzzle, null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.puzzle) },
                                     onClick = { showActions = false; onExtend() },
                                     modifier = Modifier.testTag("profile_extend_${profile.id}"))
                             }
                             if (profile.type == ProfileType.URL) {
-                                AppDropdownMenuItem(text = { Text("同步") }, leadingIcon = { AppGlyphIcon(AppGlyphs.sync, null) },
+                                AppDropdownMenuItem(text = { Text("同步") }, leadingIcon = { AppGlyphIcon(AppGlyphs.sync) },
                                     onClick = { showActions = false; onUpdate() }, enabled = canMutate)
                             }
                             if (profile.type != ProfileType.CUSTOM) {
                                 AppDropdownMenuItem(
                                     text = { Text("更多") },
                                     trailingIcon = { AppMenuSubmenuArrow() },
-                                    leadingIcon = { AppGlyphIcon(AppGlyphs.moreCircle, contentDescription = null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.moreCircle) },
                                     onClick = { showMore = true }, dismissOnClick = false, opensSubmenu = true,
                                     modifier = Modifier.testTag("profile_more_${profile.id}"),
                                 )
@@ -4310,7 +4281,7 @@ internal fun ProfileCard(
                             HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
                             AppDropdownMenuItem(
                                 text = { Text("删除") }, danger = true,
-                                leadingIcon = { AppGlyphIcon(AppGlyphs.delete, null) },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.delete) },
                                 onClick = { showActions = false; onDelete() }, enabled = canDelete,
                             )
                         }

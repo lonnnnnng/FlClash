@@ -133,7 +133,7 @@ private fun WebDavAccountPage(initial: WebDavCredentials?, busy: Boolean, onDism
             OutlinedTextField(password, { if (it.length <= 1024) { password = it; error = null } }, label = { Text("密码") }, enabled = !busy, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (revealed) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = { IconButton({ revealed = !revealed }) { androidx.compose.material3.Icon(Icons.Outlined.Visibility, "显示或隐藏密码") } },
+                trailingIcon = { IconButton({ revealed = !revealed }) { androidx.compose.material3.Icon(Icons.Outlined.Visibility, null) } },
                 modifier = Modifier.fillMaxWidth().testTag("webdav_password"))
             Text("填写 WebDAV 目录地址。账号保存在本机，备份文件不包含 WebDAV 登录凭据。", style = MaterialTheme.typography.bodySmall)
             if (initial != null) TextButton({ deleting = true; onClear() }, enabled = !busy, modifier = Modifier.testTag("webdav_clear")) { Text("删除账号") }

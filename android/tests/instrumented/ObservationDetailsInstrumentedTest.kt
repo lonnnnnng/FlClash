@@ -13,7 +13,6 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -97,26 +96,26 @@ class ObservationDetailsInstrumentedTest {
         }
 
         composeRule.onNodeWithText("查看全部").performClick()
-        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithText("搜索目标、进程、代理链或规则").performTextInput("api.example.test")
         composeRule.onNodeWithTag("request_row_0").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
-        composeRule.onNodeWithContentDescription("返回最近请求列表").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
+        composeRule.onNodeWithTag("observation_list_back").performClick()
 
         composeRule.onNodeWithText("DNS").performClick()
         composeRule.onNodeWithText("查看全部").performClick()
-        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithText("搜索域名、上游、答案或错误").performTextInput("1.1.1.1")
         composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
-        composeRule.onNodeWithContentDescription("返回DNS查询列表").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
+        composeRule.onNodeWithTag("observation_list_back").performClick()
 
         composeRule.onNodeWithText("日志").performClick()
         composeRule.onNodeWithText("查看全部").performClick()
         composeRule.onNodeWithTag("log_level_error").performClick()
         composeRule.onNodeWithText("显示 1/2").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("移除筛选 error").performClick()
-        composeRule.onNodeWithContentDescription("返回日志列表").performClick()
+        composeRule.onNodeWithTag("observation_keyword_error").performClick()
+        composeRule.onNodeWithTag("observation_list_back").performClick()
     }
 
     @Test
@@ -224,18 +223,18 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithTag("connection_detail_主机").performScrollTo().performClick()
         assertEquals("other.example.test", copiedText)
         composeRule.onNodeWithTag("connections_copy_feedback").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+        composeRule.onNodeWithTag("connections_detail_close").performClick()
         composeRule.onNodeWithTag("request_row_0").assertIsDisplayed()
         composeRule.onNode(hasText("DIRECT") and hasClickAction()).performClick()
         composeRule.onNodeWithTag("request_row_0").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithText("搜索目标、进程、代理链或规则").performTextInput("other.example")
         composeRule.onNodeWithTag("request_row_0").performTouchInput {
             click(androidx.compose.ui.geometry.Offset(width / 2f, height * 0.2f))
         }
-        composeRule.onNodeWithContentDescription("关闭连接详情").performClick()
+        composeRule.onNodeWithTag("connections_detail_close").performClick()
         composeRule.onNodeWithText("other.example").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("移除筛选 DIRECT")
+        composeRule.onNodeWithTag("observation_keyword_DIRECT")
             .assertIsDisplayed()
             .assertHeightIsEqualTo(36.dp)
         androidx.test.espresso.Espresso.closeSoftKeyboard()
@@ -248,11 +247,11 @@ class ObservationDetailsInstrumentedTest {
             check(keywordScreenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
         }.toByteArray()
         recordVisualPng("observation-search-keyword-requests", keywordPng)
-        composeRule.onNodeWithContentDescription("移除筛选 DIRECT").performClick()
+        composeRule.onNodeWithTag("observation_keyword_DIRECT").performClick()
         composeRule.onNodeWithText("other.example").performTextClearance()
         composeRule.onNodeWithTag("request_row_1").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
-        composeRule.onNodeWithContentDescription("返回最近请求列表").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
+        composeRule.onNodeWithTag("observation_list_back").performClick()
         composeRule.onNodeWithText("DNS").performClick()
         composeRule.onNodeWithText("查看全部").performClick()
         composeRule.onNodeWithTag("observation_clear").assertIsDisplayed()
@@ -260,7 +259,7 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
         composeRule.onNode(hasText("NXDOMAIN") and hasClickAction()).performClick()
         composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithText("搜索域名、上游、答案或错误").performTextInput("api.example")
         // 作者 long：DNS 卡片中间包含关键词标签，点击右上耗时留白才能验证外层详情手势，避免误触筛选。
         composeRule.onNodeWithTag("dns_row_0").performTouchInput {
@@ -271,16 +270,16 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithTag("connection_detail_错误").performScrollTo().performClick()
         assertEquals("name not resolved", copiedText)
         composeRule.onNodeWithTag("dns_copy_feedback").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("关闭 DNS 详情").performClick()
+        composeRule.onNodeWithTag("dns_detail_close").performClick()
         composeRule.onNodeWithText("api.example").assertIsDisplayed()
         composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("移除筛选 缓存").assertIsDisplayed().performClick()
-        composeRule.onNodeWithContentDescription("移除筛选 NXDOMAIN").assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag("observation_keyword_缓存").assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag("observation_keyword_NXDOMAIN").assertIsDisplayed().performClick()
         // 作者 long：移除标签后自由搜索仍生效，先清空搜索再验证所有记录恢复，防止返回详情时丢失输入。
         composeRule.onNodeWithText("api.example").performTextClearance()
         composeRule.onNodeWithTag("dns_row_1").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
-        composeRule.onNodeWithContentDescription("返回DNS查询列表").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
+        composeRule.onNodeWithTag("observation_list_back").performClick()
     }
 
     @Test

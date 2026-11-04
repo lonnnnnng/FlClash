@@ -100,7 +100,12 @@ class RuleResourcesViewModel @Inject constructor(
         viewModelScope.launch {
             try { action() }
             catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { mutable.value = mutable.value.copy(error = "操作失败，请检查名称、资源正文或网络；原资源已保留") }
+            catch (error: Exception) {
+                // 作者 long：核心编译错误可能带原规则和路径；固定业务提示可直接展示，其余失败只给修正办法。
+                val message = error.message?.takeIf { it in setOf("请输入资源名称", "请输入资源正文", "资源为空或超过 8 MiB",
+                    "资源名称已经存在", "资源已变化，请重新打开", "本地资源没有远程地址", "规则资源列表已变化，请重新排序") }
+                mutable.value = mutable.value.copy(error = message ?: "操作失败，请检查名称、资源正文或网络；原资源已保留")
+            }
             finally { mutable.value = mutable.value.copy(busy = false) }
         }
     }

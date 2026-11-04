@@ -258,7 +258,7 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
 
     fun changeProviderContent(content: String) {
         val old = document.value ?: return
-        if (!old.editing || old.saving || old.committed || old.document == null) return
+        if (!old.editing || old.saving || old.committed || old.document == null || old.content == content) return
         mutableDocument.value = ProviderDocumentUiState(old.name, false, old.document, content, true)
     }
 

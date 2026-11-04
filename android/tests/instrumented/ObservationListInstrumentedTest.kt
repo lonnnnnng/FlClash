@@ -9,7 +9,6 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -116,21 +115,21 @@ class ObservationListInstrumentedTest {
         composeRule.onNodeWithTag("observation_list_page").assertIsDisplayed()
         composeRule.onNodeWithText("日志").assertIsDisplayed()
         composeRule.onNodeWithText("显示 3/3").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("导出日志").performClick()
+        composeRule.onNodeWithTag("observation_export").performClick()
         assertEquals(1, composeRule.activity.logExportRequests)
 
         composeRule.onNodeWithTag("log_level_error").performClick()
         composeRule.onNodeWithText("显示 1/3").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("移除筛选 error").performClick()
+        composeRule.onNodeWithTag("observation_keyword_error").performClick()
         composeRule.onNodeWithText("显示 3/3").assertIsDisplayed()
 
-        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithText("搜索日志级别或内容").performTextInput("上游")
         composeRule.onNodeWithText("显示 1/3").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithText("显示 3/3").assertIsDisplayed()
 
-        composeRule.onNodeWithContentDescription("返回日志列表").performClick()
+        composeRule.onNodeWithTag("observation_list_back").performClick()
     }
 
     @Test
@@ -202,14 +201,14 @@ class ObservationListInstrumentedTest {
                 composeRule.activity.overrideDarkTheme(darkTheme)
                 composeRule.activity.showRequestsPage()
             }
-            composeRule.onNodeWithContentDescription("搜索").performClick()
+            composeRule.onNodeWithTag("observation_search_toggle").performClick()
             composeRule.onNodeWithTag("observation_search_field").performTextInput("no-such-target")
             composeRule.onNodeWithTag("requests_no_results_state").assertIsDisplayed()
             composeRule.onNodeWithText("没有匹配的结果").assertIsDisplayed()
             capture("requests_no_results_$theme", "requests_no_results_state")
 
             composeRule.activity.runOnUiThread { composeRule.activity.showDnsPage() }
-            composeRule.onNodeWithContentDescription("搜索").performClick()
+            composeRule.onNodeWithTag("observation_search_toggle").performClick()
             composeRule.onNodeWithTag("observation_search_field").performTextInput("no-such-domain")
             composeRule.onNodeWithTag("dns_no_results_state").assertIsDisplayed()
             composeRule.onNodeWithText("没有匹配的结果").assertIsDisplayed()
@@ -230,7 +229,7 @@ class ObservationListInstrumentedTest {
     fun dnsDetailSnapshotAndSearchRestoreAfterActivityRecreation() {
         assertPortraitDefaultFontConfiguration()
         composeRule.activity.runOnUiThread { composeRule.activity.showDnsPage() }
-        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithTag("observation_search_field").performTextInput("rebuild-me.example.test")
         composeRule.onNodeWithTag("dns_row_0").assertIsDisplayed()
         composeRule.onNodeWithTag("dns_row_0").performTouchInput {
@@ -243,7 +242,7 @@ class ObservationListInstrumentedTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("DNS 详情").assertIsDisplayed()
         composeRule.onNodeWithTag("dns_detail_answer_0").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("关闭 DNS 详情").performClick()
+        composeRule.onNodeWithTag("dns_detail_close").performClick()
         composeRule.onNodeWithTag("observation_search_field")
             .assertIsDisplayed()
             .assertTextEquals("rebuild-me.example.test")
@@ -255,9 +254,9 @@ class ObservationListInstrumentedTest {
     fun expandedSearchReplacesToolbarActionsAndClearKeepsSearchOpen() {
         assertPortraitDefaultFontConfiguration()
         composeRule.activity.runOnUiThread { composeRule.activity.showDnsPage() }
-        composeRule.onNodeWithContentDescription("清除 DNS 缓存").assertIsDisplayed()
+        composeRule.onNodeWithTag("observation_clear").assertIsDisplayed()
 
-        composeRule.onNodeWithContentDescription("搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithTag("observation_search_field")
             .assertIsDisplayed()
             .assertHeightIsEqualTo(44.dp)
@@ -273,27 +272,27 @@ class ObservationListInstrumentedTest {
             assertEquals("search text inset", 41.dp.toPx(), inputBounds.left - capsuleBounds.left, 1f)
             assertEquals("search icon to text gap", 9.dp.toPx(), inputBounds.left - iconBounds.right, 1f)
         }
-        composeRule.onNodeWithContentDescription("返回DNS查询列表").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("清除 DNS 缓存").assertDoesNotExist()
+        composeRule.onNodeWithTag("observation_list_back").assertDoesNotExist()
+        composeRule.onNodeWithTag("observation_clear").assertDoesNotExist()
         composeRule.onNodeWithTag("observation_search_clear").assertDoesNotExist()
 
         composeRule.onNodeWithTag("observation_search_field").performTextInput("resolver")
-        composeRule.onNodeWithContentDescription("清除搜索").assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag("observation_search_clear").assertIsDisplayed().performClick()
         assertEquals(
             "",
             composeRule.onNodeWithTag("observation_search_field")
                 .fetchSemanticsNode().config[SemanticsProperties.EditableText].text,
         )
-        composeRule.onNodeWithContentDescription("关闭搜索").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithTag("observation_search_field").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("返回DNS查询列表").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("清除 DNS 缓存").assertIsDisplayed()
+        composeRule.onNodeWithTag("observation_list_back").assertIsDisplayed()
+        composeRule.onNodeWithTag("observation_clear").assertIsDisplayed()
     }
 
     @Test
     fun dnsToolbarShowsSuccessfulCacheClearAndKeepsHistory() {
         composeRule.activity.runOnUiThread { composeRule.activity.showDnsPage() }
-        composeRule.onNodeWithContentDescription("清除 DNS 缓存").assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag("observation_clear").assertIsDisplayed().performClick()
         composeRule.onNodeWithText("DNS 缓存已清除").assertIsDisplayed()
         composeRule.onNodeWithTag("observation_list_page").assertIsDisplayed()
         composeRule.onNodeWithText("resolver.example.test").assertIsDisplayed()
@@ -308,7 +307,7 @@ class ObservationListInstrumentedTest {
             composeRule.activity.showDnsPage()
             composeRule.activity.setDnsCacheClearSucceeds(false)
         }
-        composeRule.onNodeWithContentDescription("清除 DNS 缓存").performClick()
+        composeRule.onNodeWithTag("observation_clear").performClick()
         composeRule.onNodeWithText("清除 DNS 缓存失败").assertIsDisplayed()
         composeRule.onNodeWithText("resolver.example.test").assertIsDisplayed()
         composeRule.activity.runOnUiThread {

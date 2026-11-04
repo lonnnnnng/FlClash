@@ -66,7 +66,7 @@ internal fun MainPageTransition(
         label = "mainPage",
     ) { page ->
         val active = page == destination
-        // 作者 long：退场页面只参与绘制，不能继续接收点击或被无障碍重复朗读；返回时恢复该页的滚动、搜索和草稿视图。
+        // 作者 long：退场页面只参与绘制，不能继续接收操作；返回时恢复该页的滚动、搜索和草稿视图。
         val interaction = if (active) Modifier else Modifier.clearAndSetSemantics {}.pointerInput(Unit) {
             awaitPointerEventScope {
                 while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }

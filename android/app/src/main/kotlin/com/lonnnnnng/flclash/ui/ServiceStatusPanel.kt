@@ -11,7 +11,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.core.*
 
@@ -63,7 +62,7 @@ internal fun DashboardServiceStatusCard(
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.Verified, null)
             Text("服务状态", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            Icon(Icons.Outlined.ChevronRight, "查看服务状态")
+            Icon(Icons.Outlined.ChevronRight, null)
         }
         Spacer(Modifier.height(12.dp))
         val shown = state.settings.enabled.take(2)
@@ -96,7 +95,7 @@ internal fun DashboardServiceStatusCard(
         onNavigateBack = if (quality != null || manage) ({ if (quality != null) onCloseQuality() else manage = false }) else null,
         backTag = "service_manage_back", actions = {
             if (quality != null) IconButton(onClick = onRefreshQuality, enabled = !quality.qualityLoading,
-                modifier = Modifier.testTag("service_quality_refresh")) { Icon(Icons.Outlined.Refresh, "刷新 IP 质量") }
+                modifier = Modifier.testTag("service_quality_refresh")) { Icon(Icons.Outlined.Refresh, null) }
         },
     ) {
             state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("service_error")) }
@@ -131,7 +130,7 @@ internal fun DashboardServiceStatusCard(
                                 }
                                 Text(listOfNotNull(country, value).joinToString(" · "),
                                     modifier = Modifier.testTag("service_exit_${target.id}").then(if (exit?.info != null)
-                                        Modifier.clickable(role = Role.Button, onClickLabel = "查看 ${target.label} 出口 IP 质量") { onOpenQuality(checkNotNull(node)) } else Modifier),
+                                        Modifier.clickable { onOpenQuality(checkNotNull(node)) } else Modifier),
                                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 if (exit?.error != null) TextButton(onClick = { onRefreshExit(checkNotNull(node)) }, modifier = Modifier.testTag("service_exit_retry_${target.id}")) { Text("出口 IP 查询失败，重试") }
                             }

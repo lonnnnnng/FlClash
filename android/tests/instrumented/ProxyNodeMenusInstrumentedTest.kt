@@ -44,7 +44,7 @@ class ProxyNodeMenusInstrumentedTest {
                 compose.onNodeWithTag("node_menu_select").assert(hasText(if (group == "Selector") "选择" else "优选")).performClick()
                 compose.runOnIdle { assertTrue(chosen); assertEquals(before + 1, selections) }
                 compose.onNodeWithTag("node").performTouchInput { longClick() }
-                compose.onNodeWithContentDescription("已选中").assertExists()
+                compose.onActionMarker("已选中").assertExists()
             }
             capture("node_menu_${group}_$theme")
             compose.onNodeWithTag("node_menu_add_local").performClick()
