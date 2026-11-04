@@ -111,7 +111,11 @@ data class ProfileRulesEditorUiState(
     val isSaving: Boolean = false,
     val catalog: CustomRuleCatalog = CustomRuleCatalog(),
     val error: String? = null,
-)
+    val session: Long = 0,
+    val uiDraft: EditorSaveableState? = null,
+    val pendingContent: String? = null,
+    val interruptedRules: String? = null,
+) { override fun toString() = "ProfileRulesEditorUiState(id=${profile?.id}, saving=$isSaving)" }
 
 data class ProfileProxiesEditorUiState(
     val profile: Profile? = null,
@@ -128,7 +132,11 @@ data class ProfileProxyGroupsEditorUiState(
     val initialGroupIndex: Int? = null,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
-)
+    val error: String? = null,
+    val session: Long = 0,
+    val uiDraft: EditorSaveableState? = null,
+    val pendingContent: String? = null,
+) { override fun toString() = "ProfileProxyGroupsEditorUiState(id=${profile?.id}, saving=$isSaving)" }
 
 data class ProfileProvidersEditorUiState(
     val profile: Profile? = null,
@@ -247,6 +255,8 @@ class ProfilesViewModel internal constructor(
     private var localEditorGeneration = 0L
     private var proxyGroupsGeneration = 0L
     private var rulesGeneration = 0L
+    private var rulesClosing = false
+    private var groupsClosing = false
     private var dialersGeneration = 0L
     private var moreGeneration = 0L
     private var providersGeneration = 0L
@@ -290,12 +300,15 @@ class ProfilesViewModel internal constructor(
     init {
         if (draftStore !== com.lonnnnnng.flclash.data.NoopProfileDraftStore) viewModelScope.launch {
             val generation = localEditorGeneration
+            val rulesAtRead = rulesGeneration
+            val groupsAtRead = proxyGroupsGeneration
             try {
                 val bytes = draftStore.read()
                 val saved = bytes?.let { withContext(overviewDispatcher) { draftGson.fromJson(it.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java) } }
-                if (saved != null && generation == localEditorGeneration && mutableEditor.value.profile == null && mutableRemoteEditor.value.profile == null) {
-                    require(saved.version == 1)
-                    val id = saved.editor.profile?.id ?: saved.remote.profile?.id
+                if (saved != null && generation == localEditorGeneration && rulesAtRead == rulesGeneration && groupsAtRead == proxyGroupsGeneration &&
+                    mutableEditor.value.profile == null && mutableRemoteEditor.value.profile == null) {
+                    require(saved.version in 1..2)
+                    val id = saved.editor.profile?.id ?: saved.remote.profile?.id ?: saved.rules?.profile?.id ?: saved.groups?.profile?.id
                     if (id != null && repository.extensionProfile(id) != null) {
                         if (saved.editor.isLoading || saved.remote.isLoading) {
                             openEditor(requireNotNull(saved.editor.profile ?: saved.remote.profile))
@@ -310,6 +323,7 @@ class ProfilesViewModel internal constructor(
                             restoredFilePick = pendingFilePick?.third
                             restoredRemotePick = pendingRemotePick?.third
                             nextFilePickToken = saved.nextToken
+                            restoreStructuredDrafts(saved, id)
                             refreshOverview()
                         }
                     }
@@ -317,13 +331,16 @@ class ProfilesViewModel internal constructor(
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { mutableErrors.emit("无法恢复上次编辑草稿，正式配置未改动") }
             finally { draftRestored.complete(Unit) }
-            combine(mutableEditor, mutableRemoteEditor, mutableDocumentEditor, draftRevision) { _, _, _, _ ->
+            combine(mutableEditor, mutableRemoteEditor, mutableDocumentEditor, draftRevision,
+                combine(mutableRulesEditor, mutableProxyGroupsEditor) { rules, groups -> rules to groups }) { _, _, _, _, _ ->
                 draftEpoch to currentDraftSnapshot()
-            }.collect { (epoch, snapshot) ->
+            }.collect { (epoch, _) ->
                 try {
                     draftWriteLock.withLock {
                         if (epoch == draftEpoch) {
-                            val bytes = snapshot?.let { withContext(overviewDispatcher) { draftGson.toJson(it).toByteArray(Charsets.UTF_8) } }
+                            // 作者 long：等待写锁期间可能已登记保存意图；拿锁后重取状态，不能用排队旧快照擦掉提交前的恢复记录。
+                            val latest = currentDraftSnapshot()
+                            val bytes = latest?.let { withContext(overviewDispatcher) { draftGson.toJson(it).toByteArray(Charsets.UTF_8) } }
                             if (epoch == draftEpoch) draftStore.write(bytes)
                         }
                     }
@@ -335,10 +352,85 @@ class ProfilesViewModel internal constructor(
 
     private fun currentDraftSnapshot(): ProfileEditorDraftSnapshot? {
         val editor = mutableEditor.value; val remote = mutableRemoteEditor.value
-        if (draftClosing || editor.isLoading || remote.isLoading || editor.profile == null && remote.profile == null) return null
+        val rules = mutableRulesEditor.value.takeUnless { rulesClosing || it.profile == null || it.isLoading }
+        val groups = mutableProxyGroupsEditor.value.takeUnless { groupsClosing || it.profile == null || it.isLoading }
+        if (draftClosing || editor.isLoading || remote.isLoading || editor.profile == null && remote.profile == null && rules == null && groups == null) return null
         return ProfileEditorDraftSnapshot(editor = editor.copy(overview = null), remote = remote, document = mutableDocumentEditor.value,
             fileBytes = replacementBytes?.copyOf(), remoteBytes = remoteReplacementBytes?.copyOf(),
-            filePick = pendingFilePick, remotePick = pendingRemotePick, nextToken = nextFilePickToken)
+            filePick = pendingFilePick, remotePick = pendingRemotePick, nextToken = nextFilePickToken, rules = rules, groups = groups)
+    }
+
+    private suspend fun persistCurrentEditorDraft() {
+        val epoch = draftEpoch
+        draftWriteLock.withLock {
+            val snapshot = currentDraftSnapshot()
+            val bytes = snapshot?.let { withContext(overviewDispatcher) { draftGson.toJson(it).toByteArray(Charsets.UTF_8) } }
+            check(epoch == draftEpoch) { "编辑会话已变化" }
+            draftStore.write(bytes)
+        }
+    }
+
+    private suspend fun restoreStructuredDrafts(saved: ProfileEditorDraftSnapshot, ownerId: Long) {
+        val parentGeneration = localEditorGeneration
+        val epoch = draftEpoch
+        fun canRestore() = parentGeneration == localEditorGeneration && epoch == draftEpoch && !draftClosing
+        saved.rules?.takeIf { it.profile?.id == ownerId && it.profile.type == ProfileType.CUSTOM }?.let { draft ->
+            val generation = rulesGeneration
+            draft.uiDraft?.restoredValues()
+            val current = repository.readLocalProfileContent(ownerId)
+            val committed = draft.pendingContent != null && current == draft.pendingContent
+            val profile = repository.extensionProfile(ownerId)
+            if (!canRestore() || generation != rulesGeneration || rulesClosing) return
+            val message = when {
+                committed -> null
+                current != draft.sourceContent -> "配置正文已变化，请保留草稿并重新打开规则页"
+                draft.isSaving || draft.pendingContent != null -> "上次保存已中断，草稿已恢复，请检查后重试"
+                else -> draft.error
+            }
+            mutableRulesEditor.value = draft.copy(session = ++rulesGeneration, isLoading = false, isSaving = false,
+                profile = if (committed) profile else draft.profile,
+                sourceContent = if (committed) current else draft.sourceContent,
+                rules = if (committed) ProfileRulesEditor.extractRules(current) else draft.rules, error = message, pendingContent = null,
+                interruptedRules = if (committed) null else draft.pendingContent?.let(ProfileRulesEditor::extractRules) ?: draft.interruptedRules)
+            if (committed) reflectStructuredSave(ownerId, current, profile)
+        }
+        saved.groups?.takeIf { it.profile?.id == ownerId && it.profile.type == ProfileType.CUSTOM }?.let { draft ->
+            val generation = proxyGroupsGeneration
+            draft.uiDraft?.restoredValues()
+            val current = repository.readLocalProfileContent(ownerId)
+            val committed = draft.pendingContent != null && current == draft.pendingContent
+            val profile = repository.extensionProfile(ownerId)
+            if (!canRestore() || generation != proxyGroupsGeneration || groupsClosing) return
+            if (committed) {
+                // 作者 long：正文完全匹配才认定上次提交完成；不重新提交，也不把磁盘成功冒充运行态应用成功。
+                reflectStructuredSave(ownerId, current, profile)
+                mutableErrors.tryEmit("已确认上次策略组保存，请检查当前配置的运行状态")
+            } else {
+                mutableProxyGroupsEditor.value = draft.copy(session = ++proxyGroupsGeneration, isLoading = false, isSaving = false,
+                    pendingContent = null, error = when {
+                        current != draft.sourceContent -> "配置正文已变化，请保留草稿并重新打开策略组"
+                        draft.isSaving || draft.pendingContent != null -> "上次保存已中断，草稿已恢复，请检查后重试"
+                        else -> draft.error
+                    })
+            }
+        }
+    }
+
+    fun updateRulesUiDraft(profileId: Long, session: Long, draft: EditorSaveableState) {
+        val state = mutableRulesEditor.value
+        if (!draftClosing && !rulesClosing && state.profile?.id == profileId && state.session == session)
+            mutableRulesEditor.value = state.copy(uiDraft = draft)
+    }
+
+    fun updateGroupsUiDraft(profileId: Long, session: Long, draft: EditorSaveableState) {
+        val state = mutableProxyGroupsEditor.value
+        if (!draftClosing && !groupsClosing && state.profile?.id == profileId && state.session == session)
+            mutableProxyGroupsEditor.value = state.copy(uiDraft = draft)
+    }
+
+    fun discardInterruptedRules() {
+        if (rulesClosing || mutableRulesEditor.value.isSaving) return
+        mutableRulesEditor.update { it.copy(interruptedRules = null, error = it.error?.takeUnless { message -> message.startsWith("上次保存已中断") }) }
     }
 
     suspend fun persistPickerBeforeLaunch(token: Long): Boolean {
@@ -700,8 +792,10 @@ class ProfilesViewModel internal constructor(
         draftEpoch++; draftClosing = false
         localEditorGeneration++
         rulesGeneration++
+        proxyGroupsGeneration++
+        rulesClosing = false; groupsClosing = false
         mutableRulesEditor.value = ProfileRulesEditorUiState()
-        closeProxyGroupsEditor()
+        mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState()
         closeProvidersEditor()
         cancelCustomImport()
         overviewJob?.cancel()
@@ -1077,7 +1171,7 @@ class ProfilesViewModel internal constructor(
     }
 
     fun openRulesEditor(profile: Profile) {
-        if (mutableRulesEditor.value.isSaving) return
+        if (draftClosing || rulesClosing || mutableRulesEditor.value.isSaving) return
         if (profile.type != ProfileType.CUSTOM) {
             mutableErrors.tryEmit("高级规则编辑仅支持自定义配置")
             return
@@ -1087,7 +1181,8 @@ class ProfilesViewModel internal constructor(
             return
         }
         val generation = ++rulesGeneration
-        mutableRulesEditor.value = ProfileRulesEditorUiState(profile = profile, isLoading = true)
+        draftEpoch++
+        mutableRulesEditor.value = ProfileRulesEditorUiState(profile = profile, isLoading = true, session = generation)
         viewModelScope.launch {
             runCatching {
                 val content = repository.readLocalProfileContent(profile.id)
@@ -1101,6 +1196,7 @@ class ProfilesViewModel internal constructor(
                     sourceContent = content,
                     rules = rules,
                     catalog = catalog,
+                    session = generation,
                 )
             }.onFailure { error ->
                 if (error is CancellationException) throw error
@@ -1113,15 +1209,39 @@ class ProfilesViewModel internal constructor(
     }
 
     fun closeRulesEditor() {
-        if (mutableRulesEditor.value.isSaving) return
-        rulesGeneration++
-        mutableRulesEditor.value = ProfileRulesEditorUiState()
+        if (mutableRulesEditor.value.isSaving || rulesClosing) return
+        closeStructuredEditor(rules = true)
+    }
+
+    private fun closeStructuredEditor(rules: Boolean) {
+        if (rules) { rulesClosing = true; rulesGeneration++; mutableRulesEditor.update { it.copy(isSaving = true) } }
+        else { groupsClosing = true; proxyGroupsGeneration++; mutableProxyGroupsEditor.update { it.copy(isSaving = true) } }
+        val generation = if (rules) rulesGeneration else proxyGroupsGeneration
+        val parentGeneration = localEditorGeneration
+        draftEpoch++; draftRevision.value++
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            withContext(kotlinx.coroutines.NonCancellable) {
+                try {
+                    // 作者 long：页面关闭必须等移除该子页的密文落盘；旧写入和迟到回调都不能让已放弃的草稿复活。
+                    persistCurrentEditorDraft()
+                    if (parentGeneration == localEditorGeneration && generation == if (rules) rulesGeneration else proxyGroupsGeneration) {
+                        if (rules) { mutableRulesEditor.value = ProfileRulesEditorUiState(); rulesClosing = false }
+                        else { mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(); groupsClosing = false }
+                    }
+                } catch (_: Exception) {
+                    if (parentGeneration == localEditorGeneration && generation == if (rules) rulesGeneration else proxyGroupsGeneration) {
+                        if (rules) { rulesClosing = false; mutableRulesEditor.update { it.copy(isSaving = false, error = "草稿清除失败，请重试关闭") } }
+                        else { groupsClosing = false; mutableProxyGroupsEditor.update { it.copy(isSaving = false, error = "草稿清除失败，请重试关闭") } }
+                    }
+                }
+            }
+        }
     }
 
     fun saveRules(rules: String) {
         val state = mutableRulesEditor.value
         val profile = state.profile ?: return
-        if (state.isLoading || state.isSaving) return
+        if (draftClosing || rulesClosing || state.isLoading || state.isSaving) return
         if (isProfileTransitioning(runtimeManager.state.value)) {
             val message = "核心正在启停，请稍后重试"
             mutableRulesEditor.value = state.copy(error = message)
@@ -1129,10 +1249,13 @@ class ProfilesViewModel internal constructor(
             return
         }
         val generation = rulesGeneration
-        mutableRulesEditor.value = state.copy(isSaving = true, error = null)
+        mutableRulesEditor.value = state.copy(isSaving = true, error = null, interruptedRules = null)
         viewModelScope.launch {
             runCatching {
                 val updatedContent = withContext(overviewDispatcher) { ProfileRulesEditor.replaceRules(state.sourceContent, rules) }
+                check(generation == rulesGeneration) { "编辑会话已变化" }
+                mutableRulesEditor.update { it.copy(pendingContent = updatedContent) }
+                persistCurrentEditorDraft()
                 val updatedProfile = profileWrite { repository.saveCustomRules(profile.id, rules, state.sourceContent) {
                     generation == rulesGeneration && !isProfileTransitioning(runtimeManager.state.value)
                 } }
@@ -1140,12 +1263,14 @@ class ProfilesViewModel internal constructor(
                     reflectStructuredSave(profile.id, updatedContent, updatedProfile)
                     // 作者 long：与 Flutter 一样逐操作保存并留在列表；更新正文快照供下一次保存检测过期写入。
                     mutableRulesEditor.value = state.copy(profile = updatedProfile, sourceContent = updatedContent,
-                        rules = ProfileRulesEditor.extractRules(updatedContent), isSaving = false, error = null)
+                        rules = ProfileRulesEditor.extractRules(updatedContent), isSaving = false, error = null,
+                        uiDraft = mutableRulesEditor.value.uiDraft, pendingContent = null, interruptedRules = null)
                 }
             }.onFailure { error ->
                 if (error is CancellationException) throw error
                 if (generation == rulesGeneration) {
-                    mutableRulesEditor.value = state.copy(isSaving = false, error = error.message ?: "保存规则失败，原配置已保留")
+                    mutableRulesEditor.value = state.copy(isSaving = false, error = error.message ?: "保存规则失败，原配置已保留",
+                        uiDraft = mutableRulesEditor.value.uiDraft, pendingContent = null)
                 }
             }
         }
@@ -1217,16 +1342,17 @@ class ProfilesViewModel internal constructor(
             mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
-        if (mutableProxyGroupsEditor.value.isSaving) return
+        if (draftClosing || groupsClosing || mutableProxyGroupsEditor.value.isSaving) return
         val generation = ++proxyGroupsGeneration
-        mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(profile = profile, isLoading = true, initialGroupIndex = index)
+        draftEpoch++
+        mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(profile = profile, isLoading = true, initialGroupIndex = index, session = generation)
         viewModelScope.launch {
             runCatching {
                 val content = repository.readLocalProfileContent(profile.id)
                 content to ProfileProxyGroupsEditor.extractGroups(content)
             }.onSuccess { (content, groups) ->
                 if (generation == proxyGroupsGeneration) mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState(
-                    profile = profile, sourceContent = content, groups = groups, initialGroupIndex = index,
+                    profile = profile, sourceContent = content, groups = groups, initialGroupIndex = index, session = generation,
                 )
             }.onFailure { error ->
                 if (error is CancellationException) throw error
@@ -1239,8 +1365,8 @@ class ProfilesViewModel internal constructor(
     }
 
     fun closeProxyGroupsEditor() {
-        proxyGroupsGeneration++
-        mutableProxyGroupsEditor.value = ProfileProxyGroupsEditorUiState()
+        if (groupsClosing || mutableProxyGroupsEditor.value.isSaving) return
+        closeStructuredEditor(rules = false)
     }
 
     suspend fun readGroupIcon(uri: String): String = withContext(overviewDispatcher) {
@@ -1254,30 +1380,34 @@ class ProfilesViewModel internal constructor(
     fun saveProxyGroupsDraft(save: ProxyGroupsSave) {
         val state = mutableProxyGroupsEditor.value
         val profile = state.profile ?: return
-        if (state.isLoading || state.isSaving) return
+        if (draftClosing || groupsClosing || state.isLoading || state.isSaving) return
         if (isProfileTransitioning(runtimeManager.state.value)) {
             mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
         val generation = proxyGroupsGeneration
-        mutableProxyGroupsEditor.value = state.copy(isSaving = true)
+        mutableProxyGroupsEditor.value = state.copy(isSaving = true, error = null)
         viewModelScope.launch {
             runCatching {
                 // 作者 long：快捷 YAML 和列表保存也必须经过核心校验，不能仅依赖表单的防抖预检。
                 val filters = save.groups.flatMap { listOf(it.text("filter"), it.text("exclude-filter")) }
                 require(validateGroupFilters(filters).all(String::isEmpty)) { "过滤表达式无效，请打开对应策略组修复" }
-                withContext(overviewDispatcher) { ProxyGroupDrafts.apply(state.sourceContent, save, repository.localProxies().map { it.name }) }
+                val updatedContent = withContext(overviewDispatcher) { ProxyGroupDrafts.apply(state.sourceContent, save, repository.localProxies().map { it.name }) }
+                check(generation == proxyGroupsGeneration) { "编辑会话已变化" }
+                mutableProxyGroupsEditor.update { it.copy(pendingContent = updatedContent) }
+                persistCurrentEditorDraft()
                 val updated = profileWrite { repository.saveCustomProxyGroups(profile.id, save, state.sourceContent) {
                     generation == proxyGroupsGeneration && !isProfileTransitioning(runtimeManager.state.value)
                 } }
                 if (generation == proxyGroupsGeneration) {
                     reflectStructuredSave(profile.id, repository.readLocalProfileContent(profile.id), updated)
-                    closeProxyGroupsEditor()
+                    closeStructuredEditor(rules = false)
                 }
             }.onFailure { error ->
                 if (error is CancellationException) throw error
                 if (generation == proxyGroupsGeneration) {
-                    mutableProxyGroupsEditor.value = state.copy(isSaving = false)
+                    mutableProxyGroupsEditor.value = state.copy(isSaving = false, error = error.message ?: "保存代理组失败",
+                        uiDraft = mutableProxyGroupsEditor.value.uiDraft, pendingContent = null)
                     mutableErrors.emit(error.message ?: "保存代理组失败")
                 }
             }
@@ -1287,21 +1417,32 @@ class ProfilesViewModel internal constructor(
     fun saveProxyGroups(groups: String) {
         val state = mutableProxyGroupsEditor.value
         val profile = state.profile ?: return
+        if (draftClosing || groupsClosing || state.isLoading || state.isSaving) return
         if (isProfileTransitioning(runtimeManager.state.value)) {
             mutableErrors.tryEmit("核心正在启停，请稍后重试")
             return
         }
+        val generation = proxyGroupsGeneration
+        mutableProxyGroupsEditor.value = state.copy(isSaving = true, error = null)
         viewModelScope.launch {
-            mutableProxyGroupsEditor.value = state.copy(isSaving = true)
             runCatching {
-                val updatedContent = ProfileProxyGroupsEditor.replaceGroups(state.sourceContent, groups)
-                val updatedProfile = profileWrite { repository.saveCustomDocument(profile.id, updatedContent, state.sourceContent) { !isProfileTransitioning(runtimeManager.state.value) } }
-                reflectStructuredSave(profile.id, updatedContent, updatedProfile)
+                val updatedContent = withContext(overviewDispatcher) { ProfileProxyGroupsEditor.replaceGroups(state.sourceContent, groups) }
+                check(generation == proxyGroupsGeneration) { "编辑会话已变化" }
+                mutableProxyGroupsEditor.update { it.copy(pendingContent = updatedContent) }
+                persistCurrentEditorDraft()
+                val updatedProfile = profileWrite { repository.saveCustomDocument(profile.id, updatedContent, state.sourceContent) {
+                    generation == proxyGroupsGeneration && !isProfileTransitioning(runtimeManager.state.value)
+                } }
+                if (generation == proxyGroupsGeneration) reflectStructuredSave(profile.id, updatedContent, updatedProfile)
             }.onSuccess {
-                closeProxyGroupsEditor()
+                if (generation == proxyGroupsGeneration) closeStructuredEditor(rules = false)
             }.onFailure { error ->
-                mutableProxyGroupsEditor.value = mutableProxyGroupsEditor.value.copy(isSaving = false, groups = groups)
-                mutableErrors.emit(error.message ?: "保存代理组失败")
+                if (error is CancellationException) throw error
+                if (generation == proxyGroupsGeneration) {
+                    mutableProxyGroupsEditor.value = mutableProxyGroupsEditor.value.copy(isSaving = false, groups = groups,
+                        pendingContent = null, error = error.message ?: "保存代理组失败")
+                    mutableErrors.emit(error.message ?: "保存代理组失败")
+                }
             }
         }
     }

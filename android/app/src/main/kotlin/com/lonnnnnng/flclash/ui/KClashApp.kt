@@ -926,6 +926,10 @@ fun KClashApp(
                         onOpenRulesEditor = profilesViewModel::openRulesEditor,
                         onCloseRulesEditor = profilesViewModel::closeRulesEditor,
                         onSaveRules = profilesViewModel::saveRules,
+                        onRulesUiDraftChange = profilesViewModel::updateRulesUiDraft,
+                        onGroupsUiDraftChange = profilesViewModel::updateGroupsUiDraft,
+                        onEditorDraftFailure = { profilesViewModel.reportError("草稿暂存失败，请保持编辑页面并重试保存") },
+                        onDiscardInterruptedRules = profilesViewModel::discardInterruptedRules,
                         proxiesEditorState = proxiesEditorState,
                         onOpenProxiesEditor = profilesViewModel::openProxiesEditor,
                         onCloseProxiesEditor = profilesViewModel::closeProxiesEditor,
@@ -1631,6 +1635,10 @@ internal fun ProfilesPanel(
     onOpenRulesEditor: (profile: Profile) -> Unit = {},
     onCloseRulesEditor: () -> Unit = {},
     onSaveRules: (rules: String) -> Unit = {},
+    onRulesUiDraftChange: (Long, Long, EditorSaveableState) -> Unit = { _, _, _ -> },
+    onGroupsUiDraftChange: (Long, Long, EditorSaveableState) -> Unit = { _, _, _ -> },
+    onEditorDraftFailure: () -> Unit = {},
+    onDiscardInterruptedRules: () -> Unit = {},
     proxiesEditorState: ProfileProxiesEditorUiState = ProfileProxiesEditorUiState(),
     onOpenProxiesEditor: (profile: Profile) -> Unit = {},
     onCloseProxiesEditor: () -> Unit = {},
@@ -2029,15 +2037,20 @@ internal fun ProfilesPanel(
                 confirmButton = {},
             )
         } else {
-            ProfileRulesEditorDialog(
+            EncryptedEditorState(rulesEditorState.session, rulesEditorState.uiDraft,
+                { onRulesUiDraftChange(profile.id, rulesEditorState.session, it) }, onEditorDraftFailure) { checkpoint ->
+              ProfileRulesEditorDialog(
                 profile = profile,
                 initialRules = rulesEditorState.rules,
                 saving = rulesEditorState.isSaving,
                 catalog = rulesEditorState.catalog,
                 saveError = rulesEditorState.error,
                 onDismiss = onCloseRulesEditor,
-                onSave = onSaveRules,
+                onSave = { checkpoint(); onSaveRules(it) },
+                interruptedRules = rulesEditorState.interruptedRules,
+                onDiscardInterrupted = onDiscardInterruptedRules,
             )
+            }
         }
     }
 
@@ -2069,19 +2082,23 @@ internal fun ProfilesPanel(
                 confirmButton = {},
             )
         } else {
-            ProfileProxyGroupsEditorDialog(
+            EncryptedEditorState(proxyGroupsEditorState.session, proxyGroupsEditorState.uiDraft,
+                { onGroupsUiDraftChange(profile.id, proxyGroupsEditorState.session, it) }, onEditorDraftFailure) { checkpoint ->
+              ProfileProxyGroupsEditorDialog(
                 profile = profile,
                 initialGroups = proxyGroupsEditorState.groups,
                 sourceContent = proxyGroupsEditorState.sourceContent,
                 resourceProfiles = state.profiles,
                 initialGroupIndex = proxyGroupsEditorState.initialGroupIndex,
-                onSaveDraft = onSaveProxyGroupsDraft,
+                onSaveDraft = onSaveProxyGroupsDraft?.let { save -> { checkpoint(); save(it) } },
                 onValidateFilters = onValidateGroupFilters,
                 recentIcons = recentGroupIcons, onRecordIcon = onRecordGroupIcon, onReadIcon = onReadGroupIcon,
                 saving = proxyGroupsEditorState.isSaving,
                 onDismiss = onCloseProxyGroupsEditor,
-                onSave = onSaveProxyGroups,
+                onSave = { checkpoint(); onSaveProxyGroups(it) },
+                saveError = proxyGroupsEditorState.error,
             )
+            }
         }
     }
 
@@ -4480,8 +4497,9 @@ internal fun ProfileProxyGroupsEditorDialog(
     onRecordIcon: (String, Boolean) -> Unit = { _, _ -> },
     onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
     resourceProfiles: List<Profile> = emptyList(),
+    saveError: String? = null,
 ) {
-    VisualProxyGroupsEditor(profile, initialGroups, sourceContent, saving, initialGroupIndex, onDismiss, onSave, onSaveDraft, onValidateFilters, recentIcons, onRecordIcon, onReadIcon, resourceProfiles)
+    VisualProxyGroupsEditor(profile, initialGroups, sourceContent, saving, initialGroupIndex, onDismiss, onSave, onSaveDraft, onValidateFilters, recentIcons, onRecordIcon, onReadIcon, resourceProfiles, saveError)
 }
 
 /** 作者 long：Provider 入口只做页面投影，正式保存由 ViewModel 回读版本确认，不在 UI 里提前关闭子页。 */

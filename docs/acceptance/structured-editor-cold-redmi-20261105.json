@@ -1,0 +1,2185 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "status": "DONE_VERIFIED_FOR_LISTED_SCOPE_OVERALL_PARTIAL",
+  "title": "规则和策略组加密草稿及真实冷进程恢复",
+  "baseCommit": "d36ad01350f1943077c67e1a350aac04a17b92db",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": "1.0"
+  },
+  "changes": [
+    "ProfileEditorDraftSnapshot v2纳入规则/策略组正式入口、CAS源基线、UI纯值树和待提交正文，继续复用Keystore AES-GCM与noBackup AtomicFile。",
+    "独立SaveableStateRegistry不向Activity父注册表登记；每个Dialog/AlertDialog窗口稳定命名空间，状态变化、ON_STOP与提交前checkpoint捕获。",
+    "白名单保存标量/UUID/数组/List/Map/Compose标准MutableState policy；DefaultLazyKey仅以精确类、index字段和int构造器往返，不开放任意Parcelable。Release keep/mapping/DEX只读审计已核对。",
+    "规则保存意图持久化后才提交；恢复确认磁盘已提交则不重写，未提交保留上次操作供显式重试，源已变化保留原CAS基线拒绝覆盖。",
+    "关闭等同写锁清除密文子页后才退场；generation/epoch/closing拒绝迟到快照与恢复读取，collector拿锁后重取快照防止擦除待提交意图。"
+  ],
+  "builds": {
+    "productionFinal": "build9，生产App与build8字节相同；最终测试包testbuild10仅修正YAML测试的真实选区基准。",
+    "build9": {
+      "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease --no-daemon -Ptarget-platform=android-arm64",
+      "result": "BUILD SUCCESSFUL in 1m 30s",
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-build9.log",
+        "sha256": "7015b6edfd1ba90ca06094293d23ef00fa969bffd76bb53f04e59d8a920c3f6e",
+        "bytes": 20013
+      }
+    },
+    "lint2": {
+      "scope": "最终生产Debug/Release双Lint，0错误，各66警告，Debug10/Release9提示",
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-lint2.log",
+        "sha256": "f0a7667d28fec8139a3cd93e39d91dd24656eca91c955df8ee5059dd66f2bf4a",
+        "bytes": 14684
+      }
+    },
+    "testbuild10": {
+      "command": "./gradlew :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64",
+      "result": "BUILD SUCCESSFUL in 39s",
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-testbuild10-lint3.log",
+        "sha256": "9e3f192b03f38509c8f9b3e6e57ed4e23cfc76c635642e9115e39eb62aa52698",
+        "bytes": 11915
+      }
+    },
+    "unitTests": {
+      "total": 726,
+      "modules": {
+        "app": {
+          "tests": 462,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "service": {
+          "tests": 195,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "core": {
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "common": {
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "xmlReports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ApplicationSettingsBackupTest.xml",
+          "sha256": "4b432fbce8c9f4ae8809a3bf18bf0cee0f6e528e39c487c552c0a054ce0bc6ef",
+          "bytes": 847
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomProfileImportTest.xml",
+          "sha256": "c015f7bfdc8ad333e74c9aedffb18d05b15581ad4ae2f652342f2a6fd57b1f7c",
+          "bytes": 943
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomRuleDraftTest.xml",
+          "sha256": "e9b72acacd54b476bd065f7f9393625ace13d148ab94973b1260939ac5a1646d",
+          "bytes": 1413
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.DeepLinkImportTest.xml",
+          "sha256": "28dab7d03ae4e7f6424bdceb219a3b37b93ace5de198e6442d260af8b887d9d3",
+          "bytes": 1326
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.FilterPresetsTest.xml",
+          "sha256": "c18e1221a5847df67f072b4208593be6a750d11fa2f7676067ff1cc9c5797372",
+          "bytes": 987
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.HttpRequestPolicyTest.xml",
+          "sha256": "82daa37ad3f9d365fe9021d27f7915cd6e1362b478ecec09af1d4dd9e0ddf226",
+          "bytes": 667
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconRecommendationsTest.xml",
+          "sha256": "deee31cac86775ad55f81f323437b414065826bc02309fbb5c411367dcea96af",
+          "bytes": 892
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconSetCodecTest.xml",
+          "sha256": "0e23a3944273d4ff4483484406f8d261fcf517a0a73c281e188046fb296fd228",
+          "bytes": 781
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationRepositoryTest.xml",
+          "sha256": "57f1ae5c669d97f2764992e75d606b17d5034edbd4bf0ca30f09763ee18c1cc6",
+          "bytes": 995
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationTest.xml",
+          "sha256": "bbacc740ff1cbf466d86405da7a983bf53c69f91ee2559b2b27f4a597d369c5b",
+          "bytes": 1002
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProfileFileWriteTest.xml",
+          "sha256": "b32297c3cfa2bcdc8ff1f054d112d9dd745d8e029e4fcbd05e646478bb3c65a3",
+          "bytes": 1887
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxiesTest.xml",
+          "sha256": "a87b220a5700abff460b788e9528b2e175b305f3f71a2444d8e62e6a3816c680",
+          "bytes": 1531
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyAdditionTest.xml",
+          "sha256": "42b7bacf3695b37ec8143f37a04f43dca154b50e3ec55f2d62c9fcbc13ad7afe",
+          "bytes": 987
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyLinkEditTest.xml",
+          "sha256": "7fbfcf53912d044f288cc57b9068e6c13878cc19f436da00758444c0ac387e3f",
+          "bytes": 1331
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.OnDemandSsidTrackerTest.xml",
+          "sha256": "5dab8a3c6da9c6e7f09a59d7070d01818ebbba09037795a93f677a17fb81545e",
+          "bytes": 807
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileContentDecoderTest.xml",
+          "sha256": "de46170e0fd5f79ce1db3320eef37c17f494f2f9a9510e365b81cd5e9415c018",
+          "bytes": 1515
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDialerEditorTest.xml",
+          "sha256": "1d0c5b376eea4259c8e314f7e26bddf338eb35c4eb6c15c5b674d2cb9be8998e",
+          "bytes": 962
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDocumentTest.xml",
+          "sha256": "212a2dbfd62f61b20c49e134fa9f386946a6df5f558e76fdf2adecf83d58ce1d",
+          "bytes": 508
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileExportTest.xml",
+          "sha256": "b486ea1da06dd73932e51323e46813a5cbf79df998192e46a821ab6af6cab8fd",
+          "bytes": 811
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileMorePatchTest.xml",
+          "sha256": "01d1374294837fb1162f4a7a6ac7a486b38eb992023985af1ae7868325b5e51a",
+          "bytes": 810
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProvidersEditorTest.xml",
+          "sha256": "bc1dcf1124b2a5436cc0ae542443cd657fc8ec9f81b6fc875d1e253553a29924",
+          "bytes": 1458
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxiesEditorTest.xml",
+          "sha256": "f82f19dc0cfc0bebbca6513139c9bf447ad878eff6efedd6508c4240c65b79da",
+          "bytes": 813
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyGroupsEditorTest.xml",
+          "sha256": "12c70976aa3069da1d9652a868fd87f9a9ea86ef81b312cb98b662e3ebed91e9",
+          "bytes": 1142
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyResourcesTest.xml",
+          "sha256": "f88f1d69ba1c24982854ee4f917e21f56fe21e275404dcd91eff5647fe1ac693",
+          "bytes": 941
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileRulesEditorTest.xml",
+          "sha256": "781ef795ffe51fdeb51a3014d5b327f2ecc6d40115957ca83966c45236bfce5f",
+          "bytes": 780
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileSelectionTest.xml",
+          "sha256": "975969d1b87146e3bfae856cd221f822e71b8e2de6a30b2a7bc96239ed85808b",
+          "bytes": 791
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileTest.xml",
+          "sha256": "9250dd0870c7639484e34f714ab9b8bd260c0f59166fc63876377c942a074246",
+          "bytes": 996
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProviderEditingTest.xml",
+          "sha256": "6307465570f61734d47f7a1dea1ceb38484744da8c42aa43af252b8425a3935f",
+          "bytes": 1181
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupDraftsTest.xml",
+          "sha256": "ed66e2e2838a1c702a4da988ab6d999238b0a1e180fb50fbf248f5e5acb6d003",
+          "bytes": 1910
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupIssuesTest.xml",
+          "sha256": "b36b52aaa5e526125919ae04d0245ddac61d32fb3345fba6d35ba0aff430b10c",
+          "bytes": 1105
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.RuleResourcesTest.xml",
+          "sha256": "f531d79b3dff7fb2266b39aa406ce53b62a21bc029d66752a15bce870aef0485",
+          "bytes": 935
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ScriptImportTest.xml",
+          "sha256": "daec0acf44ccdd9bd30dbdc2f3674109bcd3c28f88c2554c0e775f11ea23f72d",
+          "bytes": 623
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ServiceExitRepositoryTest.xml",
+          "sha256": "7825e18e16de45c8bb07badfb8b331809dbe37867ceef5d8df919f09f82e9b7c",
+          "bytes": 805
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionAutoUpdateTest.xml",
+          "sha256": "cbfc1110deb22ce19111375484c2206ffa6c2b0a4897f8c47ad77aded4c57657",
+          "bytes": 772
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionClientTest.xml",
+          "sha256": "67e79e58d18a17590a432585cb6c69dab329103f90a839adf712cb04862cba75",
+          "bytes": 503
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.WebDavClientTest.xml",
+          "sha256": "b7963a68d77ccb292efbd6b6989042106292d41bfb10ce692c8d122b5a19e705",
+          "bytes": 1193
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AccessControlViewModelTest.xml",
+          "sha256": "461204e63bd5c5dceb3351239a1090ec0db6b688fa0b884cdebf1373ea2050cd",
+          "bytes": 1354
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuMotionTest.xml",
+          "sha256": "33983106e895fc391d2a99328d0007ee2eeb3a7e5b4d02c547ef21931a37af7a",
+          "bytes": 1617
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuPositionerTest.xml",
+          "sha256": "07f3c1ce330fafcf80540dbcda5159b451d562f9fc249d0703d8b50ad15aa45c",
+          "bytes": 1048
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppSurfacePhysicsTest.xml",
+          "sha256": "415b82c0b7d25d0b93aae72bd916c0b5e36601bea2a19343101e68addefad1aa",
+          "bytes": 904
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionDetailFormattingTest.xml",
+          "sha256": "428eed2fd479c7bd79857288225e5c2f6942b91a72b661d30eff12613fa29ed3",
+          "bytes": 995
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest.xml",
+          "sha256": "72afd13180150017afb6f0e68ea89bb3e5a268f232ccea57c248664d26456f98",
+          "bytes": 1628
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.CustomProfileSummaryTest.xml",
+          "sha256": "648aa0a20444e9b5c5349fb6f9a88fdd9f018827c5603a3caf043932efb08286",
+          "bytes": 959
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardDragTest.xml",
+          "sha256": "1c2986116ea20023199e4d7f457511da17ae63fed4e48bf4a06c5d0084b3a921",
+          "bytes": 768
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardLayoutTest.xml",
+          "sha256": "b1dfcde5df4d79c3f7717aeabfe49b71fdedd52c9b4efd0931596d943ce62097",
+          "bytes": 1931
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardTelemetryTest.xml",
+          "sha256": "f63aa7b04f4cb0543d67fed007cff0339bd4e1d0f80dd9aef01f1b94186b99c3",
+          "bytes": 1006
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.EditorSaveableStateTest.xml",
+          "sha256": "696c68c33a72f5f2afb3a19bfbfc06e7cfba7644bf7f594b6b530acf269ba8d2",
+          "bytes": 974
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.GlobalRulesControllerTest.xml",
+          "sha256": "f3724959f0dcc7e37022c42610da9a21c6a7b3a7c613016714b6190681beb39a",
+          "bytes": 800
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.IntranetIpViewModelTest.xml",
+          "sha256": "97e473bbcd96304054f2f7c42a526ab0bd3cc0014e3ac6a699f4c28a0d5cc8b8",
+          "bytes": 1285
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainPageScaffoldTest.xml",
+          "sha256": "02421b92d03897a3e09d7c81a86a7f9b893af6e614be1fc43e673af7830b01e7",
+          "bytes": 671
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTelemetryTest.xml",
+          "sha256": "28a207dd34c46545899c0557975d5506fa38fd62a065f830038b4bf278dc4f92",
+          "bytes": 844
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTest.xml",
+          "sha256": "9f2b4b8b8fab24efb208f6d0b77bf33e8bb0f2f221ee99ecbe34b5687e221dfa",
+          "bytes": 3291
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MemoryViewModelTest.xml",
+          "sha256": "c4e12be1f0d0b4183f456750ed7d1ef609b8708c87285bd163ceece57cd76cfa",
+          "bytes": 1348
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.OutboundIpViewModelTest.xml",
+          "sha256": "e638ea7e50a5d6f1f37fa050994e6a1e3fc9bac68b601c1877274c4d86c94b4c",
+          "bytes": 1259
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileExtensionControllerTest.xml",
+          "sha256": "f4f1288724b1544b2388c153c9020c304012cfc8c36c3d252624beb8be4e5edd",
+          "bytes": 1184
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileFileImportControllerTest.xml",
+          "sha256": "36d3f381787da4db598dd03bbb2ab2b6b7ceab0f654835a1d1ab6b74f05ec333",
+          "bytes": 1292
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileMoreFieldsTest.xml",
+          "sha256": "bfb240592e8949c8cc4fb17f11854487960d610d7566a900a0bada88f6cba6ca",
+          "bytes": 1261
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileSharingViewModelTest.xml",
+          "sha256": "00a597b746abe6cba352b9b4182df55b36d58e5befd70cd4a10d0def4da5385d",
+          "bytes": 1887
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileStatisticsViewModelTest.xml",
+          "sha256": "a26d1f4141899051dca08066f915dc2486394b158395bff7e84f8099b24644fe",
+          "bytes": 3197
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileUrlImportTest.xml",
+          "sha256": "257eed8c15677c2b34ba0d98e09f4ea971e2faf0e9552675c69c1be8ab111dac",
+          "bytes": 771
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfilesViewModelTest.xml",
+          "sha256": "2dfde813b425ad9a5d0e03d9f071304684798ce30d626d9a35f8443adeb5163e",
+          "bytes": 12701
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProxyGroupsViewModelTest.xml",
+          "sha256": "8de0aecb49ac09a9fe9367bd165f644a667996625d51f3e9708384ea5bf77aff",
+          "bytes": 5753
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ResourceUrlImportControllerTest.xml",
+          "sha256": "d5a4e106ded979dcc6722aaed530fe5e8dfed53f2f53bf750843dc452e04fe48",
+          "bytes": 829
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModelTest.xml",
+          "sha256": "27b7e0659130a9d3a9e2b4ed05a69664c95d1a7a6fc3b65c804fef5e0c9c4228",
+          "bytes": 881
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ScriptsViewModelTest.xml",
+          "sha256": "b3323cbd484f8214524088b13bbf1077be03cb21bfbeaf0ab5e21d346d510538",
+          "bytes": 1790
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ServiceStatusViewModelTest.xml",
+          "sha256": "376d53552dfbf3c3828754e8e6e84b6e671aec7a0788f4cb1e7edbb8501a9547",
+          "bytes": 3749
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml",
+          "sha256": "e93af58075dca4777caf9c8f9d312d1eff3dd587b9596561aa7fb7087accdef1",
+          "bytes": 17243
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.DefaultVpnOptionsProviderTest.xml",
+          "sha256": "917e3385b0c59305ca671eea1e00fbf76dafb0e1b3ab6861e99832981a2b6706",
+          "bytes": 1170
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeneralSettingsTest.xml",
+          "sha256": "e8aed0c9f39f4499ad1994e85d64c702905f1c27f49c075da4f0537e31ec5520",
+          "bytes": 955
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeoResourceSettingsTest.xml",
+          "sha256": "28f9c3e2f176dfe5785df2672471de7e8cd4d8e40e769cc1c7cfea2154f0e79c",
+          "bytes": 692
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GlobalDnsSettingsTest.xml",
+          "sha256": "3e8594b73d18e062036c0d6f6731311b5c76fae1eb5b21097e075bd43d0562ae",
+          "bytes": 954
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.NetworkSettingsTest.xml",
+          "sha256": "573b05f1e64ab93fb95a62501f7febff6caba0c3d45a0ab17c8496d32bd2c85a",
+          "bytes": 1155
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.OnDemandSettingsTest.xml",
+          "sha256": "85f11ec44628404055bddfb85018001aed9ec92115741d9a8d502e93b6664c9e",
+          "bytes": 656
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileDnsBaselineTest.xml",
+          "sha256": "e653837905507212d81da1e6bcd8da9d92474a60e923537baf820dfac6f090e3",
+          "bytes": 1127
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileExtensionTest.xml",
+          "sha256": "e3f7cd46cbb9eba3d855768c93b2ba9fc5a343a234b34440cfc51196c25a23ca",
+          "bytes": 1159
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileMoreOverridesTest.xml",
+          "sha256": "19c130ef00a56c76889e8e0e299a5a8a8a279256f09cc8504c6ea8a2fea13983",
+          "bytes": 1129
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileProviderOverridesTest.xml",
+          "sha256": "d129d33298d6189c141a82f925ea97034706a3a51cb19c5700d24c42f4304d09",
+          "bytes": 2553
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileScriptTest.xml",
+          "sha256": "f00beb5d449ec4290beb3d8c1792a11c316d1e5d43d272b28fc7502d0491970f",
+          "bytes": 1549
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileStatisticsTest.xml",
+          "sha256": "0cd3952c12ce9422c7bbf705cb12aba3b51c57736316fdd6b40524ebcce3d590",
+          "bytes": 651
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.RuntimeDiagnosticsTest.xml",
+          "sha256": "1cf2c5fe5c0196af7ef9049a00df6a735bd6330c7a21fc66062bebb951b2ee77",
+          "bytes": 960
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ServiceConfigTest.xml",
+          "sha256": "18d10c96f0be25ba3fbe979819fe32952a1d5521e4bc681fc341ef35b51a6f34",
+          "bytes": 1077
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.RouteAddressTest.xml",
+          "sha256": "5c5ae8b6ca0cb5dd1e51e4eab003d925d95ffd0f88b371163a7bd905937a2010",
+          "bytes": 942
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.ToCIDRTest.xml",
+          "sha256": "07ec504c1cb87bc3603d89b5fb4b1ba3b3e98cab105bbb9dc13620572b5a7063",
+          "bytes": 1456
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TrafficTest.xml",
+          "sha256": "955c8130f8fc493457bc03233b56ff17aec6f087c2694a5cbb64e976c42ec6be",
+          "bytes": 1120
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TunOptionsTest.xml",
+          "sha256": "57670cad503a1d7518d703597b97d579603f11b0f616e71f76368ecdad6c024d",
+          "bytes": 784
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/core/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.core.CoreBridgeParsingTest.xml",
+          "sha256": "ed43fc79351981139e36741e4d10f449be3ab9154f8479dedc380f7adb1f58a1",
+          "bytes": 6076
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.BroadcastLeaseTest.xml",
+          "sha256": "606a80b1a6aae9fd37f857bd57c35158cbd03204bf1a6ab611dcfb455326611f",
+          "bytes": 1307
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.EnumsTest.xml",
+          "sha256": "cc7639d2e5dc4405b1cadfeed107c3a8e6a6932db6920cb579ebd3776f592788",
+          "bytes": 1049
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.PendingCallbackTest.xml",
+          "sha256": "8651a94e8dc5490568e19a91afc3c6fbd90156fbe655774ef7cff1d689feebb5",
+          "bytes": 1613
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.RunIntentArbiterTest.xml",
+          "sha256": "226b0d451e7c9c8a6d24717b59e3fc4918de0858302c6ee924fefc69f81bc93e",
+          "bytes": 1745
+        }
+      ]
+    },
+    "lint": {
+      "debug": {
+        "issuesBySeverity": {
+          "Warning": 66,
+          "Hint": 10
+        },
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-debug.xml",
+          "sha256": "93757eb55431cbd58d97ef2f0fde139cfadc9301577c3afc175bae79c8228ae6",
+          "bytes": 85144
+        }
+      },
+      "release": {
+        "issuesBySeverity": {
+          "Warning": 66,
+          "Hint": 9
+        },
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-release.xml",
+          "sha256": "776f11aa310eea68a1002e028d6c5dbf2904db93551fe1f0e4b7afac0e4379b3",
+          "bytes": 83939
+        }
+      }
+    }
+  },
+  "artifacts": {
+    "debug": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "72e6178c60607b8b2ede9e84783fcd3afce442782416b6c85afc8f241bd2fbcc",
+      "bytes": 90682722
+    },
+    "androidTest": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "91a597db9d3db13fd21908dfaeee22e6fdade39fd14a23b8bca33cd00405f818",
+      "bytes": 4778843
+    },
+    "releaseUnsigned": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "9e3bf15207f9630f4b4a7b6c2fe229f79eb621abfd26895101a59a0b36aaa73e",
+      "bytes": 48161660
+    },
+    "releaseMapping": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/mapping/release/mapping.txt",
+      "sha256": "516890be31cea97c9a89b74c7781938c4ca05aceb794c9546ce8c533a3cb2551",
+      "bytes": 108764994
+    }
+  },
+  "installation": [
+    {
+      "package": "com.lonnnnnng.flclash",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "72e6178c60607b8b2ede9e84783fcd3afce442782416b6c85afc8f241bd2fbcc",
+      "installedSha256": "72e6178c60607b8b2ede9e84783fcd3afce442782416b6c85afc8f241bd2fbcc"
+    },
+    {
+      "package": "com.lonnnnnng.flclash.test",
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "91a597db9d3db13fd21908dfaeee22e6fdade39fd14a23b8bca33cd00405f818",
+      "installedSha256": "91a597db9d3db13fd21908dfaeee22e6fdade39fd14a23b8bca33cd00405f818"
+    }
+  ],
+  "structuredColdProcess": {
+    "caseCount": 8,
+    "twoPhaseMethodCount": 16,
+    "note": "每场景prepare/verify独立instrumentation；中间启动正式App、Home、am kill并确认PID消失；外部核对verifyPid同时不同于preparePid和visiblePid。",
+    "processAudit": {
+      "path": "/tmp/kclash-editor-cold-20261105-cold-final10-pid-audit.json",
+      "sha256": "0ea510bfb0bfb07c2b90ebdd32748661576422ea01a297cbb1344a1175bc2570",
+      "bytes": 4250
+    },
+    "cases": [
+      {
+        "case": "groups-yaml",
+        "startedAtEpochMs": 1793827609668,
+        "prepareBatch": "cold-final10-groups-yaml-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "13014",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793827636726,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold-final10-groups-yaml-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793827665504,
+        "preparedPid": "12857",
+        "verifiedPid": "13074",
+        "prepare": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 24.663,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-yaml-prepare-cold_groups-yaml_prepared.png",
+              "sha256": "0987e4e708d2ce6fa122fc7c583843be8e6bf1398a308b64454224a9d5c35698"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-yaml-prepare.json",
+            "sha256": "253b7a2f73a484007b4022249a25e9dcb7e0579acf626745447521b91e3375af",
+            "bytes": 743
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-yaml-prepare.log",
+            "sha256": "7b9c61f096a1e91372eceb8fb4e5a3f8f57ef8f653f3276bb27633006352e879",
+            "bytes": 1147
+          }
+        },
+        "verify": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 28.713,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-yaml-verify-cold_groups-yaml_restored.png",
+              "sha256": "212aa95c38b5f8d7643a6ec30adfb2989c96e63e5a74818f734bf7548c53ff80"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-yaml-verify.json",
+            "sha256": "63072d15e42c7bf001355393befdfe488c5be7f86ba55bfd1afa1f6e2c10ca9f",
+            "bytes": 781
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-yaml-verify.log",
+            "sha256": "830dbf871d6e4109e786ce4aabf0b8e9a0497fd6058ca9efdbba93fafe6a096a",
+            "bytes": 1186
+          }
+        }
+      },
+      {
+        "case": "single-yaml",
+        "startedAtEpochMs": 1793827665504,
+        "prepareBatch": "cold-final10-single-yaml-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "13299",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793827690577,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold-final10-single-yaml-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793827718703,
+        "preparedPid": "13182",
+        "verifiedPid": "13357",
+        "prepare": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 22.703,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-single-yaml-prepare-cold_single-yaml_prepared.png",
+              "sha256": "7b6fdecdc51a3d33e01da31472183b7406c3ecf2b4d6546cd912efb66196cccb"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-single-yaml-prepare.json",
+            "sha256": "1b4425d7779693e195bc3e6e0ff029447a33623b33211c3c82c0d6cc634d31b5",
+            "bytes": 743
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-single-yaml-prepare.log",
+            "sha256": "fea564b9c0ad9ba8c0a3fa9762909b4b5c34fbaa0619d46be90e1025b64c68f3",
+            "bytes": 1147
+          }
+        },
+        "verify": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 28.066,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-single-yaml-verify-cold_single-yaml_restored.png",
+              "sha256": "ead48ce7242ccc7de80efd139eb4788e9450fdefe5925ba0917e9b51b5b2409f"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-single-yaml-verify.json",
+            "sha256": "d378ab75f2a1d75899e6e1e5af544be8eca7e8754c824f4becc0aec6062d1052",
+            "bytes": 781
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-single-yaml-verify.log",
+            "sha256": "ed791ea6ff0cbd3308a67f89f8d8ad3952087df0daf9c715cf463036a84fd869",
+            "bytes": 1186
+          }
+        }
+      },
+      {
+        "case": "rules-form",
+        "startedAtEpochMs": 1793827718703,
+        "prepareBatch": "cold-final10-rules-form-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "13599",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793827736485,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold-final10-rules-form-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793827748512,
+        "preparedPid": "13483",
+        "verifiedPid": "13669",
+        "prepare": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 15.377,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-form-prepare-cold_rules-form_prepared.png",
+              "sha256": "b6bc5f3c84e0499766c1c5c2597da31e4b7c8c744862da26865dba84e58516fe"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-form-prepare.json",
+            "sha256": "75eabdfad7f5d836ac422d7387d2af53f2ff48941da881f3a3a74c6bf6acf47e",
+            "bytes": 739
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-form-prepare.log",
+            "sha256": "2873b79f5b61ec400b3f3faa55361e0288086b7ff01672ca076375eb0957293d",
+            "bytes": 1144
+          }
+        },
+        "verify": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 11.963,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-form-verify-cold_rules-form_restored.png",
+              "sha256": "a3e9a50e0b6de22b14f67895c4198b729f9c32c371c5fc221228e9c7d9cc97ac"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-form-verify.json",
+            "sha256": "4f46184c9152a9bbdf78f141fa450757284ebef5350137b528b1d00573446228",
+            "bytes": 777
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-form-verify.log",
+            "sha256": "0ccfce7e1b97e59f8bbca71101129d6d655ef19710d2eea32b118021023ba04a",
+            "bytes": 1182
+          }
+        }
+      },
+      {
+        "case": "rules-batch",
+        "startedAtEpochMs": 1793827748512,
+        "prepareBatch": "cold-final10-rules-batch-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "13879",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793827765293,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold-final10-rules-batch-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793827776847,
+        "preparedPid": "13777",
+        "verifiedPid": "13935",
+        "prepare": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 14.37,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-batch-prepare-cold_rules-batch_prepared.png",
+              "sha256": "7d353d0f62e088a253af7d812042eec787bc22c241386a32e15634ec07e02017"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-batch-prepare.json",
+            "sha256": "dc0cc5c110d313032b5d60e005dc8ae1eafc085934cbb5e8ec8a0726ada1cd70",
+            "bytes": 742
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-batch-prepare.log",
+            "sha256": "43b68d5d9bc059f748d37cf7d24b7088eade70903eed7c9afb05d7406fa92e1f",
+            "bytes": 1147
+          }
+        },
+        "verify": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 11.488,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-batch-verify-cold_rules-batch_restored.png",
+              "sha256": "7d353d0f62e088a253af7d812042eec787bc22c241386a32e15634ec07e02017"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-batch-verify.json",
+            "sha256": "2dc7ea8041f08556e61924634551364b2b043c08726795e72dfed24a0f122add",
+            "bytes": 781
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-batch-verify.log",
+            "sha256": "d7469b557ff638610e68e07de9224282f0bed750dc056b6f1d98e7854ba39b6b",
+            "bytes": 1185
+          }
+        }
+      },
+      {
+        "case": "rules-conflict",
+        "startedAtEpochMs": 1793827776847,
+        "prepareBatch": "cold-final10-rules-conflict-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "14170",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793827794851,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold-final10-rules-conflict-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793827808365,
+        "preparedPid": "14038",
+        "verifiedPid": "14231",
+        "prepare": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 15.604,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-prepare-cold_rules-conflict_prepared.png",
+              "sha256": "73b61af5ddf1b3c9081e2db72c16b30deaeb1a729420f5b06bf2a5e0ee46b520"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-prepare.json",
+            "sha256": "a50201ca7680bd96f8136caacf9d9f50c27b4815fe69fd79cc553299e8d3cdbb",
+            "bytes": 755
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-prepare.log",
+            "sha256": "627fa21bf468397e536d567ed7eb1df82358249ababd0c9fbb2d3f0b3db8b874",
+            "bytes": 1156
+          }
+        },
+        "verify": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 13.44,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-verify-cold_rules-conflict_restored.png",
+              "sha256": "656a934c8a3cd0c0ec01b858f890f1ee1771af09c01c4ed7da9f26089ac74421"
+            },
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-verify-cold_rules-conflict_rejected.png",
+              "sha256": "85a6a281f770df251e1d5f73048cefa253ad29bc7e87d41ddb495211f53237eb"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-verify.json",
+            "sha256": "18a3d72086f009fa9edaefbc487ce71c816af62789e791ee3d013c98c40ab7b6",
+            "bytes": 1006
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-verify.log",
+            "sha256": "6eaa4f12819c18f523000ec582793ded6a7b7640d4ba2bad3a78ac38efa8f07f",
+            "bytes": 1402
+          }
+        }
+      },
+      {
+        "case": "groups-icon",
+        "startedAtEpochMs": 1793827808365,
+        "prepareBatch": "cold-final10-groups-icon-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "14472",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793827833714,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold-final10-groups-icon-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793827862759,
+        "preparedPid": "14348",
+        "verifiedPid": "14528",
+        "prepare": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 22.938,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-icon-prepare-cold_groups-icon_prepared.png",
+              "sha256": "259fdde7505759d4e43c530de45028f9fc252dd2539ee810079dfe2d49f5b55c"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-icon-prepare.json",
+            "sha256": "def4bc8e2f5aaab491673a4ff59c6f2f61ce78cd63a4427272501c9863e6389a",
+            "bytes": 743
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-icon-prepare.log",
+            "sha256": "b51ddf262dd392a488fdd25fa3a3b6859b026976eea800b32b2d0389d74cf07f",
+            "bytes": 1147
+          }
+        },
+        "verify": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 28.971,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-icon-verify-cold_groups-icon_restored.png",
+              "sha256": "c1574f1aa9febdbecec0b2218d79524ab91c17f114091e758418930f6402535b"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-icon-verify.json",
+            "sha256": "be07807fb2577c44c778fb9f0f2910e954e7509c426156b0c48682a1f8cf738c",
+            "bytes": 781
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-icon-verify.log",
+            "sha256": "cb1d8779b2392f63d06d97fa7b5845db23c1da004172e102fd6003b5e47fe19f",
+            "bytes": 1186
+          }
+        }
+      },
+      {
+        "case": "groups-option",
+        "startedAtEpochMs": 1793827862759,
+        "prepareBatch": "cold-final10-groups-option-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "14755",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793827886641,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold-final10-groups-option-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793827914523,
+        "preparedPid": "14644",
+        "verifiedPid": "14813",
+        "prepare": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 21.463,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-option-prepare-cold_groups-option_prepared.png",
+              "sha256": "2c28a3fddc1f2a59448904a81b9f2bacceef3379d93c68422bd7f21067cb8ef5"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-option-prepare.json",
+            "sha256": "923d4c5162b03625eecbed27792698042338bf1296c782f2acda03271bbf39b4",
+            "bytes": 751
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-option-prepare.log",
+            "sha256": "b846119cd5d88f9f2822140191cebce2880f59d91baf934eb880479a96211ae6",
+            "bytes": 1153
+          }
+        },
+        "verify": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 27.807,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-option-verify-cold_groups-option_restored.png",
+              "sha256": "2c28a3fddc1f2a59448904a81b9f2bacceef3379d93c68422bd7f21067cb8ef5"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-option-verify.json",
+            "sha256": "cde774504d47ea7593bbc5bc5ddb0faa9c6b1d2372e18ebbce66300d019d3128",
+            "bytes": 789
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-option-verify.log",
+            "sha256": "1387ea0e5e1ba0c7f7d6bf72cb9dbf97b5e7846ac14836986e784e5c9e66de6e",
+            "bytes": 1191
+          }
+        }
+      },
+      {
+        "case": "groups-value",
+        "startedAtEpochMs": 1793827914523,
+        "prepareBatch": "cold-final10-groups-value-prepare",
+        "prepareExitCode": 0,
+        "visiblePid": "15072",
+        "killSamples": [
+          {
+            "timeEpochMs": 1793827939458,
+            "pid": "",
+            "exitCode": 1
+          }
+        ],
+        "pidDisappeared": true,
+        "verifyBatch": "cold-final10-groups-value-verify",
+        "verifyExitCode": 0,
+        "passed": true,
+        "finishedAtEpochMs": 1793827968084,
+        "preparedPid": "14936",
+        "verifiedPid": "15135",
+        "prepare": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#prepareEncryptedSubpageWithoutCommittingDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 22.531,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-value-prepare-cold_groups-value_prepared.png",
+              "sha256": "ce3df61e02206283decc8e115d1589013cd693e5442a762d9cb979e38c722a89"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-value-prepare.json",
+            "sha256": "ea2690ca1d2d2be4b9b64eb454f6984583976d95e496206fe95d1729f22e0eb8",
+            "bytes": 747
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-value-prepare.log",
+            "sha256": "3d894b725a760583f29c4894f6804f037ec41bf7b1dd755ab3425ff17ee4ab08",
+            "bytes": 1150
+          }
+        },
+        "verify": {
+          "requested": [
+            "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft"
+          ],
+          "results": [
+            {
+              "method": "com.lonnnnnng.flclash.ui.StructuredEditorColdProcessInstrumentedTest#verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft",
+              "code": 0,
+              "passed": true,
+              "stack": null
+            }
+          ],
+          "exitCode": 0,
+          "seconds": 28.552,
+          "images": [
+            {
+              "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-value-verify-cold_groups-value_restored.png",
+              "sha256": "5a18e085c346c349dba979bc93203e650b0271e4f6b0e46906070d3b521cc0f1"
+            }
+          ],
+          "report": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-value-verify.json",
+            "sha256": "ba35a1931d0531ef60f48db0d1e6e3e6951f62fa6aa17e430c241e429a05a768",
+            "bytes": 785
+          },
+          "log": {
+            "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-value-verify.log",
+            "sha256": "9a6b4822c2e8c80a6d7557347e2fdec93e0e2b596c0bba11da49b48ee2def51d",
+            "bytes": 1189
+          }
+        }
+      }
+    ]
+  },
+  "regressionFinal10": {
+    "requested": [
+      "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#nestedDialogDraftRestoresFromEncryptedTreeWithoutActivityRestoration",
+      "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#interruptedBatchKeepsOperationAndWaitsForExplicitRetry",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#duplicateRuleIdentityAndBatchSelectionSurviveRestoration",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#pendingRuleSaveRestoresAndCompletesWithoutSubmittingAgain",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#changedRuleSourceDoesNotTurnRestoredEditIntoInsertion",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#groupYamlBackKeepsValidDraftAndInvalidDraftCanContinueOrDiscard",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel",
+      "com.lonnnnnng.flclash.ui.CustomRulesEditorInstrumentedTest#addingDuplicatingSearchingAndBatchDeletingSaveImmediately",
+      "com.lonnnnnng.flclash.ui.CustomRulesEditorInstrumentedTest#failedSaveAndReturningFromFormAndYamlRetainEditableDrafts",
+      "com.lonnnnnng.flclash.data.CustomRulesRepositoryInstrumentedTest#rulesWriteRejectsStaleOrRunningChangesAndPreservesLatestMetadata",
+      "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+      "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+      "com.lonnnnnng.flclash.CustomRulesActivityInstrumentedTest#realCustomRulesAutosaveAndRecreateKeepOtherSectionsAndCurrentProfile",
+      "com.lonnnnnng.flclash.ui.ProfileClosureHostInstrumentedTest#runningFileAndCustomSavesApplyWithoutRestartingSession"
+    ],
+    "results": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#interruptedBatchKeepsOperationAndWaitsForExplicitRetry",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.EncryptedEditorStateInstrumentedTest#nestedDialogDraftRestoresFromEncryptedTreeWithoutActivityRestoration",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#changedRuleSourceDoesNotTurnRestoredEditIntoInsertion",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#groupYamlBackKeepsValidDraftAndInvalidDraftCanContinueOrDiscard",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#duplicateRuleIdentityAndBatchSelectionSurviveRestoration",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#pendingRuleSaveRestoresAndCompletesWithoutSubmittingAgain",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.CustomRulesEditorInstrumentedTest#addingDuplicatingSearchingAndBatchDeletingSaveImmediately",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.CustomRulesEditorInstrumentedTest#failedSaveAndReturningFromFormAndYamlRetainEditableDrafts",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.CustomRulesRepositoryInstrumentedTest#rulesWriteRejectsStaleOrRunningChangesAndPreservesLatestMetadata",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.CustomRulesActivityInstrumentedTest#realCustomRulesAutosaveAndRecreateKeepOtherSectionsAndCurrentProfile",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileClosureHostInstrumentedTest#runningFileAndCustomSavesApplyWithoutRestartingSession",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      }
+    ],
+    "exitCode": 0,
+    "seconds": 97.52,
+    "images": [
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-group_icon_restored_empty.png",
+        "sha256": "b0b1bb8868a4db9adb3723e534f6b6c19d985577cb962c8c74a4335bd5af53e5"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-group_option_restored_value.png",
+        "sha256": "45bef3b03d7fa803b1e8fd1b2c79645767e37537e986e9df96d0c49c6b8ffd60"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-whole_groups_yaml_error_located.png",
+        "sha256": "9a4902822c0d8b7eabbb5bba2796134defb750f6a7ab0737a930f4ea599c6e61"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-group_yaml_failed_draft.png",
+        "sha256": "162d2f758c6c0ab9b77c3bedd1e834b25469c9ecdd48fed4cf7ab5cc9f5d7a6e"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-rule_restored_draft.png",
+        "sha256": "9a5ffd9e20ee5dacdf458d0a857b50d3a44f7703622f81d099259c282627f6af"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-rule_restored_selection.png",
+        "sha256": "ff80824f368db971ed9ad83485a2ec4baeed262fea983797ef0df8bd108180e5"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_list_light.png",
+        "sha256": "1c7f90fd15adb98fbd618d0fd329d67514c2dd8616d086138e3c6c1d202c1840"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_member_picker_light.png",
+        "sha256": "7add8d524700820dffb6df41ae2b78672f0ba573aa78d3f60470bc687ea990cd"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_members_light.png",
+        "sha256": "c2ddf8ed53fa45290d61cc076839620008b420ddb0dc62d756df71290b778033"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_add_options_light.png",
+        "sha256": "8109f6dfe265ed9889eaac464166adebc4e58cef2c3651b82cffd4d235c7ab63"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_options_light.png",
+        "sha256": "1470ff3d8b30178be6991b56e66250a613f1c614077fcc30d2ef36c3398228c1"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_quick_yaml_light.png",
+        "sha256": "08968f9a16e1b3d43177a4eb38853ce88dfb230099ecfe8da0f59c9a71bc73c9"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_list_dark.png",
+        "sha256": "7ef896a27bbd1a907a0cc725633575f5baabea2acdca2902ad048687b0259c8b"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_member_picker_dark.png",
+        "sha256": "acb1ee35accda8b4d0e3c636d888ab9fd156694195dcd11b484a96ced75b9a27"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_members_dark.png",
+        "sha256": "b108d26c1691c99ef916e25413db538e82a45dbd710753bd8e490a4052faf68f"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_add_options_dark.png",
+        "sha256": "c9a288d1461ddb72630dd6c941174d2ac650a6e5a406a86963381e8e882c7129"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_options_dark.png",
+        "sha256": "82c17ea017703de3dffb448f0a7337840d87c4293ccef7b96e51d834adc06e5d"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_quick_yaml_dark.png",
+        "sha256": "6f8272e424b27e1c887b0677d129edca597b5fef4f007b535ee9e877549e325f"
+      }
+    ],
+    "report": {
+      "path": "/tmp/kclash-editor-cold-20261105-regression-final10.json",
+      "sha256": "c9571e9a52cfe9521e49e1bcaa69040d54e6831375bdc7d6c745b84fc4fcc8e7",
+      "bytes": 8736
+    },
+    "log": {
+      "path": "/tmp/kclash-editor-cold-20261105-regression-final10.log",
+      "sha256": "f837e15c5929cd1b432d88535b70ecb1e8719c9dd04f7278466627fbeca004ab",
+      "bytes": 15350
+    }
+  },
+  "parentDocumentColdProcess": {
+    "prepareBatch": "parent-final10-prepare",
+    "prepareExitCode": 0,
+    "preparePid": "15873",
+    "visiblePid": "15983",
+    "killSamples": [
+      {
+        "epochMs": 1793828425064,
+        "pid": "",
+        "exitCode": 1
+      }
+    ],
+    "pidDisappeared": true,
+    "verifyBatch": "parent-final10-verify",
+    "verifyExitCode": 0,
+    "verifyPid": "16039",
+    "passed": true,
+    "prepare": {
+      "requested": [
+        "com.lonnnnnng.flclash.ui.ProfileDraftProcessInstrumentedTest#preparePendingFileAndBodyDraftWithoutCommitting"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDraftProcessInstrumentedTest#preparePendingFileAndBodyDraftWithoutCommitting",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 12.155,
+      "images": [],
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-parent-final10-prepare.json",
+        "sha256": "9a88102617c2bf224ddede46db2e7bc9b2b8173441d61f44a0f1ddba74837509",
+        "bytes": 509
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-parent-final10-prepare.log",
+        "sha256": "4e98a4bc1a5a0f8706bfc5d17d288db4e3a992bc7898aae9440b4c4da480dfa7",
+        "bytes": 927
+      }
+    },
+    "verify": {
+      "requested": [
+        "com.lonnnnnng.flclash.ui.ProfileDraftProcessInstrumentedTest#verifyColdProcessRestoresDraftAndDiscardLeavesOriginalsUntouched"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDraftProcessInstrumentedTest#verifyColdProcessRestoresDraftAndDiscardLeavesOriginalsUntouched",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 10.282,
+      "images": [],
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-parent-final10-verify.json",
+        "sha256": "0846cec6a66550af3b7e20f1a721c819d3f9797bb7620db6a9da8d1bbb88e586",
+        "bytes": 542
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-parent-final10-verify.log",
+        "sha256": "4bb1143e8dab7d5c646e5f98c144cba735838b45197a5935a08de3f990510ff4",
+        "bytes": 962
+      }
+    }
+  },
+  "preservation": {
+    "count": 1,
+    "aggregateSha256": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+    "before": {
+      "requested": [
+        "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 7.215,
+      "images": [],
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-preserve-before.json",
+        "sha256": "3b9cafbef6a139d1ae6c9f1d75b8912df01eb82d4b6bb7110ebe903d9c8cc01a",
+        "bytes": 465
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-preserve-before.log",
+        "sha256": "c1f7cae8add0367776bac610683720a8dd95244a860eeb3946257ded297d93b4",
+        "bytes": 962
+      }
+    },
+    "after": {
+      "requested": [
+        "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 7.357,
+      "images": [],
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-preserve-after-final10.json",
+        "sha256": "242ca8cd07d0d78888579b61d5362fecb40d51d6f836c187390119ebf5445866",
+        "bytes": 472
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-preserve-after-final10.log",
+        "sha256": "4d9adc29d60af77187af9f0b250a7cc2336d512c0e1eea4d537d196d8824b573",
+        "bytes": 961
+      }
+    },
+    "metadataFieldDigests": {
+      "7378367243428447508": {
+        "ageSecretKey": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "autoUpdate": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+        "autoUpdateIntervalMillis": "619d6a33617fad349ba0aa57557416f206f833a77a836db358ea09d0d5e3156e",
+        "currentGroupName": "bee545c0354aee46255b1fba492fda33ddadd6552cd014942145aaf89fe4a560",
+        "downloadBytes": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "expireAtSeconds": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "extendType": "cb2842d6687d19c69a6c0d4eb6a0f1af02951cef170de56ab331046ea5baac08",
+        "id": "cc8ffbd4c1413321177fc83e7e1c48773625664142c0796768f1ebe7b54ec749",
+        "label": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "lastUpdateAt": "75ff95385085c48d49b568ab1920f2d46d7fc6bbb24db9aaddcc2e4b3d53b04c",
+        "orderIndex": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "overridesJson": "c89a148be40e6752261e3038609a4b68de22fa3bfdaf32f884edffb8480b9bbe",
+        "selectedMapJson": "c89a148be40e6752261e3038609a4b68de22fa3bfdaf32f884edffb8480b9bbe",
+        "totalBytes": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "type": "c6ef2fb0345c47534dfae5f70cab6e297b808559aa49c11b539e31c3f9d14121",
+        "unfoldSetJson": "b3283bf184bb082f364b8537776bc6b15fce2ff9f9acb3fb11ae87da394bfd4b",
+        "uploadBytes": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "url": "8eb34db2907c2b835c9f525c20d92d9da69407162fb3ff6ff9c32fb2cc63ea0f"
+      }
+    },
+    "roomRowsSelectionAndBodyShaSizeMtimeVerified": true,
+    "localAndDeviceYamlUnchanged": true,
+    "flutterApkUnchanged": true,
+    "deviceSettingsUnchanged": true,
+    "noKotlinServiceOrTun0": true,
+    "draftStoreClearedAndTestMarkersRemovedByInProcessAssertions": true,
+    "fieldInspection": {
+      "diagnosticOnlyNotAdditionalPreservationPass": true,
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-fields-inspect-final10.json",
+        "sha256": "6ab362aaf6d6124daca68ac9f759a660c9d5306eb10a9cbeeda13e6bb8232a56",
+        "bytes": 472
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-fields-inspect-final10.log",
+        "sha256": "89db9f9296eb751db8311801f568d30faea5b3c563050d3f98418a04ac50da9a",
+        "bytes": 2458
+      }
+    },
+    "discardedAdbPrivateFileInspection": {
+      "snapshot": {
+        "path": "/tmp/kclash-editor-cold-20261105-after-final10.json",
+        "sha256": "18ffc73ef6f721d616a6ec25d732a5e40aac848594268d8d7371c4ff60bd5a5d",
+        "bytes": 1994
+      },
+      "reason": "run-as SELinux拒绝，不能把退出码1当成文件不存在；pendingArtifacts字段作废，未检查.bak/.new物理文件。"
+    }
+  },
+  "snapshots": {
+    "before": {
+      "serial": "wsvwypiz7xwslvl7",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "system.font_scale": "1.0",
+        "system.accelerometer_rotation": "1",
+        "system.user_rotation": "0",
+        "global.window_animation_scale": "1.0",
+        "global.transition_animation_scale": "1.0",
+        "global.animator_duration_scale": "1.0"
+      },
+      "local1": {
+        "bytes": 34814,
+        "sha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+      },
+      "device1": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898  /sdcard/Download/1.yaml",
+      "flutterApkSha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1",
+      "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+      "interfaces": [
+        "ap0",
+        "ccmni-lan",
+        "ccmni0",
+        "ccmni1",
+        "ccmni10",
+        "ccmni11",
+        "ccmni12",
+        "ccmni13",
+        "ccmni14",
+        "ccmni15",
+        "ccmni16",
+        "ccmni17",
+        "ccmni18",
+        "ccmni19",
+        "ccmni2",
+        "ccmni20",
+        "ccmni3",
+        "ccmni4",
+        "ccmni5",
+        "ccmni6",
+        "ccmni7",
+        "ccmni8",
+        "ccmni9",
+        "dummy0",
+        "ifb0",
+        "ifb1",
+        "ip6_vti0",
+        "ip6tnl0",
+        "ip_vti0",
+        "lo",
+        "p2p0",
+        "sit0",
+        "wlan0",
+        "wlan1"
+      ]
+    },
+    "after": {
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "system.font_scale": "1.0",
+        "system.accelerometer_rotation": "1",
+        "system.user_rotation": "0",
+        "global.window_animation_scale": "1.0",
+        "global.transition_animation_scale": "1.0",
+        "global.animator_duration_scale": "1.0"
+      },
+      "local1": {
+        "bytes": 34814,
+        "sha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+      },
+      "device1": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898  /sdcard/Download/1.yaml",
+      "packages": {
+        "com.follow.clash": {
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1",
+          "bytes": 61083319
+        },
+        "com.lonnnnnng.flclash": {
+          "sha256": "72e6178c60607b8b2ede9e84783fcd3afce442782416b6c85afc8f241bd2fbcc",
+          "bytes": 90682722
+        },
+        "com.lonnnnnng.flclash.test": {
+          "sha256": "91a597db9d3db13fd21908dfaeee22e6fdade39fd14a23b8bca33cd00405f818",
+          "bytes": 4778843
+        }
+      },
+      "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+      "interfaces": [
+        "ap0",
+        "ccmni-lan",
+        "ccmni0",
+        "ccmni1",
+        "ccmni10",
+        "ccmni11",
+        "ccmni12",
+        "ccmni13",
+        "ccmni14",
+        "ccmni15",
+        "ccmni16",
+        "ccmni17",
+        "ccmni18",
+        "ccmni19",
+        "ccmni2",
+        "ccmni20",
+        "ccmni3",
+        "ccmni4",
+        "ccmni5",
+        "ccmni6",
+        "ccmni7",
+        "ccmni8",
+        "ccmni9",
+        "dummy0",
+        "ifb0",
+        "ifb1",
+        "ip6_vti0",
+        "ip6tnl0",
+        "ip_vti0",
+        "lo",
+        "p2p0",
+        "sit0",
+        "wlan0",
+        "wlan1"
+      ],
+      "preserved": true,
+      "installedApksMatch": true,
+      "noKotlinServiceOrTun0": true,
+      "privateFilesAdbInspection": {
+        "verified": false,
+        "reason": "run-as被设备SELinux拒绝；退出码1不能判定文件不存在，原after-final10.json对应字段作废。"
+      },
+      "draftCleanupEvidence": "各8场景verify与父正文verify内部等待草稿Store为空并删除对应marker；未独立回读AtomicFile .bak/.new物理状态。"
+    }
+  },
+  "visualReview": {
+    "reviewedBy": "primary agent",
+    "imageCount": 35,
+    "coldImages": 17,
+    "regressionImages": 18,
+    "images": [
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-yaml-prepare-cold_groups-yaml_prepared.png",
+        "sha256": "0987e4e708d2ce6fa122fc7c583843be8e6bf1398a308b64454224a9d5c35698"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-yaml-verify-cold_groups-yaml_restored.png",
+        "sha256": "212aa95c38b5f8d7643a6ec30adfb2989c96e63e5a74818f734bf7548c53ff80"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-single-yaml-prepare-cold_single-yaml_prepared.png",
+        "sha256": "7b6fdecdc51a3d33e01da31472183b7406c3ecf2b4d6546cd912efb66196cccb"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-single-yaml-verify-cold_single-yaml_restored.png",
+        "sha256": "ead48ce7242ccc7de80efd139eb4788e9450fdefe5925ba0917e9b51b5b2409f"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-form-prepare-cold_rules-form_prepared.png",
+        "sha256": "b6bc5f3c84e0499766c1c5c2597da31e4b7c8c744862da26865dba84e58516fe"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-form-verify-cold_rules-form_restored.png",
+        "sha256": "a3e9a50e0b6de22b14f67895c4198b729f9c32c371c5fc221228e9c7d9cc97ac"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-batch-prepare-cold_rules-batch_prepared.png",
+        "sha256": "7d353d0f62e088a253af7d812042eec787bc22c241386a32e15634ec07e02017"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-batch-verify-cold_rules-batch_restored.png",
+        "sha256": "7d353d0f62e088a253af7d812042eec787bc22c241386a32e15634ec07e02017"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-prepare-cold_rules-conflict_prepared.png",
+        "sha256": "73b61af5ddf1b3c9081e2db72c16b30deaeb1a729420f5b06bf2a5e0ee46b520"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-verify-cold_rules-conflict_restored.png",
+        "sha256": "656a934c8a3cd0c0ec01b858f890f1ee1771af09c01c4ed7da9f26089ac74421"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-rules-conflict-verify-cold_rules-conflict_rejected.png",
+        "sha256": "85a6a281f770df251e1d5f73048cefa253ad29bc7e87d41ddb495211f53237eb"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-icon-prepare-cold_groups-icon_prepared.png",
+        "sha256": "259fdde7505759d4e43c530de45028f9fc252dd2539ee810079dfe2d49f5b55c"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-icon-verify-cold_groups-icon_restored.png",
+        "sha256": "c1574f1aa9febdbecec0b2218d79524ab91c17f114091e758418930f6402535b"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-option-prepare-cold_groups-option_prepared.png",
+        "sha256": "2c28a3fddc1f2a59448904a81b9f2bacceef3379d93c68422bd7f21067cb8ef5"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-option-verify-cold_groups-option_restored.png",
+        "sha256": "2c28a3fddc1f2a59448904a81b9f2bacceef3379d93c68422bd7f21067cb8ef5"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-value-prepare-cold_groups-value_prepared.png",
+        "sha256": "ce3df61e02206283decc8e115d1589013cd693e5442a762d9cb979e38c722a89"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-cold-final10-groups-value-verify-cold_groups-value_restored.png",
+        "sha256": "5a18e085c346c349dba979bc93203e650b0271e4f6b0e46906070d3b521cc0f1"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-group_icon_restored_empty.png",
+        "sha256": "b0b1bb8868a4db9adb3723e534f6b6c19d985577cb962c8c74a4335bd5af53e5"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-group_option_restored_value.png",
+        "sha256": "45bef3b03d7fa803b1e8fd1b2c79645767e37537e986e9df96d0c49c6b8ffd60"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-whole_groups_yaml_error_located.png",
+        "sha256": "9a4902822c0d8b7eabbb5bba2796134defb750f6a7ab0737a930f4ea599c6e61"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-group_yaml_failed_draft.png",
+        "sha256": "162d2f758c6c0ab9b77c3bedd1e834b25469c9ecdd48fed4cf7ab5cc9f5d7a6e"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-rule_restored_draft.png",
+        "sha256": "9a5ffd9e20ee5dacdf458d0a857b50d3a44f7703622f81d099259c282627f6af"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-rule_restored_selection.png",
+        "sha256": "ff80824f368db971ed9ad83485a2ec4baeed262fea983797ef0df8bd108180e5"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_list_light.png",
+        "sha256": "1c7f90fd15adb98fbd618d0fd329d67514c2dd8616d086138e3c6c1d202c1840"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_member_picker_light.png",
+        "sha256": "7add8d524700820dffb6df41ae2b78672f0ba573aa78d3f60470bc687ea990cd"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_members_light.png",
+        "sha256": "c2ddf8ed53fa45290d61cc076839620008b420ddb0dc62d756df71290b778033"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_add_options_light.png",
+        "sha256": "8109f6dfe265ed9889eaac464166adebc4e58cef2c3651b82cffd4d235c7ab63"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_options_light.png",
+        "sha256": "1470ff3d8b30178be6991b56e66250a613f1c614077fcc30d2ef36c3398228c1"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_quick_yaml_light.png",
+        "sha256": "08968f9a16e1b3d43177a4eb38853ce88dfb230099ecfe8da0f59c9a71bc73c9"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_list_dark.png",
+        "sha256": "7ef896a27bbd1a907a0cc725633575f5baabea2acdca2902ad048687b0259c8b"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_member_picker_dark.png",
+        "sha256": "acb1ee35accda8b4d0e3c636d888ab9fd156694195dcd11b484a96ced75b9a27"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_members_dark.png",
+        "sha256": "b108d26c1691c99ef916e25413db538e82a45dbd710753bd8e490a4052faf68f"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_add_options_dark.png",
+        "sha256": "c9a288d1461ddb72630dd6c941174d2ac650a6e5a406a86963381e8e882c7129"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_options_dark.png",
+        "sha256": "82c17ea017703de3dffb448f0a7337840d87c4293ccef7b96e51d834adc06e5d"
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-regression-final10-groups_quick_yaml_dark.png",
+        "sha256": "6f8272e424b27e1c887b0677d129edca597b5fef4f007b535ee9e877549e325f"
+      }
+    ],
+    "contactSheets": [
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-00.jpg",
+        "sha256": "9cf8d0a7c1b35e13c2bf13db95f38ccb4c6655ed3404642164cfd6f427f9293a",
+        "bytes": 199043
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-01.jpg",
+        "sha256": "af54c229fd3018eb2dd4071cdf07c02357b070916770864c7152998f0fe2ee62",
+        "bytes": 352722
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-02.jpg",
+        "sha256": "42083f222a232fe204588b4d6c303ff780a489acac863e2eed6eddc526721fd3",
+        "bytes": 241765
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-03.jpg",
+        "sha256": "b4a19895c33e488d803440ff329544d91a9474f2322807b677dab4ee67efa550",
+        "bytes": 207889
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-04.jpg",
+        "sha256": "cd876f94cb9dd2efdca42c8ef4f9a4e0235d449706863f85f5202b51ed562cb3",
+        "bytes": 266946
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-05.jpg",
+        "sha256": "280dd5845f185b58ee8df0bcc54043bfae17a5983597f4580ff074e3fabdc2ce",
+        "bytes": 150644
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-06.jpg",
+        "sha256": "0011989918ef9990980b047b91901c191a469d661d94eba1dc4987f9dabe6c62",
+        "bytes": 174283
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-07.jpg",
+        "sha256": "9215e2ec98d1d566b9d120c59d22734f835207b8019e446a45bca97f50528f65",
+        "bytes": 159089
+      },
+      {
+        "path": "/tmp/kclash-editor-cold-20261105-contact-final10-08.jpg",
+        "sha256": "b968c16c9b59b479f07b3b13b688554a0904cedbd84dbe500eea3ea11e63213d",
+        "bytes": 158483
+      }
+    ],
+    "note": "已目视恢复前后表单、批选、冲突、图标/选项、长YAML错误及深浅子页，未见本组遮挡/重叠；不推广Flutter全页逐像素或动效性能。"
+  },
+  "failedAndSupersededBatches": [
+    {
+      "batch": "registry1",
+      "passed": 1,
+      "completed": 2,
+      "requested": 2,
+      "note": "1/2；测试外层key(generation)改变保存键，移除外层key后继续诊断。",
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry1.json",
+        "sha256": "8ca3ddf0dcb6c4d20ab57eb5849dba6307adf8bd9b310c38b10036cd3b1561f5",
+        "bytes": 3200
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry1.log",
+        "sha256": "4b9438ba6717ad49e29b51a4bafef5e3d4b8c0be4a7b254e6f30af26668ff058",
+        "bytes": 5170
+      }
+    },
+    {
+      "batch": "registry2",
+      "passed": 1,
+      "completed": 2,
+      "requested": 2,
+      "note": "1/2；规则类型选择器产生Compose内部DefaultLazyKey，被值白名单拒绝。",
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry2.json",
+        "sha256": "70ef6bce8410cc0f31a907a05ae1e9746fd06b82202ab1cadc44b3b35e150fa7",
+        "bytes": 7028
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry2.log",
+        "sha256": "9b598cdaa300b3b5c3602ef747283a70a9f21b484ba40d2b3a8aa795ec0c78c2",
+        "bytes": 7606
+      }
+    },
+    {
+      "batch": "registry3-isolated",
+      "passed": 0,
+      "completed": 1,
+      "requested": 1,
+      "note": "0/1；同上，后续measure-idle异常不是首次根因。",
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry3-isolated.json",
+        "sha256": "12082aafe5b426712693964ac2f2d812c1418c442d2d5941453b510aa69f20df",
+        "bytes": 6704
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry3-isolated.log",
+        "sha256": "e27438c7816f9ba280e66703341e8debd57acc354eec00d89460c33aad0d5273",
+        "bytes": 6897
+      }
+    },
+    {
+      "batch": "registry4-phase",
+      "passed": 0,
+      "completed": 1,
+      "requested": 1,
+      "note": "0/1；已捕获首个DefaultLazyKey不支持异常。",
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry4-phase.json",
+        "sha256": "dfdf56aa2005431a86610519c2b1b923ab9fc93187f811b6d9094ca5528389cf",
+        "bytes": 6701
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry4-phase.log",
+        "sha256": "6cdff25b6e407844661580171cef787dab9db7fa181ba5562be99e70040a8068",
+        "bytes": 7434
+      }
+    },
+    {
+      "batch": "registry5",
+      "passed": 0,
+      "completed": 0,
+      "requested": 2,
+      "note": "0项；安装与instrumentation重叠，未计为验收。",
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry5.json",
+        "sha256": "68e35da0c47a180bdf6ec8dda343d6c34c23a1255cf4ed14a297a64b89d7ea04",
+        "bytes": 439
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry5.log",
+        "sha256": "cc376fcd260b55a01f82c04af5e0a9ead88516f600131a38bdea1a3e05b10a8d",
+        "bytes": 74
+      }
+    },
+    {
+      "batch": "registry6",
+      "passed": 2,
+      "completed": 2,
+      "requested": 2,
+      "note": "旧Test8组件2/2；最终Test10在15项回归再次覆盖。",
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry6.json",
+        "sha256": "9e6d750d46eb1ebb48ccdc084d29312cc6390850e6ec46163bf3ba281490253e",
+        "bytes": 872
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-registry6.log",
+        "sha256": "6aabe529ba40784eee12809593040a2a821ac2e9615e4a321dc5a9db9c180ae9",
+        "bytes": 2412
+      }
+    },
+    {
+      "batch": "cold1-groups-yaml-verify",
+      "passed": 0,
+      "completed": 1,
+      "requested": 1,
+      "note": "前6场景双阶段通过后，本场景选区错误预期失败；YAML校验会主动定位，test10改为校验后实际选区并新增完整正文SHA断言。finally清理通过。",
+      "report": {
+        "path": "/tmp/kclash-editor-cold-20261105-cold1-groups-yaml-verify.json",
+        "sha256": "9beb873952051d0c13995044d6d3c66c20888e10923519e3da8c644c0d2e9baf",
+        "bytes": 42485
+      },
+      "log": {
+        "path": "/tmp/kclash-editor-cold-20261105-cold1-groups-yaml-verify.log",
+        "sha256": "1eaa5f8bb6e1cc2bd75046e87121438f25319a8f9f1f45b96bfdbe3a85c327a8",
+        "bytes": 61164
+      }
+    }
+  ],
+  "failureDiagnostics": [
+    {
+      "path": "/tmp/kclash-editor-cold-20261105-registry4-framework.log",
+      "sha256": "ca91b86fc61840f5a412259d3772b998aae27118720cf3be1f38288cd97817d7",
+      "bytes": 39714
+    }
+  ],
+  "sources": {
+    "android/app/proguard-rules.pro": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/proguard-rules.pro",
+      "sha256": "1977b9864e7f637ccb9bb5d65b7e610e2148b4fa49330db968a4210a39e8e537",
+      "bytes": 2080
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/CustomRulesEditor.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/CustomRulesEditor.kt",
+      "sha256": "e532765434fd45f4a68f93e74762bd19833be25c073bb3db9a4a75dc410b49ab",
+      "bytes": 28229
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/EditorSaveableState.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/EditorSaveableState.kt",
+      "sha256": "0c16cb14668a2e7d8ea0a7792ffae33a3683c5ad330ac18fe1d85e8fd250f129",
+      "bytes": 11157
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "sha256": "99ee4084b53f2d9ac7c2ae96b56e8b2c66e23a1b2aab8434dbd05e935aab85b7",
+      "bytes": 247769
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEditorDraftSnapshot.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEditorDraftSnapshot.kt",
+      "sha256": "f240490446e6bfee150be7bc6065d2a3b5b7df4ea2f61e08d2f64b59480650e7",
+      "bytes": 859
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt",
+      "sha256": "b7537ce03b4f3e377858e2f4f78fba56bf4603a56a40dff82eb25e5b0400ed1d",
+      "bytes": 10438
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt",
+      "sha256": "62a851a43d013516e19b902444e1c5c6d854ba4b2ed2cd9806254443e3ccaaea",
+      "bytes": 103409
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt",
+      "sha256": "e15815b9044c1cd648a20f96f540f0b56ef425f93f44406bedb60deb55d92907",
+      "bytes": 44481
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupVisuals.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupVisuals.kt",
+      "sha256": "8d7ae42d4ff2f8f0eade3716fde22fdb09bc0f677d15027fe835e34943998c40",
+      "bytes": 13090
+    },
+    "android/tests/app/EditorSaveableStateTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/app/EditorSaveableStateTest.kt",
+      "sha256": "2b45700fb41e83be89fa9734230b1fa8235976a052e35901e2cc5ca1679c1980",
+      "bytes": 3814
+    },
+    "android/tests/app/ProfilesViewModelTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/app/ProfilesViewModelTest.kt",
+      "sha256": "614f3d6f91f567661061e417a7ed3096642a7aec08c7693c380100f009bc5696",
+      "bytes": 110430
+    },
+    "android/tests/instrumented/EncryptedEditorStateInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/EncryptedEditorStateInstrumentedTest.kt",
+      "sha256": "bd22c36626101353425974d67cc4c826b0f037cd8394772df09cbf3cc0ef12b9",
+      "bytes": 5683
+    },
+    "android/tests/instrumented/StructuredEditorColdProcessInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/StructuredEditorColdProcessInstrumentedTest.kt",
+      "sha256": "dfc460e8f3f8069addb7aa7f35b0b6f2359feff3831a14f70b2f0ee5ba7030f2",
+      "bytes": 18218
+    }
+  },
+  "independentReview": [
+    "此前encrypted_editor_review/dialog_registry_boundary_review核对关闭/恢复守卫及窗口注册表；修复后lazy_key_final_review核对真实框架类、Release keep、mapping与APK DEX，无新增阻断。最终证据另行只读审计。",
+    "structured_cold_final_evidence_audit：254个path/sha256 descriptor文件/哈希及大小一致，726单测、8场景PID链、15项回归/父正文、安装保护与当前文档口径一致；无新增阻断。未独立重看PNG，run-as限制和本机附件边界保持。"
+  ],
+  "limitations": [
+    "八场景为rules-form/rules-batch/rules-conflict/groups-icon/groups-option/groups-value/groups-yaml/single-yaml；只证明明确case，不覆盖所有编辑器。",
+    "配置内Proxies、本地代理及链接映射仍VM内存，未接入新的加密持久草稿。",
+    "规则YAML/保持打开的类型选择器、策略组成员/选择/排序/批选，以及保存中和落盘后UI收尾前死亡窗口，尚无本组真实冷进程证据；提交判定与显式重试有JVM/组件覆盖。",
+    "本组未访问在线订阅，未重跑Provider实网、Fallback、VPN、低API、Go、正式签名Release运行或远端CI；运行态回归仅原1.yaml临时副本纯代理保存应用。",
+    "自然到期后台更新和运行态节点落库已由前组独立验收，不重复计入本组；在线age/CUSTOM引用源实网、其他资源SAF/外部脚本、Provider剩余来源/故障恢复/实际流量命中、质量来源/持久缓存、Fallback/蜂窝/第三方OEM仍待推进。",
+    "第三步完整视觉/缓动、morph/orbit、live背景/触点光效、玻璃采样品质和8MiB/动效性能仍未完成；玻璃默认关闭。",
+    "备份/系统恢复、观测次要打磨、语言/主题暂缓；TalkBack/自定义无障碍、早期Room兼容及横屏/大字号不纳入。",
+    "原始日志/PNG和驱动脚本只在本机/tmp，未随源码上传；哈希和路径不等于远端附件可复核。"
+  ]
+}

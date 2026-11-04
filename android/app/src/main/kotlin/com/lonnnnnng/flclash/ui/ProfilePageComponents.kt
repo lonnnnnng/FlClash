@@ -38,10 +38,12 @@ internal fun ProfileEditorPage(
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     backTag: String = "profile_editor_back",
 ) {
+    val draftRegistry = rememberEditorWindowRegistry()
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
+      ProvideEditorWindowRegistry(draftRegistry) {
         val view = LocalView.current
         val window = (view.parent as? DialogWindowProvider)?.window
         val entrance = remember { Animatable(0f) }
@@ -86,6 +88,7 @@ internal fun ProfileEditorPage(
                 if (dismissButton != null) Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.End) { dismissButton() }
             }
         }
+      }
     }
 }
 

@@ -209,6 +209,152 @@ class ProfilesViewModelTest {
         owner2.clear()
     }
 
+    @Test fun structuredEditorsRecoverInNewViewModelWithoutReplacingConflictBaseline() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (rules in listOf(true, false)) {
+            val profile = Profile.custom(819, "structured-draft")
+            val original = "proxy-groups:\n  - name: group\n    type: select\n    proxies: [DIRECT]\nrules:\n  - MATCH,DIRECT\n"
+            val store = FakeProfileStore(profile).apply { content = original }
+            val drafts = PickerMemoryStore()
+            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+            first.openEditor(profile); advanceUntilIdle()
+            if (rules) first.openRulesEditor(profile) else first.openSingleProxyGroupEditor(profile, 0)
+            advanceUntilIdle()
+            val session = if (rules) first.rulesEditorState.value.session else first.proxyGroupsEditorState.value.session
+            val ui = EditorSaveableState(mapOf("pending" to listOf(EditorSavedValue.capture("private-form"))))
+            if (rules) first.updateRulesUiDraft(profile.id, session, ui) else first.updateGroupsUiDraft(profile.id, session, ui)
+            advanceUntilIdle(); owner.clear()
+            store.content = original + "# external change\n"
+            val second = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+            advanceUntilIdle()
+            if (rules) {
+                assertEquals(ui, second.rulesEditorState.value.uiDraft)
+                assertEquals(original, second.rulesEditorState.value.sourceContent)
+                assertTrue(second.rulesEditorState.value.error!!.contains("正文已变化"))
+                second.saveRules("MATCH,DIRECT"); advanceUntilIdle()
+            } else {
+                assertEquals(ui, second.proxyGroupsEditorState.value.uiDraft)
+                assertEquals(0, second.proxyGroupsEditorState.value.initialGroupIndex)
+                assertEquals(original, second.proxyGroupsEditorState.value.sourceContent)
+                assertTrue(second.proxyGroupsEditorState.value.error!!.contains("正文已变化"))
+                second.saveProxyGroups("- name: group\n  type: select\n  proxies: [DIRECT]"); advanceUntilIdle()
+            }
+            assertNull(store.updatedContent)
+            if (rules) second.closeRulesEditor() else second.closeProxyGroupsEditor()
+            advanceUntilIdle()
+            if (rules) second.updateRulesUiDraft(profile.id, session, ui) else second.updateGroupsUiDraft(profile.id, session, ui)
+            advanceUntilIdle()
+            val snapshot = com.google.gson.Gson().fromJson(drafts.bytes!!.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java)
+            assertNull(snapshot.rules); assertNull(snapshot.groups)
+            assertNotNull(second.editorState.value.profile)
+            second.closeEditor(); advanceUntilIdle(); owner2.clear(); assertNull(drafts.bytes)
+        }
+    }
+
+    @Test fun interruptedStructuredSavesInspectCommittedBodyAndNeverResubmitAutomatically() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (rules in listOf(true, false)) for (committed in listOf(false, true)) {
+            val profile = Profile.custom(820, "interrupted")
+            val original = "proxy-groups:\n  - name: group\n    type: select\n    proxies: [DIRECT]\nrules:\n  - MATCH,DIRECT\n"
+            val store = FakeProfileStore(profile).apply { content = original }
+            val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+            val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+            var writes = 0
+            val wrapper = object : ProfileStore by store {
+                override suspend fun saveCustomRules(id: Long, text: String, expectedContent: String, canWrite: () -> Boolean): Profile {
+                    writes++
+                    if (committed) store.updateLocalProfileContent(id, com.lonnnnnng.flclash.data.ProfileRulesEditor.replaceRules(expectedContent, text))
+                    entered.complete(Unit); release.await()
+                    return profile
+                }
+                override suspend fun saveCustomDocument(id: Long, content: String, expectedContent: String, canWrite: () -> Boolean): Profile {
+                    writes++
+                    if (committed) store.updateLocalProfileContent(id, content)
+                    entered.complete(Unit); release.await()
+                    return profile
+                }
+            }
+            val drafts = PickerMemoryStore()
+            fun model() = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+            first.openEditor(profile); advanceUntilIdle()
+            if (rules) { first.openRulesEditor(profile); advanceUntilIdle(); first.saveRules("DOMAIN,pending.test,DIRECT\nMATCH,DIRECT") }
+            else { first.openProxyGroupsEditor(profile); advanceUntilIdle(); first.saveProxyGroups("- name: renamed\n  type: select\n  proxies: [DIRECT]") }
+            entered.await(); advanceUntilIdle()
+            val pending = com.google.gson.Gson().fromJson(drafts.bytes!!.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java)
+            assertNotNull(if (rules) pending.rules?.pendingContent else pending.groups?.pendingContent)
+            owner.clear()
+            val second = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+            advanceUntilIdle(); assertEquals(1, writes)
+            if (rules) {
+                assertFalse(second.rulesEditorState.value.isSaving)
+                assertEquals(if (committed) store.content else original, second.rulesEditorState.value.sourceContent)
+                if (committed) assertNull(second.rulesEditorState.value.error)
+                else {
+                    assertTrue(second.rulesEditorState.value.error!!.contains("保存已中断"))
+                    assertEquals("DOMAIN,pending.test,DIRECT\nMATCH,DIRECT", second.rulesEditorState.value.interruptedRules)
+                }
+            } else if (committed) assertNull(second.proxyGroupsEditorState.value.profile)
+            else {
+                assertFalse(second.proxyGroupsEditorState.value.isSaving)
+                assertTrue(second.proxyGroupsEditorState.value.error!!.contains("保存已中断"))
+            }
+            assertEquals(if (committed) store.content else original, second.editorState.value.content)
+            second.closeEditor(); advanceUntilIdle(); owner2.clear()
+        }
+    }
+
+    @Test fun childCloseWaitsForOldWriteAndRejectsLateSnapshotAfterViewModelDestruction() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(821, "child-close")
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        var bytes: ByteArray? = null; var block = false
+        val drafts = object : com.lonnnnnng.flclash.data.ProfileDraftStore {
+            override suspend fun read() = bytes
+            override suspend fun write(content: ByteArray?) {
+                if (block && content != null) { block = false; entered.complete(Unit); kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { release.await() } }
+                bytes = content?.copyOf()
+            }
+        }
+        val model = ProfilesViewModel(FakeProfileStore(profile).apply { content = "rules: [MATCH,DIRECT]" }, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
+        model.openRulesEditor(profile); advanceUntilIdle()
+        val session = model.rulesEditorState.value.session
+        block = true
+        val ui = EditorSaveableState(mapOf("form" to listOf(EditorSavedValue.capture("pending"))))
+        model.updateRulesUiDraft(profile.id, session, ui); entered.await()
+        model.closeRulesEditor(); assertTrue(model.rulesEditorState.value.isSaving)
+        model.updateRulesUiDraft(profile.id, session, ui)
+        owner.clear(); release.complete(Unit); advanceUntilIdle()
+        assertNull(bytes); assertNull(model.rulesEditorState.value.profile)
+    }
+
+    @Test fun closingParentDuringSuspendedChildRestoreCannotResurrectOldSession() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (rules in listOf(true, false)) {
+            val profile = Profile.custom(822, "restore-race")
+            val store = FakeProfileStore(profile).apply { content = "proxy-groups: []\nrules: []\n" }
+            val drafts = PickerMemoryStore()
+            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
+            first.openEditor(profile); advanceUntilIdle()
+            if (rules) first.openRulesEditor(profile) else first.openProxyGroupsEditor(profile)
+            advanceUntilIdle(); owner.clear()
+            val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+            val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+            store.beforeRead = { entered.complete(Unit); release.await() }
+            val second = model(); val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+            entered.await()
+            second.closeEditor(); release.complete(Unit); advanceUntilIdle()
+            assertNull(second.editorState.value.profile)
+            assertNull(second.rulesEditorState.value.profile)
+            assertNull(second.proxyGroupsEditorState.value.profile)
+            assertNull(drafts.bytes); owner2.clear()
+        }
+    }
+
     @Test fun remoteDocumentStagesWithoutWritingAndFailedOuterSaveKeepsDraftForRetry() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(801, "https://example.test/source", "source")

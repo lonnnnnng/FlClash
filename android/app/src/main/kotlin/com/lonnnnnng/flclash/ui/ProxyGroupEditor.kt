@@ -70,6 +70,7 @@ internal fun VisualProxyGroupsEditor(
     onRecordIcon: (String, Boolean) -> Unit = { _, _ -> },
     onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
     resourceProfiles: List<Profile> = emptyList(),
+    saveError: String? = null,
 ) {
     val source = remember(sourceContent, initialGroups) {
         sourceContent.ifBlank { if (initialGroups.isBlank()) "" else "proxy-groups:\n" + initialGroups.prependIndent("  ") }
@@ -158,7 +159,7 @@ internal fun VisualProxyGroupsEditor(
         },
         text = {
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_error")) }
+                (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_error")) }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(if (selecting) "已选择 ${selected.size} 项" else "策略组 · ${groups.size}", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                     if (selecting) {
@@ -242,12 +243,12 @@ internal fun VisualProxyGroupsEditor(
             groups = values; yaml = null; error = null
         }
     }
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃策略组修改？") }, text = { Text("尚未保存的策略组修改会丢失。") },
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃策略组修改？") }, text = { Text("尚未保存的策略组修改会丢失。") },
         confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
     if (deleteKeys.isNotEmpty()) {
         val targets = groups.filter { it.key in deleteKeys }
         val inUse = ProxyGroupIssues.referencedNames(groups, deleteKeys, source)
-        AlertDialog(onDismissRequest = { deleteKeys = emptySet() }, title = { Text("删除策略组？") },
+        EditorAlertDialog(onDismissRequest = { deleteKeys = emptySet() }, title = { Text("删除策略组？") },
             text = { Text(if (inUse.isNotEmpty()) "以下策略组仍被引用：${inUse.joinToString("、")}。删除后需要修复规则或节点引用。"
                 else "将删除 ${targets.size} 个策略组：${targets.joinToString("、") { it.name }}") },
             confirmButton = { TextButton(onClick = {
@@ -442,7 +443,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
         })
     }
     if (yaml) GroupQuickYaml(group, onDismiss = { yaml = false }, onApply = { next -> json = next.json; yaml = false; error = null })
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃此策略组修改？") },
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃此策略组修改？") },
         confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }
 
@@ -507,7 +508,7 @@ private fun <T> GroupYamlPage(original: String, title: String, tag: String, onDi
                 }, true, Modifier.fillMaxWidth().weight(1f), contentTag = "${tag}_content")
             }
         })
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃 YAML 修改？") },
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃 YAML 修改？") },
         text = { Text(failure.orEmpty()) }, confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } },
         dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }
@@ -531,7 +532,7 @@ private fun GroupFieldRow(label: String, value: String, tag: String, onClick: ()
 private fun GroupValueDialog(option: GroupOption, initial: String, choices: List<String>, onDismiss: () -> Unit, onSave: (String) -> Unit) {
     var value by rememberSaveable(option.key) { mutableStateOf(initial) }
     var error by rememberSaveable(option.key) { mutableStateOf<String?>(null) }
-    AlertDialog(onDismissRequest = onDismiss, title = { Text(option.label) }, text = {
+    EditorAlertDialog(onDismissRequest = onDismiss, title = { Text(option.label) }, text = {
         if (choices.isNotEmpty()) Column(Modifier.verticalScroll(rememberScrollState())) {
             choices.distinct().forEach { choice -> TextButton(onClick = { onSave(choice) }, Modifier.fillMaxWidth()) { Text(choice.ifBlank { "默认" }) } }
         } else Column(Modifier.verticalScroll(rememberScrollState())) {
@@ -594,6 +595,6 @@ private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroup
                 }
             }
         })
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃成员修改？") }, confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } },
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃成员修改？") }, confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } },
         dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }

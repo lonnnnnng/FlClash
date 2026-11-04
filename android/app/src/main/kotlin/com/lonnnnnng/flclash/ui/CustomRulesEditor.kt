@@ -39,7 +39,8 @@ private fun rulesDigest(text: String): String = MessageDigest.getInstance("SHA-2
 /** 作者 long：规则操作逐次保存后仍留在列表；等待回读成功再关闭子页，写入失败保留编辑内容供修复。 */
 @Composable
 internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, saving: Boolean, onDismiss: () -> Unit,
-    onSave: (String) -> Unit, catalog: CustomRuleCatalog = CustomRuleCatalog(), saveError: String? = null) {
+    onSave: (String) -> Unit, catalog: CustomRuleCatalog = CustomRuleCatalog(), saveError: String? = null,
+    interruptedRules: String? = null, onDiscardInterrupted: () -> Unit = {}) {
     // 作者 long：表单保存的是行身份，重建必须恢复同一组 key；仅保存摘要和 key，避免把整份规则正文重复塞进系统 Bundle。
     val rowsSaver = listSaver<List<CustomRuleDraft>, String>(
         save = { values -> listOf(rulesDigest(CustomRules.editorText(values))) + values.map { it.key } },
@@ -51,7 +52,13 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
         },
     )
     var rows by rememberSaveable(profile.id, stateSaver = rowsSaver) { mutableStateOf(CustomRules.decode(initialRules, validate = false)) }
-    var pending by remember { mutableStateOf<List<CustomRuleDraft>?>(null) }
+    val pendingSaver = listSaver<List<CustomRuleDraft>?, String>(
+        save = { values -> values.orEmpty().flatMap { listOf(it.key, it.value) } },
+        restore = { saved -> saved.takeIf { it.isNotEmpty() }?.chunked(2)?.map { CustomRuleDraft(it[0], it[1]) } },
+    )
+    var pending by rememberSaveable(profile.id, stateSaver = pendingSaver) { mutableStateOf<List<CustomRuleDraft>?>(null) }
+    var retryRules by rememberSaveable(profile.id) { mutableStateOf<String?>(null) }
+    var discardOperation by rememberSaveable(profile.id) { mutableStateOf(false) }
     var pendingDigest by rememberSaveable(profile.id) { mutableStateOf<String?>(null) }
     var query by rememberSaveable(profile.id) { mutableStateOf("") }
     var search by rememberSaveable(profile.id) { mutableStateOf(false) }
@@ -67,11 +74,15 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
     val busy = saving || pendingDigest != null
     val visible = rows.filter { it.value.contains(query, ignoreCase = true) }
     val issues = remember(rows, catalog) { rows.mapNotNull { rule -> catalog.issue(rule.value)?.let { rule.key to it } }.toMap() }
-    LaunchedEffect(initialRules, saving, saveError, pendingDigest) {
+    LaunchedEffect(initialRules, saving, saveError, pendingDigest, interruptedRules) {
         if (!saving) {
             if (saveError != null) {
                 // 作者 long：排序先在本地预览，写入失败必须回到已保存顺序；表单和 YAML 子页另持草稿供重试。
-                rows = CustomRules.decode(initialRules, previous = rows, validate = false)
+                if (interruptedRules != null) {
+                    // 作者 long：提交前被回收的批选/排序仍是用户操作，保留原行身份和结果，由用户确认重试，不能自动重放。
+                    retryRules = interruptedRules
+                    rows = pending ?: CustomRules.decode(interruptedRules, previous = rows, validate = false)
+                } else if (retryRules == null) rows = CustomRules.decode(initialRules, previous = rows, validate = false)
                 pending = null; pendingDigest = null
             }
             else if (pendingDigest == null || rulesDigest(initialRules) == pendingDigest) {
@@ -85,7 +96,7 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
         if (saving || pendingDigest != null) return
         runCatching { CustomRules.validateAll(next, unchangedValues = CustomRules.decode(initialRules, validate = false).map { it.value }.toSet()) }.onSuccess {
             val text = CustomRules.editorText(next)
-            error = null; pending = next; pendingDigest = rulesDigest(text); onSave(text)
+            error = null; retryRules = null; pending = next; pendingDigest = rulesDigest(text); onSave(text)
         }.onFailure { error = it.message ?: "规则无效，请检查后重试" }
     }
     fun duplicate(keys: Set<String>) = persist(rows.flatMap { if (it.key in keys) listOf(it, it.copy(key = UUID.randomUUID().toString())) else listOf(it) })
@@ -93,6 +104,7 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
         if (!busy) when {
             selecting -> { selecting = false; selected = emptySet() }
             search -> { search = false; query = "" }
+            retryRules != null -> discardOperation = true
             else -> onDismiss()
         }
     }
@@ -121,6 +133,15 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
             Column(Modifier.fillMaxSize()) {
                 if (search) OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索类型、内容或策略") }, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).testTag("custom_rules_search"))
                 (error ?: saveError)?.let { Text(it, Modifier.padding(vertical = 8.dp).testTag("custom_rules_error"), color = MaterialTheme.colorScheme.error) }
+                retryRules?.let { text -> Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(enabled = !busy, modifier = Modifier.testTag("custom_rules_retry_interrupted"), onClick = {
+                        persist(CustomRules.decode(text, previous = rows, validate = false))
+                    }) { Text("重试上次操作") }
+                    TextButton(enabled = !busy, modifier = Modifier.testTag("custom_rules_discard_interrupted"), onClick = {
+                        retryRules = null; onDiscardInterrupted(); rows = CustomRules.decode(initialRules, previous = rows, validate = false)
+                        selected = selected.intersect(rows.map { it.key }.toSet())
+                    }) { Text("放弃上次操作") }
+                } }
                 Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(if (query.isBlank()) "共 ${rows.size} 条规则" else "${visible.size} / ${rows.size} 条规则", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(if (busy) "保存中…" else "操作后自动保存", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -146,7 +167,7 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
     form?.let { key ->
         val original = rows.firstOrNull { it.key == key }
         // 作者 long：源列表在外部更新后找不到原行时不能把编辑误作新增，重复规则也必须按身份定位。
-        if (key != "new" && original == null && !busy) AlertDialog(onDismissRequest = { form = null },
+        if (key != "new" && original == null && !busy) EditorAlertDialog(onDismissRequest = { form = null },
             title = { Text("原规则已变更") }, text = { Text("请返回列表，重新选择要编辑的规则。") },
             confirmButton = { TextButton(onClick = { form = null }) { Text("返回列表") } })
         else CustomRuleForm(original, catalog, busy, error ?: saveError, { form = null; error = null }, { delete = setOf(key) }) { value ->
@@ -157,7 +178,10 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
     }
     if (yaml) CustomRuleYaml(rows, busy, error ?: saveError, { yaml = false; error = null }, ::persist)
     if (presets) ExtensionPresets({ presets = false }) { values -> presets = false; persist(rows + values.map { CustomRuleDraft(value = it) }) }
-    if (delete.isNotEmpty()) AlertDialog(onDismissRequest = { delete = emptySet() }, title = { Text("删除规则") }, text = { Text("删除所选 ${delete.size} 条规则？") },
+    if (discardOperation) EditorAlertDialog(onDismissRequest = { discardOperation = false }, title = { Text("放弃上次未完成的规则操作？") },
+        confirmButton = { TextButton(onClick = { onDiscardInterrupted(); onDismiss() }) { Text("放弃") } },
+        dismissButton = { TextButton(onClick = { discardOperation = false }) { Text("继续编辑") } })
+    if (delete.isNotEmpty()) EditorAlertDialog(onDismissRequest = { delete = emptySet() }, title = { Text("删除规则") }, text = { Text("删除所选 ${delete.size} 条规则？") },
         confirmButton = { TextButton(onClick = { val ids = delete; delete = emptySet(); persist(rows.filterNot { it.key in ids }) }, modifier = Modifier.testTag("custom_rules_delete_confirm")) { Text("删除") } },
         dismissButton = { TextButton(onClick = { delete = emptySet() }) { Text("取消") } })
 }
@@ -242,7 +266,7 @@ private fun CustomRuleForm(initial: CustomRuleDraft?, catalog: CustomRuleCatalog
         }
         CustomRulePicker(mode, sections, { picker = null }) { value -> when (mode) { "type" -> type = value; "provider" -> payload = value; else -> target = value }; error = null; picker = null }
     }
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃未保存的规则？") },
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃未保存的规则？") },
         confirmButton = { TextButton(onClick = onDismiss) { Text("放弃") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }
 
@@ -289,5 +313,5 @@ private fun CustomRuleYaml(initial: List<CustomRuleDraft>, saving: Boolean, save
                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace), label = { Text("规则 YAML") })
         }
     })
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃 YAML 修改？") }, confirmButton = { TextButton(onClick = onDismiss) { Text("放弃") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃 YAML 修改？") }, confirmButton = { TextButton(onClick = onDismiss) { Text("放弃") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }

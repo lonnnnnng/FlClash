@@ -1,6 +1,18 @@
 # Testing
 
-## 后台订阅自然周期与运行态节点（2026-11-05，最新）
+## 规则/策略组加密草稿与冷进程（2026-11-05，最新）
+
+最终生产build9与最终测试testbuild10：App462/Service195/Core38/Common31共726项零失败/错误/跳过；Debug/Test、未签名Release/R8成功；lint2双变体和testbuild10的lintDebug通过，各0错误/66警告（Debug10/Release9提示）。生产App与build8字节相同，test10只将YAML测试选区基准改为校验后真实选区，并新增完整正文SHA断言。证据`docs/acceptance/structured-editor-cold-redmi-20261105.json`，原始附件仅本机/tmp。
+
+- `StructuredEditorColdProcessInstrumentedTest`两个方法分别执行：`prepareEncryptedSubpageWithoutCommittingDraft`和`verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft`。精确case为rules-form/rules-batch/rules-conflict/groups-icon/groups-option/groups-value/groups-yaml/single-yaml，共8场景，各双阶段通过；case由kclashEditorCase传入，kclashProfileClosureAcceptance=true，kclashLocalFile=true并核对原1.yaml SHA。
+- 中间启动正式MainActivity、Home、am kill；外部逐次确认PID消失，恢复PID同时不同于preparedPid与visiblePid。自动恢复正式入口，不主动重新open；核对正文/选区/批选身份/子页层级、冲突提交被CAS拒绝，Bundle与物理密文无测试正文marker，放弃后草稿Store为空。
+- 最终同套App/Test旧入口回归15/15：EncryptedEditorState两项、MainSubpageRecovery前六项、CustomRulesEditor两项、CustomRulesRepository一项、ProxyGroupEditor两项、CustomRulesActivity一项、ProfileClosureHost运行态保存一项。运行态只使用原1.yaml临时副本纯代理，不访问订阅。
+- 父级`ProfileDraftProcessInstrumentedTest`prepare/verify分开运行，中间同样确认真实PID消失；各1/1，父表单密钥/名称及正文恢复、放弃清理与原数据保护通过。不跨批累计成一个大批次。
+- before/after正式保护各1/1，count1及聚合SHA相同，逐字段摘要比较通过并另由inspect诊断回读；inspect不算额外保护验收。原1.yaml、Flutter APK、设置保持，最终App/Test回拉SHA匹配；结束无服务/tun0。各verify断言草稿Store为空且删除自己的marker；run-as被设备SELinux拒绝，原after-final10.json的pendingArtifacts判断作废，未独立检查.bak/.new物理文件，最终采用after-verified10.json。
+- 主代理目视最终35张PNG（冷恢复17、回归18）和9张拼图；不推广完整Flutter视觉或动效性能。registry1测试保存键改变、registry2/3/4实际DefaultLazyKey白名单缺口、registry5安装与测试重叠0项、cold1错误选区预期均保留；不累计旧批成功数。
+- 尚未接入加密持久恢复：配置内Proxies、本地代理/集合/链接映射。已接入但本组未冷验：规则YAML/保持打开的类型选择器、策略组成员/选择/排序/批选；保存中与落盘后UI收尾前死亡窗口仍只有JVM/组件覆盖。未重跑实网、VPN、低API、Go、正式签名运行或远端CI；第二步其他场景及第三步保持待办。
+
+## 后台订阅自然周期与运行态节点（2026-11-05，历史切片）
 
 App454/Service195/Core38/Common31共718项单测零失败/错误/跳过；build4 Debug/Test和未签名Release/R8、最终testbuild6及独立lint4双变体通过，各0错误/66警告（Debug10/Release9提示）。Redmi最终同套App4/Test6回归7/7，自然周期独立1/1，两张PNG已目视，安装哈希匹配。证据`docs/acceptance/subscription-auto-cycle-redmi-20261105.json`；原始日志/PNG只在本机/tmp。
 
@@ -10,7 +22,7 @@ App454/Service195/Core38/Common31共718项单测零失败/错误/跳过；build4
 - before/after正式保护聚合摘要一致；同批原1.yaml双端、Flutter com.follow.clash APK、设置与安装SHA核对，结束无应用服务/tun0。Flutter只读不修改。
 - 失败历史：regression1/final4/final5各6/7；final-regression因关闭隔离Room后观察者迟到读取崩溃，不能记为完整3/5。最终关闭前cancelAndJoin，节点真实触摸等待覆盖卡片的Snackbar自然退场；未改生产提示行为。
 - 真实在线age密文、CUSTOM引用资源实网全链路、低API/VPN/Go/正式签名运行/远端CI不在本组通过范围；其他第二步及第三步保持原待办。
-- 规则/批选及策略组子页当前只有VM内存/Compose保存状态，父加密快照未包含正式入口；下组需要实现安全持久化和入口恢复，不能只加一个StateRestorationTester用例后声称冷进程通过。
+- 当时规则/批选及策略组子页只具备VM/Compose保存状态；顶部新切片已接入父加密快照并完成八场景真实冷进程，不沿用该历史缺口。
 
 
 ## 第一阶段页面交互闭环（2026-11-05，历史切片）

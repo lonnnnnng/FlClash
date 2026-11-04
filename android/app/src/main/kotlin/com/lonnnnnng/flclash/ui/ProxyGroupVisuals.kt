@@ -40,7 +40,7 @@ internal fun GroupIssueButton(issues: List<ProxyGroupIssue>, tag: String) {
     IconButton(onClick = { open = true }, modifier = Modifier.testTag(tag)) {
         Icon(Icons.Outlined.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
     }
-    if (open) AlertDialog(onDismissRequest = { open = false }, title = { Text("策略组问题") },
+    if (open) EditorAlertDialog(onDismissRequest = { open = false }, title = { Text("策略组问题") },
         text = { GroupIssuesBanner(issues, "${tag}_details") },
         confirmButton = { TextButton(onClick = { open = false }) { Text("关闭") } })
 }
@@ -178,7 +178,7 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
                 }
             }
         })
-    if (link) AlertDialog(onDismissRequest = { link = false }, title = { Text("图标地址") }, text = {
+    if (link) EditorAlertDialog(onDismissRequest = { link = false }, title = { Text("图标地址") }, text = {
         OutlinedTextField(draft, { draft = it; error = null }, Modifier.fillMaxWidth().testTag("group_icon_url"), singleLine = true,
             isError = error != null, supportingText = { error?.let { Text(it) } })
     }, confirmButton = { TextButton(onClick = {
@@ -186,7 +186,7 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
         if (url.length <= 8192 && uri.scheme in listOf("http", "https") && !uri.host.isNullOrBlank() && uri.userInfo == null) choose(url)
         else error = "请输入有效的 HTTP 或 HTTPS 图标地址"
     }, modifier = Modifier.testTag("group_icon_url_confirm")) { Text("确认") } }, dismissButton = { TextButton(onClick = { link = false; error = null }) { Text("取消") } })
-    deleteRecord?.let { icon -> AlertDialog(onDismissRequest = { deleteRecord = null }, title = { Text("删除最近图标记录？") },
+    deleteRecord?.let { icon -> EditorAlertDialog(onDismissRequest = { deleteRecord = null }, title = { Text("删除最近图标记录？") },
         text = { Text("已应用到配置的图标会保留。") }, confirmButton = { TextButton(onClick = { onRecord(icon, true); deleteRecord = null }) { Text("删除") } },
         dismissButton = { TextButton(onClick = { deleteRecord = null }) { Text("取消") } }) }
 }

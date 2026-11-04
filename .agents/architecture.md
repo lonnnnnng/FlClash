@@ -1,5 +1,15 @@
 # Architecture
 
+## 规则/策略组加密子树与提交恢复（2026-11-05）
+
+`ProfileEditorDraftSnapshot` v2纳入rules/groups的正式入口、原CAS基线、纯值UI树和pendingContent，继续复用Keystore AES-GCM/noBackup AtomicFile。`EditorStateRegistry`只接受明确值类型/标准MutableState policy；状态变化、ON_STOP与保存前checkpoint捕获，不向Activity父保存树登记。Compose的Dialog新建ComposeView会覆盖注册表，`rememberEditorWindowRegistry`以可恢复UUID命名空间隔离窗口，`ProvideEditorWindowRegistry`在各窗口内容中重新提供。
+
+LazyColumn内部`DefaultLazyKey`会出现在保存树Map键中；只接受精确类，校验Class并读取index:int，以整数编码后用真实int构造器恢复，Release保留该类字段/构造器；不开放任意Parcelable或Bundle序列化正文。真实类单测和Release keep/mapping/DEX核对已有证据。
+
+保存前同写锁落盘pendingContent，恢复比较磁盘正文确认是否已提交；未提交保留规则操作供显式重试，源变化保留旧基线使CAS拒绝覆盖。collector拿锁后重取最新快照，防排队旧快照擦pending；关闭以UNDISPATCHED+NonCancellable等写锁清子页后才关闭UI。generation/epoch/closing守卫覆盖迟到回调和恢复读取。
+
+726单测、最终8场景双阶段真实冷进程、15/15旧入口及父正文两阶段各1/1见`docs/acceptance/structured-editor-cold-redmi-20261105.json`。配置内Proxies/本地代理仍VM内存，规则YAML/打开的选择器、策略组成员/批选和保存死亡窗口未全面冷验；不推广全部编辑器或Release真机运行。
+
 ## 后台订阅提交与受影响配置应用（2026-11-05）
 
 ProfileRepository先在核心锁外下载、解密、校验；automaticCommitter通过Provider延迟取得唯一CoreRuntimeManager，避免runtime→repository→runtime的构造环。withProfileSourceWrite只应用当前源或CUSTOM正文中实际use引用的稳定资源ID；无关资源不重载。固定锁序automaticUpdateMutex→transitionLock→fileMutationMutex，手动updateRemoteProfile保留原调用语义。
@@ -20,7 +30,7 @@ SheetBackGesture按Flutter位移/归一化速度收尾，DashboardModalSheet以�
 
 ## 主页面子页状态与退场隔离（2026-11-05）
 
-CustomRulesEditor只向Bundle保存规范化规则摘要和行key，正文由当前源重建；摘要吻合时恢复身份，重复内容按原索引定位。批选key和pendingDigest可保存，原提交回读匹配才关闭子页；源已变更且旧行不可定位时拒绝误新增。
+该历史切片以规范化规则摘要和行key恢复身份，正文由当前源重建；正式入口现由顶部加密注册表隔离，正文和pending行只进入密文草稿。重复内容按原索引定位，原提交回读匹配才关闭子页；源已变更且旧行不可定位时拒绝误新增。
 
 GroupQuickYaml返回解析成功只更新父组草稿；失败保持正文并提供继续/放弃。ProviderQuickYaml提交收焦点/IME，失败按尝试次数回顶，重复相同错误也可见。
 
