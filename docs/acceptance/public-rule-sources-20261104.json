@@ -1,0 +1,109 @@
+{
+  "authorization": "用户2026-11-04明确授权查找公开Rule Provider用于实网验收；不扩展其他真实订阅授权。",
+  "observedAt": "2026-11-04",
+  "sources": [
+    {
+      "behavior": "domain",
+      "format": "yaml",
+      "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml",
+      "httpStatus": 200,
+      "bytes": 3543,
+      "sha256": "7f396a73bf5c01725cf4a51e6089239491a0d8cb3c808bd1c524d78391221440",
+      "entries": 132,
+      "name": "acceptance-domain-yaml",
+      "originUrl": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml",
+      "transport": "gh-proxy.com; phone DIRECT; origin reset observed",
+      "mirrorBytes": 3543,
+      "mirrorHashMatchesOrigin": true
+    },
+    {
+      "behavior": "domain",
+      "format": "text",
+      "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.list",
+      "httpStatus": 200,
+      "bytes": 2741,
+      "sha256": "db9b2da8d7e90f09e183dcde096f72adaacd8de21e0f09d364b413085ecb7b57",
+      "entries": 132,
+      "name": "acceptance-domain-text",
+      "originUrl": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.list",
+      "transport": "gh-proxy.com; phone DIRECT; origin reset observed",
+      "mirrorBytes": 2741,
+      "mirrorHashMatchesOrigin": true
+    },
+    {
+      "behavior": "ipcidr",
+      "format": "yaml",
+      "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml",
+      "httpStatus": 200,
+      "bytes": 532,
+      "sha256": "5c8fcfcb7305fe6a74fb279bf9aa05047fcb4b0a6289a96c81a6ee2b084148e9",
+      "entries": 28,
+      "name": "acceptance-ipcidr-yaml",
+      "originUrl": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml",
+      "transport": "gh-proxy.com; phone DIRECT; origin reset observed",
+      "mirrorBytes": 532,
+      "mirrorHashMatchesOrigin": true
+    },
+    {
+      "behavior": "ipcidr",
+      "format": "text",
+      "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.list",
+      "httpStatus": 200,
+      "bytes": 354,
+      "sha256": "3105f74241f0c3fc4e0d3a67ffc33a018a3eb7913725a7219576603b79935c3c",
+      "entries": 28,
+      "name": "acceptance-ipcidr-text",
+      "originUrl": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.list",
+      "transport": "gh-proxy.com; phone DIRECT; origin reset observed",
+      "mirrorBytes": 354,
+      "mirrorHashMatchesOrigin": true
+    },
+    {
+      "behavior": "classical",
+      "format": "yaml",
+      "url": "https://gh-proxy.com/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.yaml",
+      "httpStatus": 200,
+      "bytes": 1590,
+      "sha256": "e78efc3f18069f1f1e3f88c15cd55f85424367b58ce8474af08c2fdf054704e0",
+      "entries": 46,
+      "ruleTypes": [
+        "DOMAIN",
+        "DOMAIN-KEYWORD",
+        "DOMAIN-SUFFIX",
+        "IP-ASN",
+        "IP-CIDR",
+        "IP-CIDR6",
+        "PROCESS-NAME"
+      ],
+      "name": "acceptance-classical-yaml",
+      "originUrl": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.yaml",
+      "transport": "gh-proxy.com; phone DIRECT; origin reset observed",
+      "mirrorBytes": 1590,
+      "mirrorHashMatchesOrigin": true
+    },
+    {
+      "behavior": "classical",
+      "format": "text",
+      "url": "https://gh-proxy.com/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list",
+      "httpStatus": 200,
+      "bytes": 1562,
+      "sha256": "0e99a027795b51c495e3bd97c854b147898c5e598ece47bd79515a419aab25e1",
+      "entries": 46,
+      "ruleTypes": [
+        "DOMAIN",
+        "DOMAIN-KEYWORD",
+        "DOMAIN-SUFFIX",
+        "IP-ASN",
+        "IP-CIDR",
+        "IP-CIDR6",
+        "PROCESS-NAME"
+      ],
+      "name": "acceptance-classical-text",
+      "originUrl": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list",
+      "transport": "gh-proxy.com; phone DIRECT; origin reset observed",
+      "mirrorBytes": 1562,
+      "mirrorHashMatchesOrigin": true
+    }
+  ],
+  "networkBoundary": "Redmi curl: raw GitHub TLS connection reset; gh-proxy same bytes HTTP200. Native Provider network acceptance uses explicit DIRECT and mirror URLs."
+}

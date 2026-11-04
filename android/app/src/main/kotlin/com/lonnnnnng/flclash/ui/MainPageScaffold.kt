@@ -4,11 +4,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Build
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -17,18 +12,22 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 
-internal enum class MainDestination(val label: String, val icon: ImageVector) {
-    DASHBOARD("首页", Icons.Outlined.Home),
-    PROXY("代理", Icons.Outlined.SwapVert),
-    PROFILES("配置", Icons.Outlined.Description),
-    TOOLS("工具", Icons.Outlined.Build),
+internal enum class MainDestination(val label: String) {
+    DASHBOARD("首页"), PROXY("代理"), PROFILES("配置"), TOOLS("工具");
+
+    // 作者 long：路由枚举也用于纯JVM业务校验，只有实际绘制入口才创建依赖Android的图形路径。
+    val icon: AppGlyph get() = when (this) {
+        DASHBOARD -> AppGlyphs.dashboard
+        PROXY -> AppGlyphs.proxies
+        PROFILES -> AppGlyphs.profiles
+        TOOLS -> AppGlyphs.tools
+    }
 }
 
 /** 作者 long：Flutter 手机导航在没有可用 Profile/代理组时隐藏代理入口，空配置页不展示不可操作的 Tab。 */

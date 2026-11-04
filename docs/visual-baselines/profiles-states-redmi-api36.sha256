@@ -1,11 +1,13 @@
 # KClash Profiles fixed-state PNG baselines.
 # Device: Redmi Note 8 Pro, Android 16/API 36, portrait, system font scale 1.0, dark mode.
-state=empty sha256=f8730d9a6659e608316e654c8aba803270401979221127fee65204726620c019
-state=custom_selected sha256=9b8a39c5aff0c0559a2779b9dc4558244057e570adeddf87400c7822357c5f92
-state=remote_usage sha256=5ec26e77b54eeb846ba228214be37416d05a374cb2cc40d21110b9f958053bed
+state=empty sha256=4f604228b49dd0a010d2150846f706f894e5aa2a86e0f5a2bb5a3415581d065f
+state=custom_selected sha256=f02b6d7d18a8621b38f68b20a8a96673029da918d8a747071ec9eaf16ff2fc2e
+state=remote_usage sha256=518f519d71d6d6f163921aaac44af855dfd41cf138f67bb9d79635da55adf56a
 
 # 2026-11-04 主页面连续圆角、分层阴影与Dock静态态已目视；仅锁定原生回归，不表示Flutter逐像素一致。
 
 # 2026-11-04 菜单组：卡片按同一连续圆角显式裁剪涟漪；已比对仅轮廓抗锯齿变化，内部内容保持。
 
 # 2026-11-04 整页动效组：72dp工具栏、胶囊按钮及正文间距对齐上游；配置截图宿主去除额外8dp纵向padding。已目视深浅两主题，新基线只证明原生稳定性。
+
+# 2026-11-04 默认Flutter蓝色色板/字体语义、图标与空态轮廓已目视；仅本文件列出的14张严格截图更新，其他页面旧基线未验。

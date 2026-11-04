@@ -1,5 +1,12 @@
 # Architecture
 
+## Provider列表路由重读与默认视觉（2026-11-04）
+
+`profileProviders`在3秒总预算内最多读取3次；`ProviderRouteMovedException`仅表示同一epoch内路由version变化。丢弃旧列表后，在transitionLock内复核原配置/正文key/修订号和epoch，重新取stamp；任何源输入、会话或生命周期变化仍失败，更新/写入守卫不放宽。3项Service回归覆盖单次变更后返回新结果、连续变化有界失败、跨epoch/正文变化不重试。核心写入协议未改。
+
+默认颜色/字体由Flutter oracle导出；`AppGlyph`保留body/detail/line、透明镂空和RTL，`AppMenuMorph`分离位置/内容缩放/高度/角部弹簧；空态使用真实cookie曲线。`tool/export_flutter_visual_reference.py`在独立/tmp工程从固定上游SHA生成参考，未恢复Flutter运行时依赖。完整视觉仍PARTIAL；验收与公开加速源见最新testing/roadmap及`flutter-visual-provider-types-redmi-20261104.json`。
+
+
 ## 主导航连续滑动与代理标签（2026-11-04）
 
 `MainNavigationHost`在外层Scaffold固定Dock和snackbar，消费底部insets；`MainPageTransition`按目标序号/RTL选择方向，以300ms easeOut移动完整标题和正文。各页由SaveableStateHolder保存布局状态，退场页清语义并消费触摸，非相邻入口只构建起止页；快速反向及草稿/滚动恢复已有真机帧断言。`MainNavigationDock`再次轻点当前项也调用路由，工具子页返回及未保存检查统一走navigateTo；原地拖动和取消不提交。

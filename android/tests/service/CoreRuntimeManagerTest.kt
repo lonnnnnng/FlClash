@@ -526,6 +526,55 @@ class CoreRuntimeManagerTest {
         assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
     }
 
+    @Test fun providerListRereadsAfterRouteMovementAndReturnsOnlyTheStableResult() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge()
+        val runtime = manager(ActiveProfile(8, "明细", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())
+        runtime.getProxyGroups().getOrThrow()
+        var reads = 0
+        bridge.externalRead = {
+            reads++
+            if (reads == 1) bridge.ipStamp = CoreRouteStamp(1, 2)
+            listOf(providerFixture().copy(count = reads.toLong()))
+        }
+        // 作者 long：更新或健康检查恰好改变路由时，旧列表必须丢弃，返回新快照中的真实条目数。
+        assertEquals(2L, runtime.profileProviders(8).single().count)
+        assertEquals(2, reads)
+    }
+
+    @Test fun providerListContinuousRouteMovementStopsAfterThreeReads() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge()
+        val runtime = manager(ActiveProfile(8, "明细", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())
+        runtime.getProxyGroups().getOrThrow()
+        var reads = 0
+        bridge.externalRead = {
+            reads++
+            bridge.ipStamp = CoreRouteStamp(1, reads.toLong() + 1)
+            listOf(providerFixture())
+        }
+        assertTrue(runCatching { runtime.profileProviders(8) }.isFailure)
+        assertEquals(3, reads)
+    }
+
+    @Test fun providerListDoesNotRetryAcrossCoreEpochOrSourceChanges() = runTest {
+        for (changeEpoch in listOf(false, true)) {
+            val source = temporaryFolder.newFile().apply { writeText("{}") }
+            val bridge = FakeBridge()
+            val runtime = manager(ActiveProfile(8, "明细", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())
+            runtime.getProxyGroups().getOrThrow()
+            var reads = 0
+            bridge.externalRead = {
+                reads++
+                bridge.ipStamp = CoreRouteStamp(if (changeEpoch) 2 else 1, 2)
+                if (!changeEpoch) source.writeText("{\"port\": 7890}")
+                listOf(providerFixture())
+            }
+            assertTrue(runCatching { runtime.profileProviders(8) }.isFailure)
+            assertEquals(1, reads)
+        }
+    }
+
     @Test fun providerUpdateRefusesWrongProfileMissingAndFileProvidersWithoutCallingUpdate() = runTest {
         val source = temporaryFolder.newFile().apply { writeText("{}") }
         val bridge = FakeBridge(); val runtime = manager(ActiveProfile(8, "明细", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())

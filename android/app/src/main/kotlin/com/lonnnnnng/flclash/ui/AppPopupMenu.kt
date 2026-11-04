@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.TransformOrigin
@@ -121,8 +122,7 @@ private val LocalAppMenuEnabled = staticCompositionLocalOf { true }
 
 @Composable
 internal fun AppMenuSubmenuArrow() {
-    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-    Icon(Icons.Outlined.ChevronRight, null, Modifier.graphicsLayer { scaleX = if (rtl) -1f else 1f })
+    AppGlyphIcon(AppGlyphs.chevronForward, null)
 }
 
 /** 作者 long：全窗口透明拦截层区分“点外部关闭全部”和“返回上层菜单”，不把返回键误当成点外部。 */
@@ -157,6 +157,11 @@ internal fun AppDropdownMenu(
     val margin = with(density) { 16.dp.roundToPx() }; val gap = with(density) { 8.dp.roundToPx() }
     val positioner = remember(margin, gap) { AppMenuPositioner(margin, gap) }
     var parentBounds by remember { mutableStateOf(IntRect.Zero) }
+    var menuPosition by remember { mutableStateOf(IntOffset.Zero) }
+    val opening = remember { Animatable(0f) }
+    LaunchedEffect(expanded) {
+        if (expanded) { opening.snapTo(0f); opening.animateTo(.45f, tween(450, easing = LinearEasing)) }
+    }
     // 作者 long：菜单窗口始终以宿主Window原点布局，锚点使用boundsInWindow，避免把状态栏偏移重复计算。
     val windowOrigin = remember { object : PopupPositionProvider {
         override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection, popupContentSize: IntSize): IntOffset {
@@ -178,14 +183,21 @@ internal fun AppDropdownMenu(
             Box(Modifier.matchParentSize().testTag("app_popup_outside").pointerInput(Unit) { detectTapGestures { dismiss() } })
             Layout(content = {
                 AnimatedVisibility(visibleState = visible,
-                    enter = fadeIn(tween(150)) + scaleIn(spring(dampingRatio = .78f, stiffness = 380f), initialScale = .8f, transformOrigin = TransformOrigin(1f, 0f)),
+                    enter = fadeIn(tween(1)),
                     exit = fadeOut(tween(200)) + scaleOut(tween(200), targetScale = .8f, transformOrigin = TransformOrigin(1f, 0f))) {
                     val shape = AppSuperellipseShape(24.dp)
                     val dark = LocalKClashDarkTheme.current
                     val surface = if (dark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceBright
+                    val morph: (androidx.compose.ui.geometry.Size) -> AppMenuMorphFrame = { size ->
+                        val origin = anchor ?: parentBounds
+                        val localAnchor = Rect((origin.left - menuPosition.x).toFloat(), (origin.top - menuPosition.y).toFloat(),
+                            (origin.right - menuPosition.x).toFloat(), (origin.bottom - menuPosition.y).toFloat())
+                        appMenuMorphFrame(localAnchor, size, opening.value, density.density)
+                    }
                     Surface(modifier.widthIn(min = 160.dp, max = 280.dp).width(IntrinsicSize.Max)
-                        .dropShadow(shape, Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
+                        .dropShadow(AppMenuMorphShape(morph), Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
                             color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp)))
+                        .appMenuMorph(surface, morph)
                         .testTag("app_popup_menu").semantics { paneTitle = "菜单" }, shape = shape, color = surface) {
                         CompositionLocalProvider(LocalAppMenuEnabled provides expanded) {
                             // 作者 long：子菜单内容增减时保留右上角停靠并平滑调整高度；切页另起滚动位置，避免根菜单滚到底后遮住子页的返回入口。
@@ -202,6 +214,7 @@ internal fun AppDropdownMenu(
                 val child = children.single().measure(available)
                 val point = positioner.position(anchor ?: parentBounds, IntSize(constraints.maxWidth, constraints.maxHeight),
                     IntSize(child.width, child.height), insets, placement, avoid)
+                menuPosition = point
                 layout(constraints.maxWidth, constraints.maxHeight) { child.place(point.x, point.y) }
             }
         }

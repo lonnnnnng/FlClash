@@ -1,5 +1,20 @@
 # Testing
 
+## Flutter默认视觉与六种规则资源实网（2026-11-04）
+
+默认0xFF007AFF/vivid深浅色板及字体语义槽已由固定Flutter上游导出；31个真实glyph接入Dock、配置/代理工具栏和菜单，空配置使用cookie7/cookie4曲线及spin入场，MIT许可随APK保留。菜单采用锚点中心生长、等比内容缩放/高度分离、延迟角部弹簧和跟随阴影。独立导出脚本实际3项通过，复现色板、曲线和23图标双图集字节一致；Native/Flutter图集平均每通道差约0.191/0.178（满量程255）。不是完整页面逐像素等价。
+
+实网发现Provider列表读取期间路由版本变化会拒绝结果，已改为3秒总预算内最多3次重读；仅同一配置/正文/修订号/核心epoch可继续。旧实现新增3项回归中2项红测，修复后Service191项通过。最终App440/Service191/Core38/Common31共700项零失败/错误/跳过，Debug/Test、未签名Release/R8及双变体Lint通过，各0错误/62警告（Debug10/Release9 hints）。
+
+Redmi主批final6为17/18：菜单、图标/动效、14张已目视严格PNG、深浅Tab/List矩阵、整页连续动效和HTTP/File Proxy通过；Rule首次列表等待超时未完整捕获，不认定唯一原因。testbuild13只补安全状态/正式重试入口及规则验收，rule7独立1/1通过且未调用重试：domain/ipcidr/classical各YAML/text共6资源，在STOPPED及纯代理RUNNING各更新一次，共12次；核心数量132/28/46、mtime前进、正文SHA和格式全部核对，Activity重建/16秒轮询及运行会话保持。不能合并宣称一次18/18。
+
+HTTP Proxy首次count0/无cache已保留；后续加载为7条，停止/运行两次正式UI实更新和正文回读通过；File保持原1.yaml字节7条、拒绝在线更新。公开规则原始GitHub地址在Redmi出现TLS连接重置，经用户确认采用gh-proxy.com前缀与DIRECT；6份镜像SHA与原文件一致。使用公开现成规则，未转换原90个MRS；这组证明真实下载/解析/回读，不覆盖每条规则的数据包命中、全部站点或代理协议。
+
+final6与rule7共用生产App；final6测试包和最终testbuild13分开记录。最终App/Test设备哈希匹配，旧入口after1/1，正式1份配置及正文元数据保持，网络fixture另核对Room行/原选择/正文SHA-size-mtime/脚本/VPN，原1.yaml双端哈希保持。结束无服务/tun0、旋转1/0、字号1.0；Flutter com.follow.clash只读参考。失败、源码、安装及本机附件索引见`docs/acceptance/flutter-visual-provider-types-redmi-20261104.json`；原始附件仅本机/tmp。
+
+完整Flutter视觉仍PARTIAL：菜单源快照/液滴返回、blur/滑动携带、完整子菜单/玻璃、更多子页和精确排版未完成；空态只实现spin，其他随机入场未移植。默认主题全局生效，但暂缓观测页旧截图未更新；主题/语言设置、备份/系统恢复与观测次要打磨继续暂缓。Fallback实核/冷进程仍受授权输入无非空Fallback限制，Go未重跑、签名Release运行及远端CI未验；前段子代理通道失败，未计独立review。
+
+
 ## 整页连续动效与全部原配置规则Provider实网（2026-11-04）
 
 主导航采用300ms easeOut整页滑动，标题/正文一起移动、Dock固定；返回保留滚动与草稿视图，跨入口不构建沿途页。代理标签点击立即高亮、选中项居中、末端24dp渐隐，半程拖动取消不写组记忆；配置与代理工具栏72dp、胶囊操作、正文间距和到期标签按Flutter收敛。修复Dock再次轻点当前入口被忽略，工具子页可回根菜单；原地拖动/系统取消不重复导航。

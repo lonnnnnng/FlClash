@@ -748,16 +748,16 @@ class DashboardInstrumentedTest {
 }
 
 private val baselines = mapOf(
-    "default" to "92d0a662f7f5b02804b693d3d89c5e254960208b731d9dbe8d89b00012adac0c",
-    "system_ready" to "eda3da666967495280f4b1321e3859d8bcae8242f8d5a9652eeb17e9e7fb5eb5",
-    "running" to "76acca4aa29674089a53eb3019729a1182bba185bfd3cc6384bf574a278b7d41",
-    "light_default" to "a87a88b4170da233053a7ab075a3d920600bb6dd7b8631cfdec256ca6d457a7c",
-    "light_running" to "a251bd3d7b0dd6d56eba6ec2a6c111e4f1f087437073a69d034847811e7ed65f",
+    "default" to "9e15f92b825a7380cd7279e4b80a14825a845fc13351a3b12f1071db8d3d2280",
+    "system_ready" to "d44421dd7257b6520abc6d5c377180718040d38ece1bb20990c899783d89cd3f",
+    "running" to "f2b020de1527a30dbc896f66f9bf70db2169d3e909e9010d970881f2f5b2d20e",
+    "light_default" to "049197a800eb107905ca031932e7d000ff447a08f7b3a5c5e7844cceee91e5df",
+    "light_running" to "d0ab3b47109a0cecf6f4f55d4607734bfdba3002ebd75d1d79f6e1f952c14434",
 )
 
 private val proxyPickerBaselines = mapOf(
-    "summary_dark" to "6c7e9f8388a4691d3f54658edf001e0ea084a981a8adf6abcf18cbe0e6ac0e32",
-    "summary_light" to "4317d23bfb172bd708da28aaddf03083060c5d2a05a289507dcd3530039fd180",
-    "picker_dark" to "b9ad482e2e92ebe56599cc82cafd757028ea961f278c9fa828ac203583897fb6",
-    "picker_light" to "cdd6355fd2ad0d1bbad0eacc0ac3a1e1fe2950c251d9437e1786193aafb818c1",
+    "summary_dark" to "d63207b70f8623523c463d364c729647322bfba90734d69ac5d42134d45689dc",
+    "summary_light" to "ad089617dba26698ce5433619e32bc1dd827124224382cc143dacfad3b1752f9",
+    "picker_dark" to "6a9a8d9214240887e02fffc9032d6956e2b9daa81b8a7d3961e2a9a8339eb927",
+    "picker_light" to "62ace29b467263dca1ad4b9a777774516f4961ca2f2ec63d2820b8c97f394754",
 )

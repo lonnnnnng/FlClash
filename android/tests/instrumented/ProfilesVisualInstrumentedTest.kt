@@ -32,7 +32,7 @@ class ProfilesVisualInstrumentedTest {
         composeRule.onAllNodesWithTag("profiles_sync_all").assertCountEquals(0)
         composeRule.activityRule.scenario.onActivity { it.showCustomSelectedScenario() }
         actual["custom_selected"] = captureHash("custom_selected")
-        composeRule.onAllNodesWithTag("profiles_sync_all").assertCountEquals(0)
+        composeRule.onNodeWithTag("profiles_sync_all").assertIsDisplayed()
         composeRule.activityRule.scenario.onActivity { it.showRemoteUsageScenario() }
         actual["remote_usage"] = captureHash("remote_usage")
         composeRule.onNodeWithTag("profiles_sync_all").assertIsDisplayed()
@@ -40,9 +40,9 @@ class ProfilesVisualInstrumentedTest {
         composeRule.onNodeWithText("已用 3.0GB / 10.0GB").assertIsDisplayed()
 
         val expected = mapOf(
-            "empty" to "f8730d9a6659e608316e654c8aba803270401979221127fee65204726620c019",
-            "custom_selected" to "9b8a39c5aff0c0559a2779b9dc4558244057e570adeddf87400c7822357c5f92",
-            "remote_usage" to "5ec26e77b54eeb846ba228214be37416d05a374cb2cc40d21110b9f958053bed",
+            "empty" to "4f604228b49dd0a010d2150846f706f894e5aa2a86e0f5a2bb5a3415581d065f",
+            "custom_selected" to "f02b6d7d18a8621b38f68b20a8a96673029da918d8a747071ec9eaf16ff2fc2e",
+            "remote_usage" to "518f519d71d6d6f163921aaac44af855dfd41cf138f67bb9d79635da55adf56a",
         )
         val mismatches = actual.mapNotNull { (state, hash) ->
             val baseline = expected.getValue(state)

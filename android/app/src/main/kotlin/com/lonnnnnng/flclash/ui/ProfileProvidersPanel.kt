@@ -26,7 +26,7 @@ internal fun ProfileProvidersPanel(state: ProfileProvidersUiState, onRetry: () -
         Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Providers", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
             IconButton(onUpdateAll, enabled = !busy && state.providers.orEmpty().any { it.canUpdate || it.name in state.managedNames },
-                modifier = Modifier.testTag("profile_providers_update_all")) { Icon(Icons.Outlined.Sync, "全部更新") }
+                modifier = Modifier.testTag("profile_providers_update_all")) { AppGlyphIcon(AppGlyphs.sync, "全部更新") }
         }
         when {
             state.isLoading -> LinearProgressIndicator(Modifier.fillMaxWidth().testTag("profile_providers_loading"))
@@ -61,11 +61,11 @@ internal fun ProfileProvidersPanel(state: ProfileProvidersUiState, onRetry: () -
                     // 作者 long：应用登记的远程规则在核心表现为文件，仍经资源仓库同步；普通文件不显示在线更新。
                     IconButton(onClick = { onUpdate(provider.name) }, enabled = !busy,
                         modifier = Modifier.testTag("profile_provider_update_" + index)) {
-                        Icon(Icons.Outlined.Sync, contentDescription = "更新 " + provider.name)
+                        AppGlyphIcon(AppGlyphs.sync, contentDescription = "更新 " + provider.name)
                     }
                 }
                 IconButton({ menuAnchor.open(); menu = provider.name }, enabled = !busy, modifier = Modifier.testTag("profile_provider_menu_$index")) {
-                    Icon(Icons.Outlined.MoreVert, "${provider.name} 更多操作")
+                    AppGlyphIcon(AppGlyphs.more, "${provider.name} 更多操作")
                 }
             }
             AppDropdownMenu(menu == provider.name && !busy, { menu = null }, anchor = menuAnchor.point,

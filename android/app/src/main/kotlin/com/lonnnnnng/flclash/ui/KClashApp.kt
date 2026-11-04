@@ -203,17 +203,6 @@ internal enum class ProfilesToolbarAction {
     BACKUP_RESTORE,
 }
 
-private val ProfileIllustrationShape = GenericShape { size, _ ->
-    val radius = minOf(size.width, size.height) * 0.48f
-    repeat(7) { index ->
-        val angle = -PI / 2 + index * 2 * PI / 7
-        val x = size.width / 2 + cos(angle).toFloat() * radius
-        val y = size.height / 2 + sin(angle).toFloat() * radius
-        if (index == 0) moveTo(x, y) else lineTo(x, y)
-    }
-    close()
-}
-
 @Composable
 internal fun ProfilesTopBarActions(
     profiles: List<Profile>,
@@ -227,18 +216,18 @@ internal fun ProfilesTopBarActions(
     if (profiles.isNotEmpty()) {
         Surface(shape = CircleShape, color = dashboardCardColor()) {
             Row {
-                if (profiles.any { it.type == ProfileType.URL }) {
+                run {
                     IconButton(
                         onClick = { onAction(ProfilesToolbarAction.SYNC_ALL) },
                         enabled = canMutate,
                         modifier = Modifier.size(44.dp).testTag("profiles_sync_all"),
-                    ) { Icon(Icons.Outlined.Sync, contentDescription = "同步全部配置") }
+                    ) { AppGlyphIcon(AppGlyphs.sync, contentDescription = "同步全部配置") }
                 }
                 IconButton(
                     onClick = { onAction(ProfilesToolbarAction.SORT) },
                     enabled = canMutate,
                     modifier = Modifier.size(44.dp).testTag("profiles_sort"),
-                ) { Icon(Icons.AutoMirrored.Outlined.Sort, contentDescription = "排序") }
+                ) { AppGlyphIcon(AppGlyphs.sort, contentDescription = "排序") }
             }
         }
         Spacer(Modifier.size(8.dp))
@@ -247,7 +236,7 @@ internal fun ProfilesTopBarActions(
             enabled = !busy,
             modifier = Modifier.size(44.dp).background(dashboardCardColor(), CircleShape).testTag("profiles_add_fab")
                 .onGloballyPositioned { onAddAnchorChanged(it.boundsInWindow().roundToIntRect()) },
-        ) { Icon(Icons.Outlined.Add, contentDescription = "添加配置") }
+        ) { AppGlyphIcon(AppGlyphs.addCircle, contentDescription = "添加配置") }
         Spacer(Modifier.size(12.dp))
     }
 }
@@ -1765,37 +1754,7 @@ internal fun ProfilesPanel(
                     modifier = Modifier.widthIn(max = 320.dp).padding(horizontal = 32.dp, vertical = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Box(Modifier.size(160.dp), contentAlignment = Alignment.Center) {
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            shape = ProfileIllustrationShape,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                        ) {}
-                        Surface(
-                            modifier = Modifier.size(96.dp),
-                            shape = RoundedCornerShape(28.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerLow,
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Description,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(56.dp),
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                            }
-                        }
-                        Surface(
-                            modifier = Modifier.align(Alignment.TopEnd).padding(top = 26.dp, end = 18.dp).size(14.dp),
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            color = MaterialTheme.colorScheme.tertiary,
-                        ) {}
-                        Surface(
-                            modifier = Modifier.align(Alignment.BottomStart).padding(start = 20.dp, bottom = 30.dp).size(9.dp),
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            color = MaterialTheme.colorScheme.primary,
-                        ) {}
-                    }
+                    ProfileEmptyIllustration()
                     Spacer(Modifier.height(16.dp))
                     Text("暂无配置", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
@@ -1808,7 +1767,7 @@ internal fun ProfilesPanel(
                     Spacer(Modifier.height(24.dp))
                     androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog,
                         modifier = Modifier.onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
-                        Icon(Icons.Outlined.Add, contentDescription = null)
+                        AppGlyphIcon(AppGlyphs.addCircle, contentDescription = null)
                         Spacer(Modifier.size(8.dp))
                         Text("添加配置")
                     }
@@ -4258,7 +4217,7 @@ internal fun ProfileCard(
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Outlined.Check, contentDescription = "已选中", modifier = Modifier.size(18.dp))
+                            AppGlyphIcon(AppGlyphs.check, contentDescription = "已选中", modifier = Modifier.size(18.dp), filled = true)
                         }
                     }
                 }
@@ -4271,30 +4230,32 @@ internal fun ProfileCard(
                         if (showMore) {
                             AppDropdownMenuItem(
                                 text = { Text("返回") },
-                                leadingIcon = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null) },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.arrowBack, contentDescription = null) },
                                 onClick = { showMore = false },
                             )
                             AppDropdownMenuItem(
                                 text = { Text("运行配置") },
-                                leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.eye, contentDescription = null) },
                                 onClick = { showActions = false; onPreview() },
                                 modifier = Modifier.testTag("profile_preview_${profile.id}"),
                             )
                             if (profile.type == ProfileType.URL) {
                                 AppDropdownMenuItem(
                                     text = { Text("复制链接") },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.copy, null) },
                                     onClick = { showActions = false; onCopyLink() },
                                     modifier = Modifier.testTag("profile_copy_link_${profile.id}"),
                                 )
                                 AppDropdownMenuItem(
                                     text = { Text("二维码") },
-                                    leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, contentDescription = null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode, contentDescription = null) },
                                     onClick = { showActions = false; onShowQr() },
                                     modifier = Modifier.testTag("profile_show_qr_${profile.id}"),
                                 )
                             }
                             AppDropdownMenuItem(
                                 text = { Text(if (exportBusy) "正在导出…" else "导出") },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.export, null) },
                                 onClick = { showActions = false; onExport() },
                                 enabled = !exportBusy,
                                 modifier = Modifier.testTag("profile_export_${profile.id}"),
@@ -4302,39 +4263,39 @@ internal fun ProfileCard(
                         } else {
                             AppDropdownMenuItem(
                                 text = { Text("编辑") },
-                                leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.edit, contentDescription = null) },
                                 onClick = { showActions = false; onEdit() }, enabled = canEdit,
                                 modifier = Modifier.testTag("profile_edit_${profile.id}"),
                             )
                             if (profile.type == ProfileType.CUSTOM) {
                                 AppDropdownMenuItem(
                                     text = { Text("重命名") },
-                                    leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.textShort, contentDescription = null) },
                                     onClick = { showActions = false; onRename() },
                                     modifier = Modifier.testTag("profile_rename_${profile.id}"),
                                     enabled = canMutate,
                                 )
                                 AppDropdownMenuItem(
                                     text = { Text("运行配置") },
-                                    leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.eye, contentDescription = null) },
                                     onClick = { showActions = false; onPreview() },
                                     modifier = Modifier.testTag("profile_preview_${profile.id}"),
                                 )
                             } else {
                                 AppDropdownMenuItem(text = { Text("扩展") },
-                                    leadingIcon = { Icon(Icons.Outlined.Extension, null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.puzzle, null) },
                                     onClick = { showActions = false; onExtend() },
                                     modifier = Modifier.testTag("profile_extend_${profile.id}"))
                             }
                             if (profile.type == ProfileType.URL) {
-                                AppDropdownMenuItem(text = { Text("同步") }, leadingIcon = { Icon(Icons.Outlined.Sync, null) },
+                                AppDropdownMenuItem(text = { Text("同步") }, leadingIcon = { AppGlyphIcon(AppGlyphs.sync, null) },
                                     onClick = { showActions = false; onUpdate() }, enabled = canMutate)
                             }
                             if (profile.type != ProfileType.CUSTOM) {
                                 AppDropdownMenuItem(
                                     text = { Text("更多") },
                                     trailingIcon = { AppMenuSubmenuArrow() },
-                                    leadingIcon = { Icon(Icons.Outlined.MoreVert, contentDescription = null) },
+                                    leadingIcon = { AppGlyphIcon(AppGlyphs.moreCircle, contentDescription = null) },
                                     onClick = { showMore = true },
                                     modifier = Modifier.testTag("profile_more_${profile.id}"),
                                 )
@@ -4342,7 +4303,7 @@ internal fun ProfileCard(
                             HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
                             AppDropdownMenuItem(
                                 text = { Text("删除") }, danger = true,
-                                leadingIcon = { Icon(Icons.Outlined.Delete, null) },
+                                leadingIcon = { AppGlyphIcon(AppGlyphs.delete, null) },
                                 onClick = { showActions = false; onDelete() }, enabled = canDelete,
                             )
                         }

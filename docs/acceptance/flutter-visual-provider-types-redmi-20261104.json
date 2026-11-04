@@ -1,0 +1,1437 @@
+{
+  "date": "2026-11-04",
+  "scope": "Flutter默认视觉token、图标/空态/菜单形变与HTTP/File Proxy和六种HTTP Rule资源实网",
+  "status": "PARTIAL",
+  "parentCommit": "57a878298c37dcd85a015cd0b75d942235cad5eb",
+  "implementation": [
+    "Flutter默认蓝色色板及字体语义槽；31个上游glyph用于Dock、配置/代理工具栏和菜单",
+    "配置空态使用真实cookie7/cookie4曲线和spin入场；MIT许可随APK保留",
+    "锚点中心生长、分离等比内容缩放与高度、延迟角部弹簧和形变阴影",
+    "Provider列表3秒总预算、最多3次同会话路由重读；配置/正文/修订号/核心epoch变化仍拒绝"
+  ],
+  "build": {
+    "unitTests": {
+      "app": {
+        "tests": 440,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 191,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 700,
+    "lint": {
+      "debug": {
+        "Warning": 62,
+        "Hint": 10
+      },
+      "release": {
+        "Warning": 62,
+        "Hint": 9
+      }
+    },
+    "production": "build8; finalbuild11 removed unneeded Debug-only diagnostic entrypoint; final6/rule7 same installed App",
+    "testApk": "final6 uses finalbuild11; rule7 and after guard use testbuild13; final installed hash only belongs to latter",
+    "release": "unsigned arm64 Release/R8, built after production service change; not installed",
+    "go": "not rerun; no Go source changes",
+    "logs": {
+      "/tmp/kclash-visual-providers-20261104-build6.log": {
+        "sha256": "e595f6e4e03504d27e0467775328424de08e0a8762472ece30f20a0de8ffb327",
+        "bytes": 14582
+      },
+      "/tmp/kclash-visual-providers-20261104-build8.log": {
+        "sha256": "efc11e02e21961cfbfbc29e39290e5b5d2dfe77feabba606afaea2c213f519a1",
+        "bytes": 17286
+      },
+      "/tmp/kclash-visual-providers-20261104-release.log": {
+        "sha256": "d18b91a25f0159c511d2ec89a7e85077d00d93085d38356472f308b4585bf153",
+        "bytes": 10656
+      },
+      "/tmp/kclash-visual-providers-20261104-finalbuild11.log": {
+        "sha256": "795a57cde2e6bdb45c89572500970e9b31caf5e98e48c7492757511d29237325",
+        "bytes": 12700
+      },
+      "/tmp/kclash-visual-providers-20261104-testbuild13.log": {
+        "sha256": "f548e9bc431d0cc4ed4aaae10694886646f241d60f3fdc7f483a07b746a081a9",
+        "bytes": 8296
+      },
+      "/tmp/kclash-visual-providers-20261104-route-red.log": {
+        "sha256": "27286c65ed0559dd48aebf6cfbf1d1b4af0512ca3e697649cf4319bcd8602d81",
+        "bytes": 5136
+      },
+      "/tmp/kclash-visual-providers-20261104-oracle.log": {
+        "sha256": "ca5c51d23a991a15be63f62cab164b42ddd1af0f406e59a8e5d486369a7d26ea",
+        "bytes": 1386
+      },
+      "/tmp/kclash-visual-providers-20261104-final-lint.log": {
+        "sha256": "94e9ce7640854abb9c6a9ac6ecc57afc66a11621038ef569b2ed29fa879bec5d",
+        "bytes": 14216
+      }
+    }
+  },
+  "finalDevice": {
+    "device": {
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "sdk": "36",
+      "abi": "arm64-v8a",
+      "size": "Physical size: 1080x2340"
+    },
+    "settings": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "artifacts": {
+      "com.lonnnnnng.flclash": {
+        "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "aa2e46f4d2aae118511a7784d48f57976af34a9ada3c55c1f816baac4fbab3ff",
+        "installedSha256": "aa2e46f4d2aae118511a7784d48f57976af34a9ada3c55c1f816baac4fbab3ff",
+        "bytes": 90682722,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "6e104469e157f5b8319cd0a34b84b818aef4bfe647f3516172086fc4d55b1769",
+        "installedSha256": "6e104469e157f5b8319cd0a34b84b818aef4bfe647f3516172086fc4d55b1769",
+        "bytes": 3974026,
+        "nativeAbis": []
+      }
+    },
+    "release": {
+      "sha256": "04e0e4ab133bb04066b06db7e788c39d1c6d24c118cab2d55c079bc6103648f1",
+      "bytes": 48075420,
+      "signed": false,
+      "installed": false
+    },
+    "servicesPresent": false,
+    "tun0Present": false,
+    "sourceYaml": {
+      "localSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+    },
+    "flutterReferenceInstalled": true
+  },
+  "finalUiBatch": {
+    "label": "final6",
+    "passed": 17,
+    "total": 18,
+    "testApkSha256": "327b1aff76d7c18cfe3a49dabafdcce07a10babcfd5377f411a3dd69cf09efb3",
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+        "passed": true,
+        "seconds": 11.56,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-0.log",
+        "sha256": "7008fd8d9bdb853abca947ad65ddfaa8afdc7937a43604073a6bca070675196c",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_menu_profile_root_false.png",
+            "sha256": "c2a0bfa81f74c1609991cc999e01a429491e3781dbfa93fa59a01f7e9a600978"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_menu_profile_more_false.png",
+            "sha256": "0a50cef3cf2e9e4ec11c24be491645b0ac815fb43ad1fb7713b6625ec159ec26"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_menu_profile_root_true.png",
+            "sha256": "9fb89b0303553283b58ab25b53a36f1b476b89605a56b36636e9d003e06f6cbe"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_menu_profile_more_true.png",
+            "sha256": "68ef37afb76983b10ba2b476752adbbc9206962ee5a4d780afd0e41c4a2db787"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+        "passed": true,
+        "seconds": 5.91,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-1.log",
+        "sha256": "584735dc9f0d7d7be0e29f4157802847fe2de54fda898f95347d1b381e2740fd",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_menu_keyboard_context.png",
+            "sha256": "35c54c32f891d73666f9f620a9f84241edcf055916c3c463df74630e5e91ea0c"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+        "passed": true,
+        "seconds": 5.89,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-2.log",
+        "sha256": "680c418600a23d45bb91ee58fa04ab28455223e0438772a44a93285d2f6d1c67",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+        "passed": true,
+        "seconds": 6.06,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-3.log",
+        "sha256": "9d2a52f1d3fd1f0830f2647848cf2380bf43db2e6976dd8f5dfd63ae4f58fb02",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_menu_long_menu.png",
+            "sha256": "622e33becfcec5128205b97bf9e883ea542c94d70d3880d1afc5c9a21c7038ba"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+        "passed": true,
+        "seconds": 7.85,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-4.log",
+        "sha256": "c956dcdbbfde79914a3425b5373ff2cec6b47babb63f03dbd2aa730e7e885c1b",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_menu_proxy_sort.png",
+            "sha256": "4c8d0cc0fe708d98655ee67dbc91e29ea264ca0cb857bdcd046fc341ad9dcf87"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+        "passed": true,
+        "seconds": 9.15,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-5.log",
+        "sha256": "135b3d72eda9eea88d5d6dc2acb4d96ceae41f5a449e7c6483b3eaef864857a0",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-profiles_empty_light.png",
+            "sha256": "86b07b153859af40cf9929074cd61b4a78cdf2d044430abaac04c572913a7ad6"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-profiles_custom_selected_light.png",
+            "sha256": "c8dd9e24ea47bc3a28581a3349213efe04fa7380a6add89aaa503506963d136e"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-profiles_remote_usage_light.png",
+            "sha256": "1fc10cdd8b6653f719a36598b06fc38438a628d493c20e6415df309e708c09bf"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-profiles_source_menu_light.png",
+            "sha256": "c7f6dc69b1fe3556198711cc368f546108c9523ea9cb201af1c5daf2f65fb625"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-profiles_source_menu_dark.png",
+            "sha256": "6d762f571cb62a409108b0a653fad544a91647e7747bd9a339fdb01c043be884"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#glyphAtlasUsesFlutterPathsAndTransparentFilledDetails",
+        "passed": true,
+        "seconds": 4.09,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-6.log",
+        "sha256": "e160c1d078288d4687418ad7db5c278030ee13abeed9a22e34de94e6807382f3",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-glyphs_false.png",
+            "sha256": "45248b3d7779fde49860f2740e1ab4e61af3126f88201b02bb55156c7ed9b9cd"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-glyphs_true.png",
+            "sha256": "fa7307377726aef4052bcd2483da596ac026509c1c5874a83243ab0c3c975b9b"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#anchoredMenuPaintsDistinctIntermediateFramesAndCanCloseDuringOpening",
+        "passed": true,
+        "seconds": 6.46,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-7.log",
+        "sha256": "bded05ec725b31ba4571fc1c6f4a9e46abd6c4ec805579488484cc6e3f28ae9d",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-menu_morph_0.png",
+            "sha256": "4226b3c595f4199b7e211d73db6905ca08c99d68ec668975bef21eeb92d7d927"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-menu_morph_1.png",
+            "sha256": "e2b80efdb52ec76f5148eadb85dd33033fdd764d20eb6853850cd92ecc026ecc"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-menu_morph_2.png",
+            "sha256": "a93ec74f45f3b8cf76912676c296c2a36ec3610542669c4c00ec133ba38641a3"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-menu_morph_3.png",
+            "sha256": "ca4673be092571ba7b19fc7c29096e6dc9f0f4ec7df8fb2d6ad569d6c0a4ef66"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+        "passed": true,
+        "seconds": 6.86,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-8.log",
+        "sha256": "5f68440d15155494bd6dc1486168e554ddb14f0b2cf9ac086f5e9249524e4e5b",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-profiles_empty.png",
+            "sha256": "4f604228b49dd0a010d2150846f706f894e5aa2a86e0f5a2bb5a3415581d065f"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-profiles_custom_selected.png",
+            "sha256": "f02b6d7d18a8621b38f68b20a8a96673029da918d8a747071ec9eaf16ff2fc2e"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-profiles_remote_usage.png",
+            "sha256": "518f519d71d6d6f163921aaac44af855dfd41cf138f67bb9d79635da55adf56a"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+        "passed": true,
+        "seconds": 6.32,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-9.log",
+        "sha256": "531b07727aa3c19393240165ed42203303354a6e607c830cfc3a3bb8e88c3692",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_dark.png",
+            "sha256": "083fcc865ac4ef5e4b20e1217107b50600e4819f024b97c89326c39fac7f9c0c"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_light.png",
+            "sha256": "930cd68a2ee1974ac42ec246a165ef0b2a7032147df03693f7248f02e717d122"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "passed": true,
+        "seconds": 6.61,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-10.log",
+        "sha256": "dae21cc763440e4d971ce6370fecc3a8fb50b0fa25a2e1c19922731a8aecabb6",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_default.png",
+            "sha256": "9e15f92b825a7380cd7279e4b80a14825a845fc13351a3b12f1071db8d3d2280"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_system_ready.png",
+            "sha256": "d44421dd7257b6520abc6d5c377180718040d38ece1bb20990c899783d89cd3f"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+        "passed": true,
+        "seconds": 6.37,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-11.log",
+        "sha256": "d8b2b812c328d9188cfdcc3d60050ca736d29ebafd4913b0af36157ff44824e0",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_running.png",
+            "sha256": "f2b020de1527a30dbc896f66f9bf70db2169d3e909e9010d970881f2f5b2d20e"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+        "passed": true,
+        "seconds": 7.34,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-12.log",
+        "sha256": "e34138d2f8513d17e379d47a92b341fbe35758d3c5f29b9d46e24a25fc87ee1e",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_light_default.png",
+            "sha256": "049197a800eb107905ca031932e7d000ff447a08f7b3a5c5e7844cceee91e5df"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_light_running.png",
+            "sha256": "d0ab3b47109a0cecf6f4f55d4607734bfdba3002ebd75d1d79f6e1f952c14434"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#authorizedHttpAndFileProxyProvidersKeepSourceAndRunningSession",
+        "passed": true,
+        "seconds": 50.86,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-13.log",
+        "sha256": "56acc5a471c8d33b8691277048f4543d055f8d0183d54f6e34e6909374cf7377",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#publicHttpRuleYamlTextAndClassicalUpdateFromUiAndKeepRunningSession",
+        "passed": false,
+        "seconds": 33.02,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-14.log",
+        "sha256": "5855f3852e976af0ac46358f7b4e3dbd37073432feceec156ac522426385ec19",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent",
+        "passed": true,
+        "seconds": 25.67,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-15.log",
+        "sha256": "81dc3d9aeb2c5d37112ce322e4596b21924a595edc60b9775898f2739ce213f2",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_tab_compact_light.png",
+            "sha256": "9dc76054bbf25933037e54bc3bd78d04342b7b84e63c6688fdaab628c7e5418e"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_tab_compact_dark.png",
+            "sha256": "4b6c6231071c80161d645f54623bca3cbcd831ae6bfa7ace9c05a1e4bf0b86db"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_tab_standard_light.png",
+            "sha256": "1f9c9821d9e72d8b6ffbfd74a943f5488cebc6e1c3ef2138e4715b0316f00d9d"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_tab_standard_dark.png",
+            "sha256": "8ac4cb4f15e9aa103e3c3f7d17def2f9e314ea2c14e7c03ca4a5043d9a032633"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_tab_loose_light.png",
+            "sha256": "ddb7e43c00e4af338da7220d517b3f9d54468ef14ebd7131821e392b54d91f77"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_tab_loose_dark.png",
+            "sha256": "20e4170f652b159304a8332af6bee7723e663704abd743188345aa5ea81e4667"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_list_compact_light.png",
+            "sha256": "a3947f9b00fa127d31ac45d1c4049c7d0a5a55373f6054da67b68740663b2cb3"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_list_compact_dark.png",
+            "sha256": "7eda5b9169118b55ae70d8a0a873c226633312b69502942cbd100528e9edaad5"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_list_standard_light.png",
+            "sha256": "5023431d7c85ea434d92b06540e31d7e9fb2d2d8686a36184d1a22630fafa9c1"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_list_standard_dark.png",
+            "sha256": "a12f617cc7588bce08c4d7dc8a291059b8061f735959b76e2979eb84764819ed"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_list_loose_light.png",
+            "sha256": "56fb3c31b53c5ac233c57508f3a72000aa544feeb7c6bb874826fe1eec87aefd"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_list_loose_dark.png",
+            "sha256": "ac89e6bd9192a58b2490bbdfdb365a7df81a7ede7ec6f1e06e3e912303a80663"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-proxy_page_list_collapsed_dark.png",
+            "sha256": "6c8974f9ad23efe71264351ba3b527155815076f2a2c6b7a383d603aaf85d2f6"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+        "passed": true,
+        "seconds": 11.82,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-16.log",
+        "sha256": "6972c972499db2cc956953873161682093557bcd45c61a8e389e9a0c87490414",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_proxy_summary_dark.png",
+            "sha256": "d63207b70f8623523c463d364c729647322bfba90734d69ac5d42134d45689dc"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_proxy_picker_dark.png",
+            "sha256": "6a9a8d9214240887e02fffc9032d6956e2b9daa81b8a7d3961e2a9a8339eb927"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_proxy_summary_light.png",
+            "sha256": "ad089617dba26698ce5433619e32bc1dd827124224382cc143dacfad3b1752f9"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-dashboard_proxy_picker_light.png",
+            "sha256": "62ace29b467263dca1ad4b9a777774516f4961ca2f2ec63d2820b8c97f394754"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest#continuousPagesKeepDockAndRestoreScrollAndDraftInBothThemes",
+        "passed": true,
+        "seconds": 16.8,
+        "log": "/tmp/kclash-visual-providers-20261104-final6-17.log",
+        "sha256": "cba96eb10ad2fef36f6b4c4d31af50d806a6dac045480dd8e82c2eb5a1a87ca4",
+        "images": [
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_light_frame_0.png",
+            "sha256": "c893ffb04ddb0679be377a3136b8616d5ce23aa7a7a0523e5599cb71eed47f9a"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_light_frame_1.png",
+            "sha256": "9b2413f8bc5b31f7c0e89e5fc1c2d7c86363fc5a9debb4dd3e7095135253f718"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_light_frame_2.png",
+            "sha256": "a9271d02e758cf6ee0b38e5c39eb7f5b2e73b71fbec168d73eccf61cc4814045"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_light_frame_3.png",
+            "sha256": "186adaf1e52c51915c2f37c19db41881c8b9eb5a063dcc126925e0274690b9fd"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_light_frame_4.png",
+            "sha256": "6c376a435126a355f6920accaf3f80a684b9d074d99d2a57daa98ec67c058759"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_light_settled.png",
+            "sha256": "0c4e420445f2d718104a694acdbbb904eb3801440828023d48466fce14302a67"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_dark_frame_0.png",
+            "sha256": "2b7210f6deb3230582a7b1d7104554937d3ba13b974f130ca1af15543683a15b"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_dark_frame_1.png",
+            "sha256": "a49cdfdf20925fdcb4896f0d31e1873357e3debb17e25d64b3a72fffa1c6ac84"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_dark_frame_2.png",
+            "sha256": "75a9bd4296b0f5ebacc7ca31f73f41bb3b18be1c5cf95225fdc0d0f1bc70679c"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_dark_frame_3.png",
+            "sha256": "655abe39be4aff3dc5e41b50492df04922cee69fe338e03db51d1b9cfe02bcbe"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_dark_frame_4.png",
+            "sha256": "ad6a4bfecfd0d7c296aee771fc583849f2cf7999b8db3653265547791e33e4dd"
+          },
+          {
+            "path": "/tmp/kclash-visual-providers-20261104-final6-main_page_dark_settled.png",
+            "sha256": "841fe6f878ea1a822b648b8844a5531ebb36e39c1c8509fb18a0f537e419078b"
+          }
+        ]
+      }
+    ]
+  },
+  "finalRuleSupplement": {
+    "label": "rule7",
+    "passed": 1,
+    "total": 1,
+    "testApkSha256": "6e104469e157f5b8319cd0a34b84b818aef4bfe647f3516172086fc4d55b1769",
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#publicHttpRuleYamlTextAndClassicalUpdateFromUiAndKeepRunningSession",
+        "passed": true,
+        "seconds": 78.23,
+        "log": "/tmp/kclash-visual-providers-20261104-rule7-0.log",
+        "sha256": "cb5c03c6db4a2905ec014d47792d66174baa65c735e90cb54c11895a328a95f8",
+        "images": []
+      }
+    ]
+  },
+  "network": {
+    "authorization": "Existing sole authorized subscription remains private. User additionally authorized public Rule sources and confirmed gh-proxy prefix for phone GitHub access.",
+    "catalog": "docs/acceptance/public-rule-sources-20261104.json",
+    "transport": "Explicit DIRECT; public Rule URLs use gh-proxy.com plus raw GitHub URL",
+    "phoneProbe": {
+      "rawGithub": "curl exit35: Recv failure: Connection reset by peer; HTTP000/0 bytes",
+      "mirror": "HTTP200/3543 bytes/2.244091s; domain YAML"
+    },
+    "proxy": {
+      "updates": [
+        "phase=stopped-ui-download;type=Proxy;vehicle=HTTP;count=7;before=1793777582832;after=1793777591354;file-count=7;file-update-rejected=true",
+        "phase=running-ui-download;type=Proxy;vehicle=HTTP;count=7;before=1793777591354;after=1793777599473;file-count=7;file-update-rejected=true"
+      ],
+      "initialAndSubsequentCounts": [
+        "phase=load-real-providers;http=0;file=7;http-cache=false;file-cache=true",
+        "phase=stopped-ui-download;http=7;file=7;http-cache=true;file-cache=true",
+        "phase=stopped-ui-download;http=7;file=7;http-cache=true;file-cache=true",
+        "phase=running-ui-download;http=7;file=7;http-cache=true;file-cache=true",
+        "phase=running-ui-download;http=7;file=7;http-cache=true;file-cache=true",
+        "phase=recreate-and-poll;http=7;file=7;http-cache=true;file-cache=true"
+      ],
+      "summary": [
+        "http=true;file=true;recreated=true;polling-ms=16000;session=true;source=true"
+      ],
+      "preservation": [
+        "profiles=1;files=true;scripts=true;selection=true;vpn=true;stopped=true"
+      ]
+    },
+    "rules": {
+      "updates": [
+        "running=false;behavior=domain;format=yaml;count=132;before=1793777840175;after=1793777847992;readback=true",
+        "running=false;behavior=domain;format=text;count=132;before=1793777841734;after=1793777852109;readback=true",
+        "running=false;behavior=ipcidr;format=yaml;count=28;before=1793777841778;after=1793777856019;readback=true",
+        "running=false;behavior=ipcidr;format=text;count=28;before=1793777840349;after=1793777858424;readback=true",
+        "running=false;behavior=classical;format=yaml;count=46;before=1793777840176;after=1793777860735;readback=true",
+        "running=false;behavior=classical;format=text;count=46;before=1793777841397;after=1793777863089;readback=true",
+        "running=true;behavior=domain;format=yaml;count=132;before=1793777847992;after=1793777868794;readback=true",
+        "running=true;behavior=domain;format=text;count=132;before=1793777852109;after=1793777871713;readback=true",
+        "running=true;behavior=ipcidr;format=yaml;count=28;before=1793777856019;after=1793777874942;readback=true",
+        "running=true;behavior=ipcidr;format=text;count=28;before=1793777858424;after=1793777880618;readback=true",
+        "running=true;behavior=classical;format=yaml;count=46;before=1793777860735;after=1793777882647;readback=true",
+        "running=true;behavior=classical;format=text;count=46;before=1793777863089;after=1793777884984;readback=true"
+      ],
+      "summary": [
+        "providers=6;updates=12;recreated=true;polling-ms=16000;session=true;source=true"
+      ],
+      "preservation": [
+        "profiles=1;files=true;scripts=true;selection=true;vpn=true;stopped=true"
+      ],
+      "firstListRetriesUsed": false,
+      "counts": {
+        "domain": 132,
+        "ipcidr": 28,
+        "classical": 46
+      },
+      "bodySha256MatchedCatalog": true,
+      "sourceFileOriginalBytes": true
+    },
+    "meaning": "Real network downloads, Mihomo parser/counts, update timestamps and body readback in STOPPED and pure-proxy RUNNING. This does not validate packet matching for every rule/proxy protocol or all sites. Original 90 MRS providers were not converted."
+  },
+  "preservation": {
+    "before": [
+      {
+        "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+        "passed": true,
+        "seconds": 10.26,
+        "log": "/tmp/kclash-visual-providers-20261104-before-0.log",
+        "sha256": "5ae832e6d6eb3bf88c7923d7a64673b82be67aea0d0eae37953530ff1e7814d8",
+        "images": []
+      }
+    ],
+    "after": [
+      {
+        "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersHomeAndProfileEntry",
+        "passed": true,
+        "seconds": 10.23,
+        "log": "/tmp/kclash-visual-providers-20261104-after-0.log",
+        "sha256": "8b750e141d7a3172522f9c5f9eae861978347bf0a7ae0c703e62fd4b81de8c3b",
+        "images": []
+      }
+    ],
+    "formalProfileCount": 1,
+    "networkFixtures": "Formal Room rows/selection/body SHA-size-mtime/scripts/VPN retained by finally checks; only own temporary IDs/caches removed.",
+    "flutterReference": "com.follow.clash remained installed; no install/uninstall/clear-data/config edit performed",
+    "beforeStatus": [
+      "phase=before count=1 missing=0 expected=1"
+    ],
+    "afterStatus": [
+      "phase=after count=1 missing=0 expected=1"
+    ],
+    "temporaryInputCleanup": "Inspected exact two device input paths then removed only /data/local/tmp/kclash-proxy-provider-authorized.json and /data/local/tmp/kclash-rule-providers-authorized.json after acceptance."
+  },
+  "visualReference": {
+    "upstreamSha": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+    "exporter": "tool/export_flutter_visual_reference.py",
+    "command": "python3 tool/export_flutter_visual_reference.py --output /tmp/kclash-flutter-visual-oracle-repro-20261104 --flutter /Users/long/Documents/flutter/bin/flutter",
+    "exportTests": 3,
+    "artifacts": [
+      {
+        "file": "colors.json",
+        "sha256": "6220d38f2e54925e3d698812f2f0d88df7e942f8acada4f643565267c0d4f80f",
+        "bytes": 2596
+      },
+      {
+        "file": "glyphs-false.png",
+        "sha256": "3edbc42a999389409cc73f1cca09b729d3f96b309675adabf12db2f06305c904",
+        "bytes": 34009
+      },
+      {
+        "file": "glyphs-true.png",
+        "sha256": "ea8327e415a4aac61199010543fbbcbe23989a1bd902e9985246941181761255",
+        "bytes": 31334
+      },
+      {
+        "file": "provenance.json",
+        "sha256": "2e4d343e90f96e891dae276ca0cc9388c9bfbbbfc955c92c5128024101542e55",
+        "bytes": 216
+      },
+      {
+        "file": "shapes.json",
+        "sha256": "99e53211d025fee9c19db5ad516429a46ad9984d6cdd90bba2f82be2a16c9643",
+        "bytes": 4937
+      }
+    ],
+    "reproducesOriginalArtifactsExactly": true,
+    "independentGlyphCount": 23,
+    "totalMigratedGlyphCount": 31,
+    "outlineMeanAbsoluteChannelDifference": 0.19112847222222223,
+    "filledMeanAbsoluteChannelDifference": 0.17811439043209876,
+    "differenceScale": 255,
+    "strictNativePngsUpdated": 14,
+    "reviewedContactSheets": [
+      "/tmp/kclash-review2-contact-0.png",
+      "/tmp/kclash-review2-contact-1.png",
+      "/tmp/kclash-review2-contact-2.png"
+    ],
+    "meaning": "Native repeatability and scoped independent Flutter path/palette evidence; not full-page pixel equivalence."
+  },
+  "failedBatches": [
+    {
+      "batch": "review1",
+      "passed": 8,
+      "total": 14,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 10.9,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-0.log",
+          "sha256": "3a5cb370c0cca33577b280f6b0a07965923f919275169ebb0a9b3c43e6867997",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 5.52,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-1.log",
+          "sha256": "d0399f11f9eb141c439f60bcd90e8ec488cfd328751c4b1b4c8cc90399cd70da",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 5.68,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-2.log",
+          "sha256": "9834319443900f5267cd3f28e470e16c3cea1ffb5945617044b3dba9b27bd0b7",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 5.98,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-3.log",
+          "sha256": "5157c58df9abe75bd60acb725648341855bd99a72d1dcae08327b88dac069a54",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 7.9,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-4.log",
+          "sha256": "eed1f9bba2b54a75efcf041764719637bffbe4f9a313438861c4ce94e7885b1a",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "passed": true,
+          "seconds": 9.17,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-5.log",
+          "sha256": "57d2027b464120084ba7397d9db1e9b9eca1310892d785f65dff1050a205dc7c",
+          "imageCount": 5
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#glyphAtlasUsesFlutterPathsAndTransparentFilledDetails",
+          "passed": true,
+          "seconds": 4.1,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-6.log",
+          "sha256": "cfdf9b12d4adde80178c690ae17f4c5944ee2313f2bb387e3eb34a96406d3662",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#anchoredMenuPaintsDistinctIntermediateFramesAndCanCloseDuringOpening",
+          "passed": true,
+          "seconds": 6.51,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-7.log",
+          "sha256": "dc81a408c8f7c4f3295abfcdcb58ff570c541024d1605ab5c63f045a58279239",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 7.08,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-8.log",
+          "sha256": "e77cafff6d566717e57e1c2fe0561f009b9b45876d0478d63b343b45ee9047c3",
+          "imageCount": 3
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 6.24,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-9.log",
+          "sha256": "85c24fa1c1e38f8c90a1b7ee5c96099fb116416749e8bff45ce1563b292be509",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 6.62,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-10.log",
+          "sha256": "54ca4746f190bdb9083a4c87ce7e50018dfac83c15bfca410542d1829e3c7bd6",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 6.47,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-11.log",
+          "sha256": "775ea953a78f4e2548e0b2ac7f2fd052f5d0cdffe09db0c3f52617bcf546f5c2",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 7.47,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-12.log",
+          "sha256": "3845be22f8c6e2752132507a92074367adeb50bae959493ce6c4cd0617190f97",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#authorizedHttpAndFileProxyProvidersKeepSourceAndRunningSession",
+          "passed": false,
+          "seconds": 12.34,
+          "log": "/tmp/kclash-visual-providers-20261104-review1-13.log",
+          "sha256": "529381d6eadf12fcb4d70f0c3298583a2dfb416b30d85c305c13b400245d0fe1",
+          "imageCount": 0
+        }
+      ]
+    },
+    {
+      "batch": "review2",
+      "passed": 10,
+      "total": 18,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 11.43,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-0.log",
+          "sha256": "6d6a356a004a44bc575dcd9785c0733339a3ffd0950b88f0eebb55126dc63021",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 5.84,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-1.log",
+          "sha256": "f9ebae43ad332df0e5a2f9fb6f1353ed20ec47734aef3f2a176876a1eba6df2d",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 5.87,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-2.log",
+          "sha256": "189884de268c41ff977e06dcf82f9df2b48681a418ecebb3345da813e0757de3",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 6.09,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-3.log",
+          "sha256": "54d267a7a20ab33eae58bcbc67297c5e5ab2f8430754970249058bf1ceef86d2",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 7.82,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-4.log",
+          "sha256": "6dfe43c064b0845877ca9e77627b86491e8b65a8467e2dee78154622a854fd41",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "passed": true,
+          "seconds": 9.07,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-5.log",
+          "sha256": "659068f1b91a60c8b3479c56356287f2240c735a39d0ad7e174745b03fb1492f",
+          "imageCount": 5
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#glyphAtlasUsesFlutterPathsAndTransparentFilledDetails",
+          "passed": true,
+          "seconds": 4.06,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-6.log",
+          "sha256": "abe841b323a5ca06cd92aaaad1a3000c3ce949ffcab6483f581075d8f45d779c",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#anchoredMenuPaintsDistinctIntermediateFramesAndCanCloseDuringOpening",
+          "passed": true,
+          "seconds": 6.59,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-7.log",
+          "sha256": "746fa7fc61e0a1e33e7c77f440ed0ed0d3aac3f7dc8fa5207b5c24f21ef524e5",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 7.04,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-8.log",
+          "sha256": "cbae511286214dc4a77d34f649bbb5f1bd811fc65421a0bdd78f8d2c7b38a426",
+          "imageCount": 3
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 6.34,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-9.log",
+          "sha256": "1a56eb56378d55240dcd7151ad3333d706aaaf323b57b35d4766de4ce2e6ede4",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 6.73,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-10.log",
+          "sha256": "4e40ae8755c4d6e796f97da82bd6d7e3eb55f1b93c682e7e3da95e6229512ce5",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 6.47,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-11.log",
+          "sha256": "8d10aed8715106bf481983294171340790b6cdf4fe936c997e67286f837e9605",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "passed": false,
+          "seconds": 7.31,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-12.log",
+          "sha256": "25cd1ab6209a972785bbbc3063e10244d57b9f4ea1654cc7a7ca4c5e3780ca67",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#authorizedHttpAndFileProxyProvidersKeepSourceAndRunningSession",
+          "passed": false,
+          "seconds": 12.09,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-13.log",
+          "sha256": "2b7ed9c9aab2f6c8c189e2c8aab6bbf9c79ed088a398f91d2a9d46c6844ad92d",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#publicHttpRuleYamlTextAndClassicalUpdateFromUiAndKeepRunningSession",
+          "passed": false,
+          "seconds": 22.2,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-14.log",
+          "sha256": "f36d66f914271fea95bd5f7e38840bb37bbc8b95a35fa3d6efae4c5805867d85",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent",
+          "passed": true,
+          "seconds": 25.39,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-15.log",
+          "sha256": "aeee730ffddb93f5fa878e46487f3400ba68c7a62e804145c69373bb57a1579c",
+          "imageCount": 13
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "passed": false,
+          "seconds": 11.82,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-16.log",
+          "sha256": "a1fdbbcc0aa4314ae8d428ace7a1f6547cef9358bd04dc256b8cba002bf96a0b",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest#continuousPagesKeepDockAndRestoreScrollAndDraftInBothThemes",
+          "passed": true,
+          "seconds": 17.71,
+          "log": "/tmp/kclash-visual-providers-20261104-review2-17.log",
+          "sha256": "8e6ebcffa1694698dc8d87a615796fdf22469fab7b0cdd83ffddd91a476ddd7e",
+          "imageCount": 12
+        }
+      ]
+    },
+    {
+      "batch": "diagnostic3",
+      "passed": 0,
+      "total": 2,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#authorizedHttpAndFileProxyProvidersKeepSourceAndRunningSession",
+          "passed": false,
+          "seconds": 12.79,
+          "log": "/tmp/kclash-visual-providers-20261104-diagnostic3-0.log",
+          "sha256": "4ecf553e5f91479d7ac5779158e1acff92b80d6d5077de7e8f436d5b05d8d944",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#publicHttpRuleYamlTextAndClassicalUpdateFromUiAndKeepRunningSession",
+          "passed": false,
+          "seconds": 22.03,
+          "log": "/tmp/kclash-visual-providers-20261104-diagnostic3-1.log",
+          "sha256": "497401407aaa83f847fec6d5befc41ba329180f008bb5436ed19e7c4b8f32ac6",
+          "imageCount": 0
+        }
+      ]
+    },
+    {
+      "batch": "review4",
+      "passed": 16,
+      "total": 18,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 11.51,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-0.log",
+          "sha256": "d976aee5bf005a44205be333f48fa9774ae502d92071cce3380cc62bbe35d00e",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 5.72,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-1.log",
+          "sha256": "2c53fbebc6ae62785ae8c053c5b9cc209dc3ac7c8098d08a26ae9cd5216ca7b0",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 5.79,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-2.log",
+          "sha256": "b80c4f742ed45d0297950218e8531bad9a3458a6f02978e1ae19bc04be2349b9",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 6.22,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-3.log",
+          "sha256": "ca84e241041b2be3fbd32106ed3384ccfceab74cdaad4575a20f4ba3ce7dc272",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 8.0,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-4.log",
+          "sha256": "14c5784f20f775428257923382cca35b154a6a7637b8069c3c9d66f137eb77ed",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "passed": true,
+          "seconds": 9.0,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-5.log",
+          "sha256": "4487ddc62ef71daf0d71c4d4c092d11cf4336ecffcd04940851b2ef1eab48994",
+          "imageCount": 5
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#glyphAtlasUsesFlutterPathsAndTransparentFilledDetails",
+          "passed": true,
+          "seconds": 4.14,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-6.log",
+          "sha256": "485fb5a3d60ed7f13570a1e13b90b8d7fde86b8de7977d6616f85258dc9fa468",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#anchoredMenuPaintsDistinctIntermediateFramesAndCanCloseDuringOpening",
+          "passed": true,
+          "seconds": 6.4,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-7.log",
+          "sha256": "3a393bdb75a100f0e70d63d4305f9c80e758b4be84f846088605c7664331d3d7",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 7.04,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-8.log",
+          "sha256": "6db6e3ac0a97c06cdb4ecee19cc6e83562c09f1dcb1ced33cd40769550691ba1",
+          "imageCount": 3
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 6.19,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-9.log",
+          "sha256": "8b46a6e0ebbe5bd187dcf4e3baf7b2ba3a87335b5b0c2b62ecb69cc31e3af23f",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 6.72,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-10.log",
+          "sha256": "e1d97e5a935b2c02be146edb7eb20110b7552d305c116583366d655b51e4397e",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 6.41,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-11.log",
+          "sha256": "940701b5257066a1537a6c567b8383ad82cdcaba5b06b659c572431bdfb6961f",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 7.37,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-12.log",
+          "sha256": "b8afe54c8662fc95cb0c349a01b58b44cee2d3233fc1cb865f6a369888b5265b",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#authorizedHttpAndFileProxyProvidersKeepSourceAndRunningSession",
+          "passed": false,
+          "seconds": 30.79,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-13.log",
+          "sha256": "cba0f9c991bb9e7d6d96dda0b3e99e9835dd68e8709cc547dcf109318d6be59f",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#publicHttpRuleYamlTextAndClassicalUpdateFromUiAndKeepRunningSession",
+          "passed": false,
+          "seconds": 30.27,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-14.log",
+          "sha256": "59ab982ccdc20342a4c0362e8dc3f94eae53692e9f2851edb628ff1c0e50399c",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent",
+          "passed": true,
+          "seconds": 26.33,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-15.log",
+          "sha256": "948b9b7ff9b7980280df82a9ed0e7872f9b45272e8640e58ba95a21a65c87e7b",
+          "imageCount": 13
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "passed": true,
+          "seconds": 11.92,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-16.log",
+          "sha256": "d06fd01275d10ccfa8aec5a391a0030f8bb16218d945869704a2fbf240ecc6b8",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest#continuousPagesKeepDockAndRestoreScrollAndDraftInBothThemes",
+          "passed": true,
+          "seconds": 17.51,
+          "log": "/tmp/kclash-visual-providers-20261104-review4-17.log",
+          "sha256": "61b03775543e50be074c6537fa7c220243c63d019d55aa23324fa7aacf36672b",
+          "imageCount": 12
+        }
+      ]
+    },
+    {
+      "batch": "network5",
+      "passed": 1,
+      "total": 2,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#authorizedHttpAndFileProxyProvidersKeepSourceAndRunningSession",
+          "passed": true,
+          "seconds": 51.8,
+          "log": "/tmp/kclash-visual-providers-20261104-network5-0.log",
+          "sha256": "1dbb202dff1fad557d04dc5fa4a2493b807fb539633154d689f9f714787c898f",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#publicHttpRuleYamlTextAndClassicalUpdateFromUiAndKeepRunningSession",
+          "passed": false,
+          "seconds": 19.73,
+          "log": "/tmp/kclash-visual-providers-20261104-network5-1.log",
+          "sha256": "02480438ae30a3782558be8e7169a5b2f1b81c62c51cab3aa704f4e02265190b",
+          "imageCount": 0
+        }
+      ]
+    },
+    {
+      "batch": "final6",
+      "passed": 17,
+      "total": 18,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 11.56,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-0.log",
+          "sha256": "7008fd8d9bdb853abca947ad65ddfaa8afdc7937a43604073a6bca070675196c",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 5.91,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-1.log",
+          "sha256": "584735dc9f0d7d7be0e29f4157802847fe2de54fda898f95347d1b381e2740fd",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 5.89,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-2.log",
+          "sha256": "680c418600a23d45bb91ee58fa04ab28455223e0438772a44a93285d2f6d1c67",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 6.06,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-3.log",
+          "sha256": "9d2a52f1d3fd1f0830f2647848cf2380bf43db2e6976dd8f5dfd63ae4f58fb02",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 7.85,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-4.log",
+          "sha256": "c956dcdbbfde79914a3425b5373ff2cec6b47babb63f03dbd2aa730e7e885c1b",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "passed": true,
+          "seconds": 9.15,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-5.log",
+          "sha256": "135b3d72eda9eea88d5d6dc2acb4d96ceae41f5a449e7c6483b3eaef864857a0",
+          "imageCount": 5
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#glyphAtlasUsesFlutterPathsAndTransparentFilledDetails",
+          "passed": true,
+          "seconds": 4.09,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-6.log",
+          "sha256": "e160c1d078288d4687418ad7db5c278030ee13abeed9a22e34de94e6807382f3",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest#anchoredMenuPaintsDistinctIntermediateFramesAndCanCloseDuringOpening",
+          "passed": true,
+          "seconds": 6.46,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-7.log",
+          "sha256": "bded05ec725b31ba4571fc1c6f4a9e46abd6c4ec805579488484cc6e3f28ae9d",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 6.86,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-8.log",
+          "sha256": "5f68440d15155494bd6dc1486168e554ddb14f0b2cf9ac086f5e9249524e4e5b",
+          "imageCount": 3
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 6.32,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-9.log",
+          "sha256": "531b07727aa3c19393240165ed42203303354a6e607c830cfc3a3bb8e88c3692",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 6.61,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-10.log",
+          "sha256": "dae21cc763440e4d971ce6370fecc3a8fb50b0fa25a2e1c19922731a8aecabb6",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 6.37,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-11.log",
+          "sha256": "d8b2b812c328d9188cfdcc3d60050ca736d29ebafd4913b0af36157ff44824e0",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "passed": true,
+          "seconds": 7.34,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-12.log",
+          "sha256": "e34138d2f8513d17e379d47a92b341fbe35758d3c5f29b9d46e24a25fc87ee1e",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#authorizedHttpAndFileProxyProvidersKeepSourceAndRunningSession",
+          "passed": true,
+          "seconds": 50.86,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-13.log",
+          "sha256": "56acc5a471c8d33b8691277048f4543d055f8d0183d54f6e34e6909374cf7377",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyProviderNetworkInstrumentedTest#publicHttpRuleYamlTextAndClassicalUpdateFromUiAndKeepRunningSession",
+          "passed": false,
+          "seconds": 33.02,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-14.log",
+          "sha256": "5855f3852e976af0ac46358f7b4e3dbd37073432feceec156ac522426385ec19",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent",
+          "passed": true,
+          "seconds": 25.67,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-15.log",
+          "sha256": "81dc3d9aeb2c5d37112ce322e4596b21924a595edc60b9775898f2739ce213f2",
+          "imageCount": 13
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "passed": true,
+          "seconds": 11.82,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-16.log",
+          "sha256": "6972c972499db2cc956953873161682093557bcd45c61a8e389e9a0c87490414",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest#continuousPagesKeepDockAndRestoreScrollAndDraftInBothThemes",
+          "passed": true,
+          "seconds": 16.8,
+          "log": "/tmp/kclash-visual-providers-20261104-final6-17.log",
+          "sha256": "cba96eb10ad2fef36f6b4c4d31af50d806a6dac045480dd8e82c2eb5a1a87ca4",
+          "imageCount": 12
+        }
+      ]
+    }
+  ],
+  "failureNotes": [
+    "Initial compile attempts: RTL receiver, drawContent receiver, test import and enum eager Android Path initialization corrected before passing build.",
+    "route-red: 3 new service regressions, 2 fail on old implementation; final 191 service tests pass.",
+    "Raw GitHub unreachable on phone, now uses user-approved mirror with identical SHA-256.",
+    "Final6 Rule first-list readiness timeout not fully captured; rule7 adds safe list state and formal retry path, passes without invoking retry. Do not assign a unique root cause to that timeout.",
+    "HTTP initial count0/cache missing observed even in successful final6; later loaded to7 and both UI updates/readbacks passed; initial load failure is not counted as success."
+  ],
+  "remaining": [
+    "Full Flutter menu source snapshot/droplet return, content blur, gesture carry, full submenu unfolding and glass",
+    "Remaining full-page spacing/alignment and other subpages; only spin of three upstream empty-state entrance variants implemented",
+    "Fallback invalid-now real-core and cold-process boundary unavailable in current authorized configs",
+    "All Provider transports/sites/types, every real rule hit, full external-script E2E and other resource SAF",
+    "Observation secondary polish, backup/system restore, language/theme settings remain deferred; global default color/typography affects deferred page snapshots, which were not rebaselined",
+    "Signed Release runtime and remote CI not verified; independent agent review unavailable earlier in session"
+  ],
+  "rawEvidence": "Local /tmp logs/screenshots only; source repo stores hashes/indexes, not raw attachments or private source URLs.",
+  "sourceFiles": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt",
+      "sha256": "fd77d1c8aaeabd7fdc9f5838de45ccc0624744069e0531831957b13b1f6a5ce1",
+      "bytes": 13755
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "sha256": "17b506669d384fa653a4617169d35054e4e21130e558f61c7319f392351fee3c",
+      "bytes": 247583
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MainNavigationDock.kt",
+      "sha256": "40545000766177ec8352979f40ea1e19ba2edbe09d02070d092f560188770827",
+      "bytes": 14516
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MainPageScaffold.kt",
+      "sha256": "5af0f003d1398e65b68b42bc3ec811bd83ccb750968207d4d0b690db9a227d69",
+      "bytes": 4025
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt",
+      "sha256": "5cc54139ba4825250b2dc324a4451ce5accbc0c55f5bf8beff427eb533e50c1e",
+      "bytes": 9064
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProvidersPanel.kt",
+      "sha256": "25b723b41618760e2d66df9e6ef4f50ec986691b44f9cf20ef5e21c4bc96f5e0",
+      "bytes": 8089
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+      "sha256": "81c015b62e097fe388d0d8e15c69ba0eac5f7d7d1412b581edef13394fd52e03",
+      "bytes": 51958
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/theme/Theme.kt",
+      "sha256": "86ceecb3b5c3f3b68054a309cbd40bdc9b424af05af52db559bd272a8635648b",
+      "bytes": 2911
+    },
+    {
+      "path": "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt",
+      "sha256": "29815247edfc6066fcfc43dcbc167b7243f267de55367b52ed71a06a49e8645f",
+      "bytes": 85437
+    },
+    {
+      "path": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+      "sha256": "22611415e2af056e45506550f134e0ba37f94189cee0fb78c9a06257d828928a",
+      "bytes": 49423
+    },
+    {
+      "path": "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt",
+      "sha256": "460b4daa0f7f7bb49a68552d503f4768437e6bcf6634ea62bd735b9b802256c7",
+      "bytes": 4445
+    },
+    {
+      "path": "android/tests/instrumented/ProxyGroupsActivityInstrumentedTest.kt",
+      "sha256": "4bd59447303a68ae7402270cf44a94ac04d425309718245f438e7b5b652655e6",
+      "bytes": 11400
+    },
+    {
+      "path": "android/tests/service/CoreRuntimeManagerTest.kt",
+      "sha256": "1ea4abe5de5755900934d994b32f68597c1db937e1330a43c27999be81c1434a",
+      "bytes": 135997
+    },
+    {
+      "path": "android/app/src/main/assets/licenses/material-new-shapes.txt",
+      "sha256": "397bf2a37f7b9acf3505892f3c00476b7b1f5d72d403cacbae48e09aed344d9d",
+      "bytes": 1069
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppGlyph.kt",
+      "sha256": "1a82c7afb03849b515d2d06fcc715f8147d3ab1b723c9e0b12b399bcc4b14c43",
+      "bytes": 6896
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppGlyphs.kt",
+      "sha256": "74a61d0fffeb9b5993df24bd6049a71d243c32d2bf9bf2e9e142c76364ff98ab",
+      "bytes": 12580
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt",
+      "sha256": "d9e824b4bba610e72a418a6925cdb379bb891c60581c859f411592c91e902de4",
+      "bytes": 3005
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEmptyIllustration.kt",
+      "sha256": "2d80a5cebc500a045a6e74bf27ee54418ac87a61528938e472da4502009de4a3",
+      "bytes": 3434
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileIllustrationPaths.kt",
+      "sha256": "9683f0776a453fefa1882f917c4d4ca6eea8d78f35cc87142b08bccef99f02b6",
+      "bytes": 3603
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/theme/FlutterColors.kt",
+      "sha256": "a9ca27610ea3802a3c2cba3755f030f249b060dbe6a3a0175371f502498af715",
+      "bytes": 4308
+    },
+    {
+      "path": "android/tests/instrumented/FlutterVisualTokensInstrumentedTest.kt",
+      "sha256": "728c7745490a0702b24973e9131ec199d5d48c6245d569e05fd4cedc5525bdb1",
+      "bytes": 4952
+    },
+    {
+      "path": "android/tests/instrumented/ProxyProviderNetworkInstrumentedTest.kt",
+      "sha256": "fae97b453d1d33e1411dfdb8670d4e8585a6dbfd85d058b5657815d836f0d5ca",
+      "bytes": 22620
+    },
+    {
+      "path": "tool/export_flutter_visual_reference.py",
+      "sha256": "6ac136b89852b878c7f593c1616289d890008e513276f751f42f03c3161d0260",
+      "bytes": 7392
+    }
+  ]
+}

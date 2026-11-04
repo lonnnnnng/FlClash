@@ -201,7 +201,7 @@ internal fun MainNavigationDock(selected: MainDestination, destinations: List<Ma
                             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                             Column(Modifier.fillMaxWidth().dockLensTint(motion, geometry, item, rtl, colors.primary),
                                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Icon(destination.icon, null, Modifier.size(28.dp), tint = colors.onSurfaceVariant)
+                                AppGlyphIcon(destination.icon, null, Modifier.size(28.dp), tint = colors.onSurfaceVariant, filled = true)
                                 Text(destination.label, style = TextStyle(fontSize = 10.sp, lineHeight = 14.5.sp, fontWeight = FontWeight.Medium),
                                     color = colors.onSurfaceVariant, maxLines = 1)
                             }

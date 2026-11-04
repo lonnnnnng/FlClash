@@ -1201,6 +1201,8 @@ class CoreRuntimeManager(
     private class ProviderSnapshot(val profile: ActiveProfile, val key: List<Any?>?, val revision: Long,
         val stamp: com.lonnnnnng.flclash.core.CoreRouteStamp)
 
+    private class ProviderRouteMovedException : IllegalStateException("Provider 路由已变化，请重试")
+
     private suspend fun providerSnapshot(profileId: Long): ProviderSnapshot = transitionLock.withLock {
         val profile = requireNotNull(profileProvider.activeProfile())
         check(profile.id == profileId && loadedConfigKey != null && loadedConfigKey == configKey(profile))
@@ -1212,14 +1214,30 @@ class CoreRuntimeManager(
         check(profileProvider.activeProfile() == snapshot.profile && loadedConfigKey == snapshot.key &&
             configKey(snapshot.profile) == snapshot.key && mutableServiceCacheRevision.value == snapshot.revision)
         val current = withTimeout(3_000L) { bridge.ipRouteStamp() }
-        check(if (allowRouteChange) current.epoch == snapshot.stamp.epoch else current == snapshot.stamp)
+        check(current.epoch == snapshot.stamp.epoch)
+        if (!allowRouteChange && current.version != snapshot.stamp.version) throw ProviderRouteMovedException()
     }
 
     override suspend fun profileProviders(profileId: Long): List<com.lonnnnnng.flclash.core.CoreExternalProvider> = withContext(Dispatchers.IO) {
-        val snapshot = providerSnapshot(profileId)
-        val providers = withTimeout(3_000L) { bridge.externalProviders() }
-        transitionLock.withLock { verifyProviderSnapshot(snapshot) }
-        providers
+        withTimeout(3_000L) {
+            var snapshot = providerSnapshot(profileId)
+            repeat(3) { attempt ->
+                val providers = bridge.externalProviders()
+                try {
+                    transitionLock.withLock { verifyProviderSnapshot(snapshot) }
+                    return@withTimeout providers
+                } catch (moved: ProviderRouteMovedException) {
+                    if (attempt == 2) throw moved
+                    // 作者 long：Provider更新与健康检查可在列表读取中改变路由；丢弃旧结果后有界重读，不能把瞬时变化变成页面常驻错误。
+                    // 新令牌仍属于原配置/正文/核心会话；只容忍路由版本变化，不跨切换、保存或重启继续读取。
+                    transitionLock.withLock {
+                        verifyProviderSnapshot(snapshot, allowRouteChange = true)
+                        snapshot = ProviderSnapshot(snapshot.profile, snapshot.key, snapshot.revision, bridge.ipRouteStamp())
+                    }
+                }
+            }
+            error("Provider 列表读取未完成")
+        }
     }
 
     override suspend fun updateProfileProvider(profileId: Long, name: String): Unit = withContext(Dispatchers.IO) {

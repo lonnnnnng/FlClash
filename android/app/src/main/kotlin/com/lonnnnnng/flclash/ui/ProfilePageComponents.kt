@@ -112,14 +112,14 @@ internal fun ProfileSourceMenu(
 ) {
     AppDropdownMenu(expanded = true, onDismissRequest = onDismiss, anchor = anchor,
         modifier = Modifier.testTag("profile_add_source_menu")) {
-        AppDropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { Icon(Icons.Outlined.QrCodeScanner, null) },
+        AppDropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode, null) },
             onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))
-        AppDropdownMenuItem(text = { Text("从文件导入 YAML") }, leadingIcon = { Icon(Icons.Outlined.Description, null) },
+        AppDropdownMenuItem(text = { Text("从文件导入 YAML") }, leadingIcon = { AppGlyphIcon(AppGlyphs.profiles, null) },
             onClick = onFile, enabled = !busy, modifier = Modifier.testTag("profile_add_source_file"))
-        AppDropdownMenuItem(text = { Text("添加订阅链接") }, leadingIcon = { Icon(Icons.Outlined.Link, null) },
+        AppDropdownMenuItem(text = { Text("添加订阅链接") }, leadingIcon = { AppGlyphIcon(AppGlyphs.link, null) },
             onClick = onRemote, enabled = !busy, modifier = Modifier.testTag("profile_add_source_remote"))
         HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
-        AppDropdownMenuItem(text = { Text("创建自定义配置") }, leadingIcon = { Icon(Icons.Outlined.Edit, null) },
+        AppDropdownMenuItem(text = { Text("创建自定义配置") }, leadingIcon = { AppGlyphIcon(AppGlyphs.edit, null) },
             onClick = onCustom, enabled = !busy, modifier = Modifier.testTag("profile_add_source_custom"))
     }
 }
