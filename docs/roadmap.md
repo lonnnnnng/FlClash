@@ -8,7 +8,7 @@
 >
 > 当前基线：本文件所在的 `kotlin` 主线提交，追踪 `origin/kotlin`；DNS/浏览器修复 `cab92464` 和规则资源 `d3ee7fc4` 为已同步历史基线，当前累计能力以第3/7节和最新切片为准，远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 本轮最新（11-04）：菜单AGSL玻璃折射、保留父层的多级展开/收回及本地代理/Provider选项/资源列表同行排版完成本组验收。706项单测、Debug/Test、未签名Release/R8与独立双Lint通过；最终生产/测试包Redmi final12同批22/22，42张PNG已目视。最终批次独立快照的Room全行/逐字段摘要、选择、正文SHA-size-mtime保持，安装哈希匹配；较早before→final10存在未定位的Room元数据摘要变化，正文/选择一致，失败保留，不宣称整个长窗口元数据保持。证据`docs/acceptance/glass-stack-subpages-redmi-20261104.json`。完整Flutter视觉继续PARTIAL，通用玻璃/ultra分级、完整材质插值、更多子页/空态和低API实测仍待补；暂缓项保持。
+> 本轮最新（11-04）：共享regular/pill/menu/alert/tinted/lens材质及STANDARD/ULTRA质量等级已接入，玻璃默认仍关闭；菜单液滴/AGSL、多层可逆子菜单、策略组/更多/链式代理覆盖子页与source→menu材质连续插值完成本组验收。App449/Service191/Core38/Common31共709项单测零失败/错误/跳过；Debug/Test、未签名Release/R8和独立双Lint通过。Redmi API36 final6同批19/19、API27竖屏手机AVD final6同批10/10，最终PNG已目视，App/Test安装哈希匹配。API27仅覆盖离线材质像素、真实Window捕获、菜单与子页fallback；API24/25、31/32及其他ABI未验，亦未覆盖订阅、YAML、VPN或实网。验收记录中的API27旋转/字号/动画设置为`null`，不能据此确认设置恢复；Redmi保护日志的单份正式配置、选择与正文聚合摘要count=1且before/after SHA相同，JSON未内嵌逐字段摘要。早期Room元数据兼容不属于开发阶段要求，历史摘要变化保留、不追加迁移或回溯修补；当前正式配置与正文仍按独立快照保护。证据`docs/acceptance/general-glass-subpages-api27-20261104.json`。完整Flutter视觉仍PARTIAL：未覆盖空态/更多页面、全应用采样品质与逐像素一致性、完整性能profile仍待做；Fallback实核/冷进程、8MiB正文性能、实网、Go、正式签名运行和远端CI保持未验，暂缓项保持。
 > 前序液滴菜单（11-04）：源按钮快照液滴/500ms回源、长按原指针滑动携带、基础磨砂材质和配置/代理子页视觉完成本组验收。705项单测、Debug/Test、未签名Release/R8与双Lint通过；最终生产/测试包上Redmi同批24/24，含读屏长按与长正文。正式1份配置/选择/正文SHA-size-mtime保持，最终安装哈希匹配；证据`docs/acceptance/liquid-menu-subpages-redmi-20261104.json`。玻璃完整折射shader、多层卡片物理展开/收回、更多子页精确排版仍未完成，完整Flutter视觉继续PARTIAL；暂缓项保持。
 > 前序默认视觉与Provider类型（11-04）：默认Flutter色板/排版、31图标/空态/菜单形变与Provider列表路由重读已补齐；700项单测、Debug/Test、未签名Release/R8及双Lint通过。Redmi主批17/18（14张严格PNG通过，Rule首读等待超时），随后Rule独立1/1通过：6种HTTP规则组合×停止/运行共12次更新、条目/mtime/正文SHA/重建/会话均通过；HTTP/File Proxy已在主批通过。GitHub实网使用用户确认的gh-proxy前缀，镜像哈希一致。安装/失败见`flutter-visual-provider-types-redmi-20261104.json`；完整Flutter视觉与Fallback实核仍PARTIAL，主题/语言设置和备份/系统恢复继续暂缓。
 > 前序整页动效（11-04）：整页300ms连续滑动、代理标签居中/渐隐、配置/代理工具栏排版及Dock当前入口回菜单已完成定向验收；697项单测、Debug/Test、未签名Release/R8和双Lint通过。最终UI批次14/15，14项动效/UI/协议通过，Fallback实核因授权配置无非空Fallback未通过。原1.yaml全部90个HTTP Rule/mrs资源经32+55+3三次更新回读完成，最后3项及重建/会话补验1/1；不是单次90/90。安装/保护/失败见`page-continuity-providers-redmi-20261104.json`。完整Flutter视觉、其他Provider类型和Fallback实核仍PARTIAL，主题/语言与备份/系统恢复继续暂缓。
@@ -41,7 +41,7 @@ Redmi final12最终App/Test同批22/22：GPU有/无折射边缘对照且中心�
 
 最终glass-final12独立快照before/after各1/1，正式1份配置的Room全行/逐字段摘要、当前选择、正文文件名/SHA/size/mtime保持。**较早原before→final10保护0/1：仅Room行摘要不同，原选择及正文记录相同；只读诊断未确定变化字段/时点。** 原基线与失败保留，未回写未知旧字段；不能把最终窗口稳定推广为整个长窗口元数据保持。只用install-r保留Kotlin数据，App/Test设备SHA匹配，原1.yaml双端字节与Flutter参考包SHA保持；结束无服务/tun0、旋转1/0、字号/动画倍率1.0。详见`docs/acceptance/glass-stack-subpages-redmi-20261104.json`，原始日志/PNG仅本机/tmp。
 
-完整Flutter视觉仍PARTIAL：预模糊是近似，未宣称完整采样品质或全页面逐像素等价；通用玻璃控件/ultra分级、source regular到menu完整材质插值、其他空态/更多子页、API<33设备实测和完整性能profile仍待补。本组未重跑订阅/Provider实网、Go、正式签名运行或远端CI；Fallback实核/冷进程输入限制、8MiB正文性能边界保持。备份/系统恢复、观测次要打磨、语言和主题继续暂缓。
+完整Flutter视觉仍PARTIAL：预模糊是近似，未宣称完整采样品质或全页面逐像素等价；共享六种材质/质量分级、覆盖子页与API27离线降级已验，API24/25、31/32、其他ABI及实网/核心场景未验；其他空态/页面和完整性能profile仍待补。本组未重跑订阅/Provider实网、Go、正式签名运行或远端CI；Fallback实核/冷进程输入限制、8MiB正文性能边界保持。早期Room元数据兼容不在开发阶段范围内，当前正式配置/正文保护仍单独核验。备份/系统恢复、观测次要打磨、语言和主题继续暂缓。
 
 
 ### Flutter默认视觉与六种规则资源实网（2026-11-04）
@@ -774,7 +774,7 @@ flowchart LR
 
 状态：`PARTIAL`，基础能力和高级分区首片已完成，完整 Flutter parity 仍在推进。
 
-最新视觉补充：本地代理基本/认证/可选项、Provider选项与资源列表按56dp同行、右侧轻量输入、24/8分组标题及资源边距补齐；最终final12同批22/22含深浅表单、草稿/失败重试、正式保存与重建，见`glass-stack-subpages-redmi-20261104.json`。正文/运行预览等宽着色、1201行查找复制和72dp排序沿用前组证据。更多子页/空态与8MiB正文极限性能待补，完整Profiles仍PARTIAL；长窗口Room摘要差异及最终独立保护窗口见最新切片。
+最新视觉补充：本地代理基本/认证/可选项、Provider选项与资源列表按56dp同行、右侧轻量输入、24/8分组标题及资源边距补齐；随后共享玻璃材质、策略组/更多/链式代理覆盖子页与API27离线fallback同批验收，见`general-glass-subpages-api27-20261104.json`。正文/运行预览等宽着色、1201行查找复制和72dp排序沿用前组证据。未覆盖的更多页面/空态与8MiB正文极限性能待补，完整Profiles仍PARTIAL；历史Room摘要变化保留，早期元数据兼容不在开发阶段要求内，正式配置与正文仍按验收快照核验。
 
 最新补充：全局本地代理/链式代理、规则/图库/过滤/Geo资源、Provider结构化与外部文档、脚本整页、常规/网络/全局DNS/附加规则、按需SSID、批量同步及正文父草稿均已有首版。备份现为v6，ALL_DATA纳入常规/网络/全局DNS、VPN/LAN、恢复策略及可选SSID；PROFILES_ONLY和旧归档缺项保留现值，失败有补偿。其他界面/按应用代理偏好、跨全部写者一致快照和系统备份SAF完整E2E仍待补。分项设备证据见顶部同名节，完整Profiles仍为PARTIAL。
 
@@ -895,7 +895,7 @@ flowchart LR
 待完成：
 
 - URLTest/Fallback 的有效核心 `now` 优先、手动固定、再次选择清除固定和非法成员拒绝已由真实 Mihomo 真机回归覆盖；两组均找到正延迟节点。URLTest正延迟优选及清除固定又由独立prepare/verify阶段验证跨应用进程恢复各1/1；现有`1.yaml`无Fallback，当前唯一授权订阅也未提供非空Fallback，故Fallback冷进程恢复及无有效核心`now`真实边界仍受配置限制；无有效`now`时映射/`fixed`回退已补真实Bridge解析→VM→Tab/List×深浅主题协议验收，响应注入不等于实核产生。
-- List/Grid排序、搜索过滤、网格密度变化后的语义锚定已有实现、JVM覆盖和Redmi精确方法`gridSemanticAnchorSurvivesSortDensityAndSearchChanges`真机验收；工具栏、卡片与组标题首版视觉已完成。节点菜单停止/运行态保存、重复提示及Activity重建回读已通过本轮各1项正式宿主用例；配置页菜单/预览交互3项、Providers行菜单、Provider资源页菜单、代理组编辑列表菜单各自1/1，相关页面/正文入口批次也通过。上述旧批只证明静态画面与终态交互；本轮已补主导航与代理Pager中间帧、快速反向、取消及状态恢复，见`docs/acceptance/page-continuity-providers-redmi-20261104.json`。运行态添加到本地目录及其余面板/液滴玻璃动效仍待补齐。
+- List/Grid排序、搜索过滤、网格密度变化后的语义锚定已有实现、JVM覆盖和Redmi精确方法`gridSemanticAnchorSurvivesSortDensityAndSearchChanges`真机验收；工具栏、卡片与组标题首版视觉已完成。节点菜单停止/运行态保存、重复提示及Activity重建回读已通过本轮各1项正式宿主用例；配置页菜单/预览交互3项、Providers行菜单、Provider资源页菜单、代理组编辑列表菜单各自1/1，相关页面/正文入口批次也通过。上述旧批只证明静态画面与终态交互；本轮已补主导航与代理Pager中间帧、快速反向、取消及状态恢复，见`docs/acceptance/page-continuity-providers-redmi-20261104.json`。运行态添加到本地目录、其余面板及未覆盖页面的整页视觉仍待补齐；液滴/玻璃菜单动效与API27 fallback已有独立验收。
 - 按组/测速 URL 的成功、超时、失败和进行中摘要已有实现及 JVM 覆盖，不使用缺失模型伪造计数。递归解析仍使用完整组图，保持 Flutter 平面列表，不新增上游没有的子组下钻。
 - 延迟结果持久化已有 Room 实现、45 秒 TTL、过期清理、DAO/迁移与 ViewModel 重建 JVM 覆盖；Redmi 真机正式 Profile 通过真实 `force-stop`/新进程验证缓存恢复，并确认旧 Profile 与旧测速 URL 的同名节点不进入当前页面（`DONE-VERIFIED`）。
 - 首页/代理组主流程此前同批9/9，选择保存跨revision与Activity重建、旧渲染ID隔离、模式/测速和读失败重试已验。URLTest正延迟手动优选跨冷进程恢复和清除固定此前通过；Fallback协议边界本轮通过，但当前授权输入无非空Fallback，实核仍未验。真实加密在线订阅与其他资源SAF也保留独立边界；运行态保存、父/正文进程草稿及四类SAF恢复已有前组证据。
@@ -951,7 +951,7 @@ flowchart LR
 
 状态：`PARTIAL`。
 
-最新已验：菜单AGSL折射/高光、真实背景深浅玻璃子卡、保留所有父卡的多层展开/收回和反向、本地代理/Provider同行排版，final12最终包同批22/22，42张PNG已目视；源快照液滴/回源、文字blur、读屏长按与长正文沿用前组并含相关回归。历史缺项现收敛为通用玻璃控件/ultra分级、完整采样品质和source→menu材质插值、其他空态/更多子页、低API实测与性能profile。默认玻璃仍关闭，不扩展暂缓的主题设置，不声称全应用逐像素一致；见`glass-stack-subpages-redmi-20261104.json`。
+最新已验：共享六种玻璃材质及STANDARD/ULTRA等级、默认关闭、菜单折射/高光/液滴回源、多层子菜单可逆展开、策略组/更多/链式代理覆盖子页和API27离线降级；Redmi final6 19/19、API27 final6 10/10，709项单测和独立双Lint通过，证据见`general-glass-subpages-api27-20261104.json`。API24/25、31/32及其他ABI、实网/VPN/核心均未覆盖；API27设置恢复不能单凭该JSON确认。Redmi正式配置/选择/正文聚合保护日志为count=1且before/after SHA一致，逐字段摘要未嵌入JSON。早期Room元数据兼容不属于开发阶段要求。剩余视觉范围为其他空态/页面、完整采样品质、全应用动效/逐像素一致性和性能profile；主题设置仍暂缓，整体状态保持`PARTIAL`。
 
 当前已有：
 
@@ -986,13 +986,13 @@ flowchart LR
 待完成：
 
 - Flutter 页面信息架构和 Android 手机导航结构对齐。
-- 主流程累计：Profiles运行态保存/应用、删除回退、整页排序、父/正文加密草稿新进程恢复，以及FILE/remote/脚本/Provider真实SAF等待中进程回收后返回与取消均已有11-04证据；脚本运行态、全局DNS/规则、Provider覆盖/侧载/两HTTP资源实更新由前组13/13覆盖。本组首页/代理组选择、模式/测速隔离、读失败重试和Providers空/90资源非空态跨轮询/Activity重建同批9/9。主页面连续圆角、焦点/按压、Dock、完整字素及刷新忙态一致性已由前组23/23覆盖，共用菜单由20/20覆盖，主页四入口面板26/26、Providers真实UI更新/三分钟观察另批2/2通过；本轮配置/代理页面与正文入口24/24、2/2，菜单/预览交互3/3，停止/运行节点菜单各1/1，URLTest冷进程准备/恢复各1/1（分批记录，不能合并成一次33/33）。整页连续动效及原1.yaml全部90个HTTP Rule/mrs分批更新已由最新证据覆盖；完整液滴/玻璃菜单、Fallback冷进程及无有效核心`now`实核仍PARTIAL（当前授权输入无非空Fallback），真实加密在线订阅、其他资源SAF/外部脚本完整E2E及其他Provider类型实网仍单列。备份/系统恢复与观测页次要视觉暂缓。
+- 主流程累计：Profiles运行态保存/应用、删除回退、整页排序、父/正文加密草稿新进程恢复，以及FILE/remote/脚本/Provider真实SAF等待中进程回收后返回与取消均已有11-04证据；脚本运行态、全局DNS/规则、Provider覆盖/侧载/HTTP资源实更新由前组覆盖。本组首页/代理组选择、模式/测速隔离、读失败重试和Providers空/90资源非空态跨轮询/Activity重建、配置/代理正文与菜单交互、URLTest冷进程、整页连续动效及共享玻璃/多层子菜单/API27离线子页均有独立批次证据，数量不跨批相加；原1.yaml全部90个HTTP Rule/mrs分批更新已覆盖。Fallback冷进程及无有效核心`now`实核仍PARTIAL（当前授权输入无非空Fallback），真实加密在线订阅、其他资源SAF/外部脚本完整E2E及其他Provider类型实网仍单列。全应用视觉/动效和逐像素一致性仍PARTIAL。备份/系统恢复与观测页次要视觉暂缓。
 - Dashboard 出口 IP 已完成停止态 DIRECT 与运行态实际代理出口验证；质量有正式链路与固定宿主，待补质量来源全覆盖、Room持久缓存与更细内容parity；可选服务状态的route hits逐项核验复用已由后续真实GitHub切片覆盖，不推广为首页所有IP/质量共享缓存；运行时间和最近 30 次真实速度采样已通过正式 MainActivity/核心验收，停止/运行两态和深浅色竖屏截图已有单设备基线。
 - 可选服务状态真实检测及出口 IP/质量首片已验收：13 目标、10 种核心状态、单项/全部检测、启用及按钮排序、至少一项、偏好重建；前台可见自动检测前两项，详情按代理链首节点共享出口查询与质量入口，路由稳定等待与旧结果保护。整行长按排序、松手保存、边缘滚动及后台取消已验收；服务 route hits 逐项核验复用已有真实 GitHub 证据，无关选择变化保留检测时间，改变出口或网络通知强制重测。服务完整 parity 继续保留 PARTIAL，不把 Google/GitHub 真机结果推广为 13 项外部服务全部验收。
-- Profiles、Proxy、Connection、Observations页面及其Requests、DNS、Logs页签的完整视觉与交互对齐；Dashboard Dock默认非玻璃模式的拖动/弹簧/取消、共用菜单及主页四入口面板切片已验，配置页菜单/预览和节点菜单停止/运行态交互已有定向验收。完整液滴/玻璃菜单、连续动效采集、未覆盖面板和逐屏动效仍待继续。
+- Profiles、Proxy、Connection、Observations页面及其Requests、DNS、Logs页签的完整视觉与交互对齐仍待继续；Dashboard Dock默认非玻璃模式的拖动/弹簧/取消、共用液滴/玻璃菜单、连续动效、主页四入口面板、配置页菜单/预览和节点菜单停止/运行态交互已有定向验收。未覆盖面板、全应用逐屏动效与Flutter逐像素parity仍待继续。
 - 暂停项：Requests/DNS 完整页面、搜索筛选视觉校准及 DNS 真实核心清理端到端验收暂不排期；先完成首页、配置和代理组主流程后再恢复。
 - Material You 动态颜色；Dashboard 已有浅色/深色静态主题截图，但全应用主题覆盖尚未完成。
-- 主页面连续圆角、焦点/按压、默认Dock和共用菜单切片已验；配置切换、内存、IP质量、服务详情/管理四入口共用面板的短内容自然高度、长内容双停靠、固定标题操作、正文滚动和子页系统返回已有26项集中回归；配置页菜单、预览和正文入口本轮另有3项交互及2项正文用例通过。该证据不覆盖完整时间轴动效或Flutter全页视觉等价；完整液滴/变形/滑动携带/玻璃菜单、其他面板及逐屏动效仍待继续。
+- 主页面连续圆角、焦点/按压、默认Dock和共用液滴/玻璃菜单切片已验；配置切换、内存、IP质量、服务详情/管理四入口共用面板的短内容自然高度、长内容双停靠、固定标题操作、正文滚动和子页系统返回已有26项集中回归；配置页菜单、预览和正文入口另有定向用例通过。此证据不覆盖Flutter全页视觉等价；未覆盖面板、其他子页与全应用逐屏动效仍待继续。
 - Connections 两档高度、横屏侧栏、浅色和小窗口首片已验证；原连接详情保留四次曲线采样近似轮廓，本组主页四入口使用已有准确连续圆角。共用面板新增自然高度和重合停靠点去重，短/中/长内容及增长收缩已有单测与真机覆盖，原连接详情三项回归通过；不能据此声称所有面板均接入了 `fitsContent`。入场/退场和遮罩联动已完成，横屏侧栏历史上对齐 Flutter 的 300ms/200ms 标准减速曲线；快速拖甩速度延续、越界回弹、连接轮廓逐像素对照及全页面键盘联动继续保留。后续验收固定为竖屏和系统默认字号。
 - 小屏滚动策略、无障碍语义、内容描述和触控区域的全页面覆盖；按当前验收范围，后续不执行横屏与大字号测试。
 - 无障碍语义、内容描述和触控区域的全页面覆盖；Dashboard 开关已提供动作语义和 48dp 以上触控区域，Dock/其他页面仍需完整审计。

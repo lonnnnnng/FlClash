@@ -107,7 +107,7 @@ internal fun ProfileFormSection(
 internal fun ProfileFormRow(title: String, modifier: Modifier = Modifier, leading: (@Composable () -> Unit)? = null,
     content: @Composable RowScope.() -> Unit) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
-    val titleLimit = maxWidth / 2
+    val titleLimit = ((maxWidth - 32.dp - 16.dp) / 2).coerceAtLeast(0.dp)
     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         leading?.invoke()
         Text(title, maxLines = 2, style = MaterialTheme.typography.bodyLarge,

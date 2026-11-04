@@ -19,50 +19,99 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.currentCoroutineContext
 import kotlin.math.*
 
-internal data class AppMenuBackdrop(val raw: Bitmap, val frosted: Bitmap, val scaleX: Float, val scaleY: Float)
-
-internal fun DrawScope.drawAppMenuFrost(backdrop: AppMenuBackdrop, offset: Offset, paintScale: Float = 1f) {
-    drawImage(backdrop.frosted.asImageBitmap(), dstOffset = androidx.compose.ui.unit.IntOffset((offset.x / paintScale).roundToInt(), (offset.y / paintScale).roundToInt()),
-        dstSize = androidx.compose.ui.unit.IntSize((backdrop.raw.width / backdrop.scaleX / paintScale).roundToInt(), (backdrop.raw.height / backdrop.scaleY / paintScale).roundToInt()))
+internal data class AppGlassFrost(val blur: Float, val bitmap: Bitmap)
+internal data class AppMenuBackdrop(val raw: Bitmap, val frosted: Bitmap, val scaleX: Float, val scaleY: Float,
+    val levels: List<AppGlassFrost> = listOf(AppGlassFrost(0f, raw), AppGlassFrost(12f, frosted))) {
+    fun samples(blur: Float): Triple<Bitmap, Bitmap, Float> {
+        val target = blur.coerceIn(0f, levels.last().blur)
+        val high = levels.indexOfFirst { it.blur >= target }.coerceAtLeast(0)
+        val upper = levels[high]; val lower = levels[(high - 1).coerceAtLeast(0)]
+        val fraction = if (upper.blur == lower.blur) 0f else (target - lower.blur) / (upper.blur - lower.blur)
+        return Triple(lower.bitmap, upper.bitmap, fraction)
+    }
 }
 
-/** 作者 long：菜单只持有一帧降采样背景；把12dp模糊移出逐帧着色，避免多层卡片同时展开时反复扫描整屏。 */
+/** 作者 long：旧API复用同一组材质的模糊/饱和度/染色；缺少RuntimeShader时保留内容可读性，降级不伪造折射。 */
+internal fun DrawScope.drawAppGlassFallback(frame: AppMenuMorphFrame, backdrop: AppMenuBackdrop, offset: Offset,
+    style: AppGlassStyle, quality: AppGlassQuality = AppGlassQuality.ULTRA, paintScale: Float = 1f, amount: Float = 1f) {
+    val material = style.resolve(quality, amount)
+    val matrix = androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(material.saturation) }
+    for (row in 0..2) for (column in 0..4) matrix[row, column] *= material.brightness
+    val filter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(matrix)
+    fun image(bitmap: Bitmap, alpha: Float, blend: androidx.compose.ui.graphics.BlendMode = androidx.compose.ui.graphics.BlendMode.SrcOver) {
+        drawImage(bitmap.asImageBitmap(), dstOffset = androidx.compose.ui.unit.IntOffset((offset.x / paintScale).roundToInt(), (offset.y / paintScale).roundToInt()),
+            dstSize = androidx.compose.ui.unit.IntSize((backdrop.raw.width / backdrop.scaleX / paintScale).roundToInt(), (backdrop.raw.height / backdrop.scaleY / paintScale).roundToInt()), alpha = alpha, colorFilter = filter, blendMode = blend)
+    }
+    fun frost(blur: Float, alpha: Float = 1f, blend: androidx.compose.ui.graphics.BlendMode = androidx.compose.ui.graphics.BlendMode.SrcOver) {
+        val (low, high, fraction) = backdrop.samples(blur)
+        // 作者 long：在透明隔离层里按预乘颜色相加，SrcOver两次会让半透明捕获额外变厚，与shader的mix不一致。
+        drawContext.canvas.saveLayer(androidx.compose.ui.geometry.Rect(Offset.Zero, size), androidx.compose.ui.graphics.Paint().apply { this.alpha = alpha; blendMode = blend })
+        image(low, 1f - fraction)
+        if (fraction > 0f) image(high, fraction, androidx.compose.ui.graphics.BlendMode.Plus)
+        drawContext.canvas.restore()
+    }
+    // 作者 long：haze同样按预乘mix合成，不能用SrcOver叠厚半透明Window；外层隔离避免Plus影响宿主。
+    drawContext.canvas.saveLayer(androidx.compose.ui.geometry.Rect(Offset.Zero, size), androidx.compose.ui.graphics.Paint())
+    frost(material.blur, 1f - material.haze)
+    if (material.haze > 0f) frost(material.hazeBlur, material.haze, androidx.compose.ui.graphics.BlendMode.Plus)
+    drawContext.canvas.restore()
+    drawPath(frame.outline(), material.tint)
+}
+
+/** 作者 long：同一帧预备四级背景，逐帧只插值采样；取消会中止卷积，不为菜单动画在主线程重复扫描整屏。 */
 internal suspend fun prepareAppMenuBackdrop(bitmap: Bitmap, density: Float): AppMenuBackdrop = withContext(Dispatchers.Default) {
     val processing = currentCoroutineContext()
     val divisor = max(4f, max(bitmap.width, bitmap.height) / 2048f).coerceAtMost(8f)
     val raw = Bitmap.createScaledBitmap(bitmap, max(1, (bitmap.width / divisor).roundToInt()), max(1, (bitmap.height / divisor).roundToInt()), true)
-    val pixels = IntArray(raw.width * raw.height)
-    raw.getPixels(pixels, 0, raw.width, 0, 0, raw.width, raw.height)
-    val scratch = IntArray(pixels.size)
-    val radius = max(1, (12f * density / divisor - .5f).roundToInt())
-    // 作者 long：三次盒式卷积的总方差接近目标高斯；边界钳位与BitmapShader一致，窗口边缘不会出现黑色采样带。
-    fun pass(input: IntArray, output: IntArray, horizontal: Boolean) {
-        val length = if (horizontal) raw.width else raw.height
-        val lines = if (horizontal) raw.height else raw.width
-        val count = radius * 2 + 1
-        for (line in 0 until lines) {
-            if (line % 16 == 0) processing.ensureActive()
-            fun index(at: Int) = if (horizontal) line * raw.width + at.coerceIn(0, length - 1) else at.coerceIn(0, length - 1) * raw.width + line
-            var a = 0; var r = 0; var g = 0; var b = 0
-            fun add(pixel: Int, sign: Int) { a += (pixel ushr 24) * sign; r += (pixel ushr 16 and 255) * sign; g += (pixel ushr 8 and 255) * sign; b += (pixel and 255) * sign }
-            for (at in -radius..radius) add(input[index(at)], 1)
-            for (at in 0 until length) {
-                output[index(at)] = (a / count shl 24) or (r / count shl 16) or (g / count shl 8) or (b / count)
-                add(input[index(at - radius)], -1); add(input[index(at + radius + 1)], 1)
+    val original = IntArray(raw.width * raw.height)
+    raw.getPixels(original, 0, raw.width, 0, 0, raw.width, raw.height)
+    fun blurred(blur: Float): Bitmap {
+        // 作者 long：getPixels返回非预乘通道，先预乘再卷积，最后才还原；透明边缘不能把透明黑色混成暗边。
+        val pixels = IntArray(original.size) { index ->
+            val pixel = original[index]; val a = pixel ushr 24
+            (a shl 24) or ((pixel ushr 16 and 255) * a / 255 shl 16) or
+                ((pixel ushr 8 and 255) * a / 255 shl 8) or ((pixel and 255) * a / 255)
+        }
+        val scratch = IntArray(pixels.size)
+        val radius = max(1, (blur * density / divisor - .5f).roundToInt())
+        // 作者 long：三次盒式卷积近似高斯，边界钳位与BitmapShader一致；这仍是近似，不作为Flutter逐像素等价证据。
+        fun pass(input: IntArray, output: IntArray, horizontal: Boolean) {
+            val length = if (horizontal) raw.width else raw.height
+            val lines = if (horizontal) raw.height else raw.width
+            val count = radius * 2 + 1
+            for (line in 0 until lines) {
+                if (line % 16 == 0) processing.ensureActive()
+                fun index(at: Int) = if (horizontal) line * raw.width + at.coerceIn(0, length - 1) else at.coerceIn(0, length - 1) * raw.width + line
+                var a = 0; var r = 0; var g = 0; var b = 0
+                fun add(pixel: Int, sign: Int) { a += (pixel ushr 24) * sign; r += (pixel ushr 16 and 255) * sign; g += (pixel ushr 8 and 255) * sign; b += (pixel and 255) * sign }
+                for (at in -radius..radius) add(input[index(at)], 1)
+                for (at in 0 until length) {
+                    output[index(at)] = (a / count shl 24) or (r / count shl 16) or (g / count shl 8) or (b / count)
+                    add(input[index(at - radius)], -1); add(input[index(at + radius + 1)], 1)
+                }
             }
         }
+        repeat(3) { pass(pixels, scratch, true); pass(scratch, pixels, false) }
+        pixels.indices.forEach { index ->
+            val pixel = pixels[index]; val a = pixel ushr 24
+            fun straight(shift: Int) = if (a == 0) 0 else ((pixel ushr shift and 255) * 255 / a).coerceAtMost(255)
+            pixels[index] = (a shl 24) or (straight(16) shl 16) or (straight(8) shl 8) or straight(0)
+        }
+        return Bitmap.createBitmap(pixels, raw.width, raw.height, Bitmap.Config.ARGB_8888)
     }
-    repeat(3) { pass(pixels, scratch, true); pass(scratch, pixels, false) }
-    val frosted = Bitmap.createBitmap(pixels, raw.width, raw.height, Bitmap.Config.ARGB_8888)
-    AppMenuBackdrop(raw, frosted, raw.width.toFloat() / bitmap.width, raw.height.toFloat() / bitmap.height)
+    val levels = listOf(AppGlassFrost(0f, raw)) + listOf(2.5f, 12f, 16f).map { AppGlassFrost(it, blurred(it)) }
+    AppMenuBackdrop(raw, levels[2].bitmap, raw.width.toFloat() / bitmap.width, raw.height.toFloat() / bitmap.height, levels)
 }
 
-/** 作者 long：RuntimeShader仅在API33以上创建；旧系统继续使用同一份预模糊背景，不让新API阻断普通菜单。 */
+/** 作者 long：RuntimeShader仅在API33以上创建；共享材质不依赖新API，旧系统可以继续渲染和操作普通菜单。 */
 internal class AppMenuGlassRenderer {
     private val optics by lazy { if (Build.VERSION.SDK_INT >= 33) Optics() else null }
-    fun draw(scope: DrawScope, frame: AppMenuMorphFrame, backdrop: AppMenuBackdrop, offset: Offset, tint: Color, dark: Boolean, refraction: Float = 60f, paintScale: Float = 1f, amount: Float = 1f): Boolean {
+    fun draw(scope: DrawScope, frame: AppMenuMorphFrame, backdrop: AppMenuBackdrop, offset: Offset, tint: Color, dark: Boolean,
+        refraction: Float = 60f, paintScale: Float = 1f, amount: Float = 1f,
+        style: AppGlassStyle = AppGlassStyle.menu(dark, tint).copy(refraction = refraction),
+        quality: AppGlassQuality = AppGlassQuality.ULTRA): Boolean {
         if (Build.VERSION.SDK_INT < 33) return false
-        optics?.draw(scope, frame, backdrop, offset, tint, dark, refraction, paintScale, amount)
+        optics?.draw(scope, frame, backdrop, offset, dark, paintScale, style.resolve(quality, amount))
         return optics != null
     }
 
@@ -71,23 +120,32 @@ internal class AppMenuGlassRenderer {
         private val shader = RuntimeShader(MENU_GLASS_SHADER)
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { shader = this@Optics.shader }
         private var bound: AppMenuBackdrop? = null
-        fun draw(scope: DrawScope, frame: AppMenuMorphFrame, backdrop: AppMenuBackdrop, offset: Offset, tint: Color, dark: Boolean, refraction: Float, paintScale: Float, amount: Float) {
-            if (bound !== backdrop) {
-                shader.setInputShader("raw", BitmapShader(backdrop.raw, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply { setFilterMode(BitmapShader.FILTER_MODE_LINEAR) })
-                shader.setInputShader("frost", BitmapShader(backdrop.frosted, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply { setFilterMode(BitmapShader.FILTER_MODE_LINEAR) })
-                bound = backdrop
+        private val samplers = mutableMapOf<Bitmap, BitmapShader>()
+        private fun sampler(bitmap: Bitmap) = samplers.getOrPut(bitmap) {
+            BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply { setFilterMode(BitmapShader.FILTER_MODE_LINEAR) }
+        }
+        fun draw(scope: DrawScope, frame: AppMenuMorphFrame, backdrop: AppMenuBackdrop, offset: Offset, dark: Boolean, paintScale: Float, style: AppGlassStyle) {
+            if (bound !== backdrop) { samplers.clear(); bound = backdrop }
+            shader.setInputShader("raw", sampler(backdrop.raw))
+            fun frost(name: String, blur: Float) {
+                val (low, high, fraction) = backdrop.samples(blur)
+                shader.setInputShader(name + "Low", sampler(low)); shader.setInputShader(name + "High", sampler(high))
+                shader.setFloatUniform(name + "Mix", fraction)
             }
+            frost("frost", style.blur); frost("rimFrost", style.blur + style.rimBlur); frost("haze", style.hazeBlur)
             val rect = frame.platter
             val drop = frame.droplet?.takeUnless { it.isEmpty } ?: rect
             val radius = frame.radius.coerceIn(.001f, rect.size.minDimension.coerceAtLeast(.002f) / 2)
             shader.setFloatUniform("box", rect.center.x, rect.center.y, rect.width / 2, rect.height / 2)
             shader.setFloatUniform("drop", drop.center.x, drop.center.y, drop.width / 2, drop.height / 2)
             shader.setFloatUniform("geometry", radius, if (frame.droplet != null) frame.blend else 0f, scope.density, if (dark) 1f else 0f)
-            shader.setFloatUniform("refraction", refraction)
+            shader.setFloatUniform("optics", style.refraction, style.saturation, style.brightness, style.contrast)
+            shader.setFloatUniform("edgeStyle", style.bevel, style.dispersion, style.haze, style.endShade)
+            shader.setFloatUniform("rimStyle", style.rim, style.rimWidth, style.rimTail, style.rimFocus)
+            shader.setFloatUniform("lineStyle", style.rimAdded, style.hairline, style.hairlineSide, style.menuRim)
             shader.setFloatUniform("paintScale", paintScale)
-            shader.setFloatUniform("amount", amount.coerceIn(0f, 1f))
             shader.setFloatUniform("sampling", -offset.x, -offset.y, backdrop.scaleX, backdrop.scaleY)
-            shader.setFloatUniform("tint", tint.red, tint.green, tint.blue, if (dark) .63f else .55f)
+            shader.setFloatUniform("tint", style.tint.red, style.tint.green, style.tint.blue, style.tint.alpha)
             val x = appGlassCurve(rect.width / 2, radius); val y = appGlassCurve(rect.height / 2, radius)
             shader.setFloatUniform("curveX", x.copyOfRange(0, 4)); shader.setFloatUniform("curveY", y.copyOfRange(0, 4))
             shader.setFloatUniform("centers", x[4], x[5], y[4], y[5])
@@ -98,10 +156,18 @@ internal class AppMenuGlassRenderer {
     }
 }
 
-// 作者 long：光学参数移植固定Flutter liquid_glass.frag；菜单原材质无色散/雾化，不能为了“玻璃感”额外制造彩边。
+// 作者 long：光学参数来自固定Flutter liquid_glass.frag；色散、雾化和边缘由材质驱动，menu不额外制造彩边。
 internal const val MENU_GLASS_SHADER = """
 uniform shader raw;
-uniform shader frost;
+uniform shader frostLow;
+uniform shader frostHigh;
+uniform shader rimFrostLow;
+uniform shader rimFrostHigh;
+uniform shader hazeLow;
+uniform shader hazeHigh;
+uniform float frostMix;
+uniform float rimFrostMix;
+uniform float hazeMix;
 uniform float4 box;
 uniform float4 drop;
 uniform float4 geometry;
@@ -110,9 +176,11 @@ uniform float4 tint;
 uniform float4 curveX;
 uniform float4 curveY;
 uniform float4 centers;
-uniform float refraction;
+uniform float4 optics;
+uniform float4 edgeStyle;
+uniform float4 rimStyle;
+uniform float4 lineStyle;
 uniform float paintScale;
-uniform float amount;
 uniform float4 pillCurve;
 uniform float2 pillCenter;
 const float3 luma = float3(.2126,.7152,.0722);
@@ -139,7 +207,15 @@ float insetCurve(float2 p) {
     return q.y+c>=q.x?octant(float2(q.x,q.y+c),box.z,curveX,centers.xy):octant(float2(q.y,q.x-c),box.w,curveY,centers.zw);
 }
 half4 sampleRaw(float2 p) { return raw.eval((p*paintScale+sampling.xy)*sampling.zw); }
-half4 sampleFrost(float2 p) { return frost.eval((p*paintScale+sampling.xy)*sampling.zw); }
+half4 sampleFrost(float2 p) {
+    float2 at=(p*paintScale+sampling.xy)*sampling.zw;
+    return mix(frostLow.eval(at),frostHigh.eval(at),frostMix);
+}
+half4 sampleMaterial(float2 p,float rise) {
+    float2 at=(p*paintScale+sampling.xy)*sampling.zw;
+    half4 base=mix(sampleFrost(p),mix(rimFrostLow.eval(at),rimFrostHigh.eval(at),rimFrostMix),rise*rise);
+    return mix(base,mix(hazeLow.eval(at),hazeHigh.eval(at),hazeMix),edgeStyle.z);
+}
 float band(float a,float b,float start,float end,float lit) { return max(min(b,end)-max(a,start),0.0)*lit; }
 float shine(float edge,float unit) {
     float a=max(edge/unit-.5/unit,0.0), b=edge/unit+.5/unit;
@@ -182,28 +258,45 @@ half4 main(float2 p) {
         edge=max(-d-max(lost-(nearest-d),0.0),0.0);
     }
     float inset=max(-d,0.0), minor=min(box.z,box.w);
-    float bevel=max(min(20.0*unit,minor*.5),.001);
+    float bevel=max(min(edgeStyle.x*unit,minor*.5),.001);
     float rise=1.0-clamp(inset/bevel,0.0,1.0);
-    float depth=min(refraction*amount*unit,minor)*(1.0-sqrt(max(1.0-rise*rise,0.0)));
-    half4 base=mix(sampleRaw(p-normal*depth),sampleFrost(p-normal*depth),amount);
+    float2 shift;
+    if(optics.x<0.0) shift=normal*(-optics.x*unit)*smoothstep(0.0,bevel,inset)*(1.0-smoothstep(bevel,max(minor,bevel+.001),inset));
+    else shift=-normal*min(optics.x*unit,minor)*(1.0-sqrt(max(1.0-rise*rise,0.0)));
+    half4 base=sampleMaterial(p+shift,rise);
+    if(edgeStyle.y>0.0 && inset<10.0*unit) {
+        float2 part=normal.yx*.5*edgeStyle.y*unit*(.6+.4*abs(normal.y)*max(1.0-inset/(7.0*unit),0.0))*(1.0-smoothstep(7.0*unit,10.0*unit,inset));
+        half4 red=sampleMaterial(p+shift+part,rise), blue=sampleMaterial(p+shift-part,rise);
+        base=half4(red.r,base.g,blue.b,max(base.a,max(red.a,blue.a)));
+    }
     float3 color=base.rgb/max(float(base.a),.0001);
-    color=mix(float3(dot(color,luma)),color,1.0+(mix(2.0,1.75,geometry.w)-1.0)*amount)*(1.0+(mix(1.1,1.8,geometry.w)-1.0)*amount);
-    float contrast=-.53*geometry.w*amount;
+    color=mix(float3(dot(color,luma)),color,optics.y)*optics.z;
+    color*=1.0-edgeStyle.w*abs(normal.x)*exp(-inset/(3.0*unit));
+    float contrast=optics.w;
     half4 behind=(sampleFrost(box.xy)+sampleFrost(box.xy+box.zw*float2(-.6,-.4))+sampleFrost(box.xy+box.zw*float2(.6,-.4))
         +sampleFrost(box.xy+box.zw*float2(-.6,.4))+sampleFrost(box.xy+box.zw*float2(.6,.4)))*.2;
     float clash=clamp((sign(contrast)*(dot(tint.rgb,luma)-dot(behind.rgb/max(float(behind.a),.0001),luma))-.3)/.5,0.0,1.0);
-    float cover=tint.a*amount+(1.0-tint.a*amount)*clash*abs(contrast);
+    float cover=tint.a+(1.0-tint.a)*clash*abs(contrast);
     float alpha=base.a*(1.0-cover)+cover;
     float3 glass=color*base.a*(1.0-cover)+tint.rgb*cover;
+    float n2=normal.y*normal.y, n4=n2*n2, n16=n4*n4*n4*n4;
+    float facing=optics.x<0.0?smoothstep(.65,.95,abs(normal.y)):mix(n2,.5*n2*abs(normal.y)*(1.0+n16),rimStyle.w);
+    float rimBand=clamp(1.0-max(edge-.67*unit,0.0)/max(rimStyle.y*unit,.001),0.0,1.0);
+    float tail=clamp(1.0-max(inset-.67*unit,0.0)/(4.5*unit),0.0,1.0);
+    float light=min(rimStyle.x*facing*mix(rimBand,tail,rimStyle.z),1.0);
+    glass+=(float3(alpha)-(1.0-lineStyle.x)*glass)*light;
+    half4 under=sampleRaw(p);
+    float line=clamp((.67*unit-edge)+.5,0.0,1.0);
+    float darken=mix(lineStyle.y,lineStyle.z,pow(abs(normal.x),3.0));
+    float3 darkLine=max(under.rgb-float3(.298*under.a),.22*under.rgb);
+    glass=mix(glass,mix(under.rgb,darkLine,darken),line*(max(lineStyle.y,lineStyle.z)>0.0?1.0:0.0));
     float across=min(radius/max(box.z*2.0,.001),.4), x=abs(centered.x)/(box.z*2.0)+.5;
     x=min(x,1.0-x);
     float side=mix(.25,.27,geometry.w), corner=mix(.15,.1,geometry.w), flatTone=mix(.09,.02,geometry.w);
-    float darken=mix(side,corner,clamp(x/max(across/4.0,.0001),0.0,1.0));
-    darken=mix(darken,flatTone,clamp((x-across/4.0)/max(across*.75,.0001),0.0,1.0));
-    half4 under=sampleRaw(p);
-    float line=clamp((.67*unit-edge)+.5,0.0,1.0);
-    glass=mix(glass,under.rgb*(1.0-darken),line*amount);
-    glass+=alpha*around(atan(abs(centered.x),max(abs(centered.y),.0001)),radius)*shine(max(edge,0.0),unit)*mix(.16,.22,geometry.w)*amount;
+    float menuDark=mix(side,corner,clamp(x/max(across/4.0,.0001),0.0,1.0));
+    menuDark=mix(menuDark,flatTone,clamp((x-across/4.0)/max(across*.75,.0001),0.0,1.0));
+    glass=mix(glass,under.rgb*(1.0-menuDark),line*lineStyle.w);
+    glass+=alpha*around(atan(abs(centered.x),max(abs(centered.y),.0001)),radius)*shine(max(edge,0.0),unit)*mix(.16,.22,geometry.w)*lineStyle.w;
     return half4(min(glass,float3(alpha)),alpha);
 }
 """

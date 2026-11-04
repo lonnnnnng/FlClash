@@ -92,6 +92,9 @@ class ProxyGroupEditorInstrumentedTest {
             compose.onNodeWithTag("proxy_group_members_confirm").performClick()
             compose.onNodeWithTag("proxy_group_add_option").performScrollTo().performClick()
             compose.onNodeWithTag("group_add_timeout").performScrollTo().performClick()
+            compose.onNodeWithTag("group_add_timeout").assertDoesNotExist()
+            capture("groups_add_options_$theme")
+            compose.onNodeWithTag("proxy_group_add_option_back").performClick()
             compose.onNodeWithTag("group_option_timeout").performScrollTo().performClick()
             compose.onNodeWithTag("group_value_input").performTextReplacement("-1")
             compose.onNodeWithTag("group_value_confirm").performClick()
@@ -116,6 +119,32 @@ class ProxyGroupEditorInstrumentedTest {
                 assertTrue(values.last().fields.has("future"))
             }
         }
+    }
+
+    @Test fun addingAllOptionsReturnsToDraftWithoutSavingParent() {
+        assertPortraitDefaultFontConfiguration()
+        var writes = 0
+        compose.setContent { KClashTheme {
+            ProfileProxyGroupsEditorDialog(Profile.custom(212, "连续设置"), ProfileProxyGroupsEditor.extractGroups(source), false,
+                {}, { writes++ }, sourceContent = source, onSaveDraft = { writes++ })
+        } }
+        compose.onNodeWithTag("proxy_group_row_0").performClick()
+        compose.onNodeWithTag("proxy_group_add_option").performScrollTo().performClick()
+        val options = listOf("empty-fallback", "url", "interval", "timeout", "max-failed-times", "lazy", "expected-status", "default-selected", "hidden", "disable-udp")
+        options.forEachIndexed { index, option ->
+            compose.onNodeWithTag("group_add_$option").performScrollTo().performClick()
+            compose.onNodeWithTag("group_add_$option").assertDoesNotExist()
+            if (index < options.lastIndex) compose.onNodeWithTag("proxy_group_add_option_back").assertIsDisplayed()
+        }
+        compose.onNodeWithTag("proxy_group_add_option_back").assertDoesNotExist()
+        compose.onNodeWithTag("proxy_group_form_confirm").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(0, writes) }
+        capture("groups_all_options_returned_to_draft")
+        compose.onNodeWithTag("proxy_group_form_back").performClick()
+        compose.onNodeWithText("放弃此策略组修改？").assertIsDisplayed()
+        compose.onNodeWithText("放弃修改").performClick()
+        compose.onNodeWithTag("proxy_group_row_0").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(0, writes) }
     }
 
     @Test fun emptyGroupBlocksConfirmAndCancelDoesNotWrite() {

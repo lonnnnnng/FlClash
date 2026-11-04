@@ -10,4 +10,4 @@ Design System 至少集中管理颜色、字体、间距、形状、图标、状
 
 ## 最新菜单/子页切片（2026-11-04）
 
-菜单AGSL折射与保留父层的可逆展开/收回、本地代理及Provider的56dp同行表单已完成final12集中验收。完整视觉仍PARTIAL：预模糊近似、通用玻璃/ultra分级、完整材质插值、其他空态/更多子页、低API和性能验证待补；默认玻璃关闭，暂缓主题/语言设置。截图与长窗口Room保护边界见`docs/acceptance/glass-stack-subpages-redmi-20261104.json`和roadmap最新节。
+共享regular/pill/menu/alert/tinted/lens材质与STANDARD/ULTRA等级、共用液滴回源、可逆多层展开、策略组/更多/链式代理覆盖子页及API27离线fallback已验，玻璃默认关闭；Redmi final6 19/19、API27 final6 10/10，详见`docs/acceptance/general-glass-subpages-api27-20261104.json`。完整视觉仍PARTIAL：预模糊近似，API24/25、31/32及其他ABI/实网未验；其他空态/页面、完整采样品质、全应用逐像素一致性和性能验证待补。早期Room元数据兼容不属于开发阶段要求；Redmi正式配置/选择/正文聚合摘要的count=1且before/after SHA一致，逐字段摘要未嵌入JSON；API27设置记录为null，不能据此确认恢复。主题/语言设置继续暂缓。

@@ -117,7 +117,8 @@ class LocalProxiesPageInstrumentedTest {
             compose.onNodeWithTag("profile_dialer_target_Beta").performClick()
             compose.runOnIdle { assertEquals(mapOf("Alpha" to "Beta"), ProfileDialerEditor.parseDialers(state.dialers)) }
             compose.onNodeWithTag("profile_dialer_Alpha").performClick()
-            compose.onNodeWithTag("profile_dialer_none").performClick()
+            compose.onNodeWithTag("profile_dialer_target_Beta").assertIsSelected()
+            compose.onNodeWithTag("profile_dialer_none").assertIsNotSelected().performClick()
             compose.runOnIdle { assertTrue(state.dialers.isEmpty()) }
         }
     }

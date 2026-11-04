@@ -2,17 +2,17 @@
 
 ## 菜单背景光学与可逆层栈（2026-11-04）
 
-- `AppMenuSource`的PixelCopy结果通过`prepareAppMenuBackdrop`在Default后台降采样/三次盒式卷积，分离raw/frosted；取消每16行检查。`AppMenuGlassRenderer` API33+用RuntimeShader/BitmapShader绘制连续圆角SDF、折射/bevel及goo高光，窗口坐标与父层paintScale参与背景采样；低API沿用预模糊背景，尚未真机验证。
+- `AppMenuSource`的PixelCopy结果通过`prepareAppMenuBackdrop`在Default后台降采样/三次盒式卷积，分离raw/frosted；取消每16行检查。`AppMenuGlassRenderer` API33+用RuntimeShader/BitmapShader绘制连续圆角SDF、折射/bevel及goo高光，窗口坐标与父层paintScale参与背景采样；API27离线捕获与fallback已在手机AVD验收，API24/25、31/32和其他ABI未验，API27设置恢复不能由证据JSON确认。
 - `AppMenuStackState`保留Level/Owner及每层ScrollState/key。新卡从owner触发行按分段曲线展开，父卡缩小/压暗/减影；同一Animatable收回可反向，退完才remove。外部祖先同步不可被用户返回误反向，标题复用触发行并旋转箭头。后层清语义/禁用命中，露出父卡只返回一级。
 - 交互clip与开场外层morph相交，释放使用最后真实落点重新命中，hitRevision使动画/滚动后重新计算；`maxValue`必须在组合读取后发布可滚动性，不能只在SideEffect里读而漏掉首帧测量变化。回源t=0保留全部材质/blur/sourceAlpha，稳定卡与开场光学层互斥。
-- `ProfileFormRow`承载56dp同行标签/值与右侧编辑，`ProfileFormSection`允许按页面关闭默认内边距/间距；本地代理认证/可选分组、Provider选项与资源引用仅改排版，不改保存、草稿与核心边界。默认玻璃关闭，通用材质/ultra与更多子页仍PARTIAL；旧切片的AnimatedContent/基础磨砂描述为历史状态。
+- `ProfileFormRow`承载56dp同行标签/值与右侧编辑，`ProfileFormSection`允许按页面关闭默认内边距/间距；本地代理认证/可选分组、Provider选项与资源引用仅改排版，不改保存、草稿与核心边界。共享regular/pill/menu/alert/tinted/lens材质及STANDARD/ULTRA等级可复用，默认玻璃仍关闭；策略组/更多/链式代理覆盖子页已验，其他页面和完整全局parity仍PARTIAL。三次盒式卷积只是预模糊近似。
 
 ## 源快照菜单与代码正文视图（2026-11-04）
 
 - `AppMenuSource`记录源按钮GraphicsLayer，在内存快照成功后交接原绘制；没有快照保留普通200ms退场。`AppMenuMorph`/`AppMenuGoo`负责开场、从中断帧回源及距离场桥接；`present`独立保留500ms回源图层，不能依赖未发生透明度变化的AnimatedVisibility生命周期。
 - `AppDropdownMenu`在退场完成且宿主仍STARTED、原expanded仍有效时才执行待办操作；ON_STOP撤销，源销毁恢复绘制。子菜单旧层移除语义并禁用命中，`opensSubmenu`只表示导航停留，普通保持打开的开关不触发400ms导航。
 - `AppMenuCarry`区分长按、跨slop拖动、释放与取消；源手指未释放前Popup不抢Window焦点，源持续更新Window坐标。语义长按没有物理指针，不进入携带状态，由Popup接管系统返回。可滚动菜单不抢竖向手势；取消路径撤销悬停，不执行最后条目。
-- 玻璃开关默认关闭，开启时用宿主Window的PixelCopy内存背景，先隐藏源绘制后抓帧；当前仅磨砂/透色/高光。API26以下不抓背景，API31以下不使用RenderEffect；完整上游折射shader和材质分级尚未实现。
+- 玻璃开关默认关闭，开启时用宿主Window的PixelCopy内存背景，先隐藏源绘制后抓帧；API33+使用折射shader，旧API保留fallback。API27离线材质、Window捕获、菜单与子页已通过；API24/25、31/32、其他ABI及低API网络/VPN/核心路径未测。
 - `ProfileCodeField`用显示span保持OffsetMapping.Identity，行号独立Canvas；超过512Ki字符跳过着色扫描。查找选区显式驱动滚动，预览行号DisableSelection；正文只返回父草稿，不增加直接文件写入。BasicTextField仍整体测量，极限正文性能另验。
 - 排序列表保留既有暂存/真实拖动链路，视觉统一72dp行和单尾部拖柄，上下移动改为CustomAccessibilityAction；身份验证分组和Provider选项不改变协议字段/保存边界。
 
@@ -46,7 +46,7 @@ Fallback真实Bridge协议边界通过，但授权订阅与本地原1.yaml均未
 
 `ProfileStatisticsViewModel.updateProvider`对齐Flutter `ProxiesAction.updateProvider`的finally清理：超时和取消也清除inFlightName/updatingNames，防止已结束任务留下进度圈或污染下一份配置。超时显示“更新超时，请重试”并登记失败项；真实协程取消仍向上传播，不向新窗口发布旧提示。它与既有8秒Providers列表读取预算分别覆盖更新态和加载态，原始分钟级现场缺失，不能认定唯一触发原因。
 
-菜单采用浮层底色、连续圆角、阴影、弹簧缩放/淡入淡出和禁用语义；尚未实现Flutter完整液滴、截图变形、滑动携带和玻璃模式。整体页面parity仍PARTIAL，集中构建/安装/失败证据见`docs/acceptance/main-menu-redmi-20261104.json`。
+该切片验收的是浮层底色、连续圆角、阴影、弹簧缩放/淡入淡出和禁用语义；随后已补齐共用液滴回源、滑动携带、玻璃折射/多层展开与API27 fallback，细节见本文件前述最新状态及`docs/acceptance/general-glass-subpages-api27-20261104.json`。整体页面parity仍PARTIAL。
 
 ## 主页面连续圆角与绘制反馈（2026-11-04）
 

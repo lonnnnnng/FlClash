@@ -1,12 +1,12 @@
 # Project Context
 
-## 菜单玻璃折射、层栈及同行表单（2026-11-04）
+## 共享玻璃材质、层栈、子页及 API27（2026-11-04）
 
-菜单使用独立原图/预模糊背景与API33+ AGSL折射/bevel/高光，goo法线及窗口/绘制缩放对齐；深色tint由Flutter实际导出#343537。多层子菜单保留所有父卡/独立滚动，从触发行展开；收回弹簧可反向，退完才移除，外部祖先/后层命中语义隔离。修正短菜单maxValue测量订阅和释放实时clip命中。本地代理/Provider选项/资源列表统一56dp同行与分组边距。
+六种共享玻璃样式regular/pill/menu/alert/tinted/lens与STANDARD/ULTRA质量等级已接入，默认关闭；API33+使用AGSL折射/bevel/高光，旧系统走预模糊fallback。深色tint由Flutter实际导出#343537。多层子菜单保留所有父卡/独立滚动，从触发行展开；收回弹簧可反向，退完才移除，外部祖先/后层命中语义隔离。策略组/更多/链式代理覆盖子页和同行排版已验。
 
-build10 App446/Service191/Core38/Common31共706项零失败/错误/跳过，Debug/Test、未签名Release/R8通过；testbuild12仅增强配置保护，生产APK未变，独立双Lint各0错误/64警告（Debug10/Release9 hints）。Redmi final12最终App/Test同批22/22、42张PNG已目视；最终独立会话before/after各1/1，正式1份配置全行/字段摘要、选择及正文保持。较早原before→final10仅Room摘要变化，字段/时点未定位，原选择/正文保持；失败及旧基线保留，不宣称整个长窗口元数据保护。两包设备哈希匹配，原1.yaml双端和Flutter原版包SHA保持，结束无服务/tun0、旋转1/0、字号/动画倍率1.0。证据`docs/acceptance/glass-stack-subpages-redmi-20261104.json`。
+App449/Service191/Core38/Common31共709项零失败/错误/跳过，Debug/Test、未签名Release/R8和独立双Lint通过。Redmi API36 final6同批19/19、API27手机AVD final6同批10/10，最终PNG已目视，App/Test安装哈希匹配。API27只覆盖离线材质像素、真实Window捕获、菜单/子页与fallback；API24/25、31/32及其他ABI未验。Redmi保护日志显示单份正式配置、选择和正文聚合摘要count=1且before/after SHA一致，逐字段摘要未嵌入JSON；更早Room摘要变化的字段/时点未定位。早期Room元数据兼容不属于开发阶段要求，不新增迁移或回溯修补；当前正式配置和正文仍独立保护。API27旋转/字号/动画设置记录为null，不能据此确认恢复。证据`docs/acceptance/general-glass-subpages-api27-20261104.json`。
 
-完整Flutter视觉仍PARTIAL：三次盒式卷积是预模糊近似，通用玻璃/ultra分级、完整材质插值、其他空态/更多子页、低API实测与性能profile待补；默认玻璃仍关闭。本组未重跑网络/Go/远端CI或签名Release运行，Fallback实核/冷进程和8MiB正文边界保持。备份/系统恢复、观测次要打磨、语言/主题继续暂缓。下方旧切片仅代表当时状态。
+完整Flutter视觉仍PARTIAL：三次盒式卷积为近似，未声称完整采样品质或全页面逐像素等价；其他空态/页面、API24/25/31/32与其他ABI、实网/核心场景和性能profile待补。未重跑Provider实网、Go、远端CI或正式签名运行；Fallback实核/冷进程和8MiB正文性能边界保持。备份/系统恢复、观测次要打磨、语言/主题继续暂缓。下方旧切片仅代表当时状态。
 
 ## 液滴菜单与配置子页视觉（2026-11-04）
 

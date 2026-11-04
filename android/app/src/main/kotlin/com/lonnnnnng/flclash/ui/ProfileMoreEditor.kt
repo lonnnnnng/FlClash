@@ -217,12 +217,12 @@ private fun MoreProtocolRow(title: String, detail: String, modifier: Modifier, e
 @Composable
 private fun MoreSettingRow(field: MoreField, value: JsonElement, enabled: Boolean, onRemove: () -> Unit, onEdit: () -> Unit, onToggle: (Boolean) -> Unit) {
     val toggle = field.kind == MoreFieldKind.TOGGLE
-    Row(Modifier.fillMaxWidth().heightIn(min = 72.dp).testTag("more_field_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("more_field_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onRemove, enabled = enabled, modifier = Modifier.testTag("more_remove_${field.key}")) { Icon(Icons.Outlined.RemoveCircleOutline, "移除${field.label}", tint = MaterialTheme.colorScheme.error) }
-        Column(Modifier.weight(1f).clickable(enabled) { if (toggle) onToggle(!value.asBoolean) else onEdit() }.padding(vertical = 12.dp).testTag("more_edit_${field.key}")) {
+        Column(Modifier.weight(1f).clickable(enabled) { if (toggle) onToggle(!value.asBoolean) else onEdit() }.padding(vertical = 10.dp).testTag("more_edit_${field.key}")) {
             Text(field.label)
             val detail = when {
-                toggle -> field.description
+                toggle -> ""
                 field.kind == MoreFieldKind.PROTOCOL -> value.asJsonObject.get("ports")?.asJsonArray?.let { if (it.size() == 0) "默认端口" else "${it.size()} 个端口或范围" } ?: "默认端口"
                 value.isJsonArray -> "${value.asJsonArray.size()} 项" + if (value.asJsonArray.size() == 0) " · 空列表" else ""
                 value.asString.isEmpty() -> "空值"

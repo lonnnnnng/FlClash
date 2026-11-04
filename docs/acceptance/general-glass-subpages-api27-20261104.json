@@ -1,0 +1,2368 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-04",
+  "scope": "共享玻璃材质与质量分级、regular-menu回源、策略组/更多/链式代理子页和API27离线降级验收",
+  "baseCommit": "d22fa9ff6a3ac6740237a43bffce19f6aa0018c5",
+  "flutterReferenceCommit": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+  "glassDefaultEnabled": false,
+  "earlyRoomMetadataCompatibility": "用户确认开发阶段不要求早期Room元数据兼容；未新增迁移或追溯修补，保留历史失败，现有正式配置/正文继续保护。",
+  "builds": {
+    "build1": {
+      "path": "/tmp/kclash-general-material-20261104-build1.log",
+      "sha256": "214a859612fa71d6f858d6090b3b3c668313020496698af31d9bf34d5e91a616",
+      "bytes": 11126,
+      "passed": true,
+      "failure": null
+    },
+    "build2": {
+      "path": "/tmp/kclash-general-material-20261104-build2.log",
+      "sha256": "e7315b3cce486c90b43a0af742d40d48ae8fc09a9d79b200bbdf0dfbbef89cba",
+      "bytes": 20034,
+      "passed": true,
+      "failure": null
+    },
+    "build3": {
+      "path": "/tmp/kclash-general-material-20261104-build3.log",
+      "sha256": "16b440b2b239309175c95871c7c55d59e318ab3743dc4d88f77497edbcc811e5",
+      "bytes": 20251,
+      "passed": true,
+      "failure": null
+    },
+    "build4": {
+      "path": "/tmp/kclash-general-material-20261104-build4.log",
+      "sha256": "801cfc82f2bfed7d28d63c6c044615b6912586b477afdb8691c0d68b239a5fbe",
+      "bytes": 19189,
+      "passed": false,
+      "failure": "Kotlin测试字符串插值缺少花括号：Unresolved reference haze不能把半透明叠成更厚的玻璃；build5修正通过。"
+    },
+    "build5": {
+      "path": "/tmp/kclash-general-material-20261104-build5.log",
+      "sha256": "c7f447c05ccd5175f39bea6efc7aa3172812e8a487f32950b8f821ef26f4aa32",
+      "bytes": 20002,
+      "passed": true,
+      "failure": null
+    },
+    "build6": {
+      "path": "/tmp/kclash-general-material-20261104-build6.log",
+      "sha256": "46492f0d4da48179f57004135e5db6bd2ca2b195d5be210f21220a36e8878f28",
+      "bytes": 19782,
+      "passed": true,
+      "failure": null
+    },
+    "lint3": {
+      "path": "/tmp/kclash-general-material-20261104-lint3.log",
+      "sha256": "a264c97ed8fa4f04a2e4d54d04a9a1bb0003190c3422b82a55b9125219286b78",
+      "bytes": 27668,
+      "passed": true,
+      "failure": null,
+      "diagnostic": "虽返回BUILD SUCCESSFUL，但出现并行源码变动导致的Did not find源码定位异常；不作为最终Lint证据，lint6在源码稳定后独立串行完成。"
+    },
+    "lint6": {
+      "path": "/tmp/kclash-general-material-20261104-lint6.log",
+      "sha256": "a1de1b63908bb9f98a87227a909a6d5a06256f0fb2d157a674412f727498122c",
+      "bytes": 14683,
+      "passed": true,
+      "failure": null
+    }
+  },
+  "batchArtifacts": {
+    "redmi1/api27-2": {
+      "android/app/build/outputs/apk/debug/app-debug.apk": "d4a25457520e77bce294d956589d1a995880d468c129c0c3d3e2341151e66454",
+      "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk": "cb9e1f59964485bd4ecfa8fb2c7a8f1e23002f8226b84d035d38a371b7634166",
+      "android/app/build/outputs/apk/release/app-release-unsigned.apk": "b8a9545be253f84affc83321ac3430f6dbcf2ef90eb02c5432cffe9cba982d38"
+    },
+    "redmi-final5/api27-final5": {
+      "android/app/build/outputs/apk/debug/app-debug.apk": "eef9ed9e911a6128a9b788860eb5760f5759aa5a58819c2e3a75914629f45b2b",
+      "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk": "2b82afb8c6be728514f2020511dcd6d36363dac7e106edd4784bd8fd0891e3f2"
+    },
+    "redmi-final6/api27-final6": {
+      "android/app/build/outputs/apk/debug/app-debug.apk": "0160fb18c666529df9494f233d01cefdbbca2163bfec43bef5b19ed9211ebbc4",
+      "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk": "e10e6b93915b3fee9c9a83c16a215ef67ba0b1ecfe4c056a927a4a5c0cbfc90c"
+    }
+  },
+  "unitTests": {
+    "app": {
+      "tests": 449,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 191,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "common": {
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "lint": {
+    "debug": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-debug.xml",
+      "sha256": "e4615f02470920b117c9940703f6938e5e62058e672f1cd50a81d97e4def0996",
+      "bytes": 83101,
+      "counts": {
+        "Warning": 64,
+        "Hint": 10
+      }
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-release.xml",
+      "sha256": "bde46049036a99829edfc58b9001e86d063c8b6b91206cf65ab7732d97d63abf",
+      "bytes": 81896,
+      "counts": {
+        "Warning": 64,
+        "Hint": 9
+      }
+    }
+  },
+  "batches": {
+    "redmi1": {
+      "final": false,
+      "passed": 19,
+      "executed": 19,
+      "expected": 19,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#sharedMaterialsAndQualityRenderDistinctPixelsAcrossThemes",
+          "passed": true,
+          "seconds": 10.21,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-0.log",
+          "sha256": "5c95777e0dcf299949916d0d832116b6898357e4ff42a4c936dd0a1e30540ef1",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-materials_36_false_ULTRA.png",
+              "sha256": "1ab029ed064ce4d9692ba70cec2de2da9ad80de34ac4cf78a76eb810210101d2"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-materials_36_false_STANDARD.png",
+              "sha256": "bfeac2d9e3d9242c1c46db0db37195de833259f4995efc4c709865c9006a2819"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-materials_36_true_ULTRA.png",
+              "sha256": "020599eb5f55c3de76a32004d2b8f5e7471f10da46aab5ba4a20b5897b99449b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-materials_36_true_STANDARD.png",
+              "sha256": "ad987aee5913af5e9745070e594e3487307d0f6822b0a1d8ab66c6aa8ed13aee"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#transparentFrostKeepsColorAndFallbackInterpolatesPremultipliedAlpha",
+          "passed": true,
+          "seconds": 3.87,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-1.log",
+          "sha256": "d03a97622ffdb4a7c90a8e83e0e4c1b8e93ccd1690be1814abd7d46b5f2e8617",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#windowCaptureAndDefaultDisabledStayUsableOnCurrentApi",
+          "passed": true,
+          "seconds": 4.24,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-2.log",
+          "sha256": "45fa024d346357330d75967040e79b2260f137ac110e23a0d5a29791a697fee9",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+          "passed": true,
+          "seconds": 5.15,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-3.log",
+          "sha256": "daf5dbe628715437794e232e98f96f0befd9ae641d7412faa23dceb58f610c52",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-glass_optics_false.png",
+              "sha256": "8d3e7265b55b3097d853e888b9aaba043ccf76125d687a8fea9c7e54e2a57836"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-glass_optics_true.png",
+              "sha256": "3a0f2af61ea25d115c8290cb3b6e79c6ae287f68bb542f924cac547928fa58fe"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 13.7,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-4.log",
+          "sha256": "10b11eb06c820ed9f799b7d771361a5a55c01e8e7020ae091ccd7914dea3c7e5",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-stack_three.png",
+              "sha256": "03c3de3460c9a533a866de9d1c7766492abf8867325b75b720f3b0f093aa63e6"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-stack_fold_middle.png",
+              "sha256": "5c794d0324f16e896bb26ba65645bef27c60eaf7197812798fdd8dd39a0700d6"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 11.7,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-5.log",
+          "sha256": "cf2da792563a50d53436369aee52ffb3fba3d0b6a660e00c0274714b3af5210e",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-glass_stack_false.png",
+              "sha256": "ae7a8bbf2450f349d5a211b9a1a1c1c5db52e28467bb60a1c2fad3cd9e079693"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-glass_stack_true.png",
+              "sha256": "1b15d705d54d387f9d4ae809976a081e167e377e18b51198b01242b28148d6d3"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 17.43,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-6.log",
+          "sha256": "0aec61149b0d29375745cf7f42f87b9ec00f70911c7663b200807da894f585b0",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-liquid_open_false_false.png",
+              "sha256": "50ec3ac662520ef590d38cf02497a85e2aaaf5a99eaf98dcfe1f1b4ba2332920"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-liquid_return_false_false.png",
+              "sha256": "2dfee77fc8515091b189abf60ed22007325e852942d3667c0421af765c380df2"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-liquid_open_false_true.png",
+              "sha256": "fb05a58cd1dcac573afdb7c19f5ddb77222c2abc201bfcf7bb130a7461e7baed"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-liquid_return_false_true.png",
+              "sha256": "1cdf33f92fd44c350bd81da976743b2364788fe5f7ad34e47f7edfa51b9f7a63"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-liquid_open_true_false.png",
+              "sha256": "2b340d9e7d2380a25075f6624ccdeed8a002043b2a77298c15fcb3ef8d99b6f9"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-liquid_return_true_false.png",
+              "sha256": "c91f0b2a796482b74412c71ee8e576ebd7d24a2f5bc8846ad55964b3d37276aa"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-liquid_open_true_true.png",
+              "sha256": "dc4564b7201829ade44ae0c73a5671f6a358eafbd67b31b694f46a3ab1803fb0"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-liquid_return_true_true.png",
+              "sha256": "0bbb0bac41777a384768719fa72d03782a30922ab60a9c6da1323729e5e405fe"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": true,
+          "seconds": 4.99,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-7.log",
+          "sha256": "83d7616d53b28e0d13b61fcb8a341913a2348224845b94055cb33d8a9dfde616",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+          "passed": true,
+          "seconds": 26.95,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-8.log",
+          "sha256": "fe5110831ebd90a0535cf3b2c0e708320c15089e25963b177e784f06a34be309",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_list_light.png",
+              "sha256": "69ebfe9f32638c24ed0ef14debe4456a48a3cb88179258fbc26ec264357b85e2"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_member_picker_light.png",
+              "sha256": "305c42d882274e4571fb92ade97314ef11eb8edba999f20c22b120ceba385353"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_members_light.png",
+              "sha256": "0559eb3ac63cd027a520aedcf6b6725ea1094bf456d9cc3fe81cda537ae11ced"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_add_options_light.png",
+              "sha256": "bf59a8757ff45dfa916e9b599586f67d69376a3d0f317869cef523f4e24b224c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_options_light.png",
+              "sha256": "17eff16ff75d2c94ecdac61829d2b011fb2a4c63aa2cb8dd58639020bd08e68b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_quick_yaml_light.png",
+              "sha256": "0d7945157abe7d43d4cb829d473411e3209ddd06c57610b3b98b7eaee91dfdbe"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_list_dark.png",
+              "sha256": "502fd58e5b88b9597554c99d947381d2249ff35dce87faef9e83d4de8735824f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_member_picker_dark.png",
+              "sha256": "339a2c4bb49deb32cc4471d304f900ccc6d32864f6c3dbc266dcafecfdbf9037"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_members_dark.png",
+              "sha256": "9632e033dd936d6893cb65b759aa251e0db61eb96dec15f0e6ae20abb1d44957"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_add_options_dark.png",
+              "sha256": "c0e60c390190125d9bd9ab8866e359677446badcbf8eaf3548819330f837fbde"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_options_dark.png",
+              "sha256": "ac2bc81b79ca98cb947eb79705efa6f9145c9141c39ef30f126e6121cf6a9b5d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_quick_yaml_dark.png",
+              "sha256": "dff848db27105ca6dc2425d751028ba7b4460bf7be10558d759099d1128a05e4"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+          "passed": true,
+          "seconds": 7.28,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-9.log",
+          "sha256": "7a7165503a97ec703410757c3c8677640b3ddd79b36b0c540e8760b457fb2d14",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+          "passed": true,
+          "seconds": 6.71,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-10.log",
+          "sha256": "4ca6c083ef556a1bb6c30f9b6ea3cd96f3d3e0716054da347a6d606aa33b20df",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+          "passed": true,
+          "seconds": 7.49,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-11.log",
+          "sha256": "1131a8091b4f9619cb640570a5a618ded4ea87b5ca31c24b1c89dcc372efaccf",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+          "passed": true,
+          "seconds": 10.56,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-12.log",
+          "sha256": "65f694128f93ec2388e23774960d83582c00a75ecc22c2751a3a8ecbea57b789",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-profile_dialers_missing_false.png",
+              "sha256": "cba1e8386177a538ce8ea884f4c5a79c7bf8b539f08c45b5845f22082c71dbb4"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-profile_dialers_targets_false.png",
+              "sha256": "ebb0953009e790b4f6721810f930cc6f420ce8767ec371740c3b0dbd346f900b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-profile_dialers_missing_true.png",
+              "sha256": "8898da792f13fa0000b699105ab4835ee413a560d6c346ddbe066c6e374ce881"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-profile_dialers_targets_true.png",
+              "sha256": "04a3b0769a71e325ee6a2ca5bb201185ca58b297cec16350863aa92516ab2e89"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+          "passed": true,
+          "seconds": 28.03,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-13.log",
+          "sha256": "c7db68021c89f9d13e17ae5b64dcfbd223e8582916fc4cbb61226181eeb9cde2",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_ntp_empty_light.png",
+              "sha256": "b24765c6ce4c2c385bf6cac6146dcf7f062e823cc081c38929ac6205c16bbeac"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_ntp_add_light.png",
+              "sha256": "31ad52e0d6bdc2210693a0863301c619824ad46e30f5a3cbf47a2f65b5985d08"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_ntp_fields_light.png",
+              "sha256": "c423930c137ec6f5803f3a3c4ad133f287a5f484e2ab8b7f326445fe25874473"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_ntp_error_light.png",
+              "sha256": "a6caeeb47005485de56e59151367f355ec0c6171599ed78e1dfea927b45f59ad"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_sniffer_protocol_light.png",
+              "sha256": "4bcb789b2f1274be49d165d60790d0f0ac76299f515237225883b2f07155543e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_sniffer_ports_light.png",
+              "sha256": "448f486aa0166c39560d66dd3365fb90c052ea61cc77c78bc54b799de9620274"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_sniffer_yaml_light.png",
+              "sha256": "dbc73f2dbbb41f4c501a3eb8dae7e33e04ad703f147d5a62a60037553123751d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_ntp_empty_dark.png",
+              "sha256": "1c86e235d677cb25a7ecaa096f28603dfbae4a212db568daa9de1f1f675b9e1e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_ntp_add_dark.png",
+              "sha256": "0c1102b7d7491cb10f217429a6e15cbeed82d9ecabf2cf5117914a3a6fe4f68e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_ntp_fields_dark.png",
+              "sha256": "1e21eabdecac96488f4ed2e662c65c4ffaa274e4fa957a60d3c539af0634d83b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_ntp_error_dark.png",
+              "sha256": "17e64ac4d06b70c7089ad8bfbf8eadeab51f20ea1068e55eb9a3464f7a858945"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_sniffer_protocol_dark.png",
+              "sha256": "f601f4332da2ae782fe85f8277055ec01713a1cd6792e313ea9382e166073a0a"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_sniffer_ports_dark.png",
+              "sha256": "1bfa24c83ea9d0b453140f43d41c7c3f4a8eeffc05a8fd47d4ccd6349f174659"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_sniffer_yaml_dark.png",
+              "sha256": "7a32b786f95db88a96fc606ae4b925e70914d06347d1798d4ec4b57e2e2599ea"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+          "passed": true,
+          "seconds": 9.86,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-14.log",
+          "sha256": "c1bf32b2b961ca44f32c745c5f87e07c7e0238d9fb9457dbdf9925b75fe1c294",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-more_field_save_failure.png",
+              "sha256": "3eb7001821b746dbc4a5c93a5b2ece7be042a3a471e934f985ad49046db6015a"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+          "passed": true,
+          "seconds": 10.69,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-15.log",
+          "sha256": "a1bc6d08c834af59534bbb03bc870a46af638521bace31c9828cf7578b362109",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol",
+          "passed": true,
+          "seconds": 9.52,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-16.log",
+          "sha256": "bbcdb628e3845ceaaf818aab7c7c4fdf1afd68889f78afa9c6adfcc15af010d3",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "seconds": 9.39,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-17.log",
+          "sha256": "00876f8972e1ca2f9c3cbe841e47aff6d6969878f010f269ef8590fd1c00d68a",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+          "passed": true,
+          "seconds": 10.52,
+          "log": "/tmp/kclash-general-material-20261104-redmi1-18.log",
+          "sha256": "6a873685fc93ac95a9e6a12de9fab55c33733e4378ae7508949788a578bc7825",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi1-groups_all_options_returned_to_draft.png",
+              "sha256": "a26b9908dc5b8b40e7a5eda431d441c86a5f3e5e60b14ccdb813527fd0eefde7"
+            }
+          ]
+        }
+      ]
+    },
+    "api27-2": {
+      "final": false,
+      "passed": 10,
+      "executed": 10,
+      "expected": 10,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#sharedMaterialsAndQualityRenderDistinctPixelsAcrossThemes",
+          "passed": true,
+          "seconds": 4.8,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-0.log",
+          "sha256": "a8aafc129a22ca83abd187dcad838ebe989c5cb0dd98d606530283f1db51734b",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-materials_27_false_ULTRA.png",
+              "sha256": "7db2b4fc8d1ae2992ef461b98985566481b2fe2bc9531ec13da298da2326be64"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-materials_27_false_STANDARD.png",
+              "sha256": "14a93df65249f02933e2696a7611f8b3a1ab66a2ceee06c0d431e2a20691bb5f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-materials_27_true_ULTRA.png",
+              "sha256": "28822bfd6565e8593a8a65c10b08573e29f44dde4f0fd611f004a39b809f0eb5"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-materials_27_true_STANDARD.png",
+              "sha256": "251815393113db894fbe891fc0069bcaf6352163e2af03a251d0469499a30966"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#transparentFrostKeepsColorAndFallbackInterpolatesPremultipliedAlpha",
+          "passed": true,
+          "seconds": 1.86,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-1.log",
+          "sha256": "34f43eae3831e77528df3eb829879ad03fcc38ce95f89652e699316e5351b81f",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#windowCaptureAndDefaultDisabledStayUsableOnCurrentApi",
+          "passed": true,
+          "seconds": 2.07,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-2.log",
+          "sha256": "fe23e5bf853fc96d8624097effc4943fda76eb08aff5a08a7fe89db02c85560c",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 5.54,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-3.log",
+          "sha256": "7c886f5fe2831a1b011a2071365bab27a33021fbd4342a5dc3308a4c9215c65c",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-stack_three.png",
+              "sha256": "08228dd70f56cf535d2190471155cd68dce66689237120f3797a7d2ba8c93a73"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-stack_fold_middle.png",
+              "sha256": "10dcf9fb5efc0f5808012474f1d8ed8d1766f7bb6d52035c7c93ba49946ae411"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 4.69,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-4.log",
+          "sha256": "95508c1a1520ccbca37badcbef482ed0c7285c3b23a08d244ed7703dd10dea03",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-glass_stack_false.png",
+              "sha256": "ed9bd7fd6439fddf77ad9f3378e393040eea5d2180121fd7bc6b07811f0ed193"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-glass_stack_true.png",
+              "sha256": "5981ea04c4d7bbeea2f590ccb1283690b87497dad3b756505be17cbcbdfd31a4"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 7.39,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-5.log",
+          "sha256": "3c9198382f8a7cc678c310749c1875d19b773459b9b0e440d6dddaefe6401638",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-liquid_open_false_false.png",
+              "sha256": "8a407bacb4e3faaf43bfb35b5501ecea30a2cd0d8bc233883183cc929f4f8fe3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-liquid_return_false_false.png",
+              "sha256": "b973af4d8335c09daf86b2d65076f8ac5e20d7adcb47e964cfa4224b086a7dc9"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-liquid_open_false_true.png",
+              "sha256": "0d3b4f0c1a0f0d0d6c7b7b513b42bd980d1adf98665aa953c311e7e46fec2956"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-liquid_return_false_true.png",
+              "sha256": "2b44b709824a92c03765bd3964f258da0127bd62783759f543bcf160e8df6d57"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-liquid_open_true_false.png",
+              "sha256": "a67215fc3ea16efb192adea68a3b11b9ab7d0b3957282cb82c12bc6d5f0686ed"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-liquid_return_true_false.png",
+              "sha256": "521441a9b6b4041eae816bea35dbf250167c86117883cf0e3b08d65eddb74085"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-liquid_open_true_true.png",
+              "sha256": "859327d8d7c8a37b68698d542b9ed308052d4e1e2dca60548e052b465f84d827"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-liquid_return_true_true.png",
+              "sha256": "2aee70990fff4ef3a5945f5c70755ef434b1d7ab9744b73652b032333a77cffe"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+          "passed": true,
+          "seconds": 19.96,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-6.log",
+          "sha256": "f622a33898bcabe10ff9481c291744f4df3db5c0a405084d8e4fc4d50d8e621d",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_list_light.png",
+              "sha256": "4d9191d3f86d8b8d249236fa98ba348a9fff658793faa1a2381e098fff93e9d1"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_member_picker_light.png",
+              "sha256": "30cb27aa9438b24c8a88dc97b2730131d61d4b65c1e1d532464f644f44622f4c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_members_light.png",
+              "sha256": "4b202c15fb7c39f38b2ef8f6771298fde3c4999cf5dd03faa314ac046d8c6994"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_add_options_light.png",
+              "sha256": "bcff10625a222df2c10da03ab747cda8ead21eb692d94355f52fc7f2d5627a7f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_options_light.png",
+              "sha256": "f9b8d71bf63b261b7c67b8e5b8f306cfae073540aa4f3ddc771efe5173fc2ac8"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_quick_yaml_light.png",
+              "sha256": "bf19a8e505ad4be25f97814cd855999bc8ba2e6c5c365ff68f4dcb992bbfe59e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_list_dark.png",
+              "sha256": "b6546f3ff3406acfa04198b09e961022836ee02b8e1731b54e9d7c45ebbc7c10"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_member_picker_dark.png",
+              "sha256": "7b46352b7e33c7c3fbba6dc290ac022a5587f0ccbd50718b739af20bfcda253d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_members_dark.png",
+              "sha256": "b7e7ca6fc07ec8ea10697de1d948b31d7e7e1f604bf23970bd50308ed0871221"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_add_options_dark.png",
+              "sha256": "35b585fcafa7d0414fdb98e36a9e961a713520cbdebfe66c8241864b14a7e8f1"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_options_dark.png",
+              "sha256": "3a6072acc92f24b7db08b1c3db3eba3c11276e0346f46635b99084ef989433b3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_quick_yaml_dark.png",
+              "sha256": "111301542ac7dcd809513786c9609cba484a94ed6362a5658c9540e0c2ea0366"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+          "passed": true,
+          "seconds": 7.36,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-7.log",
+          "sha256": "569e483102e05acad50701f0effb431411ea429bbcfc8718947eea6fa203e6fe",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-profile_dialers_missing_false.png",
+              "sha256": "7e0806bbba1d6a37f64a059fa0ad86021d9b91ed6082db3099a190c0b2aad29e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-profile_dialers_targets_false.png",
+              "sha256": "f5934f144e8539c9a73f78c35cd2d1495d5469f341b867727842b3f5cc0b6900"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-profile_dialers_missing_true.png",
+              "sha256": "ecff510d38b3fbc3c2c6819db6c3f4e5ae89f635f4aca72a1a1085c0bcd5ed90"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-profile_dialers_targets_true.png",
+              "sha256": "657a16ff2db822ef4c74a558be560dbfd8f5a07951282f2d60545e2845c2ae70"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+          "passed": true,
+          "seconds": 17.58,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-8.log",
+          "sha256": "1262fe182325068a6571c8aa0fde543d9bd00506c8f66632680dcf1aa168313a",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_ntp_empty_light.png",
+              "sha256": "e199fd6b33fc2a22a0a337400820f2e3fc47dd27131cae5c888ecc11a0f4b1cd"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_ntp_add_light.png",
+              "sha256": "f7419a0fd797023267bcbf5b7bebd2a684e7a1c8403bca3f7b1f70d300090e99"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_ntp_fields_light.png",
+              "sha256": "6bc702ecd5ff17eff4ec46d8a1a378d30f36adf982b254c922b671c9d78387ea"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_ntp_error_light.png",
+              "sha256": "861fa27450a70f0c1ce1707b16eda78806ef803f1b8474679e806d61883813fc"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_sniffer_protocol_light.png",
+              "sha256": "5cc975615d463e108d0ff17d3f39a51e4ec1c8a79884d05fa6177e8dcc4a6f0b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_sniffer_ports_light.png",
+              "sha256": "dff53e8a4ab4482cec628e7f82c29e8d9297b08d9e5def2c0c57d5d95bb68f35"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_sniffer_yaml_light.png",
+              "sha256": "6d6067faaec1fa767d8f6b5eb7785b69b684f880cf6fbfa4627202fe72f07a70"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_ntp_empty_dark.png",
+              "sha256": "2eca7b6ecc28f4d0eb559c966c4f9ed2a145deebe6f78ea752b66f7406b17923"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_ntp_add_dark.png",
+              "sha256": "8f5693bdb6390e2279cf89a5603753a5434828e642936b802b0bf2d6db27171c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_ntp_fields_dark.png",
+              "sha256": "7e1bb59b7bd303381209a18d10acee4dac2d264c8c094a24ab2ecf108eb1ee5e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_ntp_error_dark.png",
+              "sha256": "33f7dac906a028b953e92ad5ee8c41a0b211f6ccca20141f3fdc48c8c6620d85"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_sniffer_protocol_dark.png",
+              "sha256": "e13019888bef52f491c652bdf0447b63873e54328eaccf57f55e0823f090059a"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_sniffer_ports_dark.png",
+              "sha256": "02f7422411ab80e4e20c277f0c744e4faabcec529dcb08ff677ba5f58832c44d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-more_sniffer_yaml_dark.png",
+              "sha256": "b9f7e6d769678ccec501b1c960b5f47efea3e1f45c502f2a8a7b15af858f7b22"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+          "passed": true,
+          "seconds": 5.46,
+          "log": "/tmp/kclash-general-material-20261104-api27-2-9.log",
+          "sha256": "6a2ff2fa32c1ae1ea36ce66b97293144125d597e0491f6d8f01ebaba6078e908",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-2-groups_all_options_returned_to_draft.png",
+              "sha256": "f1f0905ba04b4723c19dc75cec45b59543c1c74145cc341d40e23a5d7a46a396"
+            }
+          ]
+        }
+      ]
+    },
+    "redmi-final5": {
+      "final": false,
+      "passed": 19,
+      "executed": 19,
+      "expected": 19,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#sharedMaterialsAndQualityRenderDistinctPixelsAcrossThemes",
+          "passed": true,
+          "seconds": 10.07,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-0.log",
+          "sha256": "816a10463ab96f7d242e745e64fc9cf033377758751c0ca721902e9f5cafa7db",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-materials_36_false_ULTRA.png",
+              "sha256": "81aaa4fe916b6670051634fc034c149800df4571a88677be862d043cd259766a"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-materials_36_false_STANDARD.png",
+              "sha256": "d2a6223a2b6f692540552284f1e84751d6ff3eb64694562567ec15b2c1cece76"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-materials_36_true_ULTRA.png",
+              "sha256": "672a230f9cb4d392e1b15e3937de8729faf3f6b8076f74e98accf4b19b63542e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-materials_36_true_STANDARD.png",
+              "sha256": "99818b8d68ff355c7d6654f12fde001bc325278c88ca0d29f13c18f1c6cb7ee3"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#transparentFrostKeepsColorAndFallbackInterpolatesPremultipliedAlpha",
+          "passed": true,
+          "seconds": 3.78,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-1.log",
+          "sha256": "7582c1f8706b7db5973cd3dd3266cef1befbb3de1f43ffa49d5e2919f73a48e5",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#windowCaptureAndDefaultDisabledStayUsableOnCurrentApi",
+          "passed": true,
+          "seconds": 4.25,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-2.log",
+          "sha256": "da9f8d2ac2b893d909a9d0ee96424e2f524b2c737e2f18cd89a608cf37975615",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+          "passed": true,
+          "seconds": 5.34,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-3.log",
+          "sha256": "2ee2491a8ffe762b9b47cf9f5588a3a97a1812284972f06bcb34b85c4a5f2260",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-glass_optics_false.png",
+              "sha256": "96288362f9437fa089e8e7d9ac30e56781ca58deb5374bb4a705ad0b5ec9114e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-glass_optics_true.png",
+              "sha256": "61ffdd2fb3902c7b6c09827b40479fc514096fcb59e9335d29f399792d69b0be"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 14.19,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-4.log",
+          "sha256": "c7ad528c9480737afd88a4790a1a516da149d64503ed15023684be93eba409d3",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-stack_three.png",
+              "sha256": "3d00995318a1b37a4c044a76a41e2d4124752a6f87d711f453bdc6007c700be1"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-stack_fold_middle.png",
+              "sha256": "ffa6c86aa1faaaad7b758d08d11fed697b75ef01c03920b3c2fcd56e5c1735a7"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 11.3,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-5.log",
+          "sha256": "5f2e4184001f085411bbb21fec83f84bc974aea44210852d3ec6ce3135659946",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-glass_stack_false.png",
+              "sha256": "84d805f6a74ac2a21615235826c9fc08b63dc1e4b0bb08afd55ae650d2b89b45"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-glass_stack_true.png",
+              "sha256": "bd4c69aac30b01298837d28e08a04f38ab9962dec7611d185dafda6ee1e739b6"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 17.85,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-6.log",
+          "sha256": "a8e36e10504d2ebf38d625d703d12ab8b2548d4b5e4b300513c7f46a4e477d60",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-liquid_open_false_false.png",
+              "sha256": "1314041b5377a4326d94071046976ccd26f2b999510aa20ca33e8b456d9d35ad"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-liquid_return_false_false.png",
+              "sha256": "cac296afa242ef0597646caa9ae0f36ade5cac858eeb7c71428abbf44d9758b3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-liquid_open_false_true.png",
+              "sha256": "c56dfb059ad473bcbde0c6c24a973a417f77c7d61777dd8484b6e322095a6b6e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-liquid_return_false_true.png",
+              "sha256": "3121feb630c69bc9e64d1863bd1b09781b9d68d7193a2de38a70f08cabb0b157"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-liquid_open_true_false.png",
+              "sha256": "e89e884fb98ca204373d91a9ce5dfbdb2e37d8dc130b0db1d5c94955bcca8b04"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-liquid_return_true_false.png",
+              "sha256": "48fb8263ef9893e4cc76671e8dfaf77b3031143fcdf72888716c8d1cb55e9a8f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-liquid_open_true_true.png",
+              "sha256": "7f8d8da0acb8d0cf88a6b78e15706246b108cc5b63d1602d6193956145ee009e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-liquid_return_true_true.png",
+              "sha256": "582b3c76251d6fb0f7f578cc50a8f081852cc7dcd4cb4c385914ed513e0ac079"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": true,
+          "seconds": 5.01,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-7.log",
+          "sha256": "8ffc48e3ec7a08205af4107aa92c2b5ab9fa58ae258bba177b99fc7cd8d68ac0",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+          "passed": true,
+          "seconds": 26.64,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-8.log",
+          "sha256": "329dbc04f8bdf1f7e2526b7c03be873e5d45c0c1152385184c377c9261cc4af3",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_list_light.png",
+              "sha256": "fd5e3237946bd4320b3724b39a7adea39d2358e14ed261ecf1ee3aaba547c500"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_member_picker_light.png",
+              "sha256": "ad96a21e8acaf929fc570aa048cbe5733af67ee2dd14fefc630ef5c2dc3c6d7c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_members_light.png",
+              "sha256": "363aabd802e7d3e9e05feec9e63a8154274bfd084448ce4c19d21f718d48dd2d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_add_options_light.png",
+              "sha256": "0a66d632dc4cedd37476d4aa111f6dbb9842a354ba484a5ad928b8703d2b6c1b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_options_light.png",
+              "sha256": "54ad47ac86b7a0b49aa7aa3e507082adadfb7c915884b1d0617503f773aaf47c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_quick_yaml_light.png",
+              "sha256": "a962a84cfbf1f8c9c356014747a4a3000819ecdff6335685c95359ec9dc9bf0e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_list_dark.png",
+              "sha256": "1edf0049aa575c7bb77f2612af1afc580482174f1f4a07ac8aeb38a494817ad7"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_member_picker_dark.png",
+              "sha256": "5d2ef37885912029f517ebaab9d5c11a477499d9a65f69413c8855b414768459"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_members_dark.png",
+              "sha256": "af70f1ba2dd492d16e07b3b5bd6b99b37525a858d0079e5ef0c0395d41ea959d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_add_options_dark.png",
+              "sha256": "bcf78ae0e2dbae4845e55e4161c7f7fc73087a301203a56aa86be97daa723b69"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_options_dark.png",
+              "sha256": "614f9da4c2c67688488b71ddea89702544b1a736fc5a5a3ad2cb7d5136047429"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_quick_yaml_dark.png",
+              "sha256": "2e31a7336778340ab30c1611e3a355622bb558a8502f058b432804a1f9ed57f1"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+          "passed": true,
+          "seconds": 7.13,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-9.log",
+          "sha256": "c0bd6323d9701f067bd8c2eb2968d2e3b774b13cc463b80472647c128a77ae2e",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+          "passed": true,
+          "seconds": 6.96,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-10.log",
+          "sha256": "8793ae711e41f45d80bfb5d74cfc2343d4deda3e5140022ad1f559003aae69a7",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+          "passed": true,
+          "seconds": 7.59,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-11.log",
+          "sha256": "7e3a00b49c6fb7896038dc852b0696465f022ced031f98c520f63730132f50d5",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+          "passed": true,
+          "seconds": 10.62,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-12.log",
+          "sha256": "72feab964d5fdc8c0a3a18b00395e57cdb2bf4b1c720b9070001845a0d5e8c4a",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-profile_dialers_missing_false.png",
+              "sha256": "22453d9a7c96dccd92f07c94d1ed19f0ad43a50bde10d9f754be131013768019"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-profile_dialers_targets_false.png",
+              "sha256": "2110825fba99d00647e1de3a209e1401391d8f9dba7997541a7cd9fc7bf8b4f0"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-profile_dialers_missing_true.png",
+              "sha256": "23635a20b8810ba0f432072f0f79c7a749090c4d70aed57ef3b3859516994411"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-profile_dialers_targets_true.png",
+              "sha256": "be7c58ebeac11e31d093c025319ca78c82b9e4efe5f1b86509314c201262a133"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+          "passed": true,
+          "seconds": 28.36,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-13.log",
+          "sha256": "a9effa9f18bd26131c68e8d5f05280d3a87514e3012c07fb6f17e78898f6f04a",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_ntp_empty_light.png",
+              "sha256": "e02800349914958151057c4ff4d7b47ec2ae29c54f334b778d878cbddf49e8bb"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_ntp_add_light.png",
+              "sha256": "6da6facae00c8474604e09036eb78314720f566fb2804de6d19f890c7d7a121f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_ntp_fields_light.png",
+              "sha256": "ca1ea7237b13c043a6ee75187350c058f9bf50bc3ed5ec4e5d6db1ba5d09d9cb"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_ntp_error_light.png",
+              "sha256": "108936f441c582fc42276ae5bc803627f76dfd39809cf40dcde283b09eae94c1"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_sniffer_protocol_light.png",
+              "sha256": "c9eb5d672ee306da1fc8179f76961e31ed7ac37b7b4ce22444b30a2d2a9f809c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_sniffer_ports_light.png",
+              "sha256": "1c5a65d5d49bf461b39afca9f28a525f82d8d8bf11fd52795b3b3b8a49b82567"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_sniffer_yaml_light.png",
+              "sha256": "4ea2ea35ecd40b2ef5114371a50b248d3dcce7cd00bd0e47a2dc4a8830e3f5b9"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_ntp_empty_dark.png",
+              "sha256": "dbcc7b1e5a7e278975664888edabc45d5df5f11fb103ba61349412577c46d1d7"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_ntp_add_dark.png",
+              "sha256": "77d436dcd4b966a8eeffe7483c0892d5c3be8ed633d82794bf725b42084aa001"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_ntp_fields_dark.png",
+              "sha256": "e25d7ea2f0ec6693479d2470f5d0cf2363ead44b4581feaa6634bad3a7be05c0"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_ntp_error_dark.png",
+              "sha256": "94771f7ceb4ce0abaa44d3afb0ac8366da65490181fb2a640279daa8b64dd6f7"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_sniffer_protocol_dark.png",
+              "sha256": "44a0939a593d6caea3706ded12b46e8ba1750148652a6c36ea8359acfb0f01ba"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_sniffer_ports_dark.png",
+              "sha256": "f191fd3413a231733c4caa004c983d6331144c6b97582e14e1e7bc6a2e965306"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_sniffer_yaml_dark.png",
+              "sha256": "de488b46826f9b55f08900f7ab1ac35043216be7770537e7f0abe9873d76191d"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+          "passed": true,
+          "seconds": 9.49,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-14.log",
+          "sha256": "ffaf848fbfd56714b5da50acca968302a4de0de3682350c26cc2b3870c999cec",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-more_field_save_failure.png",
+              "sha256": "ddc651c4271299943113c7dbd0a37dcd75636a94d522ab10ebca58c58aaaca1c"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+          "passed": true,
+          "seconds": 11.18,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-15.log",
+          "sha256": "d03bc2c3eee5124931bf1c13fa7dd081b73da74e4f03247e267830b0d757271b",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol",
+          "passed": true,
+          "seconds": 9.54,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-16.log",
+          "sha256": "0b174c08155cb2006008905e259b1cd6b99e43b8059a36c682361014ed3ad4ca",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "seconds": 9.4,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-17.log",
+          "sha256": "830b74385c30a0aef10635438dae349f3df7eccd9de19aa756c9fe5941ca9f12",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+          "passed": true,
+          "seconds": 10.58,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final5-18.log",
+          "sha256": "7a7b989688c706e524fba18a9520dd66e9848cc32e3f79b96712dc61b20d2c91",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final5-groups_all_options_returned_to_draft.png",
+              "sha256": "f29c9f305e52b46453efc2ad2013a7cec9710a32b2b1659f161fe8362904bcec"
+            }
+          ]
+        }
+      ]
+    },
+    "api27-final5": {
+      "final": false,
+      "passed": 10,
+      "executed": 10,
+      "expected": 10,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#sharedMaterialsAndQualityRenderDistinctPixelsAcrossThemes",
+          "passed": true,
+          "seconds": 3.79,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-0.log",
+          "sha256": "2c90bd90ecef97ee91faac67c2dbbd5486910078987f8f5b6152587e37159393",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-materials_27_false_ULTRA.png",
+              "sha256": "335e62b1de038b6b1aebd4423b50528cbd7d07ab22dd1708aa18e631d648fc04"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-materials_27_false_STANDARD.png",
+              "sha256": "157ba455e7e7a0a29a9db6dd07e219717f645cbc4e092e894eeb67089200eed3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-materials_27_true_ULTRA.png",
+              "sha256": "5ee8d3c95745fa316bc6ee3b36447d7da5ae59d878e15a6cf9b2a54e1b2c5c04"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-materials_27_true_STANDARD.png",
+              "sha256": "f398303dc8239b682d24fede6a846e5e4565e673bb6c6433855b26edbf2a6659"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#transparentFrostKeepsColorAndFallbackInterpolatesPremultipliedAlpha",
+          "passed": true,
+          "seconds": 1.73,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-1.log",
+          "sha256": "ea1298b77920705f0db533e9c763d688973e01a88fca15b4437b69618c50d943",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#windowCaptureAndDefaultDisabledStayUsableOnCurrentApi",
+          "passed": true,
+          "seconds": 1.83,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-2.log",
+          "sha256": "2743582b9069a3a583130b1cb6c0defa4ccbfa2d835dd9d4c24d7a919e29b51a",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 4.76,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-3.log",
+          "sha256": "7d858c13f9095c3ac24ebd86a01a8917fd98e2fa6dca040a5cc65d3c4c8cd604",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-stack_three.png",
+              "sha256": "c73a5efc5db0bac6981475ac645b23689a6852500257258d38422bc31469e02a"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-stack_fold_middle.png",
+              "sha256": "242328842f382b452b04954df7bf7604d6284dee21078abebf4a6863878bce3d"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 4.27,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-4.log",
+          "sha256": "95e1935ea17f502ab64c151e4957afca6989a15d248747841f25226af2370bc1",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-glass_stack_false.png",
+              "sha256": "8002cc3e5d5590be9de08811ddcc4fa37203bd99c10e6f059e03aa15343f118b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-glass_stack_true.png",
+              "sha256": "f4fef8fc12354f06a3dc59589110f75c7a1ad144fab50768a6baa93e1e51677f"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 6.54,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-5.log",
+          "sha256": "72acce85b7d797a7793374af96a9fe9ea7baa2618261990403bb300955fce2fa",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-liquid_open_false_false.png",
+              "sha256": "ed052b42e86f1b0a01ba5122a0d34d6148e0107e2a92a1cf1bcbae9ece2fb7ed"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-liquid_return_false_false.png",
+              "sha256": "59ded256166ddea0dff445c09efe1c8a01cc77356e972b2ce104f3cf97f0bdbe"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-liquid_open_false_true.png",
+              "sha256": "f0b6eaaaf5c8d03c6ce9bef69f3559ea46ce8d3ae0b779244cd43931147ebb33"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-liquid_return_false_true.png",
+              "sha256": "7860d280690ef5bad8f2b34c24847adfc8c11a1c23e894c9bf9202d5437fdddd"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-liquid_open_true_false.png",
+              "sha256": "54b85a62a7021b6ab65c95cac639919bfefc38d6aeb35ff7b55f28fba40fe923"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-liquid_return_true_false.png",
+              "sha256": "808230aed56ad13f1ee63a27e049912918876d6fda22a9f486105933ebebedb2"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-liquid_open_true_true.png",
+              "sha256": "51b40adc7feaddbb7d8744fe3e2b5365d90682a5ca8699f76fd0ec1189b22039"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-liquid_return_true_true.png",
+              "sha256": "c0a7b98361d1d7eafab82af204a2210d1f1672e915dd7d02c3f9d5daa8593dfe"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+          "passed": true,
+          "seconds": 18.35,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-6.log",
+          "sha256": "af5e4c7860be207683c327d07505a4eb73cdf1efdcc75299697ce9e7221cb883",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_list_light.png",
+              "sha256": "e58bfcede88953e50990fbe2a467b8afe078be16629d2a837d4888c4a4ff4bc4"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_member_picker_light.png",
+              "sha256": "dcbd7a9e25d049e2e9b469d07d3cdf3d0636caec59685ccdcf9f0d0aea55ec6b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_members_light.png",
+              "sha256": "8be00be7075292a6be213875e37a29f3936efcf66a9581442bc1a35f7c5970d9"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_add_options_light.png",
+              "sha256": "d1eb54d00c930e7b60b171fbc23a128f65b1363ab10b0de095e5ef21564a8faa"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_options_light.png",
+              "sha256": "9a247373a60810524cca7c275b45b413a1a15aceb5ca2d8e867de5b2bbd8bf43"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_quick_yaml_light.png",
+              "sha256": "6cb0d0ff03d6ed21412436a1a649741c0e25d283271b8402808ff1a2dec11ca3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_list_dark.png",
+              "sha256": "fb7987dff16305838f3b670549c8276805707e985c1df2e09a2067c3b66daede"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_member_picker_dark.png",
+              "sha256": "65851348074cd1c2e1196d44ad2840ca80a077dbe6a42a540f02838a455bec65"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_members_dark.png",
+              "sha256": "2ac31499656287f8abf7b962ace0217f35578dbf8be12ad4a704333c7ad7ff1e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_add_options_dark.png",
+              "sha256": "4bf579c584446db01786246cf9a5b88b9522d9b7edcbaabb93f516771b9dba32"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_options_dark.png",
+              "sha256": "444c7a41db774f6bd28fc46ee7d0d4bb08b3dcbd3b8321762f2f5f553d5e8b88"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_quick_yaml_dark.png",
+              "sha256": "87961ac7b72fefe4e5eb1cbaaca454a34d65a46d7452c9d94052cbb1bd0575da"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+          "passed": true,
+          "seconds": 7.89,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-7.log",
+          "sha256": "c28ee593e8dc0f36d49de0c745377125e867e977d11b53c64edce3f2bee35314",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-profile_dialers_missing_false.png",
+              "sha256": "1e59c96394e88da9db065171e8a31efb6c64e036a4ffaea56e5554e328233222"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-profile_dialers_targets_false.png",
+              "sha256": "33c17283e81e78412283d48ac98040431d49f727c02941a80c3d4b790d1ffe5c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-profile_dialers_missing_true.png",
+              "sha256": "552aa60e3de31c2684b0541f8496df54bae165145add7ea81fb38741f02576fa"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-profile_dialers_targets_true.png",
+              "sha256": "25c167fedd2abf0ae9c06e90ead0c77fff4ea18e08ca50bb6024105f79af7e73"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+          "passed": true,
+          "seconds": 17.39,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-8.log",
+          "sha256": "ff15d60f0c91711b036557c0bf2eb2a59218844e49a7ce424c60bec37be05746",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_ntp_empty_light.png",
+              "sha256": "4c40b5470819726aff6870cd2a05cf3d0209598082e6fd685a54622a1ba75edb"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_ntp_add_light.png",
+              "sha256": "3d10a362dac50745f0a046e964cbedf69130c0a97e37900f830f252e12426834"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_ntp_fields_light.png",
+              "sha256": "e6133461ce4f06bcc9d5576d8ffd7216af874410f892a16f516f4dfaf1be49eb"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_ntp_error_light.png",
+              "sha256": "65e91386a5e67ad31586f23dc5bb3567a183e57fbe231ac444ef722e2ab197fe"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_sniffer_protocol_light.png",
+              "sha256": "732ae361c2b3a0150c33aa38a202d7f6b41af40cb59424c2c230f56117d59ab4"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_sniffer_ports_light.png",
+              "sha256": "aab011e9aecddeb38ee2ff7b4ebe59d95cad512a256122fed75545b46fd57705"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_sniffer_yaml_light.png",
+              "sha256": "482b4dc3bbb303639ca555bd55ee515b66e0f9cc3780ea4ce0904470486826de"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_ntp_empty_dark.png",
+              "sha256": "f22afe073d71f173052c9b2739cba956428c8cfecd1a245b1db81e550febc718"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_ntp_add_dark.png",
+              "sha256": "c730406d2a2ca7fbf2b4164fcbb654487463fa22af52967ac7198f264499dc12"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_ntp_fields_dark.png",
+              "sha256": "8089429ea4abe6d80a6a4f134773c70384ceb0b12aaa979c6fd8f180b79d3435"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_ntp_error_dark.png",
+              "sha256": "ebb793531c51f6a58f05f43b7394014d717826132dd1324722693dfc7ee0a9cd"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_sniffer_protocol_dark.png",
+              "sha256": "8b4b72e2922007a8d3fb9dd2c51cc93c568f07a611076159fdbd0b28f92efba0"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_sniffer_ports_dark.png",
+              "sha256": "66443e3db6d2afe47ddf4c73ebf3033a325077c1982b588e3ce4c5beeaaad14b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-more_sniffer_yaml_dark.png",
+              "sha256": "70be31e810da213ffc5330b9a25b7e735b801ef37c2fadae5256839524fa12a2"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+          "passed": true,
+          "seconds": 5.48,
+          "log": "/tmp/kclash-general-material-20261104-api27-final5-9.log",
+          "sha256": "0ba7f208f7d712fc3860b58f28f975905a26f5320bda0d3eaf70582a3b5081a9",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final5-groups_all_options_returned_to_draft.png",
+              "sha256": "ee3d5b43a6beef00f105449eef736d2fd7692846314222b4b37dd90e2d705887"
+            }
+          ]
+        }
+      ]
+    },
+    "redmi-final6": {
+      "final": true,
+      "passed": 19,
+      "executed": 19,
+      "expected": 19,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#sharedMaterialsAndQualityRenderDistinctPixelsAcrossThemes",
+          "passed": true,
+          "seconds": 11.09,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-0.log",
+          "sha256": "ebaeb3976ddabb6d3d2c7844382624b383c59e67647246cd35409b5fdad6e251",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-materials_36_false_ULTRA.png",
+              "sha256": "0dad4fb6190f8b4f9e426c505198559248452818b9d24ea20cceea59f899dc2c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-materials_36_false_STANDARD.png",
+              "sha256": "579fbe693b8946b011d0c8dc87dbf48c8502a552dbd3ef68911b475f373b2dbe"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-materials_36_true_ULTRA.png",
+              "sha256": "8306ff3e9c9aac6b35fc2410016af239ebe15dc44adf0699f75362aaeb55ca5c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-materials_36_true_STANDARD.png",
+              "sha256": "3c35feae43a99c3392822f65cc4d56d1e227c59b10445fdfb6df55bb19ea4b35"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#transparentFrostKeepsColorAndFallbackInterpolatesPremultipliedAlpha",
+          "passed": true,
+          "seconds": 3.78,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-1.log",
+          "sha256": "b617112b16318761ff100ef260f252feb6a9a08486810049029efc4cf2ac32d8",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#windowCaptureAndDefaultDisabledStayUsableOnCurrentApi",
+          "passed": true,
+          "seconds": 4.22,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-2.log",
+          "sha256": "3a7fbee03ad7b4f6405b899eaffe93496743ec89fdefae7cf83bdeae747e3597",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+          "passed": true,
+          "seconds": 5.18,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-3.log",
+          "sha256": "ead2f0a8237f42e02cf0fedbe9a7b4b82e6a9b2cf363ad4f9ef165e260299f59",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-glass_optics_false.png",
+              "sha256": "61f13fd1383ad77a0fdfb13b738ef19901dfc5fbec9f6ee1281c482556e0bbea"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-glass_optics_true.png",
+              "sha256": "9795c842d59721b5716fe84c41226639a96dd662c2f1481ee51416403cccdab2"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 14.09,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-4.log",
+          "sha256": "5d3ef7c4634f9c8cba6f68f4f9cb059e56d8c96f5a54ffebbf4011a051f1e8b3",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-stack_three.png",
+              "sha256": "378c78ff2e9c948fbe6d55cb9bd07213253edf1463170d42bb8e4f3580bf37ee"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-stack_fold_middle.png",
+              "sha256": "23de70f86c1ddf99774ba29e4fab342f9132d808f0f3b9c13c9ecfc4d031540a"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 11.51,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-5.log",
+          "sha256": "4b3a4606e49fca1a95751766b5ef101b0d21795d5def35e3de74de68521b675d",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-glass_stack_false.png",
+              "sha256": "dfd978245538eead9ccc0a3007f4411e2057c335b1d99e14e561f7f372ae6fb3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-glass_stack_true.png",
+              "sha256": "6ff01a6a03750c3a5aff1e7490c9092621a71271de6a69649162b949587a0640"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 17.8,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-6.log",
+          "sha256": "8d277558381549f1573d7e3ff084e8892f48b5000d86820b5d5190c5a752bfc9",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-liquid_open_false_false.png",
+              "sha256": "4a94cab845245be0a428b9cd7c2288b1d96085eb4ea89af7fbf2b163e203255f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-liquid_return_false_false.png",
+              "sha256": "5aee3fabe8e6bd32ad4e4e5ad33bfd91428d84f132372f6a70b2c5ae31d4377f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-liquid_open_false_true.png",
+              "sha256": "e6c68ead5edd35f6fdc8cd80ec86313efcff63ae66a9c8566251766282db0727"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-liquid_return_false_true.png",
+              "sha256": "0f6e454a5b622d658461ea49f432839d356c8bcbe105e2fb28e7e22c2d35ed86"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-liquid_open_true_false.png",
+              "sha256": "024a4216f6b1ce8490d025eec856881ab2b30a4d0c431f266f29fd088ff0eb74"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-liquid_return_true_false.png",
+              "sha256": "4ff6197fc8acdf577453d84d5672f2c7eeb5d785ea329e2c1ec16aed43af2823"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-liquid_open_true_true.png",
+              "sha256": "cbcc572056368792efb153eb6c1dbb5efe4c8d2db1fc1e5d26f446b1b1d0c848"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-liquid_return_true_true.png",
+              "sha256": "9fdf6f520ea2b4197ef76cee61898e9f064489f93c89ff60f13a9592622ac324"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": true,
+          "seconds": 4.96,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-7.log",
+          "sha256": "95072a8158df2886951ab094a110207a2e68f70b79fb938f3219f876eb36926b",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+          "passed": true,
+          "seconds": 27.14,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-8.log",
+          "sha256": "34bb9915e8400f9e1d9c7761da8095518b7fa088e21ff00f20d88deb32deffe6",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_list_light.png",
+              "sha256": "19284468d4ff1a4b62130fe4d70696f05515a6c49f99a516c94c6d48fe5df627"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_member_picker_light.png",
+              "sha256": "7b13f34c11a4a53dd88eb0a8d857f3ce07542ca621523b6eaa3ba73103261935"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_members_light.png",
+              "sha256": "7523bbb52ef6d425968687ac317f9b8612c96e43b1571e504171974ddd3a5a42"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_add_options_light.png",
+              "sha256": "20186b2223eb893caa24aee57eebe0a2b2b1a53037ca94ee016bcb070c07bde9"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_options_light.png",
+              "sha256": "757c8f3637fbf7dabb450c4e24b7db3fb34a2ab0d8baec24fd2a9b285770e3fa"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_quick_yaml_light.png",
+              "sha256": "a27dd8353ddf0c22fc55bff3407c6edf6a0ef8c17ef08b4853bd35d09ebfb3f3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_list_dark.png",
+              "sha256": "a8deb15e362e7fa2067e4afba14f06648fa56972099eb1b86c2ec48da4d0174f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_member_picker_dark.png",
+              "sha256": "64e94922b55ba68f44381ddeed451e67fa30a72abda96678544e3aeb70437f69"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_members_dark.png",
+              "sha256": "2821d99e42629aa14452293a04ee9251a7bdfa083de18a2fd306f02cca6f5321"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_add_options_dark.png",
+              "sha256": "f618d8bcfc71e566a4a50d353424ed9c8e0818d1cecd6329aeba060eecb060ee"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_options_dark.png",
+              "sha256": "b74fa6c53debcc40069214190a1701c0f95dc0595c5bcb36651a90ec604d6369"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_quick_yaml_dark.png",
+              "sha256": "27a59700668b389e9cc36270cf8fc159dbdd9f35d1336dffe7a51f0cae481c06"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+          "passed": true,
+          "seconds": 7.08,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-9.log",
+          "sha256": "078210d427bebb6f820d3dab73c0dc0009f78d463ad8f78290b03b49fda5ee13",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+          "passed": true,
+          "seconds": 6.72,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-10.log",
+          "sha256": "f80af8140d52c6d60afed8c684624845d29abc5fa320822cfbf4796cf6364965",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+          "passed": true,
+          "seconds": 7.45,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-11.log",
+          "sha256": "852359fd4e912ceea572df5f2eaa9bece84502f1141da34ebf973513d87f5475",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+          "passed": true,
+          "seconds": 10.6,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-12.log",
+          "sha256": "a267bead1852a8966d7801e0d99d3a52d533c8b8ad0ae2292d20f6826e7e62e3",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-profile_dialers_missing_false.png",
+              "sha256": "7a6cf595f2a1cefcde8fb2041324a46f4fc6b885a174e01385807ab16dea6e78"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-profile_dialers_targets_false.png",
+              "sha256": "cb8c2573dffef40fcc7c75c3aff57c55a397006c1ecbcd25e9f143989131665d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-profile_dialers_missing_true.png",
+              "sha256": "9e8233e41dae3ea52eac40b9c25411f8f222318656cf545a726178e720236ac1"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-profile_dialers_targets_true.png",
+              "sha256": "a0fe42a4b32a86c7aa5a34126a41976ef39646b6a588a9263f784bab2d935b46"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+          "passed": true,
+          "seconds": 28.45,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-13.log",
+          "sha256": "fb50af84e6a2c23cc4e2f36803a463b44c3de8a7a74ad8a616460a714c66ea13",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_ntp_empty_light.png",
+              "sha256": "5addcb8e240b5a330cbde19677c933a9e8b24b0aee1d3a7e9e63467d12a7822b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_ntp_add_light.png",
+              "sha256": "fccaad6ddeec117b2bfcee702e0627e6dd984c3cef16408c2081d78dcd8b75e7"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_ntp_fields_light.png",
+              "sha256": "16b7d11d83f8c2d349775716848f87d0bf3e304ef120d0fcb0aa2ec89d94310f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_ntp_error_light.png",
+              "sha256": "74368c1d54a5148ef120b4ae98a13348b8f935af20aaf40e263abfd36c750833"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_sniffer_protocol_light.png",
+              "sha256": "6035252264b6ed9a5a5f9e7c2a077f54c71e7eb22d7dfe984ff0223bc1056796"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_sniffer_ports_light.png",
+              "sha256": "0892e47c6a054a80e96885f42879206b5a83feae281c03d915dfbd006aaa96f7"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_sniffer_yaml_light.png",
+              "sha256": "25351789e30bcd9b30a084e0a6555a861ffc79782056f8c83daa096dfe4d6292"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_ntp_empty_dark.png",
+              "sha256": "6f88d3f5472da2f05b85805fa0ff4d94ffb74baad87ff47b2dec6760fe752be0"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_ntp_add_dark.png",
+              "sha256": "22f185186d87a73dead53c7cddefbd7ddcd651949b9bbb5993e0be103698da4c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_ntp_fields_dark.png",
+              "sha256": "60cf0554dad9788fe098a764ea8c4f8a0d27bfe423d532d164a8b9c2686bf731"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_ntp_error_dark.png",
+              "sha256": "6a0f2950fd7b06e1b7738bc4e21c511a52ba17095a33957d9310a9cbb53d3923"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_sniffer_protocol_dark.png",
+              "sha256": "4a13e55493f53903f3020dab9ab3fd1044f6f1452e45d11283dcdef4d03b0dea"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_sniffer_ports_dark.png",
+              "sha256": "a1d06ef8d8dfbed982697f3049a3eb42ce389b38bf09b97860137a07c93ae34a"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_sniffer_yaml_dark.png",
+              "sha256": "bd7c4e0478e5800c1ce08d77bb969de13915b07736de759df47849af5fc72ae3"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+          "passed": true,
+          "seconds": 9.81,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-14.log",
+          "sha256": "f0b2070ab94e58a0885f9d8bcbc5e8a9de300d041eb4bc6f5edd66792c6b8439",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-more_field_save_failure.png",
+              "sha256": "09e6ca4e205be409d6dcf830482a962dd1994d201cc08af22e47db3b2053b4ee"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+          "passed": true,
+          "seconds": 10.96,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-15.log",
+          "sha256": "cc3876745f11cd10695c85620ca11c36a68fd89ef1956f0295f35312709ea0aa",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol",
+          "passed": true,
+          "seconds": 9.86,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-16.log",
+          "sha256": "4bdf838d57532c7e65737efc91ec33f329910d0954871df47a94fabb53c7a070",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "seconds": 9.64,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-17.log",
+          "sha256": "65fe1274344b546e923c813238106a8581c2a421c04488e2f049db964b7b082f",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+          "passed": true,
+          "seconds": 10.49,
+          "log": "/tmp/kclash-general-material-20261104-redmi-final6-18.log",
+          "sha256": "7003a2299fcf9f7e2b2de278e790bc86f35b7d61c4bd2996ed036e0f70997ab2",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-redmi-final6-groups_all_options_returned_to_draft.png",
+              "sha256": "3d341d818e7b26faaea716f8cc7a68b32b3e65f2da41614f0b2c4e013e1ec68b"
+            }
+          ]
+        }
+      ]
+    },
+    "api27-final6": {
+      "final": true,
+      "passed": 10,
+      "executed": 10,
+      "expected": 10,
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#sharedMaterialsAndQualityRenderDistinctPixelsAcrossThemes",
+          "passed": true,
+          "seconds": 5.37,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-0.log",
+          "sha256": "e083394d83171d6bbe41930d6fcb8e84d54aad9b0e9345fd600dadd35adddac3",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-materials_27_false_ULTRA.png",
+              "sha256": "46af7bb275321f5fa80ba593ed8f36bbed5225955e0a7f660bc15324d9a911fe"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-materials_27_false_STANDARD.png",
+              "sha256": "f999fb4e22d97f07517c25cc5b9747554304bc060deb1556bf1a33327530705a"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-materials_27_true_ULTRA.png",
+              "sha256": "8b13ba1b47651dfce06c53460fe4d2b10a9a08cabde958ea0eff82053a9041d5"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-materials_27_true_STANDARD.png",
+              "sha256": "5d6fa5315277e101500fcd413369cc89291d8f5bfa24e55df21181513f0d0f81"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#transparentFrostKeepsColorAndFallbackInterpolatesPremultipliedAlpha",
+          "passed": true,
+          "seconds": 1.96,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-1.log",
+          "sha256": "8969fea5908137337394b1d7260a9c2c29f6b9ba00d3e7b27d73d2a8f75b28bc",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest#windowCaptureAndDefaultDisabledStayUsableOnCurrentApi",
+          "passed": true,
+          "seconds": 1.97,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-2.log",
+          "sha256": "d164cabd609d73afaa4e63b3059a21267b60fdd1c77f271848b58b1d4f0c7b44",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 4.67,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-3.log",
+          "sha256": "c4e7d8ee6f1c00b4458c7ad1cde8e0188dd260d3ef56c1cdd548c65ad3664e75",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-stack_three.png",
+              "sha256": "5f149150a258706c272cb64e844f50e9bf3a6ccedf3447022301671e6fe2a8f3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-stack_fold_middle.png",
+              "sha256": "1b772a1f8fda051b95e4973309f94d533766f14103daade9a33cd9634022f1e6"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 4.37,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-4.log",
+          "sha256": "0380cecaef6d087f21e9e15504993abcee5f8d8eb50b6543c7a6c95aa5886d4a",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-glass_stack_false.png",
+              "sha256": "b2c3fe183038d85ba467fb8b856dbece9c9d6aded8c14bc34e331b1405cb8428"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-glass_stack_true.png",
+              "sha256": "5f610dc3b7462dbca810b3162c5e79d1b166cdaeae2d58971bf9abc1bf588a61"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 6.57,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-5.log",
+          "sha256": "72f6e667ee22b0c51b69d67c08533bdea0d5dad752889999405ad3152bd839e5",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-liquid_open_false_false.png",
+              "sha256": "626438537db2cbe793905c322b5165ea567534931a24111b0ced73a57b2efadd"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-liquid_return_false_false.png",
+              "sha256": "c8f9032702981168ffc0a884b5cbcdbae42e48224e1c50d0b04909d728eb6b90"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-liquid_open_false_true.png",
+              "sha256": "6a6b6aab1276fa306b435fd8d9ac5ad5a628375bd35a348e7ecbb90968afb269"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-liquid_return_false_true.png",
+              "sha256": "28e6f841eb5e440c7ca3832fcfcd5ddf10806083293a37514db08ce8c8fea8a3"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-liquid_open_true_false.png",
+              "sha256": "5cca1db3dc8dcc0fbf630d226a7f8e6b7e333621c1cabb6bd5a723b2cdc25a07"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-liquid_return_true_false.png",
+              "sha256": "2884e5f5612f35a33920708491c6cf7f66f4415af3aa0a6ad921dbe3e628878c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-liquid_open_true_true.png",
+              "sha256": "ca2765bbea9baeaaae91ffbf99e1ec8861eb4b2ae6c02ef1327683a8469ee750"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-liquid_return_true_true.png",
+              "sha256": "3e79c3131bbfce608a8809990661cdb0e8d432add644f1630d0b9ab21da201ee"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+          "passed": true,
+          "seconds": 19.53,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-6.log",
+          "sha256": "e9c21755ce41488caf120b0c9f1351234405fc73e64a8fa9be203aafcc215db3",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_list_light.png",
+              "sha256": "8603d64867680b17d63da80136cdbc401d0e31f4da7a2995d22495fdd543559b"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_member_picker_light.png",
+              "sha256": "e5efbfe05f245e51be3ce6efef3a46cfde844aea42717b1a1a1db691b9e3fa99"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_members_light.png",
+              "sha256": "0a8bde4244e60d1eaa1b24c91664068181859925d3fcf0e387e4f44bd1babf92"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_add_options_light.png",
+              "sha256": "ff76f634e70e0f9631bbddc58b0107747f6bb7d80ec1b2fd0392ee4e705960e6"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_options_light.png",
+              "sha256": "38b8dcb58c02f7d8e35bd3e95a869f8589d708aec0df09f68db6ea82625822fb"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_quick_yaml_light.png",
+              "sha256": "4d4ce88eb3fc7d6d06a4271ab70a0e021d865bc591f2f30dfb3eaf1b0c451fc0"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_list_dark.png",
+              "sha256": "af7c63ddc4321ee0cf9148d85498842ceac0d96b909309c0e4a08b9f5b29dfdc"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_member_picker_dark.png",
+              "sha256": "de210ed623f83f2860f472b55bf6df1859101ba36508833f357722de3073e00d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_members_dark.png",
+              "sha256": "dba1838e86a2e32cd48a4d1ab51131d8b465c64115bea73f22bbe5f22887692f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_add_options_dark.png",
+              "sha256": "6df8f027d828747ce085de4f8439610c2fe95249fb8ef6749607c4ed4f1a9203"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_options_dark.png",
+              "sha256": "680d436324077165c0fdf9ef2cf79e1ec3913b1a13a24d407cf91b43d2bf37ee"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_quick_yaml_dark.png",
+              "sha256": "1f549424e1fdca40c4b29e7324e76cd8bd87a47de6ca73c9631865f35f3fbb7c"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+          "passed": true,
+          "seconds": 10.68,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-7.log",
+          "sha256": "52fb631aa397a98bcaec78e7ca5858f0af40fe759d6bfe4b722ded92e07696c9",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-profile_dialers_missing_false.png",
+              "sha256": "edf8a52e0045bc62068d7044e7b1ae9aba0d4e7f54ff99a9f114caf6d0ee1454"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-profile_dialers_targets_false.png",
+              "sha256": "aa8e9f248d2ecb77f9748713223690d99f9826d275a2465e47cb4b9276c85cd2"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-profile_dialers_missing_true.png",
+              "sha256": "07de8110253f40052032c27d4dff0d2d6169072fa4dcddb95b16f2fd20bfab08"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-profile_dialers_targets_true.png",
+              "sha256": "9b2dde5df50e30eda2c26c1aaa92ea7ed8f6d4a329ff1f079227643add51abae"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest#morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+          "passed": true,
+          "seconds": 23.79,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-8.log",
+          "sha256": "540d67bd1bc5ebc3fca127dc4ed133e5b29b92c04da8b92362948bf5be42e4d3",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_ntp_empty_light.png",
+              "sha256": "c9d81a802e4535b0dbd1fb178ed122a4d2dd9a1f64d078991bbd23f1b48bcd6e"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_ntp_add_light.png",
+              "sha256": "26827f48b170f22a85fd35d24ad2451819a59f9d8e2039520ff429fedef51cf7"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_ntp_fields_light.png",
+              "sha256": "0f53b2ac5884afb88941aa6b4bbb0387c34fe9242c868163d1d22e987460b56c"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_ntp_error_light.png",
+              "sha256": "7efa2c839796ed71d18963ce0ac4dad0f309955fa55d35273ec6e64dddc643e6"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_sniffer_protocol_light.png",
+              "sha256": "13a7a0b7f621f2434a91fdc14e7590e8d0e58a2ab3f48a5c7eae06dc32e61dd4"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_sniffer_ports_light.png",
+              "sha256": "3dd9c96acdc0c4f9598e5e1de52d6db6a99ec71d10f1da4c58327f35d385428a"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_sniffer_yaml_light.png",
+              "sha256": "7773964331c000e515361583933a0ce8509c5ce50d851d5939b89ae3036749d9"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_ntp_empty_dark.png",
+              "sha256": "4a392b8251d1d83c2c4228d34c3fb80e50290550407feca3041855660138f56d"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_ntp_add_dark.png",
+              "sha256": "2a64739d57d7260ea38149fb16cac936fde89ed13b2b19dcb81684a94f447933"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_ntp_fields_dark.png",
+              "sha256": "f3a76ea25b2bd25ad7996133683713a27451b863fb6e29a06da2abba9c12ef55"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_ntp_error_dark.png",
+              "sha256": "ce9bb4eec0111131dc9b977b86bf51d4986fdb028bf95220589d740f6a4695ef"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_sniffer_protocol_dark.png",
+              "sha256": "cc94108d2c83a205ea3aba52f28d33dbbe8a7cbe10bc40f5b06159f8c6e65c9f"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_sniffer_ports_dark.png",
+              "sha256": "48e0da96d888b15a1a5b5c5f3da3f3ad4c73eef7fe01e9979a1ad90da3a90214"
+            },
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-more_sniffer_yaml_dark.png",
+              "sha256": "44c23d1ff7023f0872cb2b7982cdcec7bc71510f746f73e812e4962d0e3be6a6"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+          "passed": true,
+          "seconds": 6.41,
+          "log": "/tmp/kclash-general-material-20261104-api27-final6-9.log",
+          "sha256": "1e01221bdd3c2796aed882df065ac2a454c037faea9a0dad4f8b54650573de5f",
+          "images": [
+            {
+              "path": "/tmp/kclash-general-material-20261104-api27-final6-groups_all_options_returned_to_draft.png",
+              "sha256": "3823eb7fe924c59704d5d7ca6065e3d1a3a51b32dc5cfaa75e1678e3ed2c55eb"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "historicalHarnessFailures": [
+    {
+      "log": "/tmp/kclash-general-material-20261104-api27-1-run.log",
+      "reason": "API27 ro.boot.qemu.avd_name为空，预检中止且未执行用例；使用ro.kernel.qemu.avd_name核对。"
+    },
+    {
+      "log": "/tmp/kclash-general-material-20261104-api27-2-run.log",
+      "reason": "API27 10/10用例通过后，恢复未设置的user_rotation时put null失败；已恢复未设置状态并修正null恢复逻辑，final5/final6完整收尾。"
+    }
+  ],
+  "devices": {
+    "redmi-final6": {
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "sdk": "36",
+      "abi": "arm64-v8a",
+      "size": "Physical size: 1080x2340",
+      "density": "Physical density: 440",
+      "avd": "",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0"
+      },
+      "artifacts": {
+        "com.lonnnnnng.flclash": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+          "sha256": "0160fb18c666529df9494f233d01cefdbbca2163bfec43bef5b19ed9211ebbc4",
+          "bytes": 90682722,
+          "installedSha256": "0160fb18c666529df9494f233d01cefdbbca2163bfec43bef5b19ed9211ebbc4",
+          "nativeAbis": [
+            "arm64-v8a"
+          ]
+        },
+        "com.lonnnnnng.flclash.test": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+          "sha256": "e10e6b93915b3fee9c9a83c16a215ef67ba0b1ecfe4c056a927a4a5c0cbfc90c",
+          "bytes": 4048672,
+          "installedSha256": "e10e6b93915b3fee9c9a83c16a215ef67ba0b1ecfe4c056a927a4a5c0cbfc90c",
+          "nativeAbis": []
+        }
+      },
+      "animationSettings": {
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "servicesPresent": false,
+      "tun0Present": false
+    },
+    "api27-final6": {
+      "serial": "emulator-5554",
+      "model": "Android SDK built for arm64",
+      "sdk": "27",
+      "abi": "arm64-v8a",
+      "size": "Physical size: 1080x1920",
+      "density": "Physical density: 420",
+      "avd": "KClash_API27_Phone",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "null",
+        "font_scale": "null"
+      },
+      "artifacts": {
+        "com.lonnnnnng.flclash": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+          "sha256": "0160fb18c666529df9494f233d01cefdbbca2163bfec43bef5b19ed9211ebbc4",
+          "bytes": 90682722,
+          "installedSha256": "0160fb18c666529df9494f233d01cefdbbca2163bfec43bef5b19ed9211ebbc4",
+          "nativeAbis": [
+            "arm64-v8a"
+          ]
+        },
+        "com.lonnnnnng.flclash.test": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+          "sha256": "e10e6b93915b3fee9c9a83c16a215ef67ba0b1ecfe4c056a927a4a5c0cbfc90c",
+          "bytes": 4048672,
+          "installedSha256": "e10e6b93915b3fee9c9a83c16a215ef67ba0b1ecfe4c056a927a4a5c0cbfc90c",
+          "nativeAbis": []
+        }
+      },
+      "animationSettings": {
+        "window_animation_scale": "null",
+        "transition_animation_scale": "null",
+        "animator_duration_scale": "null"
+      },
+      "servicesPresent": false,
+      "tun0Present": false
+    }
+  },
+  "preservation": {
+    "before": {
+      "path": "/tmp/kclash-general-material-20261104-preserve-before.log",
+      "sha256": "64754d46109c86dfc2a0b87f42cdc095ef9cb52580cc28adba6a88747af7a9ca",
+      "bytes": 961
+    },
+    "after": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+        "passed": true,
+        "seconds": 6.8,
+        "log": "/tmp/kclash-general-material-20261104-preserve-after6-0.log",
+        "sha256": "ca20e12ab240bc24146304891068e0127008786a57d6ebb474852f9dfb6620d1",
+        "images": []
+      }
+    ],
+    "beforeDevice": {
+      "device": {
+        "serial": "wsvwypiz7xwslvl7",
+        "model": "Redmi Note 8 Pro",
+        "api": 36,
+        "abi": "arm64-v8a"
+      },
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0"
+      },
+      "flutterSha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1",
+      "yamlDeviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "yamlLocalSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+    },
+    "flutterReference": {
+      "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1",
+      "matchesBefore": true,
+      "operations": "仅只读pm path和SHA核对；未安装覆盖、卸载、清数据或改配置。"
+    },
+    "sourceYaml": {
+      "localSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+    },
+    "install": "Kotlin App/Test install -r，未connectedDebugAndroidTest。"
+  },
+  "release": {
+    "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+    "sha256": "3ea1ca973986517c8058650112ce4e8f2b5db513104167b61a6713a5944271f1",
+    "bytes": 48115640,
+    "signed": false,
+    "installed": false
+  },
+  "visualReview": {
+    "reviewer": "主代理",
+    "finalScreenshots": {
+      "redmi-final6": 50,
+      "api27-final6": 47
+    },
+    "status": "全部最终PNG由联系表目视，材质与子页重点图原图复核；不是Flutter逐像素等价。",
+    "contactSheets": [
+      {
+        "path": "/tmp/kclash-general-material-20261104-redmi-final6-review-contact0.jpg",
+        "sha256": "6bd15a0df10df24dc88c994c9bc6377273b9ea8dfe9ad69d18800635881e482a",
+        "bytes": 111972
+      },
+      {
+        "path": "/tmp/kclash-general-material-20261104-redmi-final6-review-contact1.jpg",
+        "sha256": "47221c76bfff01c99eee6edf104af83f8b8afc65dba9456ddf3be2a2ffc61542",
+        "bytes": 82897
+      },
+      {
+        "path": "/tmp/kclash-general-material-20261104-redmi-final6-review-contact2.jpg",
+        "sha256": "58ac0a1fda5b24127ebfa2c754b7b0558f0d3bf18541ed04c7c2ed4a6366bd22",
+        "bytes": 100046
+      },
+      {
+        "path": "/tmp/kclash-general-material-20261104-redmi-final6-review-contact3.jpg",
+        "sha256": "34ab714b7d424d9e431e5c5bc134110352cb7f074145aae75a2f6106c8890d52",
+        "bytes": 102292
+      },
+      {
+        "path": "/tmp/kclash-general-material-20261104-redmi-final6-review-contact4.jpg",
+        "sha256": "8e4b49fe2b81f180aea7f68bc4b19b546951feb4a0eaf7411219687cb1b3554e",
+        "bytes": 45083
+      },
+      {
+        "path": "/tmp/kclash-general-material-20261104-api27-final6-review-contact0.jpg",
+        "sha256": "ce34dc25a789e944cd817b21199e09279a11a2ac2e98a35910b576d3d6343603",
+        "bytes": 117893
+      },
+      {
+        "path": "/tmp/kclash-general-material-20261104-api27-final6-review-contact1.jpg",
+        "sha256": "725b5f0f658d489d20234651394936c997c06a19f798f7c96ceb5fde39817da4",
+        "bytes": 105142
+      },
+      {
+        "path": "/tmp/kclash-general-material-20261104-api27-final6-review-contact2.jpg",
+        "sha256": "1cfb3ee0e82f48530d0b8928528aa2e0fd59e8aa5ee3339a917ef66b8edd88e8",
+        "bytes": 113313
+      },
+      {
+        "path": "/tmp/kclash-general-material-20261104-api27-final6-review-contact3.jpg",
+        "sha256": "08ee5d28f5477a79a8ad1dc9c232765a97915d4eb5945fd26266acef54846fae",
+        "bytes": 110327
+      }
+    ]
+  },
+  "review": [
+    "材质/API/插值只读探子复核发现strength保留参数、透明卷积和fallback混合问题，已修正并用最终实际像素覆盖。",
+    "子页只读探子复核发现最后选项自动返回和链式选择语义遗漏，已修正，最终两设备用例覆盖。",
+    "最终透明混合复核发现standard与strength顺序边界，新增resolve先质量后强度，最终两端近零强度像素断言通过。"
+  ],
+  "limitations": [
+    "三次盒式卷积和预备多级背景是近似；未声称全部采样品质或全应用逐像素一致。",
+    "共享regular/pill/menu/alert/tinted/lens及quality组件可渲染，生产默认玻璃关闭；常驻Dock/按钮/其他面板的live背景捕获和触点glow仍待接入。",
+    "低API本组仅API27手机AVD：PixelCopy有，RuntimeShader/RenderEffect无；API24/25、31/32及其他ABI未实测，不推广全部低API通过。",
+    "API27仅离线组件/真实Window捕获/菜单/子页；未导入真实订阅或本地YAML，不作为低API实核/VPN/实网验收。",
+    "本组未重跑Provider订阅实网、Go、正式签名Release运行或远端CI；Fallback实核/冷进程和8MiB正文性能边界保持。",
+    "备份/系统恢复、观测次要打磨、语言/主题继续暂缓。"
+  ],
+  "sourceFiles": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuGlass.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuGlass.kt",
+      "sha256": "13cf8f5d96a23f5431094fe8c3fafb4923eff3575ea74b584f6bc316821f95f4",
+      "bytes": 18963
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt",
+      "sha256": "0415f60b8a3015b034406f95f831b275debb5ace56126217ed4207bab8c1106d",
+      "bytes": 9210
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuSource.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuSource.kt",
+      "sha256": "c0a783b352cf86bea17c33e824e3294f7221ea7856aa0a2983fc9c87438a6d82",
+      "bytes": 3750
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuStack.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuStack.kt",
+      "sha256": "27bf2315002ca4bb4a07047f4e03769be975df8149af3e616058caa4d4074cec",
+      "bytes": 11547
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDialersPage.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDialersPage.kt",
+      "sha256": "34db0efc15d79162d0a639fd570265e360653c96170cce0838f05dd1c6fe7652",
+      "bytes": 7300
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt",
+      "sha256": "7a31248eac923248aceea41f116f768018cbace7f7920a223fdada2eb013f0c0",
+      "bytes": 23572
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt",
+      "sha256": "740fba6e1f7b58a55270dd2187705f49313774aa022fd940fe4d0b53bf4a6ea9",
+      "bytes": 10315
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt",
+      "sha256": "bb4bc91b6d198d3d3458374819ea29633325acb49062e0ff89ae8d46014f92e7",
+      "bytes": 41834
+    },
+    "android/tests/app/AppMenuMotionTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/app/AppMenuMotionTest.kt",
+      "sha256": "6b21f4e7504c08081c4f0794e3643bb54be56e6971aabaa2989396c830fa29e0",
+      "bytes": 6190
+    },
+    "android/tests/instrumented/LocalProxiesPageInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/LocalProxiesPageInstrumentedTest.kt",
+      "sha256": "4aec12396f2191f8423e96c96d9f6b3d779ec548657c938a3668ebbaee04533e",
+      "bytes": 9622
+    },
+    "android/tests/instrumented/ProxyGroupEditorInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/ProxyGroupEditorInstrumentedTest.kt",
+      "sha256": "95764512dbd7f09842c5c6c2e2f50c6876375f4d78cddb9aa9c2068d3cd1482b",
+      "bytes": 10811
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppGlassStyle.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppGlassStyle.kt",
+      "sha256": "14905585b3ebf208548978cae23074a6051ab5420147cebb51063350d876a039",
+      "bytes": 5076
+    },
+    "android/tests/instrumented/AppGlassInstrumentedTest.kt": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/AppGlassInstrumentedTest.kt",
+      "sha256": "3aec21a352d1e4aec3c6ef6cfb2394913525d2a471290f3a82e50943d116e830",
+      "bytes": 10304
+    }
+  }
+}

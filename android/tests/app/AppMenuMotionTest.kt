@@ -28,6 +28,53 @@ class AppMenuMotionTest {
         }
     }
 
+    @Test fun opticalReturnOutlivesTextAndInterruptionsKeepMaterialContinuous() {
+        for (time in listOf(.04f, .12f, .45f)) {
+            val from = appMenuMorphFrame(anchor, card, time, 1f, true)
+            val first = appMenuReturnFrame(anchor, from, 0f, 1f)
+            assertEquals(from.materialProgress, first.materialProgress, .00001f)
+            assertEquals(from.frostProgress, first.frostProgress, .00001f)
+            val textGone = appMenuReturnFrame(anchor, from, .1f, 1f)
+            assertEquals(0f, textGone.progress, .00001f)
+            assertTrue(textGone.materialProgress > 0f)
+            assertEquals(from.frostProgress, textGone.frostProgress, .00001f)
+            val absorbed = appMenuReturnFrame(anchor, from, .5f, 1f)
+            assertEquals(0f, absorbed.materialProgress, .00001f)
+            assertEquals(0f, absorbed.frostProgress, .00001f)
+        }
+    }
+
+    @Test fun materialStrengthPreservesTintAndEdgeGeometryDuringUnfold() {
+        val source = AppGlassStyle.pill(true)
+        val partial = source.strength(.35f)
+        assertEquals(source.tint.red, partial.tint.red, .00001f)
+        assertEquals(source.tint.green, partial.tint.green, .00001f)
+        assertEquals(source.bevel, partial.bevel, 0f)
+        assertEquals(source.rimWidth, partial.rimWidth, 0f)
+        assertEquals(source.hazeBlur, partial.hazeBlur, 0f)
+        assertEquals(source.refraction * .35f, partial.refraction, .00001f)
+        assertEquals(source, source.strength(1f))
+    }
+
+    @Test fun standardQualityKeepsLensRefractionAndRimWhileMergingPillHaze() {
+        for (dark in listOf(false, true)) {
+            val lens = AppGlassStyle.lens(dark)
+            val reduced = lens.effective(AppGlassQuality.STANDARD)
+            assertEquals(lens.refraction, reduced.refraction, 0f)
+            assertEquals(lens.rim, reduced.rim, 0f)
+            assertEquals(0f, reduced.dispersion, 0f)
+            val pill = AppGlassStyle.pill(dark)
+            val flat = pill.effective(AppGlassQuality.STANDARD)
+            assertEquals(pill.hazeBlur, flat.blur, 0f)
+            assertEquals(0f, flat.haze, 0f)
+            assertEquals(pill.tint, flat.tint)
+            assertEquals(pill, pill.effective(AppGlassQuality.ULTRA))
+            val menu = AppGlassStyle.menu(dark, Color.White)
+            assertEquals(pill, pill.interpolate(menu, 0f))
+            assertEquals(menu, pill.interpolate(menu, 1f))
+        }
+    }
+
     @Test fun submenuClipGrowsFromOwnerWithoutScalingContentHeight() {
         val size = Size(280f, 400f)
         assertEquals(Rect(8f, 8f, 272f, 56f), appMenuStackRect(size, 120f, 128f, 48f, 0f, 1f))

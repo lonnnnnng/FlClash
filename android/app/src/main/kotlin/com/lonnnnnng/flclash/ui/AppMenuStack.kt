@@ -120,6 +120,7 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
             val renderer = remember { AppMenuGlassRenderer() }
             val dark = com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current
             val tint = if (dark) Color(0xFF343537) else MaterialTheme.colorScheme.surfaceBright
+            val quality = LocalAppGlassQuality.current
             val dim = MaterialTheme.colorScheme.surface
             val material = if (top && index > 0) (state.unfold.value / .35f).coerceIn(0f, 1f) else 1f
             val enabled = active && top && !state.folding && level.key == pageKey
@@ -153,12 +154,13 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                         val hit = state.outerBounds?.let(rect::intersect) ?: rect
                         if (state.hitBounds != hit) { state.hitBounds = hit; state.hitRevision++ }
                     }
+                    val style = AppGlassStyle.menu(dark, tint).resolve(quality, material)
                     clipPath(motion.path()) {
                         if (opening >= .45f && active) {
                             if (backdrop == null || !renderer.draw(this, motion, backdrop,
-                                Offset(-level.bounds.left, -level.bounds.top), tint, dark, paintScale = scale.coerceAtLeast(.001f), amount = material)) {
-                                if (backdrop != null) drawAppMenuFrost(backdrop, Offset(-level.bounds.left, -level.bounds.top), scale.coerceAtLeast(.001f))
-                                drawPath(motion.path(), surface.copy(alpha = if (backdrop == null) 1f else .72f))
+                                Offset(-level.bounds.left, -level.bounds.top), tint, dark, paintScale = scale.coerceAtLeast(.001f), style = style, quality = quality)) {
+                                if (backdrop != null) drawAppGlassFallback(motion, backdrop, Offset(-level.bounds.left, -level.bounds.top), style, quality, scale.coerceAtLeast(.001f))
+                                else drawPath(motion.path(), surface)
                             }
                         }
                         this@drawWithContent.drawContent()

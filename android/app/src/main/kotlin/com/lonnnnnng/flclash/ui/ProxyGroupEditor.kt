@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.*
 import kotlin.math.abs
@@ -353,7 +354,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
         "hash-key" -> group.text("type") == "load-balance" && group.text("strategy") != "round-robin"
         else -> true
     } }
-    ProfileEditorPage(onDismissRequest = ::exit, title = { Text(if (creating) "添加策略组" else "编辑策略组") }, backTag = "proxy_group_form_back",
+    ProfileEditorPage(onDismissRequest = ::exit, title = { Text(if (creating) "添加策略组" else "编辑策略组") }, backTag = "proxy_group_form_back", contentPadding = PaddingValues(0.dp),
         confirmButton = {
             IconButton(onClick = { clearFocus[0]?.invoke(); yaml = true }, modifier = Modifier.testTag("proxy_group_quick_yaml")) { Icon(Icons.Outlined.Code, "快捷 YAML") }
             TextButton(onClick = ::confirm, enabled = !confirming, modifier = Modifier.testTag("proxy_group_form_confirm")) { Text(if (confirming) "校验中…" else "确认") }
@@ -361,11 +362,11 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
             val focus = LocalFocusManager.current
             val keyboard = LocalSoftwareKeyboardController.current
             DisposableEffect(focus, keyboard) { clearFocus[0] = { focus.clearFocus(force = true); keyboard?.hide() }; onDispose { clearFocus[0] = null } }
-            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
                 error?.takeUnless { message -> issues.any { it.message == message } }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_form_error")) }
                 GroupIssuesBanner(issues, "proxy_group_form_issues")
-                Text("常规", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp))
-                ProfileFormSection {
+                GroupSectionHeading("常规")
+                ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     GroupFieldRow("名称", group.name.ifBlank { "未命名" }, "proxy_group_name") { editing = GroupOption("name", "名称", "") }
                     GroupFieldRow("类型", group.text("type"), "proxy_group_type") { editing = GroupOption("type", "类型", "select", "type") }
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -373,24 +374,24 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                         Box(Modifier.weight(1f)) { GroupFieldRow("图标", if (group.text("icon").isBlank()) "默认" else "已设置", "proxy_group_icon") { clearFocus[0]?.invoke(); iconPicker = true } }
                     }
                 }
-                Text("节点", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp))
-                ProfileFormSection {
+                GroupSectionHeading("节点")
+                ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     GroupFieldRow("成员", ProxyGroupDrafts.members(group).size.toString() + " 个", "proxy_group_members") { members = true }
                     listOf("include-all-proxies" to "包含全部代理", "include-all-providers" to "包含全部资源").forEach { (key, label) ->
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(label, Modifier.weight(1f)); Switch(group.flag(key), { value -> change { if (value) it.addProperty(key, true) else it.remove(key) } }, Modifier.testTag("proxy_group_$key"))
+                        ProfileFormRow(label) {
+                            Switch(group.flag(key), { value -> change { if (value) it.addProperty(key, true) else it.remove(key) } }, Modifier.testTag("proxy_group_$key"))
                         }
                     }
                     GroupFieldRow("过滤表达式", group.text("filter").ifBlank { "未设置" }, "proxy_group_filter") { editing = GroupOption("filter", "过滤表达式", "") }
                     GroupFieldRow("排除表达式", group.text("exclude-filter").ifBlank { "未设置" }, "proxy_group_exclude_filter") { editing = GroupOption("exclude-filter", "排除表达式", "") }
                 }
-                Text("可选设置", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp))
-                ProfileFormSection {
+                GroupSectionHeading("可选设置")
+                ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     applicable.filter { group.fields.has(it.key) }.forEach { option ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = { change { it.remove(option.key) } }, modifier = Modifier.testTag("group_remove_" + option.key)) { Icon(Icons.Outlined.RemoveCircleOutline, "移除" + option.label) }
                             if (option.kind == "boolean") {
-                                Text(option.label, Modifier.weight(1f)); Switch(group.flag(option.key), { value -> change { it.addProperty(option.key, value) } })
+                                Text(option.label, Modifier.weight(1f).padding(start = 16.dp)); Switch(group.flag(option.key), { value -> change { it.addProperty(option.key, value) } }, modifier = Modifier.padding(end = 16.dp))
                             } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { "默认" }, "group_option_" + option.key) { editing = option } }
                         }
                     }
@@ -403,19 +404,35 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     if (iconPicker) ProfileGroupIconPicker(group.text("icon"), group.name, recentIcons, onRecordIcon, onReadIcon,
         onDismiss = { iconPicker = false }, onSelect = { value -> change { if (value.isEmpty()) it.remove("icon") else it.addProperty("icon", value) }; iconPicker = false })
     if (members) GroupMembersEditor(group, groups, source, onDismiss = { members = false }, onConfirm = { json = it.json; members = false; error = null })
-    if (addOption) AlertDialog(onDismissRequest = { addOption = false }, title = { Text("添加设置项") }, text = {
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            applicable.filterNot { group.fields.has(it.key) }.forEach { option ->
-                TextButton(onClick = {
-                    change { when (option.kind) {
-                        "boolean" -> it.addProperty(option.key, option.default.toBoolean())
-                        "number" -> it.addProperty(option.key, option.default.toLong())
-                        else -> it.addProperty(option.key, option.default)
-                    } }; addOption = false
-                }, modifier = Modifier.fillMaxWidth().testTag("group_add_" + option.key)) { Text(option.label) }
+    if (addOption) ProfileEditorPage(onDismissRequest = { addOption = false }, title = { Text("添加设置项") },
+        backTag = "proxy_group_add_option_back", contentPadding = PaddingValues(0.dp), text = {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+            val healthKeys = setOf("url", "interval", "timeout", "max-failed-times", "lazy", "expected-status", "tolerance")
+            listOf("健康检查" to true, "其他" to false).forEach { (heading, health) ->
+                val options = applicable.filterNot { group.fields.has(it.key) }.filter { (it.key in healthKeys) == health }
+                if (options.isNotEmpty()) {
+                    GroupSectionHeading(heading)
+                    options.forEach { option ->
+                        // 作者 long：添加只更新本组草稿并移除候选；剩余候选可继续添加，最后一项自动返回，始终不触发父表单保存。
+                        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("group_add_" + option.key).clickable {
+                            val last = applicable.count { !group.fields.has(it.key) } == 1
+                            change { when (option.kind) {
+                                "boolean" -> it.addProperty(option.key, option.default.toBoolean())
+                                "number" -> it.addProperty(option.key, option.default.toLong())
+                                else -> it.addProperty(option.key, option.default)
+                            } }
+                            if (last) addOption = false
+                        }.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(option.label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                            Icon(Icons.Outlined.Add, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
             }
+            if (applicable.all { group.fields.has(it.key) }) Text("已添加全部设置项", Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(20.dp))
         }
-    }, confirmButton = { TextButton(onClick = { addOption = false }) { Text("关闭") } })
+    })
     editing?.let { option ->
         val choices = when (option.kind) {
             "type" -> ProxyGroupDrafts.types
@@ -447,11 +464,17 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
 }
 
 @Composable
+private fun GroupSectionHeading(title: String) {
+    Text(title, Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+@Composable
 private fun GroupFieldRow(label: String, value: String, tag: String, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag(tag).clickable(onClick = onClick).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, Modifier.weight(1f))
-        Text(value, Modifier.weight(1f), maxLines = 2, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-        Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    ProfileFormRow(label, Modifier.testTag(tag).clickable(onClick = onClick)) {
+        Text(value, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End,
+            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyLarge)
+        Icon(Icons.Outlined.ChevronRight, null, Modifier.padding(start = 8.dp).size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

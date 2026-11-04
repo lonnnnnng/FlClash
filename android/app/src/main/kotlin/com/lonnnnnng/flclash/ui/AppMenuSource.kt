@@ -53,6 +53,7 @@ internal fun Modifier.appMenuSource(source: AppMenuSource): Modifier = composed 
 
 // 作者 long：上游玻璃默认关闭；材质入口独立于主题设置，开启时只持有当前菜单的一帧背景，不保存或导出页面图像。
 internal val LocalAppMenuGlass = staticCompositionLocalOf { false }
+internal val LocalAppGlassQuality = staticCompositionLocalOf { AppGlassQuality.ULTRA }
 
 /** 作者 long：背景取宿主Window而不是Popup自身，避免折射层重复拍到菜单；取消后丢弃回调，图像从不进入存储。 */
 internal suspend fun captureAppMenuBackdrop(view: View, density: Float): AppMenuBackdrop? {

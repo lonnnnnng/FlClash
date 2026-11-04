@@ -17,7 +17,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.*
 
 internal data class AppMenuMorphFrame(val platter: Rect, val radius: Float, val progress: Float,
-    val droplet: Rect? = null, val blend: Float = 0f, val blur: Float = 0f, val sourceAlpha: Float = 0f) {
+    val droplet: Rect? = null, val blend: Float = 0f, val blur: Float = 0f, val sourceAlpha: Float = 0f,
+    val materialProgress: Float = 1f, val frostProgress: Float = 1f) {
     fun path() = superellipsePath(platter.size, List(4) { radius }).apply { translate(platter.topLeft) }
     fun outline() = droplet?.let { appMenuGooPath(platter, radius, it, blend) } ?: path()
 }
@@ -54,12 +55,12 @@ internal fun appMenuMorphFrame(anchor: Rect, card: Size, seconds: Float, unit: F
     val settled = progress.coerceIn(0f, 1f)
     return AppMenuMorphFrame(Rect(center - Offset(size.width / 2f, size.height / 2f), size), radius, settled,
         droplet, 28f * unit, sqrt((4f * (1f - settled)).pow(2) + (1.9f * riseAndFall(seconds, .069f, 2.1f)).pow(2)) * unit,
-        1f - min(1f, settled / .25f))
+        1f - min(1f, settled / .25f), materialProgress = settled)
 }
 
 /** 作者 long：回源从实际中断帧起算，500ms内消除弹簧余振；100ms隐去文字，470ms重建按钮图像。 */
 internal fun appMenuReturnFrame(anchor: Rect, from: AppMenuMorphFrame, seconds: Float, unit: Float): AppMenuMorphFrame {
-    if (seconds >= .5f) return AppMenuMorphFrame(anchor, anchor.size.minDimension / 2f, 0f, anchor, 0f, 0f, 1f)
+    if (seconds >= .5f) return AppMenuMorphFrame(anchor, anchor.size.minDimension / 2f, 0f, anchor, 0f, 0f, 1f, materialProgress = 0f, frostProgress = 0f)
     val ringing = 1f - androidx.compose.animation.core.FastOutLinearInEasing.transform(((seconds - .4f) / .1f).coerceIn(0f, 1f))
     val p = 1f + (menuSpring(165f, .8f, seconds) - 1f) * ringing
     val distance = from.platter.center.y - anchor.center.y
@@ -77,7 +78,9 @@ internal fun appMenuReturnFrame(anchor: Rect, from: AppMenuMorphFrame, seconds: 
         max(0f, (from.radius + (from.platter.width / 2 - from.radius) * p) * scale), reveal,
         Rect(dropCenter - Offset(dropSize.width / 2, dropSize.height / 2), dropSize), from.blend * (1f - absorbed),
         from.blur + (8f * unit * (1f - reveal) - from.blur) * min(1f, seconds / .1f),
-        from.sourceAlpha + (1f - from.sourceAlpha) * androidx.compose.animation.core.CubicBezierEasing(.25f, .1f, .25f, 1f).transform((seconds / .47f).coerceIn(0f, 1f)))
+        from.sourceAlpha + (1f - from.sourceAlpha) * androidx.compose.animation.core.CubicBezierEasing(.25f, .1f, .25f, 1f).transform((seconds / .47f).coerceIn(0f, 1f)),
+        materialProgress = from.materialProgress * (1f - p).coerceIn(0f, 1f),
+        frostProgress = from.frostProgress * (1f - absorbed))
 }
 
 internal class AppMenuMorphShape(private val frame: (Size) -> AppMenuMorphFrame) : Shape {
@@ -89,18 +92,23 @@ internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorph
     drawSurface: () -> Boolean = { true }) = composed {
     val glass = remember { AppMenuGlassRenderer() }
     val dark = LocalKClashDarkTheme.current
-    // 作者 long：默认深色由固定上游surfaceContainer.shiftTone(7)实际导出，不能拿邻近的容器槽代替HCT色调。
-    val tint = if (dark) Color(0xFF343537) else MaterialTheme.colorScheme.surfaceBright
+    // 作者 long：源按钮和菜单分别采用共享regular/menu材质，深浅色参数只来自固定上游，不在动效中混用主题容器槽。
+    val tint = MaterialTheme.colorScheme.surfaceBright
+    val regular = AppGlassStyle.regular(dark)
+    val menu = AppGlassStyle.menu(dark, tint)
+    val quality = LocalAppGlassQuality.current
     drawWithContent {
         val motion = frame(size)
         if (!drawSurface()) { drawContent(); return@drawWithContent }
         val scale = motion.platter.width / size.width.coerceAtLeast(1f)
         val path = motion.path()
         val outline = motion.outline()
-        val refracted = backdrop != null && glass.draw(this, motion, backdrop, backdropOffset, tint, dark)
+        // 作者 long：文字100ms先退场，材质沿回源弹簧继续；磨砂只在按钮吸收阶段减弱，三条时间线互不替代。
+        val material = regular.interpolate(menu, motion.materialProgress).copy(blur = regular.blur + (menu.blur - regular.blur) * motion.frostProgress)
+        val refracted = backdrop != null && glass.draw(this, motion, backdrop, backdropOffset, tint, dark, style = material, quality = quality)
         if (!refracted) {
-            if (backdrop != null) clipPath(outline) { drawAppMenuFrost(backdrop, backdropOffset) }
-            drawPath(outline, surface.copy(alpha = if (backdrop != null) .72f else 1f))
+            if (backdrop != null) clipPath(outline) { drawAppGlassFallback(motion, backdrop, backdropOffset, material, quality) }
+            else drawPath(outline, surface)
         }
         motion.droplet?.let { drop -> if (source != null && drop.width > 0 && drop.height > 0) {
             drawImage(source, dstOffset = androidx.compose.ui.unit.IntOffset(drop.left.roundToInt(), drop.top.roundToInt()),
