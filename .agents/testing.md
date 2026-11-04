@@ -1,5 +1,12 @@
 # Testing
 
+## 配置页与代理组剩余菜单补验（2026-11-04）
+
+- 指定 Redmi Note 8 Pro `wsvwypiz7xwslvl7`、API 36、arm64-v8a、1080×2340竖屏、字号1.0。三个精确方法分别运行并各自通过1/1，失败/错误/跳过均为0：`ProfileProviderManagementInstrumentedTest#providerMenusBatchRetryAndSubscriptionAreReachableInBothThemes`、`ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft`、`ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity`。覆盖行菜单长按避让/外点关闭/原动作、资源页菜单外点关闭与快捷YAML入口、代理组复制/删除菜单与外点关闭。
+- 每项独立Gradle日志和JUnit XML分别保存在`/tmp/kclash-menu-finish-provider-row-final-20261104.log`、`/tmp/kclash-menu-finish-provider-row-20261104.xml`，`/tmp/kclash-menu-finish-provider-pages-20261104.log`、`/tmp/kclash-menu-finish-provider-pages-20261104.xml`，`/tmp/kclash-menu-finish-proxygroup-final-20261104.log`、`/tmp/kclash-menu-finish-proxygroup-20261104.xml`；各文件SHA见`docs/acceptance/profile-proxy-menus-redmi-20261104.json`。曾尝试逗号分隔的多方法过滤，JUnit实际仅执行首项1/1；不计为三项合并批次，最终结果来自三个独立精确运行。
+- 最终`com.lonnnnnng.flclash` Debug APK及`com.lonnnnnng.flclash.test` AndroidTest APK安装后回拉，与本地产物SHA分别匹配：`3c310caf20c790cb9174e57afe2490235272e8db404122fe7a13ae7b8c78ef90`、`6edd65088b48d8a9cb23cc307f8685ed374fd4f79c1067caa046a74c4b35027d`。原版Flutter上游参考`com.follow.clash`仍安装；本轮只读检查其路径，未对它安装、卸载、清数据或启动。连接测试结束后核心进程数0且`tun0`不存在；Gradle测试期间应用包曾不在安装列表，因此不声称既有Room/Profile数据保留，最终安装只恢复APK。
+- 该切片只验三个菜单入口和各自原有动作，不覆盖完整页面动效、Flutter逐像素一致、Fallback真实核心边界或额外Provider实网行为。完整源码构建与697项单测仍引用前组证据`docs/acceptance/profiles-proxy-motion-redmi-20261104.json`；本次只补跑精确真机方法。
+
 ## 配置页与代理组菜单、面板及冷进程收尾（2026-11-04）
 
 - 最终源码构建 `/tmp/kclash-profiles-proxy-motion-20261104-final-build.log` 通过：App440、Service188、Core38、Common31，共697项，失败/错误/跳过0；Debug、AndroidTest、未签名arm64 Release/R8与双变体Lint通过。Debug/Release Lint各0 errors、62 warnings（hints分别9/8）；Go测试本组未重跑。

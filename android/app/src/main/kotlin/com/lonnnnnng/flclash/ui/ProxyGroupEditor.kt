@@ -194,13 +194,20 @@ internal fun VisualProxyGroupsEditor(
                             }
                             if (!sorting && !selecting) {
                                 var menu by remember { mutableStateOf(false) }
+                                val menuAnchor = remember(group.key) { AppContextMenuAnchor() }
                                 Box {
-                                    IconButton(onClick = { menu = true }, enabled = !saving, modifier = Modifier.testTag("proxy_group_menu_$index")) { Icon(Icons.Outlined.MoreVert, "策略组操作") }
-                                    DropdownMenu(menu, { menu = false }) {
-                                        DropdownMenuItem(text = { Text("复制") }, onClick = {
+                                    IconButton(onClick = { menuAnchor.open(); menu = true }, enabled = !saving,
+                                        modifier = Modifier.appContextMenuAnchor(menuAnchor, enabled = !saving) { menu = true }
+                                            .testTag("proxy_group_menu_$index")) { Icon(Icons.Outlined.MoreVert, "策略组操作") }
+                                    AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point,
+                                        placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
+                                        modifier = Modifier.testTag("proxy_group_actions_$index")) {
+                                        AppDropdownMenuItem(text = { Text("复制") }, onClick = {
                                             groups = ProxyGroupIssues.duplicate(groups, setOf(group.key), source); menu = false
-                                        })
-                                        DropdownMenuItem(text = { Text("删除", color = MaterialTheme.colorScheme.error) }, onClick = { menu = false; deleteKeys = setOf(group.key) })
+                                        }, modifier = Modifier.testTag("proxy_group_copy_$index"))
+                                        AppDropdownMenuItem(text = { Text("删除") }, danger = true,
+                                            onClick = { menu = false; deleteKeys = setOf(group.key) },
+                                            modifier = Modifier.testTag("proxy_group_delete_$index"))
                                     }
                                 }
                             }

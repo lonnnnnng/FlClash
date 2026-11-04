@@ -4,6 +4,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.boundsInWindow
 import com.lonnnnnng.flclash.core.*
 import com.lonnnnnng.flclash.service.ProfileProviderDocument
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
@@ -17,21 +19,31 @@ class ProfileProviderManagementInstrumentedTest {
     @Test fun providerMenusBatchRetryAndSubscriptionAreReachableInBothThemes() {
         assertPortraitDefaultFontConfiguration()
         var dark by mutableStateOf(false)
-        var updated = 0; var retries = 0; var edited = ""; var uploaded = ""
+        var updated = 0; var retries = 0; var previewed = ""; var edited = ""; var uploaded = ""
         val rows = listOf(CoreExternalProvider("远程节点", "Proxy", "HTTP", 3, null,
             CoreProviderSubscription(100, 200, 1024, null)), CoreExternalProvider("本地规则", "Rule", "File", 2, null))
         compose.setContent { KClashTheme(darkTheme = dark) {
             ProfileProvidersPanel(ProfileProvidersUiState(1, rows, failedNames = setOf("远程节点")), {}, {},
-                { updated++ }, { retries++ }, {}, { edited = it }, { uploaded = it })
+                { updated++ }, { retries++ }, { previewed = it }, { edited = it }, { uploaded = it })
         } }
         compose.onNodeWithTag("profile_providers_update_all").performClick()
         compose.onNodeWithTag("profile_providers_retry_failed").performClick()
+        compose.onNodeWithTag("profile_provider_row_0").performTouchInput { longClick() }
+        compose.onNodeWithTag("profile_provider_edit_0").assertIsDisplayed()
+        val rowBounds = compose.onNodeWithTag("profile_provider_row_0").fetchSemanticsNode().boundsInWindow
+        val menuBounds = compose.onNodeWithTag("profile_provider_edit_0").fetchSemanticsNode().boundsInWindow
+        assertTrue(menuBounds.bottom <= rowBounds.top || menuBounds.top >= rowBounds.bottom)
+        compose.runOnIdle { assertEquals("", previewed) }
+        compose.onNodeWithTag("app_popup_outside").performTouchInput { click(Offset(4f, centerY)) }
+        compose.onNodeWithTag("profile_provider_edit_0").assertDoesNotExist()
         compose.onNodeWithTag("profile_provider_menu_0").performClick()
+        compose.onNodeWithTag("profile_provider_edit_0").assertIsDisplayed()
         compose.onNodeWithTag("profile_provider_edit_0").performClick()
         compose.onNodeWithTag("profile_provider_menu_1").performClick()
         compose.onNodeWithTag("profile_provider_upload_1").performClick()
         compose.runOnIdle { assertEquals(1, updated); assertEquals(1, retries); assertEquals("远程节点", edited); assertEquals("本地规则", uploaded) }
         compose.onNodeWithTag("profile_provider_menu_0").performClick()
+        compose.onNodeWithTag("profile_provider_subscription_0").assertIsDisplayed()
         capture("provider_menu")
         compose.onNodeWithTag("profile_provider_subscription_0").performClick()
         compose.onNodeWithText("不限到期时间").assertIsDisplayed()
@@ -39,6 +51,11 @@ class ProfileProviderManagementInstrumentedTest {
         compose.onNodeWithText("确定").performClick()
         compose.runOnIdle { dark = true }
         compose.onNodeWithTag("profile_providers_update_all").assertIsEnabled()
+        compose.onNodeWithTag("profile_provider_menu_0").performClick()
+        compose.onNodeWithTag("profile_provider_edit_0").assertIsDisplayed()
+        capture("provider_menu_dark")
+        compose.onNodeWithTag("app_popup_outside").performTouchInput { click(Offset(4f, centerY)) }
+        compose.onNodeWithTag("profile_provider_edit_0").assertDoesNotExist()
     }
 
     @Test fun providerEditorProtectsDraftShowsFailureAndMrsIsReadOnly() {

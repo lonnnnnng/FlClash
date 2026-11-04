@@ -1,0 +1,130 @@
+{
+  "verifiedAtBeijing": "2026-11-04",
+  "baseCommit": "cb67d1aeae6f5a6b9f6ac852f71e6cc724c663d1",
+  "scope": "补验 Providers 行菜单、Provider 资源页操作菜单和代理组编辑列表菜单",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": "1.0"
+  },
+  "instrumentation": [
+    {
+      "class": "com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest",
+      "method": "providerMenusBatchRetryAndSubscriptionAreReachableInBothThemes",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "coverage": "长按行锚点避让、不会触发预览、外点关闭、编辑/上传/同步/订阅用量动作及双主题菜单",
+      "log": "/tmp/kclash-menu-finish-provider-row-final-20261104.log",
+      "logSha256": "7a376a5cac35e3c5ff550b8da35ac16ec3fb069997d5b7775426825d98d9d290",
+      "xml": "/tmp/kclash-menu-finish-provider-row-20261104.xml",
+      "xmlSha256": "52ca211e4b05953a41679351cc89ed0255d7d1af53aa96b54e4d70cfa147206f"
+    },
+    {
+      "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+      "method": "missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "coverage": "Provider 资源页菜单外点关闭、快捷 YAML 入口，以及引用绑定和失败草稿回归",
+      "log": "/tmp/kclash-menu-finish-provider-pages-20261104.log",
+      "logSha256": "6f4bfb8ebb5dd82009baa5db0c373d4a5e60bd22d4b73a33c8fc1e4a36e8d539",
+      "xml": "/tmp/kclash-menu-finish-provider-pages-20261104.xml",
+      "xmlSha256": "38e8b0addc26eead09c8c7d01a04f937585d05148c969bc850f0e4d11af4456e"
+    },
+    {
+      "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+      "method": "listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "result": "PASS",
+      "coverage": "代理组复制/删除菜单外点关闭、操作确认和长按排序回归",
+      "log": "/tmp/kclash-menu-finish-proxygroup-final-20261104.log",
+      "logSha256": "9777056b09087f6ae4f1af0d40d1be528e1a2464be676b14c37ccc44cce10aa7",
+      "xml": "/tmp/kclash-menu-finish-proxygroup-20261104.xml",
+      "xmlSha256": "65f422cd9f8b4ffe4bdecd7bc3c721061c520bbf934c48a061b15de12f077e65"
+    }
+  ],
+  "build": {
+    "fullSourceBuildReference": "docs/acceptance/profiles-proxy-motion-redmi-20261104.json",
+    "fullSourceBuildReRunInThisSlice": false,
+    "debugApk": {
+      "package": "com.lonnnnnng.flclash",
+      "versionName": "0.1.0",
+      "versionCode": 1,
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "3c310caf20c790cb9174e57afe2490235272e8db404122fe7a13ae7b8c78ef90",
+      "devicePull": "/tmp/kclash-menu-finish-installed-20261104.apk",
+      "devicePullSha256": "3c310caf20c790cb9174e57afe2490235272e8db404122fe7a13ae7b8c78ef90"
+    },
+    "androidTestApk": {
+      "package": "com.lonnnnnng.flclash.test",
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "6edd65088b48d8a9cb23cc307f8685ed374fd4f79c1067caa046a74c4b35027d",
+      "devicePull": "/tmp/kclash-menu-finish-installed-test-20261104.apk",
+      "devicePullSha256": "6edd65088b48d8a9cb23cc307f8685ed374fd4f79c1067caa046a74c4b35027d"
+    },
+    "installationCommand": "adb -s wsvwypiz7xwslvl7 install -r <apk>"
+  },
+  "upstreamReference": {
+    "package": "com.follow.clash",
+    "role": "Flutter 上游参考基线",
+    "stillInstalledAfterVerification": true,
+    "actionsThisSlice": "仅查询包路径；未安装、卸载、清数据或启动"
+  },
+  "deviceAfter": {
+    "appInstalled": true,
+    "androidTestInstalled": true,
+    "runningAppOrCoreProcessCount": 0,
+    "tun0Present": false,
+    "fontScale": "1.0",
+    "accelerometerRotation": 1
+  },
+  "proceduralNote": "曾使用逗号分隔的多方法过滤；JUnit实际只执行首个方法1/1，因此未按合并三项批次计数。随后三个方法分别单独运行并各自通过1/1。",
+  "visuals": {
+    "manualScreenshotReview": false,
+    "limitation": "自动UI断言不证明连续动画时间曲线或Flutter逐像素一致"
+  },
+  "sourceManifest": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProvidersPage.kt",
+      "sha256": "323f3ea15347df44b1c4a24c792d7c4b418493bef1bbbbb97e88ea411f6d0977"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProvidersPanel.kt",
+      "sha256": "74e81f0003e4e6189b7d7b300a058068b8f1260113c031ad927bb94068f2de82"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt",
+      "sha256": "9c475a9061b1908710644e76d382d98672de54f1679592e3c07cc68d06f429a3"
+    },
+    {
+      "path": "android/tests/instrumented/ProfileProviderManagementInstrumentedTest.kt",
+      "sha256": "276e27ba1d5977ab4494a7a9a1d8f20b9cb2621c85227475851f4e152abfedbe"
+    },
+    {
+      "path": "android/tests/instrumented/ProviderPagesInstrumentedTest.kt",
+      "sha256": "47fdcd0683f375d3d341af253ad598639b0807038ac918f927d2cc518f1c6d4a"
+    },
+    {
+      "path": "android/tests/instrumented/ProxyGroupEditorInstrumentedTest.kt",
+      "sha256": "a858ff8336ed43e719a0a204d0aa43602ecffd147a1cd1f6efe643a805f6b0be"
+    }
+  ],
+  "limits": [
+    "本切片只覆盖三个菜单入口及其既有操作，不代表整页菜单、面板或完整动效全部完成。",
+    "未在本切片重跑全量单测、Release/R8、Lint或Go测试；这些仍以fullSourceBuildReference中的前组记录为准。",
+    "未覆盖Fallback无有效核心now、所有Provider实网、真实加密在线订阅、其他资源SAF或完整页面视觉。",
+    "Instrumentation运行期间目标Kotlin应用包曾不在安装列表；最终重新安装了Debug和AndroidTest APK，不声称原Room/Profile数据保留。"
+  ]
+}

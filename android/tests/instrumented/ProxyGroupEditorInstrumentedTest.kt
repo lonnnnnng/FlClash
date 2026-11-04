@@ -44,6 +44,10 @@ class ProxyGroupEditorInstrumentedTest {
                 {}, {}, sourceContent = source, onSaveDraft = { saved = it })
         } }
         compose.onNodeWithTag("proxy_group_menu_0").performClick()
+        compose.onNodeWithTag("proxy_group_copy_0").assertIsDisplayed()
+        compose.onNodeWithTag("app_popup_outside").performTouchInput { click(Offset(4f, centerY)) }
+        compose.onNodeWithTag("proxy_group_copy_0").assertDoesNotExist()
+        compose.onNodeWithTag("proxy_group_menu_0").performClick()
         compose.onNodeWithText("复制").performClick()
         compose.onNodeWithText("Main 副本").assertIsDisplayed()
         compose.onNodeWithTag("proxy_group_menu_1").performClick()

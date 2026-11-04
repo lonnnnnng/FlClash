@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.lonnnnnng.flclash.data.*
@@ -125,6 +126,10 @@ class ProviderPagesInstrumentedTest {
         compose.onNodeWithTag("profile_provider_edit_旧别名").assertIsDisplayed()
         compose.runOnIdle { assertEquals(902L, ProfileProxyResources.idOf(ProfileProxyResources.definitions(proxy).get("旧别名"))) }
         capture("provider_reference_bound")
+        compose.onNodeWithTag("profile_providers_menu").performClick()
+        compose.onNodeWithText("快捷 YAML").assertIsDisplayed()
+        compose.onNodeWithTag("app_popup_outside").performTouchInput { click(Offset(4f, centerY)) }
+        compose.onNodeWithText("快捷 YAML").assertDoesNotExist()
         compose.onNodeWithTag("profile_providers_menu").performClick()
         compose.onNodeWithText("快捷 YAML").performClick()
         compose.onNodeWithTag("providers_yaml_rule").performScrollTo().performTextReplacement("bad: scalar")

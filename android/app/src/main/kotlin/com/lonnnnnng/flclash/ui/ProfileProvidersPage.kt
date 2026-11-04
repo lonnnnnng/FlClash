@@ -33,6 +33,7 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
     var bindingProxy by rememberSaveable(profile.id) { mutableStateOf(true) }
     var quick by rememberSaveable(profile.id) { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
+    val menuAnchor = remember(profile.id) { AppContextMenuAnchor() }
     var submitted by rememberSaveable(profile.id) { mutableStateOf<Long?>(null) }
     var info by remember { mutableStateOf<String?>(null) }
     val parsed = remember(profile, source, proxySection, ruleSection) { runCatching { ProviderCatalog.from(profile, source, proxySection, ruleSection) } }
@@ -48,12 +49,17 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
         // 作者 long：只有仓库成功回读的新版本才能关闭子页；失败时保留当前选择和输入。
         if (submitted?.let { revision > it } == true) { editing = null; binding = null; quick = false; submitted = null }
     }
+    LaunchedEffect(saving) { if (saving) menu = false }
     ProfileEditorPage(onDismissRequest = { if (!saving) onDismiss() }, backTag = "profile_providers_back", title = { Text("资源") },
         confirmButton = { if (profile.type == ProfileType.CUSTOM) Box {
-            IconButton(onClick = { menu = true }, enabled = !saving, modifier = Modifier.testTag("profile_providers_menu")) { Icon(Icons.Outlined.MoreVert, "资源操作") }
-            DropdownMenu(menu, { menu = false }) {
-                DropdownMenuItem(text = { Text("快捷 YAML") }, onClick = { menu = false; quick = true })
-                DropdownMenuItem(text = { Text("管理规则资源") }, onClick = { menu = false; onManageRules() })
+            IconButton(onClick = { menuAnchor.open(); menu = true }, enabled = !saving,
+                modifier = Modifier.appContextMenuAnchor(menuAnchor, enabled = !saving) { menu = true }
+                    .testTag("profile_providers_menu")) { Icon(Icons.Outlined.MoreVert, "资源操作") }
+            AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point,
+                placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
+                modifier = Modifier.testTag("profile_providers_actions")) {
+                AppDropdownMenuItem(text = { Text("快捷 YAML") }, onClick = { menu = false; quick = true })
+                AppDropdownMenuItem(text = { Text("管理规则资源") }, onClick = { menu = false; onManageRules() })
             }
         } }, text = {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("profile_providers_page"), verticalArrangement = Arrangement.spacedBy(16.dp)) {

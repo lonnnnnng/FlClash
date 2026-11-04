@@ -21,6 +21,7 @@ internal fun ProfileProvidersPanel(state: ProfileProvidersUiState, onRetry: () -
     var menu by remember(state.profileId) { mutableStateOf<String?>(null) }
     var subscription by remember(state.profileId) { mutableStateOf<com.lonnnnnng.flclash.core.CoreExternalProvider?>(null) }
     val busy = state.updatingName != null || state.updatingNames.isNotEmpty()
+    LaunchedEffect(busy) { if (busy) menu = null }
     Column(Modifier.fillMaxWidth().testTag("profile_providers"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Providers", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
@@ -40,8 +41,13 @@ internal fun ProfileProvidersPanel(state: ProfileProvidersUiState, onRetry: () -
             Text("正在更新 Provider，请稍候", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         state.providers.orEmpty().forEachIndexed { index, provider ->
+            val menuAnchor = remember(state.profileId, provider.name) { AppContextMenuAnchor() }
             Row(Modifier.fillMaxWidth().testTag("profile_provider_row_" + index)
-                .combinedClickable(enabled = !busy, onClick = { onPreview(provider.name) }, onLongClick = { menu = provider.name }), verticalAlignment = Alignment.CenterVertically) {
+                // 作者 long：整行长按和更多按钮共用实际触点，菜单不会因滚动或行高变化漂离触发位置。
+                .appContextMenuAnchor(menuAnchor, enabled = !busy) { menu = provider.name }
+                .combinedClickable(enabled = !busy, onClick = { onPreview(provider.name) }, onLongClick = {
+                    menuAnchor.open(); menu = provider.name
+                }), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).padding(vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(provider.name, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyLarge)
                     Text((if (provider.type == "Proxy") "代理 · " else "规则 · ") + provider.count + " 条 · " + provider.vehicleType,
@@ -58,18 +64,24 @@ internal fun ProfileProvidersPanel(state: ProfileProvidersUiState, onRetry: () -
                         Icon(Icons.Outlined.Sync, contentDescription = "更新 " + provider.name)
                     }
                 }
-                Box {
-                    IconButton({ menu = provider.name }, enabled = !busy, modifier = Modifier.testTag("profile_provider_menu_$index")) {
-                        Icon(Icons.Outlined.MoreVert, "${provider.name} 更多操作")
-                    }
-                    DropdownMenu(menu == provider.name, { menu = null }) {
-                        DropdownMenuItem(text = { Text("预览") }, onClick = { menu = null; onPreview(provider.name) })
-                        DropdownMenuItem(text = { Text("编辑") }, onClick = { menu = null; onEdit(provider.name) }, modifier = Modifier.testTag("profile_provider_edit_$index"))
-                        DropdownMenuItem(text = { Text("从文件导入") }, onClick = { menu = null; onUpload(provider.name) }, modifier = Modifier.testTag("profile_provider_upload_$index"))
-                        if (provider.canUpdate || provider.name in state.managedNames) DropdownMenuItem(text = { Text("同步") }, onClick = { menu = null; onUpdate(provider.name) })
-                        if (provider.subscriptionInfo != null) DropdownMenuItem(text = { Text("订阅用量") }, onClick = { menu = null; subscription = provider }, modifier = Modifier.testTag("profile_provider_subscription_$index"))
-                    }
+                IconButton({ menuAnchor.open(); menu = provider.name }, enabled = !busy, modifier = Modifier.testTag("profile_provider_menu_$index")) {
+                    Icon(Icons.Outlined.MoreVert, "${provider.name} 更多操作")
                 }
+            }
+            AppDropdownMenu(menu == provider.name && !busy, { menu = null }, anchor = menuAnchor.point,
+                placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
+                modifier = Modifier.testTag("profile_provider_actions_$index")) {
+                AppDropdownMenuItem(text = { Text("预览") }, onClick = { menu = null; onPreview(provider.name) })
+                AppDropdownMenuItem(text = { Text("编辑") }, onClick = { menu = null; onEdit(provider.name) },
+                    modifier = Modifier.testTag("profile_provider_edit_$index"))
+                AppDropdownMenuItem(text = { Text("从文件导入") }, onClick = { menu = null; onUpload(provider.name) },
+                    modifier = Modifier.testTag("profile_provider_upload_$index"))
+                if (provider.canUpdate || provider.name in state.managedNames) AppDropdownMenuItem(
+                    text = { Text("同步") }, onClick = { menu = null; onUpdate(provider.name) },
+                )
+                if (provider.subscriptionInfo != null) AppDropdownMenuItem(text = { Text("订阅用量") },
+                    onClick = { menu = null; subscription = provider },
+                    modifier = Modifier.testTag("profile_provider_subscription_$index"))
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
