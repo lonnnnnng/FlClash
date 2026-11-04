@@ -80,10 +80,11 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("过滤", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                     Box {
-                        IconButton(onClick = { menu = true }, enabled = !busy, modifier = Modifier.testTag("provider_filter_menu")) { Icon(Icons.Outlined.MoreVert, "过滤选项") }
-                        DropdownMenu(menu, { menu = false }) {
-                            DropdownMenuItem(text = { Text("沿用源过滤") }, enabled = filters.filter != null, onClick = { menu = false; changeFilters(filters.copy(filter = null, memberLayout = null)) })
-                            DropdownMenuItem(text = { Text("沿用源排除过滤") }, enabled = filters.excludeFilter != null, onClick = { menu = false; changeFilters(filters.copy(excludeFilter = null, memberLayout = null)) })
+                        val source = rememberAppMenuSource()
+                        IconButton(onClick = { menu = true }, enabled = !busy, modifier = Modifier.testTag("provider_filter_menu").appMenuSource(source)) { Icon(Icons.Outlined.MoreVert, "过滤选项") }
+                        AppDropdownMenu(menu && !busy, { menu = false }, source = source) {
+                            AppDropdownMenuItem(text = { Text("沿用源过滤") }, enabled = filters.filter != null, onClick = { menu = false; changeFilters(filters.copy(filter = null, memberLayout = null)) })
+                            AppDropdownMenuItem(text = { Text("沿用源排除过滤") }, enabled = filters.excludeFilter != null, onClick = { menu = false; changeFilters(filters.copy(excludeFilter = null, memberLayout = null)) })
                         }
                     }
                 }
@@ -117,10 +118,18 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                                 }
                                 option == ProviderOption.IP_VERSION -> ProfileSectionRow(option.title, values[option.name], Icons.Outlined.Public, !busy,
                                     Modifier.weight(1f).testTag("provider_option_${option.name}")) { choosingIp = true }
-                                else -> OutlinedTextField(values[option.name].orEmpty(), { if (it.length <= 8192) set(option, it) }, enabled = !busy, singleLine = true,
-                                    label = { Text(option.title) }, suffix = { if (option.number) Text(if (option == ProviderOption.INTERVAL) "s" else "ms") },
+                                else -> {
+                                    Text(option.title, Modifier.widthIn(min = 72.dp, max = 112.dp), style = MaterialTheme.typography.bodyMedium)
+                                    TextField(values[option.name].orEmpty(), { if (it.length <= 8192) set(option, it) }, enabled = !busy, singleLine = true,
+                                    colors = TextFieldDefaults.colors(focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                        unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                        disabledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                        focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                                        unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent),
+                                    suffix = { if (option.number) Text(if (option == ProviderOption.INTERVAL) "s" else "ms") },
                                     keyboardOptions = KeyboardOptions(keyboardType = if (option.number) KeyboardType.Number else KeyboardType.Text),
                                     modifier = Modifier.weight(1f).testTag("provider_option_${option.name}"))
+                                }
                             }
                         }
                     } }

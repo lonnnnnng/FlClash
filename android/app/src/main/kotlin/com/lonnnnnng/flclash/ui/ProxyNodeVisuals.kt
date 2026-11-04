@@ -118,7 +118,7 @@ internal fun ProxyNodeCard(
         color = proxyNodeColor(insideGroup),
     ) {
         Box(Modifier.heightIn(min = minimumHeight)) {
-            AppDropdownMenu(menu && menuEnabled && hasMenu, { menu = false }, anchor = menuAnchor.point,
+            AppDropdownMenu(menu && menuEnabled && hasMenu, { menu = false }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                 placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds) {
                 // 作者 long：菜单复用卡片选择回调，computed组再次优选仍清除固定，内建/组节点也可选择但不能导入。
                 if (selectable) AppDropdownMenuItem(text = { Text(if (computed) "优选" else "选择") },

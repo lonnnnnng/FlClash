@@ -55,7 +55,7 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
             IconButton(onClick = { menuAnchor.open(); menu = true }, enabled = !saving,
                 modifier = Modifier.appContextMenuAnchor(menuAnchor, enabled = !saving) { menu = true }
                     .testTag("profile_providers_menu")) { Icon(Icons.Outlined.MoreVert, "资源操作") }
-            AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point,
+            AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                 placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
                 modifier = Modifier.testTag("profile_providers_actions")) {
                 AppDropdownMenuItem(text = { Text("快捷 YAML") }, onClick = { menu = false; quick = true })

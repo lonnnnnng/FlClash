@@ -129,6 +129,7 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
     fun exit() { if (!busy) { if (row.json != baseline) discard = true else onDismiss() } }
     val required = LocalProxies.required(row.type)
     val fields = LocalProxies.catalog.filter { LocalProxyFields.offered(row, it) }
+    val credentialIds = setOf("username", "password", "uuid", "privateKey", "token")
     fun update(field: ProxyField, value: JsonElement?) { row = LocalProxyFields.change(row, field, value) }
     ProfileEditorPage(onDismissRequest = ::exit, backTag = "local_proxy_editor_back", title = { Text(if (draft.original == null) "添加本地代理" else "编辑代理") },
         confirmButton = { Row {
@@ -145,7 +146,7 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
                     ProxyTextField("服务器", "server", row, busy) { row = LocalProxies.withValue(row, "server", JsonPrimitive(it)) }
                     ProxyTextField("端口", "port", row, busy, number = true) { row = LocalProxies.withValue(row, "port", it.toLongOrNull()?.let(::JsonPrimitive)) }
                 }
-                fields.filter { it.id in required }.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choosing = field.id }, { editingField = field }, {}) }
+                fields.filter { it.id in required && it.id !in credentialIds }.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choosing = field.id }, { editingField = field }, {}) }
                 ListItem(headlineContent = { Text("UDP") }, trailingContent = { Switch(LocalProxies.value(row.fields, "udp")?.asBoolean == true,
                     { row = LocalProxies.withValue(row, "udp", JsonPrimitive(it)) }, enabled = !busy) })
                 if (row.type == "easytier") {
@@ -156,6 +157,12 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
                         val field = ProxyField(path, path, if (path == "peers") "对等节点" else "出口节点", ProxyFieldKind.LIST)
                         ProxyFieldRow(row, field, busy, false, {}, {}, { editingField = field }, {})
                     }
+                }
+                // 作者 long：认证字段按上游独立成组，协议参数与UDP仍留在基本信息，密码显隐和未保存确认沿用原草稿。
+                val credentials = fields.filter { it.id in required && it.id in credentialIds }
+                if (credentials.isNotEmpty()) {
+                    Text("身份验证", Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    credentials.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choosing = field.id }, { editingField = field }, {}) }
                 }
                 Text("可选设置", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                 fields.filter { it.id !in required && (it.id in shown || LocalProxies.value(row.fields, it.path) != null) }.forEach { field ->

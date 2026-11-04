@@ -1,5 +1,14 @@
 # Architecture
 
+## 源快照菜单与代码正文视图（2026-11-04）
+
+- `AppMenuSource`记录源按钮GraphicsLayer，在内存快照成功后交接原绘制；没有快照保留普通200ms退场。`AppMenuMorph`/`AppMenuGoo`负责开场、从中断帧回源及距离场桥接；`present`独立保留500ms回源图层，不能依赖未发生透明度变化的AnimatedVisibility生命周期。
+- `AppDropdownMenu`在退场完成且宿主仍STARTED、原expanded仍有效时才执行待办操作；ON_STOP撤销，源销毁恢复绘制。子菜单旧层移除语义并禁用命中，`opensSubmenu`只表示导航停留，普通保持打开的开关不触发400ms导航。
+- `AppMenuCarry`区分长按、跨slop拖动、释放与取消；源手指未释放前Popup不抢Window焦点，源持续更新Window坐标。语义长按没有物理指针，不进入携带状态，由Popup接管系统返回。可滚动菜单不抢竖向手势；取消路径撤销悬停，不执行最后条目。
+- 玻璃开关默认关闭，开启时用宿主Window的PixelCopy内存背景，先隐藏源绘制后抓帧；当前仅磨砂/透色/高光。API26以下不抓背景，API31以下不使用RenderEffect；完整上游折射shader和材质分级尚未实现。
+- `ProfileCodeField`用显示span保持OffsetMapping.Identity，行号独立Canvas；超过512Ki字符跳过着色扫描。查找选区显式驱动滚动，预览行号DisableSelection；正文只返回父草稿，不增加直接文件写入。BasicTextField仍整体测量，极限正文性能另验。
+- 排序列表保留既有暂存/真实拖动链路，视觉统一72dp行和单尾部拖柄，上下移动改为CustomAccessibilityAction；身份验证分组和Provider选项不改变协议字段/保存边界。
+
 ## Provider列表路由重读与默认视觉（2026-11-04）
 
 `profileProviders`在3秒总预算内最多读取3次；`ProviderRouteMovedException`仅表示同一epoch内路由version变化。丢弃旧列表后，在transitionLock内复核原配置/正文key/修订号和epoch，重新取stamp；任何源输入、会话或生命周期变化仍失败，更新/写入守卫不放宽。3项Service回归覆盖单次变更后返回新结果、连续变化有界失败、跨epoch/正文变化不重试。核心写入协议未改。

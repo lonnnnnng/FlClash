@@ -18,6 +18,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -97,23 +99,23 @@ internal fun ResourceOrderList(rows: List<ResourceOrderItem>, saving: Boolean, t
             val picked = dragged == id
             Surface(Modifier.fillMaxWidth().zIndex(if (picked) 1f else 0f).graphicsLayer {
                 translationY = if (picked) top - (list.layoutInfo.visibleItemsInfo.firstOrNull { it.key == id }?.offset ?: top.toInt()) else 0f
-            }.testTag("${tag}_order_$id").semantics { stateDescription = if (picked) "正在拖动" else "第 ${index + 1} 项" },
+            }.testTag("${tag}_order_$id").semantics { stateDescription = if (picked) "正在拖动" else "第 ${index + 1} 项"
+                // 作者 long：屏幕阅读器通过自定义动作调整顺序，视觉保持上游单尾柄，不挤占标题宽度。
+                customActions = if (saving || dragged != null) emptyList() else listOf(-1, 1).filter { index + it in preview.indices }.map { offset ->
+                    CustomAccessibilityAction(if (offset < 0) "上移${row.title}" else "下移${row.title}") {
+                        commit(preview.toMutableList().apply { add(index + offset, removeAt(index)) }); true
+                    }
+                } },
                 color = if (picked) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow) {
-                Row(Modifier.fillMaxWidth().heightIn(min = 80.dp).padding(start = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.DragHandle, "长按${row.title}调整顺序", Modifier.padding(end = 12.dp))
+                Row(Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                     row.icon?.let { ProfileGroupIcon(it, row.title, Modifier.padding(end = 12.dp).size(32.dp)) }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(row.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(row.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
-                    for (offset in listOf(-1, 1)) IconButton(onClick = {
-                        commit(preview.toMutableList().apply { add(index + offset, removeAt(index)) })
-                    }, enabled = !saving && dragged == null && index + offset in preview.indices, modifier = Modifier.testTag("${tag}_${if (offset < 0) "up" else "down"}_$id")) {
-                        Icon(if (offset < 0) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown, if (offset < 0) "上移${row.title}" else "下移${row.title}")
-                    }
+                    Icon(Icons.Outlined.DragHandle, "长按${row.title}调整顺序", Modifier.padding(start = 16.dp).size(24.dp))
                 }
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
     }
 }

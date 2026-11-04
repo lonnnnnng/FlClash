@@ -2,9 +2,10 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
@@ -100,6 +101,7 @@ internal fun RuntimeConfigPreviewSheet(
                 IconButton({ searching = !searching }, enabled = state.preview != null,
                     modifier = Modifier.testTag("runtime_config_preview_find")) { Icon(Icons.Outlined.Search, "查找正文") }
         },
+        contentPadding = PaddingValues(),
         text = {
         Column(Modifier.fillMaxSize().testTag("runtime_config_preview_sheet")) {
             when {
@@ -116,12 +118,12 @@ internal fun RuntimeConfigPreviewSheet(
                         else "由这份配置生成的预览，只读；尚未经过核心校验。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 12.dp).testTag("runtime_config_preview_origin"),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).testTag("runtime_config_preview_origin"),
                     )
                     val lines = remember(state.preview.content) { state.preview.content.lines() }
                     val matches = remember(lines, query) { if (query.isEmpty()) emptyList() else lines.indices.filter { lines[it].contains(query, true) } }
                     if (searching) {
-                        OutlinedTextField(query, { query = it; match = 0 }, Modifier.fillMaxWidth().testTag("runtime_config_preview_query"),
+                        OutlinedTextField(query, { query = it; match = 0 }, Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("runtime_config_preview_query"),
                             label = { Text("查找") }, singleLine = true)
                         Row {
                             Text("${matches.size} 行匹配", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
@@ -136,9 +138,15 @@ internal fun RuntimeConfigPreviewSheet(
                     // 作者 long：只为可视行布局，正文保留选择能力但不提供编辑或自动导出，避免改动原始配置。
                     SelectionContainer(Modifier.weight(1f)) {
                         LazyColumn(Modifier.fillMaxSize().testTag("runtime_config_preview_content"), state = list, contentPadding = PaddingValues(bottom = 24.dp)) {
-                            items(lines) { line ->
-                                Text(line.ifEmpty { " " }, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall,
-                                    color = if (query.isNotEmpty() && line.contains(query, true)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                            itemsIndexed(lines) { index, line ->
+                                Row(Modifier.fillMaxWidth().padding(end = 16.dp)) {
+                                    DisableSelection { Text((index + 1).toString(), Modifier.width(48.dp).padding(end = 12.dp),
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.End, style = profileCodeStyle(), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                                    Text(profileYamlText(line.ifEmpty { " " }, MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.tertiary),
+                                        Modifier.weight(1f), style = profileCodeStyle(),
+                                        color = if (query.isNotEmpty() && line.contains(query, true)) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                                }
                             }
                         }
                     }

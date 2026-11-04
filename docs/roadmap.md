@@ -8,7 +8,8 @@
 >
 > 当前基线：本文件所在的 `kotlin` 主线提交，追踪 `origin/kotlin`；DNS/浏览器修复 `cab92464` 和规则资源 `d3ee7fc4` 为已同步历史基线，当前累计能力以第3/7节和最新切片为准，远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 本轮最新（11-04）：默认Flutter色板/排版、31图标/空态/菜单形变与Provider列表路由重读已补齐；700项单测、Debug/Test、未签名Release/R8及双Lint通过。Redmi主批17/18（14张严格PNG通过，Rule首读等待超时），随后Rule独立1/1通过：6种HTTP规则组合×停止/运行共12次更新、条目/mtime/正文SHA/重建/会话均通过；HTTP/File Proxy已在主批通过。GitHub实网使用用户确认的gh-proxy前缀，镜像哈希一致。安装/失败见`flutter-visual-provider-types-redmi-20261104.json`；完整Flutter视觉与Fallback实核仍PARTIAL，主题/语言设置和备份/系统恢复继续暂缓。
+> 本轮最新（11-04）：源按钮快照液滴/500ms回源、长按原指针滑动携带、基础磨砂材质和配置/代理子页视觉完成本组验收。705项单测、Debug/Test、未签名Release/R8与双Lint通过；最终生产/测试包上Redmi同批24/24，含读屏长按与长正文。正式1份配置/选择/正文SHA-size-mtime保持，最终安装哈希匹配；证据`docs/acceptance/liquid-menu-subpages-redmi-20261104.json`。玻璃完整折射shader、多层卡片物理展开/收回、更多子页精确排版仍未完成，完整Flutter视觉继续PARTIAL；暂缓项保持。
+> 前序默认视觉与Provider类型（11-04）：默认Flutter色板/排版、31图标/空态/菜单形变与Provider列表路由重读已补齐；700项单测、Debug/Test、未签名Release/R8及双Lint通过。Redmi主批17/18（14张严格PNG通过，Rule首读等待超时），随后Rule独立1/1通过：6种HTTP规则组合×停止/运行共12次更新、条目/mtime/正文SHA/重建/会话均通过；HTTP/File Proxy已在主批通过。GitHub实网使用用户确认的gh-proxy前缀，镜像哈希一致。安装/失败见`flutter-visual-provider-types-redmi-20261104.json`；完整Flutter视觉与Fallback实核仍PARTIAL，主题/语言设置和备份/系统恢复继续暂缓。
 > 前序整页动效（11-04）：整页300ms连续滑动、代理标签居中/渐隐、配置/代理工具栏排版及Dock当前入口回菜单已完成定向验收；697项单测、Debug/Test、未签名Release/R8和双Lint通过。最终UI批次14/15，14项动效/UI/协议通过，Fallback实核因授权配置无非空Fallback未通过。原1.yaml全部90个HTTP Rule/mrs资源经32+55+3三次更新回读完成，最后3项及重建/会话补验1/1；不是单次90/90。安装/保护/失败见`page-continuity-providers-redmi-20261104.json`。完整Flutter视觉、其他Provider类型和Fallback实核仍PARTIAL，主题/语言与备份/系统恢复继续暂缓。
 > 前序配置/代理切片（11-04）：配置页/代理组菜单、正文/预览面板和部分动效收尾；App440、Service188、Core38、Common31共697项单测零失败/错误/跳过，Debug/AndroidTest、独立未签名Release/R8和双变体Lint通过。Redmi 24项配置/代理页面回归、2项正文入口、3项菜单/预览交互、停止/运行节点菜单各1项及URLTest冷进程准备/恢复各1项，按独立批次全部通过；设备App/Test哈希匹配。Room在测试卸载后为空，不声称旧Profile/偏好被保留；本地`1.yaml`无Fallback，未覆盖Fallback实核，完整连续动效与Flutter逐像素parity仍PARTIAL。详见`docs/acceptance/profiles-proxy-motion-redmi-20261104.json`。
 > 后续菜单补验（11-04）：Providers 行菜单、Provider 资源页操作菜单、代理组编辑器列表菜单在指定 Redmi 上分别以精确方法 1/1 通过；三份 XML 均为失败/错误/跳过0。Kotlin APK `com.lonnnnnng.flclash` 与 AndroidTest APK 已重新安装并回拉核对哈希；Flutter 上游参考包 `com.follow.clash` 仅只读确认仍安装，本轮未对其执行安装、卸载、清数据或启动。完整页面和连续动效仍为 PARTIAL，详见`docs/acceptance/profile-proxy-menus-redmi-20261104.json`。
@@ -513,13 +514,13 @@ before/after-panels/after-final各1/1保护通过，两份正式配置非空正�
 | 数据 | Room 新 schema + 应用独立文件目录 |
 | 依赖注入 | Hilt |
 | 核心生命周期 | `CoreRuntimeManager` 统一启动、停止、配置热切、停止态节点读取/选择/测速、模式、VPN/纯代理、LAN 热更新、Provider 更新与观测失效；UI 不直接调用 gomobile |
-| 单元测试 | 本组App440、Service191、Core38、Common31共700项，失败/错误/跳过0；Go本组未重跑 |
-| 主流程真机测试 | 最新final6主批17/18（Rule首次列表等待超时），rule7独立1/1完成6资源×停止/运行12次规则更新；主批含HTTP/File Proxy、菜单/图标/动效及14张严格PNG；旧批独立保留 |
-| Debug 构建 | 最终生产与testbuild13通过；根Wrapper test700项、Debug/AndroidTest及双Lint成功，0错误/62警告 |
-| Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；SHA-256 `aa2e46f4d2aae118511a7784d48f57976af34a9ada3c55c1f816baac4fbab3ff`，设备安装一致 |
-| Debug 原生库 | App仅arm64-v8a；最终AndroidTest SHA-256 `6e104469e157f5b8319cd0a34b84b818aef4bfe647f3516172086fc4d55b1769`与设备匹配，仅对应rule7/after；final6使用较早finalbuild11测试包，同一生产App |
-| Release 构建 | 独立assembleRelease/R8/lintRelease通过；Lint 0 errors、62 warnings；未签名arm64 APK，版本0.1.0 (1)，正式签名与真机运行未验 |
-| 最近真机证据 | Redmi API36/竖屏1080×2340/字号1.0；`flutter-visual-provider-types-redmi-20261104.json`记录分批网络、视觉、失败和安装保护；原90个MRS分批证据沿用前组，完整UI/Fallback实核仍PARTIAL |
+| 单元测试 | 本组App445、Service191、Core38、Common31共705项，失败/错误/跳过0；Go本组未重跑 |
+| 主流程真机测试 | 最新final14同批24/24验菜单/子页/读屏长按/长正文/旧入口；前期21/21与3/3保留为历史包批次。Provider网络沿用前组final6与rule7分批结果，本组未重跑 |
+| Debug 构建 | 最终build14完整构建通过；根Wrapper test705项、Debug/AndroidTest及双Lint成功，0错误/63警告（新增1条Bitmap的UseKtx风格警告） |
+| Debug APK | android/app/build/outputs/apk/debug/app-debug.apk；SHA-256 `b11bedf1ccf74b738fde6a8f879c239a841433b5bd24f128277d2f9abc8787ee`，设备安装一致 |
+| Debug 原生库 | App仅arm64-v8a；最终AndroidTest SHA-256 `45f3b25c7f01bc9d5ab04fb3873642b86bed469ca5d3db69a5ac6aa9faf4647a`与设备匹配，对应final14同批24项及最终保护；前期包哈希独立归档 |
+| Release 构建 | assembleRelease/R8/lintRelease通过；Lint 0 errors、63 warnings；未签名arm64 APK，版本0.1.0 (1)，正式签名与真机运行未验 |
+| 最近真机证据 | Redmi API36/竖屏1080×2340/字号1.0；`liquid-menu-subpages-redmi-20261104.json`记录菜单/子页、失败及安装保护，正式1份配置/选择/正文元数据与原1.yaml保持；完整玻璃/多层子菜单/全UI及Fallback实核仍PARTIAL |
 
 ## 4. 目标架构图
 
@@ -757,6 +758,8 @@ flowchart LR
 
 状态：`PARTIAL`，基础能力和高级分区首片已完成，完整 Flutter parity 仍在推进。
 
+最新视觉补充：正文/运行预览已统一等宽着色、行号沟槽与编辑操作菜单，1201行查找定位和复制不带行号已真机通过；排序改72dp单拖柄且保留读屏动作，本地代理认证分组和Provider轻量选项收敛。父草稿/保存失败语义保持，更多子页排版及8MiB正文极限性能待补；见`liquid-menu-subpages-redmi-20261104.json`。
+
 最新补充：全局本地代理/链式代理、规则/图库/过滤/Geo资源、Provider结构化与外部文档、脚本整页、常规/网络/全局DNS/附加规则、按需SSID、批量同步及正文父草稿均已有首版。备份现为v6，ALL_DATA纳入常规/网络/全局DNS、VPN/LAN、恢复策略及可选SSID；PROFILES_ONLY和旧归档缺项保留现值，失败有补偿。其他界面/按应用代理偏好、跨全部写者一致快照和系统备份SAF完整E2E仍待补。分项设备证据见顶部同名节，完整Profiles仍为PARTIAL。
 
 已完成本轮切片：
@@ -861,6 +864,8 @@ flowchart LR
 
 状态：`PARTIAL`。
 
+最新菜单补充：工具/组选按钮接源快照液滴与500ms回源，节点长按原指针可跨Popup拖入条目、释放只执行一次；长菜单竖向滚动不触发悬停操作，后台撤销待办已在最终同批24/24通过。子菜单有420/340ms层级过渡，完整多层卡片物理展开/收回和玻璃折射仍待补。
+
 已完成首片：
 
 - Tab/List 双布局、横向分组切换、节点网格、搜索、单节点/批量测速、刷新、Profile 当前组记忆和 List 三种图标样式。
@@ -929,6 +934,8 @@ flowchart LR
 ### 7.6 UI/UX 完整对齐
 
 状态：`PARTIAL`。
+
+最新已验：源快照液滴开场/回源/中断、文字blur、长按滑动携带、基础磨砂组件与配置/代理子页，最终final14同批24/24，另含读屏长按与长正文；38张菜单/子页中间帧已目视。下文历史“完整液滴/玻璃”缺项现收敛为完整玻璃折射shader/ultra材质、完整多层卡片物理展开/收回、其他空态和子页精确排版；默认玻璃仍关闭，不扩展暂缓的主题设置。不声称Flutter全应用逐像素一致。
 
 当前已有：
 

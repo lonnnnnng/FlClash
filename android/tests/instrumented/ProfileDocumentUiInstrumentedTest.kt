@@ -3,6 +3,9 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.text.TextRange
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.data.*
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
@@ -12,6 +15,34 @@ import org.junit.Test
 
 class ProfileDocumentUiInstrumentedTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun longDocumentSearchScrollsToMatchAndCopyExcludesGutter() {
+        assertPortraitDefaultFontConfiguration()
+        // 作者 long：长正文的屏外匹配必须真实进入视口；行号只用于阅读，复制不能污染返回父草稿的原始字节。
+        val original = (1..1200).joinToString("\n") { "# 配置正文第${it}行" } + "\nmode: rule"
+        var state by mutableStateOf(ProfileDocumentEditorState(1, 1, original = original, content = original))
+        compose.setContent { KClashTheme { ProfileDocumentEditor(state, { state = state.copy(content = it) }, {}, {}) } }
+        compose.onNodeWithTag("profile_document_find").performClick()
+        compose.onNodeWithTag("profile_document_query").performTextInput("mode: rule")
+        compose.onNodeWithTag("profile_document_next").performClick()
+        compose.waitForIdle()
+        val editor = compose.onNodeWithTag("profile_editor_content")
+        assertEquals(TextRange(original.length - 10, original.length), editor.fetchSemanticsNode().config[SemanticsProperties.TextSelectionRange])
+        assertTrue("查找必须滚到屏外匹配", compose.onAllNodes(hasScrollAction()).fetchSemanticsNodes().any {
+            it.config.contains(SemanticsProperties.VerticalScrollAxisRange) && it.config[SemanticsProperties.VerticalScrollAxisRange].value() > 0
+        })
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
+        val before = clipboard.primaryClip
+        try {
+            editor.performSemanticsAction(SemanticsActions.CopyText) { assertTrue(it()) }
+            compose.runOnIdle { assertEquals("mode: rule", clipboard.primaryClip?.getItemAt(0)?.text?.toString()) }
+            capture("profile_document_long_match")
+            assertEquals(original, state.content)
+        } finally {
+            compose.runOnIdle { if (before == null) clipboard.clearPrimaryClip() else clipboard.setPrimaryClip(before) }
+        }
+    }
 
     @Test fun textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts() {
         assertPortraitDefaultFontConfiguration()
@@ -26,8 +57,11 @@ class ProfileDocumentUiInstrumentedTest {
         compose.onNodeWithTag("profile_document_replacement").performTextInput("direct")
         compose.onNodeWithTag("profile_document_replace_all").performClick()
         assertTrue(state.content.contains("direct"))
+        compose.onNodeWithTag("profile_document_history").performClick()
         compose.onNodeWithTag("profile_document_undo").performClick()
+        compose.waitForIdle()
         assertEquals(state.original, state.content)
+        compose.onNodeWithTag("profile_document_history").performClick()
         compose.onNodeWithTag("profile_document_redo").performClick()
         compose.onNodeWithTag("profile_document_save").performClick()
         compose.onNodeWithTag("profile_document_error").assertTextContains("输入已保留", substring = true)

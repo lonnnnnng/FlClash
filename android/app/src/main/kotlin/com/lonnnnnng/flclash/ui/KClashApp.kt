@@ -211,6 +211,7 @@ internal fun ProfilesTopBarActions(
     onAdd: () -> Unit,
     onAction: (ProfilesToolbarAction) -> Unit,
     onAddAnchorChanged: (IntRect) -> Unit = {},
+    addSource: AppMenuSource? = null,
 ) {
     // 作者 long：配置工具采用上游同一胶囊分组，添加按钮独立；保持各自语义和禁用状态，不把整组变成一个点击目标。
     if (profiles.isNotEmpty()) {
@@ -234,7 +235,7 @@ internal fun ProfilesTopBarActions(
         IconButton(
             onClick = onAdd,
             enabled = !busy,
-            modifier = Modifier.size(44.dp).background(dashboardCardColor(), CircleShape).testTag("profiles_add_fab")
+            modifier = (if (addSource != null) Modifier.appMenuSource(addSource) else Modifier).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("profiles_add_fab")
                 .onGloballyPositioned { onAddAnchorChanged(it.boundsInWindow().roundToIntRect()) },
         ) { AppGlyphIcon(AppGlyphs.addCircle, contentDescription = "添加配置") }
         Spacer(Modifier.size(12.dp))
@@ -396,6 +397,7 @@ fun KClashApp(
     var scannedProfileUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var scannedProfileLabel by rememberSaveable { mutableStateOf<String?>(null) }
     var profileAddAnchor by remember { mutableStateOf<IntRect?>(null) }
+    val profileAddSource = rememberAppMenuSource()
     var showToolsBackup by rememberSaveable { mutableStateOf(false) }
     var showRequests by rememberSaveable { mutableStateOf(false) }
     var showDns by rememberSaveable { mutableStateOf(false) }
@@ -817,6 +819,7 @@ fun KClashApp(
                         onAdd = { showAddDialog = true },
                         onAction = { pendingProfilesToolbarAction = it },
                         onAddAnchorChanged = { profileAddAnchor = it },
+                        addSource = profileAddSource,
                     )
                 }
             },
@@ -906,6 +909,7 @@ fun KClashApp(
                             profilesViewModel.addCustom(label)
                         },
                         addMenuAnchor = profileAddAnchor,
+                        addMenuSource = profileAddSource,
                         initialRemoteUrl = scannedProfileUrl,
                         initialRemoteLabel = scannedProfileLabel,
                         onSelect = profilesViewModel::select,
@@ -1610,6 +1614,7 @@ internal fun ProfilesPanel(
     onAddRemoteBatch: ((List<String>) -> Unit)? = null,
     onAddCustom: (label: String) -> Unit,
     addMenuAnchor: IntRect? = null,
+    addMenuSource: AppMenuSource? = null,
     initialRemoteUrl: String? = null,
     initialRemoteLabel: String? = null,
     onSelect: (id: Long) -> Unit,
@@ -1712,6 +1717,7 @@ internal fun ProfilesPanel(
     var pendingWebDavCredentials by remember { mutableStateOf<WebDavCredentials?>(null) }
     var inlineToolbarAction by remember { mutableStateOf<ProfilesToolbarAction?>(null) }
     var localAddAnchor by remember { mutableStateOf<IntRect?>(null) }
+    val localAddSource = rememberAppMenuSource()
 
     val actionToHandle = toolbarAction ?: inlineToolbarAction
     LaunchedEffect(actionToHandle) {
@@ -1742,6 +1748,7 @@ internal fun ProfilesPanel(
                     onAdd = onShowAddDialog,
                     onAction = { inlineToolbarAction = it },
                     onAddAnchorChanged = { localAddAnchor = it },
+                    addSource = localAddSource,
                 )
             }
         }
@@ -1766,7 +1773,7 @@ internal fun ProfilesPanel(
                     )
                     Spacer(Modifier.height(24.dp))
                     androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog,
-                        modifier = Modifier.onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
+                        modifier = Modifier.appMenuSource(localAddSource).onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
                         AppGlyphIcon(AppGlyphs.addCircle, contentDescription = null)
                         Spacer(Modifier.size(8.dp))
                         Text("添加配置")
@@ -1846,6 +1853,7 @@ internal fun ProfilesPanel(
                 .toSet(),
             onAddCustom = onAddCustom,
             sourceAnchor = localAddAnchor ?: addMenuAnchor,
+            menuSource = if (localAddAnchor != null) localAddSource else addMenuSource,
             initialRemoteUrl = initialRemoteUrl,
             initialRemoteLabel = initialRemoteLabel,
         )
@@ -4224,14 +4232,14 @@ internal fun ProfileCard(
 
                 Box {
                     AppDropdownMenu(expanded = showActions, onDismissRequest = { showActions = false },
-                        anchor = menuAnchor.point, placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
+                        anchor = menuAnchor.point, carriedPointer = menuAnchor.carry, placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
                         pageKey = showMore,
-                        onNavigateBack = if (showMore) ({ showMore = false }) else null) {
-                        if (showMore) {
+                        onNavigateBack = if (showMore) ({ showMore = false }) else null) { level ->
+                        if (level as Boolean) {
                             AppDropdownMenuItem(
                                 text = { Text("返回") },
                                 leadingIcon = { AppGlyphIcon(AppGlyphs.arrowBack, contentDescription = null) },
-                                onClick = { showMore = false },
+                                onClick = { showMore = false }, dismissOnClick = false, opensSubmenu = true,
                             )
                             AppDropdownMenuItem(
                                 text = { Text("运行配置") },
@@ -4296,7 +4304,7 @@ internal fun ProfileCard(
                                     text = { Text("更多") },
                                     trailingIcon = { AppMenuSubmenuArrow() },
                                     leadingIcon = { AppGlyphIcon(AppGlyphs.moreCircle, contentDescription = null) },
-                                    onClick = { showMore = true },
+                                    onClick = { showMore = true }, dismissOnClick = false, opensSubmenu = true,
                                     modifier = Modifier.testTag("profile_more_${profile.id}"),
                                 )
                             }
@@ -4883,6 +4891,7 @@ internal fun AddProfileDialog(
     existingUrls: Set<String> = emptySet(),
     onAddCustom: (label: String) -> Unit,
     sourceAnchor: IntRect? = null,
+    menuSource: AppMenuSource? = null,
     initialRemoteUrl: String? = null,
     initialRemoteLabel: String? = null,
 ) {
@@ -4898,7 +4907,7 @@ internal fun AddProfileDialog(
     val busyDismiss = { if (!busy) onDismiss() }
     if (step == AddProfileStep.SOURCE) {
         ProfileSourceMenu(sourceAnchor, busy, busyDismiss, onPickQrCode, onPickFile,
-            { step = AddProfileStep.REMOTE }, { onAddCustom("") })
+            { step = AddProfileStep.REMOTE }, { onAddCustom("") }, menuSource)
         return
     }
     AlertDialog(

@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.lonnnnnng.flclash.data.*
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
@@ -39,10 +40,10 @@ class ResourceOrderAndIconsInstrumentedTest {
             val tag = if (icons) "icon_sets" else "rule_resources"
             compose.onNodeWithTag("${tag}_sort").performClick()
             compose.onNodeWithTag("${tag}_add").assertDoesNotExist()
-            compose.onNodeWithTag("${tag}_down_a").performClick()
+            compose.onNodeWithTag("${tag}_order_a").performOrderAccessibilityAction(compose, "下移")
             compose.onNodeWithText("保存失败，请重试").assertIsDisplayed()
             compose.runOnIdle { assertEquals(listOf("a", "b", "c"), order); reject = false }
-            compose.onNodeWithTag("${tag}_down_a").performClick()
+            compose.onNodeWithTag("${tag}_order_a").performOrderAccessibilityAction(compose, "下移")
             compose.runOnIdle { assertEquals(listOf("b", "a", "c"), order) }
             compose.onNodeWithTag("${tag}_order_b").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "第 1 项"))
             capture("${tag}_sort_$theme")

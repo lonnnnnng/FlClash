@@ -34,13 +34,13 @@ class ProfilesProxyMotionInstrumentedTest {
                 Button({ open = true }, Modifier.align(Alignment.BottomEnd).testTag("motion_menu_open")
                     .onGloballyPositioned { anchor = it.boundsInWindow().roundToIntRect() }) { Text("菜单") }
                 AppDropdownMenu(open, { open = false }, anchor = anchor, pageKey = child,
-                    onNavigateBack = if (child) ({ child = false }) else null) {
-                    if (child) {
-                        AppDropdownMenuItem({ Text("返回") }, { child = false }, Modifier.testTag("motion_menu_back"))
+                    onNavigateBack = if (child) ({ child = false }) else null) { level ->
+                    if (level as Boolean) {
+                        AppDropdownMenuItem({ Text("返回") }, { child = false }, Modifier.testTag("motion_menu_back"), dismissOnClick = false, opensSubmenu = true)
                         AppDropdownMenuItem({ Text("完成") }, { submissions++; open = false }, Modifier.testTag("motion_menu_submit"))
                     } else {
                         repeat(24) { i -> AppDropdownMenuItem({ Text("选项 $i") }, {}, Modifier.testTag("motion_root_$i")) }
-                        AppDropdownMenuItem({ Text("更多") }, { child = true }, Modifier.testTag("motion_menu_more"))
+                        AppDropdownMenuItem({ Text("更多") }, { child = true }, Modifier.testTag("motion_menu_more"), dismissOnClick = false, opensSubmenu = true)
                     }
                 }
             }

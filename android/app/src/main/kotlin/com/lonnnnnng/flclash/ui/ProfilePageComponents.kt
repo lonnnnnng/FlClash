@@ -35,7 +35,8 @@ internal fun ProfileEditorPage(
     title: @Composable () -> Unit,
     text: @Composable () -> Unit,
     confirmButton: @Composable () -> Unit = {},
-    dismissButton: @Composable () -> Unit = {},
+    dismissButton: (@Composable () -> Unit)? = null,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     backTag: String = "profile_editor_back",
 ) {
     Dialog(
@@ -81,9 +82,9 @@ internal fun ProfileEditorPage(
             },
         ) { padding ->
             // 作者 long：Scaffold 已计入安全区；消费后再补键盘差值，避免输入时把可用高度扣两次。
-            Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding().padding(horizontal = 16.dp)) {
+            Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding().padding(contentPadding)) {
                 Box(Modifier.weight(1f).fillMaxWidth()) { text() }
-                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.End) { dismissButton() }
+                if (dismissButton != null) Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.End) { dismissButton() }
             }
         }
     }
@@ -109,8 +110,9 @@ internal fun ProfileSourceMenu(
     onFile: () -> Unit,
     onRemote: () -> Unit,
     onCustom: () -> Unit,
+    source: AppMenuSource? = null,
 ) {
-    AppDropdownMenu(expanded = true, onDismissRequest = onDismiss, anchor = anchor,
+    AppDropdownMenu(expanded = true, onDismissRequest = onDismiss, anchor = anchor, source = source,
         modifier = Modifier.testTag("profile_add_source_menu")) {
         AppDropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode, null) },
             onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))

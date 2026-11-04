@@ -1,5 +1,15 @@
 # Testing
 
+## 液滴菜单与配置子页集中验收（2026-11-04）
+
+最终生产build14根Wrapper `test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64`成功：App445/Service191/Core38/Common31共705项，失败/错误/跳过0；Debug/Test、未签名arm64 Release/R8及双Lint通过，各0错误/63警告（Debug10/Release9 hints）。新增1条UseKtx风格警告来自PixelCopy背景Bitmap创建。此前testbuild13只补截图同步/长正文；随后补真实指针与读屏语义长按区分，再以build14完整重建。
+
+Redmi final14最终生产/测试包同批24/24：深浅×两材质源快照开场/回源/中断、拖选/后台撤销、长菜单滚动、原指针长按跨Popup、读屏语义长按系统返回、既有菜单/子菜单/键盘、正文草稿/撤销重做、预览、Provider选项、本地目录/链接、资源排序/取消/失败、正式添加取消、1201行查找复制及旧资源入口。38张PNG（8张菜单帧、29张菜单/子页、1张长正文）已主线程目视，不等于Flutter逐像素一致。此前build12的21/21、testbuild13独立3/3只作为历史批次，各包哈希分别归档。
+
+新Repository保护before2、after12、final-after及final14-after各1/1：正式1份配置的Room行摘要/选择/正文文件名、SHA/size/mtime一致；原1.yaml双端哈希保持。旧首页guard依赖隐藏统计卡失败，首次新guard遇到横屏，均保留且不计通过；run-as被SELinux拒绝，未绕过。仅install-r安装指定Kotlin包，两包最终哈希匹配，Flutter原版未操作；结束无服务/tun0、旋转恢复1/0、字号1.0，剪贴板恢复。本组未跑订阅/Provider网络，不宣称全量脚本/偏好快照核验。
+
+历史失败含空退出帧、输入tag位置、异步撤销等待、正式表单关闭断言、回源图层提前移除/残留和长按携带，已按批保留，最终同批24/24为最新结果。详见`docs/acceptance/liquid-menu-subpages-redmi-20261104.json`，原始日志/PNG仅本机/tmp。完整玻璃折射shader、多层卡片物理展开/收回、其他空态/精确排版与8MiB正文性能未验；Go、正式签名运行、远端CI未验。整体UI仍PARTIAL，备份/系统恢复、观测次要打磨、语言/主题继续暂缓。
+
 ## Flutter默认视觉与六种规则资源实网（2026-11-04）
 
 默认0xFF007AFF/vivid深浅色板及字体语义槽已由固定Flutter上游导出；31个真实glyph接入Dock、配置/代理工具栏和菜单，空配置使用cookie7/cookie4曲线及spin入场，MIT许可随APK保留。菜单采用锚点中心生长、等比内容缩放/高度分离、延迟角部弹簧和跟随阴影。独立导出脚本实际3项通过，复现色板、曲线和23图标双图集字节一致；Native/Flutter图集平均每通道差约0.191/0.178（满量程255）。不是完整页面逐像素等价。

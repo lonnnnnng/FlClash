@@ -1,0 +1,1906 @@
+{
+  "date": "2026-11-04",
+  "scope": "源按钮快照液滴/回源、长按滑动携带、基础磨砂材质与配置/代理子页视觉",
+  "status": "PARTIAL",
+  "sliceStatus": "DONE-VERIFIED",
+  "parentCommit": "703808746ba9191148de401f5baf14cd94eeb77b",
+  "implementation": [
+    "源按钮内存快照与原绘制交接；450ms开场、500ms回源，中断从当前帧继续；100ms文字隐去、470ms按钮恢复。",
+    "移植goo距离场/平滑并集与128射线桥接，内容blur独立于玻璃开关；无源快照保留200ms普通退场。",
+    "长按原指针跨Popup持续拖动，悬停反馈/释放单次选择、400ms导航停留；长菜单保留竖向滚动。",
+    "子菜单420/340ms层级切换，退场层禁用命中/语义；后台撤销等待执行的动作。",
+    "正文/运行预览使用14sp等宽着色与行号沟槽，撤销重做收纳菜单；查找屏外匹配显式定位，行号排除复制。",
+    "排序72dp行与单尾部拖柄，读屏上移/下移语义；本地代理身份验证分组，Provider选项轻量右侧编辑，filter菜单统一。",
+    "语义长按没有物理指针时不进入携带状态，Popup正常接管系统返回；与真实长按分别验收。"
+  ],
+  "visualReference": {
+    "upstreamSha": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+    "paths": [
+      "lib/ui/popup.dart",
+      "lib/ui/goo.dart",
+      "lib/views/profiles",
+      "lib/views/proxies"
+    ],
+    "referenceMode": "固定main只读源码；未修改或操作Flutter包配置。",
+    "nativeScreenshots": "最终final14 38张PNG（8张菜单中间帧、29张菜单/子页、1张长正文）已由主线程目视。历史final12玻璃开场采样过早，testbuild13修正等待宿主Window背景帧；不作为Flutter逐像素等价证据。",
+    "reviewSheets": {
+      "/tmp/kclash-liquid-subpages-20261104-final14-review-0.jpg": {
+        "sha256": "bd122618ab4f246d53bbb363bf20076931a3f205cdf9dd4bee4878bb61585218",
+        "bytes": 91032
+      },
+      "/tmp/kclash-liquid-subpages-20261104-final14-review-1.jpg": {
+        "sha256": "011fb93f8b0157cc30b3a5eb76f38c1bf0965e1629fae6b41fcc539475778088",
+        "bytes": 145622
+      },
+      "/tmp/kclash-liquid-subpages-20261104-final14-review-2.jpg": {
+        "sha256": "dcab66de310a04f09d15a3234a2c24a980e55e98868cca2d2162ed1e859d5c35",
+        "bytes": 186941
+      },
+      "/tmp/kclash-liquid-subpages-20261104-final14-review-3.jpg": {
+        "sha256": "cbcfbcdd76bee8078bbe3f500faba05b39769a57556caf99798352f8a4cac57d",
+        "bytes": 47472
+      }
+    },
+    "readOnlyReviewFindings": [
+      "长菜单拖动不应抢scroll",
+      "退场子菜单仍命中",
+      "保持菜单开关不能等同导航dwell",
+      "pointer取消需要finally",
+      "预览行号不能进入复制",
+      "查找屏外选区需要显式滚动"
+    ]
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "production": "build14：区分真实指针和读屏语义长按后完整重建；最终24项均在该包执行。",
+    "finalTestBuild": "build14，同次构建Debug/AndroidTest与全部检查。",
+    "unitTests": {
+      "app": {
+        "tests": 445,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 191,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 705,
+    "lint": {
+      "debug": {
+        "Warning": 63,
+        "Hint": 10
+      },
+      "release": {
+        "Warning": 63,
+        "Hint": 9
+      }
+    },
+    "lintNote": "均0错误；比前组新增1条UseKtx风格警告，源自PixelCopy的Bitmap.createBitmap。",
+    "release": "未签名arm64 Release/R8构建通过；未安装/运行。",
+    "go": "本组无Go改动，未重跑。"
+  },
+  "finalUiBatch": {
+    "label": "final14",
+    "passed": 24,
+    "total": 24,
+    "testApkSha256": "45f3b25c7f01bc9d5ab04fb3873642b86bed469ca5d3db69a5ac6aa9faf4647a",
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#accessibilityLongPressKeepsSystemBackAndDoesNotSelectSource",
+        "passed": true,
+        "seconds": 5.5,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-0.log",
+        "sha256": "50c36d7984a49045e6dc89e74b71c4b6dab299047efd7c1cf2a369c31839ef33",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+        "passed": true,
+        "seconds": 15.69,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-1.log",
+        "sha256": "f4f4cb16687024592b7019d7f85154f5a8d3b5ae47b00716389c3b36819e1b69",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-liquid_open_false_false.png",
+            "sha256": "e46e3e5df286835a99519c432f91908678f2b519504b92cf12af4a1b65ff80da"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-liquid_return_false_false.png",
+            "sha256": "de7fd93c1d5e3ca50d68c59bb9765fdad1e6241358775cedefd7410c5d0de723"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-liquid_open_false_true.png",
+            "sha256": "1f7cc266606d3dd587c8037770fb658a73205f621569ae443712e0f43230bbb3"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-liquid_return_false_true.png",
+            "sha256": "12b3d5173a929418d3a50c50f5b6b6e3f52b635612f59e951a57a7a39c6c44b0"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-liquid_open_true_false.png",
+            "sha256": "f874f251063f02935581627a24d3c3e49d9f1ad8d8e4bb8ad7a3a0a521ed3ae1"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-liquid_return_true_false.png",
+            "sha256": "c2435d1543e181ecb45b0ef093bd772c220375f97971ac7f9b87b9e22c9626f1"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-liquid_open_true_true.png",
+            "sha256": "5cb897e7ff2f7e91b6b12729f9c34f84246c351110e879fb9b11068b5ceee610"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-liquid_return_true_true.png",
+            "sha256": "cf7f23da355225f37550d62b702d2ab823b82943efece7049873a83d8309c6c7"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+        "passed": true,
+        "seconds": 6.2,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-2.log",
+        "sha256": "1e29e7d8de423973c9d7d278d14eef67e9bd1273b472088d006325fc28a929aa",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+        "passed": true,
+        "seconds": 6.16,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-3.log",
+        "sha256": "a7639b00a2aa589f0ec512300cc25b048420ab7529dbd7e991786985cc5a4f1d",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+        "passed": true,
+        "seconds": 4.74,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-4.log",
+        "sha256": "8bd5747114c2a299729f54b46e418597301bd1b7e162af226e0ac6bdedf8b707",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+        "passed": true,
+        "seconds": 13.61,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-5.log",
+        "sha256": "487a0c6e2995da6c365b3fa51d4cd8dc3ff312fbabbe1082c344da836680ee88",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-main_menu_profile_root_false.png",
+            "sha256": "e7158175cf3bb519821dc90718b9bc1aa0d8045ce0edb9814a14850db1a7ad80"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-main_menu_profile_more_false.png",
+            "sha256": "72ce92d503fea42f4e4c0449083c97fac8f36390a37c664f15d485d636500a09"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-main_menu_profile_root_true.png",
+            "sha256": "e80358602b81d6ba4bda559e6557bbaf79d070aead149f11bf859397aa8034f5"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-main_menu_profile_more_true.png",
+            "sha256": "99524791a7de11b467433b2c921853590176e6989eeba92f0041f961d81ac840"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+        "passed": true,
+        "seconds": 5.74,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-6.log",
+        "sha256": "2a55066878151bb91c863ce9a090e4157f166a69030968a22134038de9efc0a2",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-main_menu_keyboard_context.png",
+            "sha256": "a6ca5a10cd27dfaf3f40682402278c2ebc3ea8d72b1787886838c4bf0f6eab1c"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+        "passed": true,
+        "seconds": 5.84,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-7.log",
+        "sha256": "5369875c01cdf1df57912284833f8bc777f768b88c92dc4c3f49a6aa5a4ee2c7",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+        "passed": true,
+        "seconds": 6.44,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-8.log",
+        "sha256": "2b45879010712f28b84b4f4ccf7014731e96c1f4058db4bce997e901348502f0",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-main_menu_long_menu.png",
+            "sha256": "0c10571ef237f9ebede1dda97acc3b20fd2e1cbf77dcb7e7bdcdf97f025a77df"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+        "passed": true,
+        "seconds": 9.45,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-9.log",
+        "sha256": "6d0c6a3f6bf7734c144210fe652c448bb4c9f814e984840673e165b0ed367d5d",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-main_menu_proxy_sort.png",
+            "sha256": "889985cbba99e8c0684daebada8772327e7e18c84a4be384505fb0860852eb3a"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#scrolledRootSubmenuResetsScrollAndReturnsWithoutMovingAnchorOrDuplicatingAction",
+        "passed": true,
+        "seconds": 9.07,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-10.log",
+        "sha256": "8dc1a3c4c37c05d7bd23331b5ae6c7d2bfdd62b8e1e5eaad2b5b95c083e534e2",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#fullPreviewKeepsToolbarWhileScrollingSearchingAndClosingWithSystemBack",
+        "passed": true,
+        "seconds": 8.84,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-11.log",
+        "sha256": "62fa1981b2e6ea2cdf897fea9159bdf7d9557dac067a20f335f6f71580320a33",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#documentBackConfirmationKeepsDraftUntilSaveOrDiscardAfterPageEntrance",
+        "passed": true,
+        "seconds": 6.78,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-12.log",
+        "sha256": "2e4f749a026982817887c093435d3655110259bf65f4be3d69519341a4445665",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+        "passed": true,
+        "seconds": 12.2,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-13.log",
+        "sha256": "61bdf959dfc8e0490060f78508e86e6f8995f68c8b9e26c9f66cd734fc109652",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-profile_document_light_failed_search.png",
+            "sha256": "9e004d4787d25d9e8b0586e81eb9b4dadc6f1b117cdf59d0f856110d50a0ae22"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-profile_document_dark_exit.png",
+            "sha256": "65da13c25f196359264be39673390a09e242bf1acaa0b459c5773b2cae67b9f4"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilePreviewInstrumentedTest#noncurrentPreviewRendersBothThemesAndSupportsFailureRetryAndClose",
+        "passed": true,
+        "seconds": 5.24,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-14.log",
+        "sha256": "96710fedd2c4560bca5091dfd108c5cc1e00ac70d5c3e72b69a885ff265e7e0c",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-profile_noncurrent_preview_light.png",
+            "sha256": "c16bfcced40b89351350e124b9ea4d33ab5b9617164eef89989209f67d5eab89"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-profile_noncurrent_preview_dark.png",
+            "sha256": "4005a1cfdda68309e88221fc3a10de03854ee9a8bceb684b193b5f628f19394f"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+        "passed": true,
+        "seconds": 22.03,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-15.log",
+        "sha256": "d3ce616a3082367b040a25d983bf68946f6380484f51535e43228305586c1390",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-provider_option_picker_false.png",
+            "sha256": "db8e476398ad4785c95de9f81e2acb2cfba785fbcc420d60f562364a0514cf9f"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-provider_ip_picker_false.png",
+            "sha256": "b09d3da5ba2b6797c5b687ca82498003244271e80799269d4bc0fd397a7058b6"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-provider_options_error_false.png",
+            "sha256": "de6f85f89d3ce985af4d599a7bea30d333fc6fdcd5fb185e4626438dea1848fb"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-provider_option_picker_true.png",
+            "sha256": "54f4ca16261d5331e46d0b591ed02cd5443206e8446ea61747d985943a27dbfe"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-provider_ip_picker_true.png",
+            "sha256": "cb19d53d06e95d6be357e01e1c6eb5d79c8115de998178b49d960659a261383a"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-provider_options_error_true.png",
+            "sha256": "57323b9fce4eba2baaac8076571b2b52f23b377d182281c2bde401d119e9b3f1"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#localDirectoryDragScrollsCancelsAndSavesOnceThenSearchDisablesSorting",
+        "passed": true,
+        "seconds": 8.67,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-16.log",
+        "sha256": "c923f99dc282f90345f3fc3c4877566cacbcf996cf7ac0c7ac8c07582ab9d65e",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-local_proxies_drag_saved.png",
+            "sha256": "69c5becbc97e617075032bda7aa512dfeee2b35f093dc13e0c81ce98f4f79b41"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#linkDraftErrorsReplacementAndDiscardRenderInBothThemes",
+        "passed": true,
+        "seconds": 13.62,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-17.log",
+        "sha256": "b2cf84ea9abb945929ec0b40fc6eb543cd2c9fb44ab06760d892dcf25de2ea4e",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-local_proxy_links_error_false.png",
+            "sha256": "20c8207c68bfeb2647f6fcc1bda616a79da1b82b5f80a750317275d06feaea09"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-local_proxy_links_discard_false.png",
+            "sha256": "90c3964ef53632c8cdb039f571c7c7973862d513d229731c7cc72395b72554b4"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-local_proxy_links_replacement_false.png",
+            "sha256": "d5d7b543580ad39fef8eb7fb400e67f41fbdb2da59d291c34c6773f76a8a29dd"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-local_proxy_links_error_true.png",
+            "sha256": "6e94e13f1d5a41e0b18216c977a1e3b2d722824e910eb86a2e96b00ccfeeeef9"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-local_proxy_links_discard_true.png",
+            "sha256": "7caa4d1d5aa32a9da2fdb473e7775353cc66bb3d70bc436c36ec839fd2d15159"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-local_proxy_links_replacement_true.png",
+            "sha256": "cbaaf6939f1327412ec1e0e60b555abf5872b188c161fcb69ad55d13ae5146e1"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest#bothResourcePagesSortInBothThemesAndRetainOrderOnSaveFailure",
+        "passed": true,
+        "seconds": 10.87,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-18.log",
+        "sha256": "df491e5304e8f1f66289902ad483f04a89400692899114d3ca23af2cb2342280",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-rule_resources_sort_false.png",
+            "sha256": "a8b4a8e5707c3cd0f03198d28bc6f1c646503f49b74e5a43bf42d3c415b0566a"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-icon_sets_sort_false.png",
+            "sha256": "c6e940e637a3c8a4d353e4775fbf455962d7b5176f3127c9e836f42786049f57"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-rule_resources_sort_true.png",
+            "sha256": "a54387bdb9d811189bcbc7c33f6d2318e6820f4b9883895e307eb6f3d423f7f2"
+          },
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-icon_sets_sort_true.png",
+            "sha256": "d42a27b45128e1c3270a43a824c0927539f508f5aca19491859bf2e5f828ef8f"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest#viewportDragScrollsWithoutNewMovesCancelsAndCommitsOnlyOnDrop",
+        "passed": true,
+        "seconds": 6.51,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-19.log",
+        "sha256": "78d5ac14697a58670f5d26e129940efa588fe752cb39c87836fc1009704af30b",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-resource_order_drag_saved.png",
+            "sha256": "c36cb2309e10329337f55473cea062dd577afeb1ae2b41b39a0e29717f1e517e"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileClosureUiInstrumentedTest#orderPageStagesReconcilesAndRetainsFailedSaveInBothThemes",
+        "passed": true,
+        "seconds": 5.62,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-20.log",
+        "sha256": "b1183e593e1c69a27079a6e2f72c1394e1fac0dc6d2f564e17125e4eace64c7c",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+        "passed": true,
+        "seconds": 9.41,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-21.log",
+        "sha256": "f7b902210ee2f356e7ff19423cc8e2c82c0a141da52c17cb455e077af03ed953",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#longDocumentSearchScrollsToMatchAndCopyExcludesGutter",
+        "passed": true,
+        "seconds": 10.3,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-22.log",
+        "sha256": "15cc371ee03b54f514ec6726b833e753dac0606eb0b2bf44c72c3a223c8781ce",
+        "images": [
+          {
+            "path": "/tmp/kclash-liquid-subpages-20261104-final14-profile_document_long_match.png",
+            "sha256": "7ccb65a6a7cf96298a6e74e443aff6e10f787b0688654a5f845670001f46ebde"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityOpensFilterPresetsAndBothResourceUrlFormsWithoutChangingProfiles",
+        "passed": true,
+        "seconds": 12.9,
+        "log": "/tmp/kclash-liquid-subpages-20261104-final14-23.log",
+        "sha256": "f4720534b5ac19a60c1eb2bbcacebb5dad5758e2a22ddd1b6111f2ffc62aa569",
+        "images": []
+      }
+    ]
+  },
+  "batchInterpretation": "最终build14生产/测试包同批24/24。此前build12的21/21和测试补充3/3只作为历史批次，未套用到最终包。",
+  "preservation": {
+    "formalProfileCount": 1,
+    "checks": {
+      "preserve-before": {
+        "passed": false,
+        "log": "/tmp/kclash-liquid-subpages-20261104-preserve-before.log",
+        "sha256": "b8f842672ee989181a02a738d99c2bf4ef3312c62e1eb9d466d123366437c076",
+        "bytes": 2150,
+        "status": []
+      },
+      "preserve-full-before": {
+        "passed": false,
+        "log": "/tmp/kclash-liquid-subpages-20261104-preserve-full-before.log",
+        "sha256": "80c389991242f5e226745a511aa11cfece3a67550baa036ea6ed797861771996",
+        "bytes": 5033,
+        "status": []
+      },
+      "preserve-full-before2": {
+        "passed": true,
+        "log": "/tmp/kclash-liquid-subpages-20261104-preserve-full-before2.log",
+        "sha256": "a3c673adc293851957fd846e12b6801283fb2075223da73ad27029d70186fb2e",
+        "bytes": 962,
+        "status": [
+          "INSTRUMENTATION_STATUS: kclash_visual_preserved=before count=1 sha=b94808c36d86fd6db05f15ae82b2f984640266bbc8bde7b5b11a64dccb145a58"
+        ]
+      },
+      "preserve-after12": {
+        "passed": true,
+        "log": "/tmp/kclash-liquid-subpages-20261104-preserve-after12.log",
+        "sha256": "1e1aea1e9d55f82ca9f4ded178148953aa4b726a997d1e1ba4286ed2fd0d3fb6",
+        "bytes": 961,
+        "status": [
+          "INSTRUMENTATION_STATUS: kclash_visual_preserved=after count=1 sha=b94808c36d86fd6db05f15ae82b2f984640266bbc8bde7b5b11a64dccb145a58"
+        ]
+      },
+      "preserve-final-after": {
+        "passed": true,
+        "log": "/tmp/kclash-liquid-subpages-20261104-preserve-final-after.log",
+        "sha256": "1472c1a2161f18b093fd4131baf0a1cfb05f8cb80ef38bd539cb7a5d28ffd373",
+        "bytes": 961,
+        "status": [
+          "INSTRUMENTATION_STATUS: kclash_visual_preserved=after count=1 sha=b94808c36d86fd6db05f15ae82b2f984640266bbc8bde7b5b11a64dccb145a58"
+        ]
+      },
+      "preserve-final14-after": {
+        "passed": true,
+        "log": "/tmp/kclash-liquid-subpages-20261104-preserve-final14-after.log",
+        "sha256": "622c89ff2bf933e0c6a4ba43f845245637645342bb917f8fcf9253ec229b999b",
+        "bytes": 961,
+        "status": [
+          "INSTRUMENTATION_STATUS: kclash_visual_preserved=after count=1 sha=b94808c36d86fd6db05f15ae82b2f984640266bbc8bde7b5b11a64dccb145a58"
+        ]
+      }
+    },
+    "fullGuard": "对比排序后的Room行JSON摘要、当前选择及正文文件名/SHA-256/size/mtime；before2与after12、final-after、final14-after摘要一致。",
+    "guardLimit": "旧首页guard依赖可隐藏统计卡失败；首次新guard因横屏前置条件失败，均未计通过。run-as被Redmi SELinux拒绝，使用应用内Repository保护，未绕过。",
+    "preferencesAndScripts": "本组未做订阅/Provider网络或核心启停，固定组件宿主不写正式脚本/偏好；guard不单独声明全量偏好/脚本快照已核验。",
+    "flutterReference": "com.follow.clash仍安装；本组没有对其安装/卸载/清数据/配置修改。",
+    "sourceYaml": "本机../1.yaml与设备/sdcard/Download/1.yaml字节哈希均保持；本组未生成/替换配置YAML。",
+    "restored": "结束无服务/tun0，旋转恢复1/0、字号1.0；新长正文用例恢复原剪贴板。"
+  },
+  "finalDevice": {
+    "device": {
+      "model": "Redmi Note 8 Pro",
+      "sdk": "36",
+      "abi": "arm64-v8a",
+      "serial": "wsvwypiz7xwslvl7",
+      "size": "Physical size: 1080x2340"
+    },
+    "settings": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "animator_duration_scale": "1.0",
+      "animatorDurationNamespace": "global"
+    },
+    "artifacts": {
+      "com.lonnnnnng.flclash": {
+        "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "b11bedf1ccf74b738fde6a8f879c239a841433b5bd24f128277d2f9abc8787ee",
+        "installedSha256": "b11bedf1ccf74b738fde6a8f879c239a841433b5bd24f128277d2f9abc8787ee",
+        "bytes": 90682722,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "45f3b25c7f01bc9d5ab04fb3873642b86bed469ca5d3db69a5ac6aa9faf4647a",
+        "installedSha256": "45f3b25c7f01bc9d5ab04fb3873642b86bed469ca5d3db69a5ac6aa9faf4647a",
+        "bytes": 4000641,
+        "nativeAbis": []
+      }
+    },
+    "release": {
+      "sha256": "84817a0eca93f7a67b51a397f57adcfd49a33488e6aa7d4c825cb2bb619b0d74",
+      "bytes": 48111240,
+      "signed": false,
+      "installed": false
+    },
+    "servicesPresent": false,
+    "tun0Present": false,
+    "sourceYaml": {
+      "localSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+    },
+    "flutterReferenceInstalled": true
+  },
+  "failedBatches": [
+    {
+      "label": "batch1",
+      "passed": 1,
+      "total": 8,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": false,
+          "seconds": 5.58,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch1-0.log",
+          "sha256": "e665c833008f24ad84c982eeafc575d145c7a7b138e7fc042bac0abf0ac2f47f",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": false,
+          "seconds": 4.7,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch1-1.log",
+          "sha256": "84bf092a041ca31dc43bf89b3c7eb9ea42634bed1d8808177dfafffc7c025575",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "passed": false,
+          "seconds": 6.37,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch1-2.log",
+          "sha256": "0717c342f0117cced83555016e5349dc46b7861a9eee45974bb494ee2d788875",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": false,
+          "seconds": 9.33,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch1-3.log",
+          "sha256": "d20325d2b3e216618f879135bae73fbb2cdc32c2816993b1d438d33e1a5ae995",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": false,
+          "seconds": 5.87,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch1-4.log",
+          "sha256": "36f84e2f084d556c7f84624774a4c8d1a3b78e665b320abdf4c2d6dddcde18f2",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 5.84,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch1-5.log",
+          "sha256": "94a84c4048e40c598a6ffe145401a3e181eaca8f247b9199f3bf15e05ede9195",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": false,
+          "seconds": 6.47,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch1-6.log",
+          "sha256": "8b5e435ac31081aa1e967bf269c034aae0c2cde933052689b3df2341112cd903",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": false,
+          "seconds": 9.53,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch1-7.log",
+          "sha256": "f907d6efaa9f75ba729b1c3fa785887bfaee80c5768719ba264012b10c449595",
+          "imageCount": 1
+        }
+      ],
+      "reasonAndResolution": "退出空帧解引用空children，首个失败后旧runner继续到8项；已加空布局保护并改为首失败停。",
+      "productionAndTestPackages": "历史构建包；未将其中成功项套用到最终生产APK。"
+    },
+    {
+      "label": "batch2",
+      "passed": 0,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": false,
+          "seconds": 12.78,
+          "log": "/tmp/kclash-liquid-subpages-20261104-batch2-0.log",
+          "sha256": "293c67e826a5159a2f58d7f719e2ade1fb391c5a1b134a3de7784573746c8e89",
+          "imageCount": 2
+        }
+      ],
+      "reasonAndResolution": "手动Compose时钟未推进，等待source.hidden超时；测试显式推进帧。",
+      "productionAndTestPackages": "历史构建包；未将其中成功项套用到最终生产APK。"
+    },
+    {
+      "label": "rest2",
+      "passed": 0,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": false,
+          "seconds": 5.1,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest2-0.log",
+          "sha256": "c865b6d9ce42aa699c1a7d490e80ca76832b5668cd75454f67ed3133c7c94e8f",
+          "imageCount": 0
+        }
+      ],
+      "reasonAndResolution": "二次打开菜单后过早停时钟；先等待条目可见。",
+      "productionAndTestPackages": "历史构建包；未将其中成功项套用到最终生产APK。"
+    },
+    {
+      "label": "rest3",
+      "passed": 8,
+      "total": 9,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "passed": true,
+          "seconds": 6.62,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-0.log",
+          "sha256": "3b7fb1e11c134e445551b001a2da848e020f8b6ee50e8400709fc7748b0194c8",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 13.24,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-1.log",
+          "sha256": "e48ffb7f051be511be143ed18fd1d78e9ca09f972ab72bb8b2359f9127b8199d",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 5.92,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-2.log",
+          "sha256": "74bdea35c44f121135e4c646a605e99c7fb531873b6224872d92c0bacacb26d3",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 6.0,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-3.log",
+          "sha256": "b8d03673e570fdaea2794f859c7bf1170594f34dcd63e1f210c75ce3e0d9d725",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 6.47,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-4.log",
+          "sha256": "2f0b52ed8cc282625655f7e1a8460e4e0624ada89b01ba5a9a600853107b8e63",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 9.44,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-5.log",
+          "sha256": "d6ad4fe9355a17a7966b321d168695c27b325a3e91b0ef0db6c8e6f8584f2d2f",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#scrolledRootSubmenuResetsScrollAndReturnsWithoutMovingAnchorOrDuplicatingAction",
+          "passed": true,
+          "seconds": 9.35,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-6.log",
+          "sha256": "619081b734b10a781ee02c1243c2273fbd4ad94388c994d2530d8caaf77c3de0",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#fullPreviewKeepsToolbarWhileScrollingSearchingAndClosingWithSystemBack",
+          "passed": true,
+          "seconds": 9.02,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-7.log",
+          "sha256": "ffe9f3de740771250c70a8b77eabb0bd4f08d1be70d580df74c9d256248d445c",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#documentBackConfirmationKeepsDraftUntilSaveOrDiscardAfterPageEntrance",
+          "passed": false,
+          "seconds": 4.5,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest3-8.log",
+          "sha256": "59002f9626428c836913d77c5b5cb87cfc9cc361926e2a7468070dceed4a5499",
+          "imageCount": 0
+        }
+      ],
+      "reasonAndResolution": "8项通过，正文输入tag挂在外层容器，没有RequestFocus；改到BasicTextField。",
+      "productionAndTestPackages": "历史构建包；未将其中成功项套用到最终生产APK。"
+    },
+    {
+      "label": "rest4",
+      "passed": 7,
+      "total": 8,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilePreviewInstrumentedTest#noncurrentPreviewRendersBothThemesAndSupportsFailureRetryAndClose",
+          "passed": true,
+          "seconds": 5.47,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest4-0.log",
+          "sha256": "8bb8c77bb2e2ce83bb2908bee7b3d9ddaba92784c99722c3f22eeb867f1c3592",
+          "imageCount": 2
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+          "passed": true,
+          "seconds": 22.19,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest4-1.log",
+          "sha256": "201eb6f63b2bc03fcd9dd29e4f8a2593436d65662297a989a3802a8fb2d836e2",
+          "imageCount": 6
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#localDirectoryDragScrollsCancelsAndSavesOnceThenSearchDisablesSorting",
+          "passed": true,
+          "seconds": 8.64,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest4-2.log",
+          "sha256": "1c499a7d12bbf4348b817675da0ea365882ed02f7319de8d948621b4ff6e734e",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#linkDraftErrorsReplacementAndDiscardRenderInBothThemes",
+          "passed": true,
+          "seconds": 13.67,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest4-3.log",
+          "sha256": "d981376d5626cd5a2fbff1c690b78cf95931c586cf0c2a8d6874622bfad3dd4a",
+          "imageCount": 6
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest#bothResourcePagesSortInBothThemesAndRetainOrderOnSaveFailure",
+          "passed": true,
+          "seconds": 10.96,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest4-4.log",
+          "sha256": "80a2846f3dc15cd0db41c42fdffa749e7ef0bddff1f3b697ea9d7385151226df",
+          "imageCount": 4
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest#viewportDragScrollsWithoutNewMovesCancelsAndCommitsOnlyOnDrop",
+          "passed": true,
+          "seconds": 6.65,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest4-5.log",
+          "sha256": "a6bc01dda3613b14e0413bcfb2711966138bbb97a10400757f2be949797c231f",
+          "imageCount": 1
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileClosureUiInstrumentedTest#orderPageStagesReconcilesAndRetainsFailedSaveInBothThemes",
+          "passed": true,
+          "seconds": 5.65,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest4-6.log",
+          "sha256": "b685f700bf9d8fe5e6afce2bdb998ea86afc616609958446a4f71d752957e5a5",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": false,
+          "seconds": 8.71,
+          "log": "/tmp/kclash-liquid-subpages-20261104-rest4-7.log",
+          "sha256": "befd827bcd0d1db16feb7878ca64b6c0b3684475eef4ffc3f495c25da9884abb",
+          "imageCount": 0
+        }
+      ],
+      "reasonAndResolution": "7项通过，正式远程表单已打开但测试寻找不存在的“取消”；改为系统Back。",
+      "productionAndTestPackages": "历史构建包；未将其中成功项套用到最终生产APK。"
+    },
+    {
+      "label": "timing8",
+      "passed": 3,
+      "total": 4,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 15.56,
+          "log": "/tmp/kclash-liquid-subpages-20261104-timing8-0.log",
+          "sha256": "7bb256ccfd5b32fa844f428c5496620002b6fe5881dd223f8b6657d775d7a544",
+          "imageCount": 8
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": true,
+          "seconds": 6.22,
+          "log": "/tmp/kclash-liquid-subpages-20261104-timing8-1.log",
+          "sha256": "3f3b2a238050d9ee03220ed117155960cda0efa542562c058ef708589c682fcb",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#documentBackConfirmationKeepsDraftUntilSaveOrDiscardAfterPageEntrance",
+          "passed": true,
+          "seconds": 6.54,
+          "log": "/tmp/kclash-liquid-subpages-20261104-timing8-2.log",
+          "sha256": "ebd43af70ca3eabe2f74d6cccc70c5fec78c29bfbc6f95e7c19f46d5509894c7",
+          "imageCount": 0
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+          "passed": false,
+          "seconds": 7.83,
+          "log": "/tmp/kclash-liquid-subpages-20261104-timing8-3.log",
+          "sha256": "1c1ca4fecc665a2f7c3c6f21527e607ee7f8758ea4d41c73476f978a76b77f84",
+          "imageCount": 0
+        }
+      ],
+      "reasonAndResolution": "3项通过，撤销回调在500ms退场后执行；测试增加waitForIdle。此批回源截图空白，后续目视判为缺陷，不能当视觉通过。",
+      "productionAndTestPackages": "历史构建包；未将其中成功项套用到最终生产APK。"
+    },
+    {
+      "label": "final11",
+      "passed": 0,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": false,
+          "seconds": 7.06,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final11-0.log",
+          "sha256": "978a3d9ce3ef29a54b30a1cc2982ee073eb81e3c8158d8c6c5e39b03661f3707",
+          "imageCount": 2
+        }
+      ],
+      "reasonAndResolution": "回源中间帧已有像素，但结束后Popup仍残留；改由present状态移除绘制层。",
+      "productionAndTestPackages": "历史构建包；未将其中成功项套用到最终生产APK。"
+    },
+    {
+      "label": "longpress11",
+      "passed": 0,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": false,
+          "seconds": 5.37,
+          "log": "/tmp/kclash-liquid-subpages-20261104-longpress11-0.log",
+          "sha256": "c539a44b9729f7ecdbd5bf07a2b8c399043f0b211ff7133582fb632bfd13a7a1",
+          "imageCount": 0
+        }
+      ],
+      "reasonAndResolution": "真实长按携带未通过，finally的ACTION_CANCEL注入失败掩盖原异常；测试修正清理，并将源按下期间Popup设为不抢Window焦点。",
+      "productionAndTestPackages": "历史构建包；未将其中成功项套用到最终生产APK。"
+    }
+  ],
+  "limitations": [
+    "整体Flutter视觉继续PARTIAL，未完成全部页面逐像素对齐。",
+    "玻璃仅基础背景磨砂/透色/高光，默认关闭，未接主题设置；未实现上游完整折射shader与ultra分级。API26以下无背景快照，API31以下无RenderEffect模糊。",
+    "子菜单使用AnimatedContent层级过渡，未完整移植多层卡片物理unfold/fold。",
+    "空态其他随机morph/orbit及更多子页精确排版仍待继续。",
+    "长正文查找与复制在1201行固定正文通过；BasicTextField仍整体测量，未验8MiB极限正文交互性能。",
+    "本组未重跑Provider实网，六种Rule格式及HTTP/File Proxy沿用前组独立证据；未新增实网覆盖。",
+    "Fallback无有效now实核/冷进程仍受授权输入无非空组限制。",
+    "备份/系统恢复、观测次要打磨、语言和主题设置继续暂缓；正式签名运行、远端CI未验。"
+  ],
+  "sourceFiles": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuCarry.kt": {
+      "sha256": "4a4cb105b531b07e2020921994f187a2308e2ec3be06b4cafc400bb10b92244a",
+      "bytes": 1336
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuGoo.kt": {
+      "sha256": "ca5dc0f82289b69f8ed3041639580c96cdbd40024868935e2444532773cfdcf4",
+      "bytes": 3219
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt": {
+      "sha256": "56b0e38ed31fe794a4b7ad067ec0fc4421577d653448b8afa6bf233fe432224f",
+      "bytes": 8082
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuSource.kt": {
+      "sha256": "21b2647424edc40e9fe334eb049e6095c4330a3265deda98419fff9f8a2ddfcf",
+      "bytes": 3577
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt": {
+      "sha256": "6f474a334af0ec8feaac5a647c53ae390bc15ebd6e703c751686e14d078cb773",
+      "bytes": 23713
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": {
+      "sha256": "b7ae71d65c5d5f10865a184b00e1c4c02efadcb1782a8eddc7b5f5baf07454f7",
+      "bytes": 248298
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxiesPage.kt": {
+      "sha256": "7be92a47deb9d0f6ce0b28baec7ce1499fe91a947cec2fdcd040306de8a4f352",
+      "bytes": 23068
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileCodeField.kt": {
+      "sha256": "2a007730e232f58acf03bd11af6fa1f7cedd2a27e18e5414d17b55853c377389",
+      "bytes": 5151
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDocumentEditor.kt": {
+      "sha256": "0db5c084d13c8a5fec2b51c0e640cbb9aa35d3b2a3b47124621021321cad9be9",
+      "bytes": 7389
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": {
+      "sha256": "b9f0c2ba746e662a3466aad5cfecc668e3d4ffb4deefe3a1d69670c002527f32",
+      "bytes": 9215
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProvidersPage.kt": {
+      "sha256": "11a43b5f6b2676e9c325b09dc77703d225b6229a75b57872364df9ffb2a987f9",
+      "bytes": 16098
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProvidersPanel.kt": {
+      "sha256": "11bd68cea4fef42ec61e7b5c6c2053b5dd96fcfa5532f9eb69195777a8b84bbf",
+      "bytes": 8124
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProviderOptionsPage.kt": {
+      "sha256": "591ce5a05595b1f5cc15747060c82b749ef92d9ddfd1d096e4194b59b87fe8fc",
+      "bytes": 18254
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt": {
+      "sha256": "198296455cfe5650a3f20206b490a32b8c210cd89226b8e3c441b96580eade6c",
+      "bytes": 40260
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt": {
+      "sha256": "bb1853b802e84f58f592616524411efbfff6f875b5ccb625d3f3749f6872a1b7",
+      "bytes": 52483
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyNodeVisuals.kt": {
+      "sha256": "c661ac8964e4b1cddfc23cfabe4b2a7f50f2e2f5675f0ba91613f5037c95f40e",
+      "bytes": 12517
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ResourceOrderList.kt": {
+      "sha256": "4bcf2684be2d5753b6c2f02e3ba64c9d11178c32d4faaaf82fc1cd2b1ff33b9a",
+      "bytes": 7482
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuntimeConfigPreviewSheet.kt": {
+      "sha256": "3a21e64b03d6b87f1e38c295462b0be6b89f2f6645bf64d2fb46ac543854eea4",
+      "bytes": 8799
+    },
+    "android/tests/app/AppMenuMotionTest.kt": {
+      "sha256": "1bb75e47e3e869f7ba27395c844874da04229e03f002d0530813be8099bc8374",
+      "bytes": 2990
+    },
+    "android/tests/instrumented/LiquidMenuInstrumentedTest.kt": {
+      "sha256": "46caeb845d4bd5f548f920131eadd79b7c85d9ded090fae5a32b82f15a5df568",
+      "bytes": 12194
+    },
+    "android/tests/instrumented/MenuVisualHostInstrumentedTest.kt": {
+      "sha256": "2ec671ff6ea73caf45237456dbf0aacadb1870b373702fcece6caed300485339",
+      "bytes": 3226
+    },
+    "android/tests/instrumented/OrderAccessibilityActions.kt": {
+      "sha256": "c11f3fe399ae0a8947d9484eb26bf018f8b88b91b898f511243e40592d1b7e8e",
+      "bytes": 607
+    },
+    "android/tests/instrumented/ProfileClosureUiInstrumentedTest.kt": {
+      "sha256": "692fc28f8a3c8bb1a64c1145feb17a08478b9f9da841549d51b2249d61e34b5b",
+      "bytes": 3902
+    },
+    "android/tests/instrumented/ProfileDocumentUiInstrumentedTest.kt": {
+      "sha256": "e6916d9946f8d680060262f1c7c47780498fa0f21215fd0aa0dad397ced7af15",
+      "bytes": 6866
+    },
+    "android/tests/instrumented/ProfilesProxyMotionInstrumentedTest.kt": {
+      "sha256": "0afc425821057d29ad3244131cc61230b97f98e7b4f3dd7bea20a9c40e2b549c",
+      "bytes": 6885
+    },
+    "android/tests/instrumented/ResourceOrderAndIconsInstrumentedTest.kt": {
+      "sha256": "3718b0bd91a17b8c5ba538f8cdd4f196e7a0dce3703de4d42fef0b58d4c9e38b",
+      "bytes": 8694
+    },
+    "android/tests/instrumented/ResourceOrderHostInstrumentedTest.kt": {
+      "sha256": "8f7fce88ab1252bbfd72aeadfa2c728b5f43c2c5f63f30a3f76493b38388bc39",
+      "bytes": 5014
+    }
+  },
+  "localLogIndex": {
+    "/tmp/kclash-liquid-subpages-20261104-batch1-0.log": {
+      "sha256": "e665c833008f24ad84c982eeafc575d145c7a7b138e7fc042bac0abf0ac2f47f",
+      "bytes": 16053
+    },
+    "/tmp/kclash-liquid-subpages-20261104-batch1-1.log": {
+      "sha256": "84bf092a041ca31dc43bf89b3c7eb9ea42634bed1d8808177dfafffc7c025575",
+      "bytes": 18433
+    },
+    "/tmp/kclash-liquid-subpages-20261104-batch1-2.log": {
+      "sha256": "0717c342f0117cced83555016e5349dc46b7861a9eee45974bb494ee2d788875",
+      "bytes": 18353
+    },
+    "/tmp/kclash-liquid-subpages-20261104-batch1-3.log": {
+      "sha256": "d20325d2b3e216618f879135bae73fbb2cdc32c2816993b1d438d33e1a5ae995",
+      "bytes": 18461
+    },
+    "/tmp/kclash-liquid-subpages-20261104-batch1-4.log": {
+      "sha256": "36f84e2f084d556c7f84624774a4c8d1a3b78e665b320abdf4c2d6dddcde18f2",
+      "bytes": 18398
+    },
+    "/tmp/kclash-liquid-subpages-20261104-batch1-5.log": {
+      "sha256": "94a84c4048e40c598a6ffe145401a3e181eaca8f247b9199f3bf15e05ede9195",
+      "bytes": 839
+    },
+    "/tmp/kclash-liquid-subpages-20261104-batch1-6.log": {
+      "sha256": "8b5e435ac31081aa1e967bf269c034aae0c2cde933052689b3df2341112cd903",
+      "bytes": 18434
+    },
+    "/tmp/kclash-liquid-subpages-20261104-batch1-7.log": {
+      "sha256": "f907d6efaa9f75ba729b1c3fa785887bfaee80c5768719ba264012b10c449595",
+      "bytes": 18430
+    },
+    "/tmp/kclash-liquid-subpages-20261104-batch2-0.log": {
+      "sha256": "293c67e826a5159a2f58d7f719e2ade1fb391c5a1b134a3de7784573746c8e89",
+      "bytes": 2785
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build1.log": {
+      "sha256": "569c943f98bd4238f704c13d92611ba8718ba80a3c35e2a17dcf2f9adde280c6",
+      "bytes": 13846
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build11.log": {
+      "sha256": "83bfbbc6dde5ce4318208b602fb6992443bef02bdc35aec650292bc2d93378c1",
+      "bytes": 23641
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build12.log": {
+      "sha256": "04d22a34c413aa446be7ff16f33546aa703a49fbfb00d1d38f0643918f65ca6e",
+      "bytes": 23641
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build14.log": {
+      "sha256": "6ec04307347eaad5f27e8bb099c8f820c46584e2d09f798108070892e54c89a0",
+      "bytes": 23641
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build2.log": {
+      "sha256": "8b5badf0289c6d9e87960a6948bc3190bcdcec164e0a4d0b6890ff8bfe9cb7ea",
+      "bytes": 21040
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build3.log": {
+      "sha256": "f6c9f806e3c9ed5fae6f7141ede27dd06ffa0ad28116084525a7dc3fde1430bf",
+      "bytes": 17750
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build4.log": {
+      "sha256": "47a3aa000c025927e8669a6471b96cfc39224b25b1d0f0c37ab2b0ba416c7809",
+      "bytes": 15239
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build5.log": {
+      "sha256": "8e67f467bf26fa575918921cd2d8615408d53dcfc4b29f36239967f3bb5ba478",
+      "bytes": 14766
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build6.log": {
+      "sha256": "192ddf59193dd9f7f150b394650a00a454488ce4424185244d4d79d5f0a8f0ad",
+      "bytes": 14648
+    },
+    "/tmp/kclash-liquid-subpages-20261104-build8.log": {
+      "sha256": "fbc8d88fceb2c6620eb2c659dafcf1df6afa89fa37ad76ef8ec69f2aeb53a825",
+      "bytes": 23707
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final11-0.log": {
+      "sha256": "978a3d9ce3ef29a54b30a1cc2982ee073eb81e3c8158d8c6c5e39b03661f3707",
+      "bytes": 3343
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-0.log": {
+      "sha256": "315d65bab774c6210771a4fcc311aa8d455c9fac7ffa9b9c9a28730010f3bdf4",
+      "bytes": 1124
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-1.log": {
+      "sha256": "62a8f7d9272270651348d27a783ba55d2720a4f4a6718a2475a911aedb2cda3a",
+      "bytes": 849
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-10.log": {
+      "sha256": "5216d2bc1825c2ec04d7356b150dbbda41ff7a5f1bf9255d98dcfb68d775f382",
+      "bytes": 886
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-11.log": {
+      "sha256": "f14dd908352a6fd79daad0e8101d3ad328dd2bcd4311baab0afe44ae7440b254",
+      "bytes": 884
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-12.log": {
+      "sha256": "3f23c542b6f38f6c16d5ec7a6a5eb61cbce8121d68cb775d2ca047d00a220ebd",
+      "bytes": 938
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-13.log": {
+      "sha256": "25e4ceda5fdb564f73ff531360c02e0b3a76cf1fd5202049f2afc6715b381500",
+      "bytes": 923
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-14.log": {
+      "sha256": "d274f35a8c6adf5fa2125576e623609da8793f5547959d973ff61f0aaac29bcc",
+      "bytes": 1039
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-15.log": {
+      "sha256": "0d8ab2f135a0852f448be8aeceb96a77f4b83fbebc419f19bb57e38bbcb3d0fc",
+      "bytes": 903
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-16.log": {
+      "sha256": "55f5f1a817dfdcb6e575c4e45de0b137623714c1466c7ca220bc2ec4362f5cd0",
+      "bytes": 1029
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-17.log": {
+      "sha256": "9f27b5b83908f2270999676aea7b8d27c83438cab5f055e5ad0a9c14f0abfe39",
+      "bytes": 996
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-18.log": {
+      "sha256": "5045925236ce28cf1cabdfd70355a5797c2be8912c48ee1db43bd53e2612130c",
+      "bytes": 905
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-19.log": {
+      "sha256": "f892951516cdddae7a6ab0ea5bbbcef05f011a68a22ab46b21a28724b14f53a1",
+      "bytes": 851
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-2.log": {
+      "sha256": "4dd20f419111f16916db2952c421989d7946c50d69a674b4b1d7015c7d86f1b9",
+      "bytes": 809
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-20.log": {
+      "sha256": "37b8cb015d17243ba3327d480942bb08f5236007561a3f806bb1bcf2ed08311b",
+      "bytes": 853
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-3.log": {
+      "sha256": "d50d89589d1354e3f17a4ff05c6fb5c9a50a83563e769069175ad0ee752a8892",
+      "bytes": 835
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-4.log": {
+      "sha256": "82dc82fe58f37bcc8d8253a4cfb151b99ce6d875911ee7ab69765b6d019ebdf6",
+      "bytes": 956
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-5.log": {
+      "sha256": "5a1267ab114a9ef30c3627d951519fb9612d62d7b536e85a1d6f54d80b4b0a83",
+      "bytes": 846
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-6.log": {
+      "sha256": "f62583f6e1fac381dfd83de9ca356c05b9e9e16de3e5c4fba49d0deb9b194ce2",
+      "bytes": 839
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-7.log": {
+      "sha256": "cc4e10d9e4105cbbd854e7c7e787336241b484b49d2d25243516385387f4af9f",
+      "bytes": 864
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-8.log": {
+      "sha256": "54e0eb51f80ee3a919ab0cbcff1d895e2b794c39e56f0cb69417ce28b7addabb",
+      "bytes": 862
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final12-9.log": {
+      "sha256": "b46ee3beaab363d2b3b45c931ff21459c6592be93ab916ee3992798ae6cccd21",
+      "bytes": 904
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-0.log": {
+      "sha256": "50c36d7984a49045e6dc89e74b71c4b6dab299047efd7c1cf2a369c31839ef33",
+      "bytes": 837
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-1.log": {
+      "sha256": "f4f4cb16687024592b7019d7f85154f5a8d3b5ae47b00716389c3b36819e1b69",
+      "bytes": 1124
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-10.log": {
+      "sha256": "8dc1a3c4c37c05d7bd23331b5ae6c7d2bfdd62b8e1e5eaad2b5b95c083e534e2",
+      "bytes": 904
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-11.log": {
+      "sha256": "62fa1981b2e6ea2cdf897fea9159bdf7d9557dac067a20f335f6f71580320a33",
+      "bytes": 885
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-12.log": {
+      "sha256": "2e4f749a026982817887c093435d3655110259bf65f4be3d69519341a4445665",
+      "bytes": 884
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-13.log": {
+      "sha256": "61bdf959dfc8e0490060f78508e86e6f8995f68c8b9e26c9f66cd734fc109652",
+      "bytes": 938
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-14.log": {
+      "sha256": "96710fedd2c4560bca5091dfd108c5cc1e00ac70d5c3e72b69a885ff265e7e0c",
+      "bytes": 923
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-15.log": {
+      "sha256": "d3ce616a3082367b040a25d983bf68946f6380484f51535e43228305586c1390",
+      "bytes": 1037
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-16.log": {
+      "sha256": "c923f99dc282f90345f3fc3c4877566cacbcf996cf7ac0c7ac8c07582ab9d65e",
+      "bytes": 903
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-17.log": {
+      "sha256": "b2cf84ea9abb945929ec0b40fc6eb543cd2c9fb44ab06760d892dcf25de2ea4e",
+      "bytes": 1029
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-18.log": {
+      "sha256": "df491e5304e8f1f66289902ad483f04a89400692899114d3ca23af2cb2342280",
+      "bytes": 996
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-19.log": {
+      "sha256": "78d5ac14697a58670f5d26e129940efa588fe752cb39c87836fc1009704af30b",
+      "bytes": 905
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-2.log": {
+      "sha256": "1e29e7d8de423973c9d7d278d14eef67e9bd1273b472088d006325fc28a929aa",
+      "bytes": 849
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-20.log": {
+      "sha256": "b1183e593e1c69a27079a6e2f72c1394e1fac0dc6d2f564e17125e4eace64c7c",
+      "bytes": 851
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-21.log": {
+      "sha256": "f7b902210ee2f356e7ff19423cc8e2c82c0a141da52c17cb455e077af03ed953",
+      "bytes": 853
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-22.log": {
+      "sha256": "15cc371ee03b54f514ec6726b833e753dac0606eb0b2bf44c72c3a223c8781ce",
+      "bytes": 877
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-23.log": {
+      "sha256": "f4720534b5ac19a60c1eb2bbcacebb5dad5758e2a22ddd1b6111f2ffc62aa569",
+      "bytes": 869
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-3.log": {
+      "sha256": "a7639b00a2aa589f0ec512300cc25b048420ab7529dbd7e991786985cc5a4f1d",
+      "bytes": 809
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-4.log": {
+      "sha256": "8bd5747114c2a299729f54b46e418597301bd1b7e162af226e0ac6bdedf8b707",
+      "bytes": 835
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-5.log": {
+      "sha256": "487a0c6e2995da6c365b3fa51d4cd8dc3ff312fbabbe1082c344da836680ee88",
+      "bytes": 956
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-6.log": {
+      "sha256": "2a55066878151bb91c863ce9a090e4157f166a69030968a22134038de9efc0a2",
+      "bytes": 846
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-7.log": {
+      "sha256": "5369875c01cdf1df57912284833f8bc777f768b88c92dc4c3f49a6aa5a4ee2c7",
+      "bytes": 839
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-8.log": {
+      "sha256": "2b45879010712f28b84b4f4ccf7014731e96c1f4058db4bce997e901348502f0",
+      "bytes": 864
+    },
+    "/tmp/kclash-liquid-subpages-20261104-final14-9.log": {
+      "sha256": "6d0c6a3f6bf7734c144210fe652c448bb4c9f814e984840673e165b0ed367d5d",
+      "bytes": 861
+    },
+    "/tmp/kclash-liquid-subpages-20261104-longpress11-0.log": {
+      "sha256": "c539a44b9729f7ecdbd5bf07a2b8c399043f0b211ff7133582fb632bfd13a7a1",
+      "bytes": 2556
+    },
+    "/tmp/kclash-liquid-subpages-20261104-preserve-after12.log": {
+      "sha256": "1e1aea1e9d55f82ca9f4ded178148953aa4b726a997d1e1ba4286ed2fd0d3fb6",
+      "bytes": 961
+    },
+    "/tmp/kclash-liquid-subpages-20261104-preserve-before.log": {
+      "sha256": "b8f842672ee989181a02a738d99c2bf4ef3312c62e1eb9d466d123366437c076",
+      "bytes": 2150
+    },
+    "/tmp/kclash-liquid-subpages-20261104-preserve-final-after.log": {
+      "sha256": "1472c1a2161f18b093fd4131baf0a1cfb05f8cb80ef38bd539cb7a5d28ffd373",
+      "bytes": 961
+    },
+    "/tmp/kclash-liquid-subpages-20261104-preserve-final14-after.log": {
+      "sha256": "622c89ff2bf933e0c6a4ba43f845245637645342bb917f8fcf9253ec229b999b",
+      "bytes": 961
+    },
+    "/tmp/kclash-liquid-subpages-20261104-preserve-full-before.log": {
+      "sha256": "80c389991242f5e226745a511aa11cfece3a67550baa036ea6ed797861771996",
+      "bytes": 5033
+    },
+    "/tmp/kclash-liquid-subpages-20261104-preserve-full-before2.log": {
+      "sha256": "a3c673adc293851957fd846e12b6801283fb2075223da73ad27029d70186fb2e",
+      "bytes": 962
+    },
+    "/tmp/kclash-liquid-subpages-20261104-release-metadata.log": {
+      "sha256": "85d164687fd273eb27cc8a9d6f753be3f72a4537d2fb5c876939395aeda6a297",
+      "bytes": 5929
+    },
+    "/tmp/kclash-liquid-subpages-20261104-release-signature.log": {
+      "sha256": "1413af210d1627fde4f14e31934eb5d9d031684e4f7a5c3371a74b3bdeb8764c",
+      "bytes": 52
+    },
+    "/tmp/kclash-liquid-subpages-20261104-release1.log": {
+      "sha256": "4c5e6a1d5f7d827297c9014d54ebe82f4c468dbbd3837090f418d2270b02542b",
+      "bytes": 12871
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest2-0.log": {
+      "sha256": "c865b6d9ce42aa699c1a7d490e80ca76832b5668cd75454f67ed3133c7c94e8f",
+      "bytes": 3760
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-0.log": {
+      "sha256": "3b7fb1e11c134e445551b001a2da848e020f8b6ee50e8400709fc7748b0194c8",
+      "bytes": 809
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-1.log": {
+      "sha256": "e48ffb7f051be511be143ed18fd1d78e9ca09f972ab72bb8b2359f9127b8199d",
+      "bytes": 956
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-2.log": {
+      "sha256": "74bdea35c44f121135e4c646a605e99c7fb531873b6224872d92c0bacacb26d3",
+      "bytes": 846
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-3.log": {
+      "sha256": "b8d03673e570fdaea2794f859c7bf1170594f34dcd63e1f210c75ce3e0d9d725",
+      "bytes": 839
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-4.log": {
+      "sha256": "2f0b52ed8cc282625655f7e1a8460e4e0624ada89b01ba5a9a600853107b8e63",
+      "bytes": 864
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-5.log": {
+      "sha256": "d6ad4fe9355a17a7966b321d168695c27b325a3e91b0ef0db6c8e6f8584f2d2f",
+      "bytes": 862
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-6.log": {
+      "sha256": "619081b734b10a781ee02c1243c2273fbd4ad94388c994d2530d8caaf77c3de0",
+      "bytes": 904
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-7.log": {
+      "sha256": "ffe9f3de740771250c70a8b77eabb0bd4f08d1be70d580df74c9d256248d445c",
+      "bytes": 886
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest3-8.log": {
+      "sha256": "59002f9626428c836913d77c5b5cb87cfc9cc361926e2a7468070dceed4a5499",
+      "bytes": 4163
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest4-0.log": {
+      "sha256": "8bb8c77bb2e2ce83bb2908bee7b3d9ddaba92784c99722c3f22eeb867f1c3592",
+      "bytes": 923
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest4-1.log": {
+      "sha256": "201eb6f63b2bc03fcd9dd29e4f8a2593436d65662297a989a3802a8fb2d836e2",
+      "bytes": 1038
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest4-2.log": {
+      "sha256": "1c499a7d12bbf4348b817675da0ea365882ed02f7319de8d948621b4ff6e734e",
+      "bytes": 903
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest4-3.log": {
+      "sha256": "d981376d5626cd5a2fbff1c690b78cf95931c586cf0c2a8d6874622bfad3dd4a",
+      "bytes": 1029
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest4-4.log": {
+      "sha256": "80a2846f3dc15cd0db41c42fdffa749e7ef0bddff1f3b697ea9d7385151226df",
+      "bytes": 996
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest4-5.log": {
+      "sha256": "a6bc01dda3613b14e0413bcfb2711966138bbb97a10400757f2be949797c231f",
+      "bytes": 905
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest4-6.log": {
+      "sha256": "b685f700bf9d8fe5e6afce2bdb998ea86afc616609958446a4f71d752957e5a5",
+      "bytes": 851
+    },
+    "/tmp/kclash-liquid-subpages-20261104-rest4-7.log": {
+      "sha256": "befd827bcd0d1db16feb7878ca64b6c0b3684475eef4ffc3f495c25da9884abb",
+      "bytes": 6833
+    },
+    "/tmp/kclash-liquid-subpages-20261104-supplement13-0.log": {
+      "sha256": "06ecb9393eb056abbc0a0c271cdf98fdbf460e010ba214d1d05e59012e0584fc",
+      "bytes": 1124
+    },
+    "/tmp/kclash-liquid-subpages-20261104-supplement13-1.log": {
+      "sha256": "613279f69069f12c56b91871f155eded2c03f9074c4272ea654d887805789e84",
+      "bytes": 877
+    },
+    "/tmp/kclash-liquid-subpages-20261104-supplement13-2.log": {
+      "sha256": "a001e31f8fc0cbebe7134d243ec4862600c695bc9cee21177b0d61fd27369c8b",
+      "bytes": 869
+    },
+    "/tmp/kclash-liquid-subpages-20261104-test10.log": {
+      "sha256": "05e5b6c99a967cf38b67ceb42cacf7abe9c8723bb1cc455ec282ad714769b452",
+      "bytes": 11915
+    },
+    "/tmp/kclash-liquid-subpages-20261104-test7-release2.log": {
+      "sha256": "4796c8165e2364c51c58dd179092c19594d23564e398000f7e8013266e534936",
+      "bytes": 35390
+    },
+    "/tmp/kclash-liquid-subpages-20261104-test9.log": {
+      "sha256": "a787bc8d9df5a4e46bb8e74fe4b0a7e8b678e1f639eef82c825e480c79ee490d",
+      "bytes": 13695
+    },
+    "/tmp/kclash-liquid-subpages-20261104-testbuild13.log": {
+      "sha256": "cdc4cb4541be8cca96aa6afbcc5a44d71aa41c37eb6e98a85260b708f09d3bcc",
+      "bytes": 11915
+    },
+    "/tmp/kclash-liquid-subpages-20261104-timing8-0.log": {
+      "sha256": "7bb256ccfd5b32fa844f428c5496620002b6fe5881dd223f8b6657d775d7a544",
+      "bytes": 1124
+    },
+    "/tmp/kclash-liquid-subpages-20261104-timing8-1.log": {
+      "sha256": "3f3b2a238050d9ee03220ed117155960cda0efa542562c058ef708589c682fcb",
+      "bytes": 848
+    },
+    "/tmp/kclash-liquid-subpages-20261104-timing8-2.log": {
+      "sha256": "ebd43af70ca3eabe2f74d6cccc70c5fec78c29bfbc6f95e7c19f46d5509894c7",
+      "bytes": 884
+    },
+    "/tmp/kclash-liquid-subpages-20261104-timing8-3.log": {
+      "sha256": "1c1ca4fecc665a2f7c3c6f21527e607ee7f8758ea4d41c73476f978a76b77f84",
+      "bytes": 2351
+    }
+  },
+  "attachmentPolicy": "日志与PNG仅本机/tmp留存；仓库记录索引/哈希，原始附件未上传，远端不能仅凭路径复核。",
+  "previousVerifiedBatches": [
+    {
+      "label": "final12",
+      "passed": 21,
+      "total": 21,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 16.19,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-0.log",
+          "sha256": "315d65bab774c6210771a4fcc311aa8d455c9fac7ffa9b9c9a28730010f3bdf4",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-liquid_open_false_false.png",
+              "sha256": "bf1cf449ef7c72941f9142cb366fb50817b3dd194ff5f4a89e6d59816bb154c4"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-liquid_return_false_false.png",
+              "sha256": "e6cbb0e601e26b620cae818edbc50b52b73211f3b2699f9bfa4a9e6e4e1955a8"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-liquid_open_false_true.png",
+              "sha256": "eb9e65d74249aab07b1c2a280fbf24f339a84a0558adbcec94cd22806c8b2836"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-liquid_return_false_true.png",
+              "sha256": "71ab44e23aba256fc8fa6b2324970347634500e96a9c9a39a124fb57fde1d3a2"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-liquid_open_true_false.png",
+              "sha256": "b20c5c5e9c17673b7bee6b7e3f77a6b602d0203cb0b572feaecddbd3e50dfefc"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-liquid_return_true_false.png",
+              "sha256": "454e17d1f9928517dbb511a21fbbf299fa0826a4fb67ac804ee7388ee8c17572"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-liquid_open_true_true.png",
+              "sha256": "85ae08ae7d06d1d16d7653c39e63800dead39efb926f9d3490c5bb4cf003f150"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-liquid_return_true_true.png",
+              "sha256": "42c5cd20b403676d9a73cbdd3813cb54e291eb1968e2cece3c9928485d43b563"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": true,
+          "seconds": 6.13,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-1.log",
+          "sha256": "62a8f7d9272270651348d27a783ba55d2720a4f4a6718a2475a911aedb2cda3a",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "passed": true,
+          "seconds": 6.07,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-2.log",
+          "sha256": "4dd20f419111f16916db2952c421989d7946c50d69a674b4b1d7015c7d86f1b9",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": true,
+          "seconds": 4.92,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-3.log",
+          "sha256": "d50d89589d1354e3f17a4ff05c6fb5c9a50a83563e769069175ad0ee752a8892",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 13.39,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-4.log",
+          "sha256": "82dc82fe58f37bcc8d8253a4cfb151b99ce6d875911ee7ab69765b6d019ebdf6",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-main_menu_profile_root_false.png",
+              "sha256": "1c795796150991a61b767b5cb726bcfabcd25f2039dca032180b7e6c0343b4f6"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-main_menu_profile_more_false.png",
+              "sha256": "5a29b55f7cad1898531995905d754788b86c1cbf9e21ed1832ab95d10479153a"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-main_menu_profile_root_true.png",
+              "sha256": "40e7f7d2a24308423a86db4af8f78fee5532f216a5e3bb62b39f91b67ef175fe"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-main_menu_profile_more_true.png",
+              "sha256": "f5257f49408d20ee2c3bc9528bcd22385f6363f4012165f9b008a518d3800a82"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 5.81,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-5.log",
+          "sha256": "5a1267ab114a9ef30c3627d951519fb9612d62d7b536e85a1d6f54d80b4b0a83",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-main_menu_keyboard_context.png",
+              "sha256": "04d5afda4043cb09d6f190c1b40b42673e604a2a87c7b2a889b3700dd923d216"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 5.77,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-6.log",
+          "sha256": "f62583f6e1fac381dfd83de9ca356c05b9e9e16de3e5c4fba49d0deb9b194ce2",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 6.43,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-7.log",
+          "sha256": "cc4e10d9e4105cbbd854e7c7e787336241b484b49d2d25243516385387f4af9f",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-main_menu_long_menu.png",
+              "sha256": "bbb54a049a32c897666b1501faa95f3c3c44965974ca3d3a6f6be4b8f80d1059"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 9.28,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-8.log",
+          "sha256": "54e0eb51f80ee3a919ab0cbcff1d895e2b794c39e56f0cb69417ce28b7addabb",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-main_menu_proxy_sort.png",
+              "sha256": "97f79f9d1d0345468695bc6e3c0e45e5db8df8057f46e1e2b5303c65147be350"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#scrolledRootSubmenuResetsScrollAndReturnsWithoutMovingAnchorOrDuplicatingAction",
+          "passed": true,
+          "seconds": 9.14,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-9.log",
+          "sha256": "b46ee3beaab363d2b3b45c931ff21459c6592be93ab916ee3992798ae6cccd21",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#fullPreviewKeepsToolbarWhileScrollingSearchingAndClosingWithSystemBack",
+          "passed": true,
+          "seconds": 8.97,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-10.log",
+          "sha256": "5216d2bc1825c2ec04d7356b150dbbda41ff7a5f1bf9255d98dcfb68d775f382",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#documentBackConfirmationKeepsDraftUntilSaveOrDiscardAfterPageEntrance",
+          "passed": true,
+          "seconds": 6.86,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-11.log",
+          "sha256": "f14dd908352a6fd79daad0e8101d3ad328dd2bcd4311baab0afe44ae7440b254",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+          "passed": true,
+          "seconds": 12.13,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-12.log",
+          "sha256": "3f23c542b6f38f6c16d5ec7a6a5eb61cbce8121d68cb775d2ca047d00a220ebd",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-profile_document_light_failed_search.png",
+              "sha256": "30294a22de70827aff34250ae0b1ac65cef02e69a533e3994df95ef97c42f5a9"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-profile_document_dark_exit.png",
+              "sha256": "428b7ecfa2dd5f8f71f1c50beac694a08b5dd83dd4f660f8d71d0359e6da3d4d"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilePreviewInstrumentedTest#noncurrentPreviewRendersBothThemesAndSupportsFailureRetryAndClose",
+          "passed": true,
+          "seconds": 5.29,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-13.log",
+          "sha256": "25e4ceda5fdb564f73ff531360c02e0b3a76cf1fd5202049f2afc6715b381500",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-profile_noncurrent_preview_light.png",
+              "sha256": "c16bfcced40b89351350e124b9ea4d33ab5b9617164eef89989209f67d5eab89"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-profile_noncurrent_preview_dark.png",
+              "sha256": "4005a1cfdda68309e88221fc3a10de03854ee9a8bceb684b193b5f628f19394f"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+          "passed": true,
+          "seconds": 21.57,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-14.log",
+          "sha256": "d274f35a8c6adf5fa2125576e623609da8793f5547959d973ff61f0aaac29bcc",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-provider_option_picker_false.png",
+              "sha256": "5bd013e1d1c280c2bc7981d1f486de352a2243762a360c1134a4a6dd854faf17"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-provider_ip_picker_false.png",
+              "sha256": "5084a8f9dc0df84a9d76f488980e69251da352316c7f787c470f6e60b05fba5f"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-provider_options_error_false.png",
+              "sha256": "b8f1f2088bba3d11f1efa4b21fcecfb9db8c49841a2de134a2d5a3ffbca3df33"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-provider_option_picker_true.png",
+              "sha256": "a9073eaae90851b5852a19e8cd2fd1d8ee5f9b162ad4e3ebabecccc86f4a6a66"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-provider_ip_picker_true.png",
+              "sha256": "99c3ef791587a0a18d840e11eedff45a3dca9fe7c48253b3fe7e0c1cc767875d"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-provider_options_error_true.png",
+              "sha256": "aac8c87f10cb9b7dc6a47631ea9cc743732c7046f5352dd07deffdfd0c96ab0e"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#localDirectoryDragScrollsCancelsAndSavesOnceThenSearchDisablesSorting",
+          "passed": true,
+          "seconds": 8.48,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-15.log",
+          "sha256": "0d8ab2f135a0852f448be8aeceb96a77f4b83fbebc419f19bb57e38bbcb3d0fc",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-local_proxies_drag_saved.png",
+              "sha256": "5012d240707a135b5dcec8cb67eff7452548bce3d452570ddfc9beebb70c1f94"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#linkDraftErrorsReplacementAndDiscardRenderInBothThemes",
+          "passed": true,
+          "seconds": 13.86,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-16.log",
+          "sha256": "55f5f1a817dfdcb6e575c4e45de0b137623714c1466c7ca220bc2ec4362f5cd0",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-local_proxy_links_error_false.png",
+              "sha256": "344a427504417d749065d34116b61f0d684aa425965d76c7f1ef51f31c5a930e"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-local_proxy_links_discard_false.png",
+              "sha256": "81fa6a63004153fb57122cf813772a78679c1ede151b7959b625a9846e871d31"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-local_proxy_links_replacement_false.png",
+              "sha256": "d465396c95b8008dc7491d583182a313906862172e882445e5c5de0edd799367"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-local_proxy_links_error_true.png",
+              "sha256": "d235392d09a96c5548b4d0bc616fbbc0427af590e820b9846252a79d55e949a0"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-local_proxy_links_discard_true.png",
+              "sha256": "3cb9330025d13b288bd5795f9060b23a0447985534002f1f082b6cb0341797b6"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-local_proxy_links_replacement_true.png",
+              "sha256": "db17bcf5f63f49bfd67162e54f42141f48dc3f2684216be3bf2112bcd5babe75"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest#bothResourcePagesSortInBothThemesAndRetainOrderOnSaveFailure",
+          "passed": true,
+          "seconds": 10.97,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-17.log",
+          "sha256": "9f27b5b83908f2270999676aea7b8d27c83438cab5f055e5ad0a9c14f0abfe39",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-rule_resources_sort_false.png",
+              "sha256": "b689390e290e8eeda47c9a418562400b96233e198733a194b329482986fe7144"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-icon_sets_sort_false.png",
+              "sha256": "76fdbf930ade1df43f14d1f522bb9e9f39cafc5d3e3c07b63397f632ab30a98b"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-rule_resources_sort_true.png",
+              "sha256": "ae5c0e28876d0f933a7dadeb65a1472b9d4bdf81f0bdd00217accd6068c2af76"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-icon_sets_sort_true.png",
+              "sha256": "49dc4c6571b96c280ac24bcd306f2eb5c066510acac4ef8d5d732b1235ad4949"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest#viewportDragScrollsWithoutNewMovesCancelsAndCommitsOnlyOnDrop",
+          "passed": true,
+          "seconds": 6.68,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-18.log",
+          "sha256": "5045925236ce28cf1cabdfd70355a5797c2be8912c48ee1db43bd53e2612130c",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-final12-resource_order_drag_saved.png",
+              "sha256": "6563f1a29b7f9e46e0d02a3ed7449644cc1a7d2cca78814fd3d3b2253601036b"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileClosureUiInstrumentedTest#orderPageStagesReconcilesAndRetainsFailedSaveInBothThemes",
+          "passed": true,
+          "seconds": 5.69,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-19.log",
+          "sha256": "f892951516cdddae7a6ab0ea5bbbcef05f011a68a22ab46b21a28724b14f53a1",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "seconds": 9.43,
+          "log": "/tmp/kclash-liquid-subpages-20261104-final12-20.log",
+          "sha256": "37b8cb015d17243ba3327d480942bb08f5236007561a3f806bb1bcf2ed08311b",
+          "images": []
+        }
+      ],
+      "testApkSha256": "00f98aa06456d684181653d3d1adeaf38ebeeb0914edc86687f0afa499415dc4",
+      "production": "build12"
+    },
+    {
+      "label": "supplement13",
+      "passed": 3,
+      "total": 3,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 16.19,
+          "log": "/tmp/kclash-liquid-subpages-20261104-supplement13-0.log",
+          "sha256": "06ecb9393eb056abbc0a0c271cdf98fdbf460e010ba214d1d05e59012e0584fc",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-liquid_open_false_false.png",
+              "sha256": "d8ebfd45ce01a5861df1b3e53a38dfb75aab19f6e3d94f268c1d89566ad8e2e6"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-liquid_return_false_false.png",
+              "sha256": "2581954431e571ea20a01c20b0496af054e3e8147c8665a3b8fce0370c59a3ca"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-liquid_open_false_true.png",
+              "sha256": "b311f3cc08d13895a1800a1145f99b34f5aa937387c6705dc81d0dc1fe492bb9"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-liquid_return_false_true.png",
+              "sha256": "aaedbec2ccdf6a87a4fb8916b4c0ed508bd60c71c91a53494d6ae52819cee3ab"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-liquid_open_true_false.png",
+              "sha256": "93edd70833ebba9093aaec8fd98a2a816cd0789811a1920a6a24c9956492174d"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-liquid_return_true_false.png",
+              "sha256": "1b1be6ae7a938e6f1384e02bb72334def34b4636a5d18b8157fa041e23da9d3c"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-liquid_open_true_true.png",
+              "sha256": "69e7871742fcb1354b25cff9e681bbe4029ebdf1279bfcf76a587be85350f550"
+            },
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-liquid_return_true_true.png",
+              "sha256": "a06792736159a3dbae172a2dc4ef33652cd6396ceee296e6c0fd40884a4afbb9"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest#longDocumentSearchScrollsToMatchAndCopyExcludesGutter",
+          "passed": true,
+          "seconds": 11.0,
+          "log": "/tmp/kclash-liquid-subpages-20261104-supplement13-1.log",
+          "sha256": "613279f69069f12c56b91871f155eded2c03f9074c4272ea654d887805789e84",
+          "images": [
+            {
+              "path": "/tmp/kclash-liquid-subpages-20261104-supplement13-profile_document_long_match.png",
+              "sha256": "d3eca5975f120f7133394a7fbfd649c2c01c618069f180300ecae6a07f1ae3de"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityOpensFilterPresetsAndBothResourceUrlFormsWithoutChangingProfiles",
+          "passed": true,
+          "seconds": 12.88,
+          "log": "/tmp/kclash-liquid-subpages-20261104-supplement13-2.log",
+          "sha256": "a001e31f8fc0cbebe7134d243ec4862600c695bc9cee21177b0d61fd27369c8b",
+          "images": []
+        }
+      ],
+      "testApkSha256": "917d2dce744a7777b68cb7e4a34f00553b8607de9cf1aa210bc5e17526c6a13c",
+      "production": "build12"
+    }
+  ],
+  "previousDevice": {
+    "device": {
+      "model": "Redmi Note 8 Pro",
+      "sdk": "36",
+      "abi": "arm64-v8a",
+      "serial": "wsvwypiz7xwslvl7",
+      "size": "Physical size: 1080x2340"
+    },
+    "settings": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "animator_duration_scale": "1.0",
+      "animatorDurationNamespace": "global"
+    },
+    "artifacts": {
+      "com.lonnnnnng.flclash": {
+        "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "fea67ef7f5d378e7dc3ad57577db7c67c591e63a2aca3706c25e195874c30c8c",
+        "installedSha256": "fea67ef7f5d378e7dc3ad57577db7c67c591e63a2aca3706c25e195874c30c8c",
+        "bytes": 90682722,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "917d2dce744a7777b68cb7e4a34f00553b8607de9cf1aa210bc5e17526c6a13c",
+        "installedSha256": "917d2dce744a7777b68cb7e4a34f00553b8607de9cf1aa210bc5e17526c6a13c",
+        "bytes": 3999721,
+        "nativeAbis": []
+      }
+    },
+    "release": {
+      "sha256": "486f62be475838b223c849d11e792ab3897f5328b1c38bcd35567101346de42c",
+      "bytes": 48111460,
+      "signed": false,
+      "installed": false
+    },
+    "servicesPresent": false,
+    "tun0Present": false,
+    "sourceYaml": {
+      "localSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+    },
+    "flutterReferenceInstalled": true
+  }
+}

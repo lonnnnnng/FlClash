@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import com.lonnnnnng.flclash.MainActivity
 import com.lonnnnnng.flclash.ConnectionAcceptanceEntryPoint
@@ -38,8 +39,8 @@ class ResourceOrderHostInstrumentedTest {
                 open(gallery)
                 compose.waitUntil(5_000) { compose.onAllNodesWithTag("${tag}_sort").fetchSemanticsNodes().isNotEmpty() }
                 compose.onNodeWithTag("${tag}_sort").performClick()
-                compose.onNodeWithTag("${tag}_order_list").performScrollToNode(hasTestTag("${tag}_up_${ids.last()}"))
-                compose.onNodeWithTag("${tag}_up_${ids.last()}").performClick()
+                compose.onNodeWithTag("${tag}_order_list").performScrollToNode(hasTestTag("${tag}_order_${ids.last()}"))
+                compose.onNodeWithTag("${tag}_order_${ids.last()}").performOrderAccessibilityAction(compose, "上移")
                 compose.waitUntil(5_000) { runBlocking {
                     val now = if (gallery) entry.icons().all().map { it.id } else entry.rules().all().map { it.id }
                     now.takeLast(2) == ids.reversed()

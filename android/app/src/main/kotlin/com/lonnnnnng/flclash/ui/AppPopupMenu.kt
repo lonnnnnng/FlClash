@@ -8,6 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -33,6 +36,12 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.TextStyle
@@ -44,6 +53,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
+import kotlinx.coroutines.delay
 
 internal enum class AppMenuPlacement { OVER_ANCHOR_END, BELOW_POINT }
 internal data class AppMenuInsets(val left: Int, val top: Int, val right: Int, val bottom: Int)
@@ -82,19 +92,25 @@ internal class AppMenuPositioner(private val margin: Int, private val gap: Int) 
     }
 }
 
-/** 作者 long：只旁听最初落点，不认领触摸；卡片原有点击、长按和滚动仍由combinedClickable处理。 */
+/** 作者 long：长按前只记录落点；越过拖选阈值后才认领，避免菜单释放后又点击卡片。 */
 @Stable
 internal class AppContextMenuAnchor {
     var bounds by mutableStateOf(IntRect.Zero)
     var point by mutableStateOf<IntRect?>(null)
     private var pointerAt = 0L
     private var pointer = Offset.Zero
-    fun record(position: Offset) { pointer = position; pointerAt = SystemClock.uptimeMillis() }
+    private var pointerPressed = false
+    val carry = AppMenuCarry()
+    fun record(position: Offset) { pointer = position; pointerAt = SystemClock.uptimeMillis(); pointerPressed = true }
+    fun finishPointer(cancelled: Boolean) { pointerPressed = false; if (cancelled) carry.cancel() else carry.finish() }
     fun open(fromKeyboard: Boolean = false) {
-        val p = if (!fromKeyboard && SystemClock.uptimeMillis() - pointerAt < 1_500) pointer
+        // 作者 long：读屏长按也会调用此入口，但没有按下的物理指针；只能真实按住时保留宿主焦点，否则菜单无法接管系统返回。
+        val touchHeld = !fromKeyboard && pointerPressed
+        val p = if (touchHeld && SystemClock.uptimeMillis() - pointerAt < 1_500) pointer
             else Offset(0f, bounds.height.toFloat())
         val x = bounds.left + p.x.toInt(); val y = bounds.top + p.y.toInt()
         point = IntRect(x, y, x, y)
+        if (touchHeld) carry.start(Offset(x.toFloat(), y.toFloat())) else carry.cancel()
     }
 }
 
@@ -102,10 +118,17 @@ internal fun Modifier.appContextMenuAnchor(anchor: AppContextMenuAnchor, enabled
     onGloballyPositioned { anchor.bounds = it.boundsInWindow().roundToIntRect() }
         .pointerInput(anchor) {
             awaitPointerEventScope {
-                while (true) {
-                    awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.pressed && !it.previousPressed }
-                        ?.let { anchor.record(it.position) }
-                }
+                try { while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                    event.changes.firstOrNull()?.let { change ->
+                        if (change.pressed && !change.previousPressed) anchor.record(change.position)
+                        if (change.pressed) {
+                            anchor.carry.move(change.position + Offset(anchor.bounds.left.toFloat(), anchor.bounds.top.toFloat()), viewConfiguration.touchSlop)
+                            if (anchor.carry.dragging) change.consume()
+                        }
+                        if (!change.pressed && change.previousPressed) anchor.finishPointer(change.isConsumed || event.type != PointerEventType.Release)
+                    }
+                } } finally { anchor.finishPointer(cancelled = true) }
             }
         }.onPreviewKeyEvent { event ->
             val menuKey = event.nativeKeyEvent.keyCode == AndroidKeyEvent.KEYCODE_MENU ||
@@ -119,6 +142,7 @@ internal fun Modifier.appContextMenuAnchor(anchor: AppContextMenuAnchor, enabled
         }
 
 private val LocalAppMenuEnabled = staticCompositionLocalOf { true }
+private val LocalAppMenuAction = staticCompositionLocalOf<(((()->Unit)) -> Unit)?> { null }
 
 @Composable
 internal fun AppMenuSubmenuArrow() {
@@ -136,21 +160,32 @@ internal fun AppDropdownMenu(
     avoid: IntRect? = null,
     pageKey: Any? = Unit,
     onNavigateBack: (() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit,
+    source: AppMenuSource? = null,
+    carriedPointer: AppMenuCarry? = null,
+    content: @Composable ColumnScope.(Any?) -> Unit,
 ) {
     val visible = remember { MutableTransitionState(false) }
-    visible.targetState = expanded
-    if (!visible.currentState && !visible.targetState) return
+    var present by remember { mutableStateOf(false) }
+    var requestedClose by remember { mutableStateOf(false) }
+    var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val expandedLatest by rememberUpdatedState(expanded)
+    val active = expanded && !requestedClose
+    visible.targetState = active
+    if (!expanded && !present && !requestedClose) return
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val dismiss by rememberUpdatedState(onDismissRequest)
     val back by rememberUpdatedState(onNavigateBack)
     DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) dismiss() }
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) { pendingAction = null; source?.hidden = false; dismiss() } }
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer) }
     }
     val density = LocalDensity.current
     val direction = LocalLayoutDirection.current
+    val glass = LocalAppMenuGlass.current
+    val hostView = LocalView.current
+    val frostLayer = rememberGraphicsLayer()
+    var backdrop by remember { mutableStateOf<ImageBitmap?>(null) }
     val safe = WindowInsets.safeDrawing
     val insets = AppMenuInsets(safe.getLeft(density, direction), safe.getTop(density),
         safe.getRight(density, direction), safe.getBottom(density))
@@ -158,10 +193,61 @@ internal fun AppDropdownMenu(
     val positioner = remember(margin, gap) { AppMenuPositioner(margin, gap) }
     var parentBounds by remember { mutableStateOf(IntRect.Zero) }
     var menuPosition by remember { mutableStateOf(IntOffset.Zero) }
+    var sourceImage by remember { mutableStateOf<ImageBitmap?>(null) }
     val opening = remember { Animatable(0f) }
-    LaunchedEffect(expanded) {
-        if (expanded) { opening.snapTo(0f); opening.animateTo(.45f, tween(450, easing = LinearEasing)) }
+    val returning = remember { Animatable(0f) }
+    var returnFrom by remember { mutableFloatStateOf(.45f) }
+    val sourceReady = sourceImage != null
+    val close: () -> Unit = { if (active) requestedClose = true }
+    val carry = carriedPointer ?: remember { AppMenuCarry() }
+    var sourceHeld by remember(expanded) { mutableStateOf(expanded && carriedPointer?.armed == true) }
+    LaunchedEffect(carry.armed) { if (!carry.armed) sourceHeld = false }
+    val registry = remember { AppMenuCarryRegistry() }
+    var scrollable by remember { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
+    LaunchedEffect(carry.position, carry.dragging, active, pageKey) {
+        val hovered = if (active && carry.dragging) registry.items.entries.firstOrNull {
+            it.value.enabled && carry.position?.let(it.value.bounds::contains) == true
+        }?.key else null
+        if (hovered != registry.hovered && hovered != null) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        registry.hovered = hovered
+        val item = registry.items[hovered]
+        if (item?.submenu == true) { delay(400); if (active && carry.armed) { item.action(); registry.hovered = null; carry.dragging = false } }
     }
+    LaunchedEffect(carry.release) {
+        if (carry.release > 0 && active) {
+            registry.items[registry.hovered]?.takeIf { it.enabled && !it.submenu }?.action?.invoke()
+            registry.hovered = null
+        }
+    }
+    LaunchedEffect(active) {
+        if (active) {
+            present = true
+            opening.snapTo(0f)
+            returning.snapTo(0f)
+            sourceImage = source?.capture()
+            source?.hidden = sourceImage != null
+            // 作者 long：原按钮隐藏后的宿主帧才可作为磨砂背景，否则玻璃会留下按钮的蓝色残影。
+            if (glass) withFrameNanos { }
+            backdrop = if (glass) captureAppMenuBackdrop(hostView) else null
+            opening.animateTo(.45f, tween(450, easing = LinearEasing))
+        } else {
+            returnFrom = opening.value
+            returning.snapTo(0f)
+            val duration = if (sourceReady) 500 else 200
+            returning.animateTo(duration / 1000f, tween(duration, easing = LinearEasing))
+            source?.hidden = false
+            // 作者 long：源按钮重新接管绘制后才打开目标子页，避免新Window先出现导致液滴被截断；外部状态撤销不执行旧操作。
+            val action = pendingAction.takeIf { expandedLatest && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
+            pendingAction = null
+            if (requestedClose) { if (action == null) dismiss() else action() }
+            sourceImage = null; backdrop = null
+            carry.cancel(); registry.hovered = null
+            present = false
+            requestedClose = false
+        }
+    }
+    DisposableEffect(source) { onDispose { source?.hidden = false } }
     // 作者 long：菜单窗口始终以宿主Window原点布局，锚点使用boundsInWindow，避免把状态栏偏移重复计算。
     val windowOrigin = remember { object : PopupPositionProvider {
         override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection, popupContentSize: IntSize): IntOffset {
@@ -169,56 +255,94 @@ internal fun AppDropdownMenu(
             return IntOffset.Zero
         }
     } }
-    Popup(popupPositionProvider = windowOrigin, onDismissRequest = { (back ?: dismiss)() },
-        properties = PopupProperties(focusable = true, clippingEnabled = false)) {
+    Popup(popupPositionProvider = windowOrigin, onDismissRequest = { (back ?: close)() },
+        // 作者 long：源长按尚未抬手时不抢Window焦点，原指针才能持续送到源控件；释放后恢复键盘和系统返回接管。
+        properties = PopupProperties(focusable = !sourceHeld, clippingEnabled = false)) {
         val focus = LocalFocusManager.current
-        Box(Modifier.fillMaxSize().focusGroup().testTag("app_popup_window").onPreviewKeyEvent { event ->
+        Box(Modifier.fillMaxSize().focusGroup().testTag("app_popup_window").pointerInput(carry, scrollable) {
+            try { awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                if (scrollable) { carry.cancel(); return@awaitEachGesture }
+                carry.start(down.position)
+                do {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                    val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                    if (change.pressed) carry.move(change.position, viewConfiguration.touchSlop)
+                    if (carry.dragging && change.pressed) change.consume()
+                    if (!change.pressed) { if (change.isConsumed || event.type != PointerEventType.Release) carry.cancel() else carry.finish(); break }
+                } while (true)
+            } } finally { carry.cancel() }
+        }.onPreviewKeyEvent { event ->
             when {
-                event.key == Key.Escape -> { if (event.type == KeyEventType.KeyUp) (back ?: dismiss)(); true }
+                event.key == Key.Escape -> { if (event.type == KeyEventType.KeyUp) (back ?: close)(); true }
                 event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown -> focus.moveFocus(FocusDirection.Next)
                 event.type == KeyEventType.KeyDown && event.key == Key.DirectionUp -> focus.moveFocus(FocusDirection.Previous)
                 else -> false
             }
         }) {
-            Box(Modifier.matchParentSize().testTag("app_popup_outside").pointerInput(Unit) { detectTapGestures { dismiss() } })
+            Box(Modifier.matchParentSize().testTag("app_popup_outside").pointerInput(active) { detectTapGestures { close() } })
             Layout(content = {
-                AnimatedVisibility(visibleState = visible,
-                    enter = fadeIn(tween(1)),
-                    exit = fadeOut(tween(200)) + scaleOut(tween(200), targetScale = .8f, transformOrigin = TransformOrigin(1f, 0f))) {
+                AppMenuVisibility(sourceReady, visible) {
                     val shape = AppSuperellipseShape(24.dp)
                     val dark = LocalKClashDarkTheme.current
                     val surface = if (dark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceBright
                     val morph: (androidx.compose.ui.geometry.Size) -> AppMenuMorphFrame = { size ->
-                        val origin = anchor ?: parentBounds
+                        val origin = source?.bounds?.takeUnless { it == IntRect.Zero } ?: anchor ?: parentBounds
                         val localAnchor = Rect((origin.left - menuPosition.x).toFloat(), (origin.top - menuPosition.y).toFloat(),
                             (origin.right - menuPosition.x).toFloat(), (origin.bottom - menuPosition.y).toFloat())
-                        appMenuMorphFrame(localAnchor, size, opening.value, density.density)
+                        if (!active && sourceReady) appMenuReturnFrame(localAnchor,
+                            appMenuMorphFrame(localAnchor, size, returnFrom, density.density, true), returning.value, density.density)
+                        else appMenuMorphFrame(localAnchor, size, opening.value, density.density, sourceReady)
                     }
                     Surface(modifier.widthIn(min = 160.dp, max = 280.dp).width(IntrinsicSize.Max)
                         .dropShadow(AppMenuMorphShape(morph), Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
                             color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp)))
-                        .appMenuMorph(surface, morph)
-                        .testTag("app_popup_menu").semantics { paneTitle = "菜单" }, shape = shape, color = surface) {
-                        CompositionLocalProvider(LocalAppMenuEnabled provides expanded) {
+                        .appMenuMorph(surface, morph, sourceImage, backdrop,
+                            Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()), frostLayer)
+                        .testTag("app_popup_menu").semantics { paneTitle = "菜单" }, shape = shape, color = Color.Transparent, contentColor = MaterialTheme.colorScheme.onSurface) {
+                        CompositionLocalProvider(LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
+                            LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {
                             // 作者 long：子菜单内容增减时保留右上角停靠并平滑调整高度；切页另起滚动位置，避免根菜单滚到底后遮住子页的返回入口。
-                            val scroll = remember(pageKey) { ScrollState(0) }
-                            Column(Modifier.animateContentSize(spring(dampingRatio = .85f, stiffness = 500f), Alignment.TopEnd)
-                                .verticalScroll(scroll).padding(8.dp), content = content)
+                            AnimatedContent(pageKey, transitionSpec = {
+                                (fadeIn(tween(168, 20)) + scaleIn(tween(420), initialScale = .88f, transformOrigin = TransformOrigin(1f, 0f))) togetherWith
+                                    (fadeOut(tween(136)) + scaleOut(tween(340), targetScale = .94f, transformOrigin = TransformOrigin(1f, 0f))) using
+                                    SizeTransform(clip = false, sizeAnimationSpec = { _, _ -> spring(.85f, 500f) })
+                            }, contentAlignment = Alignment.TopEnd, label = "menuLevels") { level ->
+                            val scroll = remember(level) { ScrollState(0) }
+                            val hasScroll = scroll.maxValue > 0
+                            SideEffect { if (level == pageKey) scrollable = hasScroll }
+                            Column(Modifier.then(if (level != pageKey) Modifier.clearAndSetSemantics {} else Modifier)
+                                .verticalScroll(scroll).padding(8.dp).graphicsLayer {
+                                    val time = if (active) opening.value else returning.value
+                                    val blur = if (active) (4f * (1f - (time / .25f).coerceIn(0f, 1f))) else (8f * (time / .1f).coerceIn(0f, 1f))
+                                    renderEffect = if (blur > .1f && android.os.Build.VERSION.SDK_INT >= 31) BlurEffect(blur * density.density, blur * density.density) else null
+                                }) { CompositionLocalProvider(LocalAppMenuEnabled provides (active && level == pageKey)) { content(level) } }
+                            }
                         }
                     }
                 }
             }) { children, constraints ->
+                // 作者 long：可见性动画移除子树与回源回调完成可能相差一帧，空帧仍保留窗口，不能解引用不存在的菜单。
+                if (children.isEmpty()) return@Layout layout(constraints.maxWidth, constraints.maxHeight) {}
                 val available = constraints.copy(minWidth = 0, minHeight = 0,
                     maxWidth = (constraints.maxWidth - insets.left - insets.right - margin * 2).coerceAtLeast(0),
                     maxHeight = (constraints.maxHeight - insets.top - insets.bottom - margin * 2).coerceAtLeast(0))
                 val child = children.single().measure(available)
-                val point = positioner.position(anchor ?: parentBounds, IntSize(constraints.maxWidth, constraints.maxHeight),
+                val point = positioner.position(source?.bounds?.takeUnless { it == IntRect.Zero } ?: anchor ?: parentBounds, IntSize(constraints.maxWidth, constraints.maxHeight),
                     IntSize(child.width, child.height), insets, placement, avoid)
                 menuPosition = point
                 layout(constraints.maxWidth, constraints.maxHeight) { child.place(point.x, point.y) }
             }
         }
     }
+}
+
+/** 作者 long：液滴由回源时钟负责保留绘制层；透明度不变的AnimatedVisibility会立即移除内容，不能承担500ms回源。 */
+@Composable
+private fun AppMenuVisibility(sourceReady: Boolean, visible: MutableTransitionState<Boolean>, content: @Composable () -> Unit) {
+    if (sourceReady) Box { content() }
+    else AnimatedVisibility(visibleState = visible, enter = fadeIn(tween(1)),
+        exit = fadeOut(tween(200)) + scaleOut(tween(200), targetScale = .8f, transformOrigin = TransformOrigin(1f, 0f))) { content() }
 }
 
 /** 作者 long：菜单统一采用浮层底色与16dp行圆角；禁用项保留可读标签和禁用语义，退出动画期间不能再次提交。 */
@@ -231,12 +355,29 @@ internal fun AppDropdownMenuItem(
     trailingIcon: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
     danger: Boolean = false,
+    dismissOnClick: Boolean = true,
+    opensSubmenu: Boolean = false,
 ) {
     val active = enabled && LocalAppMenuEnabled.current
     val color = (if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
         .copy(alpha = if (active) 1f else .3f)
     val shape = AppSuperellipseShape(16.dp)
-    Row(modifier.fillMaxWidth().appFocusRing(shape).clip(shape).clickable(enabled = active, role = Role.Button, onClick = onClick)
+    val menuAction = LocalAppMenuAction.current
+    val registry = LocalAppMenuCarry.current
+    val identity = remember { Any() }
+    val action = { if (active) { if (dismissOnClick && menuAction != null) menuAction(onClick) else onClick() } }
+    val latestAction by rememberUpdatedState(action)
+    DisposableEffect(registry, identity) { onDispose { registry?.items?.remove(identity) } }
+    SideEffect {
+        registry?.items?.get(identity)?.let { item ->
+            if (item.enabled != active || item.submenu != opensSubmenu) registry.items[identity] = item.copy(enabled = active, submenu = opensSubmenu)
+        }
+    }
+    Row(modifier.fillMaxWidth().onGloballyPositioned { coordinates ->
+        registry?.items?.set(identity, AppMenuCarriedItem(coordinates.boundsInWindow(), active, opensSubmenu) { latestAction() })
+    }.appFocusRing(shape).clip(shape)
+        .background(if (registry?.hovered == identity) MaterialTheme.colorScheme.onSurface.copy(alpha = .08f) else Color.Transparent)
+        .clickable(enabled = active, role = Role.Button, onClick = action)
         .heightIn(min = 48.dp).padding(horizontal = 12.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         CompositionLocalProvider(LocalContentColor provides color, LocalTextStyle provides TextStyle(fontSize = 15.sp, lineHeight = 20.sp)) {
             if (leadingIcon != null) { Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) { leadingIcon() }; Spacer(Modifier.width(12.dp)) }

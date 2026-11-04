@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
@@ -31,7 +32,7 @@ class ProfileClosureUiInstrumentedTest {
         } } }
         for (theme in listOf(false, true)) {
             compose.runOnIdle { dark = theme; error = null; submitted = emptyList(); reject = true; profiles = profiles.take(2) }
-            compose.onNodeWithTag("profiles_down_1").performClick()
+            compose.onNodeWithTag("profiles_order_1").performOrderAccessibilityAction(compose, "下移")
             compose.runOnIdle { assertTrue(submitted.isEmpty()); profiles = profiles + Profile.custom(3, "新增配置") }
             compose.onNodeWithTag("profiles_order_2").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "第 1 项"))
             compose.onNodeWithTag("profiles_order_save").performClick()

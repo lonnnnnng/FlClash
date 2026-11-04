@@ -199,7 +199,7 @@ internal fun VisualProxyGroupsEditor(
                                     IconButton(onClick = { menuAnchor.open(); menu = true }, enabled = !saving,
                                         modifier = Modifier.appContextMenuAnchor(menuAnchor, enabled = !saving) { menu = true }
                                             .testTag("proxy_group_menu_$index")) { Icon(Icons.Outlined.MoreVert, "策略组操作") }
-                                    AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point,
+                                    AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                                         placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
                                         modifier = Modifier.testTag("proxy_group_actions_$index")) {
                                         AppDropdownMenuItem(text = { Text("复制") }, onClick = {

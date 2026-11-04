@@ -68,7 +68,7 @@ internal fun ProfileProvidersPanel(state: ProfileProvidersUiState, onRetry: () -
                     AppGlyphIcon(AppGlyphs.more, "${provider.name} 更多操作")
                 }
             }
-            AppDropdownMenu(menu == provider.name && !busy, { menu = null }, anchor = menuAnchor.point,
+            AppDropdownMenu(menu == provider.name && !busy, { menu = null }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                 placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
                 modifier = Modifier.testTag("profile_provider_actions_$index")) {
                 AppDropdownMenuItem(text = { Text("预览") }, onClick = { menu = null; onPreview(provider.name) })
