@@ -50,7 +50,7 @@ class ProfilesTestActivity : ComponentActivity() {
                         )
                     },
                 ) { insets ->
-                    Column(Modifier.fillMaxSize().padding(insets).padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Column(Modifier.fillMaxSize().padding(insets).padding(horizontal = 16.dp)) {
                         ProfilesPanel(
                             modifier = Modifier.fillMaxSize(),
                             state = ProfilesUiState(

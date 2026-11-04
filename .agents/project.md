@@ -1,5 +1,20 @@
 # Project Context
 
+## 整页连续动效与全部原配置规则Provider实网（2026-11-04）
+
+主导航采用300ms easeOut整页滑动，标题/正文一起移动、Dock固定；返回保留滚动与草稿视图，跨入口不构建沿途页。代理标签点击立即高亮、选中项居中、末端24dp渐隐，半程拖动取消不写组记忆；配置与代理工具栏72dp、胶囊操作、正文间距和到期标签按Flutter收敛。修复Dock再次轻点当前入口被忽略，工具子页可回根菜单；原地拖动/系统取消不重复导航。
+
+最终生产build3根Wrapper test通过App440/Service188/Core38/Common31共697项，失败/错误/跳过0；Debug/AndroidTest、独立未签名Release/R8及双变体Lint通过，均0错误/62警告（Debug10/Release9 hints）。testbuild4最终UI批次14/15：14项动效、滚动/草稿、深浅Tab/List矩阵、五张严格截图、正文/预览、Dock回归与Fallback协议边界全部通过；第15项因当前唯一授权订阅未提供非空Fallback组失败，保留为未验，不能写成15/15。
+
+原1.yaml的90个HTTP Rule Provider（82 domain/8 ipcidr，均mrs）已逐项实际更新并回读时间前进：首轮32、页面失败项重试55，剩余3由testbuild5正式页面单项更新成功；共90个不同资源，不能称一次90/90全量批次成功。最后3项补验1/1，还验证连续16秒无busy、Activity重建及核心会话保持。首次网络失败原因未确定，不由重试成功推断根因；原配置没有proxy-providers，不能推广全部类型/格式/来源。
+
+Fallback缺失/空/非法now、有效映射/fixed回退和有效now优先，已通过真实Bridge解析→实际VM→Tab/List×深浅主题20种组合；响应由测试替身注入，不是Mihomo自然产出的异常。原1.yaml无Fallback，唯一授权订阅当前也未提供非空Fallback。Mihomo合法非空组的Now最终返回存活项或首项，故无效now实核与Fallback冷进程仍保留边界，不生成或替换YAML。
+
+App/Test已用install -r安装且设备哈希匹配；最终Test为testbuild5，仅对应最后3资源补验，UI14项使用testbuild4，两批生产App相同。网络fixture逐次保护正式1份配置/选择/正文SHA及mtime/VPN，只删除自己的临时ID；原1.yaml双端哈希保持。结束无服务/tun0、旋转1/0、字号1.0。Flutter com.follow.clash仅只读参考，未安装覆盖、卸载、清数据或改配置。授权临时JSON核对后定点移除。
+
+深浅页面/菜单、动画中间帧及Fallback边界截图已目视，五张严格原生基线更新后通过；主题配色与图标仍有差异，不宣称Flutter逐像素一致或全部液滴/玻璃菜单完成。失败批次与包/源码/日志/截图摘要见`docs/acceptance/page-continuity-providers-redmi-20261104.json`，原始附件只留本机/tmp。Go测试未重跑，正式签名Release运行未验；子代理通道失败，未计独立review。备份/系统恢复、观测次要打磨、语言/主题继续暂缓，整体Profiles/UI仍PARTIAL。
+
+
 ## 主页共用面板与 Providers 真实页面复查（2026-11-04）
 
 配置切换、内存、IP质量、服务详情/管理接入自然高度/双停靠共用面板，标题操作固定、正文独立滚动，服务子页系统返回先退一级。重合停靠点去重、内容增减弹簧重排、配置单次选择与隐藏IP整行开关语义已补齐。App440/Service188共628项零失败/错误/跳过，Debug/AndroidTest及独立未签名Release/R8/双变体Lint通过，各0错误/62警告。

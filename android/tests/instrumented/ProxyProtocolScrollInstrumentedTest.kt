@@ -93,6 +93,7 @@ class ProxyProtocolScrollInstrumentedTest {
         node("C", 0).assertIsDisplayed()
         compose.runOnIdle { id = 11 }
         node("C", 36).assertIsDisplayed()
+        compose.onNodeWithTag("proxy_tools").performClick()
         compose.onNodeWithTag("proxy_scroll_to_selected").performClick()
         node("C", 0).assertIsDisplayed()
         tab("A")

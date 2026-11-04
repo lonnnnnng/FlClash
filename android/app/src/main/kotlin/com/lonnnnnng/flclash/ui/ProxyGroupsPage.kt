@@ -33,18 +33,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.LayoutDirection
 import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -86,7 +96,7 @@ private fun ProxyPageToolbar(
     }
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant) {
         Row(
-            Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(start = 16.dp, end = 8.dp)
+            Modifier.fillMaxWidth().heightIn(min = if (picker) 64.dp else 72.dp).padding(horizontal = 16.dp)
                 .testTag("proxy_page_toolbar"),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -121,15 +131,20 @@ private fun ProxyPageToolbar(
                     modifier = Modifier.testTag("proxy_group_search_toggle")) {
                     Icon(Icons.Outlined.Close, "关闭节点搜索", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                primaryAction()
             } else {
                 Text("代理", Modifier.weight(1f), style = TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurface)
-                IconButton(onClick = { onSearchExpandedChange(true) }, modifier = Modifier.testTag("proxy_group_search_toggle")) {
-                    Icon(Icons.Outlined.Search, "搜索节点", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Surface(shape = CircleShape, color = dashboardCardColor()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { onSearchExpandedChange(true) }, modifier = Modifier.size(44.dp).testTag("proxy_group_search_toggle")) {
+                            Icon(Icons.Outlined.Search, "搜索节点", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        primaryAction()
+                    }
                 }
             }
-            primaryAction()
-            if (!searchExpanded && !picker) secondaryActions()
+            if (!searchExpanded && !picker) { Spacer(Modifier.width(8.dp)); secondaryActions() }
         }
     }
 }
@@ -137,15 +152,45 @@ private fun ProxyPageToolbar(
 @Composable
 private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
     val tabsState = rememberLazyListState()
+    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+    val tabStyle = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold)
+    val widths = names.map { name ->
+        maxOf(with(density) { 64.dp.roundToPx() }, textMeasurer.measure(AnnotatedString(name), tabStyle).size.width + with(density) { 32.dp.roundToPx() })
+    }
+    val viewportWidth by remember { derivedStateOf { tabsState.layoutInfo.viewportSize.width } }
+    var initiallyRevealed by remember(names) { mutableStateOf(false) }
     var showGroups by remember { mutableStateOf(false) }
     val hasOverflow by remember { derivedStateOf { tabsState.canScrollForward || tabsState.canScrollBackward } }
-    LaunchedEffect(selectedIndex, names) {
-        if (selectedIndex in names.indices) tabsState.animateScrollToItem(selectedIndex)
+    LaunchedEffect(selectedIndex, names, viewportWidth) {
+        if (selectedIndex in names.indices && viewportWidth > 0) {
+            // 作者 long：与上游标签带一样把选中项尽量放在视口中央，越界由列表夹紧；初次定位不播放从首组跨越而来的动画。
+            val offset = with(density) { 16.dp.roundToPx() } - (viewportWidth - widths[selectedIndex]) / 2
+            if (initiallyRevealed) tabsState.animateScrollToItem(selectedIndex, offset)
+            else { tabsState.scrollToItem(selectedIndex, offset); initiallyRevealed = true }
+        }
     }
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     Row(Modifier.fillMaxWidth().height(36.dp), verticalAlignment = Alignment.CenterVertically) {
         LazyRow(
             state = tabsState,
-            modifier = Modifier.weight(1f).testTag("proxy_group_tabs"),
+            modifier = Modifier.weight(1f).testTag("proxy_group_tabs")
+                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                .drawWithContent {
+                    drawContent()
+                    val info = tabsState.layoutInfo
+                    val last = info.visibleItemsInfo.lastOrNull()
+                    val remaining = if (last?.index == names.lastIndex) (last.offset + last.size - info.viewportEndOffset).toFloat() else 24.dp.toPx()
+                    val fade = if (tabsState.canScrollForward) (remaining / 24.dp.toPx()).coerceIn(0f, 1f) else 0f
+                    if (fade > 0f) {
+                        // 作者 long：只淡化末端尚未露出的标签，接近列表结尾时恢复不透明，提示横向内容而不遮住最后一组。
+                        drawRect(Brush.horizontalGradient(
+                            colors = if (rtl) listOf(Color.Black.copy(alpha = 1f - fade), Color.Black) else listOf(Color.Black, Color.Black.copy(alpha = 1f - fade)),
+                            startX = if (rtl) 0f else (size.width - 24.dp.toPx()).coerceAtLeast(0f),
+                            endX = if (rtl) 24.dp.toPx() else size.width,
+                        ), blendMode = BlendMode.DstIn)
+                    }
+                },
             contentPadding = PaddingValues(start = 16.dp, end = if (hasOverflow) 0.dp else 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -165,7 +210,7 @@ private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (I
                 ) {
                     Box(Modifier.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
                         Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                            style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold))
+                            style = tabStyle)
                     }
                 }
             }
@@ -218,6 +263,9 @@ internal fun ProxyGroupsCard(
     val initialPage = groupNames.indexOf(currentGroupName).coerceAtLeast(0)
     val pagerState = rememberPagerState(initialPage = initialPage) { groups.size }
     val coroutineScope = rememberCoroutineScope()
+    var requestedGroupIndex by remember(currentProfileId, groupNames) { mutableStateOf<Int?>(null) }
+    var groupNavigation by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+    var groupNavigationGeneration by remember { mutableIntStateOf(0) }
     var searchExpanded by rememberSaveable(currentProfileId) { mutableStateOf(picker) }
     var proxyQuery by rememberSaveable(currentProfileId) { mutableStateOf("") }
 
@@ -265,7 +313,7 @@ internal fun ProxyGroupsCard(
                     IconButton(
                         onClick = { onTestGroupDelay(group) },
                         enabled = canRefresh && group.all.isNotEmpty(),
-                        modifier = Modifier.testTag("proxy_group_batch_${group.name}"),
+                        modifier = Modifier.size(44.dp).testTag("proxy_group_batch_${group.name}"),
                     ) {
                         if (state.batchTestingGroup == group.name) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                         else Icon(Icons.Outlined.Bolt, contentDescription = "批量测速")
@@ -273,20 +321,13 @@ internal fun ProxyGroupsCard(
                 }
             },
             secondaryActions = {
-                if (pageOptions.displayMode == ProxyDisplayMode.TAB) selectedGroup?.let { group ->
-                    IconButton(
-                        onClick = { locateTargetGroup = group.name; locateSelectedRequest++ },
-                        enabled = group.all.isNotEmpty(),
-                        modifier = Modifier.testTag("proxy_scroll_to_selected"),
-                    ) { Icon(Icons.Outlined.MyLocation, contentDescription = "定位当前节点") }
-                }
                 Box {
                     IconButton(
                         onClick = {
                             toolsMenuPage = ProxyToolsMenuPage.ROOT
                             toolsExpanded = true
                         },
-                        modifier = Modifier.testTag("proxy_tools"),
+                        modifier = Modifier.size(44.dp).background(dashboardCardColor(), CircleShape).testTag("proxy_tools"),
                     ) {
                         Icon(Icons.Outlined.MoreVert, contentDescription = "代理组工具")
                     }
@@ -298,6 +339,13 @@ internal fun ProxyGroupsCard(
                     ) {
                         when (toolsMenuPage) {
                             ProxyToolsMenuPage.ROOT -> {
+                                // 作者 long：搜索、测速和更多已经占满上游手机工具栏，定位动作折入更多，避免标题被第四个按钮挤压。
+                                if (pageOptions.displayMode == ProxyDisplayMode.TAB) selectedGroup?.let { group ->
+                                    AppDropdownMenuItem(text = { Text("定位当前节点") },
+                                        onClick = { toolsExpanded = false; locateTargetGroup = group.name; locateSelectedRequest++ },
+                                        enabled = group.all.isNotEmpty(), leadingIcon = { Icon(Icons.Outlined.MyLocation, null) },
+                                        modifier = Modifier.testTag("proxy_scroll_to_selected"))
+                                }
                                 selectedGroup?.let { group ->
                                     val summary = state.delaySummary(group)
                                     if (summary.tested > 0 || summary.testing > 0) AppDropdownMenuItem(
@@ -402,6 +450,7 @@ internal fun ProxyGroupsCard(
                 }
             },
         )
+        if (!picker) Spacer(Modifier.height(12.dp))
         // 作者 long：刷新保留旧节点时仍明确展示忙态，卡片选择、菜单和测速一起停用，不能看起来可点却静默拒绝。
         if (state.isLoading && groups.isNotEmpty()) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("proxy_groups_refreshing"))
         state.error?.let { message ->
@@ -417,8 +466,15 @@ internal fun ProxyGroupsCard(
             }
         } else {
             if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
-                ProxyGroupTabs(groups.map { it.name }, selectedGroupIndex) { index ->
-                    coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                ProxyGroupTabs(groups.map { it.name }, requestedGroupIndex ?: selectedGroupIndex) { index ->
+                    // 作者 long：点击立即高亮目标组，手指滑动仍跟随当前页；取消旧点击后只允许最后一个导航清除目标，避免快速连点闪回。
+                    val generation = ++groupNavigationGeneration
+                    groupNavigation?.cancel()
+                    requestedGroupIndex = index
+                    groupNavigation = coroutineScope.launch {
+                        try { pagerState.animateScrollToPage(index, animationSpec = tween(MAIN_PAGE_SLIDE_MILLIS, easing = MainPageSlideEasing)) }
+                        finally { if (groupNavigationGeneration == generation) requestedGroupIndex = null }
+                    }
                 }
                 Spacer(Modifier.height(16.dp))
             }

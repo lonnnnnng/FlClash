@@ -1,5 +1,14 @@
 # Architecture
 
+## 主导航连续滑动与代理标签（2026-11-04）
+
+`MainNavigationHost`在外层Scaffold固定Dock和snackbar，消费底部insets；`MainPageTransition`按目标序号/RTL选择方向，以300ms easeOut移动完整标题和正文。各页由SaveableStateHolder保存布局状态，退场页清语义并消费触摸，非相邻入口只构建起止页；快速反向及草稿/滚动恢复已有真机帧断言。`MainNavigationDock`再次轻点当前项也调用路由，工具子页返回及未保存检查统一走navigateTo；原地拖动和取消不提交。
+
+代理标签宽度由同一字体测量，居中偏移包含16dp起始padding，首帧直接定位、后续滚动；末端24dp使用DstIn渐隐，接近末项时恢复不透明并适配RTL。点击目标立即高亮，取消旧job后generation保护最后目标；Pager落定才持久化组名。配置与代理72dp工具栏、操作胶囊及正文间距共用现有颜色/形状，主题与完整图标parity未在本组替换。
+
+Fallback真实Bridge协议边界通过，但授权订阅与本地原1.yaml均未提供本次可验的非空Fallback。原1.yaml全部90个HTTP规则资源已分三次实网回读（32+55+3）；Go批量更新实现未改，首轮失败原因未知。结果、失败与安装范围见`docs/acceptance/page-continuity-providers-redmi-20261104.json`。
+
+
 ## 主页详情的自然高度与停靠（2026-11-04）
 
 `DashboardModalSheet`复用`ConnectionModalSheet`，标题/操作/返回/关闭位于滚动正文之外；滚动修饰符内部测量正文自然高度，加标题、48dp拖柄和导航安全区。短内容fitsContent，长内容9/16与0.9双停靠；内容增减按原弹簧重排。`ConnectionSheetGeometry`重合停靠点只保留PARTIAL/HIDDEN，拖甩只从有效锚点选目标；原连接详情默认轮廓和行为保留。

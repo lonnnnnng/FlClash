@@ -141,6 +141,8 @@ class MainSurfaceInteractionInstrumentedTest {
         dock.performTouchInput { click(Offset(width * .15f, height + 4.dp.toPx())) }
         compose.runOnIdle { assertEquals(MainDestination.DASHBOARD, selected); assertEquals(3, calls.size) }
         assertEquals(profileBounds, compose.onNodeWithTag("nav_profiles").fetchSemanticsNode().boundsInRoot)
+        compose.onNodeWithTag("nav_dashboard").performTouchInput { click() }
+        compose.runOnIdle { assertEquals(4, calls.size); assertEquals(MainDestination.DASHBOARD, calls.last()) }
     }
 
     @Test fun focusRingFollowsDescendantRatherThanSelectedState() {

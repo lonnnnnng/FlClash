@@ -20,6 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 
 internal enum class MainDestination(val label: String, val icon: ImageVector) {
     DASHBOARD("首页", Icons.Outlined.Home),
@@ -48,6 +51,7 @@ internal fun MainPageScaffold(
     topBarTitle: String? = null,
     topBarNavigationIcon: @Composable (() -> Unit)? = null,
     showTopBar: Boolean = true,
+    showNavigation: Boolean = true,
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -62,14 +66,17 @@ internal fun MainPageScaffold(
         containerColor = pageColor,
         topBar = {
             if (showTopBar) TopAppBar(
-                title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) "仪表盘" else selectedDestination.label) },
+                title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) "仪表盘" else selectedDestination.label,
+                    style = if (selectedDestination == MainDestination.PROFILES) TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold)
+                    else MaterialTheme.typography.titleLarge) },
+                expandedHeight = if (selectedDestination == MainDestination.PROFILES) 72.dp else 64.dp,
                 navigationIcon = topBarNavigationIcon ?: {},
                 actions = topBarActions,
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = pageColor),
             )
         },
         snackbarHost = snackbarHost,
-        bottomBar = { MainNavigationDock(selectedDestination, destinations, onDestinationSelected) },
+        bottomBar = { if (showNavigation) MainNavigationDock(selectedDestination, destinations, onDestinationSelected) },
         floatingActionButton = floatingActionButton,
         content = content,
     )

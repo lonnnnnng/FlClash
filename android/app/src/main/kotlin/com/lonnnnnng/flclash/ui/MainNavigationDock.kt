@@ -164,7 +164,8 @@ internal fun MainNavigationDock(selected: MainDestination, destinations: List<Ma
                                         chosen = (motion.lens.target + lead).roundToInt().coerceIn(chosen - 1, chosen + 1).coerceIn(0, destinations.lastIndex)
                                     }
                                     motion.release(chosen); pointer.consume(); committed = true
-                                    if (chosen != latestIndex) latestSelection(destinations[chosen])
+                                    // 作者 long：再次轻点当前入口也需交给路由处理，工具子页才能回根菜单并执行未保存确认；原地拖动不重复导航。
+                                    if (!drag || chosen != latestIndex) latestSelection(destinations[chosen])
                                     request++
                                     break
                                 }

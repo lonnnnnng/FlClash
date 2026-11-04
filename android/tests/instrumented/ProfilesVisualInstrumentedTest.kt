@@ -40,9 +40,9 @@ class ProfilesVisualInstrumentedTest {
         composeRule.onNodeWithText("已用 3.0GB / 10.0GB").assertIsDisplayed()
 
         val expected = mapOf(
-            "empty" to "e8667f3bbd39ea6d54e6c922c4a251a200bdfad7bc111ea624b722f12ad0d87f",
-            "custom_selected" to "5017976e9005c3678daa555f88547e3abde43586c00161a12e2e53f259f97962",
-            "remote_usage" to "d0243b92595dc16946afd8522dbb1b1c729d260de1cceab1af66c591c42fdd5f",
+            "empty" to "f8730d9a6659e608316e654c8aba803270401979221127fee65204726620c019",
+            "custom_selected" to "9b8a39c5aff0c0559a2779b9dc4558244057e570adeddf87400c7822357c5f92",
+            "remote_usage" to "5ec26e77b54eeb846ba228214be37416d05a374cb2cc40d21110b9f958053bed",
         )
         val mismatches = actual.mapNotNull { (state, hash) ->
             val baseline = expected.getValue(state)

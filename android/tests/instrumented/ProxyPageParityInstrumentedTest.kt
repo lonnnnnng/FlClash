@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -32,6 +34,56 @@ class ProxyPageParityInstrumentedTest {
     }
 
     @After fun restore() { ProxyPageOptionsStore.save(compose.activity, previousOptions) }
+
+    @Test fun pagerDragCancelAndDistantTabTapKeepContinuousFramesAndSettledSelection() {
+        val names = (0..12).map { "分组$it" }
+        val groups = names.map { ProxyGroupInfo(it, "Selector", "node-a", listOf("node-a", "node-b"), false) }
+        var current by mutableStateOf(names.first())
+        val settled = mutableListOf<String>()
+        compose.setContent { KClashTheme {
+            ProxyGroupsCard(state = ProxyGroupsUiState(groups = groups), runtimeState = CoreRuntimeStatus.STOPPED,
+                currentGroupName = current, onSelectGroup = { current = it; settled += it },
+                onRefresh = {}, onSelect = { _, _ -> }, onTestDelay = { _, _ -> }, onTestGroupDelay = {})
+        } }
+        compose.onNodeWithTag("proxy_node_分组0_node-a").assertIsDisplayed()
+        val pager = compose.onNodeWithTag("proxy_groups_pager")
+        compose.mainClock.autoAdvance = false
+        pager.performTouchInput { down(Offset(width * .85f, height * .5f)); moveTo(Offset(width * .6f, height * .5f), 160) }
+        compose.mainClock.advanceTimeByFrame()
+        compose.runOnIdle { org.junit.Assert.assertEquals("分组0", current) }
+        capture("proxy_pager_partial_drag")
+        pager.performTouchInput { cancel() }
+        compose.mainClock.advanceTimeBy(1_000)
+        compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("proxy_group_tab_分组0").assertIsSelected()
+        compose.runOnIdle { org.junit.Assert.assertEquals(listOf("分组0"), settled.distinct()) }
+
+        pager.performTouchInput { swipeLeft(durationMillis = 400) }
+        compose.onNodeWithTag("proxy_group_tab_分组1").assertIsSelected()
+        compose.runOnIdle { org.junit.Assert.assertEquals("分组1", current) }
+        compose.onNodeWithTag("proxy_group_more").performClick()
+        compose.onNodeWithTag("proxy_group_menu_分组10").performScrollTo()
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag("proxy_group_menu_分组10").performClick()
+        compose.mainClock.advanceTimeBy(64)
+        val positions = mutableListOf<Float>()
+        repeat(4) { frame ->
+            compose.mainClock.advanceTimeBy(48)
+            val member = compose.onNodeWithTag("proxy_group_members_分组10").fetchSemanticsNode()
+            positions += member.layoutInfo.coordinates.positionInRoot().x
+            capture("proxy_pager_tap_frame_$frame")
+        }
+        org.junit.Assert.assertTrue("目标页必须持续向左收敛", positions.zipWithNext().all { (a, b) -> b <= a } && positions.first() > positions.last())
+        compose.mainClock.advanceTimeBy(1_000)
+        compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("proxy_group_tab_分组10").assertIsSelected().assertIsDisplayed()
+        compose.onNodeWithTag("proxy_node_分组10_node-a").assertIsDisplayed()
+        compose.runOnIdle { org.junit.Assert.assertEquals("分组10", current) }
+        val strip = compose.onNodeWithTag("proxy_group_tabs").fetchSemanticsNode().boundsInRoot
+        val tab = compose.onNodeWithTag("proxy_group_tab_分组10").fetchSemanticsNode().boundsInRoot
+        org.junit.Assert.assertEquals("中间组应居中显示", strip.center.x, tab.center.x, 3f)
+        capture("proxy_pager_tab_centered")
+    }
 
     @Test fun tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent() {
         var dark by mutableStateOf(false)

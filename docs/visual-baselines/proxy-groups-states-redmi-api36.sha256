@@ -1,9 +1,11 @@
 # KClash Proxy Groups page PNG baselines.
 # Device: Redmi Note 8 Pro, Android 16/API 36, portrait, system font scale 1.0.
 # Fixed fixture with group tabs and inline node grid; no core or network access.
-page_dark sha256=187ea10b6870bfec4cfca1adf74eb585717978eb3772e23ce0c5a3a8ab28154f
-page_light sha256=1f752cf96f37ec08d19da1841a46845b4da087ec51f8b63a390d852b00b8402c
+page_dark sha256=f4273a06a72bd0a3eca0e2902a81ee4f4d792d93c66054cb9e5bf9a052ea08e6
+page_light sha256=0ac02325b11f831bdaffedbb80e45e261bee521f682311770bb89915f0006f8a
 
 # 2026-11-04 主页面连续圆角、分层阴影与Dock静态态已目视；仅锁定原生回归，不表示Flutter逐像素一致。
 
 # 2026-11-04 菜单组：卡片按同一连续圆角显式裁剪涟漪；已比对仅轮廓抗锯齿变化，内部内容保持。
+
+# 2026-11-04 整页动效组：72dp工具栏、胶囊按钮及正文间距对齐上游；配置截图宿主去除额外8dp纵向padding。已目视深浅两主题，新基线只证明原生稳定性。
