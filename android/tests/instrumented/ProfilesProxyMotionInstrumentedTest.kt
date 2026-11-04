@@ -36,7 +36,7 @@ class ProfilesProxyMotionInstrumentedTest {
                 AppDropdownMenu(open, { open = false }, anchor = anchor, pageKey = child,
                     onNavigateBack = if (child) ({ child = false }) else null) { level ->
                     if (level as Boolean) {
-                        AppDropdownMenuItem({ Text("返回") }, { child = false }, Modifier.testTag("motion_menu_back"), dismissOnClick = false, opensSubmenu = true)
+                        AppDropdownMenuItem({ Text("返回") }, { child = false }, Modifier.testTag("motion_menu_back"), dismissOnClick = false, isBack = true)
                         AppDropdownMenuItem({ Text("完成") }, { submissions++; open = false }, Modifier.testTag("motion_menu_submit"))
                     } else {
                         repeat(24) { i -> AppDropdownMenuItem({ Text("选项 $i") }, {}, Modifier.testTag("motion_root_$i")) }
@@ -50,12 +50,13 @@ class ProfilesProxyMotionInstrumentedTest {
         compose.onNodeWithTag("motion_menu_back").assertIsDisplayed()
         val childBounds = compose.onNodeWithTag("app_popup_menu").fetchSemanticsNode().boundsInWindow
         androidx.test.espresso.Espresso.pressBack()
-        compose.onNodeWithTag("motion_root_0").assertIsDisplayed()
+        // 作者 long：物理父卡保留原滚动位置；返回后仍在触发行，不因旧AnimatedContent重建而跳到首项。
+        compose.onNodeWithTag("motion_menu_more").assertIsDisplayed()
         val rootBounds = compose.onNodeWithTag("app_popup_menu").fetchSemanticsNode().boundsInWindow
         assertEquals(rootBounds.right, childBounds.right, 1f)
         assertEquals(rootBounds.top, childBounds.top, 1f)
         compose.onNodeWithTag("motion_menu_more").performScrollTo().performClick()
-        compose.onNodeWithTag("motion_menu_submit").performClick()
+        compose.onNodeWithTag("motion_menu_submit").performScrollTo().performClick()
         compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
         assertEquals(1, submissions)
     }

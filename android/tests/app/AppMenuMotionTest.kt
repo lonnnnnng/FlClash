@@ -19,10 +19,21 @@ class AppMenuMotionTest {
             assertEquals(from.platter.top, first.platter.top, .0001f)
             assertEquals(from.platter.right, first.platter.right, .0001f)
             assertEquals(from.platter.bottom, first.platter.bottom, .0001f)
+            assertEquals(from.blend, first.blend, .0001f)
+            assertEquals(from.blur, first.blur, .0001f)
+            assertEquals(from.sourceAlpha, first.sourceAlpha, .0001f)
             val last = appMenuReturnFrame(anchor, from, .5f, 1f)
             assertEquals(anchor, last.platter); assertEquals(anchor, last.droplet)
             assertEquals(0f, last.progress); assertEquals(1f, last.sourceAlpha)
         }
+    }
+
+    @Test fun submenuClipGrowsFromOwnerWithoutScalingContentHeight() {
+        val size = Size(280f, 400f)
+        assertEquals(Rect(8f, 8f, 272f, 56f), appMenuStackRect(size, 120f, 128f, 48f, 0f, 1f))
+        assertEquals(Rect(Offset.Zero, size), appMenuStackRect(size, 120f, 128f, 48f, 1f, 1f))
+        val over = appMenuStackRect(size, 120f, 128f, 48f, 1.02f, 1f)
+        assertTrue(over.bottom > size.height)
     }
 
     @Test fun returnHasFiniteGeometryAtEveryFrameInBothDirections() {
@@ -51,6 +62,10 @@ class AppMenuMotionTest {
         assertTrue(carry.dragging)
         carry.finish(); carry.finish()
         assertEquals(1, carry.release)
+        carry.cancel()
+        assertEquals(Offset(20f, 20f), carry.releasedPosition)
+        carry.start(Offset.Zero)
+        assertNull(carry.releasedPosition)
     }
 
     @Test fun yamlDecorationPreservesEveryCharacterAndDoesNotExpandLargeInput() {

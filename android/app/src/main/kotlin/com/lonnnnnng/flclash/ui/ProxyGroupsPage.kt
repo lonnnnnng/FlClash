@@ -763,8 +763,8 @@ private fun ProxyGroupIcon(name: String, style: ProxyGroupIconStyle) {
 @Composable
 private fun ProxyMenuBackItem(label: String, onBack: () -> Unit) {
     AppDropdownMenuItem(
-        text = { Text("返回：$label") },
-        onClick = onBack, dismissOnClick = false, opensSubmenu = true,
+        text = { Text(label) },
+        onClick = onBack, dismissOnClick = false, isBack = true,
         modifier = Modifier.testTag("proxy_tools_back"),
     )
 }

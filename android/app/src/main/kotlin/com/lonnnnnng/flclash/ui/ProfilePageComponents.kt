@@ -93,10 +93,28 @@ internal fun ProfileEditorPage(
 @Composable
 internal fun ProfileFormSection(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
+    spacing: androidx.compose.ui.unit.Dp = 12.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(modifier.fillMaxWidth(), shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
+        Column(Modifier.padding(contentPadding), verticalArrangement = Arrangement.spacedBy(spacing), content = content)
+    }
+}
+
+/** 作者 long：结构化选项沿用Flutter同行标签/值，标签最多占半行，右侧输入留给真实内容；分组间距不混入行内。 */
+@Composable
+internal fun ProfileFormRow(title: String, modifier: Modifier = Modifier, leading: (@Composable () -> Unit)? = null,
+    content: @Composable RowScope.() -> Unit) {
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+    val titleLimit = maxWidth / 2
+    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        leading?.invoke()
+        Text(title, maxLines = 2, style = MaterialTheme.typography.bodyLarge,
+            overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = titleLimit))
+        Spacer(Modifier.width(16.dp))
+        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End, content = content)
+    }
     }
 }
 

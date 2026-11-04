@@ -1,5 +1,12 @@
 # Architecture
 
+## 菜单背景光学与可逆层栈（2026-11-04）
+
+- `AppMenuSource`的PixelCopy结果通过`prepareAppMenuBackdrop`在Default后台降采样/三次盒式卷积，分离raw/frosted；取消每16行检查。`AppMenuGlassRenderer` API33+用RuntimeShader/BitmapShader绘制连续圆角SDF、折射/bevel及goo高光，窗口坐标与父层paintScale参与背景采样；低API沿用预模糊背景，尚未真机验证。
+- `AppMenuStackState`保留Level/Owner及每层ScrollState/key。新卡从owner触发行按分段曲线展开，父卡缩小/压暗/减影；同一Animatable收回可反向，退完才remove。外部祖先同步不可被用户返回误反向，标题复用触发行并旋转箭头。后层清语义/禁用命中，露出父卡只返回一级。
+- 交互clip与开场外层morph相交，释放使用最后真实落点重新命中，hitRevision使动画/滚动后重新计算；`maxValue`必须在组合读取后发布可滚动性，不能只在SideEffect里读而漏掉首帧测量变化。回源t=0保留全部材质/blur/sourceAlpha，稳定卡与开场光学层互斥。
+- `ProfileFormRow`承载56dp同行标签/值与右侧编辑，`ProfileFormSection`允许按页面关闭默认内边距/间距；本地代理认证/可选分组、Provider选项与资源引用仅改排版，不改保存、草稿与核心边界。默认玻璃关闭，通用材质/ultra与更多子页仍PARTIAL；旧切片的AnimatedContent/基础磨砂描述为历史状态。
+
 ## 源快照菜单与代码正文视图（2026-11-04）
 
 - `AppMenuSource`记录源按钮GraphicsLayer，在内存快照成功后交接原绘制；没有快照保留普通200ms退场。`AppMenuMorph`/`AppMenuGoo`负责开场、从中断帧回源及距离场桥接；`present`独立保留500ms回源图层，不能依赖未发生透明度变化的AnimatedVisibility生命周期。

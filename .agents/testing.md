@@ -1,5 +1,13 @@
 # Testing
 
+## 菜单玻璃折射、层栈及同行表单（2026-11-04）
+
+菜单使用独立原图/预模糊背景与API33+ AGSL折射/bevel/高光，goo法线及窗口/绘制缩放对齐；深色tint由Flutter实际导出#343537。多层子菜单保留所有父卡/独立滚动，从触发行展开；收回弹簧可反向，退完才移除，外部祖先/后层命中语义隔离。修正短菜单maxValue测量订阅和释放实时clip命中。本地代理/Provider选项/资源列表统一56dp同行与分组边距。
+
+build10 App446/Service191/Core38/Common31共706项零失败/错误/跳过，Debug/Test、未签名Release/R8通过；testbuild12仅增强配置保护，生产APK未变，独立双Lint各0错误/64警告（Debug10/Release9 hints）。Redmi final12最终App/Test同批22/22、42张PNG已目视；最终独立会话before/after各1/1，正式1份配置全行/字段摘要、选择及正文保持。较早原before→final10仅Room摘要变化，字段/时点未定位，原选择/正文保持；失败及旧基线保留，不宣称整个长窗口元数据保护。两包设备哈希匹配，原1.yaml双端和Flutter原版包SHA保持，结束无服务/tun0、旋转1/0、字号/动画倍率1.0。证据`docs/acceptance/glass-stack-subpages-redmi-20261104.json`。
+
+完整Flutter视觉仍PARTIAL：三次盒式卷积是预模糊近似，通用玻璃/ultra分级、完整材质插值、其他空态/更多子页、低API实测与性能profile待补；默认玻璃仍关闭。本组未重跑网络/Go/远端CI或签名Release运行，Fallback实核/冷进程和8MiB正文边界保持。备份/系统恢复、观测次要打磨、语言/主题继续暂缓。下方旧切片仅代表当时状态。
+
 ## 液滴菜单与配置子页集中验收（2026-11-04）
 
 最终生产build14根Wrapper `test :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64`成功：App445/Service191/Core38/Common31共705项，失败/错误/跳过0；Debug/Test、未签名arm64 Release/R8及双Lint通过，各0错误/63警告（Debug10/Release9 hints）。新增1条UseKtx风格警告来自PixelCopy背景Bitmap创建。此前testbuild13只补截图同步/长正文；随后补真实指针与读屏语义长按区分，再以build14完整重建。

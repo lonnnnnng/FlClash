@@ -62,7 +62,7 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                 AppDropdownMenuItem(text = { Text("管理规则资源") }, onClick = { menu = false; onManageRules() })
             }
         } }, text = {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("profile_providers_page"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("profile_providers_page"), verticalArrangement = Arrangement.spacedBy(0.dp)) {
                 if (saving) LinearProgressIndicator(Modifier.fillMaxWidth())
                 (error?.takeIf { editing == null && binding == null && !quick }
                     ?: parsed.exceptionOrNull()?.let { "无法解析资源引用，请通过快捷 YAML 检查配置。" })?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -70,8 +70,8 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                     Text(if (profile.type == ProfileType.CUSTOM) "暂无引用的资源，请先在策略组或规则中选择资源。" else "这份配置没有 Provider。", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (!catalog?.proxies.isNullOrEmpty()) {
-                    Text("代理", style = MaterialTheme.typography.titleSmall)
-                    ProfileFormSection {
+                    Text("代理", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                    ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                         catalog!!.proxies.forEachIndexed { index, name ->
                             val definition = proxyDefs?.get(name)
                             val id = ProfileProxyResources.idOf(definition)
@@ -85,13 +85,13 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                                     if (profile.type == ProfileType.CUSTOM) IconButton(onClick = { bindingProxy = true; binding = name }, enabled = !saving,
                                         modifier = Modifier.testTag("profile_provider_bind_proxy_$name")) { Icon(Icons.Outlined.SwapHoriz, "选择代理资源") }
                                 })
-                            if (index < catalog.proxies.lastIndex) HorizontalDivider()
+                            if (index < catalog.proxies.lastIndex) HorizontalDivider(Modifier.padding(start = 14.dp))
                         }
                     }
                 }
                 if (!catalog?.rules.isNullOrEmpty()) {
-                    Text("规则", style = MaterialTheme.typography.titleSmall)
-                    ProfileFormSection {
+                    Text("规则", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                    ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                         catalog!!.rules.forEachIndexed { index, name ->
                             val definition = ruleDefs?.get(name)
                             val id = RuleResources.idOf(definition)
@@ -104,7 +104,7 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                                     if (profile.type == ProfileType.CUSTOM) IconButton(onClick = { bindingProxy = false; binding = name }, enabled = !saving,
                                         modifier = Modifier.testTag("profile_provider_bind_rule_$name")) { Icon(Icons.Outlined.SwapHoriz, "选择规则资源") }
                                 })
-                            if (index < catalog.rules.lastIndex) HorizontalDivider()
+                            if (index < catalog.rules.lastIndex) HorizontalDivider(Modifier.padding(start = 14.dp))
                         }
                     }
                 }
@@ -124,8 +124,8 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
 
 @Composable
 private fun ProviderResourceRow(name: String, subtitle: String?, missing: Boolean, tag: String, enabled: Boolean, onClick: (() -> Unit)?, trailing: @Composable RowScope.() -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 72.dp).then(if (onClick != null) Modifier.clickable(enabled, onClick = onClick) else Modifier).testTag(tag), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f).padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).then(if (onClick != null) Modifier.clickable(enabled, onClick = onClick) else Modifier).testTag(tag).padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 color = if (missing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant) }

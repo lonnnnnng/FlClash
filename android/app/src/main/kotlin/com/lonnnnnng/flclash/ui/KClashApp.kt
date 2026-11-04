@@ -4237,9 +4237,8 @@ internal fun ProfileCard(
                         onNavigateBack = if (showMore) ({ showMore = false }) else null) { level ->
                         if (level as Boolean) {
                             AppDropdownMenuItem(
-                                text = { Text("返回") },
-                                leadingIcon = { AppGlyphIcon(AppGlyphs.arrowBack, contentDescription = null) },
-                                onClick = { showMore = false }, dismissOnClick = false, opensSubmenu = true,
+                                text = { Text("更多") },
+                                onClick = { showMore = false }, dismissOnClick = false, isBack = true,
                             )
                             AppDropdownMenuItem(
                                 text = { Text("运行配置") },

@@ -106,29 +106,27 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                     if (rows.isEmpty()) Text(if (filters.filter == "" || filters.excludeFilter == "") "条件已清空；可从过滤选项恢复继承。" else "暂无过滤条件", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     ProfileSectionRow("添加过滤", icon = Icons.Outlined.AddCircleOutline, enabled = !busy, modifier = Modifier.testTag("provider_filters_add")) { pickingFilters = true }
                 }
-                Text("选项", style = MaterialTheme.typography.titleSmall)
-                ProfileFormSection {
+                Text("选项", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     ProviderOption.entries.filter { it.name in values }.forEach { option -> key(option) {
-                        Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { set(option, null) }, enabled = !busy, modifier = Modifier.testTag("provider_option_remove_${option.name}")) { Icon(Icons.Outlined.RemoveCircleOutline, "移除${option.title}") }
+                        ProfileFormRow(option.title, leading = {
+                            IconButton(onClick = { set(option, null) }, enabled = !busy, modifier = Modifier.testTag("provider_option_remove_${option.name}")) {
+                                Icon(Icons.Outlined.RemoveCircleOutline, "移除${option.title}", Modifier.size(24.dp))
+                            }
+                        }) {
                             when {
-                                option.boolean -> {
-                                    Text(option.title, Modifier.weight(1f))
-                                    Switch(values[option.name] == "true", { set(option, it.toString()) }, enabled = !busy, modifier = Modifier.testTag("provider_option_${option.name}"))
+                                option.boolean -> Switch(values[option.name] == "true", { set(option, it.toString()) }, enabled = !busy, modifier = Modifier.testTag("provider_option_${option.name}"))
+                                option == ProviderOption.IP_VERSION -> Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(!busy) { choosingIp = true }.testTag("provider_option_${option.name}"),
+                                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
+                                    Text(values[option.name].orEmpty()); Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow()
                                 }
-                                option == ProviderOption.IP_VERSION -> ProfileSectionRow(option.title, values[option.name], Icons.Outlined.Public, !busy,
-                                    Modifier.weight(1f).testTag("provider_option_${option.name}")) { choosingIp = true }
                                 else -> {
-                                    Text(option.title, Modifier.widthIn(min = 72.dp, max = 112.dp), style = MaterialTheme.typography.bodyMedium)
-                                    TextField(values[option.name].orEmpty(), { if (it.length <= 8192) set(option, it) }, enabled = !busy, singleLine = true,
-                                    colors = TextFieldDefaults.colors(focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                                        unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                                        disabledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                                        focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                                        unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent),
-                                    suffix = { if (option.number) Text(if (option == ProviderOption.INTERVAL) "s" else "ms") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = if (option.number) KeyboardType.Number else KeyboardType.Text),
-                                    modifier = Modifier.weight(1f).testTag("provider_option_${option.name}"))
+                                    androidx.compose.foundation.text.BasicTextField(values[option.name].orEmpty(), { if (it.length <= 8192) set(option, it) }, enabled = !busy, singleLine = true,
+                                        textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = androidx.compose.ui.text.style.TextAlign.End, color = MaterialTheme.colorScheme.onSurface),
+                                        cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+                                        keyboardOptions = KeyboardOptions(keyboardType = if (option.number) KeyboardType.Number else KeyboardType.Text),
+                                        modifier = Modifier.weight(1f).testTag("provider_option_${option.name}"))
+                                    if (option.number) { Spacer(Modifier.width(4.dp)); Text(if (option == ProviderOption.INTERVAL) "s" else "ms") }
                                 }
                             }
                         }

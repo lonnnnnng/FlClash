@@ -136,19 +136,20 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
             IconButton(onClick = { onLinks(row) }, enabled = !busy) { Icon(Icons.Outlined.EditNote, "从分享链接填写") }
             TextButton(onClick = { onSave(row) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_save")) { Text("保存") }
         } }, text = {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                Text("基本信息", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                Text("基本信息", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                 ProxyTextField("名称", "name", row, busy) { row = LocalProxies.withValue(row, "name", JsonPrimitive(it)) }
-                ListItem(headlineContent = { Text("代理类型") }, trailingContent = { Text(row.type) }, modifier = Modifier.clickable(!busy) { choosing = "type" })
+                ProfileFormRow("代理类型", Modifier.clickable(!busy) { choosing = "type" }) { Text(row.type); Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow() }
                 if (row.type != "easytier") {
                     ProxyTextField("服务器", "server", row, busy) { row = LocalProxies.withValue(row, "server", JsonPrimitive(it)) }
                     ProxyTextField("端口", "port", row, busy, number = true) { row = LocalProxies.withValue(row, "port", it.toLongOrNull()?.let(::JsonPrimitive)) }
                 }
                 fields.filter { it.id in required && it.id !in credentialIds }.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choosing = field.id }, { editingField = field }, {}) }
-                ListItem(headlineContent = { Text("UDP") }, trailingContent = { Switch(LocalProxies.value(row.fields, "udp")?.asBoolean == true,
-                    { row = LocalProxies.withValue(row, "udp", JsonPrimitive(it)) }, enabled = !busy) })
+                ProfileFormRow("UDP") { Switch(LocalProxies.value(row.fields, "udp")?.asBoolean == true,
+                    { row = LocalProxies.withValue(row, "udp", JsonPrimitive(it)) }, enabled = !busy) }
                 if (row.type == "easytier") {
                     listOf("network-name" to "网络名称", "network-secret" to "网络密钥", "ipv4" to "虚拟 IPv4", "hostname" to "主机名").forEach { (path, label) ->
                         ProxyTextField(label, path, row, busy, secret = path == "network-secret") { row = LocalProxies.withValue(row, path, JsonPrimitive(it)) }
@@ -158,17 +159,22 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
                         ProxyFieldRow(row, field, busy, false, {}, {}, { editingField = field }, {})
                     }
                 }
+                }
                 // 作者 long：认证字段按上游独立成组，协议参数与UDP仍留在基本信息，密码显隐和未保存确认沿用原草稿。
                 val credentials = fields.filter { it.id in required && it.id in credentialIds }
                 if (credentials.isNotEmpty()) {
-                    Text("身份验证", Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    Text("身份验证", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                    ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     credentials.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choosing = field.id }, { editingField = field }, {}) }
+                    }
                 }
-                Text("可选设置", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                Text("可选设置", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                 fields.filter { it.id !in required && (it.id in shown || LocalProxies.value(row.fields, it.path) != null) }.forEach { field ->
                     ProxyFieldRow(row, field, busy, true, { update(field, it) }, { choosing = field.id }, { editingField = field }, { shown -= field.id; update(field, null) })
                 }
                 TextButton(onClick = { choosing = "option" }, enabled = !busy, modifier = Modifier.testTag("local_proxy_add_option")) { Icon(Icons.Outlined.AddCircleOutline, null); Spacer(Modifier.width(8.dp)); Text("添加设置项") }
+                }
                 if (draft.original != null) TextButton(onClick = { onDelete(draft.original) }, enabled = !busy) { Text("删除节点", color = MaterialTheme.colorScheme.error) }
                 Spacer(Modifier.height(24.dp))
             }
@@ -200,10 +206,19 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
 @Composable
 private fun ProxyTextField(label: String, path: String, row: LocalProxy, busy: Boolean, secret: Boolean = false, number: Boolean = false, onChange: (String) -> Unit) {
     var revealed by remember { mutableStateOf(false) }
-    OutlinedTextField(LocalProxies.value(row.fields, path)?.let { if (it.isJsonPrimitive) it.asString else it.toString() }.orEmpty(),
-        { if (!number || it.all(Char::isDigit)) onChange(it.take(8192)) }, Modifier.fillMaxWidth().testTag("local_proxy_field_$path"), label = { Text(label) },
-        enabled = !busy, singleLine = true, visualTransformation = if (secret && !revealed) PasswordVisualTransformation() else VisualTransformation.None,
-        trailingIcon = { if (secret) IconButton(onClick = { revealed = !revealed }) { Icon(if (revealed) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, if (revealed) "隐藏密码" else "显示密码") } })
+    ProfileFormRow(label) {
+        androidx.compose.foundation.text.BasicTextField(
+            LocalProxies.value(row.fields, path)?.let { if (it.isJsonPrimitive) it.asString else it.toString() }.orEmpty(),
+            { if (!number || it.all(Char::isDigit)) onChange(it.take(8192)) }, Modifier.weight(1f).testTag("local_proxy_field_$path"),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (busy) .38f else 1f)),
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = if (number) androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),
+            enabled = !busy, singleLine = true, visualTransformation = if (secret && !revealed) PasswordVisualTransformation() else VisualTransformation.None)
+        if (secret) IconButton(onClick = { revealed = !revealed }) {
+            Icon(if (revealed) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, if (revealed) "隐藏密码" else "显示密码")
+        }
+    }
 }
 
 @Composable
@@ -214,11 +229,14 @@ private fun ProxyFieldRow(row: LocalProxy, field: ProxyField, busy: Boolean, rem
             when (field.kind) {
                 ProxyFieldKind.TEXT, ProxyFieldKind.SECRET, ProxyFieldKind.NUMBER -> ProxyTextField(field.label, field.path, row, busy,
                     field.kind == ProxyFieldKind.SECRET, field.kind == ProxyFieldKind.NUMBER) { onValue(if (field.kind == ProxyFieldKind.NUMBER) it.toLongOrNull()?.let(::JsonPrimitive) else JsonPrimitive(it)) }
-                ProxyFieldKind.TOGGLE -> ListItem(headlineContent = { Text(field.label) }, trailingContent = { Switch(LocalProxies.value(row.fields, field.path)?.asBoolean == true, { onValue(JsonPrimitive(it)) }, enabled = !busy) })
-                else -> ListItem(headlineContent = { Text(field.label) }, supportingContent = { Text(LocalProxies.value(row.fields, field.path)?.let {
-                    when { it.isJsonArray -> "${it.asJsonArray.size()} 项"; it.isJsonObject -> "${it.asJsonObject.size()} 项"; else -> it.asString }
-                } ?: "未设置", maxLines = 1, overflow = TextOverflow.Ellipsis) }, trailingContent = { Icon(Icons.Outlined.ChevronRight, null) },
-                    modifier = Modifier.clickable(!busy) { if (field.kind == ProxyFieldKind.CHOICE) onChoice() else onCollection() })
+                ProxyFieldKind.TOGGLE -> ProfileFormRow(field.label) { Switch(LocalProxies.value(row.fields, field.path)?.asBoolean == true, { onValue(JsonPrimitive(it)) }, enabled = !busy) }
+                else -> ProfileFormRow(field.label, Modifier.clickable(!busy) { if (field.kind == ProxyFieldKind.CHOICE) onChoice() else onCollection() }) {
+                    Text(LocalProxies.value(row.fields, field.path)?.let {
+                        when { it.isJsonArray -> "${it.asJsonArray.size()} 项"; it.isJsonObject -> "${it.asJsonObject.size()} 项"; else -> it.asString }
+                    } ?: "未设置", maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow()
+                }
             }
         }
     }

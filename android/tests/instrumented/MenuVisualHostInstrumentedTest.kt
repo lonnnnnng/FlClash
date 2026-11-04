@@ -33,9 +33,36 @@ class MenuVisualHostInstrumentedTest {
                 appendLine("${row.id}:${file.name}:${file.length()}:${file.lastModified()}:${sha(file.readBytes())}")
             }
         }
-        val file = context.cacheDir.resolve("menu-visual-preserved.sha256")
+        val session = InstrumentationRegistry.getArguments().getString("kclashVisualPreserveSession", "")
+        require(session.isEmpty() || session.matches(Regex("[a-z0-9-]{1,64}")))
+        val suffix = session.takeIf { it.isNotEmpty() }?.let { "-$it" }.orEmpty()
+        val file = context.cacheDir.resolve("menu-visual-preserved$suffix.sha256")
         val phase = InstrumentationRegistry.getArguments().getString("kclashVisualPreserve", "after")
-        if (phase == "before") file.writeText(record) else { assertTrue(file.isFile); assertEquals(file.readText(), record) }
+        val fieldFile = context.cacheDir.resolve("menu-visual-preserved$suffix-fields.json")
+        val gson = Gson()
+        val fields = rows.associate { row ->
+            row.id.toString() to gson.toJsonTree(row).asJsonObject.entrySet().associate { (name, value) ->
+                name to sha(value.toString().toByteArray())
+            }.toSortedMap()
+        }
+        if (phase == "before") {
+            file.writeText(record)
+            // 作者 long：全行摘要只能发现变化；逐字段摘要使后续验收能定位元数据差异，又不落盘订阅与密钥原文。
+            fieldFile.writeText(gson.toJson(fields))
+        } else {
+            assertTrue(file.isFile)
+            if (phase == "inspect") {
+                // 作者 long：诊断只报告字段摘要与文件保护结果，不能用当前状态覆盖旧基线或将检查模式记为保护通过。
+                InstrumentationRegistry.getInstrumentation().sendStatus(0, android.os.Bundle().apply {
+                    putString("kclash_visual_metadata_inspect", gson.toJson(mapOf("fields" to fields,
+                        "filesAndSelectionMatch" to (file.readLines().drop(1) == record.lines().dropLast(1).drop(1)),
+                        "autoUpdateEnabled" to rows.any { it.autoUpdate }, "hasUpdateError" to rows.any { it.lastUpdateError != null })))
+                })
+                return@runBlocking
+            }
+            assertEquals(file.readText(), record)
+            if (fieldFile.isFile) assertEquals(fieldFile.readText(), gson.toJson(fields))
+        }
         InstrumentationRegistry.getInstrumentation().sendStatus(0, android.os.Bundle().apply {
             putString("kclash_visual_preserved", "$phase count=${rows.size} sha=${sha(record.toByteArray())}")
         })

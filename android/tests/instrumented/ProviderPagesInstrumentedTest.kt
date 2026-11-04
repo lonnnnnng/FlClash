@@ -80,7 +80,10 @@ class ProviderPagesInstrumentedTest {
         compose.onNodeWithTag("provider_filter_pick_FILTER_地区").performClick()
         compose.onNodeWithTag("provider_filter_kind_EXCLUDE").performScrollTo().performClick()
         compose.onNodeWithTag("provider_filter_custom").performScrollTo().performTextInput("ads")
-        compose.onNodeWithTag("provider_filter_custom_add").performScrollTo().performClick()
+        // 作者 long：键盘收起后再重新测量按钮位置，防止触摸沿用输入前的屏幕坐标而漏掉自定义条件。
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        compose.waitForIdle(); android.os.SystemClock.sleep(350)
+        compose.onNodeWithTag("provider_filter_custom_add").performScrollTo().assertIsDisplayed().performClick()
         compose.onNodeWithTag("provider_filter_picker_done").performClick()
         capture("provider_filter_members")
         for (index in listOf(3, 2, 1)) compose.onNodeWithTag("group_move_up_$index").performScrollTo().performClick()

@@ -31,6 +31,12 @@ internal data class AppSuperellipseShape(
 private data class SuperellipseOctant(val offset: Offset, val a: Float, val n: Float,
     val start: Offset = Offset.Zero, val center: Offset = Offset.Zero, val angle: Float = 0f)
 
+/** 作者 long：光学边线和实际裁剪共用引擎八分弧，避免圆角矩形高光悬在连续圆角内部。 */
+internal fun appGlassCurve(halfSide: Float, radius: Float): FloatArray {
+    val curve = superellipseOctant(Offset.Zero, halfSide.coerceAtLeast(.001f), radius)
+    return floatArrayOf(curve.n, curve.start.x, curve.start.y, (curve.start - curve.center).getDistance(), curve.center.x, curve.center.y)
+}
+
 private val superellipseRatioTable = arrayOf(
     2.00000000f to 1.13276676f, 2.18349805f to 1.20311921f, 2.33888662f to 1.28698796f,
     2.48660575f to 1.36351941f, 2.62226596f to 1.44717976f, 2.75148990f to 1.53385819f,

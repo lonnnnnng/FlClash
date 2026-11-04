@@ -82,11 +82,16 @@ class LiquidMenuInstrumentedTest {
     @Test fun carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction() {
         var open by mutableStateOf(false); var result = 0
         lateinit var source: AppMenuSource
+        val pointer = AppMenuCarry()
+        lateinit var stack: AppMenuStackState
+        lateinit var registry: AppMenuCarryRegistry
         compose.setContent { KClashTheme {
             source = rememberAppMenuSource()
             Box(Modifier.fillMaxSize().safeDrawingPadding()) {
                 Button({ open = true }, Modifier.appMenuSource(source).align(Alignment.TopEnd).testTag("liquid_open")) { Text("菜单") }
-                AppDropdownMenu(open, { open = false }, source = source) {
+                AppDropdownMenu(open, { open = false }, source = source, carriedPointer = pointer) {
+                    stack = checkNotNull(LocalAppMenuStack.current)
+                    registry = checkNotNull(LocalAppMenuCarry.current)
                     repeat(3) { index -> AppDropdownMenuItem({ Text("选项$index") }, { result = index + 1; open = false }, Modifier.testTag("drag_item_$index")) }
                 }
             }
@@ -96,8 +101,11 @@ class LiquidMenuInstrumentedTest {
         val b = compose.onNodeWithTag("drag_item_1").fetchSemanticsNode().boundsInRoot.center
         compose.onNodeWithTag("app_popup_window").performTouchInput { down(a); moveTo(b, delayMillis = 120) }
         compose.waitForIdle()
+        compose.runOnIdle { assertTrue("移动后必须仍持有原指针 armed=${pointer.armed} dragging=${pointer.dragging} position=${pointer.position}", pointer.armed && pointer.dragging) }
         compose.onNodeWithTag("app_popup_window").performTouchInput { up() }
-        compose.runOnIdle { assertEquals(2, result) }
+        compose.runOnIdle {
+            assertEquals("release=${pointer.release} point=${pointer.releasedPosition} clip=${stack.hitBounds} rows=${registry.items.values.map { it.bounds to it.enabled }}", 2, result)
+        }
         compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
         compose.onNodeWithTag("liquid_open").performClick()
         compose.onNodeWithTag("drag_item_0").assertIsDisplayed()

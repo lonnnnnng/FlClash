@@ -1,0 +1,2991 @@
+{
+  "date": "2026-11-04",
+  "scope": "菜单玻璃折射、保留父层的多级展开/收回及本地代理/Provider选项/资源列表精确排版",
+  "status": "PARTIAL",
+  "sliceStatus": "DONE-VERIFIED",
+  "parentCommit": "d6abd1e80740580d981baeda4a9d23d764264d26",
+  "implementation": [
+    "PixelCopy背景拆分raw/frosted；后台降采样与三次盒式卷积近似12dp高斯，长循环支持协程取消。",
+    "API33+ AGSL实现连续圆角SDF、60dp折射/20dp bevel、goo混合法线、高光及深浅材质；修正窗口偏移、父卡paintScale和回源首帧。",
+    "子菜单保留全部父层/独立滚动与稳定key，从触发行展开；宽度前30%、材质前35%、内容(.05,.35)分段，父卡分层缩小/压暗/减影。",
+    "同一弹簧处理收回反向，回退完成才移除顶层；后台/外部祖先导航/后层语义和命中受保护，release按最后位置与当前clip重算。",
+    "可滚动性在组合中订阅maxValue，测量完成后正确恢复短菜单携带拖选；取消与真实释放坐标独立。",
+    "本地代理基本/认证/可选项、Provider选项和资源引用按56dp同行标签/值、右侧轻量输入、24/8分组标题与资源行边距对齐。"
+  ],
+  "visualReference": {
+    "upstreamSha": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+    "paths": [
+      "lib/ui/popup.dart",
+      "lib/ui/goo.dart",
+      "lib/ui/liquid_glass.dart",
+      "shaders/liquid_glass.frag",
+      "lib/views/profiles"
+    ],
+    "referenceMode": "固定main只读；Android AGSL官方正文已抓取；未恢复Flutter运行依赖。",
+    "deepTintOracle": {
+      "value": "ff343537",
+      "log": "/tmp/kclash-glass-tint-20261104.log",
+      "passed": 1,
+      "total": 1
+    },
+    "nativeScreenshotCount": 42,
+    "nativeScreenshots": "final12全部PNG及光学/层栈/表单拼图已主线程目视；未修改严格golden，不等于全页面Flutter逐像素一致。",
+    "reviewSheets": {
+      "/tmp/kclash-glass-stack-20261104-final12-forms-review-0.jpg": {
+        "sha256": "b3fd8f0e17e4ac6c34616a9e022f03eb35bfd222b5f4aff8dd12305eb669dc03",
+        "bytes": 87648
+      },
+      "/tmp/kclash-glass-stack-20261104-final12-forms-review-1.jpg": {
+        "sha256": "4e83c98c7c941855493bb9055de39dc0d2895981d98c12e7b135ca1a9b96a2f2",
+        "bytes": 133260
+      },
+      "/tmp/kclash-glass-stack-20261104-final12-forms-review-2.jpg": {
+        "sha256": "8fece299b0250befd586388c8b093b0f3bb22d0b08d932d93f1165d3e34a235c",
+        "bytes": 223744
+      },
+      "/tmp/kclash-glass-stack-20261104-final12-forms-review-3.jpg": {
+        "sha256": "96abb5a607c9b7983bd1f0443f04d85b91edef1ca868f2b076158e749fabbc2e",
+        "bytes": 174248
+      },
+      "/tmp/kclash-glass-stack-20261104-final12-forms-review-4.jpg": {
+        "sha256": "ce3039178e10ba184ffca78884b0d40950a89129e6f50b85091ce0e7fc0bf18f",
+        "bytes": 80429
+      },
+      "/tmp/kclash-glass-stack-20261104-final12-glass-review-0.jpg": {
+        "sha256": "fdb900cde7ed43fde40d872a8587f3487299443f6ffc4937b10351ca5a3ed895",
+        "bytes": 115066
+      }
+    },
+    "independentReadOnlyReview": "两路default子代理只读复核玻璃与层栈；外部导航反向、release clip、CPU取消、低API材质交接、goo高光和回源首帧问题已修复。"
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease --no-daemon --max-workers=2 -Ptarget-platform=android-arm64",
+    "lintCommand": "./gradlew :app:lintDebug :app:lintRelease --no-daemon --max-workers=1 -Ptarget-platform=android-arm64",
+    "production": "build10最终Debug与未签名arm64 Release/R8成功；testbuild12只增强配置保护字段摘要及独立快照会话，生产APK未变；独立串行lint12成功。",
+    "unitTests": {
+      "app": {
+        "tests": 446,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 191,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 706,
+    "unitExecution": "最终构建使用Gradle增量UP-TO-DATE结果；XML对应本轮最终源码，0失败/错误/跳过。",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "Warning": 64,
+        "Hint": 10,
+        "report": "android/app/build/reports/lint-results-debug.xml",
+        "sha256": "4cb1c1da3165a6985188c5683cdcc475aaaef9dc8d5b1695f2581e56a3be7124",
+        "bytes": 83101
+      },
+      "release": {
+        "errors": 0,
+        "Warning": 64,
+        "Hint": 9,
+        "report": "android/app/build/reports/lint-results-release.xml",
+        "sha256": "f6d54a706474852aac3daeac07584892ce40e26ef74f5a0473e32b2665ea500e",
+        "bytes": 81896
+      }
+    },
+    "lintNote": "比前组各增加1条UseKtx风格警告，来自AppMenuGlass的Bitmap.createScaledBitmap。",
+    "release": "仅未签名arm64构建/R8/Lint；未安装运行。",
+    "go": "无Go改动，本组未重跑。",
+    "unitXml": {
+      "app": {
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ApplicationSettingsBackupTest.xml": {
+          "sha256": "83294674b1698c75517222f037a204a86a3cd0b54d6b7442564c59acc3ec0f30",
+          "bytes": 847
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomProfileImportTest.xml": {
+          "sha256": "8defd70d08f316904e98a9300a1453ffdb84262441b50c0fbaeed250710458a3",
+          "bytes": 943
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomRuleDraftTest.xml": {
+          "sha256": "56b85ba00709bf3af17bc046d0ac48a5d380079e2134d55e517c5ff2d394113b",
+          "bytes": 1413
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.DeepLinkImportTest.xml": {
+          "sha256": "4900316a035b13874a517c68259a45a817c52e9cc09e529de72f2b1f3296e37f",
+          "bytes": 1326
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.FilterPresetsTest.xml": {
+          "sha256": "60c2231c24f52bb8ec78ebfb69432bb29db6001de765eab1eeba3bd00095a67a",
+          "bytes": 986
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.HttpRequestPolicyTest.xml": {
+          "sha256": "96b1af5ec0068e0a2dddc5b7b07d3251b2dd71218429e47de1760aaf9f2e0184",
+          "bytes": 667
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconRecommendationsTest.xml": {
+          "sha256": "9b46d432dfff87fc201cd0f0d4a44f3a292a2fbf77d0e425d974823c25522775",
+          "bytes": 892
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconSetCodecTest.xml": {
+          "sha256": "521756a2e35f5c339be4e4d327e01e4a0e10488ae126e2ab54ca1c83a5ee2236",
+          "bytes": 781
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationRepositoryTest.xml": {
+          "sha256": "22dc8b3275150c9fd231a48e2ebc994ecd0b9fb655c43a215be417bd7f03a813",
+          "bytes": 996
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationTest.xml": {
+          "sha256": "4a18e716f0700c29e1eee8cbd4c9bf428af247f47ecdde1089af0431f1b6ff94",
+          "bytes": 1002
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProfileFileWriteTest.xml": {
+          "sha256": "d540d87a93f9eb6e9a6d14d20ab74fea5a26034f2c5bf975a2ee6546e36ad2fd",
+          "bytes": 1887
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxiesTest.xml": {
+          "sha256": "692c17b2d9b5d8c2b7eb87310aa3c97934fa4676deffbafb2656ba18aa6801fd",
+          "bytes": 1533
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyAdditionTest.xml": {
+          "sha256": "81b8fba124412eef00557896b6bbbe16443e328790c22b59d77fe3cbb75d41ea",
+          "bytes": 987
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyLinkEditTest.xml": {
+          "sha256": "55682f911a62754aeeccd9daefd523f071df883e5032f8dcc6e52dbbc429043a",
+          "bytes": 1333
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.OnDemandSsidTrackerTest.xml": {
+          "sha256": "6131b9f7f4524a21b0d4b2c8ed984f6d4fc51990879e42494c0c44845d1e8b0a",
+          "bytes": 805
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileContentDecoderTest.xml": {
+          "sha256": "1bc3e3fe418b2388aae6e25c5a43490a636a75a0fb3753d0c36f0b6b39318024",
+          "bytes": 1517
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDialerEditorTest.xml": {
+          "sha256": "7d705ec44995c72c4184eba1a71ac09b62155e9a773cee1183abf153d82da028",
+          "bytes": 964
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDocumentTest.xml": {
+          "sha256": "0fdc382bdd329a978066e34c101c4ef444d7f2691a054086ba4ecbf655ef46ef",
+          "bytes": 508
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileExportTest.xml": {
+          "sha256": "2a2242b126d2dadfe70c3d644bf5bfbd1fb4438b6401108debb2168a3a41f983",
+          "bytes": 813
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileMorePatchTest.xml": {
+          "sha256": "f71a121b04d82e7dad15ba41a831994488737b58e1f5dd758e2ffe2df55b7e2a",
+          "bytes": 808
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProvidersEditorTest.xml": {
+          "sha256": "240d0a1169d9287dee237bfce04bd8f0cb23c52876518e09c23d0416cb603026",
+          "bytes": 1459
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxiesEditorTest.xml": {
+          "sha256": "d85676ee2f7d8e1245e1658eb8d55ea72607a8050b84480dae2ca8875e1ee8e3",
+          "bytes": 813
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyGroupsEditorTest.xml": {
+          "sha256": "1d1056551f22de2071c153ee36d909d2907cfdf30fb581ba4f750721a20fedc6",
+          "bytes": 1144
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyResourcesTest.xml": {
+          "sha256": "6bd728d65f1edd5d45cb1b44544ebb489fed5c3769361cde59e2d103a2bb4f1b",
+          "bytes": 788
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileRulesEditorTest.xml": {
+          "sha256": "8553bc308d29e10859088beb70525ab6ee2b059b6761146461b7aa7814c4f9d6",
+          "bytes": 784
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileSelectionTest.xml": {
+          "sha256": "60a42bf4d20e4acd1754ad2b88716857bda9c890b01e38e6dfd4e21f53c43e71",
+          "bytes": 795
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileTest.xml": {
+          "sha256": "a85ed89f2760f04da2b3e8637ce226fc3c6aa879b2ed9413cf254946815181f9",
+          "bytes": 992
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProviderEditingTest.xml": {
+          "sha256": "5ea3dc3ee400b8d160a97e136f26a5337528f52302923b1ba530366acee0a90b",
+          "bytes": 1181
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupDraftsTest.xml": {
+          "sha256": "d0d63bc3562d8742ccfb562502b79861e97ca55a04c5a926c3d4b9acd63126ac",
+          "bytes": 1598
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupIssuesTest.xml": {
+          "sha256": "0b0a3891ae8f8ccb27e8e884c42a7b2ea150e983a3390b5d5f4815cd7cdbe6cd",
+          "bytes": 1107
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.RuleResourcesTest.xml": {
+          "sha256": "1b93ed80aa118ab333c180341b09610cf12fbddcb1f6a64626d59889ad80eee7",
+          "bytes": 937
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ScriptImportTest.xml": {
+          "sha256": "c335a11cacd85fc7a572419bd685108240add030e7830bf8a1d545073a7cd921",
+          "bytes": 625
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ServiceExitRepositoryTest.xml": {
+          "sha256": "06822f5e58ed1b00746d5a8b5ce9cdfa62cdb7ae05a3569e255e08ec54b50d00",
+          "bytes": 805
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionAutoUpdateTest.xml": {
+          "sha256": "200ebe659f2186beaf3d80c9cae2c589129e2178375494502c6878ef9dc0fb98",
+          "bytes": 774
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionClientTest.xml": {
+          "sha256": "189600c6d3275a963866feeeab7b9ada669343d875091b17b27c7cb8ad6d6681",
+          "bytes": 503
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.WebDavClientTest.xml": {
+          "sha256": "d8c1851bf9a937f0444220d6ebaec0334194f10246fa0f80ffddfcdbc5d6e9d0",
+          "bytes": 1193
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AccessControlViewModelTest.xml": {
+          "sha256": "7180cfa334ea06499738ffafdae5cd6507c50c1fd3c0a9a176cc810c018985a9",
+          "bytes": 1354
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuMotionTest.xml": {
+          "sha256": "52ef73f40a48846c826e8f11ea858431948878992966fd46a460ebd5c5cfc165",
+          "bytes": 1170
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuPositionerTest.xml": {
+          "sha256": "735993d47a4cdc8b5a546f2853bb43cc83dbccb6878e0b51d08e771df34debb2",
+          "bytes": 1048
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppSurfacePhysicsTest.xml": {
+          "sha256": "8a83b165ae8e110dc65456176ec0498df69e3befa19110ec87974d8687f9e647",
+          "bytes": 904
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionDetailFormattingTest.xml": {
+          "sha256": "9db5b9330754f1c448282cb50546fe83643aa971f9b310f78436e6930e38b6e0",
+          "bytes": 995
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest.xml": {
+          "sha256": "60f4a551f7994a211327a78d1d4e3097d7dc45a55264b74fcdd780fb3afb364b",
+          "bytes": 1630
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.CustomProfileSummaryTest.xml": {
+          "sha256": "b47f6caca9439b9cee27008eefe5899a5ef4295dbd6eaf0f2f78bffd8acd78d5",
+          "bytes": 959
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardDragTest.xml": {
+          "sha256": "1614375dbbc0b222756a9a40110c3de73cf2e3b78ebe5119021f054afb5c4492",
+          "bytes": 768
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardLayoutTest.xml": {
+          "sha256": "88fe7054246643729adaee30f6d351aae078c129c39efaf2c08f5c879e105137",
+          "bytes": 1931
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardTelemetryTest.xml": {
+          "sha256": "9c55668714cfe2c03ab13c54187821bf5fb44b17773877bd17d5623c122773ca",
+          "bytes": 1004
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.GlobalRulesControllerTest.xml": {
+          "sha256": "1bf7657e9452e4e337624686b86c8a36684df996de4571a6d0c15afe2e041e2a",
+          "bytes": 800
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.IntranetIpViewModelTest.xml": {
+          "sha256": "77ff625519a9db6c682ec3062387ccb4d1c4171a4e9c6e36e27184a5500f15bc",
+          "bytes": 1287
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainPageScaffoldTest.xml": {
+          "sha256": "1370e21b7dab37e10b864e12f01420f7590c6bcc7cf8b71e16c1228992ea4735",
+          "bytes": 675
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTelemetryTest.xml": {
+          "sha256": "6fe19c6ef82812d0346b3934f47c28f00941a9f06e645a853561b70089c4be76",
+          "bytes": 843
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTest.xml": {
+          "sha256": "97a8d2b52cc80ae3ef82b0d31436b621924ad812c36921ac3f196edf15267355",
+          "bytes": 3292
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MemoryViewModelTest.xml": {
+          "sha256": "9a0449fecfc1b8a4313630ad9d4488df544269d81771349e1298de57a5652d21",
+          "bytes": 1347
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.OutboundIpViewModelTest.xml": {
+          "sha256": "711e6ae27051d450d55ef6b3c097afb488def608e58959efa27891c7dffbefa0",
+          "bytes": 1259
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileExtensionControllerTest.xml": {
+          "sha256": "5cc0ce42e5e143d2dad7c3b344436b795598e348c78cd54a6a68dccbd129ea9d",
+          "bytes": 1184
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileFileImportControllerTest.xml": {
+          "sha256": "7b4ce17f2a66dc46e168f1c25c012d983ce8c15ba07f90525ec7540faf072030",
+          "bytes": 1292
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileMoreFieldsTest.xml": {
+          "sha256": "385a2259fdaa33cbb9a5648654e11d8d17c5ee44ced19f033331e50f72e56771",
+          "bytes": 1263
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileSharingViewModelTest.xml": {
+          "sha256": "3bbd5ba28e135d643aa2b47e84207844845df75b99b7f8c6c824da0bcaa863f5",
+          "bytes": 1886
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileStatisticsViewModelTest.xml": {
+          "sha256": "ac1e080b4459f2cbd042f16ff8cbde674162854c61eba82dbff24209da0ad39a",
+          "bytes": 3197
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileUrlImportTest.xml": {
+          "sha256": "c6b71b9a573bb733354f4b8caafb8cc5c099796c397b261bfdbabe35d5efd1a3",
+          "bytes": 773
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfilesViewModelTest.xml": {
+          "sha256": "b28d2aa8abe241a7ba48f464b833af5cd0f864166d07e761735098438729bfb6",
+          "bytes": 11884
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProxyGroupsViewModelTest.xml": {
+          "sha256": "fad2f4c18e13c81e42681e47abe7ff7ec3a55492205ac49951c4be976a8a0eb7",
+          "bytes": 5753
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ResourceUrlImportControllerTest.xml": {
+          "sha256": "02eb8ff06689f3c2c76b6fd4587cf39e62ec99f318d4b1fb61e8907aa31557bb",
+          "bytes": 829
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModelTest.xml": {
+          "sha256": "88906a46491b00bb6ed5e59949fbd4e9c22a4fc87438c540f54cc82493d6f1e4",
+          "bytes": 881
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ScriptsViewModelTest.xml": {
+          "sha256": "ddd43689dbc447dcaa61053524e2ca87c9988fae184a6556aed0b2727fe6c59e",
+          "bytes": 1608
+        },
+        "android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ServiceStatusViewModelTest.xml": {
+          "sha256": "e876a2d7c62873b0cce8c16ac64a1f73735cf84db7d12bcb15ca5fed7001dd0b",
+          "bytes": 3750
+        }
+      },
+      "service": {
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml": {
+          "sha256": "c17939bb47fbcdfeae0a5825c8d4d6f4d1b629bc017d30b227c91b3ec41ae1cd",
+          "bytes": 16885
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.DefaultVpnOptionsProviderTest.xml": {
+          "sha256": "8219a4006b01e49d54e764f148d205f757bc2c61ea2952c2dd4cba3b24646024",
+          "bytes": 1170
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeneralSettingsTest.xml": {
+          "sha256": "6ae31960327c6fcf94db06de804f1146c58d144a81b6407c98e493ba11a0c714",
+          "bytes": 957
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeoResourceSettingsTest.xml": {
+          "sha256": "ad22503b59e4a69ebca0d7e3c8ced33f13e375d11c2eef6f4523babea6a37968",
+          "bytes": 692
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GlobalDnsSettingsTest.xml": {
+          "sha256": "fb6c455921d5dab2c951540249e79c1b4557a2a3270a63e4496ad0ff8752a5d5",
+          "bytes": 952
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.NetworkSettingsTest.xml": {
+          "sha256": "1855b441baeeb6a684e77526f5104cae5e6f199bf03d850745fbd9d6ee4ba95d",
+          "bytes": 1153
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.OnDemandSettingsTest.xml": {
+          "sha256": "5d65bb240da7663dcf8352848f70bbf31b234c0328c81024370609270b583381",
+          "bytes": 652
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileDnsBaselineTest.xml": {
+          "sha256": "52eb941d1c6cfb8aabfcc9af5e37648e52992efb45b84163fbb68fdb5b69c926",
+          "bytes": 1127
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileExtensionTest.xml": {
+          "sha256": "87fc1545d42099efd49f0c430c21eb84f381de1c0415f1e2d55bde29aa8c698b",
+          "bytes": 1161
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileMoreOverridesTest.xml": {
+          "sha256": "d2f468123774711b5768db9ac23ece55f7cb208a6ad1b663188612d90dac70ef",
+          "bytes": 1131
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileProviderOverridesTest.xml": {
+          "sha256": "7453ac9e6792e30a52cf354b015970cfc5e78c09fba4662aff5927f5a8136309",
+          "bytes": 2552
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileScriptTest.xml": {
+          "sha256": "fd9aedc956fabbc8e3cf928f2eeebfd2b22082952268a1c80ee554f33de319e4",
+          "bytes": 1219
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileStatisticsTest.xml": {
+          "sha256": "6ec2cc342cc63882f60f721a829590f8622163b91b48559ba34570088a9bb5fd",
+          "bytes": 655
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.RuntimeDiagnosticsTest.xml": {
+          "sha256": "09fce7f02dbcc66b409511a2b8ce74c6d0a3565c981b8530df8e9e6d0603f74a",
+          "bytes": 960
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ServiceConfigTest.xml": {
+          "sha256": "dc5323597afd7604cd396ba782a32b35828139d7735dc721471de3a2e7ab1f1f",
+          "bytes": 1077
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.RouteAddressTest.xml": {
+          "sha256": "fa6f1122ce1f886436f994c0077082dab3fc621877f45b8f1ecd2ee1d3eaaf4c",
+          "bytes": 940
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.ToCIDRTest.xml": {
+          "sha256": "c5f1952cb1022fdb55b5e940456fec27090a16420a8ae7f4b5922c1af51d9e8c",
+          "bytes": 1458
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TrafficTest.xml": {
+          "sha256": "2ed665dc5b671b92e1a4c0a2460fc3d70f2e16ab1a349145a288dda80b519240",
+          "bytes": 1120
+        },
+        "android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TunOptionsTest.xml": {
+          "sha256": "31ca44d604a508e2703a22683c84662bf12deee88fd5dc93bf998441def53ed6",
+          "bytes": 784
+        }
+      },
+      "core": {
+        "android/core/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.core.CoreBridgeParsingTest.xml": {
+          "sha256": "ed43fc79351981139e36741e4d10f449be3ab9154f8479dedc380f7adb1f58a1",
+          "bytes": 6076
+        }
+      },
+      "common": {
+        "android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.BroadcastLeaseTest.xml": {
+          "sha256": "606a80b1a6aae9fd37f857bd57c35158cbd03204bf1a6ab611dcfb455326611f",
+          "bytes": 1307
+        },
+        "android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.EnumsTest.xml": {
+          "sha256": "cc7639d2e5dc4405b1cadfeed107c3a8e6a6932db6920cb579ebd3776f592788",
+          "bytes": 1049
+        },
+        "android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.PendingCallbackTest.xml": {
+          "sha256": "8651a94e8dc5490568e19a91afc3c6fbd90156fbe655774ef7cff1d689feebb5",
+          "bytes": 1613
+        },
+        "android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.RunIntentArbiterTest.xml": {
+          "sha256": "226b0d451e7c9c8a6d24717b59e3fc4918de0858302c6ee924fefc69f81bc93e",
+          "bytes": 1745
+        }
+      }
+    }
+  },
+  "finalUiBatch": {
+    "label": "final12",
+    "passed": 22,
+    "total": 22,
+    "testApkSha256": "98f2343c0267225b6aa8e26a99e192e91fe4b9ad29bd5501979a1caaea25c5c4",
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+        "passed": true,
+        "seconds": 5.77,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-0.log",
+        "sha256": "53a5a926be6f9494f290987dceb10e6bff035bd0a738153b32f93e4f0b3005fa",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-glass_optics_false.png",
+            "sha256": "c0d9e7dad25d5d044d478d061c28840cd4dd138f4bf5d244a88783dd69b27128"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-glass_optics_true.png",
+            "sha256": "9b87015fd02051fc9e252e786cff366c90bdc1515f345f6dc3fd62e255cbc2ea"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+        "passed": true,
+        "seconds": 13.81,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-1.log",
+        "sha256": "c3e83af1cfe24c675cfe60054068cca4c6d7ac4f8af7399d915a7fa281c50d30",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-stack_three.png",
+            "sha256": "3851926410f0c0a37a5d614c93fd2af40b4634594283fe678b7fe2795eaf7e7c"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-stack_fold_middle.png",
+            "sha256": "f4f4630adfbf92c3b0a6389f30d238ce3c56b76d1e3da83c8110759aada57296"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+        "passed": true,
+        "seconds": 10.62,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-2.log",
+        "sha256": "b6fd3d08f2a94faf3af900d7c9b6775762ea6765edf55e1b5232cbc17f950ab7",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-glass_stack_false.png",
+            "sha256": "8a275a3e0807118223c313338374d767415a09af4aac035ef04d2f9ae2ae0dcb"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-glass_stack_true.png",
+            "sha256": "4f8555e6a06aa36c3d2a77cd8bfdcc61780b2f1873a9f116739565d664f96524"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#accessibilityLongPressKeepsSystemBackAndDoesNotSelectSource",
+        "passed": true,
+        "seconds": 4.68,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-3.log",
+        "sha256": "202de589a14e449f691a43b2d7ed038cd8db924764336072bc02393933a4f783",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+        "passed": true,
+        "seconds": 17.46,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-4.log",
+        "sha256": "62f68a23e1914252909a16ec9c75df452ddb927930e24e568fb4059a75628b22",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-liquid_open_false_false.png",
+            "sha256": "466c50c11d9afa7fa65e31ec6526d8ab4e6eda1fef371d2213477fe3de9476df"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-liquid_return_false_false.png",
+            "sha256": "c16482c5daaa6f181dc5a1b676c1a826f1716ae47b122ca636a38de5ff8846c6"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-liquid_open_false_true.png",
+            "sha256": "493e1c3cdec4dabc5d5a86697b97b7f60848aba5363fc3adecb8e573d61d9872"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-liquid_return_false_true.png",
+            "sha256": "ade9a9af3fd01cc855b1b12a405895313b4a6d1d1f71c9bb25bc27bb3b59ef51"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-liquid_open_true_false.png",
+            "sha256": "d1ff6c38fb91be9f044156f5b7d16da37a952aedb3f1a2131f8e2c99c11f0285"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-liquid_return_true_false.png",
+            "sha256": "7abc7ef6d44cae4ffc3580f0f3011d8b46cc3a9e64dbdb10aee8bd11edee17c2"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-liquid_open_true_true.png",
+            "sha256": "041dc5ce169e1d77d9b0d9a6de8eeffe21da80b9125d8737a8d868a4a146077f"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-liquid_return_true_true.png",
+            "sha256": "f76a08fb41d9d777afe7024f80590b64cd678ce0984c31bd0e86142240ddcc5a"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+        "passed": true,
+        "seconds": 6.59,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-5.log",
+        "sha256": "e903df07dd3878ba77f3f715be1b56b9fa2a6c7b802110ef098ff8e062a81064",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+        "passed": true,
+        "seconds": 6.8,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-6.log",
+        "sha256": "8bf064df1ddfff55dcbaffb9a9e26935e5d341816eb0a004a3ed8ecad82931ea",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+        "passed": true,
+        "seconds": 4.88,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-7.log",
+        "sha256": "210a3ae1cad8ee19684a7c085f98c0a255001dd15b56c02909f71336ed5b0a8d",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+        "passed": true,
+        "seconds": 13.87,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-8.log",
+        "sha256": "c7b7d503c71c4241098e0898a5818e8f943ef54b2b47657c80e57cca2fb2e325",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-main_menu_profile_root_false.png",
+            "sha256": "09fcd812305e55efc11ed2bc0761cc621b0b41fc711f85f8525853596bf416fa"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-main_menu_profile_more_false.png",
+            "sha256": "a2ecca882de977210f4c7b662a3423ac83e544c08e03209995545bd8735dc0c9"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-main_menu_profile_root_true.png",
+            "sha256": "a74512a077bb61b1db25dce9e7c6a15c954d4a7f8901fe51fd9f02160463878a"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-main_menu_profile_more_true.png",
+            "sha256": "d576c2ce22abd4ca3636eff53da49121d1a7c012aaafb71af43a49146e26c942"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+        "passed": true,
+        "seconds": 6.18,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-9.log",
+        "sha256": "5bf6a1d3fd020d4c7920d0d4395bd64c412612b5c538a4460bf9ff08af57ca24",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-main_menu_keyboard_context.png",
+            "sha256": "b5af9e3ab2ad6684cb8820a553bcd277f298dbcdbfb716a8b05be21e0c249209"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+        "passed": true,
+        "seconds": 6.08,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-10.log",
+        "sha256": "90c01bd162bc24680eb9eaa06456d48edf4bd0de7ed82961ddb4c7bb79aa148d",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+        "passed": true,
+        "seconds": 7.12,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-11.log",
+        "sha256": "96e8e6f874d9a4c23b67d21f43d259f7d31cd44c5b7302c0993114cbd7602c39",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-main_menu_long_menu.png",
+            "sha256": "330173820f6eb7ed409c258a8aec8fba6864981379fbad6016f60b0b53e66fdd"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+        "passed": true,
+        "seconds": 9.49,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-12.log",
+        "sha256": "32fab346e60b9283130bd40e2a7f1843f81342f052dc6c81c9aafa22e981fe7d",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-main_menu_proxy_sort.png",
+            "sha256": "02973da989c8b8409197966168bc8c5a016c0286d8b38a76e348cd5dc8354c1e"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#scrolledRootSubmenuResetsScrollAndReturnsWithoutMovingAnchorOrDuplicatingAction",
+        "passed": true,
+        "seconds": 9.38,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-13.log",
+        "sha256": "f3b4432740d7d2c68da50ba631c21d35f4934456f8abc20868edf939dd1d5bbb",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+        "passed": true,
+        "seconds": 9.23,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-14.log",
+        "sha256": "d68eb15cfeaf0bdb47f3dbe57cb5538bdc7fa9cea32b8ad70823b4e816b934fa",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+        "passed": true,
+        "seconds": 27.64,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-15.log",
+        "sha256": "1d2df6344c0da48d4235a0cac4413d982835405744bded0ba84ed65f4bedcb8c",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxies_list_false.png",
+            "sha256": "64e56a1676949ee661fa2a713ab0f4dd99078a883fb777dbc5cb0767e97420a8"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_ss_editor_false.png",
+            "sha256": "3f57b585c30d5351b5a0af71bc7e9e28c1a2f770b065ff5bb0e2a9aa06cb0418"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_options_false.png",
+            "sha256": "ae564a6c442677701fa622f9e07d6136cf7391262ee637c2125b1084250c74eb"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_transport_false.png",
+            "sha256": "b52f48ca5fe57f7962b760881cdd807f4ff115aa3eea23269717a76ace8dad81"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxies_list_true.png",
+            "sha256": "166592f545edc49c480c382423657c5207afc9e6518a48d43c911f0e5698e99f"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_ss_editor_true.png",
+            "sha256": "c66d29816b3aaa6af0fbf6e75852668cb69330cb2cdbee770c33e3c0d3e3fa41"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_options_true.png",
+            "sha256": "fc1c577d33dcc9aef6f451910c251431f3d9515bea9a64b0ebc286326d13def5"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_transport_true.png",
+            "sha256": "a07e63725cae23c0b13f9bf41ef399cebecb86d19cf400eb43ccf8d62fbd3fce"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+        "passed": true,
+        "seconds": 11.01,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-16.log",
+        "sha256": "c674ecca70b9fac772f24ea0fea8a9f318950c78d3e88b89b177da9db07c3a04",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_discard.png",
+            "sha256": "8d4625d26a608dcb99d54f38bbec476afd14e498b5ee33e2f00c755ea7244900"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_delete_references.png",
+            "sha256": "0e964ac210b63b810bf3a23df64206c2c44860e7636677a14696acfaf111007f"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-local_proxy_empty.png",
+            "sha256": "b54909e38c702fc0288f5863af722a39587fd30c0221209bfa0bdbf25f53767c"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+        "passed": true,
+        "seconds": 21.15,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-17.log",
+        "sha256": "474a8c37b8d29d8cf0f9b85750d31e6c5b61902c20c0a2c063454a9077412339",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_option_picker_false.png",
+            "sha256": "94ef77f9d65bd520c7983094fb2fc99ac1f2392a609bbabaee2af205db0fc638"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_ip_picker_false.png",
+            "sha256": "728441922ac3d4a52fed30340831f4600fab11ad2029cfbf7a770397c2f5104b"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_options_error_false.png",
+            "sha256": "6fc71a476f6e39413a5fecfe0af17ea91d715cd7d00b90c61409cf560389d57d"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_option_picker_true.png",
+            "sha256": "acb0bfa759de116c11c69d5467feae653e2b8ad677a7b93519d54e912787956b"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_ip_picker_true.png",
+            "sha256": "f86e071da6194df1d47ce19d719ac7e9d37fa483110d72a320693f0f995ebb1c"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_options_error_true.png",
+            "sha256": "7da2c31fa533e8fa51db122365ff4fcd750f011bf8cab61dbd0d346e7c961363"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+        "passed": true,
+        "seconds": 10.95,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-18.log",
+        "sha256": "cd966af09cde20c66add194dc3974782721707a4c165e28b5f5bc699b533e559",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_filter_members.png",
+            "sha256": "02a1b5b236b2cad2d56b17c49d384c37a50b36bc1f0a6252781443d1e3dce2b4"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+        "passed": true,
+        "seconds": 13.66,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-19.log",
+        "sha256": "91a46ba6dde7eece8d6dd53c02d921225654b8824cbf8f3fe09d40cca4c2aa18",
+        "images": [
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_reference_missing.png",
+            "sha256": "a32d3fa92013e1820044737e594bde696ca2420238d0602e9b29d8820ebebb52"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_reference_bound.png",
+            "sha256": "c4432a45f02d7b084ab757fc55554bfb87b0ab36fcc4db62d538c13fa47e472a"
+          },
+          {
+            "path": "/tmp/kclash-glass-stack-20261104-final12-provider_quick_yaml_error.png",
+            "sha256": "d72d6d5c5d3f2ef5e57c736f207c510e96908f0693f7d437407d8fa6547de540"
+          }
+        ]
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderHostInstrumentedTest#actualProfileProviderOptionsSaveInPlaceSurviveRecreationAndKeepSource",
+        "passed": true,
+        "seconds": 20.12,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-20.log",
+        "sha256": "c43d040160581e5ccbe9c0d9e77cad7f2b286d58e2335dc782615c4e5d9f8a4c",
+        "images": []
+      },
+      {
+        "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityOpensFilterPresetsAndBothResourceUrlFormsWithoutChangingProfiles",
+        "passed": true,
+        "seconds": 12.33,
+        "log": "/tmp/kclash-glass-stack-20261104-final12-21.log",
+        "sha256": "b17e1f2ec52b3948a94d172e6682af828d7f5013c2f389b61c59eb91df5f3f49",
+        "images": []
+      }
+    ]
+  },
+  "batchInterpretation": "final12是最终生产/测试包完整22/22；final10在相同生产包、前期测试包22/22，随后只增强配置保护；final9也是前期测试包，不替代最终批次，各批数量不相加。",
+  "preservation": {
+    "formalProfileCount": 1,
+    "before": {
+      "log": "/tmp/kclash-glass-stack-20261104-preserve-before12-0.log",
+      "sha256": "ab5a16c5409ee3065de8e80208bb329a86c3a86e1506e1def033a47267e9a9fb",
+      "bytes": 962,
+      "passed": true,
+      "status": "kclash_visual_preserved=before count=1 sha=ae892ba8f8a49a0db1dbb510360f5b0b46c1e794e83a071848ea74efced8b8a3"
+    },
+    "after": {
+      "log": "/tmp/kclash-glass-stack-20261104-preserve-after12-0.log",
+      "sha256": "260f1b56b0b0238855a8fdad158baa18ba18b85748ad584b648557417b3b01ff",
+      "bytes": 961,
+      "passed": true,
+      "status": "kclash_visual_preserved=after count=1 sha=ae892ba8f8a49a0db1dbb510360f5b0b46c1e794e83a071848ea74efced8b8a3"
+    },
+    "guard": "glass-final12独立会话组前组后Room全行及逐字段摘要、当前选择、正文文件名/SHA/size/mtime保持；未清数据。",
+    "legacyGuard": {
+      "passed": false,
+      "beforeLog": "/tmp/kclash-glass-stack-20261104-preserve-before.log",
+      "afterLog": "/tmp/kclash-glass-stack-20261104-preserve-after10-0.log",
+      "finding": "最初before到final10仅Room行摘要变化；旧选择/正文SHA-size-mtime完全一致。inspect11只读检查无更新失败状态、候选默认值均不匹配。具体字段/时点未定；旧基线及失败保留，不回写未知旧字段。最终final12独立快照只证明最终集中批次的全量元数据稳定。"
+    },
+    "preferencesAndScripts": "本组未做网络或核心启停；未单独声明全量脚本/偏好快照保护。",
+    "install": "只对Kotlin App/Test使用install -r，无connectedDebugAndroidTest。"
+  },
+  "finalDevice": {
+    "device": {
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "sdk": "36",
+      "abi": "arm64-v8a",
+      "size": "Physical size: 1080x2340"
+    },
+    "settings": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "artifacts": {
+      "com.lonnnnnng.flclash": {
+        "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "c2a75c44edce74a32fb1c3969bdf318f1f354a805b00c00bd197b2157648a378",
+        "bytes": 90682722,
+        "installedSha256": "c2a75c44edce74a32fb1c3969bdf318f1f354a805b00c00bd197b2157648a378",
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "98f2343c0267225b6aa8e26a99e192e91fe4b9ad29bd5501979a1caaea25c5c4",
+        "bytes": 4029148,
+        "installedSha256": "98f2343c0267225b6aa8e26a99e192e91fe4b9ad29bd5501979a1caaea25c5c4",
+        "nativeAbis": []
+      }
+    },
+    "release": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "aedbdda5df3c69e1148df2c4d2597800ed5a20007755983500524bbd6c62ae9b",
+      "bytes": 48112664,
+      "signed": false,
+      "installed": false
+    },
+    "servicesPresent": false,
+    "tun0Present": false,
+    "sourceYaml": {
+      "localSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+    },
+    "flutterReference": {
+      "installed": true,
+      "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1",
+      "matchesBefore": true,
+      "operations": "仅只读核对包路径和SHA，未安装覆盖、卸载、清数据或改配置。"
+    }
+  },
+  "previousBatches": [
+    {
+      "label": "critical8",
+      "passed": 0,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": false,
+          "seconds": 5.21,
+          "log": "/tmp/kclash-glass-stack-20261104-critical8-0.log",
+          "sha256": "f88a406f63f72f9c19ef67777ef57bbc45a74954851676c99a23fafa00e32c58",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "critical9",
+      "passed": 2,
+      "total": 2,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": true,
+          "seconds": 6.93,
+          "log": "/tmp/kclash-glass-stack-20261104-critical9-0.log",
+          "sha256": "7687f1b3496311c016f8c8dc5ba7a7b6fd8e7cfd63055f2532581a0168f473f2",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 10.22,
+          "log": "/tmp/kclash-glass-stack-20261104-critical9-1.log",
+          "sha256": "6fa4e927a406b906b910991315a3b038aacb337806e582a234bab25c20051331",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-critical9-glass_stack_false.png",
+              "sha256": "8e0bc1128f0311ba081c59157d6c83a27b6f32d7a3b18aa403dd0c20e2e0950c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-critical9-glass_stack_true.png",
+              "sha256": "8aa63594411fd5e3dd467a78ac679c7a9ebf0d99eb88355599c8d6b00da21d6c"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "diag7",
+      "passed": 0,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": false,
+          "seconds": 5.24,
+          "log": "/tmp/kclash-glass-stack-20261104-diag7-0.log",
+          "sha256": "a1e3d6bb06ea920bae1c4019a11593a2b9a08a054874583ac35225bba4cabbca",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "final10",
+      "passed": 22,
+      "total": 22,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+          "passed": true,
+          "seconds": 5.91,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-0.log",
+          "sha256": "f73ffbe243f8c8eecf54e81a24a9e3deea5b1bf0b474efcf3c3c94b0c931624a",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-glass_optics_false.png",
+              "sha256": "ce67ebd7213cc91a25bfb37e7b8be96ec7f76dcf70843c9d6897e1d616823d3c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-glass_optics_true.png",
+              "sha256": "acc63c9cb3d170588727ba661ef61dcb5d3078be8d6b519f19912da568da6302"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 14.41,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-1.log",
+          "sha256": "4609db3c81d258b337d640e8e4733baabf386677841e2e410b36a9626b93e8d0",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-stack_three.png",
+              "sha256": "6f71e7be065442eb2a144ab81c2e5dcf0aadcb452e37ec4d9daf59701478e53b"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-stack_fold_middle.png",
+              "sha256": "e96d5807ca798f63b7a1f033dc3b02532a3ad8d6a52c2e24cf176c2329c515a3"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 10.71,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-2.log",
+          "sha256": "d40ed509ab01888f5c56adf2dbbbce048dbd4a9e568b7cf5bc2e1e6263a933f8",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-glass_stack_false.png",
+              "sha256": "9e3c3f5edc44de15e19c148984cb76c34b213f7220a740cb7f1a63493b1118ac"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-glass_stack_true.png",
+              "sha256": "5ef1358b370f54767c0592f6a72c4d83a560079adda11799842e1088b1592c99"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#accessibilityLongPressKeepsSystemBackAndDoesNotSelectSource",
+          "passed": true,
+          "seconds": 4.74,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-3.log",
+          "sha256": "8988542314315d0613e9cf3c1bd060593df75a33d76e0877345818932f58fd7c",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 17.31,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-4.log",
+          "sha256": "928139508b3135e9e9137cdf585997e1462b81f82412c5f38a363f682a02986e",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-liquid_open_false_false.png",
+              "sha256": "4d49364e2b50efae5ff3c55dc63b9bdc73e9d3067bb547b6fc1e5f2f1c51f327"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-liquid_return_false_false.png",
+              "sha256": "5bf7afbac88c651fa2abef673bd0065c6368da850718d6a284df1670c7e37d45"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-liquid_open_false_true.png",
+              "sha256": "6ac8172ed226738966bac1f2bdfaa80a886d304a6dcdf99f9a475d9a94889a84"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-liquid_return_false_true.png",
+              "sha256": "692dd62aedfccc69c99132e6a1c3fa95f021bc3c084be17aff4849314d335403"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-liquid_open_true_false.png",
+              "sha256": "3c2bfa5dddbcf37e5365c1d216840085271bf0c0ba96e102a9a57b7cc8a41cc1"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-liquid_return_true_false.png",
+              "sha256": "3f3f7a137695c584563266b5cdeae51353b34446abaf65da71d361596b0d8d21"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-liquid_open_true_true.png",
+              "sha256": "53bc6262a736cc68ad1f06ce8b0888b5680feb93c9f3aa8fc631e569a61aa12c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-liquid_return_true_true.png",
+              "sha256": "b41d39b07fdaf3d6de6bcf0efa20df48edd1a7576be843e2247b61fb3d99b143"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": true,
+          "seconds": 6.58,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-5.log",
+          "sha256": "0444517539a16d477e553796c956c3c6d3d9de8c55fc54b60431412a52b8faae",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "passed": true,
+          "seconds": 6.84,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-6.log",
+          "sha256": "df6d9f334174cf6b65ddcd6f208530387e4fa6ec53f10e9b09d6325e53c3634e",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": true,
+          "seconds": 5.28,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-7.log",
+          "sha256": "4150d30c03963ebb6e0bd9be9b829fab5008e74cb4a7f68162b9cf05f32b7c20",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 13.99,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-8.log",
+          "sha256": "5102eb88d73c2b26d70faf3a4700fb99ea77ddf6101be2478d9745a50f4c4fa1",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-main_menu_profile_root_false.png",
+              "sha256": "84d96d23cdf98f263c87ea67b12376add1511f5c5d8776d0efd70e479f81fa21"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-main_menu_profile_more_false.png",
+              "sha256": "dcebc1ff74dcad12013069bebaf759d83e4c598b82d67c227d6b58f55039b944"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-main_menu_profile_root_true.png",
+              "sha256": "de940ef7ec4693546c983630ff479cf31d297cfd14939cfc946dbd53dbdb6347"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-main_menu_profile_more_true.png",
+              "sha256": "958423eea0314e90094ac6a9a7e0be41bade3446111a87f9103dc53a60d2c3eb"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 6.18,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-9.log",
+          "sha256": "69616042d045a60b1a5286f91fbacd45dcf295eaf7d08c7a9bcd119c75f044e5",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-main_menu_keyboard_context.png",
+              "sha256": "f761c776bccb9824b2ab86b17737d604eed2e0a13d22af6c4b256f4e0491b60b"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 6.19,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-10.log",
+          "sha256": "2a6726b73e42a0f11f37712ccd68dc3c4d4c0756b1cc76c01e826a44668f96bb",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 7.22,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-11.log",
+          "sha256": "746a1fba2669c23683621211fd53624c79169808f0fc253c58e88ed1bdf30800",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-main_menu_long_menu.png",
+              "sha256": "e01c860b9a99b81cab4e260ded6abd5a9b4bcf36868806aed48e2f23274f6680"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 9.46,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-12.log",
+          "sha256": "b3744c612c5e1d46a6a06bd1e1c4c551f755fa16d1448db2a09597c6bca33abe",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-main_menu_proxy_sort.png",
+              "sha256": "089b94ff5cf8c51b969033e4df62d073cdd50f44be363bd43f9e0832042194c8"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#scrolledRootSubmenuResetsScrollAndReturnsWithoutMovingAnchorOrDuplicatingAction",
+          "passed": true,
+          "seconds": 9.35,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-13.log",
+          "sha256": "2d40305ef65ff71d4977d91621fc137f56b7d4cb8a8cdb9afce6b9059278c7fa",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "seconds": 9.52,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-14.log",
+          "sha256": "62a102e66e0722acd39e7ff98066123ed51db0f3640e61b07c74c1db81e1a652",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+          "passed": true,
+          "seconds": 28.17,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-15.log",
+          "sha256": "7bef4e61657ce520b93603c8046b527817d71886a7eeb6fe22b101b02665909a",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxies_list_false.png",
+              "sha256": "32a64db81b21113699ff45e27574d12b113f305a703b4f2368d09e5b09378a61"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_ss_editor_false.png",
+              "sha256": "0fdd3f357ce5c3d60053344370c261e370f1ee77607019b24ad5cd6b29d3f386"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_options_false.png",
+              "sha256": "9b55009a07f4c3257d9df316dd729731ebb2bd1d2a6945bc7ff0fcc3b1c799eb"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_transport_false.png",
+              "sha256": "f62f2e7ef86d99584cf986349bb6a9ef9630f37a4898fe257be191fb97e0a9f4"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxies_list_true.png",
+              "sha256": "e82f6e78a3c860c39172c49a82e63a70fcba0e4859417336760ca7a39f515b75"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_ss_editor_true.png",
+              "sha256": "f5233e0d8933160aca974ef97f80a91045db14b7956cdf2aed37a051b55adebd"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_options_true.png",
+              "sha256": "5a693c5cdb4a947ea4ce07feb55c8d787ec8b6c38bdc320cb08788c15e6b353f"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_transport_true.png",
+              "sha256": "187f2fe8ba9d703304d5c3d922ae44d8ae7472beb4b3e930a3eed045b568a76a"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+          "passed": true,
+          "seconds": 11.03,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-16.log",
+          "sha256": "91447926da86adbb0288264ce952f454510428b32a707b8c3e83841932109274",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_discard.png",
+              "sha256": "2578bf28715c43844223c6ac034ac9c59c259b2b066e12cbaff1cfe70dd04790"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_delete_references.png",
+              "sha256": "c066115675d29181e90f2b4a111d577c890ffc8c82bae3117320fca899ff2640"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-local_proxy_empty.png",
+              "sha256": "770c299cc084ddea66f3af9ab8b3073794b74525840683867de08141fbe03b94"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+          "passed": true,
+          "seconds": 21.71,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-17.log",
+          "sha256": "750a0908c02b2ea26404375e10530afc1b04ca1e729f155bda50c0cf86be7842",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_option_picker_false.png",
+              "sha256": "cd81a38f3eb0f767cda693d2ccd4f0bcc439a2942855917cada17322999b2458"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_ip_picker_false.png",
+              "sha256": "4c9fc4a234e5c8fa6e12915bd5566868d5cdeb7b79055b3229408d7cb177437c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_options_error_false.png",
+              "sha256": "315fc9d0caed8b0feab3ae6842a90aead2660812ee89b22df46eded7d48656dd"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_option_picker_true.png",
+              "sha256": "a9acdb50bf389f54aa6514a26dfacbf5cdd74acdaf896e83bc3e7fb96071987e"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_ip_picker_true.png",
+              "sha256": "b0f0a3fb8b2024f7bad8b511afdfb535de47785b6611b94a8b8fb5798574d5b4"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_options_error_true.png",
+              "sha256": "391940d80c1dc23f4e4b040667615cdeba55647db90879957652c6002bead869"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+          "passed": true,
+          "seconds": 10.55,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-18.log",
+          "sha256": "1c2a82bc77772910b32bdbb5c899966a149d08d391795e6c502653e98117bcb5",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_filter_members.png",
+              "sha256": "188be41c08f7f6c31d5e2a19d6ccc5790ea8a18d89e0763de068af5a0a59922b"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+          "passed": true,
+          "seconds": 14.63,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-19.log",
+          "sha256": "5a9859bbfcff0c055b0ae1a9c502aba2ca575ed54f89697fd82da60adcaa7fa1",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_reference_missing.png",
+              "sha256": "b542560e0be3cc86fd182ae3b8e467e9fb5ff32c31a0b6abf296b61a7a4e778a"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_reference_bound.png",
+              "sha256": "9af011c9f57e42ae5fed3e67adc6d3f97af93056e40dc42fe7836762a1113a41"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final10-provider_quick_yaml_error.png",
+              "sha256": "82d5822b77f9e4535e83ea101af4ee88b61c2deaff5a874f30a8b3ad783c2782"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderHostInstrumentedTest#actualProfileProviderOptionsSaveInPlaceSurviveRecreationAndKeepSource",
+          "passed": true,
+          "seconds": 19.2,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-20.log",
+          "sha256": "915b0261ed0a7470c65e24813c2db00131800db23b610fb101f868835c788073",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityOpensFilterPresetsAndBothResourceUrlFormsWithoutChangingProfiles",
+          "passed": true,
+          "seconds": 12.69,
+          "log": "/tmp/kclash-glass-stack-20261104-final10-21.log",
+          "sha256": "a8038927dcde941ba67618d6123506993bff3b40a4983988f354d88d807b4b02",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "final6",
+      "passed": 5,
+      "total": 6,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+          "passed": true,
+          "seconds": 5.81,
+          "log": "/tmp/kclash-glass-stack-20261104-final6-0.log",
+          "sha256": "288457476dbb1a1bccf84695e5cdc65e1f02d66c037bd4921de15b12c52f85d0",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-glass_optics_false.png",
+              "sha256": "395601bbfcfd8d4a8ef88ae4ddeb5ca6aee0d2734a1c557a8528d42360af2358"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-glass_optics_true.png",
+              "sha256": "69228c0566e9cc931a5c49459ea226222b90084ca6c33b8aed9dd29640e2f27e"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 14.03,
+          "log": "/tmp/kclash-glass-stack-20261104-final6-1.log",
+          "sha256": "9ad0e4dde232d189fec95d23055c46d764f5404d753c2430d023bc5ac9759840",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-stack_three.png",
+              "sha256": "3b9d0c1f827489ddeb2c58658260e3834de8e67fd50d7ad9baac8a136a1fc560"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-stack_fold_middle.png",
+              "sha256": "7c25a22ac48e4bc98bd444ff4835aa9efa2166e4f507e0a87f80d799251acc04"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 10.96,
+          "log": "/tmp/kclash-glass-stack-20261104-final6-2.log",
+          "sha256": "7b486e6b66575d5fbc3b6360504f069d0bba251f90572655ebc1a1eec3a479d8",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-glass_stack_false.png",
+              "sha256": "7f9cc5943cfbf01fa5036e0e70d1b30c560497689f15f6d34fe6a35334d87938"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-glass_stack_true.png",
+              "sha256": "7a43581a8fb1301cec7fdd23a93cd52ddc85dad7d8d7ef95a98ef8ebe80d0f1e"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#accessibilityLongPressKeepsSystemBackAndDoesNotSelectSource",
+          "passed": true,
+          "seconds": 4.76,
+          "log": "/tmp/kclash-glass-stack-20261104-final6-3.log",
+          "sha256": "8988542314315d0613e9cf3c1bd060593df75a33d76e0877345818932f58fd7c",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 17.86,
+          "log": "/tmp/kclash-glass-stack-20261104-final6-4.log",
+          "sha256": "8288eb14ce7b12447e5f0f19d65c6f37ee507510aa32dc7799384813b35fb764",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-liquid_open_false_false.png",
+              "sha256": "e2acff3aaa072a563c80a857ae5815820cec37361dce6837624ed0db0cb2f22d"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-liquid_return_false_false.png",
+              "sha256": "e2d9ded8eb63018b7a8e5d41cc601bbb17ec2deb0f6b70fb7b33baaac350031c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-liquid_open_false_true.png",
+              "sha256": "79354e3e2c600f7e59e3cf797b837dd650d4dd35aaf0e4aa300de709a9b34067"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-liquid_return_false_true.png",
+              "sha256": "3e240c63b5c3db5edc9645ecee32d0251cc16f5d022ec267ab3856a3edfc1c19"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-liquid_open_true_false.png",
+              "sha256": "68db4fe8ebd9dbf6a6ec4de41148519baed1553210dc4b6ddfdbd8120085b147"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-liquid_return_true_false.png",
+              "sha256": "665987da9ee2b29bdf3e0016ab31161b4f280a34b2139a827eb9e0df0aee7903"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-liquid_open_true_true.png",
+              "sha256": "9a6c29128e0743b5be4ef239890869873145dd46564ca98cad0e97952f216e08"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final6-liquid_return_true_true.png",
+              "sha256": "46e1c322fe412d4c1350a77b2ca6d9820c42072d9f5400493f979d32ffd1c7f1"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": false,
+          "seconds": 4.48,
+          "log": "/tmp/kclash-glass-stack-20261104-final6-5.log",
+          "sha256": "5f3709c65083708fbd401e80df82d38aed1a392daf4a1c4313fe3b535abee131",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "final9",
+      "passed": 22,
+      "total": 22,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+          "passed": true,
+          "seconds": 5.2,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-0.log",
+          "sha256": "77d71e7087d22c615bdb8bbcb1bf715c9eaa58dbc8b4e9d0f43b88fe41626bb2",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-glass_optics_false.png",
+              "sha256": "5196f2c72cadaea8821d330a0ff59e5088d038bb552c2169316023ad01978307"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-glass_optics_true.png",
+              "sha256": "13451f447d5eebd20e54d2e7d8de6b3fde66943de9654d3bfffe5e39673fd01f"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 14.13,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-1.log",
+          "sha256": "c0338fd348abb0724c1847696b98298d78b1b73951abc7d622cc79b780196607",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-stack_three.png",
+              "sha256": "e0607011b67ea76a8b201a281957067d416a57243c4ca7afd23d8a43f0124c5a"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-stack_fold_middle.png",
+              "sha256": "ded15159fc844fa6fd38e046ffc278024fd0dfaa87b51fb7cdf1a1bca5b00195"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "passed": true,
+          "seconds": 10.04,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-2.log",
+          "sha256": "35e734b3b85e0ae677afc09a1e2cb174b704da3ac84ea29904c7cdf6510df778",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-glass_stack_false.png",
+              "sha256": "34ee5e36b597a7d99dddfce28097bafbf246c7f67626dd1cc851100a75404ddc"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-glass_stack_true.png",
+              "sha256": "7bd4e87803e2e1109d697c14a8981b1c9aea1725110c74a4434afddff9ceda2a"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#accessibilityLongPressKeepsSystemBackAndDoesNotSelectSource",
+          "passed": true,
+          "seconds": 4.77,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-3.log",
+          "sha256": "d0c7fd8c74dbb8668e194cbe17616ab25c4b2a0c0ba069f3b751722b59ae2322",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 17.6,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-4.log",
+          "sha256": "f7b1f6264896433d05e1de577eac4f9731c8396152ea1c70631319ee693ae275",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-liquid_open_false_false.png",
+              "sha256": "c546205e9774bbc3da75989a360c95eddbb07c94929c0c5d0805b41211e976d6"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-liquid_return_false_false.png",
+              "sha256": "2de74f5e4177ebddf815219f324607fce151d645a4259e8ed4563613fa6b1073"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-liquid_open_false_true.png",
+              "sha256": "1f00a18a65110e93cacf538dd726cb97caa1fc4c028c5fb994cbc6fa33192feb"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-liquid_return_false_true.png",
+              "sha256": "ef2ee701fd3e83b245d65d81b9bc180a3b6fceb493ee945544c816d10a8a9642"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-liquid_open_true_false.png",
+              "sha256": "178e2bdb7acb699930f320494356c9a2933790d68a1357069e5d59d4c5062650"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-liquid_return_true_false.png",
+              "sha256": "c64d10470d3a93d28312d6dbca47e055a57dc3cf186714b679af625f0f680707"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-liquid_open_true_true.png",
+              "sha256": "f3b538c96185c562fa6df0ec3c2fdc30271723155f606848e0d7ff4027ec37c0"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-liquid_return_true_true.png",
+              "sha256": "7e904b26eefef1c30cc46d8f1d6c49f009a2069bc6f21a59640ea7225160cdfc"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": true,
+          "seconds": 6.68,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-5.log",
+          "sha256": "3a03b8430ba42593e1ac1bac40f55f516369d9fd98439dbc63473e1d9b1acad3",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "passed": true,
+          "seconds": 6.76,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-6.log",
+          "sha256": "c0617cd261c6eec01e98b8222ac964361c347f2c8ef1bdec0b359307f03bd80d",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": true,
+          "seconds": 4.82,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-7.log",
+          "sha256": "4e18aafba022dd44221e3adb9e16f086b1597e5978152f10ab0867dfd877a076",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 14.26,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-8.log",
+          "sha256": "5092030fcf41b7258be1796797b6d1ab4fdb904b40ffbb069c304d11b8ecb2ee",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-main_menu_profile_root_false.png",
+              "sha256": "1c725deed8ea9ac4f21a61d103a66c8a4418f6ab9c7e1b7b893b19ca42dacabc"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-main_menu_profile_more_false.png",
+              "sha256": "25fdc9e0e01ae8bdf038bced2c186dabf90eacd41545df97a0f838d4ea1bddbc"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-main_menu_profile_root_true.png",
+              "sha256": "592c6c9185f8c5f0208ec839f609c8926ee1a4c115869154a127c007c79229ce"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-main_menu_profile_more_true.png",
+              "sha256": "9510ddacb9dc967f0d2392dbb2e0f90cde5556cd3cd6c36c0b467358fbed8ed9"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 6.3,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-9.log",
+          "sha256": "4f13f321f7885f41d7f20b2be14c4fe4b5438a328ceaeb3d12c095d4877f93a2",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-main_menu_keyboard_context.png",
+              "sha256": "8c40272825d4da57418269150f047944bfe5d5fea39afc52f4fedacdac39815b"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 6.09,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-10.log",
+          "sha256": "ae3214ebb1c52f7e30a2c1ac9218eac8f4bcedff4d53e26007412598c43b5f51",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 7.15,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-11.log",
+          "sha256": "686dd4d86112a9e55abb661d32eeccbb51c8bdfc0b59f0716accb4144426d201",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-main_menu_long_menu.png",
+              "sha256": "49e52c4429f3eae1be20350a1e19e1ad5b1cc1f779274053ded3b2fc507f65eb"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 9.4,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-12.log",
+          "sha256": "43c4e572d9e19999c4def7c45a0a8e290bac471de14232af7487e0e5dca77be2",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-main_menu_proxy_sort.png",
+              "sha256": "5edc24a75268d2456bc1db4ae8a82c311ef98b7dff581c0ff3feaba8769dfa5c"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#scrolledRootSubmenuResetsScrollAndReturnsWithoutMovingAnchorOrDuplicatingAction",
+          "passed": true,
+          "seconds": 9.5,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-13.log",
+          "sha256": "2432882b7ca68e5804bec6a626a206d7c735f9213b9d71f82de9376331c3164d",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "seconds": 9.42,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-14.log",
+          "sha256": "5267aa68b5e55a52bcdc74fe06e557026a4b7d912ea895091fcbe1e813f6d241",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+          "passed": true,
+          "seconds": 27.63,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-15.log",
+          "sha256": "25ad9320f23202345d50100537c2732e3e8f678a1c6b00a859360d05811285a9",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxies_list_false.png",
+              "sha256": "eda665763a732f0e734d4bed3a9e638d85d3925d0c6e3556dca021fc74e73d23"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_ss_editor_false.png",
+              "sha256": "22924cc2167ccea422233077954a893a63415dffad7c9f853d0ef36427431726"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_options_false.png",
+              "sha256": "e7e91952fa521ddd7a9beb794e0f1990084c2c46da9c8ac90d92d369e6315156"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_transport_false.png",
+              "sha256": "081f021a413011f1ed11d3cdbcea732d9f05f1cdf926195d49124d8d78f4e72b"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxies_list_true.png",
+              "sha256": "01edb260ed2413d30bb49e29cd2acd9135860053295796b8d32b7a6c51f72c4b"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_ss_editor_true.png",
+              "sha256": "baf91dbd5c87daa82af60772e57cbec4623e63b2f39a836d2dbcc9badacf2010"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_options_true.png",
+              "sha256": "30c106cbcc84871c2f7439882fa2350fa9fb1bdb158c2f982f4b3fbd057d9fc1"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_transport_true.png",
+              "sha256": "84262c3254512c50edee2aca88068ee241f67d95fcd52fa36eac45a028155fe7"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+          "passed": true,
+          "seconds": 11.14,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-16.log",
+          "sha256": "b35de02401566661ece690fd82f8efdc3b596715b91ed6d74a6b185055efe8b2",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_discard.png",
+              "sha256": "fb722acda0ec1c5878adfc9203fbebb10b250343c971c1799872151032fcf73e"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_delete_references.png",
+              "sha256": "3d1a02156b7b4361f2fcacb4f7e098afabdcfdb3b3f5f2eb0c5762262cde447e"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-local_proxy_empty.png",
+              "sha256": "5419f0068a552520dce599bbda245439640bb7ecce54ebab5b360fafe6fcb891"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+          "passed": true,
+          "seconds": 21.28,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-17.log",
+          "sha256": "3d47130523019108f5a4691b36029847fe0c1cabbb5edced88044dcde3d98f67",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_option_picker_false.png",
+              "sha256": "b28ffdadc121de1dfdd227fdfae017c63037303981e6e45c2d0d79d031360d3b"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_ip_picker_false.png",
+              "sha256": "20c7acf199854e67cf44fc853744ad8ae2e7b9171b1265b555dd690fdf3250c7"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_options_error_false.png",
+              "sha256": "3b73663147ae82709e718e50be81ca5c2fbda6fcd631e41f209847ba940bca51"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_option_picker_true.png",
+              "sha256": "ff42603a1c17e06f2420b2970bd294e457cdf81c11279e15964c6ead03905d95"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_ip_picker_true.png",
+              "sha256": "ae17e88a580b8a461ce546553ec27652d682fa923498d60feadccdb846dafd96"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_options_error_true.png",
+              "sha256": "a88261565a1a70e417787cee94e8d250c1a45b7309460964129b66dd7da87d3f"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+          "passed": true,
+          "seconds": 11.17,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-18.log",
+          "sha256": "6ceba344c678ef012d28d6911faa14f54104ccfbbe9344187c3867ca1fb0066e",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_filter_members.png",
+              "sha256": "6dde3b38776e7e61be7534aac3680a79081a54cbb24503b5bf0e47019c68ef3b"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+          "passed": true,
+          "seconds": 14.22,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-19.log",
+          "sha256": "782e2942c79ac5e4061d1dcf34cadcd4bca5774bb1eff03c731fdcdab140d862",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_reference_missing.png",
+              "sha256": "4812e4c07e8fe7113a4a534674631850a72d72add2885e962cd5a8897f209c44"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_reference_bound.png",
+              "sha256": "07be4fe693d71190e42ce71492d41d614d84611b5e60c63b594c316488cd6023"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-final9-provider_quick_yaml_error.png",
+              "sha256": "f529be1a4244a14501a87f4c5e219d5c10fa6f4dc8d61651a0935709fde5c729"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderHostInstrumentedTest#actualProfileProviderOptionsSaveInPlaceSurviveRecreationAndKeepSource",
+          "passed": true,
+          "seconds": 19.36,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-20.log",
+          "sha256": "aa4578ee2835fadd44e34223f7ace08c5b6a51e6b4215d3a349c7751ef613eef",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityOpensFilterPresetsAndBothResourceUrlFormsWithoutChangingProfiles",
+          "passed": true,
+          "seconds": 12.92,
+          "log": "/tmp/kclash-glass-stack-20261104-final9-21.log",
+          "sha256": "9d61a8a439034efebb9c534032e63bd42da03f2a7d8d6b002060e13eb4ed2daf",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "first4",
+      "passed": 0,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+          "passed": false,
+          "seconds": 4.82,
+          "log": "/tmp/kclash-glass-stack-20261104-first4-0.log",
+          "sha256": "29bf4d850d85624b58efa2e34330cf9ea26fc9eb6e6420fc98274c585ba5354f",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "optics5",
+      "passed": 2,
+      "total": 2,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+          "passed": true,
+          "seconds": 5.99,
+          "log": "/tmp/kclash-glass-stack-20261104-optics5-0.log",
+          "sha256": "3454f956443fc031fc27b9e0e95079f0789092bfa0cb4f5b6aae755d457b8f46",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-optics5-glass_optics_false.png",
+              "sha256": "d95c84068b29e39dc6d77ea1f7c4597da04e731eb6d8f70866fbe4627d3f5b59"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-optics5-glass_optics_true.png",
+              "sha256": "27daff26ef4b6779bc1ed02ef4fb2e42c889e09cdaf422e8266e6eff6168ee27"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 14.26,
+          "log": "/tmp/kclash-glass-stack-20261104-optics5-1.log",
+          "sha256": "58d3724af99a04aa2df74f20a1a666e3576a78f374f946c38cc15ddb38fb0316",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-optics5-stack_three.png",
+              "sha256": "e8ed2394dc9bc9d19716ce3b046f29712eb4ba702c4686d796a93427fbd40d01"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-optics5-stack_fold_middle.png",
+              "sha256": "dca228fc5f0676acb726ffc4e2dc692053af87ef32bae17ccd71f04d98bb9b6f"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "preserve-after10",
+      "passed": 0,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+          "passed": false,
+          "seconds": 7.2,
+          "log": "/tmp/kclash-glass-stack-20261104-preserve-after10-0.log",
+          "sha256": "1e760d03ea116fbbd1e5b4c7b6699f4f1462c6a41b55847194dd43f04f5ce554",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "providerrest5",
+      "passed": 3,
+      "total": 3,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+          "passed": true,
+          "seconds": 14.27,
+          "log": "/tmp/kclash-glass-stack-20261104-providerrest5-0.log",
+          "sha256": "976ee1bfd9c3fa9951c7425076d6eaee0540d858740c24fe5e145ab10d4cf312",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providerrest5-provider_reference_missing.png",
+              "sha256": "f9a3c65e968cfe6098b90cbeb87403c881f4b6db5e60c1043a326a10f1ed9644"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providerrest5-provider_reference_bound.png",
+              "sha256": "a5d003f7dfbcc75723f2813602c728d1b853b44cf0fa96f10cb50c25b0871c16"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providerrest5-provider_quick_yaml_error.png",
+              "sha256": "31041acdcd081dc50b31ca5630c1969e18182a2777200a847c9986364ded4e7e"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderHostInstrumentedTest#actualProfileProviderOptionsSaveInPlaceSurviveRecreationAndKeepSource",
+          "passed": true,
+          "seconds": 19.32,
+          "log": "/tmp/kclash-glass-stack-20261104-providerrest5-1.log",
+          "sha256": "33d538f97a35b7e6582c737967b2c1df1f73a4c4fd7d65b5610f2386d98d313a",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityOpensFilterPresetsAndBothResourceUrlFormsWithoutChangingProfiles",
+          "passed": true,
+          "seconds": 12.76,
+          "log": "/tmp/kclash-glass-stack-20261104-providerrest5-2.log",
+          "sha256": "f7b56216e3834e389531a0be18d382c03578d0a68d36ba929392782cff0bf618",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "providers5",
+      "passed": 1,
+      "total": 2,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+          "passed": true,
+          "seconds": 21.39,
+          "log": "/tmp/kclash-glass-stack-20261104-providers5-0.log",
+          "sha256": "b79a1eecc3de1a809d36e65176fe6595fa76312f145d56f8750ead62d13ba440",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providers5-provider_option_picker_false.png",
+              "sha256": "d68c3d830575fe72ace7b5d4bd439fd8ddd93241c5ecccb213b15a4f163c715a"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providers5-provider_ip_picker_false.png",
+              "sha256": "609ceb9d7902e7cb9c7328a0f02baba9e7ba9de074f12804b9054577111f52a5"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providers5-provider_options_error_false.png",
+              "sha256": "d7ed2941999fedf6cb6f092ce9b038fff2afb71b30b279e256f69b43b67b7206"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providers5-provider_option_picker_true.png",
+              "sha256": "273c2c35db3fdbdcd065035717f016a456bfd3ccd3deb1381de5ebf330a5f882"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providers5-provider_ip_picker_true.png",
+              "sha256": "bda9615802696431850c23d8a60282b0d5d1e44652b67b4a674b5fcf2a6cb23c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providers5-provider_options_error_true.png",
+              "sha256": "0ce57181615320e6c6c4e97954c07a4775f4574776f1590e1f94f63e01dc611e"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+          "passed": false,
+          "seconds": 8.41,
+          "log": "/tmp/kclash-glass-stack-20261104-providers5-1.log",
+          "sha256": "40bc6fca2e2107c12ceb8ef316f8aa90c0619743a0506252dc45bff71cc7a122",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-providers5-provider_filter_members.png",
+              "sha256": "63c21e2a899079833586a069ffc658feaeb1c8bc8a697b0d5878ba31a934d2d0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "regression5",
+      "passed": 2,
+      "total": 3,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#accessibilityLongPressKeepsSystemBackAndDoesNotSelectSource",
+          "passed": true,
+          "seconds": 5.1,
+          "log": "/tmp/kclash-glass-stack-20261104-regression5-0.log",
+          "sha256": "a0dfaaadfebf563bf538c2c700659eb5a28c2c588ae8f4987f8e0dc8eed29dc2",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "passed": true,
+          "seconds": 18.53,
+          "log": "/tmp/kclash-glass-stack-20261104-regression5-1.log",
+          "sha256": "c77270bbba05c4e5fa38967dacf3ab912c5f5b9a5d5cb6992f520f72dc12fad5",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-regression5-liquid_open_false_false.png",
+              "sha256": "d1f732f969310c9e327b4e137fd8956b58201ec63eb3eb021cd9cdf29aacabe9"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-regression5-liquid_return_false_false.png",
+              "sha256": "a46ed147630b560103f694a0334ec33aeee32ec62a37ab1b7a550196c3977e4f"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-regression5-liquid_open_false_true.png",
+              "sha256": "656bb4deca99728f5d07dc282b9a856f226bfc17f628f9fadd960f6df65d63d8"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-regression5-liquid_return_false_true.png",
+              "sha256": "53c950a04cec48c894678ac721b47307c93ccacede4882f852edae1ed408a41d"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-regression5-liquid_open_true_false.png",
+              "sha256": "b75c2886cfaf699ecf436ae12fb261d173070c215b0c9d77e856c7c8eca8e169"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-regression5-liquid_return_true_false.png",
+              "sha256": "ea903ea4d55acc28565abac79bec16fb8a639b929f2c2a8206cc0e46c67b3d36"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-regression5-liquid_open_true_true.png",
+              "sha256": "fc4fee74351d6d7732da1f67397bd4e098e71195a84a2a07a53cd868de5a5054"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-regression5-liquid_return_true_true.png",
+              "sha256": "56bbffe0e090a3d04ae4e753066aa46cb7ac983c1cb8ce46a2ec5dc566ad82f4"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "passed": false,
+          "seconds": 4.65,
+          "log": "/tmp/kclash-glass-stack-20261104-regression5-2.log",
+          "sha256": "785ab1d9a9b57a938ef0742fb50909ead5836da1a8bd5097f81ba004c415c76c",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "remaining5",
+      "passed": 10,
+      "total": 11,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "passed": true,
+          "seconds": 7.1,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-0.log",
+          "sha256": "9ddd8860a7d1000ee5751493c5a2c8e80c7531ee56d065ba2dedc702175edb85",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": true,
+          "seconds": 4.95,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-1.log",
+          "sha256": "9e456a5299d16923abddf8de1ea933a5dc1b0cceb9dcc55758e44ad8dd92883c",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 13.82,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-2.log",
+          "sha256": "9535dd70f63f086cf2291d0eafed0a24656337c11a092f1d66094343ea8e5e52",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-main_menu_profile_root_false.png",
+              "sha256": "1c02d05d72f6016b9f80b8e0fc26dddd8dcd6d38842e916509c1ddea4a3e0eb6"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-main_menu_profile_more_false.png",
+              "sha256": "bb8a151b68b2e709f31460bec1d1b6522ae8c7e7436a7552582270a1c8c68244"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-main_menu_profile_root_true.png",
+              "sha256": "7013abc2b1c33d1df01574231937c344d74deba54b2a383795d1842fe50a61da"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-main_menu_profile_more_true.png",
+              "sha256": "f8354373be033a79eeff0dafab78768f7270a881ae978334a380b85d85697f2f"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 6.07,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-3.log",
+          "sha256": "848e82496e22a39a820c36e51fa7f95ea7650c4eb20d8d65bc67e4150e1004d2",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-main_menu_keyboard_context.png",
+              "sha256": "b284e1f058d814d2b517233ee56016c59df126557a0702b909795fcce7aff676"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 6.07,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-4.log",
+          "sha256": "03513e418773e5723c4061fc1a57fea4704560a46acc010f963013100407ac01",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 7.22,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-5.log",
+          "sha256": "ae2a7582b4052d9312b1470a3dbdd08df52833a8dd4bfa40eb202f5f8cedaf96",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-main_menu_long_menu.png",
+              "sha256": "1b67652a380c08b5d93b1ebf31c07679181f9601f9ed2a5b09c72656ffb580bf"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 9.33,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-6.log",
+          "sha256": "bcbc3e9cec6ff66a2c24bd03f6839dadce41bcfe241e967b46e05effae558f3d",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-main_menu_proxy_sort.png",
+              "sha256": "6a20976b2ac8c12b7cb5e442a6c0546114c65b36d43c4895830cbef6c3d08bda"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#scrolledRootSubmenuResetsScrollAndReturnsWithoutMovingAnchorOrDuplicatingAction",
+          "passed": true,
+          "seconds": 9.26,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-7.log",
+          "sha256": "e5e717dddcc6d5f2204a2ba1c20293d122d21f4159a2226b7469c0f6be434e8b",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": true,
+          "seconds": 9.76,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-8.log",
+          "sha256": "fe12d469b5b4f46b9258000acb21a6cf95251cdd1a40298e0acd7765b87a515e",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+          "passed": true,
+          "seconds": 27.67,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-9.log",
+          "sha256": "6244ce3f5e4eed238d16da3533e47fe3880a0eeba410974a6079ebdca533a17e",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxies_list_false.png",
+              "sha256": "39bb83de4aace92818fd2e4088221f4acc7d0f8cfe1986f2c6a5234bf32e044d"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxy_ss_editor_false.png",
+              "sha256": "1bcb34880d04e601369cd759d17563628722c0a8bbf15eb15b49c14f8899c832"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxy_options_false.png",
+              "sha256": "e4c80fbef7203ea2ab60243c927746b9b4d916ddaa5e96bc179671f474fc4efd"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxy_transport_false.png",
+              "sha256": "54b50a0f668ba31e0a651c0d28fb0d6c9b3fcb02f896446c2c68936b4d26de08"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxies_list_true.png",
+              "sha256": "c915c8055372afc31df3ebc430f166b4a87dec3da0c0a46079f10f630012757c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxy_ss_editor_true.png",
+              "sha256": "59b8ab7ccd30bafe78a407fe407ba31b9088afafd2b9ccd8e4c7febe7a27079d"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxy_options_true.png",
+              "sha256": "b536e555359aa05e1828d88d93577e837a63e5eb27dbb1288dcdfd336fe48dfc"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxy_transport_true.png",
+              "sha256": "f2f2e24d72a521e808c13a61f7e89f2be77e7934f5ff3a7926163309504e0002"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+          "passed": false,
+          "seconds": 13.6,
+          "log": "/tmp/kclash-glass-stack-20261104-remaining5-10.log",
+          "sha256": "317c1dc2b450e974ef7126be3f2715fae1311987099b227e2b86ffc83cce299f",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxy_discard.png",
+              "sha256": "c7affea4f665ef6f54080ebb7c36b38b8da8a455eeffe63a8db97bfd3602e147"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-remaining5-local_proxy_delete_references.png",
+              "sha256": "a160e130e9dc8762b9fb0e5c563dc95a316dd915be2dd4118310119070d368d6"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "rest6",
+      "passed": 8,
+      "total": 9,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "passed": true,
+          "seconds": 7.24,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-0.log",
+          "sha256": "7863493ab77596b65ec6afce7e8f69c8e2f120bb344d60daa50a5912720dbdc1",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "passed": true,
+          "seconds": 4.97,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-1.log",
+          "sha256": "9de632d20bd6887c622a5df62db708a7b54eef95f290e405074984ce0bddcac5",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+          "passed": true,
+          "seconds": 14.01,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-2.log",
+          "sha256": "f945fc5407bb2f1ab7ab67aabb99454631fd8c1d32b05fab2f229e580d5615bf",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-rest6-main_menu_profile_root_false.png",
+              "sha256": "1f6f2f572192737b8f374ce1fd7dfb31e0268c597c625d8b43ef3f35a8fdcab6"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-rest6-main_menu_profile_more_false.png",
+              "sha256": "5255386798535c2099c379a518f31707ade4dd313fb4468ad1a5827c9e06a85c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-rest6-main_menu_profile_root_true.png",
+              "sha256": "70f58389790e19fb9d757e353a2461808c913486e1ecb06c3bdbfddd8aa4dd7e"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-rest6-main_menu_profile_more_true.png",
+              "sha256": "8db17d3d375e11d82d19b5c859310de5e6fa8f6edc58ab749191ef8bf83135b5"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+          "passed": true,
+          "seconds": 6.23,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-3.log",
+          "sha256": "054655b4e9bd5a45d706b46671b4068e2f40bacbdb491f36fb9055223dfccab7",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-rest6-main_menu_keyboard_context.png",
+              "sha256": "ebdaa52bd51313d5091a4ca5bd56ecc228406d895abe90c0de98ef35d140e295"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#nodeMenuWithdrawsOnRefreshAndOnBackgroundWithoutExecutingAction",
+          "passed": true,
+          "seconds": 6.13,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-4.log",
+          "sha256": "5360b53b12dbcf7a1c74890c8c04af08293726be8cbb74473b36a3f5a26ba2db",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#longMenuScrollsInsideSafeViewportAndDisabledItemCannotSubmit",
+          "passed": true,
+          "seconds": 7.18,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-5.log",
+          "sha256": "7c54e21af619887cc15f47c9a52e3e388df04b354b1b739b22f2ff7694353b4b",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-rest6-main_menu_long_menu.png",
+              "sha256": "1cfca45ef2956f4771ed44b4875b860962a9d25c26036358239f53011a13b017"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+          "passed": true,
+          "seconds": 9.67,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-6.log",
+          "sha256": "4af92d476c57d6c4d502447978f300823e8aff286ed2e2c827f592239b982776",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-rest6-main_menu_proxy_sort.png",
+              "sha256": "e8cfeda4ee40f0ebd8c4c2d54f2f513bace089a4247f82e4b7acd6d507f1f2f3"
+            }
+          ]
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesProxyMotionInstrumentedTest#scrolledRootSubmenuResetsScrollAndReturnsWithoutMovingAnchorOrDuplicatingAction",
+          "passed": true,
+          "seconds": 9.23,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-7.log",
+          "sha256": "cd393c62c112fa94f05c0d0d2e692d8ca2b21de744a894c489f2300d8a577612",
+          "images": []
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "passed": false,
+          "seconds": 9.37,
+          "log": "/tmp/kclash-glass-stack-20261104-rest6-8.log",
+          "sha256": "2eec444e896fb3e12a6279693fddbe7f8cbc8554c7c461667cc24fce2af84721",
+          "images": []
+        }
+      ]
+    },
+    {
+      "label": "stack4",
+      "passed": 1,
+      "total": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "passed": true,
+          "seconds": 12.19,
+          "log": "/tmp/kclash-glass-stack-20261104-stack4-0.log",
+          "sha256": "0b4ed0e63d8cc1bc21ddaf5f41e4855e61813fa3a6b82caf434320fc6e5a0548",
+          "images": [
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-stack4-stack_three.png",
+              "sha256": "ab65ad0a8c4640f1f07e93348b6c6d2a7906a3c21efe2c60c39614f8cfd7122c"
+            },
+            {
+              "path": "/tmp/kclash-glass-stack-20261104-stack4-stack_fold_middle.png",
+              "sha256": "542b21b3a1ef3667d6409eb2dd61e568fad9cc36c0c776dfaee289e7fc06bc21"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "failureNotes": [
+    "compile1的setFloatUniform spread编译失败、first4的AGSL保留字flat运行时编译失败已修。",
+    "regression5/final6/diag7/critical8的拖选失败，定位maxValue缺少组合订阅；修复后critical9 2/2、final9/final10均通过。",
+    "remaining5本地删除与providers5过滤添加受IME位移影响未点中，测试关闭键盘等待稳定后恢复真实点击，最终回归通过。",
+    "rest6正式宿主发生native SIGABRT stack not found in /proc/self/maps，未确定唯一根因；最终该入口重验通过。",
+    "build5长时间Lint由本任务主动中断退出130，不能记完整成功；build9-full在同批Release kapt生成期间出现生成文件缺失/FIR阶段异常，build10后独立串行lint10成功。",
+    "final6/critical9玻璃集成截图过早，仅拍到源或root；build10补等待已展开、确认child/back和空闲后截图，以final12子卡图为准。"
+  ],
+  "limitations": [
+    "最初before到final10的Room元数据变化字段/时点未确定；选择与正文保持，仅最终final12独立窗口证明完整元数据保持。",
+    "完整Flutter视觉仍PARTIAL；三次盒式预模糊是高斯近似，未宣称Flutter完整采样品质或全应用逐像素一致。",
+    "其他通用玻璃控件、ultra分级、source regular到menu完整材质插值及更多子页/空态尚未全部对齐；默认玻璃关闭，未新增主题设置。",
+    "API<33背景磨砂fallback仅代码覆盖，未在低API设备实测；未完成跨机型或完整性能profile。",
+    "本组未重跑订阅/Provider实网；先前90个MRS与六种Rule格式、HTTP/File Proxy沿用各自历史证据。",
+    "Fallback实核无有效now/冷进程仍受现有授权输入无非空Fallback组限制。",
+    "正文8MiB极限性能未验；备份/系统恢复、观测次要打磨、语言和主题设置继续暂缓。",
+    "Go、正式签名Release运行、远端CI本组未验。"
+  ],
+  "sourceFiles": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuCarry.kt": {
+      "sha256": "fd1a2b61fe8376652b9667c904bb26e157b896a829e58a80c78b11ba2209cfe6",
+      "bytes": 1631
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuGlass.kt": {
+      "sha256": "5ad36a8f92375d0b616cf1e1d6dc7b7a581fe182fd1033b4b061dc5f3a50d2c4",
+      "bytes": 12683
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt": {
+      "sha256": "8c1266d353fc15e448a595c2d1487b2b90dd358406405073216c4839875d0e7d",
+      "bytes": 8481
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuSource.kt": {
+      "sha256": "334a4fb8b89689e47541e11a4fec14bed85bf0f3025e4d0add0d20955f2ef32e",
+      "bytes": 3663
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuStack.kt": {
+      "sha256": "13cfb2d0db5af9297d16332b90da01b4c65a9dc8517bc53ab2f0cb37eda54e1e",
+      "bytes": 11403
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt": {
+      "sha256": "289a20634826eef86152dfefa70b56f99cd1a8c772f9234a49229a800c732c8e",
+      "bytes": 24275
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppSuperellipseShape.kt": {
+      "sha256": "35d670f266f88213ac76654e3797ac2199ccf5a561213a892b9cb279ea2e1371",
+      "bytes": 8167
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": {
+      "sha256": "d466a0e65307137c0d679110f8ac2b823b657e44909078c6b0da94ce62119643",
+      "bytes": 248180
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxiesPage.kt": {
+      "sha256": "ffdb4019f781454259f15b876e40ea1297e912122b8030ba447499887dafa608",
+      "bytes": 24035
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": {
+      "sha256": "8da620c82f6f9c6a33d9e54bc57fd66ab0bb179a77808316fb98ea4bb1f6e4ff",
+      "bytes": 10275
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProvidersPage.kt": {
+      "sha256": "33120a793a96a1c9589c4ea4e699b658616fc36ddb6e3238ffd31ecbd48da945",
+      "bytes": 16427
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProviderOptionsPage.kt": {
+      "sha256": "9334c11e75b284d3004bdedf6d2efa51d1969dc2e1c231e4c3f7e9539a8e04ce",
+      "bytes": 18137
+    },
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt": {
+      "sha256": "56350884e632c9d763a899bbf7ce34cbee8f8f47ae9f1a0970006b87cb70d90c",
+      "bytes": 52465
+    },
+    "android/tests/app/AppMenuMotionTest.kt": {
+      "sha256": "642c95a65d1d9b8b63954c6a875d14dd7a3e53b5c4bafd57151ef94aaed69af3",
+      "bytes": 3756
+    },
+    "android/tests/instrumented/GlassStackInstrumentedTest.kt": {
+      "sha256": "3ab6025b1848e192dd9cf85625fddc339e9237740739f520ee7738e286d5174d",
+      "bytes": 10976
+    },
+    "android/tests/instrumented/LiquidMenuInstrumentedTest.kt": {
+      "sha256": "6d77c2118377aa92c6dd1aa4de88df8414d9b845930fdf7f432268cf592e1d49",
+      "bytes": 12858
+    },
+    "android/tests/instrumented/LocalProxiesPageInstrumentedTest.kt": {
+      "sha256": "17c2457d0a6404ba3a8575f21036f5b329ee9dae8fb5829ad2b955ee94904d97",
+      "bytes": 9517
+    },
+    "android/tests/instrumented/MenuVisualHostInstrumentedTest.kt": {
+      "sha256": "ae6de570b41e59204b189756cc1402c6883b33674aa19a1a22cd35bf9a900102",
+      "bytes": 4951
+    },
+    "android/tests/instrumented/ProfilesProxyMotionInstrumentedTest.kt": {
+      "sha256": "6d6c3780564ae0bc2e5ab19339ba864afb403061f2c1fc9a107f1f5936bffd39",
+      "bytes": 7037
+    },
+    "android/tests/instrumented/ProviderPagesInstrumentedTest.kt": {
+      "sha256": "fa1c900f74202bebedacf0caf471c217248dcec11620ac8dc2ed950a02e23b12",
+      "bytes": 11232
+    }
+  },
+  "localLogIndex": {
+    "/tmp/kclash-glass-stack-20261104-build10.log": {
+      "sha256": "d978e180f37aabab7a35634d30247cab64c40149cff02ada9c308dc5c48d1c50",
+      "bytes": 20188
+    },
+    "/tmp/kclash-glass-stack-20261104-build2.log": {
+      "sha256": "84d6a8fdf831c3ce906cf41593d404991b7407cdb3551e11884f4f988516c3c7",
+      "bytes": 40736
+    },
+    "/tmp/kclash-glass-stack-20261104-build3.log": {
+      "sha256": "1a7b1d52fe31d979314bfefd8e0d5cbf0b2226dc59a687cc02a0d4b297ec0cc0",
+      "bytes": 24170
+    },
+    "/tmp/kclash-glass-stack-20261104-build4.log": {
+      "sha256": "46b8f7dcdca1a52b1117a92b2578a0db2bb5e0061a2a49ec58a9eec333f05f3f",
+      "bytes": 36441
+    },
+    "/tmp/kclash-glass-stack-20261104-build5.log": {
+      "sha256": "f922cfcff66a36b169e93a803d43d9eff12d236831572fde86b40ebdbf8cb4a2",
+      "bytes": 22664
+    },
+    "/tmp/kclash-glass-stack-20261104-build6.log": {
+      "sha256": "d9eac2f1764b2e7ddbf8706d956d5790555f7196e507f45739e760128241e7c6",
+      "bytes": 24514
+    },
+    "/tmp/kclash-glass-stack-20261104-build8-debug.log": {
+      "sha256": "8e33a55a0879348fa2f7cd20a32befd825ee4a47ed4f0f2e4bac1634ee29e390",
+      "bytes": 9311
+    },
+    "/tmp/kclash-glass-stack-20261104-build9-debug.log": {
+      "sha256": "78a844f7930d097ed1c8049e41927b197e4faaba85875e85c7b37a8af00dbc6e",
+      "bytes": 9168
+    },
+    "/tmp/kclash-glass-stack-20261104-build9-full.log": {
+      "sha256": "d815b06c837154438b573d543ae7f424122b0cb514ac7ff9d0271f90a87a5b24",
+      "bytes": 54511
+    },
+    "/tmp/kclash-glass-stack-20261104-compile1.log": {
+      "sha256": "7efab58c2457ccb2d0d4b399a30630d455b3b5dbdee7a91047ca24bd8c0af788",
+      "bytes": 7123
+    },
+    "/tmp/kclash-glass-stack-20261104-crash6.log": {
+      "sha256": "488e00757df62f6323d33455b85412b2c9cf4b1914937db100489feb1abbd5b6",
+      "bytes": 118969
+    },
+    "/tmp/kclash-glass-stack-20261104-critical8-0.log": {
+      "sha256": "f88a406f63f72f9c19ef67777ef57bbc45a74954851676c99a23fafa00e32c58",
+      "bytes": 25240
+    },
+    "/tmp/kclash-glass-stack-20261104-critical9-0.log": {
+      "sha256": "7687f1b3496311c016f8c8dc5ba7a7b6fd8e7cfd63055f2532581a0168f473f2",
+      "bytes": 849
+    },
+    "/tmp/kclash-glass-stack-20261104-critical9-1.log": {
+      "sha256": "6fa4e927a406b906b910991315a3b038aacb337806e582a234bab25c20051331",
+      "bytes": 883
+    },
+    "/tmp/kclash-glass-stack-20261104-diag7-0.log": {
+      "sha256": "a1e3d6bb06ea920bae1c4019a11593a2b9a08a054874583ac35225bba4cabbca",
+      "bytes": 25945
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-0.log": {
+      "sha256": "f73ffbe243f8c8eecf54e81a24a9e3deea5b1bf0b474efcf3c3c94b0c931624a",
+      "bytes": 909
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-1.log": {
+      "sha256": "4609db3c81d258b337d640e8e4733baabf386677841e2e410b36a9626b93e8d0",
+      "bytes": 912
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-10.log": {
+      "sha256": "2a6726b73e42a0f11f37712ccd68dc3c4d4c0756b1cc76c01e826a44668f96bb",
+      "bytes": 839
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-11.log": {
+      "sha256": "746a1fba2669c23683621211fd53624c79169808f0fc253c58e88ed1bdf30800",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-12.log": {
+      "sha256": "b3744c612c5e1d46a6a06bd1e1c4c551f755fa16d1448db2a09597c6bca33abe",
+      "bytes": 860
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-13.log": {
+      "sha256": "2d40305ef65ff71d4977d91621fc137f56b7d4cb8a8cdb9afce6b9059278c7fa",
+      "bytes": 904
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-14.log": {
+      "sha256": "62a102e66e0722acd39e7ff98066123ed51db0f3640e61b07c74c1db81e1a652",
+      "bytes": 853
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-15.log": {
+      "sha256": "7bef4e61657ce520b93603c8046b527817d71886a7eeb6fe22b101b02665909a",
+      "bytes": 1094
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-16.log": {
+      "sha256": "91447926da86adbb0288264ce952f454510428b32a707b8c3e83841932109274",
+      "bytes": 944
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-17.log": {
+      "sha256": "750a0908c02b2ea26404375e10530afc1b04ca1e729f155bda50c0cf86be7842",
+      "bytes": 1039
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-18.log": {
+      "sha256": "1c2a82bc77772910b32bdbb5c899966a149d08d391795e6c502653e98117bcb5",
+      "bytes": 883
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-19.log": {
+      "sha256": "5a9859bbfcff0c055b0ae1a9c502aba2ca575ed54f89697fd82da60adcaa7fa1",
+      "bytes": 938
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-2.log": {
+      "sha256": "d40ed509ab01888f5c56adf2dbbbce048dbd4a9e568b7cf5bc2e1e6263a933f8",
+      "bytes": 883
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-20.log": {
+      "sha256": "915b0261ed0a7470c65e24813c2db00131800db23b610fb101f868835c788073",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-21.log": {
+      "sha256": "a8038927dcde941ba67618d6123506993bff3b40a4983988f354d88d807b4b02",
+      "bytes": 869
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-3.log": {
+      "sha256": "8988542314315d0613e9cf3c1bd060593df75a33d76e0877345818932f58fd7c",
+      "bytes": 836
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-4.log": {
+      "sha256": "928139508b3135e9e9137cdf585997e1462b81f82412c5f38a363f682a02986e",
+      "bytes": 1124
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-5.log": {
+      "sha256": "0444517539a16d477e553796c956c3c6d3d9de8c55fc54b60431412a52b8faae",
+      "bytes": 849
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-6.log": {
+      "sha256": "df6d9f334174cf6b65ddcd6f208530387e4fa6ec53f10e9b09d6325e53c3634e",
+      "bytes": 809
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-7.log": {
+      "sha256": "4150d30c03963ebb6e0bd9be9b829fab5008e74cb4a7f68162b9cf05f32b7c20",
+      "bytes": 835
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-8.log": {
+      "sha256": "5102eb88d73c2b26d70faf3a4700fb99ea77ddf6101be2478d9745a50f4c4fa1",
+      "bytes": 956
+    },
+    "/tmp/kclash-glass-stack-20261104-final10-9.log": {
+      "sha256": "69616042d045a60b1a5286f91fbacd45dcf295eaf7d08c7a9bcd119c75f044e5",
+      "bytes": 844
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-0.log": {
+      "sha256": "53a5a926be6f9494f290987dceb10e6bff035bd0a738153b32f93e4f0b3005fa",
+      "bytes": 909
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-1.log": {
+      "sha256": "c3e83af1cfe24c675cfe60054068cca4c6d7ac4f8af7399d915a7fa281c50d30",
+      "bytes": 912
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-10.log": {
+      "sha256": "90c01bd162bc24680eb9eaa06456d48edf4bd0de7ed82961ddb4c7bb79aa148d",
+      "bytes": 839
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-11.log": {
+      "sha256": "96e8e6f874d9a4c23b67d21f43d259f7d31cd44c5b7302c0993114cbd7602c39",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-12.log": {
+      "sha256": "32fab346e60b9283130bd40e2a7f1843f81342f052dc6c81c9aafa22e981fe7d",
+      "bytes": 862
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-13.log": {
+      "sha256": "f3b4432740d7d2c68da50ba631c21d35f4934456f8abc20868edf939dd1d5bbb",
+      "bytes": 903
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-14.log": {
+      "sha256": "d68eb15cfeaf0bdb47f3dbe57cb5538bdc7fa9cea32b8ad70823b4e816b934fa",
+      "bytes": 853
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-15.log": {
+      "sha256": "1d2df6344c0da48d4235a0cac4413d982835405744bded0ba84ed65f4bedcb8c",
+      "bytes": 1094
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-16.log": {
+      "sha256": "c674ecca70b9fac772f24ea0fea8a9f318950c78d3e88b89b177da9db07c3a04",
+      "bytes": 944
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-17.log": {
+      "sha256": "474a8c37b8d29d8cf0f9b85750d31e6c5b61902c20c0a2c063454a9077412339",
+      "bytes": 1039
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-18.log": {
+      "sha256": "cd966af09cde20c66add194dc3974782721707a4c165e28b5f5bc699b533e559",
+      "bytes": 883
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-19.log": {
+      "sha256": "91a46ba6dde7eece8d6dd53c02d921225654b8824cbf8f3fe09d40cca4c2aa18",
+      "bytes": 938
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-2.log": {
+      "sha256": "b6fd3d08f2a94faf3af900d7c9b6775762ea6765edf55e1b5232cbc17f950ab7",
+      "bytes": 883
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-20.log": {
+      "sha256": "c43d040160581e5ccbe9c0d9e77cad7f2b286d58e2335dc782615c4e5d9f8a4c",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-21.log": {
+      "sha256": "b17e1f2ec52b3948a94d172e6682af828d7f5013c2f389b61c59eb91df5f3f49",
+      "bytes": 868
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-3.log": {
+      "sha256": "202de589a14e449f691a43b2d7ed038cd8db924764336072bc02393933a4f783",
+      "bytes": 837
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-4.log": {
+      "sha256": "62f68a23e1914252909a16ec9c75df452ddb927930e24e568fb4059a75628b22",
+      "bytes": 1124
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-5.log": {
+      "sha256": "e903df07dd3878ba77f3f715be1b56b9fa2a6c7b802110ef098ff8e062a81064",
+      "bytes": 849
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-6.log": {
+      "sha256": "8bf064df1ddfff55dcbaffb9a9e26935e5d341816eb0a004a3ed8ecad82931ea",
+      "bytes": 808
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-7.log": {
+      "sha256": "210a3ae1cad8ee19684a7c085f98c0a255001dd15b56c02909f71336ed5b0a8d",
+      "bytes": 835
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-8.log": {
+      "sha256": "c7b7d503c71c4241098e0898a5818e8f943ef54b2b47657c80e57cca2fb2e325",
+      "bytes": 956
+    },
+    "/tmp/kclash-glass-stack-20261104-final12-9.log": {
+      "sha256": "5bf6a1d3fd020d4c7920d0d4395bd64c412612b5c538a4460bf9ff08af57ca24",
+      "bytes": 846
+    },
+    "/tmp/kclash-glass-stack-20261104-final6-0.log": {
+      "sha256": "288457476dbb1a1bccf84695e5cdc65e1f02d66c037bd4921de15b12c52f85d0",
+      "bytes": 909
+    },
+    "/tmp/kclash-glass-stack-20261104-final6-1.log": {
+      "sha256": "9ad0e4dde232d189fec95d23055c46d764f5404d753c2430d023bc5ac9759840",
+      "bytes": 912
+    },
+    "/tmp/kclash-glass-stack-20261104-final6-2.log": {
+      "sha256": "7b486e6b66575d5fbc3b6360504f069d0bba251f90572655ebc1a1eec3a479d8",
+      "bytes": 883
+    },
+    "/tmp/kclash-glass-stack-20261104-final6-3.log": {
+      "sha256": "8988542314315d0613e9cf3c1bd060593df75a33d76e0877345818932f58fd7c",
+      "bytes": 836
+    },
+    "/tmp/kclash-glass-stack-20261104-final6-4.log": {
+      "sha256": "8288eb14ce7b12447e5f0f19d65c6f37ee507510aa32dc7799384813b35fb764",
+      "bytes": 1124
+    },
+    "/tmp/kclash-glass-stack-20261104-final6-5.log": {
+      "sha256": "5f3709c65083708fbd401e80df82d38aed1a392daf4a1c4313fe3b535abee131",
+      "bytes": 25408
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-0.log": {
+      "sha256": "77d71e7087d22c615bdb8bbcb1bf715c9eaa58dbc8b4e9d0f43b88fe41626bb2",
+      "bytes": 909
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-1.log": {
+      "sha256": "c0338fd348abb0724c1847696b98298d78b1b73951abc7d622cc79b780196607",
+      "bytes": 912
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-10.log": {
+      "sha256": "ae3214ebb1c52f7e30a2c1ac9218eac8f4bcedff4d53e26007412598c43b5f51",
+      "bytes": 839
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-11.log": {
+      "sha256": "686dd4d86112a9e55abb661d32eeccbb51c8bdfc0b59f0716accb4144426d201",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-12.log": {
+      "sha256": "43c4e572d9e19999c4def7c45a0a8e290bac471de14232af7487e0e5dca77be2",
+      "bytes": 862
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-13.log": {
+      "sha256": "2432882b7ca68e5804bec6a626a206d7c735f9213b9d71f82de9376331c3164d",
+      "bytes": 904
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-14.log": {
+      "sha256": "5267aa68b5e55a52bcdc74fe06e557026a4b7d912ea895091fcbe1e813f6d241",
+      "bytes": 853
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-15.log": {
+      "sha256": "25ad9320f23202345d50100537c2732e3e8f678a1c6b00a859360d05811285a9",
+      "bytes": 1093
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-16.log": {
+      "sha256": "b35de02401566661ece690fd82f8efdc3b596715b91ed6d74a6b185055efe8b2",
+      "bytes": 943
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-17.log": {
+      "sha256": "3d47130523019108f5a4691b36029847fe0c1cabbb5edced88044dcde3d98f67",
+      "bytes": 1039
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-18.log": {
+      "sha256": "6ceba344c678ef012d28d6911faa14f54104ccfbbe9344187c3867ca1fb0066e",
+      "bytes": 883
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-19.log": {
+      "sha256": "782e2942c79ac5e4061d1dcf34cadcd4bca5774bb1eff03c731fdcdab140d862",
+      "bytes": 938
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-2.log": {
+      "sha256": "35e734b3b85e0ae677afc09a1e2cb174b704da3ac84ea29904c7cdf6510df778",
+      "bytes": 883
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-20.log": {
+      "sha256": "aa4578ee2835fadd44e34223f7ace08c5b6a51e6b4215d3a349c7751ef613eef",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-21.log": {
+      "sha256": "9d61a8a439034efebb9c534032e63bd42da03f2a7d8d6b002060e13eb4ed2daf",
+      "bytes": 869
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-3.log": {
+      "sha256": "d0c7fd8c74dbb8668e194cbe17616ab25c4b2a0c0ba069f3b751722b59ae2322",
+      "bytes": 837
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-4.log": {
+      "sha256": "f7b1f6264896433d05e1de577eac4f9731c8396152ea1c70631319ee693ae275",
+      "bytes": 1124
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-5.log": {
+      "sha256": "3a03b8430ba42593e1ac1bac40f55f516369d9fd98439dbc63473e1d9b1acad3",
+      "bytes": 849
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-6.log": {
+      "sha256": "c0617cd261c6eec01e98b8222ac964361c347f2c8ef1bdec0b359307f03bd80d",
+      "bytes": 809
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-7.log": {
+      "sha256": "4e18aafba022dd44221e3adb9e16f086b1597e5978152f10ab0867dfd877a076",
+      "bytes": 835
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-8.log": {
+      "sha256": "5092030fcf41b7258be1796797b6d1ab4fdb904b40ffbb069c304d11b8ecb2ee",
+      "bytes": 954
+    },
+    "/tmp/kclash-glass-stack-20261104-final9-9.log": {
+      "sha256": "4f13f321f7885f41d7f20b2be14c4fe4b5438a328ceaeb3d12c095d4877f93a2",
+      "bytes": 846
+    },
+    "/tmp/kclash-glass-stack-20261104-first4-0.log": {
+      "sha256": "29bf4d850d85624b58efa2e34330cf9ea26fc9eb6e6420fc98274c585ba5354f",
+      "bytes": 26841
+    },
+    "/tmp/kclash-glass-stack-20261104-lint10.log": {
+      "sha256": "47f7efb4983a719b3f5a1691b93b5ca5da1520e920a9e77b39384d85a4f9d958",
+      "bytes": 14712
+    },
+    "/tmp/kclash-glass-stack-20261104-lint11.log": {
+      "sha256": "55b28b73b8fc1a637d4c86507c1c5458b21e272aa8312236848edf9c568fdac6",
+      "bytes": 14216
+    },
+    "/tmp/kclash-glass-stack-20261104-lint12.log": {
+      "sha256": "ca13451d9d3bc8c5767bcd5744e6c9cd1c38cf2da038152fe1629fc299810bde",
+      "bytes": 14216
+    },
+    "/tmp/kclash-glass-stack-20261104-optics5-0.log": {
+      "sha256": "3454f956443fc031fc27b9e0e95079f0789092bfa0cb4f5b6aae755d457b8f46",
+      "bytes": 908
+    },
+    "/tmp/kclash-glass-stack-20261104-optics5-1.log": {
+      "sha256": "58d3724af99a04aa2df74f20a1a666e3576a78f374f946c38cc15ddb38fb0316",
+      "bytes": 912
+    },
+    "/tmp/kclash-glass-stack-20261104-preserve-after10-0.log": {
+      "sha256": "1e760d03ea116fbbd1e5b4c7b6699f4f1462c6a41b55847194dd43f04f5ce554",
+      "bytes": 5309
+    },
+    "/tmp/kclash-glass-stack-20261104-preserve-after12-0.log": {
+      "sha256": "260f1b56b0b0238855a8fdad158baa18ba18b85748ad584b648557417b3b01ff",
+      "bytes": 961
+    },
+    "/tmp/kclash-glass-stack-20261104-preserve-before.log": {
+      "sha256": "ac2c6b9146aa920d91e40a217e69cf214037d7ab79d0bbc1f49e4178918d5651",
+      "bytes": 961
+    },
+    "/tmp/kclash-glass-stack-20261104-preserve-before12-0.log": {
+      "sha256": "ab5a16c5409ee3065de8e80208bb329a86c3a86e1506e1def033a47267e9a9fb",
+      "bytes": 962
+    },
+    "/tmp/kclash-glass-stack-20261104-preserve-inspect11.log": {
+      "sha256": "c3629cc6d13edf6cd7447fc930fa559b624898d7c5204868c8113540a0062523",
+      "bytes": 2477
+    },
+    "/tmp/kclash-glass-stack-20261104-providerrest5-0.log": {
+      "sha256": "976ee1bfd9c3fa9951c7425076d6eaee0540d858740c24fe5e145ab10d4cf312",
+      "bytes": 938
+    },
+    "/tmp/kclash-glass-stack-20261104-providerrest5-1.log": {
+      "sha256": "33d538f97a35b7e6582c737967b2c1df1f73a4c4fd7d65b5610f2386d98d313a",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-providerrest5-2.log": {
+      "sha256": "f7b56216e3834e389531a0be18d382c03578d0a68d36ba929392782cff0bf618",
+      "bytes": 869
+    },
+    "/tmp/kclash-glass-stack-20261104-providers5-0.log": {
+      "sha256": "b79a1eecc3de1a809d36e65176fe6595fa76312f145d56f8750ead62d13ba440",
+      "bytes": 1039
+    },
+    "/tmp/kclash-glass-stack-20261104-providers5-1.log": {
+      "sha256": "40bc6fca2e2107c12ceb8ef316f8aa90c0619743a0506252dc45bff71cc7a122",
+      "bytes": 3362
+    },
+    "/tmp/kclash-glass-stack-20261104-regression5-0.log": {
+      "sha256": "a0dfaaadfebf563bf538c2c700659eb5a28c2c588ae8f4987f8e0dc8eed29dc2",
+      "bytes": 837
+    },
+    "/tmp/kclash-glass-stack-20261104-regression5-1.log": {
+      "sha256": "c77270bbba05c4e5fa38967dacf3ab912c5f5b9a5d5cb6992f520f72dc12fad5",
+      "bytes": 1124
+    },
+    "/tmp/kclash-glass-stack-20261104-regression5-2.log": {
+      "sha256": "785ab1d9a9b57a938ef0742fb50909ead5836da1a8bd5097f81ba004c415c76c",
+      "bytes": 25407
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-0.log": {
+      "sha256": "9ddd8860a7d1000ee5751493c5a2c8e80c7531ee56d065ba2dedc702175edb85",
+      "bytes": 809
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-1.log": {
+      "sha256": "9e456a5299d16923abddf8de1ea933a5dc1b0cceb9dcc55758e44ad8dd92883c",
+      "bytes": 835
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-10.log": {
+      "sha256": "317c1dc2b450e974ef7126be3f2715fae1311987099b227e2b86ffc83cce299f",
+      "bytes": 2705
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-2.log": {
+      "sha256": "9535dd70f63f086cf2291d0eafed0a24656337c11a092f1d66094343ea8e5e52",
+      "bytes": 956
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-3.log": {
+      "sha256": "848e82496e22a39a820c36e51fa7f95ea7650c4eb20d8d65bc67e4150e1004d2",
+      "bytes": 846
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-4.log": {
+      "sha256": "03513e418773e5723c4061fc1a57fea4704560a46acc010f963013100407ac01",
+      "bytes": 839
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-5.log": {
+      "sha256": "ae2a7582b4052d9312b1470a3dbdd08df52833a8dd4bfa40eb202f5f8cedaf96",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-6.log": {
+      "sha256": "bcbc3e9cec6ff66a2c24bd03f6839dadce41bcfe241e967b46e05effae558f3d",
+      "bytes": 862
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-7.log": {
+      "sha256": "e5e717dddcc6d5f2204a2ba1c20293d122d21f4159a2226b7469c0f6be434e8b",
+      "bytes": 904
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-8.log": {
+      "sha256": "fe12d469b5b4f46b9258000acb21a6cf95251cdd1a40298e0acd7765b87a515e",
+      "bytes": 853
+    },
+    "/tmp/kclash-glass-stack-20261104-remaining5-9.log": {
+      "sha256": "6244ce3f5e4eed238d16da3533e47fe3880a0eeba410974a6079ebdca533a17e",
+      "bytes": 1094
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-0.log": {
+      "sha256": "7863493ab77596b65ec6afce7e8f69c8e2f120bb344d60daa50a5912720dbdc1",
+      "bytes": 809
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-1.log": {
+      "sha256": "9de632d20bd6887c622a5df62db708a7b54eef95f290e405074984ce0bddcac5",
+      "bytes": 835
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-2.log": {
+      "sha256": "f945fc5407bb2f1ab7ab67aabb99454631fd8c1d32b05fab2f229e580d5615bf",
+      "bytes": 956
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-3.log": {
+      "sha256": "054655b4e9bd5a45d706b46671b4068e2f40bacbdb491f36fb9055223dfccab7",
+      "bytes": 846
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-4.log": {
+      "sha256": "5360b53b12dbcf7a1c74890c8c04af08293726be8cbb74473b36a3f5a26ba2db",
+      "bytes": 839
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-5.log": {
+      "sha256": "7c54e21af619887cc15f47c9a52e3e388df04b354b1b739b22f2ff7694353b4b",
+      "bytes": 864
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-6.log": {
+      "sha256": "4af92d476c57d6c4d502447978f300823e8aff286ed2e2c827f592239b982776",
+      "bytes": 862
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-7.log": {
+      "sha256": "cd393c62c112fa94f05c0d0d2e692d8ca2b21de744a894c489f2300d8a577612",
+      "bytes": 904
+    },
+    "/tmp/kclash-glass-stack-20261104-rest6-8.log": {
+      "sha256": "2eec444e896fb3e12a6279693fddbe7f8cbc8554c7c461667cc24fce2af84721",
+      "bytes": 486
+    },
+    "/tmp/kclash-glass-stack-20261104-stack4-0.log": {
+      "sha256": "0b4ed0e63d8cc1bc21ddaf5f41e4855e61813fa3a6b82caf434320fc6e5a0548",
+      "bytes": 911
+    },
+    "/tmp/kclash-glass-stack-20261104-testbuild11.log": {
+      "sha256": "db58e59d0217d978e801dcb16294648b102952c4928e6156804a24d41e8ce87f",
+      "bytes": 8296
+    },
+    "/tmp/kclash-glass-stack-20261104-testbuild12.log": {
+      "sha256": "385edf240576720fda07a288646707b623cc2d282f7db6d63dfd9decdc606e01",
+      "bytes": 8296
+    },
+    "/tmp/kclash-glass-stack-20261104-testbuild7.log": {
+      "sha256": "d98e0b49ab1b7dfda87f7f5a8a11f997a5745b40c7b51bd38ee9b27ab9c06b96",
+      "bytes": 8344
+    }
+  },
+  "attachmentPolicy": "日志/PNG/原始XML仅本机/tmp和build留存；仓库保留索引及哈希，未上传原始附件。"
+}

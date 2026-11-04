@@ -1,6 +1,10 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.runtime.remember
+import androidx.compose.material3.MaterialTheme
+import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -8,9 +12,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.graphics.layer.drawLayer
-import androidx.compose.ui.graphics.layer.GraphicsLayer
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.*
@@ -74,8 +75,9 @@ internal fun appMenuReturnFrame(anchor: Rect, from: AppMenuMorphFrame, seconds: 
     val reveal = from.progress * (1f - androidx.compose.animation.core.LinearOutSlowInEasing.transform((seconds / .1f).coerceIn(0f, 1f)))
     return AppMenuMorphFrame(Rect(center - Offset(size.width / 2, size.height / 2), size),
         max(0f, (from.radius + (from.platter.width / 2 - from.radius) * p) * scale), reveal,
-        Rect(dropCenter - Offset(dropSize.width / 2, dropSize.height / 2), dropSize), 28f * unit * min(1f, seconds / .05f) * (1f - absorbed),
-        8f * unit * (1f - reveal), .2f + .8f * androidx.compose.animation.core.CubicBezierEasing(.25f, .1f, .25f, 1f).transform((seconds / .47f).coerceIn(0f, 1f)))
+        Rect(dropCenter - Offset(dropSize.width / 2, dropSize.height / 2), dropSize), from.blend * (1f - absorbed),
+        from.blur + (8f * unit * (1f - reveal) - from.blur) * min(1f, seconds / .1f),
+        from.sourceAlpha + (1f - from.sourceAlpha) * androidx.compose.animation.core.CubicBezierEasing(.25f, .1f, .25f, 1f).transform((seconds / .47f).coerceIn(0f, 1f)))
 }
 
 internal class AppMenuMorphShape(private val frame: (Size) -> AppMenuMorphFrame) : Shape {
@@ -83,33 +85,39 @@ internal class AppMenuMorphShape(private val frame: (Size) -> AppMenuMorphFrame)
 }
 
 internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorphFrame, source: ImageBitmap? = null,
-    backdrop: ImageBitmap? = null, backdropOffset: Offset = Offset.Zero, frost: GraphicsLayer? = null) = drawWithContent {
-    val motion = frame(size)
-    val scale = motion.platter.width / size.width.coerceAtLeast(1f)
-    val path = motion.path()
-    val outline = motion.outline()
-    if (backdrop != null && frost != null) {
-        frost.record { drawImage(backdrop, topLeft = backdropOffset) }
-        if (android.os.Build.VERSION.SDK_INT >= 31) frost.renderEffect = BlurEffect(18f * density, 18f * density)
-        clipPath(outline) { drawLayer(frost) }
-    }
-    drawPath(outline, surface.copy(alpha = if (backdrop != null) .72f else 1f))
-    if (backdrop != null) drawPath(outline, Brush.linearGradient(listOf(Color.White.copy(alpha = .4f), Color.White.copy(alpha = .05f))), style = Stroke(1f * density))
-    motion.droplet?.let { drop -> if (source != null && drop.width > 0 && drop.height > 0) {
-        drawImage(source, dstOffset = androidx.compose.ui.unit.IntOffset(drop.left.roundToInt(), drop.top.roundToInt()),
-            dstSize = androidx.compose.ui.unit.IntSize(drop.width.roundToInt().coerceAtLeast(1), drop.height.roundToInt().coerceAtLeast(1)), alpha = motion.sourceAlpha)
-    } }
-    clipPath(path) {
-        withTransform({
-            translate(motion.platter.center.x, motion.platter.center.y)
-            scale(scale, scale, Offset.Zero)
-            translate(-size.width / 2f, -size.height / 2f)
-        }) {
-            drawContext.canvas.saveLayer(Rect(Offset.Zero, size), Paint().apply {
-                alpha = motion.progress.coerceIn(0f, 1f)
-            })
-            this@drawWithContent.drawContent()
-            drawContext.canvas.restore()
+    backdrop: AppMenuBackdrop? = null, backdropOffset: Offset = Offset.Zero,
+    drawSurface: () -> Boolean = { true }) = composed {
+    val glass = remember { AppMenuGlassRenderer() }
+    val dark = LocalKClashDarkTheme.current
+    // 作者 long：默认深色由固定上游surfaceContainer.shiftTone(7)实际导出，不能拿邻近的容器槽代替HCT色调。
+    val tint = if (dark) Color(0xFF343537) else MaterialTheme.colorScheme.surfaceBright
+    drawWithContent {
+        val motion = frame(size)
+        if (!drawSurface()) { drawContent(); return@drawWithContent }
+        val scale = motion.platter.width / size.width.coerceAtLeast(1f)
+        val path = motion.path()
+        val outline = motion.outline()
+        val refracted = backdrop != null && glass.draw(this, motion, backdrop, backdropOffset, tint, dark)
+        if (!refracted) {
+            if (backdrop != null) clipPath(outline) { drawAppMenuFrost(backdrop, backdropOffset) }
+            drawPath(outline, surface.copy(alpha = if (backdrop != null) .72f else 1f))
         }
-    }
+        motion.droplet?.let { drop -> if (source != null && drop.width > 0 && drop.height > 0) {
+            drawImage(source, dstOffset = androidx.compose.ui.unit.IntOffset(drop.left.roundToInt(), drop.top.roundToInt()),
+                dstSize = androidx.compose.ui.unit.IntSize(drop.width.roundToInt().coerceAtLeast(1), drop.height.roundToInt().coerceAtLeast(1)), alpha = motion.sourceAlpha)
+        } }
+        clipPath(path) {
+            withTransform({
+                translate(motion.platter.center.x, motion.platter.center.y)
+                scale(scale, scale, Offset.Zero)
+                translate(-size.width / 2f, -size.height / 2f)
+            }) {
+                drawContext.canvas.saveLayer(Rect(Offset.Zero, size), Paint().apply {
+                    alpha = motion.progress.coerceIn(0f, 1f)
+                })
+                this@drawWithContent.drawContent()
+                drawContext.canvas.restore()
+            }
+        }
+}
 }

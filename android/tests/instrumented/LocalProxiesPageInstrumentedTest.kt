@@ -71,7 +71,10 @@ class LocalProxiesPageInstrumentedTest {
         capture("local_proxy_discard")
         compose.onNodeWithText("继续编辑").performClick()
         compose.waitUntil(5_000) { compose.onAllNodesWithText("继续编辑").fetchSemanticsNodes().isEmpty() }
-        compose.onNodeWithText("删除节点").performScrollTo().performClick()
+        // 作者 long：继续编辑会恢复原输入焦点；先收起IME并等视口稳定，再用真实触摸点击屏内删除入口。
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        compose.waitForIdle(); android.os.SystemClock.sleep(350)
+        compose.onNodeWithText("删除节点").performScrollTo().assertIsDisplayed().performClick()
         capture("local_proxy_delete_references")
         compose.waitUntil(5_000) { compose.onNodeWithText("以下配置正在引用节点", substring = true).isDisplayed() }
         compose.onNodeWithText("以下配置正在引用节点", substring = true).assertIsDisplayed()

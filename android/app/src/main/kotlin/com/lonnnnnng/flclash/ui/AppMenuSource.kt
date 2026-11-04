@@ -55,7 +55,7 @@ internal fun Modifier.appMenuSource(source: AppMenuSource): Modifier = composed 
 internal val LocalAppMenuGlass = staticCompositionLocalOf { false }
 
 /** 作者 long：背景取宿主Window而不是Popup自身，避免折射层重复拍到菜单；取消后丢弃回调，图像从不进入存储。 */
-internal suspend fun captureAppMenuBackdrop(view: View): ImageBitmap? {
+internal suspend fun captureAppMenuBackdrop(view: View, density: Float): AppMenuBackdrop? {
     if (Build.VERSION.SDK_INT < 26 || !view.isAttachedToWindow) return null
     var context: Context = view.context
     while (context is ContextWrapper && context !is Activity) context = context.baseContext
@@ -63,10 +63,11 @@ internal suspend fun captureAppMenuBackdrop(view: View): ImageBitmap? {
     val window = dialog ?: (context as? Activity)?.window ?: return null
     val decor = window.decorView
     if (decor.width <= 0 || decor.height <= 0) return null
-    return suspendCancellableCoroutine { continuation ->
+    val captured: Bitmap? = suspendCancellableCoroutine { continuation ->
         val bitmap = Bitmap.createBitmap(decor.width, decor.height, Bitmap.Config.ARGB_8888)
         runCatching { PixelCopy.request(window, bitmap, { result ->
-            if (continuation.isActive) continuation.resume(if (result == PixelCopy.SUCCESS) bitmap.asImageBitmap() else null)
+            if (continuation.isActive) continuation.resume(if (result == PixelCopy.SUCCESS) bitmap else null)
         }, Handler(Looper.getMainLooper())) }.onFailure { if (continuation.isActive) continuation.resume(null) }
     }
+    return captured?.let { prepareAppMenuBackdrop(it, density) }
 }
