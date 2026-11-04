@@ -319,7 +319,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     var editing by remember { mutableStateOf<GroupOption?>(null) }
     var addOption by remember { mutableStateOf(false) }
     var members by rememberSaveable(initial.key) { mutableStateOf(false) }
-    var yaml by remember { mutableStateOf(false) }
+    var yaml by rememberSaveable(initial.key) { mutableStateOf(false) }
     var discard by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val clearFocus = remember { arrayOf<(() -> Unit)?>(null) }
@@ -447,20 +447,41 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
             editing = null
         })
     }
-    if (yaml) {
-        var value by rememberSaveable(group.key) { mutableStateOf(ProxyGroupDrafts.definitionYaml(group)) }
-        var yamlError by remember { mutableStateOf<String?>(null) }
-        ProfileEditorPage(onDismissRequest = { yaml = false }, title = { Text("快捷 YAML") }, backTag = "proxy_group_yaml_back",
-            confirmButton = { TextButton(onClick = { runCatching { json = ProxyGroupDrafts.definition(value, group).json; yaml = false; error = null }.onFailure { yamlError = it.message } },
-                modifier = Modifier.testTag("proxy_group_yaml_confirm")) { Text("确认") } }, text = {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    yamlError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                    OutlinedTextField(value, { value = it }, Modifier.fillMaxWidth().testTag("proxy_group_yaml_content"), minLines = 15)
-                }
-            })
-    }
+    if (yaml) GroupQuickYaml(group, onDismiss = { yaml = false }, onApply = { next -> json = next.json; yaml = false; error = null })
     if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃此策略组修改？") },
         confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
+}
+
+@Composable
+private fun GroupQuickYaml(group: ProxyGroupDraft, onDismiss: () -> Unit, onApply: (ProxyGroupDraft) -> Unit) {
+    val original = remember(group.key) { ProxyGroupDrafts.definitionYaml(group) }
+    var value by rememberSaveable(group.key) { mutableStateOf(original) }
+    var failure by rememberSaveable { mutableStateOf<String?>(null) }
+    var discard by rememberSaveable { mutableStateOf(false) }
+    var attempts by remember { mutableIntStateOf(0) }
+    val scroll = rememberScrollState()
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    LaunchedEffect(failure, attempts) { if (failure != null) scroll.animateScrollTo(0) }
+    fun apply(leaving: Boolean) {
+        focus.clearFocus(force = true); keyboard?.hide(); attempts++
+        if (leaving && value == original) { onDismiss(); return }
+        // 作者 long：沿用 Flutter 快捷编辑的返回即校验规则；成功只写父草稿，失败先保留正文再由用户决定是否放弃。
+        runCatching { ProxyGroupDrafts.definition(value, group) }.onSuccess(onApply).onFailure {
+            failure = "策略组 YAML 格式无效，请检查字段和缩进"
+            if (leaving) discard = true
+        }
+    }
+    ProfileEditorPage(onDismissRequest = { apply(true) }, title = { Text("快捷 YAML") }, backTag = "proxy_group_yaml_back",
+        confirmButton = { TextButton(onClick = { apply(false) }, modifier = Modifier.testTag("proxy_group_yaml_confirm")) { Text("确认") } }, text = {
+            Column(Modifier.fillMaxSize().verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                failure?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_yaml_error")) }
+                OutlinedTextField(value, { value = it; failure = null }, Modifier.fillMaxWidth().testTag("proxy_group_yaml_content"), minLines = 15)
+            }
+        })
+    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃 YAML 修改？") },
+        text = { Text(failure.orEmpty()) }, confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } },
+        dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }
 
 @Composable

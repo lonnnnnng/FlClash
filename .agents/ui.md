@@ -8,10 +8,14 @@ Design System 至少集中管理颜色、字体、间距、形状、图标、状
 
 验收范围固定为竖屏和系统默认字号；用户明确不需要横屏或大字号测试，后续不得运行这些测试，也不要运行包含这些用例的整类 instrumentation。深浅主题可按当前页面需求验证；其他布局差异需说明是 Android 平台约束还是尚未完成的 parity 工作。
 
+## 当前主页面交互切片（2026-11-05）
+
+规则编辑的原行身份、批选及保存中状态可重建恢复；源行已变更时阻止误新增。单策略组快捷YAML返回先校验并更新父草稿，错误可继续或放弃；Provider长文保存失败与同文案重试自动回顶。服务详情/管理/质量标题正文连续过渡，独立页内容和滚动状态解决返回后列表回顶；面板退场阻断业务触摸与按键。App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4 Debug/Test、未签名Release/R8及独立lint4双变体通过，各0错误/64警告（Debug10/Release9提示）。Redmi最终生产/测试包同批final5 28/28，63张PNG已目视，安装哈希匹配。首批26/28、两次6/7、motion4补验1/1及系统设置覆盖页面的final4 27/28独立保留、不累计。正式1份配置/原选择/正文SHA-size-mtime及逐字段摘要保持；原1.yaml双端、Flutter APK及旋转/字号/动画设置保持，结束无服务/tun0。证据`docs/acceptance/main-subpages-recovery-redmi-20261105.json`。整体Flutter视觉仍PARTIAL；服务子页边缘拖回、精确缓动/全应用视觉、未覆盖子页/空态/异常恢复与性能仍待补。本组规则重建是保存状态模拟恢复，未做冷进程；未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。玻璃默认关闭，Dock/按钮实时背景和触点光效后排；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。
+
 ## 最新菜单/子页切片（2026-11-04）
 
 共享regular/pill/menu/alert/tinted/lens材质与STANDARD/ULTRA等级、共用液滴回源、可逆多层展开、策略组/更多/链式代理覆盖子页及API27离线fallback已验，玻璃默认关闭；Redmi final6 19/19、API27 final6 10/10，详见`docs/acceptance/general-glass-subpages-api27-20261104.json`。完整视觉仍PARTIAL：预模糊近似，API24/25、31/32及其他ABI/实网未验；其他空态/页面、完整采样品质、全应用逐像素一致性和性能验证待补。早期Room元数据兼容不属于开发阶段要求；Redmi正式配置/选择/正文聚合摘要的count=1且before/after SHA一致，逐字段摘要未嵌入JSON；API27设置记录为null，不能据此确认恢复。主题/语言设置继续暂缓。
 
-## 当前编辑器与主页面回归（2026-11-04）
+## 前序编辑器与主页面回归（2026-11-04）
 
 脚本、Provider正文、选项、过滤预设和规则资源错误体验已补齐本组范围；选区移动不清失败，长文查找显式滚动，已提交回读失败只允许重新读取，保存失败自动回到错误且保留草稿。App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；最终build4 Debug/Test、未签名Release/R8及独立lint4双变体通过，各0错误/64警告（Debug10/Release9提示）。Redmi最终App/Test同批final4 43/43，69张PNG已目视，安装哈希匹配；首批40/43独立保留、不累计。正式1份配置/原选择/正文SHA-size-mtime及逐字段摘要保持，原1.yaml、Flutter APK和设备设置保持，结束无服务/tun0。证据`docs/acceptance/editor-errors-recovery-redmi-20261104.json`。完整Flutter视觉仍PARTIAL：未覆盖页面/面板、全应用动效与玻璃采样品质、常驻Dock/按钮/其他面板live背景和触点glow、8MiB正文性能仍待补；低API核心/VPN/实网、Fallback实核/冷进程、Go/正式签名运行/远端CI边界保持。玻璃默认关闭；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。

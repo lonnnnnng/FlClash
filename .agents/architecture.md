@@ -1,5 +1,15 @@
 # Architecture
 
+## 主页面子页状态与退场隔离（2026-11-05）
+
+CustomRulesEditor只向Bundle保存规范化规则摘要和行key，正文由当前源重建；摘要吻合时恢复身份，重复内容按原索引定位。批选key和pendingDigest可保存，原提交回读匹配才关闭子页；源已变更且旧行不可定位时拒绝误新增。
+
+GroupQuickYaml返回解析成功只更新父组草稿；失败保持正文并提供继续/放弃。ProviderQuickYaml提交收焦点/IME，失败按尝试次数回顶，重复相同错误也可见。
+
+DashboardModalSheet以pageKey/depth保存标题、正文及滚动状态，450ms横移四分之一宽；ServiceStatusPanel按页key生成独立Compose内容/操作lambda，避免离场树被下一页内容覆盖并丢失Lazy列表状态。只由活动页回报自然高度。ConnectionModalSheet退场统一消费触摸/按键，系统返回也不再触发子页业务。边缘拖回尚未实现，完整Flutter缓动/逐像素一致性仍PARTIAL。
+
+最终源码验证见`docs/acceptance/main-subpages-recovery-redmi-20261105.json`；保存状态重建不等于冷进程或实网验证。
+
 ## 菜单背景光学与可逆层栈（2026-11-04）
 
 - `AppMenuSource`的PixelCopy结果通过`prepareAppMenuBackdrop`在Default后台降采样/三次盒式卷积，分离raw/frosted；取消每16行检查。`AppMenuGlassRenderer` API33+用RuntimeShader/BitmapShader绘制连续圆角SDF、折射/bevel及goo高光，窗口坐标与父层paintScale参与背景采样；API27离线捕获与fallback已在手机AVD验收，API24/25、31/32和其他ABI未验，API27设置恢复不能由证据JSON确认。

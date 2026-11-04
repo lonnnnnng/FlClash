@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -26,22 +27,36 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.*
 import java.util.UUID
+import java.security.MessageDigest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 
+private fun rulesDigest(text: String): String = MessageDigest.getInstance("SHA-256")
+    .digest(text.toByteArray()).joinToString("") { "%02x".format(it) }
+
 /** 作者 long：规则操作逐次保存后仍留在列表；等待回读成功再关闭子页，写入失败保留编辑内容供修复。 */
 @Composable
 internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, saving: Boolean, onDismiss: () -> Unit,
     onSave: (String) -> Unit, catalog: CustomRuleCatalog = CustomRuleCatalog(), saveError: String? = null) {
-    var rows by remember(profile.id) { mutableStateOf(CustomRules.decode(initialRules, validate = false)) }
+    // 作者 long：表单保存的是行身份，重建必须恢复同一组 key；仅保存摘要和 key，避免把整份规则正文重复塞进系统 Bundle。
+    val rowsSaver = listSaver<List<CustomRuleDraft>, String>(
+        save = { values -> listOf(rulesDigest(CustomRules.editorText(values))) + values.map { it.key } },
+        restore = { saved ->
+            val current = CustomRules.decode(initialRules, validate = false)
+            if (saved.size == current.size + 1 && saved.first() == rulesDigest(CustomRules.editorText(current)))
+                current.mapIndexed { index, row -> row.copy(key = saved[index + 1]) }
+            else current
+        },
+    )
+    var rows by rememberSaveable(profile.id, stateSaver = rowsSaver) { mutableStateOf(CustomRules.decode(initialRules, validate = false)) }
     var pending by remember { mutableStateOf<List<CustomRuleDraft>?>(null) }
-    var pendingText by remember { mutableStateOf<String?>(null) }
+    var pendingDigest by rememberSaveable(profile.id) { mutableStateOf<String?>(null) }
     var query by rememberSaveable(profile.id) { mutableStateOf("") }
     var search by rememberSaveable(profile.id) { mutableStateOf(false) }
     var selecting by rememberSaveable { mutableStateOf(false) }
-    var selected by remember { mutableStateOf(setOf<String>()) }
+    var selected by rememberSaveable(profile.id, stateSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() })) { mutableStateOf(setOf<String>()) }
     var sorting by rememberSaveable { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
     var form by rememberSaveable { mutableStateOf<String?>(null) }
@@ -49,26 +64,28 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
     var presets by rememberSaveable { mutableStateOf(false) }
     var delete by remember { mutableStateOf(setOf<String>()) }
     var error by remember { mutableStateOf<String?>(null) }
-    val busy = saving || pendingText != null
+    val busy = saving || pendingDigest != null
     val visible = rows.filter { it.value.contains(query, ignoreCase = true) }
     val issues = remember(rows, catalog) { rows.mapNotNull { rule -> catalog.issue(rule.value)?.let { rule.key to it } }.toMap() }
-    LaunchedEffect(initialRules, saving, saveError, pendingText) {
+    LaunchedEffect(initialRules, saving, saveError, pendingDigest) {
         if (!saving) {
             if (saveError != null) {
                 // 作者 long：排序先在本地预览，写入失败必须回到已保存顺序；表单和 YAML 子页另持草稿供重试。
                 rows = CustomRules.decode(initialRules, previous = rows, validate = false)
-                pending = null; pendingText = null
+                pending = null; pendingDigest = null
             }
-            else if (pendingText == null || initialRules == pendingText) {
+            else if (pendingDigest == null || rulesDigest(initialRules) == pendingDigest) {
                 rows = CustomRules.decode(initialRules, previous = pending ?: rows, validate = false)
-                if (pendingText != null) { form = null; yaml = false; pending = null; pendingText = null; selected = emptySet() }
+                if (pendingDigest != null) { form = null; yaml = false; pending = null; pendingDigest = null; selected = emptySet() }
+                selected = selected.intersect(rows.map { it.key }.toSet())
             }
         }
     }
     fun persist(next: List<CustomRuleDraft>) {
-        if (busy) return
+        if (saving || pendingDigest != null) return
         runCatching { CustomRules.validateAll(next, unchangedValues = CustomRules.decode(initialRules, validate = false).map { it.value }.toSet()) }.onSuccess {
-            error = null; pending = next; pendingText = CustomRules.editorText(next); onSave(checkNotNull(pendingText))
+            val text = CustomRules.editorText(next)
+            error = null; pending = next; pendingDigest = rulesDigest(text); onSave(text)
         }.onFailure { error = it.message ?: "规则无效，请检查后重试" }
     }
     fun duplicate(keys: Set<String>) = persist(rows.flatMap { if (it.key in keys) listOf(it, it.copy(key = UUID.randomUUID().toString())) else listOf(it) })
@@ -128,7 +145,12 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
         })
     form?.let { key ->
         val original = rows.firstOrNull { it.key == key }
-        CustomRuleForm(original, catalog, busy, error ?: saveError, { form = null; error = null }, { delete = setOf(key) }) { value ->
+        // 作者 long：源列表在外部更新后找不到原行时不能把编辑误作新增，重复规则也必须按身份定位。
+        if (key != "new" && original == null && !busy) AlertDialog(onDismissRequest = { form = null },
+            title = { Text("原规则已变更") }, text = { Text("请返回列表，重新选择要编辑的规则。") },
+            confirmButton = { TextButton(onClick = { form = null }) { Text("返回列表") } })
+        else CustomRuleForm(original, catalog, busy, error ?: saveError, { form = null; error = null }, { delete = setOf(key) }) { value ->
+            if (key != "new" && original == null) return@CustomRuleForm
             val next = original?.copy(value = value) ?: CustomRuleDraft(value = value)
             persist(if (original == null) rows + next else rows.map { if (it.key == key) next else it })
         }

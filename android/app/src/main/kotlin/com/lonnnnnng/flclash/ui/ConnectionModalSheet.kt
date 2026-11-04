@@ -203,7 +203,7 @@ internal fun ConnectionModalSheet(
     var scrimFade by remember { mutableFloatStateOf(1f) }
     val requestDismiss: () -> Unit = { dismissalStarted = true }
     Dialog(
-        onDismissRequest = { if (backRequest?.invoke() != true) requestDismiss() },
+        onDismissRequest = { if (!dismissalStarted && backRequest?.invoke() != true) requestDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
         val view = LocalView.current
@@ -220,8 +220,7 @@ internal fun ConnectionModalSheet(
                         indication = null,
                         enabled = !dismissalStarted,
                         onClick = requestDismiss,
-                    )
-                    ,
+                    ),
             )
             // 作者 long：停靠比例以顶部及左右安全区后的窗口为分母；底部安全区属于面板，再由内容避让导航栏。
             BoxWithConstraints(
@@ -272,7 +271,7 @@ internal fun ConnectionModalSheet(
                             .testTag(sheetTag),
                         color = MaterialTheme.colorScheme.surfaceContainer,
                     ) {
-                        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
+                        Column(Modifier.fillMaxSize().blockSheetInput(dismissalStarted).windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
                             content(requestDismiss)
                         }
                     }
@@ -380,12 +379,11 @@ internal fun ConnectionModalSheet(
                         shape = sheetShape,
                         color = MaterialTheme.colorScheme.surfaceContainer,
                     ) {
-                        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
+                        Column(Modifier.fillMaxSize().blockSheetInput(dismissalStarted).windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
                             Box(
                                 Modifier.fillMaxWidth().height(48.dp).testTag("connection_detail_handle")
                                     .clickable(
                                         enabled = geometry.hasExpandedDetent && hasEntered && !dismissalStarted,
-
                                     ) {
                                         scope.launch {
                                             state.animateTo(if (savedDetent == ConnectionSheetDetent.EXPANDED)

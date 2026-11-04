@@ -15,6 +15,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.*
@@ -161,11 +163,18 @@ private fun ProviderQuickYaml(initialProxy: String, initialRule: String, busy: B
     var proxy by rememberSaveable { mutableStateOf(initialProxy) }
     var rule by rememberSaveable { mutableStateOf(initialRule) }
     var failure by remember { mutableStateOf<String?>(null) }
-    var discard by remember { mutableStateOf(false) }
+    var discard by rememberSaveable { mutableStateOf(false) }
+    var attempts by remember { mutableIntStateOf(0) }
+    val scroll = rememberScrollState()
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    // 作者 long：长正文底部提交及相同错误的重复重试都要回到提示处，收起输入焦点以免键盘再次把失败提示推出视口。
+    LaunchedEffect(failure, error, busy, attempts) { if (!busy && (failure ?: error) != null) scroll.animateScrollTo(0) }
     val dirty = proxy != initialProxy || rule != initialRule
     val close = { if (!busy) { if (dirty) discard = true else onDismiss() } }
     ProfileEditorPage(onDismissRequest = close, backTag = "providers_yaml_back", title = { Text("快捷 YAML") }, confirmButton = {
         TextButton(onClick = {
+            focus.clearFocus(force = true); keyboard?.hide(); attempts++
             runCatching {
                 fun definitions(key: String, text: String): com.google.gson.JsonObject {
                     val value = ProxyGroupDrafts.root("$key:\n" + text.lines().joinToString("\n") { "  $it" }).get(key)
@@ -180,8 +189,8 @@ private fun ProviderQuickYaml(initialProxy: String, initialRule: String, busy: B
             }.onSuccess { (p, r) -> failure = null; onSave(p, r) }.onFailure { failure = "Provider YAML 格式无效，请检查缩进和条目类型" }
         }, enabled = !busy, modifier = Modifier.testTag("providers_yaml_save")) { Text(if (busy) "保存中…" else "保存") }
     }, text = {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            (failure ?: error)?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        Column(Modifier.fillMaxSize().verticalScroll(scroll).testTag("providers_yaml_scroll"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            (failure ?: error)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("providers_yaml_error")) }
             OutlinedTextField(proxy, { proxy = it; failure = null }, label = { Text("proxy-providers") }, minLines = 8, enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("providers_yaml_proxy"))
             OutlinedTextField(rule, { rule = it; failure = null }, label = { Text("rule-providers") }, minLines = 8, enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("providers_yaml_rule"))
         }

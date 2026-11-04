@@ -84,27 +84,19 @@ internal fun DashboardServiceStatusCard(
         verdict?.let { Text(it, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 10.dp)) }
         state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
     }
-    if (detail) DashboardModalSheet(
-        title = if (quality != null) "IP 质量" else if (manage) "管理服务" else "服务状态",
-        sheetTag = "service_detail_sheet", closeTag = "service_detail_close", scrollTag = "service_detail_scroll",
-        onDismiss = { onCloseQuality(); detail = false; manage = false },
-        scrollState = if (quality != null) qualityScroll else detailScroll,
-        scrollable = !manage || quality != null, fitsContent = !manage || quality != null,
-        isContentAtTop = { if (quality != null) qualityScroll.value == 0 else if (manage) managementAtTop else detailScroll.value == 0 },
-        // 作者 long：系统返回与标题返回遵循同一层级，质量详情和管理页先回服务列表，不直接丢弃整个面板。
-        onNavigateBack = if (quality != null || manage) ({ if (quality != null) onCloseQuality() else manage = false }) else null,
-        backTag = "service_manage_back", actions = {
-            if (quality != null) IconButton(onClick = onRefreshQuality, enabled = !quality.qualityLoading,
-                modifier = Modifier.testTag("service_quality_refresh")) { Icon(Icons.Outlined.Refresh, null) }
-        },
-    ) {
+    // 作者 long：把页种类固定到本次内容快照，退场正文不能读取已经切换的 manage 状态。
+    val showingManagement = manage
+    val sheetPage = if (quality != null) "quality" else if (showingManagement) "manage" else "detail"
+    // 作者 long：每个页种类使用独立的 Compose lambda 实例；离场页不能被同一调用位置更新成新页正文。
+    val sheetBody: @Composable ColumnScope.(() -> Unit) -> Unit = key(sheetPage) {
+        { _ ->
             state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("service_error")) }
             if (quality != null) {
                 Column(Modifier.testTag("service_quality_details"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     IpQualityContent(quality, hiddenIp, { hiddenIp = it })
                 }
             } else if (state.settingsLoading) TextButton(onClick = onRetrySettings) { Text("重新读取设置") }
-            else if (manage) {
+            else if (showingManagement) {
                 ServiceOrderEditor(state.settings, state.saving, onToggle, onMove, onReorder, Modifier.weight(1f),
                     onContentAtTopChanged = { managementAtTop = it })
             } else {
@@ -139,7 +131,28 @@ internal fun DashboardServiceStatusCard(
                     }
                 }
             }
+        }
     }
+    val sheetActions: @Composable RowScope.() -> Unit = key(sheetPage) {
+        {
+            if (quality != null) IconButton(onClick = onRefreshQuality, enabled = !quality.qualityLoading,
+                modifier = Modifier.testTag("service_quality_refresh")) { Icon(Icons.Outlined.Refresh, null) }
+        }
+    }
+    if (detail) DashboardModalSheet(
+        title = if (quality != null) "IP 质量" else if (showingManagement) "管理服务" else "服务状态",
+        sheetTag = "service_detail_sheet", closeTag = "service_detail_close", scrollTag = "service_detail_scroll",
+        pageKey = sheetPage,
+        pageDepth = if (quality != null || showingManagement) 1 else 0,
+        onDismiss = { onCloseQuality(); detail = false; manage = false },
+        scrollState = if (quality != null) qualityScroll else detailScroll,
+        scrollable = !showingManagement || quality != null, fitsContent = !showingManagement || quality != null,
+        isContentAtTop = { if (quality != null) qualityScroll.value == 0 else if (showingManagement) managementAtTop else detailScroll.value == 0 },
+        // 作者 long：系统返回与标题返回遵循同一层级，质量详情和管理页先回服务列表，不直接丢弃整个面板。
+        onNavigateBack = if (quality != null || showingManagement) ({ if (quality != null) onCloseQuality() else manage = false }) else null,
+        backTag = "service_manage_back", actions = sheetActions,
+        content = sheetBody,
+    )
 }
 
 @Composable
