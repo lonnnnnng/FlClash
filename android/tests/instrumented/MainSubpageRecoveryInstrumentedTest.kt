@@ -129,6 +129,80 @@ class MainSubpageRecoveryInstrumentedTest {
         compose.runOnIdle { assertEquals(1, writes); assertEquals("Renamed", checkNotNull(saved).groups.single().name) }
     }
 
+    @Test fun wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft() {
+        val source = "proxy-groups:\n- {name: Main, type: select, proxies: [DIRECT]}\nrules: ['MATCH,Main']\n"
+        var saved: ProxyGroupsSave? = null
+        var writes = 0
+        val restore = StateRestorationTester(compose)
+        restore.setContent { KClashTheme {
+            ProfileProxyGroupsEditorDialog(Profile.custom(946, "整组草稿"), ProfileProxyGroupsEditor.extractGroups(source), false,
+                {}, {}, sourceContent = source, onSaveDraft = { saved = it; writes++ })
+        } }
+        compose.onNodeWithTag("proxy_groups_yaml").performScrollTo().performClick()
+        val valid = "- name: Main\n  type: select\n  proxies: [DIRECT]\n  future: preserved\n"
+        compose.onNodeWithTag("proxy_groups_yaml_content").performTextReplacement(valid)
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("proxy_groups_yaml_content").assertTextContains("future: preserved", substring = true)
+        compose.onNodeWithTag("proxy_groups_yaml_back").performClick()
+        compose.runOnIdle { assertEquals(0, writes) }
+        compose.onNodeWithTag("proxy_groups_yaml").performScrollTo().performClick()
+        val invalid = (1..90).joinToString("\n") { "# 长注释 😀 $it" } + "\n- name: ["
+        compose.onNodeWithTag("proxy_groups_yaml_content").performTextReplacement(invalid)
+        repeat(2) {
+            compose.onNodeWithTag("proxy_groups_yaml_confirm").performClick()
+            compose.onNodeWithTag("proxy_groups_yaml_error").assertIsDisplayed().assertTextContains("第 91 行", substring = true)
+            compose.onNodeWithTag("proxy_groups_yaml_content").assert(SemanticsMatcher.expectValue(SemanticsProperties.TextSelectionRange, androidx.compose.ui.text.TextRange(invalid.length)))
+            compose.onNodeWithTag("proxy_groups_yaml_locate_error").performClick()
+        }
+        captureSubpage("whole_groups_yaml_error_located")
+        closeSoftKeyboard()
+        compose.onNodeWithTag("proxy_groups_yaml_back").performClick()
+        compose.onNodeWithText("继续编辑").performClick()
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("proxy_groups_yaml_content").assertTextContains(invalid, substring = true)
+        compose.onNodeWithTag("proxy_groups_yaml_back").performClick()
+        compose.onNodeWithText("放弃修改").performClick()
+        compose.onNodeWithTag("proxy_group_list_save").performClick()
+        compose.runOnIdle { assertEquals(1, writes); assertEquals("preserved", checkNotNull(saved).groups.single().text("future")) }
+    }
+
+    @Test fun singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel() {
+        val source = "proxy-groups:\n- {name: Main, type: select, proxies: [DIRECT]}\n"
+        var writes = 0
+        val restore = StateRestorationTester(compose)
+        restore.setContent { KClashTheme {
+            ProfileProxyGroupsEditorDialog(Profile.custom(947, "子页恢复"), ProfileProxyGroupsEditor.extractGroups(source), false,
+                {}, {}, sourceContent = source, initialGroupIndex = 0, onSaveDraft = { writes++ })
+        } }
+        compose.onNodeWithTag("proxy_group_icon").performScrollTo().performClick()
+        compose.onNodeWithTag("group_icon_search").performTextReplacement("empty-search")
+        compose.onNodeWithTag("group_icon_link").performClick()
+        compose.onNodeWithTag("group_icon_url").performTextReplacement("invalid-draft")
+        compose.onNodeWithTag("group_icon_url_confirm").performClick()
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("group_icon_url").assertTextContains("invalid-draft")
+        compose.onNodeWithText("请输入有效的 HTTP 或 HTTPS 图标地址").assertIsDisplayed()
+        compose.onNodeWithText("取消").performClick()
+        compose.onNodeWithTag("group_icon_search").assertTextContains("empty-search")
+        captureSubpage("group_icon_restored_empty")
+        compose.onNodeWithTag("group_icon_back").performClick()
+        compose.onNodeWithTag("proxy_group_add_option").performScrollTo().performClick()
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("group_add_interval").performScrollTo().performClick()
+        compose.onNodeWithTag("proxy_group_add_option_back").performClick()
+        compose.onNodeWithTag("group_option_interval").performScrollTo().performClick()
+        compose.onNodeWithTag("group_value_input").performTextReplacement("-2")
+        compose.onNodeWithTag("group_value_confirm").performClick()
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("group_value_input").assertTextContains("-2")
+        compose.onNodeWithText("请输入非负整数").assertIsDisplayed()
+        compose.onNodeWithTag("group_value_input").performTextReplacement("77")
+        compose.onNodeWithTag("group_value_confirm").performClick()
+        compose.onNodeWithTag("group_option_interval").assertTextContains("77", substring = true)
+        compose.runOnIdle { assertEquals(0, writes) }
+        captureSubpage("group_option_restored_value")
+    }
+
     @Test fun providerYamlErrorsReturnToTopOnRepeatedLocalAndRepositoryFailures() {
         var failure by mutableStateOf<String?>(null)
         var busy by mutableStateOf(false)
@@ -191,6 +265,156 @@ class MainSubpageRecoveryInstrumentedTest {
 class ServiceSubpageMotionInstrumentedTest {
     @get:Rule val compose = createAndroidComposeRule<DashboardTestActivity>()
     @Before fun prepare() { assertPortraitDefaultFontConfiguration(); prepareTouchVisualCapture() }
+
+    private fun beginManagement(dark: Boolean = true) {
+        compose.activityRule.scenario.onActivity { it.showServices(dark) }
+        compose.onNodeWithTag("dashboard_service_card").performClick()
+        compose.onNodeWithTag("service_manage").performClick()
+        compose.waitForIdle()
+    }
+
+    private fun dragHeader(fraction: Float, cancel: Boolean = false, secondPointer: Boolean = false) {
+        val sheet = compose.onNodeWithTag("service_detail_sheet")
+        val bounds = sheet.fetchSemanticsNode().boundsInRoot
+        val y = compose.onNodeWithTag("dashboard_sheet_title").fetchSemanticsNode().boundsInRoot.center.y - bounds.top
+        sheet.performTouchInput {
+            down(androidx.compose.ui.geometry.Offset(width * .12f, y))
+            moveBy(androidx.compose.ui.geometry.Offset(width * fraction, 0f), delayMillis = 400)
+            if (secondPointer) down(1, androidx.compose.ui.geometry.Offset(width * .3f, y + 25f))
+            advanceEventTime(200)
+            if (cancel || secondPointer) cancel() else up()
+        }
+        compose.waitForIdle()
+    }
+
+    @Test fun dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes() {
+        for (dark in listOf(false, true)) {
+            beginManagement(dark)
+            dragHeader(.25f)
+            compose.onNodeWithTag("service_order_list").assertIsDisplayed()
+            compose.onNodeWithTag("service_order_list").performScrollToIndex(8)
+            val before = compose.onNodeWithTag("service_order_list").fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
+            dragHeader(.7f)
+            compose.onNodeWithTag("service_check_all").assertIsDisplayed()
+            compose.onNodeWithTag("service_manage").performClick()
+            assertEquals(before, compose.onNodeWithTag("service_order_list").fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value(), .01f)
+            compose.mainClock.autoAdvance = false
+            compose.onNodeWithTag("service_manage_back").performClick()
+            compose.mainClock.advanceTimeByFrame(); compose.mainClock.advanceTimeBy(96)
+            val pageLeft = compose.onNodeWithTag("service_detail_sheet_page_detail").fetchSemanticsNode().positionInRoot.x
+            val sheetLeft = compose.onNodeWithTag("service_detail_sheet").fetchSemanticsNode().boundsInRoot.left
+            captureSubpage("service_drag_then_normal_back_$dark")
+            assertTrue("拖回后的普通返回仍须播放过渡：page=$pageLeft sheet=$sheetLeft", pageLeft < sheetLeft - 1f)
+            compose.mainClock.advanceTimeBy(700); compose.mainClock.autoAdvance = true
+            assertEquals(0, compose.activity.serviceOrderSaveCount)
+            compose.onNodeWithTag("service_detail_close").performClick()
+        }
+    }
+
+    @Test fun interruptedDragNeverNavigatesAfterBackgroundAndNextDragWorks() {
+        beginManagement()
+        dragHeader(.7f, cancel = true)
+        compose.onNodeWithTag("service_order_list").assertIsDisplayed()
+        dragHeader(.7f, secondPointer = true)
+        compose.onNodeWithTag("service_order_list").assertIsDisplayed()
+        compose.onNodeWithTag("service_order_list").performTouchInput { swipeUp() }
+        compose.onNodeWithTag("service_order_list").assertIsDisplayed()
+        compose.mainClock.autoAdvance = false
+        try {
+            val sheet = compose.onNodeWithTag("service_detail_sheet")
+            val bounds = sheet.fetchSemanticsNode().boundsInRoot
+            val y = compose.onNodeWithTag("dashboard_sheet_title").fetchSemanticsNode().boundsInRoot.center.y - bounds.top
+            sheet.performTouchInput { down(androidx.compose.ui.geometry.Offset(width * .12f, y)); moveBy(androidx.compose.ui.geometry.Offset(width * .7f, 0f), delayMillis = 400); up() }
+            compose.mainClock.advanceTimeByFrame(); compose.mainClock.advanceTimeBy(64)
+            compose.activityRule.scenario.moveToState(androidx.lifecycle.Lifecycle.State.CREATED)
+            compose.activityRule.scenario.moveToState(androidx.lifecycle.Lifecycle.State.RESUMED)
+            compose.mainClock.advanceTimeBy(700)
+        } finally { compose.mainClock.autoAdvance = true }
+        compose.onNodeWithTag("service_order_list").assertIsDisplayed()
+        dragHeader(.7f)
+        compose.onNodeWithTag("service_check_all").assertIsDisplayed()
+        assertEquals(0, compose.activity.serviceOrderSaveCount)
+    }
+
+    @Test fun fastFlingCommitsBeforeHalfAndReverseFlingCancelsAfterHalf() {
+        beginManagement()
+        fun headerY(): Float {
+            val sheet = compose.onNodeWithTag("service_detail_sheet").fetchSemanticsNode().boundsInRoot
+            return compose.onNodeWithTag("dashboard_sheet_title").fetchSemanticsNode().boundsInRoot.center.y - sheet.top
+        }
+        var y = headerY()
+        compose.onNodeWithTag("service_detail_sheet").performTouchInput {
+            swipe(androidx.compose.ui.geometry.Offset(width * .12f, y), androidx.compose.ui.geometry.Offset(width * .42f, y), 60)
+        }
+        compose.onNodeWithTag("service_check_all").assertIsDisplayed()
+        compose.onNodeWithTag("service_manage").performClick()
+        y = headerY()
+        val sheet = compose.onNodeWithTag("service_detail_sheet")
+        sheet.performTouchInput { down(androidx.compose.ui.geometry.Offset(width * .1f, y)); moveTo(androidx.compose.ui.geometry.Offset(width * .8f, y), delayMillis = 400) }
+        val left = compose.onNodeWithTag("service_detail_sheet_page_manage").fetchSemanticsNode().positionInRoot.x
+        assertTrue(left > sheet.fetchSemanticsNode().boundsInRoot.width * .5f)
+        captureSubpage("service_drag_following_finger")
+        sheet.performTouchInput {
+            moveTo(androidx.compose.ui.geometry.Offset(width * .77f, y), delayMillis = 16)
+            moveTo(androidx.compose.ui.geometry.Offset(width * .74f, y), delayMillis = 16)
+            moveTo(androidx.compose.ui.geometry.Offset(width * .71f, y), delayMillis = 16)
+            up()
+        }
+        compose.onNodeWithTag("service_order_list").assertIsDisplayed()
+        dragHeader(.7f)
+        compose.onNodeWithTag("service_check_all").assertIsDisplayed()
+    }
+
+    @Test fun qualityReturnCapturesOutgoingBodyBeforeFadeCompletes() {
+        for (dark in listOf(false, true)) {
+            compose.activityRule.scenario.onActivity { it.showServiceExit("ready", dark = dark) }
+            compose.onNodeWithTag("dashboard_service_card").performClick()
+            compose.onNodeWithTag("service_exit_google").performScrollTo().performClick()
+            compose.onNodeWithTag("service_quality_details").assertIsDisplayed()
+            captureSubpage("quality_before_return_$dark")
+            compose.mainClock.autoAdvance = false
+            try {
+                compose.onNodeWithTag("service_manage_back").performClick()
+                compose.mainClock.advanceTimeByFrame(); compose.mainClock.advanceTimeBy(32)
+                // 作者 long：离场层按产品行为隐藏语义，保留真实Window截图作正文目视验收，不能用终态节点断言代替中间帧。
+                captureSubpage("quality_return_outgoing_$dark")
+                val bounds = compose.onNodeWithTag("service_detail_sheet").fetchSemanticsNode().boundsInRoot
+                val pixels = checkNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+                try {
+                    val density = compose.activity.resources.displayMetrics.density
+                    val top = (bounds.top + 80 * density).toInt()
+                    val bottom = minOf((bounds.bottom - 64 * density).toInt(), top + (300 * density).toInt())
+                    val background = pixels.getPixel((bounds.left + 8 * density).toInt(), top + 10)
+                    var visible = 0
+                    for (y in top until bottom step 4) for (x in (bounds.left + 24 * density).toInt() until (bounds.right - 24 * density).toInt() step 4) {
+                        val color = pixels.getPixel(x, y)
+                        val distance = kotlin.math.abs(android.graphics.Color.red(color) - android.graphics.Color.red(background)) +
+                            kotlin.math.abs(android.graphics.Color.green(color) - android.graphics.Color.green(background)) +
+                            kotlin.math.abs(android.graphics.Color.blue(color) - android.graphics.Color.blue(background))
+                        if (distance > 36) visible++
+                    }
+                    assertTrue("返回中间帧必须保留实际正文绘制，不能闪成空白：$visible", visible > 80)
+                } finally { pixels.recycle() }
+                compose.mainClock.advanceTimeBy(700)
+            } finally { compose.mainClock.autoAdvance = true }
+            compose.onNodeWithTag("service_check_all").assertIsDisplayed()
+            compose.onNodeWithTag("service_detail_close").performClick()
+        }
+    }
+
+    @Test fun qualityPageDragBackKeepsServiceDetailsAndDoesNotRefresh() {
+        compose.activityRule.scenario.onActivity { it.showServiceExit("ready") }
+        compose.onNodeWithTag("dashboard_service_card").performClick()
+        compose.onNodeWithTag("service_exit_google").performScrollTo().performClick()
+        compose.onNodeWithTag("service_quality_details").assertExists()
+        dragHeader(.25f)
+        compose.onNodeWithTag("service_quality_details").assertExists()
+        captureSubpage("service_quality_drag_cancelled")
+        dragHeader(.7f)
+        compose.onNodeWithTag("service_check_all").assertIsDisplayed()
+        compose.onNodeWithTag("service_exit_google").assertExists()
+        assertEquals(0, compose.activity.serviceCheckCount)
+    }
 
     @Test fun managementTransitionReversesAndPreservesListPositionAcrossThemes() {
         for (dark in listOf(false, true)) {

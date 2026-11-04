@@ -11,7 +11,19 @@ import javax.inject.Inject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-data class LocalProxyDraft(val original: LocalProxy?, val value: LocalProxy)
+// 作者 long：节点凭据和集合输入只随 ViewModel 留在内存，Activity 重建可继续；不进入 Bundle、备份或日志。
+data class LocalProxyDraft(
+    val original: LocalProxy?, val value: LocalProxy,
+    val session: String = java.util.UUID.randomUUID().toString(),
+    val baselineJson: String = value.json,
+    val shown: Set<String> = emptySet(), val choosing: String? = null,
+    val collection: LocalProxyCollectionDraft? = null, val discarding: Boolean = false,
+) { override fun toString() = "LocalProxyDraft([REDACTED_SECRET])" }
+
+data class LocalProxyCollectionDraft(
+    val field: ProxyField, val values: List<Pair<String, String>>,
+    val error: String? = null, val discarding: Boolean = false,
+) { override fun toString() = "LocalProxyCollectionDraft([REDACTED_SECRET])" }
 data class ProxyLinksDraft(val text: String, val previous: List<LocalProxy>, val links: List<String>, val single: Boolean)
 data class LocalProxiesUiState(
     val rows: List<LocalProxy> = emptyList(), val loading: Boolean = true, val busy: Boolean = false,
@@ -74,6 +86,12 @@ class LocalProxiesViewModel @Inject constructor(
         mutable.value = state.value.copy(editor = LocalProxyDraft(row, row ?: LocalProxy()), error = null)
     }
     fun dismissEditor() { if (!state.value.busy) mutable.value = state.value.copy(editor = null, links = null, error = null) }
+    fun updateEditor(draft: LocalProxyDraft) {
+        // 作者 long：重建前的旧窗口或已关闭编辑器不得把凭据草稿写回后来打开的会话。
+        if (!state.value.busy && state.value.editor?.session == draft.session) {
+            mutable.value = state.value.copy(editor = draft, error = null)
+        }
+    }
     fun save(row: LocalProxy) = perform {
         val draft = state.value.editor ?: return@perform
         val errors = bridge.validateProxies(listOf(row.fields)); require(errors.single().isEmpty()) { errors.single() }

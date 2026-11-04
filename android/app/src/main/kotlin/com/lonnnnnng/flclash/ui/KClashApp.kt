@@ -1368,7 +1368,7 @@ fun KClashApp(
         { localProxiesViewModel.close(); showLocalProxies = false }, localProxiesViewModel::edit, localProxiesViewModel::save,
         localProxiesViewModel::dismissEditor, localProxiesViewModel::links, localProxiesViewModel::applyLinks,
         localProxiesViewModel::cancelLinks, localProxiesViewModel::reorder, localProxiesViewModel::askDelete,
-        localProxiesViewModel::delete, localProxiesViewModel::cancelDelete, localProxiesViewModel::confirmReplacement)
+        localProxiesViewModel::delete, localProxiesViewModel::cancelDelete, localProxiesViewModel::confirmReplacement, localProxiesViewModel::updateEditor)
     if (showIconSets) IconSetsPage(resources.iconSets, iconBusy, iconError, iconCompleted,
         { showIconSets = false }, { name, url -> resourcesViewModel?.importIcons(name, url) }, { iconSetFilePicker.launch(arrayOf("application/json", "text/*", "application/octet-stream")) },
         { item, name, url -> resourcesViewModel?.iconOptions(item, name, url) },

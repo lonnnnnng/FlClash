@@ -44,6 +44,10 @@ private val groupOptions = listOf(
     GroupOption("hidden", "从列表隐藏", "false", "boolean"),
     GroupOption("disable-udp", "禁用 UDP", "false", "boolean"),
 )
+private val groupIdentityOptions = listOf(
+    GroupOption("name", "名称", ""), GroupOption("type", "类型", "select", "type"),
+    GroupOption("filter", "过滤表达式", ""), GroupOption("exclude-filter", "排除表达式", ""),
+)
 
 private val groupDraftSaver = listSaver<List<ProxyGroupDraft>, String>(
     save = { groups -> groups.flatMap { listOf(it.key, it.originalName.orEmpty(), it.json) } },
@@ -234,21 +238,9 @@ internal fun VisualProxyGroupsEditor(
             onDelete = { deleteKeys = setOf(selected) })
     } }
     yaml?.let { initialYaml ->
-        var draft by rememberSaveable(initialYaml) { mutableStateOf(initialYaml) }
-        var yamlError by remember { mutableStateOf<String?>(null) }
-        ProfileEditorPage(onDismissRequest = { yaml = null }, title = { Text("策略组 YAML") },
-            backTag = "proxy_groups_yaml_back", confirmButton = {
-                TextButton(onClick = { runCatching {
-                    val content = ProfileProxyGroupsEditor.replaceGroups(source, draft)
-                    val values = ProxyGroupDrafts.read(content)
-                    // 作者 long：快捷 YAML 按现有名称恢复稳定标识，重排不应被误判为批量改名。
-                    groups = values.map { value -> groups.firstOrNull { it.name == value.name }?.let { value.copy(key = it.key, originalName = it.originalName) } ?: value.copy(originalName = null) }
-                    yaml = null; error = null
-                }.onFailure { yamlError = it.message } }, modifier = Modifier.testTag("proxy_groups_yaml_confirm")) { Text("确认") }
-            }, text = { Column(Modifier.verticalScroll(rememberScrollState())) {
-                yamlError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                OutlinedTextField(draft, { draft = it }, Modifier.fillMaxWidth().testTag("proxy_groups_yaml_content"), minLines = 15, label = { Text("代理组 YAML") })
-            } })
+        GroupsQuickYaml(initialYaml, groups, { yaml = null }) { values ->
+            groups = values; yaml = null; error = null
+        }
     }
     if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃策略组修改？") }, text = { Text("尚未保存的策略组修改会丢失。") },
         confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
@@ -300,7 +292,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     onDismiss: () -> Unit, onConfirm: (ProxyGroupDraft) -> Unit, onDelete: () -> Unit) {
     var json by rememberSaveable(initial.key) { mutableStateOf(initial.json) }
     val group = initial.copy(json = json)
-    var iconPicker by remember { mutableStateOf(false) }
+    var iconPicker by rememberSaveable(initial.key) { mutableStateOf(false) }
     var confirming by remember { mutableStateOf(false) }
     var filterErrors by remember { mutableStateOf(emptyList<String>()) }
     val scope = rememberCoroutineScope()
@@ -316,8 +308,10 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     }
     val issues = remember(json, groups, source) { runCatching { ProxyGroupIssues.inspect(group, groups.map { if (it.key == group.key) group else it }, source) }.getOrDefault(emptyList()) } +
         filterErrors.filter(String::isNotEmpty).map { ProxyGroupIssue("过滤表达式无效：$it") }
-    var editing by remember { mutableStateOf<GroupOption?>(null) }
-    var addOption by remember { mutableStateOf(false) }
+    // 作者 long：只保存选项身份，重建时从同一字段目录恢复子页，避免父草稿还在而未确认的值窗口已丢失。
+    var editingKey by rememberSaveable(initial.key) { mutableStateOf<String?>(null) }
+    val editing = (groupIdentityOptions + groupOptions).firstOrNull { it.key == editingKey }
+    var addOption by rememberSaveable(initial.key) { mutableStateOf(false) }
     var members by rememberSaveable(initial.key) { mutableStateOf(false) }
     var yaml by rememberSaveable(initial.key) { mutableStateOf(false) }
     var discard by remember { mutableStateOf(false) }
@@ -367,8 +361,8 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                 GroupIssuesBanner(issues, "proxy_group_form_issues")
                 GroupSectionHeading("常规")
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                    GroupFieldRow("名称", group.name.ifBlank { "未命名" }, "proxy_group_name") { editing = GroupOption("name", "名称", "") }
-                    GroupFieldRow("类型", group.text("type"), "proxy_group_type") { editing = GroupOption("type", "类型", "select", "type") }
+                    GroupFieldRow("名称", group.name.ifBlank { "未命名" }, "proxy_group_name") { editingKey = "name" }
+                    GroupFieldRow("类型", group.text("type"), "proxy_group_type") { editingKey = "type" }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         ProfileGroupIcon(group.text("icon"), group.name, Modifier.size(32.dp).padding(end = 8.dp))
                         Box(Modifier.weight(1f)) { GroupFieldRow("图标", if (group.text("icon").isBlank()) "默认" else "已设置", "proxy_group_icon") { clearFocus[0]?.invoke(); iconPicker = true } }
@@ -382,8 +376,8 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                             Switch(group.flag(key), { value -> change { if (value) it.addProperty(key, true) else it.remove(key) } }, Modifier.testTag("proxy_group_$key"))
                         }
                     }
-                    GroupFieldRow("过滤表达式", group.text("filter").ifBlank { "未设置" }, "proxy_group_filter") { editing = GroupOption("filter", "过滤表达式", "") }
-                    GroupFieldRow("排除表达式", group.text("exclude-filter").ifBlank { "未设置" }, "proxy_group_exclude_filter") { editing = GroupOption("exclude-filter", "排除表达式", "") }
+                    GroupFieldRow("过滤表达式", group.text("filter").ifBlank { "未设置" }, "proxy_group_filter") { editingKey = "filter" }
+                    GroupFieldRow("排除表达式", group.text("exclude-filter").ifBlank { "未设置" }, "proxy_group_exclude_filter") { editingKey = "exclude-filter" }
                 }
                 GroupSectionHeading("可选设置")
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
@@ -392,7 +386,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                             IconButton(onClick = { change { it.remove(option.key) } }, modifier = Modifier.testTag("group_remove_" + option.key)) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                             if (option.kind == "boolean") {
                                 Text(option.label, Modifier.weight(1f).padding(start = 16.dp)); Switch(group.flag(option.key), { value -> change { it.addProperty(option.key, value) } }, modifier = Modifier.padding(end = 16.dp))
-                            } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { "默认" }, "group_option_" + option.key) { editing = option } }
+                            } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { "默认" }, "group_option_" + option.key) { editingKey = option.key } }
                         }
                     }
                     TextButton(onClick = { addOption = true }, modifier = Modifier.testTag("proxy_group_add_option")) { Icon(Icons.Outlined.Add, null); Text("添加设置项") }
@@ -442,9 +436,9 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                 else listOf("") + ProxyGroupDrafts.members(group).filterNot { it.provider }.map { it.name }
             else -> emptyList()
         }
-        GroupValueDialog(option, group.text(option.key), choices, onDismiss = { editing = null }, onSave = { value ->
+        GroupValueDialog(option, group.text(option.key), choices, onDismiss = { editingKey = null }, onSave = { value ->
             change { fields -> if (option.kind == "number") fields.addProperty(option.key, value.toLong()) else fields.addProperty(option.key, value) }
-            editing = null
+            editingKey = null
         })
     }
     if (yaml) GroupQuickYaml(group, onDismiss = { yaml = false }, onApply = { next -> json = next.json; yaml = false; error = null })
@@ -453,30 +447,64 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
 }
 
 @Composable
+private fun GroupsQuickYaml(original: String, groups: List<ProxyGroupDraft>,
+    onDismiss: () -> Unit, onApply: (List<ProxyGroupDraft>) -> Unit) {
+    GroupYamlPage(original, "策略组 YAML", "proxy_groups_yaml", onDismiss,
+        parse = { value -> ProxyGroupDrafts.readEditorYaml(value).map { next ->
+            groups.firstOrNull { it.name == next.name }?.let { next.copy(key = it.key, originalName = it.originalName) }
+                ?: next.copy(originalName = null)
+        } }, locate = ProxyGroupDrafts::editorErrorLocation, onApply = onApply)
+}
+
+@Composable
 private fun GroupQuickYaml(group: ProxyGroupDraft, onDismiss: () -> Unit, onApply: (ProxyGroupDraft) -> Unit) {
     val original = remember(group.key) { ProxyGroupDrafts.definitionYaml(group) }
-    var value by rememberSaveable(group.key) { mutableStateOf(original) }
+    GroupYamlPage(original, "快捷 YAML", "proxy_group_yaml", onDismiss,
+        parse = { ProxyGroupDrafts.definition(it, group) },
+        locate = com.lonnnnnng.flclash.service.YamlConfigCodec::errorLocation, onApply = onApply)
+}
+
+/** 作者 long：两种快捷入口共用校验与返回保护，定位只改选区，确认成功只更新父草稿，不提前写文件。 */
+@Composable
+private fun <T> GroupYamlPage(original: String, title: String, tag: String, onDismiss: () -> Unit,
+    parse: (String) -> T, locate: (String, Throwable) -> com.lonnnnnng.flclash.service.YamlErrorLocation?, onApply: (T) -> Unit) {
+    var value by rememberSaveable(original, stateSaver = androidx.compose.ui.text.input.TextFieldValue.Saver) {
+        mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(original))
+    }
     var failure by rememberSaveable { mutableStateOf<String?>(null) }
+    var errorOffset by rememberSaveable { mutableStateOf<Int?>(null) }
     var discard by rememberSaveable { mutableStateOf(false) }
-    var attempts by remember { mutableIntStateOf(0) }
-    val scroll = rememberScrollState()
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    LaunchedEffect(failure, attempts) { if (failure != null) scroll.animateScrollTo(0) }
+    fun locateError() {
+        errorOffset?.let { value = value.copy(selection = androidx.compose.ui.text.TextRange(it.coerceIn(0, value.text.length))) }
+        focus.clearFocus(force = true); keyboard?.hide()
+    }
     fun apply(leaving: Boolean) {
-        focus.clearFocus(force = true); keyboard?.hide(); attempts++
-        if (leaving && value == original) { onDismiss(); return }
-        // 作者 long：沿用 Flutter 快捷编辑的返回即校验规则；成功只写父草稿，失败先保留正文再由用户决定是否放弃。
-        runCatching { ProxyGroupDrafts.definition(value, group) }.onSuccess(onApply).onFailure {
-            failure = "策略组 YAML 格式无效，请检查字段和缩进"
+        focus.clearFocus(force = true); keyboard?.hide()
+        if (leaving && value.text == original) { onDismiss(); return }
+        runCatching { parse(value.text) }.onSuccess(onApply).onFailure { error ->
+            val position = locate(value.text, error)
+            errorOffset = position?.offset
+            // 作者 long：解析器异常包含原文片段，界面只显示安全行列和修复提示，不能回显潜在凭据。
+            failure = if (position == null) "策略组 YAML 格式无效，请检查列表、名称和类型"
+                else "第 ${position.line} 行，第 ${position.column} 列格式无效，请检查缩进和括号"
+            locateError()
             if (leaving) discard = true
         }
     }
-    ProfileEditorPage(onDismissRequest = { apply(true) }, title = { Text("快捷 YAML") }, backTag = "proxy_group_yaml_back",
-        confirmButton = { TextButton(onClick = { apply(false) }, modifier = Modifier.testTag("proxy_group_yaml_confirm")) { Text("确认") } }, text = {
-            Column(Modifier.fillMaxSize().verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                failure?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_yaml_error")) }
-                OutlinedTextField(value, { value = it; failure = null }, Modifier.fillMaxWidth().testTag("proxy_group_yaml_content"), minLines = 15)
+    ProfileEditorPage(onDismissRequest = { apply(true) }, title = { Text(title) }, backTag = "${tag}_back",
+        confirmButton = { TextButton(onClick = { apply(false) }, Modifier.testTag("${tag}_confirm")) { Text("确认") } },
+        contentPadding = PaddingValues(), text = {
+            Column(Modifier.fillMaxSize().testTag("${tag}_scroll")) {
+                failure?.let { message -> Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(message, color = MaterialTheme.colorScheme.error, modifier = Modifier.weight(1f).testTag("${tag}_error"))
+                    if (errorOffset != null) TextButton(::locateError, Modifier.testTag("${tag}_locate_error")) { Text("定位") }
+                } }
+                ProfileCodeField(value, { next ->
+                    if (next.text != value.text) { failure = null; errorOffset = null }
+                    value = next
+                }, true, Modifier.fillMaxWidth().weight(1f), contentTag = "${tag}_content")
             }
         })
     if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃 YAML 修改？") },
@@ -502,7 +530,7 @@ private fun GroupFieldRow(label: String, value: String, tag: String, onClick: ()
 @Composable
 private fun GroupValueDialog(option: GroupOption, initial: String, choices: List<String>, onDismiss: () -> Unit, onSave: (String) -> Unit) {
     var value by rememberSaveable(option.key) { mutableStateOf(initial) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var error by rememberSaveable(option.key) { mutableStateOf<String?>(null) }
     AlertDialog(onDismissRequest = onDismiss, title = { Text(option.label) }, text = {
         if (choices.isNotEmpty()) Column(Modifier.verticalScroll(rememberScrollState())) {
             choices.distinct().forEach { choice -> TextButton(onClick = { onSave(choice) }, Modifier.fillMaxWidth()) { Text(choice.ifBlank { "默认" }) } }

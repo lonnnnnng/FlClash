@@ -1,0 +1,2282 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "scope": "第一步：策略组YAML及子页草稿、本地代理列表映射恢复、服务拖回与退场正文",
+  "baseCommit": "b0c554f84e146e005b3cc29d6739ddc7d93dec36",
+  "branch": "kotlin",
+  "upstreamBaseline": "7fd417fb9a9a277c6a9339a8ac87f907df7c25f7",
+  "glassDefaultEnabled": false,
+  "changes": [
+    "整策略组原始YAML返回先解析并只更新父草稿，失败可继续/放弃；91行长正文错误定位及重复跳转。",
+    "单组图标搜索/链接、添加选项和值页保存状态及返回层级恢复，父确认前零写入。",
+    "本地代理列表/映射子页草稿由ViewModel内存持有，支持返回校验、放弃、清空及旧session拒绝；真实隔离Activity重建后保持，凭据测试标记不进入Bundle。",
+    "服务管理/质量子页支持跟手拖回、速度判定、取消/反向/后台中断及普通返回后续动画；采用Flutter分段缓动，保留管理滚动。",
+    "质量页关闭后保留离场正文快照，修复内容立即清空造成的退场空白帧。"
+  ],
+  "unitTests": {
+    "app": {
+      "tests": 453,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ApplicationSettingsBackupTest.xml",
+          "sha256": "1cd490b8fae73962926194053cdb226760ddad5b2c1af0586faa6388e11497b6",
+          "bytes": 846
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomProfileImportTest.xml",
+          "sha256": "09778be47ac20113de8cb31ba545b192d1f2aa59fd1f36e9ff7065bc5bd1da21",
+          "bytes": 943
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.CustomRuleDraftTest.xml",
+          "sha256": "43c5b67fb601b59d72460936bd6afb2a5c40ec98f31c261eeadb8c8e0b594c72",
+          "bytes": 1413
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.DeepLinkImportTest.xml",
+          "sha256": "30e8399c4533e4a8cfea79c72a69d768b8a5ea5a89d17845b0023bb8d38bd165",
+          "bytes": 1326
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.FilterPresetsTest.xml",
+          "sha256": "2fefddc83c41cdab4539064aed62013f068d4b23bbafca9c1e55a08170b97ffc",
+          "bytes": 988
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.HttpRequestPolicyTest.xml",
+          "sha256": "08734d0597ffb8142d42efa3098f6ca45d2729788478b926a51856d530734520",
+          "bytes": 667
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconRecommendationsTest.xml",
+          "sha256": "c86162af54e1c4d435d9329edd9b98f556691f78d1247c110e359987b86de5f3",
+          "bytes": 892
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IconSetCodecTest.xml",
+          "sha256": "917ee5a9d4524c4adcb454f2b58a0ba53545f6dbf6af7053658994672ca7b8e3",
+          "bytes": 781
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationRepositoryTest.xml",
+          "sha256": "988915ae4787081e95edcef89475bc617b72c2b820141792a483fa1f8ad5cca2",
+          "bytes": 995
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.IpInformationTest.xml",
+          "sha256": "583ab6b175c7f5a373595b35f042e2e037b15883c7b94f2a833004f1ce949087",
+          "bytes": 1004
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProfileFileWriteTest.xml",
+          "sha256": "d45689567017c2cfb411327e9b5e55e339ad0caf11c6a9352aebc8b31c23467a",
+          "bytes": 1887
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxiesTest.xml",
+          "sha256": "8a522b32d6d687af639b04df254a7152828a857bc7824ffc0386d837863f258f",
+          "bytes": 1531
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyAdditionTest.xml",
+          "sha256": "297dbdedeb4477a836c2b8c70356eb55e7077448e0da2d6ae177f5472a006509",
+          "bytes": 987
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.LocalProxyLinkEditTest.xml",
+          "sha256": "1acb210df25b5015e3e69b138b244316a246a45d3c1b1e31b03ae8020a38c92b",
+          "bytes": 1329
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.OnDemandSsidTrackerTest.xml",
+          "sha256": "a5f9ab68d567db7ab52bd425368597279f8454a7e1c0c317fc6215a2eeb1d934",
+          "bytes": 805
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileContentDecoderTest.xml",
+          "sha256": "ff79ce6d813df8631f5a32a05666e60be07b0c81320dd2d02bd4643499145d52",
+          "bytes": 1517
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDialerEditorTest.xml",
+          "sha256": "163cf0747f56d0e818a270818b3e83c3c4c1fd35286c5f13a89df6cae7b7600f",
+          "bytes": 964
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileDocumentTest.xml",
+          "sha256": "ab33efd166da5fbdb1d8167927e974c16b3ae6254cbda8ab8c0b212a6ec7799c",
+          "bytes": 508
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileExportTest.xml",
+          "sha256": "d379e50fe62bad3765a08862bbda33b3636cb9477bcb69294552d790c15bb66d",
+          "bytes": 813
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileMorePatchTest.xml",
+          "sha256": "540435d7fd65817e7a05fcc68e17d68b25d0923e8fee6d059a383d031db0be32",
+          "bytes": 810
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProvidersEditorTest.xml",
+          "sha256": "446a9490ae5308bfdbfcb77f265f93d367785241730e86566eb01abf04f26e8f",
+          "bytes": 1458
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxiesEditorTest.xml",
+          "sha256": "433cabf1e941d143c86f810f4df9d90addb1684e9487304cb12d45bc3a2d61b8",
+          "bytes": 811
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyGroupsEditorTest.xml",
+          "sha256": "3425b0aae8932b3529c819e01c0f59feec3014844283aa4202948cf94d9594cc",
+          "bytes": 1144
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileProxyResourcesTest.xml",
+          "sha256": "3b2d72e539c3aeae729c5e3339ec7775dad9748b56de9fb174e6210dd1b23890",
+          "bytes": 788
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileRulesEditorTest.xml",
+          "sha256": "79244493469b221c86d297b18c6408f14a69514a681ef50827be4b769f4ca832",
+          "bytes": 784
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileSelectionTest.xml",
+          "sha256": "8515183a0e993dec5b3de6f871a892c047d6a9ab081585a98146503d9709fb3a",
+          "bytes": 793
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProfileTest.xml",
+          "sha256": "172fa86886a898654080393875143e4ac77da273b4b931357812966fffce979d",
+          "bytes": 996
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProviderEditingTest.xml",
+          "sha256": "caf310f5f3374db2efa45311529efbc238f3451d27b9426785d8fc3d001f9b15",
+          "bytes": 1181
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupDraftsTest.xml",
+          "sha256": "0b57c207db8b2cea95bbd212fb1f3624af51a1b699a89b8e37b1fda5733d9d37",
+          "bytes": 1912
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ProxyGroupIssuesTest.xml",
+          "sha256": "d942b050b441a096fef5693a7658060f93ca0e0afc7d9af3a231f69ff4d98ef4",
+          "bytes": 1107
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.RuleResourcesTest.xml",
+          "sha256": "d21c8a71bf2853a57f28d81ef844e75ce78a8c0967c65fa71f4356371af8d0f8",
+          "bytes": 937
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ScriptImportTest.xml",
+          "sha256": "185f4aa31668cdb1fbbc1c3a8d1970d9b8d62e87ca1aad2e9ac1199619bb1651",
+          "bytes": 623
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.ServiceExitRepositoryTest.xml",
+          "sha256": "91ae3fe430bb60d2dbb983289c3cf426d8376672c9bc4e40c208d356eca06d39",
+          "bytes": 805
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionAutoUpdateTest.xml",
+          "sha256": "0e83192b98fac14db5a3578be340fac75822734f0f0d395c4a7a5ae99c563272",
+          "bytes": 772
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.SubscriptionClientTest.xml",
+          "sha256": "d12d4b07e937d6c04513e02782604fcf0f06843973cc28c4bc13802639b2aad6",
+          "bytes": 503
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.data.WebDavClientTest.xml",
+          "sha256": "5c27e653a30543c6e6331b572ff8c3f9c31efad0e4bbe8ab2a84fb49c97f53af",
+          "bytes": 1193
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AccessControlViewModelTest.xml",
+          "sha256": "6b44742ac4eeecc88df9db45e5cad0353633a09872429bb5172e8c15c1ba15c6",
+          "bytes": 1354
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuMotionTest.xml",
+          "sha256": "4cb02338c2d67b2b74593ed05b3fe7d4a4093833a2fb07f4d8a8ca4fd8652144",
+          "bytes": 1617
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppMenuPositionerTest.xml",
+          "sha256": "dbd2c2c19efc4a1645db5661f69c88df4a37ff6ecf075db5d6e98a20f3c7a382",
+          "bytes": 1048
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.AppSurfacePhysicsTest.xml",
+          "sha256": "5fcc831321cbc0af0c783d059a597b8d44052ac678a9be9c99805b085e36153d",
+          "bytes": 904
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionDetailFormattingTest.xml",
+          "sha256": "ca1a6dec2ecf42070a93fb19300f27e3a6718e0d184e2fd368488db6c9fdda81",
+          "bytes": 995
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest.xml",
+          "sha256": "d2df3840402d44765ea26a822b335556c39c926463fa8b390a00709d866bc494",
+          "bytes": 1626
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.CustomProfileSummaryTest.xml",
+          "sha256": "51796b47427fb2d9786a4119ec8f19a411d5a39e2575a288bef8ef1086ed8e04",
+          "bytes": 959
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardDragTest.xml",
+          "sha256": "40a2768fe94f3dd485be5233f1c79439a6700d51406ee97bddd72b593846ea28",
+          "bytes": 764
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardLayoutTest.xml",
+          "sha256": "76deffbae8c6ec477d6289e7dfacfe8d332d7b71d12fa115049db23bc1403754",
+          "bytes": 1933
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.DashboardTelemetryTest.xml",
+          "sha256": "2e407035156f216bf246ae7af82bb304d1ebd4b8901fe87c577a934fcdbee15e",
+          "bytes": 1004
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.GlobalRulesControllerTest.xml",
+          "sha256": "d5d00821b258f07d447002c6b1f35c67c982f52d3cff09b2190a8e723c12cbc4",
+          "bytes": 797
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.IntranetIpViewModelTest.xml",
+          "sha256": "1ee4d5de476a930e52231d206bd7991dff97b05fa7ae0948e9a11a55204fa2b3",
+          "bytes": 1288
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainPageScaffoldTest.xml",
+          "sha256": "e52700c4050b697964836b4ee382fe7f82a61fe534eac99a0359e517e632dc67",
+          "bytes": 675
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTelemetryTest.xml",
+          "sha256": "128effad9ae2376b761b4358be3bf5b03b3e384eaa2688ded9f54d527d828435",
+          "bytes": 844
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MainViewModelTest.xml",
+          "sha256": "3055983c0a9d9f12e2c8f69d079a5087c9d569684f1c0b7489afae173b126027",
+          "bytes": 3289
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.MemoryViewModelTest.xml",
+          "sha256": "ebfedfef8adbab09d856a67242bf2b9780b25b3a1f581812e8485afcfda06273",
+          "bytes": 1346
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.OutboundIpViewModelTest.xml",
+          "sha256": "9bacfe99698145a9c2ae4c675e253cbcaa5aecd6be22ab3534e712c47f8b37e5",
+          "bytes": 1258
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileExtensionControllerTest.xml",
+          "sha256": "12680f6b9d8b7e833f1e1c00f99557c0e28136a7939e937e5e8a2bc18dcc77e7",
+          "bytes": 1184
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileFileImportControllerTest.xml",
+          "sha256": "53d0fc3dc7ddd0cbed685413932ee1a240e29c62b4c0666d78608dfe1d5b9d8d",
+          "bytes": 1288
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileMoreFieldsTest.xml",
+          "sha256": "b71e38cee9c0401816a123cb976894c66834b2db7627f56eb21a0e2cb08cfbe9",
+          "bytes": 1263
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileSharingViewModelTest.xml",
+          "sha256": "f57068d494f1a2381b9bd88252198fb58ff94d1dc07884f1ddbd1f02d1c5ab1a",
+          "bytes": 1883
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileStatisticsViewModelTest.xml",
+          "sha256": "7e8925f9d41b45bd9c3faab4053b0b380f3938a8aa7cad05b2d23fa83a649f34",
+          "bytes": 3196
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfileUrlImportTest.xml",
+          "sha256": "d06c32c814dce4557528612bfde222957a03eb19dad0833637ee0f9fbd5bb10c",
+          "bytes": 771
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProfilesViewModelTest.xml",
+          "sha256": "c9ae5eee5f89d0e80a9e58f20833786296a554b1899c5bba0761d95e874662a4",
+          "bytes": 12041
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ProxyGroupsViewModelTest.xml",
+          "sha256": "9828f647f4d7418074a2850202c9dd122de87271ad06e2c7931f6588610ac6ea",
+          "bytes": 5750
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ResourceUrlImportControllerTest.xml",
+          "sha256": "ed259c3bc94b89e2cfc24a9ea7fc00f234be1c7d7506a9c67013009bab89cb1b",
+          "bytes": 829
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModelTest.xml",
+          "sha256": "258395ed057e4fd98925f8790ac6f2a507c76490ec867019471570759311fcf6",
+          "bytes": 879
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ScriptsViewModelTest.xml",
+          "sha256": "af2d1d52de2d48936306d3f428bdc78f0839bba29a86b4b560d91149ea8b8b38",
+          "bytes": 1790
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.ui.ServiceStatusViewModelTest.xml",
+          "sha256": "b7f86ed0921720b15333d4d6aead8a3f607b0e3a2fb13ccfa4739eb9069c924a",
+          "bytes": 3749
+        }
+      ]
+    },
+    "service": {
+      "tests": 193,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml",
+          "sha256": "70c2ac724cd9e0525b225cd8ade708f38aec701e2a5dca76e944f180bc36157f",
+          "bytes": 16890
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.DefaultVpnOptionsProviderTest.xml",
+          "sha256": "f4ca5ca5c2b470d25db95aa8a40b86947f398a4cda38f06dfde2c82a0194638e",
+          "bytes": 1170
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeneralSettingsTest.xml",
+          "sha256": "cd51dd5da89c4f5bbc5c661400030e9ae7abaac3046407ebfb0da40e987d2bab",
+          "bytes": 955
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GeoResourceSettingsTest.xml",
+          "sha256": "75abd8c01d144e37bd8b49781cae4855b125923abb094a970d845cfa20278600",
+          "bytes": 692
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.GlobalDnsSettingsTest.xml",
+          "sha256": "5194c8da6c5343b3acb8c59708bf13f47ac95b4ef92620e68808ae36c35705d7",
+          "bytes": 954
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.NetworkSettingsTest.xml",
+          "sha256": "3648945cd6544f7221de0c26a798a76c9ec1badd59baf3cd42bbf0298fb8cfad",
+          "bytes": 1153
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.OnDemandSettingsTest.xml",
+          "sha256": "188cae24475d12daf62cc2889c2a1c605285497a8eccfa1418a4a238dacdc48e",
+          "bytes": 654
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileDnsBaselineTest.xml",
+          "sha256": "cad627854eb13375550e440d3188b193ebbcafad59a34bd7c2096f0d140cf370",
+          "bytes": 1125
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileExtensionTest.xml",
+          "sha256": "717813cace0012eb4efc654b42084b11ba98bf66185ea526b434708768dc95f6",
+          "bytes": 1157
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileMoreOverridesTest.xml",
+          "sha256": "a071d1011ecd73854d2ff8486ffabe01219a8ced22d3aa5d7e3b4061e7802224",
+          "bytes": 1127
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileProviderOverridesTest.xml",
+          "sha256": "d5f1613d8e91c3d191496cda8f79551fef991575dface19228ca3be02684cf89",
+          "bytes": 2550
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileScriptTest.xml",
+          "sha256": "469b472cc5f49eea963784ed77edacdfb7a00d83d0761447b105e7d687d174c8",
+          "bytes": 1547
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ProfileStatisticsTest.xml",
+          "sha256": "3546ad75425243a3be9fcfb1213e2556c6b269bd8f3f12524ee724dfb5a7ab55",
+          "bytes": 655
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.RuntimeDiagnosticsTest.xml",
+          "sha256": "e1b7f58298db275088b5dbad36a9ddc770aeee52f66aba6c7125ea4597e6d3d2",
+          "bytes": 960
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.ServiceConfigTest.xml",
+          "sha256": "ee3363bbcefd9bfa906703accb270a2efd71d0c1f00c6de0c5e393aea119397a",
+          "bytes": 1077
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.RouteAddressTest.xml",
+          "sha256": "4dac70a5d6a59cb7d144dd400bead11cd098c5465ad51e807772be9cc1cc392f",
+          "bytes": 942
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.ToCIDRTest.xml",
+          "sha256": "226eb49d2ec5f4675a3161bd695555ce5d33c16d1a8746d502caef7e8a5ccdf2",
+          "bytes": 1458
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TrafficTest.xml",
+          "sha256": "64065524b2943d82ea0bda6e447bcafb058271dfb45681a84d473e62c780dc09",
+          "bytes": 1120
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/service/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.service.models.TunOptionsTest.xml",
+          "sha256": "055e1e9617855d00cca1268646f9ac5b8d81fc76c250071c4ee7e825f5081408",
+          "bytes": 782
+        }
+      ]
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/core/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.core.CoreBridgeParsingTest.xml",
+          "sha256": "ed43fc79351981139e36741e4d10f449be3ab9154f8479dedc380f7adb1f58a1",
+          "bytes": 6076
+        }
+      ]
+    },
+    "common": {
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reports": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.BroadcastLeaseTest.xml",
+          "sha256": "606a80b1a6aae9fd37f857bd57c35158cbd03204bf1a6ab611dcfb455326611f",
+          "bytes": 1307
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.EnumsTest.xml",
+          "sha256": "cc7639d2e5dc4405b1cadfeed107c3a8e6a6932db6920cb579ebd3776f592788",
+          "bytes": 1049
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.PendingCallbackTest.xml",
+          "sha256": "8651a94e8dc5490568e19a91afc3c6fbd90156fbe655774ef7cff1d689feebb5",
+          "bytes": 1613
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/common/build/test-results/testDebugUnitTest/TEST-com.lonnnnnng.flclash.common.RunIntentArbiterTest.xml",
+          "sha256": "226b0d451e7c9c8a6d24717b59e3fc4918de0858302c6ee924fefc69f81bc93e",
+          "bytes": 1745
+        }
+      ]
+    }
+  },
+  "unitTotal": 715,
+  "lint": {
+    "debug": {
+      "errors": 0,
+      "warnings": 64,
+      "hints": 10,
+      "report": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-debug.xml",
+        "sha256": "8c10f60f9d56af338b7f3a0f6f21c5896de9af5869440e0e6d2a000ac1e4c590",
+        "bytes": 83101
+      }
+    },
+    "release": {
+      "errors": 0,
+      "warnings": 64,
+      "hints": 9,
+      "report": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/reports/lint-results-release.xml",
+        "sha256": "d98651c617b1c72b263de1d117f7c36beef55c1aaa83f7a46b92c14fba1341b3",
+        "bytes": 81896
+      }
+    }
+  },
+  "artifacts": {
+    "app": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "666989de1bdee0fece4db4a2196fc1738373122f5a09b1b9c1fa18549913c7cb",
+      "bytes": 90682722,
+      "package": "com.lonnnnnng.flclash",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "metadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "signed": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899",
+      "installedSha256": "666989de1bdee0fece4db4a2196fc1738373122f5a09b1b9c1fa18549913c7cb"
+    },
+    "test": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "14006b91020243e73a9625820d4ee5a5af277c7618e144645c8ccac1e3cd177c",
+      "bytes": 4114282,
+      "package": "com.lonnnnnng.flclash.test",
+      "nativeAbis": [],
+      "metadata": "package: name='com.lonnnnnng.flclash.test' versionCode='' versionName='' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "signed": true,
+      "signerCertificateSha256": "6c8823ff4295d7b29e8e2c58b13c864f795b082255b67c80aa8cb783155e3899",
+      "installedSha256": "14006b91020243e73a9625820d4ee5a5af277c7618e144645c8ccac1e3cd177c"
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "cee65f2bd52affc5558640b79a52264cbd99a76b46fa4985d6589bed05eeefbe",
+      "bytes": 48136936,
+      "package": "com.lonnnnnng.flclash",
+      "nativeAbis": [
+        "arm64-v8a"
+      ],
+      "metadata": "package: name='com.lonnnnnng.flclash' versionCode='1' versionName='0.1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17'",
+      "signed": false,
+      "installed": false
+    }
+  },
+  "buildLogs": [
+    {
+      "path": "/tmp/kclash-stage1-20261105-build1.log",
+      "sha256": "f400a29c695236cc4e4dd4160d3caec9992df1a41d9c972a6c0c888f5fc49c11",
+      "bytes": 19859
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-build2.log",
+      "sha256": "21f9c06d62a91524dacfddfa47fe9bfded5f79ff2189dadeed378ed9f88f3faa",
+      "bytes": 19826
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-build3.log",
+      "sha256": "749bd26c8e892bebd2492a565bf2b7c3dba31e7f8bdf9a4037046a0fbf9d1432",
+      "bytes": 19782
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-testbuild2.log",
+      "sha256": "4eea123c0906121ba2c545d5e41f68ab928387eaeb23de6e21d95a218751948b",
+      "bytes": 8296
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-testbuild3.log",
+      "sha256": "4eea123c0906121ba2c545d5e41f68ab928387eaeb23de6e21d95a218751948b",
+      "bytes": 8296
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-testbuild4.log",
+      "sha256": "b01f4f311c5c8b0a34740b9c415653dc9554c83015f2386d300c2f767d28efea",
+      "bytes": 8296
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-lint3.log",
+      "sha256": "34962f16c7ceecfc6c4edb2525b4ff28169566ec2a27487619d4a36a27a2f8a5",
+      "bytes": 14684
+    }
+  ],
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": "1.0"
+  },
+  "finalBatch": {
+    "methodsRequested": [
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#duplicateRuleIdentityAndBatchSelectionSurviveRestoration",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#pendingRuleSaveRestoresAndCompletesWithoutSubmittingAgain",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#changedRuleSourceDoesNotTurnRestoredEditIntoInsertion",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#groupYamlBackKeepsValidDraftAndInvalidDraftCanContinueOrDiscard",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#providerYamlErrorsReturnToTopOnRepeatedLocalAndRepositoryFailures",
+      "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#dismissingSheetBlocksBusinessClicksAndReopenedSheetWorks",
+      "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes",
+      "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#interruptedDragNeverNavigatesAfterBackgroundAndNextDragWorks",
+      "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#fastFlingCommitsBeforeHalfAndReverseFlingCancelsAfterHalf",
+      "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityPageDragBackKeepsServiceDetailsAndDoesNotRefresh",
+      "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#managementTransitionReversesAndPreservesListPositionAcrossThemes",
+      "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+      "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+      "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+      "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+      "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+      "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+      "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+      "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+      "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+      "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+      "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar",
+      "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+      "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+      "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndRetryRespectRuntimeGate",
+      "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+      "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+      "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longProfilePickerKeepsDetentsAndSelectsLastRowOnce",
+      "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+      "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+      "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+      "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#realCodecAndViewModelKeepDraftOptionsRejectStaleSaveAndConfirmBatchReplacement",
+      "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+      "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityReturnCapturesOutgoingBodyBeforeFadeCompletes"
+    ],
+    "results": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#changedRuleSourceDoesNotTurnRestoredEditIntoInsertion",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#providerYamlErrorsReturnToTopOnRepeatedLocalAndRepositoryFailures",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#groupYamlBackKeepsValidDraftAndInvalidDraftCanContinueOrDiscard",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#duplicateRuleIdentityAndBatchSelectionSurviveRestoration",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#dismissingSheetBlocksBusinessClicksAndReopenedSheetWorks",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#pendingRuleSaveRestoresAndCompletesWithoutSubmittingAgain",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#managementTransitionReversesAndPreservesListPositionAcrossThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityPageDragBackKeepsServiceDetailsAndDoesNotRefresh",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityReturnCapturesOutgoingBodyBeforeFadeCompletes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#fastFlingCommitsBeforeHalfAndReverseFlingCancelsAfterHalf",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#interruptedDragNeverNavigatesAfterBackgroundAndNextDragWorks",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndRetryRespectRuntimeGate",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longProfilePickerKeepsDetentsAndSelectsLastRowOnce",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#realCodecAndViewModelKeepDraftOptionsRejectStaleSaveAndConfirmBatchReplacement",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      }
+    ],
+    "images": [
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-group_icon_restored_empty.png",
+        "sha256": "dc37e4e24df192c92e7a9fc7de9dcbcffe77055cef182f202767526dc2031f2d"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-group_option_restored_value.png",
+        "sha256": "a344defc679bbae304fb914af41672dcc211db98e1aa9bb6733dedd211b00ad5"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-whole_groups_yaml_error_located.png",
+        "sha256": "903ba88c03fe7d9146b1451f24d021b34c3bfa1adb268a3318ab0af35c25087a"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-providers_yaml_local_error.png",
+        "sha256": "afdee0c761f752fa2da8200bf5fffb7843d4e2937f072db5dcb31f96da794ee5"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-providers_yaml_repository_error.png",
+        "sha256": "af8c05990b97f56e4a4dccc6c1e06e5d803eec76d17e22f6f768e669b88a54a5"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-group_yaml_failed_draft.png",
+        "sha256": "ca47897f2cb899a83dd76d161fa794214f5e540a9390a75ab30d7be344e223b7"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-rule_restored_draft.png",
+        "sha256": "34aad0080b5b99126ca8b278eeddf407284aa8baf3d0a9715e40bfd782278a83"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-rule_restored_selection.png",
+        "sha256": "732d16c9f49d520e427ef57853b3f3a6909ca83632fd89ad4777f6ccbfcff5fd"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_manage_mid_false.png",
+        "sha256": "5b712e4193f8f5cdb7fa923e831d78ba3568be8b1968cb64b176ac08bc1cd263"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_manage_scrolled_false.png",
+        "sha256": "0ab04a6e60140245b4782ec9589844142659b8b4f3d6053882ad3b43088e5606"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_manage_mid_true.png",
+        "sha256": "0ba77039d5d1e55784cfe0e5cdc9682c99f85a00ba8bd5d5d72594b49e44a0d1"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_manage_scrolled_true.png",
+        "sha256": "5a40b1b16438829f40fe6de5fb488755673ae8c8729f99614a9afa4597166ec0"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_quality_drag_cancelled.png",
+        "sha256": "4748922007862b6db18ede8ca0843efcd3737d0895906446c75bcd44324199f5"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-quality_before_return_false.png",
+        "sha256": "6398b07bec1d87941328e2d7a80d44e8b61312f87e094a5d855fa6ceea27bf93"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-quality_return_outgoing_false.png",
+        "sha256": "8f4f82f5dc0f843d5508db373e1cddbb8c38fcb55f275c22e6ce5edf12a37980"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-quality_before_return_true.png",
+        "sha256": "b8f073e89ac443a38498adcd0617295413c68e35dc276b254b2a01df89c5480f"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-quality_return_outgoing_true.png",
+        "sha256": "72896f1a52a92e68d428b7f799c1718754f58584716727d6b66027f1da41b82a"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_drag_then_normal_back_false.png",
+        "sha256": "37a8730c1914c778f92140d8e82e465e232fb4356589b406d13f576e64afceaa"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_drag_then_normal_back_true.png",
+        "sha256": "68f8b22aaff6cd5c525a499f166ac2643d1421345cd606307fd36630da67cb4e"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_drag_following_finger.png",
+        "sha256": "b7a336f25922cce001f6594bde4aed2450c5469c66c3ae92a46ce659ca30ba6c"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_list_light.png",
+        "sha256": "6f4daf767605795f0cb4e53048a4a311867c389b7c64b181e79498f23caf0197"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_member_picker_light.png",
+        "sha256": "f277ebd0ba52d92a52d39e48779a9f56278591a51ed500715df296f2e8467bc5"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_members_light.png",
+        "sha256": "dceba9188c6dfad2ef18b8c7c21c3ca08d267cbec29517bd14b971164328f109"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_add_options_light.png",
+        "sha256": "e52fbc7d5a0fbebc7d88aa7eacca84696062166b455245b36489fca5a45a1a84"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_options_light.png",
+        "sha256": "e3c0d2c72ff86dd1a5328fec68253d1e9850a3ae3557f907c5f1f8adfa43ca04"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_quick_yaml_light.png",
+        "sha256": "87824ba26b9e94076fc4eef207c3dd874e55d17d05525b4d1ee95214cba84ab1"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_list_dark.png",
+        "sha256": "dfed2c630f586be21a0be822ca72f258fff4ad717789998d98db6c1b25a9d659"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_member_picker_dark.png",
+        "sha256": "a1d76dfa13d4ceb9596757a512a6c5ee1d2eb3e3b2d5b202e2a13ec49de7a133"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_members_dark.png",
+        "sha256": "7f0be81c83a007aa7f956555e0b157be49e803860eaa9b91a3a49df1a0a9741b"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_add_options_dark.png",
+        "sha256": "438cf4e71df4865599b894b86c0e9c2c32edd7f7901f6f46e377fa7f861cd8c0"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_options_dark.png",
+        "sha256": "36761705f430cc0640483b916c0f92632a15a92d5e563fbe9a777ff06d106097"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_quick_yaml_dark.png",
+        "sha256": "5c5942520075da6289117023b97c6e83dcf97e169f309030db5112faccc0cd21"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-groups_all_options_returned_to_draft.png",
+        "sha256": "a5e73840c9262775ec46e7ff753c6377642743337e523384c8dbf45ceee562bf"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_discard.png",
+        "sha256": "a0e59358f2236612aee0cb4650db81564415368bff5ae99722c6fdb39bba38c4"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_delete_references.png",
+        "sha256": "5770a64630233b690a87fbf50ffde976e5a5e4b48050ba3fb308203cc2447654"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_empty.png",
+        "sha256": "4cdee1fe7c2b85dcf7dce2dbe9e5095a3813cd90790d7e85cc872b71613d9cf3"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-profile_dialers_missing_false.png",
+        "sha256": "201add73fa33faaea58ab97b528c770bce0b51c6be8a46494f5e8defac49260e"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-profile_dialers_targets_false.png",
+        "sha256": "15a3da817ffeb3e377f44b9242bea1edc0efd435e9c54633f27e07941016f5d3"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-profile_dialers_missing_true.png",
+        "sha256": "b449453a5312a622a82b02ddc7209bdce1221edae44b746e8d8cc3fdf839639a"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-profile_dialers_targets_true.png",
+        "sha256": "9e972dd3328513e288e53dcf7349cb5ab3937de30136e07594a52e3dbb0dc46c"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxies_list_false.png",
+        "sha256": "664783ca64139b8cbd6f3ba896e385842834430981c49f7c2bf10cdda3301665"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_ss_editor_false.png",
+        "sha256": "e213f2dcaf54a0670fbaf141688d5be2eb9126e1e0ab086357158ae3d7eaa800"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_options_false.png",
+        "sha256": "e610268779017e57974c2bea27b115f2bae98bcf5a0095d604e3c60aaf564a2a"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_transport_false.png",
+        "sha256": "dd6c65005dfbfd684bbbe6c0b96d7172babd7996a6e6c539f9275c11d2908bf8"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxies_list_true.png",
+        "sha256": "d0a0e216a863b452c726dfe81b0db32630b12a54f4d6244491498c2578f4da1c"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_ss_editor_true.png",
+        "sha256": "799440d4fc5b7d1f8fbf1a12fec3029ed7ce8bae0b9b407c379b18df7f875636"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_options_true.png",
+        "sha256": "b90785dc9e33784309a00005911fa059634760b654985f76d450df60cc42e302"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-local_proxy_transport_true.png",
+        "sha256": "a0eb5a06821704547da3613ac1ffc3f0056403529984faa77921d25d65ff1747"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_search_empty_TAB.png",
+        "sha256": "72a783693cc555315bab130569802033f536824982792be8bf8582440a59f9bb"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_search_cleared_TAB.png",
+        "sha256": "3ba485fa39402f55bc08de5b9fdb09372b256f94a98b8311fa7c94d705914b50"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_search_empty_LIST.png",
+        "sha256": "ff40331f64d0c5ff6e4e5bf9de9b5ed73de8c2e197952ad7a27d90f652d8c4e8"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_search_cleared_LIST.png",
+        "sha256": "370f97d8b28454d9ee2de0ae172bb8a91df0d78b80774451f08d37279995cfae"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_empty_failed_false.png",
+        "sha256": "9c5c37ef9f3c77ee6c96e9c4024c7b7828659057ab7b31034ff566a6a743e3b7"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_empty_plain_false.png",
+        "sha256": "84e1619faf014a8829745243a8e5ee4d7c03809bcf69cb71fe452e672dd790fe"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_empty_failed_true.png",
+        "sha256": "9d73f59d737546de7e9da885e1b429ea1015bab4ba4321bd4901bf9b77bc9f89"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_empty_plain_true.png",
+        "sha256": "30fd729a3e4191a490196d3cbb1395c26cb359f6b10e80458643d9f931def59b"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-profiles_empty_false.png",
+        "sha256": "dd292e750410e2346c66aabec7d23baf0e5a88e281963c0092f9bcf0f62c6e35"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-profiles_empty_true.png",
+        "sha256": "166e947524c61e45a51ad45ed159ffe4d80a862c69306af4943709c7583ef06a"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_short_false.png",
+        "sha256": "709d066445684c13eddf00b5db2a934c33478e0f945689e117fb9fe44c08de66"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_long_false.png",
+        "sha256": "0be627fc919a134545336f32e85a4ea5ee19fab802afdd4eee7f65bcb74a90ee"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_short_true.png",
+        "sha256": "9176e205796c5c6d6ef911a64dc0636127b3070da5c4f633e26021648eb57ceb"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_long_true.png",
+        "sha256": "9ec8274b9b9b0e982a0502057d15dc73956fc749479d7942054d6b38b6408813"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_profile_long.png",
+        "sha256": "7c682b215ae96fe1123a1cb262421593d309d672b82f5c61f038f1d5f0704d61"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_service_quality.png",
+        "sha256": "cff961c0ed75c02927447f74260d807c148fbe9e3ab27f808cb93c9640f3ea31"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_service_manage.png",
+        "sha256": "e5f8fe3811388710edbf6aaaa6af1802a5c1366aca6a4336ae05102c93bfe976"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_profile_picker_true.png",
+        "sha256": "3ef6b67ffa7b01da11aa210bb603ce8df1591f165c92cbc013f5f2bf371475c6"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_sheet_profile_picker_false.png",
+        "sha256": "fce3cda43b6be816de81b456325c8da282d5bd59cd79c97b04b417068952544e"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_default.png",
+        "sha256": "9e15f92b825a7380cd7279e4b80a14825a845fc13351a3b12f1071db8d3d2280"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-dashboard_system_ready.png",
+        "sha256": "d44421dd7257b6520abc6d5c377180718040d38ece1bb20990c899783d89cd3f"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_exit_ipv6_dark.png",
+        "sha256": "334348194dcf6b6aa59ae433bb83e9c53d402b734a65ca3ae9e71a055fe74c8e"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_exit_quality_dark.png",
+        "sha256": "2ce88ca31b7cb7f287ec3aad82a37426e8e3565a6777e5e61c16e0a6e5f7b3f3"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_exit_ipv6_light.png",
+        "sha256": "bf424d0eee92f7df778ff4e9d55da212d29ada79a246aef73d87e9ad3dcab5a4"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-service_exit_quality_light.png",
+        "sha256": "1bf3cd5d12905f9f987bea1f20c8d4ceed776c4c94c7673425e8cdb084de749d"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-services_card_dark.png",
+        "sha256": "a5c3ad94114c304e9f5814a547996010b5bb7645f671121dbf6a025b1d64fb37"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-services_details_dark.png",
+        "sha256": "83ae0d32edb8550f05b3ddd1ac53ad0229ef2399e9773e55b7a545ec0708a8b3"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-services_manage_dark.png",
+        "sha256": "0ac0aba0b83ce03813911333efdcd31dd163d01eb262af62a1a29796e1481160"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-services_card_light.png",
+        "sha256": "16afa52aa91cb051cb6dffcfde4a9263144da13791fe6f832103d3ce94a562cf"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-services_details_light.png",
+        "sha256": "e14d82b420120dcdafb7dcdc8aa0c5fe55d7de8d0e17b5e0477a1c8ce8bdef55"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-services_manage_light.png",
+        "sha256": "c0730c480b0a781d4edf2cc11dd2f02be504a949de67a98641c8da3969c107e6"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_page_dark.png",
+        "sha256": "083fcc865ac4ef5e4b20e1217107b50600e4819f024b97c89326c39fac7f9c0c"
+      },
+      {
+        "path": "/tmp/kclash-stage1-20261105-final2-proxy_page_light.png",
+        "sha256": "930cd68a2ee1974ac42ec246a165ef0b2a7032147df03693f7248f02e717d122"
+      }
+    ],
+    "exitCode": 0,
+    "seconds": 244.889,
+    "log": "/tmp/kclash-stage1-20261105-final2.log"
+  },
+  "previousBatches": {
+    "new1": {
+      "methodsRequested": [
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft",
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel",
+        "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+        "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes",
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#interruptedDragNeverNavigatesAfterBackgroundAndNextDragWorks",
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityPageDragBackKeepsServiceDetailsAndDoesNotRefresh"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityPageDragBackKeepsServiceDetailsAndDoesNotRefresh",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes",
+          "code": -2,
+          "passed": false,
+          "stack": "java.lang.AssertionError: 拖回后的普通返回仍须播放过渡\n\tat org.junit.Assert.fail(Assert.java:89)\n\tat org.junit.Assert.assertTrue(Assert.java:42)\n\tat com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest.dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes(MainSubpageRecoveryInstrumentedTest.kt:306)\n\nError in dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes(com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest):\njava.lang.AssertionError: 拖回后的普通返回仍须播放过渡\n\tat org.junit.Assert.fail(Assert.java:89)\n\tat org.junit.Assert.assertTrue(Assert.java:42)\n\tat com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest.dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes(MainSubpageRecoveryInstrumentedTest.kt:306)\n"
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#interruptedDragNeverNavigatesAfterBackgroundAndNextDragWorks",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "images": [
+        {
+          "path": "/tmp/kclash-stage1-20261105-new1-None.png",
+          "sha256": "17aac8da8fd29fddb627fe7dbb25b1ff292928459bf75f88cba38be06b4bb249"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-new1-group_icon_restored_empty.png",
+          "sha256": "958e84838060596329697c5f7587d5e9452e424808ee3633c6c70a7cafad0301"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-new1-group_option_restored_value.png",
+          "sha256": "3a1dbb8507902ebf42455a678b06d3782d7a4baac35dec08a5d6722354eeb414"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-new1-whole_groups_yaml_error_located.png",
+          "sha256": "c6dc6139cf926bd1fca3c889b95c5956907490bb8962bb1deacc3d3074f8f4d8"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 51.909,
+      "log": "/tmp/kclash-stage1-20261105-new1.log"
+    },
+    "motion2": {
+      "methodsRequested": [
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "images": [
+        {
+          "path": "/tmp/kclash-stage1-20261105-motion2-None.png",
+          "sha256": "eb51359b51fcf927f6f99f27490e36e89a2c5f3a263e83df09410c3b42c9406e"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-motion2-service_drag_then_normal_back_false.png",
+          "sha256": "d2417bd74cad8fbd07db6677e6fb1987dbe26aed841c916f1ad30be1094d3751"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 19.856,
+      "log": "/tmp/kclash-stage1-20261105-motion2.log"
+    },
+    "fling3": {
+      "methodsRequested": [
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#fastFlingCommitsBeforeHalfAndReverseFlingCancelsAfterHalf"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#fastFlingCommitsBeforeHalfAndReverseFlingCancelsAfterHalf",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "images": [
+        {
+          "path": "/tmp/kclash-stage1-20261105-fling3-service_drag_following_finger.png",
+          "sha256": "f5e3a4982ff6b5a09b95b45b80134a55f09298b5291930e5aab9b449cefa7f6a"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 14.208,
+      "log": "/tmp/kclash-stage1-20261105-fling3.log"
+    },
+    "final1": {
+      "methodsRequested": [
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#duplicateRuleIdentityAndBatchSelectionSurviveRestoration",
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#pendingRuleSaveRestoresAndCompletesWithoutSubmittingAgain",
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#changedRuleSourceDoesNotTurnRestoredEditIntoInsertion",
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#groupYamlBackKeepsValidDraftAndInvalidDraftCanContinueOrDiscard",
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft",
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel",
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#providerYamlErrorsReturnToTopOnRepeatedLocalAndRepositoryFailures",
+        "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#dismissingSheetBlocksBusinessClicksAndReopenedSheetWorks",
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes",
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#interruptedDragNeverNavigatesAfterBackgroundAndNextDragWorks",
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#fastFlingCommitsBeforeHalfAndReverseFlingCancelsAfterHalf",
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityPageDragBackKeepsServiceDetailsAndDoesNotRefresh",
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#managementTransitionReversesAndPreservesListPositionAcrossThemes",
+        "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+        "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+        "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+        "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+        "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+        "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+        "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+        "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+        "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+        "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+        "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar",
+        "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+        "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+        "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndRetryRespectRuntimeGate",
+        "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+        "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+        "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longProfilePickerKeepsDetentsAndSelectsLastRowOnce",
+        "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+        "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+        "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+        "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#realCodecAndViewModelKeepDraftOptionsRejectStaleSaveAndConfirmBatchReplacement",
+        "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#singleGroupIconAndOptionSubpagesRestoreTheirDraftAndBackLevel",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#changedRuleSourceDoesNotTurnRestoredEditIntoInsertion",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#wholeGroupYamlRestoresLocatesLongErrorsAndReturnsOnlyToParentDraft",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#providerYamlErrorsReturnToTopOnRepeatedLocalAndRepositoryFailures",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#groupYamlBackKeepsValidDraftAndInvalidDraftCanContinueOrDiscard",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#duplicateRuleIdentityAndBatchSelectionSurviveRestoration",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#dismissingSheetBlocksBusinessClicksAndReopenedSheetWorks",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainSubpageRecoveryInstrumentedTest#pendingRuleSaveRestoresAndCompletesWithoutSubmittingAgain",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#managementTransitionReversesAndPreservesListPositionAcrossThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityPageDragBackKeepsServiceDetailsAndDoesNotRefresh",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#dragBackCommitsOrCancelsAndNextOrdinaryBackStillAnimatesAcrossThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#fastFlingCommitsBeforeHalfAndReverseFlingCancelsAfterHalf",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#interruptedDragNeverNavigatesAfterBackgroundAndNextDragWorks",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#addingAllOptionsReturnsToDraftWithoutSavingParent",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest#overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#dialerListFiltersLoopsAndPersistsEachSelectionInBothThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#dashboardEmptyStatusAndRetryRespectRuntimeGate",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longProfilePickerKeepsDetentsAndSelectsLastRowOnce",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest#proxyGroupsScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#realCodecAndViewModelKeepDraftOptionsRejectStaleSaveAndConfirmBatchReplacement",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "images": [
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-group_icon_restored_empty.png",
+          "sha256": "5b305118ac12300c44f81ee8185bf37e8d823f380b78df246de44f5d3876682e"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-group_option_restored_value.png",
+          "sha256": "0bad14ab822307b6de43d8b02588a80601bad5b3e0f2485b86f042a3d2ed7b1a"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-whole_groups_yaml_error_located.png",
+          "sha256": "174b21a5114220d6985fa5c3b0359bd22153a5b651a8b0c84e5492c7cf186a50"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-providers_yaml_local_error.png",
+          "sha256": "9ed3f9a086e5d9ea8301e56d143b25ced3e6f791140296b2fc73af1567b1f8c0"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-providers_yaml_repository_error.png",
+          "sha256": "8d9322c83532900ee435f82053b6cf1f926e1eca52901bc8d5bd2043b0e33ff9"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-group_yaml_failed_draft.png",
+          "sha256": "f1010fae750f7f2f05a18f20f95c6e808de79c6c678c68546949ed744f8b3222"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-rule_restored_draft.png",
+          "sha256": "1d8c6d3dc01b0644ecab96c27a9c4cbbf5564834cdd82f50490ebcc920f15bdc"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-rule_restored_selection.png",
+          "sha256": "85b57f9aa583fde7759b9dda91a5700db4698d4d187432f1dd02b81e71d275c2"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_manage_mid_false.png",
+          "sha256": "71aaab1407ebdc5f16a4b8de177ac7770e5eaf77e0c275bc8e6bd452c6ba233f"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_manage_scrolled_false.png",
+          "sha256": "d680916ad0bfea0a9de5c1cc78240a3fcc43db5f0d5b86d2c501f7339ea183e1"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_manage_mid_true.png",
+          "sha256": "101fa828f43d4c44db67ce367a322f032b4d8d039f6e9700895f186abc9ec21d"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_manage_scrolled_true.png",
+          "sha256": "0ea4f6ada5fd10f14252ba390924ed3a63e2e0b15dc573b22f6120f3e0e5f6a6"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_quality_drag_cancelled.png",
+          "sha256": "c3c1bb91c03cc26b268d64f8f3742464d352b0de96f2e5b7b83ca2e42237b46b"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_drag_then_normal_back_false.png",
+          "sha256": "d9b0c83205504d39bb2879634d4e22e26629802dec44ab24a3ef75aaa43c9270"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_drag_then_normal_back_true.png",
+          "sha256": "ba4c0b53ffb70b94e858e7de07aabeffa6dd93df842c46a4823dea62e72d5bd1"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_drag_following_finger.png",
+          "sha256": "465af57aa6e76dd7ca3ab483a71d35303d7a6aa98b09a0f1dd8bdbeb07a4289d"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_list_light.png",
+          "sha256": "370477d957f9bab84269d31222ad88b06beb3937d2a0ac8ebdac13c84358749b"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_member_picker_light.png",
+          "sha256": "3e7e475fab98efe6e9a1437057b7154d628463238cb2e995fc416ac172497fdc"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_members_light.png",
+          "sha256": "795f9f570157b876e514809f0ebd44af5a7071461e97de584a620f106bb17ff1"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_add_options_light.png",
+          "sha256": "87757bedd91d27449402f5f8d293ec2c7b356bf8b27ac4cb8b7465f9f8269965"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_options_light.png",
+          "sha256": "44832567cc533563b042e61a4bab5f02292c6ab0b4bc721e35bf63b508c3b523"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_quick_yaml_light.png",
+          "sha256": "1c33072603bdcf8a5c8f1188c8440d4d00a1fd6f3bd29c14e4295fa1f53effda"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_list_dark.png",
+          "sha256": "072a1c506751f2a176971f0aee1d534bf4a07e9138e9fb143c2653d621384f18"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_member_picker_dark.png",
+          "sha256": "4fbb96758770a411763dcf3819227174699c3f468d301482f793417a518fc736"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_members_dark.png",
+          "sha256": "548a310d0fb5af21bd42acbef4e4a4c0104990a99e995ec43886c62005e9ec78"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_add_options_dark.png",
+          "sha256": "8f3967af894e0186eec5164fc939ab5fcd3ded22e70ac8f999af5d95b4919cb0"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_options_dark.png",
+          "sha256": "b2f32482637972f0198c6c18a2ff98591a91b4c8deb1e46e920f06d427397752"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_quick_yaml_dark.png",
+          "sha256": "11eba3a517da7f47f2fdf31c559d7b4d89828aed631c3b8f0d1dbac7ca572c41"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-groups_all_options_returned_to_draft.png",
+          "sha256": "24c3eb1f58714fa418c4937bcaa6bcd776f591ec311a4329d5fcbb88f0b8bf5b"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_discard.png",
+          "sha256": "f1f0b960c4ba95eebb1c522914580e9f7ff772c63986b77d95ef0dee42e20231"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_delete_references.png",
+          "sha256": "a52814ca22a950623bad83af422d1c7a1f9b1ea0741874df1525ebf452a17c7b"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_empty.png",
+          "sha256": "eeb596b5164e1689dbb6afcbd92ec67407e583e7ecf851af22894ff983e7fbcf"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-profile_dialers_missing_false.png",
+          "sha256": "b501b09653821dab63a7209a941e4286e77fcc63182bd9a983a45de8fa004acc"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-profile_dialers_targets_false.png",
+          "sha256": "aa9f756d557a398481bba7e9a1b9109946e92bb0b7e229874457ac80ef5e3ad7"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-profile_dialers_missing_true.png",
+          "sha256": "3edfe72141d0db65c9a7b9419753bf758b74b8012039de1711d54c36ca3ed229"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-profile_dialers_targets_true.png",
+          "sha256": "2fa4013b121f26d54b0e2a6af64ae8a623b03942cb7d5f62b36b05dde872c3f8"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxies_list_false.png",
+          "sha256": "a86582e4bad59f29399848e74a1077ab6f65a7ee9ee6e15c7e1dddebb9ec6315"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_ss_editor_false.png",
+          "sha256": "96b735453b5ea77e8dc05c078f57b399e88662b4066c42b0f9cf1694a46c505b"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_options_false.png",
+          "sha256": "ecf4d665648500595c138c69405e03d35ad20f88481c69199e5bee147a322f96"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_transport_false.png",
+          "sha256": "4ef85ef4d5af82e0251e68812dd31c86df22912c63aea59546b234691c4c9049"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxies_list_true.png",
+          "sha256": "37c6c1b58c2a0587b2bf5949f01db3e58f24fa02ddadac00e49a80467fee2459"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_ss_editor_true.png",
+          "sha256": "8f7ccff7c98f25b563ea4c77eaa4e09abac62ed591605e5906d16f0cabea6f1c"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_options_true.png",
+          "sha256": "5bdfb7bf8479b032bc30db8586b8980f2cbea3670d220c4038f7b150e0a856c4"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-local_proxy_transport_true.png",
+          "sha256": "539de51c12c25f36b5a5c652b7a71314b4e3df2682d211ffb65c65a7df31d08d"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_search_empty_TAB.png",
+          "sha256": "e51fbedac0195ddc1b25284869407eaf2ecbbb3e3ee57b4e9a0e77545a1964c2"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_search_cleared_TAB.png",
+          "sha256": "95048eea65b0b7605cba3631f903cfdf2b144b54c6c03de2968ac406f4a3b40f"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_search_empty_LIST.png",
+          "sha256": "e6772276846c2d0960d8a17a8c172b161a86f37436b4161b228a831eeba22dac"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_search_cleared_LIST.png",
+          "sha256": "6c49d86275313416d64a89ef8f7aec5dfa755d58b23afb7a2bae18fbc073e3b8"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_empty_failed_false.png",
+          "sha256": "fc8e4f79fbdf6710bc8e43171acbbb0f2e1add3ff89e0aabb88568b04e0da36e"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_empty_plain_false.png",
+          "sha256": "b33197cf0b25292fbaef807b1622a764f6a20592a24603bef8aa0cabccc15351"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_empty_failed_true.png",
+          "sha256": "afe5048f8d13ca8d7c14d88a5c675b42aada741ae8e03446173a7bd5c8ba5da0"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_empty_plain_true.png",
+          "sha256": "1ee0477ae8b217d126cebd1a76cadd6633aa260e2f9383ecdea659e95dc73de6"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-profiles_empty_false.png",
+          "sha256": "77ba4b0ee51d12324711364c4f7fd73176e0f55c52cde7916fdf91cd577172e2"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-profiles_empty_true.png",
+          "sha256": "0bfd765bfabe298761ae96f4dd9508948278e1495a8f1bdaa3e98c46dfe9296c"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_short_false.png",
+          "sha256": "a4ebe49b46aeac5bbca5f43f6913d66a1eeeee1467846040483c5021fd95bcc5"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_long_false.png",
+          "sha256": "349445d7ccbf7da46205ab3d19d16e4fa37d47c2f4d28afbaaece5616de46dca"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_short_true.png",
+          "sha256": "980c4e56c6a7bedc9c4efab277c25a9aec9ddac0775a8e12dc8e216729bb0951"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_long_true.png",
+          "sha256": "1c2837d42f712c648dad8bcbc08c39576dd68313af8c033936cad2c1d1646ac0"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_profile_long.png",
+          "sha256": "75e111da043caa3530b50c01aaeee9ee7f2c3d558fc24779d67ba865f91657e2"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_service_quality.png",
+          "sha256": "922aec8dd71564213c7c309e6231885ce8377454bdc4a547f7c99ff4a911cd25"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_service_manage.png",
+          "sha256": "3e2ffe9d86c88fba55790e2a5c52efa6d1804bb3b63a905e5d9ce13926c45ff0"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_profile_picker_true.png",
+          "sha256": "285df27eefccd03fbefa641f27cd61beb347aeca32b3b3af4d6d640742fdfdfa"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_sheet_profile_picker_false.png",
+          "sha256": "b4764f785888c5f011692216805a50990f946536e0b39dfbd2c3f8f25a8c5ca8"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_default.png",
+          "sha256": "9e15f92b825a7380cd7279e4b80a14825a845fc13351a3b12f1071db8d3d2280"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-dashboard_system_ready.png",
+          "sha256": "d44421dd7257b6520abc6d5c377180718040d38ece1bb20990c899783d89cd3f"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_exit_ipv6_dark.png",
+          "sha256": "334348194dcf6b6aa59ae433bb83e9c53d402b734a65ca3ae9e71a055fe74c8e"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_exit_quality_dark.png",
+          "sha256": "eb4b96fb4ee236b40402aa5876b31b702de41ba6ea20e33a7b810ca249805eec"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_exit_ipv6_light.png",
+          "sha256": "bf424d0eee92f7df778ff4e9d55da212d29ada79a246aef73d87e9ad3dcab5a4"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-service_exit_quality_light.png",
+          "sha256": "e3bd20ab12f4cf5572da8d4aafe093cf06d075003f0322c2f3712b2277b5f6b6"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-services_card_dark.png",
+          "sha256": "a5c3ad94114c304e9f5814a547996010b5bb7645f671121dbf6a025b1d64fb37"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-services_details_dark.png",
+          "sha256": "83ae0d32edb8550f05b3ddd1ac53ad0229ef2399e9773e55b7a545ec0708a8b3"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-services_manage_dark.png",
+          "sha256": "8024a6285f5f87f8303f582a90451e71f99bf317bf5b90ce41fc9906226ff514"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-services_card_light.png",
+          "sha256": "16afa52aa91cb051cb6dffcfde4a9263144da13791fe6f832103d3ce94a562cf"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-services_details_light.png",
+          "sha256": "e14d82b420120dcdafb7dcdc8aa0c5fe55d7de8d0e17b5e0477a1c8ce8bdef55"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-services_manage_light.png",
+          "sha256": "86c103649320023beadb76c0293f7e1a2cd20c4bd9cb618e9ed933e73809b28d"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_page_dark.png",
+          "sha256": "083fcc865ac4ef5e4b20e1217107b50600e4819f024b97c89326c39fac7f9c0c"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-final1-proxy_page_light.png",
+          "sha256": "930cd68a2ee1974ac42ec246a165ef0b2a7032147df03693f7248f02e717d122"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 240.956,
+      "log": "/tmp/kclash-stage1-20261105-final1.log"
+    },
+    "quality-before-fix": {
+      "methodsRequested": [
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityReturnCapturesOutgoingBodyBeforeFadeCompletes"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityReturnCapturesOutgoingBodyBeforeFadeCompletes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "images": [
+        {
+          "path": "/tmp/kclash-stage1-20261105-quality-before-fix-quality_before_return_false.png",
+          "sha256": "2e8ec0724eee8bfdee44c4bf822661d92c6e727e728ecec58bc0d0439d689794"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-quality-before-fix-quality_return_outgoing_false.png",
+          "sha256": "8afd2585f2fc5bf05affbe8bf6014eaa95d2a30f37be9feeacffe66f44997eaf"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-quality-before-fix-quality_before_return_true.png",
+          "sha256": "4ebdfba050a4f9cc0543a63353f403ac16507f40816799c542d1d5dfbc8864da"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-quality-before-fix-quality_return_outgoing_true.png",
+          "sha256": "c107079419e73fc3ad9e5905a872a8884cc4c6266b0ab5b81d82cfceaa58e8fe"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 16.418,
+      "log": "/tmp/kclash-stage1-20261105-quality-before-fix.log"
+    },
+    "quality-after-fix": {
+      "methodsRequested": [
+        "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityReturnCapturesOutgoingBodyBeforeFadeCompletes"
+      ],
+      "results": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.ServiceSubpageMotionInstrumentedTest#qualityReturnCapturesOutgoingBodyBeforeFadeCompletes",
+          "code": 0,
+          "passed": true,
+          "stack": null
+        }
+      ],
+      "images": [
+        {
+          "path": "/tmp/kclash-stage1-20261105-quality-after-fix-quality_before_return_false.png",
+          "sha256": "9502c2613dda42fe8be804eeb576c92f7a6357587e53117b8763773318a34f06"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-quality-after-fix-quality_return_outgoing_false.png",
+          "sha256": "42d09450f17b7c6f21deccebad2b1d7b2489f6f12677553270b25ee19412bc3c"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-quality-after-fix-quality_before_return_true.png",
+          "sha256": "85175986ba9b67f96be1e2694697a9d795fc6f04f2f1e2b54ca8cce728c5dd4e"
+        },
+        {
+          "path": "/tmp/kclash-stage1-20261105-quality-after-fix-quality_return_outgoing_true.png",
+          "sha256": "17a95ec14bcf1c07a4bc6a0f0ae3747906371b250b9f0a852ea72004ac259fea"
+        }
+      ],
+      "exitCode": 0,
+      "seconds": 16.445,
+      "log": "/tmp/kclash-stage1-20261105-quality-after-fix.log"
+    }
+  },
+  "previousBatchNotes": {
+    "new1": "6/7，拖回后普通返回过渡断言失败；修正后motion2和最终批次通过。",
+    "final1": "旧生产App/Test同批43/43，不累计为最终44项；之后发现质量页退场正文空白并修复。",
+    "quality-before-fix": "修复前该方法1/1也能通过，单凭测试结果不能证明正文像素保留；截图检查发现空白。",
+    "quality-after-fix": "修复后1/1；最终44项再次覆盖，深浅退场正文图已目视。"
+  },
+  "preservation": {
+    "before": {
+      "count": 1,
+      "aggregateSha256": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+      "log": {
+        "path": "/tmp/kclash-stage1-20261105-preserve-before.log",
+        "sha256": "92b345be9c9d8154f668a1088479853c8d81eb3c6a9d381b825eadbd1b66aa90",
+        "bytes": 962
+      }
+    },
+    "after": {
+      "count": 1,
+      "aggregateSha256": "de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+      "log": {
+        "path": "/tmp/kclash-stage1-20261105-preserve-after.log",
+        "sha256": "b42eece5d966d12369397f81f114c478b3dc027e97dd867f0b1a1f4d1492f340",
+        "bytes": 961
+      }
+    },
+    "roomRowsSelectionFilesAndFieldDigestsVerified": true,
+    "flutterApkUnchanged": true,
+    "localAndDeviceYamlUnchanged": true,
+    "deviceSettingsUnchanged": true,
+    "noKotlinServiceOrTun0": true
+  },
+  "snapshots": {
+    "before": {
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "com.lonnnnnng.flclash": {
+        "path": "/data/app/~~CmZcEsX9nJOtr1HxnVIkAw==/com.lonnnnnng.flclash-ixuDrip41GNLJppelGt7uw==/base.apk",
+        "sha256": "765313c65d1a8baff14417ecef06efbe9a54cfc14ec65ed025ebf389c8095383"
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "/data/app/~~MBk_vk_z5uy53wi3KoAAJg==/com.lonnnnnng.flclash.test-Y5WFUyiuvSVSfFjgGt-d8w==/base.apk",
+        "sha256": "bc5f1929c6633aaef8117b453ef800d5a89c5e0cd0a364bbc44a1e0380fcd392"
+      },
+      "com.follow.clash": {
+        "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+        "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898"
+    },
+    "installed": {
+      "com.lonnnnnng.flclash": {
+        "path": "/data/app/~~RzRcxwDxliLC0d-05Dt7Vw==/com.lonnnnnng.flclash-fVjXq46zlgHKZTqoWOZAtw==/base.apk",
+        "sha256": "666989de1bdee0fece4db4a2196fc1738373122f5a09b1b9c1fa18549913c7cb",
+        "installedMatch": true
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "/data/app/~~bzCFXdDvQt_LowBRTEMkDw==/com.lonnnnnng.flclash.test-KCQ0igdHEqvYMD55619z_g==/base.apk",
+        "sha256": "14006b91020243e73a9625820d4ee5a5af277c7618e144645c8ccac1e3cd177c",
+        "installedMatch": true
+      }
+    },
+    "after": {
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "com.lonnnnnng.flclash": {
+        "path": "/data/app/~~RzRcxwDxliLC0d-05Dt7Vw==/com.lonnnnnng.flclash-fVjXq46zlgHKZTqoWOZAtw==/base.apk",
+        "sha256": "666989de1bdee0fece4db4a2196fc1738373122f5a09b1b9c1fa18549913c7cb"
+      },
+      "com.lonnnnnng.flclash.test": {
+        "path": "/data/app/~~bzCFXdDvQt_LowBRTEMkDw==/com.lonnnnnng.flclash.test-KCQ0igdHEqvYMD55619z_g==/base.apk",
+        "sha256": "14006b91020243e73a9625820d4ee5a5af277c7618e144645c8ccac1e3cd177c"
+      },
+      "com.follow.clash": {
+        "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+        "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "interfaces": [
+        "ap0",
+        "ccmni-lan",
+        "ccmni0",
+        "ccmni1",
+        "ccmni10",
+        "ccmni11",
+        "ccmni12",
+        "ccmni13",
+        "ccmni14",
+        "ccmni15",
+        "ccmni16",
+        "ccmni17",
+        "ccmni18",
+        "ccmni19",
+        "ccmni2",
+        "ccmni20",
+        "ccmni3",
+        "ccmni4",
+        "ccmni5",
+        "ccmni6",
+        "ccmni7",
+        "ccmni8",
+        "ccmni9",
+        "dummy0",
+        "ifb0",
+        "ifb1",
+        "ip6_vti0",
+        "ip6tnl0",
+        "ip_vti0",
+        "lo",
+        "p2p0",
+        "sit0",
+        "wlan0",
+        "wlan1"
+      ],
+      "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)"
+    }
+  },
+  "sources": {
+    "android/app/src/debug/AndroidManifest.xml": "8f7ddf5c9e83dba6a722761b21316a73f5337492879e874ad3c10f59dc664467",
+    "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/LocalProxyDraftTestActivity.kt": "a6d090235aa6c01d88a07912475f5a3bb439e93aac3a24e2df1973e107b289c9",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProxyGroupDraft.kt": "2bf9415cc4ef48ba9ec9f97fca58550008cd821177da1b518f85868d5a9109e0",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardModalSheet.kt": "8b9b967a2c9a39a5dcab33a2d5839b771d92a05ea6cd51003d7e67bc0f6efb00",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "3c594e2b41f638fac505fab29d2e7b9f0905b1ef5d3b2890786f8d737196df29",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxiesPage.kt": "cee7405a4f0396d1583c6b9fac84cd2841bb27930d06b4e82193a92f1752e422",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxiesViewModel.kt": "974a7459031036180ca662ba38d6658be16025b8f0c22dbdfabff05e8c94e63c",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": "c6c26b05021b39a4f1f6fecc58eef3cb62f4114fcca0500ee955f73dc6544bc8",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt": "09c6bb6ba549018c139789494e42f0bf4d71b612f82255f4025501d97430bb65",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupVisuals.kt": "c54110bfa2f0d8d0cddae052c3f38f9e27425f70e5a43e6ab248cb7286204aac",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ServiceStatusPanel.kt": "070f2a132a127fccd0f007a2c6cd54dcce3a64f1ec8636b60a132e346cf263f9",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/SheetBackGesture.kt": "cbab53c12449d6d9a1ae8a25f25b187bde19dec2a1bb41ecf3636375cdaf7119",
+    "android/tests/app/ProxyGroupDraftsTest.kt": "65b41f45e551de2fe4719fc4acbdb657657c69faf83f7ce5c908ede327072b6f",
+    "android/tests/instrumented/LocalProxiesPageInstrumentedTest.kt": "acf4e3089fac8d667aaaf096c8f1a38afacc357c05df9e8a4f5afcead431ba3d",
+    "android/tests/instrumented/LocalProxyLinksInstrumentedTest.kt": "bd47f84a7a918eb523f7a9de298ba71083235b8c12056ac9dd39af580b881250",
+    "android/tests/instrumented/MainSubpageRecoveryInstrumentedTest.kt": "ad2a3449b651d7883df93f64a020c7015a48fda78a632a48c023ddc4d59b58df",
+    "android/tests/instrumented/StageOneDraftInstrumentedTest.kt": "b42eb759d7e4427ed8eacf26ce6f308fa9f87669bc281798c31a5855e34a1f23"
+  },
+  "contactSheets": [
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-1.jpg",
+      "sha256": "0ed71ad24ad0c3d109f8de90923683d746948e4d9b3903589e344465dc69ab97",
+      "bytes": 309109
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-2.jpg",
+      "sha256": "7164ddb1e29ff13b05e3510fe563e8dc000c113db125d3ce5bf2455b87a91bfc",
+      "bytes": 312987
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-3.jpg",
+      "sha256": "ba1bcd431a714515990248d599c244c337894e094003008da35824f9eda031ff",
+      "bytes": 250865
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-4.jpg",
+      "sha256": "867d3a292b3cec7d500bbd183ec506a10ebef008b9c540e51fce2a53f6201475",
+      "bytes": 262337
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-5.jpg",
+      "sha256": "e36fbd6fb3013cc1c0ad1a547b1cebc59e4e6b20f3873bfeda989e9d98cc367c",
+      "bytes": 244555
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-6.jpg",
+      "sha256": "338496ca42f82532d7b97274a326aa580f8c1184df29e20c700d16e2ed89bc7c",
+      "bytes": 300446
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-7.jpg",
+      "sha256": "26ab7305f50bae189bb6d3f6c2e2bab47e0c29caeab3791ecaf58155357f988d",
+      "bytes": 249917
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-8.jpg",
+      "sha256": "7671789a2b19091a6753970dcfbec9bd49074622bc415897ac8b1c7be912696a",
+      "bytes": 310570
+    },
+    {
+      "path": "/tmp/kclash-stage1-20261105-final2-contact-9.jpg",
+      "sha256": "3cbde648714ff718954c2be9bfd8bec1ab6b77e9093e518bfd45743e4a27f605",
+      "bytes": 225650
+    }
+  ],
+  "independentReviews": [
+    "stage1_final_code_review：未发现明确可行动缺陷；RTL运行与仅PAUSED未STOPPED边界未验。",
+    "stage1_final_coverage_review：四项实现与44方法记录匹配；明确保存状态模拟/隔离Activity重建/冷进程边界。"
+  ],
+  "visualReview": {
+    "reviewedBy": "primary agent",
+    "images": 81,
+    "contactSheets": 9,
+    "strictBaselinesUnchanged": true,
+    "note": "逐张联系图复核，含长YAML错误/IME、深浅子页、服务跟手/普通返回中间帧和质量退场正文；不宣称全应用Flutter逐像素等价。"
+  },
+  "limitations": [
+    "第一步指定页面交互完成本组范围验收，完整视觉/全应用精确缓动与性能仍属第三步。",
+    "整组YAML及单组图标/选项采用StateRestorationTester保存状态模拟；本地代理为隔离Activity+正式VM的真实recreate，不是正式MainActivity全链路或冷进程。",
+    "本地代理凭据标记未进入本次Bundle，不推广为所有编辑器正文完整敏感字段审计；策略组YAML仍采用保存状态正文。",
+    "仅Redmi API36竖屏默认字号arm64；RTL拖回、仅PAUSED生命周期、低API与其他设备未验。",
+    "本组未运行核心/VPN/订阅/Provider实网或Go，不扩大前序网络通过范围。",
+    "Release为未签名R8构建，正式签名运行与远端CI未验。",
+    "run-as读取cache被SELinux拒绝，未修改权限；保护由正式宿主instrumentation比较原始会话基线与逐字段摘要完成。",
+    "玻璃默认关闭，实时背景/触点光效后排；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。",
+    "原始日志及PNG仅保存于本机/tmp，未随源码上传。"
+  ]
+}

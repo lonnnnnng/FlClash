@@ -4,6 +4,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.lonnnnnng.flclash.service.YamlConfigCodec
+import com.lonnnnnng.flclash.service.YamlErrorLocation
 import java.util.UUID
 
 data class ProxyGroupDraft(
@@ -39,6 +40,30 @@ object ProxyGroupDrafts {
             val fields = element.asJsonObject
             ProxyGroupDraft(originalName = fields.get("name")?.asString, json = fields.toString())
         }
+    }
+
+    private fun editorHasRoot(text: String) = text.lineSequence().firstOrNull { it.isNotBlank() && !it.trimStart().startsWith("#") }
+        ?.trimStart()?.startsWith("proxy-groups:") == true
+
+    private fun editorDocument(text: String) = if (editorHasRoot(text)) text
+        else "proxy-groups:\n  " + text.replace(Regex("\\r\\n|\\r|\\n")) { "${it.value}  " }
+
+    fun readEditorYaml(text: String): List<ProxyGroupDraft> = read(editorDocument(text)).also { groups ->
+        val names = mutableSetOf<String>()
+        groups.forEachIndexed { index, group ->
+            require(group.name.isNotBlank()) { "第 ${index + 1} 个策略组缺少名称" }
+            require(group.text("type") in types) { "第 ${index + 1} 个策略组类型无效" }
+            require(names.add(group.name)) { "第 ${index + 1} 个策略组名称重复" }
+        }
+    }
+
+    fun editorErrorLocation(text: String, error: Throwable): YamlErrorLocation? {
+        val location = YamlConfigCodec.errorLocation(editorDocument(text), error) ?: return null
+        if (editorHasRoot(text)) return location
+        // 作者 long：解析时临时包裹分区，定位必须扣除标题与每行两格缩进，不能把包装文档坐标当成用户正文坐标。
+        val line = (location.line - 1).coerceAtLeast(1)
+        val offset = (location.offset - "proxy-groups:\n".length - line * 2).coerceIn(0, text.length)
+        return YamlErrorLocation(line, (location.column - 2).coerceAtLeast(1), offset)
     }
 
     fun definition(yaml: String, previous: ProxyGroupDraft): ProxyGroupDraft = previous.copy(json = root(yaml).apply {

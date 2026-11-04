@@ -99,9 +99,9 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
     onRecord: (String, Boolean) -> Unit, onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
     onDismiss: () -> Unit, onSelect: (String) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
-    var link by remember { mutableStateOf(false) }
+    var link by rememberSaveable { mutableStateOf(false) }
     var draft by rememberSaveable { mutableStateOf(value.takeIf { it.startsWith("http") }.orEmpty()) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
     var reading by remember { mutableStateOf(false) }
     var deleteRecord by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()

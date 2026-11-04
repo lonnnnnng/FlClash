@@ -27,7 +27,8 @@ val LocalGlobalProxies = staticCompositionLocalOf<List<LocalProxy>> { emptyList(
 internal fun LocalProxiesPage(state: LocalProxiesUiState, onDismiss: () -> Unit, onEdit: (LocalProxy?) -> Unit,
     onSave: (LocalProxy) -> Unit, onCloseEditor: () -> Unit, onLinks: (LocalProxy?) -> Unit,
     onApplyLinks: (String) -> Unit, onCancelLinks: () -> Unit, onReorder: (List<String>) -> Unit,
-    onAskDelete: (Set<String>) -> Unit, onDelete: () -> Unit, onCancelDelete: () -> Unit, onConfirmReplacement: () -> Unit) {
+    onAskDelete: (Set<String>) -> Unit, onDelete: () -> Unit, onCancelDelete: () -> Unit, onConfirmReplacement: () -> Unit,
+    onUpdateEditor: (LocalProxyDraft) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     var selected by remember { mutableStateOf(emptySet<String>()) }
     var sorting by rememberSaveable { mutableStateOf(false) }
@@ -77,7 +78,7 @@ internal fun LocalProxiesPage(state: LocalProxiesUiState, onDismiss: () -> Unit,
                 if (state.editor == null && state.links == null) LocalProxyConfirmations(state, onCancelDelete, onDelete, onConfirmReplacement)
             }
         })
-    state.editor?.let { draft -> LocalProxyEditor(draft, state.busy, state.error, onCloseEditor, onSave, onLinks, { onAskDelete(setOf(it.id)) }) {
+    state.editor?.let { draft -> LocalProxyEditor(draft, state.busy, state.error, onCloseEditor, onSave, onLinks, { onAskDelete(setOf(it.id)) }, onUpdateEditor) {
         if (state.links == null) LocalProxyConfirmations(state, onCancelDelete, onDelete, onConfirmReplacement)
     } }
     state.links?.let { draft ->
@@ -118,19 +119,24 @@ private fun LocalProxyConfirmations(state: LocalProxiesUiState, onCancelDelete: 
 
 @Composable
 private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: String?, onDismiss: () -> Unit,
-    onSave: (LocalProxy) -> Unit, onLinks: (LocalProxy) -> Unit, onDelete: (LocalProxy) -> Unit, confirmations: @Composable () -> Unit) {
-    // 作者 long：含密码的草稿只在当前表单内存中，不能写入 SavedState 或持久化的 UI 恢复状态。
-    var row by remember(draft.original?.id, draft.value) { mutableStateOf(draft.value) }
-    val baseline = remember(draft.original?.id) { draft.original?.json ?: draft.value.json }
-    var shown by remember(draft.original?.id) { mutableStateOf(emptySet<String>()) }
-    var choosing by remember { mutableStateOf<String?>(null) }
-    var editingField by remember { mutableStateOf<ProxyField?>(null) }
-    var discard by remember { mutableStateOf(false) }
-    fun exit() { if (!busy) { if (row.json != baseline) discard = true else onDismiss() } }
+    onSave: (LocalProxy) -> Unit, onLinks: (LocalProxy) -> Unit, onDelete: (LocalProxy) -> Unit, onUpdate: (LocalProxyDraft) -> Unit, confirmations: @Composable () -> Unit) {
+    val row = draft.value
+    val shown = draft.shown
+    val choosing = draft.choosing
+    fun change(next: LocalProxy) { onUpdate(draft.copy(value = next)) }
+    fun choose(kind: String?) { onUpdate(draft.copy(choosing = kind)) }
+    fun collection(field: ProxyField) {
+        val initial = LocalProxies.value(row.fields, field.path)
+        val values = if (field.kind == ProxyFieldKind.MAP) initial?.takeIf { it.isJsonObject }?.asJsonObject?.entrySet()?.map {
+            it.key to (if (it.value.isJsonPrimitive) it.value.asString else it.value.toString())
+        }.orEmpty() else initial?.let { if (it.isJsonArray) it.asJsonArray.map { value -> "" to value.asString } else listOf("" to it.asString) }.orEmpty()
+        onUpdate(draft.copy(collection = LocalProxyCollectionDraft(field, values)))
+    }
+    fun exit() { if (!busy) { if (row.json != draft.baselineJson) onUpdate(draft.copy(discarding = true)) else onDismiss() } }
     val required = LocalProxies.required(row.type)
     val fields = LocalProxies.catalog.filter { LocalProxyFields.offered(row, it) }
     val credentialIds = setOf("username", "password", "uuid", "privateKey", "token")
-    fun update(field: ProxyField, value: JsonElement?) { row = LocalProxyFields.change(row, field, value) }
+    fun update(field: ProxyField, value: JsonElement?) { change(LocalProxyFields.change(row, field, value)) }
     ProfileEditorPage(onDismissRequest = ::exit, backTag = "local_proxy_editor_back", title = { Text(if (draft.original == null) "添加本地代理" else "编辑代理") },
         confirmButton = { Row {
             IconButton(onClick = { onLinks(row) }, enabled = !busy) { Icon(Icons.Outlined.EditNote, null, modifier = Modifier.testTag("action:从分享链接填写")) }
@@ -141,22 +147,22 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 Text("基本信息", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                ProxyTextField("名称", "name", row, busy) { row = LocalProxies.withValue(row, "name", JsonPrimitive(it)) }
-                ProfileFormRow("代理类型", Modifier.clickable(!busy) { choosing = "type" }) { Text(row.type); Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow() }
+                ProxyTextField("名称", "name", row, busy) { change(LocalProxies.withValue(row, "name", JsonPrimitive(it))) }
+                ProfileFormRow("代理类型", Modifier.clickable(!busy) { choose("type") }) { Text(row.type); Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow() }
                 if (row.type != "easytier") {
-                    ProxyTextField("服务器", "server", row, busy) { row = LocalProxies.withValue(row, "server", JsonPrimitive(it)) }
-                    ProxyTextField("端口", "port", row, busy, number = true) { row = LocalProxies.withValue(row, "port", it.toLongOrNull()?.let(::JsonPrimitive)) }
+                    ProxyTextField("服务器", "server", row, busy) { change(LocalProxies.withValue(row, "server", JsonPrimitive(it))) }
+                    ProxyTextField("端口", "port", row, busy, number = true) { change(LocalProxies.withValue(row, "port", it.toLongOrNull()?.let(::JsonPrimitive))) }
                 }
-                fields.filter { it.id in required && it.id !in credentialIds }.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choosing = field.id }, { editingField = field }, {}) }
+                fields.filter { it.id in required && it.id !in credentialIds }.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choose(field.id) }, { collection(field) }, {}) }
                 ProfileFormRow("UDP") { Switch(LocalProxies.value(row.fields, "udp")?.asBoolean == true,
-                    { row = LocalProxies.withValue(row, "udp", JsonPrimitive(it)) }, enabled = !busy) }
+                    { change(LocalProxies.withValue(row, "udp", JsonPrimitive(it))) }, enabled = !busy) }
                 if (row.type == "easytier") {
                     listOf("network-name" to "网络名称", "network-secret" to "网络密钥", "ipv4" to "虚拟 IPv4", "hostname" to "主机名").forEach { (path, label) ->
-                        ProxyTextField(label, path, row, busy, secret = path == "network-secret") { row = LocalProxies.withValue(row, path, JsonPrimitive(it)) }
+                        ProxyTextField(label, path, row, busy, secret = path == "network-secret") { change(LocalProxies.withValue(row, path, JsonPrimitive(it))) }
                     }
                     listOf("peers", "exit-nodes").forEach { path ->
                         val field = ProxyField(path, path, if (path == "peers") "对等节点" else "出口节点", ProxyFieldKind.LIST)
-                        ProxyFieldRow(row, field, busy, false, {}, {}, { editingField = field }, {})
+                        ProxyFieldRow(row, field, busy, false, {}, {}, { collection(field) }, {})
                     }
                 }
                 }
@@ -165,15 +171,15 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
                 if (credentials.isNotEmpty()) {
                     Text("身份验证", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                     ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                    credentials.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choosing = field.id }, { editingField = field }, {}) }
+                    credentials.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choose(field.id) }, { collection(field) }, {}) }
                     }
                 }
                 Text("可选设置", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                 fields.filter { it.id !in required && (it.id in shown || LocalProxies.value(row.fields, it.path) != null) }.forEach { field ->
-                    ProxyFieldRow(row, field, busy, true, { update(field, it) }, { choosing = field.id }, { editingField = field }, { shown -= field.id; update(field, null) })
+                    ProxyFieldRow(row, field, busy, true, { update(field, it) }, { choose(field.id) }, { collection(field) }, { onUpdate(draft.copy(shown = shown - field.id, value = LocalProxyFields.change(row, field, null))) })
                 }
-                TextButton(onClick = { choosing = "option" }, enabled = !busy, modifier = Modifier.testTag("local_proxy_add_option")) { Icon(Icons.Outlined.AddCircleOutline, null); Spacer(Modifier.width(8.dp)); Text("添加设置项") }
+                TextButton(onClick = { choose("option") }, enabled = !busy, modifier = Modifier.testTag("local_proxy_add_option")) { Icon(Icons.Outlined.AddCircleOutline, null); Spacer(Modifier.width(8.dp)); Text("添加设置项") }
                 }
                 if (draft.original != null) TextButton(onClick = { onDelete(draft.original) }, enabled = !busy) { Text("删除节点", color = MaterialTheme.colorScheme.error) }
                 Spacer(Modifier.height(24.dp))
@@ -186,21 +192,29 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
             "option" -> fields.filter { it.id !in required && it.id !in shown && LocalProxies.value(row.fields, it.path) == null }.map { it.id to it.label }
             else -> LocalProxies.catalog.first { it.id == kind }.let { field -> LocalProxyFields.choices(row, field).map { it to it } }
         }
-        ProfileEditorPage(onDismissRequest = { choosing = null }, title = { Text(if (kind == "type") "代理类型" else if (kind == "option") "添加设置项" else "选择设置值") }, text = {
+        ProfileEditorPage(onDismissRequest = { choose(null) }, backTag = "local_proxy_choices_back", title = { Text(if (kind == "type") "代理类型" else if (kind == "option") "添加设置项" else "选择设置值") }, text = {
             LazyColumn(Modifier.testTag("local_proxy_choices_$kind")) { itemsIndexed(choices) { _, (id, label) -> ListItem(headlineContent = { Text(label) }, modifier = Modifier.testTag("local_proxy_choice_$id").clickable {
-                when (kind) {
-                    "type" -> { row = LocalProxyFields.changeType(row, id); shown = emptySet() }
-                    "option" -> { val field = fields.first { it.id == id }; shown += id
-                        if (field.kind == ProxyFieldKind.TOGGLE) update(field, JsonPrimitive(true))
-                        if (field.kind == ProxyFieldKind.CHOICE) LocalProxyFields.choices(row, field).firstOrNull()?.let { update(field, JsonPrimitive(it)) }
+                val next = when (kind) {
+                    "type" -> draft.copy(value = LocalProxyFields.changeType(row, id), shown = emptySet())
+                    "option" -> {
+                        val field = fields.first { it.id == id }
+                        val value = when (field.kind) {
+                            ProxyFieldKind.TOGGLE -> JsonPrimitive(true)
+                            ProxyFieldKind.CHOICE -> LocalProxyFields.choices(row, field).firstOrNull()?.let(::JsonPrimitive)
+                            else -> null
+                        }
+                        draft.copy(shown = shown + id, value = if (value == null) row else LocalProxyFields.change(row, field, value))
                     }
-                    else -> update(LocalProxies.catalog.first { it.id == kind }, JsonPrimitive(id))
-                }; choosing = null
+                    else -> draft.copy(value = LocalProxyFields.change(row, LocalProxies.catalog.first { it.id == kind }, JsonPrimitive(id)))
+                }
+                onUpdate(next.copy(choosing = null))
             }) } }
         })
     }
-    editingField?.let { field -> ProxyCollectionEditor(row, field, { editingField = null }, { update(field, it); editingField = null }) }
-    if (discard) DiscardLocalProxyDialog({ discard = false }, onDismiss)
+    draft.collection?.let { collection -> ProxyCollectionEditor(row, collection, busy,
+        { onUpdate(draft.copy(collection = it)) }, { onUpdate(draft.copy(collection = null)) },
+        { value -> onUpdate(draft.copy(value = LocalProxyFields.change(row, collection.field, value), collection = null)) }) }
+    if (draft.discarding) DiscardLocalProxyDialog({ onUpdate(draft.copy(discarding = false)) }, onDismiss)
 }
 
 @Composable
@@ -243,32 +257,57 @@ private fun ProxyFieldRow(row: LocalProxy, field: ProxyField, busy: Boolean, rem
 }
 
 @Composable
-private fun ProxyCollectionEditor(row: LocalProxy, field: ProxyField, onDismiss: () -> Unit, onSave: (JsonElement?) -> Unit) {
+private fun ProxyCollectionEditor(row: LocalProxy, draft: LocalProxyCollectionDraft, busy: Boolean,
+    onUpdate: (LocalProxyCollectionDraft) -> Unit, onDismiss: () -> Unit, onSave: (JsonElement?) -> Unit) {
+    val field = draft.field
+    val values = draft.values
     val initial = LocalProxies.value(row.fields, field.path)
-    var values by remember { mutableStateOf(if (field.kind == ProxyFieldKind.MAP) initial?.takeIf { it.isJsonObject }?.asJsonObject?.entrySet()?.map { it.key to it.value.toString().let { _ -> if (it.value.isJsonPrimitive) it.value.asString else it.value.toString() } }.orEmpty()
-        else initial?.let { if (it.isJsonArray) it.asJsonArray.map { value -> "" to value.asString } else listOf("" to it.asString) }.orEmpty()) }
-    ProfileEditorPage(onDismissRequest = onDismiss, title = { Text(field.label) }, confirmButton = { TextButton(onClick = {
+    val list = androidx.compose.foundation.lazy.rememberLazyListState()
+    var attempts by remember { mutableIntStateOf(0) }
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    LaunchedEffect(draft.error, attempts) { if (draft.error != null) list.animateScrollToItem(0) }
+    fun change(next: List<Pair<String, String>>) { if (!busy) onUpdate(draft.copy(values = next, error = null)) }
+    fun apply(leaving: Boolean) {
+        if (busy) return
+        keyboard?.hide(); attempts++
+        // 作者 long：Flutter 列表和映射子页的返回保留父表单修改；这里只合并父草稿，正式目录仍由父页保存一次。
+        val incomplete = field.kind == ProxyFieldKind.MAP && values.any { it.first.isBlank() && it.second.isNotBlank() }
+        val keys = values.filter { it.first.isNotBlank() }.map { it.first.lowercase() }
+        val error = when {
+            incomplete -> "请填写条目名称，或删除未完成的条目"
+            field.kind == ProxyFieldKind.MAP && keys.distinct().size != keys.size -> "条目名称重复，请修改后重试"
+            else -> null
+        }
+        if (error != null) { onUpdate(draft.copy(error = error, discarding = leaving)); return }
         if (field.kind == ProxyFieldKind.MAP) {
             val result = JsonObject()
             values.filter { it.first.isNotBlank() }.forEach { (key, value) ->
                 val old = initial?.takeIf { it.isJsonObject }?.asJsonObject?.get(key)
                 if (old != null && (if (old.isJsonPrimitive) old.asString else old.toString()) == value) result.add(key, old.deepCopy())
                 else if (field.id == "httpHeaders") result.add(key, JsonArray().apply { add(value) }) else result.addProperty(key, value)
-            }; onSave(result.takeIf { it.size() > 0 })
-        } else onSave(JsonArray().apply { values.filter { it.second.isNotBlank() }.forEach { add(it.second) } })
-    }) { Text("确认") } }, text = {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            itemsIndexed(values) { i, (key, value) -> Column {
+            }
+            onSave(result.takeIf { it.size() > 0 })
+        } else onSave(JsonArray().apply { values.filter { it.second.isNotBlank() }.forEach { add(it.second) } }.takeIf { it.size() > 0 })
+    }
+    ProfileEditorPage(onDismissRequest = { apply(true) }, title = { Text(field.label) }, backTag = "local_proxy_collection_back",
+        confirmButton = { TextButton(onClick = { apply(false) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_collection_confirm")) { Text("确认") } }, text = {
+        LazyColumn(state = list, modifier = Modifier.testTag("local_proxy_collection_list"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            draft.error?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxy_collection_error")) } }
+            itemsIndexed(values) { i, (key, value) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { values = values.toMutableList().apply { removeAt(i) } }) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
+                    IconButton(onClick = { change(values.toMutableList().apply { removeAt(i) }) }, enabled = !busy,
+                        modifier = Modifier.testTag("local_proxy_collection_remove_$i")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (field.kind == ProxyFieldKind.MAP) OutlinedTextField(key, { values = values.toMutableList().apply { set(i, it to value) } }, label = { Text("名称") }, singleLine = true)
-                        OutlinedTextField(value, { values = values.toMutableList().apply { set(i, key to it) } }, label = { Text("值") }, singleLine = true)
+                        if (field.kind == ProxyFieldKind.MAP) OutlinedTextField(key, { change(values.toMutableList().apply { set(i, it to value) }) },
+                            Modifier.fillMaxWidth().testTag("local_proxy_collection_key_$i"), label = { Text("名称") }, singleLine = true, enabled = !busy)
+                        OutlinedTextField(value, { change(values.toMutableList().apply { set(i, key to it) }) },
+                            Modifier.fillMaxWidth().testTag("local_proxy_collection_value_$i"), label = { Text("值") }, singleLine = true, enabled = !busy)
                     }
                 }
-            } }
-            item { TextButton(onClick = { values = values + ("" to "") }) { Text("添加条目") } }
+            }
+            item { TextButton(onClick = { change(values + ("" to "")) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_collection_add")) { Text("添加条目") } }
         }
+        if (draft.discarding) DiscardLocalProxyDialog({ onUpdate(draft.copy(discarding = false)) }, onDismiss)
     })
 }
 

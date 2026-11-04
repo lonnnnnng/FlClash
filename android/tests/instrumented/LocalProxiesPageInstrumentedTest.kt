@@ -21,7 +21,7 @@ class LocalProxiesPageInstrumentedTest {
         compose.setContent { KClashTheme(darkTheme = dark) {
             LocalProxiesPage(state, {}, { state = state.copy(editor = LocalProxyDraft(it, it ?: LocalProxy())) },
                 { saved = it; state = state.copy(editor = null) }, { state = state.copy(editor = null) }, {}, {}, {}, {},
-                { state = state.copy(deleting = it, users = listOf("引用配置")) }, { state = state.copy(rows = emptyList(), deleting = emptySet()) }, { state = state.copy(deleting = emptySet()) }, {})
+                { state = state.copy(deleting = it, users = listOf("引用配置")) }, { state = state.copy(rows = emptyList(), deleting = emptySet()) }, { state = state.copy(deleting = emptySet()) }, {}, { state = state.copy(editor = it) })
         } }
         for (theme in listOf(false, true)) {
             compose.runOnIdle { dark = theme; state = LocalProxiesUiState(loading = false, rows = listOf(alpha)) }
@@ -62,7 +62,7 @@ class LocalProxiesPageInstrumentedTest {
         var deletes = 0
         compose.setContent { KClashTheme {
             LocalProxiesPage(state, {}, { state = state.copy(editor = LocalProxyDraft(it, it ?: LocalProxy())) }, {}, { state = state.copy(editor = null) }, {}, {}, {}, {},
-                { state = state.copy(deleting = it, users = listOf("正在引用的配置")) }, { deletes++; state = state.copy(rows = emptyList(), editor = null, deleting = emptySet()) }, { state = state.copy(deleting = emptySet()) }, {})
+                { state = state.copy(deleting = it, users = listOf("正在引用的配置")) }, { deletes++; state = state.copy(rows = emptyList(), editor = null, deleting = emptySet()) }, { state = state.copy(deleting = emptySet()) }, {}, { state = state.copy(editor = it) })
         } }
         compose.onNodeWithTag("local_proxy_alpha").performClick()
         compose.onNodeWithTag("local_proxy_field_name").performTextReplacement("Changed")

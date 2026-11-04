@@ -1,5 +1,13 @@
 # Architecture
 
+## 策略组与本地代理草稿、服务拖回（2026-11-05，第一步）
+
+整组YAML与单组图标/选项子页各有保存状态；返回解析成功只更新父草稿，失败可继续或放弃。ProxyGroupDraft统一包装分区与正文错误行列换算。本地代理列表/映射放在LocalProxiesViewModel内存，父窗口session拒绝旧回写，凭据草稿不写Bundle；隔离宿主真实recreate已验，冷进程另列。
+
+SheetBackGesture按Flutter位移/归一化速度收尾，DashboardModalSheet以独立父页揭露、页对标记抑制本次重复返回动画，后台清除迟到提交；450ms切页采用Flutter分段缓动。ServiceStatusPanel保留最后quality快照，选择清空后退场页仍绘制原正文。LTR触摸、取消/快甩/反向、后台中断、下一次普通返回与管理滚动由Redmi44/44覆盖；RTL运行及仅PAUSED边界未验。
+
+715单测、构建、安装/保护与视觉边界见`docs/acceptance/stage-one-interactions-redmi-20261105.json`。下方旧切片的“尚未实现”仅代表当时状态。
+
 ## 主页面子页状态与退场隔离（2026-11-05）
 
 CustomRulesEditor只向Bundle保存规范化规则摘要和行key，正文由当前源重建；摘要吻合时恢复身份，重复内容按原索引定位。批选key和pendingDigest可保存，原提交回读匹配才关闭子页；源已变更且旧行不可定位时拒绝误新增。

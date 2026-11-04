@@ -8,7 +8,6 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
@@ -64,7 +63,7 @@ internal fun ProfileEditorPage(
         Scaffold(
             modifier = Modifier.fillMaxSize().graphicsLayer {
                 // 作者 long：沿Flutter整页共享X轴的四分之一页宽进入，保留原页面状态；Compose时钟遵循系统动画缩放，不延迟返回确认或保存回调。
-                translationX = size.width * .25f * (1f - FastOutSlowInEasing.transform(entrance.value))
+                translationX = size.width * .25f * (1f - SheetPageEasing.transform(entrance.value))
                 val fade = ((entrance.value - .15f) / .4f).coerceIn(0f, 1f)
                 alpha = 1f - (1f - fade) * (1f - fade) * (1f - fade)
             }.testTag("profile_editor_page"),

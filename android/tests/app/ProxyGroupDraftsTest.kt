@@ -113,4 +113,28 @@ class ProxyGroupDraftsTest {
         assertEquals(listOf("Main"), ProxyGroupDrafts.read(deleted).single().strings("proxies"))
         assertTrue(ProxyGroupDrafts.root(deleted).getAsJsonArray("rules")[0].asString.contains(",Main,"))
     }
+    @Test fun wholeEditorAcceptsBlockFlowAndRootWithoutLosingUnknownValues() {
+        for (text in listOf("- {name: Main, type: select, proxies: [DIRECT], future: false}",
+            "proxy-groups:\n- {name: Main, type: select, proxies: [DIRECT], future: false}")) {
+            val result = ProxyGroupDrafts.readEditorYaml(text).single()
+            assertEquals("Main", result.name)
+            assertFalse(result.fields["future"].asBoolean)
+        }
+        assertTrue(ProxyGroupDrafts.readEditorYaml("[]").isEmpty())
+        assertTrue(ProxyGroupDrafts.readEditorYaml("").isEmpty())
+        assertTrue(runCatching { ProxyGroupDrafts.readEditorYaml("- {name: Main, type: invalid}") }.isFailure)
+        assertTrue(runCatching { ProxyGroupDrafts.readEditorYaml("- {name: Main, type: select}\n- {name: Main, type: select}") }.isFailure)
+    }
+
+    @Test fun wholeEditorSyntaxLocationUsesOriginalUtf16AndNewlineCoordinates() {
+        for (newline in listOf("\n", "\r\n", "\r")) {
+            val text = listOf("# 😀 comment", "- name: Main", "  type: select", "  proxies: [DIRECT").joinToString(newline)
+            val error = runCatching { ProxyGroupDrafts.readEditorYaml(text) }.exceptionOrNull()!!
+            val location = ProxyGroupDrafts.editorErrorLocation(text, error)!!
+            assertEquals(4, location.line)
+            assertEquals(text.length, location.offset)
+            assertEquals("  proxies: [DIRECT".length + 1, location.column)
+        }
+    }
+
 }

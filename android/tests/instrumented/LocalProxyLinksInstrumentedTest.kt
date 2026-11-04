@@ -68,7 +68,7 @@ class LocalProxyLinksInstrumentedTest {
             idle()
             compose.setContent { val state by model.state.collectAsState(); KClashTheme {
                 LocalProxiesPage(state, model::close, model::edit, model::save, model::dismissEditor, model::links,
-                    model::applyLinks, model::cancelLinks, model::reorder, model::askDelete, model::delete, model::cancelDelete, model::confirmReplacement)
+                    model::applyLinks, model::cancelLinks, model::reorder, model::askDelete, model::delete, model::cancelDelete, model::confirmReplacement, model::updateEditor)
             } }
             compose.runOnIdle { model.open() }
             stage = "链接填充父页草稿"
@@ -134,7 +134,7 @@ class LocalProxyLinksInstrumentedTest {
         var commits = 0
         compose.setContent { KClashTheme {
             LocalProxiesPage(LocalProxiesUiState(rows = rows, loading = false), {}, {}, {}, {}, {}, {}, {},
-                { ids -> commits++; rows = ids.map { id -> original.first { it.id == id } } }, {}, {}, {}, {})
+                { ids -> commits++; rows = ids.map { id -> original.first { it.id == id } } }, {}, {}, {}, {}, {})
         } }
         compose.onNodeWithTag("local_proxies_sort").performClick()
         val list = compose.onNodeWithTag("local_proxies_order_list")
@@ -170,7 +170,7 @@ class LocalProxyLinksInstrumentedTest {
         var confirms = 0
         compose.setContent { KClashTheme(darkTheme = dark) { key(dark) {
             LocalProxiesPage(state, {}, {}, {}, {}, {}, { state = state.copy(error = "第 2 行分享链接无效") },
-                { state = state.copy(links = null) }, {}, {}, {}, { state = state.copy(replacement = null) }, { confirms++ })
+                { state = state.copy(links = null) }, {}, {}, {}, { state = state.copy(replacement = null) }, { confirms++ }, { state = state.copy(editor = it) })
         } } }
         for (theme in listOf(false, true)) {
             compose.runOnIdle { dark = theme; state = LocalProxiesUiState(rows = listOf(row), loading = false, links = draft) }

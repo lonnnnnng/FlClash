@@ -56,6 +56,10 @@ internal fun DashboardServiceStatusCard(
     val qualityScroll = rememberScrollState()
     var managementAtTop by remember { mutableStateOf(true) }
     val quality = state.qualityNode?.let { state.exits[it] }
+    var lastQuality by remember { mutableStateOf<OutboundIpUiState?>(null) }
+    val qualitySnapshot = quality ?: lastQuality
+    // 作者 long：关闭质量详情会立即清空选择，离场绘制仍需要最后正文；不能把正在淡出的质量页换成服务列表。
+    SideEffect { if (quality != null) lastQuality = quality }
     // 作者 long：弹层打开后仍需前台/路由保护，但展示全部目标不会自动触发一轮全量外部请求。
     DisposableEffect(detail) { onDetailVisible(detail); onDispose { onDetailVisible(false) } }
     DashboardSurface(modifier = Modifier.testTag("dashboard_service_card"), onClick = { detail = true }) {
@@ -88,7 +92,10 @@ internal fun DashboardServiceStatusCard(
     val showingManagement = manage
     val sheetPage = if (quality != null) "quality" else if (showingManagement) "manage" else "detail"
     // 作者 long：每个页种类使用独立的 Compose lambda 实例；离场页不能被同一调用位置更新成新页正文。
-    val sheetBody: @Composable ColumnScope.(() -> Unit) -> Unit = key(sheetPage) {
+    val sheetBodies: Map<String, @Composable ColumnScope.(() -> Unit) -> Unit> = listOf("detail", "manage", "quality").associateWith { page ->
+        val showingManagement = page == "manage"
+        val quality = if (page == "quality") qualitySnapshot else null
+        key(page) {
         { _ ->
             state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("service_error")) }
             if (quality != null) {
@@ -133,6 +140,7 @@ internal fun DashboardServiceStatusCard(
             }
         }
     }
+    }
     val sheetActions: @Composable RowScope.() -> Unit = key(sheetPage) {
         {
             if (quality != null) IconButton(onClick = onRefreshQuality, enabled = !quality.qualityLoading,
@@ -151,7 +159,9 @@ internal fun DashboardServiceStatusCard(
         // 作者 long：系统返回与标题返回遵循同一层级，质量详情和管理页先回服务列表，不直接丢弃整个面板。
         onNavigateBack = if (quality != null || showingManagement) ({ if (quality != null) onCloseQuality() else manage = false }) else null,
         backTag = "service_manage_back", actions = sheetActions,
-        content = sheetBody,
+        backPage = if (sheetPage == "detail") null else DashboardSheetPage("detail", 0, "服务状态", detailScroll,
+            true, true, null, {}, sheetBodies.getValue("detail")),
+        content = sheetBodies.getValue(sheetPage),
     )
 }
 

@@ -1,7 +1,12 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -32,6 +37,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 // 作者 long：退场层只保留绘制，统一消费触摸和按键，避免关闭途中仍触发回收、检测或第二次保存。
 internal fun Modifier.blockSheetInput(blocked: Boolean): Modifier = if (!blocked) this else
@@ -41,7 +49,7 @@ internal fun Modifier.blockSheetInput(blocked: Boolean): Modifier = if (!blocked
         }
     }
 
-private class DashboardSheetPage(
+internal class DashboardSheetPage(
     val key: String, val depth: Int, val title: String, val scroll: ScrollState,
     val scrollable: Boolean, val fitsContent: Boolean, val back: (() -> Unit)?,
     val actions: @Composable RowScope.() -> Unit,
@@ -64,6 +72,7 @@ internal fun DashboardModalSheet(
     scrollTag: String = "dashboard_sheet_scroll",
     pageKey: String = "root",
     pageDepth: Int = 0,
+    backPage: DashboardSheetPage? = null,
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.(requestDismiss: () -> Unit) -> Unit,
 ) {
@@ -73,7 +82,30 @@ internal fun DashboardModalSheet(
     val chromeHeight = with(density) { 48.dp.roundToPx() } + WindowInsets.navigationBars.getBottom(density)
     val pages = rememberSaveableStateHolder()
     val direction = if (LocalLayoutDirection.current == LayoutDirection.Ltr) 1 else -1
+    val scope = rememberCoroutineScope()
+    val backGesture = remember { SheetBackGesture(scope) }
+    val entrance = remember { Animatable(0f) }
+    val latestBack by rememberUpdatedState(onNavigateBack)
+    val currentKey by rememberUpdatedState(pageKey)
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val canDrag by rememberUpdatedState(backPage != null && onNavigateBack != null)
+    val completedGesture = remember(pageKey) { backGesture.committedTransition?.takeIf { it.second == pageKey } }
+    LaunchedEffect(pageKey) {
+        // 作者 long：只抑制刚完成的拖回切换；再次进入同一子页后的普通返回仍须播放完整过渡。
+        backGesture.reset(); backGesture.forgetTransition(); entrance.snapTo(0f)
+        entrance.animateTo(1f, tween(450, easing = LinearEasing))
+    }
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) { backGesture.reset(); backGesture.forgetTransition() }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer); backGesture.reset() }
+    }
     val page = DashboardSheetPage(pageKey, pageDepth, title, scrollState, scrollable, fitsContent, onNavigateBack, actions, content)
+    val pageSnapshots = remember { mutableMapOf<String, DashboardSheetPage>() }
+    // 作者 long：动画身份只取路由key；测量或加载状态重组时创建的新页面对象不能重启动画并造成空白帧。离场页保留最后一份页面快照。
+    pageSnapshots[pageKey] = page
     ConnectionModalSheet(
         onDismiss = onDismiss,
         contentScrollState = scrollState,
@@ -82,39 +114,67 @@ internal fun DashboardModalSheet(
         naturalContentHeight = if (fitsContent && bodyHeight > 0 && headerHeight > 0) bodyHeight + headerHeight + chromeHeight else null,
         sheetTag = sheetTag,
         sheetShape = AppSuperellipseShape(topStart = 28.dp, topEnd = 28.dp, bottomEnd = 0.dp, bottomStart = 0.dp),
-        onBackRequest = { onNavigateBack?.let { it(); true } ?: false },
+        onBackRequest = { if (backGesture.active) true else onNavigateBack?.let { it(); true } ?: false },
     ) { requestDismiss ->
-        // 作者 long：子页沿 Flutter SharedX 的 450ms、四分之一页宽过渡，标题和正文同向移动；外层停靠面板保持原实例。
-        AnimatedContent(page, modifier = Modifier.fillMaxWidth().weight(1f, fill = !fitsContent).clipToBounds(),
-            contentKey = { it.key }, label = "dashboardSheetPage", transitionSpec = {
-                val sign = if (targetState.depth >= initialState.depth) direction else -direction
-                ((slideInHorizontally(tween(450, easing = FastOutSlowInEasing)) { it * sign / 4 } + fadeIn(tween(180, delayMillis = 68))) togetherWith
-                    (slideOutHorizontally(tween(450, easing = FastOutSlowInEasing)) { -it * sign / 4 } + fadeOut(tween(135)))).using(null)
-            }) { displayed ->
-            val active = displayed.key == pageKey
-            pages.SaveableStateProvider(displayed.key) {
-                Column(Modifier.fillMaxWidth().blockSheetInput(!active).testTag("${sheetTag}_page_${displayed.key}")) {
-                    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).onSizeChanged { if (active) headerHeight = it.height }
-                        .padding(start = if (displayed.back == null) 20.dp else 4.dp, end = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        if (displayed.back != null) IconButton(displayed.back, Modifier.testTag(backTag)) {
-                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, null)
-                        }
-                        Text(displayed.title, Modifier.weight(1f).testTag("dashboard_sheet_title"), style = MaterialTheme.typography.titleLarge,
-                            maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        displayed.actions(this)
-                        IconButton(requestDismiss, Modifier.testTag(closeTag)) { Icon(Icons.Outlined.Close, null) }
-                    }
-                    Column(Modifier.fillMaxWidth().weight(1f, fill = !displayed.fitsContent)
-                        .then(if (displayed.scrollable) Modifier.verticalScroll(displayed.scroll) else Modifier)
-                        // 作者 long：仅活动页回报正文自然高度，避免离场页的旧高度抢回停靠位置。
-                        .onSizeChanged { if (active) bodyHeight = it.height }.testTag(scrollTag)
-                        .padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        displayed.content(this, requestDismiss)
+        Box(Modifier.fillMaxWidth().weight(1f, fill = !fitsContent).clipToBounds()
+            .sheetBackGesture(pageKey, backPage?.key, direction, backGesture,
+                { canDrag && entrance.value == 1f && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }, {
+                    // 作者 long：后台中断或外部切页后不得执行原页面迟到的返回。
+                    if (currentKey == pageKey && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) latestBack?.invoke()
+                })) {
+            if (backGesture.active && backPage != null) {
+                pages.SaveableStateProvider(backPage.key) {
+                    Box(Modifier.matchParentSize().graphicsLayer {
+                        translationX = -size.width * direction * .25f * (1f - backGesture.progress)
+                        alpha = backGesture.progress
+                    }.blockSheetInput(true)) {
+                        DashboardSheetPageContent(backPage, false, sheetTag, closeTag, backTag, scrollTag, requestDismiss, {}, {})
                     }
                 }
             }
+            // 作者 long：拖回中当前页跟随手指整页平移，父页按四分之一宽揭露；松手完成后直接接管父页，避免再播一次普通返回动画。
+            AnimatedContent(pageKey, modifier = Modifier.fillMaxWidth().graphicsLayer {
+                translationX = if (backGesture.active) size.width * direction * backGesture.progress else 0f
+            }, label = "dashboardSheetPage", transitionSpec = {
+                if (completedGesture == (initialState to targetState)) (EnterTransition.None togetherWith ExitTransition.None).using(null)
+                else {
+                    val sign = if (pageSnapshots.getValue(targetState).depth >= pageSnapshots.getValue(initialState).depth) direction else -direction
+                    ((slideInHorizontally(tween(450, easing = SheetPageEasing)) { it * sign / 4 } + fadeIn(tween(180, delayMillis = 68,
+                        easing = androidx.compose.animation.core.CubicBezierEasing(.215f, .61f, .355f, 1f)))) togetherWith
+                        (slideOutHorizontally(tween(450, easing = SheetPageEasing)) { -it * sign / 4 } + fadeOut(tween(135, easing = LinearEasing)))).using(null)
+                }
+            }) { displayedKey ->
+                val displayed = pageSnapshots.getValue(displayedKey)
+                val active = displayed.key == pageKey
+                pages.SaveableStateProvider(displayed.key) {
+                    Box(Modifier.background(dashboardPageColor()).blockSheetInput(backGesture.settling)) {
+                        DashboardSheetPageContent(displayed, active, sheetTag, closeTag, backTag, scrollTag, requestDismiss,
+                            { if (active) headerHeight = it }, { if (active) bodyHeight = it })
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DashboardSheetPageContent(displayed: DashboardSheetPage, active: Boolean,
+    sheetTag: String, closeTag: String, backTag: String, scrollTag: String, requestDismiss: () -> Unit,
+    onHeaderHeight: (Int) -> Unit, onBodyHeight: (Int) -> Unit) {
+    Column(Modifier.fillMaxWidth().blockSheetInput(!active).testTag("${sheetTag}_page_${displayed.key}")) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).onSizeChanged { onHeaderHeight(it.height) }
+            .padding(start = if (displayed.back == null) 20.dp else 4.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (displayed.back != null) IconButton(displayed.back, Modifier.testTag(backTag)) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null) }
+            Text(displayed.title, Modifier.weight(1f).testTag("dashboard_sheet_title"), style = MaterialTheme.typography.titleLarge,
+                maxLines = 1, overflow = TextOverflow.Ellipsis)
+            displayed.actions(this)
+            IconButton(requestDismiss, Modifier.testTag(closeTag)) { Icon(Icons.Outlined.Close, null) }
+        }
+        Column(Modifier.fillMaxWidth().weight(1f, fill = !displayed.fitsContent)
+            .then(if (displayed.scrollable) Modifier.verticalScroll(displayed.scroll) else Modifier)
+            .onSizeChanged { onBodyHeight(it.height) }.testTag(scrollTag)
+            .padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            displayed.content(this, requestDismiss)
         }
     }
 }
