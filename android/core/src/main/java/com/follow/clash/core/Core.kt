@@ -16,6 +16,13 @@ object Core {
 
     fun resetNetwork() = Mobile.resetNetwork()
 
+    // 作者 long：只读核心启动/保护计数，区分Android提交DNS与Go实际应用，不以快照触发等待或补启动。
+    fun networkBootstrapSnapshot(): String = Mobile.networkBootstrapSnapshot()
+
+    fun beginDialDiagnostic(sourcePort: Int) = Mobile.beginDialDiagnostic(sourcePort)
+
+    fun dialDiagnosticSnapshot(sourcePort: Int, finish: Boolean): String = Mobile.dialDiagnosticSnapshot(sourcePort, finish)
+
     private fun parseInetSocketAddress(address: String): InetSocketAddress {
         val uri = URI("tcp://$address")
         val host = requireNotNull(uri.host) { "Missing host in address: $address" }

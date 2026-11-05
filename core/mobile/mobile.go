@@ -92,6 +92,16 @@ func ResetNetwork() {
 	core.ResetNetwork()
 }
 
+func NetworkBootstrapSnapshot() string {
+	return core.NetworkBootstrapSnapshot()
+}
+
+func BeginDialDiagnostic(sourcePort int32) { core.BeginDialDiagnostic(int(sourcePort)) }
+
+func DialDiagnosticSnapshot(sourcePort int32, finish bool) string {
+	return core.DialDiagnosticSnapshot(int(sourcePort), finish)
+}
+
 func GetTraffic(onlyStatisticsProxy bool) string {
 	return core.GetTraffic(onlyStatisticsProxy)
 }

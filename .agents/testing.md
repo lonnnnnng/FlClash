@@ -1,6 +1,18 @@
 # Testing
 
-## Always-on首请求与网络观察复验（2026-11-05，当前）
+## TUN保护竞态与系统首请求复验（2026-11-05，当前）
+
+本组修正Flutter共用Go适配层的TUN保护缺口：gate先于hook就绪，listener未返回也保护，平台false/Control错误透传；关闭等待inflight并释放回调，迟到旧gate拒绝。TUN启动仍在handler锁外，启停仍串行，Mihomo子模块不改。只读DNS执行序号/单调时间和源端口有界诊断只用于观察，不改变DNS调度或作为就绪屏障；默认停采、不存原始端点。见ADR0020。
+
+最终build1 App492/Service206/Core38/Common31共767项JVM零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8及双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。Go普通全量265/265、定向race7/7；全量race在控制器httpServer异步重建1项失败，旧源码overlay复现同一竞态，单列未修，不能写全量race通过。
+
+Redmi final1/2两轮默认零额外等待，冷启动/运行中SIGKILL恢复共四次首个TUN HTTPS均HTTP200、同socket归因/正流量，直接核心诊断有对应出站事件，无补诊断。3/3模式/组件/菜单回归、独立纯代理恢复1场景、前后保护各1/1通过，App/Test安装回拉与代码快照匹配。旧包baseline1冷TLS EOF保留；四次callsDuringStart=0，真机尚未观测该窗口触发，不能认定旧失败因果或长期稳定性已闭环。
+
+正式1份配置逐字段摘要/选择/正文SHA-size-mtime、原1.yaml双端、Flutter APK及设置保持；备份清空，结束无服务/tun0，临时XML匹配后定点删除。final2系统开/关两图已目视，仅作系统状态证据；第6项原长窗口保护失败保持。
+
+证据`docs/acceptance/system-vpn-protection-redmi-20261105.json`，附件`../acceptance-artifacts/tun-protect-20261105/`。第8整体PARTIAL，蜂窝延期，首次安装/第三方/OEM及生产Always-on状态识别仍待验；低API、正式签名运行、远端CI和完整Flutter视觉未补，玻璃默认关闭、原暂缓/取消项保持。
+
+## Always-on首请求与网络观察复验（2026-11-05，历史切片）
 
 最终build3 App492/Service206/Core38/Common31共767项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8和双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。新增protect拒绝/异常透传/并发计数3项，模式切换真实用例断言加载前已注册、切换/停止后registeredAt相同且DNS有效。
 

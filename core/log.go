@@ -32,6 +32,7 @@ func (pump *logPump) run() {
 		if pump.stopped.Load() || event.LogLevel < log.Level() {
 			continue
 		}
+		activeDialDiagnostic.record(event.Payload)
 		sendMessage(LogMessage, event)
 	}
 }

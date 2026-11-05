@@ -16,6 +16,7 @@ import com.lonnnnnng.flclash.data.AppPreferenceEntity
 import com.lonnnnnng.flclash.data.EncryptedDraftFile
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.core.CoreOutboundMode
+import com.lonnnnnng.flclash.core.Core
 import com.lonnnnnng.flclash.service.*
 import dagger.hilt.android.EntryPointAccessors
 import java.net.InetSocketAddress
@@ -237,6 +238,7 @@ class SystemVpnAcceptanceActivity : ComponentActivity() {
     private fun networkEvidence(): JSONObject {
         val connectivity = getSystemService(android.net.ConnectivityManager::class.java)
         return JSONObject().put("observer", JSONObject(gson.toJson(NetworkObserver.snapshot())))
+            .put("coreBootstrap", JSONObject(Core.networkBootstrapSnapshot()))
             .put("networks", org.json.JSONArray(connectivity.allNetworks.map(::networkSnapshot)))
     }
 
@@ -269,107 +271,112 @@ class SystemVpnAcceptanceActivity : ComponentActivity() {
             // 作者 long：先固定源端口并订阅事件，DNS/connect阶段的短命失败也必须纳入本次请求窗口。
             socket.bind(InetSocketAddress(0))
             val sourcePort = socket.localPort
-            var address: java.net.InetAddress? = null
-            val trace = java.util.Collections.synchronizedList(mutableListOf<JSONObject>())
-            fun traceSnapshot() = synchronized(trace) { org.json.JSONArray(trace.toList()) }
-            val beforeProtection = systemMode().protection
-            var ancillaryCount = 0
-            val collecting = launch(start = CoroutineStart.UNDISPATCHED) {
-                entry.coreBridge().events.collect { event ->
-                    val detail = when (event) {
-                        is com.lonnnnnng.flclash.core.CoreEvent.Log -> {
-                            val payload = event.payload
-                            val destination = payload.substringAfter(" --> ", "")
-                            val targetMatches = listOfNotNull("${target.host}:443 ", address?.hostAddress?.let { "$it:443 " }).any {
-                                destination.startsWith(it, ignoreCase = true)
-                            }
-                            val categories = vpnFailure(java.io.IOException(payload)).getJSONArray("categories")
-                            if (payload.contains("[TCP]") && payload.contains(":$sourcePort --> ") && targetMatches) {
-                                JSONObject().put("kind", if (" error: " in payload) "TCP_DIAL_FAILED" else "TCP_UPSTREAM_OPENED")
-                                    .put("at", event.timestampMillis).put("failure", categories)
-                                    .put("errorEndpointHashes", org.json.JSONArray(Regex("(?:[A-Za-z0-9-]+\\.)+[A-Za-z0-9-]+")
-                                        .findAll(payload.substringAfter("error:", "")).map { vpnSha(it.value.toByteArray()) }.distinct().toList()))
-                            } else if (categories.length() > 0 && ("dns" in payload.lowercase() || "context deadline exceeded" in payload)) {
-                                // 作者 long：配置初载的健康检查可能产生大量旁路DNS日志；为本请求TCP事件保留证据空间。
-                                if (ancillaryCount++ >= 8) return@collect
-                                JSONObject().put("kind", "CORE_NETWORK_DIAGNOSTIC").put("at", event.timestampMillis)
-                                    .put("failure", categories).put("payloadSha256", vpnSha(payload.toByteArray()))
-                                    .put("mentionsRequestHost", payload.contains(target.host, ignoreCase = true))
-                            } else null
-                        }
-                        is com.lonnnnnng.flclash.core.CoreEvent.Request -> event.connection.takeIf {
-                            it.id !in existing && it.metadata.sourcePort == sourcePort.toString() &&
-                                it.metadata.destinationPort == "443" && (it.metadata.host.equals(target.host, ignoreCase = true) || it.metadata.destinationIp == address?.hostAddress)
-                        }?.let { JSONObject().put("kind", "TCP_TRACKER_CREATED").put("id", it.id)
-                            .put("upload", it.upload).put("download", it.download) }
-                        else -> null
-                    }
-                    if (detail != null && trace.size < 64) trace.add(detail)
-                }
-            }
+            Core.beginDialDiagnostic(sourcePort)
             try {
-                vpnReport(intent.getStringExtra("token").orEmpty(), "request-ready", JSONObject()
-                    .put("vpnNetwork", network.networkHandle).put("networkState", networkEvidence())
-                    .put("targetHostSha256", vpnSha(target.host.toByteArray())))
-                val dnsAt = System.currentTimeMillis()
-                address = network.getAllByName(target.host).first { it is java.net.Inet4Address }
-                vpnReport(intent.getStringExtra("token").orEmpty(), "request-dns", JSONObject().put("millis", System.currentTimeMillis() - dnsAt)
-                    .put("addressSha256", vpnSha(checkNotNull(address).address)))
-                socket.connect(InetSocketAddress(address, 443), 20_000)
-                socket.soTimeout = 20_000
-                // 作者 long：TLS包装关闭原socket后localAddress会变成通配地址，先固定真实端点，避免失败诊断失真。
-                val sourceIp = socket.localAddress.hostAddress
-                val observing = async { withTimeout(20_000) {
-                    while (true) {
-                        entry.coreBridge().getConnections().singleOrNull {
-                            it.id !in existing && it.metadata.network.equals("tcp", ignoreCase = true) &&
-                                it.metadata.sourceIp == sourceIp && it.metadata.sourcePort == sourcePort.toString() &&
-                                it.metadata.destinationPort == "443" && (it.metadata.host.equals(target.host, ignoreCase = true) ||
-                                it.metadata.destinationIp == socket.inetAddress.hostAddress) && it.upload > 0 && it.download > 0
-                        }?.let { return@withTimeout it }
-                        delay(50)
+                var address: java.net.InetAddress? = null
+                val trace = java.util.Collections.synchronizedList(mutableListOf<JSONObject>())
+                fun traceSnapshot() = synchronized(trace) { org.json.JSONArray(trace.toList()) }
+                val beforeProtection = systemMode().protection
+                var ancillaryCount = 0
+                val collecting = launch(start = CoroutineStart.UNDISPATCHED) {
+                    entry.coreBridge().events.collect { event ->
+                        val detail = when (event) {
+                            is com.lonnnnnng.flclash.core.CoreEvent.Log -> {
+                                val payload = event.payload
+                                val destination = payload.substringAfter(" --> ", "")
+                                val targetMatches = listOfNotNull("${target.host}:443 ", address?.hostAddress?.let { "$it:443 " }).any {
+                                    destination.startsWith(it, ignoreCase = true)
+                                }
+                                val categories = vpnFailure(java.io.IOException(payload)).getJSONArray("categories")
+                                if (payload.contains("[TCP]") && payload.contains(":$sourcePort --> ") && targetMatches) {
+                                    JSONObject().put("kind", if (" error: " in payload) "TCP_DIAL_FAILED" else "TCP_UPSTREAM_OPENED")
+                                        .put("at", event.timestampMillis).put("failure", categories)
+                                        .put("errorEndpointHashes", org.json.JSONArray(Regex("(?:[A-Za-z0-9-]+\\.)+[A-Za-z0-9-]+")
+                                            .findAll(payload.substringAfter("error:", "")).map { vpnSha(it.value.toByteArray()) }.distinct().toList()))
+                                } else if (categories.length() > 0 && ("dns" in payload.lowercase() || "context deadline exceeded" in payload)) {
+                                    // 作者 long：配置初载的健康检查可能产生大量旁路DNS日志；为本请求TCP事件保留证据空间。
+                                    if (ancillaryCount++ >= 8) return@collect
+                                    JSONObject().put("kind", "CORE_NETWORK_DIAGNOSTIC").put("at", event.timestampMillis)
+                                        .put("failure", categories).put("payloadSha256", vpnSha(payload.toByteArray()))
+                                        .put("mentionsRequestHost", payload.contains(target.host, ignoreCase = true))
+                                } else null
+                            }
+                            is com.lonnnnnng.flclash.core.CoreEvent.Request -> event.connection.takeIf {
+                                it.id !in existing && it.metadata.sourcePort == sourcePort.toString() &&
+                                    it.metadata.destinationPort == "443" && (it.metadata.host.equals(target.host, ignoreCase = true) || it.metadata.destinationIp == address?.hostAddress)
+                            }?.let { JSONObject().put("kind", "TCP_TRACKER_CREATED").put("id", it.id)
+                                .put("upload", it.upload).put("download", it.download) }
+                            else -> null
+                        }
+                        if (detail != null && trace.size < 64) trace.add(detail)
                     }
-                    @Suppress("UNREACHABLE_CODE") error("未观察到本次TUN连接")
-                } }
-                try { (SSLSocketFactory.getDefault() as SSLSocketFactory).createSocket(socket, target.host, 443, true).use { secure ->
-                    secure as SSLSocket
-                    secure.sslParameters = secure.sslParameters.apply { endpointIdentificationAlgorithm = "HTTPS" }
-                    secure.startHandshake()
-                    val path = target.rawPath.ifBlank { "/" } + target.rawQuery?.let { "?$it" }.orEmpty()
-                    secure.getOutputStream().apply {
-                        write("GET $path HTTP/1.1\r\nHost: ${target.host}\r\nUser-Agent: clash-verge/Platform/android\r\nConnection: keep-alive\r\n\r\n".toByteArray()); flush()
-                    }
-                    val input = secure.getInputStream().buffered(); var budget = 32768
-                    fun line(): String = buildString {
-                        while (true) { check(budget-- > 0); val ch = input.read(); check(ch >= 0); if (ch == 10) break; if (ch != 13) append(ch.toChar()) }
-                    }
-                    val http = line().split(' ').getOrNull(1)?.toIntOrNull(); check(http == 200)
-                    while (line().isNotEmpty()) Unit
-                    val connection = observing.await()
-                    JSONObject().put("http", http).put("tunnelSocketAttributed", true).put("uploadPositive", connection.upload > 0)
-                        .put("downloadPositive", connection.download > 0).put("hasNonDirectChain", connection.chains.any { it != "DIRECT" })
-                        .put("connectionId", connection.id).put("connectionStart", connection.start)
-                        .put("sourceIp", connection.metadata.sourceIp).put("sourcePort", connection.metadata.sourcePort)
-                        .put("socketSourceIp", socket.localAddress.hostAddress).put("socketSourcePort", socket.localPort)
-                        .put("destinationIp", connection.metadata.destinationIp).put("socketDestinationIp", socket.inetAddress.hostAddress)
-                        .put("targetHostSha256", vpnSha(target.host.toByteArray()))
-                        .put("connectionHostSha256", vpnSha(connection.metadata.host.toByteArray()))
-                        .put("coreTrace", traceSnapshot()).put("networkState", networkEvidence())
+                }
+                try {
+                    vpnReport(intent.getStringExtra("token").orEmpty(), "request-ready", JSONObject()
+                        .put("vpnNetwork", network.networkHandle).put("networkState", networkEvidence())
+                        .put("targetHostSha256", vpnSha(target.host.toByteArray())))
+                    val dnsAt = System.currentTimeMillis()
+                    address = network.getAllByName(target.host).first { it is java.net.Inet4Address }
+                    vpnReport(intent.getStringExtra("token").orEmpty(), "request-dns", JSONObject().put("millis", System.currentTimeMillis() - dnsAt)
+                        .put("addressSha256", vpnSha(checkNotNull(address).address)))
+                    socket.connect(InetSocketAddress(address, 443), 20_000)
+                    socket.soTimeout = 20_000
+                    // 作者 long：TLS包装关闭原socket后localAddress会变成通配地址，先固定真实端点，避免失败诊断失真。
+                    val sourceIp = socket.localAddress.hostAddress
+                    val observing = async { withTimeout(20_000) {
+                        while (true) {
+                            entry.coreBridge().getConnections().singleOrNull {
+                                it.id !in existing && it.metadata.network.equals("tcp", ignoreCase = true) &&
+                                    it.metadata.sourceIp == sourceIp && it.metadata.sourcePort == sourcePort.toString() &&
+                                    it.metadata.destinationPort == "443" && (it.metadata.host.equals(target.host, ignoreCase = true) ||
+                                    it.metadata.destinationIp == socket.inetAddress.hostAddress) && it.upload > 0 && it.download > 0
+                            }?.let { return@withTimeout it }
+                            delay(50)
+                        }
+                        @Suppress("UNREACHABLE_CODE") error("未观察到本次TUN连接")
+                    } }
+                    try { (SSLSocketFactory.getDefault() as SSLSocketFactory).createSocket(socket, target.host, 443, true).use { secure ->
+                        secure as SSLSocket
+                        secure.sslParameters = secure.sslParameters.apply { endpointIdentificationAlgorithm = "HTTPS" }
+                        secure.startHandshake()
+                        val path = target.rawPath.ifBlank { "/" } + target.rawQuery?.let { "?$it" }.orEmpty()
+                        secure.getOutputStream().apply {
+                            write("GET $path HTTP/1.1\r\nHost: ${target.host}\r\nUser-Agent: clash-verge/Platform/android\r\nConnection: keep-alive\r\n\r\n".toByteArray()); flush()
+                        }
+                        val input = secure.getInputStream().buffered(); var budget = 32768
+                        fun line(): String = buildString {
+                            while (true) { check(budget-- > 0); val ch = input.read(); check(ch >= 0); if (ch == 10) break; if (ch != 13) append(ch.toChar()) }
+                        }
+                        val http = line().split(' ').getOrNull(1)?.toIntOrNull(); check(http == 200)
+                        while (line().isNotEmpty()) Unit
+                        val connection = observing.await()
+                        JSONObject().put("http", http).put("tunnelSocketAttributed", true).put("uploadPositive", connection.upload > 0)
+                            .put("downloadPositive", connection.download > 0).put("hasNonDirectChain", connection.chains.any { it != "DIRECT" })
+                            .put("connectionId", connection.id).put("connectionStart", connection.start)
+                            .put("sourceIp", connection.metadata.sourceIp).put("sourcePort", connection.metadata.sourcePort)
+                            .put("socketSourceIp", socket.localAddress.hostAddress).put("socketSourcePort", socket.localPort)
+                            .put("destinationIp", connection.metadata.destinationIp).put("socketDestinationIp", socket.inetAddress.hostAddress)
+                            .put("targetHostSha256", vpnSha(target.host.toByteArray()))
+                            .put("connectionHostSha256", vpnSha(connection.metadata.host.toByteArray()))
+                            .put("coreTrace", traceSnapshot()).put("networkState", networkEvidence())
+                            .put("dialDiagnostic", org.json.JSONArray(Core.dialDiagnosticSnapshot(sourcePort, false)))
+                            .put("protectionBefore", JSONObject(gson.toJson(beforeProtection)))
+                            .put("protectionAfter", JSONObject(gson.toJson(systemMode().protection)))
+                    } } finally { observing.cancelAndJoin() }
+                } catch (failure: Exception) {
+                    if (failure is CancellationException) throw failure
+                    val afterProtection = systemMode().protection
+                    vpnReport(intent.getStringExtra("token").orEmpty(), "request-failed", vpnFailure(failure)
+                        .put("sourcePort", sourcePort).put("coreTrace", traceSnapshot()).put("networkState", networkEvidence())
+                        .put("dialDiagnostic", org.json.JSONArray(Core.dialDiagnosticSnapshot(sourcePort, false)))
                         .put("protectionBefore", JSONObject(gson.toJson(beforeProtection)))
-                        .put("protectionAfter", JSONObject(gson.toJson(systemMode().protection)))
-                } } finally { observing.cancelAndJoin() }
-            } catch (failure: Exception) {
-                if (failure is CancellationException) throw failure
-                val afterProtection = systemMode().protection
-                vpnReport(intent.getStringExtra("token").orEmpty(), "request-failed", vpnFailure(failure)
-                    .put("sourcePort", sourcePort).put("coreTrace", traceSnapshot()).put("networkState", networkEvidence())
-                    .put("protectionBefore", JSONObject(gson.toJson(beforeProtection)))
-                    .put("protectionAfter", JSONObject(gson.toJson(afterProtection)))
-                    .put("runtimeTimeline", org.json.JSONArray(entry.runtimeManager().diagnosticEvents.value.filter {
-                        it.timestampMillis >= verifyAt
-                    }.map { JSONObject().put("kind", it.kind.name).put("at", it.timestampMillis) })))
-                throw failure
-            } finally { collecting.cancelAndJoin() }
+                        .put("protectionAfter", JSONObject(gson.toJson(afterProtection)))
+                        .put("runtimeTimeline", org.json.JSONArray(entry.runtimeManager().diagnosticEvents.value.filter {
+                            it.timestampMillis >= verifyAt
+                        }.map { JSONObject().put("kind", it.kind.name).put("at", it.timestampMillis) })))
+                    throw failure
+                } finally { collecting.cancelAndJoin() }
+            } finally { Core.dialDiagnosticSnapshot(sourcePort, true) }
         }
     }
 

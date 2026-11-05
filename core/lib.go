@@ -35,8 +35,9 @@ var (
 )
 
 type TunHandler struct {
-	listener  *sing_tun.Listener
-	callbacks TunCallbacks
+	listener   *sing_tun.Listener
+	callbacks  TunCallbacks
+	protection *socketProtectionGate
 
 	mu sync.RWMutex
 }
@@ -49,11 +50,7 @@ func (th *TunHandler) start(fd int, stack, address, dns, options string) bool {
 	th.initHook()
 	th.mu.Unlock()
 
-	// t.Start runs outside th.mu on purpose. The hook is live from initHook
-	// onwards, and a socket opened anywhere inside Start reaches handleProtect
-	// on this very goroutine — an RLock taken while this one holds the write
-	// lock deadlocks the start outright. Nothing is lost by dropping it: both
-	// hooks return early until th.listener is set, which is below.
+	// 作者 long：栈初始化本身可能拨号，不能持有它会回入的handler锁；保护回调已在hook发布前就绪，不依赖listener赋值。
 	tunListener := t.Start(fd, stack, address, dns, options)
 
 	th.mu.Lock()
@@ -61,6 +58,7 @@ func (th *TunHandler) start(fd int, stack, address, dns, options string) bool {
 	if tunListener != nil {
 		log.Infoln("TUN address: %v", tunListener.Address())
 		th.listener = tunListener
+		th.protection.markReady()
 		return true
 	}
 	th.clear()
@@ -75,24 +73,12 @@ func (th *TunHandler) close() {
 
 func (th *TunHandler) clear() {
 	th.removeHook()
+	th.protection.close()
 	if th.listener != nil {
 		_ = th.listener.Close()
 	}
 	th.callbacks = nil
 	th.listener = nil
-}
-
-// A refused protect never fails the dial: mihomo's tunnel retries a failed
-// dial ten times, and Android refuses only after the VPN was revoked, when the
-// routes are gone and an unprotected socket takes the default network.
-func (th *TunHandler) handleProtect(fd int) {
-	th.mu.RLock()
-	defer th.mu.RUnlock()
-
-	if th.listener == nil || th.callbacks == nil {
-		return
-	}
-	th.callbacks.Protect(fd)
 }
 
 func (th *TunHandler) handleResolveProcess(source, target net.Addr) (int, string) {
@@ -136,9 +122,7 @@ func installHooks() {
 			if th == nil {
 				return nil
 			}
-			return conn.Control(func(fd uintptr) {
-				th.handleProtect(int(fd))
-			})
+			return protectRawSocket(conn, th.protection)
 		}
 		process.DefaultPackageNameResolver = func(metadata *constant.Metadata) (string, error) {
 			th := activeTunHandler.Load()
@@ -172,9 +156,10 @@ func (th *TunHandler) removeHook() {
 }
 
 var (
-	tunLock    sync.Mutex
-	errBlocked = errors.New("blocked: the process is out of file descriptors")
-	tunHandler *TunHandler
+	tunLock           sync.Mutex
+	errBlocked        = errors.New("blocked: the process is out of file descriptors")
+	tunHandler        *TunHandler
+	lastTunProtection atomic.Pointer[socketProtectionGate]
 )
 
 func handleStopTun() {
@@ -200,8 +185,10 @@ func handleStartTun(callbacks TunCallbacks, fd int, stack, address, dns, options
 		return false
 	}
 	tunHandler = &TunHandler{
-		callbacks: callbacks,
+		callbacks:  callbacks,
+		protection: newSocketProtectionGate(callbacks.Protect),
 	}
+	lastTunProtection.Store(tunHandler.protection)
 	if tunHandler.start(fd, stack, address, dns, options) {
 		return true
 	}
@@ -213,8 +200,11 @@ func handleStartTun(callbacks TunCallbacks, fd int, stack, address, dns, options
 }
 
 var (
-	dnsUpdateMu  sync.Mutex
-	dnsUpdateSeq atomic.Uint64
+	dnsUpdateMu    sync.Mutex
+	dnsUpdateSeq   atomic.Uint64
+	dnsAppliedSeq  atomic.Uint64
+	dnsApplyingSeq atomic.Uint64
+	dnsAppliedAt   atomic.Int64
 )
 
 func handleUpdateDns(value string) {
@@ -231,10 +221,28 @@ func handleUpdateDns(value string) {
 		if seq != dnsUpdateSeq.Load() {
 			return
 		}
+		dnsApplyingSeq.Store(seq)
+		defer dnsApplyingSeq.Store(0)
 		log.Infoln("[DNS] updateDns %s", value)
 		dns.UpdateSystemDNS(addr)
 		dns.FlushCacheWithDefaultResolver()
+		dnsAppliedAt.Store(bootstrapMillis())
+		dnsAppliedSeq.Store(seq)
 	})
+}
+
+// 作者 long：诊断只读计数和进程内单调时间，不等待DNS任务、不改变启动时序，也不输出fd、DNS地址或节点。
+func NetworkBootstrapSnapshot() string {
+	state := map[string]any{
+		"atMillis": bootstrapMillis(), "dnsRequestedSequence": dnsUpdateSeq.Load(),
+		"dnsApplyingSequence": dnsApplyingSeq.Load(), "dnsAppliedSequence": dnsAppliedSeq.Load(),
+		"dnsAppliedAtMillis": dnsAppliedAt.Load(),
+	}
+	if gate := lastTunProtection.Load(); gate != nil {
+		state["protection"] = gate.snapshot()
+	}
+	data, _ := json.Marshal(state)
+	return string(data)
 }
 
 func init() {
