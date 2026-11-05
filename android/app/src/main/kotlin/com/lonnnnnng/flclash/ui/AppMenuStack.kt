@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -20,6 +21,8 @@ import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.*
@@ -33,7 +36,15 @@ internal data class AppMenuOwner(val identity: Any, val bounds: Rect, val text: 
 internal class AppMenuLevel(val key: Any?, val owner: AppMenuOwner? = null, val top: Float = 0f, val fromWidth: Float = 0f,
     val ownerTop: Float = 0f) {
     val scroll = ScrollState(0)
+    val initialFocusRequester = FocusRequester()
     var bounds = Rect.Zero
+    private var initialFocusTargetAssigned = false
+
+    fun claimInitialFocusTarget(enabled: Boolean): Boolean {
+        if (!enabled || initialFocusTargetAssigned) return false
+        initialFocusTargetAssigned = true
+        return true
+    }
 }
 
 /** 作者 long：回退完成才移除顶卡，父卡的滚动/组合身份始终保留；同一个弹簧可在收回途中反向，不重置速度。 */
@@ -105,7 +116,16 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
     backdrop: AppMenuBackdrop?, menuPosition: IntOffset, opening: Float, returning: Float,
     onScrollable: (Boolean) -> Unit, content: @Composable ColumnScope.(Any?) -> Unit) {
     val density = LocalDensity.current.density
+    val inputModeManager = LocalInputModeManager.current
     val levels = state.levels.toList()
+    LaunchedEffect(active, pageKey, levels.lastOrNull()) {
+        val level = levels.lastOrNull()
+        if (active && level != null && inputModeManager.inputMode == InputMode.Keyboard) {
+            // 作者 long：键盘打开或进入子菜单后先聚焦首个可用项，方向键即可按顺序浏览而不误触代理组。
+            withFrameNanos { }
+            level.initialFocusRequester.requestFocus()
+        }
+    }
     Layout(content = {
         levels.forEachIndexed { index, level -> key(level) {
             val top = index == levels.lastIndex

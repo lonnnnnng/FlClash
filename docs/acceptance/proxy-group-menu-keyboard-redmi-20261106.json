@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "代理组溢出菜单键盘焦点、方向键、Enter 选择和 Escape 取消",
+  "status": "DONE_VERIFIED_FOR_PROXY_GROUP_OVERFLOW_MENU_KEYBOARD_INTERACTION; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "a675fb58faff5e68a7b306f49a1aa8e8b9ccc3f3",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userRotation": 0
+  },
+  "implementation": {
+    "production": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuStack.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt"
+    ],
+    "test": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+    "behavior": [
+      "键盘模式打开溢出菜单后自动聚焦首个可用菜单项",
+      "DirectionDown 在菜单项之间移动焦点，不提前切换当前代理组",
+      "Enter 选择聚焦的代理组并关闭菜单",
+      "Escape 取消菜单浏览并保持原代理组选择",
+      "进入子菜单时同样为当前层首项分配初始焦点"
+    ],
+    "flutterReference": "仅参考本地 Flutter 菜单/代理组交互语义，未修改或合并 Flutter 上游代码；未触碰 com.follow.clash"
+  },
+  "build": {
+    "command": "./gradlew test :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :common:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL；JVM 771 项，失败/错误/跳过均为 0；Debug/Test、未签名 Release/R8、Debug/Release Lint 均通过",
+    "jvm": {
+      "tests": 771,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "983d3cbdd78795339b1c66a4f5cc14907bbe436d033785e5afbe7e15eb007558"
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "4fcb062ce2fe75d76b79132805fd4b4a1849fc95d3e18b680cfb1df546071feb"
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "b213dc0d06e2ca1bddc5e5d2829a2d85b42f2496b38fbc667ce0e0cea6737f8d"
+    },
+    "lint": "Debug 0 errors、67 warnings、10 hints；Release 0 errors、66 warnings、9 hints",
+    "artifactCopies": "../acceptance-artifacts/proxy-group-menu-keyboard-redmi-20261106/"
+  },
+  "test": {
+    "command": "adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "result": "OK (9 tests); failures=0, errors=0, skipped=0",
+    "newMethod": "overflowingGroupMenuSupportsKeyboardSelectionAndEscapeDismissal",
+    "xml": "android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml",
+    "testLog": "../acceptance-artifacts/proxy-group-menu-keyboard-redmi-20261106/final-installed-instrumentation.log",
+    "installedApkHashesMatchBuild": true,
+    "keyInput": "Compose instrumentation 注入 InputMode.Keyboard、Key.DirectionDown、Key.Enter 和 Key.Escape；未使用实体外接键盘"
+  },
+  "failureHistory": {
+    "firstRun": "9 tests, 1 failure：修复后测试仍额外发送一次 DirectionDown，首项已自动聚焦后焦点实际落到第二项；失败日志保留于 ../acceptance-artifacts/proxy-group-menu-keyboard-redmi-20261106/focus-fix-test.log",
+    "resolution": "调整验收顺序为打开即断言首项焦点，再验证 DirectionDown；修复后整类 9/9 通过"
+  },
+  "cleanup": {
+    "runtimeStartedByTest": false,
+    "vpnOrProxyServiceStarted": false,
+    "profileOrSubscriptionTouched": false,
+    "flutterBaselinePackageTouched": false,
+    "postRunProcesses": "com.lonnnnnng.flclash 与 tun0 均未运行"
+  },
+  "limitations": [
+    "仅验证代理组溢出菜单的 Compose 注入键盘事件；实体 USB/Bluetooth 键盘和系统按键路由未验",
+    "完整 Flutter 页面视觉、全应用焦点顺序、其他面板联动和全应用动效仍为 PARTIAL",
+    "不新增 TalkBack 或无障碍功能；玻璃效果保持默认关闭"
+  ],
+  "next": "继续覆盖代理组剩余子页与面板联动，再统一做视觉基线和动效验收"
+}

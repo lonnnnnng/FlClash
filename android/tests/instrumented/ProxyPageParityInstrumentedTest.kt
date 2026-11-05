@@ -386,6 +386,51 @@ class ProxyPageParityInstrumentedTest {
         compose.runOnIdle { assertEquals(names[1], current) }
     }
 
+    @Test fun overflowingGroupMenuSupportsKeyboardSelectionAndEscapeDismissal() {
+        val names = (0..12).map { "分组$it" }
+        val groups = names.map { ProxyGroupInfo(it, "Selector", "node-a", listOf("node-a", "node-b"), false) }
+        var current by mutableStateOf(names.first())
+        lateinit var inputMode: InputModeManager
+        compose.setContent { KClashTheme {
+            inputMode = LocalInputModeManager.current
+            ProxyGroupsCard(
+                state = ProxyGroupsUiState(groups = groups),
+                runtimeState = CoreRuntimeStatus.STOPPED,
+                currentGroupName = current,
+                onSelectGroup = { current = it },
+                onRefresh = {},
+                onSelect = { _, _ -> },
+                onTestDelay = { _, _ -> },
+                onTestGroupDelay = {},
+            )
+        } }
+
+        val more = compose.onNodeWithTag("proxy_group_more")
+        val firstMenuItem = compose.onNodeWithTag("proxy_group_menu_${names[0]}")
+        val secondMenuItem = compose.onNodeWithTag("proxy_group_menu_${names[1]}")
+        compose.runOnIdle { inputMode.requestInputMode(InputMode.Keyboard) }
+        more.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        more.performKeyInput { pressKey(Key.Enter) }
+        // 作者 long：键盘打开时菜单会把焦点放到首项，后续方向键才移动到相邻项。
+        firstMenuItem.assertIsFocused()
+        compose.onNodeWithTag("app_popup_window").performKeyInput { pressKey(Key.DirectionDown) }
+        secondMenuItem.assertIsFocused()
+
+        // 作者 long：溢出菜单的 Escape 只撤销菜单浏览，不切换当前代理组；再次 Enter 才提交所聚焦的组。
+        secondMenuItem.performKeyInput { pressKey(Key.Escape) }
+        compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(names.first(), current) }
+
+        more.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        more.performKeyInput { pressKey(Key.Enter) }
+        firstMenuItem.performKeyInput { pressKey(Key.DirectionDown) }
+        secondMenuItem.assertIsFocused().performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+        compose.onNodeWithTag("proxy_group_tab_${names[1]}").assertIsSelected()
+        compose.runOnIdle { assertEquals(names[1], current) }
+    }
+
     @Test fun listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls() {
         val group = ProxyGroupInfo(
             "长列表",

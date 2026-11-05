@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -357,6 +358,7 @@ internal fun AppDropdownMenuItem(
     val level = LocalAppMenuLevel.current
     val owner = if (isBack) level?.owner else null
     val active = enabled && (if (isBack) LocalAppMenuHeaderEnabled.current else LocalAppMenuEnabled.current)
+    val requestInitialFocus = remember(level, active) { level?.claimInitialFocusTarget(active) == true }
     val color = (if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
         // 作者 long：后层只屏蔽交互并由卡片统一染暗，不能再把每行当成业务禁用，否则父卡会被重复压暗。
         .copy(alpha = if (enabled) 1f else .3f)
@@ -379,7 +381,8 @@ internal fun AppDropdownMenuItem(
             if (item.enabled != active || item.submenu != opensSubmenu) registry.items[identity] = item.copy(enabled = active, submenu = opensSubmenu)
         }
     }
-    Row(modifier.fillMaxWidth().onGloballyPositioned { coordinates ->
+    Row(modifier.fillMaxWidth().then(if (requestInitialFocus && level != null) Modifier.focusRequester(level.initialFocusRequester) else Modifier)
+        .onGloballyPositioned { coordinates ->
         itemBounds = coordinates.boundsInWindow()
         registry?.items?.set(identity, AppMenuCarriedItem(coordinates.boundsInWindow(), active, opensSubmenu) { latestAction() })
     }.graphicsLayer {
