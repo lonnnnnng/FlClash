@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.SemanticsActions
@@ -340,6 +341,49 @@ class ProxyPageParityInstrumentedTest {
         compose.onNodeWithTag("proxy_group_search_toggle").performClick()
         compose.onNodeWithTag("proxy_group_search").assertDoesNotExist()
         compose.onNodeWithTag("proxy_group_tab_分组12").assertIsSelected()
+    }
+
+    @Test fun groupTabsCanBeNavigatedWithDirectionalKeysAndActivatedWithEnter() {
+        val names = listOf("第一组", "第二组", "第三组")
+        val groups = names.map { name -> ProxyGroupInfo(name, "Selector", "香港节点", listOf("香港节点", "日本节点"), false) }
+        var current by mutableStateOf(names.first())
+        lateinit var inputMode: InputModeManager
+        compose.setContent { KClashTheme {
+            inputMode = LocalInputModeManager.current
+            ProxyGroupsCard(
+                state = ProxyGroupsUiState(groups = groups),
+                runtimeState = CoreRuntimeStatus.STOPPED,
+                currentGroupName = current,
+                onSelectGroup = { current = it },
+                onRefresh = {},
+                onSelect = { _, _ -> },
+                onTestDelay = { _, _ -> },
+                onTestGroupDelay = {},
+            )
+        } }
+
+        val first = compose.onNodeWithTag("proxy_group_tab_${names[0]}")
+        val second = compose.onNodeWithTag("proxy_group_tab_${names[1]}")
+        compose.runOnIdle { inputMode.requestInputMode(InputMode.Keyboard) }
+        first.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        first.assertIsFocused().assertIsSelected()
+        first.performKeyInput { pressKey(Key.DirectionRight) }
+
+        // 作者 long：组标签焦点先随方向键移动，只有 Enter 才切换代理组，避免浏览时误改页面上下文。
+        second.assertIsFocused().assertIsNotSelected()
+        compose.runOnIdle { assertEquals(names.first(), current) }
+        second.performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        second.assertIsFocused().assertIsSelected()
+        compose.onNodeWithTag("proxy_node_${names[1]}_香港节点").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(names[1], current) }
+
+        second.performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag("proxy_group_tab_${names[2]}").assertIsFocused()
+        compose.onNodeWithTag("proxy_group_tab_${names[2]}").performKeyInput { pressKey(Key.DirectionRight) }
+        // 作者 long：末组继续右移可以离开标签带，但不能绕回首组，也不能仅因浏览焦点切换代理组。
+        first.assertIsNotFocused()
+        compose.runOnIdle { assertEquals(names[1], current) }
     }
 
     @Test fun listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls() {

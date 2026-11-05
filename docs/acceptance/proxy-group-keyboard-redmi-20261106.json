@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "代理组标签方向键焦点移动、Enter 激活和末端不循环",
+  "status": "DONE_VERIFIED_FOR_PROXY_GROUP_TAB_KEYBOARD_NAVIGATION; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "89fb85794d85dd670222c5f704ff2089a10a9612",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userRotation": 0
+  },
+  "implementation": {
+    "production": "未修改；ProxyGroupsPage.kt 的代理组标签已使用 Compose selectable，现有焦点导航响应方向键并支持 Enter 激活",
+    "test": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+    "behavior": [
+      "方向键右移将焦点从第一组移动到第二组，但不立即改变当前代理组",
+      "Enter 激活第二组，选择态与对应节点内容同步更新",
+      "焦点移动到末组后继续按右键不绕回首组，当前代理组保持不变"
+    ],
+    "flutterReference": "参考本地 Flutter lib/views/proxies/group_tabs.dart 的代理组标签选择流程；未修改或合并 Flutter 源码"
+  },
+  "build": {
+    "command": "./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :common:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL；JVM 测试任务均为 UP-TO-DATE，本切片只改 instrumentation 测试；最近完整 JVM 结果为 App 492、Service 206、Core 38、Common 31，失败/错误/跳过均为 0",
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "4d589eb5a2731082638de967c431009c009bc4ab48086e79f1ad984cf3f518bd"
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "4f884f298597a01c78e4d7be1189b15c5b59b394cc40ddd669198b15aa2ebf2a"
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "cbbd7f675657348275ed803b98fe912d6b8b745bc32e2e80d11009c5b27dffee"
+    },
+    "lint": "Debug 0 errors、67 warnings、10 hints；Release 0 errors、66 warnings、9 hints",
+    "artifactCopies": "../acceptance-artifacts/proxy-group-keyboard-redmi-20261106/"
+  },
+  "test": {
+    "command": "ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "result": "OK (8 tests); failures=0, errors=0, skipped=0",
+    "newMethod": "groupTabsCanBeNavigatedWithDirectionalKeysAndActivatedWithEnter",
+    "methods": [
+      "overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+      "pagerDragCancelAndDistantTabTapKeepContinuousFramesAndSettledSelection",
+      "tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent",
+      "delayFocusRingAndKeyboardActivationStayIndependentFromNodeSelection",
+      "delayStatusUsesFadeTransitionWithoutChangingNodeSelection",
+      "groupTabsCanBeNavigatedWithDirectionalKeysAndActivatedWithEnter",
+      "listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls",
+      "computedGroupSeparatesAutomaticNowFromPreferredNodeMarker"
+    ],
+    "xml": "../acceptance-artifacts/proxy-group-keyboard-redmi-20261106/proxy-page-parity-redmi.xml",
+    "testLog": "../acceptance-artifacts/proxy-group-keyboard-redmi-20261106/keyboard-test-logcat.txt",
+    "keyInput": "Compose instrumentation 注入 Key.DirectionRight 和 Key.Enter；未使用实体外接键盘"
+  },
+  "testNotes": [
+    "首轮用例要求末组再按右键后焦点仍停留末组，Redmi 实测失败；Compose 允许焦点离开标签带。将断言修正为末组右移不绕回首组且当前组不变后，定向用例及整类 8/8 通过。",
+    "测试通过 Redmi 上的 Compose 仪器，不代表 USB/Bluetooth 实体键盘、系统按键映射或所有页面键盘焦点顺序已验收。"
+  ],
+  "cleanup": {
+    "productionSourceChanged": false,
+    "runtimeStartedByTest": false,
+    "vpnOrProxyServiceStarted": false,
+    "profileOrSubscriptionTouched": false,
+    "flutterBaselinePackageTouched": false,
+    "postRunInstalledApkHashCaptured": false
+  },
+  "limitations": [
+    "仅覆盖代理组标签的右方向键、Enter 激活和末端不循环；左方向键、菜单与全应用焦点顺序仍待验",
+    "未连接或操作实体外接键盘，不能推广为 OEM/蓝牙/USB 按键路由验证",
+    "完整 Flutter 页面视觉与键盘联动仍为 PARTIAL；不新增 TalkBack 或无障碍功能"
+  ],
+  "next": "继续覆盖代理组剩余子页、面板及键盘交互；保持玻璃默认关闭"
+}
