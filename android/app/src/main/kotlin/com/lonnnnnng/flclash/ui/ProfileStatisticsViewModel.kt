@@ -29,7 +29,7 @@ data class ProfileProvidersUiState(val profileId: Long? = null,
     val isLoading: Boolean = false, val error: String? = null, val updatingName: String? = null,
     val updateMessage: String? = null, val updateFailed: Boolean = false,
     val updatingNames: Set<String> = emptySet(), val failedNames: Set<String> = emptySet(),
-    val managedNames: Set<String> = emptySet())
+    val managedNames: Set<String> = emptySet(), val failedMessages: Map<String, String> = emptyMap())
 
 /** 作者 long：编辑正文包含凭据，不生成可将正文写入日志的data class.toString。 */
 class ProviderDocumentUiState(val name: String, val loading: Boolean = true,
@@ -52,6 +52,7 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
     private var updateJob: Job? = null
     private var inFlightName: String? = null
     private var visibilityGeneration = 0L
+    private var providerGeneration = 0L
     private var managedBindings: Map<String, RuleResource> = emptyMap()
     private val mutableDocument = MutableStateFlow<ProviderDocumentUiState?>(null)
     val document = mutableDocument.asStateFlow()
@@ -102,7 +103,7 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
         }
         viewModelScope.launch {
             pollProfile(providerRetries,
-                clear = { id -> mutableProviders.update { old -> if (old.profileId == id && foreground.value)
+                clear = { id -> mutableProviders.update { old -> if (old.profileId == id)
                     old.copy(providers = null, isLoading = false, error = null) else ProfileProvidersUiState(id, updatingName = inFlightName) } },
                 loading = { mutableProviders.update { it.copy(isLoading = it.providers == null, error = null) } },
                 read = { id ->
@@ -158,10 +159,10 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
         val id = profile.value ?: return
         if (!foreground.value || updateJob?.isActive == true || providers.value.profileId != id ||
             document.value?.saving == true || providers.value.providers?.any { it.name == name && (it.canUpdate || name in providers.value.managedNames) } != true) return
-        val generation = visibilityGeneration
+        val generation = providerGeneration
         inFlightName = name
         val resource = managedBindings[name]
-        mutableProviders.update { it.copy(updatingName = name, updatingNames = setOf(name), updateMessage = null, updateFailed = false, failedNames = emptySet()) }
+        mutableProviders.update { it.copy(updatingName = name, updatingNames = setOf(name), updateMessage = null) }
         updateJob = viewModelScope.launch {
             var failure: String? = null
             try {
@@ -176,10 +177,15 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
                 inFlightName = null
                 mutableProviders.update { it.copy(updatingName = null, updatingNames = emptySet()) }
             }
-            // 作者 long：关闭、后台或换配置后，旧下载即使完成也不再向新详情写入提示或触发代理组刷新。
-            if (generation == visibilityGeneration && foreground.value && profile.value == id) {
-                mutableProviders.update { it.copy(updatingName = null, updateMessage = failure ?: "Provider 已更新", updateFailed = failure != null,
-                    failedNames = if (failure == null) emptySet() else setOf(name)) }
+            // 作者 long：单项恢复只能移除本项失败；后台下载仍属于原详情，换配置或关闭后才丢弃结果。
+            if (generation == providerGeneration && profile.value == id) {
+                mutableProviders.update { old ->
+                    val messages = old.failedMessages.toMutableMap().apply { remove(name); failure?.let { put(name, it) } }.toMap()
+                    val names = (old.failedNames - name) + if (failure == null) emptySet() else setOf(name)
+                    old.copy(updatingName = null, failedNames = names, failedMessages = messages, updateFailed = names.isNotEmpty(),
+                        updateMessage = if (names.size > 1 || failure == null && names.isNotEmpty()) failureSummary(names.size)
+                            else failure ?: "Provider 已更新")
+                }
                 providerRetries.update { it + 1 }
                 retries.update { it + 1 }
             }
@@ -188,41 +194,63 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
 
     fun updateAllProviders(onlyFailed: Boolean = false) {
         val id = profile.value ?: return
-        if (!foreground.value || updateJob?.isActive == true || document.value?.saving == true) return
+        if (!foreground.value || updateJob?.isActive == true || document.value?.saving == true || providers.value.profileId != id) return
         val names = providers.value.providers.orEmpty().filter { (it.canUpdate || it.name in providers.value.managedNames) &&
             (!onlyFailed || it.name in providers.value.failedNames) }.map { it.name }
         if (names.isEmpty()) return
-        val generation = visibilityGeneration
+        val generation = providerGeneration
         val bindings = managedBindings.filterKeys { it in names }
         val http = names.filterNot { it in bindings }
-        mutableProviders.update { it.copy(updatingNames = names.toSet(), updateMessage = null, updateFailed = false, failedNames = emptySet()) }
+        mutableProviders.update { it.copy(updatingNames = names.toSet(), updateMessage = null) }
         updateJob = viewModelScope.launch {
-            val failures = linkedSetOf<String>()
+            val failures = linkedMapOf<String, String>()
+            val synced = linkedSetOf<String>()
             try {
                 supervisorScope {
                     val core = async {
                         if (http.isEmpty()) emptyList() else try { runtime.updateProfileProviders(id, http) }
+                        catch (_: TimeoutCancellationException) { http.map { CoreProviderUpdateResult(it, "request_timeout") } }
                         catch (cancelled: CancellationException) { throw cancelled }
                         catch (_: Exception) { http.map { CoreProviderUpdateResult(it, "update_failed") } }
                     }
                     val resources = bindings.map { (name, resource) -> async {
                         try { checkNotNull(managed).sync(resource); CoreProviderUpdateResult(name, "") }
+                        catch (_: TimeoutCancellationException) { CoreProviderUpdateResult(name, "request_timeout") }
                         catch (cancelled: CancellationException) { throw cancelled }
                         catch (_: Exception) { CoreProviderUpdateResult(name, "update_failed") }
                     } }
-                    failures += (core.await() + resources.awaitAll()).filter { it.code.isNotEmpty() }.map { it.name }
+                    (core.await() + resources.awaitAll()).forEach { result ->
+                        if (result.code.isNotEmpty()) failures[result.name] = providerFailureMessage(result.code)
+                        else if (result.name in bindings) synced += result.name
+                    }
                 }
-                if (bindings.isNotEmpty()) try { managed?.apply(id) }
+                // 作者 long：没有资源提交成功时不重载旧配置；部分成功仍应用已落盘版本，失败项单独保留重试。
+                if (synced.isNotEmpty()) try { managed?.apply(id) }
+                catch (_: TimeoutCancellationException) { synced.forEach { failures[it] = "应用更新超时，请重试" } }
                 catch (cancelled: CancellationException) { throw cancelled }
-                catch (_: Exception) { failures += bindings.keys }
+                catch (_: Exception) { synced.forEach { failures[it] = "资源已更新，但应用失败，请重试" } }
                 currentCoroutineContext().ensureActive()
-                if (generation == visibilityGeneration && foreground.value && profile.value == id) {
-                    mutableProviders.update { it.copy(failedNames = failures, updateFailed = failures.isNotEmpty(),
-                        updateMessage = if (failures.isEmpty()) "Providers 已全部更新" else "${failures.size} 项更新失败，可重试失败项") }
+                if (generation == providerGeneration && profile.value == id) {
+                    mutableProviders.update { old ->
+                        val remaining = (old.failedNames - names.toSet()) + failures.keys
+                        old.copy(failedNames = remaining, failedMessages = old.failedMessages - names.toSet() + failures,
+                            updateFailed = remaining.isNotEmpty(), updateMessage = if (remaining.isEmpty()) "Providers 已全部更新" else failureSummary(remaining.size))
+                    }
                     retryProviders(); retry()
                 }
             } finally { mutableProviders.update { it.copy(updatingNames = emptySet()) } }
         }
+    }
+
+    private fun failureSummary(count: Int) = "${count} 项更新失败，可重试失败项"
+
+    // 作者 long：只映射核心错误码，不把下载异常中的订阅地址、响应正文或凭据展示到页面。
+    private fun providerFailureMessage(code: String) = when (code) {
+        "request_timeout" -> "更新超时，请重试"
+        "request_bad_response" -> "更新服务返回异常，请稍后重试"
+        "provider_not_found" -> "Provider 已不存在，请刷新列表"
+        "provider_updating" -> "Provider 正在更新，请稍后重试"
+        else -> "更新失败，请稍后重试"
     }
 
     fun openProvider(name: String, edit: Boolean = false, pickFile: Boolean = false) {
@@ -396,7 +424,7 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
                 return
             }
             invalidatePicker()
-            visibilityGeneration++; documentGeneration++; documentJob?.cancel(); mutableDocument.value = null; managedBindings = emptyMap()
+            providerGeneration++; visibilityGeneration++; documentGeneration++; documentJob?.cancel(); mutableDocument.value = null; managedBindings = emptyMap()
             mutableProviders.value = ProfileProvidersUiState(profileId, updatingName = inFlightName)
         }
         profile.value = profileId
@@ -408,7 +436,8 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
             if (!value && document.value?.pickerToken == null && document.value?.saving != true && document.value?.committed != true) {
                 documentGeneration++; documentJob?.cancel(); mutableDocument.value = null
             }
-            mutableProviders.value = ProfileProvidersUiState(profile.value, updatingName = inFlightName, updatingNames = providers.value.updatingNames)
+            // 作者 long：后台仅清除列表和文档，不丢失当前详情的失败清单；回到前台仍能继续恢复剩余项。
+            mutableProviders.update { it.copy(providers = null, isLoading = false, error = null, managedNames = emptySet()) }
         }
         foreground.value = value
     }

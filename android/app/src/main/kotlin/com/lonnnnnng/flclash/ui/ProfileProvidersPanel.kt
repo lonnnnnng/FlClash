@@ -54,6 +54,9 @@ internal fun ProfileProvidersPanel(state: ProfileProvidersUiState, onRetry: () -
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(provider.updatedAtMillis?.let { "更新于 " + DateUtils.getRelativeTimeSpanString(it) } ?: "尚未更新",
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (provider.name in state.failedNames) Text(state.failedMessages[provider.name] ?: "更新失败，请重试",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("profile_provider_failure_$index"))
                 }
                 if (state.updatingName == provider.name || provider.name in state.updatingNames) {
                     CircularProgressIndicator(Modifier.padding(12.dp).size(24.dp).testTag("profile_provider_updating_" + index), strokeWidth = 2.dp)

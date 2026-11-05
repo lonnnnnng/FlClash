@@ -191,6 +191,87 @@ class ProfileStatisticsViewModelTest {
         } finally { model.viewModelScope.cancel(); runCurrent() }
     }
 
+    @Test fun singleRetryKeepsOtherBatchFailuresAndPollingDoesNotEraseReasons() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        runtime.providerRead = { providerSamples() + listOf("other", "third").map {
+            com.lonnnnnng.flclash.core.CoreExternalProvider(it, "Rule", "HTTP", 4, null) } }
+        val batches = mutableListOf<List<String>>()
+        val gate = CompletableDeferred<Unit>()
+        runtime.batch = { names -> batches += names; gate.await(); names.map {
+            com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, when (it) { "other" -> "request_timeout"; "third" -> "request_bad_response"; else -> "" }) } }
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            model.updateAllProviders(); runCurrent()
+            assertEquals(setOf("http", "other", "third"), model.providers.value.updatingNames)
+            model.updateAllProviders(); model.updateProvider("other"); runCurrent()
+            assertEquals(1, batches.size); assertEquals(0, runtime.updateCalls)
+            gate.complete(Unit); runCurrent()
+            assertEquals(setOf("other", "third"), model.providers.value.failedNames)
+            assertEquals("更新超时，请重试", model.providers.value.failedMessages["other"])
+            assertEquals("更新服务返回异常，请稍后重试", model.providers.value.failedMessages["third"])
+            advanceTimeBy(5_000); runCurrent()
+            assertEquals(2, model.providers.value.failedMessages.size)
+            model.updateProvider("other"); runCurrent()
+            assertEquals(setOf("third"), model.providers.value.failedNames)
+            assertEquals(setOf("third"), model.providers.value.failedMessages.keys)
+            assertTrue(model.providers.value.updateFailed)
+            runtime.batch = { names -> batches += names; names.map { com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, "") } }
+            model.updateAllProviders(onlyFailed = true); runCurrent()
+            assertEquals(listOf("third"), batches.last())
+            assertTrue(model.providers.value.failedNames.isEmpty()); assertTrue(model.providers.value.failedMessages.isEmpty())
+            assertEquals("Providers 已全部更新", model.providers.value.updateMessage)
+        } finally { gate.complete(Unit); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun batchCompletingInBackgroundKeepsFailureForSameDetailAndRetryRecovers() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        val gate = CompletableDeferred<Unit>()
+        runtime.batch = { names -> gate.await(); names.map { com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, "request_bad_response") } }
+        try {
+            model.setForeground(true); model.show(1); runCurrent(); model.updateAllProviders(); runCurrent()
+            model.setForeground(false); runCurrent(); gate.complete(Unit); runCurrent()
+            assertEquals(setOf("http"), model.providers.value.failedNames)
+            assertTrue(model.providers.value.updatingNames.isEmpty()); assertNull(model.providers.value.providers)
+            model.setForeground(true); runCurrent()
+            assertEquals(setOf("http"), model.providers.value.failedNames)
+            runtime.batch = { names -> names.map { com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, "") } }
+            model.updateAllProviders(onlyFailed = true); runCurrent()
+            assertFalse(model.providers.value.updateFailed); assertTrue(model.providers.value.failedNames.isEmpty())
+        } finally { gate.complete(Unit); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun failedBatchCannotPublishAfterSwitchingAwayAndBackToSameId() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        val gate = CompletableDeferred<Unit>()
+        runtime.batch = { names -> withContext(NonCancellable) { gate.await() }; names.map {
+            com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, "request_bad_response") } }
+        try {
+            model.setForeground(true); model.show(1); runCurrent(); model.updateAllProviders(); runCurrent()
+            model.show(2); runCurrent(); model.show(1); runCurrent(); gate.complete(Unit); runCurrent()
+            assertTrue(model.providers.value.failedNames.isEmpty()); assertNull(model.providers.value.updateMessage)
+            assertTrue(model.providers.value.updatingNames.isEmpty())
+        } finally { gate.complete(Unit); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun batchTimeoutAndUnknownCodesAreSafeFailuresAndReleaseRetryGate() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            runtime.batch = { withTimeout(100) { awaitCancellation() } }
+            model.updateAllProviders(); runCurrent(); advanceTimeBy(100); runCurrent()
+            assertEquals("更新超时，请重试", model.providers.value.failedMessages["http"])
+            assertTrue(model.providers.value.updatingNames.isEmpty())
+            runtime.batch = { names -> names.map { com.lonnnnnng.flclash.core.CoreProviderUpdateResult(it, "fixture_secret") } }
+            model.updateAllProviders(onlyFailed = true); runCurrent()
+            assertEquals("更新失败，请稍后重试", model.providers.value.failedMessages["http"])
+            assertFalse(model.providers.value.toString().contains("fixture_secret"))
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
     @Test fun providerDraftKeepsInputOnFailureAndRejectsOldPickerAndLateRead() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)

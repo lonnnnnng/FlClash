@@ -1,0 +1,2342 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "scope": "todo item 5: partial Provider failure recovery, HTTP/File/Inline Rule sources and public HTTPS rule attribution; inline Proxy core expansion",
+  "status": {
+    "partialFailureRecovery": "VERIFIED_IN_SCOPE",
+    "representativeRuleVehiclesAndTraffic": "VERIFIED_IN_SCOPE",
+    "inlineProxyExpansion": "VERIFIED_IN_SCOPE",
+    "allProxyProtocolTraffic": "NOT_CLAIMED",
+    "overallFlutterParity": "PARTIAL",
+    "nextTodoItem": 6
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "settings": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    }
+  },
+  "implementation": {
+    "production": [
+      "Keep per-item failure reasons across polling/background and remove only recovered item",
+      "Reject stale update publication after closing/switching detail, including returning to same ID",
+      "Map timeout and safe fixed error messages; release update busy gate",
+      "Apply managed resources only after a successful sync and retain separate download/apply errors"
+    ],
+    "upstreamReference": [
+      "lib/views/proxies/providers.dart:34-68",
+      "lib/views/dashboard/widgets/profile_detail.dart:106-122"
+    ],
+    "testFixture": "Formal MainActivity/ViewModel/runtime/Mihomo; unchanged original 1.yaml temporary FILE copy with formal bound script projection",
+    "faultInjection": "On-device loopback HTTP server: one successful control, HTTP503 and HTTP200 missing YAML payload; actual Mihomo downloader/parser/cache and UI retry used",
+    "traffic": "Phone Wi-Fi -> local SOCKS -> public www.baidu.com:443, HTTPS hostname validation, HTTP200 and at least one response body byte, same socket source port plus destination443, exact RuleSet/provider and DIRECT chain",
+    "projection": "Only target RULE-SET then MATCH; sniffer disabled in test script to isolate literal IPv4 matching; source and user settings unchanged",
+    "runtimePreservation": "Every script apply advances actual core epoch; profileInputsApplied true; source signature/current selection/pure-proxy runningSince remain unchanged"
+  },
+  "builds": {
+    "build": "build9",
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon --stacktrace -Ptarget-platform=android-arm64",
+    "log": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9.log",
+      "sha256": "30f5d6df93205d5e632de6dc3e584ce899beadf81ea56cda6e7f63c04436426e",
+      "bytes": 24006
+    },
+    "incremental": true,
+    "counts": {
+      "app": {
+        "tests": 485,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 196,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "lintDebug": {
+        "Error": 0,
+        "Warning": 66,
+        "Hint": 10
+      },
+      "lintRelease": {
+        "Error": 0,
+        "Warning": 66,
+        "Hint": 9
+      }
+    },
+    "apks": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "1b251b6d0a329f5db575ed61e169d2f25d82968df02ece112dc33f2253f9adcc",
+        "bytes": 90682722,
+        "abis": [
+          "arm64-v8a"
+        ]
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "30a49fde246c5269aab62c3c19886aac54f87c632aa6397fc59ae4e0723b9c48",
+        "bytes": 3407724,
+        "abis": []
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+        "sha256": "b9753afeaf14848131078c2569f6836fe85ea96a3ee1fad6126a19297662d9bd",
+        "bytes": 48182236,
+        "abis": [
+          "arm64-v8a"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/ProviderRecoveryHitsInstrumentedTest.kt",
+        "sha256": "2f44278fb9e37a850faa79282c31b25b88f6fe9ba645cd8c77510910c3ad9267",
+        "bytes": 34651
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/ProfileStatisticsViewModel.kt",
+        "sha256": "925f8bafb1c02f3688c0cdb1c2d820f04c63a50324850a299358f61194a409b2",
+        "bytes": 27529
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/ProfileProvidersPanel.kt",
+        "sha256": "46f0f2d424e2e3338881e3101c6ca44a450ebc7bec7d3df0ab9103612b6c8811",
+        "bytes": 8356
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/ProfileStatisticsViewModelTest.kt",
+        "sha256": "0749f465f425eb2a97605e85ea658c56c1242686d04ab058b8a5ae3fa63c50c9",
+        "bytes": 29329
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/CoreRuntimeManagerTest.kt",
+        "sha256": "8320bc05c55eb518562da739d4939ac6103339383eb90ed718e831a2c83fd2ea",
+        "bytes": 140285
+      }
+    ],
+    "frozenChecks": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/CoreRuntimeManagerTest.kt",
+        "sha256": "8320bc05c55eb518562da739d4939ac6103339383eb90ed718e831a2c83fd2ea",
+        "bytes": 140285
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/ProfileProvidersPanel.kt",
+        "sha256": "46f0f2d424e2e3338881e3101c6ca44a450ebc7bec7d3df0ab9103612b6c8811",
+        "bytes": 8356
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/ProfileStatisticsViewModel.kt",
+        "sha256": "925f8bafb1c02f3688c0cdb1c2d820f04c63a50324850a299358f61194a409b2",
+        "bytes": 27529
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/ProfileStatisticsViewModelTest.kt",
+        "sha256": "0749f465f425eb2a97605e85ea658c56c1242686d04ab058b8a5ae3fa63c50c9",
+        "bytes": 29329
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/ProviderRecoveryHitsInstrumentedTest.kt",
+        "sha256": "2f44278fb9e37a850faa79282c31b25b88f6fe9ba645cd8c77510910c3ad9267",
+        "bytes": 34651
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ApplicationSettingsBackupTest.xml",
+        "sha256": "ce788d24653ddfa40dc3bd97315f508b2cd1b2548c385b8c83b5f4b5ff29f903",
+        "bytes": 846
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.CustomProfileImportTest.xml",
+        "sha256": "c212d4da062a8419d435b75d089e9778dd3408ec1787858d1049f9c0fcbbaf56",
+        "bytes": 943
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.CustomRuleDraftTest.xml",
+        "sha256": "0d177d82b09d82e37d7fa48359420b3ecb6f355c795a6b63ae37853f42000f8b",
+        "bytes": 1413
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.DeepLinkImportTest.xml",
+        "sha256": "e587e1b6b86748a42e8e7cc6805ce228ece958b98e2b269a3da3330110782d67",
+        "bytes": 1328
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.FilterPresetsTest.xml",
+        "sha256": "7732ddc0d27640d0b888b4a666f22b9d9b5e8ccd62ef80f8725a4c6045ae80a1",
+        "bytes": 986
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.HttpRequestPolicyTest.xml",
+        "sha256": "f77ab56da85ccb16b003cd1334ff291c0733741b3a2d207e2b97eec52b0c855c",
+        "bytes": 667
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.IconRecommendationsTest.xml",
+        "sha256": "959471e567e0ab3190bdcce42fcae2d3091a6b4090015ae9c8dde3914acf63fa",
+        "bytes": 892
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.IconSetCodecTest.xml",
+        "sha256": "b8d63f130b8bb99f206870a2dbd3ea6942108925c1718c31e6cdcbc67521a694",
+        "bytes": 781
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.IpInformationRepositoryTest.xml",
+        "sha256": "eef096df6127d6eb6ab7a03f73bcf2a70fd3a9bf178e17e5484b0d41415509d0",
+        "bytes": 996
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.IpInformationTest.xml",
+        "sha256": "6330b662a71fff83ff26f3bf8ca1c471108e209981ab40647f05ceda26f7305a",
+        "bytes": 1002
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.LocalProfileFileWriteTest.xml",
+        "sha256": "e78634cf51e139e84f7344fa4170801e8b06b72097838b9064b7248e3e0ec2e6",
+        "bytes": 1886
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.LocalProxiesTest.xml",
+        "sha256": "7ec1e540487e8a1080e800bc2f9125f84f116916240f19016b1275c3280583eb",
+        "bytes": 1531
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.LocalProxyAdditionTest.xml",
+        "sha256": "1324e7908107441fd3df28fe7407c2e5783254e07651114485e6737d13703951",
+        "bytes": 987
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.LocalProxyLinkEditTest.xml",
+        "sha256": "ca0755dadd1f581d3034e86e9675b29bef8174dd4dc80f40c72bb0d6e084c9b6",
+        "bytes": 1331
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.OnDemandSsidTrackerTest.xml",
+        "sha256": "1ee65c4fb6af64808457a0265f8f02e43c412971ccc05153337c0efeaf113513",
+        "bytes": 805
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileContentDecoderTest.xml",
+        "sha256": "a968ca6c8e04a2c0d9428a48ee53d5c36df1b0a2f69c608f5def057e195af434",
+        "bytes": 1517
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileDialerEditorTest.xml",
+        "sha256": "59bc1b0a15629e61d4753da192419adef45a378b22949845f12510db641a8fe5",
+        "bytes": 964
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileDocumentTest.xml",
+        "sha256": "89bd4f4e223f02c07e921bb1f17675426cd57e0a3144c1af4921f498dbff800d",
+        "bytes": 508
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileExportTest.xml",
+        "sha256": "cdd44614cf8babd539dba22a083a1efa92682b93debf6a249d60fe8bd9b3c6fb",
+        "bytes": 813
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileMorePatchTest.xml",
+        "sha256": "64066523dda750da07ae74115e0094543f55bb1813f7cab371fa0767e93709c0",
+        "bytes": 810
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileProvidersEditorTest.xml",
+        "sha256": "3a6f719354dc45248884f018225b8feea46a0665512ea6a38b5288a08d6bb83d",
+        "bytes": 1463
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileProxiesEditorTest.xml",
+        "sha256": "1003e27c721d33add6580382c30cc4dc556de08731ad4d62ea605d9cd659d03b",
+        "bytes": 1448
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileProxyGroupsEditorTest.xml",
+        "sha256": "7a3c8a1e380528db0dc6b59cc013f5a73a4a1c20ceed8839c939bc6cf1180f46",
+        "bytes": 1142
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileProxyResourcesTest.xml",
+        "sha256": "88df95b5581faff97c659e585038e96b36c0d8ff1866cdaa95e522d0e195d58d",
+        "bytes": 943
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileRulesEditorTest.xml",
+        "sha256": "a24f5ec88aa31b7716037f1aeb07624318626a90cc1f336ddecbbf43596f49db",
+        "bytes": 782
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileSelectionTest.xml",
+        "sha256": "3814eadb8207324fefb8bbe53360893c67399d372a3482a880de4bd08ef989b5",
+        "bytes": 795
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProfileTest.xml",
+        "sha256": "72bb0969ba66c4e683f438f6d68fadd530eeb0557fc3e2bac1a38483a5d80af5",
+        "bytes": 994
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProviderEditingTest.xml",
+        "sha256": "4357e16b49559be1d239ec654101324f42ed43bcbc6ae91cf13b368712e1c779",
+        "bytes": 1181
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProxyGroupDraftsTest.xml",
+        "sha256": "8e936ce119a630984ce517c10bf3b501fcfe6ad16e45ccdc561ae574fec2c4af",
+        "bytes": 1914
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ProxyGroupIssuesTest.xml",
+        "sha256": "a588c2c88e34cd92106d877ea403462e9b734508e06a0eaeba8b2082d0370097",
+        "bytes": 1107
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.RuleResourcesTest.xml",
+        "sha256": "d0e454323ba7faccac1ec2a53600e9eb6c5c5a4160aca5dae0f92ac9b28040ed",
+        "bytes": 937
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ScriptImportTest.xml",
+        "sha256": "6021bcb6f03ef8216b23b2a9d34658ce68adba4f75daffc5d6455c0c42126e98",
+        "bytes": 623
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.ServiceExitRepositoryTest.xml",
+        "sha256": "78a4200252a2ce928ebe544d2464143db1728fecfb9bdbcd25dbeac67634fcc3",
+        "bytes": 803
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.SubscriptionAutoUpdateTest.xml",
+        "sha256": "001079dd8faaa40a812cbe5d5b1d732c197c561e517798b6658e910b1d4133a3",
+        "bytes": 772
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.SubscriptionClientTest.xml",
+        "sha256": "8b6353e9c654e205a3bb823130a59c90ed23cbd36378f6606fb4289892ef1f49",
+        "bytes": 503
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.data.WebDavClientTest.xml",
+        "sha256": "8864216954075dfefb4f6e172259eb238a35727f748bb60c20952c8405eb253a",
+        "bytes": 1193
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.AccessControlViewModelTest.xml",
+        "sha256": "5fe2672e29a2e387a1215918ac8e00999d6ded4f431d65db44fe1fa6a800cdae",
+        "bytes": 1356
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.AppMenuMotionTest.xml",
+        "sha256": "8f5673fb388454c30ba978bf362addf70601fa877bc1a9b40868a38efa6f073f",
+        "bytes": 1617
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.AppMenuPositionerTest.xml",
+        "sha256": "ddf3c4a402e41dc1057344f1f8110112dbe149c84ede8b6c6335c9ac027b1a40",
+        "bytes": 1046
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.AppSurfacePhysicsTest.xml",
+        "sha256": "3706a06312764e633a723bd67de75f1277f1c44c21d0a661abb8d5104eb1ba73",
+        "bytes": 904
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ConnectionDetailFormattingTest.xml",
+        "sha256": "c5988304a2be597b32c99550d80f7b3e79216175ef821050801ff88b9ece5091",
+        "bytes": 995
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest.xml",
+        "sha256": "2d7eaebd98dd7a026d96d602a9b6346085850b018168ef8171936d33c8a49f4c",
+        "bytes": 1630
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.CustomProfileSummaryTest.xml",
+        "sha256": "7fab26fba7d2730c9d1c33713a7a85668a11af88b72383cc45331ffedfe7871f",
+        "bytes": 959
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.DashboardDragTest.xml",
+        "sha256": "a8e45e80d4bacae2dac7348e5e9732fed122435cd6aa3d143221ba9be7b339a5",
+        "bytes": 768
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.DashboardLayoutTest.xml",
+        "sha256": "334b234e55d07710b138e0b81a98d4c0a3a2a527f3b0a6700f0d472461d50121",
+        "bytes": 1931
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.DashboardTelemetryTest.xml",
+        "sha256": "975f37a60eefc188744887c6dd6772210ca663caff63c83bd9490070463db92a",
+        "bytes": 1004
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.EditorSaveableStateTest.xml",
+        "sha256": "8485e176065b27b6d082803b70d26b0c14d4f0ec01174ee28000c0ee7c432bf0",
+        "bytes": 974
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.GlobalRulesControllerTest.xml",
+        "sha256": "332c2bddb01dae16f133a73858ac3eb74df6bd520789a843df3fbb71bc9c79aa",
+        "bytes": 799
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.IntranetIpViewModelTest.xml",
+        "sha256": "4e463b56e7006ebbe83bef994b3e361258c3f94eab6872126cc9bd8253c0243c",
+        "bytes": 1285
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.LocalProxyDraftRecoveryTest.xml",
+        "sha256": "a48a4029eb930383a2fba2e5b62f9a8ed594b72187d04f9f4df4db90cdbd24a1",
+        "bytes": 1839
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.MainPageScaffoldTest.xml",
+        "sha256": "76f04b539da4a4522c4bef6cfeaeeae89d823e82999034e8c63eeda701ad302c",
+        "bytes": 675
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.MainViewModelTelemetryTest.xml",
+        "sha256": "7e4f00528f80a3280246c6227742d651919634d46df72a8cbf4dafb02cb3eb59",
+        "bytes": 844
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.MainViewModelTest.xml",
+        "sha256": "72cfedec1c2b7363c2ffea39099b8cf353ff87a929201c4c234659c26b652c0c",
+        "bytes": 3293
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.MemoryViewModelTest.xml",
+        "sha256": "69d47bcaf0f26a8455f69d649b8198e85d32396a7894896b64816d8be8626952",
+        "bytes": 1346
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.OutboundIpViewModelTest.xml",
+        "sha256": "d85b60f43bbb0b11feec385df7ced0d31b822e4b92b0bb2a5dadc4c0faa62e4c",
+        "bytes": 1259
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ProfileExtensionControllerTest.xml",
+        "sha256": "bf0929b43a9593f325255c66f9c81545877776ffc2582413a9da3eb0d7981c5b",
+        "bytes": 1184
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ProfileFileImportControllerTest.xml",
+        "sha256": "1a4de62e8c4fec0c73e3e19acd925aa6748ca94d26fbd77de32138acdf35fbe6",
+        "bytes": 1292
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ProfileMoreFieldsTest.xml",
+        "sha256": "a09ffad41f5f0f1c1ed417c04b87b7faef7acbff54386bd55dce5edfe1abf8cd",
+        "bytes": 1260
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ProfileSharingViewModelTest.xml",
+        "sha256": "a2b617a0820bb42173d48f102d80335029130d5d0483da674ca11214ab5024c1",
+        "bytes": 1885
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ProfileStatisticsViewModelTest.xml",
+        "sha256": "53db608a1db86c83b8732337c7e941427147e837d47fce9b5c4614e55d9cbf49",
+        "bytes": 3856
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ProfileUrlImportTest.xml",
+        "sha256": "cfad1002ba9b5a92791dfb1718998463e0401ba50fba66b45986382975c13cc6",
+        "bytes": 771
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ProfilesViewModelTest.xml",
+        "sha256": "2f2fb1ad7329b1c61a70de92681f2ec11adc7e734f63fe1a3806a006832a257c",
+        "bytes": 13642
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ProxyGroupsViewModelTest.xml",
+        "sha256": "7928ba00ca836c69caa40279bff92dbfbbcef6d60a84fdcbe59bb3ad044659b0",
+        "bytes": 5755
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ResourceUrlImportControllerTest.xml",
+        "sha256": "66a603ad7f08c4484cc784b6639a27d2ac55df0c7194d3918543f2beb2f12592",
+        "bytes": 829
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModelTest.xml",
+        "sha256": "1166a925c85b16389b3f1ab8dcedd8d2e7835d0053fa65c88a51b8d35d15f2b8",
+        "bytes": 879
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ScriptsViewModelTest.xml",
+        "sha256": "e753ba977492f38fd35059ed48b1f874801127e12ee186f6d92a5def0abfe09b",
+        "bytes": 1792
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/app/TEST-com.lonnnnnng.flclash.ui.ServiceStatusViewModelTest.xml",
+        "sha256": "a8942063b2ef1ba616d0c54f3a4b553007fb00f8a4524a34050c1ecc59e65c68",
+        "bytes": 3749
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/common/TEST-com.lonnnnnng.flclash.common.BroadcastLeaseTest.xml",
+        "sha256": "606a80b1a6aae9fd37f857bd57c35158cbd03204bf1a6ab611dcfb455326611f",
+        "bytes": 1307
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/common/TEST-com.lonnnnnng.flclash.common.EnumsTest.xml",
+        "sha256": "cc7639d2e5dc4405b1cadfeed107c3a8e6a6932db6920cb579ebd3776f592788",
+        "bytes": 1049
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/common/TEST-com.lonnnnnng.flclash.common.PendingCallbackTest.xml",
+        "sha256": "8651a94e8dc5490568e19a91afc3c6fbd90156fbe655774ef7cff1d689feebb5",
+        "bytes": 1613
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/common/TEST-com.lonnnnnng.flclash.common.RunIntentArbiterTest.xml",
+        "sha256": "226b0d451e7c9c8a6d24717b59e3fc4918de0858302c6ee924fefc69f81bc93e",
+        "bytes": 1745
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/core/TEST-com.lonnnnnng.flclash.core.CoreBridgeParsingTest.xml",
+        "sha256": "ed43fc79351981139e36741e4d10f449be3ab9154f8479dedc380f7adb1f58a1",
+        "bytes": 6076
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/lint-results-debug.xml",
+        "sha256": "e7ded0d72c527a987f3bca83bc76c9efbe3a103564dd1ec09b7f6a6069a18024",
+        "bytes": 85144
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/lint-results-release.xml",
+        "sha256": "8d10ebe3fd68f6349a715d9f38554b718792af0b18346e7257853f191c504e7e",
+        "bytes": 83939
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml",
+        "sha256": "b3d1e4ea7dbb5b0ef62d8d0ff7e4b2718c1e9d4ab3e42726764bacc0a34ec275",
+        "bytes": 17417
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.DefaultVpnOptionsProviderTest.xml",
+        "sha256": "d351f5f727bd0184e135c44dd8aa068ce22de2b80e3b25ba407112062c5dd355",
+        "bytes": 1170
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.GeneralSettingsTest.xml",
+        "sha256": "4baea997eca2d924b3b2bb35cd3ec950cdc8b13cebe1eccb9199896849ef3cdc",
+        "bytes": 957
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.GeoResourceSettingsTest.xml",
+        "sha256": "5210243f78b9b810c0cdde37b8a3c70061a34ef9bae11f248642d034b5b67c3d",
+        "bytes": 692
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.GlobalDnsSettingsTest.xml",
+        "sha256": "d698ca6764b9e7df665cabdb9033e1d4c49f74fe521d0aca1c7b5b3c6856374f",
+        "bytes": 952
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.NetworkSettingsTest.xml",
+        "sha256": "f26d3965be38ac4bbf03e669f17971346874198231fa2a5424249df8e7e5f7a4",
+        "bytes": 1153
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.OnDemandSettingsTest.xml",
+        "sha256": "52def282dc9bafd2e1300aa679971f5fcafc05e24318a20d8e10064144aca2da",
+        "bytes": 654
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.ProfileDnsBaselineTest.xml",
+        "sha256": "be50dd5b6b54f758102c731616b1c5d3a313af5a8ed2a7b3a4c87bb5a2db4bc6",
+        "bytes": 1129
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.ProfileExtensionTest.xml",
+        "sha256": "5dd97579a1af2d8e45fe191d12f4aba6b445c721799316f1d829f16b3b28ce61",
+        "bytes": 1159
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.ProfileMoreOverridesTest.xml",
+        "sha256": "1681a149b5aee5c51ed8d7c4d6dabc8c8af5e10ac2ebf5d835380f2eaa953015",
+        "bytes": 1129
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.ProfileProviderOverridesTest.xml",
+        "sha256": "83786796c35166b9fab1eab5a440a9c6b106c3ac2ccb38db9e28fb7350ea03c2",
+        "bytes": 2552
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.ProfileScriptTest.xml",
+        "sha256": "0a59d40693fa5c73e308f58b1495d0e0727448ce2ea96d5d48d8fa4016d104b2",
+        "bytes": 1545
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.ProfileStatisticsTest.xml",
+        "sha256": "ccce58d3035e3f0d2d885ea460bf3f835538ff8c44244423ece0a8e1d1797868",
+        "bytes": 651
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.RuntimeDiagnosticsTest.xml",
+        "sha256": "b1e99be03144b0cf2eb2d06c8a56f9270866bea6385970dc863ba3c662f74786",
+        "bytes": 959
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.ServiceConfigTest.xml",
+        "sha256": "e21e0b2b3af4bf2332a3a22fa3a1ee33f072892a2e9fe587a49f7471a48b5af1",
+        "bytes": 1077
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.models.RouteAddressTest.xml",
+        "sha256": "518391044e091015f4e273d6d4d02b6f01308d178a20ec19eee920b94039e980",
+        "bytes": 942
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.models.ToCIDRTest.xml",
+        "sha256": "622af74ea8dee0c0de2490ae5e2cf0b68a1e639baa8cf1feda75af61ffd4ae37",
+        "bytes": 1456
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.models.TrafficTest.xml",
+        "sha256": "6fd9bf51a73c85958ef081f352fb3f20f4a51ddb50b90379e2506e8e9707d219",
+        "bytes": 1118
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-evidence/service/TEST-com.lonnnnnng.flclash.service.models.TunOptionsTest.xml",
+        "sha256": "6959de2495263a6548e8904fdf7f0d8877f242379052d3d532f274a4fccb6d51",
+        "bytes": 782
+      }
+    ]
+  },
+  "installation": {
+    "epochMs": 1793854570998,
+    "packages": [
+      {
+        "package": "com.lonnnnnng.flclash",
+        "source": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+        "installedPath": "/data/app/~~qqNcK71yDHQ4eoE6ofsWrg==/com.lonnnnnng.flclash-SzhuY8BQbr6zHyfpzMIg5A==/base.apk",
+        "sha256": "1b251b6d0a329f5db575ed61e169d2f25d82968df02ece112dc33f2253f9adcc",
+        "pulledApk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-installed-app.apk",
+        "pulledSha256": "1b251b6d0a329f5db575ed61e169d2f25d82968df02ece112dc33f2253f9adcc",
+        "installResult": "Performing Streamed Install\nSuccess"
+      },
+      {
+        "package": "com.lonnnnnng.flclash.test",
+        "source": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "installedPath": "/data/app/~~7XH5MKoSriSqgZIVCXNglQ==/com.lonnnnnng.flclash.test-6ASDyL69m1eUeALmbr2V_g==/base.apk",
+        "sha256": "30a49fde246c5269aab62c3c19886aac54f87c632aa6397fc59ae4e0723b9c48",
+        "pulledApk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/build9-installed-test.apk",
+        "pulledSha256": "30a49fde246c5269aab62c3c19886aac54f87c632aa6397fc59ae4e0723b9c48",
+        "installResult": "Performing Streamed Install\nSuccess"
+      }
+    ]
+  },
+  "results": {
+    "final": {
+      "summary": {
+        "requested": [
+          "com.lonnnnnng.flclash.ui.ProviderRecoveryHitsInstrumentedTest#realBatchPartialFailureKeepsOldCacheAndRetriesOnlyRemaining",
+          "com.lonnnnnng.flclash.ui.ProviderRecoveryHitsInstrumentedTest#httpFileAndInlineRulesMatchPublicHttpsTraffic",
+          "com.lonnnnnng.flclash.ui.ProviderRecoveryHitsInstrumentedTest#originalDomainMrsMatchesPublicHttpsResponse",
+          "com.lonnnnnng.flclash.ui.ProviderRecoveryHitsInstrumentedTest#inlineProxyProviderExpandsOriginalNodesInRunningCore"
+        ],
+        "results": [
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderRecoveryHitsInstrumentedTest#httpFileAndInlineRulesMatchPublicHttpsTraffic",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderRecoveryHitsInstrumentedTest#inlineProxyProviderExpandsOriginalNodesInRunningCore",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderRecoveryHitsInstrumentedTest#realBatchPartialFailureKeepsOldCacheAndRetriesOnlyRemaining",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderRecoveryHitsInstrumentedTest#originalDomainMrsMatchesPublicHttpsResponse",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          }
+        ],
+        "images": [
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7-provider_batch_partial_failure.png",
+            "sha256": "1b8b603e061fae6d72fde7af53a9838a5a14962d2aa4945d0cb049f0fe35419f",
+            "bytes": 162984
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7-provider_batch_single_recovered.png",
+            "sha256": "3c1191d60bd6f4e627a88060d877ce19e60ed2229cb7c548087a507fbd5e544d",
+            "bytes": 161751
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7-provider_batch_all_recovered.png",
+            "sha256": "403fbf0c4bc4a52f63d406fecce10001e52f2f3d048170bfad18f8d497e76f49",
+            "bytes": 163060
+          }
+        ],
+        "exitCode": 0,
+        "case": "rules-yaml",
+        "seconds": 106.215,
+        "log": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7.log"
+      },
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7.json",
+        "sha256": "ecfc43ec44255fde7c4bccf76bfab300843cdb8ec4a8e39e7ee269c1bec8840e",
+        "bytes": 2382
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7.log",
+        "sha256": "9e8f3b42ab5a0954dbf6fa75df96df8b42e209a6f22b701c5875c1d900b8038a",
+        "bytes": 24793
+      }
+    },
+    "regression": {
+      "summary": {
+        "requested": [
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#providerDetailsSupportReadOnlyUpdatesLoadingFailureRetryAndEmpty",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#providerDetailsCaptureThemesWithActionsReachable",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#profileStatisticsShowsLoadingFailureRetryAndRealZeroCounts",
+          "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#profileStatisticsCapturesBothThemesAndKeepsProfileActionsReachable",
+          "com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest#providerMenusBatchRetryAndSubscriptionAreReachableInBothThemes",
+          "com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest#providerEditorProtectsDraftShowsFailureAndMrsIsReadOnly",
+          "com.lonnnnnng.flclash.ui.ProviderUpdateRecoveryInstrumentedTest#singleUpdateTimeoutStopsSpinnerAndRetrySucceedsInSamePage",
+          "com.lonnnnnng.flclash.ui.ProviderHostInstrumentedTest#actualProfileProviderOptionsSaveInPlaceSurviveRecreationAndKeepSource",
+          "com.lonnnnnng.flclash.data.ProviderPersistenceInstrumentedTest#metadataOnlySavesKeepBytesMtimeAndOtherOverridesAndRollbackLateGuards",
+          "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+          "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+          "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+          "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningProviderOptionsMoreAndSideLoadReachCoreWithoutChangingSource",
+          "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningAuthorizedProviderBatchUpdatesOnlyExistingResourcesAndKeepsSession"
+        ],
+        "results": [
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#providerDetailsSupportReadOnlyUpdatesLoadingFailureRetryAndEmpty",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#providerDetailsCaptureThemesWithActionsReachable",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#profileStatisticsCapturesBothThemesAndKeepsProfileActionsReachable",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#profileStatisticsShowsLoadingFailureRetryAndRealZeroCounts",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest#providerEditorProtectsDraftShowsFailureAndMrsIsReadOnly",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest#providerMenusBatchRetryAndSubscriptionAreReachableInBothThemes",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderUpdateRecoveryInstrumentedTest#singleUpdateTimeoutStopsSpinnerAndRetrySucceedsInSamePage",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderHostInstrumentedTest#actualProfileProviderOptionsSaveInPlaceSurviveRecreationAndKeepSource",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.data.ProviderPersistenceInstrumentedTest#metadataOnlySavesKeepBytesMtimeAndOtherOverridesAndRollbackLateGuards",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningAuthorizedProviderBatchUpdatesOnlyExistingResourcesAndKeepsSession",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          },
+          {
+            "method": "com.lonnnnnng.flclash.ui.AdvancedRuntimeHostInstrumentedTest#runningProviderOptionsMoreAndSideLoadReachCoreWithoutChangingSource",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          }
+        ],
+        "images": [
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-profile_providers_dark.png",
+            "sha256": "74c4fea1f8c681cf33f68327c891993ca4945fc36891a2db47c90b1c504016b6",
+            "bytes": 148629
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-profile_providers_light.png",
+            "sha256": "3d27705432a2b87567c8c7d29ac376567486bb7f086b1cb80120ee070da24b55",
+            "bytes": 145024
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-profile_statistics_dark.png",
+            "sha256": "70ebf1cf5845318b3c57d36982ee9589ec7ab1a83a2f7fe40ab7ab7353bcabd0",
+            "bytes": 114176
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-profile_statistics_light.png",
+            "sha256": "6463f133121bdbbe65f8d9231e5a27ec37fdbabbce680a76c5a6b9c9d06a6a47",
+            "bytes": 110864
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_editor_failure.png",
+            "sha256": "9466d89fed2986051cab02951bd7bafe3637982fa7c92f1b34d015eebfb38bfc",
+            "bytes": 56639
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_editor_exit.png",
+            "sha256": "1d9662599c57f8cc4ae4c9282c2cb8e768b097d5da08d033d86ace95b764047b",
+            "bytes": 89778
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_mrs_preview.png",
+            "sha256": "21a04593c22066f0393ecea9a292cb3c9ae263de0bfeb71fd95eaee527ded748",
+            "bytes": 43710
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_menu.png",
+            "sha256": "3fcf4e0d3a84adde15d4fd4262b8e8b0a6d6f7adf58637be281066b7fca04435",
+            "bytes": 76829
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_subscription.png",
+            "sha256": "a42d1cf1902257e5291da9d75f433c5a6f83b5d8281312bef906f4c2b6c7e91a",
+            "bytes": 92282
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_menu_dark.png",
+            "sha256": "d0540e6067cbc7b6db84a31d4d68924a201c20f41bb31d8019ec56f03ce795ce",
+            "bytes": 78074
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_update_timeout.png",
+            "sha256": "5aa7f54a5ebc3a1cf7524c0e1c5dafb00fd9b924ee2909d7219ceb896014b8f8",
+            "bytes": 67639
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_update_recovered.png",
+            "sha256": "c64243ba5951b459d345fec3ae3e840a5a7738d5a7de6b6055bb5df566294210",
+            "bytes": 60493
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_option_picker_false.png",
+            "sha256": "1192005740fda8b79d6787629558f688b342b5d1efb583d8f242c8052b3e1639",
+            "bytes": 81954
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_ip_picker_false.png",
+            "sha256": "a7eec95787127b1d73fbd13afcc4a940d552170a38fe693d4ceaff436b1bb1ce",
+            "bytes": 41643
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_options_error_false.png",
+            "sha256": "822bd77476a1f863c49a8d0f3fb6572dee4542419f0c3c1102d4383a43003244",
+            "bytes": 158672
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_option_picker_true.png",
+            "sha256": "db383fc3cd0db731e6e7cf707840996e939b633daf877e98688f93303c49e6e7",
+            "bytes": 82506
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_ip_picker_true.png",
+            "sha256": "c9454b332dec4a74a8646544c4e7bfd0166f005ffff2d5a6a211f55582f8087d",
+            "bytes": 41990
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_options_error_true.png",
+            "sha256": "604c7d55ba60646f165e96edddb0b27b66ef5d15b13ef24ef12aabedc6c8f91b",
+            "bytes": 158938
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_filter_members.png",
+            "sha256": "0e3943ae5ff0f081ba2c120726075d65a65dc7ed07c3f646f7a8388cb395addc",
+            "bytes": 86444
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_reference_missing.png",
+            "sha256": "78df8270e20d5616d977bd751b0983f240f7f9092d052c64b94945065dd26032",
+            "bytes": 54419
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_reference_bound.png",
+            "sha256": "e968ef9ae38e852f44b0c0838206bfe1f19ca198f3d39303b880f4cb072a34ec",
+            "bytes": 36366
+          },
+          {
+            "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_quick_yaml_error.png",
+            "sha256": "8e06b918748d725d06705b85a48704fd8b20d78a75b251334889023215c87e7f",
+            "bytes": 143478
+          }
+        ],
+        "exitCode": 0,
+        "case": "rules-yaml",
+        "seconds": 102.765,
+        "log": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1.log"
+      },
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1.json",
+        "sha256": "d15f5a2572ebfbaba560b60a5103acfb0ae7d7e20c97bb41e1c7139f9f601a9d",
+        "bytes": 11111
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1.log",
+        "sha256": "a4ce964068c23bef21dd510e4c3b69b133c7d642cb2050db36922a4c6c3ac410",
+        "bytes": 15932
+      }
+    },
+    "events": [
+      {
+        "case": "http-download",
+        "provider": "domain-yaml",
+        "before": 1793854595384,
+        "after": 1793854604382,
+        "count": 132,
+        "sha256": "cd4b526f5a17139c057cfbcf4554f0026e9360e81ea76d830027b8cfde4dd3dd"
+      },
+      {
+        "case": "http-download",
+        "provider": "domain-text",
+        "before": 1793854595392,
+        "after": 1793854603779,
+        "count": 132,
+        "sha256": "2530928bdfac8d8ff2b20515427846af81eb9c09ed88e89fb0a7d34ded6a63a3"
+      },
+      {
+        "case": "http-download",
+        "provider": "domain-mrs",
+        "before": 1793854595404,
+        "after": 1793854603680,
+        "count": 132,
+        "sha256": "10c578677c73c828707ac68b5900c3294f12e3f71c2e3013d6496d9df04223e9"
+      },
+      {
+        "case": "http-download",
+        "provider": "ipcidr-yaml",
+        "before": 1793854595416,
+        "after": 1793854603401,
+        "count": 9647,
+        "sha256": "78c373bf461699eb96059cbac0cb9570e56ef447cfff5f7c4b4d78dab0ad996e"
+      },
+      {
+        "case": "http-download",
+        "provider": "ipcidr-text",
+        "before": 1793854595424,
+        "after": 1793854603202,
+        "count": 9647,
+        "sha256": "ed70e5f50a6cce1e10326894a1d20a4e8f14a3ca7fda3a29747499fb0659b6fc"
+      },
+      {
+        "case": "http-download",
+        "provider": "ipcidr-mrs",
+        "before": 1793854595436,
+        "after": 1793854603179,
+        "count": 9647,
+        "sha256": "937a8a20e09657aae60296e0ac1bf9db03813d5d25826aff9f2102a2e78b0e05"
+      },
+      {
+        "case": "http-download",
+        "provider": "classical-yaml",
+        "before": 1793854595444,
+        "after": 1793854603151,
+        "count": 251,
+        "sha256": "178ccb2d030efb23039388ad62de8d20a7579620a1ce69389fd27eef97bda9db"
+      },
+      {
+        "case": "http-download",
+        "provider": "classical-text",
+        "before": 1793854595452,
+        "after": 1793854603167,
+        "count": 251,
+        "sha256": "ac49361bba37ccd12f46dff78885ef07218d9dc9deb254d71d1c0431a7eb921a"
+      },
+      {
+        "case": "rule-observation",
+        "provider": "domain-yaml",
+        "vehicle": "http",
+        "rule": "RuleSet",
+        "payload": "domain-yaml",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "http",
+        "behavior": "domain",
+        "format": "yaml",
+        "provider": "domain-yaml",
+        "rule": "RuleSet",
+        "rulePayload": "domain-yaml",
+        "connectionId": "7ae2154b-e3f0-4839-a25d-ddb8cb970761",
+        "sourcePort": 48040,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 473,
+        "download": 16033,
+        "epoch": 5
+      },
+      {
+        "case": "rule-observation",
+        "provider": "domain-text",
+        "vehicle": "http",
+        "rule": "RuleSet",
+        "payload": "domain-text",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "http",
+        "behavior": "domain",
+        "format": "text",
+        "provider": "domain-text",
+        "rule": "RuleSet",
+        "rulePayload": "domain-text",
+        "connectionId": "83d3eba9-eab2-4339-aa42-86b349559552",
+        "sourcePort": 48046,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 8426,
+        "epoch": 6
+      },
+      {
+        "case": "rule-observation",
+        "provider": "domain-mrs",
+        "vehicle": "http",
+        "rule": "RuleSet",
+        "payload": "domain-mrs",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "http",
+        "behavior": "domain",
+        "format": "mrs",
+        "provider": "domain-mrs",
+        "rule": "RuleSet",
+        "rulePayload": "domain-mrs",
+        "connectionId": "43421e8c-86b8-4968-82b4-549724c615b0",
+        "sourcePort": 48062,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 8862,
+        "epoch": 7
+      },
+      {
+        "case": "rule-observation",
+        "provider": "ipcidr-yaml",
+        "vehicle": "http",
+        "rule": "RuleSet",
+        "payload": "ipcidr-yaml",
+        "destinationIpSha256": "d66a7016ae65d84b6cf686812a2dbabcbda57c57c9ba273dc246239b552282f8"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "http",
+        "behavior": "ipcidr",
+        "format": "yaml",
+        "provider": "ipcidr-yaml",
+        "rule": "RuleSet",
+        "rulePayload": "ipcidr-yaml",
+        "connectionId": "76551116-0595-4427-b7f8-26e6394b75e1",
+        "sourcePort": 48078,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "system-DNS-literal-IPv4",
+        "upload": 398,
+        "download": 3742,
+        "epoch": 8
+      },
+      {
+        "case": "rule-observation",
+        "provider": "ipcidr-text",
+        "vehicle": "http",
+        "rule": "RuleSet",
+        "payload": "ipcidr-text",
+        "destinationIpSha256": "d66a7016ae65d84b6cf686812a2dbabcbda57c57c9ba273dc246239b552282f8"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "http",
+        "behavior": "ipcidr",
+        "format": "text",
+        "provider": "ipcidr-text",
+        "rule": "RuleSet",
+        "rulePayload": "ipcidr-text",
+        "connectionId": "3390e063-7a3d-4863-b270-c67230736fc7",
+        "sourcePort": 48090,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "system-DNS-literal-IPv4",
+        "upload": 398,
+        "download": 1355,
+        "epoch": 9
+      },
+      {
+        "case": "rule-observation",
+        "provider": "ipcidr-mrs",
+        "vehicle": "http",
+        "rule": "RuleSet",
+        "payload": "ipcidr-mrs",
+        "destinationIpSha256": "d66a7016ae65d84b6cf686812a2dbabcbda57c57c9ba273dc246239b552282f8"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "http",
+        "behavior": "ipcidr",
+        "format": "mrs",
+        "provider": "ipcidr-mrs",
+        "rule": "RuleSet",
+        "rulePayload": "ipcidr-mrs",
+        "connectionId": "0dd626bd-9409-48cc-bacf-8cae5da7ca9a",
+        "sourcePort": 52576,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "system-DNS-literal-IPv4",
+        "upload": 398,
+        "download": 5790,
+        "epoch": 10
+      },
+      {
+        "case": "rule-observation",
+        "provider": "classical-yaml",
+        "vehicle": "http",
+        "rule": "RuleSet",
+        "payload": "classical-yaml",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "http",
+        "behavior": "classical",
+        "format": "yaml",
+        "provider": "classical-yaml",
+        "rule": "RuleSet",
+        "rulePayload": "classical-yaml",
+        "connectionId": "a1eeb553-8775-4f30-8379-b87a7b749604",
+        "sourcePort": 52588,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 5354,
+        "epoch": 11
+      },
+      {
+        "case": "rule-observation",
+        "provider": "classical-text",
+        "vehicle": "http",
+        "rule": "RuleSet",
+        "payload": "classical-text",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "http",
+        "behavior": "classical",
+        "format": "text",
+        "provider": "classical-text",
+        "rule": "RuleSet",
+        "rulePayload": "classical-text",
+        "connectionId": "c94bbf2a-c7b7-4a32-b6c0-3f41434e0cc4",
+        "sourcePort": 52590,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 3742,
+        "epoch": 12
+      },
+      {
+        "case": "rule-observation",
+        "provider": "domain-yaml",
+        "vehicle": "file",
+        "rule": "RuleSet",
+        "payload": "domain-yaml",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "file",
+        "behavior": "domain",
+        "format": "yaml",
+        "provider": "domain-yaml",
+        "rule": "RuleSet",
+        "rulePayload": "domain-yaml",
+        "connectionId": "83cf8460-5c91-4c5b-b037-4b09cdcf4f3f",
+        "sourcePort": 52602,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 18485,
+        "epoch": 13
+      },
+      {
+        "case": "rule-observation",
+        "provider": "domain-text",
+        "vehicle": "file",
+        "rule": "RuleSet",
+        "payload": "domain-text",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "file",
+        "behavior": "domain",
+        "format": "text",
+        "provider": "domain-text",
+        "rule": "RuleSet",
+        "rulePayload": "domain-text",
+        "connectionId": "e1b6b511-ff15-454b-b62e-e1f2bf899323",
+        "sourcePort": 52616,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 7402,
+        "epoch": 14
+      },
+      {
+        "case": "rule-observation",
+        "provider": "domain-mrs",
+        "vehicle": "file",
+        "rule": "RuleSet",
+        "payload": "domain-mrs",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "file",
+        "behavior": "domain",
+        "format": "mrs",
+        "provider": "domain-mrs",
+        "rule": "RuleSet",
+        "rulePayload": "domain-mrs",
+        "connectionId": "1eb73499-53b4-431f-a255-ca521680be46",
+        "sourcePort": 53120,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 7402,
+        "epoch": 15
+      },
+      {
+        "case": "rule-observation",
+        "provider": "ipcidr-yaml",
+        "vehicle": "file",
+        "rule": "RuleSet",
+        "payload": "ipcidr-yaml",
+        "destinationIpSha256": "d66a7016ae65d84b6cf686812a2dbabcbda57c57c9ba273dc246239b552282f8"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "file",
+        "behavior": "ipcidr",
+        "format": "yaml",
+        "provider": "ipcidr-yaml",
+        "rule": "RuleSet",
+        "rulePayload": "ipcidr-yaml",
+        "connectionId": "f7eebd7a-b431-4b87-96c1-a62b20d94b60",
+        "sourcePort": 53134,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "system-DNS-literal-IPv4",
+        "upload": 398,
+        "download": 15219,
+        "epoch": 16
+      },
+      {
+        "case": "rule-observation",
+        "provider": "ipcidr-text",
+        "vehicle": "file",
+        "rule": "RuleSet",
+        "payload": "ipcidr-text",
+        "destinationIpSha256": "d66a7016ae65d84b6cf686812a2dbabcbda57c57c9ba273dc246239b552282f8"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "file",
+        "behavior": "ipcidr",
+        "format": "text",
+        "provider": "ipcidr-text",
+        "rule": "RuleSet",
+        "rulePayload": "ipcidr-text",
+        "connectionId": "d696a10e-f9a3-495d-ad49-4edb25baa0bb",
+        "sourcePort": 53138,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "system-DNS-literal-IPv4",
+        "upload": 398,
+        "download": 7402,
+        "epoch": 17
+      },
+      {
+        "case": "rule-observation",
+        "provider": "ipcidr-mrs",
+        "vehicle": "file",
+        "rule": "RuleSet",
+        "payload": "ipcidr-mrs",
+        "destinationIpSha256": "d66a7016ae65d84b6cf686812a2dbabcbda57c57c9ba273dc246239b552282f8"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "file",
+        "behavior": "ipcidr",
+        "format": "mrs",
+        "provider": "ipcidr-mrs",
+        "rule": "RuleSet",
+        "rulePayload": "ipcidr-mrs",
+        "connectionId": "0c52a484-2ab0-4ebb-b448-1c0e175e725e",
+        "sourcePort": 53154,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "system-DNS-literal-IPv4",
+        "upload": 398,
+        "download": 8426,
+        "epoch": 18
+      },
+      {
+        "case": "rule-observation",
+        "provider": "classical-yaml",
+        "vehicle": "file",
+        "rule": "RuleSet",
+        "payload": "classical-yaml",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "file",
+        "behavior": "classical",
+        "format": "yaml",
+        "provider": "classical-yaml",
+        "rule": "RuleSet",
+        "rulePayload": "classical-yaml",
+        "connectionId": "14d8b55e-25b0-4723-8320-7b2d42c49b34",
+        "sourcePort": 53158,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 7402,
+        "epoch": 19
+      },
+      {
+        "case": "rule-observation",
+        "provider": "classical-text",
+        "vehicle": "file",
+        "rule": "RuleSet",
+        "payload": "classical-text",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "file",
+        "behavior": "classical",
+        "format": "text",
+        "provider": "classical-text",
+        "rule": "RuleSet",
+        "rulePayload": "classical-text",
+        "connectionId": "6e5137b6-677c-4502-8029-af5ea0dc1ff7",
+        "sourcePort": 36674,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 8862,
+        "epoch": 20
+      },
+      {
+        "case": "rule-observation",
+        "provider": "inline-domain",
+        "vehicle": "inline",
+        "rule": "RuleSet",
+        "payload": "inline-domain",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "inline",
+        "behavior": "domain",
+        "format": "inline",
+        "provider": "inline-domain",
+        "rule": "RuleSet",
+        "rulePayload": "inline-domain",
+        "connectionId": "14691ded-a817-4296-969e-026ff106d9a6",
+        "sourcePort": 36688,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 12147,
+        "epoch": 21
+      },
+      {
+        "case": "rule-observation",
+        "provider": "inline-ipcidr",
+        "vehicle": "inline",
+        "rule": "RuleSet",
+        "payload": "inline-ipcidr",
+        "destinationIpSha256": "d66a7016ae65d84b6cf686812a2dbabcbda57c57c9ba273dc246239b552282f8"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "inline",
+        "behavior": "ipcidr",
+        "format": "inline",
+        "provider": "inline-ipcidr",
+        "rule": "RuleSet",
+        "rulePayload": "inline-ipcidr",
+        "connectionId": "d3baffeb-e786-4b72-95af-709d8afb41dc",
+        "sourcePort": 54380,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "system-DNS-literal-IPv4",
+        "upload": 398,
+        "download": 13171,
+        "epoch": 22
+      },
+      {
+        "case": "rule-observation",
+        "provider": "inline-classical",
+        "vehicle": "inline",
+        "rule": "RuleSet",
+        "payload": "inline-classical",
+        "destinationIpSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "rule-hit",
+        "vehicle": "inline",
+        "behavior": "classical",
+        "format": "inline",
+        "provider": "inline-classical",
+        "rule": "RuleSet",
+        "rulePayload": "inline-classical",
+        "connectionId": "6a4e6785-641e-4b7a-8490-6df5b5ea5d4f",
+        "sourcePort": 54390,
+        "destinationPort": 443,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "status": 200,
+        "responseBodyPresent": true,
+        "hostnameVerifiedTls": true,
+        "snifferDisabledInTestProjection": true,
+        "destinationForm": "unresolved-domain",
+        "upload": 398,
+        "download": 10099,
+        "epoch": 23
+      },
+      {
+        "case": "rule-matches",
+        "http": 8,
+        "file": 8,
+        "inline": 3,
+        "transport": "real-WiFi-public-HTTPS",
+        "internetResourceDownloads": 8,
+        "everyRequest": "hostname-verified-TLS-HTTP200-body-RuleSet-exactProvider-upload-download"
+      },
+      {
+        "case": "restored",
+        "formalProfiles": 1,
+        "formalScripts": 0
+      },
+      {
+        "case": "proxy-inline",
+        "source": "original-1.yaml-proxies",
+        "count": 2,
+        "realCoreGroupExpanded": true,
+        "intentionallyAbsentFromExternalList": true,
+        "protocolTrafficTested": false
+      },
+      {
+        "case": "restored",
+        "formalProfiles": 1,
+        "formalScripts": 0
+      },
+      {
+        "case": "batch-failure-state",
+        "failed": [
+          "fault-content",
+          "fault-status"
+        ],
+        "reasons": {
+          "fault-content": "更新失败，请稍后重试",
+          "fault-status": "更新服务返回异常，请稍后重试"
+        },
+        "requests": {
+          "fault-status": 1,
+          "fault-content": 1,
+          "control-success": 1
+        }
+      },
+      {
+        "case": "partial-failure",
+        "batchSuccess": 1,
+        "batchFailures": 2,
+        "controlledHttpServer": true,
+        "failedCachesPreserved": true,
+        "singleRetryPreservesOtherFailure": true,
+        "retryOnlyRemaining": true,
+        "unretriedTimestampsPreserved": true,
+        "faultRequests": {
+          "fault-status": 2,
+          "fault-content": 2,
+          "control-success": 1
+        }
+      },
+      {
+        "case": "restored",
+        "formalProfiles": 1,
+        "formalScripts": 0
+      },
+      {
+        "case": "original-mrs-download",
+        "attempt": 1,
+        "success": false,
+        "type": "ProviderOperationException"
+      },
+      {
+        "case": "original-mrs-download",
+        "attempt": 2,
+        "success": true
+      },
+      {
+        "case": "public-internet-hit",
+        "source": "original-geolocation-cn-mrs",
+        "status": 200,
+        "hostnameVerifiedTls": true,
+        "responseBodyPresent": true,
+        "rule": "RuleSet",
+        "provider": "original-domain",
+        "connectionId": "26966fd7-487c-4dbd-a0d9-bd2b58352871",
+        "sourcePort": 49332,
+        "targetSha256": "eceb28b70500b741f3baaea651c6ec8298631ac1b3bf401bcdd1527b4a48ad0c",
+        "upload": 398,
+        "download": 9075,
+        "mrsSha256": "f8fbbe8f25e19c55aa0f7ff74627af305fb266fb802fb4efcf644dc426de19bc"
+      },
+      {
+        "case": "restored",
+        "formalProfiles": 1,
+        "formalScripts": 0
+      }
+    ]
+  },
+  "inputs": {
+    "manifest": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-manifest.json",
+      "sha256": "a22b672117f0a1379df29d0843e636c383aecc4b7bf039d6c806d3f7139f9289",
+      "bytes": 3318
+    },
+    "sources": [
+      {
+        "name": "domain-yaml",
+        "behavior": "domain",
+        "format": "yaml",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/baidu.yaml",
+        "file": "provider-hits-1793853039490179000-domain-yaml.yaml",
+        "bytes": 2941,
+        "sha256": "cd4b526f5a17139c057cfbcf4554f0026e9360e81ea76d830027b8cfde4dd3dd"
+      },
+      {
+        "name": "domain-text",
+        "behavior": "domain",
+        "format": "text",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/baidu.list",
+        "file": "provider-hits-1793853039490179000-domain-text.text",
+        "bytes": 2139,
+        "sha256": "2530928bdfac8d8ff2b20515427846af81eb9c09ed88e89fb0a7d34ded6a63a3"
+      },
+      {
+        "name": "domain-mrs",
+        "behavior": "domain",
+        "format": "mrs",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/baidu.mrs",
+        "file": "provider-hits-1793853039490179000-domain-mrs.mrs",
+        "bytes": 1061,
+        "sha256": "10c578677c73c828707ac68b5900c3294f12e3f71c2e3013d6496d9df04223e9"
+      },
+      {
+        "name": "ipcidr-yaml",
+        "behavior": "ipcidr",
+        "format": "yaml",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.yaml",
+        "file": "provider-hits-1793853039490179000-ipcidr-yaml.yaml",
+        "bytes": 211667,
+        "sha256": "78c373bf461699eb96059cbac0cb9570e56ef447cfff5f7c4b4d78dab0ad996e"
+      },
+      {
+        "name": "ipcidr-text",
+        "behavior": "ipcidr",
+        "format": "text",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.list",
+        "file": "provider-hits-1793853039490179000-ipcidr-text.text",
+        "bytes": 153775,
+        "sha256": "ed70e5f50a6cce1e10326894a1d20a4e8f14a3ca7fda3a29747499fb0659b6fc"
+      },
+      {
+        "name": "ipcidr-mrs",
+        "behavior": "ipcidr",
+        "format": "mrs",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs",
+        "file": "provider-hits-1793853039490179000-ipcidr-mrs.mrs",
+        "bytes": 37470,
+        "sha256": "937a8a20e09657aae60296e0ac1bf9db03813d5d25826aff9f2102a2e78b0e05"
+      },
+      {
+        "name": "classical-yaml",
+        "behavior": "classical",
+        "format": "yaml",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Baidu/Baidu.yaml",
+        "file": "provider-hits-1793853039490179000-classical-yaml.yaml",
+        "bytes": 7994,
+        "sha256": "178ccb2d030efb23039388ad62de8d20a7579620a1ce69389fd27eef97bda9db"
+      },
+      {
+        "name": "classical-text",
+        "behavior": "classical",
+        "format": "text",
+        "url": "https://gh-proxy.com/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Baidu/Baidu.list",
+        "file": "provider-hits-1793853039490179000-classical-text.text",
+        "bytes": 6981,
+        "sha256": "ac49361bba37ccd12f46dff78885ef07218d9dc9deb254d71d1c0431a7eb921a"
+      }
+    ],
+    "original1YamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "sourceDocuments": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/baidu-domain-source.md",
+        "sha256": "435ce6e1ea054106ffa7fc7123bae84a2117944336e2bee975b758317e39ccce",
+        "bytes": 2942
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/cn-ip-source.md",
+        "sha256": "375f9cca33d05a67b3238fd9557a3fbe9e4ccd50e1e4a619dde7dd43c70f8f8e",
+        "bytes": 173079
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/baidu-classical-source.md",
+        "sha256": "c4a962313271ada1fb8bed9e596a80fc2e94c379c2eaba4424574cfa575205b4",
+        "bytes": 7494
+      }
+    ]
+  },
+  "visualReview": {
+    "reviewedOriginalScreenshots": 25,
+    "method": "Visual inspection using five contact sheets derived from all original PNGs; not a pixel comparison against Flutter",
+    "findings": [
+      "Final partial-failure and single-recovery views retain visible per-item controlled error text; all-recovered view clears errors and shows success.",
+      "Lower Provider rows are partially outside viewport in first two final screenshots; model assertions and actual retry clicks cover those states.",
+      "Regression screenshots cover read-only MRS, draft failure/exit, options, filters, missing references and timeout recovery; component hosts have their own theme/background fixtures.",
+      "No new blocking rendering issue identified for this change; complete Flutter layout/motion parity remains PARTIAL."
+    ],
+    "images": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7-provider_batch_partial_failure.png",
+        "sha256": "1b8b603e061fae6d72fde7af53a9838a5a14962d2aa4945d0cb049f0fe35419f",
+        "bytes": 162984
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7-provider_batch_single_recovered.png",
+        "sha256": "3c1191d60bd6f4e627a88060d877ce19e60ed2229cb7c548087a507fbd5e544d",
+        "bytes": 161751
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7-provider_batch_all_recovered.png",
+        "sha256": "403fbf0c4bc4a52f63d406fecce10001e52f2f3d048170bfad18f8d497e76f49",
+        "bytes": 163060
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-profile_providers_dark.png",
+        "sha256": "74c4fea1f8c681cf33f68327c891993ca4945fc36891a2db47c90b1c504016b6",
+        "bytes": 148629
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-profile_providers_light.png",
+        "sha256": "3d27705432a2b87567c8c7d29ac376567486bb7f086b1cb80120ee070da24b55",
+        "bytes": 145024
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-profile_statistics_dark.png",
+        "sha256": "70ebf1cf5845318b3c57d36982ee9589ec7ab1a83a2f7fe40ab7ab7353bcabd0",
+        "bytes": 114176
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-profile_statistics_light.png",
+        "sha256": "6463f133121bdbbe65f8d9231e5a27ec37fdbabbce680a76c5a6b9c9d06a6a47",
+        "bytes": 110864
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_editor_failure.png",
+        "sha256": "9466d89fed2986051cab02951bd7bafe3637982fa7c92f1b34d015eebfb38bfc",
+        "bytes": 56639
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_editor_exit.png",
+        "sha256": "1d9662599c57f8cc4ae4c9282c2cb8e768b097d5da08d033d86ace95b764047b",
+        "bytes": 89778
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_mrs_preview.png",
+        "sha256": "21a04593c22066f0393ecea9a292cb3c9ae263de0bfeb71fd95eaee527ded748",
+        "bytes": 43710
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_menu.png",
+        "sha256": "3fcf4e0d3a84adde15d4fd4262b8e8b0a6d6f7adf58637be281066b7fca04435",
+        "bytes": 76829
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_subscription.png",
+        "sha256": "a42d1cf1902257e5291da9d75f433c5a6f83b5d8281312bef906f4c2b6c7e91a",
+        "bytes": 92282
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_menu_dark.png",
+        "sha256": "d0540e6067cbc7b6db84a31d4d68924a201c20f41bb31d8019ec56f03ce795ce",
+        "bytes": 78074
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_update_timeout.png",
+        "sha256": "5aa7f54a5ebc3a1cf7524c0e1c5dafb00fd9b924ee2909d7219ceb896014b8f8",
+        "bytes": 67639
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_update_recovered.png",
+        "sha256": "c64243ba5951b459d345fec3ae3e840a5a7738d5a7de6b6055bb5df566294210",
+        "bytes": 60493
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_option_picker_false.png",
+        "sha256": "1192005740fda8b79d6787629558f688b342b5d1efb583d8f242c8052b3e1639",
+        "bytes": 81954
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_ip_picker_false.png",
+        "sha256": "a7eec95787127b1d73fbd13afcc4a940d552170a38fe693d4ceaff436b1bb1ce",
+        "bytes": 41643
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_options_error_false.png",
+        "sha256": "822bd77476a1f863c49a8d0f3fb6572dee4542419f0c3c1102d4383a43003244",
+        "bytes": 158672
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_option_picker_true.png",
+        "sha256": "db383fc3cd0db731e6e7cf707840996e939b633daf877e98688f93303c49e6e7",
+        "bytes": 82506
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_ip_picker_true.png",
+        "sha256": "c9454b332dec4a74a8646544c4e7bfd0166f005ffff2d5a6a211f55582f8087d",
+        "bytes": 41990
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_options_error_true.png",
+        "sha256": "604c7d55ba60646f165e96edddb0b27b66ef5d15b13ef24ef12aabedc6c8f91b",
+        "bytes": 158938
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_filter_members.png",
+        "sha256": "0e3943ae5ff0f081ba2c120726075d65a65dc7ed07c3f646f7a8388cb395addc",
+        "bytes": 86444
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_reference_missing.png",
+        "sha256": "78df8270e20d5616d977bd751b0983f240f7f9092d052c64b94945065dd26032",
+        "bytes": 54419
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_reference_bound.png",
+        "sha256": "e968ef9ae38e852f44b0c0838206bfe1f19ca198f3d39303b880f4cb072a34ec",
+        "bytes": 36366
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-provider_quick_yaml_error.png",
+        "sha256": "8e06b918748d725d06705b85a48704fd8b20d78a75b251334889023215c87e7f",
+        "bytes": 143478
+      }
+    ],
+    "contactSheets": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final7-contact-sheet.png",
+        "sha256": "dfc9f4f13851ffcc72b5be39cdd3eabac5a370a1760fbef8a724dcdafea84648",
+        "bytes": 143816
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-contact-1.png",
+        "sha256": "0af2eb176767b0775a9c8d2791f22239c06eea4889b7a66c55d758088d868885",
+        "bytes": 285100
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-contact-2.png",
+        "sha256": "4bd0decc453e034977d1fea0939c24ecf61e71a1524a500792b9739e9e405221",
+        "bytes": 149729
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-contact-3.png",
+        "sha256": "4536d0cef549b0a3a07ada0f003187fd0acb109c8bbea1215abe20a44e4860c2",
+        "bytes": 220212
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/regression1-contact-4.png",
+        "sha256": "30dd206024d3d0b451572e5cf54f622cc175e0802304e616e7d9d4c4cc06c1bd",
+        "bytes": 129496
+      }
+    ]
+  },
+  "preservation": {
+    "before": {
+      "epochMs": 1793852078793,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~8qAklK4AVVh1mhYMdvLhXg==/com.lonnnnnng.flclash-t3NIuvV6dgTnkHXDNUCpWA==/base.apk",
+          "sha256": "54cc8c7ad5ac0a242e32243e46d422ca131388fc9164fb9006e4e589ed8dcedc"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~HsOanaheQzCUPSOQo1IArw==/com.lonnnnnng.flclash.test-Rv9YgYC-1lF97sKCRzQurw==/base.apk",
+          "sha256": "690171c15014b07efa53d8fbafcded3a5154e662955d362c5af568dc1c1eba28"
+        }
+      ],
+      "noKotlinServiceOrTun0": true
+    },
+    "after": {
+      "epochMs": 1793854839786,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~qqNcK71yDHQ4eoE6ofsWrg==/com.lonnnnnng.flclash-SzhuY8BQbr6zHyfpzMIg5A==/base.apk",
+          "sha256": "1b251b6d0a329f5db575ed61e169d2f25d82968df02ece112dc33f2253f9adcc"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~7XH5MKoSriSqgZIVCXNglQ==/com.lonnnnnng.flclash.test-6ASDyL69m1eUeALmbr2V_g==/base.apk",
+          "sha256": "30a49fde246c5269aab62c3c19886aac54f87c632aa6397fc59ae4e0723b9c48"
+        }
+      ],
+      "noKotlinServiceOrTun0": true,
+      "preserved": true,
+      "builtAppSha256": "1b251b6d0a329f5db575ed61e169d2f25d82968df02ece112dc33f2253f9adcc",
+      "builtTestSha256": "30a49fde246c5269aab62c3c19886aac54f87c632aa6397fc59ae4e0723b9c48",
+      "installedApksMatch": true
+    },
+    "beforeGuard": {
+      "summary": {
+        "requested": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ],
+        "results": [
+          {
+            "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          }
+        ],
+        "images": [],
+        "exitCode": 0,
+        "case": "rules-yaml",
+        "seconds": 7.613,
+        "log": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/../acceptance-artifacts/provider-recovery-hits-20261105/preserve-before.log"
+      },
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/preserve-before.json",
+        "sha256": "b273b852d98eed8b3506d718f36c5dc89b9592046dae22c48c704a401b7d332d",
+        "bytes": 545
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/preserve-before.log",
+        "sha256": "bb139b15bd485fc748784fb8233363bdd94bf0cd5b820ab80a2a78107da671f9",
+        "bytes": 962
+      }
+    },
+    "afterGuard": {
+      "summary": {
+        "requested": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ],
+        "results": [
+          {
+            "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved",
+            "code": 0,
+            "passed": true,
+            "stack": null
+          }
+        ],
+        "images": [],
+        "exitCode": 0,
+        "case": "rules-yaml",
+        "seconds": 6.957,
+        "log": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/preserve-after.log"
+      },
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/preserve-after.json",
+        "sha256": "9453efd1708100480c09aff8014c65f671db6ca4c1340ae67aca7984db15d211",
+        "bytes": 533
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/preserve-after.log",
+        "sha256": "ea16a130cc69380a674ff1bb4ed740357d7d17d82493a0e37f591a69919f093d",
+        "bytes": 961
+      }
+    },
+    "temporaryProfilesScriptsAndCachesRestored": true,
+    "deviceInputsCleanup": [
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-manifest.json",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-manifest.json",
+        "sha256": "8a603ae2da7fb48fe04728cc1b54bd928c4c7c5699632f0b67f5bb64e8a13635",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-domain-yaml.yaml",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-domain-yaml.yaml",
+        "sha256": "7f396a73bf5c01725cf4a51e6089239491a0d8cb3c808bd1c524d78391221440",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-domain-text.text",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-domain-text.text",
+        "sha256": "db9b2da8d7e90f09e183dcde096f72adaacd8de21e0f09d364b413085ecb7b57",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-domain-mrs.mrs",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-domain-mrs.mrs",
+        "sha256": "df452ab1bfb572f366f00001fa4525f16f137dc670aed2c60af0100dc397d3ec",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-ipcidr-yaml.yaml",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-ipcidr-yaml.yaml",
+        "sha256": "5c8fcfcb7305fe6a74fb279bf9aa05047fcb4b0a6289a96c81a6ee2b084148e9",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-ipcidr-text.text",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-ipcidr-text.text",
+        "sha256": "3105f74241f0c3fc4e0d3a67ffc33a018a3eb7913725a7219576603b79935c3c",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-ipcidr-mrs.mrs",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-ipcidr-mrs.mrs",
+        "sha256": "65027bee3076ec49024935c0eb9e4b85a447687db384d4b8d2763b6c2566ec1f",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-classical-yaml.yaml",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-classical-yaml.yaml",
+        "sha256": "1f5e514d59e58e004bf657d80a7f5d04205ed664f20ba2451c0a96ee4d78c413",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs/provider-hits-1793851817864067000-classical-text.text",
+        "devicePath": "/sdcard/Download/provider-hits-1793851817864067000-classical-text.text",
+        "sha256": "65decf7849f37cbc66cff8e1155ea1d6344c748c6ead772db2f9e9c7e6a1d546",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-manifest.json",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-manifest.json",
+        "sha256": "a22b672117f0a1379df29d0843e636c383aecc4b7bf039d6c806d3f7139f9289",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-domain-yaml.yaml",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-domain-yaml.yaml",
+        "sha256": "cd4b526f5a17139c057cfbcf4554f0026e9360e81ea76d830027b8cfde4dd3dd",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-domain-text.text",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-domain-text.text",
+        "sha256": "2530928bdfac8d8ff2b20515427846af81eb9c09ed88e89fb0a7d34ded6a63a3",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-domain-mrs.mrs",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-domain-mrs.mrs",
+        "sha256": "10c578677c73c828707ac68b5900c3294f12e3f71c2e3013d6496d9df04223e9",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-ipcidr-yaml.yaml",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-ipcidr-yaml.yaml",
+        "sha256": "78c373bf461699eb96059cbac0cb9570e56ef447cfff5f7c4b4d78dab0ad996e",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-ipcidr-text.text",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-ipcidr-text.text",
+        "sha256": "ed70e5f50a6cce1e10326894a1d20a4e8f14a3ca7fda3a29747499fb0659b6fc",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-ipcidr-mrs.mrs",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-ipcidr-mrs.mrs",
+        "sha256": "937a8a20e09657aae60296e0ac1bf9db03813d5d25826aff9f2102a2e78b0e05",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-classical-yaml.yaml",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-classical-yaml.yaml",
+        "sha256": "178ccb2d030efb23039388ad62de8d20a7579620a1ce69389fd27eef97bda9db",
+        "sha256Matched": true,
+        "deleted": true
+      },
+      {
+        "localPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/inputs-public/provider-hits-1793853039490179000-classical-text.text",
+        "devicePath": "/sdcard/Download/provider-hits-1793853039490179000-classical-text.text",
+        "sha256": "ac49361bba37ccd12f46dff78885ef07218d9dc9deb254d71d1c0431a7eb921a",
+        "sha256Matched": true,
+        "deleted": true
+      }
+    ],
+    "scope": "Formal rows and selection, per-field digests, body SHA/size/mtime; original1.yaml both ends; Flutter APK hashes; settings and no services/tun0. Not a byte-for-byte snapshot of the entire app filesystem."
+  },
+  "earlierBatches": [
+    {
+      "batch": "final1",
+      "passed": 1,
+      "total": 4,
+      "reason": "Source port differed from applied port; malformed YAML fixture was accepted as empty payload.",
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final1.json",
+        "sha256": "53d4f9471249b4113ba6436e6b5a88e651e5836b0d856e93b132436afd613cec",
+        "bytes": 9661
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final1.log",
+        "sha256": "2900d67b3eb4332e2a7e0d48c44c00ce3d63c27efe3c8362a9b11f135507c043",
+        "bytes": 18529
+      }
+    },
+    {
+      "batch": "final2",
+      "passed": 3,
+      "total": 4,
+      "reason": "Phone could not route to the Mac private HTTP endpoint; no route to host independently confirmed.",
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final2.json",
+        "sha256": "a21de5216d3f26b2740fdbb5e6c9e01c9a759ed1750f5e9f9f99343022888099",
+        "bytes": 4631
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final2.log",
+        "sha256": "e7c1cb7f8aa9475ae09e1831831ef9e58d6cf67a0f7013245ffe336db14221fb",
+        "bytes": 11301
+      }
+    },
+    {
+      "batch": "final3",
+      "passed": 3,
+      "total": 4,
+      "reason": "Domain-form SOCKS request fell through to Match in the first ipcidr scenario.",
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final3.json",
+        "sha256": "1cf236cc85b9cb48b2bcf98b58cff10b67f5327640c8589c8b0c6e8848a5c4a2",
+        "bytes": 4579
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final3.log",
+        "sha256": "434c781ceff826daacc425e486bfc47ea4d851593a9e9d8ddfb4ac56d49aced9",
+        "bytes": 12724
+      }
+    },
+    {
+      "batch": "final4",
+      "passed": 3,
+      "total": 4,
+      "reason": "Strict nullable destination-IP observer timed out.",
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final4.json",
+        "sha256": "a98c5a906bef1bee349f8c89ed5717adc71b81f7f0596dabcc31c391979b07be",
+        "bytes": 3575
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final4.log",
+        "sha256": "0171b8585ca35f8f72c35646bdcae97737aed9125263a0f558c5a8e29169e90e",
+        "bytes": 12150
+      }
+    },
+    {
+      "batch": "final5",
+      "passed": 3,
+      "total": 4,
+      "reason": "HTTP 8 and first File domain variants hit, but File ipcidr fell through to Match under original sniffing.",
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final5.json",
+        "sha256": "d2024b841f95d2190bc8fe530f9330b2dff844b6e9ee0da8673f2a2702716545",
+        "bytes": 4535
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final5.log",
+        "sha256": "8ef4518065ab92769bb40ba86ea8da872b37b709f2733e1e3325fccf075ee579",
+        "bytes": 20469
+      }
+    },
+    {
+      "batch": "final6",
+      "passed": 2,
+      "total": 4,
+      "reason": "19 combinations passed; public success-control and original MRS downloads failed. Final fixture isolates control HTTP and logs bounded MRS retries.",
+      "json": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final6.json",
+        "sha256": "613af922ae2230897b1b05c3b5a857bda6d455ca69b2dbe1ab92a01b93120a02",
+        "bytes": 7951
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/final6.log",
+        "sha256": "46b3775a9f49bfc7d3448830e758ac3ceedf1ba22c533134eb3d36ee59637047",
+        "bytes": 32850
+      }
+    }
+  ],
+  "limitations": [
+    "750 JVM XML results are clean; final build reused up-to-date tasks. No forced-rerun claim. Go not rerun.",
+    "New network cases are pure proxy/SOCKS on Redmi API36 arm64 portrait/default font. No new VPN, low API, cellular, signed Release runtime, CI or publication verification.",
+    "Rule matrix is 8 HTTP + 8 File + 3 Inline combinations for public Baidu/domain, China ipcidr and Baidu classical datasets. One original geolocation-cn MRS is separately hit. Not traffic coverage of all original 90 MRS datasets or every site.",
+    "Original source is a full unchanged 1.yaml copy; formal bound script deliberately replaces rule definitions/rules and disables sniffing. This proves Provider behavior in an isolated runtime projection, not the full original subscription routing/sniffer interaction.",
+    "Source-port + destination443 correlation is not a complete five-tuple check. Byte counters may include TLS handshake; HTTP200/body are independently verified on the same socket.",
+    "HTTP caches are seeded from frozen public originals before explicit updates. Byte SHA, positive count and advanced timestamps prove the update contract; this is not empty-cache first download coverage or independent server request counting.",
+    "Partial-failure control and two faults use the on-device HTTP server. Public download availability is independently proven by the eight-source matrix, not by that local server.",
+    "Original MRS first update failed and second succeeded in the final batch; both attempts are preserved. Earlier failed batches remain separate and are not added to final4/4.",
+    "Inline Proxy only expands the first two original nodes in the real core group; their protocol business traffic is not tested. HTTP/File Proxy historical evidence is not rerun as new protocol coverage.",
+    "Managed-resource mixed sync/apply failures were statically reviewed but have no new independent branch-specific unit/device fault injection.",
+    "Screenshots show recovery states, with some lower rows outside viewport. No complete Flutter visual parity claim. Glass remains off by default; deferred and cancelled scope unchanged.",
+    "Raw logs, inputs, XML, APKs and PNGs are persistent local attachments outside Git. Paths/hashes are auditable on this host; remote Git alone does not contain these attachments."
+  ],
+  "independentReview": {
+    "summary": {
+      "production": "Independent read-only review found no blocking defect in the four modified production/unit-test files.",
+      "trafficTest": "Normal success path binds same socket source port and destination 443 to exact RuleSet/provider, hostname-verified TLS, HTTP200 and nonempty body; not a complete five-tuple assertion.",
+      "fixedFinding": "Temporary profile YAML deletion now checks its absence and only retries deletion for the isolated ID with original 1.yaml SHA; failure retains encrypted recovery backup.",
+      "coverageLimit": "Managed resource mixed sync/apply failure branches were reviewed but not independently covered by new unit tests or device fault injection.",
+      "postReviewTestChanges": [
+        "Wait for nonempty HTTP/File provider before traffic",
+        "Disable sniffer only in acceptance script projection to isolate literal IPv4 rule matching",
+        "Controlled HTTP success item for partial-failure fixture",
+        "Original MRS network update has at most three attempts with every failure reported"
+      ],
+      "reviewType": "static-only; reviewers did not run tools against device or network"
+    },
+    "artifact": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/provider-recovery-hits-20261105/independent-review.json",
+      "sha256": "d9e580f929fc11a40a1c452bf3a503ca43c56280b4725ffd10fb12994d5e22ff",
+      "bytes": 1112
+    },
+    "deliveryAudit": {
+      "result": "No blocking issue found in read-only delivery audit",
+      "checks": [
+        "Current snapshot, three context headers and external todo agree with final evidence and next item6",
+        "750 frozen JVM XML cases recounted; final4/4 and regression14/14 statuses verified",
+        "19 exact rule-hit events, separate original MRS retry/final hit and inline Proxy no-traffic boundary verified",
+        "184 local attachment path/hash/bytes references matched; no missing attachment",
+        "No overclaim of all90MRS sites, all proxy protocols, VPN, full Flutter or managed sync/apply fault branches"
+      ],
+      "limitations": "Static read-only audit; no build, device/network actions or additional full APK hashing by reviewer"
+    }
+  }
+}

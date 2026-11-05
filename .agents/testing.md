@@ -1,6 +1,16 @@
 # Testing
 
-## 资源真实文件选择与外部脚本实网（2026-11-05，当前）
+## Provider部分失败恢复与真实规则命中（2026-11-05，当前）
+
+todo第5项本组范围已验：Provider批量部分失败保留逐项受控原因，单项恢复只移除本项，轮询/前后台保留剩余失败，关闭/换配置拒绝迟到结果，超时释放忙态。Redmi真实Mihomo经受控HTTP服务完成1成功+503/缺失YAML payload两失败、旧缓存保护、单项恢复和只重试剩余项。公开8源更新SHA/条目/时间前进通过；HTTP8种、File8种、Inline3种实际HTTPS均有精确RuleSet/Provider归因，另验原配置geolocation-cn MRS命中及Inline Proxy原两个节点展开。
+
+最终build9 App485/Service196/Core38/Common31共750项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8及双Lint通过，各0错误/66警告（Debug10/Release9提示）。Redmi同套App/Test final7新增4/4、回归14/14、保护前后各1/1；25张PNG经5张拼图目视，安装回拉哈希匹配。正式1份配置逐字段/选择/正文SHA-size-mtime、原1.yaml双端、Flutter包及设备设置保持，结束无服务/tun0；临时配置/脚本/缓存恢复，18个独占设备输入按SHA核对后精准删除。
+
+证据`docs/acceptance/provider-recovery-hits-redmi-20261105.json`，持久附件`../acceptance-artifacts/provider-recovery-hits-20261105/`。本组仅在原1.yaml临时副本的正式脚本投影中隔离规则并关闭嗅探；非整份原配置路由/嗅探交互、全部90个MRS站点或所有代理协议流量覆盖。原MRS首试失败、第二次成功已逐次保留，早期6个失败批次不累计。托管资源混合同步/apply失败新分支仅静态审查，未独立故障注入；Go、低API、VPN、正式签名运行、远端CI未重跑。完整Flutter视觉仍PARTIAL；下一项第6项IP/质量来源、持久缓存与失效恢复，玻璃默认关闭，原暂缓/取消项保持。
+
+精确方法：ProviderRecoveryHitsInstrumentedTest#realBatchPartialFailureKeepsOldCacheAndRetriesOnlyRemaining、#httpFileAndInlineRulesMatchPublicHttpsTraffic、#originalDomainMrsMatchesPublicHttpsResponse、#inlineProxyProviderExpandsOriginalNodesInRunningCore。需kclashProviderHitsAcceptance=true、SHA绑定清单与既有原1.yaml参数，只在确认Wi-Fi、竖屏默认字号、STOPPED且无残留恢复标记时执行。restoreInterruptedProviderHitAcceptance只在中断记录存在时单独运行；本轮未注入此测试自身的进程死亡。源码/报告不含真实订阅凭据。
+
+## 资源真实文件选择与外部脚本实网（2026-11-05，历史切片）
 
 todo第4项本组范围已验：规则YAML/MRS与图标集真实OpenDocument，策略组本地图标GetContent经Android16照片选择器“更多选项→浏览…”进入DocumentsUI；覆盖取消、空/错误文件拒绝、重试、预览不写入、正式保存和Activity重建回读。MRS原字节保持，仓库/VM/页面预览摘要一致。公开外部脚本真实下载、改源、同步与绑定配置运行态应用通过，直接Bridge确认新增CustomProxy、暂存规则及Mihomo epoch 4→5→6；正文、DIRECT选择与纯代理会话保持。
 

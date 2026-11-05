@@ -470,6 +470,20 @@ class CoreRuntimeManagerTest {
         bridge.externalBatch = { bridge.ipStamp = bridge.ipStamp.copy(epoch = bridge.ipStamp.epoch + 1); emptyList() }
         assertTrue(runCatching { runtime.updateProfileProviders(8, listOf("fixture")) }.isFailure)
     }
+    @Test fun providerBatchReturnsPartialFailureAndNextRetryUsesSameRunningSession() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("{}") }
+        val bridge = FakeBridge(); val runtime = manager(ActiveProfile(8, "Provider", source.path), temporaryFolder.newFolder(), bridge, FakeServiceController())
+        runtime.startProxy().getOrThrow()
+        val since = runtime.runningSinceElapsedMillis.value
+        bridge.externalRead = { listOf(providerFixture(), providerFixture().copy(name = "second")) }
+        bridge.externalBatch = { listOf(com.lonnnnnng.flclash.core.CoreProviderUpdateResult("fixture", ""),
+            com.lonnnnnng.flclash.core.CoreProviderUpdateResult("second", "request_bad_response")) }
+        assertEquals(listOf("", "request_bad_response"), runtime.updateProfileProviders(8, listOf("fixture", "second")).map { it.code })
+        bridge.externalBatch = { listOf(com.lonnnnnng.flclash.core.CoreProviderUpdateResult("second", "")) }
+        assertEquals(listOf("second"), runtime.updateProfileProviders(8, listOf("second")).map { it.name })
+        assertEquals(since, runtime.runningSinceElapsedMillis.value); assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+    }
+
     @Test fun nodeDefinitionReadLoadsStoppedInputRejectsOtherProfileAndChangedSource() = kotlinx.coroutines.runBlocking {
         val source = temporaryFolder.newFile().apply { writeText("{}") }
         val profile = ActiveProfile(8, "Node", source.path)
