@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "代理页 Tab/List 当前节点徽标语义、唯一迁移与深浅主题视觉验收",
+  "status": "DONE_VERIFIED_FOR_CURRENT_NODE_MARKER; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "59068e4e58f56315d83dc50026506a090c7e8287",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userRotation": 0
+  },
+  "implementation": {
+    "production": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+    "test": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+    "behavior": [
+      "Tab 与 List 卡片都显示当前节点徽标，当前状态由有效核心 now、保存映射和 fixed 回退链计算",
+      "List 中从香港节点切换到日本节点后，徽标唯一迁移，旧节点清除，新节点显示",
+      "深浅主题切换不改变当前节点语义；卡片尺寸与独立 delay 设置不影响徽标断言"
+    ],
+    "flutterReference": "仅参考本地 Flutter 代理节点卡片与当前项语义，未合并或修改 Flutter 上游代码"
+  },
+  "build": {
+    "jvm": "App 492 项、Core 38 项通过，失败/错误/跳过均为 0",
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "3d48516e64c4b9d1a738aa25811d8d0754fd311f47a39a5368adc0610f79d0e9"
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "adf5e5e4d7b19f51658ebcd0c8273e3b47e6bd51c1ded8a3ca314e9fc9491c6e"
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "0ade60cdb7f0fb37aae027e41c182e07df9d0f786392c41ca561eed6637acde1"
+    },
+    "lint": "Debug 与 Release 均 0 errors；Debug 67 warnings/10 hints，Release 66 warnings/9 hints"
+  },
+  "test": {
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "focusedMethod": "tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent",
+    "result": "OK (1 test)",
+    "durationSeconds": 30.696,
+    "assertions": [
+      "Tab/List × standard/compact/loose × dark/light 卡片均可渲染",
+      "每个布局的当前节点徽标唯一存在于香港节点",
+      "List 点击日本节点后 selected=日本节点，徽标从香港节点唯一迁移到日本节点",
+      "日本节点深色与浅色截图均保留当前徽标"
+    ],
+    "xml": "android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml",
+    "screenshots": [
+      {
+        "path": "../acceptance-artifacts/proxy-current-marker-redmi-20261106/proxy_list_current_hongkong_dark.png",
+        "bytes": 116406,
+        "sha256": "ac89e6bd9192a58b2490bbdfdb365a7df81a7ede7ec6f1e06e3e912303a80663"
+      },
+      {
+        "path": "../acceptance-artifacts/proxy-current-marker-redmi-20261106/proxy_list_current_japan_dark.png",
+        "bytes": 122749,
+        "sha256": "2cfc711c7e09861ef2d911383b1ddb1146e6199b4b29da4368ac9d333a008870"
+      },
+      {
+        "path": "../acceptance-artifacts/proxy-current-marker-redmi-20261106/proxy_list_current_japan_light.png",
+        "bytes": 115442,
+        "sha256": "0e1e7299d2770e86ce7f7038b4431369a59c24efcd9c97fe658bdd7f8a7b1075"
+      }
+    ],
+    "log": "../acceptance-artifacts/proxy-current-marker-redmi-20261106/instrumentation.log"
+  },
+  "cleanup": {
+    "formalProfileAndSettingsRestored": true,
+    "formalProfileBodyRewritten": false,
+    "authorizedInputChanged": false,
+    "flutterBaselinePackageChanged": false,
+    "runtimeStarted": false
+  },
+  "limitations": [
+    "本轮只证明当前节点徽标语义、唯一迁移与截图，不代表完整 Flutter 逐像素视觉一致",
+    "完整 List/其他子页排版、空态 morph/orbit、统一截图基线、Dock/按钮实时背景与触点光效仍为 PARTIAL",
+    "玻璃默认关闭；低 API、正式签名运行、远端 CI、蜂窝网络和观测页次要视觉不属于本轮",
+    "Redmi 在证据归档时暂时离线，未追加设备操作；设备结果来自本轮已完成的精确用例"
+  ],
+  "next": "提交并推送本组后，继续代理组卡片细节、List 展开/收回连续动效，再补剩余子页、面板、空态和统一视觉基线"
+}

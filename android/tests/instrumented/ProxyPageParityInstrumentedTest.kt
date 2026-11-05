@@ -132,6 +132,13 @@ class ProxyPageParityInstrumentedTest {
                         ProxyNodeCardSize.STANDARD -> 86.dp
                         ProxyNodeCardSize.LOOSE -> 105.dp
                     })
+                    val currentTag = if (layout == "TAB") {
+                        "proxy_node_节点选择_香港节点"
+                    } else {
+                        "proxy_list_node_节点选择_香港节点"
+                    }
+                    compose.onNodeWithTag(currentTag).assertProxyInUse(compose)
+                    compose.onNodeWithTag(tag).assertProxyNotInUse(compose)
                     val longName = "这是一个很长的节点名称用来检查两行省略"
                     val layouts = mutableListOf<TextLayoutResult>()
                     compose.onNode(hasText(longName) and hasAnyAncestor(hasTestTag(
@@ -144,6 +151,19 @@ class ProxyPageParityInstrumentedTest {
                 }
             }
         }
+        // 作者 long：List 节点卡片与 Tab 使用同一套当前节点状态，点选后徽标必须唯一地迁移到新节点。
+        val currentHongKong = compose.onNodeWithTag("proxy_list_node_节点选择_香港节点")
+        val currentJapan = compose.onNodeWithTag("proxy_list_node_节点选择_日本节点")
+        currentHongKong.assertProxyInUse(compose)
+        currentJapan.assertProxyNotInUse(compose)
+        capture("proxy_list_current_hongkong_dark")
+        currentJapan.performClick()
+        compose.runOnIdle { check(selected == "日本节点") }
+        currentHongKong.assertProxyNotInUse(compose)
+        currentJapan.assertProxyInUse(compose)
+        capture("proxy_list_current_japan_dark")
+        compose.runOnIdle { dark = false }
+        capture("proxy_list_current_japan_light")
         compose.onNodeWithTag("proxy_list_group_header_节点选择").performClick()
         compose.onNodeWithTag("proxy_list_group_locate_节点选择").assertDoesNotExist()
         compose.onNodeWithTag("proxy_list_group_batch_节点选择").assertDoesNotExist()

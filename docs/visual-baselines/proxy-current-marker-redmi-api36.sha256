@@ -1,0 +1,6 @@
+# KClash proxy current-node marker semantic capture baseline.
+# Device: Redmi Note 8 Pro, Android 16/API 36, portrait, font scale 1.0.
+# Captured 2026-11-06; current marker moves uniquely from Hong Kong to Japan.
+proxy_list_current_hongkong_dark sha256=ac89e6bd9192a58b2490bbdfdb365a7df81a7ede7ec6f1e06e3e912303a80663
+proxy_list_current_japan_dark sha256=2cfc711c7e09861ef2d911383b1ddb1146e6199b4b29da4368ac9d333a008870
+proxy_list_current_japan_light sha256=0e1e7299d2770e86ce7f7038b4431369a59c24efcd9c97fe658bdd7f8a7b1075

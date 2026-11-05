@@ -1124,7 +1124,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 ### 7.6 UI/UX 完整对齐
 
-本组补充（11-06，代理组状态转场）：代理组 loading/error/empty/content 使用 300ms 入场与 150ms 退场，内容退场保留最后快照并隔离触摸；错误、空态、Dashboard 摘要和恢复路径在 Redmi 上精确5/5通过，证据`proxy-groups-transition-redmi-20261106.json`。本轮继续完成 List 组头 sticky/raised 对齐：`ProxyGroupsPage.kt` 在滚动时以180ms动画提升组头阴影/色调层级，长列表吸顶与远端 Tab 连续转场在 Redmi 精确4/4通过，静止/吸顶截图及哈希见`proxy-list-header-redmi-20261106.json`与`../acceptance-artifacts/proxy-list-header-20261106/`。这只覆盖目标组头和转场切片，不扩大为完整 Flutter 逐像素视觉；空态 morph/orbit、剩余子页排版、全应用动效与性能仍为`PARTIAL`。Fallback真实核心与冷进程证据沿用本节前述记录，自然无效`now`仍按合法解析契约记为不可自然构造边界。
+本组补充（11-06，代理组状态转场）：代理组 loading/error/empty/content 使用 300ms 入场与 150ms 退场，内容退场保留最后快照并隔离触摸；错误、空态、Dashboard 摘要和恢复路径在 Redmi 上精确5/5通过，证据`proxy-groups-transition-redmi-20261106.json`。本轮继续完成 List 组头 sticky/raised 对齐：`ProxyGroupsPage.kt` 在滚动时以180ms动画提升组头阴影/色调层级，长列表吸顶与远端 Tab 连续转场在 Redmi 精确4/4通过，静止/吸顶截图及哈希见`proxy-list-header-redmi-20261106.json`与`../acceptance-artifacts/proxy-list-header-20261106/`。随后补齐当前节点徽标语义验收：Tab/List 各卡片尺寸与深浅主题均通过，List 从香港节点切换到日本节点后徽标唯一迁移，精确1/1结果和三张截图见`proxy-current-marker-redmi-20261106.json`，独立哈希基线见`docs/visual-baselines/proxy-current-marker-redmi-api36.sha256`。这些证据只覆盖目标组头、转场和当前徽标切片，不扩大为完整 Flutter 逐像素视觉；空态 morph/orbit、剩余子页排版、全应用动效与性能仍为`PARTIAL`。Fallback真实核心与冷进程证据沿用本节前述记录，自然无效`now`仍按合法解析契约记为不可自然构造边界。
 
 最新边界（11-05，todo第6项）：IP/质量与服务页面10/10回归，14PNG/3拼图已目视；仅验证既有页面和缓存行为，不新增Flutter全应用视觉/缓动或性能结论。最新构建/安装/保护异常见第3/7.7节和`ip-quality-cache-redmi-20261105.json`。
 
@@ -1136,7 +1136,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 状态：`PARTIAL`。
 
-当前执行清单（2026-11-06）：todo 第 9 项已补代理组 List 组头 sticky/raised 对齐和长内容滚动截图；下一步继续代理组卡片细节、剩余 List/子页排版与动效，再补空态 morph/orbit、面板手势、键盘联动和统一截图基线；todo 第 10 项实时背景/触点光效、玻璃品质与 8 MiB 性能后排，玻璃继续默认关闭。
+当前执行清单（2026-11-06）：todo 第 9 项已补代理组 List 组头 sticky/raised 对齐、长内容滚动截图和当前节点徽标唯一迁移；下一步继续代理组卡片细节、List 展开/收回连续动效、剩余子页排版与动效，再补空态 morph/orbit、面板手势、键盘联动和统一截图基线；todo 第 10 项实时背景/触点光效、玻璃品质与 8 MiB 性能后排，玻璃继续默认关闭。
 
 此前已验（11-05）：规则编辑的原行身份、批选及保存中状态可重建恢复；源行已变更时阻止误新增。单策略组快捷YAML返回先校验并更新父草稿，错误可继续或放弃；Provider长文保存失败与同文案重试自动回顶。服务详情/管理/质量标题正文连续过渡，独立页内容和滚动状态解决返回后列表回顶；面板退场阻断业务触摸与按键。App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4 Debug/Test、未签名Release/R8及独立lint4双变体通过，各0错误/64警告（Debug10/Release9提示）。Redmi最终生产/测试包同批final5 28/28，63张PNG已目视，安装哈希匹配。首批26/28、两次6/7、motion4补验1/1及系统设置覆盖页面的final4 27/28独立保留、不累计。正式1份配置/原选择/正文SHA-size-mtime及逐字段摘要保持；原1.yaml双端、Flutter APK及旋转/字号/动画设置保持，结束无服务/tun0。证据`docs/acceptance/main-subpages-recovery-redmi-20261105.json`。整体Flutter视觉仍PARTIAL；服务子页边缘拖回、精确缓动/全应用视觉、未覆盖子页/空态/异常恢复与性能仍待补。本组规则重建是保存状态模拟恢复，未做冷进程；未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。玻璃默认关闭，Dock/按钮实时背景和触点光效后排；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。
 
