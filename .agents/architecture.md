@@ -1,6 +1,16 @@
 # Architecture
 
-## 在线引用资源实网与age输入边界（2026-11-05，当前）
+## 资源真实文件选择与外部脚本实网（2026-11-05，当前）
+
+todo第4项本组范围已验：规则YAML/MRS与图标集真实OpenDocument，策略组本地图标GetContent经Android16照片选择器“更多选项→浏览…”进入DocumentsUI；覆盖取消、空/错误文件拒绝、重试、预览不写入、正式保存和Activity重建回读。MRS原字节保持，仓库/VM/页面预览摘要一致。公开外部脚本真实下载、改源、同步与绑定配置运行态应用通过，直接Bridge确认新增CustomProxy、暂存规则及Mihomo epoch 4→5→6；正文、DIRECT选择与纯代理会话保持。
+
+最终build3 App481/Service195/Core38/Common31共745项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8及双Lint通过，各0错误/66警告（Debug10/Release9提示）。Redmi同套App/Test final3新增5/5、相关回归12/12；MRS定向1/1独立保留，前后保护各1/1。15张PNG及2张拼图已目视，安装回拉哈希匹配；正式1份配置逐字段/选择/正文SHA-size-mtime、原1.yaml双端、Flutter包及设备设置保持，结束无服务/tun0。临时资源/配置/脚本与图标历史已收尾，8个独占设备输入按哈希核对后删除，本机附件保留。
+
+证据`docs/acceptance/resource-saf-scripts-redmi-20261105.json`，持久附件`../acceptance-artifacts/resource-saf-scripts-20261105/`。仅新增验收代码，生产逻辑和Flutter上游不改。脚本走正式VM方法、无Activity轮询，非完整点击导航E2E；两URL的原始脚本正文相同，只证明改源/文件版本/核心重载，不证明远端正文变化或实际流量命中。组父编辑入口由正式VM打开，图片选择/失败重试/保存为真实UI；资源为Activity重建，不推广选择器冷进程。首批3/5及第二批4/5的定位/系统选择器路径/异步等待失败独立保留，不与最终批次累计；一张选择器截图为切换中间帧，不作完整视觉等价结论。第3项在线age仍受输入条件限制，第5至11项继续待办；玻璃默认关闭，原暂缓/取消项保持。
+
+新增验收清单由SHA绑定独占设备文件；系统UI按实际包识别DocumentsUI或Android16照片选择器，再走真实浏览入口。规则导入先等异步读取/保存退出，重开时等VM绑定正式资源ID及busy清零，再比较仓库/VM/页面摘要，避免以旧占位符误判。脚本在无Activity环境调用正式VM并收集WhileSubscribed状态；先profileInputsApplied与直接Bridge epoch/proxyTypes，再查暂存规则，不用管理器读入口补加载。作用域取消后等待join，才恢复选择、VPN并按独占ID收尾；中断标记加密保存，成功清空并回读。
+
+## 在线引用资源实网与age输入边界（2026-11-05，历史切片）
 
 todo第3项CUSTOM引用在线源已验：手动ProfilesViewModel同步与生产到期Repository自动更新各完成一次真实下载、提交和当前CUSTOM应用。临时资源初值使用原1.yaml；下载后源字节版本变化，真实Mihomo epoch分别3→4、8→9，按正文SHA生成的文件Provider路径和7个节点回读匹配；当前CUSTOM、DIRECT组选择、正文及纯代理运行会话保持。无Activity/节点轮询参与补加载。唯一授权响应实测为34815字节明文，既有密钥为空，在线age下载/解密/应用仍受输入条件限制，不记通过。
 
