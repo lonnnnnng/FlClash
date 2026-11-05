@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "代理组页面 loading/error/empty/content 状态转场、旧层退场触摸隔离与错误恢复",
+  "status": "DONE_VERIFIED_FOR_TARGETED_TRANSITION_BEHAVIOR; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "5bbe078b363e73ee022ed16871dd645bbf41f220",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "runtimeAfterAcceptance": {
+      "kclashProcess": false,
+      "vpnService": false,
+      "proxyService": false,
+      "tun0": false
+    }
+  },
+  "implementation": {
+    "production": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+    "test": "android/tests/instrumented/ProxyGroupsRecoveryInstrumentedTest.kt",
+    "behavior": [
+      "AnimatedContent 使用 300ms 入场与 150ms 退场，loading/error/empty/content 各有稳定槽位",
+      "内容退场期间保留最后一份完整页面快照，但旧层吞掉指针事件和业务回调",
+      "错误与空态的重试/刷新按钮在退场层不可用，恢复后的节点层可继续选择",
+      "恢复错误标签为 proxy_groups_error，避免把错误误显示为空配置"
+    ],
+    "flutterReference": "仅参考本地 Flutter 的 NullStatusSwitcher 动画语义；未合并或修改 Flutter 上游代码"
+  },
+  "build": {
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "c3d95c07fd4f5c9f20dd4fe6fdd358c855c01e18d7f17bf09588a78565eccae8"
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "bf709f147948e590f74300e5b2ec672efe269957ce3823a42fd3f9b443480744"
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "7005d18992e4d954dc71e6b6d6c1a75f90749d98a29497edbb9e411b3556a3d6"
+    },
+    "jvm": "492 项通过，失败/错误/跳过均为 0",
+    "lint": "Debug 与 Release 均 0 errors；Debug 67 warnings/10 hints，Release 66 warnings/9 hints"
+  },
+  "test": {
+    "method": "com.lonnnnnng.flclash.ui.ProxyGroupsRecoveryInstrumentedTest",
+    "result": "OK (5 tests)",
+    "tests": [
+      "proxyReadFailureCanRetryWithoutShowingMissingConfiguration",
+      "errorRecoveryTransitionDisablesTheRetiringRetryAction",
+      "emptyRecoveryTransitionDisablesTheRetiringRefreshAction",
+      "contentFailureTransitionKeepsTheLastPageVisibleButInactive",
+      "dashboardReadFailureHasIndependentRetryAndRecoversSummary"
+    ],
+    "log": "/tmp/kclash-proxy-transition-class-final.log"
+  },
+  "cleanup": {
+    "formalProfileAndSettingsRestored": true,
+    "formalProfileBodyRewritten": false,
+    "authorizedInputChanged": false,
+    "flutterBaselinePackageChanged": false
+  },
+  "limitations": [
+    "本轮是真机状态转场与交互门禁验收，不代表完整 Flutter 逐像素视觉一致",
+    "未新增空态 morph/orbit、全应用逐页排版、Dock/按钮实时背景和触点光效验证",
+    "玻璃默认关闭；低 API、正式签名运行、远端 CI 和蜂窝网络不属于本轮"
+  ],
+  "next": "进入 todo 第 9 项，先补代理组卡片/组标题及剩余子页视觉，再扩展空态、面板手势、键盘联动和统一动效；效果与性能继续后排。"
+}

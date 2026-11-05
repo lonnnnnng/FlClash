@@ -1,7 +1,13 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -32,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.BlendMode
@@ -67,6 +75,13 @@ private enum class ProxyToolsMenuPage {
     CARD_SIZE,
     ICON_STYLE,
 }
+
+private enum class ProxyGroupsPageSlot { LOADING, ERROR, EMPTY, CONTENT }
+
+private const val PROXY_GROUPS_SLOT_ENTER_MILLIS = 300
+private const val PROXY_GROUPS_SLOT_EXIT_MILLIS = 150
+private val ProxyGroupsEnterEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
+private val ProxyGroupsExitEasing = CubicBezierEasing(0.42f, 0f, 1f, 1f)
 
 // 作者 long：代理页与 Flutter SurfaceLevel 使用同一层级；Tab 卡片在页面上一层，List 节点在组容器上一层。
 @Composable
@@ -263,7 +278,19 @@ internal fun ProxyGroupsCard(
     val groups = visibleProxyGroups(state.groups, mode)
     val groupNames = groups.map { it.name }
     val initialPage = groupNames.indexOf(currentGroupName).coerceAtLeast(0)
-    val pagerState = rememberPagerState(initialPage = initialPage) { groups.size }
+    var lastContentState by remember(currentProfileId) { mutableStateOf(state) }
+    SideEffect {
+        // 作者 long：加载失败可能暂时清空当前结果；动画退场期间保留上一份完整页面快照，避免旧内容随新状态一起消失。
+        if (state.groups.isNotEmpty() && lastContentState != state) lastContentState = state
+    }
+    val retainedGroups = groups.ifEmpty { visibleProxyGroups(lastContentState.groups, mode) }
+    val pagerState = rememberPagerState(initialPage = initialPage) { retainedGroups.size }
+    val pageSlot = when {
+        groups.isNotEmpty() -> ProxyGroupsPageSlot.CONTENT
+        state.isLoading -> ProxyGroupsPageSlot.LOADING
+        state.error != null -> ProxyGroupsPageSlot.ERROR
+        else -> ProxyGroupsPageSlot.EMPTY
+    }
     val coroutineScope = rememberCoroutineScope()
     var requestedGroupIndex by remember(currentProfileId, groupNames) { mutableStateOf<Int?>(null) }
     var groupNavigation by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
@@ -461,77 +488,121 @@ internal fun ProxyGroupsCard(
                 TextButton(onRefresh, enabled = canRefresh, modifier = Modifier.testTag("proxy_groups_retry")) { Text("重试") }
             }
         }
-        if (groups.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                ProxyPageEmptyState(
-                    title = if (state.isLoading) "正在加载代理组" else if (state.error != null) "代理组加载失败" else "没有代理组",
-                    description = if (state.isLoading) null else state.error ?: "添加有效配置后显示代理组。",
-                    tag = "proxy_groups_empty", loading = state.isLoading,
-                    actionLabel = if (state.isLoading) null else if (state.error == null) "刷新" else "重试",
-                    actionTag = if (state.error != null) "proxy_groups_retry" else "proxy_groups_empty_action",
-                    actionEnabled = canRefresh, onAction = onRefresh,
-                )
+        AnimatedContent(
+            targetState = pageSlot,
+            modifier = Modifier.fillMaxSize().testTag("proxy_groups_content_transition"),
+            transitionSpec = {
+                (fadeIn(tween(PROXY_GROUPS_SLOT_ENTER_MILLIS, easing = ProxyGroupsEnterEasing)) +
+                    scaleIn(initialScale = 0.92f, animationSpec = tween(PROXY_GROUPS_SLOT_ENTER_MILLIS, easing = ProxyGroupsEnterEasing))) togetherWith
+                    fadeOut(tween(PROXY_GROUPS_SLOT_EXIT_MILLIS, easing = ProxyGroupsExitEasing))
+            },
+            label = "proxyGroupsStatus",
+        ) { slot ->
+            val active = slot == pageSlot
+            val interaction = if (active) Modifier else Modifier.pointerInput(slot) {
+                // 作者 long：状态切换时旧页面继续参与淡出，但手指事件不能穿过旧内容触发另一项业务操作。
+                awaitPointerEventScope {
+                    while (true) awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+                }
             }
-        } else {
-            if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
-                ProxyGroupTabs(groups.map { it.name }, requestedGroupIndex ?: selectedGroupIndex) { index ->
-                    // 作者 long：点击立即高亮目标组，手指滑动仍跟随当前页；取消旧点击后只允许最后一个导航清除目标，避免快速连点闪回。
-                    val generation = ++groupNavigationGeneration
-                    groupNavigation?.cancel()
-                    requestedGroupIndex = index
-                    groupNavigation = coroutineScope.launch {
-                        try { pagerState.animateScrollToPage(index, animationSpec = tween(MAIN_PAGE_SLIDE_MILLIS, easing = MainPageSlideEasing)) }
-                        finally { if (groupNavigationGeneration == generation) requestedGroupIndex = null }
+            Column(Modifier.fillMaxSize().then(interaction)) {
+                when (slot) {
+                    ProxyGroupsPageSlot.LOADING,
+                    ProxyGroupsPageSlot.ERROR,
+                    ProxyGroupsPageSlot.EMPTY -> {
+                        val loading = slot == ProxyGroupsPageSlot.LOADING
+                        val failed = slot == ProxyGroupsPageSlot.ERROR
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            ProxyPageEmptyState(
+                                title = when (slot) {
+                                    ProxyGroupsPageSlot.LOADING -> "正在加载代理组"
+                                    ProxyGroupsPageSlot.ERROR -> "代理组加载失败"
+                                    else -> "没有代理组"
+                                },
+                                description = when (slot) {
+                                    ProxyGroupsPageSlot.LOADING -> null
+                                    ProxyGroupsPageSlot.ERROR -> state.error
+                                    else -> "添加有效配置后显示代理组。"
+                                },
+                                tag = if (failed) "proxy_groups_error" else "proxy_groups_empty",
+                                loading = loading,
+                                actionLabel = if (loading) null else if (failed) "重试" else "刷新",
+                                actionTag = if (failed) "proxy_groups_retry" else "proxy_groups_empty_action",
+                                actionEnabled = active && canRefresh,
+                                onAction = { if (active) onRefresh() },
+                            )
+                        }
+                    }
+                    ProxyGroupsPageSlot.CONTENT -> {
+                        // 作者 long：异常或切换配置时旧内容留在退场层；当前页面仍只让目标层接收输入。
+                        val contentState = if (groups.isEmpty()) lastContentState else state
+                        val contentGroups = if (groups.isEmpty()) visibleProxyGroups(contentState.groups, mode) else groups
+                        val contentGroupNames = contentGroups.map { it.name }
+                        val contentSelectedIndex = if (contentGroups.isEmpty()) 0 else pagerState.currentPage.coerceIn(contentGroups.indices)
+                        val contentSelectedGroup = contentGroups.getOrNull(contentSelectedIndex)
+                        if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
+                            ProxyGroupTabs(contentGroupNames, requestedGroupIndex ?: contentSelectedIndex) { index ->
+                                if (active) {
+                                    // 作者 long：点击立即高亮目标组，手指滑动仍跟随当前页；取消旧点击后只允许最后一个导航清除目标，避免快速连点闪回。
+                                    val generation = ++groupNavigationGeneration
+                                    groupNavigation?.cancel()
+                                    requestedGroupIndex = index
+                                    groupNavigation = coroutineScope.launch {
+                                        try { pagerState.animateScrollToPage(index, animationSpec = tween(MAIN_PAGE_SLIDE_MILLIS, easing = MainPageSlideEasing)) }
+                                        finally { if (groupNavigationGeneration == generation) requestedGroupIndex = null }
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(16.dp))
+                        }
+                        if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
+                            HorizontalPager(
+                                state = pagerState,
+                                key = { page -> "$currentProfileId:${contentGroupNames[page]}" },
+                                modifier = Modifier.fillMaxWidth().weight(1f).testTag("proxy_groups_pager"),
+                            ) { page ->
+                                val group = contentGroups.getOrNull(page) ?: return@HorizontalPager
+                                // 作者 long：Pager 会释放离屏组，位置按配置/组名独立保留；测速刷新与再次进入页面不能覆盖用户浏览位置。
+                                scrollStateHolder.SaveableStateProvider("tab:$currentProfileId:${group.name}") {
+                                    ProxyGroupNodesPage(
+                                        group = group,
+                                        groups = contentState.groups,
+                                        state = contentState,
+                                        query = proxyQuery,
+                                        options = pageOptions,
+                                        locateRequest = locateSelectedRequest,
+                                        locateTargetGroup = locateTargetGroup,
+                                        isCurrentPage = active && page == pagerState.currentPage && runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING,
+                                        onSelect = { selectedGroup, name -> if (active) onSelect(selectedGroup, name) },
+                                        onTestDelay = { testedGroup, name -> if (active) onTestDelay(testedGroup, name) },
+                                        onClearSearch = { if (active) proxyQuery = "" },
+                                        onContentAtTopChanged = { if (active) onContentAtTopChanged(it) },
+                                    )
+                                }
+                            }
+                        } else {
+                            scrollStateHolder.SaveableStateProvider("list:$currentProfileId") {
+                                ProxyGroupsListPage(
+                                    modifier = Modifier.fillMaxWidth().weight(1f),
+                                    groups = contentGroups,
+                                    state = contentState,
+                                    runtimeState = runtimeState,
+                                    query = proxyQuery,
+                                    locateGroupName = contentSelectedGroup?.name,
+                                    locateRequest = locateSelectedRequest,
+                                    options = pageOptions,
+                                    onToggleGroup = { groupName -> if (active) onToggleGroup(groupName) },
+                                    onSelect = { selectedGroup, name -> if (active) onSelect(selectedGroup, name) },
+                                    onTestDelay = { testedGroup, name -> if (active) onTestDelay(testedGroup, name) },
+                                    onTestGroupDelay = { testedGroup -> if (active) onTestGroupDelay(testedGroup) },
+                                    onClearSearch = { if (active) proxyQuery = "" },
+                                    onContentAtTopChanged = { if (active) onContentAtTopChanged(it) },
+                                )
+                            }
+                        }
                     }
                 }
-                Spacer(Modifier.height(16.dp))
             }
-            if (pageOptions.displayMode == ProxyDisplayMode.TAB) {
-                HorizontalPager(
-                    state = pagerState,
-                    key = { page -> "$currentProfileId:${groupNames[page]}" },
-                    modifier = Modifier.fillMaxWidth().weight(1f).testTag("proxy_groups_pager"),
-                ) { page ->
-                    val group = groups.getOrNull(page) ?: return@HorizontalPager
-                    // 作者 long：Pager 会释放离屏组，位置按配置/组名独立保留；测速刷新与再次进入页面不能覆盖用户浏览位置。
-                    scrollStateHolder.SaveableStateProvider("tab:$currentProfileId:${group.name}") {
-                        ProxyGroupNodesPage(
-                            group = group,
-                            groups = state.groups,
-                            state = state,
-                            query = proxyQuery,
-                            options = pageOptions,
-                            locateRequest = locateSelectedRequest,
-                            locateTargetGroup = locateTargetGroup,
-                            isCurrentPage = page == pagerState.currentPage && runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING,
-                            onSelect = onSelect,
-                            onTestDelay = onTestDelay,
-                            onClearSearch = { proxyQuery = "" },
-                            onContentAtTopChanged = onContentAtTopChanged,
-                        )
-                    }
-                }
-            } else {
-                scrollStateHolder.SaveableStateProvider("list:$currentProfileId") {
-                    ProxyGroupsListPage(
-                        modifier = Modifier.fillMaxWidth().weight(1f),
-                        groups = groups,
-                        state = state,
-                        runtimeState = runtimeState,
-                        query = proxyQuery,
-                        locateGroupName = selectedGroup?.name,
-                        locateRequest = locateSelectedRequest,
-                        options = pageOptions,
-                        onToggleGroup = onToggleGroup,
-                        onSelect = onSelect,
-                        onTestDelay = onTestDelay,
-                        onTestGroupDelay = onTestGroupDelay,
-                        onClearSearch = { proxyQuery = "" },
-                        onContentAtTopChanged = onContentAtTopChanged,
-                    )
-                }
-            }
-
         }
     }
 }

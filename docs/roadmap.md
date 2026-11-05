@@ -675,14 +675,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能差异见[审查表](upstream-flutter-v0.9.3-review.md)，不等于已适配；Flutter提交禁止merge/cherry-pick入Kotlin，原有验收基线和当前核心gitlink保持；内核4项增量仍待正式集成/Android验收 |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
 | 单元测试 | 本组build2 App492/Service206/Core38/Common31共767项JVM零失败/错误/跳过，含up-to-date复用；Go父模块全量race265/265、控制器压力40/40、嵌套route8方法及2子场景共10通过；TLS相同最小复现原3失败→修复3通过，计数不合并 |
-| 最新真机 | Redmi API36本组final2精确4/4：控制器6轮认证/轮换/关闭即时释放/嵌入写禁用及3/3回归；Always-on-final1冷启动/SIGKILL首次TUN HTTPS均200及归因，独立纯代理系统恢复1场景、保护前后各1/1。旧TLS EOF因果/长期稳定性未定；蜂窝延期 |
-| 最新Fallback实核 | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；见`docs/acceptance/fallback-real-core-redmi-20261105.json`。冷进程恢复与自然无效`now`仍未验 |
+| 最新真机 | Redmi API36本组final2控制器/系统边界精确4/4，另代理组状态转场与错误恢复精确5/5；控制器6轮认证/轮换/关闭即时释放/嵌入写禁用及3/3回归，Always-on-final1冷启动/SIGKILL首次TUN HTTPS均200及归因，独立纯代理系统恢复1场景、保护前后各1/1。旧TLS EOF因果/长期稳定性未定；蜂窝延期 |
+| 最新Fallback实核 | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
 | Debug / Test | 本组build2四模块JVM、Debug/AndroidTest、未签名Release/R8与双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示；实际构建Mihomo核心修复f83e9b10，无产品overlay |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
 | Release | 本组build2未签名arm64 APK/R8通过；SHA-256 `41347b7bd41d013238227826d082f5c17b72e7c5c6ee725754d636ced62baae8`；Lint0错误/66警告/9提示，正式签名与设备运行未验 |
-| 最新证据 | `controller-lifecycle-redmi-20261105.json`：KCORE-002/003已修，767 JVM、Go全量race265/265/压力40/40/route10通过，Redmi4/4、Always-on首请求两次200及纯代理恢复/保护通过；`fallback-real-core-redmi-20261105.json`补充授权源非空Fallback真实核心8阶段实核，`fallback-cold-process-redmi-20261106.json`补充固定选择冷进程恢复与清除固定。修复来源与撤销条件见源码缺陷台账。第8/11仍PARTIAL，第7自然无效`now`按合法Mihomo解析契约保留为不可自然构造边界，第6保护异常保持 |
+| 最新证据 | `controller-lifecycle-redmi-20261105.json`：KCORE-002/003已修，767 JVM、Go全量race265/265/压力40/40/route10通过，Redmi4/4、Always-on首请求两次200及纯代理恢复/保护通过；`fallback-real-core-redmi-20261105.json`与`fallback-cold-process-redmi-20261106.json`覆盖非空Fallback真实核心8阶段及冷进程恢复；`proxy-groups-transition-redmi-20261106.json`覆盖代理组 loading/error/empty/content 转场与退场触摸隔离5/5。修复来源与撤销条件见源码缺陷台账。第8/11仍PARTIAL，第7自然无效`now`按合法Mihomo解析契约保留为不可自然构造边界，第6保护异常保持 |
 
 ## 4. 目标架构图
 
@@ -1124,7 +1124,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 ### 7.6 UI/UX 完整对齐
 
-本组边界（11-06，todo第7项收尾）：无视觉修改或新PNG；更新授权源的Fallback真实核心8阶段实核、固定选择冷进程恢复与清除固定、协议20组合及正式添加订阅取消回归均有独立证据，不扩展完整Flutter视觉或动效结论。自然无效`now`不是当前合法Mihomo解析契约下可构造的实网成功场景，按边界记录。
+本组补充（11-06，代理组状态转场）：代理组 loading/error/empty/content 使用 300ms 入场与 150ms 退场，内容退场保留最后快照并隔离触摸；错误、空态、Dashboard 摘要和恢复路径在 Redmi 上精确5/5通过，证据`proxy-groups-transition-redmi-20261106.json`。这只覆盖状态转场和交互门禁，不扩大为完整 Flutter 逐像素视觉；空态 morph/orbit、剩余子页排版、全应用动效与性能仍为`PARTIAL`。Fallback真实核心与冷进程证据沿用本节前述记录，自然无效`now`仍按合法解析契约记为不可自然构造边界。
 
 最新边界（11-05，todo第6项）：IP/质量与服务页面10/10回归，14PNG/3拼图已目视；仅验证既有页面和缓存行为，不新增Flutter全应用视觉/缓动或性能结论。最新构建/安装/保护异常见第3/7.7节和`ip-quality-cache-redmi-20261105.json`。
 
@@ -1135,6 +1135,8 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 第一步指定页面的返回/草稿/拖回与退场正文已由最终44/44集中回归，81张PNG已目视；全应用逐屏视觉、空态morph/orbit、实时背景和性能仍待第三步。证据`stage-one-interactions-redmi-20261105.json`。
 
 状态：`PARTIAL`。
+
+当前执行清单（2026-11-06）：进入 todo 第 9 项，先对齐代理组卡片/组标题和剩余 List/子页的排版与动效，再补空态 morph/orbit、面板手势、键盘联动和统一截图基线；todo 第 10 项实时背景/触点光效、玻璃品质与 8 MiB 性能后排，玻璃继续默认关闭。
 
 此前已验（11-05）：规则编辑的原行身份、批选及保存中状态可重建恢复；源行已变更时阻止误新增。单策略组快捷YAML返回先校验并更新父草稿，错误可继续或放弃；Provider长文保存失败与同文案重试自动回顶。服务详情/管理/质量标题正文连续过渡，独立页内容和滚动状态解决返回后列表回顶；面板退场阻断业务触摸与按键。App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4 Debug/Test、未签名Release/R8及独立lint4双变体通过，各0错误/64警告（Debug10/Release9提示）。Redmi最终生产/测试包同批final5 28/28，63张PNG已目视，安装哈希匹配。首批26/28、两次6/7、motion4补验1/1及系统设置覆盖页面的final4 27/28独立保留、不累计。正式1份配置/原选择/正文SHA-size-mtime及逐字段摘要保持；原1.yaml双端、Flutter APK及旋转/字号/动画设置保持，结束无服务/tun0。证据`docs/acceptance/main-subpages-recovery-redmi-20261105.json`。整体Flutter视觉仍PARTIAL；服务子页边缘拖回、精确缓动/全应用视觉、未覆盖子页/空态/异常恢复与性能仍待补。本组规则重建是保存状态模拟恢复，未做冷进程；未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。玻璃默认关闭，Dock/按钮实时背景和触点光效后排；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。
 
@@ -1203,6 +1205,8 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 ### 7.7 测试、发布和运维
 
 状态：`PARTIAL`。
+
+本组代理组状态转场增量（11-06）：`ProxyGroupsRecoveryInstrumentedTest` 在 Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、API 36、arm64-v8a、竖屏默认字号）精确 **5/5**；覆盖错误/空态重试、内容失败退场快照、旧层按钮失效、Dashboard 独立重试。最终 Debug APK SHA-256 `c3d95c07fd4f5c9f20dd4fe6fdd358c855c01e18d7f17bf09588a78565eccae8`，AndroidTest `bf709f147948e590f74300e5b2ec672efe269957ce3823a42fd3f9b443480744`，未签名 Release `7005d18992e4d954dc71e6b6d6c1a75f90749d98a29497edbb9e411b3556a3d6`；本组 JVM 492 项、Debug/Release Lint 均 0 errors，日志 `/tmp/kclash-proxy-transition-class-final.log`，设备收尾无 KClash 进程、VpnService/ProxyService 或 `tun0`。完整 Flutter 视觉仍`PARTIAL`，详见`docs/acceptance/proxy-groups-transition-redmi-20261106.json`。
 
 当前已有：
 
