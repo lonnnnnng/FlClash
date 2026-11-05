@@ -2,6 +2,11 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -213,23 +218,47 @@ private fun ProxyDelayAction(
                 .appFocusRing(AppSuperellipseShape(4.dp), standsOff = true)
                 .testTag(delayTag),
         ) {
-            when {
-                delay?.isTesting == true -> CircularProgressIndicator(Modifier.size(13.dp), strokeWidth = 2.dp)
-                delay == null -> Icon(Icons.Outlined.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
-                else -> Text(
-                    proxyDelayLabel(delay),
-                    style = ProxyNodeStyle.delay,
-                    color = when {
-                        !enabled -> colors.onSurface.copy(alpha = 0.38f)
-                        delay.value == null -> colors.onSurfaceVariant
-                        delay.value <= 0 -> colors.error
-                        delay.value < 600 -> proxyDelaySuccessColor()
-                        else -> proxyDelayWarningColor()
-                    },
-                )
+            // 作者 long：Flutter 的 FadeBox 会在测速图标、运行中、结果和失败文案之间交叉淡入淡出；
+            // 保持固定的 13dp 行高，只替换内容，避免状态切换把相邻节点的卡片高度推开。
+            AnimatedContent(
+                targetState = proxyDelayAnimationKey(delay),
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(200)) togetherWith
+                        fadeOut(animationSpec = tween(150))
+                },
+                label = "proxyDelayFade",
+            ) { state ->
+                when (state.kind) {
+                    ProxyDelayAnimationKey.TESTING -> CircularProgressIndicator(Modifier.size(13.dp), strokeWidth = 2.dp)
+                    ProxyDelayAnimationKey.ACTION -> Icon(Icons.Outlined.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
+                    else -> Text(
+                        state.label,
+                        style = ProxyNodeStyle.delay,
+                        color = when {
+                            !enabled -> colors.onSurface.copy(alpha = 0.38f)
+                            delay?.value == null -> colors.onSurfaceVariant
+                            delay.value <= 0 -> colors.error
+                            delay.value < 600 -> proxyDelaySuccessColor()
+                            else -> proxyDelayWarningColor()
+                        },
+                    )
+                }
             }
         }
     }
+}
+
+private enum class ProxyDelayAnimationKey { ACTION, TESTING, RESULT }
+
+private data class ProxyDelayAnimationState(
+    val kind: ProxyDelayAnimationKey,
+    val label: String,
+)
+
+private fun proxyDelayAnimationKey(delay: ProxyDelayUiState?): ProxyDelayAnimationState = when {
+    delay == null -> ProxyDelayAnimationState(ProxyDelayAnimationKey.ACTION, "")
+    delay.isTesting -> ProxyDelayAnimationState(ProxyDelayAnimationKey.TESTING, "")
+    else -> ProxyDelayAnimationState(ProxyDelayAnimationKey.RESULT, proxyDelayLabel(delay))
 }
 
 private fun proxyDelayLabel(delay: ProxyDelayUiState?): String = when {

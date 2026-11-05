@@ -231,6 +231,46 @@ class ProxyPageParityInstrumentedTest {
         }
     }
 
+    @Test fun delayStatusUsesFadeTransitionWithoutChangingNodeSelection() {
+        var selected by mutableStateOf("香港节点")
+        var delayState by mutableStateOf<ProxyDelayUiState?>(null)
+        val group = ProxyGroupInfo("测速动效", "Selector", selected, listOf("香港节点", "日本节点"), false)
+        compose.setContent {
+            KClashTheme {
+                ProxyGroupsCard(
+                    state = ProxyGroupsUiState(
+                        groups = listOf(group),
+                        unfoldSet = setOf(group.name),
+                        delayResults = delayState?.let {
+                            mapOf(ProxyDelayKey(group.name, "日本节点", CoreBridge.DEFAULT_TEST_URL) to it)
+                        } ?: emptyMap(),
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    currentGroupName = group.name,
+                    onRefresh = {},
+                    onToggleGroup = {},
+                    onSelect = { _, name -> selected = name },
+                    onTestDelay = { _, _ -> },
+                    onTestGroupDelay = {},
+                )
+            }
+        }
+        val delay = compose.onNodeWithTag("proxy_node_delay_测速动效_日本节点", useUnmergedTree = true)
+        delay.assertIsDisplayed()
+        compose.waitForIdle()
+        compose.mainClock.autoAdvance = false
+        val before = delay.captureToImage().asAndroidBitmap()
+        compose.runOnIdle { delayState = ProxyDelayUiState(isTesting = true) }
+        compose.mainClock.advanceTimeBy(60)
+        val middle = delay.captureToImage().asAndroidBitmap()
+        compose.mainClock.advanceTimeBy(300)
+        val settled = delay.captureToImage().asAndroidBitmap()
+        compose.mainClock.autoAdvance = true
+        check(!before.sameAs(middle)) { "测速状态切换应产生淡入淡出中间帧" }
+        check(!middle.sameAs(settled)) { "测速状态切换的中间帧不能直接等于终帧" }
+        compose.runOnIdle { assertEquals("香港节点", selected) }
+    }
+
     @Test fun overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection() {
         val names = (0..12).map { "分组" + it }
         var current by mutableStateOf(names.first())
