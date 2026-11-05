@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "代理组 List 模式组头 sticky/raised 视觉对齐、长内容滚动与远端 Tab 转场回归",
+  "status": "DONE_VERIFIED_FOR_LIST_HEADER_PARITY; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "248c66a4d61b468c837234137515b7ba798e1899",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userRotation": 0
+  },
+  "implementation": {
+    "production": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+    "test": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+    "behavior": [
+      "List 组头继续使用 Compose stickyHeader，滚动后以 180ms 动画提升 shadowElevation 到 8dp、tonalElevation 到 2dp",
+      "测试在组头真正到达吸顶边界后再比较其相对 LazyColumn 视口位置，避免把到达边界前的中间位移误判为失败",
+      "远端 Tab 转场测试等待 HorizontalPager 目标页进入 composition 后再采样连续帧，保留原有收敛断言"
+    ],
+    "flutterReference": "参考本地 Flutter lib/views/proxies/list.dart 的 PinnedHeaderSliver、floating/lift 与双层阴影语义；未合并或修改 Flutter 上游代码"
+  },
+  "build": {
+    "jvm": "App 492 项、Core 38 项通过，失败/错误/跳过均为 0",
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "3d48516e64c4b9d1a738aa25811d8d0754fd311f47a39a5368adc0610f79d0e9"
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "509a32aa80a983783150b2e3d3e82e54c6861dc26c91346d910c046708da6de2"
+    },
+    "redmiInstall": {
+      "debugBaseApkSha256": "3d48516e64c4b9d1a738aa25811d8d0754fd311f47a39a5368adc0610f79d0e9",
+      "androidTestBaseApkSha256": "509a32aa80a983783150b2e3d3e82e54c6861dc26c91346d910c046708da6de2",
+      "matchesBuiltArtifacts": true,
+      "evidence": "../acceptance-artifacts/proxy-list-header-20261106/redmi-debug-base.apk and redmi-androidTest-base.apk"
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "9cc143851852cb0b47b486d6dbd7e4b0559c3badb5e254f2a0615c695410cf49"
+    },
+    "lint": "Debug 与 Release 均 0 errors；Debug 67 warnings/10 hints，Release 66 warnings/9 hints"
+  },
+  "test": {
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "result": "OK (4 tests)",
+    "methods": [
+      "overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+      "pagerDragCancelAndDistantTabTapKeepContinuousFramesAndSettledSelection",
+      "tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent",
+      "listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls"
+    ],
+    "focusedListHeader": {
+      "method": "listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls",
+      "result": "OK (1 test)",
+      "images": [
+        {
+          "path": "../acceptance-artifacts/proxy-list-header-20261106/proxy_list_group_header_resting.png",
+          "bytes": 102736,
+          "sha256": "069284b6ad50d10a42bffba535af68b482dcdaf0442ec73032ccc79fbd05aa68"
+        },
+        {
+          "path": "../acceptance-artifacts/proxy-list-header-20261106/proxy_list_group_header_lifted.png",
+          "bytes": 95035,
+          "sha256": "7404366cd8d45a34da2942b0af0906afe9bab46773b6872c9df7d9e3dde92bc2"
+        }
+      ],
+      "log": "../acceptance-artifacts/proxy-list-header-20261106/instrumentation.log"
+    },
+    "xml": "android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml"
+  },
+  "cleanup": {
+    "formalProfileAndSettingsRestored": true,
+    "formalProfileBodyRewritten": false,
+    "authorizedInputChanged": false,
+    "flutterBaselinePackageChanged": false,
+    "runtimeStarted": false
+  },
+  "limitations": [
+    "本轮只完成代理组 List 组头 sticky/raised 视觉切片与相关转场回归，不代表完整 Flutter 逐像素视觉一致",
+    "完整 List/其他子页排版、空态 morph/orbit、统一截图基线、Dock/按钮实时背景与触点光效仍为 PARTIAL",
+    "玻璃默认关闭；低 API、正式签名运行、远端 CI、蜂窝网络和观测页次要视觉不属于本轮"
+  ],
+  "next": "继续补代理组卡片细节、剩余子页/面板与空态视觉；再集中验收完整页面动效和其他独立实网边界"
+}

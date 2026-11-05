@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -627,6 +628,11 @@ private fun ProxyGroupsListPage(
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val listScrolled by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0
+        }
+    }
     val headerHeights = remember { mutableStateMapOf<String, Int>() }
     val fallbackHeaderHeight = with(LocalDensity.current) { 68.dp.roundToPx() }
     LaunchedEffect(listState) {
@@ -688,11 +694,23 @@ private fun ProxyGroupsListPage(
                 stickyHeader(key = "header:${group.name}") {
                     // 作者 long：Flutter 的 List 组标题是独立的 raised card；折叠时只给出类型，
                     // 展开后才显示定位与批量测速，保证标题、当前节点和操作各自有稳定层级。
+                    val headerShadow by animateDpAsState(
+                        targetValue = if (listScrolled) 8.dp else 0.dp,
+                        animationSpec = tween(180),
+                        label = "proxyListHeaderShadow",
+                    )
+                    val headerTonal by animateDpAsState(
+                        targetValue = if (listScrolled) 2.dp else 0.dp,
+                        animationSpec = tween(180),
+                        label = "proxyListHeaderTonal",
+                    )
                     Surface(
                         modifier = Modifier.fillMaxWidth().padding(top = if (groupIndex == 0) 0.dp else 16.dp).testTag("proxy_list_group_${group.name}"),
                         shape = AppSuperellipseShape(topStart = 24.dp, topEnd = 24.dp,
                             bottomStart = if (expanded) 0.dp else 24.dp, bottomEnd = if (expanded) 0.dp else 24.dp),
                         color = dashboardCardColor(),
+                        tonalElevation = headerTonal,
+                        shadowElevation = headerShadow,
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth().clickable(enabled = !state.isLoading) { onToggleGroup(group.name) }

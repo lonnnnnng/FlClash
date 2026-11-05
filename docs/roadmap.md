@@ -1124,7 +1124,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 ### 7.6 UI/UX 完整对齐
 
-本组补充（11-06，代理组状态转场）：代理组 loading/error/empty/content 使用 300ms 入场与 150ms 退场，内容退场保留最后快照并隔离触摸；错误、空态、Dashboard 摘要和恢复路径在 Redmi 上精确5/5通过，证据`proxy-groups-transition-redmi-20261106.json`。这只覆盖状态转场和交互门禁，不扩大为完整 Flutter 逐像素视觉；空态 morph/orbit、剩余子页排版、全应用动效与性能仍为`PARTIAL`。Fallback真实核心与冷进程证据沿用本节前述记录，自然无效`now`仍按合法解析契约记为不可自然构造边界。
+本组补充（11-06，代理组状态转场）：代理组 loading/error/empty/content 使用 300ms 入场与 150ms 退场，内容退场保留最后快照并隔离触摸；错误、空态、Dashboard 摘要和恢复路径在 Redmi 上精确5/5通过，证据`proxy-groups-transition-redmi-20261106.json`。本轮继续完成 List 组头 sticky/raised 对齐：`ProxyGroupsPage.kt` 在滚动时以180ms动画提升组头阴影/色调层级，长列表吸顶与远端 Tab 连续转场在 Redmi 精确4/4通过，静止/吸顶截图及哈希见`proxy-list-header-redmi-20261106.json`与`../acceptance-artifacts/proxy-list-header-20261106/`。这只覆盖目标组头和转场切片，不扩大为完整 Flutter 逐像素视觉；空态 morph/orbit、剩余子页排版、全应用动效与性能仍为`PARTIAL`。Fallback真实核心与冷进程证据沿用本节前述记录，自然无效`now`仍按合法解析契约记为不可自然构造边界。
 
 最新边界（11-05，todo第6项）：IP/质量与服务页面10/10回归，14PNG/3拼图已目视；仅验证既有页面和缓存行为，不新增Flutter全应用视觉/缓动或性能结论。最新构建/安装/保护异常见第3/7.7节和`ip-quality-cache-redmi-20261105.json`。
 
@@ -1136,7 +1136,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 状态：`PARTIAL`。
 
-当前执行清单（2026-11-06）：进入 todo 第 9 项，先对齐代理组卡片/组标题和剩余 List/子页的排版与动效，再补空态 morph/orbit、面板手势、键盘联动和统一截图基线；todo 第 10 项实时背景/触点光效、玻璃品质与 8 MiB 性能后排，玻璃继续默认关闭。
+当前执行清单（2026-11-06）：todo 第 9 项已补代理组 List 组头 sticky/raised 对齐和长内容滚动截图；下一步继续代理组卡片细节、剩余 List/子页排版与动效，再补空态 morph/orbit、面板手势、键盘联动和统一截图基线；todo 第 10 项实时背景/触点光效、玻璃品质与 8 MiB 性能后排，玻璃继续默认关闭。
 
 此前已验（11-05）：规则编辑的原行身份、批选及保存中状态可重建恢复；源行已变更时阻止误新增。单策略组快捷YAML返回先校验并更新父草稿，错误可继续或放弃；Provider长文保存失败与同文案重试自动回顶。服务详情/管理/质量标题正文连续过渡，独立页内容和滚动状态解决返回后列表回顶；面板退场阻断业务触摸与按键。App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4 Debug/Test、未签名Release/R8及独立lint4双变体通过，各0错误/64警告（Debug10/Release9提示）。Redmi最终生产/测试包同批final5 28/28，63张PNG已目视，安装哈希匹配。首批26/28、两次6/7、motion4补验1/1及系统设置覆盖页面的final4 27/28独立保留、不累计。正式1份配置/原选择/正文SHA-size-mtime及逐字段摘要保持；原1.yaml双端、Flutter APK及旋转/字号/动画设置保持，结束无服务/tun0。证据`docs/acceptance/main-subpages-recovery-redmi-20261105.json`。整体Flutter视觉仍PARTIAL；服务子页边缘拖回、精确缓动/全应用视觉、未覆盖子页/空态/异常恢复与性能仍待补。本组规则重建是保存状态模拟恢复，未做冷进程；未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。玻璃默认关闭，Dock/按钮实时背景和触点光效后排；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。
 
@@ -1206,7 +1206,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 状态：`PARTIAL`。
 
-本组代理组状态转场增量（11-06）：`ProxyGroupsRecoveryInstrumentedTest` 在 Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、API 36、arm64-v8a、竖屏默认字号）精确 **5/5**；覆盖错误/空态重试、内容失败退场快照、旧层按钮失效、Dashboard 独立重试。最终 Debug APK SHA-256 `c3d95c07fd4f5c9f20dd4fe6fdd358c855c01e18d7f17bf09588a78565eccae8`，AndroidTest `bf709f147948e590f74300e5b2ec672efe269957ce3823a42fd3f9b443480744`，未签名 Release `7005d18992e4d954dc71e6b6d6c1a75f90749d98a29497edbb9e411b3556a3d6`；本组 JVM 492 项、Debug/Release Lint 均 0 errors，日志 `/tmp/kclash-proxy-transition-class-final.log`，设备收尾无 KClash 进程、VpnService/ProxyService 或 `tun0`。完整 Flutter 视觉仍`PARTIAL`，详见`docs/acceptance/proxy-groups-transition-redmi-20261106.json`。
+本组代理组状态转场增量（11-06）：`ProxyGroupsRecoveryInstrumentedTest` 在 Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、API 36、arm64-v8a、竖屏默认字号）精确 **5/5**；覆盖错误/空态重试、内容失败退场快照、旧层按钮失效、Dashboard 独立重试。随后 List 组头/转场回归 `ProxyPageParityInstrumentedTest` 精确 **4/4**，包括长列表组头进入吸顶边界后保持相对列表视口位置、raised 阴影截图和远端 Tab 目标页懒组合等待。最终 Debug APK SHA-256 `3d48516e64c4b9d1a738aa25811d8d0754fd311f47a39a5368adc0610f79d0e9`，AndroidTest `509a32aa80a983783150b2e3d3e82e54c6861dc26c91346d910c046708da6de2`，未签名 Release `9cc143851852cb0b47b486d6dbd7e4b0559c3badb5e254f2a0615c695410cf49`；本组 JVM App492/Core38 项，Debug/Release Lint 均 0 errors（Debug67 warnings/10 hints，Release66 warnings/9 hints）。完整 Flutter 视觉仍`PARTIAL`，详见`docs/acceptance/proxy-groups-transition-redmi-20261106.json`与`docs/acceptance/proxy-list-header-redmi-20261106.json`。
 
 当前已有：
 
@@ -1300,7 +1300,7 @@ HTTP/File Proxy、六种HTTP YAML/text与原90个HTTP/mrs已有分批下载/解�
 4. Requests 页面。
 5. 基础日志流。
 
-当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 覆盖竖屏系统默认字号下的空态、选中自定义配置和订阅用量三态，横屏/大字号不再作为后续测试范围。Dashboard、Connections 和 Observation 的大字号矩阵属于历史验证记录，不继续执行。Dashboard 运行态已补齐统计/诊断交互断言；首页三态控件已在 Redmi 真机根目录 `1.yaml` 配置下完成真实核心切换和停止/重启恢复，不作为外网流量分流测试证据。Connections 已补齐详情快照恢复、元数据/格式/复制、Flutter 两档高度、浅色、小窗口、底部弹簧进出场、侧栏减速进出场、关闭中重建和真实核心详情 E2E。当前主流程已覆盖 Profiles 添加/导入首片、文件 YAML 预检和确认弹窗固定宿主、Proxy Groups 递归选择、叶子协议显示、按组滚动恢复、List 组内定位、语义锚定和工具菜单，以及 URLTest/Fallback 真实 Mihomo 选择和延迟缓存真实进程重建回归；Profile 卡片分享三项与指定 ID 只读预览已实现；age表单、真实Android Bridge密文解密及FILE新增/替换SAF已完成分项验收；节点菜单保存到本地目录与代理页卡片/组标题首版视觉已验，运行态保存/应用、父/正文进程草稿与四类真实SAF冷恢复已由11-04前组完成，前组首页/代理组/Providers同批9/9，主页面基础视觉/交互及三分钟Providers观察同批23/23；本批配置/代理页面24项、正文2项、菜单/预览交互3项、节点菜单停止/运行态各1项和URLTest冷进程prepare/verify各1项分批通过。新批正式Room起始为空，`1.yaml`无Fallback；完整页面parity、连续动效、真实加密在线订阅和其他资源SAF仍待验；Connections/Requests/DNS/Logs的细节暂不推进。当前切片不代表任一完整页面parity。
+当前页面级视觉首片已覆盖 Dashboard、Proxy、Connections、Profiles 和 Observation 的固定状态；Profiles 覆盖竖屏系统默认字号下的空态、选中自定义配置和订阅用量三态，横屏/大字号不再作为后续测试范围。Dashboard、Connections 和 Observation 的大字号矩阵属于历史验证记录，不继续执行。Dashboard 运行态已补齐统计/诊断交互断言；首页三态控件已在 Redmi 真机根目录 `1.yaml` 配置下完成真实核心切换和停止/重启恢复，不作为外网流量分流测试证据。Connections 已补齐详情快照恢复、元数据/格式/复制、Flutter 两档高度、浅色、小窗口、底部弹簧进出场、侧栏减速进出场、关闭中重建和真实核心详情 E2E。当前主流程已覆盖 Profiles 添加/导入首片、文件 YAML 预检和确认弹窗固定宿主、Proxy Groups 递归选择、叶子协议显示、按组滚动恢复、List 组内定位、语义锚定和工具菜单，以及 URLTest/Fallback 真实 Mihomo 选择和延迟缓存真实进程重建回归；Profile 卡片分享三项与指定 ID 只读预览已实现；age表单、真实Android Bridge密文解密及FILE新增/替换SAF已完成分项验收；节点菜单保存到本地目录、代理页卡片/组标题首版及 List 组头 sticky/raised 长列表视觉切片已验，运行态保存/应用、父/正文进程草稿与四类真实SAF冷恢复已由11-04前组完成，前组首页/代理组/Providers同批9/9，主页面基础视觉/交互及三分钟Providers观察同批23/23；本批配置/代理页面24项、正文2项、菜单/预览交互3项、节点菜单停止/运行态各1项和URLTest冷进程prepare/verify各1项分批通过。新批正式Room起始为空，`1.yaml`无Fallback；完整页面parity、连续动效、真实加密在线订阅和其他资源SAF仍待验；Connections/Requests/DNS/Logs的细节暂不推进。当前切片不代表任一完整页面parity。
 
 ### N3：DNS、日志和故障诊断
 
@@ -3023,3 +3023,10 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - Redmi Note 8 Pro `wsvwypiz7xwslvl7`（Android 16/API 36、arm64-v8a、1080×2340、竖屏、系统字号 1.0）双阶段通过 `OK (1 test)` / `OK (1 test)`；`ProxyDelayDaoInstrumentedTest` 3/3 通过。全程 Runtime `STOPPED`，没有 ProxyService、VpnService 或 TUN；没有读取/修改外层 `1.yaml`，没有清数据或删除 Profile。
 - 强制 `./gradlew :app:testDebugUnitTest :core:testDebugUnitTest --rerun-tasks --no-daemon -Ptarget-platform=android-arm64` 通过：App 270、Core 34 项，失败/错误/跳过 0。Debug/AndroidTest 构建和 `lintDebug` 通过，Lint 0 errors、51 warnings、9 hints。最终重建后 Debug APK SHA-256 `db03165a180429f6d46a336d5c125652dfde20a2fa4110069bcc5fda06dd92ac`，AndroidTest APK SHA-256 `deabbe570d3808404b30800360c9f25d59932c4503458dd0863291c633bd2078`，均与 Redmi 安装包匹配；App 原生库仅 arm64-v8a。
 - 本阶段 `DONE-VERIFIED`，Proxy Groups 整体仍为 `PARTIAL`。下一步补代理组卡片和组标题的视觉校准；真实 age 密文 Android E2E、加密 SAF/全新 Profile SAF 导入、URLTest/Fallback 无有效核心 `now` 的边界及跨进程手动优选恢复继续待验。本轮未提交或推送。
+
+### 2026-11-06：Proxy Groups List 组头 sticky/raised 视觉校准 — DONE-VERIFIED（整体仍 PARTIAL）
+
+- `ProxyGroupsPage.kt` 的 List 组头继续使用 Compose `stickyHeader`，在列表滚动时以 180ms 动画将 `shadowElevation` 提升到 `8dp`、`tonalElevation` 提升到 `2dp`，玻璃效果仍默认关闭。实现参考本地 Flutter `PinnedHeaderSliver` 的 floating/lift 与阴影语义，没有合并或修改 Flutter 上游代码。
+- 新增 `ProxyPageParityInstrumentedTest#listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls`：先让长列表组头真正到达吸顶边界，再验证后续滚动中相对 `LazyColumn` 视口位置保持稳定，并采集 resting/lifted 两张截图；另修正既有远端 Tab 连续转场用例，等待 `HorizontalPager` 目标页懒组合后再采样。Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、API36、arm64-v8a、1080×2340、竖屏、字号1.0）整类 **4/4** 通过，截图哈希为 resting `069284b6ad50d10a42bffba535af68b482dcdaf0442ec73032ccc79fbd05aa68`、lifted `7404366cd8d45a34da2942b0af0906afe9bab46773b6872c9df7d9e3dde92bc2`。
+- 最终 `./gradlew :app:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64` 通过：App JVM **492**、Core **38**，失败/错误/跳过均为0；Debug/AndroidTest、未签名 Release/R8 和双 Lint 均通过，Debug/Release Lint 分别为 **0 errors、67 warnings/10 hints** 与 **0 errors、66 warnings/9 hints**。最终 APK 哈希：Debug `3d48516e64c4b9d1a738aa25811d8d0754fd311f47a39a5368adc0610f79d0e9`、AndroidTest `509a32aa80a983783150b2e3d3e82e54c6861dc26c91346d910c046708da6de2`、未签名 Release `9cc143851852cb0b47b486d6dbd7e4b0559c3badb5e254f2a0615c695410cf49`。
+- 证据：`docs/acceptance/proxy-list-header-redmi-20261106.json`；持久附件 `../acceptance-artifacts/proxy-list-header-20261106/`。本轮完成的是 List 组头视觉切片，完整 List/其他子页、空态 morph/orbit、统一截图基线、全应用动效与性能仍为 `PARTIAL`；真实 age、加密 SAF、URLTest/Fallback 无有效 `now` 边界、跨进程优选恢复和其他实网边界按原清单继续排队。本轮未提交或推送。

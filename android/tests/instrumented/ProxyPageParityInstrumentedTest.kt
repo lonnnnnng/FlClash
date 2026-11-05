@@ -66,10 +66,20 @@ class ProxyPageParityInstrumentedTest {
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag("proxy_group_menu_分组10").performClick()
         compose.mainClock.advanceTimeBy(64)
+        val targetMembers = compose.onAllNodesWithTag("proxy_group_members_分组10")
+        var elapsedMillis = 0
+        while (targetMembers.fetchSemanticsNodes().isEmpty() && elapsedMillis < 500) {
+            // 作者 long：Pager 只预组合邻近页，远端目标页进入可视范围后才有成员节点可用于采集运动帧。
+            compose.mainClock.advanceTimeBy(16)
+            elapsedMillis += 16
+        }
+        check(targetMembers.fetchSemanticsNodes().isNotEmpty()) {
+            "目标组进入 Pager 可视范围后应创建成员页面，等待=${elapsedMillis}ms"
+        }
         val positions = mutableListOf<Float>()
         repeat(4) { frame ->
             compose.mainClock.advanceTimeBy(48)
-            val member = compose.onNodeWithTag("proxy_group_members_分组10").fetchSemanticsNode()
+            val member = targetMembers.onFirst().fetchSemanticsNode()
             positions += member.layoutInfo.coordinates.positionInRoot().x
             capture("proxy_pager_tap_frame_$frame")
         }
@@ -165,6 +175,80 @@ class ProxyPageParityInstrumentedTest {
         compose.onNodeWithTag("proxy_group_search_toggle").performClick()
         compose.onNodeWithTag("proxy_group_search").assertDoesNotExist()
         compose.onNodeWithTag("proxy_group_tab_分组12").assertIsSelected()
+    }
+
+    @Test fun listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls() {
+        val group = ProxyGroupInfo(
+            "长列表",
+            "Selector",
+            "节点-00",
+            (0..24).map { "节点-${it.toString().padStart(2, '0')}" },
+            false,
+        )
+        var expanded by mutableStateOf(emptySet<String>())
+        compose.setContent { KClashTheme {
+            ProxyGroupsCard(
+                modifier = Modifier.fillMaxSize(),
+                state = ProxyGroupsUiState(groups = listOf(group), unfoldSet = expanded),
+                runtimeState = CoreRuntimeStatus.STOPPED,
+                currentGroupName = group.name,
+                onRefresh = {},
+                onToggleGroup = { name -> expanded = if (name in expanded) expanded - name else expanded + name },
+                onSelect = { _, _ -> },
+                onTestDelay = { _, _ -> },
+                onTestGroupDelay = {},
+            )
+        } }
+        option("display_mode", "proxy_display_mode_LIST")
+        compose.onNodeWithTag("proxy_list_group_header_长列表").performClick()
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithTag("proxy_list_node_长列表_节点-00").fetchSemanticsNodes().isNotEmpty()
+        }
+        val list = compose.onNodeWithTag("proxy_groups_list")
+        val header = compose.onNodeWithTag("proxy_list_group_header_长列表")
+        val restingListTop = list.fetchSemanticsNode().layoutInfo.coordinates.positionInRoot().y
+        val restingHeaderTop = header.fetchSemanticsNode().layoutInfo.coordinates.positionInRoot().y
+        capture("proxy_list_group_header_resting")
+        // 作者 long：stickyHeader 到达视口边界前仍会随内容移动；要多滚一段并确认后续滚动不再改变组头位置。
+        val restingOffset = restingHeaderTop - restingListTop
+        var pinnedOffset: Float? = null
+        var latestOffset = restingOffset
+        var latestListTop = restingListTop
+        var latestHeaderTop = restingHeaderTop
+        for (attempt in 0 until 6) {
+            list.performTouchInput {
+                swipeUp(startY = height * 0.85f, endY = height * 0.15f, durationMillis = 500)
+            }
+            compose.waitForIdle()
+            val firstListTop = list.fetchSemanticsNode().layoutInfo.coordinates.positionInRoot().y
+            val firstHeaderTop = header.fetchSemanticsNode().layoutInfo.coordinates.positionInRoot().y
+            val firstOffset = firstHeaderTop - firstListTop
+            latestOffset = firstOffset
+            latestListTop = firstListTop
+            latestHeaderTop = firstHeaderTop
+            if (firstOffset < restingOffset - 1f) {
+                list.performTouchInput {
+                    swipeUp(startY = height * 0.85f, endY = height * 0.15f, durationMillis = 500)
+                }
+                compose.waitForIdle()
+                val nextListTop = list.fetchSemanticsNode().layoutInfo.coordinates.positionInRoot().y
+                val nextHeaderTop = header.fetchSemanticsNode().layoutInfo.coordinates.positionInRoot().y
+                val nextOffset = nextHeaderTop - nextListTop
+                latestOffset = nextOffset
+                latestListTop = nextListTop
+                latestHeaderTop = nextHeaderTop
+                if (kotlin.math.abs(nextOffset - firstOffset) <= 1f) {
+                    pinnedOffset = nextOffset
+                    break
+                }
+            }
+        }
+        header.assertIsDisplayed()
+        check(pinnedOffset != null) {
+            "长列表滚动后组头应进入并保持 pinned 状态，restingOffset=$restingOffset latestOffset=$latestOffset, " +
+                "listTop=$restingListTop->$latestListTop headerTop=$restingHeaderTop->$latestHeaderTop"
+        }
+        capture("proxy_list_group_header_lifted")
     }
 
     private fun option(menu: String, value: String) {
