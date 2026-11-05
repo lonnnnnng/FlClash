@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "timezone": "Asia/Shanghai",
+  "scope": "代理组节点卡片测速触点的局部键盘/遥控焦点反馈、Enter 激活与节点选择隔离",
+  "status": "DONE_VERIFIED_FOR_DELAY_FOCUS_AND_KEYBOARD_ACTIVATION; FULL_KEYBOARD_NAVIGATION_AND_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "overallPassed": true,
+  "baseCommit": "77f1a0abefacb012bc37e55307a8ca47b676b8e8",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userRotation": 0
+  },
+  "implementation": {
+    "production": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyNodeVisuals.kt",
+    "test": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+    "behavior": [
+      "测速 TextButton 增加独立局部 appFocusRing，焦点提示不改变节点卡片选中语义。",
+      "键盘模式请求测速触点焦点后，局部截图像素发生变化，证明焦点环可见。",
+      "Enter 只触发一次测速回调，当前节点仍保持原选择。"
+    ],
+    "flutterReference": "仅参考本地 Flutter 代理组触点焦点与键盘激活语义，未合并或修改 Flutter 上游代码。"
+  },
+  "build": {
+    "commands": [
+      "./gradlew :app:testDebugUnitTest :core:testDebugUnitTest :service:testDebugUnitTest :common:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease --no-daemon -Ptarget-platform=android-arm64",
+      "./gradlew :app:lintDebug --no-daemon -Ptarget-platform=android-arm64",
+      "./gradlew :app:lintRelease --no-daemon -Ptarget-platform=android-arm64"
+    ],
+    "jvm": {
+      "app": { "tests": 494, "failures": 0, "errors": 0, "skipped": 0 },
+      "service": { "tests": 206, "failures": 0, "errors": 0, "skipped": 0 },
+      "core": { "tests": 38, "failures": 0, "errors": 0, "skipped": 0 },
+      "common": { "tests": 31, "failures": 0, "errors": 0, "skipped": 0 }
+    },
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "0e87ffd8badeb5f32001aba6fa49b9ee2b996db3c14a823c585fd4d55ea314c4",
+      "bytes": 90701078
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "941717e145823e69532c0b75e523be79d2d59300a4119037aad379475dcc6db2",
+      "bytes": 3795975
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "45254ab8db780597db0467c8bc11eaef7a5cc4493c343522271e44dfe97f4985",
+      "bytes": 48206048
+    },
+    "lint": {
+      "debug": { "errors": 0, "warnings": 67, "hints": 10 },
+      "release": { "errors": 0, "warnings": 66, "hints": 9 }
+    },
+    "redmiInstall": {
+      "debugBaseApkSha256": "0e87ffd8badeb5f32001aba6fa49b9ee2b996db3c14a823c585fd4d55ea314c4",
+      "androidTestBaseApkSha256": "941717e145823e69532c0b75e523be79d2d59300a4119037aad379475dcc6db2",
+      "matchesBuiltArtifacts": true,
+      "installCommand": "adb -s wsvwypiz7xwslvl7 install -r ...",
+      "evidence": "../acceptance-artifacts/proxy-delay-focus-20261106/"
+    }
+  },
+  "test": {
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "result": "OK (1 test)",
+    "method": "delayFocusRingAndKeyboardActivationStayIndependentFromNodeSelection",
+    "xml": "../acceptance-artifacts/proxy-delay-focus-20261106/TEST-Redmi-Note-8-Pro-16.xml",
+    "summary": "tests=1 failures=0 errors=0 skipped=0",
+    "assertions": [
+      "测速触点 RequestFocus 后 assertIsFocused 通过。",
+      "聚焦前后测速区域 changedPixels > 0。",
+      "Enter 后 tested=1 且 selected 仍为香港节点。"
+    ],
+    "logcat": "../acceptance-artifacts/proxy-delay-focus-20261106/instrumentation-logcat.txt"
+  },
+  "rerunDiagnostics": [
+    "首次并行构建的 :app:lintAnalyzeDebugAndroidTest 触发 Kotlin FIR/Android Lint 工具内部异常，定位到既有 AccessControlOrientationInstrumentedTest.kt；没有业务编译或测试失败。",
+    "随后独立 :app:lintDebug 与 :app:lintRelease 均成功，最终 lint 结论只采用独立重跑结果。"
+  ],
+  "sourceSnapshot": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyNodeVisuals.kt",
+      "sha256": "5d17a8090047f2c652da78d3752f1a25018ef5525c0aec1a9f0fb49c9b487340"
+    },
+    {
+      "path": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+      "sha256": "0e281a01173d7a1060feeecebaa66e76c438b62d4f737374007e9bcdf8c878d8"
+    }
+  ],
+  "cleanup": {
+    "formalProfileAndSettingsRestored": true,
+    "formalProfileBodyRewritten": false,
+    "authorizedInputChanged": false,
+    "flutterBaselinePackageChanged": false,
+    "runtimeStarted": false,
+    "finalApkInstalledAndHashPulled": true,
+    "servicesStoppedAfterTest": true
+  },
+  "limitations": [
+    "本轮只完成测速触点局部焦点环和键盘 Enter 激活隔离，不代表完整键盘导航或全应用 Flutter 逐像素视觉一致。",
+    "其他子页/面板键盘联动、统一截图基线、Dock/按钮实时背景与触点光效、8 MiB 正文和全应用动效性能仍为 PARTIAL。",
+    "玻璃默认关闭；低 API、正式签名运行、远端 CI、蜂窝网络和观测页次要视觉不属于本轮。"
+  ],
+  "next": "继续补代理组卡片剩余视觉细节、未覆盖子页/面板与统一视觉基线，再集中验收全应用动效和性能。"
+}

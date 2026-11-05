@@ -6,10 +6,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import com.lonnnnnng.flclash.core.CoreBridge
@@ -17,10 +21,12 @@ import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import java.io.ByteArrayOutputStream
+import org.junit.Assert.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import kotlin.math.roundToInt
 
 /** 作者 long：同一轮覆盖代理完整页面的布局和操作，固定状态不访问订阅或启动真实核心。 */
 class ProxyPageParityInstrumentedTest {
@@ -171,6 +177,58 @@ class ProxyPageParityInstrumentedTest {
         compose.onNodeWithTag("proxy_list_group_header_节点选择").performClick()
         compose.onNodeWithTag("proxy_list_group_locate_节点选择").assertIsDisplayed()
         compose.onNodeWithTag("proxy_list_group_batch_节点选择").assertIsDisplayed()
+    }
+
+    @Test fun delayFocusRingAndKeyboardActivationStayIndependentFromNodeSelection() {
+        var selected by mutableStateOf("香港节点")
+        var tested by mutableStateOf(0)
+        lateinit var inputMode: InputModeManager
+        val group = ProxyGroupInfo("键盘焦点", "Selector", selected, listOf("香港节点", "日本节点"), false)
+        compose.setContent {
+            KClashTheme {
+                inputMode = LocalInputModeManager.current
+                ProxyGroupsCard(
+                    state = ProxyGroupsUiState(
+                        groups = listOf(group),
+                        unfoldSet = setOf(group.name),
+                        proxyTypes = mapOf("香港节点" to "Trojan", "日本节点" to "Vless"),
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    currentGroupName = group.name,
+                    onRefresh = {},
+                    onToggleGroup = {},
+                    onSelect = { _, name -> selected = name },
+                    onTestDelay = { _, _ -> tested++ },
+                    onTestGroupDelay = {},
+                )
+            }
+        }
+        val card = compose.onNodeWithTag("proxy_node_键盘焦点_日本节点")
+        val delay = compose.onNodeWithTag("proxy_node_delay_键盘焦点_日本节点", useUnmergedTree = true)
+        val before = card.captureToImage().toPixelMap()
+        val cardBounds = card.fetchSemanticsNode().boundsInRoot
+        val delayBounds = delay.fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { inputMode.requestInputMode(InputMode.Keyboard) }
+        delay.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        delay.assertIsFocused()
+        val after = card.captureToImage().toPixelMap()
+        val left = ((delayBounds.left - cardBounds.left) - 3f).roundToInt().coerceAtLeast(0)
+        val top = ((delayBounds.top - cardBounds.top) - 3f).roundToInt().coerceAtLeast(0)
+        val right = ((delayBounds.right - cardBounds.left) + 3f).roundToInt().coerceAtMost(before.width)
+        val bottom = ((delayBounds.bottom - cardBounds.top) + 3f).roundToInt().coerceAtMost(before.height)
+        var changedPixels = 0
+        for (y in top until bottom) for (x in left until right) {
+            if (before[x, y] != after[x, y]) changedPixels++
+        }
+        check(changedPixels > 0) { "测速触点获得焦点后应出现局部焦点环，changedPixels=$changedPixels" }
+        // 作者 long：显式采集聚焦前后卡片，方便回看局部焦点环而不把选中态误当焦点态。
+        capture("proxy_delay_focus_settled")
+        delay.performKeyInput { pressKey(androidx.compose.ui.input.key.Key.Enter) }
+        compose.runOnIdle {
+            assertEquals(1, tested)
+            // 作者 long：测速触点的键盘激活只能启动测速，不能冒泡为代理节点选择。
+            assertEquals("香港节点", selected)
+        }
     }
 
     @Test fun overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection() {

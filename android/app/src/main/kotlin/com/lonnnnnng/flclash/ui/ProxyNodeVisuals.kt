@@ -206,7 +206,12 @@ private fun ProxyDelayAction(
             onClick = onTestDelay,
             enabled = enabled && delay?.isTesting != true,
             contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
-            modifier = modifier.height(13.dp).width(58.dp).testTag(delayTag),
+            modifier = modifier
+                .height(13.dp)
+                .width(58.dp)
+                // 作者 long：Flutter 将测速触点作为卡片内的独立焦点目标；局部焦点环只提示当前键盘/遥控落点，不能改变节点卡片的选中语义。
+                .appFocusRing(AppSuperellipseShape(4.dp), standsOff = true)
+                .testTag(delayTag),
         ) {
             when {
                 delay?.isTesting == true -> CircularProgressIndicator(Modifier.size(13.dp), strokeWidth = 2.dp)
