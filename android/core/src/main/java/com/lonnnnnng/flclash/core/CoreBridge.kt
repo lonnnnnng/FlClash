@@ -581,6 +581,12 @@ class CoreBridge {
         invoke("stopLog", JSONObject())
     }
 
+    suspend fun updateLogLevel(level: String) {
+        // 作者 long：诊断窗口只热切日志等级，不重新应用配置或重置连接；拒绝把任意字段带进updateConfig。
+        require(level in setOf("debug", "info", "warning", "error", "silent"))
+        parseMessageResult(invoke("updateConfig", JSONObject().put("log-level", level)).optString("result", ""), "update_log_level_failed")
+    }
+
     fun startListener() = Core.startListener()
 
     fun stopListener() = Core.stopListener()

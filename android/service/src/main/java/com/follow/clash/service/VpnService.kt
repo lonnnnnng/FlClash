@@ -126,11 +126,20 @@ class VpnService : SystemVpnService(), ManagedService {
             stop()
             return START_NOT_STICKY
         }
-        notifyVpnStartRequested()
         return runCatching {
-            // 作者 long：前台服务 Intent 只是启动入口，必须在回调内建立 TUN，
-            // 否则调用方会永远等不到可用的 VPN 状态。
-            start()
+            when (intent.action) {
+                ACTION_START_VPN -> {
+                    // 作者 long：只有管理器确认核心和参数就绪后才能接管流量；重复启动不重建已有TUN。
+                    if (!tunRunning) start()
+                }
+                null, SystemVpnService.SERVICE_INTERFACE -> {
+                    // 作者 long：与Flutter上游一致，系统Always-on只向应用层请求启动。
+                    // 先发布前台通知，核心/Room恢复的耗时不能触发系统的前台服务超时。
+                    modules.start()
+                    notifyVpnStartRequested()
+                }
+                else -> return START_NOT_STICKY
+            }
             START_STICKY
         }.getOrElse { error ->
             GlobalState.log("VPN service start failed: $error")

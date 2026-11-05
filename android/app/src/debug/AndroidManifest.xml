@@ -6,6 +6,10 @@
             android:permission="android.permission.DUMP" android:theme="@android:style/Theme.Material.Light.NoActionBar" />
         <receiver android:name=".ProcessRecoveryKillReceiver" android:exported="true"
             android:permission="android.permission.DUMP" />
+        <activity android:name=".SystemVpnAcceptanceActivity" android:exported="true"
+            android:permission="android.permission.DUMP" android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <receiver android:name=".SystemVpnKillReceiver" android:exported="true"
+            android:permission="android.permission.DUMP" />
         <activity
             android:name=".ui.ProfilesTestActivity"
             android:exported="false"

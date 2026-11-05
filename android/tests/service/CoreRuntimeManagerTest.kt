@@ -877,6 +877,116 @@ class CoreRuntimeManagerTest {
         override fun write(enabled: Boolean) { check(!fail); this.enabled = enabled }
     }
 
+    @Test fun systemVpnStartOverridesStoppedProxyPreferenceAndPersistsResume() = runTest {
+        val store = FakeVpnStore(false)
+        val resume = FakeRuntimeResumeStore()
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val controller = FakeServiceController()
+        val runtime = manager(ActiveProfile(90, "system", source.path), temporaryFolder.newFolder(),
+            FakeBridge(), controller, runtimeResumeStore = resume, vpnSettingsStore = store)
+        runtime.handleSystemVpnStart().getOrThrow()
+        assertTrue(store.enabled)
+        assertTrue(controller.receivedOptions!!.enable)
+        assertTrue(resume.shouldResume())
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        assertFalse(runtime.vpnSettings.value.restartRequired)
+    }
+
+    @Test fun systemVpnStartSwitchesRunningProxyAndRepeatedRequestKeepsVpnSession() = runTest {
+        val store = FakeVpnStore(false)
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val controller = FakeServiceController()
+        val runtime = manager(ActiveProfile(90, "system", source.path), temporaryFolder.newFolder(),
+            FakeBridge(), controller, vpnSettingsStore = store)
+        runtime.startProxy().getOrThrow()
+        assertFalse(controller.receivedOptions!!.enable)
+        runtime.handleSystemVpnStart().getOrThrow()
+        assertEquals(listOf("service-start", "service-stop", "service-start"), controller.events)
+        assertTrue(controller.receivedOptions!!.enable)
+        val since = runtime.runningSinceElapsedMillis.value
+        runtime.handleSystemVpnStart().getOrThrow()
+        assertEquals(since, runtime.runningSinceElapsedMillis.value)
+        assertEquals(3, controller.events.size)
+    }
+
+    @Test fun systemVpnStartFailureClearsResumeAndDoesNotReportConnected() = runTest {
+        val store = FakeVpnStore(false)
+        val resume = FakeRuntimeResumeStore()
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val controller = FakeServiceController().apply { failNextStart = true }
+        val runtime = manager(ActiveProfile(90, "system", source.path), temporaryFolder.newFolder(),
+            FakeBridge(), controller, runtimeResumeStore = resume, vpnSettingsStore = store)
+        assertTrue(runtime.handleSystemVpnStart().isFailure)
+        assertFalse(resume.shouldResume())
+        assertFalse(controller.started)
+        assertEquals(CoreRuntimeStatus.FAILED, runtime.state.value)
+        assertNull(runtime.vpnSettings.value.appliedEnabled)
+        assertNull(runtime.runningSinceElapsedMillis.value)
+    }
+
+    @Test fun systemVpnStartWithoutProfileFailsAndReleasesWaitingService() = runTest {
+        val controller = FakeServiceController()
+        val resume = FakeRuntimeResumeStore()
+        val runtime = manager(null, temporaryFolder.newFolder(), FakeBridge(), controller,
+            runtimeResumeStore = resume, vpnSettingsStore = FakeVpnStore(false))
+        assertTrue(runtime.handleSystemVpnStart().isFailure)
+        assertFalse(resume.shouldResume())
+        assertFalse(controller.started)
+        assertTrue("service-stop" in controller.events)
+        assertEquals(CoreRuntimeStatus.FAILED, runtime.state.value)
+    }
+
+    @Test fun systemVpnPreferenceWriteFailureReleasesStoppedServiceAndKeepsRunningSession() = runTest {
+        val store = FakeVpnStore(false, true)
+        val controller = FakeServiceController()
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val runtime = manager(ActiveProfile(90, "system", source.path), temporaryFolder.newFolder(),
+            FakeBridge(), controller, vpnSettingsStore = store)
+        assertTrue(runtime.handleSystemVpnStart().isFailure)
+        assertEquals(listOf("service-stop"), controller.events)
+        assertFalse(store.enabled)
+        store.fail = false
+        runtime.startProxy().getOrThrow()
+        store.fail = true
+        val since = runtime.runningSinceElapsedMillis.value
+        assertTrue(runtime.handleSystemVpnStart().isFailure)
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        assertEquals(since, runtime.runningSinceElapsedMillis.value)
+        assertEquals(listOf("service-stop", "service-start"), controller.events)
+    }
+
+    @Test fun systemVpnPreferenceWriteFailureAlsoReleasesServiceAfterPreviousStartFailure() = runTest {
+        val store = FakeVpnStore(false)
+        val controller = FakeServiceController().apply { failNextStart = true }
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val runtime = manager(ActiveProfile(90, "system", source.path), temporaryFolder.newFolder(),
+            FakeBridge(), controller, vpnSettingsStore = store)
+        assertTrue(runtime.handleSystemVpnStart().isFailure)
+        assertEquals(CoreRuntimeStatus.FAILED, runtime.state.value)
+        val stops = controller.events.count { it == "service-stop" }
+        store.fail = true
+        assertTrue(runtime.handleSystemVpnStart().isFailure)
+        assertEquals(stops + 1, controller.events.count { it == "service-stop" })
+    }
+
+    @Test fun systemVpnStartRespectsExcludedWifiAndReleasesExtraWaitingService() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val controller = FakeServiceController()
+        val runtime = manager(ActiveProfile(90, "system", source.path), temporaryFolder.newFolder(),
+            FakeBridge(), controller, vpnSettingsStore = FakeVpnStore(false))
+        runtime.setOnDemandExcluded(true).getOrThrow()
+        runtime.handleSystemVpnStart().getOrThrow()
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        assertTrue(runtime.onDemandSuspended.value)
+        assertFalse(controller.started)
+        assertEquals(listOf("service-stop"), controller.events)
+        runtime.handleSystemVpnStart().getOrThrow()
+        assertEquals(listOf("service-stop", "service-stop"), controller.events)
+        runtime.setOnDemandExcluded(false).getOrThrow()
+        assertTrue(controller.started)
+        assertTrue(controller.receivedOptions!!.enable)
+    }
+
     @Test fun vpnPreferenceWithoutProfilePersistsWithoutStartingCoreAndFailureKeepsState() = runTest {
         val store = FakeVpnStore()
         val bridge = FakeBridge()

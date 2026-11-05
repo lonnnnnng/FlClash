@@ -13,6 +13,9 @@ import com.lonnnnnng.flclash.core.Core
  */
 internal const val ACTION_STOP_SERVICE = "com.lonnnnnng.flclash.action.STOP_SERVICE"
 
+// 作者 long：系统Always-on和管理器的启动必须可区分，否则系统会在核心参数恢复前直接建立TUN。
+internal const val ACTION_START_VPN = "com.lonnnnnng.flclash.action.START_VPN"
+
 interface ManagedService {
     fun start()
 

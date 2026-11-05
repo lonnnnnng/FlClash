@@ -223,7 +223,7 @@ class AndroidProxyServiceController(
             if (!options.enable) return
             ContextCompat.startForegroundService(
                 context,
-                Intent(context, VpnService::class.java),
+                Intent(context, VpnService::class.java).setAction(ACTION_START_VPN),
             )
             val state = withTimeout(VPN_START_TIMEOUT_MS) {
                 ServiceConfig.vpnState.first { vpnState ->

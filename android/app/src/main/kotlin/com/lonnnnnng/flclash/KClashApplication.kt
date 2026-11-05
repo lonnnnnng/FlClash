@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 @HiltAndroidApp
 class KClashApplication : Application() {
@@ -25,6 +26,10 @@ class KClashApplication : Application() {
     @Inject lateinit var onDemandCoordinator: com.lonnnnnng.flclash.data.OnDemandCoordinator
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private lateinit var runtimeInitialization: Job
+
+    // 作者 long：系统VPN回调和Application恢复可同时到达；先等诊断/旧运行意图恢复，避免第二次初始化覆盖新会话。
+    suspend fun awaitRuntimeInitialization() = runtimeInitialization.join()
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
@@ -37,7 +42,7 @@ class KClashApplication : Application() {
         onDemandCoordinator.start(applicationScope)
         SubscriptionAutoUpdateScheduler.schedule(this)
         com.lonnnnnng.flclash.data.ResourceAutoUpdateScheduler.schedule(this)
-        applicationScope.launch {
+        runtimeInitialization = applicationScope.launch {
             val shouldResume = runtimeResumeStore.shouldResume()
             // 作者 long：先恢复上一轮诊断时间线，再决定是否自动重启核心；这样进程重建后的
             // CORE_RESTARTED 会紧接在崩溃前事件之后，而不是从空历史重新开始。

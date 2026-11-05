@@ -645,6 +645,26 @@ class CoreRuntimeManager(
 
     suspend fun startProxy(): Result<Unit> = transitionLock.withLock { startLocked() }
 
+    suspend fun handleSystemVpnStart(): Result<Unit> = transitionLock.withLock {
+        withContext(Dispatchers.IO) {
+            runCatching {
+                // 作者 long：用户在系统设置选择Always-on就是显式请求VPN；不能沿用之前的纯代理偏好。
+                // 保存选择与切换共用启停锁，重复系统回调不重启已经接管的会话。
+                vpnSettingsStore.write(true)
+                mutableVpnSettings.update { it.copy(enabled = true) }
+                if (mutableState.value.isRunning && appliedVpnOptions?.enable != true) {
+                    stopLocked().getOrThrow()
+                }
+                startLocked().getOrThrow()
+                // 作者 long：按需排除仍优先暂停转发，系统额外创建的等待服务不能残留通知或观察器。
+                if (onDemandExcluded) serviceController.stopAndAwait()
+            }.onFailure {
+                // 作者 long：偏好落盘失败发生在startLocked之前，系统已建好的等待服务也必须释放；运行中失败则保留原会话。
+                if (!mutableState.value.isRunning) runCatching { serviceController.stopAndAwait() }
+            }
+        }
+    }
+
     private suspend fun startLocked(): Result<Unit> {
         if (mutableState.value == CoreRuntimeStatus.RUNNING) {
             return Result.success(Unit)

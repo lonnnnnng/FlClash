@@ -1,6 +1,18 @@
 # Project Context
 
-## Fallback输入复核与纯代理系统恢复（2026-11-05，当前）
+## Always-on无蜂窝部分验收（2026-11-05，当前）
+
+本组在无蜂窝条件下推进todo第8项，只有Wi-Fi↔蜂窝子项延期。对照Flutter修正系统VPN启动：先前台通知，再等待Application诊断/resume初始化，统一进入CoreRuntimeManager；内部启动action才建TUN。新增7项状态机单测，重复回调、失败释放与按需排除已有覆盖。
+
+最终build8 App492/Service203/Core38/Common31共764项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8和双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。Redmi同套App/Test精确回归3/3，纯代理SIGKILL恢复独立1场景通过，保护前后各1/1；安装回拉SHA匹配。
+
+Always-on final7仅部分已验：准备PID16294先消失，系统真实开关拉起16486，verify前独立观察双FGS/tun0（约4.706秒）；绑定VPN Network、TLS主机名校验/HTTP200及同socket核心归因通过，平台回读alwaysOn=true/lockdown=false。受控SIGKILL后约6.919秒独立观察系统PID16860及双FGS/tun0，但随后TLS EOF，核心同端口TCP_DIAL_FAILED，脱敏日志含DNS解析失败/context deadline exceeded，根因仍未确定；整组overallPassed=false，不记完整实网恢复通过。上述秒数仅服务/TUN观察耗时。Debug短暂热切日志等级/订阅并在finally恢复，不改正式日志偏好或重载配置。
+
+各场景正式行/选择/正文SHA-size-mtime恢复并清加密备份；全窗口1份配置摘要保持，原1.yaml双端、Flutter APK和设备设置保持，结束无服务/tun0，单个设备XML临时文件已定点删除。最终系统开/关两张截图已目视，仅作系统状态证据。早期Lint/脚本定位/普通socket超时和各TLS失败批次独立保留，不累计、不覆盖第6项原长窗口保护异常。
+
+证据`docs/acceptance/system-vpn-always-on-redmi-20261105.json`，附件`../acceptance-artifacts/always-on-20261105/`。下一步优先定位Always-on恢复后的DNS/拨号，再补实网恢复；首次干净安装VPN、蜂窝、Tasker/MacroDroid真调用及其余OEM/开机行为仍待验。生产Always-on状态仍UNKNOWN，本轮Debug平台回读不能推广生产界面；Go、低API、正式签名运行和远端CI未重跑，完整Flutter视觉仍PARTIAL，玻璃默认关闭，原暂缓/取消项保持。
+
+## Fallback输入复核与纯代理系统恢复（2026-11-05，历史切片）
 
 todo第7项已重新盘点：原1.yaml为33组（32 select/1 url-test）、0 Fallback；正式缓存与本次唯一授权在线响应同为34815字节、33组、0 Fallback且SHA一致。在线只读下载/解码，不写正式Profile/正文/mtime。合法非空Fallback的now由Mihomo选存活项或首项；无效now协议防御本轮2项回归中已验，但不替代实核与Fallback冷恢复，仍受输入条件限制。
 
