@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.RadioButtonChecked
 import androidx.compose.material.icons.outlined.PushPin
@@ -229,7 +230,16 @@ private fun ProxyDelayAction(
                 label = "proxyDelayFade",
             ) { state ->
                 when (state.kind) {
-                    ProxyDelayAnimationKey.TESTING -> CircularProgressIndicator(Modifier.size(13.dp), strokeWidth = 2.dp)
+                    ProxyDelayAnimationKey.QUEUED -> Icon(
+                        Icons.Outlined.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(13.dp).testTag("proxy_delay_queued_icon"),
+                        tint = colors.onSurfaceVariant.copy(alpha = 0.58f),
+                    )
+                    ProxyDelayAnimationKey.TESTING -> CircularProgressIndicator(
+                        Modifier.size(13.dp).testTag("proxy_delay_running_indicator"),
+                        strokeWidth = 2.dp,
+                    )
                     ProxyDelayAnimationKey.ACTION -> Icon(Icons.Outlined.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
                     else -> Text(
                         state.label,
@@ -248,7 +258,7 @@ private fun ProxyDelayAction(
     }
 }
 
-private enum class ProxyDelayAnimationKey { ACTION, TESTING, RESULT }
+private enum class ProxyDelayAnimationKey { ACTION, QUEUED, TESTING, RESULT }
 
 private data class ProxyDelayAnimationState(
     val kind: ProxyDelayAnimationKey,
@@ -257,6 +267,7 @@ private data class ProxyDelayAnimationState(
 
 private fun proxyDelayAnimationKey(delay: ProxyDelayUiState?): ProxyDelayAnimationState = when {
     delay == null -> ProxyDelayAnimationState(ProxyDelayAnimationKey.ACTION, "")
+    delay.isQueued -> ProxyDelayAnimationState(ProxyDelayAnimationKey.QUEUED, "")
     delay.isTesting -> ProxyDelayAnimationState(ProxyDelayAnimationKey.TESTING, "")
     else -> ProxyDelayAnimationState(ProxyDelayAnimationKey.RESULT, proxyDelayLabel(delay))
 }

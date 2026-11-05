@@ -17,6 +17,9 @@ import com.lonnnnnng.flclash.data.encodeUnfoldSet
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ProxyGroupsRuntime
 import com.lonnnnnng.flclash.service.ProxyDelayRequest
+import com.lonnnnnng.flclash.service.ProxyDelayBatchProgress
+import com.lonnnnnng.flclash.service.ProxyDelayBatchPhase
+import com.lonnnnnng.flclash.service.ProxyDelayBatchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
@@ -516,6 +519,64 @@ class ProxyGroupsViewModelTest {
     }
 
     @Test
+    fun `batch delay cards change from queued to running and publish each completed result`() = runTest {
+        Dispatchers.setMain(kotlinx.coroutines.test.StandardTestDispatcher(testScheduler))
+        val group = ProxyGroupInfo("Auto", "URLTest", "node-a", listOf("node-a", "node-b"), false)
+        val profile = Profile.custom(610L, "测速队列")
+        val runtime = FakeProxyGroupsRuntime(CoreRuntimeStatus.STOPPED, ProxyGroupsSnapshot(listOf(group)))
+        val firstStarted = CompletableDeferred<Unit>()
+        val firstRelease = CompletableDeferred<Unit>()
+        val secondStarted = CompletableDeferred<Unit>()
+        val secondRelease = CompletableDeferred<Unit>()
+        runtime.progressBatch = { requests, progress ->
+            requests.forEach { progress(ProxyDelayBatchProgress(it, ProxyDelayBatchPhase.QUEUED)) }
+            val first = requests[0]
+            progress(ProxyDelayBatchProgress(first, ProxyDelayBatchPhase.RUNNING))
+            firstStarted.complete(Unit)
+            firstRelease.await()
+            val firstResult = ProxyDelayBatchResult(first, ProxyDelay(first.testUrl, first.proxyName, 120))
+            progress(ProxyDelayBatchProgress(first, ProxyDelayBatchPhase.COMPLETED, firstResult))
+            val second = requests[1]
+            progress(ProxyDelayBatchProgress(second, ProxyDelayBatchPhase.RUNNING))
+            secondStarted.complete(Unit)
+            secondRelease.await()
+            val secondResult = ProxyDelayBatchResult(second, ProxyDelay(second.testUrl, second.proxyName, 240))
+            progress(ProxyDelayBatchProgress(second, ProxyDelayBatchPhase.COMPLETED, secondResult))
+            Result.success(listOf(firstResult, secondResult))
+        }
+        val model = ProxyGroupsViewModel(runtime, SelectionProfileStore(profile))
+        val observing = backgroundScope.launch { model.state.collect {} }
+        try {
+            model.state.first { it.groups.isNotEmpty() }
+            model.testDelayGroup(group)
+            runCurrent()
+            firstStarted.await()
+            assertTrue(model.state.value.delayState(group, "node-a")?.isTesting == true)
+            assertTrue(model.state.value.delayState(group, "node-a")?.isQueued == false)
+            assertTrue(model.state.value.delayState(group, "node-b")?.isQueued == true)
+
+            firstRelease.complete(Unit)
+            secondStarted.await()
+            runCurrent()
+            assertEquals(120, model.state.value.delayState(group, "node-a")?.value)
+            assertTrue(model.state.value.delayState(group, "node-a")?.isTesting == false)
+            assertTrue(model.state.value.delayState(group, "node-b")?.isTesting == true)
+            assertTrue(model.state.value.delayState(group, "node-b")?.isQueued == false)
+
+            secondRelease.complete(Unit)
+            runCurrent()
+            assertEquals(240, model.state.value.delayState(group, "node-b")?.value)
+            assertNull(model.state.value.batchTestingGroup)
+        } finally {
+            firstRelease.complete(Unit)
+            secondRelease.complete(Unit)
+            observing.cancel()
+            model.viewModelScope.cancel()
+            runCurrent()
+        }
+    }
+
+    @Test
     fun `selection resolver follows three nested groups and selected map`() {
         val leaf = ProxyGroupInfo("Leaf", "Selector", "node-c", listOf("node-c"), false)
         val middle = ProxyGroupInfo("Middle", "Selector", "Leaf", listOf("Leaf"), false)
@@ -841,6 +902,12 @@ private class FakeProxyGroupsRuntime(
     var changes = 0
     var beforeBatch: suspend () -> Unit = {}
     var singleDelayResult: Result<ProxyDelay?>? = null
+    var progressBatch: suspend (List<ProxyDelayRequest>, (ProxyDelayBatchProgress) -> Unit) -> Result<List<ProxyDelayBatchResult>> = { requests, _ ->
+        runCatching {
+            beforeBatch()
+            requests.map { request -> ProxyDelayBatchResult(request, ProxyDelay(request.testUrl, request.proxyName, 100)) }
+        }
+    }
 
     override suspend fun getProxyGroups(): Result<ProxyGroupsSnapshot> { beforeRead(); return Result.success(snapshot) }
 
@@ -867,4 +934,12 @@ private class FakeProxyGroupsRuntime(
             )
         }
     }
+
+    override suspend fun testDelayBatch(
+        profileId: Long,
+        requests: List<ProxyDelayRequest>,
+        timeoutMs: Long,
+        maxConcurrent: Int,
+        onProgress: (ProxyDelayBatchProgress) -> Unit,
+    ): Result<List<ProxyDelayBatchResult>> = progressBatch(requests, onProgress)
 }

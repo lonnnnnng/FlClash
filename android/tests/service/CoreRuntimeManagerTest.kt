@@ -1852,6 +1852,63 @@ class CoreRuntimeManagerTest {
     }
 
     @Test
+    fun `batch delay reports semaphore queue running and completion phases per request`() = runTest {
+        val source = temporaryFolder.newFile("batch-delay-progress-profile.yaml").apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge()
+        val manager = manager(
+            profile = ActiveProfile(13, "批量测速进度", source.path),
+            homeDir = temporaryFolder.newFolder("batch-delay-progress-core"),
+            bridge = bridge,
+            controller = FakeServiceController(),
+        )
+        manager.startProxy().getOrThrow()
+        val firstEntered = CompletableDeferred<Unit>()
+        val releaseFirst = CompletableDeferred<Unit>()
+        bridge.beforeDelay = { name -> if (name == "node-a") { firstEntered.complete(Unit); releaseFirst.await() } }
+        val events = mutableListOf<ProxyDelayBatchProgress>()
+
+        val batch = async {
+            manager.testDelayBatch(
+                profileId = 13,
+                requests = listOf(
+                    ProxyDelayRequest("node-a", "https://batch.example/delay"),
+                    ProxyDelayRequest("node-b", "https://batch.example/delay"),
+                ),
+                maxConcurrent = 1,
+                onProgress = events::add,
+            )
+        }
+        runCurrent()
+        firstEntered.await()
+        assertEquals(
+            listOf(
+                ProxyDelayBatchProgress(ProxyDelayRequest("node-a", "https://batch.example/delay"), ProxyDelayBatchPhase.QUEUED),
+                ProxyDelayBatchProgress(ProxyDelayRequest("node-a", "https://batch.example/delay"), ProxyDelayBatchPhase.RUNNING),
+                ProxyDelayBatchProgress(ProxyDelayRequest("node-b", "https://batch.example/delay"), ProxyDelayBatchPhase.QUEUED),
+            ),
+            events.toList(),
+        )
+
+        releaseFirst.complete(Unit)
+        runCurrent()
+        val result = batch.await().getOrThrow()
+        assertEquals(listOf("node-a", "node-b"), result.map { it.request.proxyName })
+        assertEquals(
+            listOf(
+                ProxyDelayBatchPhase.QUEUED,
+                ProxyDelayBatchPhase.RUNNING,
+                ProxyDelayBatchPhase.QUEUED,
+                ProxyDelayBatchPhase.COMPLETED,
+                ProxyDelayBatchPhase.RUNNING,
+                ProxyDelayBatchPhase.COMPLETED,
+            ),
+            events.map { it.phase },
+        )
+        assertEquals("node-a", events[3].result?.request?.proxyName)
+        assertEquals("node-b", events[5].result?.request?.proxyName)
+    }
+
+    @Test
     fun `batch delay propagates cancellation instead of returning failure`() = runTest {
         val source = temporaryFolder.newFile("batch-delay-cancel-profile.yaml").apply {
             writeText("mixed-port: 7890\n")
@@ -2497,6 +2554,7 @@ class CoreRuntimeManagerTest {
         private val trafficError: Throwable? = null,
         private val eventFlow: kotlinx.coroutines.flow.Flow<CoreEvent> = emptyFlow(),
     ) : CoreRuntimeBridge {
+        var beforeDelay: suspend (String) -> Unit = {}
         var definitionRead: suspend () -> com.google.gson.JsonObject? = { null }
         override suspend fun getProxyDefinition(name: String): com.google.gson.JsonObject? { calls += "definition"; return definitionRead() }
         override suspend fun updateGeoData(type: String) { calls += "geo-$type" }
@@ -2629,6 +2687,7 @@ class CoreRuntimeManagerTest {
 
         override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay? {
             delayTimeout = timeoutMs
+            beforeDelay(proxyName)
             delayError?.let { throw it }
             if (proxyName in delayErrors) throw IllegalStateException("测速失败")
             return ProxyDelay(testUrl, proxyName, 123)

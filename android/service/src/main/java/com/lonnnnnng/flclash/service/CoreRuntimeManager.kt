@@ -923,12 +923,23 @@ class CoreRuntimeManager(
         requests: List<ProxyDelayRequest>,
         timeoutMs: Long,
         maxConcurrent: Int,
-    ): Result<List<ProxyDelayBatchResult>> = testProfileDelayBatch(null, requests, timeoutMs, maxConcurrent)
+    ): Result<List<ProxyDelayBatchResult>> = testProfileDelayBatch(null, requests, timeoutMs, maxConcurrent) {}
 
-    override suspend fun testDelayBatch(profileId: Long, requests: List<ProxyDelayRequest>, timeoutMs: Long, maxConcurrent: Int): Result<List<ProxyDelayBatchResult>> =
-        testProfileDelayBatch(profileId, requests, timeoutMs, maxConcurrent)
+    override suspend fun testDelayBatch(
+        profileId: Long,
+        requests: List<ProxyDelayRequest>,
+        timeoutMs: Long,
+        maxConcurrent: Int,
+        onProgress: (ProxyDelayBatchProgress) -> Unit,
+    ): Result<List<ProxyDelayBatchResult>> = testProfileDelayBatch(profileId, requests, timeoutMs, maxConcurrent, onProgress)
 
-    private suspend fun testProfileDelayBatch(profileId: Long?, requests: List<ProxyDelayRequest>, timeoutMs: Long, maxConcurrent: Int): Result<List<ProxyDelayBatchResult>> = transitionLock.withLock {
+    private suspend fun testProfileDelayBatch(
+        profileId: Long?,
+        requests: List<ProxyDelayRequest>,
+        timeoutMs: Long,
+        maxConcurrent: Int,
+        onProgress: (ProxyDelayBatchProgress) -> Unit,
+    ): Result<List<ProxyDelayBatchResult>> = transitionLock.withLock {
         try {
             checkProxyProfile(profileId)
             ensureConfigLoaded()
@@ -940,16 +951,23 @@ class CoreRuntimeManager(
             Result.success(coroutineScope {
                 requests.map { request ->
                     async {
+                        // 作者 long：排队只表示本批次尚未取得 Kotlin 并发许可；进入网络调用前才切为运行中。
+                        onProgress(ProxyDelayBatchProgress(request, ProxyDelayBatchPhase.QUEUED))
                         permits.withPermit {
+                            onProgress(ProxyDelayBatchProgress(request, ProxyDelayBatchPhase.RUNNING))
                             try {
-                                ProxyDelayBatchResult(
+                                val item = ProxyDelayBatchResult(
                                     request = request,
                                     result = bridge.testDelay(request.proxyName, request.testUrl, effectiveTimeout),
                                 )
+                                onProgress(ProxyDelayBatchProgress(request, ProxyDelayBatchPhase.COMPLETED, item))
+                                item
                             } catch (error: CancellationException) {
                                 throw error
                             } catch (error: Throwable) {
-                                ProxyDelayBatchResult(request = request, result = null, error = error)
+                                val item = ProxyDelayBatchResult(request = request, result = null, error = error)
+                                onProgress(ProxyDelayBatchProgress(request, ProxyDelayBatchPhase.COMPLETED, item))
+                                item
                             }
                         }
                     }

@@ -14,6 +14,7 @@ import com.lonnnnnng.flclash.data.decodeSelectedMap
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ProxyGroupsRuntime
 import com.lonnnnnng.flclash.service.ProxyDelayRequest
+import com.lonnnnnng.flclash.service.ProxyDelayBatchPhase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
@@ -85,6 +86,7 @@ data class ProxyDelayKey(
 
 data class ProxyDelayUiState(
     val isTesting: Boolean = false,
+    val isQueued: Boolean = false,
     val value: Int? = null,
     val updatedAtMillis: Long = 0L,
 )
@@ -695,7 +697,7 @@ class ProxyGroupsViewModel @Inject constructor(
         val generation = profileGeneration
         val keys = targets.associate { target ->
             ProxyDelayKey(group.name, target.displayName, target.request.testUrl) to
-                ProxyDelayUiState(isTesting = true)
+                ProxyDelayUiState(isTesting = true, isQueued = true)
         }
         mutableState.update {
             it.copy(
@@ -707,7 +709,36 @@ class ProxyGroupsViewModel @Inject constructor(
         groupDelayJob = viewModelScope.launch {
             try {
                 if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
-                val outcome = runtimeManager.testDelayBatch(profileId, targets.map { it.request })
+                val targetsByRequest = targets.associateBy { it.request }
+                val outcome = runtimeManager.testDelayBatch(
+                    profileId = profileId,
+                    requests = targets.map { it.request },
+                    onProgress = { progress ->
+                        if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@testDelayBatch
+                        val target = targetsByRequest[progress.request] ?: return@testDelayBatch
+                        val key = ProxyDelayKey(group.name, target.displayName, progress.request.testUrl)
+                        when (progress.phase) {
+                            ProxyDelayBatchPhase.QUEUED -> mutableState.update { state ->
+                                state.copy(delayResults = state.delayResults + (key to ProxyDelayUiState(isTesting = true, isQueued = true)))
+                            }
+                            ProxyDelayBatchPhase.RUNNING -> mutableState.update { state ->
+                                state.copy(delayResults = state.delayResults + (key to ProxyDelayUiState(isTesting = true)))
+                            }
+                            ProxyDelayBatchPhase.COMPLETED -> {
+                                val item = progress.result ?: return@testDelayBatch
+                                mutableState.update { state ->
+                                    state.copy(delayResults = state.delayResults + (key to ProxyDelayUiState(
+                                        value = when {
+                                            item.error != null -> CoreBridge.DELAY_FAILED
+                                            else -> item.result?.value
+                                        },
+                                        updatedAtMillis = System.currentTimeMillis(),
+                                    )))
+                                }
+                            }
+                        }
+                    },
+                )
                 if (generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@launch
                 if (outcome.isSuccess) {
                     val results = outcome.getOrThrow()

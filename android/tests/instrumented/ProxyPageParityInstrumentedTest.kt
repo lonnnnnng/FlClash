@@ -302,14 +302,19 @@ class ProxyPageParityInstrumentedTest {
         compose.waitForIdle()
         compose.mainClock.autoAdvance = false
         val before = delay.captureToImage().asAndroidBitmap()
-        compose.runOnIdle { delayState = ProxyDelayUiState(isTesting = true) }
+        compose.runOnIdle { delayState = ProxyDelayUiState(isTesting = true, isQueued = true) }
         compose.mainClock.advanceTimeBy(60)
         val middle = delay.captureToImage().asAndroidBitmap()
         compose.mainClock.advanceTimeBy(300)
         val settled = delay.captureToImage().asAndroidBitmap()
-        compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("proxy_delay_queued_icon", useUnmergedTree = true).assertIsDisplayed()
         check(!before.sameAs(middle)) { "测速状态切换应产生淡入淡出中间帧" }
         check(!middle.sameAs(settled)) { "测速状态切换的中间帧不能直接等于终帧" }
+        compose.runOnIdle { delayState = ProxyDelayUiState(isTesting = true) }
+        compose.mainClock.advanceTimeBy(300)
+        compose.onNodeWithTag("proxy_delay_queued_icon", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag("proxy_delay_running_indicator", useUnmergedTree = true).assertIsDisplayed()
+        compose.mainClock.autoAdvance = true
         compose.runOnIdle { assertEquals("香港节点", selected) }
     }
 

@@ -42,6 +42,18 @@ data class ProxyDelayRequest(
     val testUrl: String,
 )
 
+enum class ProxyDelayBatchPhase {
+    QUEUED,
+    RUNNING,
+    COMPLETED,
+}
+
+data class ProxyDelayBatchProgress(
+    val request: ProxyDelayRequest,
+    val phase: ProxyDelayBatchPhase,
+    val result: ProxyDelayBatchResult? = null,
+)
+
 data class ProxyDelayBatchResult(
     val request: ProxyDelayRequest,
     val result: ProxyDelay?,
@@ -308,8 +320,13 @@ interface ProxyGroupsRuntime : CoreRuntimeStatusProvider {
         maxConcurrent: Int = 32,
     ): Result<List<ProxyDelayBatchResult>>
 
-    suspend fun testDelayBatch(profileId: Long, requests: List<ProxyDelayRequest>, timeoutMs: Long = 0L, maxConcurrent: Int = 32): Result<List<ProxyDelayBatchResult>> =
-        testDelayBatch(requests, timeoutMs, maxConcurrent)
+    suspend fun testDelayBatch(
+        profileId: Long,
+        requests: List<ProxyDelayRequest>,
+        timeoutMs: Long = 0L,
+        maxConcurrent: Int = 32,
+        onProgress: (ProxyDelayBatchProgress) -> Unit = {},
+    ): Result<List<ProxyDelayBatchResult>> = testDelayBatch(requests, timeoutMs, maxConcurrent)
 }
 
 interface CoreRuntimeBridge {

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "timezone": "Asia/Shanghai",
+  "scope": "代理组批量测速的 queued/running/completed 阶段与 Flutter 任务池语义对齐",
+  "status": "DONE_VERIFIED_FOR_DELAY_QUEUE_PHASES; FULL_KEYBOARD_NAVIGATION_AND_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "overallPassed": true,
+  "baseCommit": "e882ea4e12f62caba69e143a90ead8fc4088e946",
+  "workingTree": "本轮验收使用未提交工作树；差异仅限本 JSON 所列测速批次状态实现、单测与定向仪器测试。",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userRotation": 0
+  },
+  "implementation": {
+    "production": [
+      "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeContracts.kt",
+      "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsViewModel.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyNodeVisuals.kt"
+    ],
+    "tests": [
+      "android/tests/service/CoreRuntimeManagerTest.kt",
+      "android/tests/app/ProxyGroupsViewModelTest.kt",
+      "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt"
+    ],
+    "behavior": [
+      "批量测速任务进入 Kotlin Semaphore 前发出 QUEUED，获得并发许可后发出 RUNNING，单项结果或异常立即发出 COMPLETED。",
+      "代理组页面逐节点保留 queued/running/result 状态；嵌套代理组仍按展示节点映射，单项完成不会清掉其他节点的排队状态。",
+      "queued 显示灰色时钟，running 显示加载指示器，完成后恢复毫秒、超时或失败文案，状态转换不改变当前节点选择。"
+    ],
+    "flutterReference": "仅参考本地 Flutter DelayTestPhase/PendingDelayTests 与代理卡片显示语义，未合并或修改 Flutter 上游代码。"
+  },
+  "build": {
+    "commands": [
+      "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+      "ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#delayStatusUsesFadeTransitionWithoutChangingNodeSelection",
+      "adb -s wsvwypiz7xwslvl7 install -r android/app/build/outputs/apk/debug/app-debug.apk",
+      "adb -s wsvwypiz7xwslvl7 install -r android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+    ],
+    "jvm": {
+      "app": { "tests": 495, "failures": 0, "errors": 0, "skipped": 0 },
+      "service": { "tests": 207, "failures": 0, "errors": 0, "skipped": 0 },
+      "core": { "tests": 38, "failures": 0, "errors": 0, "skipped": 0 },
+      "common": { "tests": 31, "failures": 0, "errors": 0, "skipped": 0 },
+      "total": { "tests": 771, "failures": 0, "errors": 0, "skipped": 0 }
+    },
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "4d589eb5a2731082638de967c431009c009bc4ab48086e79f1ad984cf3f518bd",
+      "bytes": 90701078
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "9fc7a3522a7bf2957f5d2d04441f35f6219484060c27b1c430009343357a338b",
+      "bytes": 3795975
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "de59c88df671905e77d58422a85315ae3d6c387fe6c985d484f9573cbf2d3894",
+      "bytes": 48208492
+    },
+    "lint": {
+      "debug": { "errors": 0, "warnings": 67, "hints": 10 },
+      "release": { "errors": 0, "warnings": 66, "hints": 9 }
+    },
+    "redmiInstall": {
+      "debugBaseApkSha256": "4d589eb5a2731082638de967c431009c009bc4ab48086e79f1ad984cf3f518bd",
+      "androidTestBaseApkSha256": "9fc7a3522a7bf2957f5d2d04441f35f6219484060c27b1c430009343357a338b",
+      "matchesBuiltArtifacts": true,
+      "installCommand": "adb -s wsvwypiz7xwslvl7 install -r ...",
+      "evidence": "../acceptance-artifacts/proxy-delay-queue-20261106/"
+    }
+  },
+  "test": {
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "method": "delayStatusUsesFadeTransitionWithoutChangingNodeSelection",
+    "result": "OK (1 test)",
+    "summary": "tests=1 failures=0 errors=0 skipped=0",
+    "assertions": [
+      "queued 状态显示 proxy_delay_queued_icon，切换到 running 后该图标消失并显示 proxy_delay_running_indicator。",
+      "测速状态切换的中间帧与稳定帧均发生像素变化，且不直接跳到终帧。",
+      "状态切换后当前节点仍为香港节点，未发生选择冒泡。"
+    ],
+    "xml": "../acceptance-artifacts/proxy-delay-queue-20261106/TEST-Redmi-Note-8-Pro-16.xml"
+  },
+  "sourceSnapshot": [
+    { "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsViewModel.kt", "sha256": "e6375a41936988114c74896284038b07e2bf36f0e3b02cc2e28a6a35cfe12a11" },
+    { "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyNodeVisuals.kt", "sha256": "d90e4e64b0baf7d01bcd9ec8a239bff20302768399b13ce1d761f82cbab6956f" },
+    { "path": "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeContracts.kt", "sha256": "4cdd1331d42d5a05245764e6a3b24d8c1d4cabda340c7afd0aa665ae84483198" },
+    { "path": "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt", "sha256": "ac3c383ccac023ab3470ab4a8462e4641fe6a39d1267636b0d9c3af9ba5d192c" },
+    { "path": "android/tests/app/ProxyGroupsViewModelTest.kt", "sha256": "16b267fa3991e8a85f5ed61a2e47f6abc91b22008d7668a68d8d390302487f7a" },
+    { "path": "android/tests/service/CoreRuntimeManagerTest.kt", "sha256": "fe4773ce884a272b02e352b3810e9c10c997b0e56656ce5155dd67f3bfed54d0" },
+    { "path": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt", "sha256": "eea759a5da228446ff162e0311d15d8465d5a41adef67d2dd119520370911c38" }
+  ],
+  "cleanup": {
+    "formalProfileAndSettingsRestored": true,
+    "formalProfileBodyRewritten": false,
+    "authorizedInputChanged": false,
+    "flutterBaselinePackageChanged": false,
+    "runtimeStarted": false,
+    "finalApkInstalledAndHashPulled": true,
+    "servicesStoppedAfterTest": true
+  },
+  "limitations": [
+    "本轮验证的是 Kotlin Semaphore 的批次排队与 UI 阶段映射，不代表 Mihomo 内部全局 URLTest 槽位的开始事件；核心仍只返回单项最终结果。",
+    "其他子页/面板视觉、完整键盘导航、统一 Flutter 逐像素视觉、Dock/按钮实时背景与触点光效、8 MiB 正文和全应用动效性能仍为 PARTIAL。",
+    "玻璃默认关闭；低 API、正式签名运行、远端 CI、蜂窝网络和观测页次要视觉不属于本轮。"
+  ],
+  "next": "继续补代理组未覆盖面板联动与视觉细节，再集中验收全应用动效和性能。"
+}
