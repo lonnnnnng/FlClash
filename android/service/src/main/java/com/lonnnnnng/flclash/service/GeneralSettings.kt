@@ -64,7 +64,8 @@ data class GeneralSettings(
     }
 
     internal fun runtimeKey(): List<Any?> = listOf(mixedPort, port, socksPort, redirPort, tproxyPort, externalController,
-        controllerSecret, authentication, username, password, findProcess, hosts, appendSystemDns, logLevel, userAgent, checkCertificate)
+        controllerSecret, authentication, username, password, findProcess, hosts, appendSystemDns, logLevel, userAgent, checkCertificate,
+        delayTestTimeout)
 
     companion object {
         private fun secret(length: Int) = UUID.randomUUID().toString().replace("-", "").take(length)

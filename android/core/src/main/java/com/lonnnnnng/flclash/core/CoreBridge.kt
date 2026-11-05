@@ -124,6 +124,7 @@ class CoreBridge {
         selectedMap: Map<String, String> = emptyMap(),
         testUrl: String = DEFAULT_TEST_URL,
         skipCertVerify: Boolean = false,
+        testTimeoutMs: Long = DEFAULT_DELAY_TIMEOUT_MS,
     ) {
         val selected = JSONObject()
         selectedMap.forEach { (group, proxy) -> selected.put(group, proxy) }
@@ -132,6 +133,8 @@ class CoreBridge {
             arguments = JSONObject()
                 .put("selected-map", selected)
                 .put("test-url", testUrl)
+                // 作者 long：自动健康检查和手动测速共用常规设置的毫秒期限，配置重建时一起提交。
+                .put("test-timeout", testTimeoutMs)
                 .put("skip-cert-verify", skipCertVerify),
         )
         parseMessageResult(response.optString("result", ""), "apply_config_failed")

@@ -285,12 +285,16 @@ class CoreRuntimeManagerTest {
         runtime.startProxy().getOrThrow()
         assertFalse(bridge.logListenerStarted)
         val setups = bridge.calls.count { it == "setup" }
-        val next = store.settings.copy(openLogs = true, onlyStatisticsProxy = true, showNotificationStopAction = false, delayTestTimeout = 500)
+        val next = store.settings.copy(openLogs = true, onlyStatisticsProxy = true, showNotificationStopAction = false)
         runtime.updateGeneralSettings(store.settings, next).getOrThrow()
         assertTrue(bridge.logListenerStarted)
         assertEquals(setups, bridge.calls.count { it == "setup" })
         assertFalse(ServiceConfig.notificationParams.value.showStopAction)
         assertTrue(ServiceConfig.notificationParams.value.onlyStatisticsProxy)
+        val withShortTimeout = next.copy(delayTestTimeout = 500)
+        runtime.updateGeneralSettings(next, withShortTimeout).getOrThrow()
+        assertEquals(setups + 1, bridge.calls.count { it == "setup" })
+        assertEquals(500L, bridge.setupTestTimeout)
         runtime.getStats().getOrThrow(); assertEquals(true, bridge.onlyProxyStats)
         runtime.testDelay("node", "https://example.test").getOrThrow(); assertEquals(500L, bridge.delayTimeout)
         runtime.changeProxy("group", "node").getOrThrow(); assertEquals(1, bridge.closedConnections)
@@ -2576,6 +2580,12 @@ class CoreRuntimeManagerTest {
 
         var skipCertificate: Boolean? = null
         override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean) { skipCertificate = skipCertVerify; setupConfig(selectedMap) }
+        var setupTestTimeout: Long? = null
+        override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean, testTimeoutMs: Long) {
+            setupTestTimeout = testTimeoutMs
+            skipCertificate = skipCertVerify
+            setupConfig(selectedMap)
+        }
         var closedConnections = 0
         override suspend fun closeConnections() { closedConnections++ }
         var onlyProxyStats: Boolean? = null

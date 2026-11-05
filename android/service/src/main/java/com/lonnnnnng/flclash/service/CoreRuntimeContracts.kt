@@ -347,6 +347,8 @@ interface CoreRuntimeBridge {
 
     suspend fun setupConfig(selectedMap: Map<String, String> = emptyMap())
     suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean) = setupConfig(selectedMap)
+    suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean, testTimeoutMs: Long) =
+        setupConfig(selectedMap, skipCertVerify)
 
     suspend fun getConfiguredMode(path: String): CoreOutboundMode
 
@@ -431,6 +433,8 @@ class NativeCoreRuntimeBridge(
 
     override suspend fun setupConfig(selectedMap: Map<String, String>) = coreBridge.setupConfig(selectedMap)
     override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean) = coreBridge.setupConfig(selectedMap, skipCertVerify = skipCertVerify)
+    override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean, testTimeoutMs: Long) =
+        coreBridge.setupConfig(selectedMap, skipCertVerify = skipCertVerify, testTimeoutMs = testTimeoutMs)
 
     override suspend fun getConfiguredMode(path: String): CoreOutboundMode = coreBridge.getConfiguredMode(path)
 

@@ -444,7 +444,12 @@ class CoreRuntimeManager(
             loadedConfigKey = null
             loadedAutomaticConfigKey = null
             if (mutableGeoSettings.value.autoUpdate && eventListenerStarted.compareAndSet(false, true)) bridge.startEventListener()
-            bridge.setupConfig(profile.selectedMap, skipCertVerify = generalSettingsStore?.read()?.checkCertificate == false)
+            val settings = generalSettingsStore?.read()
+            bridge.setupConfig(
+                profile.selectedMap,
+                skipCertVerify = settings?.checkCertificate == false,
+                testTimeoutMs = settings?.delayTestTimeout?.toLong() ?: CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+            )
             val mode = preferredOutboundMode ?: bridge.getConfiguredMode(paths.configFile.path)
             if (preferredOutboundMode != null) bridge.updateMode(mode)
             mutableOutboundMode.value = mode
@@ -592,7 +597,11 @@ class CoreRuntimeManager(
                     if (previousContent != null && previousKey != null && previous != null) {
                         try {
                             paths.configFile.writeBytes(previousContent)
-                            bridge.setupConfig(previous.selectedMap, skipCertVerify = !mutableGeneralSettings.value.checkCertificate)
+                            bridge.setupConfig(
+                                previous.selectedMap,
+                                skipCertVerify = !mutableGeneralSettings.value.checkCertificate,
+                                testTimeoutMs = mutableGeneralSettings.value.delayTestTimeout.toLong(),
+                            )
                             bridge.updateMode(mutableOutboundMode.value)
                             if (servicesChanged && previousOptions != null) {
                                 serviceController.stopAndAwait()

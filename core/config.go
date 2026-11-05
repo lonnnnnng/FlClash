@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/metacubex/mihomo/adapter"
 	"github.com/metacubex/mihomo/adapter/inbound"
@@ -37,8 +38,9 @@ var (
 
 func defaultSetupParams() *SetupParams {
 	return &SetupParams{
-		TestURL:     defaultTestURL,
-		SelectedMap: map[string]string{},
+		TestURL:       defaultTestURL,
+		TestTimeoutMs: int64(defaultDelayTestTimeout / time.Millisecond),
+		SelectedMap:   map[string]string{},
 	}
 }
 
@@ -169,6 +171,9 @@ func applyConfig(params *SetupParams) error {
 	defer configMu.Unlock()
 
 	setTestURL(params.TestURL)
+	if params.TestTimeoutMs > 0 {
+		provider.SetDefaultTestTimeout(time.Duration(params.TestTimeoutMs) * time.Millisecond)
+	}
 	skipCertVerify.Store(params.SkipCertVerify)
 	cfg, err := loadSetupConfig(params)
 	if err != nil {

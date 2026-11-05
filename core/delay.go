@@ -5,8 +5,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/metacubex/mihomo/adapter/provider"
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/constant"
+	"github.com/metacubex/mihomo/tunnel"
 )
 
 const (
@@ -69,6 +71,19 @@ func reportMissingDelayTestProxy(name string) {
 	logError("delay test: %q is not part of the applied config", name)
 }
 
+func configuredDelayTestTimeout(proxy constant.Proxy, url string, fallback time.Duration) time.Duration {
+	providerName := proxy.ProxyInfo().ProviderName
+	if providerName == "" {
+		return fallback
+	}
+	if pp, ok := tunnel.ProvidersSnapshot()[providerName]; ok {
+		if configured, ok := provider.ConfiguredTestTimeout(pp, url); ok && configured > fallback {
+			return configured
+		}
+	}
+	return fallback
+}
+
 // A nil answer means the test never got a slot, which says nothing about the proxy.
 func handleTestDelay(params *TestDelayParams) *Delay {
 	url := params.TestUrl
@@ -84,6 +99,7 @@ func handleTestDelay(params *TestDelayParams) *Delay {
 	}
 
 	timeout := timeoutFromMillis(params.Timeout, defaultDelayTestTimeout)
+	timeout = configuredDelayTestTimeout(proxy, url, timeout)
 	if !delayTestSlots.acquireWithin(context.Background(), timeout) {
 		return nil
 	}

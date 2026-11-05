@@ -9,6 +9,7 @@
 | KCORE-001 | TUN listener 返回前跳过保护，平台拒绝保护被忽略 | FlClash Go 适配层 | 已修，修复提交 `6ca697d118e124c133f6d7658676cb217c7d9a26` |
 | KCORE-002 | 控制器异步重建的全局指针竞态和旧任务覆盖新请求 | Mihomo `hub/route` | 已修，核心提交 `f83e9b1032ed02831457d4da5a414e063e932694`；验证见下文 |
 | KCORE-003 | TLS 控制器绑定后校验失败，监听器失去回收路径 | Mihomo `hub/route` | 已修，核心提交 `f83e9b1032ed02831457d4da5a414e063e932694`；验证见下文 |
+| KCORE-004 | 宿主测速超时未传入自动健康检查，手动/后台期限可能分叉 | FlClash Go 适配层与 Mihomo Provider | 已修，核心提交 `852d3ad1`、`7038231e` 与 Kotlin setup 适配；完整 Redmi 实网复验待完成 |
 
 ## KCORE-001：TUN 启动保护缺口
 
@@ -39,13 +40,21 @@
 - 验证索引：同一[本轮验收 JSON](acceptance/controller-lifecycle-redmi-20261105.json) 的 `go.tlsBaseline`、`go.tlsFixed` 与 `go.routeFinal`；Redmi只验嵌入HTTP控制器，TLS两失败分支的运行验证环境为macOS Go，不宣称Android TLS或Windows Pipe已经验过。
 - 同步复查：检查每个成功 Listen 后的失败出口，必须有释放或明确的所有权移交。保留坏配置拒绝行为，不通过忽略校验或回退旧配置掩盖失败。
 
+## KCORE-004：宿主测速超时未覆盖自动健康检查
+
+- 来源：`chen08209/Clash.Meta:FlClash` 的 `25fb06997dd5245236a3301b0bad4852a3991a48`，随后由 `4a8e40cf`、`04f718e6`、`024245dc` 补齐 Provider 替换重测和 url-test 选择缓存行为。原 Kotlin 适配只把 `delayTestTimeout` 放在手动 `asyncTestDelay` 请求中，自动 Provider/URLTest 对未显式声明的 timeout 固定使用 5 秒。
+- 影响：常规设置中的测速期限不会约束后台健康检查，且 Provider 更新后可能沿用旧轮次/首个无效节点；用户看到的手动测速和自动选择结果可能不一致。
+- 修复：核心合并 `852d3ad1` 引入 `provider.SetDefaultTestTimeout`、显式 Provider timeout 查询、Provider 版本重测和 url-test 惰性失效；核心适配 `7038231e` 暴露查询给宿主。外层 `SetupParams.test-timeout`、`CoreBridge.setupConfig` 和 `CoreRuntimeManager` 在配置应用/失败回滚时传递毫秒期限，并把 `delayTestTimeout` 纳入 runtime key，设置变更会重新应用核心。
+- 验证：内核定向 `go test -race ./adapter/provider ./adapter/outboundgroup ./common/singledo ./hub/route` 与外层 `go test ./...` 已通过；Kotlin Service/App 单测及 Core Debug 编译已通过。完整 APK、Redmi 真机自动 Provider/URLTest、跨进程重建与显式 Provider timeout 仍需在统一构建批次验收。
+- 同步复查：以后只比较 `chen08209/Clash.Meta:FlClash` 的新实现；确认 `SetDefaultTestTimeout` 的全局状态在失败回滚/重启中随 setup 更新，确认 Provider 显式 timeout 仍覆盖宿主默认值。Flutter v0.9.3 的 UI/功能提交不能合入 Kotlin 主线。
+
 ## 未定因果调查：Always-on 首请求 TLS EOF
 
 已保留旧包冷启动失败、随后同会话物理/TUN HTTPS 成功及修改版有限轮次通过证据。KCORE-001 修复静态可证明的保护缺口，KCORE-002/003 修复控制器生命周期；目前不能把这些修复直接认定为此前 TLS EOF 的确定根因。长期稳定性、蜂窝和其他 OEM 场景仍按 roadmap 单独验收。
 
 ## 后续同步操作
 
-1. 记录新 Flutter/Mihomo 固定 SHA，先逐项阅读上游对应实现与本台账；核心 fork 保留上游原始提交，不直接改写来源历史。
+1. Mihomo 只从 `chen08209/Clash.Meta` 的 `FlClash` 分支同步，不直接合并、cherry-pick 或移植 `MetaCubeX/mihomo` 的提交/PR；作者已吸收的官方改动可随其分支同步，完整规则见 [唯一代码同步来源](../.agents/upstream-sync.md#唯一代码同步来源2026-11-05-用户确认)。记录新 Flutter/Mihomo 固定 SHA，先逐项阅读上游对应实现与本台账；核心 fork 保留上游原始提交，不直接改写来源历史。
 2. 用 gitlink 基线与核心修复提交比较实际补丁，逐条标记保留、等价已上游化、冲突需重做或不再适用，并记录判断证据。
 3. 运行缺陷回归、Go 全量竞态和 Android 构建/真机回归；通过后更新本台账的提交、测试和撤销条件，再更新 gitlink。缺条件的测试明确保留未验，不自动移除补丁。
 4. 新发现源码缺陷先分配编号，记录来源/复现/影响/修复提交/验证/同步复查条件；未定因果保持调查状态。未经用户指示不向上游发 Issue、评论或 PR。

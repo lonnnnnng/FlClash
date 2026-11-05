@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "todo第7项：授权源非空Fallback固定选择的真实冷进程恢复与清除固定",
+  "status": "DONE_VERIFIED_FOR_COLD_PROCESS; NATURAL_INVALID_NOW_NOT_CONSTRUCTIBLE_UNDER_CURRENT_MIHOMO_CONTRACT",
+  "baseCommit": "16fa671b7126c5e9e90f9f233e0674315652461a",
+  "coreCommit": "7038231e026b710088b9c369899b3a8b7f281739",
+  "authorization": {
+    "source": "外层AGENTS.md当前唯一授权源",
+    "transport": "gh-proxy.com加速节点",
+    "urlStored": false,
+    "fullYamlStored": false,
+    "sensitiveFieldsOmitted": [
+      "订阅URL",
+      "节点名称",
+      "服务器地址",
+      "UUID",
+      "WebSocket Host/path"
+    ]
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "implementation": {
+    "test": "android/tests/instrumented/FallbackColdProcessInstrumentedTest.kt",
+    "driver": "tool/android_fallback_cold_process_acceptance.py",
+    "compile": {
+      "command": "./gradlew :app:compileDebugAndroidTestKotlin --no-daemon -Ptarget-platform=android-arm64",
+      "result": "BUILD SUCCESSFUL"
+    },
+    "build": {
+      "command": "./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64",
+      "result": "BUILD SUCCESSFUL",
+      "appSha256": "32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf",
+      "androidTestSha256": "a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a",
+      "nativeAbi": ["arm64-v8a"]
+    }
+  },
+  "test": {
+    "method": "com.lonnnnnng.flclash.ui.FallbackColdProcessInstrumentedTest",
+    "runnerArguments": {
+      "kclashFallbackColdAcceptance": "true",
+      "phases": ["prepare", "force-stop", "verify"]
+    },
+    "result": "prepare OK (1 test); verify OK (1 test)",
+    "pid": {
+      "prepare": 20559,
+      "verify": 20716,
+      "different": true
+    },
+    "samples": {
+      "prepare": {
+        "fallbackMembers": 7,
+        "fixedPersisted": true,
+        "nowValid": true
+      },
+      "afterColdProcess": {
+        "fallbackMembers": 7,
+        "roomSelectionRestored": true,
+        "coreFixedRestored": true,
+        "nowValid": true
+      },
+      "afterClearFixed": {
+        "roomSelectionCleared": true,
+        "coreFixedCleared": true,
+        "nowValid": true
+      }
+    },
+    "logs": {
+      "prepare": "../acceptance-artifacts/fallback-cold-process-20261106/prepare.log",
+      "verify": "../acceptance-artifacts/fallback-cold-process-20261106/verify.log",
+      "result": "../acceptance-artifacts/fallback-cold-process-20261106/result.json",
+      "prepareSha256": "a38f6526c223712d7b4b9902ca04b1a6414cad1b7796b40fdbb55dc7340c8659",
+      "verifySha256": "20029a0b7ca7d11200aafa558aa401049d770fe6a3a3f217c42299632ed73c3e",
+      "resultSha256": "4b31cdcadf3ab06ccd82dc5e7a2e8c02bfc2076a3240b6e305ef352a0d352d23"
+    }
+  },
+  "cleanup": {
+    "deviceAuthorizedInputRemoved": true,
+    "localAuthorizedInputRemoved": true,
+    "applicationPidAfterVerify": null,
+    "proxyVpnTunServicesPresent": false,
+    "formalProfileAndSettingsRestored": true,
+    "formalProfileBodyRewritten": false
+  },
+  "naturalInvalidNow": {
+    "result": "NOT_CONSTRUCTIBLE_AS_A_NATURAL_SUCCESS_CASE",
+    "verifiedCoreSemantics": [
+      "Fallback.Now() returns findAliveProxy(false).Name()",
+      "a non-empty group with all members unhealthy still returns the first member",
+      "normal empty groups are replaced with EmptyFallback during parsing"
+    ],
+    "evidence": [
+      "core/Clash.Meta/adapter/outboundgroup/fallback.go",
+      "core/Clash.Meta/adapter/outboundgroup/groupbase.go",
+      "core/Clash.Meta/adapter/outboundgroup/parser.go"
+    ],
+    "conclusion": "合法配置、普通断网或成员全不健康均不能自然产生空或组外now；不使用Bridge注入伪装实核通过。"
+  },
+  "limitations": [
+    "本轮覆盖冷进程恢复与清除固定，不把自然无效now记为通过。",
+    "自然无效now需要核心内部不变量损坏或不同构造路径；当前合法解析契约下没有可授权的实网输入。",
+    "蜂窝网络、低API、正式签名运行、其他ABI和完整Flutter视觉不属于本轮范围。"
+  ],
+  "next": "todo第7项冷进程已完成；自然无效now保留为核心语义边界。继续下一项时不得把协议注入回归冒充自然故障实核。"
+}

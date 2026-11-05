@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "scope": "todo第7项：授权源非空Fallback的真实Mihomo now/fixed/清除固定/非法成员拒绝，停止态与运行态",
+  "status": "VERIFIED_REAL_CORE_NOW_FIXED_AND_INVALID_MEMBER_BOUNDARY_COLD_RECOVERY_PENDING",
+  "baseCommit": "16fa671b7126c5e9e90f9f233e0674315652461a",
+  "authorization": {
+    "source": "外层AGENTS.md当前唯一授权源",
+    "transport": "gh-proxy.com加速节点",
+    "urlStored": false,
+    "fullYamlStored": false,
+    "sensitiveFieldsOmitted": [
+      "订阅URL",
+      "节点名称",
+      "服务器地址",
+      "UUID",
+      "WebSocket Host/path"
+    ]
+  },
+  "source": {
+    "freshRawFetch": true,
+    "observedAt": "2026-11-05T23:56:16+08:00",
+    "localYaml": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/1.yaml",
+      "bytes": 35165,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "remoteRawBody": {
+      "bytes": 35166,
+      "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+    },
+    "comparison": "本地与远端正文除本地缺少末尾换行外完全一致",
+    "inventory": {
+      "proxyCount": 7,
+      "proxyGroupCount": 34,
+      "proxyGroupTypeCounts": {
+        "select": 32,
+        "url-test": 1,
+        "fallback": 1
+      },
+      "fallbackCount": 1,
+      "fallbackWithMembers": 1,
+      "fallbackMemberCount": 7,
+      "ruleProviderCount": 90,
+      "ruleCount": 91,
+      "fallbackProbe": {
+        "url": "https://www.gstatic.com/generate_204",
+        "interval": 15,
+        "lazy": false,
+        "timeout": 5000,
+        "maxFailedTimes": 1
+      }
+    },
+    "configCheck": {
+      "command": "go run . -t -f /Users/long/Documents/CodexProjects/clash-kotlin/1.yaml",
+      "workingDirectory": "FlClash/core/Clash.Meta",
+      "result": "configuration test is successful"
+    }
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "accelerometerRotation": 0,
+    "userRotation": 0
+  },
+  "installation": {
+    "app": {
+      "package": "com.lonnnnnng.flclash",
+      "path": "FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "bytes": 90701133,
+      "localSha256": "32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf",
+      "installedSha256": "32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf",
+      "matches": true
+    },
+    "androidTest": {
+      "package": "com.lonnnnnng.flclash.test",
+      "path": "FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "bytes": 3795975,
+      "localSha256": "bb7862a1885d8e2f007fa7684d375b992cd7efe16e5b5e480559f43253a934b2",
+      "installedSha256": "bb7862a1885d8e2f007fa7684d375b992cd7efe16e5b5e480559f43253a934b2",
+      "matches": true
+    }
+  },
+  "test": {
+    "method": "com.lonnnnnng.flclash.ui.FallbackRealCoreInstrumentedTest#authorizedFallbackKeepsValidNowStoppedRunningPinnedClearedAndAfterInvalidSelection",
+    "runnerArgument": "kclashFallbackAcceptance=true",
+    "authorizedInput": "/data/local/tmp/kclash-fallback-authorized.json（仅设备临时文件，未写入仓库）",
+    "result": "OK (1 test)",
+    "realCoreSamples": 8,
+    "samples": [
+      {
+        "phase": "stopped-automatic",
+        "members": 7,
+        "validNow": true
+      },
+      {
+        "phase": "stopped-pin",
+        "members": 7,
+        "validNow": true
+      },
+      {
+        "phase": "stopped-invalid-member",
+        "members": 7,
+        "validNow": true,
+        "invalidMemberRejected": true
+      },
+      {
+        "phase": "stopped-clear",
+        "members": 7,
+        "validNow": true
+      },
+      {
+        "phase": "running-automatic",
+        "members": 7,
+        "validNow": true
+      },
+      {
+        "phase": "running-pin",
+        "members": 7,
+        "validNow": true
+      },
+      {
+        "phase": "running-invalid-member",
+        "members": 7,
+        "validNow": true,
+        "invalidMemberRejected": true
+      },
+      {
+        "phase": "running-clear",
+        "members": 7,
+        "validNow": true
+      }
+    ],
+    "contract": {
+      "invalidNow": 0,
+      "nullNowInjection": false,
+      "runningSincePreservedAcrossSelection": true,
+      "formalProfileAndSettingsRestored": true
+    },
+    "log": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/fallback-real-core-20261105/fallback-real-instrumentation-final.log",
+      "bytes": 2068,
+      "sha256": "9a2815f59e3dda6ea85d9996a9432e9ee40770ab9be337e4868de0a590ca49c7"
+    }
+  },
+  "cleanup": {
+    "testFinallyStopAndRestore": true,
+    "postTestInstrumentationForceStop": true,
+    "applicationCoreAndMihomoProcessesPresent": false,
+    "tunInterfacesPresent": false,
+    "probe": "adb shell ps -A and /proc/net/dev after explicit force-stop of the completed instrumentation runner"
+  },
+  "limitations": [
+    "Fallback冷进程恢复尚未验证；本次是同一已安装进程内的停止态与运行态实核切换。",
+    "自然产生无效或null now尚未验证；invalid-now=0表示本次合法非空Fallback的每次核心回读均有效，不等于故障注入。",
+    "非法成员拒绝覆盖的是应用向核心提交非法选择的边界，不能替代无效now自然产生的核心故障场景。",
+    "蜂窝网络、低API、正式签名运行、其他ABI和完整Flutter视觉不属于本次范围。"
+  ],
+  "attachments": {
+    "root": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/fallback-real-core-20261105/",
+    "files": [
+      "source-inventory.json",
+      "installation.json",
+      "device-after.json",
+      "fallback-real-instrumentation-final.log"
+    ],
+    "availability": "原始日志与脱敏清单保留在工作区外层附件目录；完整授权正文、节点凭据和临时授权文件不入仓库。"
+  },
+  "next": "补Fallback冷进程恢复；随后在可构造真实故障输入时单独验证自然无效now，不把协议注入回归计为实核通过。"
+}

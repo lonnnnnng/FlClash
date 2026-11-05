@@ -22,7 +22,8 @@ class GeneralSettingsTest {
     @Test fun coreProjectionDoesNotChangeForBackgroundAndNotificationPreferences() {
         val value = GeneralSettings()
         assertEquals(value.runtimeKey(), value.copy(hidden = true, autoRun = true, minimizeOnExit = false,
-            showNotificationStopAction = false, openLogs = true, onlyStatisticsProxy = true, delayTestTimeout = 500).runtimeKey())
+            showNotificationStopAction = false, openLogs = true, onlyStatisticsProxy = true).runtimeKey())
+        assertNotEquals(value.runtimeKey(), value.copy(delayTestTimeout = 500).runtimeKey())
         assertNotEquals(value.runtimeKey(), value.copy(checkCertificate = false).runtimeKey())
     }
 

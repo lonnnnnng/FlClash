@@ -20,6 +20,9 @@ func TestDefaultSetupParams(t *testing.T) {
 	if params.TestURL != "https://www.gstatic.com/generate_204" {
 		t.Errorf("TestURL = %s, want the gstatic generate_204 probe", params.TestURL)
 	}
+	if params.TestTimeoutMs != 5000 {
+		t.Errorf("TestTimeoutMs = %d, want the 5-second core default", params.TestTimeoutMs)
+	}
 	if params.SelectedMap == nil {
 		t.Error("SelectedMap must be a usable map so decoding can merge into it")
 	}

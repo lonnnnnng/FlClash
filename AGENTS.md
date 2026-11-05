@@ -15,6 +15,7 @@
 
 - 本分支是 Android 手机 Kotlin 主线；不要在这里恢复 Flutter、桌面或 TV 的运行时依赖。
 - Go Mihomo 是代理内核；Android 应用层通过 Kotlin Bridge/Repository 使用它，不在 UI 中直接调用 gomobile。
+- Mihomo 代码同步的唯一上游是 `chen08209/Clash.Meta` 的 `FlClash` 分支；不直接从 `MetaCubeX/mihomo` 合并、cherry-pick 或移植提交/PR。作者已合入的官方改动可随该分支同步，本地缺陷修复仍保留在自己的 `kclash-fixes`；详见 `.agents/upstream-sync.md`。
 - 核心生命周期只有 `CoreRuntimeManager` 一个事实来源；页面、`VpnService` 和 `ProxyService` 不各自启动核心。
 - Room 使用全新数据模型，不读取或迁移 Flutter/Drift 数据；禁止用破坏性迁移清空 Kotlin 用户数据。
 - Compose 页面只渲染 ViewModel 的不可变 `StateFlow` 状态，通过事件进入 UseCase/Repository。
@@ -28,7 +29,7 @@
 ## 分支边界
 
 - `kotlin`：长期主线，推送到 `origin/kotlin`。
-- `main`/`upstream/main`：Flutter 参考和上游追踪，不直接合并到 Kotlin 主线。
+- `main`/`upstream/main`：仅作 Flutter UI/UX 与功能实现参考；禁止将 Flutter 仓库提交通过 merge 或 cherry-pick 合入 Kotlin 主线，共用 Go/Android 适配层也须逐项参考后在现有链路实现。
 - 上游新功能必须先确认 Android 手机行为，再在 Kotlin 主线实现并更新同步记录。
 
 ## 真机验收路径
