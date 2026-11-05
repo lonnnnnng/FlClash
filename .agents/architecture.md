@@ -1,6 +1,16 @@
 # Architecture
 
-## 规则YAML加密UI状态与剩余冷恢复（2026-11-05，当前）
+## 提交检查点与退出应用证据（2026-11-05，当前）
+
+todo第2项保存/退出受控死亡窗口已验：规则、Proxies、策略组结构化及原始YAML、本地节点的意图落盘/正式提交窗口，实际引用配置的退出应用前后、父草稿清除前后及CAS冲突共15场景。准备测试命中门闩后保持存活，外部核对同PID后force-stop并确认消失；15次首次恢复、5次测试进程正常退出后的再次冷启动检查通过。恢复不重复写入，未提交等待显式重试，源变化保留旧CAS；退出应用调用计数在恢复后为0、显式重试后为1。
+
+最终build7 App481/Service195/Core38/Common31共745单测零失败/错误/跳过，Debug/Test、未签名Release/R8及双Lint通过，各0错误/66警告（Debug10/Release9提示）；同套App/Test相关回归21/21，安装回拉哈希匹配。正式1份配置/逐字段摘要/选择/正文SHA-size-mtime、本地目录、原1.yaml双端、Flutter包及设备设置保持；临时行/正文与两个草稿Store的主文件/.bak/.new均已清除，结束无服务/tun0。
+
+证据`docs/acceptance/editor-commit-window-redmi-20261105.json`，原始附件在外层`acceptance-artifacts/commit-window-20261105/`。这是受控force-stop，未推广系统自动回收/OEM；结构化保存走正式MainActivity的VM入口，本地保存/退出使用Compose点击。实际引用分支调用并返回applyCurrentProfile，核心保持STOPPED；不推广运行中VPN/流量、事务内部崩溃原子性或完整Flutter视觉。首批11场景后退出恢复断言误将输入加载当作退出重放；第二批13场景后父清除检查点未覆盖自动写入器，均保留失败及现场收尾，不与最终批次相加。第1/2项本组范围已验，第3至11项待办；下一组按第3项真实age在线解密与CUSTOM引用源更新应用推进。玻璃默认关闭，原暂缓/取消项不变。
+
+Debug/release同FQCN检查点实现隔离：debug仅同进程一次arm，锁内记录命中，锁外NonCancellable挂起，无持久开关或导出入口；release no-op并经R8 DEX排除。Repository完成返回的检查点位于profileWrite lambda内，早于核心管理器后续应用，不能把文件rename或外层profileWrite返回混同。父草稿恢复等待信号只读；退出应用前后计数只标记真实引用分支，首页普通getProxyGroups→ensureConfigLoaded不记作退出重放。
+
+## 规则YAML加密UI状态与剩余冷恢复（2026-11-05，历史切片）
 
 规则快捷YAML的正文/选区、错误与放弃确认已进入现有加密保存树，仅正文修改清错；异步校验冻结正文，保留原CAS/关闭守卫。
 

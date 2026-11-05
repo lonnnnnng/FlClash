@@ -152,6 +152,7 @@ class LocalProxiesViewModel internal constructor(
                 try {
                     // 作者 long：先保存退出意图，应用失败或中途死亡仍可回到管理页重试；清密文成功后才退场。
                     persistDraft()
+                    EditorCommitProbe.checkpoint(EditorCommitWindow.LOCAL_CLOSE_INTENT)
                     if (before != state.value.rows) operations.applyIfReferenced(seenNames.toSet())
                     draftLock.withLock { draftStore.write(null) }
                     opened = null; pendingClose = false; pending = null; epoch++
@@ -318,7 +319,9 @@ class LocalProxiesViewModel internal constructor(
         pending = LocalProxyPendingWrite(kind, next, rename)
         // 作者 long：正式目录提交前先持久化意图；恢复仅比较实际目录确认成功，不自动重复改名或批量替换。
         persistDraft()
+        EditorCommitProbe.checkpoint(EditorCommitWindow.LOCAL_INTENT)
         operations.save(baseline, next, rename)
+        EditorCommitProbe.checkpoint(EditorCommitWindow.LOCAL_COMMITTED)
         pending = null
         seenNames += next.map { it.name }
     }

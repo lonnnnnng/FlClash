@@ -41,7 +41,11 @@ internal class RepositoryLocalProxyEditorOperations(
     override suspend fun applyIfReferenced(names: Set<String>) {
         val id = selectedId ?: return
         val profile = profiles.profiles.value.firstOrNull { it.id == id } ?: return
-        if (profile.type == ProfileType.CUSTOM && LocalProxies.referenced(profiles.readLocalProfileContent(id)).any(names::contains))
+        if (profile.type == ProfileType.CUSTOM && LocalProxies.referenced(profiles.readLocalProfileContent(id)).any(names::contains)) {
+            EditorCommitProbe.checkpoint(EditorCommitWindow.LOCAL_CLOSE_APPLYING)
             runtime.applyCurrentProfile(id)
+            // 作者 long：此检查点只在实际引用并完成核心应用后命中，跳过应用分支不能冒充已应用的死亡窗口。
+            EditorCommitProbe.checkpoint(EditorCommitWindow.LOCAL_CLOSE_APPLIED)
+        }
     }
 }

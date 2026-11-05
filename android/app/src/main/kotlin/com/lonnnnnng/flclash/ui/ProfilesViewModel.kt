@@ -305,6 +305,13 @@ class ProfilesViewModel internal constructor(
     private var restoredRemotePick: Long? = null
     private var draftRecoveryFailed = false
     private var draftRecoveryRetrying = false
+
+    // 作者 long：冷恢复验收必须等完整读取结束，初始空状态不能冒充已清除草稿；此入口只等待、不修改状态。
+    internal suspend fun awaitEditorDraftRestoration() {
+        draftRestored.await()
+        check(!draftRecoveryFailed) { "编辑草稿恢复失败" }
+    }
+
     init {
         if (draftStore !== com.lonnnnnng.flclash.data.NoopProfileDraftStore) viewModelScope.launch {
             try {
@@ -326,7 +333,11 @@ class ProfilesViewModel internal constructor(
                             // 作者 long：等待写锁期间可能已登记保存意图；拿锁后重取状态，不能用排队旧快照擦掉提交前的恢复记录。
                             val latest = currentDraftSnapshot()
                             val bytes = latest?.let { withContext(overviewDispatcher) { draftGson.toJson(it).toByteArray(Charsets.UTF_8) } }
-                            if (epoch == draftEpoch) draftStore.write(bytes)
+                            if (epoch == draftEpoch) {
+                                // 作者 long：关闭的清除也可能由自动写入器先完成；验收必须停在实际清除边界，不能只盯显式关闭协程。
+                                if (draftClosing && bytes == null) EditorCommitProbe.checkpoint(EditorCommitWindow.PROFILE_CLOSE_BEFORE_CLEAR)
+                                draftStore.write(bytes)
+                            }
                         }
                     }
                 } catch (cancelled: CancellationException) { throw cancelled }
@@ -858,7 +869,11 @@ class ProfilesViewModel internal constructor(
             withContext(kotlinx.coroutines.NonCancellable) {
                 try {
                     // 作者 long：先等旧写入结束并删除草稿，再关闭页面；VM清理不能取消已确认的放弃或让旧快照复活。
-                    draftWriteLock.withLock { draftStore.write(null) }
+                    draftWriteLock.withLock {
+                        EditorCommitProbe.checkpoint(EditorCommitWindow.PROFILE_CLOSE_BEFORE_CLEAR)
+                        draftStore.write(null)
+                    }
+                    EditorCommitProbe.checkpoint(EditorCommitWindow.PROFILE_CLOSE_AFTER_CLEAR)
                     if (generation == localEditorGeneration) resetEditorMemory()
                 } catch (_: Exception) {
                     draftClosing = false
@@ -1343,9 +1358,10 @@ class ProfilesViewModel internal constructor(
                 check(generation == rulesGeneration) { "编辑会话已变化" }
                 mutableRulesEditor.update { it.copy(pendingContent = updatedContent) }
                 persistCurrentEditorDraft()
+                EditorCommitProbe.checkpoint(EditorCommitWindow.RULES_INTENT)
                 val updatedProfile = profileWrite { repository.saveCustomRules(profile.id, rules, state.sourceContent) {
                     generation == rulesGeneration && !isProfileTransitioning(runtimeManager.state.value)
-                } }
+                }.also { EditorCommitProbe.checkpoint(EditorCommitWindow.RULES_COMMITTED) } }
                 if (generation == rulesGeneration) {
                     reflectStructuredSave(profile.id, updatedContent, updatedProfile)
                     // 作者 long：与 Flutter 一样逐操作保存并留在列表；更新正文快照供下一次保存检测过期写入。
@@ -1445,9 +1461,10 @@ class ProfilesViewModel internal constructor(
                 check(generation == proxiesGeneration) { "编辑会话已变化" }
                 mutableProxiesEditor.update { it.copy(pendingContent = updatedContent) }
                 persistCurrentEditorDraft()
+                EditorCommitProbe.checkpoint(EditorCommitWindow.PROXIES_INTENT)
                 val updatedProfile = profileWrite { repository.saveCustomDocument(profile.id, updatedContent, state.sourceContent) {
                     generation == proxiesGeneration && !isProfileTransitioning(runtimeManager.state.value)
-                } }
+                }.also { EditorCommitProbe.checkpoint(EditorCommitWindow.PROXIES_COMMITTED) } }
                 if (generation == proxiesGeneration) reflectStructuredSave(profile.id, updatedContent, updatedProfile)
             }.onSuccess {
                 if (generation == proxiesGeneration) closeProxiesDraft()
@@ -1537,9 +1554,10 @@ class ProfilesViewModel internal constructor(
                 check(generation == proxyGroupsGeneration) { "编辑会话已变化" }
                 mutableProxyGroupsEditor.update { it.copy(pendingContent = updatedContent) }
                 persistCurrentEditorDraft()
+                EditorCommitProbe.checkpoint(EditorCommitWindow.GROUPS_INTENT)
                 val updated = profileWrite { repository.saveCustomProxyGroups(profile.id, save, state.sourceContent) {
                     generation == proxyGroupsGeneration && !isProfileTransitioning(runtimeManager.state.value)
-                } }
+                }.also { EditorCommitProbe.checkpoint(EditorCommitWindow.GROUPS_COMMITTED) } }
                 if (generation == proxyGroupsGeneration) {
                     reflectStructuredSave(profile.id, repository.readLocalProfileContent(profile.id), updated)
                     closeStructuredEditor(rules = false)
@@ -1571,9 +1589,10 @@ class ProfilesViewModel internal constructor(
                 check(generation == proxyGroupsGeneration) { "编辑会话已变化" }
                 mutableProxyGroupsEditor.update { it.copy(pendingContent = updatedContent) }
                 persistCurrentEditorDraft()
+                EditorCommitProbe.checkpoint(EditorCommitWindow.GROUPS_YAML_INTENT)
                 val updatedProfile = profileWrite { repository.saveCustomDocument(profile.id, updatedContent, state.sourceContent) {
                     generation == proxyGroupsGeneration && !isProfileTransitioning(runtimeManager.state.value)
-                } }
+                }.also { EditorCommitProbe.checkpoint(EditorCommitWindow.GROUPS_YAML_COMMITTED) } }
                 if (generation == proxyGroupsGeneration) reflectStructuredSave(profile.id, updatedContent, updatedProfile)
             }.onSuccess {
                 if (generation == proxyGroupsGeneration) closeStructuredEditor(rules = false)
