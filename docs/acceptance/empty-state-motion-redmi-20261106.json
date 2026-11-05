@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "timezone": "Asia/Shanghai",
+  "scope": "Profiles、代理搜索和代理组空态插画的 SPIN/MORPH/ORBIT 900ms 入场编排，以及现有代理组 List/Tab 连续动效回归",
+  "status": "DONE_VERIFIED_FOR_EMPTY_STATE_ENTRANCES; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "overallPassed": true,
+  "baseCommit": "d394a352117bb5dd5fde4f614005a32a23561a12",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userRotation": 0
+  },
+  "implementation": {
+    "production": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEmptyIllustration.kt",
+    "test": "android/tests/app/ProfileEmptyIllustrationTest.kt",
+    "behavior": [
+      "Profiles 空态使用 SPIN，搜索空态使用 MORPH，代理组空态使用 ORBIT；三种路径在 900ms 后收敛到同一静止形态。",
+      "MORPH 在中间帧从圆形过渡到 Flutter 参考曲线，ORBIT 在中间帧让点缀沿轨道进入；固定编排避免重组和截图回归时随机跳帧。",
+      "空态、加载/错误/内容状态及代理组 List/Tab 转场均保持原有返回、搜索清除、节点选择和连续帧语义。"
+    ],
+    "flutterReference": "仅参考本地 Flutter 空态插画和代理组状态转场语义，未合并或修改 Flutter 上游代码。"
+  },
+  "build": {
+    "command": "./gradlew test :app:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:lintRelease :app:assembleRelease --no-daemon -Ptarget-platform=android-arm64",
+    "jvm": {
+      "app": { "tests": 494, "failures": 0, "errors": 0, "skipped": 0 },
+      "core": { "tests": 38, "failures": 0, "errors": 0, "skipped": 0 }
+    },
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "00373d49a57345535e6afc57085a20f011a8fc6f7215eb20ca072e7146f0f741",
+      "bytes": 90701078
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "083817f8a6682252f3db676882f0603d688d7e237638f53a600d09a427973826",
+      "bytes": 3795975
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "673a406dc5d40dce45a848356f206d60b6583f21de2306c058bce3e815a77765",
+      "bytes": 48206268
+    },
+    "lint": {
+      "debug": { "errors": 0, "warnings": 67, "hints": 10 },
+      "release": { "errors": 0, "warnings": 66, "hints": 9 }
+    },
+    "redmiInstall": {
+      "debugBaseApkSha256": "00373d49a57345535e6afc57085a20f011a8fc6f7215eb20ca072e7146f0f741",
+      "androidTestBaseApkSha256": "083817f8a6682252f3db676882f0603d688d7e237638f53a600d09a427973826",
+      "matchesBuiltArtifacts": true,
+      "evidence": "../acceptance-artifacts/empty-state-motion-20261106/final-debug.apk and final-androidTest.apk"
+    }
+  },
+  "test": {
+    "instrumentedClasses": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest",
+        "result": "OK (4 tests)",
+        "log": "../acceptance-artifacts/empty-state-motion-20261106/main-page-states-original-pass.txt"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupsActivityInstrumentedTest",
+        "result": "OK (8 tests)",
+        "log": "../acceptance-artifacts/empty-state-motion-20261106/proxy-groups-activity-original-pass.txt"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+        "result": "OK (4 tests)",
+        "log": "../acceptance-artifacts/empty-state-motion-20261106/proxy-page-parity-original-pass.txt"
+      }
+    ],
+    "totalInstrumentedTests": 16,
+    "xml": "../acceptance-artifacts/empty-state-motion-20261106/instrumentation-final.xml",
+    "emptyStateAssertions": [
+      "Profiles、搜索和代理组空态均完成指定入场编排并保留可读文案/插画。",
+      "ProfileEmptyIllustrationTest 验证三种编排终帧统一，并验证 MORPH/ORBIT 中间几何确实变化。",
+      "proxy_list_group_expand_mid 与 proxy_list_group_expand_settled 不同；收起后长列表节点语义节点消失。"
+    ],
+    "screenshotsManifest": "../acceptance-artifacts/empty-state-motion-20261106/screenshots.json",
+    "screenshotCount": 38,
+    "sha256Manifest": "../acceptance-artifacts/empty-state-motion-20261106/sha256.txt"
+  },
+  "rerunDiagnostics": [
+    "main-page-states-rerun.txt",
+    "rerun-diagnostic-main-page-states.txt",
+    "rerun-diagnostic-proxy-groups-activity.txt",
+    "rerun-diagnostic-proxy-page-parity.txt"
+  ],
+  "cleanup": {
+    "formalProfileAndSettingsRestored": true,
+    "formalProfileBodyRewritten": false,
+    "authorizedInputChanged": false,
+    "flutterBaselinePackageChanged": false,
+    "runtimeStarted": false,
+    "instrumentationStoppedAfterDiagnostics": true
+  },
+  "limitations": [
+    "本轮新增的是空态入场编排和既有代理组连续动效证据，不代表完整 Flutter 逐像素视觉一致。",
+    "完整 List/其他子页排版、统一截图基线、Dock/按钮实时背景与触点光效、全应用动效性能仍为 PARTIAL。",
+    "重跑阶段出现测试进程恢复/应用进程终止，诊断日志保留但不计入通过；通过结论只使用原始 OK 日志和独立截图。",
+    "玻璃默认关闭；低 API、正式签名运行、远端 CI、蜂窝网络和观测页次要视觉不属于本轮。"
+  ],
+  "next": "继续代理组节点卡片细节和剩余子页/面板排版，再做空态统一截图基线、键盘联动及全应用连续动效验收。"
+}
