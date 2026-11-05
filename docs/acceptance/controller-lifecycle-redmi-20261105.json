@@ -1,0 +1,1459 @@
+{
+  "date": "2026-11-05",
+  "timezone": "Asia/Shanghai",
+  "scope": "KCORE-002/003：控制器重建竞态、TLS配置失败端口泄漏及上游源码溯源台账；todo第8/11项的独立修复切片",
+  "baseCommit": "6ca697d118e124c133f6d7658676cb217c7d9a26",
+  "status": "DONE-VERIFIED scoped controller fixes; todo8/11 remain PARTIAL",
+  "overallPassed": true,
+  "stabilityResolved": false,
+  "conclusion": "核心源码直接修复并固定已推送gitlink；Go竞态/红绿复现、Android构建、Redmi控制器六轮、系统恢复及正式数据保护通过。有限成功不证明历史TLS EOF因果、全部内核race或长期稳定性。",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": "1.0",
+    "network": "Wi-Fi; cellular not tested"
+  },
+  "authorization": {
+    "onlineSource": "runtime-read sole source in outer AGENTS.md; original source1 withdrawn and never accessed",
+    "localYaml": "only original ../1.yaml",
+    "baselineFlutter": "com.follow.clash read-only APK digest, never modified"
+  },
+  "source": {
+    "parentBaseCommit": "6ca697d118e124c133f6d7658676cb217c7d9a26",
+    "coreOriginalCommit": "c5062921054902b25215a6a933e72ccd714c9bfa",
+    "coreFixCommit": "f83e9b1032ed02831457d4da5a414e063e932694",
+    "coreRemoteCommit": "f83e9b1032ed02831457d4da5a414e063e932694",
+    "coreFork": "https://github.com/lonnnnnng/mihomo.git",
+    "coreBranch": "kclash-fixes",
+    "coreTree": "9349603ca2a8b9a6d45e3a9c79e35d3bdb89a48a",
+    "coreWorkingTreeClean": true,
+    "buildSourceHashesMatch": true,
+    "files": {
+      ".gitmodules": "1ecda6da968622747642141dd24cfd19e1ede8fad0788f301915f43fdc546fb3",
+      "android/tests/instrumented/ControllerRuntimeLiveTest.kt": "b1d2ea6dfe0adb849ec15f2ffb7091b20976cc8cb4819b8b4d599efee1bd4e31",
+      "core/Clash.Meta/hub/route/server.go": "248897871214d8508e13318b56ba8cd9ed66a89b0f3a1660ae6fea945d4a9235",
+      "core/Clash.Meta/hub/route/server_test.go": "3fd971ff4a66ea3056a2269f00989f0e03015a426b8752f5e92f329bf913b74e"
+    }
+  },
+  "tracking": {
+    "ledger": "docs/upstream-source-defects.md",
+    "adr": "docs/adr/0021-controller-lifecycle-and-source-defect-tracking.md",
+    "defects": [
+      "KCORE-002",
+      "KCORE-003"
+    ],
+    "historicalDefect": "KCORE-001 fixed in 6ca697d1, evidence retained",
+    "syncRule": "compare behavior, regression and fixed SHA before retaining/replacing/removing each local patch; never remove historical failures"
+  },
+  "implementation": [
+    "公开重建入口同步关闭旧监听并绑定新监听，Serve单独后台运行；四传输同锁串行",
+    "同时持有Server和listener，覆盖Serve未登记时的端口释放窗口",
+    "输入Config/Origins快照；嵌入模式和UI路径与router构建同步",
+    "TLS客户端CA/ECH准备先于Listen，坏配置拒绝且不回退旧服务",
+    "保留HTTP/TLS secret与Unix/Pipe本地认证语义；不改正式YAML、节点、DNS或重试策略",
+    "CI分别执行父模块全量race和嵌套route包，避免./...漏测；产品不使用overlay或手改AAR"
+  ],
+  "build": {
+    "batch": "build2",
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "counts": {
+      "app": {
+        "tests": 492,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 206,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "lintDebug": {
+        "Error": 0,
+        "Warning": 67,
+        "Hint": 10
+      },
+      "lintRelease": {
+        "Error": 0,
+        "Warning": 66,
+        "Hint": 9
+      }
+    },
+    "apks": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "f3126509e9b3646b92bab61516c6ccb11fad7063981c1acf7845b739d78632a3",
+        "bytes": 90696143,
+        "abis": [
+          "arm64-v8a"
+        ]
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "bb7862a1885d8e2f007fa7684d375b992cd7efe16e5b5e480559f43253a934b2",
+        "bytes": 3795975,
+        "abis": []
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+        "sha256": "41347b7bd41d013238227826d082f5c17b72e7c5c6ee725754d636ced62baae8",
+        "bytes": 48196720,
+        "abis": [
+          "arm64-v8a"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "repositoryPath": ".agents/upstream-sync.md",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/.agents/upstream-sync.md",
+        "sha256": "5bd8b975e3da7b77429b60d1f8b638bca0724f0ae35245d67e0e7d447ade28b9",
+        "bytes": 2044
+      },
+      {
+        "repositoryPath": ".github/workflows/kotlin-android.yml",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/.github/workflows/kotlin-android.yml",
+        "sha256": "6debd295a82645e8f6092dfd501f42c9a296f0c93a04d51a37ff6ecea3c626ef",
+        "bytes": 4779
+      },
+      {
+        "repositoryPath": ".gitmodules",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/.gitmodules",
+        "sha256": "1ecda6da968622747642141dd24cfd19e1ede8fad0788f301915f43fdc546fb3",
+        "bytes": 124
+      },
+      {
+        "repositoryPath": "android/tests/instrumented/ControllerRuntimeLiveTest.kt",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/android/tests/instrumented/ControllerRuntimeLiveTest.kt",
+        "sha256": "b1d2ea6dfe0adb849ec15f2ffb7091b20976cc8cb4819b8b4d599efee1bd4e31",
+        "bytes": 6597
+      },
+      {
+        "repositoryPath": "docs/adr/0021-controller-lifecycle-and-source-defect-tracking.md",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/docs/adr/0021-controller-lifecycle-and-source-defect-tracking.md",
+        "sha256": "9ff37b2ed0cd8bf7d2b2d7ca34be8e0c6853430c669e848087c5d4b047c0cfd7",
+        "bytes": 2396
+      },
+      {
+        "repositoryPath": "docs/upstream-source-defects.md",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/docs/upstream-source-defects.md",
+        "sha256": "b049fbfde72d942b22683f7abb6b22545fd41603934368728ca1b491ad62c59c",
+        "bytes": 7745
+      },
+      {
+        "repositoryPath": "android/app/src/debug/kotlin/com/lonnnnnng/flclash/SystemVpnAcceptance.kt",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/android/app/src/debug/kotlin/com/lonnnnnng/flclash/SystemVpnAcceptance.kt",
+        "sha256": "8b7f9b74a892b111de68f872b5a20423320e5a75f48a4e6ddba8d3c32fa435b2",
+        "bytes": 29415
+      },
+      {
+        "repositoryPath": "tool/android_system_vpn_acceptance.py",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/tool/android_system_vpn_acceptance.py",
+        "sha256": "50244208d2dd3cbc9fa13f1372a060ab2fee481fcdd2c364ad4ff12e228efc9c",
+        "bytes": 16074
+      },
+      {
+        "repositoryPath": "core/Clash.Meta/hub/route/server.go",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/core/Clash.Meta/hub/route/server.go",
+        "sha256": "248897871214d8508e13318b56ba8cd9ed66a89b0f3a1660ae6fea945d4a9235",
+        "bytes": 14794
+      },
+      {
+        "repositoryPath": "core/Clash.Meta/hub/route/server_test.go",
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-evidence/sources/core/Clash.Meta/hub/route/server_test.go",
+        "sha256": "3fd971ff4a66ea3056a2269f00989f0e03015a426b8752f5e92f329bf913b74e",
+        "bytes": 9758
+      }
+    ],
+    "log": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2.log",
+      "sha256": "3b1a1570f026af7deffb8c2acfa5bc4f8385474323c700f35a1b078d8d904ddf",
+      "bytes": 23515
+    },
+    "jvmTotal": 767,
+    "incremental": true,
+    "installation": {
+      "epochMs": 1793876954016,
+      "packages": [
+        {
+          "package": "com.lonnnnnng.flclash",
+          "source": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+          "installedPath": "/data/app/~~2B7CqbsPRhvMRMLEqorqhw==/com.lonnnnnng.flclash-cv7vGP-Pdebccwwk1e5q-A==/base.apk",
+          "sha256": "f3126509e9b3646b92bab61516c6ccb11fad7063981c1acf7845b739d78632a3",
+          "pulledApk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-installed-app.apk",
+          "pulledSha256": "f3126509e9b3646b92bab61516c6ccb11fad7063981c1acf7845b739d78632a3",
+          "installResult": "Performing Streamed Install\nSuccess"
+        },
+        {
+          "package": "com.lonnnnnng.flclash.test",
+          "source": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+          "installedPath": "/data/app/~~Qcx-druhZHCC23yhKCrE8A==/com.lonnnnnng.flclash.test-z8K4q15rMzdEoLpxc6c-yg==/base.apk",
+          "sha256": "bb7862a1885d8e2f007fa7684d375b992cd7efe16e5b5e480559f43253a934b2",
+          "pulledApk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-installed-test.apk",
+          "pulledSha256": "bb7862a1885d8e2f007fa7684d375b992cd7efe16e5b5e480559f43253a934b2",
+          "installResult": "Performing Streamed Install\nSuccess"
+        }
+      ]
+    },
+    "coreBindRebuiltInBuild1": true,
+    "build2ProductionApksEqualBuild1": true,
+    "jvmBoundary": "767 = App492/Service206/Core38/Common31, zero failures/errors/skipped; up-to-date results reused; Go counts separate",
+    "releaseBoundary": "unsigned/R8/Lint only; no release signing or device execution",
+    "sourcesBoundary": "build snapshot covers exact core and Android test files; document edits after build are separate"
+  },
+  "go": {
+    "baselineFullRace": {
+      "command": "go test -race -json ./...",
+      "cwd": "core",
+      "counts": {
+        "pass": 265
+      },
+      "failedMethods": [],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-baseline-race.jsonl",
+          "sha256": "a3fc239b718fae7b79ec3912d72f7977b7664e02cecb3a86b986057282bc8642",
+          "bytes": 208337
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-baseline-race.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      ]
+    },
+    "baselineStress": {
+      "command": "go test -race -json -run '^TestUpdateConfig(ReplacesTheSecretTheProfileCarried|ServesTheControllerBehindTheSecretItWasGiven)$' -count=20 .",
+      "cwd": "core",
+      "counts": {
+        "pass": 38,
+        "fail": 2
+      },
+      "failedMethods": [
+        "TestUpdateConfigServesTheControllerBehindTheSecretItWasGiven",
+        "TestUpdateConfigReplacesTheSecretTheProfileCarried"
+      ],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-baseline-controller-stress.jsonl",
+          "sha256": "b4bc8153f302b10f95d3fa1afbca1e8c34b211319331b5e389e0d84163f52071",
+          "bytes": 56266
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-baseline-controller-stress.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      ]
+    },
+    "fixedFullRace": {
+      "command": "go test -race -json ./...",
+      "cwd": "core",
+      "counts": {
+        "pass": 265
+      },
+      "failedMethods": [],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-full-race1.jsonl",
+          "sha256": "f0f92f425fdb675927c1e5215f42e964597ccaa7c41355006fabdd293e1c7399",
+          "bytes": 208372
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-full-race1.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      ]
+    },
+    "fixedStress": {
+      "command": "go test -race -json -run '^TestUpdateConfig(ReplacesTheSecretTheProfileCarried|ServesTheControllerBehindTheSecretItWasGiven)$' -count=20 .",
+      "cwd": "core",
+      "counts": {
+        "pass": 40
+      },
+      "failedMethods": [],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-fixed-controller-stress.jsonl",
+          "sha256": "60b3503c95f57818565506e851ed3e462f8497664d49e6473f0f550819d7952c",
+          "bytes": 37375
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-fixed-controller-stress.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      ]
+    },
+    "routeFinal": {
+      "command": "go test -race -json github.com/metacubex/mihomo/hub/route",
+      "cwd": "core",
+      "counts": {
+        "pass": 10
+      },
+      "failedMethods": [],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/route-final.jsonl",
+          "sha256": "2d76fb25884cac78b87cf5516440669a8dc6a29d808addc362918cdf57adb69d",
+          "bytes": 51941
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/route-final.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      ]
+    },
+    "tlsBaseline": {
+      "command": "go test -race -json -overlay=/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline-overlay/baseline.json -run '^TestControllerTLSInvalidConfigurationReleasesPortRegression$' github.com/metacubex/mihomo/hub/route",
+      "cwd": "core",
+      "counts": {
+        "fail": 3
+      },
+      "failedMethods": [
+        "TestControllerTLSInvalidConfigurationReleasesPortRegression/client-ca",
+        "TestControllerTLSInvalidConfigurationReleasesPortRegression/ech",
+        "TestControllerTLSInvalidConfigurationReleasesPortRegression"
+      ],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline.jsonl",
+          "sha256": "3cdbeeba685ac0290a219d702700edcea42c3e7bd75e1094406f78a870fbf2f3",
+          "bytes": 6036
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      ]
+    },
+    "tlsFixed": {
+      "command": "go test -race -json -overlay=/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline-overlay/fixed.json -run '^TestControllerTLSInvalidConfigurationReleasesPortRegression$' github.com/metacubex/mihomo/hub/route",
+      "cwd": "core",
+      "counts": {
+        "pass": 3
+      },
+      "failedMethods": [],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-fixed.jsonl",
+          "sha256": "07dcdda91cbd5e373eac114f373562924061c9450cf6b774b6608e2172c530d3",
+          "bytes": 4722
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-fixed.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      ]
+    },
+    "countBoundary": "route是8个顶层方法与2个TLS子场景，共10个pass事件；TLS最小复现是两个业务分支及父项共3事件，不计为3独立缺陷。父模块265与route不合并。",
+    "overlayBoundary": "TLS baseline使用固定原始c506... server.go及最小测试；fixed只替换相同最小测试。仅为红绿证明，APK直接构建修复源码。",
+    "knownHistoricalRace": "system-vpn-protection-redmi-20261105.json旧httpServer失败保留；本组已修，单次基线265通过不消除压力38/40失败",
+    "notCovered": [
+      "全部Mihomo嵌套包测试/外部依赖和Docker套件",
+      "Windows NamedPipe运行"
+    ]
+  },
+  "regression": {
+    "batch": "final2",
+    "requested": [
+      "com.lonnnnnng.flclash.ui.ControllerRuntimeLiveTest#controllerSecretRotationAndDisableReleaseTheRealPortWithoutRewritingProfiles",
+      "com.lonnnnnng.flclash.ComponentContractInstrumentedTest#externalActionsAndPlatformComponentsKeepTheirExportBoundaries",
+      "com.lonnnnnng.flclash.ui.VpnSettingsRuntimeLiveTest#vpnChoicePersistsAndExplicitRestartSwitchesRealTunAndProxyModes",
+      "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile"
+    ],
+    "results": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.ControllerRuntimeLiveTest#controllerSecretRotationAndDisableReleaseTheRealPortWithoutRewritingProfiles",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ComponentContractInstrumentedTest#externalActionsAndPlatformComponentsKeepTheirExportBoundaries",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.VpnSettingsRuntimeLiveTest#vpnChoicePersistsAndExplicitRestartSwitchesRealTunAndProxyModes",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+        "code": 0,
+        "passed": true,
+        "stack": null
+      }
+    ],
+    "images": [],
+    "exitCode": 0,
+    "case": "rules-yaml",
+    "seconds": 43.616,
+    "log": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/final2.log",
+    "controller": {
+      "rounds": 6,
+      "authenticated": 12,
+      "rejected": 12,
+      "disabledPortReleased": 6,
+      "embeddedMutationBlocked": 6,
+      "sameRuntimeSession": true,
+      "formalRowsAndFilesPreserved": true
+    },
+    "controllerBoundary": "正式MainActivity宿主/常规设置/真实Mihomo；六轮均不等待或重试端口释放。非完整UI点击导航，也未在Redmi暴露TLS控制器。"
+  },
+  "systemVpnRegression": {
+    "token": "9ff4feecc0264172bc69a74a4b986ec3",
+    "serial": "wsvwypiz7xwslvl7",
+    "passed": true,
+    "cellularTested": false,
+    "verificationDelaySeconds": 0,
+    "acceptanceMode": "immediate",
+    "diagnosticPassed": false,
+    "installedAppSha256": "f3126509e9b3646b92bab61516c6ccb11fad7063981c1acf7845b739d78632a3",
+    "before": {
+      "pidsBefore": [],
+      "pids": [],
+      "tun0": false,
+      "ProxyService": false,
+      "ProxyForeground": false,
+      "VpnService": false,
+      "VpnForeground": false,
+      "vpnCreatedByAndroid": false,
+      "vpnSystemAction": false
+    },
+    "ready": {
+      "resume": false,
+      "vpnPreference": false,
+      "formalCount": 1,
+      "token": "9ff4feecc0264172bc69a74a4b986ec3",
+      "phase": "ready",
+      "pid": 6712,
+      "epochMs": 1793877022933
+    },
+    "preparedPidGoneBeforeEnable": true,
+    "coldObservedBeforeVerify": {
+      "pidsBefore": [
+        6838
+      ],
+      "pids": [
+        6838
+      ],
+      "tun0": true,
+      "ProxyService": true,
+      "ProxyForeground": true,
+      "VpnService": true,
+      "VpnForeground": true,
+      "vpnCreatedByAndroid": true,
+      "vpnSystemAction": true,
+      "stage": "cold-system-start",
+      "secondsAfterTrigger": 5.899
+    },
+    "coldVerified": {
+      "http": 200,
+      "tunnelSocketAttributed": true,
+      "uploadPositive": true,
+      "downloadPositive": true,
+      "hasNonDirectChain": true,
+      "connectionId": "bcad0ef7-a95d-457b-b375-cb3f2a0a8865",
+      "connectionStart": "2026-11-05T11:10:34.587838431Z",
+      "sourceIp": "198.18.0.1",
+      "sourcePort": "34317",
+      "socketSourceIp": "198.18.0.1",
+      "socketSourcePort": 34317,
+      "destinationIp": "",
+      "socketDestinationIp": "198.18.0.4",
+      "targetHostSha256": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+      "connectionHostSha256": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+      "coreTrace": [
+        {
+          "kind": "TCP_TRACKER_CREATED",
+          "id": "bcad0ef7-a95d-457b-b375-cb3f2a0a8865",
+          "upload": 254,
+          "download": 0
+        },
+        {
+          "kind": "TCP_UPSTREAM_OPENED",
+          "at": 1793877034606,
+          "failure": [],
+          "errorEndpointHashes": []
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877036860,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "f2860409c5238607ddbb93ff511684be5e2cd8dddd2f57a4f70000580e576682",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877036860,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "82af3c541e680602f5cd5de0aed4ada2bd084066d74fe905a5e7e33de59338e9",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877036861,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "8c3b2a6262c5fe1df87f7a7a3d94675459ec15210326528e92518147ac7eee16",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877036887,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "8424874dbac0118148e5a55a9ecfb82307b68fbcd759e6faf77bcf8401b56824",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877036987,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "a1221d1f64870c04fb8006f5794eff11adc889539b767db32c90b08189de0219",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877036987,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "b561f312b7fc2fee016bc543f47be424ecd014448b38e5f58751c2bf3a372ecf",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877037008,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "65bd85f50ead990a99164837ac95f6eacb2d28fd6a2405f25b709e2a15bb8811",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877037035,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "5c3c597da7dbb6fe0d91c8242676eab6aafe2feca1c82271743f7a7f36e99718",
+          "mentionsRequestHost": false
+        }
+      ],
+      "networkState": {
+        "observer": {
+          "dnsServerCount": 2,
+          "dnsUpdatedAt": 1793877027874,
+          "networkHandle": 759319941133,
+          "registeredAt": 1793877027668,
+          "started": true
+        },
+        "coreBootstrap": {
+          "atMillis": 10827,
+          "dnsAppliedAtMillis": 159,
+          "dnsAppliedSequence": 1,
+          "dnsApplyingSequence": 0,
+          "dnsRequestedSequence": 1,
+          "protection": {
+            "phase": "ready",
+            "startedAtMillis": 3355,
+            "readyAtMillis": 3356,
+            "closedAtMillis": 0,
+            "accepted": 5899,
+            "rejected": 0,
+            "unavailable": 0,
+            "callsDuringStart": 0
+          }
+        },
+        "networks": [
+          {
+            "handle": 759319941133,
+            "present": true,
+            "vpn": false,
+            "validated": true,
+            "internet": true,
+            "dnsHashes": [
+              "30e1f288d92c65fab64558b3b7d9a305eb3326821227abfdc3204e63d87d791c",
+              "b767e56d55d0f8bbe01376656cb1417de137fcfff33be038a83c1bb95a5858c7"
+            ],
+            "interfaceSha256": "f2fb6f663fba09e4161bf54e107f44ba81e09c69857ed4fa3246cd3f91cd91dc"
+          },
+          {
+            "handle": 888168960013,
+            "present": true,
+            "vpn": true,
+            "validated": true,
+            "internet": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ],
+            "interfaceSha256": "bf8449312d1ec04dbd3289405cfbb34ef6d67145db740a66acd6fc202dacfcd2"
+          }
+        ]
+      },
+      "dialDiagnostic": [
+        {
+          "atMillis": 6871,
+          "failed": false,
+          "categories": [],
+          "errorChain": [],
+          "endpointHashes": []
+        }
+      ],
+      "protectionBefore": {
+        "accepted": 5336,
+        "errors": 0,
+        "rejected": 0
+      },
+      "protectionAfter": {
+        "accepted": 5899,
+        "errors": 0,
+        "rejected": 0
+      },
+      "alwaysOn": true,
+      "lockdown": false,
+      "running": true,
+      "resume": true,
+      "diagnostic": "CORE_STARTED",
+      "diagnosticAt": 1793877031074,
+      "previousAt": 1793877022891,
+      "token": "9ff4feecc0264172bc69a74a4b986ec3",
+      "phase": "verified",
+      "pid": 6838,
+      "epochMs": 1793877038627
+    },
+    "killCommand": "Broadcasting: Intent { flg=0x400000 cmp=com.lonnnnnng.flclash/.SystemVpnKillReceiver (has extras) }\nBroadcast completed: result=0\n",
+    "recoveryObservedBeforeVerify": {
+      "pidsBefore": [
+        7233
+      ],
+      "pids": [
+        7233
+      ],
+      "tun0": true,
+      "ProxyService": true,
+      "ProxyForeground": true,
+      "VpnService": true,
+      "VpnForeground": true,
+      "vpnCreatedByAndroid": true,
+      "vpnSystemAction": true,
+      "stage": "running-vpn-sigkill",
+      "secondsAfterTrigger": 6.887
+    },
+    "recoveryVerified": {
+      "http": 200,
+      "tunnelSocketAttributed": true,
+      "uploadPositive": true,
+      "downloadPositive": true,
+      "hasNonDirectChain": true,
+      "connectionId": "57a61e70-df3e-48cb-8464-17da3aea4862",
+      "connectionStart": "2026-11-05T11:10:50.648469124Z",
+      "sourceIp": "198.18.0.1",
+      "sourcePort": "36725",
+      "socketSourceIp": "198.18.0.1",
+      "socketSourcePort": 36725,
+      "destinationIp": "",
+      "socketDestinationIp": "198.18.0.4",
+      "targetHostSha256": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+      "connectionHostSha256": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+      "coreTrace": [
+        {
+          "kind": "TCP_UPSTREAM_OPENED",
+          "at": 1793877050667,
+          "failure": [],
+          "errorEndpointHashes": []
+        },
+        {
+          "kind": "TCP_TRACKER_CREATED",
+          "id": "57a61e70-df3e-48cb-8464-17da3aea4862",
+          "upload": 254,
+          "download": 0
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877051369,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "f71833057b84b9319519b624be31acbea282b1dcc94880f55cd7af0bcb80fa2f",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877051369,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "0209a07c0686c86de786702c965275997b7f80d38d7e288863a6151180ae9b4b",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877051369,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "320ffe9904e22a58dfdc722e8c848a5275814506c7542e10c2a89698af3f752c",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877051369,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "af3f7f22ab6b9a0508ae321fde307c625c58672dc023eacdf42a16ed1736df35",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877051369,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "d83ecc962a497a54a030c618b125f579f23002f6999ec862f2b8ea755080b83c",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877051369,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "3ec7e876856d6e913c30eee9cf49ba64a87739f3898147f243d80f38228c156f",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877051369,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "c424044e1e99e81236f70e43563a48df815e444d2139d378dbbed4c308dd86a1",
+          "mentionsRequestHost": false
+        },
+        {
+          "kind": "CORE_NETWORK_DIAGNOSTIC",
+          "at": 1793877051369,
+          "failure": [
+            "deadline"
+          ],
+          "payloadSha256": "309c9bef20b2770dca6695b8ed6b7f47d40f41237f4f7ea67287d54fd1659371",
+          "mentionsRequestHost": false
+        }
+      ],
+      "networkState": {
+        "observer": {
+          "dnsServerCount": 2,
+          "dnsUpdatedAt": 1793877042458,
+          "networkHandle": 759319941133,
+          "registeredAt": 1793877042251,
+          "started": true
+        },
+        "coreBootstrap": {
+          "atMillis": 10092,
+          "dnsAppliedAtMillis": 67,
+          "dnsAppliedSequence": 1,
+          "dnsApplyingSequence": 0,
+          "dnsRequestedSequence": 1,
+          "protection": {
+            "phase": "ready",
+            "startedAtMillis": 3266,
+            "readyAtMillis": 3267,
+            "closedAtMillis": 0,
+            "accepted": 5549,
+            "rejected": 0,
+            "unavailable": 0,
+            "callsDuringStart": 0
+          }
+        },
+        "networks": [
+          {
+            "handle": 759319941133,
+            "present": true,
+            "vpn": false,
+            "validated": true,
+            "internet": true,
+            "dnsHashes": [
+              "30e1f288d92c65fab64558b3b7d9a305eb3326821227abfdc3204e63d87d791c",
+              "b767e56d55d0f8bbe01376656cb1417de137fcfff33be038a83c1bb95a5858c7"
+            ],
+            "interfaceSha256": "f2fb6f663fba09e4161bf54e107f44ba81e09c69857ed4fa3246cd3f91cd91dc"
+          },
+          {
+            "handle": 892463927309,
+            "present": true,
+            "vpn": true,
+            "validated": true,
+            "internet": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ],
+            "interfaceSha256": "bf8449312d1ec04dbd3289405cfbb34ef6d67145db740a66acd6fc202dacfcd2"
+          }
+        ]
+      },
+      "dialDiagnostic": [
+        {
+          "atMillis": 8256,
+          "failed": false,
+          "categories": [],
+          "errorChain": [],
+          "endpointHashes": []
+        }
+      ],
+      "protectionBefore": {
+        "accepted": 4851,
+        "errors": 0,
+        "rejected": 0
+      },
+      "protectionAfter": {
+        "accepted": 5549,
+        "errors": 0,
+        "rejected": 0
+      },
+      "alwaysOn": true,
+      "lockdown": false,
+      "running": true,
+      "resume": true,
+      "diagnostic": "CORE_RESTARTED",
+      "diagnosticAt": 1793877045662,
+      "previousAt": 1793877038608,
+      "token": "9ff4feecc0264172bc69a74a4b986ec3",
+      "phase": "verified",
+      "pid": 7233,
+      "epochMs": 1793877052544
+    },
+    "restored": {
+      "formalRowsAndFilesPreserved": true,
+      "backupCleared": true,
+      "token": "9ff4feecc0264172bc69a74a4b986ec3",
+      "phase": "restored",
+      "pid": 7233,
+      "epochMs": 1793877058996
+    },
+    "after": {
+      "pidsBefore": [
+        7233
+      ],
+      "pids": [
+        7233
+      ],
+      "tun0": false,
+      "ProxyService": false,
+      "ProxyForeground": false,
+      "VpnService": false,
+      "VpnForeground": false,
+      "vpnCreatedByAndroid": false,
+      "vpnSystemAction": false
+    },
+    "finalSystemState": {
+      "alwaysOn": "null",
+      "lockdown": "0"
+    }
+  },
+  "proxySystemRecoveryRegression": {
+    "token": "81ffcf0f49184321abf80a6a77ebd2c1",
+    "serial": "wsvwypiz7xwslvl7",
+    "passed": true,
+    "installedAppSha256": "f3126509e9b3646b92bab61516c6ccb11fad7063981c1acf7845b739d78632a3",
+    "before": {
+      "pids": [
+        7233
+      ],
+      "pidsBefore": [
+        7233
+      ],
+      "stableSample": true,
+      "servicePid": null,
+      "hasProxyService": false,
+      "isForeground": false,
+      "hasVpnService": false,
+      "hasTun0": false
+    },
+    "ready": {
+      "http": 200,
+      "attributedSocket": true,
+      "uploadPositive": true,
+      "downloadPositive": true,
+      "hasNonDirectChain": true,
+      "running": true,
+      "proxyConnected": true,
+      "vpnAlive": false,
+      "resume": true,
+      "port": 7890,
+      "preparedAt": 1793877070433,
+      "readyAt": 1793877075739,
+      "token": "81ffcf0f49184321abf80a6a77ebd2c1",
+      "phase": "ready",
+      "pid": 7233,
+      "epochMs": 1793877075755
+    },
+    "beforeKill": {
+      "pids": [
+        7233
+      ],
+      "pidsBefore": [
+        7233
+      ],
+      "stableSample": true,
+      "servicePid": 7233,
+      "hasProxyService": true,
+      "isForeground": true,
+      "hasVpnService": false,
+      "hasTun0": false
+    },
+    "killCommand": {
+      "type": "external-broadcast-triggered-self-SIGKILL",
+      "exitCode": 0,
+      "output": "Broadcasting: Intent { flg=0x400000 cmp=com.lonnnnnng.flclash/.ProcessRecoveryKillReceiver (has extras) }\nBroadcast completed: result=0\n"
+    },
+    "systemObservedBeforeVerify": {
+      "pids": [
+        8161
+      ],
+      "pidsBefore": [
+        8161
+      ],
+      "stableSample": true,
+      "servicePid": 8161,
+      "hasProxyService": true,
+      "isForeground": true,
+      "hasVpnService": false,
+      "hasTun0": false,
+      "secondsAfterKill": 2.927
+    },
+    "verified": {
+      "http": 200,
+      "attributedSocket": true,
+      "uploadPositive": true,
+      "downloadPositive": true,
+      "hasNonDirectChain": true,
+      "running": true,
+      "proxyConnected": true,
+      "vpnAlive": false,
+      "resume": true,
+      "port": 7890,
+      "preparedPid": 7233,
+      "restartDiagnostic": true,
+      "restartAt": 1793877081656,
+      "readyAt": 1793877075739,
+      "token": "81ffcf0f49184321abf80a6a77ebd2c1",
+      "phase": "verified",
+      "pid": 8161,
+      "epochMs": 1793877083097
+    },
+    "restored": {
+      "formalRowsAndFilesPreserved": true,
+      "backupCleared": true,
+      "token": "81ffcf0f49184321abf80a6a77ebd2c1",
+      "phase": "restored",
+      "pid": 8161,
+      "epochMs": 1793877083257
+    },
+    "after": {
+      "pids": [
+        8161
+      ],
+      "pidsBefore": [
+        8161
+      ],
+      "stableSample": true,
+      "servicePid": null,
+      "hasProxyService": false,
+      "isForeground": false,
+      "hasVpnService": false,
+      "hasTun0": false
+    }
+  },
+  "timingBoundary": "5.899/6.887秒只为Always-on冷/恢复服务与tun0独立观察耗时；2.927秒只为纯代理FGS独立观察耗时，不是完整HTTP恢复耗时。verify不补启动；Always-on零额外延迟。",
+  "protection": {
+    "before": {
+      "phase": "before",
+      "count": 1,
+      "digestSha256": "49e60b19f69fbafa6329303d58e5844d51a02181af0f5d6521b9d561917a029f"
+    },
+    "after": {
+      "phase": "after",
+      "count": 1,
+      "digestSha256": "49e60b19f69fbafa6329303d58e5844d51a02181af0f5d6521b9d561917a029f"
+    },
+    "wholeWindowMatched": true,
+    "boundary": "当前正式1份Room逐字段/选择/正文SHA-size-mtime保持；不覆盖第6项原长窗口元数据mtime保护失败",
+    "deviceBefore": {
+      "epochMs": 1793875724222,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "always_on_vpn_app": "null",
+        "always_on_vpn_lockdown": "0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~mDdNSeM5i6jZnHtRR9f67A==/com.lonnnnnng.flclash-YXfQw5E_kiKDWMcoRT6GBA==/base.apk",
+          "sha256": "d06d384643e2ccde1a371c180203a0ecaa6c63a0c71f16b2b9deb654720c17fd"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~JYw-5QxS6VxcXiYsC4hhIA==/com.lonnnnnng.flclash.test-0kw4WOoc-ml6s7jVxMTCcA==/base.apk",
+          "sha256": "bddb3bdd9bf62f046d77e8be75f2c12caa30bec735ae94126c6b135aa3330388"
+        }
+      ],
+      "noKotlinServiceOrTun0": true
+    },
+    "deviceAfter": {
+      "epochMs": 1793877142624,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "always_on_vpn_app": "null",
+        "always_on_vpn_lockdown": "0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~2B7CqbsPRhvMRMLEqorqhw==/com.lonnnnnng.flclash-cv7vGP-Pdebccwwk1e5q-A==/base.apk",
+          "sha256": "f3126509e9b3646b92bab61516c6ccb11fad7063981c1acf7845b739d78632a3"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~Qcx-druhZHCC23yhKCrE8A==/com.lonnnnnng.flclash.test-z8K4q15rMzdEoLpxc6c-yg==/base.apk",
+          "sha256": "bb7862a1885d8e2f007fa7684d375b992cd7efe16e5b5e480559f43253a934b2"
+        }
+      ],
+      "noKotlinServiceOrTun0": true,
+      "preserved": true,
+      "builtAppSha256": "f3126509e9b3646b92bab61516c6ccb11fad7063981c1acf7845b739d78632a3",
+      "builtTestSha256": "bb7862a1885d8e2f007fa7684d375b992cd7efe16e5b5e480559f43253a934b2",
+      "installedApksMatch": true
+    },
+    "temporaryCleanup": {
+      "path": "/sdcard/Download/kclash-always-on-window.xml",
+      "matchedLastDisabledXml": true,
+      "sha256": "1eeb08899dd820b7f745fcae8d6f28c3114b2e0d8545fad5c21fdcfce4b30ed4",
+      "removedAndAbsent": true
+    }
+  },
+  "visualEvidence": {
+    "viewed": [
+      "always-on-final1/always-on-enabled.png",
+      "always-on-final1/always-on-disabled.png"
+    ],
+    "boundary": "仅系统Always-on开关两图已目视，不是完整Flutter视觉验收"
+  },
+  "retainedFailedBatch": {
+    "batch": "final1",
+    "passed": 2,
+    "total": 4,
+    "artifact": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/final1.json",
+      "sha256": "990fd9bf043d35756657ceaae51185b541b4b7d174f10f1cbf35d30080ed2ff5",
+      "bytes": 7584
+    },
+    "reasons": [
+      "新测试HttpURLConnection被明文HTTP策略拒绝；改为仅回环有超时socket，不放宽应用安全策略",
+      "ComponentContract类package误写ui，导致初始化失败；final2用正确全名"
+    ],
+    "boundary": "测试问题独立保留，不累计为最终通过；build1/2生产Debug和Release APK相同"
+  },
+  "remaining": [
+    "历史Always-on首请求TLS EOF的确切因果和长期稳定性",
+    "todo6原长窗口元数据/mtime保护异常原因",
+    "授权输入不含Fallback/在线age密钥，相关实核仍受限",
+    "蜂窝、首次干净安装VPN、第三方真调用、其余OEM及生产Always-on识别",
+    "完整Flutter视觉、性能、低API核心/VPN/实网、远端CI、正式签名/Release设备运行/发布"
+  ],
+  "retainedDecisions": [
+    "玻璃默认关闭",
+    "备份/系统恢复、观测次要打磨、语言主题暂缓",
+    "TalkBack/自定义无障碍、早期Room兼容、横屏/大字号扩展和其他ABI不列待办"
+  ],
+  "localArtifacts": {
+    "directory": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105",
+    "uploadedWithSource": false,
+    "boundary": "原始日志、PNG、APK及XML仅本机保留；提交JSON记录摘要/哈希/索引，远端不能仅凭路径复核附件",
+    "files": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/after-final.json",
+        "sha256": "1ba411db26d8947ec43cd68a9ad45beeeeedc5d68262ba8c4afec0a99595f606",
+        "bytes": 1529
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1-driver.log",
+        "sha256": "850cda85154f2e6a404e2aa1936c8aa99742afa085f832390bbbaa1684cc2141",
+        "bytes": 108
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/before.json",
+        "sha256": "a85cecdb29253c08c51cf1865cc5c319018815d41c890bd51013481de309bc46",
+        "bytes": 1301
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build1-checks.json",
+        "sha256": "753bc8ce85a7f859bc613592577487dae4774e5915313c254afa73b3629ec824",
+        "bytes": 5593
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build1-installation.json",
+        "sha256": "b420e9ed920c8b70111d237159be6d2372329d314c62eb1fd62d5b71c9288fb8",
+        "bytes": 1442
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build1.log",
+        "sha256": "d935b7727fde5f417a8e9525bdb953149ee5e51da395cc11cbeecea6463e6701",
+        "bytes": 23309
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-checks.json",
+        "sha256": "69aa679fc66459274d7c0738f68c30c20d2d00bb45fd464001520c36d61037eb",
+        "bytes": 5593
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2-installation.json",
+        "sha256": "7a8ba8ad9ff3a6c7df982af9365bd05f40368e8e75089d799d6f0ae449d5b8cd",
+        "bytes": 1442
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/build2.log",
+        "sha256": "3b1a1570f026af7deffb8c2acfa5bc4f8385474323c700f35a1b078d8d904ddf",
+        "bytes": 23515
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/collect.py",
+        "sha256": "fd9d1a0baf47a5d59a6f0faf3ad8211bdf24eb7fff0a7ba69360f31cf7569bd9",
+        "bytes": 3078
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/final1.json",
+        "sha256": "990fd9bf043d35756657ceaae51185b541b4b7d174f10f1cbf35d30080ed2ff5",
+        "bytes": 7584
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/final1.log",
+        "sha256": "62ab8ed6abd515569c1a5d1ed26dee8499e6fe7cb02684139107cf2e8529bc8e",
+        "bytes": 12302
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/final2.json",
+        "sha256": "6223eedac6bbabde7fe338bcc155d9e1e37a9b5021460186b140de3d07008944",
+        "bytes": 1591
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/final2.log",
+        "sha256": "508fac9d5c3e994c51cc42c9070d04b89190fd6e6022438f04891388195dc0a8",
+        "bytes": 3554
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/finalize_evidence.py",
+        "sha256": "a1af17468ba4a548b8f13274c546045e1b03c78efeb370c2d3991688aec674f3",
+        "bytes": 10964
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-baseline-controller-stress.jsonl",
+        "sha256": "b4bc8153f302b10f95d3fa1afbca1e8c34b211319331b5e389e0d84163f52071",
+        "bytes": 56266
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-baseline-controller-stress.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-baseline-race.jsonl",
+        "sha256": "a3fc239b718fae7b79ec3912d72f7977b7664e02cecb3a86b986057282bc8642",
+        "bytes": 208337
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-baseline-race.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-fixed-controller-stress.jsonl",
+        "sha256": "60b3503c95f57818565506e851ed3e462f8497664d49e6473f0f550819d7952c",
+        "bytes": 37375
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-fixed-controller-stress.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-full-race1.jsonl",
+        "sha256": "f0f92f425fdb675927c1e5215f42e964597ccaa7c41355006fabdd293e1c7399",
+        "bytes": 208372
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/go-full-race1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/install.py",
+        "sha256": "a9cab928664c410080cfb58e9a4ba23f9f5a6025fe7012024bbdc89f4b19e8c6",
+        "bytes": 1493
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/protect-after.json",
+        "sha256": "cd1d6a2764f60d9930bfe97ee8f04e602b0cf9e02681aa1fe1e7ce518ae572f4",
+        "bytes": 524
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/protect-after.log",
+        "sha256": "49fd3f23c05347a373b9fe85d9f922e98d9b79bd8c12038ada4ef78464bf7148",
+        "bytes": 961
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/protect-before.json",
+        "sha256": "196737f99204509ee8a32b3c0f92c4078786c563ceabe2e0c6bcf411b7ed017b",
+        "bytes": 537
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/protect-before.log",
+        "sha256": "3ce22016c844718a4d043e8c9a04cf894da7db5e1d0f2985c3491e8bd980661b",
+        "bytes": 961
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/proxy-final1-driver.log",
+        "sha256": "043d5912315ab13715e4c63a71cd81f57905edd302c8cd90bf21d7ab88558d08",
+        "bytes": 101
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/route-final.jsonl",
+        "sha256": "2d76fb25884cac78b87cf5516440669a8dc6a29d808addc362918cdf57adb69d",
+        "bytes": 51941
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/route-final.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/route-focused1.jsonl",
+        "sha256": "df1942850fb741177e90c1144f8a31a28df480ec0fc49b7df113a0537a4d9041",
+        "bytes": 51647
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/route-focused1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/run.py",
+        "sha256": "820115175ed6b953bc7359c4561d70891a684ac699aa8494f1dd39016bf15202",
+        "bytes": 3304
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/snapshot.py",
+        "sha256": "13065ca3505c1ad32de462667b59773332db7c163ad51a9462e0bddcbb4abfcf",
+        "bytes": 2702
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/source-lock.json",
+        "sha256": "f073443e80811694e0dd743199ab660b6dfcad7835f33241701f258835ce77a2",
+        "bytes": 941
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/temporary-cleanup.json",
+        "sha256": "5a262d11895d9333af8864ce39f994b6776f92c85c0e2346f41d86a1cefbc068",
+        "bytes": 203
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline.jsonl",
+        "sha256": "3cdbeeba685ac0290a219d702700edcea42c3e7bd75e1094406f78a870fbf2f3",
+        "bytes": 6036
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-fixed.jsonl",
+        "sha256": "07dcdda91cbd5e373eac114f373562924061c9450cf6b774b6608e2172c530d3",
+        "bytes": 4722
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-fixed.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/always-on-disabled.png",
+        "sha256": "8898fcb9f1d62e4bd1ffd89df7dcd236056c6f65a85c360438af7d5b6f1cb509",
+        "bytes": 99241
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/always-on-disabled.xml",
+        "sha256": "1eeb08899dd820b7f745fcae8d6f28c3114b2e0d8545fad5c21fdcfce4b30ed4",
+        "bytes": 13309
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/always-on-enabled.png",
+        "sha256": "3a14d06eac67c7c89152ea446167e8dc51b4ed4de5fb373e69c3a68be00ad15e",
+        "bytes": 101137
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/always-on-enabled.xml",
+        "sha256": "282563d8e22a49ba280f6915804a2eae94586e71ca89bd8e9b51be0c4c69a6fb",
+        "bytes": 13303
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/before-enable-list.xml",
+        "sha256": "1eeb08899dd820b7f745fcae8d6f28c3114b2e0d8545fad5c21fdcfce4b30ed4",
+        "bytes": 13309
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/before-enable.png",
+        "sha256": "8898fcb9f1d62e4bd1ffd89df7dcd236056c6f65a85c360438af7d5b6f1cb509",
+        "bytes": 99241
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/cleanup-list.xml",
+        "sha256": "282563d8e22a49ba280f6915804a2eae94586e71ca89bd8e9b51be0c4c69a6fb",
+        "bytes": 13303
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/commands.json",
+        "sha256": "510caa4cfab74fa75be236dfa8a4aca6a625c0b818db1a647aa3bfdb5988f3c6",
+        "bytes": 1225
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/events.json",
+        "sha256": "9a27e91197c819eaf0a14f143e85509ba79cef2d83adc9386684c413f926bd5b",
+        "bytes": 15397
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/evidence-integrity.json",
+        "sha256": "037db45dd91b524a24cee424ce72739c3bd80afa2a60756522b5c6b62f3c80cf",
+        "bytes": 29
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/result.json",
+        "sha256": "dac19ea091b280e1a32d15f701d1083c5883dce9a375b6cbf548c3d270a4828c",
+        "bytes": 13046
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/services.log",
+        "sha256": "b103f57c6ee7ad5494bf820b26a467845ca74fdf8fcbb8a8965042ea48f58f99",
+        "bytes": 43652
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/always-on-final1/timeline.json",
+        "sha256": "2f109dae7008360d373002e30960676d272a02e9f77bae45e47276b7b4b18b18",
+        "bytes": 2987
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/proxy-final1/commands.json",
+        "sha256": "2fc9845707794d6d12f7f3d7ddbf848509ca511f44c4a405a345cbc34b9ba753",
+        "bytes": 676
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/proxy-final1/events.json",
+        "sha256": "2ee30ce515fb96864c0079589fc6ee6860c5cdb8ab2fb39007eae1ba02c029c9",
+        "bytes": 1803
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/proxy-final1/result.json",
+        "sha256": "34e5b5dbfcd41eea62babbf98e7f98dfb50a3a1fcdfb9d8347028f8f555ba08b",
+        "bytes": 2635
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/proxy-final1/service-observations.log",
+        "sha256": "bc5f617b4ad50cf89d56770ba325d568fed9d9c25b795d5931515709387aab1c",
+        "bytes": 14025
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/proxy-final1/timeline.json",
+        "sha256": "24ce89ad092ec3e6f38974deeaf12c7d91d7961556fff16f50ebb6b1ec33a348",
+        "bytes": 765
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline-overlay/baseline.json",
+        "sha256": "def5f50372536c9caa1fa75fffaf1a85a008163d10cd218d734c215113e6af5b",
+        "bytes": 490
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline-overlay/fixed.json",
+        "sha256": "58fa249854a60fa0268ec07e6c7798d123632634208ca164bacbf83701e3c646",
+        "bytes": 261
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline-overlay/server.go",
+        "sha256": "d1f7fe658430011623dfd20ca235b40c2318629b3fd800d9ccf7e8946c7faaec",
+        "bytes": 13836
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/controller-race-20261105/tls-baseline-overlay/server_test.go",
+        "sha256": "7ecd05c4ccd969ad04687038b2331245f84940627739627e0267e15b8ad181a3",
+        "bytes": 872
+      }
+    ]
+  }
+}

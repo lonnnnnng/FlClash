@@ -16,3 +16,11 @@
 6. 使用中文提交说明推送 `origin/kotlin`，在提交信息中保留上游基线 SHA。
 
 上游同步是功能适配流程，不是把 Flutter 分支直接 merge 到 Kotlin 主线。
+
+## 源码缺陷与核心 fork
+
+已确认的上游源码缺陷统一记录在 [`docs/upstream-source-defects.md`](../docs/upstream-source-defects.md)。发现时先分配编号，记录原始仓库/固定 SHA/符号、失败证据、影响、修复提交、回归和撤销条件；尚未确定因果的现场只列调查，不因有限绿测标成已修。
+
+Mihomo 修复保存到 `lonnnnnng/mihomo` 的 `kclash-fixes`，主仓库 gitlink 固定可拉取的修复 SHA；原始来源为 `chen08209/Clash.Meta` 的 `FlClash`。提交父仓库前先确认核心修复已推送且可取回，不能交付仅存在本机的子模块提交。同步时逐项比较本地补丁与新上游的行为，只有等价修复和对应回归通过才撤掉补丁，并在台账保留原失败和替代提交。
+
+核心控制器修复必须运行父模块全量 Go 竞态及 `github.com/metacubex/mihomo/hub/route` 的缺陷回归；前者不会递归执行嵌套 module 的测试。Android 构建和 Redmi 运行证据另记，不能由 Go/macOS 测试推广 Windows Pipe、低 API 或全部 OEM。

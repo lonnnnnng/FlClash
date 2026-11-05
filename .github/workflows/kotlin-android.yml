@@ -96,6 +96,12 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Verify Go core and controller lifecycle with race detector
+        working-directory: core
+        run: |
+          go test -race ./...
+          go test -race github.com/metacubex/mihomo/hub/route
+
       - name: Verify tests, R8 and arm64 Release package
         run: |
           ./gradlew test :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease \

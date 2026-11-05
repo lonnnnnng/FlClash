@@ -1,6 +1,19 @@
 # Testing
 
-## TUN保护竞态与系统首请求复验（2026-11-05，当前）
+## 核心控制器源码修复与溯源（2026-11-05，当前）
+
+本组在Mihomo固定基线c5062921上修复KCORE-002重建竞态与KCORE-003坏TLS配置端口泄漏：公开入口同步关闭/绑定，Serve后台运行，显式持有listener覆盖未登记窗口，配置快照及路由构造同锁；TLS客户端CA/ECH准备先于Listen。修复提交f83e9b1032ed02831457d4da5a414e063e932694已推lonnnnnng/mihomo的kclash-fixes，父仓库gitlink固定，原始来源/失败/撤销条件见docs/upstream-source-defects.md与ADR0021。KCORE-001保留前组6ca697d1记录；未认定为旧Always-on TLS EOF根因。
+
+最终build2 App492/Service206/Core38/Common31共767项JVM零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8和双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。Go父模块全量race修复前265/265但压力38/40，修复后265/265与相同压力40/40；嵌套route为8顶层方法及2子场景共10通过事件。TLS最小复现原始两个泄漏分支（含父项3失败）→相同修复3/3；overlay仅红绿证明，产品直接构建修复源码。CI补父模块和route的race，Windows Pipe只读核验、未运行。
+
+Redmi最终同套App/Test final2精确4/4：控制器6轮，正确密钥12次200、旧/错误12次401、关闭后立即绑定端口6次、嵌入写配置6次405，运行会话/正式配置保持；另模式/组件/旧菜单3/3。Always-on-final1零额外等待，冷启动和SIGKILL恢复首个TUN HTTPS均200、同socket核心归因/正流量；纯代理独立恢复1场景通过。系统恢复观察耗时5.899/6.887及2.927秒仅服务/TUN就绪观察，不是HTTP恢复耗时。初批final1的明文HTTP测试策略/错误类名两失败保留，修正测试后复验，不改产品网络安全策略。
+
+正式1份配置全窗口逐字段/选择/正文SHA-size-mtime摘要保持，前后保护各1/1；原1.yaml双端、Flutter APK、系统设置保持，安装回拉/构建源码哈希一致，恢复备份清空，结束无服务/tun0，独占XML匹配后定点删除。Always-on开/关两图已目视，仅作系统状态证据。证据docs/acceptance/controller-lifecycle-redmi-20261105.json，本机附件../acceptance-artifacts/controller-race-20261105/。
+
+本组控制器缺陷已修验证；第8/11项整体仍PARTIAL。旧TLS EOF因果/长期稳定性、第6项原长窗口保护异常保持未闭环；蜂窝延期，Fallback/在线age输入仍受限，首次安装/第三方/OEM、低API、远端CI、正式签名运行及完整Flutter视觉仍待补。玻璃默认关闭，原暂缓/取消项保持。
+
+
+## TUN保护竞态与系统首请求复验（2026-11-05，历史切片）
 
 本组修正Flutter共用Go适配层的TUN保护缺口：gate先于hook就绪，listener未返回也保护，平台false/Control错误透传；关闭等待inflight并释放回调，迟到旧gate拒绝。TUN启动仍在handler锁外，启停仍串行，Mihomo子模块不改。只读DNS执行序号/单调时间和源端口有界诊断只用于观察，不改变DNS调度或作为就绪屏障；默认停采、不存原始端点。见ADR0020。
 

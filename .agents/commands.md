@@ -31,8 +31,12 @@ Release 预发布检查（没有独立签名身份时输出未签名 APK）：
 
 ```zsh
 go version
-go test ./core/...
+cd core
+go test -race ./...
+go test -race github.com/metacubex/mihomo/hub/route
 ```
+
+`core` 是 Go module 根目录，Mihomo 是嵌套 module；父模块 `./...` 不运行控制器缺陷回归，必须另执行 route 包。核心修复来源、固定提交和同步复查条件见 `docs/upstream-source-defects.md`。
 
 gomobile AAR 构建需要服从 `core/go.mod`、Android SDK、NDK 和 Gradle 配置；不要手工复制或修改生成的 AAR/classes。
 
