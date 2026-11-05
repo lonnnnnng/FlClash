@@ -74,6 +74,10 @@
     },
     "xml": "android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml"
   },
+  "testNotes": [
+    "首次组头断言在 stickyHeader 尚未到达视口边界时就要求坐标固定，Redmi 实测列表内相对位置从 50px 变为 28px；测试现等待组头到达 pinned 状态后再校验，focused 与整类均通过。",
+    "远端 Tab 连续转场用例首次读取时目标页尚未进入 HorizontalPager composition；补充等待目标页懒组合后单独重跑及整类回归通过。"
+  ],
   "cleanup": {
     "formalProfileAndSettingsRestored": true,
     "formalProfileBodyRewritten": false,
