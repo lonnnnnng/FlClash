@@ -3,9 +3,10 @@ package com.lonnnnnng.flclash.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.CubicBezierEasing
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -694,6 +696,11 @@ private fun ProxyGroupsListPage(
                 stickyHeader(key = "header:${group.name}") {
                     // 作者 long：Flutter 的 List 组标题是独立的 raised card；折叠时只给出类型，
                     // 展开后才显示定位与批量测速，保证标题、当前节点和操作各自有稳定层级。
+                    val headerBottomRadius by animateDpAsState(
+                        targetValue = if (expanded) 0.dp else 24.dp,
+                        animationSpec = tween(240, easing = if (expanded) ProxyGroupsEnterEasing else ProxyGroupsExitEasing),
+                        label = "proxyListHeaderBottomRadius",
+                    )
                     val headerShadow by animateDpAsState(
                         targetValue = if (listScrolled) 8.dp else 0.dp,
                         animationSpec = tween(180),
@@ -707,7 +714,7 @@ private fun ProxyGroupsListPage(
                     Surface(
                         modifier = Modifier.fillMaxWidth().padding(top = if (groupIndex == 0) 0.dp else 16.dp).testTag("proxy_list_group_${group.name}"),
                         shape = AppSuperellipseShape(topStart = 24.dp, topEnd = 24.dp,
-                            bottomStart = if (expanded) 0.dp else 24.dp, bottomEnd = if (expanded) 0.dp else 24.dp),
+                            bottomStart = headerBottomRadius, bottomEnd = headerBottomRadius),
                         color = dashboardCardColor(),
                         tonalElevation = headerTonal,
                         shadowElevation = headerShadow,
@@ -777,8 +784,32 @@ private fun ProxyGroupsListPage(
                     rows.forEachIndexed { rowIndex, row ->
                         item(key = "row:${group.name.length}:${group.name}:${row.first()}") {
                             val lastRow = rowIndex == rows.lastIndex
+                            val rowReveal = remember { Animatable(0f) }
+                            LaunchedEffect(Unit) {
+                                // 作者 long：Flutter 按可见行顺序展开，给后续行留出轻微错峰，避免整组同时闪现。
+                                rowReveal.animateTo(
+                                    targetValue = 1f,
+                                    animationSpec = tween(
+                                        durationMillis = 240,
+                                        delayMillis = rowIndex * 24,
+                                        easing = ProxyGroupsEnterEasing,
+                                    ),
+                                )
+                            }
                             Surface(
-                                modifier = Modifier.animateItem(),
+                                modifier = Modifier
+                                    .animateItem(
+                                        fadeInSpec = tween(220, delayMillis = rowIndex * 24, easing = ProxyGroupsEnterEasing),
+                                        fadeOutSpec = tween(160, easing = ProxyGroupsExitEasing),
+                                        placementSpec = tween(240, easing = ProxyGroupsEnterEasing),
+                                    )
+                                    .graphicsLayer {
+                                        // 作者 long：行内容从顶部收敛进入，保持标题底部圆角过渡期间的连续视觉。
+                                        alpha = rowReveal.value
+                                        scaleY = 0.94f + rowReveal.value * 0.06f
+                                        transformOrigin = TransformOrigin(0.5f, 0f)
+                                    }
+                                    .testTag("proxy_list_group_row_${group.name}_$rowIndex"),
                                 color = dashboardCardColor(),
                                 shape = AppSuperellipseShape(bottomStart = if (lastRow) 24.dp else 0.dp,
                                     bottomEnd = if (lastRow) 24.dp else 0.dp),

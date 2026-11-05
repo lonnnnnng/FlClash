@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "timezone": "Asia/Shanghai",
+  "scope": "代理组 List 组头与节点行连续展开/收起动效、长内容滚动、远端 Tab 转场和现有节点徽标回归",
+  "status": "DONE_VERIFIED_FOR_LIST_EXPANSION_ANIMATION; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "overallPassed": true,
+  "baseCommit": "7cde8802f4ee1c75dc703756f2bf445126df95f4",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userRotation": 0
+  },
+  "implementation": {
+    "production": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+    "test": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+    "behavior": [
+      "List 组头底部圆角在展开/收起时以 240ms 缓动连续过渡，保留 raised/sticky 层级。",
+      "节点行按可见顺序错峰淡入、纵向收敛并使用 animateItem 处理插入/退场与布局移动。",
+      "展开中间帧与稳定帧必须不同，收起后节点行从语义树消失；同一测试继续覆盖长内容滚动与远端 Tab 连续转场。"
+    ],
+    "flutterReference": "仅参考本地 Flutter 代理组 List 的组头、行级入场和状态转场语义，未合并或修改 Flutter 上游代码。"
+  },
+  "build": {
+    "command": "./gradlew test :app:testDebugUnitTest :core:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "jvm": {
+      "app": {
+        "tests": 492,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "jvmNote": "本轮强制复跑 App/Core；Service/Common 沿用同一最终构建批次的 up-to-date 结果，不将不同批次数量相加。",
+    "debug": {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "4e690b2f2af354c809ab2c17aad2338496ad310e8a69ca3c0dbc95180deb6ebb",
+      "bytes": 90701133
+    },
+    "androidTest": {
+      "path": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "sha256": "083817f8a6682252f3db676882f0603d688d7e237638f53a600d09a427973826",
+      "bytes": 3795975
+    },
+    "releaseUnsigned": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "461d627884c9bc02090e5db6c31e05e7143635632e852b0fc8ad5a6431e10881",
+      "bytes": 48204108
+    },
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 10
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 9
+      }
+    },
+    "redmiInstall": {
+      "debugBaseApkSha256": "4e690b2f2af354c809ab2c17aad2338496ad310e8a69ca3c0dbc95180deb6ebb",
+      "androidTestBaseApkSha256": "083817f8a6682252f3db676882f0603d688d7e237638f53a600d09a427973826",
+      "matchesBuiltArtifacts": true,
+      "evidence": "acceptance-artifacts/proxy-list-animation-20261106"
+    }
+  },
+  "test": {
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "result": "OK (4 tests)",
+    "methods": [
+      "overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+      "pagerDragCancelAndDistantTabTapKeepContinuousFramesAndSettledSelection",
+      "tabAndListAllCardSizesRenderBothThemesAndKeepDelayIndependent",
+      "listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls"
+    ],
+    "animationAssertions": [
+      "proxy_list_group_expand_mid 与 proxy_list_group_expand_settled PNG 不同",
+      "收起后 proxy_list_node_长列表_节点-00 不存在"
+    ],
+    "instrumentationLog": "acceptance-artifacts/proxy-list-animation-20261106/instrumentation-final.txt",
+    "captureLog": "acceptance-artifacts/proxy-list-animation-20261106/instrumentation-capture.txt",
+    "xml": "acceptance-artifacts/proxy-list-animation-20261106/TEST-Redmi Note 8 Pro - 16.xml",
+    "images": [
+      {
+        "name": "proxy_list_current_hongkong_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_list_current_hongkong_dark.png",
+        "bytes": 116406,
+        "sha256": "ac89e6bd9192a58b2490bbdfdb365a7df81a7ede7ec6f1e06e3e912303a80663"
+      },
+      {
+        "name": "proxy_list_current_japan_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_list_current_japan_dark.png",
+        "bytes": 121787,
+        "sha256": "9d176be707128532f88e259a388629e78561f34cd74450baaaf5bf3066d2ea1a"
+      },
+      {
+        "name": "proxy_list_current_japan_light",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_list_current_japan_light.png",
+        "bytes": 115442,
+        "sha256": "0e1e7299d2770e86ce7f7038b4431369a59c24efcd9c97fe658bdd7f8a7b1075"
+      },
+      {
+        "name": "proxy_list_group_expand_mid",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_list_group_expand_mid.png",
+        "bytes": 53744,
+        "sha256": "f69ec9546a00741b09b43c0b53125b27dda76008113f29c18fc0cfd3d93c9960"
+      },
+      {
+        "name": "proxy_list_group_expand_settled",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_list_group_expand_settled.png",
+        "bytes": 102549,
+        "sha256": "feaf9d766687b5b17491306fd9730e8d130408d89ea0d8494e0beb7cfd1f3063"
+      },
+      {
+        "name": "proxy_list_group_header_lifted",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_list_group_header_lifted.png",
+        "bytes": 95035,
+        "sha256": "7404366cd8d45a34da2942b0af0906afe9bab46773b6872c9df7d9e3dde92bc2"
+      },
+      {
+        "name": "proxy_list_group_header_resting",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_list_group_header_resting.png",
+        "bytes": 102549,
+        "sha256": "feaf9d766687b5b17491306fd9730e8d130408d89ea0d8494e0beb7cfd1f3063"
+      },
+      {
+        "name": "proxy_page_list_collapsed_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_list_collapsed_dark.png",
+        "bytes": 62468,
+        "sha256": "7b3e2d1ec2a7f99d6d1f4d734e3def41dead09007db07458707d6a7039cd01f3"
+      },
+      {
+        "name": "proxy_page_list_compact_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_list_compact_dark.png",
+        "bytes": 100029,
+        "sha256": "7eda5b9169118b55ae70d8a0a873c226633312b69502942cbd100528e9edaad5"
+      },
+      {
+        "name": "proxy_page_list_compact_light",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_list_compact_light.png",
+        "bytes": 100329,
+        "sha256": "a3947f9b00fa127d31ac45d1c4049c7d0a5a55373f6054da67b68740663b2cb3"
+      },
+      {
+        "name": "proxy_page_list_loose_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_list_loose_dark.png",
+        "bytes": 116406,
+        "sha256": "ac89e6bd9192a58b2490bbdfdb365a7df81a7ede7ec6f1e06e3e912303a80663"
+      },
+      {
+        "name": "proxy_page_list_loose_light",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_list_loose_light.png",
+        "bytes": 116776,
+        "sha256": "56fb3c31b53c5ac233c57508f3a72000aa544feeb7c6bb874826fe1eec87aefd"
+      },
+      {
+        "name": "proxy_page_list_standard_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_list_standard_dark.png",
+        "bytes": 111682,
+        "sha256": "a12f617cc7588bce08c4d7dc8a291059b8061f735959b76e2979eb84764819ed"
+      },
+      {
+        "name": "proxy_page_list_standard_light",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_list_standard_light.png",
+        "bytes": 112051,
+        "sha256": "5023431d7c85ea434d92b06540e31d7e9fb2d2d8686a36184d1a22630fafa9c1"
+      },
+      {
+        "name": "proxy_page_tab_compact_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_tab_compact_dark.png",
+        "bytes": 81841,
+        "sha256": "4b6c6231071c80161d645f54623bca3cbcd831ae6bfa7ace9c05a1e4bf0b86db"
+      },
+      {
+        "name": "proxy_page_tab_compact_light",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_tab_compact_light.png",
+        "bytes": 81733,
+        "sha256": "9dc76054bbf25933037e54bc3bd78d04342b7b84e63c6688fdaab628c7e5418e"
+      },
+      {
+        "name": "proxy_page_tab_loose_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_tab_loose_dark.png",
+        "bytes": 99210,
+        "sha256": "20e4170f652b159304a8332af6bee7723e663704abd743188345aa5ea81e4667"
+      },
+      {
+        "name": "proxy_page_tab_loose_light",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_tab_loose_light.png",
+        "bytes": 99032,
+        "sha256": "ddb7e43c00e4af338da7220d517b3f9d54468ef14ebd7131821e392b54d91f77"
+      },
+      {
+        "name": "proxy_page_tab_standard_dark",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_tab_standard_dark.png",
+        "bytes": 94059,
+        "sha256": "8ac4cb4f15e9aa103e3c3f7d17def2f9e314ea2c14e7c03ca4a5043d9a032633"
+      },
+      {
+        "name": "proxy_page_tab_standard_light",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_page_tab_standard_light.png",
+        "bytes": 94168,
+        "sha256": "1f9c9821d9e72d8b6ffbfd74a943f5488cebc6e1c3ef2138e4715b0316f00d9d"
+      },
+      {
+        "name": "proxy_pager_partial_drag",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_pager_partial_drag.png",
+        "bytes": 52726,
+        "sha256": "b70b2aff5014658ee456ec406e9392f3a03de09b5350f7cdc9a19143d2c13b52"
+      },
+      {
+        "name": "proxy_pager_tab_centered",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_pager_tab_centered.png",
+        "bytes": 54799,
+        "sha256": "6b0305a0a49c37e1cfb3129d696574397d8aebdad912a2937d7101e67e963b7b"
+      },
+      {
+        "name": "proxy_pager_tap_frame_0",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_pager_tap_frame_0.png",
+        "bytes": 52534,
+        "sha256": "d3dca91ee33a2cd0f7b2eeede186f1822e2f0838d6867c4c1aa541bcf0a19537"
+      },
+      {
+        "name": "proxy_pager_tap_frame_1",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_pager_tap_frame_1.png",
+        "bytes": 50099,
+        "sha256": "15de2839d474e0d6b409d2f4a9c965bb4459f2dad9056558036f716e363372ee"
+      },
+      {
+        "name": "proxy_pager_tap_frame_2",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_pager_tap_frame_2.png",
+        "bytes": 54142,
+        "sha256": "b59f1b4c76877571a473d4ab088a2484dec21b77e852a9ee7e29f7a2054243d7"
+      },
+      {
+        "name": "proxy_pager_tap_frame_3",
+        "path": "acceptance-artifacts/proxy-list-animation-20261106/proxy_pager_tap_frame_3.png",
+        "bytes": 54299,
+        "sha256": "d1c2db24741855a8fde38ad60f10105d17e630efa04afeadac6e61286f69ec63"
+      }
+    ],
+    "imageCount": 26,
+    "sha256Manifest": "acceptance-artifacts/proxy-list-animation-20261106/sha256.txt"
+  },
+  "sourceSnapshot": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+      "sha256": "0250f0ce538ff4db414f0dea200a8ff93ec2a5545d7c00744cb4271daba3bd85",
+      "bytes": 61744
+    },
+    {
+      "path": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+      "sha256": "6153be1c8ec7a316b01161dd358e53424eee430f5ba135f9c81f9278aaccad63",
+      "bytes": 18505
+    }
+  ],
+  "cleanup": {
+    "formalProfileAndSettingsRestored": true,
+    "formalProfileBodyRewritten": false,
+    "authorizedInputChanged": false,
+    "flutterBaselinePackageChanged": false,
+    "runtimeStarted": false
+  },
+  "limitations": [
+    "本轮只完成代理组 List 组头与节点行连续展开/收起动效及相关回归，不代表完整 Flutter 逐像素视觉一致。",
+    "完整 List/其他子页排版、空态 morph/orbit、统一截图基线、Dock/按钮实时背景与触点光效、8 MiB 正文和全应用动效性能仍为 PARTIAL。",
+    "玻璃默认关闭；低 API、正式签名运行、远端 CI、蜂窝网络和观测页次要视觉不属于本轮。"
+  ],
+  "next": "继续补代理组卡片细节、剩余子页/面板与空态视觉；完成后再集中验收统一动效、实时背景与性能。"
+}

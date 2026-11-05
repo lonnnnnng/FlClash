@@ -220,10 +220,20 @@ class ProxyPageParityInstrumentedTest {
             )
         } }
         option("display_mode", "proxy_display_mode_LIST")
+        // 作者 long：先让显示模式切换完成首帧，再冻结时钟采集展开中间帧，避免点击时语义树尚未建立。
+        compose.waitForIdle()
+        compose.onNodeWithTag("proxy_list_group_header_长列表").assertExists()
+        compose.mainClock.autoAdvance = false
         compose.onNodeWithTag("proxy_list_group_header_长列表").performClick()
-        compose.waitUntil(5_000) {
-            compose.onAllNodesWithTag("proxy_list_node_长列表_节点-00").fetchSemanticsNodes().isNotEmpty()
-        }
+        // 作者 long：展开状态先经过一帧布局，LazyColumn 才会创建首行；之后再采集真实动画中间态。
+        compose.mainClock.advanceTimeByFrame()
+        compose.onNodeWithTag("proxy_list_node_长列表_节点-00").assertExists()
+        // 作者 long：展开首帧和稳定帧必须不同，证明组头圆角与节点行没有瞬时跳变。
+        val expandingFrame = capturePixels("proxy_list_group_expand_mid")
+        compose.mainClock.advanceTimeBy(900)
+        val expandedFrame = capturePixels("proxy_list_group_expand_settled")
+        check(!expandingFrame.contentEquals(expandedFrame)) { "List 组展开不能在首帧直接完成" }
+        compose.mainClock.autoAdvance = true
         val list = compose.onNodeWithTag("proxy_groups_list")
         val header = compose.onNodeWithTag("proxy_list_group_header_长列表")
         val restingListTop = list.fetchSemanticsNode().layoutInfo.coordinates.positionInRoot().y
@@ -269,6 +279,11 @@ class ProxyPageParityInstrumentedTest {
                 "listTop=$restingListTop->$latestListTop headerTop=$restingHeaderTop->$latestHeaderTop"
         }
         capture("proxy_list_group_header_lifted")
+        compose.mainClock.autoAdvance = false
+        header.performClick()
+        compose.mainClock.advanceTimeBy(500)
+        compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("proxy_list_node_长列表_节点-00").assertDoesNotExist()
     }
 
     private fun option(menu: String, value: String) {
@@ -282,5 +297,12 @@ class ProxyPageParityInstrumentedTest {
         val bitmap = compose.onNodeWithTag("proxy_groups_page").captureToImage().asAndroidBitmap()
         val png = ByteArrayOutputStream().also { check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)) }.toByteArray()
         recordVisualPng(name, png)
+    }
+
+    private fun capturePixels(name: String): ByteArray {
+        val bitmap = compose.onNodeWithTag("proxy_groups_page").captureToImage().asAndroidBitmap()
+        val png = ByteArrayOutputStream().also { check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)) }.toByteArray()
+        recordVisualPng(name, png)
+        return png
     }
 }
