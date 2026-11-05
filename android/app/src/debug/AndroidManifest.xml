@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
+        <!-- 作者 long：验收命令只供ADB shell使用，Release不合入组件，普通应用不能触发准备或杀进程。 -->
+        <activity android:name=".ProcessRecoveryAcceptanceActivity" android:exported="true"
+            android:permission="android.permission.DUMP" android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <receiver android:name=".ProcessRecoveryKillReceiver" android:exported="true"
+            android:permission="android.permission.DUMP" />
         <activity
             android:name=".ui.ProfilesTestActivity"
             android:exported="false"

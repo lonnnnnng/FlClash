@@ -1,0 +1,673 @@
+{
+  "date": "2026-11-05",
+  "scope": "todo第7项Fallback当前输入复核；第8项纯代理外部触发SIGKILL后Android自主重建与真实请求恢复",
+  "status": "PROXY_SIGKILL_SYSTEM_RECOVERY_VERIFIED_FALLBACK_INPUT_STILL_BLOCKED_ANDROID_REMAINDER_PARTIAL",
+  "baseCommit": "7a68d982549d77b78dd09068d97cfc5eaa793a4f",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "authorization": {
+    "subscription": "仅外层AGENTS.md唯一授权源，URL只在运行时读取，不写源码/报告",
+    "profilePolicy": "仅复用已选中正式URL配置，不新增、不清数据、不写正文",
+    "upstreamFlutter": "com.follow.clash仅只读包哈希对照，未修改"
+  },
+  "implementation": {
+    "productRuntimeChange": false,
+    "debugOnly": true,
+    "files": [
+      "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ProcessRecoveryAcceptance.kt",
+      "android/app/src/debug/AndroidManifest.xml",
+      "tool/android_proxy_system_recovery_acceptance.py"
+    ],
+    "gate": "Activity/Receiver要求android.permission.DUMP，32hex轮次token、唯一授权源SHA和原PID/ready快照门禁；最终Release manifest不含组件。",
+    "preparation": "先加密保存正式行摘要/文件SHA-size-mtime/选择/VPN/模式/原resume行及auto开关，落盘暂停自动更新；真实启动纯代理并完成SOCKS+TLS主机名校验/HTTP200/核心socket归因；Activity结束后旧PID和FGS仍存活。",
+    "death": "外部显式广播触发Debug receiver对自身Process.killProcess(SIGKILL)，无force-stop、无instrumentation、无Activity重新拉起；不是系统内存压力或OEM回收。",
+    "systemObservation": "kill前核对PID存活，广播后独立轮询pidof与dumpsys；绑定同一ProxyService的ProcessRecord PID和isForeground，前后PID采样一致；90秒从kill命令前开始计时，verify前必须已观察到新PID的FGS。",
+    "verification": "verify要求观察PID一致且不同准备PID，不调用start/restart/apply；回读RUNNING/appliedVPN=false/resume、READY之后CORE_RESTARTED，重新实际HTTP200与相同socket端口核心归因。",
+    "restoration": "正式stop、恢复模式/VPN/原auto开关/resume行，核对正式行摘要/正文/选择，清除本轮加密备份；失败时保留恢复标记并报告收尾结果。"
+  },
+  "fallback": {
+    "local": {
+      "file": "../1.yaml",
+      "sha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "bytes": 34814,
+      "groupTypeCounts": {
+        "select": 32,
+        "url-test": 1
+      },
+      "fallbackCount": 0,
+      "method": "只读proxy-groups段的type行计数，不输出名称/地址，不生成YAML"
+    },
+    "currentCachedAndFreshOnline": {
+      "cached": {
+        "sha256": "9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368",
+        "bytes": 34815,
+        "groups": 33,
+        "fallback": 0,
+        "fallbackWithMembers": 0
+      },
+      "online": {
+        "sha256": "9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368",
+        "bytes": 34815,
+        "groups": 33,
+        "fallback": 0,
+        "fallbackWithMembers": 0
+      },
+      "token": "35a6a57aba944bcaa6f3e49b063fc578",
+      "phase": "fallback-inventory",
+      "pid": 8860,
+      "epochMs": 1793862667589
+    },
+    "onlinePolicy": "经正式SubscriptionClient和decoder只读下载，不保存为Profile，不替换缓存、mtime或lastUpdateAt。",
+    "result": "原1.yaml和当前缓存/本次在线源都为33组、0Fallback；在线/缓存同为34815字节且SHA相同。",
+    "coreContract": "core/Clash.Meta/adapter/outboundgroup/fallback.go Now返回findAliveProxy(false).Name；所有不健康仍选首项，GroupBase空集合有EmptyFallback。合法非空组无效now不作为自然实核常态。",
+    "stillUnverified": [
+      "真实Fallback停止/运行固定与now契约本轮未验；当前输入缺非空组。",
+      "Fallback fixed冷进程恢复及真实正延迟仍未验。"
+    ],
+    "defensiveProtocolRegression": "FallbackPayloadBoundary精确方法本轮通过；Bridge解析+VM+TAB/LIST/深浅20组合为协议注入，不是Mihomo自然无效now。"
+  },
+  "build": {
+    "jvmTotal": 757,
+    "counts": {
+      "app": {
+        "tests": 492,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 196,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "lintDebug": {
+        "Error": 0,
+        "Warning": 67,
+        "Hint": 10
+      },
+      "lintRelease": {
+        "Error": 0,
+        "Warning": 66,
+        "Hint": 9
+      }
+    },
+    "incremental": true,
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "checks": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/build6-checks.json",
+      "sha256": "3f7b813a2553d22e1635d7f9811973797ffb51a6a3b216f4fc4d70ba7881b1a0",
+      "bytes": 33410
+    },
+    "apks": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "5c828bc5d338e1cfbf551bca879706c3c9acda4727318f0f39617f50b7da5e14",
+        "bytes": 90682722,
+        "abis": [
+          "arm64-v8a"
+        ]
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94",
+        "bytes": 3795975,
+        "abis": []
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+        "sha256": "fe6689be403f2c9ae3ea408ddc804726e03dc28dfca44d67c9724ea97f01fadb",
+        "bytes": 48184924,
+        "abis": [
+          "arm64-v8a"
+        ]
+      }
+    ],
+    "installation": {
+      "epochMs": 1793862662705,
+      "packages": [
+        {
+          "package": "com.lonnnnnng.flclash",
+          "source": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+          "installedPath": "/data/app/~~WdaD4kc4phB4YSiqxVUpRw==/com.lonnnnnng.flclash-MMK1mcAqFfFawucMpxwjUQ==/base.apk",
+          "sha256": "5c828bc5d338e1cfbf551bca879706c3c9acda4727318f0f39617f50b7da5e14",
+          "pulledApk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/build6-installed-app.apk",
+          "pulledSha256": "5c828bc5d338e1cfbf551bca879706c3c9acda4727318f0f39617f50b7da5e14",
+          "installResult": "Performing Streamed Install\nSuccess"
+        },
+        {
+          "package": "com.lonnnnnng.flclash.test",
+          "source": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+          "installedPath": "/data/app/~~nEZCgIs_HRv_x2myHQ8Jrg==/com.lonnnnnng.flclash.test-0UXBamgS2Bs9MZuIDsMpzA==/base.apk",
+          "sha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94",
+          "pulledApk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/build6-installed-test.apk",
+          "pulledSha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94",
+          "installResult": "Performing Streamed Install\nSuccess"
+        }
+      ]
+    },
+    "installationArtifact": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/build6-installation.json",
+      "sha256": "33850e38702a668f192584ba0f43b1615b1a5a1c2638b79b62ae4eadb4911a3c",
+      "bytes": 1454
+    },
+    "manifests": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/debug6-manifest.xml",
+        "sha256": "01d204878ef23006481e4497ff61010f722334a79ab8ec4515271b25da0d763c",
+        "bytes": 19308
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/release6-manifest.xml",
+        "sha256": "df8003ec6add52c5909089df79cf27b61bc6f3ef8dbba67609cdbd819b029844",
+        "bytes": 17207
+      }
+    ],
+    "lintWarningDelta": "Debug新增1个SetTextI18n警告，来自仅Debug验收宿主固定说明文字；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。",
+    "scope": "JVM757结果零失败/错误/跳过，含up-to-date复用；Debug/Test、未签名Release/R8及双Lint通过，正式签名运行/Go/远端CI未验。"
+  },
+  "finalSystemRecovery": {
+    "result": {
+      "token": "35a6a57aba944bcaa6f3e49b063fc578",
+      "serial": "wsvwypiz7xwslvl7",
+      "passed": true,
+      "installedAppSha256": "5c828bc5d338e1cfbf551bca879706c3c9acda4727318f0f39617f50b7da5e14",
+      "before": {
+        "pids": [
+          8860
+        ],
+        "pidsBefore": [
+          8860
+        ],
+        "stableSample": true,
+        "servicePid": null,
+        "hasProxyService": false,
+        "isForeground": false,
+        "hasVpnService": false,
+        "hasTun0": false
+      },
+      "ready": {
+        "http": 200,
+        "attributedSocket": true,
+        "uploadPositive": true,
+        "downloadPositive": true,
+        "hasNonDirectChain": true,
+        "running": true,
+        "proxyConnected": true,
+        "vpnAlive": false,
+        "resume": true,
+        "port": 7890,
+        "preparedAt": 1793862663625,
+        "readyAt": 1793862676168,
+        "token": "35a6a57aba944bcaa6f3e49b063fc578",
+        "phase": "ready",
+        "pid": 8860,
+        "epochMs": 1793862676184
+      },
+      "beforeKill": {
+        "pids": [
+          8860
+        ],
+        "pidsBefore": [
+          8860
+        ],
+        "stableSample": true,
+        "servicePid": 8860,
+        "hasProxyService": true,
+        "isForeground": true,
+        "hasVpnService": false,
+        "hasTun0": false
+      },
+      "killCommand": {
+        "type": "external-broadcast-triggered-self-SIGKILL",
+        "exitCode": 0,
+        "output": "Broadcasting: Intent { flg=0x400000 cmp=com.lonnnnnng.flclash/.ProcessRecoveryKillReceiver (has extras) }\nBroadcast completed: result=0\n"
+      },
+      "systemObservedBeforeVerify": {
+        "pids": [
+          9093
+        ],
+        "pidsBefore": [
+          9093
+        ],
+        "stableSample": true,
+        "servicePid": 9093,
+        "hasProxyService": true,
+        "isForeground": true,
+        "hasVpnService": false,
+        "hasTun0": false,
+        "secondsAfterKill": 2.874
+      },
+      "verified": {
+        "http": 200,
+        "attributedSocket": true,
+        "uploadPositive": true,
+        "downloadPositive": true,
+        "hasNonDirectChain": true,
+        "running": true,
+        "proxyConnected": true,
+        "vpnAlive": false,
+        "resume": true,
+        "port": 7890,
+        "preparedPid": 8860,
+        "restartDiagnostic": true,
+        "restartAt": 1793862682960,
+        "readyAt": 1793862676168,
+        "token": "35a6a57aba944bcaa6f3e49b063fc578",
+        "phase": "verified",
+        "pid": 9093,
+        "epochMs": 1793862684717
+      },
+      "restored": {
+        "formalRowsAndFilesPreserved": true,
+        "backupCleared": true,
+        "token": "35a6a57aba944bcaa6f3e49b063fc578",
+        "phase": "restored",
+        "pid": 9093,
+        "epochMs": 1793862684848
+      },
+      "after": {
+        "pids": [
+          9093
+        ],
+        "pidsBefore": [
+          9093
+        ],
+        "stableSample": true,
+        "servicePid": null,
+        "hasProxyService": false,
+        "isForeground": false,
+        "hasVpnService": false,
+        "hasTun0": false
+      }
+    },
+    "events": [
+      {
+        "cached": {
+          "sha256": "9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368",
+          "bytes": 34815,
+          "groups": 33,
+          "fallback": 0,
+          "fallbackWithMembers": 0
+        },
+        "online": {
+          "sha256": "9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368",
+          "bytes": 34815,
+          "groups": 33,
+          "fallback": 0,
+          "fallbackWithMembers": 0
+        },
+        "token": "35a6a57aba944bcaa6f3e49b063fc578",
+        "phase": "fallback-inventory",
+        "pid": 8860,
+        "epochMs": 1793862667589
+      },
+      {
+        "http": 200,
+        "attributedSocket": true,
+        "uploadPositive": true,
+        "downloadPositive": true,
+        "hasNonDirectChain": true,
+        "running": true,
+        "proxyConnected": true,
+        "vpnAlive": false,
+        "resume": true,
+        "port": 7890,
+        "preparedAt": 1793862663625,
+        "readyAt": 1793862676168,
+        "token": "35a6a57aba944bcaa6f3e49b063fc578",
+        "phase": "ready",
+        "pid": 8860,
+        "epochMs": 1793862676184
+      },
+      {
+        "token": "35a6a57aba944bcaa6f3e49b063fc578",
+        "phase": "kill-accepted",
+        "pid": 8860,
+        "epochMs": 1793862677679
+      },
+      {
+        "http": 200,
+        "attributedSocket": true,
+        "uploadPositive": true,
+        "downloadPositive": true,
+        "hasNonDirectChain": true,
+        "running": true,
+        "proxyConnected": true,
+        "vpnAlive": false,
+        "resume": true,
+        "port": 7890,
+        "preparedPid": 8860,
+        "restartDiagnostic": true,
+        "restartAt": 1793862682960,
+        "readyAt": 1793862676168,
+        "token": "35a6a57aba944bcaa6f3e49b063fc578",
+        "phase": "verified",
+        "pid": 9093,
+        "epochMs": 1793862684717
+      },
+      {
+        "formalRowsAndFilesPreserved": true,
+        "backupCleared": true,
+        "token": "35a6a57aba944bcaa6f3e49b063fc578",
+        "phase": "restored",
+        "pid": 9093,
+        "epochMs": 1793862684848
+      }
+    ],
+    "timeline": [
+      {
+        "pids": [],
+        "pidsBefore": [],
+        "stableSample": true,
+        "servicePid": null,
+        "hasProxyService": true,
+        "isForeground": false,
+        "hasVpnService": false,
+        "hasTun0": false,
+        "secondsAfterKill": 0.394
+      },
+      {
+        "pids": [
+          9093
+        ],
+        "pidsBefore": [
+          9093
+        ],
+        "stableSample": true,
+        "servicePid": null,
+        "hasProxyService": true,
+        "isForeground": false,
+        "hasVpnService": false,
+        "hasTun0": false,
+        "secondsAfterKill": 1.66
+      },
+      {
+        "pids": [
+          9093
+        ],
+        "pidsBefore": [
+          9093
+        ],
+        "stableSample": true,
+        "servicePid": 9093,
+        "hasProxyService": true,
+        "isForeground": true,
+        "hasVpnService": false,
+        "hasTun0": false,
+        "secondsAfterKill": 2.874
+      }
+    ],
+    "commands": [
+      {
+        "command": "prepare",
+        "epochMs": 1793862663953,
+        "exitCode": 0,
+        "output": "Starting: Intent { cmp=com.lonnnnnng.flclash/.ProcessRecoveryAcceptanceActivity (has extras) }\nStatus: ok\nLaunchState: WARM\nActivity: com.lonnnnnng.flclash/.ProcessRecoveryAcceptanceActivity\nTotalTime: 207\nWaitTime: 209\nComplete\n"
+      },
+      {
+        "command": "verify",
+        "epochMs": 1793862681169,
+        "exitCode": 0,
+        "output": "Starting: Intent { cmp=com.lonnnnnng.flclash/.ProcessRecoveryAcceptanceActivity (has extras) }\nStatus: ok\nLaunchState: WARM\nActivity: com.lonnnnnng.flclash/.ProcessRecoveryAcceptanceActivity\nTotalTime: 208\nWaitTime: 210\nComplete\n"
+      }
+    ],
+    "artifacts": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/final5/result.json",
+        "sha256": "440500eed7e9d0ce79b5d16216d0e2f3a4b37901175436688210c851786c2a83",
+        "bytes": 2635
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/final5/events.json",
+        "sha256": "ba93fe3418334156877cb0ffcc8d5f64837197d8488aeadf36a688a263795d80",
+        "bytes": 1803
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/final5/timeline.json",
+        "sha256": "e05fce127f0cf37cfdb69b9dd13171c4c1946ce0dfd94113b83930e0210c4ba8",
+        "bytes": 764
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/final5/commands.json",
+        "sha256": "c8d22216820e69bb0440ca24bc9cea85096671745b8914a312fa653830f2930b",
+        "bytes": 676
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/final5/service-observations.log",
+        "sha256": "79deabd1ba3774b6a584181a0f7ca97cedce44a23cd37a7500b6b1e7857fef93",
+        "bytes": 13697
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/final5-driver.log",
+        "sha256": "043d5912315ab13715e4c63a71cd81f57905edd302c8cd90bf21d7ab88558d08",
+        "bytes": 101
+      }
+    ],
+    "interpretation": "准备PID8860确实在kill前存活；约2.874秒先观察系统新PID9093及绑定前台服务，然后才打开verify。该时间是外部FGS观察耗时，不代表完整核心/HTTP恢复耗时。verify回读READY后新重启诊断和实际HTTP200/核心归因，均有非DIRECT链。",
+    "scenarioCount": 1
+  },
+  "regression": {
+    "report": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/regression6.json",
+      "sha256": "1af7755b25cae64bbe3629205c891e697f82f33a2a4d8b5e0c7fa2340a720531",
+      "bytes": 2074
+    },
+    "log": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/regression6.log",
+      "sha256": "664602712aade32a8037533478372f1eae028f40cfe9aa49ffef701401575d8d",
+      "bytes": 2666
+    },
+    "passed": 2,
+    "total": 2,
+    "methods": [
+      "com.lonnnnnng.flclash.ui.FallbackPayloadBoundaryInstrumentedTest#missingInvalidAndEmptyNowPassThroughBridgeViewModelAndBothPageLayouts",
+      "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile"
+    ]
+  },
+  "preservation": {
+    "scenario": "final5内部恢复正式行摘要、正文SHA-size-mtime和当前选择、VPN/模式/auto/resume，backupCleared=true；没有新增临时Profile或设备文件。",
+    "regressionWindow": {
+      "before": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/protect-before6.json",
+          "sha256": "a04ff788c7cd401287364b0c60db53d89c0a6aa25c2b12f55e6b9fe0c8a14778",
+          "bytes": 533
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/protect-before6.log",
+          "sha256": "9f6dfadba5900a743c269b38723ac5a54f06bfc18a5ff60aed4a0c50068d8c88",
+          "bytes": 962
+        },
+        "passed": 1,
+        "total": 1,
+        "methods": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ]
+      },
+      "after": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/protect-after6.json",
+          "sha256": "f99a88dfbc6ee1fa4ed6c4d69c6f3ef018ba39b58f234a655a119b83ad37b36a",
+          "bytes": 531
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/protect-after6.log",
+          "sha256": "a881d4a58a755423e5c5cfedc06c6eb4b1116e4b687c8f40c8857505ccba619f",
+          "bytes": 961
+        },
+        "passed": 1,
+        "total": 1,
+        "methods": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ]
+      },
+      "passed": true
+    },
+    "deviceSnapshot": {
+      "epochMs": 1793862764714,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~WdaD4kc4phB4YSiqxVUpRw==/com.lonnnnnng.flclash-MMK1mcAqFfFawucMpxwjUQ==/base.apk",
+          "sha256": "5c828bc5d338e1cfbf551bca879706c3c9acda4727318f0f39617f50b7da5e14"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~nEZCgIs_HRv_x2myHQ8Jrg==/com.lonnnnnng.flclash.test-0UXBamgS2Bs9MZuIDsMpzA==/base.apk",
+          "sha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94"
+        }
+      ],
+      "noKotlinServiceOrTun0": true,
+      "preserved": true,
+      "builtAppSha256": "5c828bc5d338e1cfbf551bca879706c3c9acda4727318f0f39617f50b7da5e14",
+      "builtTestSha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94",
+      "installedApksMatch": true
+    },
+    "snapshotArtifact": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/final6.json",
+      "sha256": "bd9360aa264f9660a8d1cf9a158116718278e1ca5a4dab807113acf77fee443f",
+      "bytes": 1461
+    },
+    "snapshotMeaning": "原1.yaml双端、Flutter APK、旋转/字号/动画设置保持；最终两包与本地构建SHA一致，结束无Kotlin服务/tun0。",
+    "previousGroupException": "本组场景及回归短窗口保持，不消除第6项原长窗口currentGroupName/lastUpdateAt/mtime变化未确定原因的失败记录。"
+  },
+  "intermediateAndFailedAttempts": [
+    {
+      "files": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/build1.log",
+          "sha256": "194d5a50befaf0e8bfc5f2d0637463de1f220439b832456722dc32b6cef00b79",
+          "bytes": 19587
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/build2.log",
+          "sha256": "0b93bd46d28fe55caf5ec8b1b6912556f98e6a1ffc947b1f82ea94ef0e0d3989",
+          "bytes": 18989
+        }
+      ],
+      "result": "新增Debug宿主语法缺括号/缺CoreOutboundMode导入，均构建失败；修复后build3通过。"
+    },
+    {
+      "files": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/device1/result.json",
+          "sha256": "eefe92c93383ad3ba6d13f5c4ef6142c09560df547b9f2245be39ea924c810c3",
+          "bytes": 778
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/device1/events.json",
+          "sha256": "dd7801447fe9a92db1dcd9e702730388746ab8092d0bb87f94161decb9ac5048",
+          "bytes": 572
+        }
+      ],
+      "result": "prepare网络在主线程触发NetworkOnMainThreadException，未杀进程；正式数据恢复/backup清除后修为IO上下文。"
+    },
+    {
+      "files": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/device2/result.json",
+          "sha256": "72284b349e24c359cb54f5c20992c7497f4f18d9a028e5ac0110b41725d008af",
+          "bytes": 797
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/device2/events.json",
+          "sha256": "4d5d925b16a5f0cb874fd1dd03f18697b7b4817b375170a74df87c68ef2a473b",
+          "bytes": 1146
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/device3/result.json",
+          "sha256": "f76002af29f10eae128140a376f15d61a216f15281c26e3d92c6dd7188836026",
+          "bytes": 1533
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/device3/events.json",
+          "sha256": "e71072c897d387998c5fba162997e6946ece7366bf5730399c1e1984f14c04db",
+          "bytes": 1146
+        }
+      ],
+      "result": "prepare真实HTTP成功但外部ServiceRecord解析未兼容Android16附加c字段，门禁失败，均未杀进程；正式数据恢复，失败保留。"
+    },
+    {
+      "files": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/device4/result.json",
+          "sha256": "9b009363bbfde4cc6c13444ffaecbd629facfcddb1bff72a82af27cb418ff983",
+          "bytes": 2543
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/device4/events.json",
+          "sha256": "f1a35d2175396b2fe0d5b0c5257c50527b43bb324b2cd87926a76d2970ccc374",
+          "bytes": 1711
+        }
+      ],
+      "result": "中间build5系统恢复通过；随后收紧重启诊断时间为READY之后，由最终build6/final5重新验证；不累计为2场景。"
+    }
+  ],
+  "officialEvidence": [
+    {
+      "url": "https://developer.android.com/reference/android/app/Service#START_STICKY",
+      "artifact": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/android-service.md",
+        "sha256": "bb8d7ac90c6dd06f9b510d4e598e98a4609f80fe8f413dc1ebd5aa7f4887030d",
+        "bytes": 197357
+      },
+      "support": "START_STICKY进程死亡后系统尝试重建服务；无pending start时null Intent；Android12+后台FGS限制不影响sticky foreground service的restarts。"
+    },
+    {
+      "url": "https://developer.android.com/reference/android/Manifest.permission#DUMP",
+      "artifact": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105/android-dump-permission.md",
+        "sha256": "deac16b27d8a04b870912937920000eefc7828ec6a7432f39e8274f499cc0cf2",
+        "bytes": 334591
+      },
+      "support": "DUMP非第三方应用权限；真机shell已核对granted=true，最终debug manifest组件要求DUMP。"
+    }
+  ],
+  "limits": [
+    "只有本Redmi API36/arm64、既有授权URL配置、纯代理的一次受控SIGKILL重建，不推广OEM内存回收或强行停止后恢复。",
+    "首次干净安装VPN授权、Wi-Fi与蜂窝切换、Tasker/MacroDroid真实调用及Always-on OEM仍未验。",
+    "本组没有新视觉修改或完整Flutter逐像素/连续动效结论，未采新PNG；玻璃默认关闭，原暂缓/取消项保持。"
+  ],
+  "next": "继续todo第8项其余具备条件的系统入口；首次安装不清正式数据构造、蜂窝需可用移动数据；第7Fallback等待授权非空输入。",
+  "attachmentsRoot": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/proxy-system-recovery-20261105",
+  "attachmentsAvailability": "原始日志/APK/XML仅本机附件保留，源码仓库提交脱敏报告和哈希，不承诺远端可直接读取本机附件。"
+}

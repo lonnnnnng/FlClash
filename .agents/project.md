@@ -1,6 +1,18 @@
 # Project Context
 
-## 首页IP/质量持久缓存与全部来源尝试（2026-11-05，当前）
+## Fallback输入复核与纯代理系统恢复（2026-11-05，当前）
+
+todo第7项已重新盘点：原1.yaml为33组（32 select/1 url-test）、0 Fallback；正式缓存与本次唯一授权在线响应同为34815字节、33组、0 Fallback且SHA一致。在线只读下载/解码，不写正式Profile/正文/mtime。合法非空Fallback的now由Mihomo选存活项或首项；无效now协议防御本轮2项回归中已验，但不替代实核与Fallback冷恢复，仍受输入条件限制。
+
+todo第8项纯代理受控SIGKILL系统恢复完成本组验收：准备Activity结束后旧PID8860及其前台ProxyService仍存活；外部带轮次token/PID门禁广播触发自身SIGKILL，约2.874秒在启动verify之前独立观察系统新PID9093及同PID前台服务。verify不调用start/restart/apply，回读RUNNING、纯代理、resume=true及READY之后新CORE_RESTARTED；前后本地SOCKS+TLS主机名校验/HTTP200、对应socket核心连接归因及非DIRECT链均通过。2.874秒仅为前台服务观察耗时，不等于完整核心/HTTP恢复耗时。
+
+最终build6 App492/Service196/Core38/Common31共757项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8及双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。Debug新增1条仅验收说明文字SetTextI18n；生产运行逻辑未改，新增DUMP权限保护的Debug宿主/receiver及外部驱动，最终Release清单确认无验收组件。Redmi final5系统恢复1场景、精确回归2/2、回归窗口保护前后各1/1；安装回拉SHA匹配。
+
+各场景内部正式行摘要/选择/正文SHA-size-mtime、VPN/模式/auto/resume已恢复，验收加密备份已清；最终设备快照原1.yaml双端、Flutter包及设备设置保持，结束无服务/tun0。本组保持结论不消除第6项原长窗口元数据/mtime变化原因未定的失败记录。前两次编译失败、主线程网络失败、两次ServiceRecord格式解析门禁失败及中间包通过均独立保留，不与最终批次合计。
+
+证据`docs/acceptance/proxy-system-recovery-redmi-20261105.json`，持久附件`../acceptance-artifacts/proxy-system-recovery-20261105/`。仅证明本Redmi API36既有配置纯代理的受控SIGKILL后Android重建，不推广OEM内存压力/强行停止/VPN。第8项首次干净安装VPN授权、Wi-Fi↔蜂窝、Tasker/MacroDroid真调用及Always-on OEM仍待验；下一步继续具备条件的系统入口。Go、低API、正式签名运行及远端CI未重跑，无新视觉修改/截图，完整Flutter视觉仍PARTIAL；玻璃默认关闭，原暂缓/取消项保持。
+
+## 首页IP/质量持久缓存与全部来源尝试（2026-11-05，历史切片）
 
 todo第6项成功质量缓存闭环已验：复用Room偏好表，按IP保留3天且不延长原查询时间；失败仅当前路由内存冷却5分钟。force、IO失败降级、取消、路由失效、损坏/未来/过期项、事务并发及迟到失败保护已覆盖；显式JSON字段避免Release混淆改变磁盘格式，不改schema。
 
