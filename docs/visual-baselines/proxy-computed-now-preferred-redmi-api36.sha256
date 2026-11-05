@@ -1,0 +1,4 @@
+# KClash computed URLTest automatic-now versus preferred-node semantic capture baseline.
+# Device: Redmi Note 8 Pro, Android 16/API 36, portrait, font scale 1.0.
+proxy_computed_auto_vs_preferred_tab sha256=995408d5170d8ffd40447acf548bf8c15695de27bfde57ce9d1e328f83f3e546
+proxy_computed_auto_vs_preferred_list sha256=beb31aa9ff242fc3c1ab730dbd7da83853f48deaefa2a8cac784c1faa8220cb2

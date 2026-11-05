@@ -231,6 +231,48 @@ class ProxyPageParityInstrumentedTest {
         }
     }
 
+    @Test fun computedGroupSeparatesAutomaticNowFromPreferredNodeMarker() {
+        val group = ProxyGroupInfo(
+            name = "自动优选",
+            type = "URLTest",
+            now = "香港节点",
+            all = listOf("香港节点", "日本节点", "新加坡节点"),
+            hidden = false,
+        )
+        compose.setContent {
+            KClashTheme {
+                ProxyGroupsCard(
+                    modifier = Modifier.fillMaxSize(),
+                    state = ProxyGroupsUiState(
+                        groups = listOf(group),
+                        selectedMap = mapOf(group.name to "日本节点"),
+                        unfoldSet = setOf(group.name),
+                        proxyTypes = mapOf("香港节点" to "Trojan", "日本节点" to "Vless", "新加坡节点" to "Hysteria2"),
+                    ),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    currentGroupName = group.name,
+                    onRefresh = {},
+                    onSelect = { _, _ -> },
+                    onTestDelay = { _, _ -> },
+                    onTestGroupDelay = {},
+                )
+            }
+        }
+
+        // 作者 long：computed 组的核心 now 是自动测速结果，selectedMap 是用户优选；两者不同必须同时可见，避免把优选误画成当前出口。
+        compose.onNodeWithTag("proxy_node_自动优选_香港节点_in_use", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag("proxy_node_自动优选_日本节点_preferred", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag("proxy_node_自动优选_日本节点_in_use", useUnmergedTree = true).assertDoesNotExist()
+        capture("proxy_computed_auto_vs_preferred_tab")
+
+        option("display_mode", "proxy_display_mode_LIST")
+        compose.waitForIdle()
+        compose.onNodeWithTag("proxy_list_node_自动优选_香港节点_in_use", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag("proxy_list_node_自动优选_日本节点_preferred", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag("proxy_list_node_自动优选_日本节点_in_use", useUnmergedTree = true).assertDoesNotExist()
+        capture("proxy_computed_auto_vs_preferred_list")
+    }
+
     @Test fun delayStatusUsesFadeTransitionWithoutChangingNodeSelection() {
         var selected by mutableStateOf("香港节点")
         var delayState by mutableStateOf<ProxyDelayUiState?>(null)
