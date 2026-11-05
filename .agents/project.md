@@ -1,6 +1,12 @@
 # Project Context
 
-## todo第2项：保存与退出死亡窗口（2026-11-05，当前快照）
+## 在线引用资源实网与age输入边界（2026-11-05，当前）
+
+todo第3项CUSTOM引用在线源已验：手动ProfilesViewModel同步与生产到期Repository自动更新各完成一次真实下载、提交和当前CUSTOM应用。临时资源初值使用原1.yaml；下载后源字节版本变化，真实Mihomo epoch分别3→4、8→9，按正文SHA生成的文件Provider路径和7个节点回读匹配；当前CUSTOM、DIRECT组选择、正文及纯代理运行会话保持。无Activity/节点轮询参与补加载。唯一授权响应实测为34815字节明文，既有密钥为空，在线age下载/解密/应用仍受输入条件限制，不记通过。
+
+最终build2统一检查通过：App481/Service195/Core38/Common31共745项JVM结果零失败/错误/跳过，含up-to-date/缓存复用；Debug/Test、未签名Release/R8和双Lint成功，各0错误/66警告（Debug10/Release9提示）。Redmi同套App/Test在线批次3/3、相关回归8/8，前后保护各1/1；正式1份配置逐字段/选择/正文SHA-size-mtime、原1.yaml双端、Flutter包及设备设置保持，安装回拉哈希匹配，结束无服务/tun0。证据`docs/acceptance/subscription-reference-network-redmi-20261105.json`，持久附件`../acceptance-artifacts/subscription-reference-20261105/`。自动场景直接调用生产updateDueProfiles，非另一轮WorkManager自然周期；手动场景走正式VM方法，非完整点击导航E2E。本组证明源字节更新及核心重载，不证明节点定义变化、规则/流量命中或VPN；中断恢复代码已审查，未新注入网络中断/死亡。未重跑Go、低API、正式签名运行、远端CI或完整Flutter视觉；玻璃默认关闭，原暂缓/取消项保持。
+
+## todo第2项：保存与退出死亡窗口（2026-11-05，历史切片）
 
 todo第2项保存/退出受控死亡窗口已验：规则、Proxies、策略组结构化及原始YAML、本地节点的意图落盘/正式提交窗口，实际引用配置的退出应用前后、父草稿清除前后及CAS冲突共15场景。准备测试命中门闩后保持存活，外部核对同PID后force-stop并确认消失；15次首次恢复、5次测试进程正常退出后的再次冷启动检查通过。恢复不重复写入，未提交等待显式重试，源变化保留旧CAS；退出应用调用计数在恢复后为0、显式重试后为1。
 

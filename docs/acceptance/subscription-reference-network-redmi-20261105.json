@@ -1,0 +1,886 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-05",
+  "scope": "todo item 3: authorized online payload inspection and CUSTOM referenced subscription runtime refresh",
+  "status": {
+    "customOnlineManual": "VERIFIED",
+    "customOnlineAutomaticDueRepository": "VERIFIED",
+    "onlineAge": "BLOCKED_INPUT"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "settings": {
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "font_scale": "1.0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    }
+  },
+  "builds": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon --stacktrace -Ptarget-platform=android-arm64",
+    "finalLog": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/build2.log",
+      "sha256": "53f32d1edd665a3bee11ceed48d33dc2d3ce1271b234ac7744ed816f2f2e048d",
+      "bytes": 23515
+    },
+    "counts": {
+      "app": {
+        "tests": 481,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 195,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "lintDebug": {
+        "Error": 0,
+        "Warning": 66,
+        "Hint": 10
+      },
+      "lintRelease": {
+        "Error": 0,
+        "Warning": 66,
+        "Hint": 9
+      }
+    },
+    "incrementalBuild": true,
+    "installation": {
+      "epochMs": 1793847253476,
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+          "sha256": "54cc8c7ad5ac0a242e32243e46d422ca131388fc9164fb9006e4e589ed8dcedc",
+          "bytes": 90682722,
+          "abis": [
+            "arm64-v8a"
+          ]
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+          "sha256": "0855ec28b8d5c8e15646624f5ab99e07c4512e65145fa3c0cb01390e867aee9a",
+          "bytes": 4710419,
+          "abis": []
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+          "sha256": "f3845413e96de44670d8366aff9d48b6527b6337567a9c23bda053632d153d8e",
+          "bytes": 48181076,
+          "abis": [
+            "arm64-v8a"
+          ]
+        }
+      ],
+      "r8KeptClasses": [
+        "com.lonnnnnng.flclash.ui.ProfileProxiesEditorUiState",
+        "com.lonnnnnng.flclash.ui.LocalProxyDraftSnapshot",
+        "com.lonnnnnng.flclash.ui.LocalProxyPendingWrite",
+        "com.lonnnnnng.flclash.ui.LocalProxiesUiState",
+        "com.lonnnnnng.flclash.ui.LocalProxyDraft",
+        "com.lonnnnnng.flclash.ui.LocalProxyCollectionDraft",
+        "com.lonnnnnng.flclash.ui.ProxyLinksDraft",
+        "com.lonnnnnng.flclash.data.LocalProxy",
+        "com.lonnnnnng.flclash.data.ProxyField",
+        "com.lonnnnnng.flclash.data.ProxyFieldKind",
+        "kotlin.Pair"
+      ],
+      "installed": [
+        {
+          "package": "com.lonnnnnng.flclash",
+          "devicePath": "/data/app/~~zCMab2kWN2bkQ2pjt5piKw==/com.lonnnnnng.flclash-7vIE79yj3LGzINnt58UoYw==/base.apk",
+          "sha256": "54cc8c7ad5ac0a242e32243e46d422ca131388fc9164fb9006e4e589ed8dcedc",
+          "pulledPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/installed-app.apk",
+          "installOutput": "Performing Streamed Install\nSuccess"
+        },
+        {
+          "package": "com.lonnnnnng.flclash.test",
+          "devicePath": "/data/app/~~uDqCq968hjsAOmgf76tn5w==/com.lonnnnnng.flclash.test-g_YAbL47PN18LwHCYeFRbg==/base.apk",
+          "sha256": "0855ec28b8d5c8e15646624f5ab99e07c4512e65145fa3c0cb01390e867aee9a",
+          "pulledPath": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/installed-test.apk",
+          "installOutput": "Performing Streamed Install\nSuccess"
+        }
+      ],
+      "sources": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/tests/instrumented/SubscriptionReferenceNetworkInstrumentedTest.kt",
+          "sha256": "3aa1dd0c4f8dc211163f6512659762ba327b7fd4c6f51a404d35455283e3fa55",
+          "bytes": 15463
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/src/debug/kotlin/com/lonnnnnng/flclash/ConnectionAcceptanceEntryPoint.kt",
+          "sha256": "b33ca387c9ce41661174d7e18f718286065224a24ae99f152aad3e4ec2fc097a",
+          "bytes": 2787
+        }
+      ]
+    }
+  },
+  "results": {
+    "onlineBatch": {
+      "passed": 3,
+      "total": 3,
+      "report": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/online1.json",
+        "sha256": "c632977ff5ccce6472a643355a9e724bde0eac8835b766f6159deda0db44a6fa",
+        "bytes": 1265
+      }
+    },
+    "payload": {
+      "phase": "payload",
+      "ageArmor": false,
+      "keyPresent": false,
+      "wireBytes": 34815,
+      "wireSha256": "9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368"
+    },
+    "decoded": {
+      "phase": "decoded",
+      "ageDecryptionExercised": false,
+      "plainBytes": 34815,
+      "plainSha256": "9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368"
+    },
+    "runtimeUpdates": [
+      {
+        "phase": "passed",
+        "automatic": false,
+        "bodyChanged": true,
+        "sourceBeforeSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+        "sourceAfterSha256": "9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368",
+        "providerCount": 7,
+        "providerPathSha256": "dcd094bef868815f5a0159c75d64393437c6640a38943891e709e2a2d65c781e",
+        "epochBefore": 3,
+        "epochAfter": 4,
+        "sessionPreserved": true,
+        "customBodyPreserved": true,
+        "selectedPreserved": true
+      },
+      {
+        "phase": "passed",
+        "automatic": true,
+        "bodyChanged": true,
+        "sourceBeforeSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+        "sourceAfterSha256": "9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368",
+        "providerCount": 7,
+        "providerPathSha256": "dcc0401deefa7a2da68a8ecf6ee8086d8726e31942dfcdd83fd5b253aff21c95",
+        "epochBefore": 8,
+        "epochAfter": 9,
+        "sessionPreserved": true,
+        "customBodyPreserved": true,
+        "selectedPreserved": true
+      }
+    ],
+    "regression": {
+      "passed": 8,
+      "total": 8,
+      "report": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/regression1.json",
+        "sha256": "1ae91aabd0f6e6a4a88e7fefdf59448c6d240c1ee45940d35c2a3424dd646736",
+        "bytes": 3245
+      }
+    },
+    "preservationGuards": {
+      "before": "before count=1 sha=de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2",
+      "after": "after count=1 sha=de5c7745215fac12e8f1e981c44e57a9365d47cd71ef84bc06291442093695d2"
+    }
+  },
+  "preservation": {
+    "before": {
+      "epochMs": 1793846963126,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~nmyj3YC2Ry5hjgAR1Sv26g==/com.lonnnnnng.flclash-gFEj6AjPbF8wxBfF37d1GQ==/base.apk",
+          "sha256": "886894584eaa5c3bf583e560d49ee4af84b0167a2d38485ca59b22882f97b798"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~fUgEbt6AcbYlhm-m-ALyWg==/com.lonnnnnng.flclash.test-gGdv5bFfw0zd4Pa_JnfQMw==/base.apk",
+          "sha256": "79adcb3826aa2c081e19778a92ba989e8580d2a537c2ccb8c4d2f9af8e64435e"
+        }
+      ],
+      "noKotlinServiceOrTun0": true
+    },
+    "after": {
+      "epochMs": 1793847477081,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~zCMab2kWN2bkQ2pjt5piKw==/com.lonnnnnng.flclash-7vIE79yj3LGzINnt58UoYw==/base.apk",
+          "sha256": "54cc8c7ad5ac0a242e32243e46d422ca131388fc9164fb9006e4e589ed8dcedc"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~uDqCq968hjsAOmgf76tn5w==/com.lonnnnnng.flclash.test-g_YAbL47PN18LwHCYeFRbg==/base.apk",
+          "sha256": "0855ec28b8d5c8e15646624f5ab99e07c4512e65145fa3c0cb01390e867aee9a"
+        }
+      ],
+      "noKotlinServiceOrTun0": true,
+      "preserved": true,
+      "builtAppSha256": "54cc8c7ad5ac0a242e32243e46d422ca131388fc9164fb9006e4e589ed8dcedc",
+      "builtTestSha256": "0855ec28b8d5c8e15646624f5ab99e07c4512e65145fa3c0cb01390e867aee9a",
+      "installedApksMatch": true
+    },
+    "formalRowsFieldsSelectionAndBodyShaSizeMtimePreserved": true,
+    "temporarySourceAndCustomRowsAndBodyFilesDeleted": true,
+    "newTestOwnedProjectionFilesAndExactTmpPathsCleaned": true,
+    "acceptanceEncryptedBackupClearedAndReadBackNull": true,
+    "vpnSettingRestored": true
+  },
+  "implementation": {
+    "productionMainCodeChanged": false,
+    "debugEntryPoint": "formal DI SubscriptionClient, ProfileContentDecoder, CoreBridge exposed only to debug instrumentation",
+    "manualPath": "ProfilesViewModel.update -> ProfileRepository.updateRemoteProfile -> applySyncedCurrent -> CoreRuntimeManager.applyCurrentProfile",
+    "automaticPath": "ProfileRepository.updateDueProfiles(now) -> automatic RemoteProfileCommitter -> CoreRuntimeManager.withProfileSourceWrite -> actual CUSTOM use reference",
+    "readback": "profileInputsApplied, profileProviders and direct Bridge epoch/groups; no Activity polling or getProxyGroups ensureConfigLoaded can repair the tested update"
+  },
+  "limitations": [
+    "Current sole authorized online response is plaintext, 34815 bytes, with no persisted age identity. Production decoder passes plaintext through. No online age download/decrypt/apply claim; an explicitly authorized encrypted response and corresponding key are still required.",
+    "Temporary source/cache starts with original authorized 1.yaml bytes; downloaded source bytes differ and actual core epoch advances. Provider count remains seven. This does not establish changed upstream node definitions, all protocol connectivity, or traffic/rule hits.",
+    "Manual sync enters the formal ViewModel method without a rendered Activity. This is production runtime integration acceptance, not full navigation/click E2E or visual parity.",
+    "Automatic case directly invokes the production due repository with current time and a new due temporary source. It does not wait for WorkManager or constitute another natural scheduling cycle.",
+    "Real core runs in pure proxy mode; no VPN, mobile network, low API, Go test, signed Release runtime, remote CI or publication is verified in this batch.",
+    "745 JVM XML results contain zero failures/errors/skips; final Gradle build reused up-to-date/cached tasks. Not all 745 tests were forcibly re-executed.",
+    "The eight regressions combine isolated substitute-based repository cases with two actual-core host cases; they are reported separately from the three online checks.",
+    "Interrupted acceptance recovery code and exact temporary file cleanup were reviewed, but this batch does not inject process death or cancellation during the online tests.",
+    "The new acceptance tests clean only their own source/CUSTOM projections; no broad historical projection/cache cleanup is claimed for older regression fixtures.",
+    "Build1 passed; test-only cleanup ordering and exact .tmp cleanup were improved before final build2. All device cases use build2 App/Test. No failing device batch occurred.",
+    "Raw APKs/logs/XML and frozen source files are persistent local attachments outside Git; remote readers cannot recover them from local paths alone."
+  ],
+  "artifacts": [
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/after.json",
+      "sha256": "2da0c150e7a843ec9f0527e801bbf2cb64ef06e92519d65cdafad1d61e840fa3",
+      "bytes": 1461
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/before.json",
+      "sha256": "fde71c37517a1ac9fc61312a7bfef51ecf348819d6b8402743198f4dac27f1f0",
+      "bytes": 1233
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/build-results.json",
+      "sha256": "80be9141a3a5b4d81432cc3b6233ea9e5913b0b20871fe46d49f3d64e24f5712",
+      "bytes": 502
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/build1.log",
+      "sha256": "0544b7de1a965929b010aa6a6c39ef45bce9a12c20f7782e04ed3b475cfc86ec",
+      "bytes": 23505
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/build2.log",
+      "sha256": "53f32d1edd665a3bee11ceed48d33dc2d3ce1271b234ac7744ed816f2f2e048d",
+      "bytes": 23515
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/guard-after.json",
+      "sha256": "e268a02cacc6ec422c62c1fc9a2432a61e9a69306d0676704d475ebb2e87b9f5",
+      "bytes": 530
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/guard-after.log",
+      "sha256": "6fded70741964cea01368d932a3a8e611818c02520c794a1c67ce56edf9038a9",
+      "bytes": 961
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/guard-before.json",
+      "sha256": "2b47aeb5b9ba53bae9174dd981f20284acba826d431e86bc14e8edce26d62b6f",
+      "bytes": 531
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/guard-before.log",
+      "sha256": "f557d2e26f2049bef1f68d9293c20bd9102c70f527ed96203be695f076538a0e",
+      "bytes": 962
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/install.py",
+      "sha256": "95921b074bab77a2c257d36a1921d79cc9243895f7a117df81aa72a53e2dc21f",
+      "bytes": 2971
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/installation.json",
+      "sha256": "efd70658365227c4c2d5bdcafad19daaa1ee824ac962d064d9d40e0850a9d485",
+      "bytes": 3005
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/installed-app.apk",
+      "sha256": "54cc8c7ad5ac0a242e32243e46d422ca131388fc9164fb9006e4e589ed8dcedc",
+      "bytes": 90682722
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/installed-test.apk",
+      "sha256": "0855ec28b8d5c8e15646624f5ab99e07c4512e65145fa3c0cb01390e867aee9a",
+      "bytes": 4710419
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/lint-results-debug.xml",
+      "sha256": "e7ded0d72c527a987f3bca83bc76c9efbe3a103564dd1ec09b7f6a6069a18024",
+      "bytes": 85144
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/lint-results-release.xml",
+      "sha256": "8d10ebe3fd68f6349a715d9f38554b718792af0b18346e7257853f191c504e7e",
+      "bytes": 83939
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/online1.json",
+      "sha256": "c632977ff5ccce6472a643355a9e724bde0eac8835b766f6159deda0db44a6fa",
+      "bytes": 1265
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/online1.log",
+      "sha256": "52a6ee5ce456242187ff6eba9f8b47a036ee3a64cc82cb4b9573a45f8675f79f",
+      "bytes": 4147
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/regression1.json",
+      "sha256": "1ae91aabd0f6e6a4a88e7fefdf59448c6d240c1ee45940d35c2a3424dd646736",
+      "bytes": 3245
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/regression1.log",
+      "sha256": "611a21d16d4ab25ea05578d48337551abced3b7c1de88e90082dab3ac18b231f",
+      "bytes": 6368
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/run.py",
+      "sha256": "0dd9837f34367df1f43c0bf76dba1628d61665de54b2a91f22ffc6ce687f9c86",
+      "bytes": 3386
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/snapshot.py",
+      "sha256": "fbf67c8a0bbacd331377f71c2bd1915e773b01cd763117357eca53a983e5eafb",
+      "bytes": 2631
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/sources/android/app/src/debug/kotlin/com/lonnnnnng/flclash/ConnectionAcceptanceEntryPoint.kt",
+      "sha256": "b33ca387c9ce41661174d7e18f718286065224a24ae99f152aad3e4ec2fc097a",
+      "bytes": 2787
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/sources/android/tests/instrumented/SubscriptionReferenceNetworkInstrumentedTest.kt",
+      "sha256": "3aa1dd0c4f8dc211163f6512659762ba327b7fd4c6f51a404d35455283e3fa55",
+      "bytes": 15463
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ApplicationSettingsBackupTest.xml",
+      "sha256": "6a893c18205c121665ed761224946b1c48c36edd45760ca13ed455b54f03b351",
+      "bytes": 845
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.CustomProfileImportTest.xml",
+      "sha256": "a31d8fd5bc521acf25cbbe9e6e462cf5e46ea5f3e0f07e49b4eab45e6401eea7",
+      "bytes": 942
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.CustomRuleDraftTest.xml",
+      "sha256": "95994ea5ba11585b1f60bbb72423ed4657a42f84bf0d1f67c5538202b549508e",
+      "bytes": 1412
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.DeepLinkImportTest.xml",
+      "sha256": "7853623b71f451a1c2090458bbe0d54496510f6e1cc3c7b5436e709ed7542e14",
+      "bytes": 1328
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.FilterPresetsTest.xml",
+      "sha256": "f1b141a6917edf0534cec2d49e4d0afa8b017171222103962a07bed2e72ae198",
+      "bytes": 988
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.HttpRequestPolicyTest.xml",
+      "sha256": "c62420f1f192beba883400500de9d0602db1c268f2ca0b2eec1fc6737665510d",
+      "bytes": 667
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.IconRecommendationsTest.xml",
+      "sha256": "9f6743b301627c89a66e763862fb1eb4313f2ae5b72f7a5f67cb1f2fcf5a7418",
+      "bytes": 892
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.IconSetCodecTest.xml",
+      "sha256": "40b00d5a1a13b1ecb4bb78c053c346c5470dd40917e5cb47c96476d6bd5e91c1",
+      "bytes": 779
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.IpInformationRepositoryTest.xml",
+      "sha256": "a9a6958b720842ad0cf981b99580a3b310ff3dac6b86d9783627531f388a71ba",
+      "bytes": 995
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.IpInformationTest.xml",
+      "sha256": "fbc56d6aac7a3415b6f5a4267f821ffb617736a2a840aea78179b0117a38d6ce",
+      "bytes": 1004
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.LocalProfileFileWriteTest.xml",
+      "sha256": "000d6463e5a8756c15d8b54573cafdc598a5919d430bd3e2fb5162225f84f244",
+      "bytes": 1887
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.LocalProxiesTest.xml",
+      "sha256": "ef7525609aae50c00ef590ff1b1f229b7efbb18055f8e9cfc1fe4b95c3cfe594",
+      "bytes": 1530
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.LocalProxyAdditionTest.xml",
+      "sha256": "a1f7818c4265a23003f31b3aaf0855c4efec882f1cc9cdac596b92bfe91619ed",
+      "bytes": 985
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.LocalProxyLinkEditTest.xml",
+      "sha256": "78702812ada60c210fb52b27ece53018b9edb41748b18acbcc0c2e6287211171",
+      "bytes": 1331
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.OnDemandSsidTrackerTest.xml",
+      "sha256": "c95cb61e499fa495ba0f430e74d906b814971176823845f12deff91a335d5186",
+      "bytes": 805
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileContentDecoderTest.xml",
+      "sha256": "9fb6ebae14e650ee17e463078fa3474cb3eb652905857e0f7095f1a7298b1072",
+      "bytes": 1517
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileDialerEditorTest.xml",
+      "sha256": "c98fac3bb9e1c817e9dfefed548a39007962d140da2359e34bf161a7e81a0623",
+      "bytes": 964
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileDocumentTest.xml",
+      "sha256": "ce9412a94958fe2548c244193148d6037141ee8349b06f3c8850882a3e4bb40f",
+      "bytes": 508
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileExportTest.xml",
+      "sha256": "67bbd69a3bb33bbabfdf131e24a03b2ba3b9d03870291da7fb940d6fe82d398a",
+      "bytes": 811
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileMorePatchTest.xml",
+      "sha256": "1680596e0c841e2674a6c8cf1b92c1b4259dfd4f64eabaa146e8cb2c3822c10b",
+      "bytes": 810
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileProvidersEditorTest.xml",
+      "sha256": "8e5ad1a25d6e2af733a44f6815c745218104fd4d7dfa74c6c3761d6953a9bdce",
+      "bytes": 1461
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileProxiesEditorTest.xml",
+      "sha256": "d559b6861a2489a6f54af651294d5e9164bf1ebc4b68d98b97c979ce54729c3a",
+      "bytes": 1448
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileProxyGroupsEditorTest.xml",
+      "sha256": "42a4ac44ab5486e41b294c579d77d0b784b28317d945016041693b6d4974eae6",
+      "bytes": 1144
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileProxyResourcesTest.xml",
+      "sha256": "24eacacd9ae873024ad6c60a575947ae7eb5460a72f26da1860fda50843ef66d",
+      "bytes": 943
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileRulesEditorTest.xml",
+      "sha256": "cdf9ecac376a8a94b5ef0365f91ae80d6135a71e92efa26ff1afe8394cda0bab",
+      "bytes": 784
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileSelectionTest.xml",
+      "sha256": "36420b3f285436da148e65955a0b7c01bec811f1be88d8bb1beaeac1f350d957",
+      "bytes": 795
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProfileTest.xml",
+      "sha256": "e29da016675d7100e598ac7fa0a6325360fbf26e81905cc75c998e9de1513166",
+      "bytes": 996
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProviderEditingTest.xml",
+      "sha256": "c7c158e7b3db9c8bb20b4077e1c660bd8bd7aa082754b786ce4bc2c0ad64308f",
+      "bytes": 1181
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProxyGroupDraftsTest.xml",
+      "sha256": "17cf36487b0945dd29a58f2a7bdf6ffc7b7ca48aedeb06e98452b27234efa22d",
+      "bytes": 1913
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ProxyGroupIssuesTest.xml",
+      "sha256": "bf8a1d71e3ce448a2cb716c422960eb351e054f75281539a70a9352b73e1dc45",
+      "bytes": 1106
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.RuleResourcesTest.xml",
+      "sha256": "a2f187921af477e1b2d78f586f12cff21e652f3e8ee0378f858bee67c0d0f50e",
+      "bytes": 936
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ScriptImportTest.xml",
+      "sha256": "68afd3621e10b55660880f32a21a0b133e29e9e6a3ffa765da5222b847134374",
+      "bytes": 624
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.ServiceExitRepositoryTest.xml",
+      "sha256": "ffef69ad3703578e0d13a233815c32c245b480add8814dcf59c4c9ad63de5f88",
+      "bytes": 805
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.SubscriptionAutoUpdateTest.xml",
+      "sha256": "18f4b6e988864531f4f9b31a204ac1a3f22444304d3df77e53581284cdeed222",
+      "bytes": 772
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.SubscriptionClientTest.xml",
+      "sha256": "410da4608cc8ab274c1eba4a9f6e5f3de76baeb5ea925c92a470b56e3e450a39",
+      "bytes": 503
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.data.WebDavClientTest.xml",
+      "sha256": "bea7b054f28dc1d73f35cf158e81a010f805249c9a44d66fbcc15b3881402133",
+      "bytes": 1193
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.AccessControlViewModelTest.xml",
+      "sha256": "6fb3e6c9174bf4313d019f0296f2cd56860fd219b2fb7e26ad1712940787f4b9",
+      "bytes": 1354
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.AppMenuMotionTest.xml",
+      "sha256": "85b068be293ec8636b5609915afc92a34d08d565c19666dcbc051fc1723af95d",
+      "bytes": 1615
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.AppMenuPositionerTest.xml",
+      "sha256": "8f164093fabc2f42e150bf169d7997f8828c4fbd2883cf464b0fe1ccef878ca5",
+      "bytes": 1048
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.AppSurfacePhysicsTest.xml",
+      "sha256": "b79c8eece4c1774e85417340edd616671a5fb1f84b0a91c193d95b1dfa9b4c4e",
+      "bytes": 904
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ConnectionDetailFormattingTest.xml",
+      "sha256": "ec829920f4c3e922a0e421fefa4614a6ad262562e9774da70b54e918c86bc3cd",
+      "bytes": 994
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest.xml",
+      "sha256": "90321296c3db6fac2bccf32b5f7c25360ff97e385efdb703a3a29ce062dc4136",
+      "bytes": 1632
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.CustomProfileSummaryTest.xml",
+      "sha256": "c2456ba1e6fa70a07fb1a5a1092df7eca9dd9e268497d900f5b3e205b4247498",
+      "bytes": 959
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.DashboardDragTest.xml",
+      "sha256": "e66c0f8eb6dc98e553d3e27c352d63eb14518dccf26e59e4eb8c80f550c54186",
+      "bytes": 766
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.DashboardLayoutTest.xml",
+      "sha256": "696496021f4358b06ac3f08276b2e25e5da5a4d7c19b769112f561203b782d1e",
+      "bytes": 1933
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.DashboardTelemetryTest.xml",
+      "sha256": "235863fe92099ac13bd9d781a0d7890015f9985ed671be3cffc3ad6b81425ab9",
+      "bytes": 1004
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.EditorSaveableStateTest.xml",
+      "sha256": "d6abe01896a9cf9feb2ae414edc6a1a2e89a47ed037afe30e474983a4cc25de9",
+      "bytes": 976
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.GlobalRulesControllerTest.xml",
+      "sha256": "9819627b31eeedf8d0dbeb87c426fc3ae19fe474495b6c1b6d3a0ce52c331cd7",
+      "bytes": 800
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.IntranetIpViewModelTest.xml",
+      "sha256": "221b0a690569d10f25fb3a9990688bc588025e480a6c83185d5d8a755224be52",
+      "bytes": 1288
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.LocalProxyDraftRecoveryTest.xml",
+      "sha256": "7069847134c9b6f4c2d9953ffd92dd4db045e6757e6944358651ccc8271174ab",
+      "bytes": 1839
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.MainPageScaffoldTest.xml",
+      "sha256": "a80b3b47bd811eb961e26caf64634f6e89827eed19877a9289b8842a78cce89a",
+      "bytes": 675
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.MainViewModelTelemetryTest.xml",
+      "sha256": "ef7ff45d7a10e2760fe6416932d0c05193ad45e683950080ce3886724405b283",
+      "bytes": 844
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.MainViewModelTest.xml",
+      "sha256": "260e069aa36d30f11245b3017f9e1091b65627225ab2b6e9851d4dbde2750991",
+      "bytes": 3300
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.MemoryViewModelTest.xml",
+      "sha256": "7828e3f77946b823f6500c9300ace6865b40654af7838068a432770dd32e2878",
+      "bytes": 1346
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.OutboundIpViewModelTest.xml",
+      "sha256": "c228d26de9595b281e1f108a9c0d8897d48d0486f5de25ee184aa78f86969aef",
+      "bytes": 1259
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ProfileExtensionControllerTest.xml",
+      "sha256": "4b0d4de4674ab6a397672033a478647b5e74ba1e3f92d25a0efcefcd08cb90e3",
+      "bytes": 1183
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ProfileFileImportControllerTest.xml",
+      "sha256": "7da69ec26b89cb6bb43792926d4b18e474db9067f47809d1488c7940eebd4425",
+      "bytes": 1292
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ProfileMoreFieldsTest.xml",
+      "sha256": "45ccf30c12495b9846f7cfa0ea821e1866ba69907f85879e0783c950c59882bf",
+      "bytes": 1263
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ProfileSharingViewModelTest.xml",
+      "sha256": "c1f76d27b69446dd6b8cc7c8412cc0df053db890d47e72fbb618bff0d788139d",
+      "bytes": 1887
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ProfileStatisticsViewModelTest.xml",
+      "sha256": "9203bec3e7bce3ef9b4442b5b441f4d8db68dc27db69453cc2f89fbcdf47b019",
+      "bytes": 3195
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ProfileUrlImportTest.xml",
+      "sha256": "b3de6cef2f48c4ba9a54652cac53bc72c8e8d9cf76503c5fa0f0310ad92f5374",
+      "bytes": 773
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ProfilesViewModelTest.xml",
+      "sha256": "6a83ae352c70caf3bcc18afd23cb473ee4432b44994a02a94c2c34ed01bf20fa",
+      "bytes": 13653
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ProxyGroupsViewModelTest.xml",
+      "sha256": "4d87d8bf2cccdc8cf90fef2868f7e4b96e8f62b326ea5d11e337c4fc428507e9",
+      "bytes": 5755
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ResourceUrlImportControllerTest.xml",
+      "sha256": "7645cae5756a37056def89649eb43b4d04fb32ad38517c717f29f7d8eefa86cf",
+      "bytes": 829
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModelTest.xml",
+      "sha256": "48d27405c8e2527cfdb5f3b6fa2406845d732f04052721d48f1e1804ae66c4ec",
+      "bytes": 881
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ScriptsViewModelTest.xml",
+      "sha256": "d5444d59b242ae971305ab816e1371a09c747a105ee9e8f59eb0ddf6ca9d64bd",
+      "bytes": 1794
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/app/TEST-com.lonnnnnng.flclash.ui.ServiceStatusViewModelTest.xml",
+      "sha256": "4344e2f3fbccdb0aa1a49e0c19d7885942c1675500dcf4eaff9db9a2b4a04e8e",
+      "bytes": 3749
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/common/TEST-com.lonnnnnng.flclash.common.BroadcastLeaseTest.xml",
+      "sha256": "606a80b1a6aae9fd37f857bd57c35158cbd03204bf1a6ab611dcfb455326611f",
+      "bytes": 1307
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/common/TEST-com.lonnnnnng.flclash.common.EnumsTest.xml",
+      "sha256": "cc7639d2e5dc4405b1cadfeed107c3a8e6a6932db6920cb579ebd3776f592788",
+      "bytes": 1049
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/common/TEST-com.lonnnnnng.flclash.common.PendingCallbackTest.xml",
+      "sha256": "8651a94e8dc5490568e19a91afc3c6fbd90156fbe655774ef7cff1d689feebb5",
+      "bytes": 1613
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/common/TEST-com.lonnnnnng.flclash.common.RunIntentArbiterTest.xml",
+      "sha256": "226b0d451e7c9c8a6d24717b59e3fc4918de0858302c6ee924fefc69f81bc93e",
+      "bytes": 1745
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/core/TEST-com.lonnnnnng.flclash.core.CoreBridgeParsingTest.xml",
+      "sha256": "ed43fc79351981139e36741e4d10f449be3ab9154f8479dedc380f7adb1f58a1",
+      "bytes": 6076
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml",
+      "sha256": "e93af58075dca4777caf9c8f9d312d1eff3dd587b9596561aa7fb7087accdef1",
+      "bytes": 17243
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.DefaultVpnOptionsProviderTest.xml",
+      "sha256": "917e3385b0c59305ca671eea1e00fbf76dafb0e1b3ab6861e99832981a2b6706",
+      "bytes": 1170
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.GeneralSettingsTest.xml",
+      "sha256": "e8aed0c9f39f4499ad1994e85d64c702905f1c27f49c075da4f0537e31ec5520",
+      "bytes": 955
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.GeoResourceSettingsTest.xml",
+      "sha256": "28f9c3e2f176dfe5785df2672471de7e8cd4d8e40e769cc1c7cfea2154f0e79c",
+      "bytes": 692
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.GlobalDnsSettingsTest.xml",
+      "sha256": "3e8594b73d18e062036c0d6f6731311b5c76fae1eb5b21097e075bd43d0562ae",
+      "bytes": 954
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.NetworkSettingsTest.xml",
+      "sha256": "573b05f1e64ab93fb95a62501f7febff6caba0c3d45a0ab17c8496d32bd2c85a",
+      "bytes": 1155
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.OnDemandSettingsTest.xml",
+      "sha256": "85f11ec44628404055bddfb85018001aed9ec92115741d9a8d502e93b6664c9e",
+      "bytes": 656
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.ProfileDnsBaselineTest.xml",
+      "sha256": "e653837905507212d81da1e6bcd8da9d92474a60e923537baf820dfac6f090e3",
+      "bytes": 1127
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.ProfileExtensionTest.xml",
+      "sha256": "e3f7cd46cbb9eba3d855768c93b2ba9fc5a343a234b34440cfc51196c25a23ca",
+      "bytes": 1159
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.ProfileMoreOverridesTest.xml",
+      "sha256": "19c130ef00a56c76889e8e0e299a5a8a8a279256f09cc8504c6ea8a2fea13983",
+      "bytes": 1129
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.ProfileProviderOverridesTest.xml",
+      "sha256": "d129d33298d6189c141a82f925ea97034706a3a51cb19c5700d24c42f4304d09",
+      "bytes": 2553
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.ProfileScriptTest.xml",
+      "sha256": "f00beb5d449ec4290beb3d8c1792a11c316d1e5d43d272b28fc7502d0491970f",
+      "bytes": 1549
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.ProfileStatisticsTest.xml",
+      "sha256": "0cd3952c12ce9422c7bbf705cb12aba3b51c57736316fdd6b40524ebcce3d590",
+      "bytes": 651
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.RuntimeDiagnosticsTest.xml",
+      "sha256": "1cf2c5fe5c0196af7ef9049a00df6a735bd6330c7a21fc66062bebb951b2ee77",
+      "bytes": 960
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.ServiceConfigTest.xml",
+      "sha256": "18d10c96f0be25ba3fbe979819fe32952a1d5521e4bc681fc341ef35b51a6f34",
+      "bytes": 1077
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.models.RouteAddressTest.xml",
+      "sha256": "5c5ae8b6ca0cb5dd1e51e4eab003d925d95ffd0f88b371163a7bd905937a2010",
+      "bytes": 942
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.models.ToCIDRTest.xml",
+      "sha256": "07ec504c1cb87bc3603d89b5fb4b1ba3b3e98cab105bbb9dc13620572b5a7063",
+      "bytes": 1456
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.models.TrafficTest.xml",
+      "sha256": "955c8130f8fc493457bc03233b56ff17aec6f087c2694a5cbb64e976c42ec6be",
+      "bytes": 1120
+    },
+    {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/test-results/service/TEST-com.lonnnnnng.flclash.service.models.TunOptionsTest.xml",
+      "sha256": "57670cad503a1d7518d703597b97d579603f11b0f616e71f76368ecdad6c024d",
+      "bytes": 784
+    }
+  ],
+  "independentReview": {
+    "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/subscription-reference-20261105/independent-review.md",
+    "sha256": "d042443c14fd8ef69e6def6883894593cc2489e76ffe8529d86d62c12be5b990",
+    "bytes": 1449,
+    "blockingFindings": 0,
+    "reranDeviceOrBuild": false
+  }
+}

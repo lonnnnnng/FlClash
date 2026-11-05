@@ -26,6 +26,10 @@ interface ConnectionAcceptanceEntryPoint {
     fun runtimeManager(): com.lonnnnnng.flclash.service.CoreRuntimeManager
     fun vpnSettingsStore(): com.lonnnnnng.flclash.service.VpnSettingsStore
     fun generalSettingsStore(): com.lonnnnnng.flclash.service.GeneralSettingsStore
+    // 作者 long：在线验收回读正式注入的下载/解密与核心实例，不能用明文替身冒充 age 或运行态应用。
+    fun subscriptionClient(): com.lonnnnnng.flclash.data.SubscriptionClient
+    fun profileContentDecoder(): com.lonnnnnng.flclash.data.ProfileContentDecoder
+    fun coreBridge(): com.lonnnnnng.flclash.core.CoreBridge
     fun globalDnsSettingsStore(): com.lonnnnnng.flclash.service.GlobalDnsSettingsStore
     fun networkSettingsStore(): com.lonnnnnng.flclash.service.NetworkSettingsStore
     fun lanSharingStore(): com.lonnnnnng.flclash.service.LanSharingStore
