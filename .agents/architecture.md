@@ -1,6 +1,18 @@
 # Architecture
 
-## Always-on无蜂窝部分验收（2026-11-05，当前）
+## 进程级网络观察（2026-11-05，当前）
+
+NetworkObserver在Application.onCreate、按需/恢复/配置加载之前注册并随进程存续，与本地Flutter quickSetup前初始化一致。ProxyService/VpnService模块只持有通知职责；服务停止不能注销共用观察器或清空系统DNS，停止态Provider和下一次启动仍依赖它。真实网络变化继续走callback、200ms DNS合并与resetNetwork。见`docs/adr/0019-process-network-observation.md`。
+
+只读snapshot记录started/registeredAt/dnsUpdatedAt/DNS数量/网络句柄，无DNS端点。VpnService的SocketProtectionMonitor原样透传protect结果/异常，用AtomicLong计数；计数仅覆盖已进入回调的调用，不能证明上游listener为空的静默窗口不存在。核心启停/恢复仍仅由CoreRuntimeManager协调，不改Go或submodule。
+
+Debug请求在DNS/connect前绑定源端口并订阅事件，supervisorScope隔离观察任务、finally cancelAndJoin和恢复日志状态。首请求失败仍判失败，同授权目标的物理HTTPS对照和两次TUN重测另记诊断；不更换目标/节点、不重载配置。Base64分片按token/id/index/count重组并拒绝缺片；15秒显式延迟仅diagnosticPassed，不能成为默认passed。
+
+最终build3/767项JVM、Debug/Test、未签名Release/R8和双Lint通过；Redmi final5/6两轮默认冷启动+SIGKILL恢复首个HTTPS均200、同socket归因和双向流量，3/3模式/组件/菜单回归、独立纯代理系统恢复及前后保护通过。旧包与增强包的冷首请求失败仍保留，节点DNS/拨号确切根因未定，不能认定全部稳定性已修复。正式配置/原文件/Flutter/设置保持、备份清空、无服务/tun0；第6项原长窗口保护失败独立保留。
+
+当前证据`docs/acceptance/system-vpn-dns-recovery-redmi-20261105.json`，附件`../acceptance-artifacts/always-on-dns-20261105/`。第8项仍PARTIAL，蜂窝延期，首次安装/第三方/OEM仍待验；生产Always-on状态仍UNKNOWN。Go、低API、正式签名运行、远端CI未重跑，完整Flutter视觉仍PARTIAL，玻璃默认关闭，原暂缓/取消项保持。
+
+## Always-on无蜂窝部分验收（2026-11-05，历史切片）
 
 本组在无蜂窝条件下推进todo第8项，只有Wi-Fi↔蜂窝子项延期。对照Flutter修正系统VPN启动：先前台通知，再等待Application诊断/resume初始化，统一进入CoreRuntimeManager；内部启动action才建TUN。新增7项状态机单测，重复回调、失败释放与按需排除已有覆盖。
 

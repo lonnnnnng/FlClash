@@ -7,6 +7,7 @@ import com.lonnnnnng.flclash.common.GlobalState
 import com.lonnnnnng.flclash.data.SubscriptionAutoUpdateScheduler
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.RuntimeResumeStore
+import com.lonnnnnng.flclash.service.NetworkObserver
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +40,9 @@ class KClashApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // 作者 long：与Flutter初始化顺序一致，停止态的Provider/DNS和进程恢复加载也需要底层DNS。
+        // 观察器属于应用进程，不能等前台服务创建后才注册，更不能由任一服务销毁时清空。
+        NetworkObserver.start()
         onDemandCoordinator.start(applicationScope)
         SubscriptionAutoUpdateScheduler.schedule(this)
         com.lonnnnnng.flclash.data.ResourceAutoUpdateScheduler.schedule(this)

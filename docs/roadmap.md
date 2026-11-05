@@ -4,11 +4,20 @@
 >
 > 最后核对：2026-11-05（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 阅读约定：第 3 节“当前快照”和第 7 节功能矩阵记录累计现状；具名、带日期的切片只证明当时范围，旧的“下一组/未提交/当前安装包”不代表今天仍未实现或未提交。不同批次测试数量不相加，代码实现、组件测试、真实系统入口和实网行为分别判定。订阅授权以外层 `AGENTS.md` 当前唯一入口为准。验收 JSON 保留结果、哈希和本机 `/tmp` 证据索引；原始日志/截图未随源码上传，远端不能仅凭路径复核附件。
+> 阅读约定：第 3 节“当前快照”和第 7 节功能矩阵记录累计现状；具名、带日期的切片只证明当时范围，旧的“下一组/未提交/当前安装包”不代表今天仍未实现或未提交。不同批次测试数量不相加，代码实现、组件测试、真实系统入口和实网行为分别判定。订阅授权以外层 `AGENTS.md` 当前唯一入口为准。验收 JSON 保留结果、哈希和本机附件索引（当前为外层`acceptance-artifacts/`，历史可能为`/tmp`）；原始日志/截图未随源码上传，远端不能仅凭路径复核附件。
 >
 > 当前基线：本文件所在的 `kotlin` 主线提交，追踪 `origin/kotlin`；DNS/浏览器修复 `cab92464` 和规则资源 `d3ee7fc4` 为已同步历史基线，当前累计能力以第3/7节和最新切片为准，远端差异以 `git status` 为准。Android 默认首页按 Flutter 收敛为状态 → 网络速度 → 出站模式 → 配置 → 策略组，连接统计、内存信息、服务状态、内网 IP 与 VPN 默认隐藏；无配置时隐藏代理 Tab。按应用代理位于工具设置分组，电池授权位于常规/按需连接的前置条件；系统 Always-on 与订阅请求证据仅从显式 Debug 开发者入口进入。
 > 首页编辑使用整卡长按、右上角移除与左侧添加；状态卡参与排序且不可移除。标题为“仪表盘 / 编辑仪表盘 / 可添加”，出站模式保留 Rule → Global → Direct 的 52dp connected buttons。配置快切、详情、单项同步以及策略组选择面板沿用已有正式状态与仓库链路。
-> 本轮最新（11-05，todo第8项无蜂窝部分验收）：
+> 本轮最新（11-05，网络观察生命周期与Always-on首请求复验）：
+> 对照本地Flutter将NetworkObserver提前到Application、配置加载前注册，由进程持有；服务停止不再注销共用观察器或清空系统DNS。新增只计数的socket保护结果与安全诊断，不改Go/submodule。
+>
+> 最终build3 App492/Service206/Core38/Common31共767项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8及双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示，安装回拉匹配。Redmi final5/6两轮默认零额外等待，各自冷启动与SIGKILL恢复首个TUN HTTPS均200、同socket核心归因/正流量，无失败后补诊断。精确回归3/3、独立纯代理系统恢复1场景、保护前后各1/1通过。
+>
+> 旧包baseline及增强包diagnostic2/3在冷首请求同样失败；后两轮物理HTTPS200/两次TUN HTTPS200仍只作诊断。delayed4额外15秒只计延迟诊断，旧passed字段保留并注明语义；最终脚本已分开默认验收与延迟诊断。diagnostic1长JSON截断/清理解析失败与手工token恢复独立保留，最终分片完整性门禁已验证。生命周期缺口已修，但间歇节点DNS/拨号确切根因仍未定，不宣称Always-on稳定性完全闭环。
+>
+> 正式1份配置逐字段摘要/选择/正文SHA-size-mtime、原1.yaml双端、Flutter APK和设置保持；备份清空，结束无服务/tun0，独占XML已定点删除。final6系统开/关两张截图已目视，仅作系统状态证据；第6项原长窗口保护失败仍独立保留。证据`docs/acceptance/system-vpn-dns-recovery-redmi-20261105.json`，本机附件`../acceptance-artifacts/always-on-dns-20261105/`。第8项整体仍PARTIAL，蜂窝延期；首次安装/第三方真调用/其余OEM待验，完整Flutter视觉仍PARTIAL，原暂缓/取消项保持。
+>
+> 上一组历史（11-05，todo第8项无蜂窝部分验收）：
 > 本组在无蜂窝条件下推进todo第8项，只有Wi-Fi↔蜂窝子项延期。对照Flutter修正系统VPN启动：先前台通知，再等待Application诊断/resume初始化，统一进入CoreRuntimeManager；内部启动action才建TUN。新增7项状态机单测，重复回调、失败释放与按需排除已有覆盖。
 >
 > 最终build8 App492/Service203/Core38/Common31共764项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8和双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。Redmi同套App/Test精确回归3/3，纯代理SIGKILL恢复独立1场景通过，保护前后各1/1；安装回拉SHA匹配。
@@ -636,14 +645,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
-| 单元测试 | build8核对App492、Service203、Core38、Common31共764项结果，失败/错误/跳过0；含up-to-date复用，Go未重跑 |
-| 最新真机 | Redmi API36 build8：final7 Always-on冷系统启动TUN HTTPS200/归因通过；SIGKILL后系统重建双FGS/TUN，但HTTPS拨号失败，整体未通过。精确回归3/3、纯代理SIGKILL恢复独立1场景、保护前后各1/1通过；蜂窝单独延期 |
+| 单元测试 | build3核对App492、Service206、Core38、Common31共767项结果，失败/错误/跳过0；含up-to-date复用，Go未重跑 |
+| 最新真机 | Redmi API36 build3：final5/6两轮默认冷系统启动及SIGKILL恢复首个TUN HTTPS均200/同socket归因通过，无补诊断；3/3回归、独立纯代理恢复及前后保护各1/1通过。早期冷首请求间歇DNS/拨号失败仍未定根因；蜂窝延期 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | build8四模块JVM、Debug/AndroidTest及未签名Release/R8、双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示；本组已修正生产系统VPN启动链 |
-| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `79822c399b00ee382824d1d56c811070c28716ff10e27066b425ff927ced97eb`，Redmi回拉匹配，仅arm64-v8a；Debug验收组件要求DUMP |
-| AndroidTest APK | SHA-256 `3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94`，Redmi回拉匹配，无原生库；系统恢复使用外部观察/Debug宿主，回归按精确方法 |
-| Release | build8未签名arm64 APK/R8通过；SHA-256 `fe034cd130695cc6f3486ac3ecd42eb890bc3988db5ab5334ac91d7c187445ee`；Lint0错误/66警告/9提示，清单无Debug验收组件，正式签名与设备运行未验 |
-| 最新证据 | `system-vpn-always-on-redmi-20261105.json`：764单测、冷启动TUN HTTP200、SIGKILL后系统/TUN恢复但HTTPS失败，overallPassed=false；3/3回归、纯代理系统恢复和保护通过。第7Fallback输入受限，第6原长窗口保护异常独立保留；整体PARTIAL |
+| Debug / Test | build3四模块JVM、Debug/AndroidTest及未签名Release/R8、双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示；本组修正进程级网络观察并补安全诊断 |
+| Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `82074cbd8e23ffb6cfd6a7837288a8182bdbeee947d7e8d09812be760dafa33a`，Redmi回拉匹配，仅arm64-v8a；Debug验收组件要求DUMP |
+| AndroidTest APK | SHA-256 `bddb3bdd9bf62f046d77e8be75f2c12caa30bec735ae94126c6b135aa3330388`，Redmi回拉匹配，无原生库；系统恢复使用外部观察/Debug宿主，回归按精确方法 |
+| Release | build3未签名arm64 APK/R8通过；SHA-256 `63e411df5d744bb0d6a5d90b1921386ca07dc1170bfe939a16f29d6b5065e10a`；Lint0错误/66警告/9提示，正式签名与设备运行未验 |
+| 最新证据 | `system-vpn-dns-recovery-redmi-20261105.json`：767单测、两轮默认冷启动/SIGKILL恢复首请求均HTTP200，3/3回归、纯代理恢复和保护通过；15秒延迟诊断及早期失败分开保留，间歇根因/稳定性未闭环，第8项整体PARTIAL。第7输入受限及第6原长窗口保护异常保持 |
 
 ## 4. 目标架构图
 
@@ -770,7 +779,7 @@ flowchart LR
 
 ### 7.1 真实连接链路
 
-状态：`PARTIAL`，代码启动链、TUN 生命周期、后台恢复、系统撤销 VPN、Wi‑Fi 断开恢复、进程重建和两条授权路径的真实请求诊断已打通；Wi‑Fi↔移动网络切换仍需具备蜂窝网络条件后补齐。
+状态：`PARTIAL`，代码启动链、TUN 生命周期、后台恢复、系统撤销 VPN、Wi‑Fi 断开恢复、进程重建和授权路径的真实请求诊断已有分批证据；最新两轮Always-on默认首请求通过，早期节点DNS/拨号间歇失败根因/稳定性仍待查，Wi‑Fi↔移动网络待蜂窝条件。
 
 当前已有：
 
@@ -778,7 +787,7 @@ flowchart LR
 - TUN 地址、路由、DNS、IPv6 和访问控制参数模型。
 - `Core.startTun` / `Core.stopTun` 调用。
 - 网络观察和 DNS 更新基础设施。
-- `NetworkObserver` 已纳入 `ProxyService`/`VpnService` 的模块生命周期；停止服务时注销 Connectivity 回调、清空 DNS/网络缓存并重置 Mihomo 网络连接。
+- `NetworkObserver` 由Application在配置加载前启动并由进程持有；ProxyService/VpnService停止不再注销共用观察器或清空系统DNS，真实网络变化仍更新DNS并重置连接。模式切换/停止后注册时间与DNS保持已由本轮真机回归；见ADR0019。
 - 前台 `ProxyService` 通知模块。
 - `ServiceConfig` 发布 `STOPPED / STARTING / CONNECTED / FAILED` VPN 状态和失败原因。
 - `VpnService.onStartCommand()` 已进入真实 `start()`，成功建立 TUN 后才发布 `CONNECTED`。
@@ -1039,7 +1048,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 ### 7.5 Android 平台入口
 
-最新系统切片（11-05）：已修正Always-on系统请求→应用初始化→唯一管理器→内部action建TUN。build8/final7冷系统启动与真实TUN HTTP200通过；SIGKILL后系统新进程/双FGS/TUN恢复，但HTTPS失败（DNS/拨号，根因未定），不能记完整恢复通过。普通VPN切换及组件/菜单3/3回归、纯代理系统恢复和保护通过。首次干净安装VPN、蜂窝、第三方真调用及其余OEM行为仍待验，生产Always-on状态仍UNKNOWN；见`system-vpn-always-on-redmi-20261105.json`。
+最新系统切片（11-05）：系统VPN请求→应用初始化→唯一管理器→内部action建TUN沿用前组修正；本组将网络观察改为进程持有且配置加载前注册。build3/final5/6两轮默认冷启动与SIGKILL恢复首个TUN HTTPS均200、同socket核心归因，无失败后补诊断；普通VPN切换/组件/菜单3/3、纯代理恢复和保护通过。旧包及增强包冷首请求间歇DNS/拨号失败仍未定根因，15秒延迟诊断单列，不记全部稳定性闭环。首次干净安装VPN、蜂窝、第三方真调用/其余OEM待验，生产Always-on状态仍UNKNOWN；见`system-vpn-dns-recovery-redmi-20261105.json`。
 
 状态：`PARTIAL`。
 
@@ -1164,12 +1173,12 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 当前已有：
 
-- 最新todo第8项build8统一检查通过；App492/Service203/Core38/Common31共764项JVM结果零失败/错误/跳过，含up-to-date复用；Debug/Test、未签名Release/R8及双Lint通过。生产系统VPN启动链已修正，新增7项单测，Go未重跑。
-- 最新Redmi build8同套App/Test：final7 Always-on冷启动真实TUN HTTP200/核心socket归因通过；受控SIGKILL后系统自主重建双FGS/tun0，但HTTPS EOF/拨号失败，整组未过。精确回归3/3、纯代理系统恢复独立1场景及保护前后各1/1通过，见`system-vpn-always-on-redmi-20261105.json`。第7Fallback受输入限制，第6原长窗口保护异常仍独立保留。
+- 最新todo第8项build3统一检查通过；App492/Service206/Core38/Common31共767项JVM结果零失败/错误/跳过，含up-to-date复用；Debug/Test、未签名Release/R8及双Lint通过。进程级网络观察已修正，新增3项保护结果单测及模式切换生命周期断言，Go未重跑。
+- 最新Redmi build3同套App/Test：final5/6两轮默认冷启动/SIGKILL恢复首个TUN HTTPS200、同socket核心归因及正流量，无补诊断；精确回归3/3、纯代理系统恢复独立1场景及保护前后各1/1通过，见`system-vpn-dns-recovery-redmi-20261105.json`。delayed4仅15秒延迟诊断；早期冷首请求失败根因/稳定性未闭环，第8项仍PARTIAL。第7Fallback受输入限制，第6原长窗口保护异常独立保留。
 - 2026-11-01 Requests/DNS 详情与筛选：Redmi 竖屏默认字号精确筛选 9 项全部通过，DNS 深浅色八状态新增基线，记录卡片、观测页面和连接详情既有基线一致；未运行横屏/大字号用例，未启动网络/VPN/核心。
 - 2026-10-31 连接详情面板收敛：Connections 13 项 + Observation 4 项真机回归全部通过；另 1 项显式真实核心详情 E2E 通过。覆盖非空/空元数据、复制、快照恢复、两档几何与拖动、正文中部起手保护、遮罩/返回/下滑关闭、真实系统字体 2.0x 横竖屏、浅色/小窗口和禁用系统动画，共十份详情内容截图；真实请求只识别代理连接，不读取 HTTP 响应状态/正文。
 - Debug APK 构建和 arm64 产物检查。
-- 最新build8双Lint：Debug0errors/67warnings/10hints，Release0errors/66warnings/9hints；未签名Release/R8成功且无Debug验收组件，正式签名运行未验。
+- 最新build3双Lint：Debug0errors/67warnings/10hints，Release0errors/66warnings/9hints；未签名Release/R8成功，正式签名运行未验。
 - 历史87项instrumentation稳定基线与当时Profiles定向29项保留为历史证据，不代表当前整类全量回归；当时覆盖：三状态截图 1 项、ProfilesPanel 10 项、ProfileUi 11 项、MainActivity 创建/编辑/删除及 Rules/Proxies/Proxy Groups/Providers/DNS Overrides/Dialers 7 项。横屏/大字号矩阵是历史测试记录，后续不再运行；真实 MainActivity 观测页清空/导出端到端已由 Redmi 真机操作补齐。随后 MainActivity 类级复验受 `com.duanju.player` 抢占前台和测试收集不完整影响，出现既有宿主失败；停用干扰应用后的复跑 XML 为 `tests=0`，未形成有效类级证据，因此不替换稳定基线。
 - Redmi 真机启动、停止、代理组和测速验证。
 - Redmi 真机已验证 DNS/日志观测卡片的停止态和空态展示，以及两条授权路径的真实请求归因。
@@ -1208,23 +1217,23 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 | 5 | Provider 部分失败恢复、剩余来源、实际规则流量命中 | 本组范围已验：build9/750单测、final7 4/4、回归14/14；受控两失败恢复，HTTP8/File8/Inline3实际HTTPS归因，另原MRS命中/Inline Proxy展开；见`provider-recovery-hits-redmi-20261105.json`。不推广全部90个MRS站点、所有协议流量或托管apply失败故障注入 |
 | 6 | IP/质量全部来源、持久缓存和失效恢复；服务全部目标 | 缓存闭环与全部目标尝试已验：757单测、final3 5/5、cold2/cold5各双阶段、回归10/10；远端部分受限，原长窗口配置保护after 0/1/原因未定，新短窗口通过不替代失败。见`ip-quality-cache-redmi-20261105.json` |
 | 7 | Fallback 无有效 now 实核行为和冷恢复 | 本次原1.yaml、正式缓存及唯一授权在线响应均33组/0Fallback，继续受限；协议边界20组合回归通过不能替代实核。见`proxy-system-recovery-redmi-20261105.json` |
-| 8 | 纯代理冷恢复、首次安装 VPN 授权、蜂窝切换、Tasker/MacroDroid、Always-on OEM | 部分已验：build8/764单测，Always-on冷系统启动TUN HTTP200；SIGKILL后新PID/双FGS/TUN恢复，但HTTPS拨号失败，overallPassed=false。回归3/3、纯代理恢复和保护通过；蜂窝单独延期，其余系统边界待验。见`system-vpn-always-on-redmi-20261105.json` |
+| 8 | 纯代理冷恢复、首次安装 VPN 授权、蜂窝切换、Tasker/MacroDroid、Always-on OEM | 部分已验：build3/767单测，进程级网络观察已修；final5/6两轮默认冷启动/SIGKILL恢复首个TUN HTTPS200，无补诊断。3/3回归、纯代理恢复及保护通过；早期间歇DNS/拨号根因/稳定性未闭环。蜂窝延期，其余系统边界待验。见`system-vpn-dns-recovery-redmi-20261105.json` |
 | 9 | Flutter 完整 List/子页、空态 morph/orbit、排版/缓动/面板/键盘联动 | 局部已验，整体 PARTIAL；观测页次要打磨继续暂缓 |
 | 10 | 实时背景/触点光效、玻璃采样品质、8MiB正文及连续动效性能 | 后排待做，玻璃默认关闭；已完成六种材质/折射/多层菜单不重复列缺项 |
 | 11 | API24/25/31/32及低API核心/VPN/实网、端到端回归、CI/签名/Release/更新资产 | 待兼容与正式发布，未签名Release/R8已有通过记录 |
 
-本轮原始附件存于工作区外层 `acceptance-artifacts/always-on-20261105/`；纯代理前组附件沿用 `acceptance-artifacts/proxy-system-recovery-20261105/`，第1至6项附件沿用各自证据索引。旧 `/tmp` 附件本轮已不可读取，不以历史口述代替本次验收。备份/系统恢复、观测次要打磨、语言/主题暂缓；TalkBack/自定义无障碍、早期Room兼容、横屏/大字号扩展及其他ABI不列待办。
+本轮原始附件存于工作区外层 `acceptance-artifacts/always-on-dns-20261105/`；前组Always-on及纯代理附件沿用 `acceptance-artifacts/always-on-20261105/` 和 `acceptance-artifacts/proxy-system-recovery-20261105/`，第1至6项附件沿用各自证据索引。旧 `/tmp` 附件本轮已不可读取，不以历史口述代替本次验收。备份/系统恢复、观测次要打磨、语言/主题暂缓；TalkBack/自定义无障碍、早期Room兼容、横屏/大字号扩展及其他ABI不列待办。
 
 ### 当前执行清单（累计状态，2026-11-05）
 
 本清单优先于下方历史N1～N4切片的“下一步”；每步完成后测试验收，并同时更新页首、第3/7节及验收JSON。
 
 1. 第一步指定交互已验：整策略组YAML返回草稿/长错误定位、单组图标/选项层级保存状态、本地代理列表/映射返回与隔离Activity重建、服务子页跟手拖回/取消/快甩/后台中断及质量页退场正文。715单测、最终Redmi同套App/Test 44/44与81张PNG见`stage-one-interactions-redmi-20261105.json`；不推广真实冷进程、正式主宿主全路径或全应用视觉等价。
-2. 第二步累计：后台订阅自然到期下载/应用和运行态节点落库/重建回读已有证据；todo第1/2项编辑器冷恢复与保存死亡窗口已验，见各组JSON。第3项CUSTOM引用在线源的手动/到期Repository自动更新已由`subscription-reference-network-redmi-20261105.json`补验，在线age因唯一授权响应明文且无密钥保留受限。第4项其他资源真实系统文件选择与外部脚本下载/改源/同步/应用已由`resource-saf-scripts-redmi-20261105.json`补验；第5项部分失败恢复、代表HTTP/File/Inline来源和实际规则命中已由`provider-recovery-hits-redmi-20261105.json`补验（4/4、回归14/14），隔离投影/重试/协议与托管失败边界见JSON；第6项成功质量缓存和全部来源/服务目标尝试已由`ip-quality-cache-redmi-20261105.json`补验，远端受限和长窗口配置保护异常独立保留。第7项已重新检查原文件/缓存/唯一授权在线源，均无Fallback，继续受限。第8项纯代理系统恢复已验；本组`system-vpn-always-on-redmi-20261105.json`补冷系统启动TUN HTTP200，但SIGKILL后仅系统/TUN恢复、HTTPS失败，需优先定位DNS/拨号。蜂窝因不可用单独延期，再继续首次干净安装VPN/第三方真调用/其余OEM中具备条件的场景；不清正式数据构造首次安装，缺条件不记通过。
+2. 第二步累计：后台订阅自然到期下载/应用和运行态节点落库/重建回读已有证据；todo第1/2项编辑器冷恢复与保存死亡窗口已验，见各组JSON。第3项CUSTOM引用在线源的手动/到期Repository自动更新已由`subscription-reference-network-redmi-20261105.json`补验，在线age因唯一授权响应明文且无密钥保留受限。第4项其他资源真实系统文件选择与外部脚本下载/改源/同步/应用已由`resource-saf-scripts-redmi-20261105.json`补验；第5项部分失败恢复、代表HTTP/File/Inline来源和实际规则命中已由`provider-recovery-hits-redmi-20261105.json`补验（4/4、回归14/14），隔离投影/重试/协议与托管失败边界见JSON；第6项成功质量缓存和全部来源/服务目标尝试已由`ip-quality-cache-redmi-20261105.json`补验，远端受限和长窗口配置保护异常独立保留。第7项已重新检查原文件/缓存/唯一授权在线源，均无Fallback，继续受限。第8项纯代理系统恢复已验；最新`system-vpn-dns-recovery-redmi-20261105.json`修正进程级网络观察，767单测、final5/6两轮默认冷启动及SIGKILL恢复首个TUN HTTPS200，3/3回归与保护通过；早期间歇节点DNS/拨号根因/稳定性仍待查，15秒延迟诊断和失败批次分开保留。蜂窝因不可用单独延期，再继续首次干净安装VPN/第三方真调用/其余OEM中具备条件的场景；不清正式数据构造首次安装，缺条件不记通过。
 3. 第三步后排：空态morph/orbit、全应用精确缓动、完整List和其他子页视觉；Dock/按钮/其他面板live背景与触点glow；玻璃完整采样品质及8MiB正文/连续动效性能。六种材质/折射/多层菜单已有实现和定向验收，玻璃仍默认关闭。
 4. 后续兼容与发布：API24/25、31/32的arm64关键分支与低API核心/VPN/实网；远端CI、独立正式签名、Release真机运行和发布资产。其他ABI不在当前arm64-only交付范围。
 
-HTTP/File Proxy、六种HTTP YAML/text与原90个HTTP/mrs已有分批下载/解析证据；本组补HTTP/File各8种、Inline3种实际HTTPS命中和原MRS代表命中，以及Inline Proxy原节点展开。第5项本组范围已验，不推广90个MRS全部业务站点、所有代理协议或托管混合/apply失败故障注入。第6项缓存与全目标尝试已验，受限源和长窗口保护异常见最新JSON；第7项仍无授权Fallback输入；第8项纯代理系统恢复及Always-on冷启动TUN HTTP200已验，Always-on杀进程后HTTPS仍失败，下一步先定位DNS/拨号；蜂窝单独延期。备份/系统恢复、观测次要打磨、语言/主题暂缓，早期Room兼容、TalkBack/自定义无障碍、横屏/大字号扩展不列待办。
+HTTP/File Proxy、六种HTTP YAML/text与原90个HTTP/mrs已有分批下载/解析证据；本组补HTTP/File各8种、Inline3种实际HTTPS命中和原MRS代表命中，以及Inline Proxy原节点展开。第5项本组范围已验，不推广90个MRS全部业务站点、所有代理协议或托管混合/apply失败故障注入。第6项缓存与全目标尝试已验，受限源和长窗口保护异常见最新JSON；第7项仍无授权Fallback输入；第8项纯代理恢复及最终两轮Always-on默认冷启动/SIGKILL恢复首请求HTTP200已验，早期间歇节点DNS/拨号根因与稳定性仍待查；15秒延迟诊断不计默认通过，蜂窝单独延期。备份/系统恢复、观测次要打磨、语言/主题暂缓，早期Room兼容、TalkBack/自定义无障碍、横屏/大字号扩展不列待办。
 
 ### N1：建立真实连接状态和 VPN 权限链
 

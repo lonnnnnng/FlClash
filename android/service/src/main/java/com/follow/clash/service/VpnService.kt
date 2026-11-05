@@ -34,6 +34,9 @@ class VpnService : SystemVpnService(), ManagedService {
     private val binder = LocalBinder()
     private val tunLock = Any()
     private var tunRunning = false
+    private val socketProtection = SocketProtectionMonitor()
+
+    fun socketProtectionSnapshot() = socketProtection.snapshot()
 
     override fun onDestroy() {
         try {
@@ -191,7 +194,7 @@ class VpnService : SystemVpnService(), ManagedService {
                 check(
                     Core.startTun(
                         fd = fd,
-                        protect = this::protect,
+                        protect = { socket -> socketProtection.protect { protect(socket) } },
                         resolveUid = this::resolveUid,
                         resolvePackage = this::resolvePackage,
                         stack = options.stack,

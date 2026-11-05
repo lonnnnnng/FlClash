@@ -1,6 +1,20 @@
 # Testing
 
-## Always-on无蜂窝部分验收（2026-11-05，当前）
+## Always-on首请求与网络观察复验（2026-11-05，当前）
+
+最终build3 App492/Service206/Core38/Common31共767项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8和双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。新增protect拒绝/异常透传/并发计数3项，模式切换真实用例断言加载前已注册、切换/停止后registeredAt相同且DNS有效。
+
+Redmi final5/6两轮默认verificationDelaySeconds=0，独立观察系统新PID/同PID双FGS/tun0后，冷启动及运行中SIGKILL恢复的首个TUN HTTPS均HTTP200、同socket归因/正流量，没有primary-request-failed或diagnostic-repeat。5.906/6.917秒与5.882/5.599秒仅服务/TUN观察耗时，不是完整HTTP恢复耗时。精确模式/组件/旧菜单回归3/3，纯代理SIGKILL恢复独立1场景，保护前后各1/1；安装回拉及当前源码匹配build3快照。
+
+baseline旧包、diagnostic2/3冷首请求失败不能抹去；后两轮同会话物理HTTPS200与两次TUN HTTPS200只作诊断。delayed4额外等待15秒，原passed=true为旧字段语义，只计延迟诊断；最终脚本已改diagnosticPassed=true/passed=false。diagnostic1长JSON截断和清理解析失败原样保留，手工token restore及设备快照另存；最终logcat分片缺失/总数或重复索引冲突必须阻断通过。
+
+命令仍为`python3 tool/android_system_vpn_acceptance.py --serial wsvwypiz7xwslvl7 --output <新目录>`；默认没有额外等待或首请求隐式重试。`--verification-delay-seconds 15`只准用于单独诊断目录，不能替代默认首请求。首请求失败后显式诊断不改变整轮失败；不得用verify触发start/restart/apply补系统恢复。各轮独立保留，不跨包/批次累计成功数。
+
+正式1份配置/选择/正文SHA-size-mtime、原1.yaml双端、Flutter包/设置保持；验收备份已清，结束无服务/tun0，独占XML核对SHA后精准删除。final6系统开/关两张截图已目视，仅作系统状态证据；无新应用视觉改动。第6项原长窗口保护失败不被本组通过覆盖。
+
+证据`docs/acceptance/system-vpn-dns-recovery-redmi-20261105.json`及`../acceptance-artifacts/always-on-dns-20261105/`。生命周期缺口修复和最终两轮首请求已验，间歇节点DNS/拨号根因/稳定性仍待查，第8项整体PARTIAL。蜂窝延期、首次安装/第三方/OEM待验；Go、低API、正式签名运行、远端CI和完整Flutter视觉未重跑，原暂缓/取消项保持。
+
+## Always-on无蜂窝部分验收（2026-11-05，历史切片）
 
 本组在无蜂窝条件下推进todo第8项，只有Wi-Fi↔蜂窝子项延期。对照Flutter修正系统VPN启动：先前台通知，再等待Application诊断/resume初始化，统一进入CoreRuntimeManager；内部启动action才建TUN。新增7项状态机单测，重复回调、失败释放与按需排除已有覆盖。
 

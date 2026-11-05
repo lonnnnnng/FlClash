@@ -1,6 +1,18 @@
 # Project Context
 
-## Always-on无蜂窝部分验收（2026-11-05，当前）
+## 网络观察生命周期与Always-on首请求复验（2026-11-05，当前）
+
+对照本地Flutter将NetworkObserver提前到Application.onCreate、按需/恢复/配置加载之前注册，由应用进程持有；任一服务停止不再注销共用观察器或清空系统DNS。新增只计数的socket保护结果与安全诊断，不改Go/submodule，不把该生命周期差异直接认定为全部失败根因。
+
+最终build3 App492/Service206/Core38/Common31共767项JVM结果零失败/错误/跳过（含up-to-date复用），Debug/Test、未签名Release/R8及双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。安装回拉匹配，Android源码与构建快照保持。Redmi final5/6两轮默认零额外等待，各自冷系统启动和运行中SIGKILL恢复的首个TUN HTTPS均HTTP200、同socket核心归因及正双向流量，没有触发失败后补诊断。模式切换/组件/旧菜单精确回归3/3、纯代理系统恢复独立1场景、同轮保护前后各1/1通过。
+
+旧包baseline与增强包diagnostic2/3在冷启动首请求也失败，问题不限SIGKILL；随后同会话物理HTTPS200、两次TUN HTTPS200仍保留原失败。delayed4额外等待15秒仅属诊断，旧原始passed=true保留但不计默认验收；最终脚本已分开passed/diagnosticPassed。diagnostic1长JSON截断/清理解析失败及手工token恢复证据保留，最终分片完整性门禁已启用。首请求失败涉及节点DNS/拨号的确切根因仍未确定，两轮通过不能宣称长期稳定性闭环。
+
+本轮正式1份配置逐字段摘要/选择/正文SHA-size-mtime、原1.yaml双端、Flutter APK与系统设置保持；加密验收备份清空，结束无服务/tun0，独占设备XML核对SHA后定点删除。final6系统开/关两张截图已目视，仅作系统状态证据，不作完整Flutter视觉验收。本轮通过不覆盖第6项原长窗口元数据/mtime保护失败。
+
+证据`docs/acceptance/system-vpn-dns-recovery-redmi-20261105.json`，本机附件`../acceptance-artifacts/always-on-dns-20261105/`。todo第8项仍PARTIAL：优先继续定位启动期节点DNS/拨号与稳定性，蜂窝单独延期；首次干净安装VPN、Tasker/MacroDroid真调用、其余OEM/开机及生产Always-on状态识别仍待验。Go、低API、正式签名运行和远端CI未重跑，完整Flutter视觉仍PARTIAL；玻璃默认关闭，原暂缓/取消项保持。
+
+## Always-on无蜂窝部分验收（2026-11-05，历史切片）
 
 本组在无蜂窝条件下推进todo第8项，只有Wi-Fi↔蜂窝子项延期。对照Flutter修正系统VPN启动：先前台通知，再等待Application诊断/resume初始化，统一进入CoreRuntimeManager；内部启动action才建TUN。新增7项状态机单测，重复回调、失败释放与按需排除已有覆盖。
 

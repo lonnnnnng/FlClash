@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """指定Redmi真实系统UI开启Always-on，验证无恢复标记冷启动与受控SIGKILL恢复；不需要蜂窝。"""
 import argparse
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -21,6 +22,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--serial", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--verification-delay-seconds", type=int, choices=(0, 15), default=0,
+                        help="15秒仅用于独立延迟诊断，不替代默认立即请求验收")
     args = parser.parse_args()
     assert args.serial == "wsvwypiz7xwslvl7"
     args.output.mkdir(parents=True, exist_ok=False)
@@ -28,8 +31,13 @@ def main():
     assert len(urls) == 1
     source_sha = hashlib.sha256(urls[0].encode()).hexdigest()
     token = uuid.uuid4().hex
-    result = {"token": token, "serial": args.serial, "passed": False, "cellularTested": False}
+    result = {"token": token, "serial": args.serial, "passed": False, "cellularTested": False,
+              "verificationDelaySeconds": args.verification_delay_seconds,
+              "acceptanceMode": "immediate" if args.verification_delay_seconds == 0 else "delayed-diagnostic",
+              "diagnosticPassed": False}
     commands, events, observations = [], [], []
+    incomplete_chunks = []
+    completed = False
 
     def safe(value):
         return value.replace(urls[0], "[REDACTED_SECRET]")
@@ -49,10 +57,35 @@ def main():
         return [int(p) for p in proc.stdout.split()]
 
     def read_events():
-        nonlocal events
+        nonlocal events, incomplete_chunks
         raw = text("logcat", "-d", "-v", "raw", "-s", "KClashSystemVpnAcceptance:I", "*:S")
-        events = [row for line in raw.splitlines() if line.startswith("{")
-                  and (row := json.loads(line)).get("token") == token]
+        events, chunks = [], {}
+        for line in raw.splitlines():
+            if not line.startswith("{"):
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                # 作者 long：历史其他轮次的截断行不属于本轮；本轮损坏证据必须失败，不能悄悄略过。
+                assert token not in line, "本轮logcat证据被截断"
+                continue
+            if row.get("token") != token:
+                continue
+            if row.get("phase") == "evidence-chunk":
+                assert 0 <= row["index"] < row["count"] <= 100
+                group = chunks.setdefault(row["id"], {"count": row["count"], "parts": {}})
+                assert group["count"] == row["count"]
+                parts = group["parts"]
+                assert row["index"] not in parts or parts[row["index"]] == row["data"]
+                parts[row["index"]] = row["data"]
+                if len(parts) != row["count"]:
+                    continue
+                row = json.loads(base64.b64decode("".join(parts[i] for i in range(row["count"])), validate=True))
+                assert row["token"] == token
+            events.append(row)
+        incomplete_chunks = [{"id": key, "expected": group["count"], "received": sorted(group["parts"])}
+                             for key, group in chunks.items() if len(group["parts"]) != group["count"]]
+        (args.output / "evidence-integrity.json").write_text(json.dumps({"incompleteChunks": incomplete_chunks}, indent=2) + "\n")
         (args.output / "events.json").write_text(json.dumps(events, ensure_ascii=False, indent=2) + "\n")
         return events
 
@@ -64,6 +97,7 @@ def main():
             names = (name, "already-restored") if name == "restored" else (name,)
             found = next((e for e in fresh if e["phase"] in names), None)
             if found:
+                assert not incomplete_chunks, "本轮证据分片不完整"
                 return found
             time.sleep(1)
         raise RuntimeError("等待验收阶段超时：" + name)
@@ -209,10 +243,12 @@ def main():
         first = observe_new(ready["pid"], "cold-system-start", enabled_at)
         assert any(x["vpnCreatedByAndroid"] and x["vpnSystemAction"] for x in observations)
         result["coldObservedBeforeVerify"] = first
+        time.sleep(args.verification_delay_seconds)
         count = len(read_events())
         activity("verify", first["pids"][0])
-        result["coldVerified"] = phase("verified", count)
-        print("SYSTEM UI COLD START / TUN HTTP / CORE ATTRIBUTION PASS", flush=True)
+        stage = "cold-tun-verification"
+        result["coldVerified"] = phase("verified", count, seconds=200)
+        print(result["acceptanceMode"] + " COLD START / TUN HTTP / CORE ATTRIBUTION PASS", flush=True)
         stage = "sigkill-running-vpn"
         adb("shell", "input", "keyevent", "KEYCODE_HOME")
         assert pids() == first["pids"]
@@ -224,9 +260,11 @@ def main():
         second = observe_new(first["pids"][0], "running-vpn-sigkill", killed_at)
         assert any(e["phase"] == "kill-accepted" and e["pid"] == first["pids"][0] for e in read_events())
         result["recoveryObservedBeforeVerify"] = second
+        time.sleep(args.verification_delay_seconds)
         count = len(read_events())
         activity("verify", second["pids"][0])
-        result["recoveryVerified"] = phase("verified", count)
+        stage = "recovery-tun-verification"
+        result["recoveryVerified"] = phase("verified", count, seconds=200)
         stage = "disable-and-restore"
         disable_always_on()
         count = len(read_events())
@@ -234,23 +272,27 @@ def main():
         result["restored"] = phase("restored", count)
         result["after"] = sample()
         assert not any(result["after"][k] for k in ("ProxyService", "VpnService", "tun0"))
-        result["passed"] = True
-        print("VPN SIGKILL / FORMAL DATA / ORIGINAL SYSTEM SETTINGS RESTORED PASS", flush=True)
+        completed = True
+        result["passed"] = args.verification_delay_seconds == 0
+        result["diagnosticPassed"] = args.verification_delay_seconds > 0
+        print(result["acceptanceMode"] + " VPN SIGKILL / DATA / SYSTEM RESTORED PASS", flush=True)
     except Exception as failure:
         result["failure"] = {"stage": stage, "type": type(failure).__name__, "message": safe(str(failure))[:1000]}
         raise
     finally:
         try:
-            if prepared and not result["passed"]:
+            if prepared and not completed:
                 disable_always_on()
                 count = len(read_events())
                 activity("restore")
                 result["cleanup"] = phase("restored", count)
             read_events()
+            assert not incomplete_chunks, "本轮最终证据分片不完整"
             result["finalSystemState"] = system_state()
             assert result["finalSystemState"] == {"alwaysOn": "null", "lockdown": "0"}
         except Exception as failure:
             result["passed"] = False
+            result["diagnosticPassed"] = False
             result["cleanupFailure"] = {"type": type(failure).__name__, "message": safe(str(failure))[:1000], "backupMayRemain": True}
             raise
         finally:

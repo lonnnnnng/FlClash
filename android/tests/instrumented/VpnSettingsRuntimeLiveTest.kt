@@ -33,6 +33,8 @@ class VpnSettingsRuntimeLiveTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val entry = EntryPointAccessors.fromApplication(compose.activity.application, ConnectionAcceptanceEntryPoint::class.java)
         val manager = entry.runtimeManager()
+        val observer = NetworkObserver.snapshot()
+        assertTrue("加载配置前就应注册进程级底层网络观察", observer.started && observer.registeredAt > 0)
         val repository = entry.profileRepository()
         compose.waitUntil(10_000) { repository.profiles.value.isNotEmpty() }
         val profile = repository.profiles.value.first { it.id == repository.currentProfileId.value }
@@ -87,6 +89,10 @@ class VpnSettingsRuntimeLiveTest {
             assertFalse(manager.vpnSettings.value.restartRequired)
             runBlocking(Dispatchers.IO) { manager.stop().getOrThrow() }
             assertFalse(ServiceConfig.proxyAlive.value)
+            // 作者 long：纯代理→VPN→纯代理和停止都不能注销共用观察器，否则停止态Provider与下次启动失去系统DNS。
+            assertTrue(NetworkObserver.snapshot().started)
+            assertEquals(observer.registeredAt, NetworkObserver.snapshot().registeredAt)
+            assertTrue(NetworkObserver.snapshot().dnsServerCount > 0)
             assertEquals(metadata.keys, repository.profiles.value.map { it.id }.toSet())
             assertEquals(profile.id, repository.currentProfileId.value)
             metadata.forEach { (id, stamp) -> repository.profileFile(id).let { assertEquals(stamp, it.length() to it.lastModified()) } }
