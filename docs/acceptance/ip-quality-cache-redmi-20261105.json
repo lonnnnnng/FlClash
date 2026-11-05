@@ -1,0 +1,1284 @@
+{
+  "date": "2026-11-05",
+  "scope": "todo第6项：首页IP/质量全部来源尝试、成功质量Room缓存与失效恢复、13个服务目标",
+  "status": "CACHE_VERIFIED_NETWORK_ATTEMPTS_COMPLETE_WITH_REMOTE_LIMITS_AND_LONG_WINDOW_PRESERVATION_FAILURE",
+  "productionBaseCommit": "a4c3e166f2a9dd4ddcec24d3e2981b41920746f2",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "authorization": {
+    "subscription": "仅外层AGENTS.md当前唯一授权源，不保存URL",
+    "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+    "flutterReferencePackage": "com.follow.clash，未修改"
+  },
+  "implementation": [
+    "复用app_preferences，成功质量按IP保存3天，原checkedAt不延长；失败仅当前路由内存冷却5分钟。",
+    "显式JSON协议字段避免R8字段重命名；64IP/128Ki字符上限，拒绝过期、未来及损坏项，不改Room schema。",
+    "事务合并不同IP，旧时间迟到结果不能覆盖较新记录；并发迟到失败不能遮住有效成功内存缓存。",
+    "force绕过两层缓存；缓存IO失败不遮蔽网络结果，协程取消继续传播；路由变化解除旧失败冷却。",
+    "ip-api.com fields增加query，以验证响应IP归属；远端缺少类型信息时保留NO_TYPE，不臆测。"
+  ],
+  "upstreamReference": [
+    "lib/providers/ip_quality.dart",
+    "lib/database/ip_qualities.dart"
+  ],
+  "build": {
+    "production": "build2",
+    "functionalTests": "testbuild4",
+    "diagnostics": "diagnostic5",
+    "jvmTotal": 757,
+    "counts": {
+      "app": {
+        "tests": 492,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 196,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "lintDebug": {
+        "Error": 0,
+        "Warning": 66,
+        "Hint": 10
+      },
+      "lintRelease": {
+        "Error": 0,
+        "Warning": 66,
+        "Hint": 9
+      }
+    },
+    "checks": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/testbuild4-checks.json",
+      "sha256": "48db813d80f77d7a0c3a3b44c48773a50360ca61f04372f3dd9c27a98d2efd36",
+      "bytes": 36534
+    },
+    "diagnosticChecks": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/diagnostic5-checks.json",
+      "sha256": "e10925e550911a517f4e0b398587470cc0a7fe8d6a41ed1b2013ee5d7d2cb989",
+      "bytes": 2329
+    },
+    "debugAndReleaseProductionHashesUnchanged": true,
+    "functionalTestApks": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "c7e3a9638e6f2eb6e5c7691cdafb883d6f9055e6f8ddaab0291de14e5610c435",
+        "bytes": 90682722,
+        "abis": [
+          "arm64-v8a"
+        ]
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "3887da7dcf2b9722ac3de5f2a4c61001b008200cc487804ced40800f25d63ee1",
+        "bytes": 3795975,
+        "abis": []
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+        "sha256": "10a0b0b0f21c2fb8fc860b09b306730123bb5f9ea0a7490b70f8de8c2110dfe1",
+        "bytes": 48184928,
+        "abis": [
+          "arm64-v8a"
+        ]
+      }
+    ],
+    "installedDiagnosticApks": [
+      {
+        "package": "com.lonnnnnng.flclash",
+        "source": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+        "installedPath": "/data/app/~~SUt6T6BMz4QvOJuMfDX9yA==/com.lonnnnnng.flclash-Z2Ic-1QxrYMs_UYuiI7Y-g==/base.apk",
+        "sha256": "c7e3a9638e6f2eb6e5c7691cdafb883d6f9055e6f8ddaab0291de14e5610c435",
+        "pulledApk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/diagnostic5-installed-app.apk",
+        "pulledSha256": "c7e3a9638e6f2eb6e5c7691cdafb883d6f9055e6f8ddaab0291de14e5610c435",
+        "installResult": "Performing Streamed Install\nSuccess"
+      },
+      {
+        "package": "com.lonnnnnng.flclash.test",
+        "source": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "installedPath": "/data/app/~~-nUWP81foBM-PddcUwficg==/com.lonnnnnng.flclash.test-F0dKbyWqR7ZWp0cHx8K8cw==/base.apk",
+        "sha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94",
+        "pulledApk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/diagnostic5-installed-test.apk",
+        "pulledSha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94",
+        "installResult": "Performing Streamed Install\nSuccess"
+      }
+    ],
+    "productionValidation": "Debug、未签名Release/R8、757项JVM及双Lint通过，含up-to-date复用；正式签名运行未验",
+    "diagnosticValidation": "仅增强只读元数据诊断，AndroidTest构建与双Lint通过；7份功能源码哈希与testbuild4冻结一致"
+  },
+  "network": {
+    "batch": {
+      "report": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/final3.json",
+        "sha256": "d7ca8890735c322a4f33e09fc8050524d4dc06e1aba32446b5d1dce9e2830aee",
+        "bytes": 1789
+      },
+      "log": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/final3.log",
+        "sha256": "9eba7cf37af307987a6325b8e843baeebc5c6e392ae6751224c83e3898423bf6",
+        "bytes": 19879
+      },
+      "passed": 5,
+      "total": 5,
+      "methods": [
+        "com.lonnnnnng.flclash.data.IpQualityCacheInstrumentedTest#roomTransactionsKeepConcurrentIpsAndRejectOlderLateAnswers",
+        "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allEightOutboundAndSixQualitySourcesDirect",
+        "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allEightOutboundAndSixQualitySourcesInRunningRuleMode",
+        "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allThirteenServiceTargetsInRunningRuleMode",
+        "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allThirteenServiceTargetsDirect"
+      ]
+    },
+    "sourceSummary": [
+      {
+        "phase": "source-summary",
+        "routed": false,
+        "outboundParsed": 6,
+        "qualityParsed": 3
+      },
+      {
+        "phase": "source-summary",
+        "routed": true,
+        "outboundParsed": 7,
+        "qualityParsed": 4
+      }
+    ],
+    "sources": [
+      {
+        "phase": "outbound",
+        "routed": false,
+        "source": 0,
+        "http": 200,
+        "bytes": 317,
+        "bodySha256": "eb404ee12649019731bb15684fac5b45471b8a76a5804339f5f9f51c0c9b2744",
+        "parsed": true,
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e"
+      },
+      {
+        "phase": "outbound",
+        "routed": false,
+        "source": 1,
+        "http": 200,
+        "bytes": 382,
+        "bodySha256": "0b936f5898a24124c5a2b31e7d1136a6f659def0059986b4131ded46df39d9d7",
+        "parsed": true,
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e"
+      },
+      {
+        "phase": "outbound",
+        "routed": false,
+        "source": 2,
+        "http": 200,
+        "bytes": 278,
+        "bodySha256": "7840186d97375238016d1138d548d7659932dec9919573c74df960ddfe1646b3",
+        "parsed": true,
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e"
+      },
+      {
+        "phase": "outbound",
+        "routed": false,
+        "source": 3,
+        "http": 200,
+        "bytes": 1031,
+        "bodySha256": "5fe9dd33a119de3e4ba3158df1784a8a87a79f7eb5da4d6c099e0012ae6c8d90",
+        "parsed": true,
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e"
+      },
+      {
+        "phase": "outbound",
+        "routed": false,
+        "source": 4,
+        "http": 200,
+        "bytes": 346,
+        "bodySha256": "9e2a054e1942cc10a7f8994f880d5bc4ac36e9cf5eb5cf6bf4c939deb118f4bc",
+        "parsed": true,
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e"
+      },
+      {
+        "phase": "outbound",
+        "routed": false,
+        "source": 5,
+        "http": 200,
+        "bytes": 36,
+        "bodySha256": "0a715f9061c77d066a9f0d1de8b5e3fb980927c253f1e26b1a8509f159b7f3d4",
+        "parsed": true,
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e"
+      },
+      {
+        "phase": "outbound",
+        "routed": false,
+        "source": 6,
+        "http": 200,
+        "bytes": 0,
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "parsed": false,
+        "failure": "failed"
+      },
+      {
+        "phase": "outbound",
+        "routed": false,
+        "source": 7,
+        "http": 200,
+        "bytes": 0,
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "parsed": false,
+        "failure": "failed"
+      },
+      {
+        "phase": "quality-source",
+        "routed": false,
+        "source": "IDENT_ME",
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e",
+        "http": 200,
+        "bytes": 247,
+        "bodySha256": "59aea9690630bc73360141df4fba148986c26086af6d1cfaa3caf85484e23ae6",
+        "parsed": false,
+        "failure": "NO_TYPE"
+      },
+      {
+        "phase": "quality-source",
+        "routed": false,
+        "source": "IP_API_COM",
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e",
+        "http": 200,
+        "bytes": 257,
+        "bodySha256": "3502286ff5aa656434753fea335d292f3f1667d625bc9b36e965b2a8b96b96f5",
+        "parsed": true,
+        "type": "MOBILE",
+        "inferred": false
+      },
+      {
+        "phase": "quality-source",
+        "routed": false,
+        "source": "IP_QUERY",
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e",
+        "http": 0,
+        "bytes": 0,
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "parsed": false,
+        "failure": "FAILED"
+      },
+      {
+        "phase": "quality-source",
+        "routed": false,
+        "source": "IP_LOCATE",
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e",
+        "http": 200,
+        "bytes": 1024,
+        "bodySha256": "027d5b8ecbfc021e51c45df8f6c664555b9de0c0e7be67a8f0accb4c45fec064",
+        "parsed": true,
+        "type": "RESIDENTIAL",
+        "inferred": false
+      },
+      {
+        "phase": "quality-source",
+        "routed": false,
+        "source": "IP_API_IS",
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e",
+        "http": 200,
+        "bytes": 376,
+        "bodySha256": "323ab6dd992f5259aef2596f06caf6194dba189cd12b718ca829dfa65779fc90",
+        "parsed": false,
+        "failure": "NO_TYPE"
+      },
+      {
+        "phase": "quality-source",
+        "routed": false,
+        "source": "PROXY_CHECK",
+        "ipSha256": "15dd280b2b38d5cb3497939dc84eaadbe888d93020816cb69fedae6b2ac7a82e",
+        "http": 200,
+        "bytes": 1588,
+        "bodySha256": "c1f13f4d7a8ac622e20a6bf628ec92fac94203151d6417c28551d08c3a7234d8",
+        "parsed": true,
+        "type": "MOBILE",
+        "inferred": false
+      },
+      {
+        "phase": "outbound",
+        "routed": true,
+        "source": 0,
+        "http": 200,
+        "bytes": 334,
+        "bodySha256": "3d4dbcaa2d6bdc138e2956495ef18ec3e30943ffbee08ac57e536616fb76aa61",
+        "parsed": true,
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b"
+      },
+      {
+        "phase": "outbound",
+        "routed": true,
+        "source": 1,
+        "http": 200,
+        "bytes": 372,
+        "bodySha256": "40d051bb0edd4ba3951af3573bced9104c44c6b8b70a5eb72904502b74219d03",
+        "parsed": true,
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b"
+      },
+      {
+        "phase": "outbound",
+        "routed": true,
+        "source": 2,
+        "http": 200,
+        "bytes": 253,
+        "bodySha256": "e385bc3c5e8595644567cda5e84159f51347beb96c9a83712091eae60d8e6a4e",
+        "parsed": true,
+        "ipSha256": "4e1bf5df175812d7a0a73b7e544a7f6892252071b76237d2917ef873df5efcd5"
+      },
+      {
+        "phase": "outbound",
+        "routed": true,
+        "source": 3,
+        "http": 200,
+        "bytes": 962,
+        "bodySha256": "e272067867ee508364e1472bb17f27242c7a7fe458caf5bf6cbcc05b49065bff",
+        "parsed": true,
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b"
+      },
+      {
+        "phase": "outbound",
+        "routed": true,
+        "source": 4,
+        "http": 200,
+        "bytes": 358,
+        "bodySha256": "04b5d187f8e5dcf121b30232b70be35aeacd66be59011632967d15d0cc6997e6",
+        "parsed": true,
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b"
+      },
+      {
+        "phase": "outbound",
+        "routed": true,
+        "source": 5,
+        "http": 200,
+        "bytes": 50,
+        "bodySha256": "fc87fe0258f7810e0c734c1dc13acc424fb5b444cefe5c0bc1d107348d543364",
+        "parsed": true,
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b"
+      },
+      {
+        "phase": "outbound",
+        "routed": true,
+        "source": 6,
+        "parsed": false,
+        "failure": "IllegalStateException"
+      },
+      {
+        "phase": "outbound",
+        "routed": true,
+        "source": 7,
+        "http": 200,
+        "bytes": 260,
+        "bodySha256": "2dc3a7703e0fb6d76f8b6a1aea003ac160143de85e0ca48afe4afe16125115a5",
+        "parsed": true,
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b"
+      },
+      {
+        "phase": "quality-source",
+        "routed": true,
+        "source": "IDENT_ME",
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b",
+        "http": 200,
+        "bytes": 260,
+        "bodySha256": "2dc3a7703e0fb6d76f8b6a1aea003ac160143de85e0ca48afe4afe16125115a5",
+        "parsed": true,
+        "type": "HOSTING",
+        "inferred": false
+      },
+      {
+        "phase": "quality-source",
+        "routed": true,
+        "source": "IP_API_COM",
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b",
+        "http": 200,
+        "bytes": 182,
+        "bodySha256": "4183c393c830b6ed47c02916cecad85b44cf7def2208ef2e285269b4384f7a59",
+        "parsed": true,
+        "type": "RESIDENTIAL",
+        "inferred": true
+      },
+      {
+        "phase": "quality-source",
+        "routed": true,
+        "source": "IP_QUERY",
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b",
+        "http": 200,
+        "bytes": 951,
+        "bodySha256": "a090342c2fa251ac7e626d4486b41b54469351457509d052ef3e89fd5d27c6eb",
+        "parsed": true,
+        "type": "HOSTING",
+        "inferred": false
+      },
+      {
+        "phase": "quality-source",
+        "routed": true,
+        "source": "IP_LOCATE",
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b",
+        "http": 200,
+        "bytes": 1111,
+        "bodySha256": "5697025e5c63e197c30af02c2d16e1587870b56debbc9e56951d05d7370f8f9e",
+        "parsed": false,
+        "failure": "IP_MISMATCH"
+      },
+      {
+        "phase": "quality-source",
+        "routed": true,
+        "source": "IP_API_IS",
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b",
+        "http": 200,
+        "bytes": 335,
+        "bodySha256": "f7abcf112964b2730ed52cdaee3390c13b5da4e6b75d01ffdfc075594b0bf336",
+        "parsed": false,
+        "failure": "NO_TYPE"
+      },
+      {
+        "phase": "quality-source",
+        "routed": true,
+        "source": "PROXY_CHECK",
+        "ipSha256": "2ca42ff6a6ddd63d837b85327d4ef64c38f558ff3cb8bb79883f7701f644833b",
+        "http": 200,
+        "bytes": 1543,
+        "bodySha256": "3df9b0a7200d6e204739ae92805265e6fbb3611083faec128a85a4e6dc68314c",
+        "parsed": true,
+        "type": "HOSTING",
+        "inferred": false
+      }
+    ],
+    "services": [
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "google",
+        "status": "available",
+        "checkedAt": 1793859166678,
+        "epoch": 4,
+        "routeVersion": 5,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "github",
+        "status": "available",
+        "checkedAt": 1793859166813,
+        "epoch": 4,
+        "routeVersion": 5,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "youtube",
+        "status": "available",
+        "checkedAt": 1793859167791,
+        "epoch": 4,
+        "routeVersion": 5,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "chatgpt",
+        "status": "available",
+        "checkedAt": 1793859171430,
+        "epoch": 4,
+        "routeVersion": 5,
+        "hitCount": 3,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "claude",
+        "status": "available",
+        "checkedAt": 1793859168997,
+        "epoch": 4,
+        "routeVersion": 5,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "gemini",
+        "status": "available",
+        "checkedAt": 1793859169778,
+        "epoch": 4,
+        "routeVersion": 5,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "netflix",
+        "status": "available",
+        "checkedAt": 1793859180351,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "disney-plus",
+        "status": "available",
+        "checkedAt": 1793859181245,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "prime-video",
+        "status": "failed",
+        "checkedAt": 1793859179862,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "spotify",
+        "status": "available",
+        "checkedAt": 1793859182856,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "tiktok",
+        "status": "available",
+        "checkedAt": 1793859182954,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "discord",
+        "status": "available",
+        "checkedAt": 1793859182610,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": true,
+        "target": "bilibili",
+        "status": "available",
+        "checkedAt": 1793859183162,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": true
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "google",
+        "status": "timeout",
+        "checkedAt": 1793859196902,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "github",
+        "status": "timeout",
+        "checkedAt": 1793859196903,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "youtube",
+        "status": "timeout",
+        "checkedAt": 1793859196902,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "chatgpt",
+        "status": "timeout",
+        "checkedAt": 1793859221006,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 3,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "claude",
+        "status": "unsupported-region",
+        "checkedAt": 1793859197673,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "gemini",
+        "status": "timeout",
+        "checkedAt": 1793859208936,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "netflix",
+        "status": "blocked",
+        "checkedAt": 1793859222669,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "disney-plus",
+        "status": "blocked",
+        "checkedAt": 1793859221723,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "prime-video",
+        "status": "failed",
+        "checkedAt": 1793859223053,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "spotify",
+        "status": "unsupported-region",
+        "checkedAt": 1793859223709,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "tiktok",
+        "status": "failed",
+        "checkedAt": 1793859229192,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "discord",
+        "status": "timeout",
+        "checkedAt": 1793859235088,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      },
+      {
+        "phase": "service",
+        "routed": false,
+        "target": "bilibili",
+        "status": "available",
+        "checkedAt": 1793859235459,
+        "epoch": 4,
+        "routeVersion": 6,
+        "hitCount": 1,
+        "hasNonDirectChain": false
+      }
+    ],
+    "retries": [
+      {
+        "phase": "service-retry",
+        "targets": "[netflix, disney-plus, prime-video]",
+        "attempt": 1,
+        "reason": "route-changed"
+      }
+    ],
+    "interpretation": "8出口/6质量源与13服务目标分别DIRECT和运行RULE真实尝试；5/5是断言通过，不等于远端全部可用。出口解析6/8与7/8，质量3/6与4/6；运行服务12可用、Prime Video失败；DIRECT逐项状态见services。",
+    "fixturePreservation": "每个实网fixture结束均核对正式行摘要、正文SHA-size-mtime、当前选择和原cache行；均通过。此结论不覆盖fixture间长间隙。"
+  },
+  "processRecovery": {
+    "cold2": {
+      "stages": [
+        {
+          "phase": "prepare",
+          "method": "prepareSuccessfulQualityForRealProcessRestart",
+          "passed": true,
+          "seconds": 4.276
+        },
+        {
+          "phase": "verify",
+          "method": "verifyDifferentProcessReadsOriginalQualityWithoutNetwork",
+          "passed": true,
+          "seconds": 2.997
+        }
+      ],
+      "boundary": {
+        "preparedPid": 5315,
+        "pidBeforeForceStop": "",
+        "forceStopConfirmedAbsent": true,
+        "pidofExitCode": 1
+      },
+      "status": [
+        {
+          "phase": "cold-prepared",
+          "pid": 5315,
+          "source": "IP_API_COM",
+          "qualitySha256": "fe905004bd596f477c4bfba1e65f9e80bc50e39795b9ad92aa540320427c2fc0",
+          "checkedAt": 1793859255215
+        },
+        {
+          "phase": "cold-restored",
+          "preparedPid": 5315,
+          "pid": 5390,
+          "metadataCallsOnRefusingRuntime": 0,
+          "formalDiMatches": true,
+          "originalTimestampPreserved": true,
+          "qualitySha256": "fe905004bd596f477c4bfba1e65f9e80bc50e39795b9ad92aa540320427c2fc0"
+        },
+        {
+          "phase": "restored",
+          "formalProfiles": 1
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold2/prepare.log",
+          "sha256": "c6e6172dd0b16493f3ef6e9255322b20162db0177bd6db47edeacd05a8d31977",
+          "bytes": 1074
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold2/verify.log",
+          "sha256": "555e2f5618a2005b1fdf8316da44e2497afa9b970ed2abbf655caf154d41ed35",
+          "bytes": 1272
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold2/result.json",
+          "sha256": "1eb7773dee4d61a9af0e344ec42d18ef445868e29dcbd4a68e2785653193974c",
+          "bytes": 287
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold2/process-boundary.json",
+          "sha256": "1db35b170349eec7d585ed70f21c9afd64e687fa9dc85e1f0a76cc267625f892",
+          "bytes": 112
+        }
+      ]
+    },
+    "cold5": {
+      "stages": [
+        {
+          "phase": "prepare",
+          "method": "prepareSuccessfulQualityForRealProcessRestart",
+          "passed": true,
+          "seconds": 4.447
+        },
+        {
+          "phase": "verify",
+          "method": "verifyDifferentProcessReadsOriginalQualityWithoutNetwork",
+          "passed": true,
+          "seconds": 3.059
+        }
+      ],
+      "boundary": {
+        "preparedPid": 6395,
+        "pidBeforeForceStop": "",
+        "forceStopConfirmedAbsent": true,
+        "pidofExitCode": 1
+      },
+      "status": [
+        {
+          "phase": "cold-prepared",
+          "pid": 6395,
+          "source": "IP_API_COM",
+          "qualitySha256": "fe905004bd596f477c4bfba1e65f9e80bc50e39795b9ad92aa540320427c2fc0",
+          "checkedAt": 1793859942788
+        },
+        {
+          "phase": "cold-restored",
+          "preparedPid": 6395,
+          "pid": 6470,
+          "metadataCallsOnRefusingRuntime": 0,
+          "formalDiMatches": true,
+          "originalTimestampPreserved": true,
+          "qualitySha256": "fe905004bd596f477c4bfba1e65f9e80bc50e39795b9ad92aa540320427c2fc0"
+        },
+        {
+          "phase": "restored",
+          "formalProfiles": 1
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold5/prepare.log",
+          "sha256": "28239e88af47a875800153ae6fe9f0d345ab9e6ba613426c4ccee598c9c03540",
+          "bytes": 1074
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold5/verify.log",
+          "sha256": "35c6cef14bef69a499daecc2ed269f6d5c4354428440d3e4f2a46316435375e4",
+          "bytes": 1272
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold5/result.json",
+          "sha256": "2a310f9453e58d49f38280d9add23d50daacf8eefeec95f951250d918f0ca93b",
+          "bytes": 287
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold5/process-boundary.json",
+          "sha256": "5b287106f4cf8bad3efe4fc1b7ca5458605df33f417d72595c22e73db0d2e798",
+          "bytes": 112
+        }
+      ]
+    }
+  },
+  "processBoundaryLimit": "cold2/cold5准备instrumentation退出后pidof已为空；外部force-stop后确认无旧PID，恢复PID不同。证明真实跨PID回读，不能称杀死仍存活的准备进程，亦非OEM自动回收。",
+  "regression": {
+    "report": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1.json",
+      "sha256": "5a5af1953b1e5b0e3ae5747615dc57ebbd0efd212214d0ba6c407b5df68338c5",
+      "bytes": 7076
+    },
+    "log": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1.log",
+      "sha256": "b8ba1e8b68916bb884418b3530e101572f65d1275c81771d8cfbb21b6901834c",
+      "bytes": 10250
+    },
+    "passed": 10,
+    "total": 10,
+    "methods": [
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderDragPreviewsThenSavesOnceAndCancelKeepsOrder",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusDetailsSupportSingleBatchChecksAndTargetManagement",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderBackgroundCancelsPreviewAndDoesNotResumeScrolling",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitHandlesLoadingFailureQualityRetryHideAndReturn",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsCaptureDarkAndLight",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceExitAndQualityCaptureThemesAndLongIpv6",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpRefreshKeepsAddressAndFailureCanRetry",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceOrderEdgeScrollContinuesWithStationaryFingerAndStopsOnRelease",
+      "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes"
+    ],
+    "pngs": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-ip_quality_dark.png",
+        "sha256": "83af9475881a40c4dab5915ab4952dac7e3d99e637918fe35a83cbf1185e3be9",
+        "bytes": 74697
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-ip_quality_screen_dark.png",
+        "sha256": "5d2e02b7fc6d681787eb3a96135bdec5bca68fd38746da2d7abea35efb296435",
+        "bytes": 149144
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-ip_quality_light.png",
+        "sha256": "bfe862a28816bede5bb63769a403702dbfa0d631e21ef047916542e17f9465e5",
+        "bytes": 73093
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-ip_quality_screen_light.png",
+        "sha256": "03fd33dea16cea2a1efda9b90bd1f524fdbfaf2cc2f1f85c21181e65e6cd1218",
+        "bytes": 152889
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-service_exit_ipv6_dark.png",
+        "sha256": "334348194dcf6b6aa59ae433bb83e9c53d402b734a65ca3ae9e71a055fe74c8e",
+        "bytes": 90521
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-service_exit_quality_dark.png",
+        "sha256": "fbfce3720bdfef47d633b331ffc0bb5dd85b3d9b8e70a37be4f5e6fe95230eb9",
+        "bytes": 157492
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-service_exit_ipv6_light.png",
+        "sha256": "bf424d0eee92f7df778ff4e9d55da212d29ada79a246aef73d87e9ad3dcab5a4",
+        "bytes": 89797
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-service_exit_quality_light.png",
+        "sha256": "f23d7752677cf7c916537524deb613607ed228cbea7488444605aa625065cea3",
+        "bytes": 154298
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_card_dark.png",
+        "sha256": "a5c3ad94114c304e9f5814a547996010b5bb7645f671121dbf6a025b1d64fb37",
+        "bytes": 34950
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_details_dark.png",
+        "sha256": "83ae0d32edb8550f05b3ddd1ac53ad0229ef2399e9773e55b7a545ec0708a8b3",
+        "bytes": 73087
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_manage_dark.png",
+        "sha256": "31911041953c9579a9117a9685c5d5620121c1e6d218d1001e73c52cdabd38c5",
+        "bytes": 167225
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_card_light.png",
+        "sha256": "16afa52aa91cb051cb6dffcfde4a9263144da13791fe6f832103d3ce94a562cf",
+        "bytes": 36251
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_details_light.png",
+        "sha256": "e14d82b420120dcdafb7dcdc8aa0c5fe55d7de8d0e17b5e0477a1c8ce8bdef55",
+        "bytes": 72503
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_manage_light.png",
+        "sha256": "89db551e3e02788d0512d0034738aee97fb78eff0822d1df522297b7bb819394",
+        "bytes": 171834
+      }
+    ],
+    "contactSheets": [
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/contact-1.jpg",
+        "sha256": "e0f4fe59e59a4e83cdf316c2c477019c9b6ddcade4a055a7131ca0d99048aeda",
+        "members": [
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-ip_quality_dark.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-ip_quality_light.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-ip_quality_screen_dark.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-ip_quality_screen_light.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-service_exit_ipv6_dark.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-service_exit_ipv6_light.png"
+        ]
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/contact-2.jpg",
+        "sha256": "7dde4df0c751e353d2c96a47bb9c28edcd7cd0e32c57005b7c8a7385a0119f17",
+        "members": [
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-service_exit_quality_dark.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-service_exit_quality_light.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_card_dark.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_card_light.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_details_dark.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_details_light.png"
+        ]
+      },
+      {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/contact-3.jpg",
+        "sha256": "b982b17bfaeebca9ade547f5ee148afce4843958fe1dadac4088cebb698ecd18",
+        "members": [
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_manage_dark.png",
+          "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/regression1-services_manage_light.png"
+        ]
+      }
+    ],
+    "visualReview": "14PNG经3张拼图主代理目视，无新视觉修改，不扩大为完整Flutter一致性。"
+  },
+  "preservation": {
+    "longWindow": {
+      "before": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/preserve-before.json",
+          "sha256": "5134628768a7b62548c57e333b68d0376911fc81de8e699d3330fcf0e936b2f1",
+          "bytes": 528
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/preserve-before.log",
+          "sha256": "f8882d42e69d20023d3605dd27ca641418b59e59dcbe76ea806412166c40bff6",
+          "bytes": 962
+        },
+        "passed": 1,
+        "total": 1,
+        "methods": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ]
+      },
+      "after": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/preserve-after.json",
+          "sha256": "bfd07cdd52996cff3e246c304145a7fddecdbe33820037d1d83c25d6db15913f",
+          "bytes": 3860
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/preserve-after.log",
+          "sha256": "62ea6c2c6bbcb14c9097b7bf98b7c5f0686d716880c0f386fa1111f32fc06a7e",
+          "bytes": 5819
+        },
+        "passed": 0,
+        "total": 1,
+        "methods": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ]
+      },
+      "passed": false,
+      "changedFields": {
+        "7378367243428447508": {
+          "currentGroupName": {
+            "beforeSha256": "bee545c0354aee46255b1fba492fda33ddadd6552cd014942145aaf89fe4a560",
+            "afterSha256": "75fb0d93459957dfdde76ccdbc096ca362811e341d60a0ade9643d5ed8695544"
+          },
+          "lastUpdateAt": {
+            "beforeSha256": "75ff95385085c48d49b568ab1920f2d46d7fc6bbb24db9aaddcc2e4b3d53b04c",
+            "afterSha256": "84370f2eba332b2f1fd0fa649d7535207fd47d81e6f15e25131a2e212c58520b"
+          }
+        }
+      },
+      "beforeRecord": [
+        "3ed9066668ec8b573d1f4d4984a2603977a3336473d629875199acefa2438e12",
+        "7378367243428447508",
+        "7378367243428447508:7378367243428447508.yaml:34815:1793796629796:9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368"
+      ],
+      "afterRecord": [
+        "56252efadb1927548dc00874fcd0f30a237b4515972bb3edeec3b01d4fca24ad",
+        "7378367243428447508",
+        "7378367243428447508:7378367243428447508.yaml:34815:1793858962204:9861b1e5406a2b8e585e1ec2fd8234772d8a3a0d58ad2ada38cc168037d7c368"
+      ],
+      "unchanged": "正式配置数量/当前ID、正文34815字节及SHA不变，逐字段诊断仅currentGroupName和lastUpdateAt变化；文件mtime改变。",
+      "diagnosis": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/metadata-diagnosis5.json",
+        "sha256": "136ec4d9e7a9658d6c24f5a9ee53d5cb46aad41417b26af234697e0a16fba736",
+        "bytes": 11592
+      },
+      "diagnosticRun": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/metadata-inspect5.json",
+          "sha256": "853e9794313a4f390845918f13155d17f0899866c65f994bf635cb9679a10dd9",
+          "bytes": 529
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/metadata-inspect5.log",
+          "sha256": "997cf572bea387431959f52c46b6b6e424dc17beaaf91a9f51d419314d68c0f4",
+          "bytes": 9372
+        },
+        "passed": 1,
+        "total": 1,
+        "methods": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ]
+      },
+      "workerAuditConclusion": "保留16次系统任务审计均无downloadedIds；变化时段前后任务没有成功下载记录，不能归因为后台订阅自动更新。",
+      "cause": "未确定。变化发生在cold1完成后与testbuild4安装前的长间隙；不能据此归为缓存实现缺陷或合法自动更新。未回写旧字段、mtime或正文，也未覆盖原基线。"
+    },
+    "shortWindow": {
+      "session": "ip-quality-cache-final5",
+      "before": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/short-before5.json",
+          "sha256": "16b264c3767d2a0e91b5af327b6e4bc6749501ec349261b623e37b79f3fe6b41",
+          "bytes": 525
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/short-before5.log",
+          "sha256": "851cf182220f72aef482b6ebd8795b0a1c911c06f9d4eb7b55601e54d587979f",
+          "bytes": 962
+        },
+        "passed": 1,
+        "total": 1,
+        "methods": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ]
+      },
+      "after": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/short-after5.json",
+          "sha256": "5ba9ca50baee5234b2d5502389822a0b4487b4ae2598eea76b3ca8af1df8059c",
+          "bytes": 525
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/short-after5.log",
+          "sha256": "d49080f521164347911c6131866521885fa019b44b22d369a7b77c52994553ef",
+          "bytes": 961
+        },
+        "passed": 1,
+        "total": 1,
+        "methods": [
+          "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#formalProfilesAndFilesArePreserved"
+        ]
+      },
+      "operation": "cold5成功质量写入、实际跨PID回读并恢复cache/auto开关",
+      "passed": true,
+      "limit": "独立短窗口，不能替代原长窗口失败或证明整轮正式配置完全保持。"
+    },
+    "deviceSnapshot": {
+      "epochMs": 1793859954118,
+      "serial": "wsvwypiz7xwslvl7",
+      "model": "Redmi Note 8 Pro",
+      "api": "36",
+      "abi": "arm64-v8a",
+      "settings": {
+        "accelerometer_rotation": "1",
+        "user_rotation": "0",
+        "font_scale": "1.0",
+        "window_animation_scale": "1.0",
+        "transition_animation_scale": "1.0",
+        "animator_duration_scale": "1.0"
+      },
+      "localYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "deviceYamlSha256": "bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
+      "flutter": [
+        {
+          "path": "/data/app/~~R8h8JBwo0x9G3JxqHeVTuQ==/com.follow.clash-aFJu_2Z3Ds8TjZn3aJeX8w==/base.apk",
+          "sha256": "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+        }
+      ],
+      "app": [
+        {
+          "path": "/data/app/~~SUt6T6BMz4QvOJuMfDX9yA==/com.lonnnnnng.flclash-Z2Ic-1QxrYMs_UYuiI7Y-g==/base.apk",
+          "sha256": "c7e3a9638e6f2eb6e5c7691cdafb883d6f9055e6f8ddaab0291de14e5610c435"
+        }
+      ],
+      "test": [
+        {
+          "path": "/data/app/~~-nUWP81foBM-PddcUwficg==/com.lonnnnnng.flclash.test-F0dKbyWqR7ZWp0cHx8K8cw==/base.apk",
+          "sha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94"
+        }
+      ],
+      "noKotlinServiceOrTun0": true,
+      "preserved": true,
+      "builtAppSha256": "c7e3a9638e6f2eb6e5c7691cdafb883d6f9055e6f8ddaab0291de14e5610c435",
+      "builtTestSha256": "3f21af63cb7c549553ee09076f760f496f6490922e2667ba30becfe1ae020a94",
+      "installedApksMatch": true
+    },
+    "snapshotArtifact": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/delivery5.json",
+      "sha256": "07ae72a5c03882a822f446218a2b31d6c6f67e0022a4a9cd3ac9c490f161cac5",
+      "bytes": 1461
+    },
+    "deviceSnapshotLimit": "preserved只核对原1.yaml双端、Flutter包和设备设置；installedApksMatch与noKotlinServiceOrTun0分开核对，不证明Room全行保持。"
+  },
+  "failedAndIntermediateAttempts": [
+    {
+      "evidence": {
+        "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/concurrent-red.log",
+        "sha256": "b4627f2299a834127a0534642f359ace0a131ae4cf49ff7730d99373c38c31f2",
+        "bytes": 6066
+      },
+      "result": "修复前并发迟到失败回归真实失败，build2修复后757项绿测。"
+    },
+    {
+      "batch": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/live1.json",
+          "sha256": "a8be1f90f1a720feb08caa86707ecea7e739ad96e219991c0c468b4f39e8d962",
+          "bytes": 5217
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/live1.log",
+          "sha256": "24fc5d436c88bcd5e6c27441c59f0e33119220af2a1539762d6658cf4da4cacd",
+          "bytes": 23408
+        },
+        "passed": 4,
+        "total": 5,
+        "methods": [
+          "com.lonnnnnng.flclash.data.IpQualityCacheInstrumentedTest#roomTransactionsKeepConcurrentIpsAndRejectOlderLateAnswers",
+          "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allEightOutboundAndSixQualitySourcesDirect",
+          "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allEightOutboundAndSixQualitySourcesInRunningRuleMode",
+          "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allThirteenServiceTargetsInRunningRuleMode",
+          "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allThirteenServiceTargetsDirect"
+        ]
+      },
+      "result": "4/5，运行服务route变化；失败保留。"
+    },
+    {
+      "batch": {
+        "report": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/live2.json",
+          "sha256": "ce4f9086a74d7e1c090b5b69825c391a659c695fe0510a68dec31de5d4ba854e",
+          "bytes": 1788
+        },
+        "log": {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/live2.log",
+          "sha256": "62f46973bcbb17321057ed6df42ae87d4035248c1178f2235debcd5676d14c82",
+          "bytes": 19679
+        },
+        "passed": 5,
+        "total": 5,
+        "methods": [
+          "com.lonnnnnng.flclash.data.IpQualityCacheInstrumentedTest#roomTransactionsKeepConcurrentIpsAndRejectOlderLateAnswers",
+          "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allEightOutboundAndSixQualitySourcesDirect",
+          "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allEightOutboundAndSixQualitySourcesInRunningRuleMode",
+          "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allThirteenServiceTargetsInRunningRuleMode",
+          "com.lonnnnnng.flclash.data.IpQualityNetworkInstrumentedTest#allThirteenServiceTargetsDirect"
+        ]
+      },
+      "result": "中间测试包5/5，不与final3合计。"
+    },
+    {
+      "artifacts": [
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold1/result.json",
+          "sha256": "499f550d71b8a6e90ad8a89c49f2d9ec3b7f48c20303746170efbae0ee47adcc",
+          "bytes": 287
+        },
+        {
+          "path": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105/cold1/process-boundary.json",
+          "sha256": "4fb58b9922d68a5bae51a30a4fe53b5a72811bf5975d0a624cf12335138dea7d",
+          "bytes": 112
+        }
+      ],
+      "result": "中间测试包跨PID通过，不与最终cold2/cold5累加。"
+    }
+  ],
+  "limits": [
+    "并非所有远端源都返回有效类型；FAILED/NO_TYPE/IP_MISMATCH按实测保留。",
+    "不包括VPN、蜂窝、OEM或低API；Go、正式签名运行、远端CI本组未重跑。",
+    "不新增出口IP/服务路由结果的持久TTL；只有成功质量按IP持久化。",
+    "完整Flutter视觉仍PARTIAL；玻璃默认关闭；原暂缓/取消项保持。"
+  ],
+  "next": "todo第7项Fallback无有效now实核与冷恢复仍需授权输入的可用非空Fallback组；条件不足时转第8项具备条件的系统边界。",
+  "attachmentsRoot": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/ip-quality-cache-20261105",
+  "attachmentsAvailability": "原始日志、APK、XML及PNG只在本机附件目录，未随源码上传；哈希索引不是远端可直接读取附件的承诺。"
+}

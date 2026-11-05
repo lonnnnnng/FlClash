@@ -17,7 +17,8 @@ enum class IpQualitySource(val label: String) {
         require(isPublicIpLiteral(ip)) { "IP 地址无效" }
         return when (this) {
             IDENT_ME -> "https://ident.me/json"
-            IP_API_COM -> "http://ip-api.com/json/$ip?fields=status,isp,org,as,mobile,proxy,hosting"
+            // 作者 long：显式请求query才能核验响应归属，不能只按URL假定返回的是目标IP。
+            IP_API_COM -> "http://ip-api.com/json/$ip?fields=status,query,isp,org,as,mobile,proxy,hosting"
             IP_QUERY -> "https://api.ipquery.io/$ip?format=json"
             IP_LOCATE -> "https://iplocate.io/api/lookup/$ip"
             IP_API_IS -> "https://api.ipapi.is/?q=$ip"

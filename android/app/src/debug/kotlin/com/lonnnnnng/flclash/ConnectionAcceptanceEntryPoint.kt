@@ -37,6 +37,7 @@ interface ConnectionAcceptanceEntryPoint {
     fun backupUiPreferences(): com.lonnnnnng.flclash.data.BackupUiPreferences
     fun serviceSettingsStore(): com.lonnnnnng.flclash.data.ServiceSettingsStore
     fun serviceExitStore(): com.lonnnnnng.flclash.data.ServiceExitStore
+    fun ipInformationStore(): com.lonnnnnng.flclash.data.IpInformationStore
     // 作者 long：资源整页验收必须回读与页面相同的仓库实例，避免新建仓库绕开正式并发锁与更新流。
     fun icons(): com.lonnnnnng.flclash.data.IconSetRepository
     fun rules(): com.lonnnnnng.flclash.data.RuleResourceRepository

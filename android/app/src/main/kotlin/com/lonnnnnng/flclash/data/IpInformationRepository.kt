@@ -25,9 +25,14 @@ interface IpInformationStore {
 class IpInformationRepository internal constructor(
     private val runtime: OutboundIpRuntime,
     private val elapsedMillis: () -> Long,
+    private val wallMillis: () -> Long,
+    private val persistent: IpQualityCache,
 ) : IpInformationStore {
-    @Inject constructor(runtime: OutboundIpRuntime) : this(runtime, android.os.SystemClock::elapsedRealtime)
-    private data class Cached(val quality: IpQuality?, val failure: IpQualityException?, val at: Long)
+    @Inject constructor(runtime: OutboundIpRuntime, database: KClashDatabase) :
+        this(runtime, android.os.SystemClock::elapsedRealtime, System::currentTimeMillis, RoomIpQualityCache(database))
+    internal constructor(runtime: OutboundIpRuntime, elapsedMillis: () -> Long) :
+        this(runtime, elapsedMillis, elapsedMillis, NoopIpQualityCache)
+    private data class Cached(val quality: IpQuality?, val failure: IpQualityException?, val at: Long, val routeRevision: Long)
     private val cache = linkedMapOf<String, Cached>()
 
     override suspend fun outbound(): RoutedIpInfo {
@@ -37,21 +42,41 @@ class IpInformationRepository internal constructor(
 
     override suspend fun quality(ip: String, force: Boolean): IpQuality {
         require(isPublicIpLiteral(ip)) { "IP 地址无效" }
-        val now = elapsedMillis()
+        val revision = runtime.ipRouteRevision.value
         if (!force) synchronized(cache) { cache[ip] }?.let { entry ->
-            val ttl = if (entry.quality != null) 3 * 24 * 3_600_000L else 5 * 60_000L
-            if (now >= entry.at && now - entry.at < ttl) {
+            val valid = if (entry.quality != null) IpQualityCacheCodec.fresh(entry.at, wallMillis())
+                else revision == entry.routeRevision && elapsedMillis() >= entry.at && elapsedMillis() - entry.at < 5 * 60_000L
+            if (valid) {
                 entry.quality?.let { return it }
                 throw checkNotNull(entry.failure)
             }
         }
+        if (!force) cacheOrNull { persistent.fresh(ip, wallMillis()) }?.let { record ->
+            if (record.quality.ip == ip && IpQualityCacheCodec.fresh(record.checkedAt, wallMillis())) {
+                remember(ip, Cached(record.quality, null, record.checkedAt, revision))
+                return record.quality
+            }
+        }
         try {
-            return lookupQuality(ip).also { remember(ip, Cached(it, null, elapsedMillis())) }
+            return lookupQuality(ip).also {
+                val at = wallMillis()
+                remember(ip, Cached(it, null, at, revision))
+                cacheOrNull { persistent.put(IpQualityRecord(it, at), wallMillis()) }
+            }
         } catch (error: IpQualityException) {
-            remember(ip, Cached(null, error, elapsedMillis()))
+            // 作者 long：失败只在当前路由内冷却；断网恢复/切出口后不能继续拿旧失败阻止新查询。
+            if (revision == runtime.ipRouteRevision.value) synchronized(cache) {
+                // 作者 long：首页和服务详情可并发查同IP；迟到失败不能遮住另一路已经获得的有效成功结果。
+                val success = cache[ip]?.takeIf { it.quality != null && IpQualityCacheCodec.fresh(it.at, wallMillis()) }
+                if (success == null) remember(ip, Cached(null, error, elapsedMillis(), revision))
+            }
             throw error
         }
     }
+
+    private suspend fun <T> cacheOrNull(action: suspend () -> T): T? = try { action() }
+    catch (cancelled: CancellationException) { throw cancelled }
+    catch (_: Exception) { null } // 作者 long：磁盘缓存是优化，读写失败不能掩盖可用的在线查询结果。
 
     private fun remember(ip: String, value: Cached) = synchronized(cache) {
         // 作者 long：仅存解析后的质量，不保存响应正文；内存缓存有界，避免用户频繁切换出口无限增长。

@@ -4,8 +4,10 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.lonnnnnng.flclash.MainActivity
 import com.lonnnnnng.flclash.ConnectionAcceptanceEntryPoint
+import com.lonnnnnng.flclash.data.SubscriptionAutoUpdateAudit
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -53,9 +55,24 @@ class MenuVisualHostInstrumentedTest {
             assertTrue(file.isFile)
             if (phase == "inspect") {
                 // 作者 long：诊断只报告字段摘要与文件保护结果，不能用当前状态覆盖旧基线或将检查模式记为保护通过。
+                assertTrue("缺少原逐字段摘要，不能归因元数据变化", fieldFile.isFile)
+                val previousFields = JsonParser.parseString(fieldFile.readText()).asJsonObject
+                val currentFields = gson.toJsonTree(fields).asJsonObject
+                val changedFields = (previousFields.keySet() + currentFields.keySet()).sorted().associateWith { id ->
+                    val previous = previousFields.getAsJsonObject(id)
+                    val current = currentFields.getAsJsonObject(id)
+                    ((previous?.keySet() ?: emptySet()) + (current?.keySet() ?: emptySet())).sorted()
+                        .filter { previous?.get(it) != current?.get(it) }
+                        .associateWith { name -> mapOf("beforeSha256" to previous?.get(name), "afterSha256" to current?.get(name)) }
+                }.filterValues { it.isNotEmpty() }
+                val previousRecord = file.readLines()
+                val currentRecord = record.lines().dropLast(1)
                 InstrumentationRegistry.getInstrumentation().sendStatus(0, android.os.Bundle().apply {
                     putString("kclash_visual_metadata_inspect", gson.toJson(mapOf("fields" to fields,
-                        "filesAndSelectionMatch" to (file.readLines().drop(1) == record.lines().dropLast(1).drop(1)),
+                        "changedFields" to changedFields,
+                        "beforeRecord" to previousRecord, "afterRecord" to currentRecord,
+                        "autoUpdateAudit" to JsonParser.parseString(SubscriptionAutoUpdateAudit.read(context).toString()),
+                        "filesAndSelectionMatch" to (previousRecord.drop(1) == currentRecord.drop(1)),
                         "autoUpdateEnabled" to rows.any { it.autoUpdate }, "hasUpdateError" to rows.any { it.lastUpdateError != null })))
                 })
                 return@runBlocking

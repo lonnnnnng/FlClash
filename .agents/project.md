@@ -1,6 +1,18 @@
 # Project Context
 
-## Provider部分失败恢复与真实规则命中（2026-11-05，当前）
+## 首页IP/质量持久缓存与全部来源尝试（2026-11-05，当前）
+
+todo第6项成功质量缓存闭环已验：复用Room偏好表，按IP保留3天且不延长原查询时间；失败仅当前路由内存冷却5分钟。force、IO失败降级、取消、路由失效、损坏/未来/过期项、事务并发及迟到失败保护已覆盖；显式JSON字段避免Release混淆改变磁盘格式，不改schema。
+
+生产build2 App492/Service196/Core38/Common31共757项JVM结果零失败/错误/跳过（含up-to-date复用），Debug、未签名Release/R8及双Lint通过，各0错误/66警告（Debug10/Release9提示）。testbuild4 Redmi final3 5/5、cold2双阶段、页面回归10/10；14PNG经3拼图目视。诊断包diagnostic5仅增强只读保护检查，构建/双Lint通过，独立cold5双阶段及短窗口保护前后各1/1；生产APK与功能源码哈希保持。
+
+8个出口源/6个质量源及13个服务目标分别DIRECT和运行RULE真实尝试；出口解析6/8与7/8、质量3/6与4/6，其他结果保留FAILED/NO_TYPE/IP_MISMATCH，不能写全部源成功。运行服务12项可用、Prime Video失败；DIRECT逐项受限见JSON。真实跨PID回读保持原checkedAt，拒绝联网Runtime调用0且正式DI一致；prepare退出时PID已消失，不称杀死仍存活的准备进程。
+
+长窗口正式配置保护after为0/1：正文SHA/34815字节/当前ID保持，但currentGroupName、lastUpdateAt及文件mtime变化；系统审计无对应下载成功，原因未确定。未回写旧快照或覆盖失败基线；各fixture内部保护及新cold5短窗口通过，不能替代原长窗口失败。原1.yaml双端、Flutter包和设备设置保持，结束无服务/tun0，安装回拉哈希匹配。
+
+证据`docs/acceptance/ip-quality-cache-redmi-20261105.json`，持久附件`../acceptance-artifacts/ip-quality-cache-20261105/`；早期并发红测、live1失败和中间批次独立保留、不累计。第6项缓存与全部目标尝试已验，远端受限及长窗口保护异常单列；第7项Fallback仍缺授权非空组，之后推进第8项具备条件的系统边界。完整Flutter视觉仍PARTIAL；Go、低API、VPN、正式签名运行和远端CI未重跑；玻璃默认关闭，原暂缓/取消项保持。
+
+## Provider部分失败恢复与真实规则命中（2026-11-05，历史切片）
 
 todo第5项本组范围已验：Provider批量部分失败保留逐项受控原因，单项恢复只移除本项，轮询/前后台保留剩余失败，关闭/换配置拒绝迟到结果，超时释放忙态。Redmi真实Mihomo经受控HTTP服务完成1成功+503/缺失YAML payload两失败、旧缓存保护、单项恢复和只重试剩余项。公开8源更新SHA/条目/时间前进通过；HTTP8种、File8种、Inline3种实际HTTPS均有精确RuleSet/Provider归因，另验原配置geolocation-cn MRS命中及Inline Proxy原两个节点展开。
 
