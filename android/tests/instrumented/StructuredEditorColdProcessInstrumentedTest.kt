@@ -33,7 +33,8 @@ class StructuredEditorColdProcessInstrumentedTest {
         assertPortraitDefaultFontConfiguration()
         assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashProfileClosureAcceptance"))
         val value = requireNotNull(InstrumentationRegistry.getArguments().getString("kclashEditorCase"))
-        require(value in setOf("rules-form", "rules-batch", "rules-conflict", "groups-icon", "groups-option", "groups-value", "groups-yaml", "single-yaml"))
+        require(value in setOf("rules-form", "rules-batch", "rules-conflict", "rules-yaml", "rules-yaml-discard", "rules-type-open",
+            "groups-icon", "groups-option", "groups-value", "groups-yaml", "single-yaml", "groups-members", "groups-members-sort", "groups-batch"))
         instrumentation.sendStatus(0, Bundle().apply { putString("kclash_editor_process_pid", android.os.Process.myPid().toString()) })
         return value
     }
@@ -67,7 +68,25 @@ class StructuredEditorColdProcessInstrumentedTest {
             compose.onNodeWithTag("custom_rule_duplicate_0").performClick()
             compose.waitUntil(20_000) { !model.rulesEditorState.value.isSaving && CustomRules.decode(model.rulesEditorState.value.rules, validate = false).size == CustomRules.decode(ProfileRulesEditor.extractRules(bytes.toString(Charsets.UTF_8)), validate = false).size + 1 }
             compose.waitUntil(10_000) { compose.onAllNodesWithText("保存中…").fetchSemanticsNodes().isEmpty() }
-            if (case == "rules-batch") {
+            if (case in setOf("rules-yaml", "rules-yaml-discard")) {
+                compose.onNodeWithTag("custom_rules_menu").performClick()
+                compose.onNodeWithTag("custom_rules_yaml").performClick()
+                val original = compose.onNodeWithTag("profile_rules_yaml").fetchSemanticsNode().config[SemanticsProperties.EditableText].text
+                val invalid = original + "\n# $DRAFT_MARKER\n- NETWORK,any,DIRECT"
+                compose.onNodeWithTag("profile_rules_yaml").performTextReplacement(invalid)
+                compose.onNodeWithTag("custom_rules_yaml_confirm").performClick()
+                compose.waitUntil(10_000) { compose.onAllNodesWithTag("custom_rules_yaml_error").fetchSemanticsNodes().isNotEmpty() }
+                compose.onNodeWithTag("custom_rules_yaml_error").assertTextContains("TCP", substring = true)
+                val start = invalid.indexOf(DRAFT_MARKER) + 2
+                compose.onNodeWithTag("profile_rules_yaml").performTextInputSelection(androidx.compose.ui.text.TextRange(start, start + 8))
+                closeSoftKeyboard()
+                val node = compose.onNodeWithTag("profile_rules_yaml").fetchSemanticsNode().config
+                record.addProperty("selectionStart", node[SemanticsProperties.TextSelectionRange].start)
+                record.addProperty("selectionEnd", node[SemanticsProperties.TextSelectionRange].end)
+                record.addProperty("yamlSha256", digest(node[SemanticsProperties.EditableText].text.toByteArray()))
+                record.addProperty("yamlError", compose.onNodeWithTag("custom_rules_yaml_error").fetchSemanticsNode().config[SemanticsProperties.Text].joinToString { it.text })
+                if (case == "rules-yaml-discard") compose.onNodeWithTag("custom_rules_yaml_back").performClick()
+            } else if (case == "rules-batch") {
                 compose.onNodeWithTag("custom_rules_menu").performClick()
                 compose.onNodeWithTag("custom_rules_select").performClick()
                 compose.onNodeWithTag("custom_rule_select_1").performClick()
@@ -76,13 +95,49 @@ class StructuredEditorColdProcessInstrumentedTest {
                 compose.onNodeWithTag("custom_rule_type").performClick()
                 compose.onNodeWithTag("custom_rule_pick_DOMAIN").performClick()
                 compose.onNodeWithTag("custom_rule_payload").performTextReplacement(DRAFT_MARKER)
+                if (case == "rules-type-open") {
+                    compose.onNodeWithTag("custom_rule_type").performClick()
+                    compose.onNodeWithTag("custom_rule_picker_search").performTextReplacement("DOMAIN")
+                }
             }
         } else {
             compose.runOnIdle {
-                if (case == "groups-yaml") model.openProxyGroupsEditor(profile) else model.openSingleProxyGroupEditor(profile, 0)
+                if (case in setOf("groups-yaml", "groups-batch")) model.openProxyGroupsEditor(profile) else model.openSingleProxyGroupEditor(profile, 0)
             }
             compose.waitUntil(20_000) { model.proxyGroupsEditorState.value.profile?.id == id && !model.proxyGroupsEditorState.value.isLoading }
             when (case) {
+                "groups-batch" -> {
+                    compose.onNodeWithTag("proxy_group_select").performClick()
+                    compose.onNodeWithTag("proxy_group_check_0").performClick()
+                }
+                "groups-members", "groups-members-sort" -> {
+                    compose.onNodeWithTag("proxy_group_members").performScrollTo().performClick()
+                    compose.onNodeWithTag("group_members_add").performClick()
+                    if (case == "groups-members") {
+                        compose.onNodeWithTag("group_member_search").performTextReplacement("DIRECT")
+                        val choice = memberCheckbox("DIRECT")
+                        val wasChecked = choice.fetchSemanticsNode().config[SemanticsProperties.ToggleableState] == androidx.compose.ui.state.ToggleableState.On
+                        record.addProperty("directChecked", !wasChecked)
+                        compose.onNodeWithTag("group_member_choice_false_DIRECT").performClick()
+                    } else {
+                        // 作者 long：只补正式成员选择器中的内建项，保留原1.yaml副本，不生成替代配置或提交成员变更。
+                        for (name in listOf("DIRECT", "REJECT")) {
+                            compose.onNodeWithTag("group_member_search").performTextReplacement(name)
+                            val choice = memberCheckbox(name)
+                            if (choice.fetchSemanticsNode().config[SemanticsProperties.ToggleableState] != androidx.compose.ui.state.ToggleableState.On)
+                                compose.onNodeWithTag("group_member_choice_false_$name").performClick()
+                        }
+                        closeSoftKeyboard()
+                        compose.onNodeWithTag("group_member_picker_done").performClick()
+                        compose.onNodeWithTag("group_members_sort").performClick()
+                        val beforeOrder = memberOrder()
+                        assertTrue(beforeOrder.size >= 2)
+                        compose.onNodeWithTag("group_move_down_0").performScrollTo().performClick()
+                        val expected = beforeOrder.toMutableList().apply { add(1, removeAt(0)) }
+                        assertEquals(expected, memberOrder())
+                        record.add("memberOrder", Gson().toJsonTree(expected))
+                    }
+                }
                 "groups-icon" -> {
                     compose.onNodeWithTag("proxy_group_icon").performScrollTo().performClick()
                     compose.onNodeWithTag("group_icon_search").performTextReplacement(DRAFT_MARKER)
@@ -132,7 +187,7 @@ class StructuredEditorColdProcessInstrumentedTest {
         marker().writeText(record.toString())
         compose.waitUntil(15_000) {
             val ui = if (case.startsWith("rules")) model.rulesEditorState.value.uiDraft else model.proxyGroupsEditorState.value.uiDraft
-            ui != null && if (case in setOf("rules-batch", "groups-option", "groups-value")) ui.values.isNotEmpty() else Gson().toJson(ui).contains(DRAFT_MARKER)
+            ui != null && if (case in setOf("rules-batch", "groups-option", "groups-value", "groups-members", "groups-members-sort", "groups-batch")) ui.values.isNotEmpty() else Gson().toJson(ui).contains(DRAFT_MARKER)
         }
         withTimeout(15_000) {
             while (true) {
@@ -165,6 +220,64 @@ class StructuredEditorColdProcessInstrumentedTest {
         try {
             compose.waitUntil(20_000) { if (case.startsWith("rules")) model.rulesEditorState.value.profile?.id == id else model.proxyGroupsEditorState.value.profile?.id == id }
             when (case) {
+                "rules-yaml", "rules-yaml-discard" -> {
+                    if (case == "rules-yaml-discard") {
+                        compose.onNodeWithText("放弃 YAML 修改？").assertIsDisplayed()
+                        capture("${case}_dialog_restored")
+                        compose.onNodeWithText("继续编辑", substring = false).performClick()
+                    }
+                    val node = compose.onNodeWithTag("profile_rules_yaml").fetchSemanticsNode().config
+                    assertEquals(record.get("yamlSha256").asString, digest(node[SemanticsProperties.EditableText].text.toByteArray()))
+                    assertEquals(androidx.compose.ui.text.TextRange(record.get("selectionStart").asInt, record.get("selectionEnd").asInt), node[SemanticsProperties.TextSelectionRange])
+                    compose.onNodeWithTag("custom_rules_yaml_error").assertTextEquals(record.get("yamlError").asString)
+                    capture("${case}_restored")
+                    compose.onNodeWithTag("custom_rules_yaml_back").performClick()
+                    compose.onNodeWithText("放弃", substring = false).performClick()
+                    compose.onNodeWithTag("custom_rules_back").performClick()
+                }
+                "rules-type-open" -> {
+                    compose.onNodeWithTag("custom_rule_picker_search").assertTextContains("DOMAIN")
+                    compose.onNodeWithTag("custom_rule_pick_DOMAIN").assertExists()
+                    compose.onNodeWithTag("custom_rule_pick_MATCH").assertDoesNotExist()
+                    capture("${case}_restored")
+                    compose.onNodeWithTag("custom_rule_picker_back").performClick()
+                    compose.onNodeWithTag("custom_rule_payload").assertTextContains(DRAFT_MARKER)
+                    compose.onNodeWithTag("custom_rule_confirm").assertIsEnabled()
+                    compose.onNodeWithTag("custom_rule_form_back").performClick()
+                    compose.onNodeWithText("放弃", substring = false).performClick()
+                    compose.onNodeWithTag("custom_rules_back").performClick()
+                }
+                "groups-members" -> {
+                    compose.onNodeWithTag("group_member_search").assertTextContains("DIRECT")
+                    if (record.get("directChecked").asBoolean) memberCheckbox("DIRECT").assertIsOn() else memberCheckbox("DIRECT").assertIsOff()
+                    capture("${case}_restored")
+                    compose.onNodeWithTag("group_member_picker_back").performClick()
+                    compose.onNodeWithTag("proxy_group_members_back").performClick()
+                    compose.onNodeWithText("放弃修改", substring = false).performClick()
+                    compose.onNodeWithTag("proxy_group_form_back").performClick()
+                }
+                "groups-members-sort" -> {
+                    compose.onNodeWithText("长按拖动调整代理与资源顺序").assertExists()
+                    compose.onNodeWithTag("group_member_remove_0").assertDoesNotExist()
+                    assertEquals(record.getAsJsonArray("memberOrder").map { it.asString }, memberOrder())
+                    capture("${case}_restored")
+                    compose.onNodeWithTag("proxy_group_members_back").performClick()
+                    compose.onNodeWithText("放弃修改", substring = false).performClick()
+                    compose.onNodeWithTag("proxy_group_form_back").performClick()
+                }
+                "groups-batch" -> {
+                    compose.onNodeWithText("已选择 1 项").assertIsDisplayed()
+                    compose.onNodeWithTag("proxy_group_check_0").assertIsOn()
+                    compose.onNodeWithTag("proxy_group_check_1").assertIsOff()
+                    compose.onNodeWithTag("proxy_group_batch_copy").assertIsEnabled()
+                    compose.onNodeWithTag("proxy_group_batch_delete").assertIsEnabled()
+                    compose.onNodeWithTag("proxy_group_selection_done").assertExists()
+                    capture("${case}_restored")
+                    compose.onNodeWithTag("proxy_group_list_back").performClick()
+                    compose.onNodeWithTag("proxy_group_selection_done").assertDoesNotExist()
+                    compose.onNodeWithTag("proxy_group_check_0").assertIsOff()
+                    compose.onNodeWithTag("proxy_group_list_back").performClick()
+                }
                 "rules-batch" -> {
                     compose.onNodeWithText("已选 1 项").assertIsDisplayed()
                     compose.onNodeWithTag("custom_rule_select_1").assertIsOn()
@@ -255,6 +368,13 @@ class StructuredEditorColdProcessInstrumentedTest {
     }
 
     private fun files(ids: List<Long>) = ids.joinToString("|") { id -> entry().profileRepository().profileFile(id).let { "$id:${it.length()}:${it.lastModified()}:${digest(it.readBytes())}" } }
+    private fun memberCheckbox(name: String) = compose.onNode(isToggleable() and hasAnyAncestor(hasTestTag("group_member_choice_false_$name")))
+    private fun memberOrder(): List<String> {
+        // 作者 long：同名文本存在不能证明顺序；按显示行索引读取成员标签，核对完整有序列表。
+        return generateSequence(0) { it + 1 }.map { index ->
+            compose.onAllNodesWithTag("group_member_label_$index").fetchSemanticsNodes().singleOrNull()
+        }.takeWhile { it != null }.map { node -> checkNotNull(node).config[SemanticsProperties.Text].single().text }.toList()
+    }
     private fun digest(bytes: ByteArray) = java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
     private fun capture(name: String) {
         instrumentation.waitForIdleSync()

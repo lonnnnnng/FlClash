@@ -1,6 +1,14 @@
 # Architecture
 
-## Proxies/本地代理加密持久恢复（2026-11-05，当前）
+## 规则YAML加密UI状态与剩余冷恢复（2026-11-05，当前）
+
+规则快捷YAML的正文/选区、错误与放弃确认已进入现有加密保存树，仅正文修改清错；异步校验冻结正文，保留原CAS/关闭守卫。
+
+App481/Service195/Core38/Common31共745项零失败/错误/跳过；final1统一Debug/Test、未签名Release/R8及双Lint通过，各0错误/66警告（Debug10/Release9提示）。Redmi最终同套App/Test六场景各prepare/verify通过，外部严格核对PID消失与恢复PID不同；相关回归18/18，定向绿测独立1/1。31张PNG/6拼图已目视，安装回拉哈希匹配；正式1份配置/原选择/逐字段摘要及正文SHA-size-mtime、原1.yaml双端、Flutter包和设置保持，结束无服务/tun0。证据`docs/acceptance/remaining-editor-cold-redmi-20261105.json`。
+
+todo第1项本组范围已验；第2项保存意图落盘后未提交、已提交未清草稿及退出死亡窗口仍待真机。第3至11项保持待办，玻璃默认关闭，原暂缓/取消项不变。原始附件改存工作区外层acceptance-artifacts/remaining-cold-20261105，未随源码上传。
+
+## Proxies/本地代理加密持久恢复（2026-11-05，历史切片）
 
 `ProfileEditorDraftSnapshot` v3纳入Proxies原CAS基线、正文/选区UI树及pendingContent；本地目录使用named `local-proxy-draft`独立Keystore AES-GCM/noBackup AtomicFile，快照保存opened/expected/seenNames/pending/pendingClose。正式导航由恢复后的isOpen驱动，节点、集合和分享链接窗口有独立注册表。Release保留新增Gson类型及Pair，mapping/DEX另验。
 

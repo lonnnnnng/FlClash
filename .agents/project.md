@@ -2,7 +2,15 @@
 
 用户已取消 Kotlin 的 TalkBack/自定义无障碍适配，不再实现或列为验收门槛。保留原生 Compose 控件、正常交互、隐藏退场页面的交互防护和测试标识。
 
-## Proxies与本地代理真实冷进程（2026-11-05，当前快照）
+## todo第1项：编辑器剩余冷恢复（2026-11-05，当前快照）
+
+规则快捷YAML的正文/选区、错误与放弃确认已进入现有加密保存树，仅正文修改清错；异步校验冻结正文，保留原CAS/关闭守卫。
+
+App481/Service195/Core38/Common31共745项零失败/错误/跳过；final1统一Debug/Test、未签名Release/R8及双Lint通过，各0错误/66警告（Debug10/Release9提示）。Redmi最终同套App/Test六场景各prepare/verify通过，外部严格核对PID消失与恢复PID不同；相关回归18/18，定向绿测独立1/1。31张PNG/6拼图已目视，安装回拉哈希匹配；正式1份配置/原选择/逐字段摘要及正文SHA-size-mtime、原1.yaml双端、Flutter包和设置保持，结束无服务/tun0。证据`docs/acceptance/remaining-editor-cold-redmi-20261105.json`。
+
+todo第1项本组范围已验；第2项保存意图落盘后未提交、已提交未清草稿及退出死亡窗口仍待真机。第3至11项保持待办，玻璃默认关闭，原暂缓/取消项不变。原始附件改存工作区外层acceptance-artifacts/remaining-cold-20261105，未随源码上传。
+
+## Proxies与本地代理真实冷进程（2026-11-05，历史切片）
 
 Proxies父草稿v3及本地代理独立加密草稿已接入正式入口，保留原CAS基线、UI树、保存/退出意图，恢复不自动重放；首次读取与元数据迟到恢复竞态已修，集合checkpoint不再回写旧正文。代理YAML改按Flutter语义校验，修复行内map、顶层flow列表及注释包装。
 

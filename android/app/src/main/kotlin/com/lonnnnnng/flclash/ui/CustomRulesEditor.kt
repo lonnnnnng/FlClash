@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.*
@@ -293,14 +294,17 @@ private fun CustomRulePicker(mode: String, sections: List<Pair<String, List<Stri
 @Composable
 private fun CustomRuleYaml(initial: List<CustomRuleDraft>, saving: Boolean, saveError: String?, onDismiss: () -> Unit, onSave: (List<CustomRuleDraft>) -> Unit) {
     val original = remember { CustomRules.yaml(initial) }
-    var content by rememberSaveable { mutableStateOf(original) }; var error by remember { mutableStateOf<String?>(null) }
+    // 作者 long：快捷 YAML 与父编辑器共用加密保存树；进程恢复后保留失败位置和原因，避免用户重新提交才能找回错误。
+    var content by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(original)) }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
     var discard by rememberSaveable { mutableStateOf(false) }; var checking by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope(); val focus = LocalFocusManager.current; val keyboard = LocalSoftwareKeyboardController.current
-    fun exit() { if (!saving && !checking) { if (content != original) discard = true else onDismiss() } }
+    fun exit() { if (!saving && !checking) { if (content.text != original) discard = true else onDismiss() } }
     ProfileEditorPage(::exit, title = { Text("规则 · YAML") }, backTag = "custom_rules_yaml_back", confirmButton = {
         TextButton(enabled = !saving && !checking, modifier = Modifier.testTag("custom_rules_yaml_confirm"), onClick = { scope.launch {
             checking = true
-            try { val next = withContext(Dispatchers.Default) { CustomRules.decode(content, previous = initial, dropSubRules = true) }; focus.clearFocus(force = true); keyboard?.hide(); onSave(next) }
+            val checkedText = content.text
+            try { val next = withContext(Dispatchers.Default) { CustomRules.decode(checkedText, previous = initial, dropSubRules = true) }; focus.clearFocus(force = true); keyboard?.hide(); onSave(next) }
             catch (failure: kotlinx.coroutines.CancellationException) { throw failure }
             catch (failure: IllegalArgumentException) { error = failure.message ?: "规则格式无效" }
             finally { checking = false }
@@ -309,7 +313,11 @@ private fun CustomRuleYaml(initial: List<CustomRuleDraft>, saving: Boolean, save
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("每行一条规则，支持 YAML 列表；确认后将移除 SUB-RULE 条目。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("custom_rules_yaml_error")) }
-            OutlinedTextField(content, { content = it; error = null }, enabled = !saving && !checking, modifier = Modifier.fillMaxWidth().weight(1f).testTag("profile_rules_yaml"),
+            OutlinedTextField(content, {
+                // 作者 long：移动光标或调整选区并未修正规则，只有正文改变才清除上一轮校验失败。
+                if (it.text != content.text) error = null
+                content = it
+            }, enabled = !saving && !checking, modifier = Modifier.fillMaxWidth().weight(1f).testTag("profile_rules_yaml"),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace), label = { Text("规则 YAML") })
         }
     })

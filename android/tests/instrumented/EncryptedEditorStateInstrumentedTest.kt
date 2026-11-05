@@ -160,6 +160,50 @@ class EncryptedEditorStateInstrumentedTest {
         compose.runOnIdle { assertEquals(0, commits); assertEquals(0, failures) }
     }
 
+    @Test fun rulesYamlErrorSelectionAndDiscardRestoreWithoutCommitting() {
+        var shown by mutableStateOf(true)
+        var generation by mutableLongStateOf(1)
+        var saved: EditorSaveableState? = null
+        var restored: EditorSaveableState? = null
+        var commits = 0; var failures = 0
+        val initial = "DOMAIN,example.test,DIRECT\nMATCH,DIRECT"
+        val changed = "- DOMAIN,example.test,DIRECT\n# private-rules-yaml-marker\n- NETWORK,any,DIRECT"
+        val range = androidx.compose.ui.text.TextRange(changed.indexOf("private-") + 2, changed.indexOf("private-") + 8)
+        compose.setContent { KClashTheme { if (shown) {
+            EncryptedEditorState(generation, restored, { saved = it }, { failures++ }) {
+                ProfileRulesEditorDialog(Profile.custom(958, "脱敏规则"), initial, false, { shown = false }, { commits++ })
+            }
+        } } }
+        compose.onNodeWithTag("custom_rules_menu").performClick()
+        compose.onNodeWithTag("custom_rules_yaml").performClick()
+        compose.onNodeWithTag("profile_rules_yaml").performTextReplacement(changed)
+        compose.onNodeWithTag("custom_rules_yaml_confirm").performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithTag("custom_rules_yaml_error").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("profile_rules_yaml").performTextInputSelection(range)
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        compose.onNodeWithTag("custom_rules_yaml_error").assertTextContains("TCP", substring = true)
+        compose.waitUntil(10_000) { Gson().toJson(saved).contains("private-rules-yaml-marker") }
+        compose.runOnIdle { restored = copy(checkNotNull(saved)); shown = false }
+        compose.waitForIdle()
+        compose.runOnIdle { generation++; shown = true }
+        compose.onNodeWithTag("custom_rules_yaml_error").assertTextContains("TCP", substring = true)
+        val node = compose.onNodeWithTag("profile_rules_yaml").fetchSemanticsNode().config
+        assertEquals(changed, node[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text)
+        assertEquals(range, node[androidx.compose.ui.semantics.SemanticsProperties.TextSelectionRange])
+        compose.onNodeWithTag("custom_rules_yaml_back").performClick()
+        compose.waitForIdle()
+        compose.runOnIdle { restored = copy(checkNotNull(saved)); shown = false }
+        compose.waitForIdle()
+        compose.runOnIdle { generation++; shown = true }
+        compose.onNodeWithText("放弃 YAML 修改？").assertIsDisplayed()
+        compose.onNodeWithText("继续编辑", substring = false).performClick()
+        compose.onNodeWithTag("custom_rules_yaml_error").assertIsDisplayed()
+        compose.onNodeWithTag("custom_rules_yaml_back").performClick()
+        compose.onNodeWithText("放弃", substring = false).performClick()
+        compose.onNodeWithTag("custom_rule_edit_0").assertTextContains("example.test", substring = true)
+        compose.runOnIdle { assertEquals(0, commits); assertEquals(0, failures) }
+    }
+
     private fun copy(value: EditorSaveableState): EditorSaveableState = Gson().fromJson(Gson().toJson(value), EditorSaveableState::class.java)
     private fun phase(value: String) = InstrumentationRegistry.getInstrumentation().sendStatus(0,
         android.os.Bundle().apply { putString("kclash_registry_phase", value) })

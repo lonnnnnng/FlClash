@@ -570,7 +570,7 @@ private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroup
                     GroupOrderRow(index, members.size, member.toString(), sorting, true,
                         onMove = { to -> change(members.toMutableList().apply { add(to, removeAt(index)) }) }) {
                         Column(Modifier.weight(1f).heightIn(min = 72.dp).padding(vertical = 12.dp)) {
-                            Text(member.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(member.name, Modifier.testTag("group_member_label_$index"), maxLines = 1, overflow = TextOverflow.Ellipsis)
                             Text(if (member.provider) "资源" else "代理 / 策略组", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         if (!sorting) IconButton(onClick = { change(members.filterIndexed { i, _ -> i != index }) }, Modifier.testTag("group_member_remove_$index")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }

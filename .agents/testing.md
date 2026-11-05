@@ -1,6 +1,16 @@
 # Testing
 
-## Proxies/本地代理加密草稿与冷进程（2026-11-05，最新）
+## todo第1项：规则YAML/选择器/成员/排序/批选（2026-11-05，最新）
+
+规则快捷YAML的正文/选区、错误与放弃确认已进入现有加密保存树，仅正文修改清错；异步校验冻结正文，保留原CAS/关闭守卫。
+
+App481/Service195/Core38/Common31共745项零失败/错误/跳过；final1统一Debug/Test、未签名Release/R8及双Lint通过，各0错误/66警告（Debug10/Release9提示）。Redmi最终同套App/Test六场景各prepare/verify通过，外部严格核对PID消失与恢复PID不同；相关回归18/18，定向绿测独立1/1。31张PNG/6拼图已目视，安装回拉哈希匹配；正式1份配置/原选择/逐字段摘要及正文SHA-size-mtime、原1.yaml双端、Flutter包和设置保持，结束无服务/tun0。证据`docs/acceptance/remaining-editor-cold-redmi-20261105.json`。
+
+六场景：rules-yaml/rules-yaml-discard/rules-type-open/groups-members/groups-members-sort/groups-batch；prepare/verify分开，正式MainActivity后台am kill，严格检查pidof退出码/stderr及设备连接，恢复不主动open。核对正文SHA/选区/错误、放弃框、搜索/父表单、勾选、完整成员顺序及批选首次返回清选择；Store清空后按独有ID回收。未单独逐项检查.bak/.new。旧包红测位于重建后189行；首次No compose hierarchies环境失败独立保留；锁屏仅当时工具观测，无独立附件，不认定唯一原因。31PNG中一张放弃框退场帧不作为稳定终态。
+
+todo第1项本组范围已验；第2项保存意图落盘后未提交、已提交未清草稿及退出死亡窗口仍待真机。第3至11项保持待办，玻璃默认关闭，原暂缓/取消项不变。原始附件改存工作区外层acceptance-artifacts/remaining-cold-20261105，未随源码上传。
+
+## Proxies/本地代理加密草稿与冷进程（2026-11-05，历史切片）
 
 App481/Service195/Core38/Common31共745项单测零失败/错误/跳过；最终build8 Debug/Test、未签名Release/R8及独立lint8双变体通过，各0错误/66警告（Debug10/Release9提示）。Redmi最终同套App/Test十场景各prepare/verify通过，外部确认旧PID消失、恢复PID不同；旧入口14/14，Proxies正式MainActivity保存回读独立1/1。30张PNG与5张拼图已目视，App/Test回拉哈希匹配；正式1份配置/选择/正文SHA-size-mtime及逐字段摘要、本地目录、原1.yaml双端、Flutter包与设置保持，结束无服务/tun0。各verify在应用内部确认Store为空且主文件/.bak/.new均不存在；不使用受SELinux拒绝的run-as退出码判断。证据`docs/acceptance/local-proxy-draft-cold-redmi-20261105.json`。原始日志/PNG/驱动仅本机/tmp。
 
