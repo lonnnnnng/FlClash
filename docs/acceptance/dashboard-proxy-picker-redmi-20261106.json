@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "首页策略组选择面板的系统返回、关闭重开搜索清空和Activity重建状态恢复，并回归配置快切/服务子页返回层级",
+  "status": "DONE_VERIFIED_FOR_DASHBOARD_PROXY_PICKER_ACTIVITY_STATE; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "b5ffceb2e0180c6d350ff48b80924121c8846d44",
+  "coreCommit": "7038231e026b710088b9c369899b3a8b7f281739",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "implementation": {
+    "productionChanged": false,
+    "debugHost": "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/DashboardTestActivity.kt",
+    "test": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+    "newMethods": [
+      "dashboardProxyPickerSystemBackKeepsSelectionAndReopenClearsSearch",
+      "dashboardProxyPickerRecreationKeepsOpenQueryGroupAndSelection"
+    ],
+    "hostChange": "PROXY_GROUPS固定数据宿主保存并回供当前组、selectedMap、unfoldSet及选择回调次数，使Activity重建验收不受宿主数据丢失影响；不替代正式仓库恢复",
+    "behavior": [
+      "先关闭IME，再发送一次平台系统返回；面板关闭且Activity保持RESUMED",
+      "重新打开时可编辑查询为空，原当前组及节点使用徽标保持，选择回调不重复",
+      "Activity recreate后面板仍打开，查询、当前组及所选节点保持",
+      "重建后的面板真正关闭再打开时清空查询，同时保留当前组和节点",
+      "回归重复选择、List布局中部拖动、深浅色面板、配置快切返回及服务管理/质量返回层级"
+    ],
+    "reference": {
+      "flutter": "lib/views/dashboard/widgets/proxy_groups.dart:22",
+      "behavior": "面板查询与完整代理页查询隔离；本次只读参考，没有合入Flutter提交或改动com.follow.clash"
+    },
+    "sourceHashes": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/source-hashes.json",
+    "sourceDiff": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/source-final.diff"
+  },
+  "build": {
+    "command": "./gradlew test :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :common:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 46s; 389 actionable tasks: 11 executed, 378 up-to-date; Debug/Test、未签名Release/R8及双变体Lint通过",
+    "jvm": {
+      "tests": 771,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byModule": {
+        "app": {
+          "files": 69,
+          "tests": 495,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "service": {
+          "files": 20,
+          "tests": 207,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "core": {
+          "files": 1,
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "common": {
+          "files": 4,
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "execution": "最终build2四模块测试均UP-TO-DATE，汇总本轮保留XML；build1实际执行App测试，其余含复用，不声称全部强制重跑",
+      "xmlDirectory": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/jvm-xml/"
+    },
+    "debugSha256": "a74002163c571eeaa486887f08b150c9b1d09ba79b8108fa09e50859ba44079b",
+    "androidTestSha256": "5dfdde23cfd3a382699e4c94fa756a4a8032335d17a500794c03f23633ca74db",
+    "releaseUnsignedSha256": "e322caa97d8c452f285e1feb488ad0ecdbfc330f4e3e50f60f99c4362c3ff7fc",
+    "lint": {
+      "debug": "0 errors, 67 warnings, 10 hints",
+      "release": "0 errors, 66 warnings, 9 hints"
+    },
+    "log": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/final-build2.log"
+  },
+  "installation": {
+    "debugPulledSha256": "a74002163c571eeaa486887f08b150c9b1d09ba79b8108fa09e50859ba44079b",
+    "androidTestPulledSha256": "5dfdde23cfd3a382699e4c94fa756a4a8032335d17a500794c03f23633ca74db",
+    "matchesBuiltArtifacts": true,
+    "artifacts": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/final-install/",
+    "note": "build2只调整测试断言，重装最终测试APK后回拉App/Test双包核对"
+  },
+  "test": {
+    "command": "adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerInheritsListLayoutAndMiddleDragKeepsSheetOpen,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerRecreationKeepsOpenQueryGroupAndSelection,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerSystemBackKeepsSelectionAndReopenClearsSearch,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxyPickerKeepsOpenForRepeatedSelectionAndResetsSearch,com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing,com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection -e kclashCapturePng true com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
+    "result": "OK (7 tests); failures=0, errors=0, skipped=0",
+    "methods": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest",
+        "method": "dashboardProxyPickerInheritsListLayoutAndMiddleDragKeepsSheetOpen",
+        "statusCode": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest",
+        "method": "dashboardProxyPickerRecreationKeepsOpenQueryGroupAndSelection",
+        "statusCode": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest",
+        "method": "dashboardProxyPickerSystemBackKeepsSelectionAndReopenClearsSearch",
+        "statusCode": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest",
+        "method": "dashboardProxySummaryAndPickerCaptureDarkAndLight",
+        "statusCode": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest",
+        "method": "dashboardProxyPickerKeepsOpenForRepeatedSelectionAndResetsSearch",
+        "statusCode": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest",
+        "method": "serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+        "statusCode": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest",
+        "method": "profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+        "statusCode": 0
+      }
+    ],
+    "log": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/final-install/instrumentation.log",
+    "screenshots": {
+      "count": 14,
+      "sha256Manifest": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/final-install/screenshots-manifest.sha256",
+      "manifestSha256": "96c37c27de337395869a2af2c05487d50d519510486602ddb2a7c3a922537175",
+      "allEntriesVerified": true,
+      "visuallyReviewed": [
+        "dashboard_proxy_picker_before_system_back.png",
+        "dashboard_proxy_picker_after_system_back_reopen.png",
+        "dashboard_proxy_picker_before_recreate.png",
+        "dashboard_proxy_picker_after_recreate.png",
+        "dashboard_proxy_picker_after_recreate_reopen.png"
+      ]
+    }
+  },
+  "firstRun": {
+    "result": "Tests run: 7, Failures: 2; 5/7通过，不计最终通过数",
+    "cause": "新增两例在重开后的assertTextEquals空串处失败；实际EditableText为空，但合并Text包含搜索节点占位文字。改为只断言SemanticsProperties.EditableText后同批7/7；没有修产品生产逻辑",
+    "log": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/first-run/instrumentation.log",
+    "androidTestSha256": "747b19fa5c53c4b54114ca6a29627487ada3085bf6693567fa6aaa00e0cb2367",
+    "initialBuildLog": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/final-build.log"
+  },
+  "cleanup": {
+    "appServicesRunning": false,
+    "vpnNetworkProviderLines": [
+      "4: VpnNetworkProvider:0"
+    ],
+    "activeNetworkTransports": [
+      "WIFI"
+    ],
+    "connectivityShowsVpnTransport": false,
+    "fontScale": "1.0",
+    "rotation": "0",
+    "tunInterfaceInspection": "Not queried; no interface absence claim",
+    "profileOrSubscriptionTouched": false,
+    "authorizedYamlReadOrChanged": false,
+    "flutterBaselinePackageTouched": false,
+    "deviceSettingsChanged": false,
+    "evidence": "../acceptance-artifacts/dashboard-proxy-picker-redmi-20261106/final-install/device-cleanup.json",
+    "firstCheck": "首次收尾脚本误把Connectivity中的VPN请求当作活动网络，保留device-cleanup-first-check.json；修正为只解析实际NetworkAgentInfo的Transports后活动网络为WIFI，无VPN transport；不是产品故障"
+  },
+  "limitations": [
+    "只证明固定数据Debug宿主中正式Compose面板的Activity重建，不代表冷进程或正式仓库恢复",
+    "不覆盖实网、Mihomo测速、VPN/TUN、其他设备/API、实体键盘或全应用焦点流",
+    "14张PNG全部校验与解码，只有列出的5张新增截图逐张目视，不宣称14张全部目视",
+    "没有读取或改动授权源/1.yaml/正式Profile，没有改动Flutter基线包或设备设置；未查询tun接口，不声称其不存在",
+    "完整Flutter子页/面板视觉、统一截图基线、精确缓动和全应用连续动效仍为PARTIAL；玻璃默认关闭"
+  ],
+  "next": "继续主页/配置/代理组剩余子页和面板操作、返回状态，再集中收敛统一视觉基线与连续动效；不扩展已取消的TalkBack/无障碍功能"
+}

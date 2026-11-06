@@ -87,6 +87,19 @@ class DashboardTestActivity : ComponentActivity() {
         savedInstanceState?.let {
             scenario = DashboardScenario.valueOf(it.getString("dashboard_scenario", DashboardScenario.DEFAULT.name))
             useDarkTheme = it.getBoolean("dashboard_dark_theme", true)
+            if (scenario == DashboardScenario.PROXY_GROUPS) {
+                // 作者 long：正式数据由仓库在重建后回供；夹具也须回供同一选组和节点，才能独立验收面板的保存状态。
+                currentGroupName = it.getString("dashboard_proxy_group", "机场选择")
+                val selections = it.getBundle("dashboard_proxy_selections") ?: Bundle()
+                proxyState = ProxyGroupsUiState(
+                    groups = dashboardProxyGroups(),
+                    selectedMap = selections.keySet().mapNotNull { group ->
+                        selections.getString(group)?.let { name -> group to name }
+                    }.toMap(),
+                    unfoldSet = it.getStringArrayList("dashboard_proxy_unfold").orEmpty().toSet(),
+                )
+                proxySelectionCount = it.getInt("dashboard_proxy_selection_count")
+            }
         }
         setContent {
             val running = scenario == DashboardScenario.RUNNING || scenario == DashboardScenario.PROXY_GROUPS
@@ -378,6 +391,14 @@ class DashboardTestActivity : ComponentActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("dashboard_scenario", scenario.name)
         outState.putBoolean("dashboard_dark_theme", useDarkTheme)
+        if (scenario == DashboardScenario.PROXY_GROUPS) {
+            outState.putString("dashboard_proxy_group", currentGroupName)
+            outState.putBundle("dashboard_proxy_selections", Bundle().apply {
+                proxyState.selectedMap.forEach { (group, name) -> putString(group, name) }
+            })
+            outState.putStringArrayList("dashboard_proxy_unfold", ArrayList(proxyState.unfoldSet))
+            outState.putInt("dashboard_proxy_selection_count", proxySelectionCount)
+        }
         super.onSaveInstanceState(outState)
     }
 }

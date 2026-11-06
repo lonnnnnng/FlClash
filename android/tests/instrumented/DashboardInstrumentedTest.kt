@@ -372,6 +372,70 @@ class DashboardInstrumentedTest {
     }
 
     @Test
+    fun dashboardProxyPickerSystemBackKeepsSelectionAndReopenClearsSearch() = withProxyOptions(ProxyPageOptions()) {
+        prepareTouchVisualCapture()
+        openProxyPicker()
+        composeRule.onNodeWithTag("proxy_node_机场选择_日本节点").performClick()
+        composeRule.onNodeWithTag("proxy_group_search").performTextInput("日本")
+        composeRule.onNodeWithTag("proxy_node_机场选择_香港节点").assertDoesNotExist()
+        // 作者 long：先收起输入法，随后只发一次平台返回，明确验收 Dialog 退出而不是 IME 消费返回。
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        recordWindowPng("dashboard_proxy_picker_before_system_back")
+        androidx.test.espresso.Espresso.pressBack()
+        composeRule.onNodeWithTag("dashboard_proxy_picker").assertDoesNotExist()
+        composeRule.onNodeWithTag("dashboard_proxy_groups_card").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertEquals(Lifecycle.State.RESUMED, composeRule.activity.lifecycle.currentState)
+            assertEquals(1, composeRule.activity.proxySelectionCount)
+        }
+        composeRule.onNodeWithTag("dashboard_proxy_groups_card").performClick()
+        // 作者 long：占位文字也合并到 Text 语义中；重开是否清空应只核对用户可编辑的查询内容。
+        composeRule.onNodeWithTag("proxy_group_search").assert(
+            SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")),
+        )
+        composeRule.onNodeWithTag("proxy_group_tab_机场选择").assertIsSelected()
+        composeRule.onNodeWithTag("proxy_node_机场选择_香港节点").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_node_机场选择_日本节点_in_use", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.runOnIdle { assertEquals(1, composeRule.activity.proxySelectionCount) }
+        recordWindowPng("dashboard_proxy_picker_after_system_back_reopen")
+        composeRule.onNodeWithTag("dashboard_proxy_picker_close").performClick()
+    }
+
+    @Test
+    fun dashboardProxyPickerRecreationKeepsOpenQueryGroupAndSelection() = withProxyOptions(ProxyPageOptions()) {
+        prepareTouchVisualCapture()
+        openProxyPicker()
+        composeRule.onNodeWithTag("proxy_group_tab_流媒体").performClick()
+        composeRule.onNodeWithTag("proxy_node_流媒体_香港节点").performClick()
+        composeRule.onNodeWithTag("proxy_group_search").performTextInput("香港")
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        composeRule.onNodeWithTag("proxy_group_tab_流媒体").assertIsSelected()
+        composeRule.onNodeWithTag("proxy_node_流媒体_日本节点").assertDoesNotExist()
+        recordWindowPng("dashboard_proxy_picker_before_recreate")
+        composeRule.activityRule.scenario.recreate()
+        composeRule.onNodeWithTag("dashboard_proxy_picker").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_group_search").assertTextEquals("香港")
+        composeRule.onNodeWithTag("proxy_group_tab_流媒体").assertIsSelected()
+        composeRule.onNodeWithTag("proxy_node_流媒体_香港节点_in_use", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_node_流媒体_日本节点").assertDoesNotExist()
+        composeRule.runOnIdle { assertEquals(1, composeRule.activity.proxySelectionCount) }
+        recordWindowPng("dashboard_proxy_picker_after_recreate")
+        // 作者 long：重建保留未退出面板的查询，真正退出后新一轮面板必须清空查询；两种生命周期不能混用。
+        composeRule.onNodeWithTag("dashboard_proxy_picker_close").performClick()
+        composeRule.onNodeWithTag("dashboard_proxy_picker").assertDoesNotExist()
+        composeRule.onNodeWithTag("dashboard_proxy_groups_card").performClick()
+        composeRule.onNodeWithTag("proxy_group_search").assert(
+            SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.EditableText, androidx.compose.ui.text.AnnotatedString("")),
+        )
+        composeRule.onNodeWithTag("proxy_group_tab_流媒体").assertIsSelected()
+        composeRule.onNodeWithTag("proxy_node_流媒体_日本节点").assertIsDisplayed()
+        composeRule.onNodeWithTag("proxy_node_流媒体_香港节点_in_use", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.runOnIdle { assertEquals(1, composeRule.activity.proxySelectionCount) }
+        recordWindowPng("dashboard_proxy_picker_after_recreate_reopen")
+        composeRule.onNodeWithTag("dashboard_proxy_picker_close").performClick()
+    }
+
+    @Test
     fun dashboardProxyPickerInheritsListLayoutAndMiddleDragKeepsSheetOpen() =
         withProxyOptions(ProxyPageOptions(displayMode = ProxyDisplayMode.LIST)) {
             openProxyPicker()
