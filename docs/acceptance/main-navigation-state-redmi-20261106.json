@@ -1,0 +1,489 @@
+{
+  "date": "2026-11-06",
+  "status": "DONE-VERIFIED",
+  "overallVisualParity": "PARTIAL",
+  "title": "真实主页面往返与代理List重建恢复",
+  "summary": "真实MainActivity代理页跨配置/首页往返、List布局/分组/滚动/吸顶标题跨Activity重建、搜索空态保留与清除恢复已验。KUI-001修正List首次恢复14px偏移和吸顶标题消失：首个非空实际布局后重新应用保存的索引/偏移，无固定延迟或像素补偿。Redmi最终同套App/Test final5精确9/9，27张PNG哈希/解码验证并经4张拼图目视；四模块JVM XML共775项零失败/错误/跳过，App499本轮重跑，其余任务UP-TO-DATE。Debug/Test、未签名Release-R8和双Lint通过（Debug0错误/67警告/10提示，Release0错误/66警告/9提示），安装双包实际回拉匹配。两份正式FILE/URL配置仅复用，临时副本回收，正文/元数据/偏好/选择及Flutter基线、原1.yaml、设备设置保持，结束无本应用服务。",
+  "scope": {
+    "sourceBaseCommit": "d186b653",
+    "productionChanged": true,
+    "changedSources": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt": "8dc3048f53697cf054fcfe3caf468fd135e71c2c0ab850e20515c5cf2fc68b1a",
+      "android/tests/instrumented/MainNavigationStateInstrumentedTest.kt": "a4e4d3df37b882293f0330ca678734a22f3dbc250539c4ddccfc76385e4d3ec4"
+    },
+    "implementationReferences": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt:632",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt:314",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MainPageMotion.kt:53"
+    ],
+    "flutterReadOnlyReferences": [
+      "lib/views/proxies/list.dart:37",
+      "lib/views/proxies/list.dart:218",
+      "lib/views/proxies/list.dart:313"
+    ],
+    "boundary": "三条新增方法使用真实MainActivity及正式Repository，以已授权原1.yaml对应FILE正文创建临时副本；不改变正式两行配置，不下载远程，不启动运行态Mihomo/VPN。六条相邻回归使用既有固定数据宿主/组件。",
+    "defectRecord": "docs/proxy-list-restoration-defect.md"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "1",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "flutterHashes": [
+      "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 3m 49s; 389 actionable tasks: 38 executed, 351 up-to-date",
+    "log": "../acceptance-artifacts/main-navigation-state-redmi-20261106/build5.log",
+    "jvm": {
+      "tests": 775,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byModule": {
+        "app": {
+          "tests": 499,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 69
+        },
+        "service": {
+          "tests": 207,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 20
+        },
+        "core": {
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 1
+        },
+        "common": {
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 4
+        }
+      },
+      "execution": "App499本轮testDebugUnitTest实际执行，其余三模块共276项UP-TO-DATE，不声称775全部强制重跑"
+    },
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 10
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 9
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "7d3c8c0fafc7da16a1e8fe0d451f0e09f3429a066e0ec3b403fdd59aa5cd23da",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "093f3e23b3db28d79576a91bf3cac75e1b85812e46e67cb9856cc3af90e10376",
+        "bytes": 5706025,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "ed052417f2a2a408c20623b253e02a651d19fca6305914a6eef33b02d3e936d8",
+        "bytes": 48211416,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    },
+    "releaseSigning": "未签名Release/R8构建通过，正式签名与设备运行未验"
+  },
+  "installation": {
+    "packages": {
+      "com.lonnnnnng.flclash": {
+        "builtSha256": "7d3c8c0fafc7da16a1e8fe0d451f0e09f3429a066e0ec3b403fdd59aa5cd23da",
+        "pulledSha256": "7d3c8c0fafc7da16a1e8fe0d451f0e09f3429a066e0ec3b403fdd59aa5cd23da"
+      },
+      "com.lonnnnnng.flclash.test": {
+        "builtSha256": "093f3e23b3db28d79576a91bf3cac75e1b85812e46e67cb9856cc3af90e10376",
+        "pulledSha256": "093f3e23b3db28d79576a91bf3cac75e1b85812e46e67cb9856cc3af90e10376"
+      }
+    },
+    "matchesBuiltArtifacts": true,
+    "verification": "App/Test分别adb pull设备base.apk并在本机计算SHA-256，与本次构建一致"
+  },
+  "profilePreparation": {
+    "result": "local=reused;remote=reused;count=2",
+    "behavior": "仅复用当前外层AGENTS授权的FILE/URL，不更新或重新下载远程正文；source-sha由运行参数绑定当前工作区原1.yaml",
+    "sourceDisclosure": "正文、订阅地址、密钥不写入证据或提交"
+  },
+  "profilePreservation": {
+    "before": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "93ec6b9c04ce609ade5deb87bd3343884682055279e1558a50d3336b086ce394",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "after": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "93ec6b9c04ce609ade5deb87bd3343884682055279e1558a50d3336b086ce394",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "identical": true,
+    "perMethodMarkers": [
+      "formal-count=2;source-sha256=353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e;temporary-removed=true;profiles-body-metadata-selection-preferences-preserved=true;runtime=STOPPED",
+      "formal-count=2;source-sha256=353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e;temporary-removed=true;profiles-body-metadata-selection-preferences-preserved=true;runtime=STOPPED",
+      "formal-count=2;source-sha256=353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e;temporary-removed=true;profiles-body-metadata-selection-preferences-preserved=true;runtime=STOPPED"
+    ],
+    "comparison": "两份正式配置ID/type/正文SHA-size-mtime、完整行摘要、Room偏好摘要及当前选择完全相同，runtime均STOPPED；三条新增用例各自还核对全部原行和文件并按ID/唯一名称删除自身临时副本"
+  },
+  "test": {
+    "command": [
+      "adb",
+      "-s",
+      "wsvwypiz7xwslvl7",
+      "shell",
+      "am",
+      "instrument",
+      "-w",
+      "-r",
+      "-e",
+      "class",
+      "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#tabGroupAndScrollSurviveProfilesAndDashboardRoundTrips,com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#listLayoutAndScrollSurviveProfilesRoundTripAndActivityRecreation,com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#emptySearchSurvivesMainDestinationsAndRecreationThenClearRecoversNodes,com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest#continuousPagesKeepDockAndRestoreScrollAndDraftInBothThemes,com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest#rapidReversalAndSkippedDestinationsFinishWithoutDuplicatePages,com.lonnnnnng.flclash.ui.ProxyProtocolScrollInstrumentedTest#groupPositionsSurviveDistantTabsLayoutNavigationAndProfileSwitch,com.lonnnnnng.flclash.ui.ProxyProtocolScrollInstrumentedTest#listLocatesInsideGroupAndRestoresScrollAcrossLayoutAndNavigation,com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls,com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#listHeaderLocateBatchAndFoldKeepActionsInSyncWithMotion",
+      "-e",
+      "kclashCapturePng",
+      "true",
+      "-e",
+      "kclashNavigationAcceptance",
+      "true",
+      "-e",
+      "kclashLocalYamlSha256",
+      "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+      "com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner"
+    ],
+    "result": "OK (9 tests); failures=0, errors=0, skipped=0",
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#tabGroupAndScrollSurviveProfilesAndDashboardRoundTrips",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#listLayoutAndScrollSurviveProfilesRoundTripAndActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#emptySearchSurvivesMainDestinationsAndRecreationThenClearRecoversNodes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest#rapidReversalAndSkippedDestinationsFinishWithoutDuplicatePages",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest#continuousPagesKeepDockAndRestoreScrollAndDraftInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyProtocolScrollInstrumentedTest#groupPositionsSurviveDistantTabsLayoutNavigationAndProfileSwitch",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyProtocolScrollInstrumentedTest#listLocatesInsideGroupAndRestoresScrollAcrossLayoutAndNavigation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#listHeaderLocateBatchAndFoldKeepActionsInSyncWithMotion",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "seconds": 105.919,
+    "log": "../acceptance-artifacts/main-navigation-state-redmi-20261106/final5/instrumentation-run1.log",
+    "assertions": [
+      "Tab末组/末节点经配置页、首页往返，当前分组与节点四边坐标保持（1px容差）",
+      "List布局、展开集合、当前分组、节点和吸顶标题几何经配置页往返与真实Activity重建保持",
+      "无结果搜索经主页面往返及Activity重建保留查询和空态；清除后直接恢复原组节点",
+      "主页面深浅色连续帧/草稿/滚动、快速反向与跳页、远组Tab滚动保持回归",
+      "List组内定位/布局切换/页面返回、吸顶raised层、批量测速/定位/展开收回回归"
+    ],
+    "geometryMarkers": [
+      "phase=before;viewport=Rect.fromLTRB(0.0, 309.0, 1080.0, 2081.0);anchor=Rect.fromLTRB(72.0, 1792.0, 1008.0, 2081.0);scroll=19594.0",
+      "phase=recreated;viewport=Rect.fromLTRB(0.0, 309.0, 1080.0, 2081.0);anchor=Rect.fromLTRB(72.0, 1792.0, 1008.0, 2081.0);scroll=19594.0"
+    ],
+    "screenshots": {
+      "count": 27,
+      "entries": [
+        {
+          "path": "main_navigation_tab_before.png",
+          "bytes": 142726,
+          "sha256": "64ef5727d471de3c457ab2f5bd056f63e9b976ebb97037f808c3aa16951e8ae7"
+        },
+        {
+          "path": "main_navigation_tab_after_profiles.png",
+          "bytes": 142726,
+          "sha256": "64ef5727d471de3c457ab2f5bd056f63e9b976ebb97037f808c3aa16951e8ae7"
+        },
+        {
+          "path": "main_navigation_tab_after_dashboard.png",
+          "bytes": 142726,
+          "sha256": "64ef5727d471de3c457ab2f5bd056f63e9b976ebb97037f808c3aa16951e8ae7"
+        },
+        {
+          "path": "main_navigation_list_before.png",
+          "bytes": 141753,
+          "sha256": "c49938091017a7278602de343c444bd54ef5a380bb1b2dbf776f676ad2fb7bda"
+        },
+        {
+          "path": "main_navigation_list_after_profiles.png",
+          "bytes": 141753,
+          "sha256": "c49938091017a7278602de343c444bd54ef5a380bb1b2dbf776f676ad2fb7bda"
+        },
+        {
+          "path": "main_navigation_list_recreated.png",
+          "bytes": 141753,
+          "sha256": "c49938091017a7278602de343c444bd54ef5a380bb1b2dbf776f676ad2fb7bda"
+        },
+        {
+          "path": "main_navigation_search_returned.png",
+          "bytes": 184305,
+          "sha256": "23756ca7e9832a21b3ab026c02ffa9ead7154b2727c9f82cdf26aa206579ec0d"
+        },
+        {
+          "path": "main_navigation_search_recreated.png",
+          "bytes": 184218,
+          "sha256": "3d1f694a03431e88c8c68dc209ecee81c0e753b387db011fa451d2d74bca2f25"
+        },
+        {
+          "path": "main_navigation_search_cleared.png",
+          "bytes": 167783,
+          "sha256": "61b7d6e9698ff4f76018b0ddf0bac64cf7b0a68ea20b4da8d431dbb300222809"
+        },
+        {
+          "path": "main_page_light_frame_0.png",
+          "bytes": 86946,
+          "sha256": "c893ffb04ddb0679be377a3136b8616d5ce23aa7a7a0523e5599cb71eed47f9a"
+        },
+        {
+          "path": "main_page_light_frame_1.png",
+          "bytes": 100398,
+          "sha256": "9b2413f8bc5b31f7c0e89e5fc1c2d7c86363fc5a9debb4dd3e7095135253f718"
+        },
+        {
+          "path": "main_page_light_frame_2.png",
+          "bytes": 100366,
+          "sha256": "a9271d02e758cf6ee0b38e5c39eb7f5b2e73b71fbec168d73eccf61cc4814045"
+        },
+        {
+          "path": "main_page_light_frame_3.png",
+          "bytes": 100370,
+          "sha256": "186adaf1e52c51915c2f37c19db41881c8b9eb5a063dcc126925e0274690b9fd"
+        },
+        {
+          "path": "main_page_light_frame_4.png",
+          "bytes": 100327,
+          "sha256": "6c376a435126a355f6920accaf3f80a684b9d074d99d2a57daa98ec67c058759"
+        },
+        {
+          "path": "main_page_light_settled.png",
+          "bytes": 100473,
+          "sha256": "0c4e420445f2d718104a694acdbbb904eb3801440828023d48466fce14302a67"
+        },
+        {
+          "path": "main_page_dark_frame_0.png",
+          "bytes": 86755,
+          "sha256": "2b7210f6deb3230582a7b1d7104554937d3ba13b974f130ca1af15543683a15b"
+        },
+        {
+          "path": "main_page_dark_frame_1.png",
+          "bytes": 100532,
+          "sha256": "a49cdfdf20925fdcb4896f0d31e1873357e3debb17e25d64b3a72fffa1c6ac84"
+        },
+        {
+          "path": "main_page_dark_frame_2.png",
+          "bytes": 100509,
+          "sha256": "75a9bd4296b0f5ebacc7ca31f73f41bb3b18be1c5cf95225fdc0d0f1bc70679c"
+        },
+        {
+          "path": "main_page_dark_frame_3.png",
+          "bytes": 100481,
+          "sha256": "655abe39be4aff3dc5e41b50492df04922cee69fe338e03db51d1b9cfe02bcbe"
+        },
+        {
+          "path": "main_page_dark_frame_4.png",
+          "bytes": 100443,
+          "sha256": "ad6a4bfecfd0d7c296aee771fc583849f2cf7999b8db3653265547791e33e4dd"
+        },
+        {
+          "path": "main_page_dark_settled.png",
+          "bytes": 100622,
+          "sha256": "841fe6f878ea1a822b648b8844a5531ebb36e39c1c8509fb18a0f537e419078b"
+        },
+        {
+          "path": "proxy_list_header_locate_batch.png",
+          "bytes": 103988,
+          "sha256": "d084a2c9cd0957afdc8193c6c679a391249828207ca083c6e397ea12a650526a"
+        },
+        {
+          "path": "proxy_list_header_fold_expand_settled.png",
+          "bytes": 102036,
+          "sha256": "88eab2581500f51e8d9729925e3d7f6de1c6fa2112d88b12a4cf547e3c86e691"
+        },
+        {
+          "path": "proxy_list_group_expand_mid.png",
+          "bytes": 56736,
+          "sha256": "65ee1628f4029e6f1836e14e1c42cdeb8e01d695d2f437c03c1517ea3ba0a56b"
+        },
+        {
+          "path": "proxy_list_group_expand_settled.png",
+          "bytes": 102549,
+          "sha256": "feaf9d766687b5b17491306fd9730e8d130408d89ea0d8494e0beb7cfd1f3063"
+        },
+        {
+          "path": "proxy_list_group_header_resting.png",
+          "bytes": 102549,
+          "sha256": "feaf9d766687b5b17491306fd9730e8d130408d89ea0d8494e0beb7cfd1f3063"
+        },
+        {
+          "path": "proxy_list_group_header_lifted.png",
+          "bytes": 95035,
+          "sha256": "7404366cd8d45a34da2942b0af0906afe9bab46773b6872c9df7d9e3dde92bc2"
+        }
+      ],
+      "hashesAndDecodingVerified": true,
+      "visuallyReviewed": true,
+      "review": "27张经4张本机拼图集中目视；新增9张为真实MainActivity全屏状态，另12张为主页面组件转场局部帧、6张为List组件状态。标题/末节点重建前后位置相同，空态与清除恢复可见；组件帧不作为整页或Flutter逐像素基线"
+    }
+  },
+  "retainedFailures": [
+    {
+      "batch": "run1",
+      "result": "4/6",
+      "log": "../acceptance-artifacts/main-navigation-state-redmi-20261106/instrumentation-run1.log",
+      "failures": [
+        "List真实Activity重建后末项top+14px，吸顶标题未绘出",
+        "搜索清空的AnnotatedString对象比较失败，日志空文本；改为EditableText.text断言后通过，非产品修复"
+      ]
+    },
+    {
+      "batch": "diagnostic2",
+      "result": "1/2",
+      "detail": "搜索通过；List延后截图仍+14px，视口不变",
+      "log": "../acceptance-artifacts/main-navigation-state-redmi-20261106/diagnostic2/instrumentation-run1.log"
+    },
+    {
+      "batch": "diagnostic-build3",
+      "result": "BUILD FAILED",
+      "detail": "临时日志字符串引号转义错误；未安装；修正后diagnostic-build3b通过"
+    },
+    {
+      "batch": "diagnostic3",
+      "result": "0/1",
+      "detail": "临时日志确认firstVisibleItemIndex=39、offset94→80；header仍在layoutInfo，截图未绘出；诊断日志已从最终源码移除",
+      "log": "../acceptance-artifacts/main-navigation-state-redmi-20261106/diagnostic3-layout.log"
+    },
+    {
+      "batch": "diagnostic4",
+      "result": "1/1",
+      "detail": "恢复补丁后位置和截图恢复；最终额外加入标题四边断言，统一build5/final5再跑9/9；诊断通过不与最终批次累计"
+    }
+  ],
+  "preservation": {
+    "deviceSettingsUnchanged": true,
+    "flutterApkUnchanged": true,
+    "localYamlShaSizeMtimeUnchanged": true,
+    "formalProfilesUnchanged": true,
+    "appServicesRunningAtEnd": false
+  },
+  "artifacts": "../acceptance-artifacts/main-navigation-state-redmi-20261106/",
+  "limitations": [
+    "只证明本组代理页浏览状态的Activity重建，不证明冷进程死亡/运行态恢复；Provider正文的正式宿主/冷进程仍待补",
+    "没有重跑实网/Mihomo运行态/VPN/Go/蜂窝/低API/OEM、正式签名运行或远端CI",
+    "三条正式宿主用例只使用既有授权原1.yaml临时副本，未替换YAML或修改远程资源",
+    "没有独立证明AndroidX内部lookahead/窗口测量根因，不归因上游Flutter或库缺陷",
+    "27张截图不证明完整Flutter逐像素一致或全应用动效性能；完整视觉仍PARTIAL，玻璃默认关闭，既有暂缓/取消范围保持"
+  ],
+  "next": "按todo第9项继续配置/代理组尚未覆盖的子页、面板返回和异常恢复；再统一视觉基线/连续动效。实时背景和性能后排"
+}

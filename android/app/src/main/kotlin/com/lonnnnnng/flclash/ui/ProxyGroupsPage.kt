@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 private enum class ProxyToolsMenuPage {
@@ -630,6 +631,16 @@ private fun ProxyGroupsListPage(
     onContentAtTopChanged: (Boolean) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
+    val restoredPosition = remember(listState) {
+        listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+    }
+    LaunchedEffect(listState) {
+        if (restoredPosition.first > 0 || restoredPosition.second > 0) {
+            // 作者 long：重建首帧布局可能先裁剪末尾位置；等实际列表完成布局后再应用保存的锚点，连同吸顶组头一起恢复。
+            snapshotFlow { listState.layoutInfo.visibleItemsInfo.isNotEmpty() }.first { it }
+            listState.scrollToItem(restoredPosition.first, restoredPosition.second)
+        }
+    }
     val scope = rememberCoroutineScope()
     val listScrolled by remember {
         derivedStateOf {
