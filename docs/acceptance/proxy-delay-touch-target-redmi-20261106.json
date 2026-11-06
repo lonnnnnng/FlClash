@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "代理组测速触点在 Tab/List 布局中的实际命中范围与相邻节点选择隔离",
+  "status": "DONE_VERIFIED_FOR_PROXY_DELAY_TOUCH_TARGET; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "2867d3bf",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "implementation": {
+    "productionChanged": false,
+    "test": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+    "newMethod": "delayTouchTargetExtendsPastGlyphWithoutStealingAdjacentNodeTap",
+    "behavior": [
+      "Tab 与 List 两种布局中，在测速可见图标语义边界外 8dp 位置点按仍只触发测速回调",
+      "测速点按不改变当前节点选择",
+      "随后点按相邻节点卡只切换节点，不额外触发测速"
+    ],
+    "reference": "仅验证现有 Kotlin 代理卡测速命中区域；未修改 Flutter 上游或 com.follow.clash"
+  },
+  "build": {
+    "command": "./gradlew test :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :common:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL；四模块 JVM 771 项，失败/错误/跳过均为 0；Debug/Test、未签名 Release/R8、Debug/Release Lint 均通过",
+    "jvm": {
+      "tests": 771,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debugSha256": "f5be349b51797edb4f7fa8721ed3147f7f53d8bd44f35af3eb56dccc6d82f455",
+    "androidTestSha256": "ff00d705620152b41c62922040300ea8d9555fe7741730d52e40c54be9bce3f1",
+    "releaseUnsignedSha256": "d6c132ce7bfab786bfdcc19024cabf9fddb59aeb2702671890b4a68e9f879461",
+    "lint": {
+      "debug": "0 errors, 67 warnings, 10 hints",
+      "release": "0 errors, 66 warnings, 9 hints"
+    },
+    "log": "../acceptance-artifacts/proxy-delay-touch-target-redmi-20261106/final-build.log"
+  },
+  "installation": {
+    "debugPulledSha256": "f5be349b51797edb4f7fa8721ed3147f7f53d8bd44f35af3eb56dccc6d82f455",
+    "androidTestPulledSha256": "ff00d705620152b41c62922040300ea8d9555fe7741730d52e40c54be9bce3f1",
+    "matchesBuiltArtifacts": true,
+    "artifacts": "../acceptance-artifacts/proxy-delay-touch-target-redmi-20261106/final-install/"
+  },
+  "test": {
+    "command": "adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest -e kclashCapturePng true com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
+    "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "result": "OK (11 tests); failures=0, errors=0, skipped=0",
+    "newMethod": "delayTouchTargetExtendsPastGlyphWithoutStealingAdjacentNodeTap",
+    "log": "../acceptance-artifacts/proxy-delay-touch-target-redmi-20261106/final-install/instrumentation.log",
+    "screenshots": {
+      "count": 33,
+      "sha256Manifest": "../acceptance-artifacts/proxy-delay-touch-target-redmi-20261106/final-install/screenshots-manifest.sha256",
+      "manifestSha256": "587342eea36dbcb092cd980e2c50961f78ba27b4986daad145c4f4dfde0a0726",
+      "allEntriesVerified": true,
+      "visuallyReviewed": [
+        "proxy_delay_touch_target_tab.png",
+        "proxy_delay_touch_target_list.png"
+      ]
+    }
+  },
+  "cleanup": {
+    "appServicesRunning": false,
+    "vpnNetworkProviderCount": 0,
+    "connectivityShowsVpnTransport": false,
+    "tunInterfaceInspection": "Permission denied; no claim based on ip link output",
+    "profileOrSubscriptionTouched": false,
+    "authorizedYamlReadOrChanged": false,
+    "flutterBaselinePackageTouched": false,
+    "deviceFontScaleChanged": false
+  },
+  "limitations": [
+    "只证明 Redmi API36 上 Compose instrumentation 注入的触点命中与回调隔离，不代表手指触屏测量或真实 Mihomo URLTest 已执行",
+    "不覆盖实际网络、VPN/TUN、真实测速结果及其他设备/API",
+    "完整代理页键盘焦点顺序、剩余子页/面板视觉、全应用动效和 Flutter 逐像素一致性仍为 PARTIAL；玻璃继续默认关闭"
+  ],
+  "next": "继续验收代理组其余子页和面板的操作/返回状态，再统一整理视觉基线与连续动效；不扩展 TalkBack 或无障碍功能"
+}

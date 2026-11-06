@@ -234,6 +234,59 @@ class ProxyPageParityInstrumentedTest {
         }
     }
 
+    @Test fun delayTouchTargetExtendsPastGlyphWithoutStealingAdjacentNodeTap() {
+        var selected by mutableStateOf("新加坡节点")
+        var tested = 0
+        val group = ProxyGroupInfo("触点命中", "Selector", selected,
+            listOf("香港节点", "日本节点", "新加坡节点"), false)
+        compose.setContent {
+            KClashTheme {
+                ProxyGroupsCard(
+                    modifier = Modifier.fillMaxSize(),
+                    state = ProxyGroupsUiState(groups = listOf(group.copy(now = selected)), unfoldSet = setOf(group.name)),
+                    runtimeState = CoreRuntimeStatus.STOPPED,
+                    currentGroupName = group.name,
+                    onRefresh = {},
+                    onToggleGroup = {},
+                    onSelect = { _, name -> selected = name },
+                    onTestDelay = { _, _ -> tested++ },
+                    onTestGroupDelay = {},
+                )
+            }
+        }
+        for (layout in listOf("TAB", "LIST")) {
+            if (layout == "LIST") option("display_mode", "proxy_display_mode_LIST")
+            val cardTag = if (layout == "TAB") "proxy_node_" else "proxy_list_node_"
+            val delayTag = if (layout == "TAB") "proxy_node_delay_" else "proxy_list_node_delay_"
+            val card = compose.onNodeWithTag(cardTag + "触点命中_日本节点")
+            val delay = compose.onNodeWithTag(delayTag + "触点命中_日本节点", useUnmergedTree = true)
+            val cardBounds = card.fetchSemanticsNode().boundsInRoot
+            val delayBounds = delay.fetchSemanticsNode().boundsInRoot
+            val density = compose.activity.resources.displayMetrics.density
+            val justBelowGlyph = Offset(
+                x = delayBounds.center.x - cardBounds.left,
+                y = delayBounds.bottom - cardBounds.top + 8f * density,
+            )
+
+            // 作者 long：测速图标只有13dp高，点在可见字形外沿仍应落到测速触点，而不是父节点卡片。
+            card.performTouchInput { click(justBelowGlyph) }
+            compose.runOnIdle {
+                assertEquals(1, tested)
+                assertEquals("新加坡节点", selected)
+            }
+            capture("proxy_delay_touch_target_${layout.lowercase()}")
+
+            compose.onNodeWithTag(cardTag + "触点命中_香港节点")
+                .performTouchInput { click(Offset(width * 0.35f, height * 0.35f)) }
+            compose.runOnIdle {
+                assertEquals(1, tested)
+                assertEquals("香港节点", selected)
+                selected = "新加坡节点"
+                tested = 0
+            }
+        }
+    }
+
     @Test fun computedGroupSeparatesAutomaticNowFromPreferredNodeMarker() {
         val group = ProxyGroupInfo(
             name = "自动优选",
