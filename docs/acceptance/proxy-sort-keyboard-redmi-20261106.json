@@ -1,0 +1,292 @@
+{
+  "date": "2026-11-06",
+  "status": "DONE-VERIFIED",
+  "overallVisualParity": "PARTIAL",
+  "title": "代理组排序子菜单键盘返回与名称排序",
+  "scope": {
+    "changedFiles": [
+      "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt"
+    ],
+    "productionChanged": false,
+    "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#sortSubmenuSupportsKeyboardEscapeAndAppliesNameOrder",
+    "sourceSha256": "9dddecd5f9259da9ce591c6bc2f10f8e4d9f9a4719045dbee5a3f1e381f76024",
+    "sourceBaseCommit": "d0f5d2d0",
+    "implementationReferences": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt:355",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt:445",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuStack.kt:121",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt:281"
+    ],
+    "boundary": "正式Compose组件配固定内存数据，未接真实核心；不修改Flutter参考源、参考包或Mihomo"
+  },
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "1",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "flutterHashes": [
+      "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 59s; 389 actionable tasks: 11 executed, 378 up-to-date",
+    "log": "../acceptance-artifacts/proxy-sort-keyboard-redmi-20261106/build2.log",
+    "jvm": {
+      "tests": 775,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byModule": {
+        "app": {
+          "tests": 499,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 69
+        },
+        "service": {
+          "tests": 207,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 20
+        },
+        "core": {
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 1
+        },
+        "common": {
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 4
+        }
+      },
+      "execution": "四模块Debug JVM任务均UP-TO-DATE，保留XML共775项，不声称全部强制重跑"
+    },
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 10
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 9
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "4c2ca16e8c11819c505382e574b585138ad18ded044952e9422764abd6491151",
+        "bytes": 90701078
+      },
+      "androidTest": {
+        "sha256": "6cc4fbaaa2943899e8d2bd2953294544ea560894d19d0e77c8d5ac2a20cc993e",
+        "bytes": 5688117
+      },
+      "releaseUnsigned": {
+        "sha256": "e460c26787690f45c68a2e342f4ef5dc32a0f1d6bd2fcbb2a0c063b59f4e7f16",
+        "bytes": 48211424
+      }
+    },
+    "nativeAbis": {
+      "debug": [
+        "arm64-v8a"
+      ],
+      "androidTest": [],
+      "releaseUnsigned": [
+        "arm64-v8a"
+      ]
+    },
+    "releaseSigning": "未签名Release/R8构建通过，正式签名与设备运行未验"
+  },
+  "installation": {
+    "packages": {
+      "com.lonnnnnng.flclash": {
+        "builtSha256": "4c2ca16e8c11819c505382e574b585138ad18ded044952e9422764abd6491151",
+        "pulledSha256": "4c2ca16e8c11819c505382e574b585138ad18ded044952e9422764abd6491151"
+      },
+      "com.lonnnnnng.flclash.test": {
+        "builtSha256": "6cc4fbaaa2943899e8d2bd2953294544ea560894d19d0e77c8d5ac2a20cc993e",
+        "pulledSha256": "6cc4fbaaa2943899e8d2bd2953294544ea560894d19d0e77c8d5ac2a20cc993e"
+      }
+    },
+    "matchesBuiltArtifacts": true,
+    "verification": "分别adb pull App/Test base.apk，在本机计算SHA-256与同批构建比对一致"
+  },
+  "profilePreparation": {
+    "command": "python3 tool/android_prepare_profiles.py --serial wsvwypiz7xwslvl7 --log ../acceptance-artifacts/proxy-sort-keyboard-redmi-20261106/profile-preparation.log",
+    "result": "local=reused;remote=reused;count=2",
+    "behavior": "外层AGENTS.md唯一远程来源与原1.yaml对应配置已由前组按用户重装后授权恢复；本轮正式Repository仅复用，不重新下载或覆盖正文，不重复导入，不启动核心/VPN",
+    "sourceDisclosure": "订阅真实地址、正文与凭据不写入证据或提交"
+  },
+  "profilePreservation": {
+    "before": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "93ec6b9c04ce609ade5deb87bd3343884682055279e1558a50d3336b086ce394",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "after": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "93ec6b9c04ce609ade5deb87bd3343884682055279e1558a50d3336b086ce394",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "identical": true,
+    "comparison": "两配置ID/type/正文SHA-size-mtime、元数据和偏好摘要及当前选择完全相同，runtime均STOPPED"
+  },
+  "test": {
+    "command": [
+      "adb",
+      "-s",
+      "wsvwypiz7xwslvl7",
+      "shell",
+      "am",
+      "instrument",
+      "-w",
+      "-r",
+      "-e",
+      "class",
+      "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#sortSubmenuSupportsKeyboardEscapeAndAppliesNameOrder,com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#overflowingGroupMenuSupportsKeyboardSelectionAndEscapeDismissal,com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#groupTabsCanBeNavigatedWithDirectionalKeysAndActivatedWithEnter,com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#delayFocusRingAndKeyboardActivationStayIndependentFromNodeSelection,com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent,com.lonnnnnng.flclash.ui.ProxyProtocolScrollInstrumentedTest#gridSemanticAnchorSurvivesSortDensityAndSearchChanges",
+      "-e",
+      "kclashCapturePng",
+      "true",
+      "com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner"
+    ],
+    "result": "OK (6 tests); failures=0, errors=0, skipped=0",
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#sortSubmenuSupportsKeyboardEscapeAndAppliesNameOrder",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#delayFocusRingAndKeyboardActivationStayIndependentFromNodeSelection",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#groupTabsCanBeNavigatedWithDirectionalKeysAndActivatedWithEnter",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest#overflowingGroupMenuSupportsKeyboardSelectionAndEscapeDismissal",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyProtocolScrollInstrumentedTest#gridSemanticAnchorSurvivesSortDensityAndSearchChanges",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "seconds": 32.107,
+    "assertions": [
+      "键盘打开工具菜单首项聚焦；逐次DirectionDown经刷新和样式定位排序，不触发刷新/节点选择",
+      "Enter进入排序子层后聚焦返回项；Escape只回根层，再次Escape关闭；排序偏好与原节点顺序保持",
+      "重新键盘打开并进入排序，DirectionDown定位名称后Enter提交，菜单关闭，持久偏好为NAME",
+      "节点几何顺序由node-z/node-a/node-m变为node-a/node-m/node-z；当前节点保持node-m，刷新次数为0",
+      "再开根菜单文案为排序：名称；Escape正常关闭",
+      "相邻溢出菜单键盘、Tab键盘、测速焦点、工具菜单触摸返回/外部关闭/换配置及排序滚动锚点回归"
+    ],
+    "screenshots": {
+      "count": 3,
+      "entries": [
+        {
+          "path": "proxy_keyboard_name_sort.png",
+          "bytes": 49690,
+          "sha256": "cd800390685eac6918a59eb689e1dd02c0188ddff66c8fdbb2b0378f3936379b"
+        },
+        {
+          "path": "proxy_delay_focus_settled.png",
+          "bytes": 58119,
+          "sha256": "8097a5dc8ca41f50d0a3109c42287e9a64a47679f6a57f760c3d521b9d427eee"
+        },
+        {
+          "path": "main_menu_proxy_sort.png",
+          "bytes": 81231,
+          "sha256": "c590013c4f50c7a05d10b9225728fb5d87de77e1b8ec2c41ce17218a4723de77"
+        }
+      ],
+      "hashesVerified": true,
+      "visuallyReviewed": true,
+      "review": "三张PNG逐张目视：名称排序及原节点选择、测速焦点、排序子菜单；非Flutter像素比对"
+    },
+    "log": "../acceptance-artifacts/proxy-sort-keyboard-redmi-20261106/instrumentation-run1.log"
+  },
+  "preservation": {
+    "deviceSettingsUnchanged": true,
+    "flutterApkUnchanged": true,
+    "localYamlShaSizeMtimeUnchanged": true,
+    "appServicesRunningAtEnd": false
+  },
+  "artifacts": "../acceptance-artifacts/proxy-sort-keyboard-redmi-20261106/",
+  "limitations": [
+    "键盘事件由Compose instrumentation注入，未使用实体键盘，不推广全应用焦点顺序",
+    "只增加定向UI回归，正式MainActivity恢复、Provider实网、Mihomo/VPN、Go、低API、蜂窝/OEM、正式签名运行与远端CI本轮未验",
+    "三张截图是本轮状态证据，不证明Flutter逐像素对齐、完整深浅主题矩阵或全应用动效性能",
+    "完整Flutter视觉仍PARTIAL，玻璃默认关闭；实时背景/触点光效及性能后排；既有暂缓/取消范围保持"
+  ],
+  "next": "按todo第9项继续配置/代理组剩余子页与面板返回、空态和异常恢复，再统一视觉基线与连续动效"
+}

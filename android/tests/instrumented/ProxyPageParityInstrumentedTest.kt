@@ -486,6 +486,90 @@ class ProxyPageParityInstrumentedTest {
         compose.runOnIdle { assertEquals(names[1], current) }
     }
 
+    @Test fun sortSubmenuSupportsKeyboardEscapeAndAppliesNameOrder() {
+        val group = ProxyGroupInfo("排序组", "Selector", "node-m", listOf("node-z", "node-a", "node-m"), false)
+        var selected by mutableStateOf("node-m")
+        var refreshCount = 0
+        lateinit var inputMode: InputModeManager
+        compose.setContent { KClashTheme {
+            inputMode = LocalInputModeManager.current
+            ProxyGroupsCard(
+                state = ProxyGroupsUiState(groups = listOf(group), unfoldSet = setOf(group.name)),
+                runtimeState = CoreRuntimeStatus.STOPPED,
+                currentGroupName = group.name,
+                onRefresh = { refreshCount++ },
+                onSelect = { _, name -> selected = name },
+                onTestDelay = { _, _ -> },
+                onTestGroupDelay = {},
+            )
+        } }
+
+        fun assertVisibleOrder(expected: List<String>) {
+            val positions = expected.map { name ->
+                name to compose.onNodeWithTag("proxy_node_${group.name}_$name").fetchSemanticsNode().boundsInRoot
+            }
+            val actual = positions.sortedWith(compareBy({ it.second.top }, { it.second.left })).map { it.first }
+            assertEquals(expected, actual)
+        }
+
+        assertVisibleOrder(listOf("node-z", "node-a", "node-m"))
+        val more = compose.onNodeWithTag("proxy_tools")
+        val popupWindow = compose.onNodeWithTag("app_popup_window")
+        compose.runOnIdle { inputMode.requestInputMode(InputMode.Keyboard) }
+        more.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        more.performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+
+        // 作者 long：根菜单先聚焦定位入口，逐项向下浏览只应改变焦点，不能触发刷新或节点切换。
+        compose.onNodeWithTag("proxy_scroll_to_selected").assertIsFocused()
+        popupWindow.performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag("proxy_groups_refresh").assertIsFocused()
+        popupWindow.performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag("proxy_tools_display_mode").assertIsFocused()
+        popupWindow.performKeyInput { pressKey(Key.DirectionDown) }
+        val sortItem = compose.onNodeWithTag("proxy_tools_sort").assertIsFocused()
+        sortItem.performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("proxy_tools_back").assertIsFocused()
+
+        // 作者 long：Escape 只退回排序父菜单；再次进入必须仍能由键盘完成，而非依赖触摸选择。
+        popupWindow.performKeyInput { pressKey(Key.Escape) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("proxy_sort_option_DEFAULT").assertDoesNotExist()
+        compose.onNodeWithTag("proxy_tools_sort").assertIsDisplayed()
+        compose.onNodeWithTag("proxy_scroll_to_selected").assertIsFocused()
+        popupWindow.performKeyInput { pressKey(Key.Escape) }
+        compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(ProxySortOption.DEFAULT, ProxyPageOptionsStore.load(compose.activity).sort) }
+        assertVisibleOrder(listOf("node-z", "node-a", "node-m"))
+
+        more.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        more.performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("proxy_scroll_to_selected").assertIsFocused()
+        repeat(3) { popupWindow.performKeyInput { pressKey(Key.DirectionDown) } }
+        compose.onNodeWithTag("proxy_tools_sort").assertIsFocused().performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("proxy_tools_back").assertIsFocused()
+        repeat(3) { popupWindow.performKeyInput { pressKey(Key.DirectionDown) } }
+        compose.onNodeWithTag("proxy_sort_option_NAME").assertIsFocused().performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+
+        compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(ProxySortOption.NAME, ProxyPageOptionsStore.load(compose.activity).sort)
+            assertEquals("node-m", selected)
+            assertEquals(0, refreshCount)
+        }
+        assertVisibleOrder(listOf("node-a", "node-m", "node-z"))
+        capture("proxy_keyboard_name_sort")
+        more.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        more.performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithTag("proxy_tools_sort").assertTextContains("排序：名称")
+        popupWindow.performKeyInput { pressKey(Key.Escape) }
+        compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+    }
+
     @Test fun listGroupHeaderKeepsRaisedLayerWhileLongContentScrolls() {
         val group = ProxyGroupInfo(
             "长列表",
