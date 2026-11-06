@@ -1704,9 +1704,20 @@ internal fun ProfilesPanel(
 ) {
     val canMutateProfiles = !state.isBusy && !isProfileTransitioning(runtimeState)
     val canChangeFiles = !state.isBusy && !isProfileMutationBlocked(runtimeState)
-    var profilePendingDeletion by remember { mutableStateOf<Profile?>(null) }
-    var profilePendingRename by remember { mutableStateOf<Profile?>(null) }
-    var showReorderDialog by remember { mutableStateOf(false) }
+    // 作者 long：重建只保存待确认目标ID，再从正式列表取最新行；不能因窗口丢失而吞掉重命名草稿或恢复过期Profile对象。
+    var profilePendingDeletionId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var profilePendingRenameId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var showReorderDialog by rememberSaveable { mutableStateOf(false) }
+    val profilePendingDeletion = state.profiles.firstOrNull { it.id == profilePendingDeletionId }
+    val profilePendingRename = state.profiles.firstOrNull { it.id == profilePendingRenameId }
+    LaunchedEffect(state.profilesLoaded, state.profiles.map(Profile::id)) {
+        // 作者 long：首次读库的空快照不是删除；确认读完后才撤销已不存在的目标，避免已删除配置的确认窗日后重新出现。
+        if (state.profilesLoaded) {
+            if (profilePendingDeletion == null) profilePendingDeletionId = null
+            if (profilePendingRename == null) profilePendingRenameId = null
+            if (state.profiles.isEmpty()) showReorderDialog = false
+        }
+    }
     var scriptBindingProfileId by remember { mutableStateOf<Long?>(null) }
     var extensionProfileId by rememberSaveable { mutableStateOf<Long?>(null) }
     var showBackupRestoreDialog by remember { mutableStateOf(false) }
@@ -1815,10 +1826,10 @@ internal fun ProfilesPanel(
                                     onExport = { onExportProfile(profile.id) },
                                     exportBusy = exportBusy,
                                     onEdit = { onEdit(profile) },
-                                    onRename = { profilePendingRename = profile },
+                                    onRename = { profilePendingRenameId = profile.id },
                                     onUpdate = { onUpdate(profile) },
                                     onSetAutoUpdate = { enabled -> onSetAutoUpdate(profile, enabled) },
-                                    onDelete = { profilePendingDeletion = profile },
+                                    onDelete = { profilePendingDeletionId = profile.id },
                                     onOpenRulesEditor = { onOpenRulesEditor(profile) },
                                     onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
                                     onOpenProxyGroupsEditor = { onOpenProxyGroupsEditor(profile) },
@@ -1863,7 +1874,7 @@ internal fun ProfilesPanel(
 
     profilePendingDeletion?.let { profile ->
         AlertDialog(
-            onDismissRequest = { profilePendingDeletion = null },
+            onDismissRequest = { profilePendingDeletionId = null },
             title = { Text("删除配置") },
             text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("确定删除“${profile.realLabel}”吗？本地配置文件也会一并删除。")
@@ -1874,14 +1885,14 @@ internal fun ProfilesPanel(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        profilePendingDeletion = null
+                        profilePendingDeletionId = null
                         onDelete(profile)
                     },
                     enabled = canChangeFiles,
                 ) { Text("删除") }
             },
             dismissButton = {
-                TextButton(onClick = { profilePendingDeletion = null }) { Text("取消") }
+                TextButton(onClick = { profilePendingDeletionId = null }) { Text("取消") }
             },
         )
     }
@@ -1890,15 +1901,16 @@ internal fun ProfilesPanel(
         ProfileRenameDialog(
             profile = profile,
             saving = state.isBusy,
-            onDismiss = { if (!state.isBusy) profilePendingRename = null },
+            onDismiss = { if (!state.isBusy) profilePendingRenameId = null },
             onSave = { label ->
-                profilePendingRename = null
+                profilePendingRenameId = null
                 onRename(profile, label)
             },
         )
     }
 
-    if (showReorderDialog) {
+    // 作者 long：排序草稿依赖完整ID集合，首次读库前不创建子页，防止恢复顺序被初始化空列表过滤清空。
+    if (showReorderDialog && state.profilesLoaded) {
         ProfileReorderDialog(
             profiles = state.profiles,
             saving = state.isBusy,
@@ -4074,7 +4086,7 @@ internal fun ProfileReorderDialog(
     error: String? = null, revision: Long = 0,
 ) {
     var orderedIds by rememberSaveable { mutableStateOf(profiles.map(Profile::id)) }
-    val openedRevision = remember { revision }
+    val openedRevision = rememberSaveable { revision }
     LaunchedEffect(revision) { if (revision > openedRevision) onDismiss() }
     LaunchedEffect(profiles.map(Profile::id)) {
         val latest = profiles.map(Profile::id)
@@ -4082,7 +4094,7 @@ internal fun ProfileReorderDialog(
     }
     val latest = profiles.associateBy(Profile::id)
     val ordered = orderedIds.mapNotNull(latest::get)
-    var discard by remember { mutableStateOf(false) }
+    var discard by rememberSaveable { mutableStateOf(false) }
     fun exit() { if (!saving) { if (orderedIds != profiles.map(Profile::id)) discard = true else onDismiss() } }
     ProfileEditorPage(::exit, { Text("排序配置") }, {
         Column(Modifier.fillMaxSize().testTag("profiles_order_page"), verticalArrangement = Arrangement.spacedBy(8.dp)) {

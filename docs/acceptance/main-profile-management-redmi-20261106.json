@@ -1,0 +1,441 @@
+{
+  "date": "2026-11-06",
+  "status": "DONE-VERIFIED",
+  "overallVisualParity": "PARTIAL",
+  "title": "配置管理窗口真实主宿主重建恢复",
+  "summary": "修复KUI-002：真实MainActivity配置重命名草稿、删除确认、排序草稿和放弃确认跨Activity重建保持；取消不写入，明确保存/删除仅作用于测试临时副本。Redmi final2精确9/9，25张PNG校验并经3张拼图目视；775项JVM XML零失败/错误/跳过（App499在build3重跑，其余276复用，最终build4四模块均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。App/Test实际回拉匹配，两份正式FILE/URL配置的正文/元数据/顺序/偏好/选择、原1.yaml、Flutter基线及设备设置保持，临时行清理，收尾无服务。",
+  "scope": {
+    "sourceBaseCommit": "fe6b6b74f6c54964b19f124aaa5693f12da70468",
+    "productionChanged": true,
+    "changedSources": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "f5759da693ddf7a1006d293d18846c2c68c7051c269a3f053aa99377ae997c0f",
+      "android/tests/instrumented/MainProfileManagementStateInstrumentedTest.kt": "47db9825f62eb92c016abb4e485ddd8e9473a64dd0c7bdd67a1366552771333e"
+    },
+    "defect": "KUI-002",
+    "defectDocument": "docs/profile-management-restoration-defect.md",
+    "flutterReadOnlyReferences": [
+      "lib/views/profiles/edit.dart:393",
+      "lib/views/profiles/profiles.dart:606"
+    ],
+    "implementationReferences": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt:1708",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt:1913",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt:4089"
+    ],
+    "fixture": "按当前原1.yaml摘要定位正式FILE原字节；每条创建自身临时CUSTOM与FILE，重命名CUSTOM、删除FILE，排序只交换末尾两个临时项。finally按ID/标签集合/类型清理并比较正式库全部行/正文/偏好/选择与STOPPED；正式当前配置不切换。",
+    "boundary": "三个新方法和Provider/List两条相邻回归使用真实MainActivity；其他四条为固定数据组件。Provider回归会在停止态加载核心，配置初始化及首页查询可联网，不能称整批离线；未手动更新原HTTP Provider或重新下载正式订阅，未启动运行态或VPN。只修Kotlin保存状态集成，未改Flutter/Mihomo或数据库。",
+    "sourceSnapshotTiming": "build4/source-after-validation在验收后归档；产品diff与build3/production.patch逐字节一致。"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "1",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "flutterHashes": [
+      "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 1m 1s",
+    "tasks": "389 actionable tasks: 11 executed, 378 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 499,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 69
+      },
+      "service": {
+        "tests": 207,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :app:testDebugUnitTest UP-TO-DATE",
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE"
+    ],
+    "executionNote": "App499于本组build3实际重跑，其余三模块276项复用；最终build4四模块均UP-TO-DATE，不声称775全部强制重跑",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 10
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 9
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "9ae1c0c2420e5251e8297d529c2e162f3dee55b46906a63beb599293c68da606",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "e8f1e5ea1f13efca66b2f3fa097e848a90a5deb216d4bfb5a2fb4b26a0ebb269",
+        "bytes": 5761706,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "3ed748ff8ef2a43ab981a972a0f7aeebfb5c68720bbe649489315efa67ef9a3e",
+        "bytes": 48211924,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "installation": {
+    "com.lonnnnnng.flclash": {
+      "builtSha256": "9ae1c0c2420e5251e8297d529c2e162f3dee55b46906a63beb599293c68da606",
+      "pulledSha256": "9ae1c0c2420e5251e8297d529c2e162f3dee55b46906a63beb599293c68da606"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "builtSha256": "e8f1e5ea1f13efca66b2f3fa097e848a90a5deb216d4bfb5a2fb4b26a0ebb269",
+      "pulledSha256": "e8f1e5ea1f13efca66b2f3fa097e848a90a5deb216d4bfb5a2fb4b26a0ebb269"
+    }
+  },
+  "acceptance": {
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProfileManagementStateInstrumentedTest#renameDraftSurvivesRecreationAndOnlyExplicitSaveUpdatesTemporaryMetadata",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProfileManagementStateInstrumentedTest#deleteConfirmationSurvivesRecreationAndCancelNeverDeletesProfile",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProfileManagementStateInstrumentedTest#reorderDraftAndDiscardConfirmationSurviveRecreationBeforeExplicitSave",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileClosureUiInstrumentedTest#orderPageStagesReconcilesAndRetainsFailedSaveInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesPageParityInstrumentedTest#selectedProfileRevealsInLongListAndLongPressKeepsSelection",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesPageParityInstrumentedTest#customOverviewTitleMenuAndMoreRenderBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest#profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realSaveFailureKeepsDraftSelectionAndDiscardAcrossMainActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#listLayoutAndScrollSurviveProfilesRoundTripAndActivityRecreation",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "passed": 9,
+    "total": 9,
+    "seconds": 100.125,
+    "instrumentationReportedSeconds": 97.139,
+    "newRealMainHostMethods": 3,
+    "adjacentRegressions": {
+      "fixedComponents": 4,
+      "realMainHostProviderDocument": 1,
+      "realMainHostListRestoration": 1
+    },
+    "images": [
+      {
+        "path": "main_profile_rename_before.png",
+        "bytes": 122516,
+        "sha256": "6615880bd7440b1bdd18e000882402dc267da846c181de702c993268b99d2d1b"
+      },
+      {
+        "path": "main_profile_rename_recreated.png",
+        "bytes": 122804,
+        "sha256": "911fed22aef9cbd05e09c78a9e18d23d368e1a568f587c46c2626f3985686292"
+      },
+      {
+        "path": "main_profile_rename_saved.png",
+        "bytes": 115425,
+        "sha256": "bffaf8023aa3223068bc285bd872f80a22318e9057ff6875bce7715e61bf529f"
+      },
+      {
+        "path": "main_profile_delete_before.png",
+        "bytes": 126798,
+        "sha256": "fb781200860add8aab8a8ad92379b297a4b820df5723a015f9a30dda6ba7e3cc"
+      },
+      {
+        "path": "main_profile_delete_recreated.png",
+        "bytes": 126798,
+        "sha256": "fb781200860add8aab8a8ad92379b297a4b820df5723a015f9a30dda6ba7e3cc"
+      },
+      {
+        "path": "main_profile_delete_confirmed.png",
+        "bytes": 94968,
+        "sha256": "16848f0c084ad8779d43078d94feb1630f10f461737dfc857eb4e0344f3a169c"
+      },
+      {
+        "path": "main_profile_order_draft.png",
+        "bytes": 87536,
+        "sha256": "c91fda90958cfa90a72da3505606f384949c4359d70c902cbfbf945aaf895deb"
+      },
+      {
+        "path": "main_profile_order_recreated.png",
+        "bytes": 87536,
+        "sha256": "c91fda90958cfa90a72da3505606f384949c4359d70c902cbfbf945aaf895deb"
+      },
+      {
+        "path": "main_profile_order_discard_recreated.png",
+        "bytes": 96792,
+        "sha256": "35dd7f92888632918a9dc685c84c6832e241faae69f20275d388aeba2bf3aacb"
+      },
+      {
+        "path": "main_profile_order_saved_reopened.png",
+        "bytes": 87536,
+        "sha256": "c91fda90958cfa90a72da3505606f384949c4359d70c902cbfbf945aaf895deb"
+      },
+      {
+        "path": "profile_order_false.png",
+        "bytes": 80124,
+        "sha256": "7a2f55efb334a3e2de6718c6bb7865e4ed98e2da571efa9a7f0f626709335780"
+      },
+      {
+        "path": "profile_order_true.png",
+        "bytes": 82710,
+        "sha256": "f5f77195ab31b6ba515a4735044d0363c7a6a71fc77ef9d282de7f3e1b891401"
+      },
+      {
+        "path": "profiles_custom_overview_light.png",
+        "bytes": 112826,
+        "sha256": "979e2b2affe169146db105239c5fac4bc71efea9e5d5225912b4046587a2a0eb"
+      },
+      {
+        "path": "profiles_custom_more_light.png",
+        "bytes": 62765,
+        "sha256": "4156148ef4a3bd0440b6844b803fbff2da13b9d917b9893e741b45185766b9f4"
+      },
+      {
+        "path": "profiles_custom_overview_dark.png",
+        "bytes": 109936,
+        "sha256": "77014f25c762e3afb6094667baf4278efc1b680e543ab8a1ff5bea00b1472b1e"
+      },
+      {
+        "path": "profiles_custom_more_dark.png",
+        "bytes": 63913,
+        "sha256": "b5ea8f2cfa70dce5e3683a9c870e33f9aa9dea31cf9a36e23db600dffc4e26f1"
+      },
+      {
+        "path": "main_menu_profile_root_false.png",
+        "bytes": 62801,
+        "sha256": "2d82079cc90b3310a8cef448e9a755fa882dac5421e805a8be39319686c511b1"
+      },
+      {
+        "path": "main_menu_profile_more_false.png",
+        "bytes": 74379,
+        "sha256": "367d46d7b87c8a87131c61c24b3c7140324f7ad91d7339c7b88fbf561551815b"
+      },
+      {
+        "path": "main_menu_profile_root_true.png",
+        "bytes": 64811,
+        "sha256": "ac3dfaae3983e6a634c38717892fa43ffd50f38f66e5d5f2ac6c706a1b6053fa"
+      },
+      {
+        "path": "main_menu_profile_more_true.png",
+        "bytes": 80224,
+        "sha256": "c9c0f643a9e9005a3657433bbe9920332084904249b8ad48df95c49b3aeb5a11"
+      },
+      {
+        "path": "main_provider_failed_recreated.png",
+        "bytes": 472869,
+        "sha256": "ac10020b601bea8f6a2cc3f302e2197bcc334999196218344b6afad4893b2987"
+      },
+      {
+        "path": "main_provider_discard_recreated.png",
+        "bytes": 356200,
+        "sha256": "005d0e53a7e927be164e19eceecc92409fff8c0cad4244bd36cde646f073c722"
+      },
+      {
+        "path": "main_navigation_list_before.png",
+        "bytes": 141917,
+        "sha256": "5e6a923a79ade35e64ea3ac5ec17b8322da84b8dd6794dfbda9aa2ef69149d17"
+      },
+      {
+        "path": "main_navigation_list_after_profiles.png",
+        "bytes": 141917,
+        "sha256": "5e6a923a79ade35e64ea3ac5ec17b8322da84b8dd6794dfbda9aa2ef69149d17"
+      },
+      {
+        "path": "main_navigation_list_recreated.png",
+        "bytes": 141917,
+        "sha256": "5e6a923a79ade35e64ea3ac5ec17b8322da84b8dd6794dfbda9aa2ef69149d17"
+      }
+    ],
+    "visualReview": {
+      "allPngSha256AndDecodeVerified": true,
+      "resolution": "1080x2340",
+      "reviewedContactSheets": [
+        "final2/contact-management.png",
+        "final2/contact-components.png",
+        "final2/contact-adjacent-main.png"
+      ],
+      "limitations": "三张拼图已目视，只证明目标状态；未做Flutter同帧逐像素对比或完整动效/性能验收。"
+    }
+  },
+  "preservation": {
+    "finalBefore": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "540864eb6aa13c8a8cebcd93ed8f22e2df8df4a414151647670a4fab82f80dc1",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "finalAfter": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "540864eb6aa13c8a8cebcd93ed8f22e2df8df4a414151647670a4fab82f80dc1",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "finalEqual": true,
+    "deviceSettingsFlutterOriginalYamlEqual": true,
+    "profilePreparation": "local=reused;remote=reused;count=2",
+    "temporaryRowsAndOwnCacheRemoved": true,
+    "endServicesRunning": false,
+    "allThreePhasesFormalAndDeviceSnapshotsEqual": true
+  },
+  "earlierRuns": [
+    {
+      "name": "red1",
+      "passed": 0,
+      "total": 3,
+      "resultJson": "red1/result-run1.json",
+      "resultLog": "red1/instrumentation-run1.log",
+      "causes": [
+        "未修产品在重建后丢失重命名/删除确认/排序宿主状态"
+      ],
+      "classification": "KUI-002产品缺陷原始复现；正式库和设备保护通过"
+    },
+    {
+      "name": "final1",
+      "passed": 8,
+      "total": 9,
+      "resultJson": "final1/result-run1.json",
+      "resultLog": "final1/instrumentation-run1.log",
+      "causes": [
+        "重命名草稿实际EditableText含原首尾空格，assertTextEquals错误地把名称label及supportingText一起比较"
+      ],
+      "classification": "仅修测试读取为EditableText.text精确比较，并等待异步名称展示；产品源码不变，不放宽草稿断言"
+    }
+  ],
+  "artifacts": {
+    "base": "../acceptance-artifacts/main-profile-management-redmi-20261106/",
+    "manifest": "artifact-manifest.json",
+    "manifestSha256": "c9f888474ca47752fa94fa20fec9f2e299eed28af59224b334652aec96ed1bca",
+    "finalDriver": "run-final2.py",
+    "finalBuild": "build4/gradle.log",
+    "finalResults": "final2/result-run1.json",
+    "sourceAndLogsLocalOnly": true
+  },
+  "notVerified": [
+    "配置管理窗口和Provider正文冷进程恢复",
+    "保存受理中断/提交后清理前进程死亡",
+    "管理目标被外部同时删除",
+    "运行态管理/Provider侧载及其他Provider实网",
+    "完整Flutter逐像素/精确缓动/全应用动效性能",
+    "低API/蜂窝/OEM",
+    "Go/正式签名Release运行/远端CI"
+  ],
+  "next": "继续todo第9项其他常用子页/面板返回、空态与异常恢复；正文冷进程需独立加密草稿协议，随后统一视觉/连续动效。第10后排，玻璃默认关闭，原暂缓/取消边界保持。"
+}

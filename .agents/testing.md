@@ -1,6 +1,14 @@
 # Testing
 
-## Provider正文真实主宿主切片（2026-11-06）
+## 配置管理真实主宿主重建恢复（2026-11-06，当前）
+
+KUI-002已修：重命名/删除目标只saveable保存ID，从最新列表解析；首次读库前不清目标，排序页等待profilesLoaded，排序开关/打开revision/放弃确认均恢复。`MainProfileManagementStateInstrumentedTest`三方法运行必须传`kclashProfileManagementAcceptance=true`和当前原`1.yaml`的`kclashLocalYamlSha256`；复用正式FILE原字节创建自身CUSTOM+FILE，只改自己的名称/删除/末尾顺序，finally按ID/标签/类型清理并比对正式库全部行/正文/偏好/选择及STOPPED。
+
+最终build4 Debug/Test、未签名Release-R8和双Lint通过，JVM XML共775项零失败/错误/跳过（App499本组build3实际重跑，其余276复用，最终四模块UP-TO-DATE）；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。Redmi final2新增三条+六条相邻回归9/9，25PNG/3拼图已目视；原始red1 0/3和final1 8/9保留，后者仅精确EditableText matcher修正、产品不变。两份正式配置及Flutter/原1.yaml/设备设置保持，安装回拉匹配，收尾无服务。
+
+证据`docs/acceptance/main-profile-management-redmi-20261106.json`，缺陷`docs/profile-management-restoration-defect.md`，本机附件`../acceptance-artifacts/main-profile-management-redmi-20261106/`。Provider相邻回归停止态加载核心可联网，不称整批离线；未启动运行态/VPN，未手动更新原HTTP Provider或正式订阅。管理窗口/正文冷进程、保存受理中断、目标外部删除、完整Flutter视觉/动效、低API/蜂窝/OEM及正式发布链未补，整体仍PARTIAL，玻璃默认关闭。
+
+## Provider正文真实主宿主切片（2026-11-06，历史）
 
 `MainProviderDocumentInstrumentedTest`三方法经正式MainActivity、Repository和停止态核心验证失败草稿/放弃确认、缓存保存回读、MRS只读滚动的Activity重建与面板返回；运行必须传`kclashMainProviderAcceptance=true`及当前原`1.yaml`的`kclashLocalYamlSha256`。按摘要复用正式FILE原字节建立临时FILE+CUSTOM，只侧载自身投影并按ID/标签清理，不使用旧`readAuthorizedProxyProfile()`硬编码摘要。
 
