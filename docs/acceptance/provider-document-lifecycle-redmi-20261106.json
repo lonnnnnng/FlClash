@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "Provider正文的后台保留、Activity重建、放弃确认、长文失败选区及已受理保存去重；恢复用户重装后的两份获准配置并验证保护",
+  "status": "DONE_VERIFIED_FOR_PROVIDER_DOCUMENT_ACTIVITY_LIFECYCLE; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "23abbcd08c6c66c240adcf842d1c42d3c1b1417c",
+  "coreCommit": "7038231e026b710088b9c369899b3a8b7f281739",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "implementation": {
+    "productionChanged": true,
+    "defectOrigin": "Kotlin自身的UI生命周期处理；不是Flutter或Mihomo上游缺陷，不加入上游源码缺陷台账",
+    "defectTrace": [
+      {
+        "trigger": "打开Provider正文并修改或保存失败后切后台",
+        "before": "setForeground(false)清正文并作废读取；返回时丢失草稿、错误或待完成读取",
+        "after": "后台只暂停列表轮询，正文/失败/读取由当前ViewModel保管；显式关闭和切配置仍通过documentGeneration作废旧结果",
+        "source": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileStatisticsViewModel.kt"
+      },
+      {
+        "trigger": "放弃确认打开或长文已有选区时Activity重建",
+        "before": "普通remember使确认框和TextFieldValue选区丢失；final3长文恢复失败",
+        "after": "放弃确认使用rememberSaveable；TextField自定义Saver仅保存选区起止并按当前正文长度收敛，正文由原ViewModel恢复",
+        "source": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProviderDocumentPage.kt"
+      },
+      {
+        "trigger": "仓库首读未完成时详情入口已恢复",
+        "before": "初始空快照可能误判当前配置已消失并清详情和Provider会话",
+        "after": "ProfileStore发布profilesLoaded；ProfilesViewModel等首读和当前选择校正后订阅，KClashApp据此区分恢复中空快照与真实空库/删除",
+        "sources": [
+          "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileRepository.kt",
+          "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt",
+          "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt"
+        ]
+      }
+    ],
+    "reference": {
+      "flutter": [
+        "lib/views/proxies/providers.dart:450",
+        "lib/views/proxies/providers.dart:465",
+        "lib/pages/editor.dart:237",
+        "lib/pages/editor.dart:294"
+      ],
+      "behavior": "只读参考Provider保存失败留页、脏正文退出确认、读取generation和保存去重；Android后台/Activity边界按Kotlin既有架构修复，没有合入Flutter提交或改动com.follow.clash"
+    },
+    "debugHost": "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/ProviderDocumentTestActivity.kt",
+    "debugHostBoundary": "正式Compose页面和ProfileStatisticsViewModel配内存runtime；不接正式配置库，也不证明MainActivity完整恢复",
+    "sourceHashes": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/source-hashes.json",
+    "sourceDiff": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/source-final.diff"
+  },
+  "build": {
+    "assemble": {
+      "command": "./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease --no-daemon -Ptarget-platform=android-arm64 --max-workers=1",
+      "result": "BUILD SUCCESSFUL in 1m 58s; 302 actionable tasks: 12 executed, 290 up-to-date",
+      "toolSession": 82277
+    },
+    "lint": {
+      "command": "./gradlew :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64 --max-workers=1",
+      "result": "BUILD SUCCESSFUL in 2m 3s; 237 actionable tasks: 8 executed, 229 up-to-date",
+      "toolSession": 21221,
+      "debug": "0 errors, 67 warnings, 10 hints",
+      "release": "0 errors, 66 warnings, 9 hints",
+      "reports": [
+        "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/lint-debug.xml",
+        "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/lint-release.xml"
+      ]
+    },
+    "jvm": {
+      "command": "./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :common:testDebugUnitTest --no-daemon -Ptarget-platform=android-arm64 --max-workers=1",
+      "result": "BUILD SUCCESSFUL in 10s; 95 actionable tasks: 95 up-to-date",
+      "tests": 775,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byModule": {
+        "app": {
+          "tests": 499,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 69
+        },
+        "service": {
+          "tests": 207,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 20
+        },
+        "core": {
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 1
+        },
+        "common": {
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xmlFiles": 4
+        }
+      },
+      "execution": "最终四模块测试均UP-TO-DATE，按保留XML汇总775项，不声称775项全部强制重跑",
+      "log": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/jvm-final.log",
+      "xmlDirectory": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/jvm-xml/"
+    },
+    "logAvailability": "最终构建和Lint完整输出保留于本轮工具会话，未保存为本地完整日志；本地保留产物哈希、Lint XML和JVM日志，不以旧final-build日志冒充最终构建",
+    "debugSha256": "4c2ca16e8c11819c505382e574b585138ad18ded044952e9422764abd6491151",
+    "androidTestSha256": "9af51a7f71477d331f522af27cf474769ec53179d3dba082e22d51fd1169d9ec",
+    "releaseUnsignedSha256": "d363da1d61cc85ca36b42ea67ae15157b5af1a2a65ad9f680cb9c85c9fc1620f",
+    "nativeAbis": {
+      "app-debug.apk": [
+        "arm64-v8a"
+      ],
+      "app-debug-androidTest.apk": [],
+      "app-release-unsigned.apk": [
+        "arm64-v8a"
+      ]
+    },
+    "releaseManifestHasDebugTestActivity": false,
+    "releaseDebuggable": false,
+    "artifactReview": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/artifact-review.json"
+  },
+  "installation": {
+    "packages": {
+      "com.lonnnnnng.flclash": {
+        "pulledSha256": "4c2ca16e8c11819c505382e574b585138ad18ded044952e9422764abd6491151",
+        "builtSha256": "4c2ca16e8c11819c505382e574b585138ad18ded044952e9422764abd6491151",
+        "matches": true
+      },
+      "com.lonnnnnng.flclash.test": {
+        "pulledSha256": "9af51a7f71477d331f522af27cf474769ec53179d3dba082e22d51fd1169d9ec",
+        "builtSha256": "9af51a7f71477d331f522af27cf474769ec53179d3dba082e22d51fd1169d9ec",
+        "matches": true
+      }
+    },
+    "matchesBuiltArtifacts": true,
+    "artifacts": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/installed-apks/",
+    "verification": "实际adb pull App/Test base.apk后计算本地SHA，与同批构建匹配"
+  },
+  "profilePreparation": {
+    "authorization": "用户确认当天手动重装，明确要求重新读取外层AGENTS.md唯一远程来源和工作区1.yaml；此前空库不作为未解释的数据丢失",
+    "command": "python3 tool/android_prepare_profiles.py --serial wsvwypiz7xwslvl7 --log ../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/profile-preparation.log",
+    "behavior": "通过正式ProfileRepository导入；只复用已有同来源和同正文配置，不刷新或覆盖既有行、正文和选择；不启动核心/VPN",
+    "firstResult": "local=added;remote=added;count=2",
+    "firstLog": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/profile-preparation1.log",
+    "finalResult": "local=reused;remote=reused;count=2",
+    "finalLog": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/profile-preparation.log",
+    "sourceDisclosure": "真实地址、正文和凭据未进入此证据或提交；来源由外层AGENTS.md在本机读取"
+  },
+  "profilePreservation": {
+    "before": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "93ec6b9c04ce609ade5deb87bd3343884682055279e1558a50d3336b086ce394",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "after": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "93ec6b9c04ce609ade5deb87bd3343884682055279e1558a50d3336b086ce394",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "identical": true,
+    "comparison": "正式两份FILE/URL配置ID/type/正文SHA-size-mtime、元数据聚合SHA、偏好聚合SHA和当前选择逐项相同；runtime均STOPPED",
+    "logs": [
+      "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/profiles-before.log",
+      "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/profiles-after.log"
+    ]
+  },
+  "test": {
+    "command": [
+      "adb",
+      "-s",
+      "wsvwypiz7xwslvl7",
+      "shell",
+      "am",
+      "instrument",
+      "-w",
+      "-r",
+      "-e",
+      "class",
+      "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#discardConfirmationSurvivesRecreationAndReturnsToSameProviderPanel,com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#acceptedSaveCompletesAcrossBackgroundAndRecreationOnlyOnce,com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#previewReadFinishesInBackgroundAndExplicitCloseRejectsOldRead,com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#longFailedDraftKeepsSelectionAcrossBackgroundAndRecreationWithoutSavingBodyInBundle,com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest#providerEditorProtectsDraftShowsFailureAndMrsIsReadOnly,com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest#providerMenusBatchRetryAndSubscriptionAreReachableInBothThemes",
+      "-e",
+      "kclashCapturePng",
+      "true",
+      "com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner"
+    ],
+    "result": "OK (6 tests); failures=0, errors=0, skipped=0",
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#discardConfirmationSurvivesRecreationAndReturnsToSameProviderPanel",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#acceptedSaveCompletesAcrossBackgroundAndRecreationOnlyOnce",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#previewReadFinishesInBackgroundAndExplicitCloseRejectsOldRead",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#longFailedDraftKeepsSelectionAcrossBackgroundAndRecreationWithoutSavingBodyInBundle",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest#providerEditorProtectsDraftShowsFailureAndMrsIsReadOnly",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileProviderManagementInstrumentedTest#providerMenusBatchRetryAndSubscriptionAreReachableInBothThemes",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "seconds": 34.61,
+    "log": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/instrumentation-final4.log",
+    "runner": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/run-final4.py",
+    "screenshots": {
+      "count": 10,
+      "allEntriesVerified": true,
+      "allVisuallyReviewed": true,
+      "reviewMethod": "本轮10张PNG经两张拼图目视检查",
+      "entries": [
+        {
+          "path": "provider_document_discard_recreated.png",
+          "bytes": 70212,
+          "sha256": "62e712e589bdc4a96650c3a735573b926bcaa66b48ff399ec9fc6918d42ec88a"
+        },
+        {
+          "path": "provider_document_saving_recreated.png",
+          "bytes": 35494,
+          "sha256": "c9874f8e6d519ca9c575632579f69cbf909dd8648eb74a7064489f46ceaf7ba0"
+        },
+        {
+          "path": "provider_document_preview_recreated.png",
+          "bytes": 34579,
+          "sha256": "5f6d80d85f294ae211615d4384316c30dc54a78a8c0d158a0cff803d92893447"
+        },
+        {
+          "path": "provider_document_failed_recreated.png",
+          "bytes": 356316,
+          "sha256": "41ee21b27826da908959e434166e9ddec29125d2714757d27b06039938679aa9"
+        },
+        {
+          "path": "provider_editor_failure.png",
+          "bytes": 56838,
+          "sha256": "4ca12aa9edd5b2343a012d9d605bffca97443350827bbdab48b988106b0f31ea"
+        },
+        {
+          "path": "provider_editor_exit.png",
+          "bytes": 90135,
+          "sha256": "60f98b150a35950201c3de1cf0507b50f712e621ae1ccc7dff791d0e345fe1bd"
+        },
+        {
+          "path": "provider_mrs_preview.png",
+          "bytes": 43853,
+          "sha256": "535f6c066d7197de38ba645414043f27ea0bd65536e623b433054ef844d9787a"
+        },
+        {
+          "path": "provider_menu.png",
+          "bytes": 77121,
+          "sha256": "487e8cccd48c6ddb7a56b84d6de7cebeeff30247a7f14b2618493813474f3908"
+        },
+        {
+          "path": "provider_subscription.png",
+          "bytes": 92431,
+          "sha256": "e6fe4b9290e5bbe1b0a87f7a96782075b97d9bf07ae63bfd75d0b2e86cf7ea4a"
+        },
+        {
+          "path": "provider_menu_dark.png",
+          "bytes": 78301,
+          "sha256": "6ce12f23e3aab328af4d738113127c15d67cb50fdeac40f8882e60539123ed0c"
+        }
+      ],
+      "sha256Manifest": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/screenshots.sha256",
+      "manifestSha256": "a02ead97669b9518c77a609f5271d3c0502603cb5d93ddf964ad1af5694215a8",
+      "contactSheets": [
+        "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/contact-sheet-1.jpg",
+        "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/contact-sheet-2.jpg"
+      ]
+    },
+    "assertionScope": [
+      "后台暂停期间不轮询、不重复保存；显式关闭或切配置拒绝旧读取",
+      "放弃确认重建后仍显示；继续编辑与放弃返回原Provider面板",
+      "受理保存跨后台/重建只提交一次，完成后回到Provider列表",
+      "长文失败后正文、错误和选区跨后台/重建保持，恢复滚动值大于0",
+      "序列化Activity Bundle中UTF-8/UTF-16LE/UTF-16BE均无指定正文marker",
+      "既有Provider编辑失败、退出确认、MRS只读、批量重试、订阅信息和菜单回归"
+    ]
+  },
+  "priorFailures": [
+    {
+      "run": "final3",
+      "result": "5/6；长文失败草稿的选区重建断言失败",
+      "cause": "TextFieldValue原先只remember，Activity重建重置选区；属于本地产品问题",
+      "resolution": "加入仅保存选区偏移的Saver后，最终同批6/6",
+      "log": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final3/instrumentation-final3.log",
+      "resultFile": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final3/result-final3.json",
+      "retained": true
+    },
+    {
+      "stage": "较早合并检查的Lint",
+      "result": "缺失Hilt_KClashTileService.java生成文件",
+      "resolution": "最终构建与双Lint按max-workers=1串行独立执行并成功；不认定为Provider产品缺陷",
+      "note": "早期构建记录独立保留，不覆盖或合并进最终成功数"
+    }
+  ],
+  "cleanup": {
+    "appServicesRunning": false,
+    "activeNetworkTransports": [
+      "WIFI"
+    ],
+    "vpnNetworkProviderLines": [
+      "  4: VpnNetworkProvider:0"
+    ],
+    "connectivityShowsVpnTransport": false,
+    "tunInterfaceInspection": "Not queried; no interface absence claim",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "settingsUnchanged": true,
+    "flutterApkSha256": [
+      "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+    ],
+    "flutterApkUnchanged": true,
+    "localYaml": {
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+      "bytes": 35165,
+      "mtime": 1793892313
+    },
+    "localYamlSha256Unchanged": true,
+    "evidence": "../acceptance-artifacts/provider-document-lifecycle-redmi-20261106/final4/device-after.json",
+    "firstCheck": "首版诊断把网络监听/请求条件计入活动网络，原摘要保留device-after-first-check.json；修正后只解析实际NetworkAgentInfo行，唯一活动连接为WIFI，不是产品网络故障"
+  },
+  "limitations": [
+    "六项为固定数据Debug宿主的后台与Activity重建，不证明冷进程、MainActivity正式库的完整详情恢复或Provider实网",
+    "仓库首读保护增加JVM契约回归，未以本组固定宿主覆盖正式MainActivity整条恢复链",
+    "选区由Compose semantics设置，不是实体手指拖选；长文滚动只断言恢复值大于0，不是精确位置相等",
+    "Bundle检查仅排除指定marker的三种编码出现，不推广为全部敏感数据泄漏形式均已排除",
+    "10张截图用于本组状态检查，未证明Flutter逐像素对齐或完整深浅色矩阵",
+    "配置准备确实按授权读取在线源，但本组不重复验收Provider实网、Mihomo/VPN、低API、Go、蜂窝/OEM、正式签名运行或远端CI",
+    "玻璃默认关闭；完整Flutter视觉、其余子页/面板、统一基线和全应用连续动效保持PARTIAL"
+  ],
+  "next": "按todo第9项继续配置页/代理组剩余子页与面板返回、空态和异常恢复，再集中验收统一视觉基线与连续动效；第10项实时背景/触点光效后排"
+}

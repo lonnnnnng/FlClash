@@ -26,9 +26,13 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+private val immediateProfileStoreLoaded: StateFlow<Boolean> = MutableStateFlow(true).asStateFlow()
+
 interface ProfileStore {
     val profiles: StateFlow<List<Profile>>
     val currentProfileId: StateFlow<Long?>
+    // 作者 long：内存数据源已经就绪；正式仓库须在首次Room读取与当前选择校正后发布，空列表才能表示确实没有配置。
+    val profilesLoaded: StateFlow<Boolean> get() = immediateProfileStoreLoaded
 
     suspend fun selectProfile(id: Long?)
     suspend fun addRemoteProfile(url: String, label: String = "", ageSecretKey: String = ""): Profile
@@ -191,12 +195,14 @@ class ProfileRepository(
     private val preferenceDao = database.appPreferences()
     private val mutableProfiles = MutableStateFlow<List<Profile>>(emptyList())
     private val mutableCurrentProfileId = MutableStateFlow<Long?>(null)
+    private val mutableProfilesLoaded = MutableStateFlow(false)
     // 作者 long：锁覆盖文件替换、Room 提交和失败恢复，后续保存不能在旧正文回滚完成前写入同一路径。
     private val fileMutationMutex = Mutex()
     private val automaticUpdateMutex = Mutex()
 
     override val profiles: StateFlow<List<Profile>> = mutableProfiles.asStateFlow()
     override val currentProfileId: StateFlow<Long?> = mutableCurrentProfileId.asStateFlow()
+    override val profilesLoaded: StateFlow<Boolean> = mutableProfilesLoaded.asStateFlow()
 
     init {
         scope.launch {
@@ -209,6 +215,7 @@ class ProfileRepository(
                     mutableCurrentProfileId.value = fallback
                     persistCurrentProfile(fallback)
                 }
+                mutableProfilesLoaded.value = true
             }
         }
     }

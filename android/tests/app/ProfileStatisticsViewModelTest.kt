@@ -13,6 +13,67 @@ import org.junit.Test
 class ProfileStatisticsViewModelTest {
     @After fun resetMain() = Dispatchers.resetMain()
 
+    @Test fun providerDraftAndFailureSurviveBackgroundWithoutPollingOrSaving() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            model.openProvider("http", edit = true); runCurrent()
+            model.changeProviderContent("example.net"); runtime.save = { error("fixture failure") }
+            model.saveProvider(); runCurrent()
+            val draft = model.document.value!!
+            model.setForeground(false); runCurrent()
+            val calls = runtime.providerCalls to runtime.calls
+            advanceTimeBy(15_000); runCurrent(); model.saveProvider(); runCurrent()
+            assertSame(draft, model.document.value)
+            assertEquals(calls, runtime.providerCalls to runtime.calls)
+            assertEquals(1, runtime.saves)
+            assertEquals("保存失败，请检查内容后重试", model.document.value?.error)
+            model.setForeground(true); runCurrent()
+            assertSame(draft, model.document.value)
+            runtime.save = {}; model.saveProvider(); runCurrent()
+            assertEquals(2, runtime.saves); assertNull(model.document.value)
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun providerReadFinishesAcrossBackgroundButExplicitCloseRejectsLateResult() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        val gate = CompletableDeferred<ProfileProviderDocument>()
+        runtime.documentRead = { _, _ -> withContext(NonCancellable) { gate.await() } }
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            model.openProvider("http", edit = true); runCurrent()
+            model.setForeground(false); runCurrent()
+            gate.complete(providerDocument(1, "http")); runCurrent()
+            assertEquals(false, model.document.value?.loading)
+            assertEquals("payload: []", model.document.value?.content)
+            model.setForeground(true); runCurrent()
+            val late = CompletableDeferred<ProfileProviderDocument>()
+            runtime.documentRead = { _, _ -> withContext(NonCancellable) { late.await() } }
+            model.openProvider("http"); runCurrent(); model.closeProvider()
+            late.complete(providerDocument(1, "http")); runCurrent()
+            assertNull(model.document.value)
+        } finally { gate.complete(providerDocument(1, "http")); model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun backgroundDraftIsClearedByExplicitDetailCloseOrProfileSwitch() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)
+        try {
+            model.setForeground(true); model.show(1); runCurrent()
+            model.openProvider("http", edit = true); runCurrent(); model.changeProviderContent("example.net")
+            model.setForeground(false); runCurrent(); assertNotNull(model.document.value)
+            model.show(null); runCurrent(); assertNull(model.document.value)
+            model.setForeground(true); model.show(1); runCurrent()
+            model.openProvider("http", edit = true); runCurrent(); model.changeProviderContent("example.org")
+            model.show(2); runCurrent(); assertNull(model.document.value)
+            model.openProvider("http", edit = true); runCurrent()
+            assertEquals(2L, model.document.value?.document?.profileId)
+            assertEquals("payload: []", model.document.value?.content); assertEquals(0, runtime.saves)
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
     @Test fun singleProviderTimeoutClearsBusyAndAllowsRetryWithoutReopeningDetail() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val runtime = StatisticsFixture(); val model = ProfileStatisticsViewModel(runtime)

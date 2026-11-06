@@ -713,12 +713,14 @@ fun KClashApp(
 
     // 作者 long：详情窗口由页面持有，不能随 LazyColumn 卡片被回收；启停改变前一张卡片高度也应保留正在查看的列表。
     val detailProfile = selectedProfile?.takeIf { it.id == profileDetailId && selectedDestination == MainDestination.DASHBOARD }
-    LaunchedEffect(detailProfile?.id) {
+    LaunchedEffect(profileDetailId, selectedProfile?.id, selectedDestination, profilesState.profilesLoaded) {
+        // 作者 long：Activity重建后仓库先发空快照，恢复中的详情不是用户关闭，不能清掉ViewModel里尚未保存的Provider正文。
+        if (selectedDestination == MainDestination.DASHBOARD && profileDetailId != null && !profilesState.profilesLoaded) return@LaunchedEffect
         profileStatisticsViewModel?.show(detailProfile?.id)
     }
-    LaunchedEffect(selectedProfile?.id, selectedDestination) {
-        // 作者 long：冷进程先显示空仓库快照；等当前配置真正到达后再判定切换，否则选择器返回时会丢失已恢复的详情入口。
-        if (selectedDestination != MainDestination.DASHBOARD || selectedProfile != null && profileDetailId != selectedProfile.id) profileDetailId = null
+    LaunchedEffect(selectedProfile?.id, selectedDestination, profilesState.profilesLoaded) {
+        // 作者 long：只等待首次读取；真实删除或清空当前选择仍须关闭原详情，不能把失效配置误作恢复中的空快照。
+        if (selectedDestination != MainDestination.DASHBOARD || profilesState.profilesLoaded && profileDetailId != selectedProfile?.id) profileDetailId = null
     }
     if (selectedDestination != MainDestination.PROFILES) ProfileSyncResults(profilesState.sync,
         profilesViewModel::dismissSyncResult, profilesViewModel::retrySyncFailures)

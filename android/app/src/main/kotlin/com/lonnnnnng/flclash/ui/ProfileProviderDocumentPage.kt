@@ -8,9 +8,11 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -40,8 +42,21 @@ internal fun ProfileProviderDocumentHost(model: ProfileStatisticsViewModel) {
 @Composable
 internal fun ProfileProviderDocumentPage(state: ProviderDocumentUiState, onClose: () -> Unit,
     onChange: (String) -> Unit, onSave: () -> Unit, onRetry: () -> Unit) {
-    var askDiscard by remember(state.name) { mutableStateOf(false) }
-    var value by remember(state.document) { mutableStateOf(TextFieldValue(state.content)) }
+    var askDiscard by rememberSaveable(state.document) { mutableStateOf(false) }
+    val contentForRestore = rememberUpdatedState(state.content)
+    // 作者 long：Activity 重建只写入选区偏移，正文仍由 ViewModel 保管，避免 Provider 凭据进入系统保存状态。
+    val textFieldSaver = remember(state.document) {
+        Saver<TextFieldValue, IntArray>(
+            save = { intArrayOf(it.selection.start, it.selection.end) },
+            restore = { offsets ->
+                val content = contentForRestore.value
+                TextFieldValue(content, TextRange(
+                    offsets[0].coerceIn(0, content.length), offsets[1].coerceIn(0, content.length)))
+            })
+    }
+    var value by rememberSaveable(state.document, stateSaver = textFieldSaver) {
+        mutableStateOf(TextFieldValue(state.content))
+    }
     val close = { if (!state.saving) { if (state.dirty) askDiscard = true else onClose() } }
     ProfileEditorPage(onDismissRequest = close, backTag = "profile_provider_document_back", title = { Text(state.name) },
         confirmButton = {

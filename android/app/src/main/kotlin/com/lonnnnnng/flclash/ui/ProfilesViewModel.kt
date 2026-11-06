@@ -35,6 +35,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.async
@@ -56,6 +59,7 @@ data class ProfilesUiState(
     val sync: ProfileSyncUiState = ProfileSyncUiState(),
     val orderRevision: Long = 0,
     val orderError: String? = null,
+    val profilesLoaded: Boolean = true,
 )
 
 data class ProfileEditorUiState(
@@ -273,13 +277,17 @@ class ProfilesViewModel internal constructor(
     private var overviewJob: kotlinx.coroutines.Job? = null
     val ageKeyRequired: StateFlow<Boolean> = mutableAgeKeyRequired
 
-    val state: StateFlow<ProfilesUiState> = combine(
-        repository.profiles,
-        repository.currentProfileId,
-        busy, mutableSync, orderResult,
-    ) { profiles, currentId, isBusy, sync, order ->
-        ProfilesUiState(profiles, currentId, isBusy, repository.proxyResourceUsage(), sync, order.first, order.second)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfilesUiState())
+    val state: StateFlow<ProfilesUiState> = flow {
+        // 作者 long：先等仓库首读与选择校正完成再订阅快照，避免独立合流把就绪标记配到旧空列表并误关恢复中的详情。
+        repository.profilesLoaded.first { it }
+        emitAll(combine(
+            repository.profiles,
+            repository.currentProfileId,
+            busy, mutableSync, orderResult,
+        ) { profiles, currentId, isBusy, sync, order ->
+            ProfilesUiState(profiles, currentId, isBusy, repository.proxyResourceUsage(), sync, order.first, order.second)
+        })
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfilesUiState(profilesLoaded = false))
 
     val errors = mutableErrors.asSharedFlow()
     val editorState: StateFlow<ProfileEditorUiState> = mutableEditor

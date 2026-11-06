@@ -10,6 +10,7 @@ import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
@@ -31,6 +33,32 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
+
+    @Test fun profileSnapshotDistinguishesInitialReadFromLoadedEmptyAndDeletion() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.custom(829, "loading-boundary")
+        val store = FakeProfileStore(profile).apply { profiles.value = emptyList(); currentProfileId.value = null }
+        val loaded = MutableStateFlow(false)
+        val pending = object : ProfileStore by store { override val profilesLoaded: StateFlow<Boolean> = loaded }
+        val model = ProfilesViewModel(pending, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val owner = androidx.lifecycle.ViewModelStore().apply { put("profiles", model) }
+        val collection = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { model.state.collect {} }
+        try {
+            runCurrent(); assertFalse(model.state.value.profilesLoaded)
+            // 作者 long：首读未就绪时即使配置流先到，也不能把尚未校正的选择暴露给恢复中的详情页。
+            store.profiles.value = listOf(profile); runCurrent()
+            assertFalse(model.state.value.profilesLoaded); assertTrue(model.state.value.profiles.isEmpty())
+            store.profiles.value = emptyList(); runCurrent()
+            loaded.value = true; runCurrent()
+            assertTrue(model.state.value.profilesLoaded); assertTrue(model.state.value.profiles.isEmpty())
+            store.profiles.value = listOf(profile); store.currentProfileId.value = profile.id; runCurrent()
+            assertEquals(profile.id, model.state.value.currentProfileId)
+            store.profiles.value = emptyList(); store.currentProfileId.value = null; runCurrent()
+            // 作者 long：删除最后一项是已加载的空仓库，页面应关闭旧详情，不能再次退回首次读取保护。
+            assertTrue(model.state.value.profilesLoaded); assertTrue(model.state.value.profiles.isEmpty())
+            assertNull(model.state.value.currentProfileId)
+        } finally { collection.cancel(); owner.clear() }
+    }
 
     @Test fun earlyEditorOpenWaitsForFirstReadAndPreservesRecoveredDraft() = runTest {
         Dispatchers.setMain(mainDispatcher)

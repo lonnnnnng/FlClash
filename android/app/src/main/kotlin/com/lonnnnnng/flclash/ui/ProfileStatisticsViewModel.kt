@@ -51,7 +51,6 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
     private val providerRetries = MutableStateFlow(0L)
     private var updateJob: Job? = null
     private var inFlightName: String? = null
-    private var visibilityGeneration = 0L
     private var providerGeneration = 0L
     private var managedBindings: Map<String, RuleResource> = emptyMap()
     private val mutableDocument = MutableStateFlow<ProviderDocumentUiState?>(null)
@@ -260,26 +259,25 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
         documentJob?.cancel()
         invalidatePicker()
         val generation = ++documentGeneration
-        val window = visibilityGeneration
         mutableDocument.value = ProviderDocumentUiState(name, editing = edit, picking = pickFile)
         documentJob = viewModelScope.launch {
             try {
                 val loaded = runtime.readProfileProvider(id, name)
                 currentCoroutineContext().ensureActive()
                 check(loaded.profileId == id && loaded.document.name == name)
-                if (generation != documentGeneration || window != visibilityGeneration) return@launch
+                if (generation != documentGeneration) return@launch
                 val token = if (pickFile) ++nextPickerToken else null
                 if (token != null) {
                     pendingPicker = ProviderPickerSnapshot(id, name, loaded.recoveryKey, loaded.document.digest, token)
                     writePicker(pendingPicker)
                     currentCoroutineContext().ensureActive()
-                    if (generation != documentGeneration || window != visibilityGeneration) return@launch
+                    if (generation != documentGeneration) return@launch
                 }
                 mutableDocument.value = ProviderDocumentUiState(name, false, loaded, loaded.document.content,
                     editing = edit && loaded.document.editable, picking = pickFile,
                     pickerToken = token)
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { if (generation == documentGeneration && window == visibilityGeneration)
+            catch (_: Exception) { if (generation == documentGeneration)
                 mutableDocument.value = ProviderDocumentUiState(name, false, editing = edit, picking = pickFile, error = "读取失败，请重试") }
         }
     }
@@ -424,19 +422,15 @@ class ProfileStatisticsViewModel @Inject constructor(private val runtime: Profil
                 return
             }
             invalidatePicker()
-            providerGeneration++; visibilityGeneration++; documentGeneration++; documentJob?.cancel(); mutableDocument.value = null; managedBindings = emptyMap()
+            providerGeneration++; documentGeneration++; documentJob?.cancel(); mutableDocument.value = null; managedBindings = emptyMap()
             mutableProviders.value = ProfileProvidersUiState(profileId, updatingName = inFlightName)
         }
         profile.value = profileId
     }
     fun setForeground(value: Boolean) {
         if (foreground.value != value) {
-            visibilityGeneration++
-            // 作者 long：系统文件选择器会遮挡应用，保留其绑定；其他后台状态作废未提交文档，已受理保存仍等待核心结果。
-            if (!value && document.value?.pickerToken == null && document.value?.saving != true && document.value?.committed != true) {
-                documentGeneration++; documentJob?.cancel(); mutableDocument.value = null
-            }
-            // 作者 long：后台仅清除列表和文档，不丢失当前详情的失败清单；回到前台仍能继续恢复剩余项。
+            // 作者 long：后台只暂停列表轮询；未保存正文、失败原因和读取任务留在当前ViewModel会话，避免绕过退出确认。
+            // 显式关闭或切换配置仍通过documentGeneration作废原绑定，正文不写入系统状态包或额外草稿文件。
             mutableProviders.update { it.copy(providers = null, isLoading = false, error = null, managedNames = emptySet()) }
         }
         foreground.value = value
