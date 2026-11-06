@@ -128,18 +128,37 @@ private fun LocalProxiesPageContent(state: LocalProxiesUiState, onDismiss: () ->
 @Composable
 private fun LocalProxyConfirmations(state: LocalProxiesUiState, onCancelDelete: () -> Unit, onDelete: () -> Unit, onConfirmReplacement: () -> Unit) {
     if (state.deleting.isNotEmpty()) EditorAlertDialog(onDismissRequest = onCancelDelete, title = { Text("删除 ${state.deleting.size} 个节点？") },
-        text = { Text(if (state.users.isEmpty()) "删除后可重新添加。" else "以下配置正在引用节点：${state.users.joinToString("、")}。删除后引用会保留为缺失状态。") },
-        confirmButton = { TextButton(onClick = onDelete, enabled = !state.busy) { Text("删除") } }, dismissButton = { TextButton(onClick = onCancelDelete, enabled = !state.busy) { Text("取消") } })
+        text = { LocalProxyConfirmationBody(state, "local_proxy_delete") {
+            if (state.users.isEmpty()) Text("删除后可重新添加。") else {
+                Text("以下配置正在引用节点，删除后引用会保留为缺失状态：")
+                state.users.forEach { Text(it) }
+            }
+        } },
+        confirmButton = { TextButton(onClick = onDelete, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_delete_confirm")) { Text("删除") } },
+        dismissButton = { TextButton(onClick = onCancelDelete, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_delete_cancel")) { Text("取消") } })
     if (state.replacement != null) EditorAlertDialog(onDismissRequest = onCancelDelete, title = { Text("确认替换节点？") },
         text = {
             val existed = state.rows.map { it.id }.toSet()
             val added = state.replacement.filter { it.id !in existed }.map { it.name }
-            Text("将移除：${state.removed.joinToString("、")}。" +
-                (if (added.isEmpty()) "" else "将添加：${added.joinToString("、")}。") +
-                "快捷编辑中的改名按新节点处理，原名称引用将保留为缺失。")
+            LocalProxyConfirmationBody(state, "local_proxy_replace") {
+                Text("将移除：${state.removed.joinToString("、")}。" +
+                    (if (added.isEmpty()) "" else "将添加：${added.joinToString("、")}。") +
+                    "快捷编辑中的改名按新节点处理，原名称引用将保留为缺失。")
+            }
         },
         confirmButton = { TextButton(onClick = onConfirmReplacement, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_links_replace")) { Text("确认替换") } },
         dismissButton = { TextButton(onClick = onCancelDelete, enabled = !state.busy) { Text("继续编辑") } })
+}
+
+@Composable
+private fun LocalProxyConfirmationBody(state: LocalProxiesUiState, tag: String, content: @Composable ColumnScope.() -> Unit) {
+    // 作者 long：引用数量不受单屏限制；失败与等待状态固定在当前确认层，避免被父页或长正文遮住。
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("${tag}_pending"))
+        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("${tag}_error")) }
+        Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()).testTag("${tag}_body"),
+            verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
+    }
 }
 
 @Composable

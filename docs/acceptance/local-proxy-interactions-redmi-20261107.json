@@ -1,0 +1,706 @@
+{
+  "date": "2026-11-07",
+  "title": "本地代理删除、添加节点与分享链接交互",
+  "status": "DONE-VERIFIED-SCOPED",
+  "overallVisualParity": "PARTIAL",
+  "summary": "KUI-006/007已修：本地代理删除/替换确认可滚动且原位显示失败与等待；添加节点异常按阶段脱敏，重复分支也复核当前配置。Redmi final2精确12/12、43图经完整集合/哈希/解码及13张拼图目视；新增5条覆盖40个长引用、隔离Room真实失败/重试/防重复、实核拒绝、受理前后切配置及单/批链接真实IME/Back/重建。788项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；双包回拉匹配，正式两配置/脚本/正文/偏好/选择、原1.yaml/Flutter/设备保持。",
+  "scope": {
+    "sourceBaseCommit": "46d9b4d92a9d66252e48e2c9b9ba5f8e7b73c6a0",
+    "changedSources": {
+      "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/LocalProxyDraftTestActivity.kt": "5076c4b570d3428cd3b5ee20303ece8cf00c6fad8ab5b9e40a1947651cba9daf",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxiesPage.kt": "c248f4fb5c367e9b3a9080ddbcf4112a11069b6537e6f124f2edc497c9af0f5a",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxiesViewModel.kt": "cd733b81bee4a7d824a567182fce8f616f82387ee587dcd60b90fadfaea68eb1",
+      "android/tests/app/LocalProxyInteractionTest.kt": "5e9a4f7f33013b055dbc9386310ca787bcfbb04ba24b5285840a861c1af85f98",
+      "android/tests/instrumented/LocalProxyInteractionInstrumentedTest.kt": "17ae4b10cace02861616639c6afb0f1e63ceaf59d3aabccecdc59efb18d2434d",
+      "android/tests/instrumented/StageOneDraftInstrumentedTest.kt": "1f72181daa1cac70fd6fcd73f63193b07e5a64a060abcc4a562f8d2be594f503"
+    },
+    "defects": [
+      "KUI-006",
+      "KUI-007"
+    ],
+    "defectDocument": "docs/local-proxy-interaction-defects.md",
+    "flutterReadOnlyReferences": [
+      "lib/common/dialog.dart",
+      "lib/ui/dialog.dart",
+      "lib/views/profiles/custom/custom_proxies.dart",
+      "lib/providers/actions/proxies.dart",
+      "lib/providers/state/custom_import.dart"
+    ],
+    "boundary": "新增5方法使用正式页面/VM与Debug隔离宿主；定义由原1.yaml提取，校验真实Bridge，失败触发器仅隔离Room，长引用查询结果受控注入。未运行正式MainActivity新增失败链路，不证明正式引用查询、运行态或冷进程。未下载订阅，不改Flutter/Go。受理保存后切配置仍保存冻结的原节点到全局目录。"
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 43s",
+    "tasks": "389 actionable tasks: 11 executed, 378 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 512,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 70
+      },
+      "service": {
+        "tests": 207,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :app:testDebugUnitTest UP-TO-DATE",
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE"
+    ],
+    "executionNote": "App512本组build1/build2实际执行，其余276复用；最终build6四模块UP-TO-DATE。Release产品自build1不变，Debug自build2不变，build3/4/5仅诊断测试包，build6纳入8轮交替输入回归。",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 10
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 9
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "64277c8173b514defa35e2288365487df098c0514574893435ed9bfad88d1a16",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "a392cb9da9df58afae36521970e98db49a86ea040e6d311117307fc80ee6a790",
+        "bytes": 5845688,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "8fcd4c1036edef973f47fe0ff5e36219adf3310b38ea1a94cc704872d3e1aa17",
+        "bytes": 48217264,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "flutterHashes": [
+      "700570428bde3a1b316ae7f7e8f10d77f9e23ee8bf8b3f45557362a061fbefb3"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "installation": {
+    "com.lonnnnnng.flclash": {
+      "builtSha256": "64277c8173b514defa35e2288365487df098c0514574893435ed9bfad88d1a16",
+      "pulledSha256": "64277c8173b514defa35e2288365487df098c0514574893435ed9bfad88d1a16"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "builtSha256": "a392cb9da9df58afae36521970e98db49a86ea040e6d311117307fc80ee6a790",
+      "pulledSha256": "a392cb9da9df58afae36521970e98db49a86ea040e6d311117307fc80ee6a790"
+    }
+  },
+  "acceptance": {
+    "passed": 12,
+    "total": 12,
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#singleLinksImeBackDiscardAndRecreationKeepParentWithoutSaving",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#listDeleteCancellationKeepsSelectionAndSecondBackExitsSelectionOnly",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#actualCoreValidationAndDatabaseFailureRecoverAndSelectionSwitchRespectsAcceptanceBoundary",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#batchLinksLongInputImeBackAndRecreationKeepDirectoryWithoutSaving",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#longDeleteReferencesCancelKeepsParentAndFailedSaveRetriesOnce",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenusInstrumentedTest#selectorPreferredAndNonselectableMenusKeepSelectionAndDelayIndependentInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenusInstrumentedTest#customProviderAndBuiltinPoliciesApplyToBothPageLayouts",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#localDirectoryDragScrollsCancelsAndSavesOnceThenSearchDisablesSorting",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#linkDraftErrorsReplacementAndDiscardRenderInBothThemes",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "seconds": 119.782,
+    "images": [
+      {
+        "path": "local_links_single_first_ime.png",
+        "bytes": 212552,
+        "sha256": "18161829e0b0670e716eb04252ea6e554b14ca29e15cd785181d867f5b36cbd5"
+      },
+      {
+        "path": "local_links_single_last_ime.png",
+        "bytes": 213971,
+        "sha256": "0c78a5ae9080193b73a0a7f73201f971702ea5d601d1bc84876abff1627a7aae"
+      },
+      {
+        "path": "local_links_single_discard.png",
+        "bytes": 222418,
+        "sha256": "672ef39afe38035525e682fc69790eedb0ac109c4686c43d1ed4bb7b9bbed2df"
+      },
+      {
+        "path": "local_links_single_recreated.png",
+        "bytes": 232180,
+        "sha256": "fa1e737801709ba3978119651c9c840c4abae31f9b2b578cec9a820b59181ee2"
+      },
+      {
+        "path": "local_links_single_returned.png",
+        "bytes": 61214,
+        "sha256": "ab9d500dfc80b4f9b5f5e5693861f621aee6ea9c4bd90eedf788a6934769c9a1"
+      },
+      {
+        "path": "local_delete_cancel_selection.png",
+        "bytes": 61214,
+        "sha256": "ab9d500dfc80b4f9b5f5e5693861f621aee6ea9c4bd90eedf788a6934769c9a1"
+      },
+      {
+        "path": "local_add_core_rejected.png",
+        "bytes": 89398,
+        "sha256": "8c2685659c5d9ad98572c1a4b5b864ab4abd668f6698b53399332f41487fbd94"
+      },
+      {
+        "path": "local_add_database_failed.png",
+        "bytes": 88065,
+        "sha256": "4d9d35fb02f79f30525b11c83191eb683b47ac00af7d0bd18ec83f368d257ab1"
+      },
+      {
+        "path": "local_add_profile_changed.png",
+        "bytes": 83690,
+        "sha256": "36148e0b12994621c82aad2fffff91cbdee64d80c9f2876d91df916fd4334772"
+      },
+      {
+        "path": "local_add_accepted_original.png",
+        "bytes": 78734,
+        "sha256": "fb3030520589ff5390c58d990c52fb19bb10fb9f05d0e874cfccdfda878649e5"
+      },
+      {
+        "path": "local_links_batch_first_ime.png",
+        "bytes": 217224,
+        "sha256": "0da2fda371c15dec7ef43ef467204346218074367d5ddcdea203e08cef8702e2"
+      },
+      {
+        "path": "local_links_batch_last_ime.png",
+        "bytes": 218402,
+        "sha256": "7c7298876f56b299da1d38adf132906d22f8b149e3b5f627e2e6e4932135d642"
+      },
+      {
+        "path": "local_links_batch_discard.png",
+        "bytes": 226287,
+        "sha256": "b34288825aca8686cd3274728e8c113e11ead6a5cdcf9aec57f97d969bbde956"
+      },
+      {
+        "path": "local_links_batch_recreated.png",
+        "bytes": 236717,
+        "sha256": "56af51c54e2222342a145cbf853f630b785c5965c618e0077d6770065db57a1a"
+      },
+      {
+        "path": "local_links_batch_returned.png",
+        "bytes": 61214,
+        "sha256": "ab9d500dfc80b4f9b5f5e5693861f621aee6ea9c4bd90eedf788a6934769c9a1"
+      },
+      {
+        "path": "local_delete_first.png",
+        "bytes": 195215,
+        "sha256": "81712f240487f3b9b3f077717770fc09b273baf3e1ae71fd2101e3b0605cab52"
+      },
+      {
+        "path": "local_delete_last.png",
+        "bytes": 194111,
+        "sha256": "ae7bef10df41a9ae9686d8bcc65cc0aba709ac797a9c9a7131881748c177ae7c"
+      },
+      {
+        "path": "local_delete_pending.png",
+        "bytes": 192386,
+        "sha256": "0914523f502505a9a58d9e4eb83cd9ea8b292baf6455d50401a94ab397f5c5a0"
+      },
+      {
+        "path": "local_delete_failed.png",
+        "bytes": 214882,
+        "sha256": "e20b9500d598aa955cf4776030b6934046591f69f019a0cbf50b68b78f66a41e"
+      },
+      {
+        "path": "local_delete_failed_recreated.png",
+        "bytes": 214882,
+        "sha256": "e20b9500d598aa955cf4776030b6934046591f69f019a0cbf50b68b78f66a41e"
+      },
+      {
+        "path": "local_delete_saved.png",
+        "bytes": 78817,
+        "sha256": "a03a27b2f87e51eb456d351c1ff413f962a7870d2648e54274c56f4d89a46997"
+      },
+      {
+        "path": "node_menu_Selector_false.png",
+        "bytes": 71753,
+        "sha256": "7e282b0c2adecae57fa1b8b7a557bb1821a6f987e6051085ba79faac9a2c66f0"
+      },
+      {
+        "path": "node_menu_URLTest_false.png",
+        "bytes": 55246,
+        "sha256": "692137b2c7f03006fbb47d21cd08fc870acbc435e0bd3eb2046206eabdf73230"
+      },
+      {
+        "path": "node_menu_Fallback_false.png",
+        "bytes": 55000,
+        "sha256": "1e436c3a9c56d24e8c2b0e592829c7189709a1a748d680dff8940a714bad4d45"
+      },
+      {
+        "path": "node_menu_LoadBalance_false.png",
+        "bytes": 52353,
+        "sha256": "c34e444fafbf48811fa5d8a4e0d2d89118440ca49a7ee34a460e0e0d3cf07d46"
+      },
+      {
+        "path": "node_menu_Selector_true.png",
+        "bytes": 68270,
+        "sha256": "2761bfaa80e7f1b38025c6f0d43bb8eefaea34205532f4c27102bfc06e33e545"
+      },
+      {
+        "path": "node_menu_URLTest_true.png",
+        "bytes": 63809,
+        "sha256": "77942e464aec5f82191c08236e38accb4507a7f8fe3ca417396d7d66ad442b97"
+      },
+      {
+        "path": "node_menu_Fallback_true.png",
+        "bytes": 64469,
+        "sha256": "fb595b3b79fb973673845b456136fcf7da5996ec8f303ff2f7e7b51312d7b279"
+      },
+      {
+        "path": "node_menu_LoadBalance_true.png",
+        "bytes": 56290,
+        "sha256": "e4e8916557b2d0288ac0256704491e447fdf22b5cb0a62e09035f6448a93edbc"
+      },
+      {
+        "path": "node_provider_TAB_false.png",
+        "bytes": 91168,
+        "sha256": "22398cd6d9cb23e1c44bc8f1aca5902b420aa6259f3049d0d944f53c05644faa"
+      },
+      {
+        "path": "node_provider_TAB_true.png",
+        "bytes": 89042,
+        "sha256": "3fd760838550d938464452fc93944b8fc2fd48fa76e2b64dac8239d3166ce9e4"
+      },
+      {
+        "path": "node_provider_LIST_false.png",
+        "bytes": 107293,
+        "sha256": "1e3cc7f8b6c0b5cc3a5da2b54ce861699840a8dc1808d9cee46d1105412a4c1b"
+      },
+      {
+        "path": "node_provider_LIST_true.png",
+        "bytes": 109279,
+        "sha256": "ce8591e1586ea9b3119d1f83733865dbe4428133142da3da66b6d696d04e28c3"
+      },
+      {
+        "path": "local_proxy_discard.png",
+        "bytes": 133248,
+        "sha256": "0f88c3a0aba56cbe8c57135394eb9591d18c3d510676bfb2342b540ef793dfd9"
+      },
+      {
+        "path": "local_proxy_delete_references.png",
+        "bytes": 131221,
+        "sha256": "3b25f9a0443ab9dfca0d7bf47c5f16fd3c1a331f6f222c3e291033123bf37853"
+      },
+      {
+        "path": "local_proxy_empty.png",
+        "bytes": 68393,
+        "sha256": "cfb08f90279a7c1d96afc8f11dcf0d689c4eec61d1963ff18089fa823f5bce18"
+      },
+      {
+        "path": "local_proxies_drag_saved.png",
+        "bytes": 126676,
+        "sha256": "d6a9238c2345e5d0b99352cfb601675f49a2f767d5978d2ff7e163003c7d512e"
+      },
+      {
+        "path": "local_proxy_links_error_false.png",
+        "bytes": 157266,
+        "sha256": "0a2f9b40606a70e9e28c6b698ea13bb8599e28b59dc4a1f1ede060e729966c01"
+      },
+      {
+        "path": "local_proxy_links_discard_false.png",
+        "bytes": 123329,
+        "sha256": "2a7f95905b5bf1a5433ecbeaae7697198e509a5a990f17b278e081a8c00af969"
+      },
+      {
+        "path": "local_proxy_links_replacement_false.png",
+        "bytes": 137942,
+        "sha256": "8686e3e54b053850c377409841d005f1f85eaea72d1fd436b4228877e15e8912"
+      },
+      {
+        "path": "local_proxy_links_error_true.png",
+        "bytes": 158039,
+        "sha256": "5748d3c7dc29d5def5bb15562f08f21426d902cd4e06ad8c11b4fe2dc7c18abd"
+      },
+      {
+        "path": "local_proxy_links_discard_true.png",
+        "bytes": 123123,
+        "sha256": "531d279de7f9f84fdb05bf6866775e1240c5ebc4f8bd5b49a4c7d232eec3a246"
+      },
+      {
+        "path": "local_proxy_links_replacement_true.png",
+        "bytes": 137562,
+        "sha256": "bc849a79a702fa80b18854f2319213b4be10317af74c26beaa4f5175df5f672d"
+      }
+    ],
+    "visualReview": {
+      "methods": 12,
+      "images": 43,
+      "sources": 1605,
+      "installationMatched": true,
+      "preserved": true,
+      "contactSheets": [
+        {
+          "path": "review-1-1.png",
+          "images": [
+            "local_delete_cancel_selection.png",
+            "local_delete_failed.png",
+            "local_delete_failed_recreated.png",
+            "local_delete_first.png"
+          ],
+          "sha256": "8b8e22d95c8f6c5810067ccd193689f065403400e31b1dddc0d961c8751dc40d"
+        },
+        {
+          "path": "review-1-2.png",
+          "images": [
+            "local_delete_last.png",
+            "local_delete_pending.png",
+            "local_delete_saved.png"
+          ],
+          "sha256": "1d1576f2dfe763ca6c7644687e6a79ad21bd232d449d9e9b3f72f0310e5b25b5"
+        },
+        {
+          "path": "review-2-1.png",
+          "images": [
+            "local_add_accepted_original.png",
+            "local_add_core_rejected.png",
+            "local_add_database_failed.png",
+            "local_add_profile_changed.png"
+          ],
+          "sha256": "c77001c485260b2ef14c4e0df5d9cb8c1a3be5f8519ead5e269cf67ea668657c"
+        },
+        {
+          "path": "review-3-1.png",
+          "images": [
+            "local_links_single_discard.png",
+            "local_links_single_first_ime.png",
+            "local_links_single_last_ime.png",
+            "local_links_single_recreated.png"
+          ],
+          "sha256": "0c8973653e4ca076dd43ab7e439ff18d67c9f9ff8320f24602dd201daacf2092"
+        },
+        {
+          "path": "review-3-2.png",
+          "images": [
+            "local_links_single_returned.png"
+          ],
+          "sha256": "bd6edf2684d5e8b7e39c2898e0b907ae123d20acf6d77378a76d5c3b9317e7f1"
+        },
+        {
+          "path": "review-4-1.png",
+          "images": [
+            "local_links_batch_discard.png",
+            "local_links_batch_first_ime.png",
+            "local_links_batch_last_ime.png",
+            "local_links_batch_recreated.png"
+          ],
+          "sha256": "0face8b78527259866244d9b2d088bef0d39d7ced6f3c20ceab14d33826018a3"
+        },
+        {
+          "path": "review-4-2.png",
+          "images": [
+            "local_links_batch_returned.png"
+          ],
+          "sha256": "e8fead1edbbc4a5c429c1d100c9b5f0198aa17d8520a0c6a6e84642a3db823af"
+        },
+        {
+          "path": "review-5-1.png",
+          "images": [
+            "node_menu_Fallback_false.png",
+            "node_menu_Fallback_true.png",
+            "node_menu_LoadBalance_false.png",
+            "node_menu_LoadBalance_true.png"
+          ],
+          "sha256": "77751e4c709230fe0b11b32110836f8de53620b7044d7502dc0ee47c42807933"
+        },
+        {
+          "path": "review-5-2.png",
+          "images": [
+            "node_menu_Selector_false.png",
+            "node_menu_Selector_true.png",
+            "node_menu_URLTest_false.png",
+            "node_menu_URLTest_true.png"
+          ],
+          "sha256": "2b38db466b82c16203804cba23ca887517c4f37791214db532d9afa7e2fa24e7"
+        },
+        {
+          "path": "review-5-3.png",
+          "images": [
+            "node_provider_LIST_false.png",
+            "node_provider_LIST_true.png",
+            "node_provider_TAB_false.png",
+            "node_provider_TAB_true.png"
+          ],
+          "sha256": "1876627d6f62796a9d37750a0a2826ebf383c87f548c3d38e7bf014d66c2b3a7"
+        },
+        {
+          "path": "review-6-1.png",
+          "images": [
+            "local_proxy_delete_references.png",
+            "local_proxy_discard.png",
+            "local_proxy_empty.png",
+            "local_proxy_links_discard_false.png"
+          ],
+          "sha256": "b1fda9ecedf6c3e66b1c6b81014c8d349bdfdf95215afc60a54eed5ce7672bfa"
+        },
+        {
+          "path": "review-6-2.png",
+          "images": [
+            "local_proxy_links_discard_true.png",
+            "local_proxy_links_error_false.png",
+            "local_proxy_links_error_true.png",
+            "local_proxy_links_replacement_false.png"
+          ],
+          "sha256": "b0060b74531868e5921b44b2f036ccc18435cc2f7991d1ea69e9b716f508f6be"
+        },
+        {
+          "path": "review-6-3.png",
+          "images": [
+            "local_proxy_links_replacement_true.png",
+            "local_proxies_drag_saved.png"
+          ],
+          "sha256": "72427b0c5fa68362cf9008c6460cbad7f23ae5d685147f7ce36eec218b3caf3e"
+        }
+      ],
+      "reviewed": true,
+      "reviewScope": "43张原图经13张拼图目视；前9张已在本批实现阶段复核，剩余review-5-3与review-6-1/2/3在收尾阶段完成。仅目标状态画面，不证明完整Flutter视觉或连续动效。",
+      "observations": [
+        "长引用确认首尾、等待及失败状态可见，操作仍在确认层。",
+        "单/批链接键盘、错误、放弃确认与返回父页符合本组状态；无本组可见遮挡或溢出。",
+        "深浅色节点菜单/Provider来源与本地删除、替换、空态、拖动结果布局可读；部分菜单使用组件宿主背景，不作全应用主题结论。"
+      ]
+    }
+  },
+  "preservation": {
+    "preinstall": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "before": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "after": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "equal": true,
+    "scriptsCheckedInHostFixtures": true,
+    "preparation": "复用两份正式FILE/URL，无正式导入/修复；仅隔离库原字节复制。"
+  },
+  "earlierRuns": [
+    {
+      "name": "build1",
+      "result": "统一构建通过，安装前审查修正测试完整错误匹配/等待Room回读及Debug缓存清理；build1未安装"
+    },
+    {
+      "name": "final1",
+      "passed": 11,
+      "total": 12,
+      "images": 43,
+      "preserved": true,
+      "failure": "旧ALPN立即重建一次恢复空字符串；5条新增全过，根因尚未确认，不归因于本组产品变更"
+    },
+    {
+      "name": "diagnostic-build3",
+      "passed": 1,
+      "total": 1,
+      "note": "重建前后runOnIdle值断言通过，可能改变时序，不作根因结论"
+    },
+    {
+      "name": "diagnostic-build4",
+      "passed": 1,
+      "total": 1,
+      "note": "改主线程只读断言通过"
+    },
+    {
+      "name": "diagnostic-build5",
+      "passed": 1,
+      "total": 1,
+      "note": "无额外等待连续8轮立即重建通过；最终build6加强为交替值，不靠相同输入掩盖丢失"
+    }
+  ],
+  "notVerified": [
+    "首轮ALPN立即重建空值根因仍未确认；最终8轮交替输入通过不消除历史失败",
+    "正式主宿主节点添加失败/保存等待切配置及真实长引用查询未新增验收",
+    "相同Profile内来源变化、A→B→A、原生调用永久不回调仍未因此闭环",
+    "管理窗口/扩展/Provider正文冷进程、保存受理中断、外部删除及Provider正文独立加密草稿",
+    "全应用Flutter视觉/连续动效、实时背景/触点光效和性能",
+    "第6项原保护异常、前组偏好变化、旧TLS EOF因果与长期网络稳定性；蜂窝/在线age密文输入受限",
+    "低API实核/VPN/实网、首次安装/第三方/OEM、远端CI/签名/Release真机及发布资产"
+  ],
+  "artifacts": {
+    "base": "../acceptance-artifacts/local-proxy-interactions-redmi-20261107/",
+    "manifest": "manifest.json",
+    "manifestSha256": "48a7e55bd69ed42cf6812e1e5751eb2c2b3b50331f7d0a76b7d0b09362718fa5",
+    "finalBuild": "build6/summary.json",
+    "finalResults": "final2/result-run1.json",
+    "sourceAndLogsLocalOnly": true
+  },
+  "next": "优先补正式MainActivity节点添加失败/重试、保存等待切配置及真实长引用查询，并定位ALPN立即重建间歇丢值；再推进管理窗口/扩展/Provider正文冷进程、受理中断、外部删除及独立加密草稿；随后统一视觉，系统/性能/发布按原顺序。"
+}

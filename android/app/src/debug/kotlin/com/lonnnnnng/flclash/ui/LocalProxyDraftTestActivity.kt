@@ -33,7 +33,7 @@ class LocalProxyDraftTestActivity : ComponentActivity() {
         fixture = ViewModelProvider(this)[LocalProxyDraftFixture::class.java]
         model = ViewModelProvider(this, object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T = LocalProxiesViewModel(fixture.repository, CoreBridge(), fixture.runtime) as T
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = LocalProxiesViewModel(fixture.operations, NoopProfileDraftStore) as T
         })[LocalProxiesViewModel::class.java]
         setContent { val state by model.state.collectAsState(); KClashTheme {
             LocalProxiesPage(state, model::close, model::edit, model::save, model::dismissEditor, model::links,
@@ -50,7 +50,7 @@ class LocalProxyDraftTestActivity : ComponentActivity() {
 }
 
 class LocalProxyDraftFixture(application: Application) : AndroidViewModel(application) {
-    private val database = Room.inMemoryDatabaseBuilder(application, KClashDatabase::class.java).build()
+    internal val database = Room.inMemoryDatabaseBuilder(application, KClashDatabase::class.java).build()
     private val directory = File(application.cacheDir, "local-draft-${System.nanoTime()}").apply { mkdirs() }
     val repository = run {
         // 作者 long：隔离上下文仅包装Application，不把Activity引用留在跨重建的ViewModel中。
@@ -63,5 +63,29 @@ class LocalProxyDraftFixture(application: Application) : AndroidViewModel(applic
         })
     }
     val runtime = EntryPointAccessors.fromApplication(application, ConnectionAcceptanceEntryPoint::class.java).runtimeManager()
-    override fun onCleared() { database.close() }
+    internal var beforeSave: suspend () -> Unit = {}
+    internal var beforeValidate: suspend () -> Unit = {}
+    internal var nodeDefinition: com.google.gson.JsonObject? = null
+    internal var referenceUsers: List<String>? = null
+    internal var saveCalls = 0
+    private val repositoryOperations = RepositoryLocalProxyEditorOperations(repository, CoreBridge(), runtime)
+    // 作者 long：仅Debug隔离宿主提供可暂停边界；实际校验仍走Bridge、写入仍走隔离Room，不改正式目录或运行配置。
+    internal val operations = object : LocalProxyEditorOperations by repositoryOperations {
+        override suspend fun users(names: Set<String>) = referenceUsers ?: repositoryOperations.users(names)
+        override suspend fun save(expected: List<LocalProxy>, next: List<LocalProxy>, rename: Pair<String, String>?) {
+            saveCalls++; beforeSave(); repositoryOperations.save(expected, next, rename)
+        }
+        override suspend fun validate(nodes: List<com.google.gson.JsonObject>): List<String> {
+            beforeValidate(); return repositoryOperations.validate(nodes)
+        }
+        override suspend fun definition(profileId: Long, name: String) = nodeDefinition?.deepCopy()
+            ?: repositoryOperations.definition(profileId, name)
+    }
+    override fun onCleared() {
+        database.close()
+        // 作者 long：原配置的隔离副本也含凭据；仅回收本宿主独占缓存目录，Activity重建不会触发此清理。
+        check(directory.canonicalFile.parentFile == getApplication<Application>().cacheDir.canonicalFile && directory.name.startsWith("local-draft-"))
+        directory.deleteRecursively()
+        check(!directory.exists()) { "本地代理验收缓存未清理" }
+    }
 }

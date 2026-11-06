@@ -1,6 +1,22 @@
 # Testing
 
-## 扩展批选与远程新增表单（2026-11-07，当前）
+## 本地代理确认与节点添加（2026-11-07，当前）
+
+KUI-006/007已修：本地代理删除/替换确认可滚动且原位显示失败与等待；添加节点异常按阶段脱敏，重复分支也复核当前配置。Redmi final2精确12/12、43图经完整集合/哈希/解码及13张拼图目视；新增5条覆盖40个长引用、隔离Room真实失败/重试/防重复、实核拒绝、受理前后切配置及单/批链接真实IME/Back/重建。788项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；双包回拉匹配，正式两配置/脚本/正文/偏好/选择、原1.yaml/Flutter/设备保持。
+
+App512本组build1/build2实际执行，其余276复用；最终build6四模块UP-TO-DATE，389任务11执行/378复用。Debug Lint0错误/67警告/10提示，Release0错误/66警告/9提示。
+
+新增5方法`LocalProxyInteractionInstrumentedTest`须显式传`kclashLocalInteractionAcceptance=true`与当前原1.yaml的`kclashLocalYamlSha256`。只在Debug隔离Room/独占缓存复制原字节，实际Bridge校验、SQL触发器失败、正式Repository提交；不下载订阅或随机生成配置。长引用由fixture注入，定义由原文件提取；正式库仅回读保护。每方法比较配置/脚本/正文SHA-size-mtime/偏好/选择及STOPPED，清理仅自身目录。
+
+相邻7方法含StageOneDraft两条、ProxyNodeMenus两条、LocalProxiesPage删除/放弃一条与LocalProxyLinks两条。Dialog真实IME通过WindowInspector检查，系统Back先收键盘再到放弃确认；完整12方法与43张原图名称、分片、哈希、解码同时通过。当前源码1605文件与build6清单一致。
+
+新增5方法为Debug隔离宿主、真实Bridge与隔离Room，长引用结果受控注入，不代替正式MainActivity添加失败/切配置、真实引用查询、运行态或冷进程。final1的ALPN立即重建曾丢值，11/12；最终8轮输入重建回归通过仍未定位根因，保留待查。完整Flutter视觉仍PARTIAL。
+
+ALPN首轮final1失败独立留账；build3/4诊断断言可能影响时序，build5八次立即重建及最终build6交替输入八次通过，不增加等待掩盖失败，不写已修结论。原始失败、诊断与final2不能累计成功数。
+
+证据`docs/acceptance/local-proxy-interactions-redmi-20261107.json`，溯源`docs/local-proxy-interaction-defects.md`，附件`../acceptance-artifacts/local-proxy-interactions-redmi-20261107/`。优先补正式MainActivity节点添加失败/重试、保存等待切配置及真实长引用查询，并定位ALPN立即重建间歇丢值；再推进管理窗口/扩展/Provider正文冷进程、受理中断、外部删除及独立加密草稿；随后统一视觉，系统/性能/发布按原顺序。第6项原保护异常、前组偏好变化及网络稳定性仍待查，蜂窝延期，玻璃默认关闭。
+
+## 扩展批选与远程新增表单（2026-11-07，历史）
 
 KUI-004/005已修：扩展批选与删除确认重建保持，筛选仅删可见已选项、失败原位重试、等待防重复及外部移除收口；远程新增原位校验、真实IME/Next/Done、40条批量首尾滚动/模式/来源往返/重建/取消与临时密钥清理已验。Redmi final4 精确26/26、35图完整校验并经10张拼图目视；782项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。双包安装回拉匹配，两份正式配置/脚本/正文/偏好/选择及原1.yaml/Flutter/设备设置保持，临时副本清理、无服务。
 

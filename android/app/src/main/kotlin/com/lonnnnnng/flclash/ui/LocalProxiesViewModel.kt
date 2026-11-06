@@ -166,21 +166,27 @@ class LocalProxiesViewModel internal constructor(
     }
     fun addFromRuntime(profileId: Long?, name: String) = perform {
         val id = requireNotNull(profileId) { "配置已变化，请刷新代理列表后重试" }
-        val definition = operations.definition(id, name)
-        val rows = operations.rows()
-        val groups = operations.groups()
-        val addition = planLocalProxyAddition(definition, rows, groups)
+        val definition = additionStep("无法读取节点，请刷新代理列表后重试") { operations.definition(id, name) }
+        val rows = additionStep("无法读取本地代理，请稍后重试") { operations.rows() }
+        val groups = additionStep("无法读取配置引用，请稍后重试") { operations.groups() }
+        val addition = additionStep("节点定义无效，请刷新代理列表后重试") { planLocalProxyAddition(definition, rows, groups) }
+        check(operations.selectedId == id) { "配置已切换，请重新打开节点菜单" }
         if (!addition.added) {
             mutable.value = state.value.copy(message = "${addition.row.name} 已在本地代理中")
         } else {
-            val errors = operations.validate(listOf(addition.row.fields))
+            val errors = additionStep("节点校验失败，请刷新代理列表后重试") { operations.validate(listOf(addition.row.fields)) }
             require(errors.size == 1 && errors.single().isEmpty()) { "核心拒绝此节点，请刷新代理列表后重试" }
             check(operations.selectedId == id) { "配置已切换，请重新打开节点菜单" }
             val next = rows + addition.row
-            operations.save(rows, next)
+            // 作者 long：受理前校验来源；受理后保存冻结的全局节点快照，切换配置不会将写入转向新配置正文。
+            additionStep("添加未完成，请重新打开节点菜单后重试") { operations.save(rows, next) }
             mutable.value = state.value.copy(rows = next, message = "${addition.row.name} 已添加到本地代理")
         }
     }
+    private suspend fun <T> additionStep(message: String, action: suspend () -> T): T = try { action() }
+    catch (cancelled: CancellationException) { throw cancelled }
+    // 作者 long：原生节点和数据库异常可能包含服务器、密码或链接，反馈只保留失败阶段与恢复动作。
+    catch (_: Exception) { throw IllegalStateException(message) }
     fun clearFeedback() { mutable.value = mutable.value.copy(error = null, message = null) }
     fun reportDraftFailure() { mutable.value = state.value.copy(error = DRAFT_ERROR) }
     fun updateUiDraft(session: Long, draft: EditorSaveableState) {
@@ -230,8 +236,8 @@ class LocalProxiesViewModel internal constructor(
         val rows = state.value.rows.filter { it.id in ids }
         mutable.value = state.value.copy(deleting = ids, users = operations.users(rows.map { it.name }.toSet()))
     }
-    fun cancelDelete() = discardChild { it.copy(deleting = emptySet(), replacement = null, removed = emptyList()) }
-    fun delete() = perform {
+    fun cancelDelete() = discardChild { it.copy(deleting = emptySet(), users = emptyList(), replacement = null, removed = emptyList(), error = null) }
+    fun delete() = perform("删除失败，请重试；配置引用会保留") {
         val rows = state.value.rows; val next = rows.filterNot { it.id in state.value.deleting }
         saveRows("delete", rows, next)
         mutable.value = state.value.copy(rows = next, deleting = emptySet(), editor = null, message = "节点已删除，配置引用已保留")
@@ -298,19 +304,19 @@ class LocalProxiesViewModel internal constructor(
             if (lines == null) "第 ${index + 1} 个节点校验失败，请检查协议及可选设置" else "第 ${lines[index]} 行节点校验失败，请检查分享链接"
         } }
     }
-    fun confirmReplacement() = perform { state.value.replacement?.let { commitLinks(it) } }
+    fun confirmReplacement() = perform("替换失败，链接草稿已保留，请重试") { state.value.replacement?.let { commitLinks(it) } }
     private suspend fun commitLinks(next: List<LocalProxy>) {
         saveRows("links", expected, next)
         mutable.value = state.value.copy(rows = next, links = null, replacement = null, removed = emptyList(), message = "本地代理已更新")
     }
-    private fun perform(action: suspend () -> Unit) {
-        if (!restored.isCompleted) { viewModelScope.launch { restored.await(); perform(action) }; return }
+    private fun perform(failureMessage: String? = null, action: suspend () -> Unit) {
+        if (!restored.isCompleted) { viewModelScope.launch { restored.await(); perform(failureMessage, action) }; return }
         if (state.value.busy || closing) return
         mutable.value = state.value.copy(busy = true, error = null, message = null)
         viewModelScope.launch {
             try { action() }
             catch (cancelled: CancellationException) { throw cancelled }
-            catch (error: Exception) { pending = null; mutable.value = state.value.copy(error = error.message ?: "操作失败，请检查节点后重试") }
+            catch (error: Exception) { pending = null; mutable.value = state.value.copy(error = failureMessage ?: error.message ?: "操作失败，请检查节点后重试") }
             finally { mutable.value = state.value.copy(busy = false) }
         }
     }

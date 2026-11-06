@@ -73,7 +73,14 @@ class StageOneDraftInstrumentedTest {
         compose.onNodeWithText("ALPN", substring = false).performScrollTo().performClick()
         compose.onNodeWithTag("local_proxy_collection_add").performScrollTo().performClick()
         compose.onNodeWithTag("local_proxy_collection_value_1").performTextReplacement("http/1.1")
-        compose.activityRule.scenario.recreate()
+        // 作者 long：不在输入和重建之间额外等待，连续覆盖带IME的立即重建窗口，避免断言自身掩盖时序问题。
+        repeat(8) { round ->
+            val value = if (round % 2 == 0 && round > 0) "h3" else "http/1.1"
+            if (round > 0) compose.onNodeWithTag("local_proxy_collection_value_1").performTextReplacement(value)
+            compose.activityRule.scenario.recreate()
+            assertEquals("立即重建第${round + 1}轮VM列表值", value, model.state.value.editor?.collection?.values?.get(1)?.second)
+            compose.onNodeWithTag("local_proxy_collection_value_1").assertTextContains(value)
+        }
         compose.onNodeWithTag("local_proxy_collection_value_1").assertTextContains("http/1.1")
         compose.onNodeWithTag("local_proxy_collection_back").performClick()
         assertEquals(listOf("h2", "http/1.1"), LocalProxies.value(checkNotNull(model.state.value.editor).value.fields, "alpn")?.asJsonArray?.map { it.asString })
