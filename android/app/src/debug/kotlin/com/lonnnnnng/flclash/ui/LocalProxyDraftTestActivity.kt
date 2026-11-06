@@ -35,13 +35,29 @@ class LocalProxyDraftTestActivity : ComponentActivity() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T = LocalProxiesViewModel(fixture.operations, NoopProfileDraftStore) as T
         })[LocalProxiesViewModel::class.java]
+        recordAlpn("create")
         setContent { val state by model.state.collectAsState(); KClashTheme {
             LocalProxiesPage(state, model::close, model::edit, model::save, model::dismissEditor, model::links,
                 model::applyLinks, model::cancelLinks, model::reorder, model::askDelete, model::delete, model::cancelDelete,
-                model::confirmReplacement, model::updateEditor, { model.updateUiDraft(state.session, it) },
+                model::confirmReplacement, { draft ->
+                    // 作者 long：仅隔离宿主按显式开关记录输入链路，值只记长度；生产页面与正式凭据不进入诊断日志。
+                    val before = model.state.value.editor?.collection?.values?.getOrNull(1)?.second
+                    val after = draft.collection?.values?.getOrNull(1)?.second
+                    recordAlpn("callback:${before?.length}->${after?.length}")
+                    if (fixture.traceAlpn && before != after)
+                        fixture.recordAlpn("change-stack:" + Throwable().stackTrace.take(40).joinToString("|") { "${it.className}.${it.methodName}:${it.lineNumber}" })
+                    model.updateEditor(draft)
+                    recordAlpn("updated")
+                }, { model.updateUiDraft(state.session, it) },
                 model::updateLinksUiDraft, model::reportDraftFailure, model::updateEditorUiDraft)
         } }
     }
+    private fun recordAlpn(phase: String) {
+        if (::fixture.isInitialized && ::model.isInitialized)
+            fixture.recordAlpn("$phase;activity=${System.identityHashCode(this)};lifecycle=${lifecycle.currentState};length=${model.state.value.editor?.collection?.values?.getOrNull(1)?.second?.length}")
+    }
+    override fun onStop() { recordAlpn("stop-before"); super.onStop(); recordAlpn("stop-after") }
+    override fun onDestroy() { recordAlpn("destroy-before"); super.onDestroy(); recordAlpn("destroy-after") }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val parcel = Parcel.obtain()
@@ -68,6 +84,13 @@ class LocalProxyDraftFixture(application: Application) : AndroidViewModel(applic
     internal var nodeDefinition: com.google.gson.JsonObject? = null
     internal var referenceUsers: List<String>? = null
     internal var saveCalls = 0
+    internal var traceAlpn = false
+    internal val alpnEvents = mutableListOf<String>()
+    internal fun recordAlpn(event: String) {
+        if (!traceAlpn) return
+        if (alpnEvents.size == 256) alpnEvents.removeAt(0)
+        alpnEvents += event
+    }
     private val repositoryOperations = RepositoryLocalProxyEditorOperations(repository, CoreBridge(), runtime)
     // 作者 long：仅Debug隔离宿主提供可暂停边界；实际校验仍走Bridge、写入仍走隔离Room，不改正式目录或运行配置。
     internal val operations = object : LocalProxyEditorOperations by repositoryOperations {

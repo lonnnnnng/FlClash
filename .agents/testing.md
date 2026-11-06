@@ -1,6 +1,20 @@
 # Testing
 
-## 本地代理确认与节点添加（2026-11-07，当前）
+## ALPN停止回写边界（2026-11-07，当前）
+
+KUI-008已定位并修复：本地代理输入提交后立即重建，旧窗口ON_STOP后由Compose onBlur回传旧文本；正式页面拒绝已停止宿主的业务修改，独立保存树照常捕获。Redmi final1精确14/14、43图完整校验及13拼图目视；语义输入/失焦与平台InputConnection各8轮，含合法清空，VM及页面精确值保持。788项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；安装回拉匹配，两份正式配置/脚本/正文/偏好/选择及原1.yaml/Flutter/设备设置保持。
+
+App512本组build3实际执行，其余276复用；最终build4四模块UP-TO-DATE，389任务11执行/378复用。Debug Lint0错误/67警告/10提示，Release0错误/66警告/9提示。
+
+本组为Debug隔离宿主上的正式页面/VM，InputConnection由测试驱动，不代表全部输入法、正式MainActivity全链路、冷进程或完整Flutter视觉。diagnostic1为1/2、diagnostic2为0/1，两次旧值覆盖及onBlur栈保留；前批final1原始空值未留VM轨迹，不能倒推百分百同因。
+
+`LocalProxyAlpnBoundaryInstrumentedTest`仅精确运行两方法，API29+；语义RequestFocus/SetText/焦点转移在同一主线程任务内执行，平台方法经窗口InputConnection组合输入/提交，立即recreate，不在提交后增加等待。各8轮交替http/1.1、h3、空文本、h2，VM和EditableText精确比较。Debug诊断开关默认关闭，只记有界长度/生命周期/栈，不记录正文。
+
+本组无额外ALPN截图，以精确断言和回调轨迹证明输入；43图均为12条相邻回归，13拼图已目视。正式库前后保护、双包安装、源码1606文件清单匹配；隔离宿主自身目录清理、收尾无服务。
+
+证据`docs/acceptance/alpn-input-boundary-redmi-20261107.json`，溯源`docs/local-proxy-stopped-input-defect.md`，附件`../acceptance-artifacts/alpn-input-boundary-redmi-20261107/`。继续正式MainActivity节点添加失败/重试、保存等待切配置和真实长引用查询；随后管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及Provider独立加密草稿，再统一Flutter视觉/连续动效。第6项原保护异常、前组偏好变化及网络稳定性继续待查；蜂窝延期，效果/性能/兼容/发布按原顺序，玻璃默认关闭。
+
+## 本地代理确认与节点添加（2026-11-07，历史）
 
 KUI-006/007已修：本地代理删除/替换确认可滚动且原位显示失败与等待；添加节点异常按阶段脱敏，重复分支也复核当前配置。Redmi final2精确12/12、43图经完整集合/哈希/解码及13张拼图目视；新增5条覆盖40个长引用、隔离Room真实失败/重试/防重复、实核拒绝、受理前后切配置及单/批链接真实IME/Back/重建。788项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；双包回拉匹配，正式两配置/脚本/正文/偏好/选择、原1.yaml/Flutter/设备保持。
 

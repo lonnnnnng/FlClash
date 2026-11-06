@@ -17,6 +17,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.gson.*
 import com.lonnnnnng.flclash.data.*
 
@@ -33,10 +35,14 @@ internal fun LocalProxiesPage(state: LocalProxiesUiState, onDismiss: () -> Unit,
     onLinksUiDraftChange: (String, EditorSaveableState) -> Unit = { _, _ -> },
     onDraftFailure: () -> Unit = {},
     onEditorUiDraftChange: (String, EditorSaveableState) -> Unit = { _, _ -> }) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     EncryptedEditorState(state.session, state.uiDraft, onUiDraftChange, onDraftFailure) { checkpoint ->
         LocalProxiesPageContent(state, { if (checkpoint()) onDismiss() }, onEdit, onSave, onCloseEditor, onLinks,
             onApplyLinks, onCancelLinks, onReorder, onAskDelete, onDelete, onCancelDelete, onConfirmReplacement,
-            onUpdateEditor, onLinksUiDraftChange, onDraftFailure, onEditorUiDraftChange)
+            { draft ->
+                // 作者 long：重建时旧输入框拆除会失焦并回传旧文本；已停止的宿主不能覆盖VM新值，保存树仍单独在ON_STOP捕获。
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) onUpdateEditor(draft)
+            }, onLinksUiDraftChange, onDraftFailure, onEditorUiDraftChange)
     }
 }
 
