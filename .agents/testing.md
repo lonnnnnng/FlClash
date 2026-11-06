@@ -1,5 +1,11 @@
 # Testing
 
+## Provider正文真实主宿主切片（2026-11-06）
+
+`MainProviderDocumentInstrumentedTest`三方法经正式MainActivity、Repository和停止态核心验证失败草稿/放弃确认、缓存保存回读、MRS只读滚动的Activity重建与面板返回；运行必须传`kclashMainProviderAcceptance=true`及当前原`1.yaml`的`kclashLocalYamlSha256`。按摘要复用正式FILE原字节建立临时FILE+CUSTOM，只侧载自身投影并按ID/标签清理，不使用旧`readAuthorizedProxyProfile()`硬编码摘要。
+
+本组final2与六条相邻回归共9/9、21图通过；证据`docs/acceptance/main-provider-document-redmi-20261106.json`。final1为7/9，首次IP质量持久缓存写入触发偏好保护失败，另小MRS不足一屏不能证明滚动；失败和缓存变化保留，不回写旧偏好掩盖。最终批次两份正式配置/偏好/选择前后保持。加载配置和首页查询可联网，不能称离线；不证明正文冷进程恢复、运行态侧载或Provider网络类型全覆盖，完整视觉仍PARTIAL。
+
 ## 核心控制器源码修复与溯源（2026-11-05，当前）
 
 本组在Mihomo固定基线c5062921上修复KCORE-002重建竞态与KCORE-003坏TLS配置端口泄漏：公开入口同步关闭/绑定，Serve后台运行，显式持有listener覆盖未登记窗口，配置快照及路由构造同锁；TLS客户端CA/ECH准备先于Listen。修复提交f83e9b1032ed02831457d4da5a414e063e932694已推lonnnnnng/mihomo的kclash-fixes，父仓库gitlink固定，原始来源/失败/撤销条件见docs/upstream-source-defects.md与ADR0021。KCORE-001保留前组6ca697d1记录；未认定为旧Always-on TLS EOF根因。

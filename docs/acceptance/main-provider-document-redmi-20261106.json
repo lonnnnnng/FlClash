@@ -1,0 +1,404 @@
+{
+  "date": "2026-11-06",
+  "status": "DONE-VERIFIED",
+  "overallVisualParity": "PARTIAL",
+  "title": "Provider正文真实主宿主保存与重建返回",
+  "summary": "真实MainActivity首页配置详情→Provider正文链路已验：真实侧载失败保留长草稿/错误/选区并跨后台和Activity重建，放弃确认重建后可继续/放弃；有效缓存保存后退出、重建、重开回读且资源源文件不变；原配置MRS只读预览滚动位置跨重建保持并返回同一面板。Redmi final2精确9/9，21张PNG哈希/解码验证并经4张拼图目视；775项JVM XML零失败/错误/跳过（本次四模块任务均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。最终双包实际回拉匹配，两份正式FILE/URL配置、正文/元数据/偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置及自身投影缓存清理，收尾无服务。",
+  "scope": {
+    "sourceBaseCommit": "fd85fe767682ba8d725bc2ede52ab10fc235c554",
+    "productionChanged": false,
+    "changedSources": {
+      "android/tests/instrumented/MainProviderDocumentInstrumentedTest.kt": "35c89a337115ff8cb1748df1090850281885204be3aef31fe37dcc61ea295b67"
+    },
+    "flutterReadOnlyReferences": [
+      "lib/views/proxies/providers.dart:180",
+      "lib/views/proxies/providers.dart:195",
+      "lib/views/proxies/providers.dart:240"
+    ],
+    "implementationReferences": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt:712",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProviderDocumentPage.kt:41",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileStatisticsViewModel.kt:255",
+      "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt:1331",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileRepository.kt:1200"
+    ],
+    "boundary": "本组仅补验收代码，生产代码和Mihomo不变；真实核心在停止态加载原1.yaml的临时FILE+CUSTOM资源绑定。未手动刷新原90个HTTP Provider或重新下载正式订阅，但配置加载可触发核心资源初始化、首页IP/质量查询，不能声称无网络。final1为7/9：一项只因首次新增ip_quality_cache_v1导致偏好保护失败，正式正文/元数据/选择未变；一项选中可一屏容纳的MRS却要求滚动。未回写旧缓存或放宽滚动断言，改选原配置中200..3000条的真实规则资源后final2整组通过。首轮偏好变化保留，不能以final2覆盖。此组不证明冷进程正文恢复、运行态侧载、Provider网络类型覆盖、全Flutter视觉/精确缓动或性能。",
+    "fixture": "按运行参数当前1.yaml SHA定位正式FILE原字节；只建自身临时FILE/CUSTOM，经saveCustomProxyGroups正式资源绑定与getProxyGroups停止态加载。每条91项Provider，90个原HTTP/MRS+1个File Proxy。仅本次临时缓存侧载，无效长草稿和有效追加注释均不替换原始配置。finally按ID/唯一label删除临时Profile及resourceId-SHA投影。"
+  },
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "1",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "1.0"
+    },
+    "flutterHashes": [
+      "ff6a953c0f5c12e6bdc97b49428b565b64c4a62d85e50081823ba297407529b1"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 55s",
+    "tasks": "389 actionable tasks: 11 executed, 378 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 499,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 69
+      },
+      "service": {
+        "tests": 207,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :app:testDebugUnitTest UP-TO-DATE",
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE"
+    ],
+    "lint": {
+      "debug": {
+        "Warning": 67,
+        "Hint": 10
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 9
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "7d3c8c0fafc7da16a1e8fe0d451f0e09f3429a066e0ec3b403fdd59aa5cd23da",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "f0496fd2f57a97d02efc8be122390611f741e81a8d8e2a01fedf951f6eb45c6c",
+        "bytes": 5743066,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "c9437c14d061ec703d837acfb3e31a09e34b74bac5868dd15fe388899e04f6dd",
+        "bytes": 48211416,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "installation": {
+    "com.lonnnnnng.flclash": {
+      "builtSha256": "7d3c8c0fafc7da16a1e8fe0d451f0e09f3429a066e0ec3b403fdd59aa5cd23da",
+      "pulledSha256": "7d3c8c0fafc7da16a1e8fe0d451f0e09f3429a066e0ec3b403fdd59aa5cd23da"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "builtSha256": "f0496fd2f57a97d02efc8be122390611f741e81a8d8e2a01fedf951f6eb45c6c",
+      "pulledSha256": "f0496fd2f57a97d02efc8be122390611f741e81a8d8e2a01fedf951f6eb45c6c"
+    }
+  },
+  "acceptance": {
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realSaveFailureKeepsDraftSelectionAndDiscardAcrossMainActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realMrsReadOnlyPreviewScrollRecreatesAndReturnsToSameMainPanel",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realCacheSaveReopensThroughMainPanelAndKeepsReferencedProfileSource",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#discardConfirmationSurvivesRecreationAndReturnsToSameProviderPanel",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#acceptedSaveCompletesAcrossBackgroundAndRecreationOnlyOnce",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#previewReadFinishesInBackgroundAndExplicitCloseRejectsOldRead",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#longFailedDraftKeepsSelectionAcrossBackgroundAndRecreationWithoutSavingBodyInBundle",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#listLayoutAndScrollSurviveProfilesRoundTripAndActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "passed": 9,
+    "total": 9,
+    "seconds": 129.429,
+    "newRealMainHostMethods": 3,
+    "adjacentRegressions": {
+      "fixedRuntimeProviderDocumentLifecycle": 4,
+      "realMainHostListRestoration": 1,
+      "fixedProviderOptions": 1
+    },
+    "images": [
+      {
+        "path": "main_provider_failed_recreated.png",
+        "bytes": 479257,
+        "sha256": "b54ed55e6e499c18ba0f7ebf74c13cd87a0a9296b20a640cc466cf1401006b52"
+      },
+      {
+        "path": "main_provider_discard_recreated.png",
+        "bytes": 361597,
+        "sha256": "8c2c138e8e597229831dc8e01dfea1b87d58a2a9ea6c7b9cf08bdb8ce63c83b7"
+      },
+      {
+        "path": "main_provider_mrs_before_scroll.png",
+        "bytes": 209810,
+        "sha256": "82771d8f0aa00f323832dd5d08daf3ca9e67875ad447820a0969a4d1798acfba"
+      },
+      {
+        "path": "main_provider_mrs_scrolled.png",
+        "bytes": 198453,
+        "sha256": "cd6a1fefbc4e5c444d299387b7d88b4442fe8b877b567d369b67a0e8cadc572f"
+      },
+      {
+        "path": "main_provider_mrs_recreated.png",
+        "bytes": 198453,
+        "sha256": "cd6a1fefbc4e5c444d299387b7d88b4442fe8b877b567d369b67a0e8cadc572f"
+      },
+      {
+        "path": "main_provider_detail_reopened.png",
+        "bytes": 176977,
+        "sha256": "6e7c22ce8ad048be1b8b1f40dd11b8a27c9494ac41637ed5debdf9d19a41e94a"
+      },
+      {
+        "path": "main_provider_saved_panel.png",
+        "bytes": 177791,
+        "sha256": "f0ff0a90a2d0e1ea62f82b6aac6d296da6d39e0bfe1fb96c6871b58d20d6276a"
+      },
+      {
+        "path": "main_provider_saved_reopened_return.png",
+        "bytes": 177791,
+        "sha256": "f0ff0a90a2d0e1ea62f82b6aac6d296da6d39e0bfe1fb96c6871b58d20d6276a"
+      },
+      {
+        "path": "provider_document_discard_recreated.png",
+        "bytes": 69721,
+        "sha256": "22557ea75a2f1e5483002c68bcab4f8a59a972c1788975b48bc79ecbf7ec3790"
+      },
+      {
+        "path": "provider_document_saving_recreated.png",
+        "bytes": 38195,
+        "sha256": "8511824c84bf59b87d9d354053abe531d6a56bd0c92e5f602379794bb118e259"
+      },
+      {
+        "path": "provider_document_preview_recreated.png",
+        "bytes": 33919,
+        "sha256": "49200352094a8300382fea016e87ab54ed2a628ec4781814caa4bb80c5521718"
+      },
+      {
+        "path": "provider_document_failed_recreated.png",
+        "bytes": 355750,
+        "sha256": "b487e22232323e468603d0b7ae5711a8dae805f3d26560e68b799806d639dcd3"
+      },
+      {
+        "path": "main_navigation_list_before.png",
+        "bytes": 140529,
+        "sha256": "7d20ea52114a190fe9ee885357326f13a525044d7aade5edc0d86e5416621017"
+      },
+      {
+        "path": "main_navigation_list_after_profiles.png",
+        "bytes": 140529,
+        "sha256": "7d20ea52114a190fe9ee885357326f13a525044d7aade5edc0d86e5416621017"
+      },
+      {
+        "path": "main_navigation_list_recreated.png",
+        "bytes": 140529,
+        "sha256": "7d20ea52114a190fe9ee885357326f13a525044d7aade5edc0d86e5416621017"
+      },
+      {
+        "path": "provider_option_picker_false.png",
+        "bytes": 80768,
+        "sha256": "e1fa377db291c4dc2874a9ee64d7a40a9cefa88cf7601e7978943e77e770f6bb"
+      },
+      {
+        "path": "provider_ip_picker_false.png",
+        "bytes": 40385,
+        "sha256": "9ac2e8effc9ad7a26ab9e6b231953d504f60f3e466b834f7af07e68927a0f048"
+      },
+      {
+        "path": "provider_options_error_false.png",
+        "bytes": 157657,
+        "sha256": "0d2189a91c0ea425a34360336ce9729a4d24fa16914894fed0a39d0fb944a255"
+      },
+      {
+        "path": "provider_option_picker_true.png",
+        "bytes": 81558,
+        "sha256": "b6ab52048fafec4314ffa39c26e185de9b38aebc4b5bd3a631466c0a080a80d0"
+      },
+      {
+        "path": "provider_ip_picker_true.png",
+        "bytes": 40742,
+        "sha256": "52e2a998fd9c8253cecc03629264b7bd80187e10674c8dbf6ed3e4fd99c8e8fb"
+      },
+      {
+        "path": "provider_options_error_true.png",
+        "bytes": 157700,
+        "sha256": "f82915ecd325f3cf8468b85cf61aa17bbebe861d1a1826195d4a186c47578fff"
+      }
+    ],
+    "visualReview": {
+      "allPngSha256AndDecodeVerified": true,
+      "resolution": "1080x2340",
+      "reviewedContactSheets": [
+        "final2/contact-main.png",
+        "final2/contact-lifecycle.png",
+        "final2/contact-list.png",
+        "final2/contact-options.png"
+      ],
+      "limitations": "未做Flutter同帧像素比较；真实节点凭据正文不截图，失败草稿/规则预览/列表与固定夹具可截图。"
+    }
+  },
+  "preservation": {
+    "finalBefore": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "540864eb6aa13c8a8cebcd93ed8f22e2df8df4a414151647670a4fab82f80dc1",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "finalAfter": {
+      "count": 2,
+      "files": [
+        {
+          "id": 4671219772502066522,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793933659852,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 7407567270453529659,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793933662900,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "922cacb6d31b7a35e7fd655aeda76014799771b9d0f54425c70e16d3b2be83ba",
+      "preferencesSha256": "540864eb6aa13c8a8cebcd93ed8f22e2df8df4a414151647670a4fab82f80dc1",
+      "selected": "4671219772502066522",
+      "runtime": "STOPPED"
+    },
+    "finalEqual": true,
+    "deviceSettingsFlutterOriginalYamlEqual": true,
+    "temporaryRowsAndOwnCacheRemoved": true,
+    "endServicesRunning": false,
+    "initialRunException": "final1仅preferencesSha256变化，fixture精确断言定位到ip_quality_cache_v1首次写入；正式rowsSha256/FILE-URL字节与mtime/selected/runtime保持。未回滚或隐藏该缓存变化，final2使用实际现状作新基线。"
+  },
+  "earlierRuns": [
+    {
+      "name": "final1",
+      "passed": 7,
+      "total": 9,
+      "resultLog": "final1/instrumentation-run1.log",
+      "resultJson": "final1/result-run1.json",
+      "causes": [
+        "首次正常IP质量持久缓存写入触发偏好全量保护失败",
+        "选中小MRS能一屏显示，滚动前提不成立"
+      ],
+      "classification": "测试夹具/保护边界；未发现需改产品源码的新缺陷，未登记为上游缺陷"
+    }
+  ],
+  "artifacts": {
+    "base": "../acceptance-artifacts/main-provider-document-redmi-20261106/",
+    "manifest": "artifact-manifest.json",
+    "manifestSha256": "f586dae9c501cad164193edb8b89ca686c7e1e67ec7453b684ac4cfdba3611eb",
+    "finalDriver": "run-final2.py",
+    "finalBuild": "build2/gradle.log",
+    "finalResults": "final2/result-run1.json",
+    "sourceAndLogsLocalOnly": true
+  },
+  "notVerified": [
+    "Provider正文冷进程恢复",
+    "运行态Provider侧载和网络更新",
+    "本组之外Provider类型/全部90站点实网",
+    "完整Flutter逐像素/精确缓动/全应用动效性能",
+    "低API/蜂窝/OEM",
+    "Go/正式签名Release运行/远端CI"
+  ],
+  "next": "继续todo第9项配置/代理剩余子页、面板与异常恢复；统一视觉/连续动效后再推进第10项，玻璃默认关闭，原暂缓/取消边界保持。"
+}
