@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "scope": "Proxy Groups List 组头定位、批量测速入口与展开/收回期间的滚动和触摸联动",
+  "status": "DONE_VERIFIED_FOR_LIST_HEADER_PANEL_LINKAGE; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "1d16018c",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "implementation": {
+    "production": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt",
+    "test": "android/tests/instrumented/ProxyPageParityInstrumentedTest.kt",
+    "behavior": [
+      "点击远处组头时先把组头滚入可见区，再切换折叠状态",
+      "展开/收回过渡期间屏蔽重复组头操作和关联入口，避免中间态重复提交",
+      "长组定位滚动到当前节点，批量测速只提交对应代理组"
+    ],
+    "flutterReference": "参考本地 Flutter lib/views/proxies/list.dart 的组头可视定位、当前节点定位和展开语义；只读参考，未修改或合并 Flutter 源码"
+  },
+  "build": {
+    "command": "./gradlew test :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :common:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL",
+    "jvm": {
+      "app": 495,
+      "service": 207,
+      "core": 38,
+      "common": 31,
+      "total": 771,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debugSha256": "f5be349b51797edb4f7fa8721ed3147f7f53d8bd44f35af3eb56dccc6d82f455",
+    "androidTestSha256": "868be7605bfc8d61913c7de008eb7cd9280a3a86ff188cc0cf4a7fac0407c04a",
+    "releaseUnsignedSha256": "ba13400267413872a0f4d55b8c9e351e9a53f64226251dda2ded0ec71c3f57be",
+    "lint": {
+      "debug": "0 errors, 67 warnings",
+      "release": "0 errors, 66 warnings"
+    },
+    "log": "../acceptance-artifacts/proxy-list-panel-linkage-redmi-20261106/final-build.log"
+  },
+  "installation": {
+    "debugPulledSha256": "f5be349b51797edb4f7fa8721ed3147f7f53d8bd44f35af3eb56dccc6d82f455",
+    "androidTestPulledSha256": "868be7605bfc8d61913c7de008eb7cd9280a3a86ff188cc0cf4a7fac0407c04a",
+    "matchesBuiltArtifacts": true,
+    "artifacts": "../acceptance-artifacts/proxy-list-panel-linkage-redmi-20261106/final-install/"
+  },
+  "test": {
+    "command": "adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest -e kclashCapturePng true com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
+    "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+    "result": "OK (10 tests); failures=0, errors=0, skipped=0",
+    "newMethod": "listHeaderLocateBatchAndFoldKeepActionsInSyncWithMotion",
+    "xmlFromThisRun": false,
+    "log": "../acceptance-artifacts/proxy-list-panel-linkage-redmi-20261106/final-install/instrumentation.log",
+    "screenshots": {
+      "count": 31,
+      "sha256Manifest": "../acceptance-artifacts/proxy-list-panel-linkage-redmi-20261106/final-install/screenshots-manifest.sha256",
+      "directory": "../acceptance-artifacts/proxy-list-panel-linkage-redmi-20261106/final-install/screenshots/",
+      "visuallyReviewed": [
+        "proxy_list_header_locate_batch.png",
+        "proxy_list_header_fold_expand_settled.png",
+        "proxy_list_group_expand_mid.png",
+        "proxy_list_group_expand_settled.png"
+      ]
+    }
+  },
+  "cleanup": {
+    "vpnOrProxyServiceRunning": false,
+    "tunInterfacePresent": false,
+    "profileOrSubscriptionTouched": false,
+    "authorizedYamlReadOrChanged": false,
+    "flutterBaselinePackageTouched": false,
+    "deviceFontScaleChanged": false
+  },
+  "limitations": [
+    "仅证明 Redmi API36 上代理组 List 组头的定位、批量测速入口和切换动效联动",
+    "完整代理页键盘焦点顺序、剩余子页与面板视觉、全应用动效和 Flutter 逐像素一致性仍为 PARTIAL",
+    "玻璃效果继续默认关闭；本轮没有运行真实 Mihomo、VPN 或在线订阅"
+  ],
+  "next": "继续核对代理页剩余键盘焦点流与其他代理组子页/面板，再统一收敛完整 Flutter 视觉和动效"
+}

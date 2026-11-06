@@ -83,6 +83,7 @@ private enum class ProxyGroupsPageSlot { LOADING, ERROR, EMPTY, CONTENT }
 
 private const val PROXY_GROUPS_SLOT_ENTER_MILLIS = 300
 private const val PROXY_GROUPS_SLOT_EXIT_MILLIS = 150
+private const val PROXY_LIST_GROUP_TOGGLE_LOCK_MILLIS = 480
 private val ProxyGroupsEnterEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
 private val ProxyGroupsExitEasing = CubicBezierEasing(0.42f, 0f, 1f, 1f)
 
@@ -635,6 +636,8 @@ private fun ProxyGroupsListPage(
             listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0
         }
     }
+    var groupScrollActive by remember { mutableStateOf(false) }
+    val groupToggleMotion = remember { Animatable(1f) }
     val headerHeights = remember { mutableStateMapOf<String, Int>() }
     val fallbackHeaderHeight = with(LocalDensity.current) { 68.dp.roundToPx() }
     LaunchedEffect(listState) {
@@ -670,6 +673,36 @@ private fun ProxyGroupsListPage(
             }
         }
         SideEffect { previousScrollLayout.value = scrollLayout }
+        suspend fun scrollGroupHeaderIntoView(groupName: String) {
+            val headerIndex = scrollLayout.items.indexOfFirst { item ->
+                item.isHeader && item.groupName == groupName
+            }
+            if (headerIndex < 0) return
+            val viewportStart = listState.layoutInfo.viewportStartOffset
+            val viewportEnd = listState.layoutInfo.viewportEndOffset
+            val header = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == headerIndex }
+            val fullyVisible = header != null && header.offset >= viewportStart &&
+                header.offset + header.size <= viewportEnd
+            if (!fullyVisible) {
+                // 作者 long：Flutter 在切换折叠状态前先让组头进入可视区；避免远处点击后内容展开在屏幕外，用户看不到状态变化。
+                listState.scrollToItem(headerIndex)
+            }
+        }
+        fun toggleGroup(groupName: String) {
+            if (groupScrollActive) return
+            groupScrollActive = true
+            scope.launch {
+                try {
+                    scrollGroupHeaderIntoView(groupName)
+                    onToggleGroup(groupName)
+                    // 作者 long：组头圆角与节点行错峰动效共用 Compose 动画时钟，过渡完成前屏蔽重复组头操作。
+                    groupToggleMotion.snapTo(0f)
+                    groupToggleMotion.animateTo(1f, animationSpec = tween(PROXY_LIST_GROUP_TOGGLE_LOCK_MILLIS))
+                } finally {
+                    groupScrollActive = false
+                }
+            }
+        }
         fun locate(groupName: String) {
             val index = proxyListSelectedItemIndex(groups, members, state.unfoldSet, state.selectedMap, groupName, columns)
             if (index != null) scope.launch {
@@ -720,7 +753,7 @@ private fun ProxyGroupsListPage(
                         shadowElevation = headerShadow,
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable(enabled = !state.isLoading) { onToggleGroup(group.name) }
+                            modifier = Modifier.fillMaxWidth().clickable(enabled = !state.isLoading && !groupScrollActive) { toggleGroup(group.name) }
                                 .onSizeChanged { headerHeights[group.name] = it.height }
                                 .heightIn(min = 62.dp).padding(horizontal = 10.dp, vertical = 10.dp)
                                 .testTag("proxy_list_group_header_${group.name}"),
@@ -741,13 +774,14 @@ private fun ProxyGroupsListPage(
                             }
                             if (expanded) {
                                 IconButton(onClick = { locate(group.name) },
+                                    enabled = !groupScrollActive,
                                     modifier = Modifier.size(32.dp).testTag("proxy_list_group_locate_${group.name}")) {
                                     AppGlyphIcon(AppGlyphs.locate)
                                 }
                                 IconButton(
                                     onClick = { onTestGroupDelay(group) },
                                     enabled = runtimeState != CoreRuntimeStatus.STARTING && runtimeState != CoreRuntimeStatus.STOPPING &&
-                                        !state.isLoading && state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
+                                        !state.isLoading && !groupScrollActive && state.switchingGroup == null && state.batchTestingGroup == null && group.all.isNotEmpty(),
                                     modifier = Modifier.size(32.dp).testTag("proxy_list_group_batch_${group.name}"),
                                 ) {
                                     if (state.batchTestingGroup == group.name) {
@@ -761,7 +795,7 @@ private fun ProxyGroupsListPage(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
-                            IconButton(onClick = { onToggleGroup(group.name) }, enabled = !state.isLoading,
+                            IconButton(onClick = { toggleGroup(group.name) }, enabled = !state.isLoading && !groupScrollActive,
                                 modifier = Modifier.padding(start = 6.dp).size(32.dp).testTag("proxy_list_group_toggle_${group.name}")) {
                                 AppGlyphIcon(if (expanded) AppGlyphs.chevronUp else AppGlyphs.chevronDown)
                             }

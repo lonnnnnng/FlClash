@@ -175,7 +175,9 @@ class ProxyPageParityInstrumentedTest {
         compose.onNodeWithTag("proxy_list_group_locate_节点选择").assertDoesNotExist()
         compose.onNodeWithTag("proxy_list_group_batch_节点选择").assertDoesNotExist()
         capture("proxy_page_list_collapsed_dark")
+        compose.mainClock.advanceTimeBy(500)
         compose.onNodeWithTag("proxy_list_group_header_节点选择").performClick()
+        compose.waitForIdle()
         compose.onNodeWithTag("proxy_list_group_locate_节点选择").assertIsDisplayed()
         compose.onNodeWithTag("proxy_list_group_batch_节点选择").assertIsDisplayed()
     }
@@ -518,6 +520,76 @@ class ProxyPageParityInstrumentedTest {
         compose.mainClock.advanceTimeBy(500)
         compose.mainClock.autoAdvance = true
         compose.onNodeWithTag("proxy_list_node_长列表_节点-00").assertDoesNotExist()
+        // 作者 long：收起动画期间组头触摸被隔离，等待动效锁释放后再执行下一次展开。
+        compose.mainClock.advanceTimeBy(480)
+        header.performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("proxy_list_node_长列表_节点-00").assertIsDisplayed()
+    }
+
+    @Test fun listHeaderLocateBatchAndFoldKeepActionsInSyncWithMotion() {
+        val members = (0..39).map { "A-${it.toString().padStart(2, '0')}" }
+        val group = ProxyGroupInfo("A", "Selector", members.last(), members, false)
+        val other = ProxyGroupInfo("B", "Selector", "B-00", (0..11).map { "B-${it.toString().padStart(2, '0')}" }, false)
+        var selected = members.last()
+        var batchGroup: String? = null
+        var expanded by mutableStateOf(setOf("A"))
+        compose.setContent { KClashTheme {
+            ProxyGroupsCard(
+                modifier = Modifier.fillMaxSize(),
+                state = ProxyGroupsUiState(groups = listOf(group, other), unfoldSet = expanded),
+                runtimeState = CoreRuntimeStatus.STOPPED,
+                currentProfileId = 51,
+                currentGroupName = "A",
+                onRefresh = {},
+                onToggleGroup = { name -> expanded = if (name in expanded) expanded - name else expanded + name },
+                onSelect = { _, name -> selected = name },
+                onTestDelay = { _, _ -> },
+                onTestGroupDelay = { batchGroup = it.name },
+            )
+        } }
+        option("display_mode", "proxy_display_mode_LIST")
+        compose.onNodeWithTag("proxy_list_group_locate_A").assertIsDisplayed()
+        compose.onNodeWithTag("proxy_list_group_batch_A").assertIsDisplayed()
+        compose.onNodeWithTag("proxy_list_group_batch_B").assertDoesNotExist()
+
+        // 作者 long：定位入口必须把长组的当前节点滚入视口，并让批量测速只作用于对应组。
+        compose.onNodeWithTag("proxy_list_group_locate_A").performClick()
+        compose.onNodeWithTag("proxy_list_node_A_${members.last()}").assertIsDisplayed()
+        compose.onNodeWithTag("proxy_list_group_batch_A").performClick()
+        compose.runOnIdle {
+            assertEquals("A", batchGroup)
+            assertEquals(members.last(), selected)
+        }
+        capture("proxy_list_header_locate_batch")
+
+        // 作者 long：收起时保存组头语义锚点；重新展开期间，行列表完成连续入场前不接受第二次面板操作。
+        val toggle = compose.onNodeWithTag("proxy_list_group_toggle_A")
+        compose.mainClock.autoAdvance = false
+        toggle.performClick()
+        compose.mainClock.advanceTimeByFrame()
+        compose.onNodeWithTag("proxy_list_group_batch_A").assertDoesNotExist()
+        compose.onNodeWithTag("proxy_list_group_header_A").assertIsDisplayed()
+        toggle.assertIsNotEnabled()
+        compose.mainClock.advanceTimeBy(520)
+        compose.runOnIdle { }
+        toggle.assertIsEnabled()
+
+        toggle.performClick()
+        compose.mainClock.advanceTimeByFrame()
+        compose.onNodeWithTag("proxy_list_group_batch_A").assertIsDisplayed().assertIsNotEnabled()
+        compose.onNodeWithTag("proxy_list_group_header_A").assertIsDisplayed()
+        compose.mainClock.advanceTimeBy(520)
+        compose.runOnIdle { }
+        compose.onNodeWithTag("proxy_list_group_batch_A").assertIsEnabled()
+        compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("proxy_list_group_locate_A").performClick()
+        compose.onNodeWithTag("proxy_list_node_A_${members.last()}").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals("A", batchGroup)
+            assertEquals(members.last(), selected)
+        }
+        capture("proxy_list_header_fold_expand_settled")
     }
 
     private fun option(menu: String, value: String) {
