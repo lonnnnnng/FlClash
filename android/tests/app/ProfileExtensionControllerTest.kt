@@ -11,6 +11,61 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileExtensionControllerTest {
+    @Test fun failedReadRequiresExplicitRetryAndNormalCloseStartsNewSession() = runTest {
+        val store = Store().apply { failRead = true }; val runtime = Runtime()
+        val model = ProfileExtensionController(store, runtime, backgroundScope, StandardTestDispatcher(testScheduler))
+        model.open(1); runCurrent()
+        assertNotNull(model.state.value.error)
+        assertNull(model.state.value.profile)
+        model.open(1); runCurrent()
+        assertEquals(1, store.reads)
+        store.failRead = false
+        model.open(1, reload = true); runCurrent()
+        assertEquals(2, store.reads)
+        assertEquals(1L, model.state.value.profile?.id)
+        assertNull(model.state.value.error)
+        var closed = false
+        model.close { closed = true }; runCurrent(); advanceTimeBy(600); runCurrent()
+        assertTrue(closed)
+        model.open(1); runCurrent()
+        assertEquals(3, store.reads)
+        assertEquals(1L, model.state.value.profile?.id)
+    }
+
+    @Test fun repeatedLoadingDoesNotRestartButExplicitRetryAndReopenReadAgain() = runTest {
+        val store = Store(); val runtime = Runtime()
+        val model = ProfileExtensionController(store, runtime, backgroundScope, StandardTestDispatcher(testScheduler))
+        val gate = CompletableDeferred<Unit>(); store.readGate = gate
+        model.open(1); runCurrent()
+        model.open(1); runCurrent()
+        assertEquals(1, store.reads)
+        gate.complete(Unit); runCurrent()
+        assertEquals(1L, model.state.value.profile?.id)
+        model.open(1, reload = true); runCurrent()
+        assertEquals(2, store.reads)
+        model.closeWithoutApplying { }
+        model.open(1); runCurrent()
+        assertEquals(3, store.reads)
+    }
+
+    @Test fun repeatedHostOpenKeepsPendingSaveAndExistingTargetSnapshot() = runTest {
+        val store = Store(); val runtime = Runtime()
+        val model = ProfileExtensionController(store, runtime, backgroundScope, StandardTestDispatcher(testScheduler))
+        model.open(1); runCurrent()
+        val gate = CompletableDeferred<Unit>(); store.saveGate = gate
+        val rules = listOf(ExtensionRule("pending", "DOMAIN,restore.test,DIRECT"))
+        model.rules(rules); runCurrent()
+        assertTrue(model.state.value.saving)
+        val snapshot = model.state.value
+        // 作者 long：Activity重建仍连接同一ViewModel，不应作废已经受理的保存或让页面经历空配置。
+        model.open(1)
+        assertEquals(snapshot, model.state.value)
+        gate.complete(Unit); runCurrent()
+        assertEquals(rules, model.state.value.settings.rules)
+        assertFalse(model.state.value.saving)
+        assertEquals(1, store.reads)
+    }
+
     @Test fun runningSaveIsIndependentFromApplyAndCloseUsesLatestSavedInputs() = runTest {
         val store = Store()
         val runtime = Runtime()
@@ -100,10 +155,18 @@ class ProfileExtensionControllerTest {
         override val currentProfileId = MutableStateFlow<Long?>(1)
         var global = emptyList<ExtensionRule>()
         var readGate: CompletableDeferred<Unit>? = null
-        override suspend fun readLocalProfileContent(id: Long): String { readGate?.await(); return "proxy-groups: [{name: Main, type: select}]\nrules: ['MATCH,Main']\n" }
+        var saveGate: CompletableDeferred<Unit>? = null
+        var reads = 0
+        var failRead = false
+        override suspend fun readLocalProfileContent(id: Long): String {
+            reads++; readGate?.await()
+            if (failRead) error("读取失败")
+            return "proxy-groups: [{name: Main, type: select}]\nrules: ['MATCH,Main']\n"
+        }
         override suspend fun globalExtensionRules() = global
         override suspend fun saveGlobalExtensionRules(rules: List<ExtensionRule>) { global = rules }
         override suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile {
+            saveGate?.await()
             val profile = profiles.value.single { it.id == id }
             val updated = profile.copy(extendType = mode, scriptId = scriptId, matchTarget = matchTarget,
                 overridesJson = ProfileProviderOverrides.fromJsonString(profile.overridesJson).copy(extension = extension.copy(configured = true)).toJsonString())

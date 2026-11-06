@@ -1,6 +1,18 @@
 # Testing
 
-## 配置管理真实主宿主重建恢复（2026-11-06，当前）
+## 扩展页真实主宿主恢复（2026-11-07，当前）
+
+修复KUI-003：真实MainActivity扩展页重建复用原会话，保留全局子页/搜索、长脚本列表、规则草稿/目标/校验错误及放弃确认；挂起保存不被重连作废，明确重试和退出重开重新读取。真实IME上方操作、两层返回、连续确认只保存一条规则及重新打开回读已验。Redmi final5精确13/13，33张PNG分片回传/解码/哈希校验并经7张拼图目视；778项JVM XML零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。App/Test回拉匹配，最终安装前/验收前后两份正式配置、正文、偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置/脚本清理，收尾无服务。App502于build1重跑，其余276复用，最终build5四模块UP-TO-DATE。
+
+四方法`MainProfileExtensionStateInstrumentedTest`必须传`kclashExtensionAcceptance=true`与当前原`1.yaml`的`kclashLocalYamlSha256`。只改原字节非当前FILE副本和自身脚本，finally严格比较正式行/正文/脚本/偏好/选择/STOPPED。真实IME方法限定API29+，本组Redmi API36；多Dialog返回用系统按键注入，不放宽确认断言。截图显式`kclashCapturePngChunks=true`时48KiB分片，接收端必须校验总数/索引/重复/字节/SHA及全部13方法明细；缺片/整张缺图/缺方法不能用JUnit汇总替代；接收端精确比较33张预期名称集合。静态采样650ms等待系统450ms退出，不改变业务时序。
+
+原始red1/red2均0/3、挂起保存红灯1/1失败；final1汇总11/13且偏好摘要变化、Binder回传缺两条；final2汇总13/13但仍缺两条明细；final3已13/13完整回传，静态截图退场采样不足，final5采样650ms复验。首轮偏好具体键缺少基线、原因未定，未回写旧偏好，不能消除第6项原保护异常。新增逐偏好键/值摘要；已知质量缓存变化才可命名，其他键只报摘要，不输出原值。red1按既有授权补入FILE/URL，最终安装前/验收前后均复用保护，不扩大为首次准备前数据保持。Provider相邻回归可加载停止态核心并联网，不称全离线。
+
+证据`docs/acceptance/main-extension-state-redmi-20261107.json`，缺陷`docs/profile-extension-restoration-defect.md`，本机附件`../acceptance-artifacts/main-extension-state-redmi-20261107/`。扩展其余批选/删除确认、远程新增IME/长批量/无效输入/取消、代理添加到本地失败及等待中切换配置、本地代理删除长引用/失败和分享链接IME返回仍待验；管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及正文加密草稿另行推进。完整Flutter视觉/动效仍PARTIAL，玻璃默认关闭。
+
+final4已13/13及33图通过；提交前将正式ScriptEntity列表保护断言改布尔结果，失败不打印脚本URL，并补整图缺失门禁，final5同套复验通过。
+
+## 配置管理真实主宿主重建恢复（2026-11-06，历史）
 
 KUI-002已修：重命名/删除目标只saveable保存ID，从最新列表解析；首次读库前不清目标，排序页等待profilesLoaded，排序开关/打开revision/放弃确认均恢复。`MainProfileManagementStateInstrumentedTest`三方法运行必须传`kclashProfileManagementAcceptance=true`和当前原`1.yaml`的`kclashLocalYamlSha256`；复用正式FILE原字节创建自身CUSTOM+FILE，只改自己的名称/删除/末尾顺序，finally按ID/标签/类型清理并比对正式库全部行/正文/偏好/选择及STOPPED。
 

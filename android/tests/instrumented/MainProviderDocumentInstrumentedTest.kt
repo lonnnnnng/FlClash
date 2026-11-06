@@ -212,8 +212,18 @@ class MainProviderDocumentInstrumentedTest {
                 assertEquals(rows, entry.database().profiles().getAll())
                 assertEquals(signatures, rows.associate { it.id to signature(repository.profileFile(it.id)) })
                 assertEquals(selected, repository.currentProfileId.value)
+                val afterPreferences = entry.database().appPreferences().getByPrefix("").associate { it.key to it.value }
+                if (preferences != afterPreferences) {
+                    // 作者 long：保护失败保留差异归因，已知质量缓存可命名，其余只报键摘要；不能回写旧值掩盖后台变更。
+                    val changed = (preferences.keys + afterPreferences.keys).filter { preferences[it] != afterPreferences[it] }
+                    InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
+                        putString("kclash_preference_changes", changed.joinToString(",") { key ->
+                            if (key == "ip_quality_cache_v1") key else MessageDigest.getInstance("SHA-256").digest(key.toByteArray()).joinToString("") { "%02x".format(it) }
+                        })
+                    })
+                }
                 assertTrue("正式偏好值必须保持，失败时不输出可能含网络信息的缓存正文",
-                    preferences == entry.database().appPreferences().getByPrefix("").associate { it.key to it.value })
+                    preferences == afterPreferences)
                 assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
                 InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
                     putString("kclash_main_provider_preservation", "formal-count=${rows.size};source-sha256=$expectedSha;temporary-profiles-and-cache-removed=true;body-metadata-selection-preferences-preserved=true;runtime=STOPPED")

@@ -32,7 +32,7 @@ internal fun ProfileExtensionRoute(id: Long, controller: ProfileExtensionControl
     ProfileExtensionEditor(state, scripts, onDismiss = { controller.close(onDismiss) }, onApply = controller::apply,
         onMode = controller::mode, onScript = controller::script, onTarget = controller::target,
         onRules = controller::rules, onGlobalRules = controller::globalRules, onDisabled = controller::disabled,
-        onOpenScripts = onOpenScripts, onRetry = { controller.open(id) },
+        onOpenScripts = onOpenScripts, onRetry = { controller.open(id, reload = true) },
         onSkipApply = { controller.closeWithoutApplying(onDismiss) }, canEditSource = canEditSource, onDns = onDns, onProviders = onProviders)
 }
 
@@ -243,10 +243,11 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
     var noResolve by rememberSaveable { mutableStateOf(fields.lastOrNull() == "no-resolve") }
     var rawMode by rememberSaveable { mutableStateOf(false) }
     var raw by rememberSaveable { mutableStateOf(initial?.value.orEmpty()) }
-    var error by remember { mutableStateOf<String?>(null) }
+    // 作者 long：错误和放弃确认属于尚未提交的表单，重建后应继续原决策，不得静默撤销确认或隐藏错误。
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
     var selectTarget by rememberSaveable { mutableStateOf(false) }
     var typeMenu by remember { mutableStateOf(false) }
-    var discard by remember { mutableStateOf(false) }
+    var discard by rememberSaveable { mutableStateOf(false) }
     val value = if (rawMode) raw.trim() else listOfNotNull(type, content.trim().takeUnless { type in setOf("MATCH", "FINAL") }, target, "no-resolve".takeIf { noResolve }).joinToString(",")
     fun back() { if (saving) return; if (value != initial?.value && (initial != null || content.isNotEmpty() || raw.isNotEmpty())) discard = true else onDismiss() }
     ProfileEditorPage(::back, { Text(if (initial == null) "添加规则" else "编辑规则") }, {

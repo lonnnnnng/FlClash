@@ -98,6 +98,8 @@ class ProfilePreparationInstrumentedTest {
         val snapshot = JSONObject().put("count", rows.size).put("files", files)
             .put("rowsSha256", sha(Gson().toJson(rows).toByteArray()))
             .put("preferencesSha256", sha(Gson().toJson(preferences).toByteArray()))
+            // 作者 long：逐键摘要用于定位后台缓存写入，不把订阅、密钥或网络缓存原值写入验收日志。
+            .put("preferenceDigests", JSONObject(preferences.mapKeys { sha(it.key.toByteArray()) }.mapValues { sha(it.value.toByteArray()) }))
             .put("selected", preferences["current_profile_id"] ?: JSONObject.NULL)
             .put("runtime", entry.runtimeManager().state.value.name)
         instrumentation.sendStatus(2, android.os.Bundle().apply { putString("kclash_profile_snapshot", snapshot.toString()) })

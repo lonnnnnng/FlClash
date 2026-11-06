@@ -39,6 +39,7 @@ internal class ProfileExtensionController(
 ) {
     private val lock = Mutex()
     private var generation = 0L
+    private var openedProfileId: Long? = null
     private val mutableState = MutableStateFlow(ProfileExtensionUiState())
     val state = mutableState.asStateFlow()
 
@@ -48,7 +49,10 @@ internal class ProfileExtensionController(
         scope.launch { repository.profiles.collect { refreshApplied() } }
     }
 
-    fun open(id: Long) {
+    fun open(id: Long, reload: Boolean = false) {
+        // 作者 long：Activity重建重连原会话，不能清空列表/子页或作废已受理保存；读取失败由显式重试重新发起。
+        if (!reload && openedProfileId == id) return
+        openedProfileId = id
         val token = ++generation
         mutableState.value = ProfileExtensionUiState(loading = true)
         scope.launch {
@@ -164,7 +168,7 @@ internal class ProfileExtensionController(
                     }
                     if (token == generation) {
                         mutableState.value = mutableState.value.copy(applying = false, applied = id != null && runtime.profileInputsApplied(id), error = null)
-                        if (onClosed != null) { generation++; mutableState.value = ProfileExtensionUiState(); onClosed() }
+                        if (onClosed != null) { generation++; openedProfileId = null; mutableState.value = ProfileExtensionUiState(); onClosed() }
                     }
                 } catch (failure: Exception) {
                     if (failure is CancellationException) throw failure
@@ -179,6 +183,7 @@ internal class ProfileExtensionController(
     fun closeWithoutApplying(onClosed: () -> Unit) {
         if (!mutableState.value.saving && !mutableState.value.applying) {
             generation++
+            openedProfileId = null
             mutableState.value = ProfileExtensionUiState()
             onClosed()
         }

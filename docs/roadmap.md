@@ -2,9 +2,11 @@
 
 > 文档类型：产品迁移路线图、功能矩阵、依赖图和验收门槛
 >
-> 最后核对：2026-11-06（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
+> 最后核对：2026-11-07（北京时间，优先完成主页 → 配置 → 代理组；观测页面的后续打磨暂停）
 >
-> 最新切片（2026-11-06，配置管理窗口重建恢复）：修复KUI-002：真实MainActivity配置重命名草稿、删除确认、排序草稿和放弃确认跨Activity重建保持；取消不写入，明确保存/删除仅作用于测试临时副本。Redmi final2精确9/9，25张PNG校验并经3张拼图目视；775项JVM XML零失败/错误/跳过（App499在build3重跑，其余276复用，最终build4四模块均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。App/Test实际回拉匹配，两份正式FILE/URL配置的正文/元数据/顺序/偏好/选择、原1.yaml、Flutter基线及设备设置保持，临时行清理，收尾无服务。原始red1 0/3及中间final1 8/9分别保留；后者仅为输入框matcher修正，产品不变。证据 `docs/acceptance/main-profile-management-redmi-20261106.json`，缺陷 `docs/profile-management-restoration-defect.md`，附件 `../acceptance-artifacts/main-profile-management-redmi-20261106/`。管理窗口/正文冷进程、运行态与完整Flutter视觉仍PARTIAL，玻璃默认关闭。
+> 最新切片（2026-11-07，扩展页重建与键盘错误恢复）：修复KUI-003：真实MainActivity扩展页重建复用原会话，保留全局子页/搜索、长脚本列表、规则草稿/目标/校验错误及放弃确认；挂起保存不被重连作废，明确重试和退出重开重新读取。真实IME上方操作、两层返回、连续确认只保存一条规则及重新打开回读已验。Redmi final5精确13/13，33张PNG分片回传/解码/哈希校验并经7张拼图目视；778项JVM XML零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。App/Test回拉匹配，最终安装前/验收前后两份正式配置、正文、偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置/脚本清理，收尾无服务。App502于build1重跑，其余276项复用，最终build5四模块UP-TO-DATE。证据`docs/acceptance/main-extension-state-redmi-20261107.json`，缺陷`docs/profile-extension-restoration-defect.md`，本机附件`../acceptance-artifacts/main-extension-state-redmi-20261107/`。原始red1/red2均0/3、挂起保存红灯1/1失败；final1汇总11/13且偏好摘要变化、Binder回传缺两条；final2汇总13/13但仍缺两条明细；final3已13/13完整回传，静态截图退场采样不足，final5采样650ms复验。首轮偏好具体键缺少基线、原因未定，未回写旧偏好，不能消除第6项原保护异常。扩展其余批选/删除确认、远程新增IME/长批量/无效输入/取消、代理添加到本地失败及等待中切换配置、本地代理删除长引用/失败和分享链接IME返回仍待验；管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及正文加密草稿另行推进。完整Flutter视觉/动效仍PARTIAL，玻璃默认关闭。
+>
+> 历史切片（2026-11-06，配置管理窗口重建恢复）：修复KUI-002：真实MainActivity配置重命名草稿、删除确认、排序草稿和放弃确认跨Activity重建保持；取消不写入，明确保存/删除仅作用于测试临时副本。Redmi final2精确9/9，25张PNG校验并经3张拼图目视；775项JVM XML零失败/错误/跳过（App499在build3重跑，其余276复用，最终build4四模块均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。App/Test实际回拉匹配，两份正式FILE/URL配置的正文/元数据/顺序/偏好/选择、原1.yaml、Flutter基线及设备设置保持，临时行清理，收尾无服务。原始red1 0/3及中间final1 8/9分别保留；后者仅为输入框matcher修正，产品不变。证据 `docs/acceptance/main-profile-management-redmi-20261106.json`，缺陷 `docs/profile-management-restoration-defect.md`，附件 `../acceptance-artifacts/main-profile-management-redmi-20261106/`。管理窗口/正文冷进程、运行态与完整Flutter视觉仍PARTIAL，玻璃默认关闭。
 >
 > 历史切片（2026-11-06，Provider正文真实主宿主）：真实MainActivity首页配置详情→Provider正文链路已验：真实侧载失败保留长草稿/错误/选区并跨后台和Activity重建，放弃确认重建后可继续/放弃；有效缓存保存后退出、重建、重开回读且资源源文件不变；原配置MRS只读预览滚动位置跨重建保持并返回同一面板。Redmi final2精确9/9，21张PNG哈希/解码验证并经4张拼图目视；775项JVM XML零失败/错误/跳过（本次四模块任务均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。最终双包实际回拉匹配，两份正式FILE/URL配置、正文/元数据/偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置及自身投影缓存清理，收尾无服务。首轮7/9和IP质量缓存写入造成的偏好保护失败单独保留，不与最终批次累计。证据 `docs/acceptance/main-provider-document-redmi-20261106.json`，附件 `../acceptance-artifacts/main-provider-document-redmi-20261106/`。正式宿主的Activity重建已补验，冷进程/运行态和完整Flutter视觉仍PARTIAL，玻璃默认关闭。
 >
@@ -691,15 +693,15 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步`chen08209/Clash.Meta:FlClash`，不直接同步`MetaCubeX/mihomo`分支/tag/提交/PR；连续4项`25fb0699`、`4a8e40cf`、`04f718e6`、`024245dc`已通过`852d3ad1`合入自己的`kclash-fixes`，当前为`7038231e`，本地修复保留 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
-| 单元测试 | 四模块XML App499/Service207/Core38/Common31共775项JVM零失败/错误/跳过；本组build3实际重跑App499，其余276项复用，最终build4四模块均UP-TO-DATE，不声称775全部强制重跑；Go沿用具名历史，本组未重跑 |
-| 最新真机 | Redmi API36 final2真实MainActivity重命名草稿/删除确认/排序草稿及放弃确认跨Activity重建，加相邻回归精确9/9，25图校验/3拼图目视。两份正式配置/正文/元数据/顺序/偏好/选择与原1.yaml/Flutter/设置保持，收尾无服务；原始red1 0/3与final1 8/9分别保留。冷进程/运行态未验，蜂窝延期；见`main-profile-management-redmi-20261106.json` |
+| 单元测试 | 四模块XML App502/Service207/Core38/Common31共778项JVM零失败/错误/跳过；App502于扩展页build1实际重跑，其余276项复用，最终build5四模块UP-TO-DATE；Go沿用具名历史，本组未重跑 |
+| 最新真机 | Redmi API36 final4扩展真实主宿主4条及相邻回归9条，共13/13；33PNG完整分片回传/哈希/解码，7拼图目视。最终安装前/验收前后两份正式配置/正文/脚本/偏好/选择、原1.yaml/Flutter/设置保持，临时项清理、无服务。失败及采集修正批次保留；见`main-extension-state-redmi-20261107.json` |
 | 最新Fallback实核 | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | 最新配置管理build4 Debug/Test、Release-R8及双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。Debug `9ae1c0c2420e5251e8297d529c2e162f3dee55b46906a63beb599293c68da606`，AndroidTest `e8f1e5ea1f13efca66b2f3fa097e848a90a5deb216d4bfb5a2fb4b26a0ebb269`；Redmi实际回拉匹配，本组修复KUI-002，核心gitlink仍为`7038231e` |
+| Debug / Test | 最新扩展页build5统一构建与双Lint通过；Debug0错误/67警告/10提示，Release0错误/66警告/9提示。Debug `1486305d3dafba159f295cdcc3e520915f722bf4d6acece5440a3a950864fd82`，AndroidTest `7323e1d9cd3ee40b68e1875fc15144b30b7c627bf52a1c7fda63c812aec5c8f4`；Redmi实际回拉匹配，KUI-003已修，核心gitlink仍7038231e |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
-| Release | 最新配置管理build4未签名arm64 APK/R8通过；SHA-256 `3ed748ff8ef2a43ab981a972a0f7aeebfb5c68720bbe649489315efa67ef9a3e`；Lint0错误/66警告/9提示，清单非debuggable/无Debug测试Activity；正式签名与设备运行未验 |
-| 最新证据 | `main-profile-management-redmi-20261106.json`：KUI-002配置管理真实宿主重建与相邻回归9/9、25图、775项JVM XML及两配置保护；缺陷见`profile-management-restoration-defect.md`。原始0/3与中间8/9保留，不累计批次。Provider正式宿主9/9、主页面/List/KUI-001等保持具名历史；第9完整视觉、第8/11仍PARTIAL，第7自然无效now保持语义边界、第6原保护异常保持 |
+| Release | 最新扩展页build5未签名arm64 APK/R8通过；SHA-256 `8e90fb2c86d31d8093401e312e04e27f6da4be0bccd40540c863926f54e2c4ef`；Lint0错误/66警告/9提示，清单非debuggable/无Debug测试Activity；正式签名与设备运行未验 |
+| 最新证据 | `main-extension-state-redmi-20261107.json`：KUI-003扩展恢复/真实IME/错误/连续确认，final5 13/13、33图、778项JVM及最终正式库保护。原始red1/red2均0/3、挂起保存红灯1/1失败；final1汇总11/13且偏好摘要变化、Binder回传缺两条；final2汇总13/13但仍缺两条明细；final3已13/13完整回传，静态截图退场采样不足，final5采样650ms复验。首轮偏好具体键缺少基线、原因未定，未回写旧偏好，不能消除第6项原保护异常。第9视觉、第8/11仍PARTIAL，第7自然无效now保持语义边界 |
 
 
 ## 4. 目标架构图
@@ -1156,7 +1158,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 状态：`PARTIAL`。
 
-当前执行清单（2026-11-06）：修复KUI-002：真实MainActivity配置重命名草稿、删除确认、排序草稿和放弃确认跨Activity重建保持；取消不写入，明确保存/删除仅作用于测试临时副本。Redmi final2精确9/9，25张PNG校验并经3张拼图目视；775项JVM XML零失败/错误/跳过（App499在build3重跑，其余276复用，最终build4四模块均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。App/Test实际回拉匹配，两份正式FILE/URL配置的正文/元数据/顺序/偏好/选择、原1.yaml、Flutter基线及设备设置保持，临时行清理，收尾无服务。证据`main-profile-management-redmi-20261106.json`与缺陷`profile-management-restoration-defect.md`。管理窗口/正文冷进程、保存受理中断、目标外部删除、其余子页/面板和统一Flutter视觉/动效仍待验；继续todo第9项，第10后排、玻璃默认关闭。
+当前执行清单（2026-11-07）：修复KUI-003：真实MainActivity扩展页重建复用原会话，保留全局子页/搜索、长脚本列表、规则草稿/目标/校验错误及放弃确认；挂起保存不被重连作废，明确重试和退出重开重新读取。真实IME上方操作、两层返回、连续确认只保存一条规则及重新打开回读已验。Redmi final5精确13/13，33张PNG分片回传/解码/哈希校验并经7张拼图目视；778项JVM XML零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。App/Test回拉匹配，最终安装前/验收前后两份正式配置、正文、偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置/脚本清理，收尾无服务。证据`main-extension-state-redmi-20261107.json`与缺陷`profile-extension-restoration-defect.md`。扩展其余批选/删除确认、远程新增IME/长批量/无效输入/取消、代理添加到本地失败及等待中切换配置、本地代理删除长引用/失败和分享链接IME返回仍待验；管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及正文加密草稿另行推进。完整Flutter视觉/动效仍PARTIAL，玻璃默认关闭。
 
 前序已验（2026-11-06，Provider正文真实主宿主）：真实MainActivity首页配置详情→Provider正文链路已验：真实侧载失败保留长草稿/错误/选区并跨后台和Activity重建，放弃确认重建后可继续/放弃；有效缓存保存后退出、重建、重开回读且资源源文件不变；原配置MRS只读预览滚动位置跨重建保持并返回同一面板。Redmi final2精确9/9，21张PNG哈希/解码验证并经4张拼图目视；775项JVM XML零失败/错误/跳过（本次四模块任务均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。最终双包实际回拉匹配，两份正式FILE/URL配置、正文/元数据/偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置及自身投影缓存清理，收尾无服务。证据`main-provider-document-redmi-20261106.json`。Provider正文正式宿主的Activity重建本组已补验，冷进程、运行态侧载、其余子页/面板、统一Flutter视觉/动效仍PARTIAL；继续todo第9项，再统一截图基线和连续动效，第10后排、玻璃默认关闭。首轮IP缓存保护变化与小MRS滚动前提失败单独保留。
 
@@ -1230,7 +1232,9 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 ### 7.7 测试、发布和运维
 
-最新切片（11-06，配置管理窗口重建恢复）：修复KUI-002：真实MainActivity配置重命名草稿、删除确认、排序草稿和放弃确认跨Activity重建保持；取消不写入，明确保存/删除仅作用于测试临时副本。Redmi final2精确9/9，25张PNG校验并经3张拼图目视；775项JVM XML零失败/错误/跳过（App499在build3重跑，其余276复用，最终build4四模块均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。App/Test实际回拉匹配，两份正式FILE/URL配置的正文/元数据/顺序/偏好/选择、原1.yaml、Flutter基线及设备设置保持，临时行清理，收尾无服务。最终build4为389任务11执行/378复用，Debug0错误/67警告/10提示、Release0错误/66警告/9提示。原始red1 0/3为产品缺陷复现，final1 8/9仅重命名输入框matcher错误，改用EditableText.text精确断言后final2通过，产品源码不变。两失败批次及前后保护独立保留；不称冷进程、运行态或完整视觉通过。证据`main-profile-management-redmi-20261106.json`，缺陷`profile-management-restoration-defect.md`。
+最新切片（11-07，扩展页重建与键盘错误恢复）：修复KUI-003：真实MainActivity扩展页重建复用原会话，保留全局子页/搜索、长脚本列表、规则草稿/目标/校验错误及放弃确认；挂起保存不被重连作废，明确重试和退出重开重新读取。真实IME上方操作、两层返回、连续确认只保存一条规则及重新打开回读已验。Redmi final5精确13/13，33张PNG分片回传/解码/哈希校验并经7张拼图目视；778项JVM XML零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。App/Test回拉匹配，最终安装前/验收前后两份正式配置、正文、偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置/脚本清理，收尾无服务。最终build5为389任务11执行/378复用，App502于build1重跑，其余276复用。Debug0错误/67警告/10提示、Release0错误/66警告/9提示。原始red1/red2均0/3、挂起保存红灯1/1失败；final1汇总11/13且偏好摘要变化、Binder回传缺两条；final2汇总13/13但仍缺两条明细；final3已13/13完整回传，静态截图退场采样不足，final5采样650ms复验。首轮偏好具体键缺少基线、原因未定，未回写旧偏好，不能消除第6项原保护异常。截图通道新增显式48KiB分片及总数/索引/摘要校验，旧驱动行为保留。仅本组交互与状态通过，不称冷进程、运行态或完整视觉通过。证据`main-extension-state-redmi-20261107.json`、缺陷`profile-extension-restoration-defect.md`。
+
+历史切片（11-06，配置管理窗口重建恢复）：修复KUI-002：真实MainActivity配置重命名草稿、删除确认、排序草稿和放弃确认跨Activity重建保持；取消不写入，明确保存/删除仅作用于测试临时副本。Redmi final2精确9/9，25张PNG校验并经3张拼图目视；775项JVM XML零失败/错误/跳过（App499在build3重跑，其余276复用，最终build4四模块均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。App/Test实际回拉匹配，两份正式FILE/URL配置的正文/元数据/顺序/偏好/选择、原1.yaml、Flutter基线及设备设置保持，临时行清理，收尾无服务。最终build4为389任务11执行/378复用，Debug0错误/67警告/10提示、Release0错误/66警告/9提示。原始red1 0/3为产品缺陷复现，final1 8/9仅重命名输入框matcher错误，改用EditableText.text精确断言后final2通过，产品源码不变。两失败批次及前后保护独立保留；不称冷进程、运行态或完整视觉通过。证据`main-profile-management-redmi-20261106.json`，缺陷`profile-management-restoration-defect.md`。
 
 历史切片（11-06，Provider正文真实主宿主）：真实MainActivity首页配置详情→Provider正文链路已验：真实侧载失败保留长草稿/错误/选区并跨后台和Activity重建，放弃确认重建后可继续/放弃；有效缓存保存后退出、重建、重开回读且资源源文件不变；原配置MRS只读预览滚动位置跨重建保持并返回同一面板。Redmi final2精确9/9，21张PNG哈希/解码验证并经4张拼图目视；775项JVM XML零失败/错误/跳过（本次四模块任务均UP-TO-DATE），Debug/Test、未签名Release-R8和双Lint通过。最终双包实际回拉匹配，两份正式FILE/URL配置、正文/元数据/偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置及自身投影缓存清理，收尾无服务。本组仅补验收代码，生产代码和Mihomo不变；真实核心在停止态加载原1.yaml的临时FILE+CUSTOM资源绑定。未手动刷新原90个HTTP Provider或重新下载正式订阅，但配置加载可触发核心资源初始化、首页IP/质量查询，不能声称无网络。final1为7/9：一项只因首次新增ip_quality_cache_v1导致偏好保护失败，正式正文/元数据/选择未变；一项选中可一屏容纳的MRS却要求滚动。未回写旧缓存或放宽滚动断言，改选原配置中200..3000条的真实规则资源后final2整组通过。首轮偏好变化保留，不能以final2覆盖。此组不证明冷进程正文恢复、运行态侧载、Provider网络类型覆盖、全Flutter视觉/精确缓动或性能。证据`main-provider-document-redmi-20261106.json`；最终build2为389任务11执行/378复用，Debug0错误/67警告/10提示、Release0错误/66警告/9提示。
 
@@ -1295,15 +1299,17 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 | 6 | IP/质量全部来源、持久缓存和失效恢复；服务全部目标 | 缓存闭环与全部目标尝试已验：757单测、final3 5/5、cold2/cold5各双阶段、回归10/10；远端部分受限，原长窗口配置保护after 0/1/原因未定，新短窗口通过不替代失败。见`ip-quality-cache-redmi-20261105.json` |
 | 7 | Fallback 无有效 now 实核行为和冷恢复 | 冷进程收尾已验：更新后的唯一授权源为34组、1个非空Fallback/7成员；Redmi真实Mihomo停止态/运行态各4阶段，共8/8有效`now`，固定/清除固定/非法成员拒绝通过；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`，见`fallback-real-core-redmi-20261105.json`与`fallback-cold-process-redmi-20261106.json`。自然无效`now`经源码核对在合法非空组、断网或全不健康成员下不可自然产生，保留为核心语义边界，不记伪造注入为通过。 |
 | 8 | 纯代理冷恢复、首次安装 VPN 授权、蜂窝切换、Tasker/MacroDroid、Always-on OEM | 部分已验：本组build2/767 JVM、Go全量race265/265/压力40/40/route10；控制器KCORE-002/003已修，Redmi6轮及回归共4/4，Always-on-final1零延迟首请求两次200、纯代理恢复/保护通过。旧TLS EOF因果/长期稳定性未闭环；蜂窝延期，其余系统边界待验。见`controller-lifecycle-redmi-20261105.json` |
-| 9 | Flutter完整List/子页、空态morph/orbit、排版/缓动/面板/键盘联动 | 最新KUI-002配置管理重命名/删除确认/排序与放弃确认跨Activity重建已修，Redmi新增3条及回归共9/9、25图，775项JVM XML及Debug/Test/Release-R8/双Lint通过；正式两配置保护保持。见`main-profile-management-redmi-20261106.json`与`profile-management-restoration-defect.md`。Provider正式宿主/List等沿用具名历史；管理窗口/正文冷进程、运行态、其余子页/面板与统一视觉/动效仍PARTIAL，玻璃默认关闭 |
+| 9 | Flutter完整List/子页、空态morph/orbit、排版/缓动/面板/键盘联动 | 最新KUI-003扩展页重建/错误/IME返回/重复确认已验，final5 13/13、33图、778项JVM及统一构建/双Lint通过。证据`main-extension-state-redmi-20261107.json`；扩展其余批选/删除确认、远程新增IME/长批量/无效输入/取消、代理添加到本地失败及等待中切换配置、本地代理删除长引用/失败和分享链接IME返回仍待验；管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及正文加密草稿另行推进。完整Flutter视觉/动效仍PARTIAL，玻璃默认关闭。 |
 | 10 | 实时背景/触点光效、玻璃采样品质、8MiB正文及连续动效性能 | 后排待做，玻璃默认关闭；已完成六种材质/折射/多层菜单不重复列缺项 |
 | 11 | API24/25/31/32及低API核心/VPN/实网、端到端回归、CI/签名/Release/更新资产 | 本组Go控制器race和TLS泄漏已修验证并建源码缺陷台账，CI补父模块/route竞态；未签名Release/R8通过。低API、远端CI、签名及正式发布仍待验 |
 
 本轮原始附件存于工作区外层 `acceptance-artifacts/controller-race-20261105/`；前组TUN保护沿用`acceptance-artifacts/tun-protect-20261105/`，网络观察、Always-on及纯代理附件沿用 `acceptance-artifacts/always-on-dns-20261105/`、`acceptance-artifacts/always-on-20261105/` 和 `acceptance-artifacts/proxy-system-recovery-20261105/`，第1至6项附件沿用各自证据索引。旧 `/tmp` 附件本轮已不可读取，不以历史口述代替本次验收。备份/系统恢复、观测次要打磨、语言/主题暂缓；TalkBack/自定义无障碍、早期Room兼容、横屏/大字号扩展及其他ABI不列待办。
 
-### 当前执行清单（累计状态，2026-11-06）
+### 当前执行清单（累计状态，2026-11-07）
 
 本清单优先于下方历史N1～N4切片的“下一步”；每步完成后测试验收，并同时更新页首、第3/7节及验收JSON。
+
+当前优先继续第9项剩余常用交互：①扩展批选/删除确认状态；②远程新增真实IME、长批量、无效输入、取消；③代理节点添加到本地校验/保存失败和等待中切换配置；④本地代理删除长引用/取消/失败与分享链接IME返回。KUI-003扩展恢复本组已闭环。之后补管理窗口/Provider正文冷进程、保存中断与目标外部删除，正文接独立加密草稿；再统一Flutter视觉/连续动效。第6项及本组首轮偏好保护异常、网络稳定性继续排查；蜂窝有条件后补，第10/11按原顺序后排。
 
 1. 第一步指定交互已验：整策略组YAML返回草稿/长错误定位、单组图标/选项层级保存状态、本地代理列表/映射返回与隔离Activity重建、服务子页跟手拖回/取消/快甩/后台中断及质量页退场正文。715单测、最终Redmi同套App/Test 44/44与81张PNG见`stage-one-interactions-redmi-20261105.json`；不推广真实冷进程、正式主宿主全路径或全应用视觉等价。
 2. 第二步累计：后台订阅自然到期下载/应用和运行态节点落库/重建回读已有证据；todo第1/2项编辑器冷恢复与保存死亡窗口已验，见各组JSON。第3项CUSTOM引用在线源的手动/到期Repository自动更新已由`subscription-reference-network-redmi-20261105.json`补验，在线age因唯一授权响应明文且无密钥保留受限。第4项其他资源真实系统文件选择与外部脚本下载/改源/同步/应用已由`resource-saf-scripts-redmi-20261105.json`补验；第5项部分失败恢复、代表HTTP/File/Inline来源和实际规则命中已由`provider-recovery-hits-redmi-20261105.json`补验（4/4、回归14/14），隔离投影/重试/协议与托管失败边界见JSON；第6项成功质量缓存和全部来源/服务目标尝试已由`ip-quality-cache-redmi-20261105.json`补验，远端受限和长窗口配置保护异常独立保留。第7项已用更新后的授权源完成非空Fallback真实核心8阶段实核，并完成固定选择冷进程恢复与清除固定，见`fallback-real-core-redmi-20261105.json`和`fallback-cold-process-redmi-20261106.json`；自然无效`now`按当前Mihomo合法解析契约保留为不可自然构造边界。第8项纯代理系统恢复已验；进程级网络观察已修，最新`system-vpn-protection-redmi-20261105.json`进一步修正TUN保护缺口，767 JVM、Go普通265/265及定向race7/7、final1/2两轮四次首请求HTTP200，3/3回归、纯代理恢复与保护通过；旧TLS EOF因果/长期稳定性仍待查，本组控制器竞态及TLS泄漏已由核心f83e9b10修复，Go全量race265/265、压力40/40、route10及Redmi6轮/4项回归/Always-on首请求两次200和纯代理恢复通过，见`controller-lifecycle-redmi-20261105.json`；源码来源/原失败/撤销条件见`docs/upstream-source-defects.md`，历史延迟诊断和失败批次保留。蜂窝因不可用单独延期，再继续首次干净安装VPN/第三方真调用/其余OEM中具备条件的场景；不清正式数据构造首次安装，缺条件不记通过。
@@ -3149,3 +3155,12 @@ Kotlin 主线不直接合并 Flutter 提交。每次同步按照以下顺序：
 - **包与保护**：Debug `9ae1c0c2420e5251e8297d529c2e162f3dee55b46906a63beb599293c68da606`、AndroidTest `e8f1e5ea1f13efca66b2f3fa097e848a90a5deb216d4bfb5a2fb4b26a0ebb269`、未签名Release `3ed748ff8ef2a43ab981a972a0f7aeebfb5c68720bbe649489315efa67ef9a3e`；App/Test实际回拉匹配。两份正式FILE/URL只复用，全部行/正文SHA-size-mtime/顺序/偏好/选择和原1.yaml/Flutter/设备设置三批前后保持，临时CUSTOM/FILE按ID/标签/类型清理，收尾无服务。Provider相邻回归停止态加载核心可联网，不称离线；未手动更新原HTTP Provider/正式订阅，未启动运行态/VPN。
 - **原始失败**：未修产品red1三条0/3；修复后final1为8/9，实际草稿首尾空格正确，仅assertTextEquals混入名称/提示。改为精确EditableText.text并等待异步名称后final2通过，产品未再改；失败和保护日志分别保留，不累计通过数。
 - **证据与下一步**：`docs/acceptance/main-profile-management-redmi-20261106.json`、`docs/profile-management-restoration-defect.md`；本机附件`../acceptance-artifacts/main-profile-management-redmi-20261106/`。管理窗口/正文冷进程、保存受理中断、目标外部删除、运行态、其他Provider实网、完整视觉/缓动/性能、低API/蜂窝/OEM/Go/远端CI/正式签名运行仍未补。正文冷恢复需独立加密草稿协议；继续第9项其他常用子页/面板与异常恢复，再统一视觉，第10后排、玻璃默认关闭，原暂缓/取消边界保持。
+
+### 2026-11-07：扩展页真实MainActivity重建与键盘错误恢复 — DONE-VERIFIED（整体视觉仍 PARTIAL）
+
+- **修复**：KUI-003，同配置重复open复用ViewModel会话；显式重试才reload，关闭后清会话身份。表单错误/放弃确认saveable，切换ID旧结果仍拒绝；Flutter只读参考，Mihomo不改。
+- **验收**：修复KUI-003：真实MainActivity扩展页重建复用原会话，保留全局子页/搜索、长脚本列表、规则草稿/目标/校验错误及放弃确认；挂起保存不被重连作废，明确重试和退出重开重新读取。真实IME上方操作、两层返回、连续确认只保存一条规则及重新打开回读已验。Redmi final5精确13/13，33张PNG分片回传/解码/哈希校验并经7张拼图目视；778项JVM XML零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。App/Test回拉匹配，最终安装前/验收前后两份正式配置、正文、偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置/脚本清理，收尾无服务。
+- **构建**：build5统一命令43秒、389任务11执行/378复用；App502于build1重跑，其他276复用，最终四模块UP-TO-DATE。Debug0错误/67警告/10提示、Release0错误/66警告/9提示。
+- **证据边界**：原始red1/red2均0/3、挂起保存红灯1/1失败；final1汇总11/13且偏好摘要变化、Binder回传缺两条；final2汇总13/13但仍缺两条明细；final3已13/13完整回传，静态截图退场采样不足，final5采样650ms复验。首轮偏好具体键缺少基线、原因未定，未回写旧偏好，不能消除第6项原保护异常。red1准备曾按既有授权补入本地/远程两配置，不能声称首次准备前库保持；red2及最终批次均复用。Provider相邻回归在停止态加载核心可联网，不称离线或运行态实网验收。
+- **下一步**：扩展其余批选/删除确认、远程新增IME/长批量/无效输入/取消、代理添加到本地失败及等待中切换配置、本地代理删除长引用/失败和分享链接IME返回仍待验；管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及正文加密草稿另行推进。完整Flutter视觉/动效仍PARTIAL，玻璃默认关闭。证据`docs/acceptance/main-extension-state-redmi-20261107.json`、`docs/profile-extension-restoration-defect.md`；本机附件`../acceptance-artifacts/main-extension-state-redmi-20261107/`。
+- **提交前复核**：final4同批13/13及33图已通过；进一步将正式脚本元数据比较改为不输出实体原值的布尔断言，驱动精确核对33张预期截图名称，防止整图零分片漏验。仅验收工具变化，最终build5/final5再验13/13及33图，产品源码与build1一致。
