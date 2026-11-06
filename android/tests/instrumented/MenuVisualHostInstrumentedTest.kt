@@ -10,6 +10,7 @@ import com.lonnnnnng.flclash.ConnectionAcceptanceEntryPoint
 import com.lonnnnnng.flclash.data.SubscriptionAutoUpdateAudit
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -88,11 +89,14 @@ class MenuVisualHostInstrumentedTest {
     @Test fun actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile() = runBlocking {
         assertPortraitDefaultFontConfiguration()
         val entry = EntryPointAccessors.fromApplication(compose.activity.application, ConnectionAcceptanceEntryPoint::class.java)
+        entry.profileRepository().profilesLoaded.first { it }
         val before = entry.database().profiles().getAll()
         compose.onNodeWithTag("nav_profiles").performClick()
         compose.onNodeWithTag("profiles_add_fab").performClick()
         compose.onNodeWithTag("profile_add_source_remote").assertIsDisplayed().performClick()
         compose.onNodeWithTag("profile_add_remote_url").assertIsDisplayed()
+        // 作者 long：链接输入自动聚焦后，系统返回先收键盘；此旧入口回归先显式收起，再验证取消表单。
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
         androidx.test.espresso.Espresso.pressBack()
         compose.onNodeWithTag("profile_add_remote_url").assertDoesNotExist()
         compose.onNodeWithTag("profiles_add_fab").assertIsDisplayed()

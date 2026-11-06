@@ -19,6 +19,7 @@ import com.lonnnnnng.flclash.ConnectionAcceptanceEntryPoint
 import com.lonnnnnng.flclash.MainActivity
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import com.lonnnnnng.flclash.service.ExtensionRule
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
 import dagger.hilt.android.EntryPointAccessors
 import java.io.ByteArrayOutputStream
@@ -35,6 +36,47 @@ import org.junit.Test
 class MainProfileExtensionStateInstrumentedTest {
     @get:Rule(order = 0) val notifications = GrantPermissionRule.grant(Manifest.permission.POST_NOTIFICATIONS)
     @get:Rule(order = 1) val compose = createAndroidComposeRule<MainActivity>()
+
+    @Test fun batchSelectionAndDeleteConfirmationSurviveRecreationBeforeExplicitCommit() = runBlocking {
+        val rules = listOf("first", "second", "third").map { ExtensionRule(it, "DOMAIN,$it.example.test,DIRECT") }
+        fixture(initialRules = rules) { session ->
+            val before = session.entry.database().profiles().getById(session.id)
+            for (id in listOf("first", "second")) compose.onNodeWithTag("extension_rule_select_$id").performScrollTo().performClick()
+            compose.onNodeWithText("已选 2 项").performScrollTo().assertIsDisplayed()
+            capture("main_extension_batch_selected")
+            compose.activityRule.scenario.recreate()
+            compose.onNodeWithText("已选 2 项").assertIsDisplayed()
+            compose.onNodeWithTag("extension_delete_selected").performClick()
+            compose.onNodeWithText("删除所选 2 条规则？").assertIsDisplayed()
+            capture("main_extension_batch_confirm")
+            compose.activityRule.scenario.recreate()
+            compose.onNodeWithText("删除所选 2 条规则？").assertIsDisplayed()
+            capture("main_extension_batch_confirm_recreated")
+            compose.onNodeWithText("取消").performClick()
+            compose.onNodeWithText("已选 2 项").assertIsDisplayed()
+            assertEquals(before, session.entry.database().profiles().getById(session.id))
+            // 作者 long：取消确认保留批选；下一次返回只退出批选，不能跨过扩展页直接回配置列表。
+            InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+            compose.onNodeWithText("已选 2 项").assertDoesNotExist()
+            compose.onNodeWithTag("profile_extension_mode_standard").assertIsDisplayed()
+            for (id in listOf("first", "second")) compose.onNodeWithTag("extension_rule_select_$id").performScrollTo().performClick()
+            compose.onNodeWithTag("extension_delete_selected").performScrollTo().performClick()
+            compose.onNodeWithText("删除").performTouchInput { click(); advanceEventTime(40); click() }
+            compose.waitUntil(15_000) { compose.onAllNodesWithText("删除规则").fetchSemanticsNodes().isEmpty() }
+            val saved = requireNotNull(session.entry.database().profiles().getById(session.id))
+            assertEquals(rules.takeLast(1), ProfileProviderOverrides.fromJsonString(saved.overridesJson).extension.rules)
+            compose.onNodeWithTag("extension_rule_third").assertIsDisplayed()
+            capture("main_extension_batch_saved")
+            compose.onNodeWithTag("profile_extension_back").performClick()
+            compose.onNodeWithTag("profile_card_${session.id}").performTouchInput { longClick() }
+            compose.onNodeWithTag("profile_extend_${session.id}").performClick()
+            compose.waitUntil(15_000) { compose.onAllNodesWithTag("extension_rule_third").fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithTag("extension_rule_third").assertIsDisplayed()
+            compose.onNodeWithTag("extension_rule_first").assertDoesNotExist()
+            assertEquals(saved, session.entry.database().profiles().getById(session.id))
+            compose.onNodeWithTag("profile_extension_back").performClick()
+        }
+    }
 
     @SdkSuppress(minSdkVersion = 29)
     @Test fun validationErrorImeBackAndRepeatedConfirmKeepOneSavedRule() = runBlocking {
@@ -184,7 +226,7 @@ class MainProfileExtensionStateInstrumentedTest {
         val scripts = mutableListOf<Long>()
     }
 
-    private suspend fun fixture(block: suspend (Session) -> Unit) {
+    private suspend fun fixture(initialRules: List<ExtensionRule> = emptyList(), block: suspend (Session) -> Unit) {
         assertPortraitDefaultFontConfiguration(); prepareTouchVisualCapture()
         val args = InstrumentationRegistry.getArguments()
         assertEquals("true", args.getString("kclashExtensionAcceptance"))
@@ -208,6 +250,8 @@ class MainProfileExtensionStateInstrumentedTest {
         val source = signature(repository.profileFile(profile.id))
         var failure: Throwable? = null
         try {
+            if (initialRules.isNotEmpty()) repository.saveExtension(profile.id, "standard", null, null,
+                com.lonnnnnng.flclash.service.ProfileExtensionOverrides(configured = true, rules = initialRules))
             compose.onNodeWithTag("nav_profiles").performClick()
             compose.waitUntil(15_000) { compose.onAllNodesWithTag("profile_card_${profile.id}").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("profile_card_${profile.id}").performScrollTo().performTouchInput { longClick() }

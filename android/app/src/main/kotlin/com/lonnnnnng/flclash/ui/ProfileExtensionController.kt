@@ -28,6 +28,8 @@ internal data class ProfileExtensionUiState(
     val isCurrent: Boolean = false,
     val applied: Boolean = false,
     val error: String? = null,
+    // 作者 long：相同错误文本也可能来自新的保存尝试；递增结果版本让确认窗口准确结束等待并允许重试。
+    val saveResultVersion: Long = 0,
 )
 
 /** 作者 long：保存队列与应用队列共用一把锁，退出页必须等全部元数据写完，再把最新输入交给统一核心管理器。 */
@@ -120,10 +122,12 @@ internal class ProfileExtensionController(
                     val profile = checkNotNull(next.profile)
                     val saved = repository.saveExtension(profile.id, next.mode, profile.scriptId, profile.matchTarget, next.settings)
                     if (token == generation) mutableState.value = next.copy(profile = saved, settings = next.settings.copy(configured = true), saving = false,
-                        isCurrent = repository.currentProfileId.value == saved.id, applied = false, error = null)
+                        isCurrent = repository.currentProfileId.value == saved.id, applied = false, error = null,
+                        saveResultVersion = before.saveResultVersion + 1)
                 } catch (failure: Exception) {
                     if (failure is CancellationException) throw failure
-                    if (token == generation) mutableState.value = before.copy(error = failure.message ?: "扩展保存失败，请重试")
+                    if (token == generation) mutableState.value = before.copy(error = failure.message ?: "扩展保存失败，请重试",
+                        saveResultVersion = before.saveResultVersion + 1)
                 }
             }
         }
@@ -138,10 +142,12 @@ internal class ProfileExtensionController(
                 mutableState.value = before.copy(saving = true, error = null)
                 try {
                     repository.compareAndSaveGlobalExtensionRules(before.globalRules, rules)
-                    if (token == generation) mutableState.value = before.copy(globalRules = rules, applied = false)
+                    if (token == generation) mutableState.value = before.copy(globalRules = rules, applied = false, error = null,
+                        saveResultVersion = before.saveResultVersion + 1)
                 } catch (failure: Exception) {
                     if (failure is CancellationException) throw failure
-                    if (token == generation) mutableState.value = before.copy(error = failure.message ?: "全局规则保存失败，请重试")
+                    if (token == generation) mutableState.value = before.copy(error = failure.message ?: "全局规则保存失败，请重试",
+                        saveResultVersion = before.saveResultVersion + 1)
                 }
             }
         }

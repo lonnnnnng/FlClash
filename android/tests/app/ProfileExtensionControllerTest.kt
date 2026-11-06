@@ -11,6 +11,43 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileExtensionControllerTest {
+    @Test fun repeatedSaveFailuresAdvanceResultAndSuccessfulRetryClearsError() = runTest {
+        val store = Store(); val model = ProfileExtensionController(store, Runtime(), backgroundScope, StandardTestDispatcher(testScheduler))
+        model.open(1); runCurrent()
+        val original = model.state.value.settings.rules
+        val next = listOf(ExtensionRule("new", "DOMAIN,retry.test,DIRECT"))
+        store.failSave = true
+        repeat(2) { attempt ->
+            model.rules(next); runCurrent()
+            assertEquals(attempt + 1L, model.state.value.saveResultVersion)
+            assertEquals(original, model.state.value.settings.rules)
+            assertFalse(model.state.value.saving)
+            assertEquals("保存失败", model.state.value.error)
+        }
+        store.failSave = false
+        model.rules(next); runCurrent()
+        assertEquals(3L, model.state.value.saveResultVersion)
+        assertEquals(next, model.state.value.settings.rules)
+        assertNull(model.state.value.error)
+    }
+
+    @Test fun globalSaveFailureAndRetryPublishDistinctResultsWithoutRetainingOldError() = runTest {
+        val store = Store(); val model = ProfileExtensionController(store, Runtime(), backgroundScope, StandardTestDispatcher(testScheduler))
+        model.open(1); runCurrent()
+        val next = listOf(ExtensionRule("new", "DOMAIN,retry.test,DIRECT"))
+        store.failSave = true
+        repeat(2) { attempt ->
+            model.globalRules(next); runCurrent()
+            assertEquals(attempt + 1L, model.state.value.saveResultVersion)
+            assertTrue(model.state.value.globalRules.isEmpty())
+            assertEquals("保存失败", model.state.value.error)
+        }
+        store.failSave = false
+        model.globalRules(next); runCurrent()
+        assertEquals(3L, model.state.value.saveResultVersion)
+        assertEquals(next, model.state.value.globalRules)
+        assertNull(model.state.value.error)
+    }
     @Test fun failedReadRequiresExplicitRetryAndNormalCloseStartsNewSession() = runTest {
         val store = Store().apply { failRead = true }; val runtime = Runtime()
         val model = ProfileExtensionController(store, runtime, backgroundScope, StandardTestDispatcher(testScheduler))
@@ -158,15 +195,17 @@ class ProfileExtensionControllerTest {
         var saveGate: CompletableDeferred<Unit>? = null
         var reads = 0
         var failRead = false
+        var failSave = false
         override suspend fun readLocalProfileContent(id: Long): String {
             reads++; readGate?.await()
             if (failRead) error("读取失败")
             return "proxy-groups: [{name: Main, type: select}]\nrules: ['MATCH,Main']\n"
         }
         override suspend fun globalExtensionRules() = global
-        override suspend fun saveGlobalExtensionRules(rules: List<ExtensionRule>) { global = rules }
+        override suspend fun saveGlobalExtensionRules(rules: List<ExtensionRule>) { if (failSave) error("保存失败"); global = rules }
         override suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile {
             saveGate?.await()
+            if (failSave) error("保存失败")
             val profile = profiles.value.single { it.id == id }
             val updated = profile.copy(extendType = mode, scriptId = scriptId, matchTarget = matchTarget,
                 overridesJson = ProfileProviderOverrides.fromJsonString(profile.overridesJson).copy(extension = extension.copy(configured = true)).toJsonString())

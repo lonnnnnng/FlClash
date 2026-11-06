@@ -1,0 +1,728 @@
+{
+  "date": "2026-11-07",
+  "status": "DONE-VERIFIED",
+  "overallVisualParity": "PARTIAL",
+  "title": "扩展批选删除与远程新增表单交互",
+  "summary": "KUI-004/005已修：扩展批选与删除确认重建保持，筛选仅删可见已选项、失败原位重试、等待防重复及外部移除收口；远程新增原位校验、真实IME/Next/Done、40条批量首尾滚动/模式/来源往返/重建/取消与临时密钥清理已验。Redmi final4 精确26/26、35图完整校验并经10张拼图目视；782项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。双包安装回拉匹配，两份正式配置/脚本/正文/偏好/选择及原1.yaml/Flutter/设备设置保持，临时副本清理、无服务。",
+  "scope": {
+    "sourceBaseCommit": "26e45f92b29e8c2920841f6904576c491a358dff",
+    "changedSources": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileRepository.kt": "cc94df9331ef5c232eaafa424659b3ae4d4211253091630240074cfa92003b1d",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AgeSecretKeyDialog.kt": "cc159862303a85efadf14fe2178dc8cc839e7fafb355af824321234209f34c57",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "291cb4118ccd9f7e0efe803aef49cacf6220e6b4501b5eb77fd6d750f5da85a3",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileExtensionController.kt": "37f0e54ba8eb625dd2ab651b878c22c169004b1816b14ed97b8c9f4cf4ed5389",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileExtensionEditor.kt": "897d0f07eb8895f6306fdfac951b4c0fae5679dba7fe81e72d31fbb7404902b3",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileUrlImport.kt": "392eed86c20a5f7fba58b116e0cc8fb7f5977e60594f10a9ab1a9ac8e5f4ac19",
+      "android/tests/app/ProfileExtensionControllerTest.kt": "14b5e5072c8144c1d11a8644df19070f17fc5a817d4fdae9e832ae30663f2efa",
+      "android/tests/app/ProfileUrlImportTest.kt": "cbd6ea898e04f33787debb7cc4d817cd868062499e46522d34c536afc816f6eb",
+      "android/tests/instrumented/MainProfileExtensionStateInstrumentedTest.kt": "7ffcc4dcda595b00125ba7fe57b457c4dee998b85c8dea84939dbae0927423aa",
+      "android/tests/instrumented/MainRemoteProfileFormInstrumentedTest.kt": "091676ae330bc28d705e1ad39fb1c8d4fb8e5a50465053454d7d8a3c7f95c7ec",
+      "android/tests/instrumented/MenuVisualHostInstrumentedTest.kt": "96de0ee599e8b4b3410cd82acd806c9ece90c65190c2ec6cb67132baddb5a284",
+      "android/tests/instrumented/ProfileAgeInstrumentedTest.kt": "798601cc8354226bd4ade04a70f1d519c7bab5514211c9e7b4d57cee98b6c9af",
+      "android/tests/instrumented/ProfileExtensionEditorInstrumentedTest.kt": "3fcdd7a902e83d06c343857b18b366128a54b297294a790a69d52378b2581b9f",
+      "android/tests/instrumented/ProfileUiInstrumentedTest.kt": "16790e5696ae334b375b3b755ada72eef01f842da11f8a549e19d4b3b137cebc"
+    },
+    "defects": [
+      "KUI-004",
+      "KUI-005"
+    ],
+    "defectDocument": "docs/extension-batch-remote-form-defects.md",
+    "flutterReadOnlyReferences": [
+      "lib/views/profiles/extend/standard.dart",
+      "lib/views/config/rules.dart",
+      "lib/features/form/named_url_form.dart"
+    ],
+    "fixture": "正式MainActivity仅编辑/取消测试链接；只对原1.yaml原字节建立的非当前临时FILE副本实际删除扩展规则。组件保存失败/等待/外删使用内存状态。",
+    "boundary": "未提交测试域名下载，未改Flutter/Go核心；主宿主启动可能触发首页查询，不称全离线。产品自build3后不变，build4/5/6只改测试。"
+  },
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "flutterHashes": [
+      "700570428bde3a1b316ae7f7e8f10d77f9e23ee8bf8b3f45557362a061fbefb3"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 43s",
+    "tasks": "389 actionable tasks: 11 executed, 378 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 506,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 69
+      },
+      "service": {
+        "tests": 207,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :app:testDebugUnitTest UP-TO-DATE",
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE"
+    ],
+    "executionNote": "App506于本组build1/build3实际执行，其余276项复用；最终build6四模块均UP-TO-DATE。build1测试通过但AndroidTest编译失败，不作为最终构建。",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 10
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 9
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "404de4e5ddccb540ff26af09b8bf3db2fa3e4a906a1a13c4d49da5ab6dbdede6",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "ca191522c9ae1df8530c9b06c42de99b40aadcf07b03d2eceed55b76d0f7c952",
+        "bytes": 5819650,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "fbc3603dcf7a1400bc77950eadbd4844e3e8c776896e975c66afa4f80d71c301",
+        "bytes": 48216504,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "installation": {
+    "com.lonnnnnng.flclash": {
+      "builtSha256": "404de4e5ddccb540ff26af09b8bf3db2fa3e4a906a1a13c4d49da5ab6dbdede6",
+      "pulledSha256": "404de4e5ddccb540ff26af09b8bf3db2fa3e4a906a1a13c4d49da5ab6dbdede6"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "builtSha256": "ca191522c9ae1df8530c9b06c42de99b40aadcf07b03d2eceed55b76d0f7c952",
+      "pulledSha256": "ca191522c9ae1df8530c9b06c42de99b40aadcf07b03d2eceed55b76d0f7c952"
+    }
+  },
+  "acceptance": {
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#scriptSelectionLongListRecreationAndLibraryReturnKeepNoncurrentProfile",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#batchSelectionAndDeleteConfirmationSurviveRecreationBeforeExplicitCommit",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#ruleTargetDraftAndDiscardConfirmationSurviveRecreationWithoutWriting",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#validationErrorImeBackAndRepeatedConfirmKeepOneSavedRule",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#globalSubpageSearchRestoresAndBackReturnsOneLevelWithoutChangingRules",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#externallyRemovedVisibleSelectionClosesConfirmationButKeepsHiddenChoice",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#presetsKeepLogicalRuleAndNoncurrentProfileHasNoApplyButton",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#pendingBatchDeleteBlocksRepeatedConfirmAndCancelUntilAcknowledged",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#rulesFormReorderAndBatchDeletePersistTheDisplayedOrder",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#selectionNeverLeaksAcrossProfileOrGlobalSubpage",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#externallyRemovedRulesShrinkConfirmationAndNeverDeleteEmptySelection",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#failedBatchDeleteKeepsSelectionAndConfirmationForRetry",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#globalControlsSearchDisableAndEditKeepStableRuleIdentity",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#standardScriptAndAppliedStatesRenderAcrossThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#filteredBatchDeleteOnlyRemovesVisibleSelectionAndKeepsHiddenSelection",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainRemoteProfileFormInstrumentedTest#backgroundClearsKeyAndCancelledFormReopensWithEmptyDraft",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainRemoteProfileFormInstrumentedTest#longBatchInputScrollAndRecreationKeepModePreviewAndSourceRoundTrip",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainRemoteProfileFormInstrumentedTest#invalidSingleInputImeNavigationAndRecreationKeepDraftWithoutImporting",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#invalidSingleSubscriptionStaysInFormWithoutSubmitting",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#batchProfileImportBlocksInvalidEntriesWithoutShowingTheirContents",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#addProfileSourceMenuOpensDedicatedRemoteSubscriptionForm",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#validSingleImportTrimsFieldsAndRepeatedTapSubmitsOnlyOnce",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest#batchProfileImportShowsDuplicateCountAndSubmitsOnlyNewUrls",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest#backgroundPreservesExistingEditorAndClearsHiddenNewImportKey",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest#singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MenuVisualHostInstrumentedTest#actualSourceMenuOpensRemoteFormAndCancelsWithoutAddingProfile",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "passed": 26,
+    "total": 26,
+    "seconds": 142.919,
+    "images": [
+      {
+        "path": "main_extension_script_selected.png",
+        "bytes": 203828,
+        "sha256": "b2a84f1c67612f9f830ab3ae3cee2cbc09eaac396b0ebc9f92ddf20ba97ce2bc"
+      },
+      {
+        "path": "main_extension_script_recreated.png",
+        "bytes": 203828,
+        "sha256": "b2a84f1c67612f9f830ab3ae3cee2cbc09eaac396b0ebc9f92ddf20ba97ce2bc"
+      },
+      {
+        "path": "main_extension_script_unbound.png",
+        "bytes": 203499,
+        "sha256": "e0f0d78bfb7be91ba817da214aaf3c0d1b3e292be38721befad36af7fd3c0c82"
+      },
+      {
+        "path": "main_extension_batch_selected.png",
+        "bytes": 143032,
+        "sha256": "d10f4d78e3084edc801f39eae7179a8cb09793a265f6a1f55a5e49e4670eeac5"
+      },
+      {
+        "path": "main_extension_batch_confirm.png",
+        "bytes": 141024,
+        "sha256": "c3df4ae5c6ee034dc1f84a494d00778ebcefd47c422e4a1b4f51c2cd86087259"
+      },
+      {
+        "path": "main_extension_batch_confirm_recreated.png",
+        "bytes": 140611,
+        "sha256": "14719753c778007042a47992d24d592b61dc1bdfbdbf87baf381a5e2c4d4aca0"
+      },
+      {
+        "path": "main_extension_batch_saved.png",
+        "bytes": 147631,
+        "sha256": "b927e2813e6e18fe1b590986a499d3289c205e542dc917c4e5da81b2f038a33b"
+      },
+      {
+        "path": "main_extension_rule_target_recreated.png",
+        "bytes": 102619,
+        "sha256": "65f582e1b23fd8af50e921b5df75a293f3d2aedf6940193aab3d5487963f8743"
+      },
+      {
+        "path": "main_extension_discard_recreated.png",
+        "bytes": 113071,
+        "sha256": "2098d670ef6ce5ad934b7a097c7335f5048f1eb55553809ec35574b665c16e80"
+      },
+      {
+        "path": "main_extension_validation_ime.png",
+        "bytes": 162321,
+        "sha256": "71d7721af4be451ecfd54491e65fb45ee38607d27001a8326e56d69857260453"
+      },
+      {
+        "path": "main_extension_validation_recreated.png",
+        "bytes": 107261,
+        "sha256": "3a862c446b57852dfe3045270e25e0ab17df548c46fba1571753843f8593bd79"
+      },
+      {
+        "path": "main_extension_rule_saved_once.png",
+        "bytes": 152932,
+        "sha256": "07bef5bf76526ae6df21c8d7d32cc409da7d17b292842cb250704a6bda6d4e6f"
+      },
+      {
+        "path": "main_extension_global_search_recreated.png",
+        "bytes": 66399,
+        "sha256": "520e8d3ffc55545c8dbe74b2703bdfaf0eeed086b563aa78724d29c83587bf97"
+      },
+      {
+        "path": "main_extension_global_returned.png",
+        "bytes": 143518,
+        "sha256": "e70ca4616d14fb66ef696a1ee66c31a3f9b2b8abeb408c631f77d792fb821fd2"
+      },
+      {
+        "path": "extension_batch_pending.png",
+        "bytes": 130465,
+        "sha256": "0b203c09f891b07a6b5ee2b90af9c89dad5d0a4a48128bd1d260581b68733335"
+      },
+      {
+        "path": "extension_batch_external_removed.png",
+        "bytes": 137140,
+        "sha256": "7d633c50a72832143163d1b5f0fee16181c9a56e6b0ca447fd87a7c2ea136c9e"
+      },
+      {
+        "path": "extension_batch_failed.png",
+        "bytes": 144236,
+        "sha256": "bd6579888343c530c70cebd20b3d3134cf1ac15c9450a81f30f84fbb7ad437fe"
+      },
+      {
+        "path": "extension_standard_light.png",
+        "bytes": 142803,
+        "sha256": "8ba390550d04affcc3bdbaada9d4ee17cc2bcaeb3a86362d1ee73d17e9b8c546"
+      },
+      {
+        "path": "extension_script_light.png",
+        "bytes": 122104,
+        "sha256": "317bdfbe3a5f1943006a8d018b685f1af0bafc478c37f7a30dd19ead34d55d43"
+      },
+      {
+        "path": "extension_applied_light.png",
+        "bytes": 112201,
+        "sha256": "ad6d8f20c1c432600aeb5212b02edf02709d56ceb930e37472118dacd7763710"
+      },
+      {
+        "path": "extension_retry_light.png",
+        "bytes": 141742,
+        "sha256": "c1f17b8681483b34c7351811eee0fdd3e0e364d1e91d8e743b0e430e3a1c5cb8"
+      },
+      {
+        "path": "extension_standard_dark.png",
+        "bytes": 141798,
+        "sha256": "10900f35279e4d962421cbac75d959c90d63b0c19c59242bbda603ae1a6951eb"
+      },
+      {
+        "path": "extension_script_dark.png",
+        "bytes": 124550,
+        "sha256": "2058591d2b9909e9eb5749b4c634439514b9d7a0e016264a9cba9a62480205d8"
+      },
+      {
+        "path": "extension_applied_dark.png",
+        "bytes": 112936,
+        "sha256": "ff59de98a8b92bf2951d3c27a9b337525887d1f902d90972ef69a5c530f84b73"
+      },
+      {
+        "path": "extension_retry_dark.png",
+        "bytes": 143399,
+        "sha256": "4fa2741157df44235f70fbec3037ef353c5da0a2fd6ec7bf9ca623650a1e28e1"
+      },
+      {
+        "path": "extension_batch_hidden_retained.png",
+        "bytes": 50349,
+        "sha256": "f30da2bf339d28bb20417ec43d8f518fb22c1f0fe589ae2093377c6961e3afa9"
+      },
+      {
+        "path": "remote_single_background.png",
+        "bytes": 119866,
+        "sha256": "ed5dc2d3d44180a50aba484f2f0e14a248af185d6ef8b04fdf4d89e8af073a8a"
+      },
+      {
+        "path": "remote_single_reopened_empty.png",
+        "bytes": 113200,
+        "sha256": "0d6867271069b2faf2699e6c2b9f7afbb96bf1ab8154af4dce75ed8dfa62b01e"
+      },
+      {
+        "path": "remote_batch_first_ime.png",
+        "bytes": 204235,
+        "sha256": "00bfacb59a0c961b3f6128eba4dbaed5a86058af4f54eb9ae1da47384f66e5ac"
+      },
+      {
+        "path": "remote_batch_last_ime.png",
+        "bytes": 205622,
+        "sha256": "17b2e686fcf761a3248c7ae3cd88280f0e3aaac09d2541dc7003f9bc88517639"
+      },
+      {
+        "path": "remote_batch_recreated.png",
+        "bytes": 171790,
+        "sha256": "49509c2311497795414bd0f0cf6645b6f98ac6d64253226e21bbcc40c84156a0"
+      },
+      {
+        "path": "remote_batch_returned.png",
+        "bytes": 158066,
+        "sha256": "0710b6ff6a6991679df664cafb6267d06f2cebac400a0605cf5c67758da9e7ed"
+      },
+      {
+        "path": "remote_single_key_ime.png",
+        "bytes": 143973,
+        "sha256": "addbbab45fe2c61bd8c1b79ee0e5f088adac9f50a7fbc3734b50535eaf9a2481"
+      },
+      {
+        "path": "remote_single_invalid_ime.png",
+        "bytes": 163043,
+        "sha256": "6f46124ceddccb7cf067a22789ec16d0bf159d20ca3a0765b52b179da254c653"
+      },
+      {
+        "path": "remote_single_invalid_recreated.png",
+        "bytes": 135959,
+        "sha256": "bb98ea797ea4033c11b6128352150c7c4212d07f90d773ce4ed40e0d83f421eb"
+      }
+    ],
+    "visualReview": {
+      "methods": 26,
+      "images": 35,
+      "sources": 589,
+      "installationMatched": true,
+      "preserved": true,
+      "contactSheets": [
+        {
+          "path": "review-1-1.png",
+          "images": [
+            "extension_batch_external_removed.png",
+            "extension_batch_failed.png",
+            "extension_batch_hidden_retained.png",
+            "extension_batch_pending.png"
+          ],
+          "sha256": "48869579d27af3b4b8e1a40534f98329221ef69af5140ff2471e5b04a1a1db73"
+        },
+        {
+          "path": "review-2-1.png",
+          "images": [
+            "main_extension_batch_confirm.png",
+            "main_extension_batch_confirm_recreated.png",
+            "main_extension_batch_saved.png",
+            "main_extension_batch_selected.png"
+          ],
+          "sha256": "239527e4cfc633dac894717656535b7baf569e5a63b9f302702a774441a41252"
+        },
+        {
+          "path": "review-3-1.png",
+          "images": [
+            "remote_batch_first_ime.png",
+            "remote_batch_last_ime.png",
+            "remote_batch_recreated.png",
+            "remote_batch_returned.png"
+          ],
+          "sha256": "3dd7ef754e82ffeec0e1f1d7d11f287676423cff20f554e9b4c8fdbec173a4da"
+        },
+        {
+          "path": "review-4-1.png",
+          "images": [
+            "remote_single_background.png",
+            "remote_single_invalid_ime.png",
+            "remote_single_invalid_recreated.png",
+            "remote_single_key_ime.png"
+          ],
+          "sha256": "7cba40a8af92be63be096d53aba196e1652f5ead6679cc256da03a8149f7ba2a"
+        },
+        {
+          "path": "review-4-2.png",
+          "images": [
+            "remote_single_reopened_empty.png"
+          ],
+          "sha256": "a06c6062fd7aed9fa3dcbe155b3a0f98ec5756b7f9f602bae0fc11fc06588439"
+        },
+        {
+          "path": "review-5-1.png",
+          "images": [
+            "main_extension_discard_recreated.png",
+            "main_extension_global_returned.png",
+            "main_extension_global_search_recreated.png",
+            "main_extension_rule_saved_once.png"
+          ],
+          "sha256": "e7c5cae26274c36e50f78d33ac1bcf4418bc3bf6787afd0cb454d630d45dcfad"
+        },
+        {
+          "path": "review-5-2.png",
+          "images": [
+            "main_extension_rule_target_recreated.png",
+            "main_extension_script_recreated.png",
+            "main_extension_script_selected.png",
+            "main_extension_script_unbound.png"
+          ],
+          "sha256": "3984095bce9139aed525d7e314e2aa8ec2fb9fd374a0b2ecbb8e96823e79d260"
+        },
+        {
+          "path": "review-5-3.png",
+          "images": [
+            "main_extension_validation_ime.png",
+            "main_extension_validation_recreated.png"
+          ],
+          "sha256": "c7a8d9a3db6913bd378749cd8c6e33cfe9f79114090a7e5b4d247a54b0f2e9b3"
+        },
+        {
+          "path": "review-6-1.png",
+          "images": [
+            "extension_applied_dark.png",
+            "extension_applied_light.png",
+            "extension_retry_dark.png",
+            "extension_retry_light.png"
+          ],
+          "sha256": "20cc4e77ada007481f6f07bbf921c1be8046151c5503d9e7129d92101128b703"
+        },
+        {
+          "path": "review-6-2.png",
+          "images": [
+            "extension_script_dark.png",
+            "extension_script_light.png",
+            "extension_standard_dark.png",
+            "extension_standard_light.png"
+          ],
+          "sha256": "9d8e1cdf01c0df50a3b811edbd74463ef3f857de1641102af97c2caec19d61d3"
+        }
+      ],
+      "reviewed": true,
+      "observations": [
+        "35张原始截图通过10张拼图目视复核，批选/删除确认重建、失败保留与筛选隐藏选择状态可辨。",
+        "单条/40条批量表单、错误提示、取消重开和来源往返布局可用，真实IME上方输入与操作区可见。",
+        "规则目标及长脚本列表恢复、校验错误重建、浅深色标准/脚本扩展和失败重试画面无发现阻断本组交互的遮挡。",
+        "本组仅证明指定状态的布局和恢复，不等同全应用Flutter像素对齐或连续动效验收。"
+      ]
+    },
+    "screenshotTransport": "48KiB显式分片，严格校验索引/总数/重复/整图字节/SHA/解码/1080x2340及35张完整名称集合"
+  },
+  "preservation": {
+    "preinstall": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "before": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "after": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "equal": true,
+    "scriptsCheckedInHostFixtures": true,
+    "temporaryProfilesAndScriptsRemoved": true,
+    "preparation": "本组无准备导入/修复，安装前及验收前后均复用现有两份正式FILE/URL。"
+  },
+  "earlierRuns": [
+    {
+      "name": "red1",
+      "passed": 0,
+      "total": 4,
+      "classification": "旧产品复现批选重建丢失、失败提前关闭确认、筛选删除数量不符、无效单条仍提交；正式保护相等。"
+    },
+    {
+      "name": "build1",
+      "classification": "JVM通过，AndroidTest编译因Unit链式调用与缺click导入失败；非最终构建。"
+    },
+    {
+      "name": "build2",
+      "classification": "统一构建通过但AgeSecretKeyField新增Modifier参数顺序警告；build3修正，警告恢复原基线。"
+    },
+    {
+      "name": "final1",
+      "passed": 23,
+      "total": 26,
+      "images": 32,
+      "classification": "实际IME自动弹出不稳定、重开异步读取断言过早、旧密钥后台关闭契约过时；正式/设备保护保持。"
+    },
+    {
+      "name": "final2",
+      "passed": 24,
+      "total": 26,
+      "images": 33,
+      "classification": "自动IME已过；错误标签需未合并语义树、旧密钥用例契约仍失败。修正测试，产品不变；保护保持。"
+    },
+    {
+      "name": "build4",
+      "classification": "仅错误标签测试修正，统一构建成功，未安装；最终build5再纳入密钥旧用例契约修正。"
+    },
+    {
+      "name": "final3",
+      "passed": 25,
+      "total": 26,
+      "images": 35,
+      "classification": "新功能全过，旧密钥用例把密码掩码语义当明文比较；改用隔离保存回调验证，不改产品。正式保护保持。"
+    }
+  ],
+  "artifacts": {
+    "base": "../acceptance-artifacts/extension-batch-remote-form-redmi-20261107/",
+    "manifest": "manifest.json",
+    "manifestSha256": "a1f8e778c21f31376af2f19f1269ab7a8d8be1cfd08eabb82d6f7c81b54a5766",
+    "finalDriver": "run-final4.py",
+    "finalBuild": "build6/summary.json",
+    "finalResults": "final4/result-run1.json",
+    "sourceAndLogsLocalOnly": true
+  },
+  "notVerified": [
+    "代理添加到本地的实核校验/保存失败和等待中切换配置；本地代理删除长引用/取消/失败，分享链接编辑IME返回层级",
+    "管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及Provider正文独立加密草稿；本组仅组件模拟规则外删，不推广正式管理窗口外删",
+    "全应用Flutter逐页视觉与连续动效、Dock/按钮实时背景和触点光效、玻璃采样及8MiB正文/动效性能",
+    "前组扩展final1偏好摘要变化具体归因与todo第6项原长窗口保护异常；网络恢复长期稳定性和旧TLS EOF因果",
+    "蜂窝、首次干净安装VPN、Tasker/MacroDroid真调用、其他OEM、API24/25/31/32实核/VPN/实网、远端CI/正式签名与Release设备/发布资产",
+    "在线age加密订阅缺授权密文和密钥；不扩大Provider代表类型/流量结论"
+  ],
+  "next": "继续第9项代理节点添加到本地与本地代理删除/分享链接的失败、长引用、取消和键盘层级；随后冷恢复/加密草稿，再统一视觉。原异常、暂缓和取消范围保持。"
+}

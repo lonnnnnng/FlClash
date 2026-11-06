@@ -10,6 +10,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -48,16 +49,40 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
     var formId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRuleId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRuleValue by rememberSaveable { mutableStateOf<String?>(null) }
-    var selected by remember { mutableStateOf(setOf<String>()) }
+    val selectedSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() })
+    var selected by rememberSaveable(state.profile?.id, subpage, stateSaver = selectedSaver) { mutableStateOf(setOf<String>()) }
     var sorting by rememberSaveable(subpage) { mutableStateOf(false) }
     var showTarget by rememberSaveable { mutableStateOf(false) }
     var showPresets by rememberSaveable { mutableStateOf(false) }
-    var confirmDelete by remember { mutableStateOf(false) }
-    val busy = state.loading || state.saving || state.applying
+    var confirmDelete by rememberSaveable(state.profile?.id, subpage) { mutableStateOf(false) }
+    var deleteAttempted by rememberSaveable(state.profile?.id, subpage) { mutableStateOf(false) }
+    var pendingDeleteIds by rememberSaveable(state.profile?.id, subpage) { mutableStateOf(emptyList<String>()) }
+    var pendingDeleteVersion by rememberSaveable(state.profile?.id, subpage) { mutableStateOf<Long?>(null) }
+    val busy = state.loading || state.saving || state.applying || pendingDeleteVersion != null
     val global = subpage == 2
     val rules = if (global) state.globalRules else state.settings.rules
     var ordered by remember(rules) { mutableStateOf(rules) }
     val visible = ordered.filter { it.value.contains(query, true) }
+    val selectedVisibleIds = visible.map { it.id }.filter { it in selected }.toSet()
+    LaunchedEffect(rules, query, state.loading, state.profile?.id, state.saving, state.saveResultVersion, pendingDeleteVersion) {
+        if (!state.loading && state.profile != null) {
+            // 作者 long：规则被其他入口移除后只保留仍存在的选择；加载中空列表不能擦除重建恢复的批选。
+            selected = selected.intersect(rules.map { it.id }.toSet())
+            val pendingVersion = pendingDeleteVersion
+            if (pendingVersion != null) {
+                if (rules.none { it.id in pendingDeleteIds }) {
+                    confirmDelete = false
+                    pendingDeleteVersion = null
+                    pendingDeleteIds = emptyList()
+                } else if (!state.saving && state.saveResultVersion > pendingVersion) {
+                    // 作者 long：保存失败继续显示同一确认与已选项，不能让用户重新勾选才能重试。
+                    pendingDeleteVersion = null
+                    pendingDeleteIds = emptyList()
+                }
+            }
+            if (pendingDeleteVersion == null && rules.none { it.id in selected && it.value.contains(query, true) }) confirmDelete = false
+        }
+    }
     LaunchedEffect(rules, pendingRuleId, pendingRuleValue, state.saving) {
         if (!state.saving && pendingRuleId != null && rules.any { it.id == pendingRuleId && it.value == pendingRuleValue }) {
             formId = null; pendingRuleId = null; pendingRuleValue = null
@@ -119,13 +144,13 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                         if (state.globalRules.isEmpty()) Text("暂无全局附加规则", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         TextButton(onClick = { subpage = 2; query = "" }, modifier = Modifier.testTag("extension_global_edit")) { Text("前往配置全局附加规则") }
                     } else if (global || state.mode == "standard") {
-                        if (global) OutlinedTextField(query, { query = it }, label = { Text("搜索规则") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                        if (global) OutlinedTextField(query, { query = it }, label = { Text("搜索规则") }, modifier = Modifier.fillMaxWidth().testTag("extension_rules_search"), singleLine = true)
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text(if (selected.isEmpty()) "附加规则 · ${rules.size}" else "已选 ${selected.size} 项", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                             if (selected.isNotEmpty()) {
                                 IconButton(onClick = { selected = if (visible.all { it.id in selected }) emptySet() else visible.map { it.id }.toSet() }, enabled = !busy,
                                     modifier = Modifier.testTag("extension_select_all")) { Icon(Icons.Outlined.SelectAll, null) }
-                                IconButton(onClick = { confirmDelete = true }, enabled = !busy, modifier = Modifier.testTag("extension_delete_selected")) { Icon(Icons.Outlined.Delete, null) }
+                                IconButton(onClick = { deleteAttempted = false; confirmDelete = true }, enabled = !busy && selectedVisibleIds.isNotEmpty(), modifier = Modifier.testTag("extension_delete_selected")) { Icon(Icons.Outlined.Delete, null) }
                             } else {
                                 IconButton(onClick = { sorting = !sorting }, enabled = !busy && rules.size > 1, modifier = Modifier.testTag("extension_sort")) { Icon(Icons.Outlined.SwapVert, null) }
                                 IconButton(onClick = { showPresets = true }, enabled = !busy, modifier = Modifier.testTag("extension_presets")) { Icon(Icons.Outlined.AutoAwesome, null) }
@@ -182,9 +207,25 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
             persist(if (initial == null) rules + rule else rules.map { if (it.id == rule.id) rule else it })
         }
     }
-    if (confirmDelete) AlertDialog(onDismissRequest = { confirmDelete = false }, title = { Text("删除规则") }, text = { Text("删除所选 ${selected.size} 条规则？") },
-        confirmButton = { TextButton(onClick = { persist(rules.filterNot { it.id in selected }); selected = emptySet(); confirmDelete = false }) { Text("删除") } },
-        dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("取消") } })
+    if (confirmDelete) AlertDialog(onDismissRequest = { if (!busy) confirmDelete = false }, title = { Text("删除规则") }, text = {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("删除所选 ${selectedVisibleIds.size} 条规则？")
+            if (deleteAttempted && pendingDeleteVersion == null) state.error?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_delete_error"))
+            }
+        }
+    }, confirmButton = { TextButton(onClick = {
+        if (!busy && pendingDeleteVersion == null && selectedVisibleIds.isNotEmpty()) {
+            // 作者 long：与Flutter全局规则一致，只删除当前筛选结果中的已选项；隐藏选择留待用户继续处理。
+            pendingDeleteIds = selectedVisibleIds.toList()
+            pendingDeleteVersion = state.saveResultVersion
+            deleteAttempted = true
+            persist(rules.filterNot { it.id in selectedVisibleIds })
+        }
+    }, enabled = !busy && selectedVisibleIds.isNotEmpty(), modifier = Modifier.testTag("extension_delete_confirm")) {
+        Text(if (pendingDeleteVersion != null) "删除中…" else "删除")
+    } }, dismissButton = { TextButton(onClick = { confirmDelete = false }, enabled = !busy,
+        modifier = Modifier.testTag("extension_delete_cancel")) { Text("取消") } })
 }
 
 @Composable

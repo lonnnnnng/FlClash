@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.Script
@@ -21,6 +22,124 @@ class ProfileExtensionEditorInstrumentedTest {
     private var applies = 0
     private var exits = 0
     private var scriptsOpened = 0
+
+    @Test fun filteredBatchDeleteOnlyRemovesVisibleSelectionAndKeepsHiddenSelection() {
+        assertPortraitDefaultFontConfiguration()
+        render()
+        compose.runOnIdle { screen = screen.copy(globalRules = listOf(
+            ExtensionRule("g", "DOMAIN,visible.test,DIRECT"), ExtensionRule("hidden", "DOMAIN,hidden.test,DIRECT"))) }
+        compose.onNodeWithTag("extension_global_control").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_global_edit").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_rule_select_g").performClick()
+        compose.onNodeWithTag("extension_select_all").performClick()
+        compose.onNodeWithText("搜索规则").performTextInput("visible.test")
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        compose.onNodeWithTag("extension_delete_selected").performClick()
+        compose.onNodeWithText("删除所选 1 条规则？").assertIsDisplayed()
+        compose.onNodeWithText("删除").performClick()
+        compose.runOnIdle { assertEquals(listOf("hidden"), screen.globalRules.map { it.id }) }
+        compose.onNodeWithText("已选 1 项").assertIsDisplayed()
+        compose.onNodeWithTag("extension_delete_selected").assertIsNotEnabled()
+        compose.onNodeWithText("搜索规则").performTextClearance()
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        compose.onNodeWithTag("extension_rule_select_hidden").assertIsOn()
+        capture("extension_batch_hidden_retained")
+    }
+
+    @Test fun failedBatchDeleteKeepsSelectionAndConfirmationForRetry() {
+        assertPortraitDefaultFontConfiguration()
+        val restoration = StateRestorationTester(compose)
+        var calls = 0
+        render(restoration = restoration, saveRules = { rules ->
+            calls++
+            if (calls <= 2) screen = screen.copy(error = "规则保存失败，请重试", saveResultVersion = screen.saveResultVersion + 1)
+            else screen = screen.copy(settings = screen.settings.copy(rules = rules), error = null, saveResultVersion = screen.saveResultVersion + 1)
+        })
+        compose.onNodeWithTag("extension_rule_select_r").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_delete_selected").performScrollTo().performClick()
+        compose.onNodeWithText("删除").performClick()
+        compose.onNodeWithText("删除规则").assertIsDisplayed()
+        compose.onNodeWithText("删除所选 1 条规则？").assertIsDisplayed()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("extension_delete_error").assertTextContains("规则保存失败，请重试")
+        capture("extension_batch_failed")
+        compose.onNodeWithText("删除").performClick()
+        compose.onNodeWithTag("extension_delete_error").assertTextContains("规则保存失败，请重试")
+        compose.onNodeWithText("删除").performClick()
+        compose.onNodeWithText("删除规则").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(3, calls); assertTrue(screen.settings.rules.isEmpty()) }
+    }
+
+    @Test fun pendingBatchDeleteBlocksRepeatedConfirmAndCancelUntilAcknowledged() {
+        assertPortraitDefaultFontConfiguration()
+        val restoration = StateRestorationTester(compose)
+        var calls = 0
+        var pending = emptyList<ExtensionRule>()
+        render(restoration = restoration, saveRules = { rules -> calls++; pending = rules; screen = screen.copy(saving = true) })
+        compose.onNodeWithTag("extension_rule_select_r").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_delete_selected").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_delete_confirm").performTouchInput { click(); advanceEventTime(40); click() }
+        compose.onNodeWithTag("extension_delete_confirm").assertIsNotEnabled()
+        compose.onNodeWithTag("extension_delete_cancel").assertIsNotEnabled()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("extension_delete_confirm").assertIsNotEnabled()
+        compose.runOnIdle { assertEquals(1, calls); assertEquals(1, screen.settings.rules.size) }
+        capture("extension_batch_pending")
+        compose.runOnIdle { screen = screen.copy(saving = false, settings = screen.settings.copy(rules = pending), saveResultVersion = screen.saveResultVersion + 1) }
+        compose.onNodeWithText("删除规则").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(1, calls); assertTrue(screen.settings.rules.isEmpty()) }
+    }
+
+    @Test fun externallyRemovedRulesShrinkConfirmationAndNeverDeleteEmptySelection() {
+        assertPortraitDefaultFontConfiguration()
+        var calls = 0
+        render(saveRules = { calls++ })
+        compose.runOnIdle { screen = screen.copy(settings = screen.settings.copy(rules = screen.settings.rules + ExtensionRule("second", "DOMAIN,second.test,DIRECT"))) }
+        compose.onNodeWithTag("extension_rule_select_r").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_select_all").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_delete_selected").performClick()
+        compose.runOnIdle { screen = screen.copy(settings = screen.settings.copy(rules = screen.settings.rules.drop(1))) }
+        compose.onNodeWithText("删除所选 1 条规则？").assertIsDisplayed()
+        capture("extension_batch_external_removed")
+        compose.runOnIdle { screen = screen.copy(settings = screen.settings.copy(rules = emptyList())) }
+        compose.onNodeWithText("删除规则").assertDoesNotExist()
+        compose.onNodeWithTag("extension_delete_selected").assertDoesNotExist()
+        assertEquals(0, calls)
+    }
+
+    @Test fun selectionNeverLeaksAcrossProfileOrGlobalSubpage() {
+        assertPortraitDefaultFontConfiguration()
+        render()
+        compose.onNodeWithTag("extension_rule_select_r").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_global_control").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_global_edit").performScrollTo().performClick()
+        compose.onNodeWithText("已选 1 项").assertDoesNotExist()
+        compose.onNodeWithTag("extension_rule_select_g").performClick()
+        compose.onNodeWithTag("extension_delete_selected").performClick()
+        compose.runOnIdle { screen = screen.copy(profile = screen.profile!!.copy(id = 2)) }
+        compose.onNodeWithText("删除规则").assertDoesNotExist()
+        compose.onNodeWithText("已选 1 项").assertDoesNotExist()
+        compose.onNodeWithTag("profile_extension_mode_standard").assertIsDisplayed()
+    }
+
+    @Test fun externallyRemovedVisibleSelectionClosesConfirmationButKeepsHiddenChoice() {
+        assertPortraitDefaultFontConfiguration()
+        render()
+        compose.runOnIdle { screen = screen.copy(globalRules = listOf(
+            ExtensionRule("visible", "DOMAIN,visible.test,DIRECT"), ExtensionRule("hidden", "DOMAIN,hidden.test,DIRECT"))) }
+        compose.onNodeWithTag("extension_global_control").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_global_edit").performScrollTo().performClick()
+        compose.onNodeWithTag("extension_rule_select_visible").performClick()
+        compose.onNodeWithTag("extension_select_all").performClick()
+        compose.onNodeWithTag("extension_rules_search").performTextReplacement("visible.test")
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
+        compose.onNodeWithTag("extension_delete_selected").performClick()
+        compose.runOnIdle { screen = screen.copy(globalRules = screen.globalRules.filter { it.id == "hidden" }) }
+        compose.onNodeWithText("删除规则").assertDoesNotExist()
+        compose.onNodeWithText("已选 1 项").assertIsDisplayed()
+        compose.onNodeWithTag("extension_rules_search").performTextClearance()
+        compose.onNodeWithTag("extension_rule_select_hidden").assertIsOn()
+    }
 
     @Test fun rulesFormReorderAndBatchDeletePersistTheDisplayedOrder() {
         assertPortraitDefaultFontConfiguration()
@@ -98,20 +217,21 @@ class ProfileExtensionEditorInstrumentedTest {
         assertEquals(1, exits); assertEquals(0, applies)
     }
 
-    private fun render(current: Boolean = true) {
+    private fun render(current: Boolean = true, restoration: StateRestorationTester? = null, saveRules: ((List<ExtensionRule>) -> Unit)? = null) {
         screen = ProfileExtensionUiState(Profile.remote(1, "https://example.test/sub", "家庭与出行"),
             settings = ProfileExtensionOverrides(true, listOf(ExtensionRule("r", "DOMAIN,local.test,DIRECT"))),
             globalRules = listOf(ExtensionRule("g", "DOMAIN,global.test,DIRECT")), targets = listOf("DIRECT", "REJECT", "Main", "Local"), isCurrent = current)
-        compose.setContent { KClashTheme(darkTheme = dark) {
+        val content: @Composable () -> Unit = { KClashTheme(darkTheme = dark) {
             ProfileExtensionEditor(screen, listOf(Script(9, "工作配置脚本")), onDismiss = { exits++ },
                 onApply = { applies++; screen = screen.copy(applied = true) }, onMode = { screen = screen.copy(mode = it) },
                 onScript = { screen = screen.copy(profile = screen.profile?.copy(scriptId = it)) },
                 onTarget = { screen = screen.copy(profile = screen.profile?.copy(matchTarget = it)) },
-                onRules = { screen = screen.copy(settings = screen.settings.copy(rules = it)) },
+                onRules = { rules -> if (saveRules != null) saveRules(rules) else screen = screen.copy(settings = screen.settings.copy(rules = rules)) },
                 onGlobalRules = { screen = screen.copy(globalRules = it) },
                 onDisabled = { screen = screen.copy(settings = screen.settings.copy(disabledGlobalRuleIds = it)) },
                 onOpenScripts = { scriptsOpened++ }, onRetry = {}, onSkipApply = { exits++ })
         } }
+        if (restoration == null) compose.setContent(content) else restoration.setContent(content)
     }
 
     private fun capture(name: String) {

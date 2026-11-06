@@ -1,6 +1,20 @@
 # Testing
 
-## 扩展页真实主宿主恢复（2026-11-07，当前）
+## 扩展批选与远程新增表单（2026-11-07，当前）
+
+KUI-004/005已修：扩展批选与删除确认重建保持，筛选仅删可见已选项、失败原位重试、等待防重复及外部移除收口；远程新增原位校验、真实IME/Next/Done、40条批量首尾滚动/模式/来源往返/重建/取消与临时密钥清理已验。Redmi final4 精确26/26、35图完整校验并经10张拼图目视；782项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。双包安装回拉匹配，两份正式配置/脚本/正文/偏好/选择及原1.yaml/Flutter/设备设置保持，临时副本清理、无服务。
+
+App506本组build1/build3实际执行，其余276项复用；最终build6四模块UP-TO-DATE，389任务11执行/378复用。Debug Lint0错误/67警告/10提示，Release0错误/66警告/9提示。
+
+精确26方法清单见验收JSON与本机驱动。MainProfileExtensionStateInstrumentedTest当前5方法，必须传kclashExtensionAcceptance=true和原1.yaml摘要；MainRemoteProfileFormInstrumentedTest的3方法必须传kclashRemoteFormAcceptance=true，API29+，有效测试域名只编辑/取消，不点击提交。正式非空库STOPPED、全部行/正文/脚本/偏好/选择逐项保护；只清本次临时配置/脚本。
+
+组件StateRestorationTester仅证明等待/失败后的保存状态恢复，不代替真实冷进程；全局规则失败/外删用内存数据模拟。真实IME按独立Window的insets验证字段/按钮完整位于键盘上方；错误文字使用未合并语义树。图片分片及35张完整名称集合必须同时通过。
+
+修复前red1为0/4；final1为23/26，包含IME自动聚焦问题、重开回读等待和过时后台断言；final2为24/26，余下两项为错误标签匹配与旧测试契约。final3为25/26，旧密钥掩码断言改由隔离回调验证；原始失败保留，未覆盖第6项及前组偏好异常。产品源码自build3后保持，build4/5/6只修测试。
+
+证据`docs/acceptance/extension-batch-remote-form-redmi-20261107.json`，溯源`docs/extension-batch-remote-form-defects.md`，本机附件`../acceptance-artifacts/extension-batch-remote-form-redmi-20261107/`。下一组优先代理添加到本地的实核校验/保存失败及等待中切换配置、本地代理删除长引用/取消/失败和分享链接IME返回；随后管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及正文独立加密草稿，再统一Flutter视觉/连续动效。第6项原保护异常、前组偏好变化及网络稳定性仍待查，蜂窝延期，玻璃默认关闭。
+
+## 扩展页真实主宿主恢复（2026-11-07，历史）
 
 修复KUI-003：真实MainActivity扩展页重建复用原会话，保留全局子页/搜索、长脚本列表、规则草稿/目标/校验错误及放弃确认；挂起保存不被重连作废，明确重试和退出重开重新读取。真实IME上方操作、两层返回、连续确认只保存一条规则及重新打开回读已验。Redmi final5精确13/13，33张PNG分片回传/解码/哈希校验并经7张拼图目视；778项JVM XML零失败/错误/跳过，Debug/Test、未签名Release-R8和双Lint通过。App/Test回拉匹配，最终安装前/验收前后两份正式配置、正文、偏好/选择、原1.yaml、Flutter基线和设备设置保持，临时配置/脚本清理，收尾无服务。App502于build1重跑，其余276复用，最终build5四模块UP-TO-DATE。
 

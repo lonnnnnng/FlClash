@@ -60,10 +60,13 @@ class ProfileAgeInstrumentedTest {
     @Test fun singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey() {
         assertPortraitDefaultFontConfiguration()
         var savedKey: String? = null
+        var session by mutableIntStateOf(0)
         compose.setContent {
             KClashTheme {
-                AddProfileDialog(false, {}, {}, {}, { _, _ -> error("必须传递密钥") },
-                    onAddRemoteWithAgeKey = { _, _, key -> savedKey = key }, onAddCustom = {})
+                key(session) {
+                    AddProfileDialog(false, {}, {}, {}, { _, _ -> error("必须传递密钥") },
+                        onAddRemoteWithAgeKey = { _, _, key -> savedKey = key }, onAddCustom = {})
+                }
             }
         }
         compose.onNodeWithTag("profile_add_source_remote").performClick()
@@ -71,6 +74,9 @@ class ProfileAgeInstrumentedTest {
         compose.onNodeWithTag("profile_add_remote_age_key").performScrollTo().performTextInput(" fixture-identity ")
         compose.onNodeWithTag("profile_add_submit").performClick()
         assertTrue(savedKey == "fixture-identity")
+        // 作者 long：提交后的生产窗口已关闭；批量模式必须在新的导入会话核验，不能继续操作已消费的表单。
+        compose.runOnIdle { session++ }
+        compose.onNodeWithTag("profile_add_source_remote").performClick()
         compose.onNodeWithTag("profile_add_mode_batch").performClick()
         compose.onNodeWithTag("profile_add_remote_age_key").assertDoesNotExist()
     }
@@ -90,22 +96,33 @@ class ProfileAgeInstrumentedTest {
         compose.onNodeWithTag("profile_age_required_key").assertDoesNotExist()
     }
 
-    @Test fun backgroundClosesEditorAndClearsHiddenImportKey() {
+    @Test fun backgroundPreservesExistingEditorAndClearsHiddenNewImportKey() {
         assertPortraitDefaultFontConfiguration()
         var edit by mutableStateOf(true)
         val profile = Profile.remote(811, "https://example.test/sub", "已有配置").copy(ageSecretKey = "persisted-fixture")
         var saved = false
+        var savedKey: String? = null
         compose.setContent {
             KClashTheme {
-                if (edit) RemoteProfileEditorDialog(profile, false, { edit = false }, { _, _, _, _ -> saved = true })
+                if (edit) RemoteProfileEditorDialog(profile, false, { edit = false }, { _, _, _, _ -> error("必须传递密钥") },
+                    onSaveWithAgeKey = { _, _, _, _, key -> saved = true; savedKey = key; edit = false })
                 else AddProfileDialog(false, {}, {}, {}, { _, _ -> }, onAddCustom = {})
             }
         }
+        compose.onNodeWithTag("remote_profile_editor_age_key").assertExists()
+        compose.waitForIdle()
         compose.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
-        assertFalse(edit)
+        // 作者 long：已有订阅编辑现由VM加密保留会话；新建导入的临时密钥仍必须清除，两种入口不能套用早期的统一关闭断言。
+        assertTrue(edit)
         assertFalse(saved)
         assertTrue(profile.ageSecretKey == "persisted-fixture")
         compose.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+        compose.onNodeWithTag("remote_profile_editor_age_key").performScrollTo().assert(SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.Password))
+        // 作者 long：掩码语义不是密钥原文，通过隔离回调验证后台后保存仍传递原密钥，不读取密码显示字符来推断内容。
+        compose.onNodeWithTag("remote_profile_editor_save").performClick()
+        assertTrue(saved)
+        assertTrue(savedKey == "persisted-fixture")
+        assertFalse(edit)
         compose.onNodeWithTag("profile_add_source_remote").performClick()
         compose.onNodeWithTag("profile_add_remote_age_key").performScrollTo().performTextInput("hidden-fixture")
         compose.onNodeWithTag("profile_add_mode_batch").performClick()

@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -23,15 +24,20 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @Composable
-internal fun AgeSecretKeyField(value: String, onValueChange: (String) -> Unit, enabled: Boolean, tag: String, optional: Boolean = true) {
+internal fun AgeSecretKeyField(value: String, onValueChange: (String) -> Unit, enabled: Boolean, tag: String, modifier: Modifier = Modifier,
+    optional: Boolean = true, singleLine: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+    keyboardActions: KeyboardActions = KeyboardActions.Default) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         enabled = enabled,
         label = { Text(if (optional) "age 解密密钥（可选）" else "age 解密密钥") },
         visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        modifier = Modifier.fillMaxWidth().testTag(tag),
+        singleLine = singleLine,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        modifier = modifier.fillMaxWidth().testTag(tag),
     )
 }
 

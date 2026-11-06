@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -164,6 +165,35 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithText("导入").performClick()
 
         assertEquals(listOf("我的订阅", "https://example.invalid/sub"), added)
+    }
+
+    @Test
+    fun invalidSingleSubscriptionStaysInFormWithoutSubmitting() {
+        var added = 0
+        composeRule.setContent { KClashTheme {
+            AddProfileDialog(false, {}, {}, {}, { _, _ -> added++ }, onAddCustom = {})
+        } }
+        composeRule.onNodeWithTag("profile_add_source_remote").performClick()
+        composeRule.onNodeWithTag("profile_add_remote_label").performTextInput("保留名称")
+        composeRule.onNodeWithTag("profile_add_remote_url").performTextInput("file:///private/not-a-subscription")
+        composeRule.onNodeWithTag("profile_add_submit").performClick()
+        assertEquals("无效地址不能交给导入回调", 0, added)
+        composeRule.onNodeWithText("请输入有效的 HTTP/HTTPS 订阅链接").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_add_remote_label").assertTextContains("保留名称")
+    }
+
+    @Test
+    fun validSingleImportTrimsFieldsAndRepeatedTapSubmitsOnlyOnce() {
+        val submissions = mutableListOf<List<String>>()
+        composeRule.setContent { KClashTheme {
+            AddProfileDialog(false, {}, {}, {}, { label, url -> submissions += listOf(label, url) }, onAddCustom = {})
+        } }
+        composeRule.onNodeWithTag("profile_add_source_remote").performClick()
+        composeRule.onNodeWithTag("profile_add_remote_label").performTextInput("  我的订阅  ")
+        composeRule.onNodeWithTag("profile_add_remote_url").performTextInput("  https://example.invalid/sub  ")
+        composeRule.onNodeWithTag("profile_add_submit").performTouchInput { click(); advanceEventTime(40); click() }
+        assertEquals(listOf(listOf("我的订阅", "https://example.invalid/sub")), submissions)
+        composeRule.onNodeWithTag("profile_add_submit").assertIsNotEnabled()
     }
 
     @Test

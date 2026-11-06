@@ -68,6 +68,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -84,6 +88,7 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
@@ -114,6 +119,7 @@ import com.lonnnnnng.flclash.common.AccessControlMode
 import com.lonnnnnng.flclash.common.AccessSortType
 import com.lonnnnnng.flclash.AlwaysOnVpnState
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -4926,11 +4932,38 @@ internal fun AddProfileDialog(
     ClearAgeInputOnBackground { ageKey = "" }
     var batchMode by rememberSaveable { mutableStateOf(false) }
     var batchInput by rememberSaveable { mutableStateOf("") }
+    var attempted by rememberSaveable { mutableStateOf(false) }
+    var submitted by remember { mutableStateOf(false) }
+    val locked = busy || submitted
+    val urlFocus = remember { FocusRequester() }
+    val keyFocus = remember { FocusRequester() }
+    val batchFocus = remember { FocusRequester() }
+    val preview = remember(batchInput, existingUrls) { parseProfileUrlImport(batchInput, existingUrls) }
+    val urlError = if (attempted && !batchMode) profileUrlInputError(url) else null
+    val keyboard = LocalSoftwareKeyboardController.current
+    fun submit() {
+        if (busy || submitted) return
+        attempted = true
+        if (batchMode) {
+            if (preview.urls.isEmpty() || preview.invalidCount > 0) return
+            submitted = true
+            keyboard?.hide()
+            onAddRemoteBatch(preview.urls)
+        } else {
+            if (profileUrlInputError(url) != null) { urlFocus.requestFocus(); return }
+            // 作者 long：按钮和IME共用同步认领，父窗口关闭前的连续点击也只能发出一次导入。
+            submitted = true
+            keyboard?.hide()
+            if (onAddRemoteWithAgeKey != null) onAddRemoteWithAgeKey(label.trim(), url.trim(), ageKey.trim())
+            else onAddRemote(label.trim(), url.trim())
+            ageKey = ""
+        }
+    }
     // 作者 long：来源与表单分步呈现，避免订阅字段和自定义配置字段同时挤在添加入口。
     var step by rememberSaveable { mutableStateOf(if (initialRemoteUrl != null) AddProfileStep.REMOTE else AddProfileStep.SOURCE) }
-    val busyDismiss = { if (!busy) onDismiss() }
+    val busyDismiss = { if (!locked) onDismiss() }
     if (step == AddProfileStep.SOURCE) {
-        ProfileSourceMenu(sourceAnchor, busy, busyDismiss, onPickQrCode, onPickFile,
+        ProfileSourceMenu(sourceAnchor, locked, busyDismiss, onPickQrCode, onPickFile,
             { step = AddProfileStep.REMOTE }, { onAddCustom("") }, menuSource)
         return
     }
@@ -4938,18 +4971,33 @@ internal fun AddProfileDialog(
         onDismissRequest = busyDismiss,
         title = { Text("从链接导入") },
         text = {
-            val preview = parseProfileUrlImport(batchInput, existingUrls)
+            val windowInfo = LocalWindowInfo.current
+            val formKeyboard = LocalSoftwareKeyboardController.current
+            LaunchedEffect(batchMode) {
+                // 作者 long：来源菜单关闭与Dialog取焦点有交接窗口，等本表单窗口真正获焦后才请求输入，避免焦点落在底层Activity而没有键盘。
+                snapshotFlow { windowInfo.isWindowFocused }.first { it }
+                if (!locked) {
+                    if (batchMode) batchFocus.requestFocus() else urlFocus.requestFocus()
+                    formKeyboard?.show()
+                }
+            }
             Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 PrimaryTabRow(selectedTabIndex = if (batchMode) 1 else 0) {
                     Tab(
                         selected = !batchMode,
-                        onClick = { batchMode = false },
+                        onClick = { batchMode = false; attempted = false },
+                        enabled = !locked,
                         modifier = Modifier.testTag("profile_add_mode_single"),
                         text = { Text("单条") },
                     )
                     Tab(
                         selected = batchMode,
-                        onClick = { ageKey = ""; batchMode = true },
+                        onClick = {
+                            // 作者 long：首次切换批量时接住已输入链接；已有批量草稿不得被单条内容覆盖。
+                            if (batchInput.isEmpty()) batchInput = url.trim()
+                            ageKey = ""; attempted = false; batchMode = true
+                        },
+                        enabled = !locked,
                         modifier = Modifier.testTag("profile_add_mode_batch"),
                         text = { Text("批量") },
                     )
@@ -4961,8 +5009,9 @@ internal fun AddProfileDialog(
                         label = { Text("粘贴订阅链接") },
                         minLines = 4,
                         maxLines = 7,
-                        enabled = !busy,
-                        modifier = Modifier.fillMaxWidth().testTag("profile_add_remote_batch"),
+                        enabled = !locked,
+                        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Uri),
+                        modifier = Modifier.fillMaxWidth().focusRequester(batchFocus).testTag("profile_add_remote_batch"),
                     )
                     Text("识别到 ${preview.urls.size} 个链接")
                     if (preview.skippedExisting > 0) {
@@ -4980,7 +5029,9 @@ internal fun AddProfileDialog(
                         onValueChange = { label = it },
                         label = { Text("名称（可选）") },
                         singleLine = true,
-                        enabled = !busy,
+                        enabled = !locked,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { urlFocus.requestFocus() }),
                         modifier = Modifier.testTag("profile_add_remote_label"),
                     )
                     OutlinedTextField(
@@ -4988,22 +5039,24 @@ internal fun AddProfileDialog(
                         onValueChange = { url = it },
                         label = { Text("订阅链接") },
                         singleLine = true,
-                        enabled = !busy,
-                        modifier = Modifier.testTag("profile_add_remote_url"),
+                        enabled = !locked,
+                        isError = urlError != null,
+                        supportingText = urlError?.let { error -> { Text(error, Modifier.testTag("profile_add_remote_error")) } },
+                        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { keyFocus.requestFocus() }),
+                        modifier = Modifier.focusRequester(urlFocus).testTag("profile_add_remote_url"),
                     )
-                    AgeSecretKeyField(ageKey, { ageKey = it }, !busy, "profile_add_remote_age_key")
+                    AgeSecretKeyField(ageKey, { ageKey = it }, !locked, "profile_add_remote_age_key",
+                        modifier = Modifier.focusRequester(keyFocus), singleLine = true,
+                        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { submit() }))
                 }
             }
         },
         confirmButton = {
-            val preview = parseProfileUrlImport(batchInput, existingUrls)
             TextButton(
-                onClick = {
-                    if (batchMode) onAddRemoteBatch(preview.urls)
-                    else if (onAddRemoteWithAgeKey != null) onAddRemoteWithAgeKey(label, url, ageKey.trim())
-                    else onAddRemote(label, url)
-                },
-                enabled = !busy && if (batchMode) {
+                onClick = ::submit,
+                enabled = !locked && if (batchMode) {
                     preview.urls.isNotEmpty() && preview.invalidCount == 0
                 } else {
                     url.isNotBlank()
@@ -5012,7 +5065,8 @@ internal fun AddProfileDialog(
             ) { Text(if (batchMode) "导入 ${preview.urls.size} 条" else "导入") }
         },
         dismissButton = {
-            TextButton(onClick = { step = AddProfileStep.SOURCE }, enabled = !busy) { Text("返回") }
+            TextButton(onClick = { ageKey = ""; keyboard?.hide(); step = AddProfileStep.SOURCE }, enabled = !locked,
+                modifier = Modifier.testTag("profile_add_back")) { Text("返回") }
         },
     )
 }

@@ -1288,7 +1288,8 @@ internal fun normalizeSubscriptionUrl(value: String): String {
     val uri = runCatching { java.net.URI(normalized) }
         .getOrElse { throw IllegalArgumentException("订阅链接格式无效", it) }
     require(
-        uri.scheme in setOf("http", "https") && !uri.host.isNullOrBlank(),
+        // 作者 long：协议名不区分大小写；只比较协议，返回原链接以保留路径和签名参数的大小写。
+        uri.scheme?.lowercase() in setOf("http", "https") && !uri.host.isNullOrBlank(),
     ) { "请输入有效的 HTTP/HTTPS 订阅链接" }
     return normalized
 }
