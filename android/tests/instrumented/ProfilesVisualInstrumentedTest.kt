@@ -37,12 +37,12 @@ class ProfilesVisualInstrumentedTest {
         actual["remote_usage"] = captureHash("remote_usage")
         composeRule.onNodeWithTag("profiles_sync_all").assertIsDisplayed()
         composeRule.onNodeWithTag("profile_expiry_602", useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithText("已用 3.0GB / 10.0GB").assertIsDisplayed()
+        composeRule.onNodeWithText("3.0GB / 10.0GB").assertIsDisplayed()
 
         val expected = mapOf(
-            "empty" to "4f604228b49dd0a010d2150846f706f894e5aa2a86e0f5a2bb5a3415581d065f",
-            "custom_selected" to "f02b6d7d18a8621b38f68b20a8a96673029da918d8a747071ec9eaf16ff2fc2e",
-            "remote_usage" to "518f519d71d6d6f163921aaac44af855dfd41cf138f67bb9d79635da55adf56a",
+            "empty" to "80902cd421286571e3fb11e68a8ee1f818d371eb77d2ed47921f20feac430e0c",
+            "custom_selected" to "2225a95a722601cc43737fb20c485c2391c389f33a74365ce41e69ef7fcfa14f",
+            "remote_usage" to "eeb5d0ed2077d39bfb06bb777878e74a0c11518f65cd88d5cbce7bea877ab9dc",
         )
         val mismatches = actual.mapNotNull { (state, hash) ->
             val baseline = expected.getValue(state)

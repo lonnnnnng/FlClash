@@ -1,0 +1,1179 @@
+{
+  "date": "2026-11-08",
+  "developmentStarted": "2026-11-07",
+  "status": "DONE-VERIFIED for listed layout and interaction behavior; motion performance NOT_ACCEPTED_INVESTIGATE; full Flutter pixel parity PARTIAL",
+  "baseCommit": "31a0ada07494acbffd343285b2777b2b2a0eaf73",
+  "branch": "kotlin",
+  "reference": {
+    "flutterRef": "be84736605527034689c95bf27828ff27d912c5e",
+    "prismRef": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "flutterSourceHashes": {
+      "lib/views/dashboard/widgets/profiles.dart": "b7be96228167a2e4e13506df4a1b6cb031ab313e4fa6edee299d5d26e321539d",
+      "lib/views/dashboard/widgets/profile_detail.dart": "279a4e5336b34c593b79813b99d1432ce1fd2d950a37b05a2bed33df7ff024e8",
+      "lib/views/profiles/profiles.dart": "e0fa8370288a6729611df86a4ac117c5e464354658c6af3a9edbeed7aa451a49",
+      "lib/features/ip_quality/ip_quality_sheet.dart": "733e69d4058228accf1af0db993a04c2c5364547bec09a5117422ca916750ab3",
+      "lib/providers/state/proxies.dart": "afb171508d7a82550c2d8370fab47adeb916149fd78a059b1662585ee299ad74",
+      "lib/views/proxies/tab.dart": "4e53b5eadc32e6ce7228866e81e5e39f79e66c30743e000b36a65477091ac5a3",
+      "lib/views/proxies/list.dart": "fa71e7b9d6d8dea7b1935a31b3ae80bcb565273ed45e04801f532ade8f400e9a",
+      "lib/ui/scaffold/scaffold.dart": "9ebbfb1bb0293e97ff366f52834dd6a8a31b4357b6afe067ea2a6bfbb2b9d52e",
+      "lib/ui/scaffold/scaffold_actions.dart": "0d3fee5a534de3f5b5e101c91e887558deb6145358544ae10fde7d213c9e2557"
+    },
+    "installedFlutterPackageVersion": "0.9.3",
+    "localFlutterSdk": "3.41.9",
+    "referenceRequires": "3.47.0",
+    "verificationBoundary": "Fixed source parameters plus actual Kotlin device rendering; no Flutter runtime pixel equality claim."
+  },
+  "scope": {
+    "VIS-01": "Homepage/profile title 24sp/30sp and 72dp; profile card single-line name, controls in header, one metadata row",
+    "VIS-02": "Profile quick switch uses 24dp cards, 16dp spacing, 17/22 title and 13/18 subtitle, trailing selected marker",
+    "VIS-03": "One 48dp, centered 17/22 header and leading close for root details and proxy picker; existing child back/direct close remain",
+    "VIS-04": "IP quality placeholders retain all six result rows and copy slots; exact Y positions equal before/after initial load",
+    "VIS-05": "Proxy search removes unmatched groups and uses page-level empty state; preserves selected group and node; ordinary empty has no extra refresh action",
+    "VIS-06": "Profile page and quick switch share short source/usage subtitles",
+    "MOT-01": "Natural Android frame clock, real touch/Back/IME, rapid navigation reversal, search empty/partial, nested menus, List change, panel expansion and load completion in both themes"
+  },
+  "performance": {
+    "status": "NOT_ACCEPTED_INVESTIGATE",
+    "darkCumulative": {
+      "frames": 916,
+      "janky": 312,
+      "percent": 34.06,
+      "p50Ms": 31,
+      "p90Ms": 89,
+      "p95Ms": 150,
+      "p99Ms": 300
+    },
+    "finalCumulative": {
+      "frames": 1872,
+      "janky": 592,
+      "percent": 31.62,
+      "p50Ms": 31,
+      "p90Ms": 81,
+      "p95Ms": 125,
+      "p99Ms": 250
+    },
+    "note": "Second theme counters include the first theme; do not add them. Debug, screenrecord and PNG capture overhead has not been isolated. No production or Release smoothness acceptance.",
+    "next": "Repeat the same interaction window without recording/screenshots; isolate Debug overhead and attribute slow frames before changing animation implementation."
+  },
+  "trace": "docs/main-visual-motion-alignment.md",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "flutterHashes": [
+      "700570428bde3a1b316ae7f7e8f10d77f9e23ee8bf8b3f45557362a061fbefb3"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 3m 39s",
+    "tasks": "389 actionable tasks: 36 executed, 353 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 568,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 74
+      },
+      "service": {
+        "tests": 212,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE",
+      "> Task :app:testDebugUnitTest"
+    ],
+    "executionNote": "执行/复用状态以本组jvmExecution为准",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 68,
+        "hints": 14
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 13
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "8273f6dad3cf2f9ce45b0c6a9adce3bac5edf4a54901d16e332968a3e36dd1d6",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "c77b25ea3f46b35803e1ba365076740cd3dc7d34efaee025743b64f0b20b9ffc",
+        "bytes": 5617848,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "efb2bfa3911814cde7e6432a39b47b9d426c54e65e9c4963251aebadff006cf1",
+        "bytes": 48308256,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "sourceFilesMatched": 593,
+  "releaseIsolation": {
+    "sourceFilesMatched": 593,
+    "debugMarkersAbsent": {
+      "VisualMotionTestActivity": true,
+      "VisualMotionNaturalInstrumentedTest": true,
+      "kclash_motion_event": true,
+      "ResourcePickerColdInstrumentedTest": true,
+      "kclash_resource_cold_ready": true,
+      "resource-picker-cold.json": true,
+      "resource-picker-fixture.v1": true,
+      "EditorCommitProbe$Gate": true,
+      "GlobalRulesProbe": true,
+      "fixture-global-rules-failure": true,
+      "kclash_global_rules_ready": true,
+      "ProviderRuntimeAcceptanceActivity": true,
+      "ProviderRuntimeKillReceiver": true,
+      "KClashProviderRuntime": true,
+      "provider-runtime-acceptance.v1": true,
+      "kclash-invalid-group": true,
+      "mrs-preview": true,
+      "kclash_provider_cold_ready": true,
+      "ProviderValidationProbe$Gate": true,
+      "Provider校验验收等待超时": true,
+      "本进程已有Provider校验等待点": true
+    },
+    "releaseComponentIsolation": true,
+    "sha256": "efb2bfa3911814cde7e6432a39b47b9d426c54e65e9c4963251aebadff006cf1",
+    "scope": "R8 DEX and manifest static checks; unsigned APK not installed"
+  },
+  "regression": {
+    "batch": "final1",
+    "passed": 14,
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRemoteProfileSyncShowsBusyState",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#tabGroupAndScrollSurviveProfilesAndDashboardRoundTrips",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#emptySearchSurvivesMainDestinationsAndRecreationThenClearRecoversNodes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "images": [
+      {
+        "path": "dashboard_light_default.png",
+        "bytes": 190142,
+        "sha256": "eb97b7f99796f830b4cb2ad8b2ad33fa9a62c6c9b947fc5966e6a66f10b9e7aa"
+      },
+      {
+        "path": "dashboard_light_running.png",
+        "bytes": 204760,
+        "sha256": "2f69dc53e850b42502e60ee1b90b0ad031e01948e27fcffe3f6df629b2e5a710"
+      },
+      {
+        "path": "dashboard_running.png",
+        "bytes": 180970,
+        "sha256": "10ba549b00ec921609edd3bc908e7a8f2d68d1f3d64e0d5c0d3c8db4f3172cba"
+      },
+      {
+        "path": "dashboard_default.png",
+        "bytes": 168653,
+        "sha256": "b68c79864c7e5033efc5834092851645a54dc40561093e52e6c09aedb9138bb8"
+      },
+      {
+        "path": "dashboard_system_ready.png",
+        "bytes": 158203,
+        "sha256": "0da44e328f89f381e464c32e62d417efe06bbfe867c435f991da4cd38c7c25e8"
+      },
+      {
+        "path": "dashboard_proxy_summary_dark.png",
+        "bytes": 25105,
+        "sha256": "71fb2375fe2f48ce31f6aa58892b11883b947c3e681a0f2b89113321a7d50215"
+      },
+      {
+        "path": "dashboard_proxy_picker_dark.png",
+        "bytes": 75412,
+        "sha256": "621b2ca037c2b9fe8458a9b4f703ec96995f75bec2686625ce20a62eb36f135c"
+      },
+      {
+        "path": "dashboard_proxy_summary_light.png",
+        "bytes": 26947,
+        "sha256": "0e08242f174f8c3ec1794edc1c57501820afa3a2004ec600c7f6622fef298305"
+      },
+      {
+        "path": "dashboard_proxy_picker_light.png",
+        "bytes": 75166,
+        "sha256": "438e506de6631d4774d3375549df400580e49861a9edf0491ee91e12544e8ba1"
+      },
+      {
+        "path": "dashboard_sheet_service_quality.png",
+        "bytes": 144612,
+        "sha256": "68a05da04f76c7da4bf38398a31a9072994541de0402e19c6b6f6cb5e2ab6acb"
+      },
+      {
+        "path": "dashboard_sheet_service_manage.png",
+        "bytes": 129147,
+        "sha256": "4c6c62d7013d92fe75880c1e584851e868dd6a3b99208a10d8c710bfe141557a"
+      },
+      {
+        "path": "dashboard_sheet_profile_picker_true.png",
+        "bytes": 143659,
+        "sha256": "e90c9f7e2730238896528095f93592447ebe177f26d9d96975d27e876859f493"
+      },
+      {
+        "path": "dashboard_sheet_profile_picker_false.png",
+        "bytes": 152926,
+        "sha256": "bb1e671ef6f0d7f28cd198b75fddfe36d66c71ac144fd3f3dec2528a9125cbc4"
+      },
+      {
+        "path": "dashboard_sheet_short_false.png",
+        "bytes": 35570,
+        "sha256": "65bb215d21f2e6ae86100dbea53ec7a22708ca159b95a8bebee121439b48cf31"
+      },
+      {
+        "path": "dashboard_sheet_long_false.png",
+        "bytes": 151372,
+        "sha256": "0f5cfdba1f25d09e2304755fdeda1567f8d48680a7cd03c02313c355efb97980"
+      },
+      {
+        "path": "dashboard_sheet_short_true.png",
+        "bytes": 35837,
+        "sha256": "d2c47902091ed6dde34e0cc2f2d06795abcf805d5b43827a0bf1c739fc8e9c57"
+      },
+      {
+        "path": "dashboard_sheet_long_true.png",
+        "bytes": 152181,
+        "sha256": "846649e58ca7cc0379a9fc3fe5e8ef1d6ddfa181bd9d48ec0f401bca0ac2050c"
+      },
+      {
+        "path": "proxy_search_empty_TAB.png",
+        "bytes": 138853,
+        "sha256": "d8faeec2b613b9716461a50b68a39ad5d5bd3a948c557212a710637040928bd4"
+      },
+      {
+        "path": "proxy_search_cleared_TAB.png",
+        "bytes": 111078,
+        "sha256": "563df04afad65b5e74df91727eb604992f3568508a76c58402d9c1ac85796446"
+      },
+      {
+        "path": "proxy_search_empty_LIST.png",
+        "bytes": 138853,
+        "sha256": "d8faeec2b613b9716461a50b68a39ad5d5bd3a948c557212a710637040928bd4"
+      },
+      {
+        "path": "proxy_search_cleared_LIST.png",
+        "bytes": 117647,
+        "sha256": "1291e693d5af6b9cd9bc9887798dba89d768e9c4e3bbbe2b2454d2fca074ed32"
+      },
+      {
+        "path": "proxy_empty_failed_false.png",
+        "bytes": 70194,
+        "sha256": "5c8a94c3acdbea598290a3de3f4540234143c1dbe7e7ae828e2bd2dc71a2e54c"
+      },
+      {
+        "path": "proxy_empty_plain_false.png",
+        "bytes": 50693,
+        "sha256": "2bb0da7224e514cddd4f15bf3f47ce1a0708d658626b7d0fffc1ccfb3f8fe3c0"
+      },
+      {
+        "path": "proxy_empty_failed_true.png",
+        "bytes": 75254,
+        "sha256": "769b226a691f7bb0a02efb22ff26c69f07438e48dfb3d7553ed35c9adc9fdb84"
+      },
+      {
+        "path": "proxy_empty_plain_true.png",
+        "bytes": 55239,
+        "sha256": "88a138009ab63e45a886bf2367b7b35283575e92b00c61311522a99ff8939646"
+      },
+      {
+        "path": "main_navigation_tab_before.png",
+        "bytes": 142063,
+        "sha256": "cbd6815429f3e791f80c013c31e0940470ddc5b3f3d0ff60c4075d30f4b7fa9a"
+      },
+      {
+        "path": "main_navigation_tab_after_profiles.png",
+        "bytes": 142063,
+        "sha256": "cbd6815429f3e791f80c013c31e0940470ddc5b3f3d0ff60c4075d30f4b7fa9a"
+      },
+      {
+        "path": "main_navigation_tab_after_dashboard.png",
+        "bytes": 142063,
+        "sha256": "cbd6815429f3e791f80c013c31e0940470ddc5b3f3d0ff60c4075d30f4b7fa9a"
+      },
+      {
+        "path": "main_navigation_search_returned.png",
+        "bytes": 140575,
+        "sha256": "d8b531dbbb996864202abc195a3750b5b3a5e8fa2f051e2de34e5f11f6179416"
+      },
+      {
+        "path": "main_navigation_search_recreated.png",
+        "bytes": 140481,
+        "sha256": "5a4190f89b095f42e3f1399405fd22f5c10ed4affa826a4d184a282bfc6d1554"
+      },
+      {
+        "path": "main_navigation_search_cleared.png",
+        "bytes": 170490,
+        "sha256": "a78c458f35a627ca3e87aa127ec3c81449921c7eac939881590ef20f78c0b4a7"
+      },
+      {
+        "path": "profiles_empty.png",
+        "bytes": 82650,
+        "sha256": "80902cd421286571e3fb11e68a8ee1f818d371eb77d2ed47921f20feac430e0c"
+      },
+      {
+        "path": "profiles_custom_selected.png",
+        "bytes": 59180,
+        "sha256": "2225a95a722601cc43737fb20c485c2391c389f33a74365ce41e69ef7fcfa14f"
+      },
+      {
+        "path": "profiles_remote_usage.png",
+        "bytes": 66125,
+        "sha256": "eeb5d0ed2077d39bfb06bb777878e74a0c11518f65cd88d5cbce7bea877ab9dc"
+      }
+    ],
+    "review": {
+      "decodedAndHashVerified": 34,
+      "contactSheetsViewed": 12,
+      "review": "Reviewed all captured cards, headers, sheets, empty and search states in final1. Eight MainPageStates captures are bare-component hosts without the full page status-bar inset; they prove component content/IME bounds, not complete screen geometry. Full-screen insets are checked in formal navigation and natural host."
+    }
+  },
+  "natural": {
+    "batch": "final-natural1",
+    "passed": 2,
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#darkPagesPanelsEmptyAndContinuousMotion",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#lightPagesPanelsEmptyAndContinuousMotion",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "images": [
+      {
+        "path": "natural_dark_home.png",
+        "bytes": 101269,
+        "sha256": "d333c48d06f5cf1ac1128cf593e145b623ade1ecc6c7d7d1d3da028a3bf388e4"
+      },
+      {
+        "path": "natural_dark_profile_picker.png",
+        "bytes": 127533,
+        "sha256": "4c7530b472b90482453655b0d343e908eef5c642a2091400986de70cfe1cce59"
+      },
+      {
+        "path": "natural_dark_profiles.png",
+        "bytes": 87080,
+        "sha256": "667dce47c4505a49d75c0338d475175953cb31b0c92c4759e419363f73b485ba"
+      },
+      {
+        "path": "natural_dark_profiles_sources.png",
+        "bytes": 114980,
+        "sha256": "009d9bbf47df33b344bb94bec330216965bf13d7fac82b1793b14779c1cf0e13"
+      },
+      {
+        "path": "natural_dark_proxy.png",
+        "bytes": 78231,
+        "sha256": "844a2b0229fcbbf79a77cd4531d16e66770f5eba5ab2df4a1dc62d3f16171580"
+      },
+      {
+        "path": "natural_dark_proxy_search_empty.png",
+        "bytes": 137079,
+        "sha256": "256fc69dad6d52353fd95c44aa4df6e783153cade98d3935bdd523136e71a7ec"
+      },
+      {
+        "path": "natural_dark_proxy_partial.png",
+        "bytes": 111831,
+        "sha256": "17b1e1048ce4382397db778225fde79610f8f911768f315241255f72179fe57e"
+      },
+      {
+        "path": "natural_dark_proxy_menu.png",
+        "bytes": 117851,
+        "sha256": "654b6c77331db0625c00184a614b9bb516d67c5d925db377984993184b24d53a"
+      },
+      {
+        "path": "natural_dark_proxy_submenu.png",
+        "bytes": 117890,
+        "sha256": "888bbb76a7ac6033f5dcb3b3263de67784e6ef9b6be0240be54beefe3cbb12fb"
+      },
+      {
+        "path": "natural_dark_proxy_list.png",
+        "bytes": 108333,
+        "sha256": "43b0767bfffa461460326b2c28d08c074568565cf2b787de8f95972a36c36f10"
+      },
+      {
+        "path": "natural_dark_quality_loading.png",
+        "bytes": 115102,
+        "sha256": "d5b2077d350a447ff61926b84fceda42a0f7852e7dd71cd2ca675392772ca879"
+      },
+      {
+        "path": "natural_dark_quality_ready.png",
+        "bytes": 135475,
+        "sha256": "710594d434ace820e25e5a2b64f6ac9421ad3e3ff889c93670d870092bfc6a18"
+      },
+      {
+        "path": "natural_dark_profiles_empty.png",
+        "bytes": 84485,
+        "sha256": "3edc7022bb0d96347490c60c90152e520514584af88a697505e00ab0fff77368"
+      },
+      {
+        "path": "natural_dark_proxy_empty.png",
+        "bytes": 73542,
+        "sha256": "d0ae919ad1e1f6d2ac3f8acfa2edf4fa3240cac24b42afb1e5a5f0e213276c7c"
+      },
+      {
+        "path": "natural_light_home.png",
+        "bytes": 109463,
+        "sha256": "320bd822bd426c139d3da26b65e6cf36387292ccb55d6a17f7192fcd445e3cdd"
+      },
+      {
+        "path": "natural_light_profile_picker.png",
+        "bytes": 132971,
+        "sha256": "3dcbed5771b84023416574f1107f015c83e47ead1b376edfc3bcb82950e3950a"
+      },
+      {
+        "path": "natural_light_profiles.png",
+        "bytes": 88184,
+        "sha256": "5dfdfc46e590e31cc699c4a2206270cc400786d24bc4efed38d3120127792d08"
+      },
+      {
+        "path": "natural_light_profiles_sources.png",
+        "bytes": 119668,
+        "sha256": "c99e3de4c6ca17df865ea7a85e26c5e54232544a201b9d4246bf016e6e564ed9"
+      },
+      {
+        "path": "natural_light_proxy.png",
+        "bytes": 79776,
+        "sha256": "6ebab5c5350af63f1a04cc5b6a29ecddf3183a610daa230ecaf473c11a8eebe0"
+      },
+      {
+        "path": "natural_light_proxy_search_empty.png",
+        "bytes": 129930,
+        "sha256": "ec2cfde1a71d793335579adabba3fc6369ce0eac3d5158071de240f5b5f9c570"
+      },
+      {
+        "path": "natural_light_proxy_partial.png",
+        "bytes": 107942,
+        "sha256": "1a9edcb1f3ea696d0e34196da44e21c9e252f537bef78670a54074cf12cd1f92"
+      },
+      {
+        "path": "natural_light_proxy_menu.png",
+        "bytes": 125183,
+        "sha256": "a103d376173cb26853973f51f71a86ac8000779449d823464c5e0b5d3d619415"
+      },
+      {
+        "path": "natural_light_proxy_submenu.png",
+        "bytes": 130190,
+        "sha256": "2254dfa0a7db3d01d1e1ae81c293696e87c6299e56712b8cd6ec83316efa224d"
+      },
+      {
+        "path": "natural_light_proxy_list.png",
+        "bytes": 109525,
+        "sha256": "d0be411bc8ebbaef5a172dce40b0aa6f043470f6479d0396140011e02de862a1"
+      },
+      {
+        "path": "natural_light_quality_loading.png",
+        "bytes": 111965,
+        "sha256": "7cf9c38e0acd0fa31b59b32afe8baa6a5ff47edbf5618c649737d7d0fe4d8094"
+      },
+      {
+        "path": "natural_light_quality_ready.png",
+        "bytes": 132214,
+        "sha256": "f674d11631706bf967a88d26cb3194942309893eb68b0fc445d3a53a0e7fc46a"
+      },
+      {
+        "path": "natural_light_profiles_empty.png",
+        "bytes": 83431,
+        "sha256": "fc1bd642a024c8c3ea223898edc8dfbee35098ddfd2421686ee20faf9c668068"
+      },
+      {
+        "path": "natural_light_proxy_empty.png",
+        "bytes": 73558,
+        "sha256": "2198626ac4e9aa4c3edd511856dc505c1b0e1b45060392bf9c34a546e3d9a1b6"
+      }
+    ],
+    "review": {
+      "decodedAndHashVerified": 28,
+      "contactSheetsViewed": 10,
+      "sequenceSheetsViewed": 6,
+      "review": "Reviewed the 28 captured states in ten contact sheets and all six original-PTS sequence sheets. Layout, empty states, search groups, panel expansion and nested return match the named scope; six quality row Y positions are asserted before/after load.",
+      "limits": [
+        "Light fixed Debug host inherits white system status-bar icons from device mode; status-bar contrast is excluded from production theme acceptance.",
+        "Fixed domain data, no Room/network/core. Formal MainActivity regressions are separate.",
+        "Sampling is not every-frame review. Performance acceptance remains NOT_ACCEPTED_INVESTIGATE."
+      ]
+    },
+    "video": {
+      "sha256": "b243ec1208bb27b19b78329a00225c0978d3fa329d35edf4da89e4db05cf3f3f",
+      "bytes": 19663979,
+      "devicePath": "/sdcard/Download/kclash-motion-final-natural1.mp4",
+      "deviceCopyRemoved": true
+    },
+    "motion": {
+      "stream": {
+        "width": 1080,
+        "height": 2340,
+        "r_frame_rate": "90000/1",
+        "avg_frame_rate": "5220000/280489",
+        "duration": "87.263233",
+        "nb_frames": "1624"
+      },
+      "decodedFramePtsCount": 1624,
+      "events": [
+        {
+          "theme": "dark",
+          "event": "profile-picker-open",
+          "elapsedNanos": 74336793851199
+        },
+        {
+          "theme": "dark",
+          "event": "profile-picker-reopen-back",
+          "elapsedNanos": 74340833212661
+        },
+        {
+          "theme": "dark",
+          "event": "navigation-rapid-reversal",
+          "elapsedNanos": 74343978727200
+        },
+        {
+          "theme": "dark",
+          "event": "search-partial",
+          "elapsedNanos": 74351200559431
+        },
+        {
+          "theme": "dark",
+          "event": "proxy-menu-nested",
+          "elapsedNanos": 74357241289893
+        },
+        {
+          "theme": "dark",
+          "event": "quality-loading",
+          "elapsedNanos": 74365751892663
+        },
+        {
+          "theme": "dark",
+          "event": "quality-return",
+          "elapsedNanos": 74371255715432
+        },
+        {
+          "theme": "dark",
+          "event": "completed",
+          "elapsedNanos": 74375957551509
+        },
+        {
+          "theme": "light",
+          "event": "profile-picker-open",
+          "elapsedNanos": 74378692636740
+        },
+        {
+          "theme": "light",
+          "event": "profile-picker-reopen-back",
+          "elapsedNanos": 74382138786510
+        },
+        {
+          "theme": "light",
+          "event": "navigation-rapid-reversal",
+          "elapsedNanos": 74385095956972
+        },
+        {
+          "theme": "light",
+          "event": "search-partial",
+          "elapsedNanos": 74391825031126
+        },
+        {
+          "theme": "light",
+          "event": "proxy-menu-nested",
+          "elapsedNanos": 74397395101972
+        },
+        {
+          "theme": "light",
+          "event": "quality-loading",
+          "elapsedNanos": 74405840461280
+        },
+        {
+          "theme": "light",
+          "event": "quality-return",
+          "elapsedNanos": 74411048389050
+        },
+        {
+          "theme": "light",
+          "event": "completed",
+          "elapsedNanos": 74415441718589
+        }
+      ],
+      "recordClock": {
+        "elapsedBefore": 74328.25,
+        "elapsedAfterLaunch": 74329.14,
+        "note": "Video event alignment is approximate within launch bracket; frame PTS remain original."
+      },
+      "sampledSequences": [
+        {
+          "theme": "dark",
+          "event": "navigation-rapid-reversal",
+          "approxStart": 15.283727199988789,
+          "frames": [
+            {
+              "index": 215,
+              "pts": 15.1056
+            },
+            {
+              "index": 216,
+              "pts": 15.738044
+            },
+            {
+              "index": 217,
+              "pts": 15.789911
+            },
+            {
+              "index": 218,
+              "pts": 16.124556
+            },
+            {
+              "index": 219,
+              "pts": 16.207
+            },
+            {
+              "index": 220,
+              "pts": 16.340567
+            },
+            {
+              "index": 222,
+              "pts": 16.390022
+            },
+            {
+              "index": 224,
+              "pts": 16.590956
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "event": "proxy-menu-nested",
+          "approxStart": 28.546289892998175,
+          "frames": [
+            {
+              "index": 479,
+              "pts": 28.825844
+            },
+            {
+              "index": 486,
+              "pts": 28.957733
+            },
+            {
+              "index": 503,
+              "pts": 29.359167
+            },
+            {
+              "index": 515,
+              "pts": 29.807233
+            },
+            {
+              "index": 516,
+              "pts": 30.144356
+            },
+            {
+              "index": 526,
+              "pts": 30.576511
+            },
+            {
+              "index": 533,
+              "pts": 30.909667
+            },
+            {
+              "index": 535,
+              "pts": 31.209867
+            },
+            {
+              "index": 536,
+              "pts": 32.427844
+            },
+            {
+              "index": 539,
+              "pts": 32.626378
+            },
+            {
+              "index": 544,
+              "pts": 32.875933
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "event": "quality-loading",
+          "approxStart": 37.05689266299305,
+          "frames": [
+            {
+              "index": 637,
+              "pts": 36.777478
+            },
+            {
+              "index": 643,
+              "pts": 37.508611
+            },
+            {
+              "index": 667,
+              "pts": 37.959633
+            },
+            {
+              "index": 676,
+              "pts": 38.358067
+            },
+            {
+              "index": 677,
+              "pts": 39.059144
+            },
+            {
+              "index": 689,
+              "pts": 39.343378
+            },
+            {
+              "index": 705,
+              "pts": 39.7766
+            },
+            {
+              "index": 713,
+              "pts": 40.008589
+            },
+            {
+              "index": 715,
+              "pts": 40.712667
+            },
+            {
+              "index": 716,
+              "pts": 41.085156
+            },
+            {
+              "index": 717,
+              "pts": 42.811656
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "event": "navigation-rapid-reversal",
+          "approxStart": 56.400956971992855,
+          "frames": [
+            {
+              "index": 1006,
+              "pts": 56.242289
+            },
+            {
+              "index": 1007,
+              "pts": 56.796556
+            },
+            {
+              "index": 1010,
+              "pts": 56.862744
+            },
+            {
+              "index": 1011,
+              "pts": 57.029789
+            },
+            {
+              "index": 1013,
+              "pts": 57.096789
+            },
+            {
+              "index": 1017,
+              "pts": 57.226944
+            },
+            {
+              "index": 1020,
+              "pts": 57.279611
+            },
+            {
+              "index": 1024,
+              "pts": 57.462378
+            },
+            {
+              "index": 1029,
+              "pts": 57.579233
+            },
+            {
+              "index": 1036,
+              "pts": 57.713289
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "event": "proxy-menu-nested",
+          "approxStart": 68.70010197199008,
+          "frames": [
+            {
+              "index": 1265,
+              "pts": 68.947422
+            },
+            {
+              "index": 1274,
+              "pts": 69.115222
+            },
+            {
+              "index": 1292,
+              "pts": 69.530422
+            },
+            {
+              "index": 1301,
+              "pts": 69.882
+            },
+            {
+              "index": 1303,
+              "pts": 70.398411
+            },
+            {
+              "index": 1314,
+              "pts": 70.765022
+            },
+            {
+              "index": 1320,
+              "pts": 71.032267
+            },
+            {
+              "index": 1322,
+              "pts": 71.364456
+            },
+            {
+              "index": 1323,
+              "pts": 72.449456
+            },
+            {
+              "index": 1329,
+              "pts": 72.780956
+            },
+            {
+              "index": 1333,
+              "pts": 73.482567
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "event": "quality-loading",
+          "approxStart": 77.1454612799862,
+          "frames": [
+            {
+              "index": 1424,
+              "pts": 77.482322
+            },
+            {
+              "index": 1427,
+              "pts": 77.5831
+            },
+            {
+              "index": 1452,
+              "pts": 78.047489
+            },
+            {
+              "index": 1459,
+              "pts": 78.4164
+            },
+            {
+              "index": 1460,
+              "pts": 79.014433
+            },
+            {
+              "index": 1477,
+              "pts": 79.415844
+            },
+            {
+              "index": 1495,
+              "pts": 79.882244
+            },
+            {
+              "index": 1498,
+              "pts": 80.553467
+            },
+            {
+              "index": 1499,
+              "pts": 80.5838
+            },
+            {
+              "index": 1500,
+              "pts": 82.599967
+            }
+          ]
+        }
+      ],
+      "sequenceSheets": [
+        "dark-navigation-rapid-reversal.jpg",
+        "dark-proxy-menu-nested.jpg",
+        "dark-quality-loading.jpg",
+        "light-navigation-rapid-reversal.jpg",
+        "light-proxy-menu-nested.jpg",
+        "light-quality-loading.jpg"
+      ],
+      "gfx": [
+        {
+          "path": "visual-motion-final-natural1-dark.gfx",
+          "sha256": "bdb49cb631124d0b20619e6ae76f394c179db7e7138b3ab2b2a8b9ead97ddc5d",
+          "summaryLines": [
+            "Total frames rendered: 916",
+            "Janky frames: 312 (34.06%)",
+            "Janky frames (legacy): 724 (79.04%)",
+            "50th percentile: 31ms",
+            "90th percentile: 89ms",
+            "95th percentile: 150ms",
+            "99th percentile: 300ms",
+            "Total frames rendered: 590",
+            "Janky frames: 185 (31.36%)",
+            "Janky frames (legacy): 487 (82.54%)",
+            "50th percentile: 30ms",
+            "90th percentile: 73ms",
+            "95th percentile: 150ms",
+            "99th percentile: 300ms"
+          ]
+        },
+        {
+          "path": "visual-motion-final-natural1-light.gfx",
+          "sha256": "4922ae5af9c4d439f22ff12de51b75a03cbdc2ee6f8d592d504c37ca29a66d39",
+          "summaryLines": [
+            "Total frames rendered: 1872",
+            "Janky frames: 592 (31.62%)",
+            "Janky frames (legacy): 1452 (77.56%)",
+            "50th percentile: 31ms",
+            "90th percentile: 81ms",
+            "95th percentile: 125ms",
+            "99th percentile: 250ms",
+            "Total frames rendered: 611",
+            "Janky frames: 139 (22.75%)",
+            "Janky frames (legacy): 498 (81.51%)",
+            "50th percentile: 29ms",
+            "90th percentile: 57ms",
+            "95th percentile: 93ms",
+            "99th percentile: 200ms"
+          ]
+        }
+      ],
+      "review": "reviewed sampled original-PTS sequences",
+      "limits": "Screenrecord is variable frame rate; still scenes suppress video frames. PTS is not render time. Gfx includes Debug, screenshot and recording load; second theme system counters are cumulative in same process.",
+      "observations": [
+        "Reviewed all six sequence sheets at original sampled PTS. Sampled frames show navigation reversal, menu expansion/return and quality placeholders resolving; no persistent leftover layer observed within samples.",
+        "Event alignment is approximate. These samples do not prove every frame, uninterrupted smoothness, or Flutter pixel parity."
+      ],
+      "performance": {
+        "status": "NOT_ACCEPTED_INVESTIGATE",
+        "darkCumulative": {
+          "frames": 916,
+          "janky": 312,
+          "percent": 34.06,
+          "p50Ms": 31,
+          "p90Ms": 89,
+          "p95Ms": 150,
+          "p99Ms": 300
+        },
+        "finalCumulative": {
+          "frames": 1872,
+          "janky": 592,
+          "percent": 31.62,
+          "p50Ms": 31,
+          "p90Ms": 81,
+          "p95Ms": 125,
+          "p99Ms": 250
+        },
+        "note": "Second theme counters include the first theme; do not add them. Debug, screenrecord and PNG capture overhead has not been isolated. No production or Release smoothness acceptance.",
+        "next": "Repeat the same interaction window without recording/screenshots; isolate Debug overhead and attribute slow frames before changing animation implementation."
+      }
+    }
+  },
+  "preservation": {
+    "formalProfiles": 2,
+    "fullWindowSnapshotsEqual": true,
+    "selectedAndRoomPreferencesPreserved": true,
+    "profileBodyShaSizeMtimePreserved": true,
+    "original1YamlAndFlutterPackagePreserved": true,
+    "deviceSettingsPreserved": true,
+    "ownedProfilesCleaned": true,
+    "servicesStopped": true,
+    "cleanup": {
+      "serial": "wsvwypiz7xwslvl7",
+      "readOnlyFinalCheck": true,
+      "networkInterfaces": [
+        "ap0",
+        "ccmni-lan",
+        "ccmni0",
+        "ccmni1",
+        "ccmni10",
+        "ccmni11",
+        "ccmni12",
+        "ccmni13",
+        "ccmni14",
+        "ccmni15",
+        "ccmni16",
+        "ccmni17",
+        "ccmni18",
+        "ccmni19",
+        "ccmni2",
+        "ccmni20",
+        "ccmni3",
+        "ccmni4",
+        "ccmni5",
+        "ccmni6",
+        "ccmni7",
+        "ccmni8",
+        "ccmni9",
+        "dummy0",
+        "ifb0",
+        "ifb1",
+        "ip6_vti0",
+        "ip6tnl0",
+        "ip_vti0",
+        "lo",
+        "p2p0",
+        "sit0",
+        "wlan0",
+        "wlan1"
+      ],
+      "noTun0": true,
+      "noAppServiceRecord": true,
+      "ownedFiles": [
+        {
+          "path": "/sdcard/Download/kclash-motion-final-natural1.mp4",
+          "owner": null,
+          "absent": true
+        },
+        {
+          "path": "cache/visual-motion-final-natural1-dark.gfx",
+          "owner": "com.lonnnnnng.flclash",
+          "absent": true
+        },
+        {
+          "path": "cache/visual-motion-final-natural1-light.gfx",
+          "owner": "com.lonnnnnng.flclash",
+          "absent": true
+        }
+      ],
+      "deviceSettingsEqualToFinalSnapshot": true,
+      "originalYamlEqualToFinalSnapshot": true,
+      "flutterApkEqualToFinalSnapshot": true,
+      "formalProfileEvidence": "final-natural1/profiles-after.json and preservation.json; no extra instrumentation launched during cleanup check"
+    }
+  },
+  "history": [
+    "natural1 0/2: stale native node cache and fixed-host inset gap; screenshots and video retained",
+    "natural2 0/2: half-sheet offscreen fields; expand via real handle before geometry assertions; natural3 2/2 passed",
+    "baseline1 and baseline2 each 0/4, regression1 9/10, proxy-baseline2 0/1: old screenshot hashes differ; reviewed and refreshed baselines, no retrospective sole-cause claim",
+    "First post-instrumentation gfxinfo returned No process found; final collection occurs with live host",
+    "Independent static review found no actionable new group-selection, Pager, busy-state or nested-return bug; not a dynamic guarantee"
+  ],
+  "limits": [
+    "Fixed source parameter matching and actual Kotlin rendering; local Flutter SDK 3.41.9 cannot render fixed Prism requiring3.47. No Flutter pixel-equality claim.",
+    "Natural-motion host uses production composables with fixed domain data and no Room/network/core. Separate two formal MainActivity regressions protect real profiles but are Compose test-clock checks.",
+    "Video uses original variable-rate PTS. Sampled sequences do not prove every frame or Release performance; gfxinfo includes Debug/recording/screenshot overhead and cumulative counters.",
+    "Light fixed Debug host inherits white system status-bar icons; production theme status-bar contrast is not accepted by these captures.",
+    "Remaining visible gaps: CUSTOM group-count chip, homepage no-usage statistics, memory graph hierarchy, remaining pages and exact full visual comparison.",
+    "No Go/core/network/cellular/low API/remote CI/signed Release runtime validation. Glass default off; existing deferred and cancelled items remain."
+  ],
+  "artifactRoot": "../acceptance-artifacts/visual-motion-20261107/"
+}

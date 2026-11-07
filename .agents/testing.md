@@ -1,6 +1,12 @@
 # Testing
 
-## 真实资源选择器恢复与提交（2026-11-07，当前）
+## 主页面视觉与自然时钟动效（2026-11-08，当前）
+
+主页面/常用面板具名排版与自然时钟交互本组已验（VIS-01～06、MOT-01）：固定Flutter be847366及Prism63450c0，统一首页/配置标题、配置卡/快切布局、根面板与代理选择标题栏、质量加载占位、代理整页搜索空态和短副标题。最终build6同套包Redmi回归14/14、自然时钟深浅场景2/2，62张PNG完整核验/22拼图目视，原始MP4及6组原始PTS抽帧、存活期gfxinfo已留存。849项JVM零失败/错误/跳过，App568执行、其余281复用；Debug/Test/未签名Release-R8/双Lint通过，Debug0错误68警告14提示、Release0错误66警告13提示。593份源码和双包回拉SHA匹配，Release测试宿主隔离。正式两配置、选择/Room偏好/正文SHA-size-mtime、原1.yaml/Flutter包/设备设置保持，独占录屏与gfx缓存已清理，结束无服务/tun0。自然场景不使用ComposeTestRule，验证快速反转导航、搜索/IME、多层菜单和质量六行加载前后Y坐标一致；固定宿主不冒充正式实网，视频PTS不等于渲染耗时。旧哈希失败、节点缓存/半屏定位失败及无进程gfx记录均保留。连续动效性能未通过：最终累计1872帧中592帧jank（31.62%），第二主题包含第一主题不可相加；Debug/录屏/PNG开销尚未隔离，下一步优先独立定位掉帧。浅色固定Debug宿主状态栏图标对比度不计正式主题验收。本机Flutter3.41.9低于固定Prism3.47要求，本轮是源码参数与Kotlin渲染对齐，完整像素一致/性能仍PARTIAL；随后CUSTOM组数、首页无流量统计、内存图形层级与其余子页。原第6项异常/系统网络边界仍待，玻璃默认关闭。证据`docs/acceptance/main-visual-motion-redmi-20261108.json`，溯源`docs/main-visual-motion-alignment.md`，附件`../acceptance-artifacts/visual-motion-20261107/`。
+
+自然用例只执行`VisualMotionNaturalInstrumentedTest#lightPagesPanelsEmptyAndContinuousMotion`及`#darkPagesPanelsEmptyAndContinuousMotion`，显式`kclashNaturalMotion=true`/独占`kclashMotionRun`。不得引入ComposeTestRule；外部只录屏/回读，不另起uiautomator。gfxinfo须在宿主仍存活时采集，按文件名/SHA回拉后精确清理。两条正式MainNavigationState回归仍有原1.yaml SHA门禁，不能算自然时钟。新静态哈希用于Kotlin回归，不能作为Flutter相同证据。
+
+## 真实资源选择器恢复与提交（2026-11-07，历史）
 
 真实资源选择器SAF-01～05本组已验：规则YAML/MRS、图库OpenDocument及组图片GetContent接独立加密请求、一次消费和父会话绑定；规则预览正文/选区/错误/MRS字节可冷恢复，目录与回执同事务防重放。Redmi最终同套build13包：交互7/7、冷恢复14/14及再次恢复3/3、相邻回归4/4；38张PNG完整校验、13拼图目视，其中6张系统转场图不作稳定终帧。849项JVM零失败/错误/跳过（App568本批执行，其余281复用），Debug/Test、未签名Release-R8与双Lint通过，Debug0错误68警告14提示、Release0错误66警告13提示。591份源码及安装回拉SHA匹配，Release25个恢复字段和Debug诊断隔离已检查。正式两配置/正文SHA-size-mtime、脚本、偏好与选择保持；原1.yaml、Flutter包、旋转/字号/动画设置保持；自有草稿/回执/临时行和9个独占设备输入已清理，结束无服务/tun0。KUI-017保留ready恢复竞态、选区及全部开发失败；系统选择器只杀普通宿主PID并观察系统新PID，预览/提交用受控force-stop。失效URI为显式协议注入，读取死亡限受理检查点，不推广任意流字节/OEM/VPN自然回收。下一步统一Flutter页面/面板/空态排版与连续动效；整体第9项仍PARTIAL，第6项原保护异常/网络稳定性、蜂窝及兼容/发布边界保持，玻璃默认关闭。证据`docs/acceptance/resource-picker-recovery-redmi-20261107.json`，溯源`docs/resource-picker-recovery-defect.md`，附件`../acceptance-artifacts/resource-picker-20261107/`。
 

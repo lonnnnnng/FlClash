@@ -36,6 +36,10 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -162,19 +166,35 @@ private fun DashboardSheetPageContent(displayed: DashboardSheetPage, active: Boo
     sheetTag: String, closeTag: String, backTag: String, scrollTag: String, requestDismiss: () -> Unit,
     onHeaderHeight: (Int) -> Unit, onBodyHeight: (Int) -> Unit) {
     Column(Modifier.fillMaxWidth().blockSheetInput(!active).testTag("${sheetTag}_page_${displayed.key}")) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).onSizeChanged { onHeaderHeight(it.height) }
-            .padding(start = if (displayed.back == null) 20.dp else 4.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (displayed.back != null) IconButton(displayed.back, Modifier.testTag(backTag)) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null) }
-            Text(displayed.title, Modifier.weight(1f).testTag("dashboard_sheet_title"), style = MaterialTheme.typography.titleLarge,
-                maxLines = 1, overflow = TextOverflow.Ellipsis)
-            displayed.actions(this)
-            IconButton(requestDismiss, Modifier.testTag(closeTag)) { Icon(Icons.Outlined.Close, null) }
-        }
+        DashboardSheetHeader(displayed.title, closeTag, requestDismiss, displayed.back, backTag, onHeaderHeight, displayed.actions)
         Column(Modifier.fillMaxWidth().weight(1f, fill = !displayed.fitsContent)
             .then(if (displayed.scrollable) Modifier.verticalScroll(displayed.scroll) else Modifier)
             .onSizeChanged { onBodyHeight(it.height) }.testTag(scrollTag)
             .padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             displayed.content(this, requestDismiss)
+        }
+    }
+}
+
+/** 作者 long：代理选择与详情面板共用同一个标题栏，避免独立入口继续保留右侧关闭和不同标题基线。 */
+@Composable
+internal fun DashboardSheetHeader(title: String, closeTag: String, requestDismiss: () -> Unit,
+    onBack: (() -> Unit)? = null, backTag: String = "dashboard_sheet_back", onHeight: (Int) -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {}) {
+    var actionsWidth by remember { mutableIntStateOf(0) }
+    val titleInset = with(LocalDensity.current) { actionsWidth.toDp() }.coerceAtLeast(48.dp)
+    // 作者 long：固定Flutter compact sheet采用48dp标题栏、左侧关闭/返回；两侧等宽留白让标题真正居中，操作增减不推移标题。
+    Box(Modifier.fillMaxWidth().heightIn(min = 48.dp).onSizeChanged { onHeight(it.height) }.testTag("dashboard_sheet_header")) {
+        IconButton(onBack ?: requestDismiss, Modifier.align(Alignment.CenterStart).testTag(if (onBack == null) closeTag else backTag)) {
+            Icon(if (onBack == null) Icons.Outlined.Close else Icons.AutoMirrored.Outlined.ArrowBack, null)
+        }
+        Text(title, Modifier.align(Alignment.Center).fillMaxWidth().padding(horizontal = titleInset).testTag("dashboard_sheet_title"),
+            style = TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold), textAlign = TextAlign.Center,
+            maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Row(Modifier.align(Alignment.CenterEnd).onSizeChanged { actionsWidth = it.width }, verticalAlignment = Alignment.CenterVertically) {
+            actions(this)
+            // 作者 long：已有多层面板保留直接关闭入口，左侧返回仍只退一层，避免改变既有退出契约。
+            if (onBack != null) IconButton(requestDismiss, Modifier.testTag(closeTag)) { Icon(Icons.Outlined.Close, null) }
         }
     }
 }

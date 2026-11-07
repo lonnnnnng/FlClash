@@ -4923,17 +4923,20 @@ private fun BooleanOverrideRow(
     }
 }
 
-private fun profileSubtitle(profile: Profile): String {
+internal fun profileSubtitle(profile: Profile): String {
     val info = profile.subscriptionInfo
     if (info?.usage != null) {
         val used = info.upload + info.download
-        return "已用 ${formatBytes(used)} / ${formatBytes(info.total)}"
+        return "${formatBytes(used)} / ${formatBytes(info.total)}"
     }
-    return when (profile.type) {
-        ProfileType.URL -> "远程订阅"
-        ProfileType.FILE -> "本地文件"
-        ProfileType.CUSTOM -> "自定义配置"
-    }
+    return profileSourceLabel(profile)
+}
+
+// 作者 long：配置页与首页快切共用固定Flutter短副标题，避免相同配置因入口不同而占用不同宽度。
+internal fun profileSourceLabel(profile: Profile): String = when (profile.type) {
+    ProfileType.URL -> "远程"
+    ProfileType.FILE -> "本地"
+    ProfileType.CUSTOM -> "自定义"
 }
 
 internal fun formatBytes(bytes: Long): String {

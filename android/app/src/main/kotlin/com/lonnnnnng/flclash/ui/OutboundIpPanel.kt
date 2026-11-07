@@ -3,6 +3,11 @@ package com.lonnnnnng.flclash.ui
 import android.content.ClipData
 import android.content.ClipboardManager
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -113,18 +118,18 @@ internal fun IpQualityContent(state: OutboundIpUiState, hidden: Boolean, onHidde
     val quality = state.quality
     DashboardDetailSection("基本信息") {
         IpDetailRow("IP 地址", if (hidden) "*****" else info.ip, copyText = info.ip, tag = "ip_quality_address")
-        if (state.qualityLoading) CircularProgressIndicator(Modifier.padding(vertical = 8.dp).size(24.dp).testTag("ip_quality_loading"), strokeWidth = 2.dp)
         if (quality != null || state.qualityLoading) {
-            // 作者 long：首次查询先保留结果行，返回数据后不改变分组结构；已有结果刷新时继续展示上次内容。
-            IpDetailRow("质量等级", quality?.levelLabel ?: "读取中…")
-            IpDetailRow("IP 类型", quality?.type?.label ?: "读取中…")
-            IpDetailRow("风险标记", quality?.flags?.joinToString(" · ")?.ifBlank { "无" } ?: "读取中…")
+            // 作者 long：加载占位只替换值，不插入额外进度行；旧结果刷新保留原值，面板不会因spinner增删而跳动。
+            IpDetailRow("质量等级", quality?.levelLabel.orEmpty(), tag = "ip_quality_level", loading = quality == null, placeholderWidth = 40,
+                loadingTag = "ip_quality_loading")
+            IpDetailRow("IP 类型", quality?.type?.label.orEmpty(), tag = "ip_quality_type", loading = quality == null, placeholderWidth = 64)
+            IpDetailRow("风险标记", quality?.flags?.joinToString(" · ")?.ifBlank { "无" }.orEmpty(), tag = "ip_quality_flags", loading = quality == null)
         } else Text("IP 类型查询失败", Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.error)
     }
     if (quality != null || state.qualityLoading) DashboardDetailSection("网络") {
-        IpDetailRow("组织", quality?.organization ?: if (state.qualityLoading) "读取中…" else "—", quality?.organization)
-        IpDetailRow("ASN", quality?.asn?.let { "AS$it" } ?: if (state.qualityLoading) "读取中…" else "—", quality?.asn?.let { "AS$it" })
-        quality?.let { IpDetailRow("查询来源", it.source.label) }
+        IpDetailRow("组织", quality?.organization ?: "—", quality?.organization, tag = "ip_quality_organization", loading = quality == null, placeholderWidth = 120)
+        IpDetailRow("ASN", quality?.asn?.let { "AS$it" } ?: "—", quality?.asn?.let { "AS$it" }, tag = "ip_quality_asn", loading = quality == null, placeholderWidth = 56)
+        IpDetailRow("查询来源", quality?.source?.label.orEmpty(), tag = "ip_quality_source", loading = quality == null, placeholderWidth = 72)
     }
     if (state.qualityFailures.isNotEmpty()) {
         DashboardDetailSection("查询来源") {
@@ -142,7 +147,8 @@ internal fun IpQualityContent(state: OutboundIpUiState, hidden: Boolean, onHidde
 }
 
 @Composable
-private fun IpDetailRow(label: String, value: String, copyText: String? = null, tag: String? = null) {
+private fun IpDetailRow(label: String, value: String, copyText: String? = null, tag: String? = null,
+    loading: Boolean = false, placeholderWidth: Int = 40, loadingTag: String? = null) {
     val context = LocalContext.current
     Surface(Modifier.fillMaxWidth(), color = Color.Transparent) {
         Row(
@@ -154,8 +160,14 @@ private fun IpDetailRow(label: String, value: String, copyText: String? = null, 
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(label, Modifier.weight(0.4f), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(value, Modifier.weight(0.6f), style = MaterialTheme.typography.bodyMedium)
-            if (copyText != null) Icon(Icons.Outlined.ContentCopy, null, Modifier.size(18.dp))
+            Box(Modifier.weight(0.6f).heightIn(min = 22.dp), contentAlignment = Alignment.CenterStart) {
+                if (loading) Box(Modifier.width(placeholderWidth.dp).height(14.dp)
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = .12f), RoundedCornerShape(4.dp))
+                    .then(if (loadingTag != null) Modifier.testTag(loadingTag) else Modifier))
+                else Text(value, style = MaterialTheme.typography.bodyMedium)
+            }
+            // 作者 long：复制按钮有无不能改变值列宽度，否则组织和ASN到达后会重新换行。
+            Box(Modifier.size(18.dp)) { if (copyText != null) Icon(Icons.Outlined.ContentCopy, null, Modifier.size(18.dp)) }
         }
     }
 }

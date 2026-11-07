@@ -178,7 +178,10 @@ class DashboardInstrumentedTest {
             assertEquals("203.0.113.7", clipboard.primaryClip?.getItemAt(0)?.text?.toString())
         }
         composeRule.onNodeWithTag("ip_quality_refresh").assertIsDisplayed().performClick()
-        composeRule.onNodeWithTag("ip_quality_loading").assertIsDisplayed()
+        // 作者 long：已有质量结果刷新时继续显示原值且禁用刷新，不能为了忙态插入进度行改变面板几何。
+        composeRule.onNodeWithTag("ip_quality_refresh").assertIsNotEnabled()
+        composeRule.onNodeWithTag("ip_quality_loading").assertDoesNotExist()
+        composeRule.onNodeWithText("数据中心").assertExists()
         composeRule.runOnIdle {
             assertEquals(1, composeRule.activity.qualityRefreshCount)
             assertEquals(0, composeRule.activity.ipRefreshCount)
@@ -811,16 +814,16 @@ class DashboardInstrumentedTest {
 }
 
 private val baselines = mapOf(
-    "default" to "9e15f92b825a7380cd7279e4b80a14825a845fc13351a3b12f1071db8d3d2280",
-    "system_ready" to "d44421dd7257b6520abc6d5c377180718040d38ece1bb20990c899783d89cd3f",
-    "running" to "f2b020de1527a30dbc896f66f9bf70db2169d3e909e9010d970881f2f5b2d20e",
-    "light_default" to "049197a800eb107905ca031932e7d000ff447a08f7b3a5c5e7844cceee91e5df",
-    "light_running" to "d0ab3b47109a0cecf6f4f55d4607734bfdba3002ebd75d1d79f6e1f952c14434",
+    "default" to "b68c79864c7e5033efc5834092851645a54dc40561093e52e6c09aedb9138bb8",
+    "system_ready" to "0da44e328f89f381e464c32e62d417efe06bbfe867c435f991da4cd38c7c25e8",
+    "running" to "10ba549b00ec921609edd3bc908e7a8f2d68d1f3d64e0d5c0d3c8db4f3172cba",
+    "light_default" to "eb97b7f99796f830b4cb2ad8b2ad33fa9a62c6c9b947fc5966e6a66f10b9e7aa",
+    "light_running" to "2f69dc53e850b42502e60ee1b90b0ad031e01948e27fcffe3f6df629b2e5a710",
 )
 
 private val proxyPickerBaselines = mapOf(
-    "summary_dark" to "d63207b70f8623523c463d364c729647322bfba90734d69ac5d42134d45689dc",
-    "summary_light" to "ad089617dba26698ce5433619e32bc1dd827124224382cc143dacfad3b1752f9",
-    "picker_dark" to "6a9a8d9214240887e02fffc9032d6956e2b9daa81b8a7d3961e2a9a8339eb927",
-    "picker_light" to "62ace29b467263dca1ad4b9a777774516f4961ca2f2ec63d2820b8c97f394754",
+    "summary_dark" to "71fb2375fe2f48ce31f6aa58892b11883b947c3e681a0f2b89113321a7d50215",
+    "summary_light" to "0e08242f174f8c3ec1794edc1c57501820afa3a2004ec600c7f6622fef298305",
+    "picker_dark" to "621b2ca037c2b9fe8458a9b4f703ec96995f75bec2686625ce20a62eb36f135c",
+    "picker_light" to "438e506de6631d4774d3375549df400580e49861a9edf0491ee91e12544e8ba1",
 )

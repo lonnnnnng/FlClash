@@ -66,9 +66,10 @@ internal fun MainPageScaffold(
         topBar = {
             if (showTopBar) TopAppBar(
                 title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) "仪表盘" else selectedDestination.label,
-                    style = if (selectedDestination == MainDestination.PROFILES) TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold)
+                    style = if (selectedDestination == MainDestination.PROFILES || selectedDestination == MainDestination.DASHBOARD) TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold)
                     else MaterialTheme.typography.titleLarge) },
-                expandedHeight = if (selectedDestination == MainDestination.PROFILES) 72.dp else 64.dp,
+                // 作者 long：首页与配置共用Flutter pageTitle/72dp节奏，切页时标题基线不再上下跳动。
+                expandedHeight = if (selectedDestination == MainDestination.PROFILES || selectedDestination == MainDestination.DASHBOARD) 72.dp else 64.dp,
                 navigationIcon = topBarNavigationIcon ?: {},
                 actions = topBarActions,
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = pageColor),

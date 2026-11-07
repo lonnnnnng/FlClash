@@ -19,6 +19,8 @@
             android:name=".ui.ProfilesTestActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <activity android:name=".ui.VisualMotionTestActivity" android:exported="false"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
         <activity
             android:name=".ui.ConnectionsTestActivity"
             android:exported="false"

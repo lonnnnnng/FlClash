@@ -280,18 +280,26 @@ internal fun ProxyGroupsCard(
     var toolsMenuPage by remember(currentProfileId, runtimeState, state.isLoading) { mutableStateOf(ProxyToolsMenuPage.ROOT) }
     var locateSelectedRequest by rememberSaveable(currentProfileId) { mutableStateOf(0) }
     var locateTargetGroup by rememberSaveable(currentProfileId) { mutableStateOf<String?>(null) }
-    val groups = visibleProxyGroups(state.groups, mode)
+    var searchExpanded by rememberSaveable(currentProfileId) { mutableStateOf(picker) }
+    var proxyQuery by rememberSaveable(currentProfileId) { mutableStateOf("") }
+    val allGroups = visibleProxyGroups(state.groups, mode)
+    // 作者 long：Flutter先移除搜索后无节点的组，再决定整页空态；只过滤展示组，不改原始成员或已选节点。
+    val groups = if (proxyQuery.isBlank()) allGroups else allGroups.filter { filterProxyMembers(it, proxyQuery).isNotEmpty() }
     val groupNames = groups.map { it.name }
     val initialPage = groupNames.indexOf(currentGroupName).coerceAtLeast(0)
     var lastContentState by remember(currentProfileId) { mutableStateOf(state) }
+    var lastContentGroups by remember(currentProfileId) { mutableStateOf(groups) }
+    var lastContentQuery by remember(currentProfileId) { mutableStateOf(proxyQuery) }
     SideEffect {
-        // 作者 long：加载失败可能暂时清空当前结果；动画退场期间保留上一份完整页面快照，避免旧内容随新状态一起消失。
-        if (state.groups.isNotEmpty() && lastContentState != state) lastContentState = state
+        // 作者 long：搜索进入空态时退场层保留上一份内容和关键词，避免节点先消失、组头单独闪过后才淡出。
+        if (groups.isNotEmpty()) { lastContentState = state; lastContentGroups = groups; lastContentQuery = proxyQuery }
     }
-    val retainedGroups = groups.ifEmpty { visibleProxyGroups(lastContentState.groups, mode) }
+    val retainedGroups = groups.ifEmpty { lastContentGroups }
     val pagerState = rememberPagerState(initialPage = initialPage) { retainedGroups.size }
+    val searchEmpty = allGroups.isNotEmpty() && proxyQuery.isNotBlank() && groups.isEmpty()
     val pageSlot = when {
         groups.isNotEmpty() -> ProxyGroupsPageSlot.CONTENT
+        searchEmpty -> ProxyGroupsPageSlot.EMPTY
         state.isLoading -> ProxyGroupsPageSlot.LOADING
         state.error != null -> ProxyGroupsPageSlot.ERROR
         else -> ProxyGroupsPageSlot.EMPTY
@@ -300,8 +308,6 @@ internal fun ProxyGroupsCard(
     var requestedGroupIndex by remember(currentProfileId, groupNames) { mutableStateOf<Int?>(null) }
     var groupNavigation by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     var groupNavigationGeneration by remember { mutableIntStateOf(0) }
-    var searchExpanded by rememberSaveable(currentProfileId) { mutableStateOf(picker) }
-    var proxyQuery by rememberSaveable(currentProfileId) { mutableStateOf("") }
 
     LaunchedEffect(currentProfileId, currentGroupName, groupNames) {
         if (groupNames.isNotEmpty()) {
@@ -310,11 +316,14 @@ internal fun ProxyGroupsCard(
             if (pagerState.currentPage != page) pagerState.scrollToPage(page)
         }
     }
-    LaunchedEffect(pagerState, groupNames) {
+    LaunchedEffect(pagerState, groupNames, proxyQuery) {
         // 作者 long：只在组切换稳定后写入 Profile，取消中的滑动不应改变下次恢复的分组。
         snapshotFlow { pagerState.settledPage }
             .distinctUntilChanged()
-            .collect { page -> groups.getOrNull(page)?.name?.let(onSelectGroup) }
+            .collect { page ->
+                // 作者 long：搜索过滤导致的页码变化只是临时展示，清除后仍回到用户原组。
+                if (proxyQuery.isBlank()) groups.getOrNull(page)?.name?.let(onSelectGroup)
+            }
     }
     val selectedGroupIndex = if (groupNames.isEmpty()) 0 else pagerState.currentPage.coerceIn(groupNames.indices)
     val selectedGroup = groups.getOrNull(selectedGroupIndex)
@@ -517,31 +526,33 @@ internal fun ProxyGroupsCard(
                     ProxyGroupsPageSlot.EMPTY -> {
                         val loading = slot == ProxyGroupsPageSlot.LOADING
                         val failed = slot == ProxyGroupsPageSlot.ERROR
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.BiasAlignment(0f, -.2f)) {
                             ProxyPageEmptyState(
                                 title = when (slot) {
                                     ProxyGroupsPageSlot.LOADING -> "正在加载代理组"
                                     ProxyGroupsPageSlot.ERROR -> "代理组加载失败"
-                                    else -> "没有代理组"
+                                    else -> if (searchEmpty) "没有匹配的节点" else "暂无代理"
                                 },
                                 description = when (slot) {
                                     ProxyGroupsPageSlot.LOADING -> null
                                     ProxyGroupsPageSlot.ERROR -> state.error
-                                    else -> "添加有效配置后显示代理组。"
+                                    else -> null
                                 },
-                                tag = if (failed) "proxy_groups_error" else "proxy_groups_empty",
+                                tag = if (failed) "proxy_groups_error" else if (searchEmpty) "proxy_groups_search_empty" else "proxy_groups_empty",
+                                searching = searchEmpty,
                                 loading = loading,
-                                actionLabel = if (loading) null else if (failed) "重试" else "刷新",
-                                actionTag = if (failed) "proxy_groups_retry" else "proxy_groups_empty_action",
-                                actionEnabled = active && canRefresh,
-                                onAction = { if (active) onRefresh() },
+                                actionLabel = if (loading) null else if (failed) "重试" else if (searchEmpty) "清除搜索" else null,
+                                actionTag = if (failed) "proxy_groups_retry" else if (searchEmpty) "proxy_groups_search_empty_action" else "proxy_groups_empty_action",
+                                actionEnabled = active && (searchEmpty || canRefresh),
+                                onAction = { if (active) { if (searchEmpty) proxyQuery = "" else onRefresh() } },
                             )
                         }
                     }
                     ProxyGroupsPageSlot.CONTENT -> {
                         // 作者 long：异常或切换配置时旧内容留在退场层；当前页面仍只让目标层接收输入。
                         val contentState = if (groups.isEmpty()) lastContentState else state
-                        val contentGroups = if (groups.isEmpty()) visibleProxyGroups(contentState.groups, mode) else groups
+                        val contentGroups = if (groups.isEmpty()) lastContentGroups else groups
+                        val contentQuery = if (groups.isEmpty()) lastContentQuery else proxyQuery
                         val contentGroupNames = contentGroups.map { it.name }
                         val contentSelectedIndex = if (contentGroups.isEmpty()) 0 else pagerState.currentPage.coerceIn(contentGroups.indices)
                         val contentSelectedGroup = contentGroups.getOrNull(contentSelectedIndex)
@@ -573,7 +584,7 @@ internal fun ProxyGroupsCard(
                                         group = group,
                                         groups = contentState.groups,
                                         state = contentState,
-                                        query = proxyQuery,
+                                        query = contentQuery,
                                         options = pageOptions,
                                         locateRequest = locateSelectedRequest,
                                         locateTargetGroup = locateTargetGroup,
@@ -592,7 +603,7 @@ internal fun ProxyGroupsCard(
                                     groups = contentGroups,
                                     state = contentState,
                                     runtimeState = runtimeState,
-                                    query = proxyQuery,
+                                    query = contentQuery,
                                     locateGroupName = contentSelectedGroup?.name,
                                     locateRequest = locateSelectedRequest,
                                     options = pageOptions,

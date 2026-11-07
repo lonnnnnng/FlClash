@@ -250,15 +250,7 @@ internal fun DashboardProxyGroupsCard(
             avoidIme = true,
         ) { requestDismiss ->
             Column(Modifier.fillMaxSize().testTag("dashboard_proxy_picker")) {
-                Row(
-                    Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("代理", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
-                    IconButton(onClick = requestDismiss, modifier = Modifier.testTag("dashboard_proxy_picker_close")) {
-                        Icon(Icons.Outlined.Close, null)
-                    }
-                }
+                DashboardSheetHeader("代理", "dashboard_proxy_picker_close", requestDismiss)
                 // 作者 long：弹层和完整代理页共用真实操作入口；选择节点不关闭弹层，当前分组继续写回 Profile。
                 ProxyGroupsCard(
                     state = state,
@@ -617,58 +609,41 @@ internal fun DashboardProfileCard(
             }
         },
     ) {
-        DashboardHeader("配置", Icons.Outlined.Description)
-        Row(
-            Modifier.fillMaxWidth().padding(top = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(profile?.realLabel ?: "还没有配置", style = TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(
-                    text = profile?.let(::dashboardProfileSummary) ?: if (hasProfiles) "请选择配置" else "添加一个配置，开始连接",
-                    style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+        DashboardHeader("配置", Icons.Outlined.Description) {
             if (profile?.type == ProfileType.URL) {
-                if (isBusy) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp).testTag("dashboard_profile_sync_loading"),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    IconButton(
-                        onClick = { onUpdateProfile(profile) },
-                        enabled = canSyncProfile,
-                        modifier = Modifier.testTag("dashboard_profile_sync"),
-                    ) {
-                        Icon(Icons.Outlined.Sync, contentDescription = null)
-                    }
+                IconButton(onClick = { onUpdateProfile(profile) }, enabled = canSyncProfile,
+                    modifier = Modifier.size(36.dp).testTag("dashboard_profile_sync")) {
+                    if (isBusy) CircularProgressIndicator(Modifier.size(18.dp).testTag("dashboard_profile_sync_loading"), strokeWidth = 2.dp)
+                    else Icon(Icons.Outlined.Sync, null, Modifier.size(20.dp))
                 }
             }
-            if (profiles.size > 1) {
-                IconButton(
-                    onClick = { showProfilePicker = true },
-                    enabled = !isBusy,
-                    modifier = Modifier.testTag("dashboard_profile_switch"),
-                ) {
-                    Icon(Icons.Outlined.SwapHoriz, contentDescription = null)
-                }
+            IconButton(onClick = when {
+                profile != null -> onShowProfiles
+                hasProfiles -> ({ showProfilePicker = true })
+                else -> onAddProfile
+            }, enabled = profile != null || !isBusy, modifier = Modifier.size(36.dp).testTag("dashboard_profile_action")) {
+                Icon(Icons.Outlined.ChevronRight, null, Modifier.size(20.dp))
             }
-            TextButton(
-                onClick = when {
-                    profile != null -> onShowProfiles
-                    hasProfiles -> ({ showProfilePicker = true })
-                    else -> onAddProfile
-                },
-                enabled = profile != null || hasProfiles && canSelectProfile || !hasProfiles,
-                modifier = Modifier.testTag("dashboard_profile_action"),
-            ) {
-                Text(if (profile == null && !hasProfiles) "添加配置" else if (profile == null) "选择配置" else "查看配置")
-                Icon(Icons.Outlined.ChevronRight, null, Modifier.size(18.dp))
+        }
+        // 作者 long：同步与页面入口回到卡片标题栏，名称行只保留紧邻的快切，长名称不再与三个操作争宽。
+        Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(profile?.realLabel ?: "还没有配置", Modifier.weight(1f, fill = false).testTag("dashboard_profile_name"),
+                style = TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (profiles.size > 1) IconButton(onClick = { showProfilePicker = true }, enabled = !isBusy,
+                modifier = Modifier.size(32.dp).testTag("dashboard_profile_switch")) { Icon(Icons.Outlined.SwapHoriz, null, Modifier.size(18.dp)) }
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(profile?.lastUpdateAt?.let { "更新于 ${DateUtils.getRelativeTimeSpanString(it)}" }
+                ?: if (profile != null) "" else if (hasProfiles) "请选择配置" else "添加一个配置，开始连接",
+                Modifier.weight(1f), style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            profile?.let {
+                val expiry = it.subscriptionInfo?.expireAtMillis
+                Text(if (expiry == null) profileSourceLabel(it) else "到期 ${DateUtils.getRelativeTimeSpanString(expiry)}",
+                    Modifier.then(if (expiry != null) Modifier.testTag("dashboard_profile_expiry") else Modifier),
+                    style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
         profile?.subscriptionInfo?.takeIf { it.usage != null }?.let { info ->
@@ -699,22 +674,7 @@ internal fun DashboardProfileCard(
                 )
             }
         }
-        profile?.subscriptionInfo?.expireAtMillis?.let { expiry ->
-            Text(
-                "到期 ${DateUtils.getRelativeTimeSpanString(expiry)}",
-                modifier = Modifier.padding(top = 6.dp).testTag("dashboard_profile_expiry"),
-                style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        profile?.lastUpdateAt?.let { updatedAt ->
-            Text(
-                "更新于 ${DateUtils.getRelativeTimeSpanString(updatedAt)}",
-                modifier = Modifier.padding(top = 4.dp),
-                style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+
     }
 
     if (showProfilePicker) {
@@ -731,31 +691,35 @@ internal fun DashboardProfileCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                LazyColumn(Modifier.fillMaxWidth().weight(1f, fill = false).selectableGroup(), state = pickerList) {
+                LazyColumn(Modifier.fillMaxWidth().weight(1f, fill = false).selectableGroup(), state = pickerList,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     items(profiles, key = Profile::id) { item ->
                         val selected = item.id == currentProfileId
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(AppSuperellipseShape(14.dp))
-                                .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+                                .clip(AppSuperellipseShape(24.dp))
+                                .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = .10f) else dashboardCardColor())
                                 .selectable(selected, enabled = canSelectProfile && !selectionSubmitted, ) {
                                     // 作者 long：关闭动画期间只认领一次切换，配置应用与运行态校验仍统一由 ProfilesViewModel 处理。
                                     selectionSubmitted = true
                                     if (item.id != currentProfileId) onSelectProfile(item.id)
                                     requestDismiss()
                                 }
-                                .padding(horizontal = 14.dp, vertical = 14.dp)
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
                                 .testTag("dashboard_profile_option_${item.id}"),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                                if (selected) Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(item.realLabel, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                    style = TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold))
+                                Text(profileSubtitle(item), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                    style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Text(item.realLabel, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleSmall)
-                                Text(dashboardProfileSummary(item), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            if (selected) Surface(Modifier.size(24.dp).testTag("dashboard_profile_option_selected_${item.id}"),
+                                shape = CircleShape, color = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
+                                Box(contentAlignment = Alignment.Center) { AppGlyphIcon(AppGlyphs.check, Modifier.size(18.dp), filled = true) }
                             }
                         }
                     }

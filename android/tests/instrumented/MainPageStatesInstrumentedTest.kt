@@ -80,8 +80,8 @@ class MainPageStatesInstrumentedTest {
             compose.onNodeWithTag("proxy_groups_retry").assertIsEnabled().performClick()
             capture("proxy_empty_failed_$theme")
             compose.runOnIdle { state = ProxyGroupsUiState() }
-            compose.onNodeWithText("没有代理组").assertIsDisplayed()
-            compose.onNodeWithTag("proxy_groups_empty_action").assertIsEnabled()
+            compose.onNodeWithText("暂无代理").assertIsDisplayed()
+            compose.onNodeWithTag("proxy_groups_empty_action").assertDoesNotExist()
             capture("proxy_empty_plain_$theme")
         }
         assertEquals(2, retries)
@@ -110,7 +110,7 @@ class MainPageStatesInstrumentedTest {
             compose.waitUntil(5_000) { ViewCompat.getRootWindowInsets(checkNotNull(hostView))?.isVisible(WindowInsetsCompat.Type.ime()) == true }
             compose.waitForIdle()
             compose.onNodeWithText("没有匹配的节点").assertIsDisplayed()
-            val action = compose.onNodeWithTag("proxy_group_empty_${group.name}_action")
+            val action = compose.onNodeWithTag("proxy_groups_search_empty_action")
             action.assertIsDisplayed()
             val imeTop = checkNotNull(hostView).height - checkNotNull(ViewCompat.getRootWindowInsets(checkNotNull(hostView)))
                 .getInsets(WindowInsetsCompat.Type.ime()).bottom
