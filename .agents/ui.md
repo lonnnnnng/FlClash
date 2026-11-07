@@ -1,5 +1,9 @@
 # UI parity
 
+## 菜单动效性能（2026-11-08，当前）
+
+KUI-018菜单掉帧热点已定位并优化：稳定后层轮廓、阴影透明度独立合成、普通展开取消每帧命中订阅；补截图前开关与分阶段帧统计。Redmi API36非debuggable独立包、无录屏/PNG，优化前后各两轮深浅：二级菜单jank61/92（66.30%）→20/129（15.50%），主线程阶段中位34.25→9.45ms；非启动总窗口621/4401（14.11%）→465/4599（10.11%）。方法采样阴影位图调用片段125→58、包容耗时954→396ms，非精确调用计数；面板尝试因退化撤回，最终面板62/535（11.59%）。最终build2共849项JVM零失败/错误/跳过，App568执行、其余281复用；Debug/Test/未签名Release-R8/双Lint通过，Debug0错误68警告14提示、Release0错误66警告13提示。同套最终包回归21/21、自然深浅2/2，另深色终帧补验1/1；88PNG/31拼图和7组原始PTS序列已核对，593源码与安装回拉匹配，Release诊断隔离。正式两配置/正文SHA-size-mtime/Room偏好/选择、原1.yaml/Flutter包/设备设置全组保持，独立.motion双包及独占采集文件已收尾，结束无服务/tun0。两张玻璃开场图和一张List图为过渡帧，List原视频及同包补验确认完整节点到达。最终对照位于基线之后，非随机实验；独立包未混淆且库按debug回退，不冒充正式Release。整体性能与完整Flutter视觉仍PARTIAL；下一步优先菜单首帧/动态顶卡与剩余渲染慢帧，再补CUSTOM组数、首页无流量统计、内存图形及其余子页。玻璃默认关闭，既有边界保持。证据`docs/acceptance/motion-performance-redmi-20261108.json`，溯源`docs/motion-performance-defect.md`，附件`../acceptance-artifacts/motion-performance-20261108/`。
+
 Flutter 参考实现是行为和视觉基线，Compose 是 Kotlin 的实现方式。复刻页面时先记录信息层级、状态、交互反馈、空态、错误态、加载态和竖屏默认字号布局，再落到 Composable。
 
 当前优先级固定为主页 Dashboard → 配置 Profiles → 代理组 Proxy Groups，逐页面、菜单和按钮收敛主流程；Requests/DNS/Logs 的进一步视觉打磨暂停，主流程完成后再恢复。每个已验证切片及时同步 `docs/roadmap.md`，未完成的结构化编辑不能以现有 YAML 弹窗代替完成状态。
@@ -8,7 +12,7 @@ Design System 至少集中管理颜色、字体、间距、形状、图标、状
 
 验收范围固定为竖屏和系统默认字号；用户明确不需要横屏或大字号测试，后续不得运行这些测试，也不要运行包含这些用例的整类 instrumentation。深浅主题可按当前页面需求验证；其他布局差异需说明是 Android 平台约束还是尚未完成的 parity 工作。
 
-## 当前主页面视觉与自然时钟交互（2026-11-08）
+## 历史主页面视觉与自然时钟交互（2026-11-08）
 
 固定Flutter `be847366`与Prism `63450c0`，统一首页/配置标题、配置卡/快切、共用根面板标题、质量占位、代理整页搜索空态与短副标题。build6同套包Redmi回归14/14、自然深浅交互2/2，62PNG/22拼图及6组原始PTS序列已核对；849项JVM、Debug/Test/未签名Release-R8和双Lint通过，593源码/安装回拉匹配，正式两配置及所列设备基线保持。详见`docs/main-visual-motion-alignment.md`和`docs/acceptance/main-visual-motion-redmi-20261108.json`。
 

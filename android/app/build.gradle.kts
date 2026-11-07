@@ -26,6 +26,8 @@ val hasReleaseSigning = releaseStoreFile.exists() &&
 
 val defaultVersionCode = 1
 val defaultVersionName = "0.1.0"
+// 作者 long：性能诊断显式启用独立包名的非Debug运行时；默认构建/正式Release不携带验收宿主。
+val motionBenchmarkEnabled = providers.gradleProperty("kclashMotionBenchmark").orNull == "true"
 val requestedVersionCode = providers.gradleProperty("kclashVersionCode")
     .orNull
     ?.toIntOrNull()
@@ -92,9 +94,23 @@ android {
                 "proguard-rules.pro",
             )
         }
+        if (motionBenchmarkEnabled) create("motionBenchmark") {
+            initWith(getByName("debug"))
+            isDebuggable = false
+            applicationIdSuffix = ".motion"
+            versionNameSuffix = "-motion"
+            matchingFallbacks += "debug"
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
+    if (motionBenchmarkEnabled) testBuildType = "motionBenchmark"
 
     sourceSets {
+        if (motionBenchmarkEnabled) getByName("motionBenchmark") {
+            // 作者 long：同一个固定对象宿主用于Debug/非Debug对照，禁止另写简化动画冒充产品性能。
+            kotlin.srcDir("src/debug/kotlin")
+            manifest.srcFile("src/debug/AndroidManifest.xml")
+        }
         // 作者 long：Flutter 参考工程已有的 GeoIP/GeoSite 数据作为 Android 首次启动的离线核心资源，
         // 避免 geo-auto-update 在 VPN 尚未建立前依赖外网下载而阻断配置应用。
         getByName("main").assets.srcDir(rootProject.file("assets/data"))
@@ -112,6 +128,10 @@ android {
         resources.merges += "/META-INF/services/kotlinx.coroutines.CoroutineExceptionHandler"
         resources.merges += "/META-INF/services/kotlinx.coroutines.internal.MainDispatcherFactory"
     }
+}
+
+if (motionBenchmarkEnabled) configurations.named("motionBenchmarkImplementation") {
+    extendsFrom(configurations.getByName("debugImplementation"))
 }
 
 kotlin {

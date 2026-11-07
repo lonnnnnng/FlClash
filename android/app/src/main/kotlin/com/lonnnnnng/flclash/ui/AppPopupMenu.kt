@@ -212,7 +212,9 @@ internal fun AppDropdownMenu(
     fun hitItem(position: Offset? = carry.position): Any? = position?.takeIf(stack.hitBounds::contains)?.let { point ->
         registry.items.entries.firstOrNull { it.value.enabled && it.value.bounds.contains(point) }?.key
     }
-    LaunchedEffect(carry.position, carry.dragging, active, pageKey, stack.hitRevision) {
+    // 作者 long：只有按住拖选才需要随形变重新命中；普通展开不能因绘制回写命中框而每帧重组整个Popup。
+    val movingHitRevision = if (carry.dragging) stack.hitRevision else 0
+    LaunchedEffect(carry.position, carry.dragging, active, pageKey, movingHitRevision) {
         val hovered = if (active && carry.dragging) hitItem() else null
         if (hovered != registry.hovered && hovered != null) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         registry.hovered = hovered
@@ -311,7 +313,7 @@ internal fun AppDropdownMenu(
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
                             LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
                             LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {
-                            AppMenuStack(stack, pageKey, active, surface, backdrop, menuPosition, opening.value, returning.value,
+                            AppMenuStack(stack, pageKey, active, surface, backdrop, menuPosition, opening.asState(), returning.asState(),
                                 onScrollable = { scrollable = it }, content = content)
                         }
                     }

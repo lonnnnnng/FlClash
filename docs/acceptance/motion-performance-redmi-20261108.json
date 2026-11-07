@@ -1,0 +1,2296 @@
+{
+  "date": "2026-11-08",
+  "status": "MENU_HOTSPOT_IMPROVED_VERIFIED; overall motion smoothness and full Flutter visual parity remain PARTIAL",
+  "baseCommit": "db195142a895b57072a140a52311a5bc5840b240",
+  "branch": "kotlin",
+  "defect": "KUI-018",
+  "trace": "docs/motion-performance-defect.md",
+  "changes": [
+    "Stable shape identity for root/background menu cards; shadow alpha applied by a separate graphics layer instead of shadow cache key.",
+    "Popup observes animated hit bounds only while dragging; animation State reaches draw/layer reads without Float parameters invalidating the stack.",
+    "Screenshot flag checked before capture/compression; per-theme and per-stage gfx reset while Dialog windows are alive; optional bounded method sampling.",
+    "Opt-in separate .motion non-debuggable unminified fixture variant; default Debug/Release and official data isolation retained.",
+    "ConnectionModalSheet presentation experiment reverted after measured regression; final product changes are limited to menu rendering."
+  ],
+  "reference": {
+    "flutter": "be84736605527034689c95bf27828ff27d912c5e",
+    "prism": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "compose": "1.12.1",
+    "note": "Source guidance only; no Flutter commits merged or reference app changed."
+  },
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "flutterHashes": [
+      "700570428bde3a1b316ae7f7e8f10d77f9e23ee8bf8b3f45557362a061fbefb3"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 2m 56s",
+    "tasks": "389 actionable tasks: 41 executed, 348 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 568,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 74
+      },
+      "service": {
+        "tests": 212,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE",
+      "> Task :app:testDebugUnitTest"
+    ],
+    "executionNote": "执行/复用状态以本组jvmExecution为准",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 68,
+        "hints": 14
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 13
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "ea58ec2ff1043114d900cc37c569a5207611e6d3a0ca8341ad5eed0b9b9c80b7",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "a220a9af17434962f12a17cf19b8b5c341f1731eac832619e2f712c34eecca60",
+        "bytes": 5619606,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "3e5af7a3bae13bc379b5c7bf2c38ac1e048059474bddbc4bd320223a097415cf",
+        "bytes": 48308504,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "sourceFilesMatched": 593,
+  "releaseIsolation": {
+    "sourceFilesMatched": 593,
+    "debugMarkersAbsent": {
+      "VisualMotionTestActivity": true,
+      "VisualMotionNaturalInstrumentedTest": true,
+      "kclash_motion_event": true,
+      "ResourcePickerColdInstrumentedTest": true,
+      "kclash_resource_cold_ready": true,
+      "resource-picker-cold.json": true,
+      "resource-picker-fixture.v1": true,
+      "EditorCommitProbe$Gate": true,
+      "GlobalRulesProbe": true,
+      "fixture-global-rules-failure": true,
+      "kclash_global_rules_ready": true,
+      "ProviderRuntimeAcceptanceActivity": true,
+      "ProviderRuntimeKillReceiver": true,
+      "KClashProviderRuntime": true,
+      "provider-runtime-acceptance.v1": true,
+      "kclash-invalid-group": true,
+      "mrs-preview": true,
+      "kclash_provider_cold_ready": true,
+      "ProviderValidationProbe$Gate": true,
+      "Provider校验验收等待超时": true,
+      "本进程已有Provider校验等待点": true
+    },
+    "releaseComponentIsolation": true,
+    "sha256": "3e5af7a3bae13bc379b5c7bf2c38ac1e048059474bddbc4bd320223a097415cf",
+    "scope": "R8 DEX and manifest static checks; unsigned APK not installed"
+  },
+  "extraReleaseMarkersAbsent": [
+    "kclashMotionProfile",
+    "kclashMotionInlineFrames",
+    "kclash_motion_gfx",
+    "motion-method-"
+  ],
+  "performance": {
+    "scope": "Two baseline rounds and two final menu-only rounds after rollback, each dark/light, non-debuggable unminified isolated .motion package; no PNG/video/method trace; instrumentation remains. Not signed/R8 Release.",
+    "comparisons": {
+      "allNonStartup": {
+        "before": {
+          "frames": 4401,
+          "janky": 621,
+          "percent": 14.11,
+          "uiStageSampleCount": 2824,
+          "uiStageMedianMs": 3.738,
+          "uiStageP90Ms": 23.359
+        },
+        "after": {
+          "frames": 4599,
+          "janky": 465,
+          "percent": 10.111,
+          "uiStageSampleCount": 2926,
+          "uiStageMedianMs": 3.807,
+          "uiStageP90Ms": 17.32
+        }
+      },
+      "menuOpen": {
+        "before": {
+          "frames": 146,
+          "janky": 61,
+          "percent": 41.781,
+          "uiStageSampleCount": 99,
+          "uiStageMedianMs": 28.124,
+          "uiStageP90Ms": 38.681
+        },
+        "after": {
+          "frames": 177,
+          "janky": 34,
+          "percent": 19.209,
+          "uiStageSampleCount": 126,
+          "uiStageMedianMs": 12.378,
+          "uiStageP90Ms": 22.762
+        }
+      },
+      "submenu": {
+        "before": {
+          "frames": 92,
+          "janky": 61,
+          "percent": 66.304,
+          "uiStageSampleCount": 81,
+          "uiStageMedianMs": 34.252,
+          "uiStageP90Ms": 43.184
+        },
+        "after": {
+          "frames": 129,
+          "janky": 20,
+          "percent": 15.504,
+          "uiStageSampleCount": 104,
+          "uiStageMedianMs": 9.445,
+          "uiStageP90Ms": 27.52
+        }
+      },
+      "menuReturnAndList": {
+        "before": {
+          "frames": 325,
+          "janky": 121,
+          "percent": 37.231,
+          "uiStageSampleCount": 72,
+          "uiStageMedianMs": 2.416,
+          "uiStageP90Ms": 13.705
+        },
+        "after": {
+          "frames": 378,
+          "janky": 57,
+          "percent": 15.079,
+          "uiStageSampleCount": 71,
+          "uiStageMedianMs": 2.185,
+          "uiStageP90Ms": 15.421
+        }
+      },
+      "qualityOpenAndExpand": {
+        "before": {
+          "frames": 531,
+          "janky": 74,
+          "percent": 13.936,
+          "uiStageSampleCount": 374,
+          "uiStageMedianMs": 3.984,
+          "uiStageP90Ms": 7.416
+        },
+        "after": {
+          "frames": 535,
+          "janky": 62,
+          "percent": 11.589,
+          "uiStageSampleCount": 375,
+          "uiStageMedianMs": 3.992,
+          "uiStageP90Ms": 7.847
+        }
+      },
+      "navigationReversal": {
+        "before": {
+          "frames": 321,
+          "janky": 18,
+          "percent": 5.607,
+          "uiStageSampleCount": 323,
+          "uiStageMedianMs": 3.973,
+          "uiStageP90Ms": 18.519
+        },
+        "after": {
+          "frames": 326,
+          "janky": 16,
+          "percent": 4.908,
+          "uiStageSampleCount": 327,
+          "uiStageMedianMs": 3.814,
+          "uiStageP90Ms": 14.106
+        }
+      }
+    },
+    "beforeBatches": [
+      "benchmark-before1",
+      "benchmark-before2"
+    ],
+    "afterBatches": [
+      "benchmark-menu-only1",
+      "benchmark-menu-only2"
+    ],
+    "limits": [
+      "Vsync to SyncQueued is a sampled main-thread interval, not pure CPU time. Flag=0 frame rows are restricted to the current reset window; per-window ring capacity may omit early frames.",
+      "Final menu-only rounds ran after both baseline rounds, not randomized or interleaved; earlier combined-patch rounds are separate. No variance confidence claim from two rounds; thermal status and package hashes retained per batch. No formal network/core/VPN workload.",
+      "Global smoothness is not accepted; remaining frame deadline misses and quality-stage variance are retained."
+    ],
+    "runs": [
+      {
+        "batch": "benchmark-before1",
+        "methodsPassed": 2,
+        "installHashes": {
+          "com.lonnnnnng.flclash.motion": {
+            "builtSha256": "0cf7e89068ec4ab7a69c9bd3f4d1fb9b73188f6fea0deeec79ea9c389f551dfb",
+            "pulledSha256": "0cf7e89068ec4ab7a69c9bd3f4d1fb9b73188f6fea0deeec79ea9c389f551dfb"
+          },
+          "com.lonnnnnng.flclash.motion.test": {
+            "builtSha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9",
+            "pulledSha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9"
+          }
+        },
+        "preservation": {
+          "formalProfilesAndBodiesAndPreferences": true,
+          "originalYamlFlutterDevice": true,
+          "noServices": true
+        },
+        "gfxFiles": [
+          {
+            "path": "visual-motion-benchmark-before1-dark-0-home.gfx",
+            "sha256": "0f798229484f0b4155e5a6e11ba4cb568d741a072921a606a8dbf72a9bc193e4"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-1-before-profile-picker-open.gfx",
+            "sha256": "8cfcbbd0b446265598fa458db2ac9ca9766f9556dcd43c94153d0dc9fa4bbea4"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-10-proxy-partial.gfx",
+            "sha256": "5d98e70d67e8e03711168679214f42202867675d70421ce6b88bbb0233259172"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-11-before-proxy-menu-nested.gfx",
+            "sha256": "0de551cda234da28fbd172af4d21d0fe7830bc9f8eb3f37215daa0f6b23726e7"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-12-proxy-menu.gfx",
+            "sha256": "a9e2be47672411e3fd143417351590c95dc27b40c7edfad9e4d77b9fc4cbe83f"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-13-proxy-submenu.gfx",
+            "sha256": "bc08a0655cf2bc3df1cf9f1e531911dd89d0ac0fa72e2f9a97ab4f09ca1908be"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-14-proxy-list.gfx",
+            "sha256": "9044c8de5bc485bc9b7e2c2d2abec4be1335382c161b57bf19cba1290374841b"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-15-before-quality-loading.gfx",
+            "sha256": "c9d586c9c8790236874bbd41d9ceec11617f66bf2328c8eb0ead06fe364c0de6"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-16-quality-loading.gfx",
+            "sha256": "66f87257b8eadac63e1cb64506b18cc92a43a2be10e2ea7751ab334270706b54"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-17-quality-ready.gfx",
+            "sha256": "d76e6136590ceb61b02807a8c26902880dd5ea70d57c608f1d7e63a10eddbe0e"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-18-before-quality-return.gfx",
+            "sha256": "3777176deb8fdee69a710fc53672f80e783ee6bbcbf71d188c11b6b044f4c419"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-19-profiles-empty.gfx",
+            "sha256": "065ea325a442f562104d7b21b980365ea83670ed2ca2fa8f140217dfd5e2257c"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-2-profile-picker.gfx",
+            "sha256": "1f7207425c024859e89c0c73724815b2cbcc9765ff1cde1e8642b9ef987aceed"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-20-proxy-empty.gfx",
+            "sha256": "72cafd9946cc9b47b6923e8bf7efc7a8f4457c6dc9e3a2dbce0345864c285a92"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-21-before-completed.gfx",
+            "sha256": "06d317d49994f55893ad06aa3fbe1c5060e7b4de4f898b743a6f213cfeaf2d3d"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-3-before-profile-picker-reopen-back.gfx",
+            "sha256": "706bbe6a8dc0a1c005e20bee41fdb652cd35c2376d94a51cd8ee74933fece7a6"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-4-before-navigation-rapid-reversal.gfx",
+            "sha256": "32ce55ea42f73adc2a1fc7b6d778830162ed5a74acd5ed49b1a46fe1a72a1be0"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-5-profiles.gfx",
+            "sha256": "697dc16683803d32894230c2334b5ee00f3b4d90287b6c087a0307d3eac4b4d1"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-6-profiles-sources.gfx",
+            "sha256": "c21f91592b7eb0207893c5ea89a793e86de6e5317ee8680fa524a1413119b40e"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-7-proxy.gfx",
+            "sha256": "b4db4061b00e66fff10662d72843205b41081c2d659aed68c71de55c6cf2e90b"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-8-before-search-partial.gfx",
+            "sha256": "5d6382ad5e8076a4da1cdd42be5dfce32dff0f88a04d3766211fd49aae42ecb6"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-dark-9-proxy-search-empty.gfx",
+            "sha256": "4c77518ff6136a6ea8d7dd93aedc35eaacd8d69dbfea707e2681938736ca0adc"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-0-home.gfx",
+            "sha256": "b8fc5deb07766d3d8e86e17642a111713b84b494520a4f12ee1ad9d3472fd856"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-1-before-profile-picker-open.gfx",
+            "sha256": "370f7bc697bb3f132f7d64299d3fb143e9b76cf46dce5358a844ec56b91d087d"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-10-proxy-partial.gfx",
+            "sha256": "3bfaaaa3ea8a483e85a500ee51939df353f6f6c2a1752b7f1c72b16432fcc995"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-11-before-proxy-menu-nested.gfx",
+            "sha256": "5cdb2514932029dd8e8ba187e1c3633dbfeb327f9f5af2fa4349b7071f22b27c"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-12-proxy-menu.gfx",
+            "sha256": "f17033eaa80518d2e244818ff32b3c915843f020c046c6be74f073e6b7ec9acf"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-13-proxy-submenu.gfx",
+            "sha256": "7783db76a1dd70275f1a63948bdc089d04e2bda9f266e9ed911163ba529c2f8b"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-14-proxy-list.gfx",
+            "sha256": "528e7dd5bbade9343dabf628914d2b840bc77a3b906dd368fce1602f1ea5919c"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-15-before-quality-loading.gfx",
+            "sha256": "a9b1fbcb682f8eeabfe3e87fc3dfdaca63172e92458037f6b120f584cc9bb464"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-16-quality-loading.gfx",
+            "sha256": "1070201be00aa4d3ecd97e4f892655c45518848698613bc37a3de9f94f99fe6b"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-17-quality-ready.gfx",
+            "sha256": "2058dcba2e4197cac98a0c4c2070788ab2b777763e7851f5b170af3ba4f26ef8"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-18-before-quality-return.gfx",
+            "sha256": "635eb6f5d3662923f3473bf32134ec9a433045d441d257d68e42d3bc43574c83"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-19-profiles-empty.gfx",
+            "sha256": "71c597f4393661c5ee68f01aabec39d52bc38570bdca13ecc6e04aa99a3341e6"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-2-profile-picker.gfx",
+            "sha256": "1cf291c9534dd753cce4987cec9fa063f90f57400362400cf1317aa37860e1ae"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-20-proxy-empty.gfx",
+            "sha256": "0bdd1f52f964ce3b6e0f3ef1bee35426cb266ffebd231bb9911b14da9dc237fc"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-21-before-completed.gfx",
+            "sha256": "e1776a5cd220a1d2c55574fbdc7515460990aa1d29239afa1ab83445e131a478"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-3-before-profile-picker-reopen-back.gfx",
+            "sha256": "bbb94722e8d68114874821f98ddcf8a0dfb3c05cfe89b59d9ef1f1e0cee9a98f"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-4-before-navigation-rapid-reversal.gfx",
+            "sha256": "7135f46237b52dfc8e805650e52cf8e0127066f7a4adf606a5dbcb3e0e308f39"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-5-profiles.gfx",
+            "sha256": "91a4e4f3406befb74c99bca3f058b7c84058c2f2eed51e96e81a4666633add02"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-6-profiles-sources.gfx",
+            "sha256": "fb5c817c7cf4b6f932d8f120f606f42e6c537dbc4b1c51aa1ad96c984932dfe6"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-7-proxy.gfx",
+            "sha256": "3bc2b258ef6e49c4d491bb60326759114425b73548794d1255881e29f0333817"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-8-before-search-partial.gfx",
+            "sha256": "cf817d487c85dcfefa25175231ff252020d50de9baff8e35fc1a6539dcec4107"
+          },
+          {
+            "path": "visual-motion-benchmark-before1-light-9-proxy-search-empty.gfx",
+            "sha256": "0086ffea89af1aef14835423352c1482b0b4a3cbd168acc8ae2b1c580f05aedb"
+          }
+        ],
+        "thermalStatusBefore": "Thermal Status: 0",
+        "thermalStatusAfter": "Thermal Status: 0"
+      },
+      {
+        "batch": "benchmark-before2",
+        "methodsPassed": 2,
+        "installHashes": {
+          "com.lonnnnnng.flclash.motion": {
+            "builtSha256": "0cf7e89068ec4ab7a69c9bd3f4d1fb9b73188f6fea0deeec79ea9c389f551dfb",
+            "pulledSha256": "0cf7e89068ec4ab7a69c9bd3f4d1fb9b73188f6fea0deeec79ea9c389f551dfb"
+          },
+          "com.lonnnnnng.flclash.motion.test": {
+            "builtSha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9",
+            "pulledSha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9"
+          }
+        },
+        "preservation": {
+          "formalProfilesAndBodiesAndPreferences": true,
+          "originalYamlFlutterDevice": true,
+          "noServices": true
+        },
+        "gfxFiles": [
+          {
+            "path": "visual-motion-benchmark-before2-dark-0-home.gfx",
+            "sha256": "325e2bb0a7800feee384b0791d11a1ced24f40d630d87edfb5534ef19fd960a6"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-1-before-profile-picker-open.gfx",
+            "sha256": "38981fae51bdc579462a0476dd74f4b1a066ff8481cc4824a2949336e37de46a"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-10-proxy-partial.gfx",
+            "sha256": "602a715aa1f329dd5466bccfd6631827e634089ffbe1b34a6151ad3e529d6f34"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-11-before-proxy-menu-nested.gfx",
+            "sha256": "e730ecb737aa449dcbeb4b046ed0e34a75ba1c0c55d3ca0f290877b453b69756"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-12-proxy-menu.gfx",
+            "sha256": "e17b333f8ed715f4418205fa68d0bbdc37d0ed63498c1480f33e6abf2237283a"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-13-proxy-submenu.gfx",
+            "sha256": "22e075b1b7ebc5722962dc131e1bcfd257e270ddaac73034036b7a260a1d013c"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-14-proxy-list.gfx",
+            "sha256": "bae3ecb89d83fd806ffc6464fd87d64bfeda6328c7423be2d3aebb1602ca5d45"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-15-before-quality-loading.gfx",
+            "sha256": "7cebbb4956e2e931ec9828c38bbc7f8eb28fb675f6afcae6ad11013304763fe8"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-16-quality-loading.gfx",
+            "sha256": "c2e2fd5506bff23c8c85601b8f81b252a807ace9f5a957f9addd876742929385"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-17-quality-ready.gfx",
+            "sha256": "bcae203cd292b1696894e74d390cdf9f8e6b32d1ebbe16b01c7b4b2f5940539c"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-18-before-quality-return.gfx",
+            "sha256": "9a25dc47163d59e01c32695d73ae92ce35602b6c4a5018e67c1e770a4ca6cbd7"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-19-profiles-empty.gfx",
+            "sha256": "5153a5c748f6da278c468dc086b61a5de924cd2e2bed31ac4c2726e2551387bb"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-2-profile-picker.gfx",
+            "sha256": "30ffc8898e7e1e8d83c1939d9d4bd6d4c714ad7a2ddc325579b82740b2aed692"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-20-proxy-empty.gfx",
+            "sha256": "5643eff6b7fa0e6c195bc0cfd70f220e1af4be1e70cf427f5fa09d71f4277b90"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-21-before-completed.gfx",
+            "sha256": "d74628fb9fbefa51c5e60b89796fb27b71e07a7b6632a568e8b5b98fa9b12589"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-3-before-profile-picker-reopen-back.gfx",
+            "sha256": "0efe117b0ce62666e125b6aaec3b35c88783bcc3fe9221fbc0299ca3d79522e3"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-4-before-navigation-rapid-reversal.gfx",
+            "sha256": "ccd537ea2348b386baf9564840a15bb2fad85544c430ce51b87e7e3777645840"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-5-profiles.gfx",
+            "sha256": "fd492a8ad98377515447241a05307a0d33521d509152780d3addaf504ef1b38f"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-6-profiles-sources.gfx",
+            "sha256": "ce7e08c7a328371c2583d4dd59017bb1d7d5ea09fdb06ea521726c5e6984feab"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-7-proxy.gfx",
+            "sha256": "ee277b26f7d45b36a466bbd1d77e2d69988c66833ac55093e6a3e6bef117825d"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-8-before-search-partial.gfx",
+            "sha256": "1d57db18229fbd6db5c33b2e9eadc478372550308914657df69fbaabfe25c808"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-dark-9-proxy-search-empty.gfx",
+            "sha256": "44fe3076021ced6aad25b6016d7722cbb2c6491f5e6b3e9295d7ab57d45ad1a5"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-0-home.gfx",
+            "sha256": "af3f2e32f14742e32c0e4654876b27775b98cfd9815dc4ffd11ee83a058faeb4"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-1-before-profile-picker-open.gfx",
+            "sha256": "ac534d347e94d5daf32bbf9b0bf535835d3818e8622b76c3837bfed476e600de"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-10-proxy-partial.gfx",
+            "sha256": "c96c7d4c65f494045134fd6c014705396ac438fe4d164e6d3d659afb9f9e3966"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-11-before-proxy-menu-nested.gfx",
+            "sha256": "f616a762a1ac3e90a574d77f3c5edfde14419b479a89189402913757789213eb"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-12-proxy-menu.gfx",
+            "sha256": "433419414150bcc8ec56fdfaf8ff0d0cd23353d8279eac91d4a3aa7ecc9ce5e5"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-13-proxy-submenu.gfx",
+            "sha256": "7052aa8c3447c3a89d26d949bbff5e1428460428de766a1602c8c63c7ddf35c9"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-14-proxy-list.gfx",
+            "sha256": "57d5a2464f1b5b829201f85610df30ef8a53a2bbe10c739a84c6aebff41a0ebf"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-15-before-quality-loading.gfx",
+            "sha256": "783c4ae0a1edcc8a9635d86131bddb095d6d91d3845cd77a56ad3dec49bd851b"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-16-quality-loading.gfx",
+            "sha256": "d98e433927a20b2434213259e0f118f6eef68e18c724723363be34ed14371c07"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-17-quality-ready.gfx",
+            "sha256": "c84150fb6ad3bacd73f71582ed05112cdfc46d494ac19a5e9fb18223bf47ff7f"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-18-before-quality-return.gfx",
+            "sha256": "7f71c32c1f5977ecf3a84b90d352d33387730b7a72ad9e9a7550c0639c3ce56a"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-19-profiles-empty.gfx",
+            "sha256": "649fc71da03c293aac71b28d39a7b60f2e78164253401e3d20efc1f57edcbce2"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-2-profile-picker.gfx",
+            "sha256": "303dd76935cbbf5b0f495208109ad837e284f2f4b8f3fd12d0d25a404d412427"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-20-proxy-empty.gfx",
+            "sha256": "e320a4dea7c410fd538b409008299cb48832ee2ed3b324c85fb89c1cb008dec9"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-21-before-completed.gfx",
+            "sha256": "05438a0c54ad418afb85d5eda73abfd8e1769d58d7b090804c69de814acf1b26"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-3-before-profile-picker-reopen-back.gfx",
+            "sha256": "835cd66d14395d2b9aa060a3b88941c4bf3c1bc586a4897c299f9e53c5e9eca0"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-4-before-navigation-rapid-reversal.gfx",
+            "sha256": "0f559ca4a2185e549c35fd89029bbdc13e407f91caed785289e31d943aa75b54"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-5-profiles.gfx",
+            "sha256": "813f09830d4b22995d775c25a6cbd206b86b4e42a6e486395839189f9cdfa5aa"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-6-profiles-sources.gfx",
+            "sha256": "cb625f603f0b08345bc7b476f3fd19b1582a5270ad3a92b86e929a1687eaacee"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-7-proxy.gfx",
+            "sha256": "9ab1faddf1c43a38f11c53a98e7b00d8bc103fbe54ecab619d6a2343bb76232a"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-8-before-search-partial.gfx",
+            "sha256": "dd308b0e3cf4868650dccc0e067f96cddb3f09cc678ce64dc7644e76134e8878"
+          },
+          {
+            "path": "visual-motion-benchmark-before2-light-9-proxy-search-empty.gfx",
+            "sha256": "a31978bf76090c9100c43bcd6f166edc5ca80a5ff4ca5d33c2d648ae8114b9cd"
+          }
+        ],
+        "thermalStatusBefore": "Thermal Status: 0",
+        "thermalStatusAfter": "Thermal Status: 0"
+      },
+      {
+        "batch": "benchmark-menu-only1",
+        "methodsPassed": 2,
+        "installHashes": {
+          "com.lonnnnnng.flclash.motion": {
+            "builtSha256": "9b0104c2ba394d20ee26faea1d4a2be2f96a479cd267e54b3477ea1482f168fe",
+            "pulledSha256": "9b0104c2ba394d20ee26faea1d4a2be2f96a479cd267e54b3477ea1482f168fe"
+          },
+          "com.lonnnnnng.flclash.motion.test": {
+            "builtSha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9",
+            "pulledSha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9"
+          }
+        },
+        "preservation": {
+          "formalProfilesAndBodiesAndPreferences": true,
+          "originalYamlFlutterDevice": true,
+          "noServices": true
+        },
+        "gfxFiles": [
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-0-home.gfx",
+            "sha256": "5ff4552f9bf16ca65f139707e8c9e305664bbee36768f65b60e2047a612e3cbd"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-1-before-profile-picker-open.gfx",
+            "sha256": "1c88ddb637f70c828732f19961168d17dffd6c5cff9bdaa5154a564361288c47"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-10-proxy-partial.gfx",
+            "sha256": "a8da6a3551fd2c32b633499a2abaacd6109bf2e2f4b734f6ab2b917644b02902"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-11-before-proxy-menu-nested.gfx",
+            "sha256": "f4cb9f6573aac0dc731de9b4884e4a33cd36209d23e62e8f96cf7c73112b1b7d"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-12-proxy-menu.gfx",
+            "sha256": "70f0d41089ebe44f87cbc613ad0203b13510e3d3f4c748e333ac3aa2527dbfc7"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-13-proxy-submenu.gfx",
+            "sha256": "1e74641f3efda7919ac3ddaffe099c470f8f696208079944bbb43df1bd2e30cd"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-14-proxy-list.gfx",
+            "sha256": "dd9cc17eb34dd1f42c3a3d27a0358c56bb441bb59df336b94b8c774b2ea7fb43"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-15-before-quality-loading.gfx",
+            "sha256": "8dd012d8179b7842bfe08e59e7b38f07bad948615daff798f381ab2593f013a0"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-16-quality-loading.gfx",
+            "sha256": "778c514c2140eb844c2455a0b1aa32cdd7e11bc1f3b1c20f387389baac108186"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-17-quality-ready.gfx",
+            "sha256": "4db570932bbe08fc7d64c9e0473871ca08b67ad2557eb727e3b3d65c3b805111"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-18-before-quality-return.gfx",
+            "sha256": "55b2b1a5165b38f3f48c7e11c8d6ac0f9f0edf0fdde4a44d86addcff0b86de9e"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-19-profiles-empty.gfx",
+            "sha256": "a12301bd56f7e66b856d6549a8f29a43b665d6732233a721ed5c498665fcb8eb"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-2-profile-picker.gfx",
+            "sha256": "327116356ccf2914216e0087c260562fee4c72c38b10ad6c2e5ac97b6c7f6f29"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-20-proxy-empty.gfx",
+            "sha256": "9c779c83ed8f6d235de350e6cc4d555afe49c4dcb408d5d57d3131a8a577f96e"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-21-before-completed.gfx",
+            "sha256": "0ba1efda5198c722ccfeb86137d8abea65d8cc6624ada8c1361de026c92885f7"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-3-before-profile-picker-reopen-back.gfx",
+            "sha256": "f96be671bccc1fa61585bcbb3ce520c56dd6fb11a2b1f8ec439bff31ce5f8ad7"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-4-before-navigation-rapid-reversal.gfx",
+            "sha256": "7d6918c3cbafb7568f4ba75e2023dd874fa86933ed0d118bcf824d43049d65da"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-5-profiles.gfx",
+            "sha256": "3e9508a4e8937002398eca223419b9a7c2fe0d91c687940ad82e3f43b34b2701"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-6-profiles-sources.gfx",
+            "sha256": "197f04889a41c8f4dbc1938305e8422223a0f2886dbdd15981f34d37b9e17f9c"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-7-proxy.gfx",
+            "sha256": "b3a1e2c3b1149a7102f2674bda23557972e4c3a298a87b1b1e0b082578fd12e0"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-8-before-search-partial.gfx",
+            "sha256": "d5596680116f723b612c3aaddda6c753b3a04feba4492f0f29dc65d7a6e23b7b"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-dark-9-proxy-search-empty.gfx",
+            "sha256": "108a1f03fc8ef692dd36ae582c8c43016784a7c535c0a3a4e4defd2a8ee5b24a"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-0-home.gfx",
+            "sha256": "7645e38a95555f37afe7889b4d43668847259355f51f9375db1389c1082dd5bc"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-1-before-profile-picker-open.gfx",
+            "sha256": "d4ca3ee79d5e840dcef5685a9ca46b28ae5f00c25adbb01910854eb5319be581"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-10-proxy-partial.gfx",
+            "sha256": "4703358ac8f11dff1613933414661497baba50fcb78c09dd3cc1d9a88b87eb50"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-11-before-proxy-menu-nested.gfx",
+            "sha256": "2393b7c07a996c531856413e4dc7ad882999bf8a6f32e56aae1b19e29ba9e6aa"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-12-proxy-menu.gfx",
+            "sha256": "6fafe3be53accd279e43a222773bb8aeb098d86b04027e77e2241437d8aab933"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-13-proxy-submenu.gfx",
+            "sha256": "54aae80f8a571b44f5115e5988f4fe66b2a7bba468aa5fa3f8bb2cc3a8a45ccf"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-14-proxy-list.gfx",
+            "sha256": "033cffa9d86e58f1795dc4fa1656d86b4d3eb6d4e87adad1b562f5ef40e68fe9"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-15-before-quality-loading.gfx",
+            "sha256": "0e7c7d3f24a6d1e570baf9d488fe69bf90a87454d57cab91342fdcc9df98b38f"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-16-quality-loading.gfx",
+            "sha256": "4619a9d89e857239ca4cb6a60e0041299c2a5f8a58e29a98b034e04372e37fbe"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-17-quality-ready.gfx",
+            "sha256": "5552f2b4ada65ed7e2bd35eb639918e4860f6fd57d4ef23fccc6fd440bf5767d"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-18-before-quality-return.gfx",
+            "sha256": "1b8cf5710342986a15a1768a7a279433822eee1019de145ea4e37528a75bf96c"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-19-profiles-empty.gfx",
+            "sha256": "48a9f35fde19808b55b9532e0511fd287557f20bb2d01f36f5800361978bd3df"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-2-profile-picker.gfx",
+            "sha256": "5b46a1438c9ab9063b2ffc9284f4eb84d7c21c1b2c33faa84d204e6827bd6a85"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-20-proxy-empty.gfx",
+            "sha256": "5724a8e7470d5a2335bc1aaa8042e47ed742c500e77fbb0f11b2d6838c3fd17b"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-21-before-completed.gfx",
+            "sha256": "6f1a240798678c9d708475ae25a9a5798e2b89cc8e82b756f274fdb30934ae90"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-3-before-profile-picker-reopen-back.gfx",
+            "sha256": "74bcdc025c5dc9518b2dc69fe977a81194d810405ff215fc9b0926f7fcbf1728"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-4-before-navigation-rapid-reversal.gfx",
+            "sha256": "3a88b07fac7e7b3c2aaeedde481af1a4f403f10a8a384d2ac0f7264e918a9db3"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-5-profiles.gfx",
+            "sha256": "137af8f077182f80b31e6b111d0b7b59c06ad2ab662a192a864ce475c5c3df42"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-6-profiles-sources.gfx",
+            "sha256": "3235d725aed2230ba556621be050883af2250b269e127310e3a3537c208fc43b"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-7-proxy.gfx",
+            "sha256": "ce515c01327992b9e9ae7036829b114a49d2f566901e07ec65672e505722e173"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-8-before-search-partial.gfx",
+            "sha256": "6ff01bcc21dcfe1364349f657825936462fa38cd705bfa3643de114cb21a1be3"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only1-light-9-proxy-search-empty.gfx",
+            "sha256": "464291d9ea96fb70ce692a1e765bee48801465236c5c70462783b0ce41058259"
+          }
+        ],
+        "thermalStatusBefore": "Thermal Status: 0",
+        "thermalStatusAfter": "Thermal Status: 0"
+      },
+      {
+        "batch": "benchmark-menu-only2",
+        "methodsPassed": 2,
+        "installHashes": {
+          "com.lonnnnnng.flclash.motion": {
+            "builtSha256": "9b0104c2ba394d20ee26faea1d4a2be2f96a479cd267e54b3477ea1482f168fe",
+            "pulledSha256": "9b0104c2ba394d20ee26faea1d4a2be2f96a479cd267e54b3477ea1482f168fe"
+          },
+          "com.lonnnnnng.flclash.motion.test": {
+            "builtSha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9",
+            "pulledSha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9"
+          }
+        },
+        "preservation": {
+          "formalProfilesAndBodiesAndPreferences": true,
+          "originalYamlFlutterDevice": true,
+          "noServices": true
+        },
+        "gfxFiles": [
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-0-home.gfx",
+            "sha256": "e7206b72bfad6e7928a63a8914107df0d080165b99930f67a8fde93b91f7e702"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-1-before-profile-picker-open.gfx",
+            "sha256": "73be18d0a2c8e27b6bc872d2f3477c1ab5c079a332c0d857cb9a734fa2ede34e"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-10-proxy-partial.gfx",
+            "sha256": "b5fd91247ffa044d717b231ee828bf49974e47a934d19d9d399b00d5eaf88cd0"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-11-before-proxy-menu-nested.gfx",
+            "sha256": "dec48805eb4942dd006237de9e50cc16bd22dd3c7bb862321de0a67eb62001cb"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-12-proxy-menu.gfx",
+            "sha256": "1ceefee236ace78c874b3e1c37554e8fb6b0a40e714500c39525808f1536ef93"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-13-proxy-submenu.gfx",
+            "sha256": "7924f98d8d7f2a815c7831f4d75ed1ea0cc6eb8c2b070ea97888209016678779"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-14-proxy-list.gfx",
+            "sha256": "9b7cd3afc3e6f57e857f1d2becd2116f78c6bedc2db7ded96b8cfba39401b07f"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-15-before-quality-loading.gfx",
+            "sha256": "d5b7b17fabdf110624b210a3d0953f65d8cd26cf020f5946a45c234385a73aaf"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-16-quality-loading.gfx",
+            "sha256": "8cd01423f89d778d7ace4c0766d6ad4b54e37a633b0a179bb1ab7a2797b3989f"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-17-quality-ready.gfx",
+            "sha256": "9817a87ab67be27eaf1ba2eaeea0e7f2189928b9de55d35a3b868567eaf3694b"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-18-before-quality-return.gfx",
+            "sha256": "20abe4de7b24ac18eb70d40906cf2eda6df4f045a103d5922bd890c4a82d2a5f"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-19-profiles-empty.gfx",
+            "sha256": "201032cb0509944c53b705cfec7d8e56cae4cfe40991d68c3b684eca2fce1fb1"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-2-profile-picker.gfx",
+            "sha256": "5cabb3b5b98f1f615e4759c9cea71476d2f3990644be74e20cae33f304f57f38"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-20-proxy-empty.gfx",
+            "sha256": "be4edb1f3564b34bfb17059193712c7e0ef36642336a4c35bc1d4cd699f62d4f"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-21-before-completed.gfx",
+            "sha256": "df4fa02f8baedd690073815ccb1239fa80d72b1dffb8e721371839383e82eba2"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-3-before-profile-picker-reopen-back.gfx",
+            "sha256": "b5621bd0678ee4191de6c3c8765899dd22396943578ebd578fa162ae05193d44"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-4-before-navigation-rapid-reversal.gfx",
+            "sha256": "9511a731ba5a37fbd66ffb881c12eae4567ca10b475216071d7884e0b8ea8ce8"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-5-profiles.gfx",
+            "sha256": "0716669397accf2c26da655c85e18a8d5c6d74c72e5c2b9616a82b872e17dedf"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-6-profiles-sources.gfx",
+            "sha256": "c4fa2880c5f33362d4c20cf58db60a2b6c9bac4028395b81eb2bf858543eaf07"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-7-proxy.gfx",
+            "sha256": "a1fd58ba5180f674162568f8c2a9bb7cc279b31340dd7969241642e6551d1fdf"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-8-before-search-partial.gfx",
+            "sha256": "82d10acf33864b1fd9ce8588d2b10e3be75e77954daee1d4dea16843666e8042"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-dark-9-proxy-search-empty.gfx",
+            "sha256": "cfe1801ded33aca0431df85c8137321f1e44bc4ab82bd2673e0bfe502cbc052c"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-0-home.gfx",
+            "sha256": "1406c7c7c15852b5a8a293505fc04919204abce2cec202543e895c7e54e6da23"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-1-before-profile-picker-open.gfx",
+            "sha256": "9b91140acaf5461bbadc5bb325f00b65006b139ab6417a7fdbae4cfa3158b968"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-10-proxy-partial.gfx",
+            "sha256": "d0e64c814b82cec7641c9ae4778937187348a7c16fa3fea5bf5d988725c650d7"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-11-before-proxy-menu-nested.gfx",
+            "sha256": "995e5995b0ee6cf0f19942e9888f8aa6098286822cec9ece0dd0648d4645da0b"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-12-proxy-menu.gfx",
+            "sha256": "3eefa95397f97e2e9bf08c4c4ca241ab06bdc6ebf0cad673a78a6f7b80c3ab18"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-13-proxy-submenu.gfx",
+            "sha256": "c62ae2a35e8e415fe54afa046a6fba12cf577eb49a976817deac083595ca5edf"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-14-proxy-list.gfx",
+            "sha256": "42659158a68ce9ce4ef747468ea7eaa8baeccd205522ecda4319f3aace2f2b2b"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-15-before-quality-loading.gfx",
+            "sha256": "ad38a9fae04501ff0a5f28fb6268dfc60fad9e33eb3363e85d20669d415ead7e"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-16-quality-loading.gfx",
+            "sha256": "e59f4c3d95bd71bd9d8e2ab7e54ed8ab8d53cecf9de23da0598f7f67c596f38b"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-17-quality-ready.gfx",
+            "sha256": "9a19a36a3c57acc50499eeadf929ee5ee9a2d74c95345b3f04c4e54cac62f328"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-18-before-quality-return.gfx",
+            "sha256": "df8e56eb557148dd6e663f2accf9e6b6d2d813c98d602dafc456053353fab5c8"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-19-profiles-empty.gfx",
+            "sha256": "18308c21db6fa93ed019af67e02f5167d15e66f0353eaecf3b8bdc3fdd92f8ab"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-2-profile-picker.gfx",
+            "sha256": "3758bf289d25c8c247a84a68669d55b3c026b21fdd1c2cfa194ceaaeebe69a7f"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-20-proxy-empty.gfx",
+            "sha256": "4e02f16e90036e04f2eaab1f4603c3bb8e74d737923403c81cbf481f4ffcec70"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-21-before-completed.gfx",
+            "sha256": "c924f514914125164756e0c777de52ce079b3e517a569255a5bb904d9526a694"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-3-before-profile-picker-reopen-back.gfx",
+            "sha256": "805d46ddfe05064369028958dc87d94d73fb3d752e0ce2545e242d237dbd9d0e"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-4-before-navigation-rapid-reversal.gfx",
+            "sha256": "0eac6222a723f84857ef54a0ed47aa0c8bec4b624efc614b127001d91c7ab406"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-5-profiles.gfx",
+            "sha256": "15ad597d71f3ee39a79dfbe14147ff049ae330cd9367c19956a642d2ae9a7891"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-6-profiles-sources.gfx",
+            "sha256": "4007b8eb45c579195d33f5ccf3b19fa1e9a0fc9b591f130a5da3ed8d943a1331"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-7-proxy.gfx",
+            "sha256": "1f9320ad26a91ec1ef581c7be97e2025c2a058db33bcdf178fb17a29e5197ff8"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-8-before-search-partial.gfx",
+            "sha256": "b8d4be90f9ea146c8ef207ca2b59bd5551a97df11486e6301efa9927c3a6ac3d"
+          },
+          {
+            "path": "visual-motion-benchmark-menu-only2-light-9-proxy-search-empty.gfx",
+            "sha256": "01db65e57876f521ba73d9db7f1c5aaaeb7078616683559ccee1384c0965078b"
+          }
+        ],
+        "thermalStatusBefore": "Thermal Status: 0",
+        "thermalStatusAfter": "Thermal Status: 0"
+      }
+    ],
+    "packageChecks": {
+      "before": {
+        "package": "com.lonnnnnng.flclash.motion",
+        "debuggable": false,
+        "hostPresent": true,
+        "sha256": "0cf7e89068ec4ab7a69c9bd3f4d1fb9b73188f6fea0deeec79ea9c389f551dfb",
+        "minified": false
+      },
+      "after": {
+        "package": "com.lonnnnnng.flclash.motion",
+        "debuggable": false,
+        "hostPresent": true,
+        "sha256": "83bdcfe19c3078329479e3ae43cfade59caa83ebddf0033aa5ad65dc48b1a24f",
+        "minified": false
+      },
+      "menuOnly": {
+        "package": "com.lonnnnnng.flclash.motion",
+        "debuggable": false,
+        "hostPresent": true,
+        "sha256": "9b0104c2ba394d20ee26faea1d4a2be2f96a479cd267e54b3477ea1482f168fe",
+        "minified": false
+      }
+    },
+    "rawComparison": "comparison-final.json",
+    "methodSampling": {
+      "before": {
+        "batch": "methods1",
+        "shadowSampledSpans": 125,
+        "shadowInclusiveMs": 954.2,
+        "importDepthErrors": 28,
+        "traceSha256": "74db8c397228a32da28140dec778c84b100797bbb413bf108a8bb26085aa9efa"
+      },
+      "after": {
+        "batch": "methods2",
+        "shadowSampledSpans": 58,
+        "shadowInclusiveMs": 396.2,
+        "importDepthErrors": 66,
+        "traceSha256": "719a74946e3d37f84672459080477a1bc1686a8267fe5ca9dab039783074c150"
+      },
+      "limits": "Sampled call spans are not exact call counts; inclusive durations overlap. Intermediate package has identical final menu code; trace ends before quality sheet opens."
+    }
+  },
+  "finalDeviceRuns": {
+    "final-regression2": {
+      "passed": 21,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRemoteProfileSyncShowsBusyState",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#tabGroupAndScrollSurviveProfilesAndDashboardRoundTrips",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#emptySearchSurvivesMainDestinationsAndRecreationThenClearRecoversNodes",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "code": 0,
+          "passed": true
+        }
+      ],
+      "images": [
+        {
+          "path": "dashboard_light_default.png",
+          "bytes": 190142,
+          "sha256": "eb97b7f99796f830b4cb2ad8b2ad33fa9a62c6c9b947fc5966e6a66f10b9e7aa"
+        },
+        {
+          "path": "dashboard_light_running.png",
+          "bytes": 204760,
+          "sha256": "2f69dc53e850b42502e60ee1b90b0ad031e01948e27fcffe3f6df629b2e5a710"
+        },
+        {
+          "path": "dashboard_running.png",
+          "bytes": 180970,
+          "sha256": "10ba549b00ec921609edd3bc908e7a8f2d68d1f3d64e0d5c0d3c8db4f3172cba"
+        },
+        {
+          "path": "dashboard_default.png",
+          "bytes": 168653,
+          "sha256": "b68c79864c7e5033efc5834092851645a54dc40561093e52e6c09aedb9138bb8"
+        },
+        {
+          "path": "dashboard_system_ready.png",
+          "bytes": 158203,
+          "sha256": "0da44e328f89f381e464c32e62d417efe06bbfe867c435f991da4cd38c7c25e8"
+        },
+        {
+          "path": "dashboard_proxy_summary_dark.png",
+          "bytes": 25105,
+          "sha256": "71fb2375fe2f48ce31f6aa58892b11883b947c3e681a0f2b89113321a7d50215"
+        },
+        {
+          "path": "dashboard_proxy_picker_dark.png",
+          "bytes": 75412,
+          "sha256": "621b2ca037c2b9fe8458a9b4f703ec96995f75bec2686625ce20a62eb36f135c"
+        },
+        {
+          "path": "dashboard_proxy_summary_light.png",
+          "bytes": 26947,
+          "sha256": "0e08242f174f8c3ec1794edc1c57501820afa3a2004ec600c7f6622fef298305"
+        },
+        {
+          "path": "dashboard_proxy_picker_light.png",
+          "bytes": 75166,
+          "sha256": "438e506de6631d4774d3375549df400580e49861a9edf0491ee91e12544e8ba1"
+        },
+        {
+          "path": "dashboard_sheet_service_quality.png",
+          "bytes": 144478,
+          "sha256": "5f07ad2ecfc2a880149622e658c636ba033b1565bd5d1574a3e55a2454d64655"
+        },
+        {
+          "path": "dashboard_sheet_service_manage.png",
+          "bytes": 129078,
+          "sha256": "d43841fb4a491696a872498b873ff3d9cf8909d2d921fe3f22189eae493e209e"
+        },
+        {
+          "path": "dashboard_sheet_profile_picker_true.png",
+          "bytes": 143593,
+          "sha256": "8a7228ca88c81a02c99c3e3dddfbcebd2742fd2b47c4220cd173dad68ada0f35"
+        },
+        {
+          "path": "dashboard_sheet_profile_picker_false.png",
+          "bytes": 153339,
+          "sha256": "f60129bdaff1e12df4cd3b11fa6f6816be52f7872abbf7777fd3a32285ee319e"
+        },
+        {
+          "path": "dashboard_sheet_short_false.png",
+          "bytes": 35851,
+          "sha256": "0fae4d06f1836b0c2e12519cde9ce2169ec856f4f5a319c76bef60a8bacb4eb5"
+        },
+        {
+          "path": "dashboard_sheet_long_false.png",
+          "bytes": 151682,
+          "sha256": "7e2163414cc55d83ac2a7c077822e55ff2db326aa2eb07eebc5fcbc77b888ba9"
+        },
+        {
+          "path": "dashboard_sheet_short_true.png",
+          "bytes": 36121,
+          "sha256": "1e21bd78de701def0b61403723072d5f58b568d143cb52d72a20fe798a833f6a"
+        },
+        {
+          "path": "dashboard_sheet_long_true.png",
+          "bytes": 152434,
+          "sha256": "d8c6f27f8efef13fdcb9ee4407185b6932f5e00ad627983445902aefc5d54f3f"
+        },
+        {
+          "path": "proxy_search_empty_TAB.png",
+          "bytes": 139097,
+          "sha256": "d8c049ead318925e2247f585ba6d4dbdd184eb39081153bcb200f3de6040f57f"
+        },
+        {
+          "path": "proxy_search_cleared_TAB.png",
+          "bytes": 111310,
+          "sha256": "44cadc393ca1be9dc1ba7c1e1bf09982d7920d09764b5853bc4552cbddc9eb23"
+        },
+        {
+          "path": "proxy_search_empty_LIST.png",
+          "bytes": 139097,
+          "sha256": "d8c049ead318925e2247f585ba6d4dbdd184eb39081153bcb200f3de6040f57f"
+        },
+        {
+          "path": "proxy_search_cleared_LIST.png",
+          "bytes": 117842,
+          "sha256": "375cba6910866f830c1bd6f1f908cd8fc7f20f4941ea806ace1f681485b21862"
+        },
+        {
+          "path": "proxy_empty_failed_false.png",
+          "bytes": 70629,
+          "sha256": "be98b3cecf98cb4fe8c088203a43e9516e147fabbc1160d30ef5b24360d35954"
+        },
+        {
+          "path": "proxy_empty_plain_false.png",
+          "bytes": 50942,
+          "sha256": "e53a29f48f171119e978fbd6277545344aa5489171ca21c84afbd82791d1ccfb"
+        },
+        {
+          "path": "proxy_empty_failed_true.png",
+          "bytes": 75393,
+          "sha256": "7c63a6e8c1379c4cf30a35cec52fd3d27726a910bf6e5b93202dbcead2d09fe2"
+        },
+        {
+          "path": "proxy_empty_plain_true.png",
+          "bytes": 55418,
+          "sha256": "c97d51af56befa283edd9a8945170d614ab53d5966c5dc20e1fc1dcf55db8d75"
+        },
+        {
+          "path": "main_navigation_tab_before.png",
+          "bytes": 143298,
+          "sha256": "9f567775fd805ec0c4586400d936a102f6a720b6b674b2f1d080321a2b0e37de"
+        },
+        {
+          "path": "main_navigation_tab_after_profiles.png",
+          "bytes": 143298,
+          "sha256": "9f567775fd805ec0c4586400d936a102f6a720b6b674b2f1d080321a2b0e37de"
+        },
+        {
+          "path": "main_navigation_tab_after_dashboard.png",
+          "bytes": 143298,
+          "sha256": "9f567775fd805ec0c4586400d936a102f6a720b6b674b2f1d080321a2b0e37de"
+        },
+        {
+          "path": "main_navigation_search_returned.png",
+          "bytes": 141361,
+          "sha256": "041cd30f5475b8c0ba284ee7f1ebb5c16aa3e62ec8484b4e74ef2c028705239e"
+        },
+        {
+          "path": "main_navigation_search_recreated.png",
+          "bytes": 141280,
+          "sha256": "705cdb05da8261471c9b21429f480f521907837ba3a22709d5e33c9bbcd86c59"
+        },
+        {
+          "path": "main_navigation_search_cleared.png",
+          "bytes": 171646,
+          "sha256": "f19cbd698757e77e50fbe4cc6b849932dba9c64c7eb5dd48b8c6447a2d897af2"
+        },
+        {
+          "path": "profiles_empty.png",
+          "bytes": 82650,
+          "sha256": "80902cd421286571e3fb11e68a8ee1f818d371eb77d2ed47921f20feac430e0c"
+        },
+        {
+          "path": "profiles_custom_selected.png",
+          "bytes": 59180,
+          "sha256": "2225a95a722601cc43737fb20c485c2391c389f33a74365ce41e69ef7fcfa14f"
+        },
+        {
+          "path": "profiles_remote_usage.png",
+          "bytes": 66125,
+          "sha256": "eeb5d0ed2077d39bfb06bb777878e74a0c11518f65cd88d5cbce7bea877ab9dc"
+        },
+        {
+          "path": "liquid_open_false_false.png",
+          "bytes": 54869,
+          "sha256": "a002cb2fb996a7a9f0dc403df2249f53c12b4c718324e21f4639fa105ae10a29"
+        },
+        {
+          "path": "liquid_return_false_false.png",
+          "bytes": 44509,
+          "sha256": "05ac0399d8f66401efe5340a54ada34de6574f9b353945e7c2ac36fd1f81dd2e"
+        },
+        {
+          "path": "liquid_open_false_true.png",
+          "bytes": 36744,
+          "sha256": "40f69cdfe1cfff4cf6ba370dca3a74f5ded23dbdc1ddda804715675956a79f94"
+        },
+        {
+          "path": "liquid_return_false_true.png",
+          "bytes": 48241,
+          "sha256": "9e94224f7b857fa6b94b31cd0ecdd465938d242d4809eac7c467390773b20bf4"
+        },
+        {
+          "path": "liquid_open_true_false.png",
+          "bytes": 54792,
+          "sha256": "87ed1cffd6c0097ad06d68a6684b91dd64d2170a766dea66899166f633f88701"
+        },
+        {
+          "path": "liquid_return_true_false.png",
+          "bytes": 45103,
+          "sha256": "3270676eb88f4f78717d54b9a88cd60c7dccc80e99289ac07ed35fb0d4d0799d"
+        },
+        {
+          "path": "liquid_open_true_true.png",
+          "bytes": 37882,
+          "sha256": "2d3b806200bc665f364daa43f57b7f60a930051bd4e70ec27eb38ecdcc51d5f3"
+        },
+        {
+          "path": "liquid_return_true_true.png",
+          "bytes": 50400,
+          "sha256": "fcd103043ea95aa2ce5d6c82b4507a08c3b019a598b5672359460210eae8a806"
+        },
+        {
+          "path": "stack_three.png",
+          "bytes": 69921,
+          "sha256": "a0de11d4b6c157cdce5801d1c9f543fd5a78ae52a4a22784d270d5c16154fed5"
+        },
+        {
+          "path": "stack_fold_middle.png",
+          "bytes": 72670,
+          "sha256": "d10430ad322b68a56508cb4556303c1ca56f3f3fea3bac29418931a8ff5c0c5a"
+        },
+        {
+          "path": "glass_stack_false.png",
+          "bytes": 107583,
+          "sha256": "0d98630b2ef9f928d07287bd84a5ab39ca06a35b241b8a1b7ad91b2130f7bac1"
+        },
+        {
+          "path": "glass_stack_true.png",
+          "bytes": 122565,
+          "sha256": "a86387040f3affc640bf836ce305c2704098e48dd3b242e74afc248c71d60f4e"
+        }
+      ],
+      "review": {
+        "decodedAndHashVerified": 46,
+        "contactSheetsViewed": 16,
+        "review": "Reviewed all 46 captures. Main-page baselines, short/long sheets, search/IME, nested menu shadows and return layers preserve the named behavior.",
+        "limits": [
+          "Eight bare MainPageStates captures retain the existing incomplete top-inset host limitation and are not full-screen layout proof.",
+          "liquid_open_false_true and liquid_open_true_true capture source-button transition frames; they do not prove a specific liquid intermediate shape. Stable glass submenu captures and interaction assertions are separate.",
+          "Manual-clock transient frames do not establish natural motion performance or full Flutter pixel parity; light fixed-host status-bar contrast is excluded."
+        ]
+      }
+    },
+    "final-visual2": {
+      "passed": 2,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#darkPagesPanelsEmptyAndContinuousMotion",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#lightPagesPanelsEmptyAndContinuousMotion",
+          "code": 0,
+          "passed": true
+        }
+      ],
+      "images": [
+        {
+          "path": "natural_dark_home.png",
+          "bytes": 102195,
+          "sha256": "65da3923cd0abd30a5ab555d4c9848afcd92f1294db1a00f72f3c6a5c4bc011b"
+        },
+        {
+          "path": "natural_dark_profile_picker.png",
+          "bytes": 128622,
+          "sha256": "e9d26cddefe4ea393af434bde9fd9a19ddf8badc012677444f2462a16bb08501"
+        },
+        {
+          "path": "natural_dark_profiles.png",
+          "bytes": 87488,
+          "sha256": "9d1172114432937de3ee93d3d0fbdfbccf88c09ac2c6d690b8893dfaa71fe682"
+        },
+        {
+          "path": "natural_dark_profiles_sources.png",
+          "bytes": 115392,
+          "sha256": "e27b04cd63749d1d31ff4c3ab3ed524d643bb265f198c00fdc2568b92d63ff17"
+        },
+        {
+          "path": "natural_dark_proxy.png",
+          "bytes": 77695,
+          "sha256": "3092d93b217e6c976002589c52b4c906713b8be8867b12d1294f700a674a02c7"
+        },
+        {
+          "path": "natural_dark_proxy_search_empty.png",
+          "bytes": 136600,
+          "sha256": "233a375f4d6cf207f6e988bcbbbcf5d06678a17abcb7d33dca2b5434d3a3712a"
+        },
+        {
+          "path": "natural_dark_proxy_partial.png",
+          "bytes": 111291,
+          "sha256": "e2978f4fb0523120ef1bc7b5a0a5e947c1fc13eb8dc6d86ddb27002ffbd218f6"
+        },
+        {
+          "path": "natural_dark_proxy_menu.png",
+          "bytes": 117382,
+          "sha256": "f1a1b71e343cce2b1d66785caa4325d9fa002f8d499f2b993c00f03992da086a"
+        },
+        {
+          "path": "natural_dark_proxy_submenu.png",
+          "bytes": 117326,
+          "sha256": "1db6094c2b226aec11432a5261ea5e3157f69ebdeb7d4aa195af538824f411d8"
+        },
+        {
+          "path": "natural_dark_proxy_list.png",
+          "bytes": 76461,
+          "sha256": "295f4274706c2166c74195cdd1ba4d6df19357cfefef99347e19284a14de1422"
+        },
+        {
+          "path": "natural_dark_quality_loading.png",
+          "bytes": 114596,
+          "sha256": "194179215cb67734953be0b0e12ab7d69cf7fe337133c242983e9af7f3792422"
+        },
+        {
+          "path": "natural_dark_quality_ready.png",
+          "bytes": 134969,
+          "sha256": "f690b66d7ac66daa5c7c7e3b59fc0bd85ed6eaf937e52adb31d148ea560af62d"
+        },
+        {
+          "path": "natural_dark_profiles_empty.png",
+          "bytes": 83809,
+          "sha256": "e54940b39d0648bfbf008c90ea24a91da240ffdf1e24e867c24a1003967b7872"
+        },
+        {
+          "path": "natural_dark_proxy_empty.png",
+          "bytes": 73235,
+          "sha256": "daa5f350020c7d67b88a4584e0a385cc098b1531b253ab952f2503e3198ac748"
+        },
+        {
+          "path": "natural_light_home.png",
+          "bytes": 109127,
+          "sha256": "351093852fc19d1a3e9a881706e464e2e7e260720b3ab1fbb4b2d7aa76917d36"
+        },
+        {
+          "path": "natural_light_profile_picker.png",
+          "bytes": 132637,
+          "sha256": "7aa218df21e62d4f9e716331f955ea7c30ad660c23409e824e817415de8d8fd6"
+        },
+        {
+          "path": "natural_light_profiles.png",
+          "bytes": 87930,
+          "sha256": "c152282e3b0d5df09e9ac5e7123185cb2938c3e4a07b8f052f73b99500eec164"
+        },
+        {
+          "path": "natural_light_profiles_sources.png",
+          "bytes": 119416,
+          "sha256": "436044959a2c21abfb2673c16aa132ef910acb2645cf5a5c89f68d21a8ab9a28"
+        },
+        {
+          "path": "natural_light_proxy.png",
+          "bytes": 79487,
+          "sha256": "9b2ca10754a1d2c2bd89020b3644132e8c5a1f4861914c45772c5956b7b9fc48"
+        },
+        {
+          "path": "natural_light_proxy_search_empty.png",
+          "bytes": 129577,
+          "sha256": "fc8aa020d538610667b71422866994e518d59a41e760a2d65e3c36226ef3bd39"
+        },
+        {
+          "path": "natural_light_proxy_partial.png",
+          "bytes": 107604,
+          "sha256": "73279ac3bf625dcd5f0bae2bef730f56a2af2437fbb9e7e514af146258810603"
+        },
+        {
+          "path": "natural_light_proxy_menu.png",
+          "bytes": 124657,
+          "sha256": "fc7175a9888dbd56e54b65852f8ae799f745455814a663d5ac99ec8e0e155d63"
+        },
+        {
+          "path": "natural_light_proxy_submenu.png",
+          "bytes": 129739,
+          "sha256": "ce3c670997f4adb6214b17a31939fefc504c8e673f73a5b949df1b98a6d95ca2"
+        },
+        {
+          "path": "natural_light_proxy_list.png",
+          "bytes": 109471,
+          "sha256": "d7c729ac63eac255d86c9a191815e1b041aceb8b211085281a426159afafc8be"
+        },
+        {
+          "path": "natural_light_quality_loading.png",
+          "bytes": 111587,
+          "sha256": "97b06fc0645ee1e4ae53f94494cd8d6f3acbb4818646faafd438cd2e4706d94e"
+        },
+        {
+          "path": "natural_light_quality_ready.png",
+          "bytes": 131905,
+          "sha256": "b33f028ae747c44d2657eb9763ad418cede6042f2328a4ab7f8d6af58229368c"
+        },
+        {
+          "path": "natural_light_profiles_empty.png",
+          "bytes": 83140,
+          "sha256": "5a1615b5be5a0c57604d9bf1d19b0db1b8faaa271e108886bed421ee60705222"
+        },
+        {
+          "path": "natural_light_proxy_empty.png",
+          "bytes": 73283,
+          "sha256": "63da543b1ce58ac852dec99fdb555e47a16ca16c956ce98fce8799af2ef9e5bd"
+        }
+      ],
+      "review": {
+        "decodedAndHashVerified": 28,
+        "contactSheetsViewed": 10,
+        "originalPtsSequenceSheetsViewed": 7,
+        "review": "Reviewed all captured states and six motion sequences plus targeted List reveal sequence. Named menu, return and sheet content preserved.",
+        "limits": [
+          "natural_dark_proxy_list.png captures entry before node row reveal. The same recording shows rows at PTS35.763; same-APK dark-recheck1 provides a complete still frame. Original capture retained.",
+          "Light fixture status-bar icons retain existing contrast limitation.",
+          "Recording/PNG counters are diagnostic only, not used for performance comparison or Release acceptance."
+        ]
+      }
+    },
+    "dark-recheck1": {
+      "passed": 1,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#darkPagesPanelsEmptyAndContinuousMotion",
+          "code": 0,
+          "passed": true
+        }
+      ],
+      "images": [
+        {
+          "path": "natural_dark_home.png",
+          "bytes": 102252,
+          "sha256": "56b7bbb98386764cf7d07f600f0bcb904e51bcfe23cba67d41cb005744f69c99"
+        },
+        {
+          "path": "natural_dark_profile_picker.png",
+          "bytes": 128575,
+          "sha256": "4108754da5f5bfedd66fc7cd144ac2016063047f9376b155186698c8552b3f84"
+        },
+        {
+          "path": "natural_dark_profiles.png",
+          "bytes": 87621,
+          "sha256": "0a23c1bd73a6bcca4f533750b692de3853776d797b0c57a4511b33f61bac13b4"
+        },
+        {
+          "path": "natural_dark_profiles_sources.png",
+          "bytes": 115543,
+          "sha256": "294f7ed0df7de2575c999698cd98a123e0004c81f556d414a53027ef494730ab"
+        },
+        {
+          "path": "natural_dark_proxy.png",
+          "bytes": 78641,
+          "sha256": "db7ab291e3465153a3dbd0a54773520ce70133a087f35de732472075397103dc"
+        },
+        {
+          "path": "natural_dark_proxy_search_empty.png",
+          "bytes": 137342,
+          "sha256": "8357e91dcd9b3b43d04d05ab32cd0cac48473bc18c79fe0d75567e7bd446fc0a"
+        },
+        {
+          "path": "natural_dark_proxy_partial.png",
+          "bytes": 112154,
+          "sha256": "152cefdfd9bc98273707a348fe0c8742cfb00e19afab5d92158fab06bb68446b"
+        },
+        {
+          "path": "natural_dark_proxy_menu.png",
+          "bytes": 118203,
+          "sha256": "36daef912f59d63e8c0acd959328ce775ec83f7fc82e264b47268b8080795094"
+        },
+        {
+          "path": "natural_dark_proxy_submenu.png",
+          "bytes": 118248,
+          "sha256": "8d450c30779e5c7d7e76e7462dbaddef51dbde40713666541074911f62332c56"
+        },
+        {
+          "path": "natural_dark_proxy_list.png",
+          "bytes": 106425,
+          "sha256": "6608158618643e48682e4c0414f5b5148c57545e511ba9d6f9651b3527045ea1"
+        },
+        {
+          "path": "natural_dark_quality_loading.png",
+          "bytes": 115442,
+          "sha256": "4982b902ca7293ace3516f9d0b9b325e6288f52b52da43a10806df71d711ea30"
+        },
+        {
+          "path": "natural_dark_quality_ready.png",
+          "bytes": 135810,
+          "sha256": "7c006891c5e0b057382d30f8a01b3f931e9f384114ae88c4c65e7640d2051ebe"
+        },
+        {
+          "path": "natural_dark_profiles_empty.png",
+          "bytes": 85174,
+          "sha256": "2aa24e5483e49c75d112905c4d5e355520101540f8b4da800b7ac0f97cf90d60"
+        },
+        {
+          "path": "natural_dark_proxy_empty.png",
+          "bytes": 73841,
+          "sha256": "125229a1a23591274dce17a42ab10b5055a121c8309ac30e9b49a2cf052678a2"
+        }
+      ],
+      "review": {
+        "decodedAndHashVerified": 14,
+        "contactSheetsViewed": 5,
+        "review": "Same-APK dark flow passed. All 14 states reviewed, including complete List rows; supplements but does not erase final-visual2 entry-frame capture."
+      }
+    }
+  },
+  "naturalVideo": {
+    "sha256": "257dc5af81d345eadca6d371dc185bdabf24117234b3a06888a00c7563211061",
+    "bytes": 19849117,
+    "devicePath": "/sdcard/Download/kclash-motion-final-visual2.mp4",
+    "deviceCopyRemoved": true
+  },
+  "motionReview": {
+    "stream": {
+      "width": 1080,
+      "height": 2340,
+      "r_frame_rate": "90000/1",
+      "avg_frame_rate": "30042000/1607107",
+      "duration": "89.283722",
+      "nb_frames": "1669"
+    },
+    "decodedFramePtsCount": 1669,
+    "events": [
+      {
+        "theme": "dark",
+        "event": "profile-picker-open",
+        "elapsedNanos": 78832281250237,
+        "uptimeNanos": 78832281275390
+      },
+      {
+        "theme": "dark",
+        "event": "profile-picker-reopen-back",
+        "elapsedNanos": 78836456500929,
+        "uptimeNanos": 78836456504391
+      },
+      {
+        "theme": "dark",
+        "event": "navigation-rapid-reversal",
+        "elapsedNanos": 78839621634468,
+        "uptimeNanos": 78839621644622
+      },
+      {
+        "theme": "dark",
+        "event": "search-partial",
+        "elapsedNanos": 78847148067391,
+        "uptimeNanos": 78847148073237
+      },
+      {
+        "theme": "dark",
+        "event": "proxy-menu-nested",
+        "elapsedNanos": 78853122015469,
+        "uptimeNanos": 78853122019469
+      },
+      {
+        "theme": "dark",
+        "event": "quality-loading",
+        "elapsedNanos": 78861623164315,
+        "uptimeNanos": 78861623183084
+      },
+      {
+        "theme": "dark",
+        "event": "quality-return",
+        "elapsedNanos": 78867257493854,
+        "uptimeNanos": 78867257513854
+      },
+      {
+        "theme": "dark",
+        "event": "completed",
+        "elapsedNanos": 78872713903470,
+        "uptimeNanos": 78872713912393
+      },
+      {
+        "theme": "light",
+        "event": "profile-picker-open",
+        "elapsedNanos": 78875401605931,
+        "uptimeNanos": 78875401614162
+      },
+      {
+        "theme": "light",
+        "event": "profile-picker-reopen-back",
+        "elapsedNanos": 78878929113855,
+        "uptimeNanos": 78878929116932
+      },
+      {
+        "theme": "light",
+        "event": "navigation-rapid-reversal",
+        "elapsedNanos": 78881937932316,
+        "uptimeNanos": 78881937936624
+      },
+      {
+        "theme": "light",
+        "event": "search-partial",
+        "elapsedNanos": 78888900856625,
+        "uptimeNanos": 78888900869855
+      },
+      {
+        "theme": "light",
+        "event": "proxy-menu-nested",
+        "elapsedNanos": 78894534657548,
+        "uptimeNanos": 78894534666471
+      },
+      {
+        "theme": "light",
+        "event": "quality-loading",
+        "elapsedNanos": 78902750112010,
+        "uptimeNanos": 78902750130779
+      },
+      {
+        "theme": "light",
+        "event": "quality-return",
+        "elapsedNanos": 78907994149933,
+        "uptimeNanos": 78907994168703
+      },
+      {
+        "theme": "light",
+        "event": "completed",
+        "elapsedNanos": 78912775016703,
+        "uptimeNanos": 78912775026780
+      }
+    ],
+    "recordClock": {
+      "elapsedBefore": 78823.65,
+      "elapsedAfterLaunch": 78824.54,
+      "note": "Video event alignment is approximate within launch bracket; frame PTS remain original."
+    },
+    "sampledSequences": [
+      {
+        "theme": "dark",
+        "event": "navigation-rapid-reversal",
+        "approxStart": 15.52663446799852,
+        "frames": [
+          {
+            "index": 216,
+            "pts": 15.378522
+          },
+          {
+            "index": 217,
+            "pts": 15.991789
+          },
+          {
+            "index": 219,
+            "pts": 16.076044
+          },
+          {
+            "index": 220,
+            "pts": 16.393767
+          },
+          {
+            "index": 221,
+            "pts": 16.476333
+          },
+          {
+            "index": 222,
+            "pts": 16.593089
+          },
+          {
+            "index": 224,
+            "pts": 16.659267
+          },
+          {
+            "index": 225,
+            "pts": 16.826544
+          }
+        ]
+      },
+      {
+        "theme": "dark",
+        "event": "proxy-menu-nested",
+        "approxStart": 29.02701546899334,
+        "frames": [
+          {
+            "index": 487,
+            "pts": 29.312011
+          },
+          {
+            "index": 494,
+            "pts": 29.442656
+          },
+          {
+            "index": 511,
+            "pts": 29.847767
+          },
+          {
+            "index": 523,
+            "pts": 30.209178
+          },
+          {
+            "index": 525,
+            "pts": 30.663289
+          },
+          {
+            "index": 535,
+            "pts": 31.062756
+          },
+          {
+            "index": 547,
+            "pts": 31.411522
+          },
+          {
+            "index": 549,
+            "pts": 31.728267
+          },
+          {
+            "index": 550,
+            "pts": 32.714533
+          },
+          {
+            "index": 559,
+            "pts": 33.126844
+          },
+          {
+            "index": 561,
+            "pts": 33.762211
+          }
+        ]
+      },
+      {
+        "theme": "dark",
+        "event": "quality-loading",
+        "approxStart": 37.528164314993774,
+        "frames": [
+          {
+            "index": 658,
+            "pts": 37.860044
+          },
+          {
+            "index": 662,
+            "pts": 37.977078
+          },
+          {
+            "index": 687,
+            "pts": 38.461211
+          },
+          {
+            "index": 695,
+            "pts": 38.810667
+          },
+          {
+            "index": 696,
+            "pts": 39.478389
+          },
+          {
+            "index": 708,
+            "pts": 39.812911
+          },
+          {
+            "index": 728,
+            "pts": 40.261078
+          },
+          {
+            "index": 733,
+            "pts": 40.411367
+          },
+          {
+            "index": 734,
+            "pts": 41.252067
+          },
+          {
+            "index": 735,
+            "pts": 41.298056
+          },
+          {
+            "index": 736,
+            "pts": 43.447044
+          }
+        ]
+      },
+      {
+        "theme": "light",
+        "event": "navigation-rapid-reversal",
+        "approxStart": 57.8429323159944,
+        "frames": [
+          {
+            "index": 1026,
+            "pts": 57.6948
+          },
+          {
+            "index": 1027,
+            "pts": 58.216211
+          },
+          {
+            "index": 1030,
+            "pts": 58.298178
+          },
+          {
+            "index": 1031,
+            "pts": 58.482056
+          },
+          {
+            "index": 1033,
+            "pts": 58.531989
+          },
+          {
+            "index": 1036,
+            "pts": 58.662967
+          },
+          {
+            "index": 1040,
+            "pts": 58.832767
+          },
+          {
+            "index": 1042,
+            "pts": 58.897011
+          },
+          {
+            "index": 1046,
+            "pts": 59.032722
+          },
+          {
+            "index": 1051,
+            "pts": 59.147756
+          }
+        ]
+      },
+      {
+        "theme": "light",
+        "event": "proxy-menu-nested",
+        "approxStart": 70.43965754800593,
+        "frames": [
+          {
+            "index": 1296,
+            "pts": 70.699744
+          },
+          {
+            "index": 1304,
+            "pts": 70.8507
+          },
+          {
+            "index": 1323,
+            "pts": 71.233878
+          },
+          {
+            "index": 1332,
+            "pts": 71.584533
+          },
+          {
+            "index": 1333,
+            "pts": 72.036456
+          },
+          {
+            "index": 1345,
+            "pts": 72.482389
+          },
+          {
+            "index": 1357,
+            "pts": 73.052611
+          },
+          {
+            "index": 1358,
+            "pts": 73.084711
+          },
+          {
+            "index": 1359,
+            "pts": 74.0506
+          },
+          {
+            "index": 1362,
+            "pts": 74.134189
+          },
+          {
+            "index": 1370,
+            "pts": 74.500756
+          },
+          {
+            "index": 1371,
+            "pts": 75.084711
+          }
+        ]
+      },
+      {
+        "theme": "light",
+        "event": "quality-loading",
+        "approxStart": 78.65511201000481,
+        "frames": [
+          {
+            "index": 1463,
+            "pts": 78.351622
+          },
+          {
+            "index": 1469,
+            "pts": 79.117356
+          },
+          {
+            "index": 1492,
+            "pts": 79.551689
+          },
+          {
+            "index": 1500,
+            "pts": 80.0174
+          },
+          {
+            "index": 1501,
+            "pts": 80.6528
+          },
+          {
+            "index": 1511,
+            "pts": 80.933433
+          },
+          {
+            "index": 1532,
+            "pts": 81.382989
+          },
+          {
+            "index": 1539,
+            "pts": 81.616456
+          },
+          {
+            "index": 1541,
+            "pts": 82.256089
+          },
+          {
+            "index": 1542,
+            "pts": 84.1854
+          }
+        ]
+      }
+    ],
+    "sequenceSheets": [
+      "dark-navigation-rapid-reversal.jpg",
+      "dark-proxy-menu-nested.jpg",
+      "dark-quality-loading.jpg",
+      "light-navigation-rapid-reversal.jpg",
+      "light-proxy-menu-nested.jpg",
+      "light-quality-loading.jpg"
+    ],
+    "gfx": [
+      {
+        "path": "visual-motion-final-visual2-dark.gfx",
+        "sha256": "c2e7182fff5b2e58ce3de133887b7f4f8b37b2bf14060246044d797934de465c",
+        "summaryLines": [
+          "Total frames rendered: 935",
+          "Janky frames: 308 (32.94%)",
+          "Janky frames (legacy): 756 (80.86%)",
+          "50th percentile: 32ms",
+          "90th percentile: 81ms",
+          "95th percentile: 133ms",
+          "99th percentile: 300ms",
+          "Total frames rendered: 601",
+          "Janky frames: 167 (27.79%)",
+          "Janky frames (legacy): 501 (83.36%)",
+          "50th percentile: 30ms",
+          "90th percentile: 73ms",
+          "95th percentile: 121ms",
+          "99th percentile: 300ms"
+        ]
+      },
+      {
+        "path": "visual-motion-final-visual2-light.gfx",
+        "sha256": "20bc53aae824104ceeb77e48a57846d9fe277c7e1ee833a2b44be28f5af9a6bd",
+        "summaryLines": [
+          "Total frames rendered: 1908",
+          "Janky frames: 594 (31.13%)",
+          "Janky frames (legacy): 1531 (80.24%)",
+          "50th percentile: 31ms",
+          "90th percentile: 73ms",
+          "95th percentile: 117ms",
+          "99th percentile: 250ms",
+          "Total frames rendered: 604",
+          "Janky frames: 158 (26.16%)",
+          "Janky frames (legacy): 518 (85.76%)",
+          "50th percentile: 28ms",
+          "90th percentile: 61ms",
+          "95th percentile: 97ms",
+          "99th percentile: 200ms"
+        ]
+      }
+    ],
+    "review": "reviewed sampled original-PTS sequences",
+    "limits": "Screenrecord is variable frame rate; still scenes suppress video frames. PTS is not render time. Gfx includes Debug, screenshot and recording load; second theme system counters are cumulative in same process.",
+    "extraListSequence": {
+      "path": "dark-list-reveal.jpg",
+      "pts": "dark-list-reveal-pts.json",
+      "observation": "At PTS35.497 group headers precede row reveal; by PTS35.763 rows are visible, before navigation away. Original dark list PNG is an entry frame, not a steady-state capture."
+    },
+    "performanceUse": "Visual inspection only; do not compare recording counters with no-capture benchmark rates."
+  },
+  "preservation": {
+    "formalProfileCount": 2,
+    "fullGroupSnapshotsEqual": true,
+    "formalBodyShaSizeMtimeAndRoomPreferencesPreserved": true,
+    "originalYamlFlutterAndDeviceSettingsPreserved": true,
+    "cleanup": {
+      "serial": "wsvwypiz7xwslvl7",
+      "benchmarkPackagesRemoved": [
+        {
+          "package": "com.lonnnnnng.flclash.motion.test",
+          "sha256": "1a5d21c2744d4c7344face74cd42e851e1cc364624e3158a57bbb1d3af8393b9",
+          "result": "Success"
+        },
+        {
+          "package": "com.lonnnnnng.flclash.motion",
+          "sha256": "9b0104c2ba394d20ee26faea1d4a2be2f96a479cd267e54b3477ea1482f168fe",
+          "result": "Success"
+        }
+      ],
+      "noAppServices": true,
+      "noTun0": true,
+      "interfaces": [
+        "ap0",
+        "ccmni-lan",
+        "ccmni0",
+        "ccmni1",
+        "ccmni10",
+        "ccmni11",
+        "ccmni12",
+        "ccmni13",
+        "ccmni14",
+        "ccmni15",
+        "ccmni16",
+        "ccmni17",
+        "ccmni18",
+        "ccmni19",
+        "ccmni2",
+        "ccmni20",
+        "ccmni3",
+        "ccmni4",
+        "ccmni5",
+        "ccmni6",
+        "ccmni7",
+        "ccmni8",
+        "ccmni9",
+        "dummy0",
+        "ifb0",
+        "ifb1",
+        "ip6_vti0",
+        "ip6tnl0",
+        "ip_vti0",
+        "lo",
+        "p2p0",
+        "sit0",
+        "wlan0",
+        "wlan1"
+      ],
+      "ownedGfxAndMethodCachesAbsent": true,
+      "ownedVideosAbsent": [
+        "/sdcard/Download/kclash-motion-final-visual1.mp4",
+        "/sdcard/Download/kclash-motion-final-visual2.mp4"
+      ],
+      "noOwnedPerfettoProcesses": true,
+      "finalInstalledPackages": {
+        "com.lonnnnnng.flclash": "ea58ec2ff1043114d900cc37c569a5207611e6d3a0ca8341ad5eed0b9b9c80b7",
+        "com.lonnnnnng.flclash.test": "a220a9af17434962f12a17cf19b8b5c341f1731eac832619e2f712c34eecca60"
+      },
+      "originalYamlAndFlutterAndDeviceSettingsPreserved": true,
+      "formalProfileEvidence": "dark-recheck1/profiles-after.json"
+    }
+  },
+  "history": [
+    "Previous mixed Debug/video/PNG 31.62% retained in prior acceptance; not used as the denominator for this no-capture comparison.",
+    "Perfetto background-wait timed out while sessions existed; startup-only zero-byte files retained. baseline-trace2 has FrameTimeline but no app thread/scheduling data and a failed flush.",
+    "AOT command returned Success but compiler filter read back verify; baseline-aot1 is not an effective AOT control.",
+    "menu-fix-build failed due Dp/DpOffset in a Float/Offset scope, never installed; corrected implementation uses separate shadow compositing layer.",
+    "Combined menu/sheet experiment benchmark-after1/2 improved menus but quality stage regressed 13.936% to19.031%; sheet change reverted. Intermediate final-build/final-performance1/final-regression1/final-visual1 not counted as final package.",
+    "Final dark List capture was an entry frame; original video PTS35.497 to35.763 shows rows arriving, and same-package dark-recheck1 yields complete rows. Original image retained."
+  ],
+  "limits": [
+    "Non-debuggable unminified .motion app uses debug library fallbacks and fixture dependencies; not signed/R8 Release, full AOT or production network/core/VPN workload.",
+    "Final menu-only repetitions follow both baseline rounds, not a randomized/interleaved experiment; two repeats do not establish statistical confidence or device-wide smoothness.",
+    "First frames and remaining dynamic shadow/RenderThread/buffer latency still need separate optimization; overall performance is not accepted as complete.",
+    "88 PNGs decoded/hashed and31 contact sheets reviewed; two glass-open captures and one dark List capture are transition frames, not stable terminal states. Seven original-PTS sequence sheets were reviewed; no every-frame or Flutter pixel-equivalence claim.",
+    "Light fixture status-bar contrast and bare-component inset limitations remain. No new low-API, Go, official signing/Release runtime, cellular or remote CI validation. Glass defaults off; deferred/cancelled scope unchanged."
+  ],
+  "artifactRoot": "../acceptance-artifacts/motion-performance-20261108/"
+}

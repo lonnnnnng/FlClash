@@ -18,6 +18,9 @@ import org.junit.Test
 class VisualMotionNaturalInstrumentedTest {
     private val ins get() = InstrumentationRegistry.getInstrumentation()
     private var suffix = ""
+    private val profileFrames get() = InstrumentationRegistry.getArguments().getString("kclashMotionProfile") == "true"
+    private var segment = 0
+    private var methodTrace: java.io.File? = null
     @Test fun lightPagesPanelsEmptyAndContinuousMotion() = run(false)
     @Test fun darkPagesPanelsEmptyAndContinuousMotion() = run(true)
 
@@ -29,6 +32,7 @@ class VisualMotionNaturalInstrumentedTest {
         val old = ProxyPageOptionsStore.load(context)
         try {
             ProxyPageOptionsStore.save(context, ProxyPageOptions(displayMode = ProxyDisplayMode.TAB))
+            if (profileFrames) shell("dumpsys gfxinfo ${context.packageName} reset")
             ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
                 scenario.onActivity { it.dark = dark }
                 await("dashboard_profile_switch"); settle(); capture("home")
@@ -78,15 +82,9 @@ class VisualMotionNaturalInstrumentedTest {
                 // 作者 long：测试进程结束后gfxinfo已不可读，必须在宿主仍存活时保存本轮帧统计；独占文件由外部SHA回读后收尾。
                 val run = checkNotNull(InstrumentationRegistry.getArguments().getString("kclashMotionRun"))
                 require(run.matches(Regex("[a-z0-9-]+")))
-                val gfx = ins.uiAutomation.executeShellCommand("dumpsys gfxinfo com.lonnnnnng.flclash framestats").use {
-                    android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes()
-                }
-                val file = java.io.File(context.cacheDir, "visual-motion-$run-$suffix.gfx")
-                check(!file.exists());file.writeBytes(gfx)
-                ins.sendStatus(2,Bundle().apply { putString("kclash_motion_gfx",JSONObject().put("name",file.name)
-                    .put("sha256",java.security.MessageDigest.getInstance("SHA-256").digest(gfx).joinToString(""){"%02x".format(it)}).put("bytes",gfx.size).toString()) })
+                if (!profileFrames) saveFrames("visual-motion-$run-$suffix.gfx")
             }
-        } finally { ProxyPageOptionsStore.save(context,old) }
+        } finally { stopMethodTrace(); ProxyPageOptionsStore.save(context,old) }
     }
     private fun root(): AccessibilityNodeInfo? {
         // 作者 long：跨Compose退场后系统缓存可能保留旧标签；先刷新原生节点缓存，画面消失不能用过期节点判失败。
@@ -123,10 +121,57 @@ class VisualMotionNaturalInstrumentedTest {
     }
     private fun back(){ins.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)}
     private fun settle(){SystemClock.sleep(1000)}
-    private fun event(name:String){ins.sendStatus(2,Bundle().apply{putString("kclash_motion_event",JSONObject().put("theme",suffix).put("event",name).put("elapsedNanos",SystemClock.elapsedRealtimeNanos()).toString())})}
+    private fun event(name:String){
+        if (name == "quality-loading") stopMethodTrace()
+        if (profileFrames) sampleFrames("before-$name")
+        if (name == "proxy-menu-nested" && InstrumentationRegistry.getArguments().getString("kclashMotionMethodTrace") == "true") {
+            val run=checkNotNull(InstrumentationRegistry.getArguments().getString("kclashMotionRun"))
+            require(run.matches(Regex("[a-z0-9-]+")))
+            val file=java.io.File(ins.targetContext.cacheDir,"motion-method-$run-$suffix.trace")
+            check(!file.exists());methodTrace=file
+            // 作者 long：方法采样只用于菜单热点归因，另跑诊断批次，不能把其扰动后的耗时计入性能对照。
+            android.os.Debug.startMethodTracingSampling(file.absolutePath,32*1024*1024,1000)
+        }
+        ins.sendStatus(2,Bundle().apply{putString("kclash_motion_event",JSONObject().put("theme",suffix).put("event",name)
+            .put("elapsedNanos",SystemClock.elapsedRealtimeNanos()).put("uptimeNanos",System.nanoTime()).toString())})
+    }
     private fun capture(name:String){
+        if (profileFrames) sampleFrames(name)
+        // 作者 long：性能对照必须在截图和PNG压缩之前退出；只禁回传仍会污染渲染与CPU采样窗口。
+        if (InstrumentationRegistry.getArguments().getString("kclashCapturePng") != "true") return
         val bitmap=checkNotNull(ins.uiAutomation.takeScreenshot())
         val out=ByteArrayOutputStream();bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);bitmap.recycle()
         recordVisualPng("natural_${suffix}_$name",out.toByteArray())
+    }
+    private fun shell(command:String):ByteArray = ins.uiAutomation.executeShellCommand(command).use {
+        android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes()
+    }
+    private fun sampleFrames(label:String) {
+        val run=checkNotNull(InstrumentationRegistry.getArguments().getString("kclashMotionRun"))
+        require(run.matches(Regex("[a-z0-9-]+")))
+        // 作者 long：在面板仍存活的稳定边界取各窗口统计，再清零；主题与阶段不能共享累计计数。
+        saveFrames("visual-motion-$run-$suffix-${segment++}-${label.replace('_','-')}.gfx")
+        shell("dumpsys gfxinfo ${ins.targetContext.packageName} reset")
+    }
+    private fun saveFrames(name:String) {
+        val before=System.nanoTime()
+        val gfx=shell("dumpsys gfxinfo ${ins.targetContext.packageName} framestats")
+        val file=java.io.File(ins.targetContext.cacheDir,name)
+        val inline=InstrumentationRegistry.getArguments().getString("kclashMotionInlineFrames") == "true"
+        // 作者 long：非Debug独立包不允许run-as；小型帧表直接由签名Instrumentation回传，不开放文件组件或改正式权限。
+        if (!inline) { check(!file.exists());file.writeBytes(gfx) }
+        ins.sendStatus(2,Bundle().apply { putString("kclash_motion_gfx",JSONObject().put("name",file.name)
+            .put("sampleStartUptimeNanos",before).put("sampleEndUptimeNanos",System.nanoTime())
+            .apply { if (inline) put("inlineBase64",android.util.Base64.encodeToString(gfx,android.util.Base64.NO_WRAP)) }
+            .put("sha256",java.security.MessageDigest.getInstance("SHA-256").digest(gfx).joinToString(""){"%02x".format(it)})
+            .put("bytes",gfx.size).toString()) })
+    }
+    private fun stopMethodTrace() {
+        val file=methodTrace ?: return
+        android.os.Debug.stopMethodTracing();methodTrace=null
+        val bytes=file.readBytes()
+        ins.sendStatus(2,Bundle().apply { putString("kclash_motion_trace",JSONObject().put("name",file.name)
+            .put("sha256",java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString(""){"%02x".format(it)})
+            .put("bytes",bytes.size).toString()) })
     }
 }

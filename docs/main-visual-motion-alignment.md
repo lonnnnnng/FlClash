@@ -42,4 +42,6 @@ Flutter主仓库固定`be84736605527034689c95bf27828ff27d912c5e`；其共用UI�
 
 此结果标记`NOT_ACCEPTED_INVESTIGATE`。Debug、screenrecord及PNG采集开销尚未隔离，未认定确切产品根因，也不能声称Release或无采集时流畅度通过。下一步在相同操作窗口取消录屏/截图后取帧统计，再分离Debug开销，定位慢帧后修复并集中复验。本轮原始失败指标持续保留。
 
+2026-11-08后续：已由[KUI-018](motion-performance-defect.md)补无采集、独立非debuggable包对照与方法采样，确认并修复菜单阴影缓存失效热点。二级菜单jank66.30%→15.50%、非启动总窗口14.11%→10.11%；不能与上文混合采集31.62%直接相减。面板尝试退化后撤回，完整性能仍PARTIAL。最终构建、同包回归和剩余边界见[motion-performance-redmi-20261108.json](acceptance/motion-performance-redmi-20261108.json)。
+
 浅色固定Debug宿主的系统状态栏图标继承设备模式为白色，未作为正式主题对比度验收；8张MainPageStates裸组件图缺完整主页面顶部inset，仅证明组件内容/IME边界。正式导航与自然宿主另有inset覆盖。完整Flutter像素一致、CUSTOM组数芯片、首页无流量统计、内存图形层级和其他子页仍列待办。

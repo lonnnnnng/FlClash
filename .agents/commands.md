@@ -27,6 +27,14 @@ Release 预发布检查（没有独立签名身份时输出未签名 APK）：
 
 `.github/workflows/kotlin-android.yml` 使用同一根目录 Wrapper，负责 Kotlin 主线的 arm64 单元测试、Debug/Release 构建、R8、Lint 和未签名 Release 产物检查；Flutter 发布 workflow 不作为 Kotlin 主线的构建入口。
 
+自然交互性能诊断可以显式开启独立包名的非Debug应用：
+
+```zsh
+./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true
+```
+
+仅该次Gradle调用创建`motionBenchmark`变体及对应测试任务，包名为`com.lonnnnnng.flclash.motion`；应用非debuggable、未压缩混淆，库按debug回退并复用固定UI验收宿主。它不等于正式签名/R8 Release，默认构建不携带这些组件。只执行`VisualMotionNaturalInstrumentedTest`具名深浅两方法，不运行整个测试类集合。分段参数`kclashNaturalMotion=true`、`kclashMotionProfile=true`、`kclashCapturePng=false`、`kclashMotionInlineFrames=true`及唯一`kclashMotionRun`；不同时录屏。非Debug包禁止依赖run-as，帧表由Instrumentation内联回传并核验SHA。方法采样仅用于独立诊断，不与性能对照合计。完整保护、复测及收尾记录见`docs/motion-performance-defect.md`。
+
 ## Go core
 
 ```zsh

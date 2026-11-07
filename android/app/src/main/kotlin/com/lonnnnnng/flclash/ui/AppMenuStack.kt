@@ -113,7 +113,7 @@ internal fun appMenuStackRect(size: Size, top: Float, ownerTop: Float, ownerHeig
 /** 作者 long：完整内容先布局，仅改变卡片裁剪范围；文字不做纵向缩放，后层既不暴露语义也不接收内部点击。 */
 @Composable
 internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boolean, surface: Color,
-    backdrop: AppMenuBackdrop?, menuPosition: IntOffset, opening: Float, returning: Float,
+    backdrop: AppMenuBackdrop?, menuPosition: IntOffset, opening: State<Float>, returning: State<Float>,
     onScrollable: (Boolean) -> Unit, content: @Composable ColumnScope.(Any?) -> Unit) {
     val density = LocalDensity.current.density
     val inputModeManager = LocalInputModeManager.current
@@ -137,6 +137,8 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                     level.owner?.bounds?.height ?: 48f * density, p, density)
                 AppMenuMorphFrame(rect, max(0f, (16f + 8f * p) * density), 1f)
             }
+            // 作者 long：根卡/后层只有缩放和明暗变化，轮廓没有变形；稳定Shape让Compose复用阴影位图，不能每帧制造新缓存键。
+            val shape = if (top && index > 0) AppMenuMorphShape(frame) else AppSuperellipseShape(24.dp)
             val renderer = remember { AppMenuGlassRenderer() }
             val dark = com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current
             val tint = if (dark) Color(0xFF343537) else MaterialTheme.colorScheme.surfaceBright
@@ -159,15 +161,18 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                     scaleX = scale; scaleY = scale
                     transformOrigin = TransformOrigin(1f, if (size.height > 0) ((levels.last().top - level.top) / size.height).coerceIn(0f, 1f) else 0f)
                 }
-                .dropShadow(AppMenuMorphShape(frame), Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
-                    color = Color.Black.copy(alpha = if (opening < .45f || !active) 0f else .118f * (if (dark) 1.5f else 1f) *
-                        if (top && index > 0) state.unfold.value.coerceIn(0f, 1f) else max(1f / 6, 1f - distance / 3)), offset = DpOffset(0.dp, 8.dp)))
-                .graphicsLayer { this.shape = AppMenuMorphShape(frame); clip = true }
                 .onGloballyPositioned {
                     // 作者 long：采样原点使用未裁剪的局部原点；展开裁剪不能反过来移动背景，否则边缘会随高度游走。
                     level.bounds = Rect(it.localToWindow(Offset.Zero), Size(it.size.width * scale, it.size.height * scale))
-                }
-                .drawWithContent {
+                }.testTag("app_menu_level_$index")) {
+                // 作者 long：阴影单独留在绘制层，明暗只调制该层；Compose的Shadow颜色/alpha都属于位图缓存键，不能随动画重建。
+                Box(Modifier.matchParentSize().graphicsLayer {
+                    compositingStrategy = CompositingStrategy.ModulateAlpha
+                    alpha = if (opening.value < .45f || !active) 0f else
+                        if (top && index > 0) state.unfold.value.coerceIn(0f, 1f) else max(1f / 6, 1f - distance / 3)
+                }.dropShadow(shape, Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
+                    color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp))))
+                Box(Modifier.graphicsLayer { this.shape = shape; clip = true }.drawWithContent {
                     val motion = frame(size)
                     if (top) {
                         val rect = motion.platter.translate(level.bounds.topLeft)
@@ -176,7 +181,7 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                     }
                     val style = AppGlassStyle.menu(dark, tint).resolve(quality, material)
                     clipPath(motion.path()) {
-                        if (opening >= .45f && active) {
+                        if (opening.value >= .45f && active) {
                             if (backdrop == null || !renderer.draw(this, motion, backdrop,
                                 Offset(-level.bounds.left, -level.bounds.top), tint, dark, paintScale = scale.coerceAtLeast(.001f), style = style, quality = quality)) {
                                 if (backdrop != null) drawAppGlassFallback(motion, backdrop, Offset(-level.bounds.left, -level.bounds.top), style, quality, scale.coerceAtLeast(.001f))
@@ -186,18 +191,19 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                         this@drawWithContent.drawContent()
                         if (!top) drawPath(motion.path(), dim.copy(alpha = min(.4f, .2f * distance)))
                     }
-                }.testTag("app_menu_level_$index")) {
+                }) {
                 CompositionLocalProvider(LocalAppMenuStack provides state, LocalAppMenuLevel provides level,
                     LocalAppMenuEnabled provides enabled, LocalAppMenuHeaderEnabled provides (active && top),
                     LocalAppMenuCarry provides if (top) LocalAppMenuCarry.current else null) {
                     Column(Modifier.then(if (!top) Modifier.clearAndSetSemantics {} else Modifier)
                         .verticalScroll(level.scroll, enabled = top && !state.folding).padding(8.dp).graphicsLayer {
-                            val time = if (active) opening else returning
+                            val time = if (active) opening.value else returning.value
                             val blur = if (active) 4f * (1f - (time / .25f).coerceIn(0f, 1f)) else 8f * (time / .1f).coerceIn(0f, 1f)
                             renderEffect = if (blur > .1f && android.os.Build.VERSION.SDK_INT >= 31) BlurEffect(blur * density, blur * density) else null
                         }) { content(level.key) }
                 }
                 if (!top) Box(Modifier.matchParentSize().clickable(enabled = active) { state.onBack() }.clearAndSetSemantics {})
+                }
             }
         } }
     }) { children, constraints ->
