@@ -89,6 +89,10 @@ class ProviderDocumentColdInstrumentedTest {
         compose.onNodeWithTag("dashboard_profile_card").performScrollTo().performClick()
         val m = model()
         compose.waitUntil(20_000) { m.providers.value.let { it.profileId == id && it.providers != null && !it.isLoading } }
+        if (case == "mrs-preview") {
+            prepareMrsPreview(record)
+            awaitCancellation()
+        }
         val index = m.providers.value.providers!!.indexOfFirst { it.name == alias }
         assertTrue(index >= 0)
         compose.onNodeWithTag("profile_provider_menu_$index").performScrollTo().performClick()
@@ -175,14 +179,19 @@ class ProviderDocumentColdInstrumentedTest {
         if (sourceDeleted) check(!repo.profileFile(sourceId).exists())
         else check(sha(repo.profileFile(sourceId).readBytes()) == record["sha"].asString)
         val saved = draft()
-        // 作者 long：源删除场景可能已清正文、仅卡在切回正式配置；此时允许精确收尾，但仍核对原临时ID和源缺失条件。
-        check(saved?.let { it.profileId == id && it.name == record["alias"].asString } ?: sourceDeleted)
+        // 作者 long：只读预览可能已正常关闭、随后卡在父面板；必须核对本轮源与缓存未变，才能收尾自己的临时对象。
+        val closedMrs = record["case"].asString == "mrs-preview" && record["ready"]?.asBoolean == true &&
+            record.has("session") && record.has("verifiedPid") &&
+            signature(repo.profileFile(sourceId)) == record["sourceSignature"]?.asString &&
+            signature(cache(record)) == record["cacheAtDeath"]?.asString
+        check(saved?.let { it.profileId == id && it.name == (record["previewName"] ?: record["alias"]).asString } ?: (sourceDeleted || closedMrs))
         val m = model()
         if (saved != null) compose.waitUntil(25_000) { m.document.value?.let { !it.loading && !it.saving } == true }
         else assertNull(m.document.value)
         instrumentation.sendStatus(0, Bundle().apply {
             putString("kclash_provider_fixture_diagnostic", "pending=${saved?.pending};committed=${saved?.committed};bound=${m.document.value?.document != null};blocked=${m.document.value?.recoveryBlocked};cacheMatchesDraft=${cache(record).readText() == saved?.content};error=${m.document.value?.error}")
         })
+        reportProviderPanel(record, "recovery")
         cleanup(record)
     }
 
@@ -219,6 +228,13 @@ class ProviderDocumentColdInstrumentedTest {
         val sourceDeleted = case in setOf("deleted-source-profile", "deleted-source-file")
         assertEquals(if (sourceDeleted) "missing" else record["sourceSignature"].asString,
             signature(repo.profileFile(record["sourceId"].asLong)))
+        if (case == "mrs-preview") {
+            verifyMrsPreview(record)
+            if (InstrumentationRegistry.getArguments().getString("kclashProviderKeep") == "true") {
+                record.addProperty("verifiedPid", android.os.Process.myPid()); marker().writeText(record.toString())
+                return@runBlocking
+            }
+        }
         when (case) {
             "after" -> {
                 assertTrue(m.document.value!!.committed)
@@ -271,6 +287,94 @@ class ProviderDocumentColdInstrumentedTest {
         instrumentation.sendStatus(0, Bundle().apply { putString("kclash_provider_cold_verified", "case=$case;automatic-open=true;no-replay=true;formal-preserved=true;draft-cleared=true") })
     }
 
+    private suspend fun prepareMrsPreview(record: JsonObject) {
+        val m = model()
+        // 作者 long：沿用原配置中的真实MRS，至少超过一屏才能证明滚动恢复，不生成替代规则。
+        val providers = requireNotNull(m.providers.value.providers)
+        val name = providers.filter { it.type == "Rule" && it.count in 200..3_000 }.minBy { it.count }.name
+        record.addProperty("previewName", name); marker().writeText(record.toString())
+        val index = providers.indexOfFirst { it.name == name }
+        compose.onNodeWithTag("profile_provider_row_$index").performScrollTo().performClick()
+        compose.waitUntil(20_000) { m.document.value?.let { it.draft != null && !it.loading } == true }
+        val state = requireNotNull(m.document.value)
+        val document = requireNotNull(state.document).document
+        assertFalse(document.editable); assertFalse(state.editing); assertNull(state.error)
+        compose.onNodeWithText("MRS 规则只读预览").assertIsDisplayed()
+        compose.onNodeWithTag("profile_provider_document_save").assertDoesNotExist()
+        assertTrue(document.content.count { it == '\n' } >= 100)
+        compose.onNodeWithTag("profile_provider_document_content").performTouchInput { swipeUp() }
+        compose.waitForIdle()
+        val scroll = compose.onNodeWithTag("profile_provider_document_content").fetchSemanticsNode()
+            .config[SemanticsProperties.VerticalScrollAxisRange].value()
+        assertTrue("真实MRS必须发生滚动", scroll > 0f)
+        awaitDraft { it.content == document.content && it.uiDraft != null && it.uiDraft == m.document.value?.draft?.uiDraft }
+        record.addProperty("intended", sha(document.content)); record.addProperty("digest", document.digest)
+        record.addProperty("session", draft()!!.session); record.addProperty("scroll", scroll)
+        record.addProperty("ui", sha(gson.toJson(draft()!!.uiDraft)))
+        record.addProperty("sourceSignature", signature(entry().profileRepository().profileFile(record["sourceId"].asLong)))
+        record.addProperty("cacheAtDeath", signature(cache(record)))
+        assertPrivateState(document.content.take(128))
+        record.addProperty("ready", true); marker().writeText(record.toString())
+        instrumentation.sendStatus(0, Bundle().apply { putString("kclash_provider_cold_ready", record.toString()) })
+    }
+
+    private suspend fun verifyMrsPreview(record: JsonObject) {
+        val m = model(); val state = requireNotNull(m.document.value)
+        val document = requireNotNull(state.document).document
+        assertEquals(record["previewName"].asString, state.draft!!.name)
+        assertEquals(record["session"].asString, state.draft.session)
+        assertEquals(record["digest"].asString, document.digest)
+        assertEquals(record["intended"].asString, sha(document.content))
+        assertFalse(document.editable); assertFalse(state.editing); assertFalse(state.dirty)
+        assertFalse(state.saving); assertFalse(state.committed); assertFalse(state.recoveryBlocked); assertNull(state.error)
+        compose.onNodeWithText("MRS 规则只读预览").assertIsDisplayed()
+        compose.onNodeWithTag("profile_provider_document_save").assertDoesNotExist()
+        assertEquals(record["scroll"].asFloat, compose.onNodeWithTag("profile_provider_document_content")
+            .fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value(), 1f)
+        awaitDraft { it.session == record["session"].asString && !it.pending && !it.committed }
+        if (InstrumentationRegistry.getArguments().getString("kclashProviderKeep") == "true") {
+            assertPrivateState(document.content.take(128))
+            return
+        }
+        // 作者 long：从自动恢复的页面逐层返回，确认清除独立会话后重开详情不会复活旧预览。
+        compose.onNodeWithTag("profile_provider_document_back").performClick()
+        awaitSameProviderPanel(record)
+        compose.onNodeWithTag("dashboard_profile_detail_back").performClick()
+        compose.onNodeWithTag("page_dashboard").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_profile_card").performScrollTo().performClick()
+        awaitSameProviderPanel(record)
+        assertNull(entry().providerDocumentStore().read())
+        // 作者 long：手动onSaveInstanceState会把ComponentActivity生命周期降到CREATED，必须在最后一次UI操作后做Bundle泄漏检查。
+        assertPrivateState(document.content.take(128))
+    }
+
+    private fun awaitSameProviderPanel(record: JsonObject) {
+        val m = model()
+        compose.onNodeWithTag("profile_provider_document").assertDoesNotExist()
+        try {
+            compose.waitUntil(20_000) { m.providers.value.let {
+                it.profileId == record["id"].asLong && !it.isLoading && it.providers != null && it.error == null
+            } }
+        } finally { reportProviderPanel(record, "returned") }
+        val index = m.providers.value.providers!!.indexOfFirst { it.name == record["previewName"].asString }
+        assertTrue(index >= 0)
+        compose.onNodeWithTag("profile_provider_row_$index").performScrollTo().assertIsDisplayed()
+    }
+
+    private fun reportProviderPanel(record: JsonObject, phase: String) {
+        val m = model(); val p = m.providers.value; val s = m.state.value
+        val id = record["id"].asLong
+        val selected = entry().profileRepository().currentProfileId.value
+        val detailNodes = compose.onAllNodesWithTag("dashboard_profile_detail_back").fetchSemanticsNodes().size
+        // 作者 long：只记录状态和匹配结果，失败时区分导航丢失、读取失败与生命周期暂停，不泄漏资源正文或地址。
+        instrumentation.sendStatus(0, Bundle().apply { putString("kclash_provider_panel_state",
+            "phase=$phase;profileMatches=${p.profileId == id};profileNull=${p.profileId == null};" +
+                "loading=${p.isLoading};count=${p.providers?.size};hasError=${p.error != null};" +
+                "statisticsLoading=${s.isLoading};statisticsError=${s.error != null};document=${m.document.value != null};" +
+                "selectedMatches=${selected == id};detailNodes=$detailNodes;" +
+                "lifecycle=${compose.activity.lifecycle.currentState}") })
+    }
+
     private suspend fun cleanup(record: JsonObject) {
         val e = entry(); val repo = e.profileRepository(); val m = model()
         compose.runOnIdle { m.closeProvider() }
@@ -302,21 +406,21 @@ class ProviderDocumentColdInstrumentedTest {
     private fun signature(file: File) = if (!file.exists()) "missing" else "${file.length()}:${file.lastModified()}:${sha(file.readBytes())}"
     private fun sha(text: String) = sha(text.toByteArray(Charsets.UTF_8))
     private fun sha(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
-    private fun assertPrivateState() {
+    private fun assertPrivateState(privateText: String = PRIVATE) {
         val state = Bundle()
         compose.runOnIdle { instrumentation.callActivityOnSaveInstanceState(compose.activity, state) }
         val parcel = Parcel.obtain()
         val bytes = try { parcel.writeBundle(state); parcel.marshall() } finally { parcel.recycle() }
         for (charset in listOf(Charsets.UTF_8, Charsets.UTF_16LE, Charsets.UTF_16BE)) {
-            assertFalse("正文标记不得进入系统Bundle", bytes.toString(charset).contains(PRIVATE))
+            assertFalse("正文标记不得进入系统Bundle", bytes.toString(charset).contains(privateText))
         }
         val cipher = File(compose.activity.noBackupFilesDir, "provider-document.v1")
-        if (cipher.exists()) assertFalse(cipher.readBytes().toString(Charsets.ISO_8859_1).contains(PRIVATE))
+        if (cipher.exists()) assertFalse(cipher.readBytes().toString(Charsets.UTF_8).contains(privateText))
         // 作者 long：真实正文含订阅与节点凭据，本组仅记录摘要和控件状态，不截取正文画面。
     }
     private companion object {
         const val PRIVATE = "provider-private-cold-20261107"
         val CASES = setOf("draft", "failure", "before", "after", "conflict", "deleted-profile",
-            "deleted-provider-cache", "deleted-source-profile", "deleted-source-file")
+            "deleted-provider-cache", "deleted-source-profile", "deleted-source-file", "mrs-preview")
     }
 }

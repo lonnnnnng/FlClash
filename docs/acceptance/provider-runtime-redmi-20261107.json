@@ -1,0 +1,1042 @@
+{
+  "date": "2026-11-07",
+  "scope": "Provider MRS只读冷恢复、纯代理保存死亡窗口与失效引用实核回滚",
+  "status": "DONE-VERIFIED within named slice; overall todo9 PARTIAL",
+  "sourceBase": "98283d358ba5754fd189bc3cd95c155ad82777d5",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 2m 2s",
+    "tasks": "389 actionable tasks: 28 executed, 361 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 549,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 73
+      },
+      "service": {
+        "tests": 212,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE",
+      "> Task :app:testDebugUnitTest"
+    ],
+    "executionNote": "执行/复用状态以本组jvmExecution为准",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 68,
+        "hints": 13
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 12
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "edbac442794444edc091d8a548b76db91eddb958094507300390d0b17fc250b2",
+        "bytes": 5462923,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "6ba1080825ae7bd0ddda13e85dc40171e152a1ebc2cdb40b035324584dc3e471",
+        "bytes": 48264748,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "release": {
+    "sourceFilesMatched": 579,
+    "debugMarkersAbsent": {
+      "ProviderRuntimeAcceptanceActivity": true,
+      "ProviderRuntimeKillReceiver": true,
+      "KClashProviderRuntime": true,
+      "provider-runtime-acceptance.v1": true,
+      "kclash-invalid-group": true,
+      "mrs-preview": true,
+      "kclash_provider_cold_ready": true
+    },
+    "releaseComponentIsolation": true,
+    "sha256": "6ba1080825ae7bd0ddda13e85dc40171e152a1ebc2cdb40b035324584dc3e471",
+    "scope": "R8 DEX and manifest static checks; unsigned APK not installed"
+  },
+  "cold": {
+    "batch": "mrs-final7",
+    "firstRecoveryPassed": 1,
+    "secondRecoveryPassed": 1,
+    "parentReturnedAndReopened": true,
+    "providerCount": 91,
+    "sameSessionDigestReadonlyScrollNoSaveReplay": true,
+    "scope": "Real MainActivity, STOPPED; first recovery after force-stop of verified alive PID; before second recovery prior process had already exited",
+    "secondRecoveryPreviousProcessAlreadyExited": true
+  },
+  "runtime": {
+    "batch": "final7",
+    "passed": 6,
+    "networkSamples": 12,
+    "cases": [
+      {
+        "case": "before",
+        "result": {
+          "token": "8ad5808b0f9543268497b88436e2c74e",
+          "serial": "wsvwypiz7xwslvl7",
+          "passed": true,
+          "installedAppSha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e",
+          "before": {
+            "pids": [],
+            "pidsBefore": [],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          },
+          "preparationIsolation": {
+            "type": "force-stop-before-preparation",
+            "noServices": true,
+            "noBackup": true
+          },
+          "ready": {
+            "case": "before",
+            "readyAt": 1794037119057,
+            "cacheAndCoreMatched": true,
+            "sessionPreserved": true,
+            "intent": 1,
+            "committed": 0,
+            "token": "8ad5808b0f9543268497b88436e2c74e",
+            "phase": "ready",
+            "pid": 9394,
+            "epochMs": 1794037119074
+          },
+          "beforeKill": {
+            "pids": [
+              9394
+            ],
+            "pidsBefore": [
+              9394
+            ],
+            "stableSample": true,
+            "servicePid": 9394,
+            "hasProxyService": true,
+            "isForeground": true,
+            "hasVpnService": false,
+            "hasTun0": false
+          },
+          "killCommand": {
+            "type": "external-broadcast-triggered-self-SIGKILL",
+            "exitCode": 0,
+            "output": "Broadcasting: Intent { flg=0x400000 cmp=com.lonnnnnng.flclash/.ProviderRuntimeKillReceiver (has extras) }\nBroadcast completed: result=0\n"
+          },
+          "systemObservedBeforeVerify": {
+            "pids": [
+              11955
+            ],
+            "pidsBefore": [
+              11955
+            ],
+            "stableSample": true,
+            "servicePid": 11955,
+            "hasProxyService": true,
+            "isForeground": true,
+            "hasVpnService": false,
+            "hasTun0": false,
+            "secondsAfterKill": 3.007
+          },
+          "verified": {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "case": "before",
+            "preparedPid": 9394,
+            "restartAt": 1794037125732,
+            "readyAt": 1794037119057,
+            "noAutomaticReplay": true,
+            "explicitRetryCommits": 1,
+            "cacheAndCoreMatched": true,
+            "sourcePreserved": true,
+            "token": "8ad5808b0f9543268497b88436e2c74e",
+            "phase": "verified",
+            "pid": 11955,
+            "epochMs": 1794037141315
+          },
+          "restored": {
+            "formalPreserved": true,
+            "backupCleared": true,
+            "token": "8ad5808b0f9543268497b88436e2c74e",
+            "phase": "restored",
+            "pid": 11955,
+            "epochMs": 1794037143407
+          },
+          "after": {
+            "pids": [
+              11955
+            ],
+            "pidsBefore": [
+              11955
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          }
+        },
+        "networkSamples": [
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "prepare-network",
+            "token": "8ad5808b0f9543268497b88436e2c74e",
+            "phase": "network-verified",
+            "pid": 9394,
+            "epochMs": 1794037115793
+          },
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "verify-restored-network",
+            "token": "8ad5808b0f9543268497b88436e2c74e",
+            "phase": "network-verified",
+            "pid": 11955,
+            "epochMs": 1794037127324
+          },
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "verify-post-save-network",
+            "token": "8ad5808b0f9543268497b88436e2c74e",
+            "phase": "network-verified",
+            "pid": 11955,
+            "epochMs": 1794037141312
+          }
+        ]
+      },
+      {
+        "case": "after",
+        "result": {
+          "token": "14727865fb4842b1a1c5def6c238f7b2",
+          "serial": "wsvwypiz7xwslvl7",
+          "passed": true,
+          "installedAppSha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e",
+          "before": {
+            "pids": [
+              11955
+            ],
+            "pidsBefore": [
+              11955
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          },
+          "preparationIsolation": {
+            "type": "force-stop-before-preparation",
+            "noServices": true,
+            "noBackup": true
+          },
+          "ready": {
+            "case": "after",
+            "readyAt": 1794037163474,
+            "cacheAndCoreMatched": true,
+            "sessionPreserved": true,
+            "intent": 1,
+            "committed": 1,
+            "token": "14727865fb4842b1a1c5def6c238f7b2",
+            "phase": "ready",
+            "pid": 9799,
+            "epochMs": 1794037163511
+          },
+          "beforeKill": {
+            "pids": [
+              9799
+            ],
+            "pidsBefore": [
+              9799
+            ],
+            "stableSample": true,
+            "servicePid": 9799,
+            "hasProxyService": true,
+            "isForeground": true,
+            "hasVpnService": false,
+            "hasTun0": false
+          },
+          "killCommand": {
+            "type": "external-broadcast-triggered-self-SIGKILL",
+            "exitCode": 0,
+            "output": "Broadcasting: Intent { flg=0x400000 cmp=com.lonnnnnng.flclash/.ProviderRuntimeKillReceiver (has extras) }\nBroadcast completed: result=0\n"
+          },
+          "systemObservedBeforeVerify": {
+            "pids": [
+              12401
+            ],
+            "pidsBefore": [
+              12401
+            ],
+            "stableSample": true,
+            "servicePid": 12401,
+            "hasProxyService": true,
+            "isForeground": true,
+            "hasVpnService": false,
+            "hasTun0": false,
+            "secondsAfterKill": 3.027
+          },
+          "verified": {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "case": "after",
+            "preparedPid": 9799,
+            "restartAt": 1794037170368,
+            "readyAt": 1794037163474,
+            "noAutomaticReplay": true,
+            "explicitRetryCommits": 0,
+            "cacheAndCoreMatched": true,
+            "sourcePreserved": true,
+            "token": "14727865fb4842b1a1c5def6c238f7b2",
+            "phase": "verified",
+            "pid": 12401,
+            "epochMs": 1794037177605
+          },
+          "restored": {
+            "formalPreserved": true,
+            "backupCleared": true,
+            "token": "14727865fb4842b1a1c5def6c238f7b2",
+            "phase": "restored",
+            "pid": 12401,
+            "epochMs": 1794037179927
+          },
+          "after": {
+            "pids": [
+              12401
+            ],
+            "pidsBefore": [
+              12401
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          }
+        },
+        "networkSamples": [
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "prepare-network",
+            "token": "14727865fb4842b1a1c5def6c238f7b2",
+            "phase": "network-verified",
+            "pid": 9799,
+            "epochMs": 1794037156347
+          },
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "verify-restored-network",
+            "token": "14727865fb4842b1a1c5def6c238f7b2",
+            "phase": "network-verified",
+            "pid": 12401,
+            "epochMs": 1794037171918
+          },
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "verify-post-save-network",
+            "token": "14727865fb4842b1a1c5def6c238f7b2",
+            "phase": "network-verified",
+            "pid": 12401,
+            "epochMs": 1794037177603
+          }
+        ]
+      },
+      {
+        "case": "stopped-file",
+        "result": {
+          "token": "a134f6831b8c454a9708c175046a2c0c",
+          "serial": "wsvwypiz7xwslvl7",
+          "passed": true,
+          "installedAppSha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e",
+          "before": {
+            "pids": [
+              12401
+            ],
+            "pidsBefore": [
+              12401
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          },
+          "preparationIsolation": {
+            "type": "force-stop-before-preparation",
+            "noServices": true,
+            "noBackup": true
+          },
+          "verified": {
+            "case": "stopped-file",
+            "rawValidationAccepted": true,
+            "realSetupRejectedAndRollbackApplied": true,
+            "rollbackEpochDelta": 2,
+            "oldAppliedInputRestored": true,
+            "coreMembersAndSelectionRestored": true,
+            "validTargetSwitchPassed": true,
+            "sessionPreserved": true,
+            "httpVerified": false,
+            "token": "a134f6831b8c454a9708c175046a2c0c",
+            "phase": "verified",
+            "pid": 11451,
+            "epochMs": 1794037193019
+          },
+          "restored": {
+            "formalPreserved": true,
+            "backupCleared": true,
+            "token": "a134f6831b8c454a9708c175046a2c0c",
+            "phase": "restored",
+            "pid": 11451,
+            "epochMs": 1794037194018
+          },
+          "after": {
+            "pids": [
+              11451
+            ],
+            "pidsBefore": [
+              11451
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          }
+        },
+        "networkSamples": []
+      },
+      {
+        "case": "stopped-row",
+        "result": {
+          "token": "71d9ac2e3e2e46a980c79b60a82ce8ce",
+          "serial": "wsvwypiz7xwslvl7",
+          "passed": true,
+          "installedAppSha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e",
+          "before": {
+            "pids": [
+              11451
+            ],
+            "pidsBefore": [
+              11451
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          },
+          "preparationIsolation": {
+            "type": "force-stop-before-preparation",
+            "noServices": true,
+            "noBackup": true
+          },
+          "verified": {
+            "case": "stopped-row",
+            "rawValidationAccepted": true,
+            "realSetupRejectedAndRollbackApplied": true,
+            "rollbackEpochDelta": 2,
+            "oldAppliedInputRestored": true,
+            "coreMembersAndSelectionRestored": true,
+            "validTargetSwitchPassed": true,
+            "sessionPreserved": true,
+            "httpVerified": false,
+            "token": "71d9ac2e3e2e46a980c79b60a82ce8ce",
+            "phase": "verified",
+            "pid": 11846,
+            "epochMs": 1794037206639
+          },
+          "restored": {
+            "formalPreserved": true,
+            "backupCleared": true,
+            "token": "71d9ac2e3e2e46a980c79b60a82ce8ce",
+            "phase": "restored",
+            "pid": 11846,
+            "epochMs": 1794037207632
+          },
+          "after": {
+            "pids": [
+              11846
+            ],
+            "pidsBefore": [
+              11846
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          }
+        },
+        "networkSamples": []
+      },
+      {
+        "case": "running-file",
+        "result": {
+          "token": "bcf90729b6fc4741b2441b9b6d74da34",
+          "serial": "wsvwypiz7xwslvl7",
+          "passed": true,
+          "installedAppSha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e",
+          "before": {
+            "pids": [
+              11846
+            ],
+            "pidsBefore": [
+              11846
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          },
+          "preparationIsolation": {
+            "type": "force-stop-before-preparation",
+            "noServices": true,
+            "noBackup": true
+          },
+          "verified": {
+            "case": "running-file",
+            "rawValidationAccepted": true,
+            "realSetupRejectedAndRollbackApplied": true,
+            "rollbackEpochDelta": 2,
+            "oldAppliedInputRestored": true,
+            "coreMembersAndSelectionRestored": true,
+            "validTargetSwitchPassed": true,
+            "sessionPreserved": true,
+            "httpVerified": true,
+            "token": "bcf90729b6fc4741b2441b9b6d74da34",
+            "phase": "verified",
+            "pid": 12268,
+            "epochMs": 1794037227117
+          },
+          "restored": {
+            "formalPreserved": true,
+            "backupCleared": true,
+            "token": "bcf90729b6fc4741b2441b9b6d74da34",
+            "phase": "restored",
+            "pid": 12268,
+            "epochMs": 1794037228300
+          },
+          "after": {
+            "pids": [
+              12268
+            ],
+            "pidsBefore": [
+              12268
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          }
+        },
+        "networkSamples": [
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "broken-switch",
+            "token": "bcf90729b6fc4741b2441b9b6d74da34",
+            "phase": "network-verified",
+            "pid": 12268,
+            "epochMs": 1794037220442
+          },
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "broken-switch",
+            "token": "bcf90729b6fc4741b2441b9b6d74da34",
+            "phase": "network-verified",
+            "pid": 12268,
+            "epochMs": 1794037223307
+          },
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "broken-switch",
+            "token": "bcf90729b6fc4741b2441b9b6d74da34",
+            "phase": "network-verified",
+            "pid": 12268,
+            "epochMs": 1794037227116
+          }
+        ]
+      },
+      {
+        "case": "running-row",
+        "result": {
+          "token": "2d84013a6ab649ef811048a619683799",
+          "serial": "wsvwypiz7xwslvl7",
+          "passed": true,
+          "installedAppSha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e",
+          "before": {
+            "pids": [
+              12268
+            ],
+            "pidsBefore": [
+              12268
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          },
+          "preparationIsolation": {
+            "type": "force-stop-before-preparation",
+            "noServices": true,
+            "noBackup": true
+          },
+          "verified": {
+            "case": "running-row",
+            "rawValidationAccepted": true,
+            "realSetupRejectedAndRollbackApplied": true,
+            "rollbackEpochDelta": 2,
+            "oldAppliedInputRestored": true,
+            "coreMembersAndSelectionRestored": true,
+            "validTargetSwitchPassed": true,
+            "sessionPreserved": true,
+            "httpVerified": true,
+            "token": "2d84013a6ab649ef811048a619683799",
+            "phase": "verified",
+            "pid": 12701,
+            "epochMs": 1794037247167
+          },
+          "restored": {
+            "formalPreserved": true,
+            "backupCleared": true,
+            "token": "2d84013a6ab649ef811048a619683799",
+            "phase": "restored",
+            "pid": 12701,
+            "epochMs": 1794037248473
+          },
+          "after": {
+            "pids": [
+              12701
+            ],
+            "pidsBefore": [
+              12701
+            ],
+            "stableSample": true,
+            "servicePid": null,
+            "hasProxyService": false,
+            "isForeground": false,
+            "hasVpnService": false,
+            "hasTun0": false
+          }
+        },
+        "networkSamples": [
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "broken-switch",
+            "token": "2d84013a6ab649ef811048a619683799",
+            "phase": "network-verified",
+            "pid": 12701,
+            "epochMs": 1794037241390
+          },
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "broken-switch",
+            "token": "2d84013a6ab649ef811048a619683799",
+            "phase": "network-verified",
+            "pid": 12701,
+            "epochMs": 1794037244522
+          },
+          {
+            "http": 200,
+            "attributedSocket": true,
+            "positiveTraffic": true,
+            "hasNonDirectChain": true,
+            "step": "broken-switch",
+            "token": "2d84013a6ab649ef811048a619683799",
+            "phase": "network-verified",
+            "pid": 12701,
+            "epochMs": 1794037247165
+          }
+        ]
+      }
+    ],
+    "scope": "Real Hilt VM, Room and core in DUMP-protected Debug host; pure ProxyService; not full MainActivity click navigation",
+    "timingNote": "secondsAfterKill is foreground service observation time, not HTTP recovery time"
+  },
+  "regression": {
+    "batch": "regression1",
+    "passed": 10,
+    "methods": [
+      "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realSaveFailureKeepsDraftSelectionAndDiscardAcrossMainActivityRecreation",
+      "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realMrsReadOnlyPreviewScrollRecreatesAndReturnsToSameMainPanel",
+      "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realCacheSaveReopensThroughMainPanelAndKeepsReferencedProfileSource",
+      "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#discardConfirmationSurvivesRecreationAndReturnsToSameProviderPanel",
+      "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#acceptedSaveCompletesAcrossBackgroundAndRecreationOnlyOnce",
+      "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#previewReadFinishesInBackgroundAndExplicitCloseRejectsOldRead",
+      "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#longFailedDraftKeepsSelectionAcrossBackgroundAndRecreationWithoutSavingBodyInBundle",
+      "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+      "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+      "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft"
+    ],
+    "images": [
+      {
+        "path": "main_provider_failed_recreated.png",
+        "bytes": 486671,
+        "sha256": "6d364053193891ef063daae34c2c6a639af94c8480c3e014df45b1874524a602"
+      },
+      {
+        "path": "main_provider_discard_recreated.png",
+        "bytes": 371250,
+        "sha256": "31d58f0783220cf8cf4f8e4781b67519934616cf2fec01ece15248f7641c118b"
+      },
+      {
+        "path": "main_provider_mrs_before_scroll.png",
+        "bytes": 215933,
+        "sha256": "8550b0a9b0e56bd09c32d237f43edbc3d6c51752dd44a8f337e61311fdcef73b"
+      },
+      {
+        "path": "main_provider_mrs_scrolled.png",
+        "bytes": 209147,
+        "sha256": "4cb90b90e448519dcd10f86835dc96894e3fb2d87959b31f6499f1edcf467833"
+      },
+      {
+        "path": "main_provider_mrs_recreated.png",
+        "bytes": 209147,
+        "sha256": "4cb90b90e448519dcd10f86835dc96894e3fb2d87959b31f6499f1edcf467833"
+      },
+      {
+        "path": "main_provider_detail_reopened.png",
+        "bytes": 180976,
+        "sha256": "3c04ab6bc47d41af5e77109477278a20ffe52448550659c9a0c2482bbcfa4a26"
+      },
+      {
+        "path": "main_provider_saved_panel.png",
+        "bytes": 175357,
+        "sha256": "2bb5cdab186fc515ff2bb18e0eaf44dee4e64dd1ba37329a9a079d3cf739da3e"
+      },
+      {
+        "path": "main_provider_saved_reopened_return.png",
+        "bytes": 175357,
+        "sha256": "2bb5cdab186fc515ff2bb18e0eaf44dee4e64dd1ba37329a9a079d3cf739da3e"
+      },
+      {
+        "path": "provider_document_discard_recreated.png",
+        "bytes": 69538,
+        "sha256": "241348fcaabc18c964759c036804bf22f1b6dde696be04ed96642cf6ac9c8a2e"
+      },
+      {
+        "path": "provider_document_saving_recreated.png",
+        "bytes": 38264,
+        "sha256": "9f6a3e75cb6b1a9d22ecfbc092c61a300e64e06af1f0a0ad2286408fd5ed359a"
+      },
+      {
+        "path": "provider_document_preview_recreated.png",
+        "bytes": 34047,
+        "sha256": "8ff8ed050f5fdbcff734fdfe6c511cacbb3c23905de8f73951f4a2b2adbf29b1"
+      },
+      {
+        "path": "provider_document_failed_recreated.png",
+        "bytes": 366316,
+        "sha256": "3b313b18bb375f461537760f2e6df079674c613409b91fdbff33c4b61c2f5280"
+      },
+      {
+        "path": "provider_option_picker_false.png",
+        "bytes": 81856,
+        "sha256": "72c47f4574e9b31cfa9c5360b1a50f728a2227e2adfc22cfe8748f986cb8dad3"
+      },
+      {
+        "path": "provider_ip_picker_false.png",
+        "bytes": 41667,
+        "sha256": "42aa256c7eb1e661e2c59466c167b4a74914a8ac4a338ab8c6564aa3abd26b6e"
+      },
+      {
+        "path": "provider_options_error_false.png",
+        "bytes": 151004,
+        "sha256": "927d8b535e4eeae1ec0f4a917a813ff1e204833835576a6469ccabd2de8b2426"
+      },
+      {
+        "path": "provider_option_picker_true.png",
+        "bytes": 82980,
+        "sha256": "c117398dcac2f6650abdf65e2d01f5cd99cb8cf383b84c64113a80eae725832a"
+      },
+      {
+        "path": "provider_ip_picker_true.png",
+        "bytes": 41846,
+        "sha256": "4278811f23e1d924d8e8b1e3bb96bf7148d50aed3955b926554d3527c02847e3"
+      },
+      {
+        "path": "provider_options_error_true.png",
+        "bytes": 151346,
+        "sha256": "b7ada5651801ef28f87ac0fb221ff893d56af46f6a014a4bc0891309edf334e3"
+      },
+      {
+        "path": "provider_filter_members.png",
+        "bytes": 85839,
+        "sha256": "a197600e3f8310a5ba4a107412d84feaa9ab14e49d753ad4de7b44f72ecd4608"
+      },
+      {
+        "path": "provider_reference_missing.png",
+        "bytes": 53740,
+        "sha256": "9b43e64cf337dcb2aaea791ceb25a501e476e3795e320cf1cc03c08ce14cb82f"
+      },
+      {
+        "path": "provider_reference_bound.png",
+        "bytes": 37700,
+        "sha256": "80a3b19fb482cfa410cfaac1019d18c18062f2f821073a7cc1f8d556bbf6e91e"
+      },
+      {
+        "path": "provider_quick_yaml_error.png",
+        "bytes": 135328,
+        "sha256": "ffbc70ebea75ecc87131f254d653d03e7ea321f2539e5fef8e4c8340bf60bd43"
+      }
+    ]
+  },
+  "visualReview": {
+    "reviewedImages": 22,
+    "contactSheets": 8,
+    "hashAndDecodeVerified": true,
+    "review": "All eight contact sheets inspected; functional states present; not Flutter pixel parity or motion acceptance.",
+    "fullVisualParityVerified": false,
+    "observations": [
+      {
+        "images": [
+          "provider_document_saving_recreated.png",
+          "provider_filter_members.png"
+        ],
+        "finding": "Saving page rounded edge and filter page dimmed transition sampled before stable final frame; retain as intermediate-state evidence only.",
+        "next": "Capture stable transition endpoint and verify return animation interruption separately."
+      },
+      {
+        "images": [
+          "provider_options_error_false.png",
+          "provider_options_error_true.png"
+        ],
+        "finding": "Test asserts error displayed before scrolling interval field; resulting screenshots show only clipped top of error while IME remains visible.",
+        "next": "Verify error visibility and scroll position with keyboard as a distinct interaction/visual case; do not infer error always visible from this screenshot."
+      }
+    ]
+  },
+  "installation": {
+    "com.lonnnnnng.flclash": {
+      "builtSha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e",
+      "pulledSha256": "a68cddb61420c424918ff635eac23f06595dcb1b3ae71e3b96d905433ea1087e"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "builtSha256": "edbac442794444edc091d8a548b76db91eddb958094507300390d0b17fc250b2",
+      "pulledSha256": "edbac442794444edc091d8a548b76db91eddb958094507300390d0b17fc250b2"
+    }
+  },
+  "sourceFilesMatched": 579,
+  "driverSha256": "f93c55ef503bda8a98be25b31a735b83448e2bfc5f0f2a1f1d55737a3c3d5b22",
+  "preservation": {
+    "formalProfiles": 2,
+    "formalRowsBodiesSizeMtimePreferencesScriptsSelection": true,
+    "originalYamlFlutterAndDeviceSettings": true,
+    "ownFixturesDraftAndMarkersRemoved": true,
+    "noServicesAtEnd": true,
+    "cleanup": {
+      "ownMarkersAndDraftsAbsent": true,
+      "pathsAbsent": {
+        "cache/provider-document-cold.json": true,
+        "no_backup/provider-document.v1": true,
+        "no_backup/provider-document.v1.bak": true,
+        "no_backup/provider-document.v1.new": true,
+        "no_backup/provider-runtime-acceptance.v1": true,
+        "no_backup/provider-runtime-acceptance.v1.bak": true,
+        "no_backup/provider-runtime-acceptance.v1.new": true
+      },
+      "noServicesOrTun": true
+    }
+  },
+  "failuresRetained": [
+    {
+      "id": "mrs1",
+      "scope": "MRS再次冷恢复后的UI返回",
+      "status": "FAILED",
+      "firstRecoveryPassed": true,
+      "secondRecoveryPassed": false,
+      "cause": "手动onSaveInstanceState降级Activity生命周期后继续执行Compose点击",
+      "fix": "Bundle泄漏检查移到最后一次UI操作之后",
+      "recovery": "mrs1/recovery.log: OK (1 test)",
+      "productDefect": false
+    },
+    {
+      "id": "build2",
+      "scope": "统一构建",
+      "status": "FAILED_BEFORE_TASK_EXECUTION",
+      "cause": "assembleDebugAndroidTestTest任务名拼写错误",
+      "fix": "使用assembleDebugAndroidTest",
+      "productDefect": false
+    },
+    {
+      "id": "runtime1-after",
+      "scope": "运行态提交后准备",
+      "status": "FAILED",
+      "cause": "沿用前轮新进程，EditorCommitProbe访问计数累计；未满足精确计数前置",
+      "fix": "每场准备前在无服务无遗留备份时force-stop隔离进程，不计系统恢复证据",
+      "recovery": "runtime1-after/result.json cleanup=restored",
+      "productDefect": false
+    },
+    {
+      "id": "runtime2-stopped-file",
+      "scope": "失效引用切换",
+      "status": "FAILED_BEFORE_SWITCH",
+      "cause": "错误预期RawConfig校验会拒绝未知组类型；实际在setupConfig才执行语义校验",
+      "fix": "验证RawConfig通过、真实setup拒绝、默认fallback及旧输入补偿；epoch至少增长2",
+      "recovery": "runtime2-stopped-file/result.json cleanup=restored",
+      "productDefect": false
+    },
+    {
+      "id": "mrs-final",
+      "scope": "MRS再次冷恢复返回父面板",
+      "status": "FAILED",
+      "firstRecoveryPassed": true,
+      "secondRecoveryPassed": false,
+      "cause": "正文恢复后父列表读取失败常驻；原日志未含状态字段",
+      "productDefect": "KUI-013",
+      "recovery": "mrs-final-recovery2/summary.json"
+    },
+    {
+      "id": "mrs-diagnostic2",
+      "scope": "MRS返回父面板诊断",
+      "status": "FAILED",
+      "cause": "父配置匹配、detailNodes=1、RESUMED；Providers/统计均错误，正文关闭后未刷新",
+      "productDefect": "KUI-013",
+      "recovery": "mrs-diagnostic2-recovery/summary.json"
+    },
+    {
+      "id": "parent-recovery-red",
+      "scope": "核心未就绪导致父列表先失败",
+      "status": "EXPECTED_RED",
+      "cause": "正文成功绑定后父列表仍为空，精确断言失败",
+      "productDefect": "KUI-013",
+      "fix": "成功绑定且父配置匹配时递增一次读取代次",
+      "green": "parent-recovery-green/11 tests passed"
+    },
+    {
+      "id": "build6-premature-summary",
+      "scope": "构建证据汇总",
+      "status": "FAILED_REPORT_ONLY",
+      "cause": "原构建仍运行时启动汇总，尚无BUILD SUCCESSFUL文本触发AttributeError",
+      "productDefect": false,
+      "fix": "等原构建终态后重做summary与release检查"
+    },
+    {
+      "id": "final6-before",
+      "scope": "运行态保存前死亡最终包复验",
+      "status": "FAILED",
+      "cause": "verify阶段TimeoutCancellationException，原日志缺业务栈；尚未确定具体等待",
+      "systemNewPidObserved": true,
+      "productDefect": "unconfirmed",
+      "recovery": "final6-before/result.json cleanup=restored/formalPreserved/backupCleared",
+      "next": "仅补Debug阶段和无敏感信息状态诊断后重验",
+      "laterEvidence": "final7-before passed with added diagnostics; original timeout cause remains unknown"
+    }
+  ],
+  "defects": [
+    "docs/provider-cold-parent-refresh-defect.md KUI-013",
+    "docs/broken-current-profile-switch-defect.md KUI-010 real-core evidence supplement"
+  ],
+  "limitations": [
+    "MRS STOPPED controlled force-stop; running cases pure ProxyService SIGKILL, not VPN/TUN or OEM natural reclaim",
+    "No all Provider types/protocols, double compensation failure real-core injection, standalone GlobalRulesPage cold recovery or resource picker cold recovery claim",
+    "No full Flutter visual/motion parity, low API, performance, cellular, signed Release runtime, Go rerun or remote CI in this batch",
+    "final6-before verify timeout remains unexplained; later diagnostic build passing does not erase it",
+    "Older todo6 protection anomaly, unknown preference changes and network recovery stability remain unresolved"
+  ],
+  "next": "继续剩余子页/面板具体用例及恢复边界，集中Flutter视觉/连续动效；再补原保护异常、系统/性能/兼容/发布",
+  "artifacts": "../acceptance-artifacts/provider-runtime-20261107/"
+}

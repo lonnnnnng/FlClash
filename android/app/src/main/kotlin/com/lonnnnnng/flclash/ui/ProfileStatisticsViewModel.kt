@@ -178,6 +178,12 @@ class ProfileStatisticsViewModel internal constructor(private val runtime: Profi
                         else -> saved.error
                     })
                 mutableBodyRoute.value = null
+                // 作者 long：冷启动列表可能先于正文绑定读到“核心尚未加载”并暂停轮询；绑定成功后只刷新原父面板一次。
+                // 普通版本通知仍不能抹掉读取错误，恢复失败或用户切走时也不能替另一配置自动重试。
+                if (profile.value == saved.profileId) {
+                    providerRetries.update { it + 1 }
+                    retries.update { it + 1 }
+                }
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) {
                 if (generation == documentGeneration) mutableDocument.value = old.copy(loading = false, recoveryBlocked = true,

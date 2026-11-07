@@ -1,6 +1,16 @@
 # Testing
 
-## 扩展页独立密文与正式冷恢复（2026-11-07，当前）
+## Provider运行态与MRS只读冷恢复（2026-11-07，当前）
+
+Provider本组已验：MRS只读正文首次/再次冷恢复及原面板返回通过；纯代理保存前后SIGKILL经外部独立观察系统新PID/前台服务，恢复不自动重放、显式重试仅一次；停止态/运行态各源文件或源记录缺失4类真实setup拒绝后回滚旧输入/选择/会话并成功切往有效目标，epoch各增加2。KUI-013父面板冷恢复后错误常驻已红绿复现并修复，KUI-010补齐实核回滚证据。Redmi final7运行态/回滚6/6、12次同socket核心归因HTTP200，MRS 1+1、相邻回归10/10，22张PNG完整校验及8拼图目视。build7 App549实际执行、Service212/Core38/Common31复用，共830项JVM零失败/错误/跳过；389任务28执行/361复用，Debug/Test/未签名Release-R8及双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。安装回拉及579份Android源码匹配；正式两配置/正文SHA-size-mtime/偏好/脚本/选择、原1.yaml/Flutter包/设备基线保持，临时对象/密文/标记清除，无服务或tun0。MRS为真实MainActivity STOPPED，首次存活PID受控force-stop、再次恢复前进程已退出，运行态为Debug宿主真实VM/Room/核心的纯代理SIGKILL，非VPN/OEM自然回收或完整点击导航。final6-before的verify超时原因未定，后续通过不抹除；第6项原保护异常、未知偏好变化与网络稳定性仍待查。选项错误截图滚动后提示部分裁切、筛选与保存图含转场中间帧，下一组补键盘错误可见性、稳定终帧及剩余子页/面板，再集中Flutter排版/连续动效；独立全局规则页/资源选择器冷进程另列。效果/性能/兼容/发布按原顺序，蜂窝延期、玻璃默认关闭。证据`docs/acceptance/provider-runtime-redmi-20261107.json`；溯源`docs/provider-cold-parent-refresh-defect.md`；附件`../acceptance-artifacts/provider-runtime-20261107/`。
+
+`ProviderDocumentColdInstrumentedTest`仅按方法运行，mrs-preview沿用原1.yaml真实MRS，prepare存活至外部force-stop，verify两次自动恢复并逐层返回原面板；Bundle检查在最后一次UI操作后。失败仅用`inspectAndRecoverExactInterruptedProviderFixture`及额外`kclashProviderFixtureRecovery=true`精确恢复；空密文MRS要求本例UUID/ID、ready/session/verifiedPid和源/cache签名匹配，不可泛化清草稿。
+
+运行态入口：`python3 tool/android_provider_runtime_acceptance.py --serial wsvwypiz7xwslvl7 --case <before|after|stopped-file|stopped-row|running-file|running-row> --output <全新目录>`。只复用原FILE及唯一授权URL，准备前无服务/无备份时隔离进程探针；正式死亡窗口为token/PID限定SIGKILL，必须外部观察系统新PID与同PID前台ProxyService后才verify，verify不能补启动。按独占ID临时副本操作，正式配置自动更新开关临时暂停后逐字段核对恢复，禁止清正式数据。
+
+HTTP只访问唯一授权目标，TLS主机校验、200和同socket正双向流量全部断言；nonDIRECT报告字段在最终汇总逐项核验。本组12个网络样本均true；系统观察秒数不是HTTP恢复耗时。原失败和清理证据见JSON，禁止用重跑成功追认未知根因。
+
+## 扩展页独立密文与正式冷恢复（2026-11-07，历史）
 
 扩展页局部/全局规则独立加密会话、提交前后冷恢复、事务回执防重放、外部规则修改/删除及宿主删除保护已验，KUI-012本组闭环。Redmi final2首次冷恢复18/18、提交后与回执缺口再次恢复4/4，相邻回归11/11，33张PNG完整校验并经11张拼图目视。828项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；执行/复用明细以本组JSON为准。Debug Lint0错误/67警告/13提示，Release0错误/66警告/12提示。安装回拉和578份源码匹配；两份正式配置/正文SHA-size-mtime/脚本/偏好/选择、原1.yaml、Flutter包及设备设置保持，临时对象、密文和提交标记清除，收尾无服务。首轮local-applied恢复过早就绪及后台回执覆盖新UI树已分别红绿复现并修复，原失败保留。本组仅STOPPED/受控force-stop；不推广运行态死亡、OEM自然回收、独立全局规则页冷恢复或完整Flutter视觉。下一组Provider运行态/MRS只读冷恢复及失效引用实核回滚，再统一Flutter视觉；第6项原保护异常、未知偏好变化和网络稳定性仍待查。蜂窝延期，玻璃默认关闭。证据`docs/acceptance/profile-extension-cold-redmi-20261107.json`；溯源`docs/profile-extension-cold-recovery-defect.md`；附件`../acceptance-artifacts/extension-cold-20261107/`。
 

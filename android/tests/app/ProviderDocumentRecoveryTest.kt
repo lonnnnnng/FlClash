@@ -193,6 +193,53 @@ class ProviderDocumentRecoveryTest {
         }
     }
 
+    @Test fun successfulColdBindingRefreshesParentAfterCoreNotReadyFailure() = runTest {
+        val runtime = Runtime(); val store = Store(); val first = model(runtime, store)
+        open(first); first.viewModelScope.cancel(); runCurrent()
+        val gate = CompletableDeferred<Unit>()
+        runtime.configReady = false; runtime.recoveryGate = gate
+        val second = model(runtime, store)
+        try {
+            // 作者 long：冷启动父列表可先取得核心锁并失败；正文随后加载成功必须让返回目标可用，不能要求用户再点重试。
+            second.setForeground(true); second.show(1); runCurrent()
+            assertNotNull(second.providers.value.error)
+            assertNull(second.providers.value.providers)
+            gate.complete(Unit); runCurrent()
+            assertNotNull(second.document.value?.document)
+            assertFalse(second.document.value!!.recoveryBlocked)
+            assertNotNull(second.providers.value.providers)
+            assertNull(second.providers.value.error)
+            assertNotNull(second.state.value.counts)
+            second.closeProvider(); runCurrent()
+            assertNull(second.document.value); assertNull(store.bytes)
+            assertEquals(1L, second.providers.value.profileId)
+            assertEquals(0, runtime.saves)
+            // 作者 long：恢复后的新读取错误仍须保留，不能因补偿刷新变成无限轮询并抹掉用户需要处理的失败。
+            runtime.configReady = false; runtime.profileStatisticsRevision.value++; runCurrent()
+            assertNotNull(second.providers.value.error)
+            val reads = runtime.providerReads
+            runtime.configReady = true; runtime.profileStatisticsRevision.value++; runCurrent()
+            advanceTimeBy(10_001); runCurrent()
+            assertEquals(reads, runtime.providerReads); assertNotNull(second.providers.value.error)
+        } finally { gate.complete(Unit); second.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun failedColdBindingDoesNotRetryParentOrDiscardOriginalCiphertext() = runTest {
+        val runtime = Runtime(); val store = Store(); val first = model(runtime, store)
+        open(first); first.viewModelScope.cancel(); runCurrent()
+        val gate = CompletableDeferred<Unit>()
+        runtime.configReady = false; runtime.recoveryGate = gate; runtime.missing = true
+        val second = model(runtime, store)
+        try {
+            second.setForeground(true); second.show(1); runCurrent()
+            val reads = runtime.providerReads
+            gate.complete(Unit); runCurrent(); advanceTimeBy(10_001); runCurrent()
+            assertEquals(reads, runtime.providerReads); assertNotNull(second.providers.value.error)
+            assertTrue(second.document.value!!.recoveryBlocked); assertNotNull(store.bytes)
+            assertEquals(0, runtime.saves)
+        } finally { gate.complete(Unit); second.viewModelScope.cancel(); runCurrent() }
+    }
+
     private class Store : ProfileDraftStore {
         var bytes: ByteArray? = null
         var failRead = false
@@ -215,12 +262,25 @@ class ProviderDocumentRecoveryTest {
         var key = "input"
         var missing = false
         var reads = 0
+        var providerReads = 0
         var saves = 0
         var rejectOldBinding = false
+        var configReady = true
+        var recoveryGate: CompletableDeferred<Unit>? = null
         var lastRead: ProfileProviderDocument? = null
         var onSave: suspend (String) -> Unit = {}
-        override suspend fun profileStatistics(profileId: Long) = ProfileStatistics(profileId, 0, 0, 0, 1)
-        override suspend fun profileProviders(profileId: Long) = listOf(CoreExternalProvider("resource", "Rule", "File", 0, null))
+        override suspend fun profileStatistics(profileId: Long): ProfileStatistics {
+            check(configReady); return ProfileStatistics(profileId, 0, 0, 0, 1)
+        }
+        override suspend fun profileProviders(profileId: Long): List<CoreExternalProvider> {
+            providerReads++; check(configReady); return listOf(CoreExternalProvider("resource", "Rule", "File", 0, null))
+        }
+        override suspend fun recoverProfileProviderDocument(profileId: Long, name: String, recoveryKey: String,
+            digest: String, intendedContent: String?): ProfileProviderDocument {
+            recoveryGate?.await(); configReady = true
+            profileStatisticsRevision.value++
+            return super<ProfileStatisticsRuntime>.recoverProfileProviderDocument(profileId, name, recoveryKey, digest, intendedContent)
+        }
         override suspend fun readProfileProvider(profileId: Long, name: String): ProfileProviderDocument {
             reads++; check(!missing)
             return ProfileProviderDocument(profileId, CoreProviderDocument(name, "text", content, digest), recoveryKey = key).also { lastRead = it }

@@ -36,3 +36,7 @@ Flutter 对拒绝的目标保持新选择；Kotlin 现有契约是新目标失�
 上游参考更新时继续核对配置选择前置条件和拒绝目标的产品语义。只有替代方案同时证明坏旧源可离开、运行态失败可回滚、双失败可靠停止以及取消不丢失，才可撤销本地保护。真机 STOPPED 证据不推广为运行态实网验收。
 
 最终证据：`docs/acceptance/provider-document-cold-redmi-20261107.json`。build11 App521/Service212重跑、Core38/Common31复用，802项零失败/错误/跳过；final5九场景首次恢复9/9、再次恢复3/3，regression1 10/10和22图目视。运行态实网、MRS只读冷恢复和完整视觉不由本组推导。
+
+## 2026-11-07 实核补验
+
+`provider-runtime-redmi-20261107.json`的final7停止态/纯代理运行态各源文件/源记录缺失共4场通过。目标RawConfig解码通过，真实setup拒绝后默认回退与旧输入补偿使epoch各增加2，旧ID/已应用字节/组成员/节点选择/运行会话保持；恢复目标后成功切换且旧源不重建。运行态每场前、补偿后、切换后各HTTPS200/同socket归因。此为Debug宿主真实管理器/Room/核心，未覆盖VPN、完整MainActivity点击导航或补偿再次失败实核分支。原JVM与停止态历史证据保留。
