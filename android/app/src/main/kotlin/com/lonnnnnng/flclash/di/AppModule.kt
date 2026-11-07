@@ -182,6 +182,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    @javax.inject.Named("global-rules")
+    fun provideGlobalRulesStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "global-rules.v1", "com.lonnnnnng.flclash.global.rules.v1")
+
+    @Provides
+    @Singleton
     fun provideProfileRepository(
         @ApplicationContext context: Context,
         database: KClashDatabase,

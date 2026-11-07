@@ -47,6 +47,9 @@
 -keep class com.lonnnnnng.flclash.ui.ProfileManagementDraft { *; }
 -keep class com.lonnnnnng.flclash.ui.ProfileExtensionDraft { *; }
 -keep class com.lonnnnnng.flclash.ui.ProfileExtensionCommit { *; }
+# 作者 long：独立全局规则的密文会话和事务回执身份需跨进程稳定，发布混淆不能重命名其JSON字段。
+-keep class com.lonnnnnng.flclash.ui.GlobalRulesDraft { *; }
+-keep class com.lonnnnnng.flclash.ui.GlobalRulesCommit { *; }
 -keep class com.lonnnnnng.flclash.data.ProfileExtensionValues { *; }
 -keep class com.lonnnnnng.flclash.service.ProfileExtensionOverrides { *; }
 -keep class com.lonnnnnng.flclash.service.ExtensionRule { *; }

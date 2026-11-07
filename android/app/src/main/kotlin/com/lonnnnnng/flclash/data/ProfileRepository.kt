@@ -180,6 +180,9 @@ interface ProfileStore {
         check(globalExtensionRules() == expected) { "全局规则已变化，请重新读取后保存" }
         saveGlobalExtensionRules(rules)
     }
+    suspend fun commitGlobalExtensionRules(expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String) {
+        compareAndSaveGlobalExtensionRules(expected, rules)
+    }
     suspend fun compareAndSaveGlobalExtensionRulesForProfile(id: Long, expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String? = null) {
         checkNotNull(extensionProfile(id)) { "配置不存在" }
         compareAndSaveGlobalExtensionRules(expected, rules)
@@ -1003,6 +1006,15 @@ class ProfileRepository(
         database.withTransaction {
             check(globalExtensionRules() == expected) { "全局规则已变化，请重新读取后保存" }
             saveGlobalExtensionRules(rules)
+        }
+    }
+
+    override suspend fun commitGlobalExtensionRules(expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String) = withContext(Dispatchers.IO) {
+        // 作者 long：独立全局目录不要求Profile存在，CAS和提交回执仍须处于同一事务，值改回旧值后也不能重放。
+        database.withTransaction {
+            if (extensionCommitApplied(commitId)) return@withTransaction
+            compareAndSaveGlobalExtensionRules(expected, rules)
+            recordExtensionCommit(commitId)
         }
     }
 

@@ -213,6 +213,7 @@ class ProfilesViewModel internal constructor(
     private val draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
     managementStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
     extensionStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    globalRulesStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
 ) : ViewModel() {
     @Inject constructor(
         repository: ProfileStore,
@@ -223,9 +224,10 @@ class ProfilesViewModel internal constructor(
         draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
         @javax.inject.Named("profile-management") managementStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
         @javax.inject.Named("profile-extension") extensionStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
-    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore, managementStore, extensionStore)
+        @javax.inject.Named("global-rules") globalRulesStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore, managementStore, extensionStore, globalRulesStore)
     internal val management = ProfileManagementController(repository, runtimeManager, managementStore, viewModelScope)
-    internal val globalRules = GlobalRulesController(repository, runtimeManager, viewModelScope)
+    internal val globalRules = GlobalRulesController(repository, runtimeManager, viewModelScope, globalRulesStore)
     internal val extension = ProfileExtensionController(repository, runtimeManager, viewModelScope, store = extensionStore)
     internal val fileImport = ProfileFileImportController(repository, runtimeManager, fileReader, configValidator, viewModelScope, overviewDispatcher)
     private val mutableRecentGroupIcons = MutableStateFlow<List<String>>(emptyList())

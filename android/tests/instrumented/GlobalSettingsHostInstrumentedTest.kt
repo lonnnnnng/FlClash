@@ -66,6 +66,13 @@ class GlobalSettingsHostInstrumentedTest {
             assertEquals(files, before.associate { row -> row.id to repository.profileFile(row.id).let { Triple(it.name, it.length(), it.lastModified()) } })
             assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
         } finally {
+            // 作者 long：独立规则页现在有持久会话；先结束本次测试窗口，避免还原正式目录后留下会再次自动打开的测试草稿。
+            lateinit var rulesController: GlobalRulesController
+            compose.runOnIdle {
+                rulesController = androidx.lifecycle.ViewModelProvider(compose.activity)[ProfilesViewModel::class.java].globalRules
+                rulesController.close { }
+            }
+            compose.waitUntil(15_000) { rulesController.state.value.draft == null }
             repository.compareAndSaveGlobalExtensionRules(repository.globalExtensionRules(), originalRules)
             manager.updateGlobalDns(entry.globalDnsSettingsStore().read(), originalDns).getOrThrow()
             selected?.let { manager.applyCurrentProfile(it) }

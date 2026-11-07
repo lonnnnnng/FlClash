@@ -1,6 +1,14 @@
 # Testing
 
-## Provider校验取消与正文终帧（2026-11-07，当前）
+## 独立全局规则恢复与提交（2026-11-07，当前）
+
+独立全局规则页GR-01～05本组已验：草稿/错误/选区/放弃确认、可见批选失败重试、原行修改/删除及排序冲突、独立Keystore密文、Room同事务回执防重放和冻结应用目标。Redmi正式交互5/5、cold2冷恢复14/14及提交后再次恢复2/2、相邻回归4/4；16张PNG完整校验与6拼图目视。843项JVM零失败/错误/跳过，App562在build6执行、其余281复用；build8四模块UP-TO-DATE，Debug/Test/未签名Release-R8与双Lint通过（Debug0错误68警告14提示，Release0错误66警告13提示）。最终586份源码匹配，Release14个序列化字段及Debug诊断隔离已检查。真机使用build7同套包；build8仅补未执行的旧GlobalSettingsHost测试收尾，所有产品/实际执行用例源码和Debug/Release APK一致，新的测试APK未安装。正式两配置、正文SHA-size-mtime、脚本、偏好、选择、原1.yaml/Flutter包/设备设置保持，自有规则/草稿/回执清理，结束无服务。KUI-016记录来源及红绿证据；cold1旧after选区失败缺死亡前观测，原因不追认，cold2逐场前后严格比对通过。STOPPED受控force-stop不推广VPN/OEM自然回收，切配置目标冻结由JVM覆盖。下一组真实资源选择器SAF-01～05，随后统一Flutter视觉/连续动效；整体第9项仍PARTIAL，第6项原异常/网络稳定性、蜂窝及兼容/发布边界保持，玻璃默认关闭。证据`docs/acceptance/global-rules-recovery-redmi-20261107.json`，溯源`docs/global-rules-recovery-defect.md`，附件`../acceptance-artifacts/global-rules-20261107/`。
+
+`GlobalRulesRecoveryInstrumentedTest`必须方法级筛选，传`kclashGlobalRulesAcceptance=true`和原`kclashLocalYamlSha256`。冷进程另传具名`kclashGlobalRulesCase`：after/applied/close-before/close-after/delete-before/failure/draft/error/discard/batch/sorting/conflict/deleted/before。prepare保持存活，外部核对PID再force-stop，verify不得主动open；after/applied各保留一次再冷启。恢复失败仅以`recoverExactOwnInterruptedFixture`加`kclashGlobalRulesFixtureRecovery=true`精确回收本例；禁止整类执行。
+
+本例只加自有全局规则，原偏好行以独立Keystore文件备份；每次清理逐值核对正式行/正文SHA-size-mtime/脚本/偏好/选择与STOPPED，删除自有规则、会话和回执。SQLite故障核对异常类型/固定标记及未写回执。选区从终止前实际语义树记录并严格比较，未提交草稿仍要求3..11；旧cold1失败不能追认根因。Release必须保留GlobalRulesDraft/Commit的14个字段，用APK DEX核对，映射文件可能省略未改名字段。
+
+## Provider校验取消与正文终帧（2026-11-07，历史）
 
 Provider校验返回后、保存受理前的Activity重建取消已验：旧任务取消且释放旧门闩不迟到写库，过滤/450秒草稿保持，显式重试后revision仅+1。正文saving_recreated补采位移归零的稳定终帧，固定运行时仅保存一次。Redmi final1精确18/18（8条正式MainActivity/Hilt/Room＋9条组件回归＋1条正文固定运行时），39张PNG完整校验及13拼图目视；8次正式保护与7入口入场Back通过。build1共830项JVM零失败/错误/跳过，App549执行、其余281复用；389任务45执行/344复用，Debug/Test/未签名Release-R8与双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。安装回拉及580份源码匹配，Release等待点接口/标记隔离；正式两配置/正文SHA-size-mtime/脚本行/偏好/选择、原1.yaml/Flutter包/设备设置保持，自有临时行及正文删除，收尾无服务。未新增产品缺陷；取消窗口不推广原生回调执行中，正文终帧不推广正式缓存/冷进程或连续动效性能。下一组独立全局规则页GR-01至GR-05，再真实资源选择器SAF-01至SAF-05，具体清单见docs/remaining-main-page-acceptance.md；随后统一Flutter视觉/连续动效。第6项原保护异常、未知偏好变化、网络稳定性和运行态final6-before超时仍待查，蜂窝延期、玻璃默认关闭。证据`docs/acceptance/provider-validation-boundary-redmi-20261107.json`；附件`../acceptance-artifacts/provider-validation-boundary-20261107/`。
 

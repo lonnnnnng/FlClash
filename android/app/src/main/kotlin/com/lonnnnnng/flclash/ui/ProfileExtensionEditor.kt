@@ -340,7 +340,13 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
     var discard by rememberSaveable { mutableStateOf(false) }
     val editable = !saving && onRetryPending == null
     val value = if (rawMode) raw.text.trim() else listOfNotNull(type, content.text.trim().takeUnless { type in setOf("MATCH", "FINAL") }, target, "no-resolve".takeIf { noResolve }).joinToString(",")
-    fun back() { if (saving) return; if (value != initial?.value && (initial != null || content.text.isNotEmpty() || raw.text.isNotEmpty())) discard = true else onDismiss() }
+    fun back() {
+        if (saving) return
+        // 作者 long：MATCH等无匹配内容规则也有类型/目标草稿，不能因为内容为空就静默丢弃。
+        val changed = if (initial != null) value != initial.value else
+            type != "DOMAIN-SUFFIX" || target != "DIRECT" || noResolve || content.text.isNotEmpty() || raw.text.isNotEmpty()
+        if (changed) discard = true else onDismiss()
+    }
     ProfileEditorPage(::back, { Text(if (initial == null) "添加规则" else "编辑规则") }, {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             (blockedMessage ?: error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_rule_error")) }

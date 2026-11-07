@@ -458,6 +458,18 @@ fun KClashApp(
         if (extensionSession.draft != null || extensionSession.recoveryFailed) selectedDestinationIndex = MainDestination.PROFILES.ordinal
     }
     var toolsSubpage by rememberSaveable { mutableStateOf(ToolsSubpage.MENU) }
+    val globalRulesSession by profilesViewModel.globalRules.state.collectAsState()
+    LaunchedEffect(globalRulesSession.closeVersion) {
+        // 作者 long：关闭可能跨Activity重建，结束事件由存活VM广播给新页面，不能仅回调已销毁窗口的导航状态。
+        if (globalRulesSession.closeVersion > 0 && globalRulesSession.draft == null) showGlobalRules = false
+    }
+    LaunchedEffect(globalRulesSession.draft?.session, globalRulesSession.recoveryFailed) {
+        // 作者 long：独立规则会话冷恢复后回原工具入口，不依赖Activity Bundle，也不切配置或启动核心。
+        if (globalRulesSession.draft != null || globalRulesSession.recoveryFailed) {
+            selectedDestinationIndex = MainDestination.TOOLS.ordinal
+            showGlobalRules = true
+        }
+    }
     var showAccessUnsavedChanges by rememberSaveable { mutableStateOf(false) }
     var pendingAccessExitDestination by rememberSaveable { mutableStateOf<Int?>(null) }
     var pendingAccessExitFinishes by rememberSaveable { mutableStateOf(false) }
