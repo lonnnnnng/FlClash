@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.data
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
+import androidx.room.withTransaction
 import java.net.URI
 import java.util.UUID
 import javax.inject.Inject
@@ -76,6 +77,24 @@ class IconSetRepository @Inject constructor(private val database: KClashDatabase
     val changes = preferences.observe(ICON_SETS_KEY).map(IconSetCodec::decode)
     suspend fun all() = IconSetCodec.decode(preferences.get(ICON_SETS_KEY))
     private suspend fun save(rows: List<ResourceIconSet>) = preferences.put(AppPreferenceEntity(ICON_SETS_KEY, IconSetCodec.encode(rows), System.currentTimeMillis()))
+
+    suspend fun fileImportCommitted(token: String) = preferences.get(resourceImportReceiptKey("icons", token)) != null
+    suspend fun forgetFileImport(token: String) { preferences.delete(resourceImportReceiptKey("icons", token)) }
+    suspend fun importFileOnce(token: String, content: String, fallbackName: String): ResourceIconSet? = withContext(Dispatchers.IO) {
+        val key = resourceImportReceiptKey("icons", token)
+        preferences.get(key)?.let { id -> return@withContext all().firstOrNull { it.id == id } }
+        val (name, icons) = IconSetCodec.parse(content)
+        lock.withLock { database.withTransaction {
+            preferences.get(key)?.let { id -> return@withTransaction all().firstOrNull { it.id == id } }
+            val rows = all()
+            require(rows.none { it.id == token }) { "图标集已变化，请重新选择" }
+            val item = ResourceIconSet(token, name.ifBlank { fallbackName }.ifBlank { "图标集" }.take(128), icons = icons, updatedAt = System.currentTimeMillis())
+            // 作者 long：图库选中即导入，但同一系统请求只能新增一次；回执和目录必须一起提交或一起回滚。
+            save(rows + item)
+            preferences.put(AppPreferenceEntity(key, item.id, System.currentTimeMillis()))
+            item
+        } }
+    }
 
     suspend fun importContent(content: String, url: String = "", fallbackName: String = "图标集", preferredName: String = ""): ResourceIconSet = withContext(Dispatchers.IO) {
         require(url.isEmpty() || IconSetCodec.validUrl(url)) { "请输入有效 HTTP/HTTPS 地址" }

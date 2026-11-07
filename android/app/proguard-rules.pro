@@ -53,3 +53,10 @@
 -keep class com.lonnnnnng.flclash.data.ProfileExtensionValues { *; }
 -keep class com.lonnnnnng.flclash.service.ProfileExtensionOverrides { *; }
 -keep class com.lonnnnnng.flclash.service.ExtensionRule { *; }
+
+# 作者 long：系统选择器和资源预览跨进程的密文格式必须保持，不能由发布混淆改写请求/提交字段。
+-keep class com.lonnnnnng.flclash.ui.FilePickerRequest { *; }
+-keep class com.lonnnnnng.flclash.ui.RuleResourceDraft { *; }
+-keep class com.lonnnnnng.flclash.ui.RuleResourceSession { *; }
+-keep class com.lonnnnnng.flclash.ui.RuleResourceWrite { *; }
+-keep class com.lonnnnnng.flclash.data.RuleResource { *; }

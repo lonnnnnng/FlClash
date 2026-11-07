@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.RuleResource
 
@@ -38,6 +39,9 @@ internal fun RuleResourcesPage(
     onSave: (String, String, String) -> Unit,
     onImportUrls: (() -> Unit)? = null,
     onReorder: ((List<String>) -> Unit)? = null,
+    onUiDraft: (String, EditorSaveableState) -> Unit = { _, _ -> },
+    onDraftFailure: () -> Unit = {},
+    onRetryRecovery: (() -> Unit)? = null,
 ) {
     var addMenu by remember { mutableStateOf(false) }
     var menuId by remember { mutableStateOf<String?>(null) }
@@ -63,6 +67,7 @@ internal fun RuleResourcesPage(
         }, text = {
             Column(Modifier.fillMaxSize().testTag("rule_resources_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (state.loading || state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                onRetryRecovery?.let { retry -> TextButton(retry, modifier = Modifier.testTag("rule_resource_recovery_retry")) { Text("重试恢复") } }
                 if (state.editor == null) state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier) }
                 state.message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
                 if (sorting && onReorder != null) ResourceOrderList(state.rows.map {
@@ -105,40 +110,51 @@ internal fun RuleResourcesPage(
                 }
             }
         })
-    state.editor?.let { draft -> RuleResourceEditor(draft, state.busy, state.error, onCloseEditor, onSave) }
+    state.editor?.let { draft ->
+        EncryptedEditorState(draft.session, state.session?.uiDraft, { onUiDraft(draft.session, it) }, onDraftFailure) { checkpoint ->
+            RuleResourceEditor(draft, state.busy, state.error, onCloseEditor, onRetryRecovery, checkpoint) { name, url, content ->
+                if (checkpoint()) onSave(name, url, content)
+            }
+        }
+    }
     state.deleting?.let { resource -> AlertDialog(onDismissRequest = onCancelDelete, title = { Text("删除 ${resource.label}？") },
         text = { Text(if (state.users.isEmpty()) "删除全局资源？" else "以下配置仍引用此资源：${state.users.joinToString("、")}。删除后引用将显示缺失，可重新选择资源。") },
         confirmButton = { TextButton(onClick = onDelete, enabled = !state.busy) { Text("删除") } }, dismissButton = { TextButton(onClick = onCancelDelete) { Text("取消") } }) }
 }
 
 @Composable
-private fun RuleResourceEditor(draft: RuleResourceDraft, busy: Boolean, error: String?, onDismiss: () -> Unit, onSave: (String, String, String) -> Unit) {
+private fun RuleResourceEditor(draft: RuleResourceDraft, busy: Boolean, error: String?, onDismiss: () -> Unit, onRetryRecovery: (() -> Unit)?, checkpoint: () -> Boolean, onSave: (String, String, String) -> Unit) {
     var label by rememberSaveable(draft) { mutableStateOf(draft.label) }
     var url by rememberSaveable(draft) { mutableStateOf(draft.url) }
-    var content by rememberSaveable(draft) { mutableStateOf(draft.content) }
-    var discard by remember { mutableStateOf(false) }
+    var content by rememberSaveable(draft.session, stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(draft.content)) }
+    var discard by rememberSaveable { mutableStateOf(false) }
     val scroll = rememberScrollState()
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
     // 作者 long：长规则正文保存失败时先展示恢复提示，滚动只移动视口，不重建或改写本地草稿。
     LaunchedEffect(error, busy) { if (!busy && error != null) scroll.animateScrollTo(0) }
-    val dirty = label != draft.label || url != draft.url || content != draft.content
+    val dirty = label != draft.label || url != draft.url || content.text != draft.content
     val close = { if (!busy) { if (dirty) discard = true else onDismiss() } }
     ProfileEditorPage(onDismissRequest = close, title = { Text(if (draft.options) "资源选项" else if (draft.readOnly && draft.original != null) "预览资源" else "编辑资源") },
         backTag = "rule_resource_editor_back", confirmButton = {
-            if (!draft.readOnly || draft.original == null || draft.options) TextButton(onClick = { onSave(label, url, content) }, enabled = !busy && label.isNotBlank(), modifier = Modifier.testTag("rule_resource_save")) { Text("保存") }
+            if (!draft.readOnly || draft.original == null || draft.options) TextButton(onClick = { onSave(label, url, content.text) }, enabled = !busy && label.isNotBlank(), modifier = Modifier.testTag("rule_resource_save")) { Text("保存") }
         }, text = {
             Column(Modifier.fillMaxSize().verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("rule_resource_editor_error")) }
+                onRetryRecovery?.let { TextButton(it, modifier = Modifier.testTag("rule_resource_editor_recovery_retry")) { Text("重试恢复") } }
                 OutlinedTextField(label, { label = it }, label = { Text("名称") }, singleLine = true, enabled = !busy && (!draft.readOnly || draft.original == null), modifier = Modifier.fillMaxWidth().testTag("rule_resource_label"))
                 if (!draft.readOnly || draft.url.isNotBlank()) OutlinedTextField(url, { url = it }, label = { Text("URL（留空为本地资源）") }, enabled = !busy && !draft.readOnly, modifier = Modifier.fillMaxWidth().testTag("rule_resource_url"))
                 if (!draft.options) {
-                    if (draft.readOnly) SelectionContainer { Text(content, modifier = Modifier.fillMaxWidth().testTag("rule_resource_preview")) }
-                    else if (url.isBlank()) OutlinedTextField(content, { content = it }, label = { Text("规则正文 · YAML / Text") }, minLines = 14, enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("rule_resource_content"))
+                    if (draft.readOnly) SelectionContainer { Text(content.text, modifier = Modifier.fillMaxWidth().testTag("rule_resource_preview")) }
+                    else if (url.isBlank()) OutlinedTextField(content, {
+                        // 作者 long：选区变更后立即重建也需同步捕获；旧窗口停止后的失焦回调不能覆盖已恢复的正文/选区。
+                        if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) { content = it; checkpoint() }
+                    }, label = { Text("规则正文 · YAML / Text") }, minLines = 14, enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("rule_resource_content"))
                     else Text("保存时下载并识别资源格式，下载失败保留原资源。", style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(Modifier.height(16.dp))
             }
         })
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃修改？") }, text = { Text("尚未保存的资源修改将丢失。") },
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃修改？") }, text = { Text("尚未保存的资源修改将丢失。") },
         confirmButton = { TextButton(onClick = { discard = false; onDismiss() }) { Text("放弃") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }

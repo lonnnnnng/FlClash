@@ -24,6 +24,10 @@ interface ConnectionAcceptanceEntryPoint {
     @javax.inject.Named("profile-management") fun profileManagementStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
     @javax.inject.Named("profile-extension") fun profileExtensionStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
     @javax.inject.Named("global-rules") fun globalRulesStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
+    @javax.inject.Named("rule-file-picker") fun ruleFilePickerStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
+    @javax.inject.Named("rule-resource-draft") fun ruleResourceDraftStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
+    @javax.inject.Named("icon-file-picker") fun iconFilePickerStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
+    @javax.inject.Named("group-image-picker") fun groupImagePickerStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
     @javax.inject.Named("local-proxy-draft") fun localProxyDraftStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
     fun database(): KClashDatabase
     fun paths(): CoreRuntimePaths

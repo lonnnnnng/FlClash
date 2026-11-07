@@ -22,6 +22,16 @@ class LocalProfileFileWriteTest {
         assertTrue(runCatching { readProfileFileBytes(ByteArrayInputStream(ByteArray(MAX_PROFILE_FILE_BYTES + 1))) }.isFailure)
     }
 
+    @Test fun `image budget accepts exact limit and stops reading at first excess byte`() {
+        val limit = 128 * 1024
+        val exact = ByteArray(limit) { (it % 251).toByte() }
+        assertArrayEquals(exact, readProfileFileBytes(ByteArrayInputStream(exact), maxBytes = limit))
+        val oversized = ByteArrayInputStream(ByteArray(limit * 3))
+        assertEquals("文件超过允许大小", runCatching { readProfileFileBytes(oversized, maxBytes = limit) }.exceptionOrNull()?.message)
+        // 作者 long：只读到上限后一字节即可判超限，不能为了报错先把云端整份图片读入内存。
+        assertEquals(limit * 2 - 1, oversized.available())
+    }
+
     @Test fun `staging does not modify original until persistence commits the file`() = runBlocking {
         val target = file()
         val result = replaceLocalProfileFile(target, "replacement".toByteArray(), { commit ->

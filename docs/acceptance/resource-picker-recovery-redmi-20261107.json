@@ -1,0 +1,946 @@
+{
+  "date": "2026-11-07",
+  "title": "真实资源选择器 SAF-01～05",
+  "status": "DONE-VERIFIED within listed scope",
+  "sourceBase": "dbdf7a3f8c9378ae8f48de5e96724b63ff6ebf33",
+  "branch": "kotlin",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "scope": {
+    "SAF-01": "真实OpenDocument的YAML/MRS返回；等待中Activity重建/普通任务宿主SIGKILL，系统拉起新PID；先预览后显式保存，MRS原字节与原生预览核对。",
+    "SAF-02": "真实取消、旧token/迟到/重复回调、孤立请求、真实reader拒绝显式注入失效URI并经DocumentsUI重试；错误不锁busy、不新增资源。",
+    "SAF-03": "YAML正文/选区/错误与MRS字节独立密文冷恢复；YAML再次恢复后取消零写入，MRS显式保存；保存前中断及提交后两次恢复不重复登记。",
+    "SAF-04": "图库坏JSON重选、等待中Activity重建/普通任务宿主SIGKILL；收到URI即导入，重复结果及提交后两次恢复只登记一份。",
+    "SAF-05": "GetContent经PhotoPicker浏览进入DocumentsUI；等待中Activity重建/宿主SIGKILL返回和取消，读取检查点中断后错误/重选；128KiB+1真实文件拒绝、父组取消零写入及显式确认保存。"
+  },
+  "implementation": {
+    "defect": "KUI-017",
+    "trace": "docs/resource-picker-recovery-defect.md",
+    "flutterReference": "be847366, reference only; no Flutter commits merged",
+    "protocol": "Encrypted WAITING -> READING -> RESULT -> DONE; token and owner binding; atomic directory/receipt transaction",
+    "storage": "Four independent Android Keystore stores; UI draft fields and raw MRS bytes stay out of Bundle; no Room schema change",
+    "readingLimit": "128KiB actual group-image stream budget; JVM proves exact limit and first excess byte"
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 53s",
+    "tasks": "389 actionable tasks: 17 executed, 372 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 568,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 74
+      },
+      "service": {
+        "tests": 212,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE",
+      "> Task :app:testDebugUnitTest"
+    ],
+    "executionNote": "执行/复用状态以本组jvmExecution为准",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 68,
+        "hints": 14
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 13
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "110c16b60d4721427ea61c69f8a4e84da643f85142d2669a70b5c88f2134343a",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "307df1532e64859b435a6497b2654ead3db5188b42c6dc45bffa1f18ab710ca6",
+        "bytes": 5611791,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "b849e4a0bde74bd9a5f4fbd1569d80c795101dc551e32174b98c33502117cf8c",
+        "bytes": 48307716,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "releaseIsolation": {
+    "sourceFilesMatched": 591,
+    "debugMarkersAbsent": {
+      "ResourcePickerColdInstrumentedTest": true,
+      "kclash_resource_cold_ready": true,
+      "resource-picker-cold.json": true,
+      "resource-picker-fixture.v1": true,
+      "EditorCommitProbe$Gate": true,
+      "GlobalRulesProbe": true,
+      "fixture-global-rules-failure": true,
+      "kclash_global_rules_ready": true,
+      "ProviderRuntimeAcceptanceActivity": true,
+      "ProviderRuntimeKillReceiver": true,
+      "KClashProviderRuntime": true,
+      "provider-runtime-acceptance.v1": true,
+      "kclash-invalid-group": true,
+      "mrs-preview": true,
+      "kclash_provider_cold_ready": true,
+      "ProviderValidationProbe$Gate": true,
+      "Provider校验验收等待超时": true,
+      "本进程已有Provider校验等待点": true
+    },
+    "releaseComponentIsolation": true,
+    "sha256": "b849e4a0bde74bd9a5f4fbd1569d80c795101dc551e32174b98c33502117cf8c",
+    "scope": "R8 DEX and manifest static checks; unsigned APK not installed"
+  },
+  "serializedFields": {
+    "FilePickerRequest": {
+      "token": true,
+      "owner": true,
+      "phase": true,
+      "name": true,
+      "bytes": true,
+      "error": true
+    },
+    "RuleResourceSession": {
+      "draft": true,
+      "fileBytes": true,
+      "uiDraft": true,
+      "intent": true,
+      "error": true,
+      "version": true
+    },
+    "RuleResourceWrite": {
+      "token": true,
+      "label": true,
+      "url": true,
+      "content": true,
+      "targetId": true,
+      "committed": true
+    },
+    "RuleResourceDraft": {
+      "original": true,
+      "label": true,
+      "url": true,
+      "content": true,
+      "readOnly": true,
+      "options": true,
+      "session": true
+    }
+  },
+  "sourceFilesMatched": 591,
+  "activity": {
+    "batch": "final-activity1",
+    "passed": 7,
+    "total": 7,
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceSafHostInstrumentedTest#unavailableUriAndOrphanRequestReleaseBusyAndAllowRealPickerRetry",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceSafHostInstrumentedTest#ruleMrsPickerPreservesBinaryAndUsesNativePreview",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceSafHostInstrumentedTest#rulePickerRecreationAndDuplicateLateCallbacksDoNotWrite",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceSafHostInstrumentedTest#ruleYamlPickerCancelsRejectsEmptyPreviewsAndPersists",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceSafHostInstrumentedTest#groupImageGetContentCancelsRejectsInvalidAndPersistsInCustomCopy",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceSafHostInstrumentedTest#iconSetPickerCancelsRejectsMalformedAndPersists",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourceSafHostInstrumentedTest#iconPickerRecreationAndDuplicateCallbackImportOnlyOnce",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "images": [
+      {
+        "path": "resource_picker_unavailable_uri.png",
+        "bytes": 71855,
+        "sha256": "21e44f151decb419c00646474e8eaa2d56fbf3639f4d583716f0fb1f3791671b"
+      },
+      {
+        "path": "resource_picker_rules_10.png",
+        "bytes": 242514,
+        "sha256": "ff01cc4b84dda2d15024cf11fd11ae6edc19850a3eeca8db62c3e19885b11486"
+      },
+      {
+        "path": "resource_picker_mrs_0.png",
+        "bytes": 242140,
+        "sha256": "16fa7882a6d388ce7c34f55d0f9c13a6cfd2b4fadec200e41a34481c17b311f4"
+      },
+      {
+        "path": "resource_rule_mrs_native_preview.png",
+        "bytes": 207489,
+        "sha256": "2400d1150214d5a66c12bf1d0c11220544385291e5ec6c1832040a659afdcc41"
+      },
+      {
+        "path": "resource_picker_rules_0.png",
+        "bytes": 241447,
+        "sha256": "1080903d3396abe28e17ca901b6563765fd0b923689d56cf10705a65515c9ad0"
+      },
+      {
+        "path": "resource_picker_recreated_preview.png",
+        "bytes": 408692,
+        "sha256": "9c108e5c7c4fe138530f6cffbd110715faa2176e133fc277c16af3a3ceebe254"
+      },
+      {
+        "path": "resource_picker_empty_0.png",
+        "bytes": 242311,
+        "sha256": "39aa112f6338b3277fcbe27f1f1e169bf853a419101cfd3c64acc5a6acb2a74c"
+      },
+      {
+        "path": "resource_rule_empty_rejected.png",
+        "bytes": 71613,
+        "sha256": "5e79dea876e41a3883c8bc2a9f6ea4a818389368efe0bff8060af85fab04f1e3"
+      },
+      {
+        "path": "resource_picker_rules_1.png",
+        "bytes": 242311,
+        "sha256": "39aa112f6338b3277fcbe27f1f1e169bf853a419101cfd3c64acc5a6acb2a74c"
+      },
+      {
+        "path": "resource_rule_yaml_preview.png",
+        "bytes": 356793,
+        "sha256": "74631b83bfd604108529d44cd7fa46001941dd309e7bb6b7113567025b4faddd"
+      },
+      {
+        "path": "resource_picker_rules_2.png",
+        "bytes": 80127,
+        "sha256": "75c5906804e9cf0f695bcc647762fb904a83ee652aa5134193a5656d10b23447"
+      },
+      {
+        "path": "resource_rule_yaml_saved.png",
+        "bytes": 79782,
+        "sha256": "2cc2e3a068044a0724f1a4e448f9aca566581cc409c4edfe9a439524787994db"
+      },
+      {
+        "path": "resource_picker_badImage_0.png",
+        "bytes": 92315,
+        "sha256": "195d923aa0693b96bfdfba2c8508fa8a93688f5d9d3b0ee7b66784ef75e7e72d"
+      },
+      {
+        "path": "resource_group_image_invalid.png",
+        "bytes": 75083,
+        "sha256": "cb2080a35a9cd982328af3ac794c7cfab726e90fe6af4d907a9419786d3ae2d1"
+      },
+      {
+        "path": "resource_picker_oversizedImage_1.png",
+        "bytes": 83643,
+        "sha256": "ca9dbfa5310469cc5b4b06730a5026fd1ed7477acca92f88b88fbf572cfb726b"
+      },
+      {
+        "path": "resource_group_image_oversized.png",
+        "bytes": 75083,
+        "sha256": "cb2080a35a9cd982328af3ac794c7cfab726e90fe6af4d907a9419786d3ae2d1"
+      },
+      {
+        "path": "resource_picker_image_2.png",
+        "bytes": 116385,
+        "sha256": "7888c2c428a1f30d16091397586d6fd0d7bb5d9d2f204a08c688277aa3e812b8"
+      },
+      {
+        "path": "resource_picker_image_3.png",
+        "bytes": 124706,
+        "sha256": "4829ec5a5c1596c60df8d23d605f2efc6cb6391ef58aacdcafca7901613dcf0b"
+      },
+      {
+        "path": "resource_picker_badIcons_0.png",
+        "bytes": 56283,
+        "sha256": "f8ede3456b33f5a29a6c1bb27c89319bfac19fde5171e787d9e39c3780a5cf03"
+      },
+      {
+        "path": "resource_icons_invalid_rejected.png",
+        "bytes": 61294,
+        "sha256": "061b11d96760f361cb0ac7c5b5ad4f89d89325f2ff483892f87ba852db3257c1"
+      },
+      {
+        "path": "resource_picker_icons_1.png",
+        "bytes": 40746,
+        "sha256": "f51ae140656fbb5dd17f8909a72dcfcc9259afd3f21b9df3cdb5f541e5ddddc7"
+      },
+      {
+        "path": "resource_icons_saved.png",
+        "bytes": 51455,
+        "sha256": "b6df820bbdb1b963ef581c74228020fcb1a97e760d14dd60b6814e665aba7139"
+      },
+      {
+        "path": "resource_picker_icons_0.png",
+        "bytes": 238484,
+        "sha256": "7dfc225f6b80a4049748ecfedeb6adad37bd7670f3ff73bb3db98d7d6017c4f5"
+      },
+      {
+        "path": "resource_icons_picker_recreated_once.png",
+        "bytes": 51455,
+        "sha256": "b6df820bbdb1b963ef581c74228020fcb1a97e760d14dd60b6814e665aba7139"
+      }
+    ],
+    "visualReview": {
+      "decodedAndHashVerified": 24,
+      "contactSheetsViewed": 8,
+      "review": "Error, retry, preview, selection and saved resource states manually reviewed. This is not full Flutter parity or motion acceptance.",
+      "transitionCaptures": [
+        "resource_picker_rules_2.png",
+        "resource_picker_badImage_0.png",
+        "resource_picker_oversizedImage_1.png",
+        "resource_picker_image_2.png",
+        "resource_picker_image_3.png",
+        "resource_picker_badIcons_0.png"
+      ],
+      "transitionNote": "These capture app/system or PhotoPicker/DocumentsUI transition frames; exclude them from stable final-layout evidence. Real picker actions are established by system nodes and callback/persistence assertions."
+    }
+  },
+  "cold": {
+    "batch": "final-cold1",
+    "passed": 14,
+    "total": 14,
+    "additionalRecoveries": 3,
+    "cases": [
+      {
+        "case": "image-return",
+        "ready": {
+          "case": "image-return",
+          "preparedPid": 2829,
+          "systemPicker": true,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-image.png",
+          "ready": true,
+          "instrumentationPid": 7316
+        },
+        "death": {
+          "pidBefore": 2829,
+          "hostAbsentWhileDocumentsUiStayedForeground": true,
+          "systemReturnedPid": 5210,
+          "deviceConnected": true,
+          "action": "select"
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 38.923
+        }
+      },
+      {
+        "case": "image-cancel",
+        "ready": {
+          "case": "image-cancel",
+          "preparedPid": 6639,
+          "systemPicker": true,
+          "cancel": true,
+          "filename": "resource-saf-1793848602263355000-image.png",
+          "ready": true,
+          "instrumentationPid": 8248
+        },
+        "death": {
+          "pidBefore": 6639,
+          "hostAbsentWhileDocumentsUiStayedForeground": true,
+          "systemReturnedPid": 7579,
+          "deviceConnected": true,
+          "action": "cancel"
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 28.104
+        }
+      },
+      {
+        "case": "image-reading",
+        "ready": {
+          "case": "image-reading",
+          "preparedPid": 9167,
+          "systemPicker": false,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-image.png",
+          "ready": true
+        },
+        "death": {
+          "pidBefore": 9167,
+          "pidAfter": null,
+          "deviceConnected": true
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 30.337
+        }
+      },
+      {
+        "case": "rule-return",
+        "ready": {
+          "case": "rule-return",
+          "preparedPid": 7923,
+          "systemPicker": true,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-rules.yaml",
+          "ready": true,
+          "instrumentationPid": 9539
+        },
+        "death": {
+          "pidBefore": 7923,
+          "hostAbsentWhileDocumentsUiStayedForeground": true,
+          "systemReturnedPid": 8493,
+          "deviceConnected": true,
+          "action": "select"
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 9.902
+        }
+      },
+      {
+        "case": "rule-cancel",
+        "ready": {
+          "case": "rule-cancel",
+          "preparedPid": 8870,
+          "systemPicker": true,
+          "cancel": true,
+          "filename": "resource-saf-1793848602263355000-rules.yaml",
+          "ready": true,
+          "instrumentationPid": 10260
+        },
+        "death": {
+          "pidBefore": 8870,
+          "hostAbsentWhileDocumentsUiStayedForeground": true,
+          "systemReturnedPid": 9729,
+          "deviceConnected": true,
+          "action": "cancel"
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 7.586
+        }
+      },
+      {
+        "case": "mrs-return",
+        "ready": {
+          "case": "mrs-return",
+          "preparedPid": 10068,
+          "systemPicker": true,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-mrs.mrs",
+          "ready": true,
+          "instrumentationPid": 10943
+        },
+        "death": {
+          "pidBefore": 10068,
+          "hostAbsentWhileDocumentsUiStayedForeground": true,
+          "systemReturnedPid": 10481,
+          "deviceConnected": true,
+          "action": "select"
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 9.805
+        }
+      },
+      {
+        "case": "icons-return",
+        "ready": {
+          "case": "icons-return",
+          "preparedPid": 10768,
+          "systemPicker": true,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-icons.json",
+          "ready": true,
+          "instrumentationPid": 11673
+        },
+        "death": {
+          "pidBefore": 10768,
+          "hostAbsentWhileDocumentsUiStayedForeground": true,
+          "systemReturnedPid": 11153,
+          "deviceConnected": true,
+          "action": "select"
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 7.675
+        }
+      },
+      {
+        "case": "icons-cancel",
+        "ready": {
+          "case": "icons-cancel",
+          "preparedPid": 11485,
+          "systemPicker": true,
+          "cancel": true,
+          "filename": "resource-saf-1793848602263355000-icons.json",
+          "ready": true,
+          "instrumentationPid": 12378
+        },
+        "death": {
+          "pidBefore": 11485,
+          "hostAbsentWhileDocumentsUiStayedForeground": true,
+          "systemReturnedPid": 11872,
+          "deviceConnected": true,
+          "action": "cancel"
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 7.535
+        }
+      },
+      {
+        "case": "preview-yaml",
+        "ready": {
+          "case": "preview-yaml",
+          "preparedPid": 13060,
+          "systemPicker": false,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-rules.yaml",
+          "ready": true
+        },
+        "death": {
+          "pidBefore": 13060,
+          "pidAfter": null,
+          "deviceConnected": true
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 8.962
+        },
+        "secondDeath": {
+          "alreadyExited": true,
+          "deviceConnected": true
+        },
+        "again": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 21.788
+        }
+      },
+      {
+        "case": "preview-error",
+        "ready": {
+          "case": "preview-error",
+          "preparedPid": 13512,
+          "systemPicker": false,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-rules.yaml",
+          "ready": true
+        },
+        "death": {
+          "pidBefore": 13512,
+          "pidAfter": null,
+          "deviceConnected": true
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 21.844
+        }
+      },
+      {
+        "case": "preview-mrs",
+        "ready": {
+          "case": "preview-mrs",
+          "preparedPid": 13832,
+          "systemPicker": false,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-mrs.mrs",
+          "ready": true
+        },
+        "death": {
+          "pidBefore": 13832,
+          "pidAfter": null,
+          "deviceConnected": true
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 9.673
+        }
+      },
+      {
+        "case": "rule-before",
+        "ready": {
+          "case": "rule-before",
+          "preparedPid": 14133,
+          "systemPicker": false,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-rules.yaml",
+          "ready": true
+        },
+        "death": {
+          "pidBefore": 14133,
+          "pidAfter": null,
+          "deviceConnected": true
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 9.785
+        }
+      },
+      {
+        "case": "rule-after",
+        "ready": {
+          "case": "rule-after",
+          "preparedPid": 14414,
+          "systemPicker": false,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-rules.yaml",
+          "ready": true
+        },
+        "death": {
+          "pidBefore": 14414,
+          "pidAfter": null,
+          "deviceConnected": true
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 7.188
+        },
+        "secondDeath": {
+          "alreadyExited": true,
+          "deviceConnected": true
+        },
+        "again": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 7.757
+        }
+      },
+      {
+        "case": "icons-after",
+        "ready": {
+          "case": "icons-after",
+          "preparedPid": 14820,
+          "systemPicker": false,
+          "cancel": false,
+          "filename": "resource-saf-1793848602263355000-icons.json",
+          "ready": true
+        },
+        "death": {
+          "pidBefore": 14820,
+          "pidAfter": null,
+          "deviceConnected": true
+        },
+        "prepareExit": 0,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 7.513
+        },
+        "secondDeath": {
+          "alreadyExited": true,
+          "deviceConnected": true
+        },
+        "again": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 7.62
+        }
+      }
+    ],
+    "summary": {
+      "cases": 14,
+      "passed": true,
+      "preserved": true,
+      "devicePreserved": true
+    }
+  },
+  "regression": {
+    "batch": "final-regression1",
+    "passed": 4,
+    "total": 4,
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.RuleResourcesPageInstrumentedTest#completeResourcePageSearchMenusDraftAndDeleteWorkInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ResourcesPageInstrumentedTest#iconSetPreviewAndGroupPickerUseGalleryNamesAndSelection",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.ResourceUrlRepositoryInstrumentedTest#concurrentRuleImportsDiscardOnlyUncommittedStagingAndSkipExistingUrl",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.data.ResourceUrlRepositoryInstrumentedTest#concurrentIconImportsDeduplicateAtCommitAndKeepExistingContentOnRepeat",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "images": [
+      {
+        "path": "rule_resources_list_false.png",
+        "bytes": 60868,
+        "sha256": "997d2581ddd3e324ae016e2e720c88de279d8d43389b2aaf6efe56c2ef311948"
+      },
+      {
+        "path": "rule_resources_no_results_false.png",
+        "bytes": 119759,
+        "sha256": "ef2b1ef69f6fe8a090eb76e1db3adb156f22ff1ad83cdc28eb1c3182689acb8a"
+      },
+      {
+        "path": "rule_resources_editor_false.png",
+        "bytes": 129043,
+        "sha256": "b4f570b4d33953136f6b4d7c246c63e7c4bbfdd9a27e65e679bed20705474da0"
+      },
+      {
+        "path": "rule_resources_delete_false.png",
+        "bytes": 102821,
+        "sha256": "44cfafcf58d0467e634d1b0e6bdaee20b2f4f56a74a865a31d9a33aa6a933508"
+      },
+      {
+        "path": "rule_resources_list_true.png",
+        "bytes": 125081,
+        "sha256": "92ee3de0796eb0e8d1f9af738a9521a4121191b2340ad95ee355f107a78d8075"
+      },
+      {
+        "path": "rule_resources_no_results_true.png",
+        "bytes": 120259,
+        "sha256": "74d768c4f8e12a5a9edc5ad74c9c66e43b9e14dcfed50f3740bc8f5f8cd175f0"
+      },
+      {
+        "path": "rule_resources_editor_true.png",
+        "bytes": 129537,
+        "sha256": "3fea397c7921a63041da85bfd651dd1268314d4cd826df90b87f722d912520aa"
+      },
+      {
+        "path": "rule_resources_delete_true.png",
+        "bytes": 102327,
+        "sha256": "35a28cb6b059bd1e18bcf2e94143f14ecdf9582124bccaaaee42808cd0bf40d4"
+      },
+      {
+        "path": "icon_set_list_false.png",
+        "bytes": 44240,
+        "sha256": "e8c4691cc39aa87cd12417765798b813f7f9aead723d32a88ebb03453d3cde68"
+      },
+      {
+        "path": "icon_set_preview_false.png",
+        "bytes": 44539,
+        "sha256": "d5be25ef1767f28c42a8fd44b4631d3425339c85a015fa4d92b4b681be0a7b67"
+      },
+      {
+        "path": "icon_set_group_picker_false.png",
+        "bytes": 114622,
+        "sha256": "951c518381bbb13d605245c0a1ef114afe92f4617bab7e2810d563fc0166a2f1"
+      },
+      {
+        "path": "icon_set_list_true.png",
+        "bytes": 44271,
+        "sha256": "9d0c4983eaccf2ed0a00d4e848b469af4047c6772aaac35ba1bd21c06656132f"
+      },
+      {
+        "path": "icon_set_preview_true.png",
+        "bytes": 44659,
+        "sha256": "3faa3bd48004c96c062bd1b4a94307d7c1802f41d4fc80cdabe0c5f4999ab90c"
+      },
+      {
+        "path": "icon_set_group_picker_true.png",
+        "bytes": 115373,
+        "sha256": "ef03117f7c497ac065bb850ef922a7689087bc7447347a31d74acdbfc3da5b17"
+      }
+    ],
+    "visualReview": {
+      "decodedAndHashVerified": 14,
+      "contactSheetsViewed": 5,
+      "review": "Both theme variants of resource lists, search, editor, deletion and icon gallery reviewed; IME remains usable. Fixed-component regression only; not full Flutter visual parity."
+    }
+  },
+  "preservation": {
+    "formalProfileCount": 2,
+    "fullWindowSnapshotsEqual": true,
+    "formalProfilesBodiesScriptsPreferencesSelection": true,
+    "originalYamlFlutterAndDeviceSettings": true,
+    "fixturesDraftsReceiptsCleared": true,
+    "servicesStopped": true,
+    "cleanup": {
+      "allOwnedInputsRemoved": true,
+      "formalPreserved": true,
+      "originalLocalYamlPreserved": true,
+      "noServices": true,
+      "noTun0": true,
+      "interfaceCheck": "/sys/class/net directory listed successfully; lo present, tun0 absent",
+      "networkInterfaces": [
+        "ap0",
+        "ccmni-lan",
+        "ccmni0",
+        "ccmni1",
+        "ccmni10",
+        "ccmni11",
+        "ccmni12",
+        "ccmni13",
+        "ccmni14",
+        "ccmni15",
+        "ccmni16",
+        "ccmni17",
+        "ccmni18",
+        "ccmni19",
+        "ccmni2",
+        "ccmni20",
+        "ccmni3",
+        "ccmni4",
+        "ccmni5",
+        "ccmni6",
+        "ccmni7",
+        "ccmni8",
+        "ccmni9",
+        "dummy0",
+        "ifb0",
+        "ifb1",
+        "ip6_vti0",
+        "ip6tnl0",
+        "ip_vti0",
+        "lo",
+        "p2p0",
+        "sit0",
+        "wlan0",
+        "wlan1"
+      ],
+      "ipLinkAttempt": "request send failed: Permission denied; not used as absence evidence",
+      "removed": [
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-mrs.mrs",
+          "sha256": "24376f8f11e324fe07df07d3c5a263ff13fb7b379743a26390d9db35545dccb9",
+          "bytes": 8261
+        },
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-rules.yaml",
+          "sha256": "33bc8f07bacf74082fcb5f361eded1f6f9d3abcedcbe37ada2eb2ab4ae031732",
+          "bytes": 2821
+        },
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-empty.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-icons.json",
+          "sha256": "3169b7a4273abcbbc9f0ec19c87380e30788b1e6ec4cf9a07c363109b61c1480",
+          "bytes": 227
+        },
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-badIcons.json",
+          "sha256": "33f91d295261129f5061d6ab69a5ad66e0647f51adfdf1bfaf3c4495e3c5bae1",
+          "bytes": 12
+        },
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-image.png",
+          "sha256": "15ff524fa1fb92168b692797d842870b16b7974619c5829d624902a3a6a2bc46",
+          "bytes": 16853
+        },
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-badImage.png",
+          "sha256": "fd9fac371b30c7ce3fcab712afc6599def645b9bb3515e88045f413971b060b0",
+          "bytes": 39
+        },
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-oversizedImage.png",
+          "sha256": "d1e3fcb96d785c49cc293f0d4e3a1691375cb472edeafe0dc7dc15ad526b88d9",
+          "bytes": 131073
+        },
+        {
+          "devicePath": "/sdcard/Download/resource-saf-1793848602263355000-manifest.json",
+          "sha256": "f1a0eeb6d2b81d51e73139372137c3a020beab6a885f4dd6482f7440c66c96c4",
+          "bytes": 2179
+        }
+      ]
+    }
+  },
+  "historicalFailures": [
+    "unit1 missing import; build1 SuspiciousIndentation; neither is final success.",
+    "activity1 0/5; activity2 1/5 and extra empty catalog preference; ready snapshot race fixed, exact empty-key recovery recorded.",
+    "diagnostic2 and activity3/4 picker navigation; activity5 selection failure retained; synchronous checkpoint added and activity6 5/5.",
+    "group1/3/4/5/6 image-grid filename lookup failed before reader; group2 APK hash gate; group6 terminal screenshot established hidden names; list-mode group7 passed.",
+    "cold1 instrumented-task return invalid; cold2 temporary null UI root; cold3 system return PID observed but verify took over during reading; cold4 waited for business result.",
+    "cold4 error fixture accepted by Text fallback; replaced by deterministic domain/CIDR conflict. cold5 null UI root at image startup; screenshot and later tree read prove page restored. Exact fixture recovery records retained."
+  ],
+  "limits": [
+    "STOPPED app on this Redmi/API36 only. Picker kill preserves DocumentsUI and task; preview/commit uses controlled force-stop. No VPN/OEM spontaneous pressure equivalence.",
+    "Invalid URI is explicitly injected into the production reader; it is not claimed as a URI returned by DocumentsUI. Repeated/late/orphan callbacks are controlled protocol tests.",
+    "Reading death is at the production acceptance checkpoint before reading, not evidence for arbitrary mid-byte cloud-provider cancellation.",
+    "Six activity PNGs are system transition frames, excluded from stable-layout evidence. Static screenshots do not prove full Flutter parity or continuous motion.",
+    "No new subscription requests, Go/core changes, cellular, low API, signed Release device runtime, remote CI or release publication. Existing deferred/cancelled scope stays unchanged."
+  ],
+  "next": "第9项统一Flutter页面/面板/空态的稳定布局与连续动效验收；原第6项保护异常及系统/网络边界继续单列。",
+  "artifactRoot": "../acceptance-artifacts/resource-picker-20261107/"
+}

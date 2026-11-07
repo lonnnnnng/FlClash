@@ -94,6 +94,9 @@ internal fun ProfileGroupIcon(value: String, name: String, modifier: Modifier = 
     }
 }
 
+internal val LocalGroupImagePicker = staticCompositionLocalOf<PersistentFilePicker?> { null }
+internal val LocalPersistGroupImageParent = staticCompositionLocalOf<suspend () -> Unit> { {} }
+
 @Composable
 internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: List<String>,
     onRecord: (String, Boolean) -> Unit, onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
@@ -106,17 +109,56 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
     var deleteRecord by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     fun choose(icon: String) { if (icon.isNotBlank()) onRecord(icon, false); onSelect(icon) }
+    val durable = LocalGroupImagePicker.current
+    val persistParent = LocalPersistGroupImageParent.current
+    val pickerState = durable?.state?.collectAsState()?.value
+    val owner = rememberSaveable { java.util.UUID.randomUUID().toString() }
+    var pickToken by rememberSaveable { mutableStateOf<String?>(null) }
+    val restoredToken = remember { pickToken }
+    val latestSelect by rememberUpdatedState<(String) -> Unit>(::choose)
+    val latestPersist by rememberUpdatedState(persistParent)
+    LaunchedEffect(durable) {
+        if (durable?.awaitReady() == true) {
+            // 作者 long：父草稿已接收后选择器子树可能不再恢复；新子页回收旧owner结果，不能交给当前组或锁死新选择。
+            if (durable.state.value.request?.owner?.let { it != owner } == true) durable.cancel()
+            else durable.reconcile(restoredToken)
+        }
+    }
+    LaunchedEffect(pickerState?.request?.token, pickerState?.request?.phase) {
+        val request = pickerState?.request ?: return@LaunchedEffect
+        if (request.owner != owner) return@LaunchedEffect
+        if (request.phase in setOf(FilePickerRequest.RESULT, FilePickerRequest.DONE)) {
+            durable?.complete(request.token, { result ->
+                latestSelect(checkNotNull(result.bytes).toString(Charsets.UTF_8))
+                // 作者 long：父组JSON和选择器关闭状态先写入原会话密文，再清结果，死亡不会丢图或交给另一个组。
+                latestPersist()
+            })
+        }
+    }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) scope.launch {
+        val token = pickToken; pickToken = null
+        if (durable != null) durable.receive(token, uri?.toString()) {
+            com.lonnnnnng.flclash.data.ProfileFileDocument("group-icon", onReadIcon(it).toByteArray())
+        } else if (uri != null) scope.launch {
             reading = true; error = null
-            try {
-                val encoded = onReadIcon(uri.toString())
-                choose(encoded)
-            } catch (cancelled: CancellationException) { throw cancelled }
+            try { choose(onReadIcon(uri.toString())) }
+            catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { error = "无法读取图片，请选择不超过 128 KiB 的图片" }
             finally { reading = false }
         }
     }
+    fun launchImage() { scope.launch {
+        if (durable != null) {
+            if (durable.state.value.error != null && !durable.cancel()) return@launch
+            val token = durable.begin(owner) ?: return@launch
+            pickToken = token
+            try { latestPersist(); picker.launch("image/*") }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { pickToken = null; durable.cancel(token); error = "无法打开图片选择器，请重试" }
+        } else try { picker.launch("image/*") } catch (_: Exception) { error = "无法打开图片选择器，请重试" }
+    } }
+    val imageBusy = reading || pickerState?.busy == true
+    val dismiss = { scope.launch { if (durable == null || durable.cancel()) onDismiss() }; Unit }
     val resourceIcons = LocalResourceIcons.current
     val namedSets = LocalResourceIconSets.current
     val sets = remember(namedSets, resourceIcons) { namedSets.ifEmpty {
@@ -133,15 +175,16 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
     val labels = remember(sets) { sets.flatMap { it.icons }.associate { it.url to IconRecommendations.label(it) } }
     fun label(icon: String): String = labels[icon] ?: IconRecommendations.label(IconRecommendations.record(icon))
     val shown = source?.icons.orEmpty().filter { query.isBlank() || IconRecommendations.label(it).contains(query, true) }
-    ProfileEditorPage(onDismissRequest = onDismiss, title = { Text("图标") }, backTag = "group_icon_back",
+    ProfileEditorPage(onDismissRequest = dismiss, title = { Text("图标") }, backTag = "group_icon_back",
         confirmButton = {
-            IconButton(onClick = { try { picker.launch("image/*") } catch (_: Exception) { error = "无法打开图片选择器，请重试" } }, enabled = !reading, modifier = Modifier.testTag("group_icon_local")) { Icon(Icons.Outlined.Image, null) }
-            IconButton(onClick = { link = true }, enabled = !reading, modifier = Modifier.testTag("group_icon_link")) { Icon(Icons.Outlined.Link, null) }
+            IconButton(onClick = ::launchImage, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_local")) { Icon(Icons.Outlined.Image, null) }
+            IconButton(onClick = { link = true }, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_link")) { Icon(Icons.Outlined.Link, null) }
         }, text = {
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().testTag("group_icon_search"), label = { Text("搜索图标") }, singleLine = true)
-                error?.takeUnless { link }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
-                if (reading || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())
+                (error ?: pickerState?.error)?.takeUnless { link }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
+                if (pickerState?.recoveryFailed == true) TextButton({ durable?.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text("重试恢复") }
+                if (imageBusy || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())
                 if (sources.isNotEmpty()) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     sources.forEach { item -> FilterChip(source?.key == item.key, onClick = { sourceKey = item.key },
                         label = { Text(item.label) }, modifier = Modifier.testTag("group_icon_source_${item.key}")) }

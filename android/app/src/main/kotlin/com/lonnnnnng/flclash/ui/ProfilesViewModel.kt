@@ -214,6 +214,7 @@ class ProfilesViewModel internal constructor(
     managementStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
     extensionStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
     globalRulesStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    groupImageStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
 ) : ViewModel() {
     @Inject constructor(
         repository: ProfileStore,
@@ -225,8 +226,12 @@ class ProfilesViewModel internal constructor(
         @javax.inject.Named("profile-management") managementStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
         @javax.inject.Named("profile-extension") extensionStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
         @javax.inject.Named("global-rules") globalRulesStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
-    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore, managementStore, extensionStore, globalRulesStore)
+        @javax.inject.Named("group-image-picker") groupImageStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore, managementStore, extensionStore, globalRulesStore, groupImageStore)
     internal val management = ProfileManagementController(repository, runtimeManager, managementStore, viewModelScope)
+    internal val groupImagePicker = PersistentFilePicker(viewModelScope, groupImageStore, "无法读取图片，请选择不超过 128 KiB 的图片")
+    internal suspend fun persistGroupPickerParent() = persistCurrentEditorDraft()
+    internal suspend fun readGroupImageFile(uri: String) = fileReader.readLimited(uri, 128 * 1024)
     internal val globalRules = GlobalRulesController(repository, runtimeManager, viewModelScope, globalRulesStore)
     internal val extension = ProfileExtensionController(repository, runtimeManager, viewModelScope, store = extensionStore)
     internal val fileImport = ProfileFileImportController(repository, runtimeManager, fileReader, configValidator, viewModelScope, overviewDispatcher)
@@ -1539,11 +1544,11 @@ class ProfilesViewModel internal constructor(
 
     fun closeProxyGroupsEditor() {
         if (groupsClosing || mutableProxyGroupsEditor.value.isSaving) return
-        closeStructuredEditor(rules = false)
+        viewModelScope.launch { if (groupImagePicker.cancel()) closeStructuredEditor(rules = false) }
     }
 
     suspend fun readGroupIcon(uri: String): String = withContext(overviewDispatcher) {
-        com.lonnnnnng.flclash.data.ProfileGroupIconData.encode(fileReader.read(uri).bytes)
+        com.lonnnnnng.flclash.data.ProfileGroupIconData.encode(fileReader.readLimited(uri, 128 * 1024).bytes)
     }
 
     suspend fun validateGroupFilters(filters: List<String>): List<String> = withContext(overviewDispatcher) {
@@ -1575,7 +1580,7 @@ class ProfilesViewModel internal constructor(
                 }.also { EditorCommitProbe.checkpoint(EditorCommitWindow.GROUPS_COMMITTED) } }
                 if (generation == proxyGroupsGeneration) {
                     reflectStructuredSave(profile.id, repository.readLocalProfileContent(profile.id), updated)
-                    closeStructuredEditor(rules = false)
+                    viewModelScope.launch { if (groupImagePicker.cancel()) closeStructuredEditor(rules = false) }
                 }
             }.onFailure { error ->
                 if (error is CancellationException) throw error

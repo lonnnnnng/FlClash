@@ -180,6 +180,22 @@ object AppModule {
     @Provides
     fun provideRuleResourceCompiler(compiler: com.lonnnnnng.flclash.data.NativeRuleResourceCompiler): com.lonnnnnng.flclash.data.RuleResourceCompiler = compiler
 
+    @Provides @Singleton @javax.inject.Named("rule-file-picker")
+    fun provideRuleFilePicker(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "rule-file-picker.v1", "com.lonnnnnng.flclash.rule.picker.v1")
+
+    @Provides @Singleton @javax.inject.Named("rule-resource-draft")
+    fun provideRuleResourceDraft(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "rule-resource-draft.v1", "com.lonnnnnng.flclash.rule.draft.v1")
+
+    @Provides @Singleton @javax.inject.Named("icon-file-picker")
+    fun provideIconFilePicker(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "icon-file-picker.v1", "com.lonnnnnng.flclash.icon.picker.v1")
+
+    @Provides @Singleton @javax.inject.Named("group-image-picker")
+    fun provideGroupImagePicker(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "group-image-picker.v1", "com.lonnnnnng.flclash.group.image.picker.v1")
+
     @Provides
     @Singleton
     @javax.inject.Named("global-rules")

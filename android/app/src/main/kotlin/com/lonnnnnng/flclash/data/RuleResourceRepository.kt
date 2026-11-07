@@ -47,9 +47,10 @@ class RuleResourceRepository @Inject constructor(
     suspend fun content(resource: RuleResource): String = withContext(Dispatchers.IO) {
         if (resource.format == "mrs") compiler.preview(file(resource).path) else file(resource).readText()
     }
-    private suspend fun stage(label: String, url: String, bytes: ByteArray, id: String = UUID.randomUUID().toString()): RuleResource {
+    private suspend fun stage(label: String, url: String, bytes: ByteArray, id: String = UUID.randomUUID().toString(), fileToken: String = UUID.randomUUID().toString()): RuleResource {
         require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "资源为空或超过 8 MiB" }
-        val token = UUID.randomUUID().toString() + ".rules"
+        require(UUID.fromString(fileToken).toString() == fileToken)
+        val token = fileToken + ".rules"
         directory.mkdirs()
         val target = File(directory, token)
         target.writeBytes(bytes)
@@ -95,6 +96,44 @@ class RuleResourceRepository @Inject constructor(
             val next = expected.copy(label = label.trim())
             preferences.put(AppPreferenceEntity(RULE_RESOURCES_KEY, RuleResources.encode(rows.map { if (it.id == next.id) next else it }), System.currentTimeMillis()))
             next
+        }
+    }
+    suspend fun importCommitted(token: String): Boolean = preferences.get(resourceImportReceiptKey("rule", token)) != null
+    suspend fun forgetImport(token: String) { preferences.delete(resourceImportReceiptKey("rule", token)) }
+
+    suspend fun abandonImport(token: String) = lock.withLock {
+        resourceImportReceiptKey("rule", token)
+        // 作者 long：只能回收本操作尚未登记的确定文件；有回执或目录引用时保留正式资源。
+        if (!importCommitted(token) && all().none { it.fileName == "$token.rules" }) discardFile("$token.rules")
+    }
+
+    suspend fun commitImport(token: String, label: String, url: String, bytes: ByteArray?, expected: RuleResource?, options: Boolean): RuleResource? = withContext(Dispatchers.IO) {
+        val key = resourceImportReceiptKey("rule", token)
+        preferences.get(key)?.let { id -> return@withContext all().firstOrNull { it.id == id } }
+        val normalized = if (url.isBlank()) "" else RuleResources.normalizeUrl(url)
+        require(label.trim().isNotBlank()) { "请输入资源名称" }
+        val metadataOnly = options && expected != null && normalized == expected.url
+        val body = if (metadataOnly) null else bytes ?: if (normalized.isNotEmpty()) client.download(normalized).bytes
+            else expected?.let { file(it).readBytes() } ?: error("请输入资源正文")
+        lock.withLock {
+            preferences.get(key)?.let { id -> return@withLock all().firstOrNull { it.id == id } }
+            val rows = all()
+            require(expected == null || rows.firstOrNull { it.id == expected.id } == expected) { "资源已变化，请重新打开" }
+            require(rows.none { it.fileName == "$token.rules" }) { "资源已变化，请重新打开" }
+            val staged = if (metadataOnly) checkNotNull(expected).copy(label = label.trim())
+                else stage(label, normalized, checkNotNull(body), expected?.id ?: token, token)
+            var committed = false
+            try {
+                require(rows.none { it.id != staged.id && it.label == staged.label }) { "资源名称已经存在" }
+                val next = if (expected == null) rows + staged else rows.map { if (it.id == staged.id) staged else it }
+                withContext(NonCancellable) { database.withTransaction {
+                    // 作者 long：即使进程在写目录后消失，冷恢复也可用同事务回执判定完成，不能再登记第二份。
+                    preferences.put(AppPreferenceEntity(RULE_RESOURCES_KEY, RuleResources.encode(next), System.currentTimeMillis()))
+                    preferences.put(AppPreferenceEntity(key, staged.id, System.currentTimeMillis()))
+                    committed = true
+                } }
+                staged
+            } finally { if (!committed && !metadataOnly) discardFile(staged.fileName) }
         }
     }
     suspend fun importUrlIfNew(input: NamedResourceUrl): ResourceImportResult = withContext(Dispatchers.IO) {

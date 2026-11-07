@@ -1,6 +1,6 @@
 # 第9项剩余交互与恢复验收清单
 
-2026-11-07 当前源码盘点。GR-01～05已完成本组具名验收，SAF-01～05继续待办。实现、静态检查与真机结果分开记录，不累计不同包或不同批次。
+2026-11-07 当前源码盘点。GR-01～05与SAF-01～05均已完成具名范围验收，下一步统一Flutter视觉与连续动效。实现、静态检查与真机结果分开记录，不累计不同包或不同批次。
 
 ## 独立全局规则页（本组范围已验）
 
@@ -16,9 +16,9 @@
 
 已接独立Keystore会话和Room事务回执；原行快照拒绝覆盖/重新新增，批删失败保持确认与选择，排序以完整目录CAS提交。KUI-016的红测、实现来源与失败记录见[缺陷台账](global-rules-recovery-defect.md)。本组16图/6拼图仅证明所列静态状态；完整Flutter视觉与连续动效另验。
 
-## 真实资源选择器（下一组，未验冷进程）
+## 真实资源选择器（本组具名范围已验）
 
-复用 `ResourceSafHostInstrumentedTest` 的 DocumentsUI 路径和 SHA 绑定输入清单。规则 YAML/MRS 与图库走 OpenDocument，组图片走 GetContent；它们的提交边界不同，分别验收。
+最终build13同套包的`ResourceSafHostInstrumentedTest`为7/7、`ResourcePickerColdInstrumentedTest`为14/14及3次再恢复，相邻回归4/4；证据见[验收JSON](acceptance/resource-picker-recovery-redmi-20261107.json)。使用DocumentsUI路径和SHA绑定输入清单。规则 YAML/MRS 与图库走 OpenDocument，组图片走 GetContent；它们的提交边界不同，分别验收。
 
 | 编号 | 操作与窗口 | 必须观察的结果 |
 | --- | --- | --- |
@@ -28,11 +28,11 @@
 | SAF-04 | 图库选择器重建/冷死返回，坏文件后重试及重复回调 | 当前收到 URI 即导入的边界保持；实际图库/文件只创建一次，取消不写入 |
 | SAF-05 | 组图片 GetContent 等待或有界读取期间重建/冷死；父组表单取消/确认 | 结果绑定原组会话；取消不写正文，确认一次；128 KiB 限制和错误重试保持 |
 
-源码重点：规则/图库当前直接接收 URI，尚无持久 pending token 和 consume-once 协议；规则预览正文及 `pendingFile` 仅在 VM 内存。脚本的 `beginFilePick/persistFilePick/reconcileFilePicker/receiveFilePick` 可作现有架构参考，不能照搬提交边界或将脚本测试计为新资源通过。
+已接`PersistentFilePicker`独立密文请求与一次消费、规则预览密文、规则/图库同事务回执和组图片父会话绑定；实际图片读取预算128 KiB。失效URI/重复/迟到/孤立结果为受控协议检查，成功重选走真实DocumentsUI。系统等待只杀普通宿主PID并观察系统拉起新PID；预览/提交用受控停止，读取中断位于受理检查点，不推广任意流字节/OEM/VPN自然回收。38张PNG经13拼图核对，其中6张系统转场图不作稳定终帧，完整视觉另验。来源与失败见[KUI-017](resource-picker-recovery-defect.md)。
 
 ## 视觉、异常与后续顺序
 
-1. 上述剩余资源选择器交互和恢复完成后，首页 → 配置 → 代理组逐页采深浅色稳定终帧，并对照固定 Flutter 基线核对排版、间距、面板尺寸与空态。每页列明实际比较状态，不用 Kotlin 自身截图哈希证明 Flutter 一致。
+1. 资源选择器具名范围已验；接下来首页 → 配置 → 代理组逐页采深浅色稳定终帧，并对照固定 Flutter 基线核对排版、间距、面板尺寸与空态。每页列明实际比较状态，不用 Kotlin 自身截图哈希证明 Flutter 一致。
 2. 自然时钟录制连续进入/返回/多层菜单/键盘变化，检查中间帧、重复点击和退出层级；冻结时钟的入场 Back 与静态终帧不替代连续动效性能。
 3. 回补第6项元数据/mtime保护异常、未知偏好变化、Provider运行态 final6-before 超时和网络恢复稳定性。原失败保留，后续绿测不反向证明原因。
 4. 蜂窝可用后补 Wi-Fi↔蜂窝，其余首次安装/第三方入口/OEM 按真实条件逐项验收。

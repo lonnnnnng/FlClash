@@ -1,6 +1,14 @@
 # Testing
 
-## 独立全局规则恢复与提交（2026-11-07，当前）
+## 真实资源选择器恢复与提交（2026-11-07，当前）
+
+真实资源选择器SAF-01～05本组已验：规则YAML/MRS、图库OpenDocument及组图片GetContent接独立加密请求、一次消费和父会话绑定；规则预览正文/选区/错误/MRS字节可冷恢复，目录与回执同事务防重放。Redmi最终同套build13包：交互7/7、冷恢复14/14及再次恢复3/3、相邻回归4/4；38张PNG完整校验、13拼图目视，其中6张系统转场图不作稳定终帧。849项JVM零失败/错误/跳过（App568本批执行，其余281复用），Debug/Test、未签名Release-R8与双Lint通过，Debug0错误68警告14提示、Release0错误66警告13提示。591份源码及安装回拉SHA匹配，Release25个恢复字段和Debug诊断隔离已检查。正式两配置/正文SHA-size-mtime、脚本、偏好与选择保持；原1.yaml、Flutter包、旋转/字号/动画设置保持；自有草稿/回执/临时行和9个独占设备输入已清理，结束无服务/tun0。KUI-017保留ready恢复竞态、选区及全部开发失败；系统选择器只杀普通宿主PID并观察系统新PID，预览/提交用受控force-stop。失效URI为显式协议注入，读取死亡限受理检查点，不推广任意流字节/OEM/VPN自然回收。下一步统一Flutter页面/面板/空态排版与连续动效；整体第9项仍PARTIAL，第6项原保护异常/网络稳定性、蜂窝及兼容/发布边界保持，玻璃默认关闭。证据`docs/acceptance/resource-picker-recovery-redmi-20261107.json`，溯源`docs/resource-picker-recovery-defect.md`，附件`../acceptance-artifacts/resource-picker-20261107/`。
+
+`ResourceSafHostInstrumentedTest`仅执行最终JSON列出的7个方法；`ResourcePickerColdInstrumentedTest`使用prepare/verify和具名case，传`kclashResourceColdAcceptance=true`、SHA绑定manifest及原`kclashLocalYamlSha256`。等待系统选择器的场景先结束Instrumentation，再普通启动/点击打开DocumentsUI，外部核对PID并SIGKILL，只在实际结果页就绪后运行verify；不得在Instrumentation宿主上模拟普通系统返回。外部uiautomator不能与Instrumentation同时占用UiAutomation。
+
+图片DocumentsUI网格隐藏文件名，先切列表再按完整名称选取；临时null root有界重试。其余预览/提交场景在精确检查点受控停止，读取窗口当前位于URI受理后、实际load前；不声称任意流中断。失败仅用`recoverExactOwnInterruptedResourceFixture`加显式恢复参数，核对标记/原密文备份/正式数据后精确回收。规则与图库回执随目录事务；父组图片确认前不得写正文。最终9个独占输入逐个SHA核对后删除，原1.yaml不动。
+
+## 独立全局规则恢复与提交（2026-11-07，历史）
 
 独立全局规则页GR-01～05本组已验：草稿/错误/选区/放弃确认、可见批选失败重试、原行修改/删除及排序冲突、独立Keystore密文、Room同事务回执防重放和冻结应用目标。Redmi正式交互5/5、cold2冷恢复14/14及提交后再次恢复2/2、相邻回归4/4；16张PNG完整校验与6拼图目视。843项JVM零失败/错误/跳过，App562在build6执行、其余281复用；build8四模块UP-TO-DATE，Debug/Test/未签名Release-R8与双Lint通过（Debug0错误68警告14提示，Release0错误66警告13提示）。最终586份源码匹配，Release14个序列化字段及Debug诊断隔离已检查。真机使用build7同套包；build8仅补未执行的旧GlobalSettingsHost测试收尾，所有产品/实际执行用例源码和Debug/Release APK一致，新的测试APK未安装。正式两配置、正文SHA-size-mtime、脚本、偏好、选择、原1.yaml/Flutter包/设备设置保持，自有规则/草稿/回执清理，结束无服务。KUI-016记录来源及红绿证据；cold1旧after选区失败缺死亡前观测，原因不追认，cold2逐场前后严格比对通过。STOPPED受控force-stop不推广VPN/OEM自然回收，切配置目标冻结由JVM覆盖。下一组真实资源选择器SAF-01～05，随后统一Flutter视觉/连续动效；整体第9项仍PARTIAL，第6项原异常/网络稳定性、蜂窝及兼容/发布边界保持，玻璃默认关闭。证据`docs/acceptance/global-rules-recovery-redmi-20261107.json`，溯源`docs/global-rules-recovery-defect.md`，附件`../acceptance-artifacts/global-rules-20261107/`。
 

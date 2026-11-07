@@ -31,7 +31,7 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
     onDismiss: () -> Unit, onImportUrl: (String, String) -> Unit, onPickFile: () -> Unit,
     onOptions: (ResourceIconSet, String, String) -> Unit, onSync: (ResourceIconSet) -> Unit,
     onDelete: (String) -> Unit, onMove: (String, Int) -> Unit, onImportUrls: (() -> Unit)? = null,
-    onReorder: ((List<String>) -> Unit)? = null) {
+    onReorder: ((List<String>) -> Unit)? = null, onRetryRecovery: (() -> Unit)? = null) {
     var addMenu by remember { mutableStateOf(false) }
     var importing by rememberSaveable { mutableStateOf(false) }
     var editing by remember { mutableStateOf<ResourceIconSet?>(null) }
@@ -57,6 +57,7 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
             Column(Modifier.fillMaxSize().testTag("icon_sets_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                onRetryRecovery?.let { retry -> TextButton(retry, modifier = Modifier.testTag("icon_file_recovery_retry")) { Text("重试恢复") } }
                 if (sorting && onReorder != null) ResourceOrderList(sets.map {
                     ResourceOrderItem(it.id, it.name, "${it.icons.size} 个图标", it.icons.firstOrNull()?.url.orEmpty())
                 }, busy, "icon_sets", onReorder, Modifier.fillMaxWidth().weight(1f))

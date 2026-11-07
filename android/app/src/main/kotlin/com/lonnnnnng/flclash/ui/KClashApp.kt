@@ -80,6 +80,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.snapshotFlow
@@ -308,15 +309,38 @@ fun KClashApp(
     fun openLocalProxies() { localProxiesViewModel?.open() }
     var showResources by rememberSaveable { mutableStateOf(false) }
     var showIconSets by rememberSaveable { mutableStateOf(false) }
+    var iconFileToken by rememberSaveable { mutableStateOf<String?>(null) }
+    val restoredIconFileToken = remember { iconFileToken }
+    val resourcePickerScope = rememberCoroutineScope()
+    val iconPickerState = resourcesViewModel?.filePicker?.state?.collectAsState()?.value
+    LaunchedEffect(Unit) { resourcesViewModel?.filePicker?.reconcile(restoredIconFileToken) }
     val iconSetFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri?.let { resourcesViewModel?.importIconsFile(it.toString()) }
+        val token = iconFileToken; iconFileToken = null
+        resourcesViewModel?.receiveIconsFilePick(token, uri?.toString())
     }
+    fun pickIconFile() { resourcePickerScope.launch {
+        val token = resourcesViewModel?.beginIconsFilePick() ?: return@launch
+        iconFileToken = token
+        try { iconSetFilePicker.launch(arrayOf("application/json", "text/*", "application/octet-stream")) }
+        catch (_: Exception) { iconFileToken = null; resourcesViewModel?.receiveIconsFilePick(token, null) }
+    } }
     val ruleResources = ruleResourcesViewModel?.state?.collectAsState()?.value ?: RuleResourcesUiState(loading = false)
     var showRuleResources by rememberSaveable { mutableStateOf(false) }
     var showCustomResources by rememberSaveable { mutableStateOf(false) }
+    var ruleFileToken by rememberSaveable { mutableStateOf<String?>(null) }
+    val restoredRuleFileToken = remember { ruleFileToken }
+    val rulePickerState = ruleResourcesViewModel?.filePicker?.state?.collectAsState()?.value
+    LaunchedEffect(Unit) { ruleResourcesViewModel?.filePicker?.reconcile(restoredRuleFileToken) }
     val ruleFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri?.let { ruleResourcesViewModel?.importFile(it.toString()) }
+        val token = ruleFileToken; ruleFileToken = null
+        ruleResourcesViewModel?.receiveFilePick(token, uri?.toString())
     }
+    fun pickRuleFile() { resourcePickerScope.launch {
+        val token = ruleResourcesViewModel?.beginFilePick() ?: return@launch
+        ruleFileToken = token
+        try { ruleFilePicker.launch(arrayOf("*/*")) }
+        catch (_: Exception) { ruleFileToken = null; ruleResourcesViewModel?.receiveFilePick(token, null) }
+    } }
     val proxyScrollStateHolder = rememberSaveableStateHolder()
     val serviceStatusState = serviceStatusViewModel?.state?.collectAsState()?.value ?: ServiceStatusUiState()
     val memoryState = memoryViewModel?.state?.collectAsState()?.value ?: MemoryUiState()
@@ -458,6 +482,12 @@ fun KClashApp(
         if (extensionSession.draft != null || extensionSession.recoveryFailed) selectedDestinationIndex = MainDestination.PROFILES.ordinal
     }
     var toolsSubpage by rememberSaveable { mutableStateOf(ToolsSubpage.MENU) }
+    LaunchedEffect(ruleResources.session?.draft?.session, ruleResources.recoveryFailed, rulePickerState?.request?.token, iconPickerState?.request?.token) {
+        if (ruleResources.session != null || ruleResources.recoveryFailed || rulePickerState?.request != null) {
+            selectedDestinationIndex = MainDestination.TOOLS.ordinal; showRuleResources = true
+        }
+        if (iconPickerState?.request != null) { selectedDestinationIndex = MainDestination.TOOLS.ordinal; showIconSets = true }
+    }
     val globalRulesSession by profilesViewModel.globalRules.state.collectAsState()
     LaunchedEffect(globalRulesSession.closeVersion) {
         // 作者 long：关闭可能跨Activity重建，结束事件由存活VM广播给新页面，不能仅回调已销毁窗口的导航状态。
@@ -988,6 +1018,8 @@ fun KClashApp(
                         recentGroupIcons = profilesViewModel.recentGroupIcons.collectAsState().value,
                         onRecordGroupIcon = profilesViewModel::recordGroupIcon,
                         onReadGroupIcon = profilesViewModel::readGroupIcon,
+                        groupImagePicker = profilesViewModel.groupImagePicker,
+                        onPersistGroupPicker = profilesViewModel::persistGroupPickerParent,
                         onOpenSingleProxyGroupEditor = profilesViewModel::openSingleProxyGroupEditor,
                         providersEditorState = providersEditorState,
                         ruleResources = ruleResources.rows,
@@ -1421,19 +1453,21 @@ fun KClashApp(
         { localProxiesViewModel.updateUiDraft(localProxiesState.session, it) }, localProxiesViewModel::updateLinksUiDraft, localProxiesViewModel::reportDraftFailure,
         localProxiesViewModel::updateEditorUiDraft)
     if (showIconSets) IconSetsPage(resources.iconSets, iconBusy, iconError, iconCompleted,
-        { showIconSets = false }, { name, url -> resourcesViewModel?.importIcons(name, url) }, { iconSetFilePicker.launch(arrayOf("application/json", "text/*", "application/octet-stream")) },
+        { resourcesViewModel?.closeIcons { showIconSets = false } }, { name, url -> resourcesViewModel?.importIcons(name, url) }, ::pickIconFile,
         { item, name, url -> resourcesViewModel?.iconOptions(item, name, url) },
         { item -> resources.rows.firstOrNull { it.kind == com.lonnnnnng.flclash.data.ResourceKind.ICONS && it.id == item.id }?.let { resourcesViewModel?.sync(it) } },
         { resourcesViewModel?.deleteIcons(it) }, { id, offset -> resourcesViewModel?.moveIcons(id, offset) },
         onImportUrls = { resourcesViewModel?.iconUrlImports?.reset(); showIconUrls = true },
-        onReorder = { resourcesViewModel?.reorderIcons(it) })
+        onReorder = { resourcesViewModel?.reorderIcons(it) },
+        onRetryRecovery = resourcesViewModel?.let { vm -> { vm.retryIconsImport() } }.takeIf { iconPickerState?.recoveryFailed == true || iconPickerState?.error != null && iconPickerState.request?.phase in setOf(FilePickerRequest.RESULT, FilePickerRequest.DONE) })
     if (showRuleResources && ruleResourcesViewModel != null) {
-        RuleResourcesPage(ruleResources, { showRuleResources = false }, ruleResourcesViewModel::create,
-            { ruleFilePicker.launch(arrayOf("*/*")) }, ruleResourcesViewModel::edit, ruleResourcesViewModel::sync,
+        RuleResourcesPage(ruleResources.copy(error = ruleResources.error ?: rulePickerState?.error), { ruleResourcesViewModel.closePage { showRuleResources = false } }, ruleResourcesViewModel::create,
+            ::pickRuleFile, ruleResourcesViewModel::edit, ruleResourcesViewModel::sync,
             ruleResourcesViewModel::syncAll, ruleResourcesViewModel::askDelete, ruleResourcesViewModel::delete,
             ruleResourcesViewModel::cancelDelete, ruleResourcesViewModel::move, ruleResourcesViewModel::closeEditor,
             ruleResourcesViewModel::save, onImportUrls = { ruleResourcesViewModel.urlImports.reset(); showRuleUrls = true },
-            onReorder = ruleResourcesViewModel::reorder)
+            onReorder = ruleResourcesViewModel::reorder, onUiDraft = ruleResourcesViewModel::updateUi, onDraftFailure = ruleResourcesViewModel::draftFailure,
+            onRetryRecovery = ruleResourcesViewModel::retryRecovery.takeIf { ruleResources.recoveryFailed || rulePickerState?.recoveryFailed == true || rulePickerState?.error != null && rulePickerState.request?.phase in setOf(FilePickerRequest.RESULT, FilePickerRequest.DONE) })
     }
     if (showFilterPresets && filterPresetsViewModel != null) FilterPresetsPage(filters, { showFilterPresets = false },
         filterPresetsViewModel::edit, filterPresetsViewModel::closeEditor, filterPresetsViewModel::save,
@@ -1701,6 +1735,8 @@ internal fun ProfilesPanel(
     recentGroupIcons: List<String> = emptyList(),
     onRecordGroupIcon: (String, Boolean) -> Unit = { _, _ -> },
     onReadGroupIcon: suspend (String) -> String = { error("图片读取不可用") },
+    groupImagePicker: PersistentFilePicker? = null,
+    onPersistGroupPicker: suspend () -> Unit = {},
     onOpenSingleProxyGroupEditor: ((Profile, Int) -> Unit)? = null,
     providersEditorState: ProfileProvidersEditorUiState = ProfileProvidersEditorUiState(),
     ruleResources: List<com.lonnnnnng.flclash.data.RuleResource> = emptyList(),
@@ -2156,6 +2192,8 @@ internal fun ProfilesPanel(
         } else {
             EncryptedEditorState(proxyGroupsEditorState.session, proxyGroupsEditorState.uiDraft,
                 { onGroupsUiDraftChange(profile.id, proxyGroupsEditorState.session, it) }, onEditorDraftFailure) { checkpoint ->
+              CompositionLocalProvider(LocalGroupImagePicker provides groupImagePicker,
+                  LocalPersistGroupImageParent provides { check(checkpoint()); onPersistGroupPicker() }) {
               ProfileProxyGroupsEditorDialog(
                 profile = profile,
                 initialGroups = proxyGroupsEditorState.groups,
@@ -2170,6 +2208,7 @@ internal fun ProfilesPanel(
                 onSave = { if (checkpoint()) onSaveProxyGroups(it) },
                 saveError = proxyGroupsEditorState.error,
             )
+              }
             }
         }
     }
