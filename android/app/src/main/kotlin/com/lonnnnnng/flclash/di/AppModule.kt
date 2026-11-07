@@ -166,6 +166,12 @@ object AppModule {
         com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "local-proxy-draft.v1", "com.lonnnnnng.flclash.local.proxy.draft.v1")
 
     @Provides
+    @Singleton
+    @javax.inject.Named("profile-management")
+    fun provideProfileManagementStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "profile-management.v1", "com.lonnnnnng.flclash.profile.management.v1")
+
+    @Provides
     fun provideRuleResourceCompiler(compiler: com.lonnnnnng.flclash.data.NativeRuleResourceCompiler): com.lonnnnnng.flclash.data.RuleResourceCompiler = compiler
 
     @Provides

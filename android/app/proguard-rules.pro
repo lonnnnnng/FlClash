@@ -44,3 +44,4 @@
 -keep class kotlin.Triple { *; }
 -keep class com.lonnnnnng.flclash.ui.ProviderPickerSnapshot { *; }
 -keep class com.lonnnnnng.flclash.ui.ProviderDocumentDraft { *; }
+-keep class com.lonnnnnng.flclash.ui.ProfileManagementDraft { *; }

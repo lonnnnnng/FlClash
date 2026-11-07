@@ -211,6 +211,7 @@ class ProfilesViewModel internal constructor(
     private val overviewDispatcher: kotlinx.coroutines.CoroutineDispatcher,
     private val groupFilterValidator: ProxyGroupFilterValidator = ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
     private val draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    managementStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
 ) : ViewModel() {
     @Inject constructor(
         repository: ProfileStore,
@@ -219,7 +220,9 @@ class ProfilesViewModel internal constructor(
         fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
         groupFilterValidator: ProxyGroupFilterValidator = ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
         draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
-    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore)
+        @javax.inject.Named("profile-management") managementStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore, managementStore)
+    internal val management = ProfileManagementController(repository, runtimeManager, managementStore, viewModelScope)
     internal val globalRules = GlobalRulesController(repository, runtimeManager, viewModelScope)
     internal val extension = ProfileExtensionController(repository, runtimeManager, viewModelScope)
     internal val fileImport = ProfileFileImportController(repository, runtimeManager, fileReader, configValidator, viewModelScope, overviewDispatcher)

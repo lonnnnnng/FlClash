@@ -347,6 +347,7 @@ fun KClashApp(
     val diagnosticState by runtimeViewModel.diagnosticState.collectAsState()
     val diagnosticHistory by runtimeViewModel.diagnosticHistory.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
+    val managementState by profilesViewModel.management.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val remoteEditorState by profilesViewModel.remoteEditorState.collectAsState()
     val documentEditorState by profilesViewModel.documentEditorState.collectAsState()
@@ -446,6 +447,10 @@ fun KClashApp(
     LaunchedEffect(editorState.profile?.id, remoteEditorState.profile?.id) {
         // 作者 long：冷启动恢复的编辑器仍属于配置页，不能只恢复内存而让用户在首页找不到草稿。
         if (editorState.profile != null || remoteEditorState.profile != null) selectedDestinationIndex = MainDestination.PROFILES.ordinal
+    }
+    LaunchedEffect(managementState.draft?.session, managementState.recoveryFailed) {
+        // 作者 long：进程重启后原管理窗口必须在配置页可见；导航不修改当前配置或启动核心。
+        if (managementState.draft != null || managementState.recoveryFailed) selectedDestinationIndex = MainDestination.PROFILES.ordinal
     }
     var toolsSubpage by rememberSaveable { mutableStateOf(ToolsSubpage.MENU) }
     var showAccessUnsavedChanges by rememberSaveable { mutableStateOf(false) }
@@ -854,6 +859,7 @@ fun KClashApp(
                     ProfilesPanel(
                         modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp).testTag("page_profiles"),
                         state = profilesState,
+                        management = profilesViewModel.management,
                         editorState = editorState,
                         remoteEditorState = remoteEditorState,
                         documentEditorState = documentEditorState,
@@ -1599,6 +1605,7 @@ internal fun ObservationPage(
 internal fun ProfilesPanel(
     modifier: Modifier = Modifier,
     state: ProfilesUiState,
+    management: ProfileManagementController? = null,
     editorState: ProfileEditorUiState,
     remoteEditorState: RemoteProfileEditorUiState = RemoteProfileEditorUiState(),
     documentEditorState: ProfileDocumentEditorState = ProfileDocumentEditorState(),
@@ -1751,7 +1758,7 @@ internal fun ProfilesPanel(
     LaunchedEffect(actionToHandle) {
         when (actionToHandle) {
             ProfilesToolbarAction.SYNC_ALL -> if (onSyncAll != null) onSyncAll() else state.profiles.filter { it.type == ProfileType.URL }.forEach(onUpdate)
-            ProfilesToolbarAction.SORT -> showReorderDialog = true
+            ProfilesToolbarAction.SORT -> if (management != null) management.open("order") else { showReorderDialog = true }
             ProfilesToolbarAction.SCRIPTS -> onOpenScripts()
             ProfilesToolbarAction.WEBDAV -> showWebDavDialog = true
             ProfilesToolbarAction.BACKUP_EXPORT -> onExportBackup()
@@ -1845,10 +1852,10 @@ internal fun ProfilesPanel(
                                     onExport = { onExportProfile(profile.id) },
                                     exportBusy = exportBusy,
                                     onEdit = { onEdit(profile) },
-                                    onRename = { profilePendingRenameId = profile.id },
+                                    onRename = { if (management != null) management.open("rename", profile) else { profilePendingRenameId = profile.id } },
                                     onUpdate = { onUpdate(profile) },
                                     onSetAutoUpdate = { enabled -> onSetAutoUpdate(profile, enabled) },
-                                    onDelete = { profilePendingDeletionId = profile.id },
+                                    onDelete = { if (management != null) management.open("delete", profile) else { profilePendingDeletionId = profile.id } },
                                     onOpenRulesEditor = { onOpenRulesEditor(profile) },
                                     onOpenProxiesEditor = { onOpenProxiesEditor(profile) },
                                     onOpenProxyGroupsEditor = { onOpenProxyGroupsEditor(profile) },
@@ -1890,6 +1897,7 @@ internal fun ProfilesPanel(
     }
 
     ProfileSyncResults(state.sync, onDismissSync, onRetrySync)
+    if (management != null) ProfileManagementHost(management, state.profiles, state.resourceUsers)
 
     profilePendingDeletion?.let { profile ->
         AlertDialog(

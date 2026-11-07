@@ -1,6 +1,14 @@
 # Testing
 
-## Provider正文独立密文与正式冷恢复（2026-11-07，当前）
+## 配置管理窗口独立密文与正式冷恢复（2026-11-07，当前）
+
+配置管理重命名/删除/排序独立加密会话、保存意图与提交结果核对、失败原位重试及外部目标冲突保护已验，KUI-011本组闭环。Redmi final7首次冷恢复17/17、提交后再次恢复3/3，相邻回归11/11，33张PNG完整校验并经11张拼图目视。814项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；App533在本组build4实际执行，Service212/Core38/Common31复用，最终build8四模块UP-TO-DATE、389任务11执行/378复用。Debug Lint0错误/67警告/12提示，Release0错误/66警告/11提示。安装回拉和572份源码匹配；正式两份配置/正文SHA-size-mtime/脚本/偏好值/选择、原1.yaml、Flutter包与设备设置保持，临时对象与草稿清除，收尾无服务。本组仅STOPPED下真实MainActivity/Hilt/Room、受控force-stop；不代表运行态死亡、OEM自然回收或完整Flutter视觉。final5早先17+3通过独立保留，final7增加实际Room名称/顺序和正文结果断言；中间失败与精确恢复见KUI-011，不累计。下一组为扩展页独立冷恢复、保存中断与原规则外部修改/删除保护；Provider运行态/MRS只读冷恢复、统一Flutter视觉及第6项原保护异常/网络稳定性继续待补。蜂窝延期，玻璃默认关闭。证据`docs/acceptance/profile-management-cold-redmi-20261107.json`；溯源`docs/profile-management-cold-recovery-defect.md`；附件`../acceptance-artifacts/management-cold-20261107/`。
+
+`ProfileManagementColdInstrumentedTest`只按方法运行：`prepareAndHoldManagementDraftForExternalDeath`准备并持有窗口，外部核对PID后force-stop，`verifyAutomaticManagementRecoveryAndCleanOwnFixture`验证新PID自动恢复并清本例。必须传`kclashManagementColdAcceptance=true`、`kclashManagementColdCase`和原`kclashLocalYamlSha256`；三类提交后场景用`kclashManagementKeep=true`保留一次，再在新进程验证不重放。失败现场只通过`recoverExactOwnInterruptedManagementFixture`及额外`kclashManagementFixtureRecovery=true`精确恢复；禁止整类运行。
+
+17场景：rename的draft/before/after/failure/deleted/conflict，delete的draft/before/after/failure/deleted，order的draft/before/after/failure/deleted/conflict。提交前后和恢复重试均回读真实Room名称/顺序与正文签名；SQL失败验证异常类型和固定标记计数。隐私Bundle保存检查放在语义交互后；准备阶段等仓库、实际页面和完整保存树，滚到目标卡片。相邻11方法来自MainProfileManagementState（3）、MainProfileExtensionState（5）、MainNavigationState（3），完整33图集合经分片/哈希/解码检查。
+
+## Provider正文独立密文与正式冷恢复（2026-11-07，历史）
 
 Provider正文独立加密草稿与正式冷恢复已验：正文/选区/失败/放弃确认跨进程保持；保存前中断等待显式重试、提交后恢复不重放；外部正文冲突、配置删除、引用源记录/文件删除保留草稿并阻止写入；派生缓存缺失由未变源安全重建。KUI-010失效引用配置无法切走已修，保留原ID/节点选择及已应用输入用于失败回滚。Redmi final5九场景首次恢复9/9、提交后及两类源删除再次恢复3/3，相邻回归10/10，22图完整校验并目视。802项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；App521/Service212本次重跑，Core38/Common31复用，build11共389任务60执行/329复用。Debug Lint0错误/67警告/10提示，Release0错误/66警告/9提示。安装回拉与源码匹配，正式两份配置/正文SHA-size-mtime/脚本/偏好值/选择、原1.yaml、Flutter包与设备设置保持，临时对象和密文清除，收尾无服务。
 

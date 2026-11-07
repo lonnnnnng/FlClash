@@ -100,6 +100,17 @@ interface ProfileStore {
         profiles.value.firstOrNull { it.id == id }
             ?.copy(label = label.trim())
             ?: error("配置不存在")
+    suspend fun compareAndRenameProfile(id: Long, expectedLabel: String, label: String): Profile {
+        check(extensionProfile(id)?.label == expectedLabel) { "配置名称已变化，请重新打开" }
+        return updateProfileLabel(id, label)
+    }
+    suspend fun managementProfileOrder(): List<Long> = profiles.value.map(Profile::id)
+    suspend fun compareAndReorderProfiles(expected: List<Long>, ids: List<Long>) {
+        val latest = managementProfileOrder()
+        check(expected.filter { it in latest } + latest.filterNot { it in expected } == latest) { "配置排序已变化，请重新打开" }
+        reorder(ids)
+    }
+    suspend fun profileDeletionComplete(id: Long): Boolean = extensionProfile(id) == null
     suspend fun updateRemoteProfileSettings(
         id: Long,
         label: String,
@@ -781,6 +792,28 @@ class ProfileRepository(
         }
     }
 
+    override suspend fun compareAndRenameProfile(id: Long, expectedLabel: String, label: String): Profile = withContext(Dispatchers.IO) {
+        database.withTransaction {
+            // 作者 long：检查与写入同处Room事务，旧窗口不能覆盖并发改名；只改名称，保留其他最新元数据。
+            check(profileDao.getById(id)?.label == expectedLabel) { "配置名称已变化，请重新打开" }
+            updateProfileLabel(id, label)
+        }
+    }
+
+    override suspend fun managementProfileOrder(): List<Long> = withContext(Dispatchers.IO) { profileDao.getAll().map(ProfileEntity::id) }
+
+    override suspend fun compareAndReorderProfiles(expected: List<Long>, ids: List<Long>) = withContext(Dispatchers.IO) {
+        database.withTransaction {
+            val latest = profileDao.getAll().map(ProfileEntity::id)
+            check(expected.filter { it in latest } + latest.filterNot { it in expected } == latest) { "配置排序已变化，请重新打开" }
+            reorder(ids)
+        }
+    }
+
+    override suspend fun profileDeletionComplete(id: Long): Boolean = withContext(Dispatchers.IO) {
+        fileMutationMutex.withLock { profileDao.getById(id) == null && !profileFile(id).exists() }
+    }
+
     override suspend fun updateRemoteProfileSettings(
         id: Long,
         label: String,
@@ -1107,7 +1140,12 @@ class ProfileRepository(
     override suspend fun deleteProfile(id: Long) = withContext(Dispatchers.IO) {
         // 作者 long：删除与本地文件保存共用锁，避免失败保存恢复旧文件时把已删除的配置正文重新留在磁盘。
         fileMutationMutex.withLock {
-            val profile = profileDao.getById(id) ?: return@withLock
+            val profile = profileDao.getById(id)
+            if (profile == null) {
+                // 作者 long：上次可能停在Room删除后、文件清理前；显式重试只清理这个已不存在ID的正文。
+                check(!profileFile(id).exists() || profileFile(id).delete()) { "配置正文清理失败，请重试" }
+                return@withLock
+            }
             var fallback = mutableCurrentProfileId.value
             database.withTransaction {
                 profileDao.delete(profile)
