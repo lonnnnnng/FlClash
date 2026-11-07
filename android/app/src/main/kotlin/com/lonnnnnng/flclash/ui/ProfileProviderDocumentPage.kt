@@ -35,17 +35,26 @@ internal fun ProfileProviderDocumentHost(model: ProfileStatisticsViewModel) {
             }
         }
     }
-    state?.let { draft -> ProfileProviderDocumentPage(draft, model::closeProvider, model::changeProviderContent,
-        model::saveProvider, { if (draft.committed) model.retryProviderReadback() else model.openProvider(draft.name, draft.editing, draft.picking) }) }
+    state?.let { draft ->
+        val saved = draft.draft
+        if (saved == null) ProfileProviderDocumentPage(draft, model::closeProvider, model::changeProviderContent,
+            model::saveProvider, model::retryProviderDocument)
+        else EncryptedEditorState(saved.session, saved.uiDraft,
+            { model.captureProviderUi(saved.session, it) }, model::providerUiCaptureFailed) { checkpoint ->
+            ProfileProviderDocumentPage(draft, { if (checkpoint()) model.closeProvider() }, model::changeProviderContent,
+                { if (checkpoint()) model.saveProvider() }, model::retryProviderDocument)
+        }
+    }
 }
 
 @Composable
 internal fun ProfileProviderDocumentPage(state: ProviderDocumentUiState, onClose: () -> Unit,
     onChange: (String) -> Unit, onSave: () -> Unit, onRetry: () -> Unit) {
-    var askDiscard by rememberSaveable(state.document) { mutableStateOf(false) }
+    val session = state.draft?.session ?: state.document
+    var askDiscard by rememberSaveable(session) { mutableStateOf(false) }
     val contentForRestore = rememberUpdatedState(state.content)
-    // 作者 long：Activity 重建只写入选区偏移，正文仍由 ViewModel 保管，避免 Provider 凭据进入系统保存状态。
-    val textFieldSaver = remember(state.document) {
+    // 作者 long：选区与确认窗口由独立加密注册表保存；正文由VM快照唯一持有，重绑核心不能重置正在恢复的编辑树。
+    val textFieldSaver = remember(session) {
         Saver<TextFieldValue, IntArray>(
             save = { intArrayOf(it.selection.start, it.selection.end) },
             restore = { offsets ->
@@ -54,39 +63,43 @@ internal fun ProfileProviderDocumentPage(state: ProviderDocumentUiState, onClose
                     offsets[0].coerceIn(0, content.length), offsets[1].coerceIn(0, content.length)))
             })
     }
-    var value by rememberSaveable(state.document, stateSaver = textFieldSaver) {
+    var value by rememberSaveable(session, stateSaver = textFieldSaver) {
         mutableStateOf(TextFieldValue(state.content))
     }
+    val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val canSave = state.editing && !state.committed && !state.recoveryBlocked && state.document?.document?.editable == true
     val close = { if (!state.saving) { if (state.dirty) askDiscard = true else onClose() } }
     ProfileEditorPage(onDismissRequest = close, backTag = "profile_provider_document_back", title = { Text(state.name) },
         confirmButton = {
             if (state.saving) CircularProgressIndicator(Modifier.padding(12.dp).size(24.dp).testTag("profile_provider_document_saving"), strokeWidth = 2.dp)
-            else if (state.editing && !state.committed && state.document?.document?.editable == true) TextButton(onSave, enabled = !state.loading,
+            else if (canSave) TextButton(onSave, enabled = !state.loading,
                 modifier = Modifier.testTag("profile_provider_document_save")) { Text("保存") }
         }, text = {
             Column(Modifier.fillMaxSize().testTag("profile_provider_document"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
                 state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_provider_document_error"))
-                    if (state.document == null || state.picking || state.committed) TextButton(onRetry, enabled = !state.saving) { Text(if (state.committed) "重新读取确认" else "重试") } }
+                    if (state.document == null || state.picking || state.committed || state.recoveryBlocked) TextButton(onRetry, enabled = !state.saving && !state.loading) { Text(if (state.committed) "重新读取确认" else "重试") } }
                 val document = state.document?.document
                 when {
                     state.picking -> Text(if (state.saving) "正在导入文件…" else "选择文件后将替换此 Provider 的缓存内容")
-                    document?.kind == "binary" -> Text("此资源为二进制文件，无法预览或编辑；可返回后从文件导入")
-                    document != null && state.editing && document.editable -> ProfileCodeField(value, { next ->
+                    (document?.kind ?: state.draft?.kind) == "binary" -> Text("此资源为二进制文件，无法预览或编辑；可返回后从文件导入")
+                    state.editing && (document?.editable ?: state.draft?.editable) == true -> ProfileCodeField(value, { next ->
                         // 作者 long：缓存写入失败后保留正文和选区；选择文字不会触发新的草稿或擦掉失败提示。
-                        if (next.text != value.text) onChange(next.text)
-                        value = next
-                    }, enabled = !state.saving && !state.committed, modifier = Modifier.fillMaxSize(),
+                        if (owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+                            if (next.text != value.text) onChange(next.text)
+                            value = next
+                        }
+                    }, enabled = !state.loading && !state.saving && !state.committed && !(state.pendingSave && state.recoveryBlocked), modifier = Modifier.fillMaxSize(),
                         contentTag = "profile_provider_document_content")
-                    document != null -> {
-                        if (!document.editable) Text("MRS 规则只读预览", style = MaterialTheme.typography.labelMedium)
+                    document != null || state.draft != null -> {
+                        if ((document?.editable ?: state.draft?.editable) == false) Text("MRS 规则只读预览", style = MaterialTheme.typography.labelMedium)
                         SelectionContainer { Text(state.content, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("profile_provider_document_content")) }
                     }
                 }
             }
         })
-    if (askDiscard) AlertDialog(onDismissRequest = { askDiscard = false }, title = { Text("保存更改？") },
-        text = { Text("未保存的更改将在退出后丢失") }, confirmButton = { TextButton({ askDiscard = false; onSave() }) { Text("保存") } },
+    if (askDiscard) EditorAlertDialog(onDismissRequest = { askDiscard = false }, title = { Text(if (canSave) "保存更改？" else "放弃草稿？") },
+        text = { Text("未保存的更改将在退出后丢失") }, confirmButton = { if (canSave) TextButton({ askDiscard = false; onSave() }) { Text("保存") } },
         dismissButton = { Row { TextButton({ askDiscard = false }) { Text("继续编辑") }; TextButton({ askDiscard = false; onClose() }) { Text("放弃") } } })
 }

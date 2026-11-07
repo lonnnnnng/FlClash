@@ -430,6 +430,19 @@ fun KClashApp(
         }
     }
     var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
+    val providerRecoveryProfileId by profileStatisticsViewModel?.restoredProviderProfileId?.collectAsState()
+        ?: remember { mutableStateOf<Long?>(null) }
+    LaunchedEffect(providerRecoveryProfileId, profilesState.profilesLoaded, selectedProfile?.id) {
+        if (!profilesState.profilesLoaded) return@LaunchedEffect
+        profileStatisticsViewModel?.reconcileProviderSelection(selectedProfile?.id)
+        if (providerRecoveryProfileId == null) return@LaunchedEffect
+        // 作者 long：冷恢复只重开当前配置的详情；目标被删除或用户已换配置时保留草稿提示，绝不替用户切回旧配置。
+        if (providerRecoveryProfileId == selectedProfile?.id) {
+            selectedDestinationIndex = MainDestination.DASHBOARD.ordinal
+            profileDetailId = providerRecoveryProfileId
+        }
+        profileStatisticsViewModel?.resumeProviderDocument(selectedProfile?.id)
+    }
     LaunchedEffect(editorState.profile?.id, remoteEditorState.profile?.id) {
         // 作者 long：冷启动恢复的编辑器仍属于配置页，不能只恢复内存而让用户在首页找不到草稿。
         if (editorState.profile != null || remoteEditorState.profile != null) selectedDestinationIndex = MainDestination.PROFILES.ordinal

@@ -1156,6 +1156,11 @@ class ProfileRepository(
             ?: profileDao.getAll().firstOrNull()?.id
     }
 
+    override suspend fun profileSelectedMap(id: Long): Map<String, String> = withContext(Dispatchers.IO) {
+        // 作者 long：引用源或脚本被删时，原配置本身仍有可回滚的选择元数据；不调用toActiveProfile重建失效投影。
+        profileDao.getById(id)?.let { decodeSelectedMap(it.selectedMapJson) }.orEmpty()
+    }
+
     private suspend fun toActiveProfile(profile: Profile): ActiveProfile {
         val extension = ProfileProviderOverrides.fromJsonString(profile.overridesJson).extension
         // 作者 long：旧绑定在引入模式前始终执行，未明确选择新模式的配置保留旧行为；CUSTOM 的既有绑定继续兼容。

@@ -14,8 +14,14 @@ interface ProfileStatisticsRuntime {
     suspend fun updateProfileProvider(profileId: Long, name: String): Unit = error("Provider 更新不可用")
     suspend fun readProfileProvider(profileId: Long, name: String): ProfileProviderDocument = error("Provider 预览不可用")
     suspend fun restoreProfileProvider(profileId: Long, name: String, recoveryKey: String, digest: String): ProfileProviderDocument {
+        return recoverProfileProviderDocument(profileId, name, recoveryKey, digest, null)
+    }
+    suspend fun recoverProfileProviderDocument(profileId: Long, name: String, recoveryKey: String, digest: String,
+        intendedContent: String?): ProfileProviderDocument {
         val loaded = readProfileProvider(profileId, name)
-        check(recoveryKey.isNotBlank() && loaded.recoveryKey == recoveryKey && loaded.document.digest == digest)
+        // 作者 long：只有同一输入且仍为原版本或已提交的确切正文才能重绑；任意第三方新版本都不能成为旧草稿的新基线。
+        check(loaded.profileId == profileId && loaded.document.name == name && recoveryKey.isNotBlank() && loaded.recoveryKey == recoveryKey)
+        check(loaded.document.digest == digest || intendedContent != null && loaded.document.content == intendedContent)
         return loaded
     }
     suspend fun saveProfileProvider(document: ProfileProviderDocument, content: String): Unit = error("Provider 侧载不可用")

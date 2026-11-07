@@ -1,0 +1,793 @@
+{
+  "date": "2026-11-07",
+  "title": "Provider正文独立加密草稿与正式冷恢复",
+  "status": "DONE-VERIFIED-SCOPED",
+  "overallVisualParity": "PARTIAL",
+  "summary": "Provider正文独立加密草稿、正式MainActivity冷恢复、保存前后进程中断及外部目标变化已完成本组验收；失效引用配置切换KUI-010已修；整体视觉仍PARTIAL。",
+  "scope": {
+    "sourceBaseCommit": "4ede6b850b9d019b8f98ccc8ae2884ccbb2f7c29",
+    "changedSources": {
+      "android/app/proguard-rules.pro": "7009dfabf225b2e67cc5deab5eed32eb857d994eeaa7c8fb6dca14834e6a89e4",
+      "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ConnectionAcceptanceEntryPoint.kt": "3162fe90614a3b7bbe3653466fca9aad4103e2bba23f4c19a97660ee323766b6",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProfileRepository.kt": "35c41511b53a64879b8036e51e65e9bbe0004d0d316bdee1c53ae8eabbd3d03e",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/di/AppModule.kt": "822296292496b16e87dcaf4bf19deb8aa648dd8788cc399366fbb169973b06b5",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/EditorCommitWindow.kt": "5cc43abb419cb0a82f82c57fad93b214bbfaecddc69514397215a3cb39ea2f2a",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "5c4010ce1848028e34b96408b94e8bc8bed64a12d6f8b73c30ec3da2c4f1d459",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProviderDocumentPage.kt": "50e19ba3ae840ae77d920f7f15d358cc6c87b61d90d775ec6881e17cdbeba0a9",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileStatisticsViewModel.kt": "ddfc64c69f455811400f23a4c9e9c67ce9989b0e4faa05ce9157166839865509",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProviderDocumentDraft.kt": "6576d3db6b018810fcb87498f0d485e824c06b835951d241f890e0c7468321ee",
+      "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeContracts.kt": "5370d75fdcde48804b9f5bfd48240ad1dc0af928aa5f0f7655d19eea0edfdd49",
+      "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt": "572aa08f0b3668d3a296d6a99fa1da72f2fc0f04a03592f1f0171859eeb71b2a",
+      "android/service/src/main/java/com/lonnnnnng/flclash/service/ProfileStatistics.kt": "7cbaec896dc1a28cd201fef0a6b76f9e074322088c3153ffc14f55a05ae28e9e",
+      "android/tests/app/ProviderDocumentRecoveryTest.kt": "1db74f6a8b4ab63f3c02359dd317992ca157eb366c1693dc968b6958c0a4d589",
+      "android/tests/instrumented/ProviderDocumentColdInstrumentedTest.kt": "2d9a492675f41df86f3bc9a09a0effe185c8c25f3a2c432f35c2c934d2db465d",
+      "android/tests/service/CoreRuntimeManagerTest.kt": "960d56fa53aa4d84d602997f87cff8ee6e1179de685fd5f3706bbc9eaefd4259"
+    },
+    "boundary": "Redmi API36 STOPPED状态，真实MainActivity/Hilt/Room/Bridge与授权原1.yaml的自有临时副本；受控force-stop，不等于OEM自然回收或运行态VPN中断。"
+  },
+  "build": {
+    "command": "./gradlew :app:testDebugUnitTest :service:testDebugUnitTest :core:testDebugUnitTest :common:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 2m 36s",
+    "tasks": "389 actionable tasks: 60 executed, 329 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 521,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 71
+      },
+      "service": {
+        "tests": 212,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest",
+      "> Task :app:testDebugUnitTest"
+    ],
+    "executionNote": "执行/复用状态以本组jvmExecution为准",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 10
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 9
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "a90e736b52f0a7628961d8125a84b117cdaab7fb3980f2497f96013787d1d62c",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "cf18ef5db7abc11b9ac15b2f74a8a256eb51e00345525e714b713b3f42ea2e2b",
+        "bytes": 5931044,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "53dbad15e2baa86348511255b2ea9ab816e7f0ca4b6c66be660e90513d2bae7e",
+        "bytes": 48228588,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "releaseStaticCheck": {
+    "sha256": "53dbad15e2baa86348511255b2ea9ab816e7f0ca4b6c66be660e90513d2bae7e",
+    "snapshotFields": [
+      "committed",
+      "content",
+      "digest",
+      "editable",
+      "editing",
+      "error",
+      "kind",
+      "name",
+      "originalContent",
+      "pending",
+      "profileId",
+      "recoveryKey",
+      "session",
+      "uiDraft",
+      "version"
+    ],
+    "debugMarkersAbsent": {
+      "prepareAndHoldProviderDraftForExternalDeath": true,
+      "kclash_provider_cold_ready": true,
+      "PROVIDER_INTENT": true,
+      "PROVIDER_COMMITTED": true
+    },
+    "scope": "R8 DEX static check only; unsigned APK not runtime acceptance"
+  },
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "flutterHashes": [
+      "700570428bde3a1b316ae7f7e8f10d77f9e23ee8bf8b3f45557362a061fbefb3"
+    ],
+    "services": false
+  },
+  "installation": {
+    "cold": {
+      "com.lonnnnnng.flclash": {
+        "built": "a90e736b52f0a7628961d8125a84b117cdaab7fb3980f2497f96013787d1d62c",
+        "installed": "a90e736b52f0a7628961d8125a84b117cdaab7fb3980f2497f96013787d1d62c"
+      },
+      "com.lonnnnnng.flclash.test": {
+        "built": "cf18ef5db7abc11b9ac15b2f74a8a256eb51e00345525e714b713b3f42ea2e2b",
+        "installed": "cf18ef5db7abc11b9ac15b2f74a8a256eb51e00345525e714b713b3f42ea2e2b"
+      }
+    },
+    "regression": {
+      "com.lonnnnnng.flclash": {
+        "builtSha256": "a90e736b52f0a7628961d8125a84b117cdaab7fb3980f2497f96013787d1d62c",
+        "pulledSha256": "a90e736b52f0a7628961d8125a84b117cdaab7fb3980f2497f96013787d1d62c"
+      },
+      "com.lonnnnnng.flclash.test": {
+        "builtSha256": "cf18ef5db7abc11b9ac15b2f74a8a256eb51e00345525e714b713b3f42ea2e2b",
+        "pulledSha256": "cf18ef5db7abc11b9ac15b2f74a8a256eb51e00345525e714b713b3f42ea2e2b"
+      }
+    }
+  },
+  "acceptance": {
+    "coldCases": [
+      {
+        "case": "draft",
+        "livePidKilled": 5930,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 19.846
+        },
+        "again": null,
+        "secondDeath": null,
+        "externalDeletion": null
+      },
+      {
+        "case": "failure",
+        "livePidKilled": 6273,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 19.242
+        },
+        "again": null,
+        "secondDeath": null,
+        "externalDeletion": null
+      },
+      {
+        "case": "before",
+        "livePidKilled": 6587,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 27.104
+        },
+        "again": null,
+        "secondDeath": null,
+        "externalDeletion": null
+      },
+      {
+        "case": "after",
+        "livePidKilled": 6925,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 14.198
+        },
+        "again": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 18.923
+        },
+        "secondDeath": {
+          "alreadyExited": true,
+          "deviceConnected": true
+        },
+        "externalDeletion": null
+      },
+      {
+        "case": "conflict",
+        "livePidKilled": 7417,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 18.784
+        },
+        "again": null,
+        "secondDeath": null,
+        "externalDeletion": null
+      },
+      {
+        "case": "deleted-profile",
+        "livePidKilled": 7706,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 13.08
+        },
+        "again": null,
+        "secondDeath": null,
+        "externalDeletion": null
+      },
+      {
+        "case": "deleted-provider-cache",
+        "livePidKilled": 8027,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 19.42
+        },
+        "again": null,
+        "secondDeath": null,
+        "externalDeletion": {
+          "path": "files/mihomo/providers/profiles/6954794514137434562-353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e.yaml",
+          "sha256Before": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+          "missingBeforeVerify": true
+        }
+      },
+      {
+        "case": "deleted-source-profile",
+        "livePidKilled": 8366,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 10.0
+        },
+        "again": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 16.419
+        },
+        "secondDeath": {
+          "alreadyExited": true,
+          "deviceConnected": true
+        },
+        "externalDeletion": null
+      },
+      {
+        "case": "deleted-source-file",
+        "livePidKilled": 8801,
+        "oldPidGone": true,
+        "verify": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 10.51
+        },
+        "again": {
+          "exit": 0,
+          "passed": true,
+          "seconds": 17.607
+        },
+        "secondDeath": {
+          "alreadyExited": true,
+          "deviceConnected": true
+        },
+        "externalDeletion": null
+      }
+    ],
+    "regression": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realSaveFailureKeepsDraftSelectionAndDiscardAcrossMainActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realMrsReadOnlyPreviewScrollRecreatesAndReturnsToSameMainPanel",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderDocumentInstrumentedTest#realCacheSaveReopensThroughMainPanelAndKeepsReferencedProfileSource",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#discardConfirmationSurvivesRecreationAndReturnsToSameProviderPanel",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#acceptedSaveCompletesAcrossBackgroundAndRecreationOnlyOnce",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#previewReadFinishesInBackgroundAndExplicitCloseRejectsOldRead",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#longFailedDraftKeepsSelectionAcrossBackgroundAndRecreationWithoutSavingBodyInBundle",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "screenshots": [
+      {
+        "path": "main_provider_failed_recreated.png",
+        "bytes": 506605,
+        "sha256": "82c597508beeccf3b2b5366989132d1ff4a6db013df74595951b0e46ba25b8ef"
+      },
+      {
+        "path": "main_provider_discard_recreated.png",
+        "bytes": 387260,
+        "sha256": "c155220b48de80ceb51c71365c3ae696cb1d7ba427c7ae0180774cce4470deb3"
+      },
+      {
+        "path": "main_provider_mrs_before_scroll.png",
+        "bytes": 215961,
+        "sha256": "d710deef2650c419df2e564e60cc69a21eff576ab974dd4ff792261b395f2a7f"
+      },
+      {
+        "path": "main_provider_mrs_scrolled.png",
+        "bytes": 209178,
+        "sha256": "fe29879d96dda5abb4ad32d9467c8162779ca0bb27ddab9fc0813c325ca4702f"
+      },
+      {
+        "path": "main_provider_mrs_recreated.png",
+        "bytes": 209178,
+        "sha256": "fe29879d96dda5abb4ad32d9467c8162779ca0bb27ddab9fc0813c325ca4702f"
+      },
+      {
+        "path": "main_provider_detail_reopened.png",
+        "bytes": 182853,
+        "sha256": "e3292f91406183259ef81aad656e556dbb72f761e37984834f73f0fc068ab181"
+      },
+      {
+        "path": "main_provider_saved_panel.png",
+        "bytes": 184433,
+        "sha256": "154979221ac46a70835776012dec2b8308179f61a8b61f4fef30685344b74a03"
+      },
+      {
+        "path": "main_provider_saved_reopened_return.png",
+        "bytes": 184433,
+        "sha256": "154979221ac46a70835776012dec2b8308179f61a8b61f4fef30685344b74a03"
+      },
+      {
+        "path": "provider_document_discard_recreated.png",
+        "bytes": 69811,
+        "sha256": "8106dac129c558640f8a7ba57af012c80d20dd60b680e8820a0ca52dc6dc26c9"
+      },
+      {
+        "path": "provider_document_saving_recreated.png",
+        "bytes": 38529,
+        "sha256": "bcbc56d84adc37d6790b736bf03af801cb41438e39da8e7c0d221a3b6b11e9a1"
+      },
+      {
+        "path": "provider_document_preview_recreated.png",
+        "bytes": 34512,
+        "sha256": "63b0beb56927ed27240faf7e35e7c42a672a60f10272dbecb8fc2f7eb292aa5f"
+      },
+      {
+        "path": "provider_document_failed_recreated.png",
+        "bytes": 366752,
+        "sha256": "7e377282c27048c948a6227ccea2374dc6f7d7c0691826165660fb4870c058b5"
+      },
+      {
+        "path": "provider_option_picker_false.png",
+        "bytes": 82290,
+        "sha256": "4fccc1dd92c4088d6aa9436b71e7283b5c16cc11554e5f9e106ff9f6c72ceddd"
+      },
+      {
+        "path": "provider_ip_picker_false.png",
+        "bytes": 42117,
+        "sha256": "265d96b878ed9926f04252e6145a6e63dc61d95e10657522a3dde4f25e205170"
+      },
+      {
+        "path": "provider_options_error_false.png",
+        "bytes": 151681,
+        "sha256": "fa31f0272984e1255156e3889560d689b7f6b3adf846f4304ee7b0815aa1d0a5"
+      },
+      {
+        "path": "provider_option_picker_true.png",
+        "bytes": 82672,
+        "sha256": "72af6a60eb1cd7ce0604ec5245a0cb71f163359c70510d0d2a384996c78c285e"
+      },
+      {
+        "path": "provider_ip_picker_true.png",
+        "bytes": 42282,
+        "sha256": "d695c02c62291534f244a17703044c150eb558654962e7ac95d6ceadfb2266e2"
+      },
+      {
+        "path": "provider_options_error_true.png",
+        "bytes": 151658,
+        "sha256": "a9b6b466b5c94e01cd0f73d241ed6822fd37741eaafcc1ef00204b3989021d68"
+      },
+      {
+        "path": "provider_filter_members.png",
+        "bytes": 86256,
+        "sha256": "404b915d44bc62f45eed8869022007df55a30d3e6378145efaf7fe83ccf81fc0"
+      },
+      {
+        "path": "provider_reference_missing.png",
+        "bytes": 53373,
+        "sha256": "707c2a47b7fef012fa5065a0e7283eb148f8ec0bc0a7b685ba692dcced0d6b84"
+      },
+      {
+        "path": "provider_reference_bound.png",
+        "bytes": 37931,
+        "sha256": "306b0ceec5f441689ff89b572bb5e18336fcd1cbf58c94936966a263a7827c32"
+      },
+      {
+        "path": "provider_quick_yaml_error.png",
+        "bytes": 135506,
+        "sha256": "f47ac0ace703f64258187938bddd93fcc5805d1b56f9dbea61c4ade1e013e403"
+      }
+    ],
+    "visualReview": {
+      "reviewed": true,
+      "imageCount": 22,
+      "contactSheets": 8,
+      "result": "SCOPED_REVIEW",
+      "observations": [
+        "正文失败/放弃确认、MRS首屏/滚动/重建、保存返回、选项/IP子页、引用缺失/绑定及快捷YAML均已目视",
+        "选项错误页顶部提示已随滚动离开视口，不作为错误定位视觉完整验收",
+        "过滤成员截图为遮罩过渡帧，保存中截图亦有过渡几何；不作稳定页面或连续动效等价基线"
+      ],
+      "fullFlutterParity": false
+    }
+  },
+  "preservation": {
+    "formalProfiles": 2,
+    "coldWindow": {
+      "cases": 9,
+      "passed": true,
+      "preserved": true,
+      "devicePreserved": true
+    },
+    "regressionProfilesAndDeviceEqual": true,
+    "sourceHashFiles": 573,
+    "sourceHashMatch": true,
+    "formalBodies": "SHA-size-mtime、Room全部行、脚本、偏好值与选择保持；原1.yaml、Flutter包和设备设置保持",
+    "cleanup": "每场清除自有临时配置/缓存和正文密文主文件/.bak/.new，结束STOPPED且无服务",
+    "deviceCleanup": {
+      "path": "/data/local/tmp/kclash-provider-diag-20261107.xml",
+      "ownedDiagnosticFile": true,
+      "sha256": "b4350d13db3fe6719820ac377d534cda7fac974b4d129a476cfd2925797829f5",
+      "removed": true,
+      "fixtureMarkerAndCipherAbsent": true,
+      "servicesAbsent": true
+    }
+  },
+  "earlierRuns": [
+    {
+      "run": "final4",
+      "result": "前7场通过；源Profile删除首次恢复通过、二次恢复后的切回正式配置抛引用缺失；KUI-010修复，recovery5精确恢复原final4正式快照"
+    },
+    {
+      "run": "switch-red",
+      "result": "旧实现4/4失败；修复后首次整类116/117，取消对象身份断言改为类型/消息及实际回滚"
+    },
+    {
+      "run": "same-id-red",
+      "result": "同ID预检触发补偿的风险1/1失败；前移只读预检修复"
+    },
+    {
+      "run": "build1",
+      "result": "31项中5失败；调度与读取失败窗口保护修复后31/31"
+    },
+    {
+      "run": "final1",
+      "result": "draft恢复功能断言通过，质量缓存ip_quality_cache_v1变化导致保护失败；recovery1精确收尾，未回写旧偏好"
+    },
+    {
+      "run": "final2",
+      "result": "draft/failure/before通过，after准备未到精确门闩；recovery2收尾"
+    },
+    {
+      "run": "diagnostic-after",
+      "result": "提交门闩0次，安全错误不足以归因；recovery3收尾，增加保存前严格重绑"
+    },
+    {
+      "run": "rebound-after",
+      "result": "after独立两次冷恢复及保护通过，不与最终批次累计"
+    },
+    {
+      "run": "final3",
+      "result": "2通过，before显式重试后的关闭断言提前失败；recovery4证明缓存已提交并精确收尾，修正等待本次意图与最终关闭"
+    }
+  ],
+  "notVerified": [
+    "管理窗口与扩展页剩余冷恢复/保存中断/外部删除",
+    "Provider运行态死亡窗口与MRS只读冷恢复、全部资源类型",
+    "完整Flutter逐页视觉及全应用连续动效",
+    "第6项原长窗口保护异常及前组未知偏好变化；本次ip_quality_cache_v1归因不追认旧异常",
+    "网络长期稳定性、蜂窝、其他系统入口与低API",
+    "正式签名Release运行、远端CI和发布"
+  ],
+  "next": "管理窗口和扩展页剩余恢复边界；随后统一视觉，回补原异常与系统条件，再做效果/性能/发布；玻璃默认关闭。",
+  "artifacts": {
+    "root": "../acceptance-artifacts/provider-document-cold-20261107",
+    "note": "原始日志/截图保留本机，不随源码上传；不同批次不累计。",
+    "files": {
+      "build11/build.log": "8df1690058b0bb7d539baa7971044973b3eeb851166eca09ddc7cda820675a4c",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ApplicationSettingsBackupTest.xml": "9deb2ed22709f89ffbd9de32ef0b7a7552ffde5f115f78922cc1c450dd40a217",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.CustomProfileImportTest.xml": "6c7c21ad4bb7bf9c1224406606b570093801054689f46e8ae7b5ba900ace59aa",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.CustomRuleDraftTest.xml": "000add171fd448e350a422d99179e8c42435aec77d0c3431d5dbcb2c8abf9f2c",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.DeepLinkImportTest.xml": "c464975bea8a0664ffb52d8cd2f9ccdfd5eef1f1193fbc5d5bddb7329dfdf2f7",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.FilterPresetsTest.xml": "bbb257ed49a21c151ccb3714b2251727107c47c31027bd9aea67b7ba2f1b5036",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.HttpRequestPolicyTest.xml": "84d298c107534f8f8b27c7bd7df37a01dc4f7649339bd72840d2822036159956",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.IconRecommendationsTest.xml": "cce8db6fe795b1c5bf85391d78b1a8b27736d7291532ba867ed9c73617db8ff9",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.IconSetCodecTest.xml": "83cc27ca065e24e7221232adafabb67c4343fd5f0b94a397995b53b43ebf04e7",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.IpInformationRepositoryTest.xml": "be4cc61f3bb2103509b92178ef3d3d3a66fa10e06cffcec58be93b37df47700c",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.IpInformationTest.xml": "aa694d0e77cd7d898870455569510a0dc0d3a4c21548e073b19d81759dea7952",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.IpQualityCacheTest.xml": "a952b48e05b42b81a7c04cdbe059080d30e5ac9292a8417cb30c80b245478389",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.LocalProfileFileWriteTest.xml": "60b53e636cb21deb4224401cb19bb143c7badf7a0661a2a3525eb40b0133faee",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.LocalProxiesTest.xml": "a674465cf8d5a8362474b9dd06815cdd2cccb6fdf4332cc4f951f5916544a94b",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.LocalProxyAdditionTest.xml": "2cd131351668a152a1ee96b00060420cba69bab934cd8ca149712de778a824f3",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.LocalProxyLinkEditTest.xml": "6973edebc5fb97d47b2e1f4602cb107ddd371bb2019fdb56e62dacf9ab65867b",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.OnDemandSsidTrackerTest.xml": "dd53b4f7bac246f86d62731525f531ec0da083ecf5d901451ad10469774fa787",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileContentDecoderTest.xml": "d88148e512aad9cc8e08c63245e28015c518571e00f57d15e557c7cf1b1aa61a",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileDialerEditorTest.xml": "072ac6d793b8c5a975d33618c9ee348bdef626873fb29737f50370cc3fc05160",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileDocumentTest.xml": "377ab23edec11234b08ece0f2a5d0ed49cce49655f630be85d354fcc113ed6e3",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileExportTest.xml": "2850a97937c862b3f215c9df23ff00d04f612d8262c4338964f368f11a97f886",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileMorePatchTest.xml": "65fc6f45ff64707a6716a410f0c25a6db71015110288a04637fb5ed54056db7c",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileProvidersEditorTest.xml": "a2e458c3d8d7a9b1706f3a4a22a423e3b32ff7311281c64ccdefb6b1bf05f7db",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileProxiesEditorTest.xml": "6a9a6749be5a59cc65679085f44f773bc981bd857d8d74a1adf919e6f8f90a92",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileProxyGroupsEditorTest.xml": "394d0644b07a32cac35902e289b3ca78a1373a0e973ee7c7c9e278ce0df1cc00",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileProxyResourcesTest.xml": "7ba6427bb5dbc57a1147eacd5c77c2b6e946061bd5075e5e38d244d694280536",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileRulesEditorTest.xml": "d934d7e526a90735e20d394e567286370d5ea9788bad63ed85a3eefae8767701",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileSelectionTest.xml": "276ecfec199ac99643b5b9a1f07989d85ef9dc759e997aeafb0b2744deee9084",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProfileTest.xml": "09d309d164b9bdfea7dcb36c756844b86a5ed10f7eb99f4aafa6b022aba8ed19",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProviderEditingTest.xml": "de306da9883cf33a1be7ef5c466af5057bf832a4d977ea54492fa87d8ae23825",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProxyGroupDraftsTest.xml": "5fe3840b7a6d646165fc4992577fa93601267c183c17f98d5f8565800bc6b64d",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ProxyGroupIssuesTest.xml": "d01857991a911b01584a9725ab7f65b718f5b1ee8cb30688b6ab44b5cdcf4a6b",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.RuleResourcesTest.xml": "05f7380e6a5fae27a0ea5d06d730ee7be53adb27233222ba37d25499d76cf0ed",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ScriptImportTest.xml": "3d239cb1b580eef6d72a0004ef46bf0f4ff240dc07ccf124c1ec7933262bcc6f",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.ServiceExitRepositoryTest.xml": "ea9be47963fba7b437815e13d1b682fd681a77845c6245283410b909d6c26be3",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.SubscriptionAutoUpdateTest.xml": "f51ca83f7bd8b18eee63dce9b7a78b90cc7bd69dd3277c54294c681d44ae2bad",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.SubscriptionClientTest.xml": "6be44202d512f41a0d42d68f22210586c1daf1d3759d3e33a104ed848dbecd27",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.data.WebDavClientTest.xml": "251b28858f481983471ef3334781ffc94a1aa948584c8d8a399efb2f24719e2e",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.AccessControlViewModelTest.xml": "b802a58e5b3b91443d80020e79f24812d7e3ddd4cdf55e45524f0e94d666876a",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.AppMenuMotionTest.xml": "7dec4a2344fd46a3b848bd62aad8ab20638074202c590c9d609770e3608d53fa",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.AppMenuPositionerTest.xml": "0ae0478222d040abcc777254e9e774a8b570026cdb09a34a8012a23ebb0fc70d",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.AppSurfacePhysicsTest.xml": "25c884d7ef23f819e1e7004cdb970ee6511256f806d588497003dc565fd3bce6",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ConnectionDetailFormattingTest.xml": "548bea5e6ab6af767296ac457064c0b877e9b676f04dc6884efac32aa6a6c03e",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest.xml": "9cd935c3070568783264304a1b7cc01782ab47aeffd95ea8eb89d8b2d4eab264",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.CustomProfileSummaryTest.xml": "00c1bc3fbedc62fe83953e5d93a9a3dd61d3c70da253c86d58ac41aa6a439ed0",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.DashboardDragTest.xml": "9c1654c293073b28af2cbcb167dacfee2624f4bf91cc1d5ad040245c883a21e8",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.DashboardLayoutTest.xml": "a5c5b50e87bc50d9517d2cbab201e26c3567d94509afad75382e4f4d64aabe4c",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.DashboardTelemetryTest.xml": "547beae26a7617cd95f4aff48dfcc1bf39363c069679cb54c7885f49abe0a29c",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.EditorSaveableStateTest.xml": "db9d33ea67321a309ff45594344e15c53f83de83f4b30d1771d57bc1ffbddac8",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.GlobalRulesControllerTest.xml": "24cb7b5acb87d3f427b24c2815b8a53b9473f6274efe159ef4adee3fc4028bfc",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.IntranetIpViewModelTest.xml": "5dc715a44dbc67ad619a9872b3e9184cd983f11b755198b21c071b31b624a783",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.LocalProxyDraftRecoveryTest.xml": "d9313f1228016c1f4cb9cade2829102235c5406063eb2afdc93c4e20fef132ec",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.LocalProxyInteractionTest.xml": "ff42cc966745a2225c2116799b8117a3b856e216dc73ede25fcd6cd4e1eaba15",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.MainPageScaffoldTest.xml": "408a2da579e42741639eedc3d24166a3447599a25f575e7e5c86a43ef57b6d46",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.MainViewModelTelemetryTest.xml": "487fe38524c901059d62203d0cc97460863636b2cc76352a68638720162e8282",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.MainViewModelTest.xml": "ad00a0c695dbf286de834e249cb48b579cf5ce37b28cb292adf3999a758f847c",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.MemoryViewModelTest.xml": "538b0e22453310b3edd5df6cdd36dbf1c0b8715065ae3bd09d4ed9fcc38dd2a0",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.OutboundIpViewModelTest.xml": "e7df3e308d46c403952847bf38db85576bbb28c81f15caed71e5ba78a2495817",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProfileEmptyIllustrationTest.xml": "ca890043fe1720d141dcd3e6ac4109795281c8650ca32be59373a2586160c887",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProfileExtensionControllerTest.xml": "ff997db6a63db455bdecf5c1d338a1fcbd2032da624292aa9ec98a7cda18baa7",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProfileFileImportControllerTest.xml": "09f1418f8ecff24db8c8e0cb428a4bf10a5f74d7d4919fdd412778af07cf4f60",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProfileMoreFieldsTest.xml": "6b384baf4b1c9ce9055f6fd55b055d70c4195b97bbece65d179131b9fbf84446",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProfileSharingViewModelTest.xml": "95d8f2b396b5de83618fc1fc8ed2526e592af9c7a7e7fe5bdceeb1629dfaf406",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProfileStatisticsViewModelTest.xml": "31c197b4e2bee581c4d8dac96102868262036afa7b975793ca97d1379c8a3211",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProfileUrlImportTest.xml": "9ce652c592f2b841fa04a02278f4778f3c54258b2414fad72b3828f9e971e880",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProfilesViewModelTest.xml": "8dcb7dfcddd6239c99b5e0c55bb4e756397699e12d9de24c41373b97b8f3ee8f",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProviderDocumentRecoveryTest.xml": "18e85a6039283e136e4f789bf787454db62d300a355a62245b5fccd04e7fd9c8",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ProxyGroupsViewModelTest.xml": "8e44609897b51df4316fc9ce74b3476f64e2a1eea53ae45314d6b7c87f644d3a",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ResourceUrlImportControllerTest.xml": "d7f4feebca5ffc8003912da77ac6870a35662ab56f0fad7a5c158dba332def87",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.RuntimeConfigPreviewViewModelTest.xml": "697d7a7f7718d0cd1f0fdb94505aee98010b310f2827b8631a7d7f5cfddc9c51",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ScriptsViewModelTest.xml": "d992ab4c25e515016491edeaa49a60f9ef1bf57854e6e4bc66f74f0deabd6ce1",
+      "build11/jvm/app/TEST-com.lonnnnnng.flclash.ui.ServiceStatusViewModelTest.xml": "c621c0172784ee8143cccac27a9fdfe54958ce4885b02f9da6f577752688fa17",
+      "build11/jvm/common/TEST-com.lonnnnnng.flclash.common.BroadcastLeaseTest.xml": "606a80b1a6aae9fd37f857bd57c35158cbd03204bf1a6ab611dcfb455326611f",
+      "build11/jvm/common/TEST-com.lonnnnnng.flclash.common.EnumsTest.xml": "cc7639d2e5dc4405b1cadfeed107c3a8e6a6932db6920cb579ebd3776f592788",
+      "build11/jvm/common/TEST-com.lonnnnnng.flclash.common.PendingCallbackTest.xml": "8651a94e8dc5490568e19a91afc3c6fbd90156fbe655774ef7cff1d689feebb5",
+      "build11/jvm/common/TEST-com.lonnnnnng.flclash.common.RunIntentArbiterTest.xml": "226b0d451e7c9c8a6d24717b59e3fc4918de0858302c6ee924fefc69f81bc93e",
+      "build11/jvm/core/TEST-com.lonnnnnng.flclash.core.CoreBridgeParsingTest.xml": "3626e388ca5f065312907caf82e3ff64b882c5f8c8dba5dcbb44f55a87bc43dc",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml": "baca3cb2df9f16a3feaea6cc9a4a2912cde78a0fd9eb54b11e47864f6ebd0dd5",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.DefaultVpnOptionsProviderTest.xml": "b22d0f2979459dd16a96b43fd797ac287b232d965bdacedeae82a123b9763661",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.GeneralSettingsTest.xml": "e184033d776972c37a4201b1a14bad715b4743a563a5e9969f24c814d25de84b",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.GeoResourceSettingsTest.xml": "10c50371e25f5f157191f1f239ed88ab12b48b7a133d17f52102e3279d89fd0a",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.GlobalDnsSettingsTest.xml": "b2df98ce07b737454c909ad0a9009ca3aa93b583e8b768d743764103529b04a0",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.NetworkSettingsTest.xml": "0f8e29750b9ef32123ae9e9328961629016aece5f40c754b987969256d125c62",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.OnDemandSettingsTest.xml": "12a514efa647ee89c46beb945005a54599d4588c252454f888dc67419cae149d",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.ProfileDnsBaselineTest.xml": "bb86ca43af5375d73c7cd1ba78f610a64acf5a7705e17fb0decb10e511b130bb",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.ProfileExtensionTest.xml": "18abb4ba733c2f9bef4d33315f28f19e57dadd744265d6376f4737a3aeffe158",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.ProfileMoreOverridesTest.xml": "1e4ac798ff608931857d5e2754868d283a73ab698f873c965cc0a25fa43177e7",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.ProfileProviderOverridesTest.xml": "4087ef69b9cdaa5b14a1a8227953e8ad10fc5c57e06dbd461e76251c0ed08da7",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.ProfileScriptTest.xml": "dcbd52dc09d1c71559feb20a1cd028db745b9a732dacdd10a75de57606386311",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.ProfileStatisticsTest.xml": "54d1f17f06ae92fa8465444d30380af317e80da24a03bdc96c43c9e944415ea7",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.RuntimeDiagnosticsTest.xml": "e6ceb4515e3b69551814b15313f8de6003d2fb73152415dc29f807de86f3e304",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.ServiceConfigTest.xml": "6d20f68bbf0fda751d2d02d24b7ed98f28db4e34c62fb46c01b456e29ff6ba1b",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.SocketProtectionMonitorTest.xml": "92d8bed2bd187d16dda9c843123e990e2293821a37c5cfd7ad20794cd32c5095",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.models.RouteAddressTest.xml": "6c3f35749151aee20c66cd9134915961078cdcac6445ecac1bccc0e8e2a926a9",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.models.ToCIDRTest.xml": "cd0d369adac78ea95abedc2b65be33835b4b128503eb97cd61dfc981f418fb33",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.models.TrafficTest.xml": "c0a98ac29673e685fb49369049d848c041479992c75db3067aa04ca4b3e69e26",
+      "build11/jvm/service/TEST-com.lonnnnnng.flclash.service.models.TunOptionsTest.xml": "46e164fd0e9e2873edec20fd06a9b069a3e75b74ba8a6ae8fe2d6353dfdc7798",
+      "build11/lint-results-debug.xml": "98d4661bd12cae13bc1cf1959872bf9c879ee7dc27ddaad533b41f3fe247f95e",
+      "build11/lint-results-release.xml": "cf82f18b9a3b8552dad05c490b4454f52c76fef255d26a98ea9fe62af1a58961",
+      "build11/provider-draft-dex.txt": "940b8ae2712d03f474913a5e8780fca5e6b235ffceb8e9d867890360ccebd17d",
+      "build11/release-check.json": "21080aa9bff46d6eb3d14581514480d6f9aa075f80dbdb27c38e932685d8a4ff",
+      "build11/source-hashes.json": "6a5bb4a7660cb6cc5dd7b72b768cf013a7c8419b8456fd25ac8515de16d7dfcc",
+      "build11/summary.json": "0746da65f6737713960a486f68c18ecda9d2e6d850cb3e57e207882db7b4d318",
+      "final5/after-again.json": "5429a1d05bae85e418fc29288051c57d2ab3e933d3c330bb4083318c41b7f482",
+      "final5/after-again.log": "f75297308f5727816cae9a0daa0f93ee4f9a6405d94b359fac704a10b7612cae",
+      "final5/after-prepare.log": "90174831bc5f1da4a408b2a17e2c4bd251919126ca27053ff6178a33c0978807",
+      "final5/after-process.json": "47069a4d51f187e8374b92479693c3f8a2ecde99515962304282b505190d5eb5",
+      "final5/after-verify.json": "f568429c47e95f58506088544261fa19dbe9cf4d5efa1a143ef0e056fdb122e3",
+      "final5/after-verify.log": "a47dc70cb134559d7525024be127882dff668db1c4a0ff852de16e7d558c1f2c",
+      "final5/before-prepare.log": "530eae2a6fa2cb1e08d02a19ae9de6ac02f557bc09083233b9719902c4895626",
+      "final5/before-process.json": "9a7fd901ad23b5f4b36be2f8e77c25d0e24217a5d05f31b52127cc0f3c9cd600",
+      "final5/before-verify.json": "3dc16c4a10d63abde184c40e5989447d56bee15a06658b029bbe8b0c2c103747",
+      "final5/before-verify.log": "5887d11ce8817d02ed0a0c3ed075cd9bfb2102a2a35e6b3b771ecfc548519e8e",
+      "final5/conflict-prepare.log": "69f0d85c2df7a6d23696d6d11e732626b2f791b8ed3c5365c865dd028e373f6d",
+      "final5/conflict-process.json": "c9e69afd11bdc4661f0d800f30b2af66144b29d64a49732014e4001b3243e55d",
+      "final5/conflict-verify.json": "3f32c4cc37bd5e9a5569c0dd28fca240390a3d01f9e4a9b7867e2447f98f231c",
+      "final5/conflict-verify.log": "2b46ab036d298ad22b5c429ef96be68b766c97a8e642fd27698b9807e4b38310",
+      "final5/deleted-profile-prepare.log": "a7fc04d0f6d17e17821d4c27ad50dc85eb86e981483428286630eb7a9257ca0f",
+      "final5/deleted-profile-process.json": "1ee530d78a854170cb1435d69854666dfc7d90619c25e629497ad1ef5f31d2a7",
+      "final5/deleted-profile-verify.json": "55c26d639976cea6de66a25f5256000f508cf9e100c266cc4d4073be81a637e4",
+      "final5/deleted-profile-verify.log": "41158eaba397789c6873ed1266842339729facf5becf9cc436761a88c42b8946",
+      "final5/deleted-provider-cache-prepare.log": "7333c109099bfcebb8c2e7fb724e9c4d8a48ca6d85b1b4dcc557722ed6dbecca",
+      "final5/deleted-provider-cache-process.json": "1cf56114a969b6291e48c7fc724f5b869890aa5e7b4ec5fb460789a291098cde",
+      "final5/deleted-provider-cache-verify.json": "1f6b12423092580af603a391d54ab31019e3b192b9976c921d1930d047079c7c",
+      "final5/deleted-provider-cache-verify.log": "4a74d42020667817992ca4a15edef7d8375da1b2512c52a6cc44a918873b10aa",
+      "final5/deleted-source-file-again.json": "fdd07892011197900a389dcc11eaac97fa3a6d29051d201dc2cae33a00b077bf",
+      "final5/deleted-source-file-again.log": "a6889952f31ef315e1bbec91bfe5cdf64428cc370ffc47727b2f67a0f25c5b2d",
+      "final5/deleted-source-file-prepare.log": "22d9de0a9c69bf4478f1ad1468cf6fb1d326dd20b6e78927476075038059e394",
+      "final5/deleted-source-file-process.json": "deabb8b775fe246c294d2d21feeb06b4945209bc5730f6890474d941c3a98c0e",
+      "final5/deleted-source-file-verify.json": "1341e2e9b750a72bfc8d78a57c7e557b067f6c869c202743fc73f98b2474fdfa",
+      "final5/deleted-source-file-verify.log": "6844933ad1338d6d48bdede3784a5806a3c336a9ece98685418e080cf9e26596",
+      "final5/deleted-source-profile-again.json": "d6e5ea7e725fe0d5635616408e2b5f36cd2d30711c9833ef0e340c522de599df",
+      "final5/deleted-source-profile-again.log": "a51777208d138b6cd012b0ab61397d73d9f7f00897285a9ce930a82127cc6caa",
+      "final5/deleted-source-profile-prepare.log": "20feb33c1b5aa9a1e8759a6b42221e4fd36d45881dfc2617bdc488ebf8dfb6aa",
+      "final5/deleted-source-profile-process.json": "ec8ac2d15dbb1d0f4c23a972b719a44e801ff8f4b214c64ecb21c1e6626f634d",
+      "final5/deleted-source-profile-verify.json": "fad2313efd65deac8c11cd4aad6295530c7dcf8e6532024f64492839276de05b",
+      "final5/deleted-source-profile-verify.log": "a0264d6141a867733cd7d205c32348f2a5e85728413eb8e889ef8d95c5f58cf6",
+      "final5/device-after.json": "a1ec46bc0562318c2de3cd8f8fe05d8ba37df0d6248f579b1ea5cb7308d56e52",
+      "final5/device-before.json": "a1ec46bc0562318c2de3cd8f8fe05d8ba37df0d6248f579b1ea5cb7308d56e52",
+      "final5/draft-prepare.log": "e3fa13bfd6cb6cc2c27a5d8d4bc6025139232179ac4d906a9b47803636714dc3",
+      "final5/draft-process.json": "478be7adcae76e552df3f7bf724cf279349d76b5948f75523c37457360d2c089",
+      "final5/draft-verify.json": "0d097866d211e46e939935dd9a0a05738fc330ccf8e4ac75e38b9dd2fd54947c",
+      "final5/draft-verify.log": "25fa4d07d7cb45d75f96a01768ddffb4c0df57d0814ebb667679abaef72ef929",
+      "final5/failure-prepare.log": "c02088fe7e7cdeffbef8fa6c8b4e19ece96ef3e95c75935271b9f865e5d5aa9e",
+      "final5/failure-process.json": "b5a65ac0aac542601e5174853bc2f068c4e6e6cfade3f890321926ea413dd9e5",
+      "final5/failure-verify.json": "17b2d2e1ff761fd814cd16130b61e6ac29ee5461f6eea52de8ccd3da8f9eb95b",
+      "final5/failure-verify.log": "fd940e3f7a98be418fcec17df6d22cb8a5c0e40024f82a92037bc4d822967ee3",
+      "final5/installation.json": "05143788d84f3b6d277e1af3da558ea392602da33964837c87bb8383fcce5864",
+      "final5/profiles-after-install.json": "242f4b73fce9ab8bb20ebf1deccb4b98bb4a0630b94284e46c1fdeab157cc8b0",
+      "final5/profiles-after-install.log": "4c7cfab63bb1fcbb2faf02e89cd1527d999065489e195901f5119316f84b6357",
+      "final5/profiles-after.json": "242f4b73fce9ab8bb20ebf1deccb4b98bb4a0630b94284e46c1fdeab157cc8b0",
+      "final5/profiles-after.log": "c5aee4dfecf2194bddafc0772200a9507a9d243cfee9c8143a9195c539bef3e0",
+      "final5/profiles-before.json": "242f4b73fce9ab8bb20ebf1deccb4b98bb4a0630b94284e46c1fdeab157cc8b0",
+      "final5/profiles-before.log": "8159522d7d67ea79ebba8a9a857c148d82276022df9093850f27bee081511c31",
+      "final5/results.json": "fbb0159a969ef2c08a5f0564132157e4f4f661839b0afe69202d90dc0d945a71",
+      "final5/summary.json": "791241ec9155dc5975247a77ce77f9e6e017dc63cce3ed1d397c0418d90aa7ec",
+      "regression1/com.lonnnnnng.flclash-install.log": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7",
+      "regression1/com.lonnnnnng.flclash.test-install.log": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7",
+      "regression1/contact-sheet-index.json": "21c4137c5b1e562f8603637566a82d94af9495c306eb099b4dae108e9c923c3e",
+      "regression1/device-after.json": "0721f0105560b85e1ac3856be08dbd945587fc41dc0f300ae835951334e45dbf",
+      "regression1/device-before.json": "0721f0105560b85e1ac3856be08dbd945587fc41dc0f300ae835951334e45dbf",
+      "regression1/install-hashes.json": "e5d456197fe8fa65bb33833ae20f37861206181286806f568125e61c3115d3a7",
+      "regression1/instrumentation-live.log": "454edd5a09951aa24468f6bd9a298876efbb32b103a947917cd4d214f61ca732",
+      "regression1/instrumentation-run1.log": "454edd5a09951aa24468f6bd9a298876efbb32b103a947917cd4d214f61ca732",
+      "regression1/main_provider_detail_reopened.png": "e3292f91406183259ef81aad656e556dbb72f761e37984834f73f0fc068ab181",
+      "regression1/main_provider_discard_recreated.png": "c155220b48de80ceb51c71365c3ae696cb1d7ba427c7ae0180774cce4470deb3",
+      "regression1/main_provider_failed_recreated.png": "82c597508beeccf3b2b5366989132d1ff4a6db013df74595951b0e46ba25b8ef",
+      "regression1/main_provider_mrs_before_scroll.png": "d710deef2650c419df2e564e60cc69a21eff576ab974dd4ff792261b395f2a7f",
+      "regression1/main_provider_mrs_recreated.png": "fe29879d96dda5abb4ad32d9467c8162779ca0bb27ddab9fc0813c325ca4702f",
+      "regression1/main_provider_mrs_scrolled.png": "fe29879d96dda5abb4ad32d9467c8162779ca0bb27ddab9fc0813c325ca4702f",
+      "regression1/main_provider_saved_panel.png": "154979221ac46a70835776012dec2b8308179f61a8b61f4fef30685344b74a03",
+      "regression1/main_provider_saved_reopened_return.png": "154979221ac46a70835776012dec2b8308179f61a8b61f4fef30685344b74a03",
+      "regression1/profiles-after.json": "242f4b73fce9ab8bb20ebf1deccb4b98bb4a0630b94284e46c1fdeab157cc8b0",
+      "regression1/profiles-after.log": "509aa40cc8c25b6003a255d85d2f05198e0efa2a6513dbbca8e04ef3db8d7c43",
+      "regression1/profiles-before.json": "242f4b73fce9ab8bb20ebf1deccb4b98bb4a0630b94284e46c1fdeab157cc8b0",
+      "regression1/profiles-before.log": "9f5aedc59671f86611808a09b4401a28e79dc74200ac9e32957fbd70b47523ea",
+      "regression1/profiles-preinstall.json": "242f4b73fce9ab8bb20ebf1deccb4b98bb4a0630b94284e46c1fdeab157cc8b0",
+      "regression1/profiles-preinstall.log": "9f5aedc59671f86611808a09b4401a28e79dc74200ac9e32957fbd70b47523ea",
+      "regression1/provider_document_discard_recreated.png": "8106dac129c558640f8a7ba57af012c80d20dd60b680e8820a0ca52dc6dc26c9",
+      "regression1/provider_document_failed_recreated.png": "7e377282c27048c948a6227ccea2374dc6f7d7c0691826165660fb4870c058b5",
+      "regression1/provider_document_preview_recreated.png": "63b0beb56927ed27240faf7e35e7c42a672a60f10272dbecb8fc2f7eb292aa5f",
+      "regression1/provider_document_saving_recreated.png": "bcbc56d84adc37d6790b736bf03af801cb41438e39da8e7c0d221a3b6b11e9a1",
+      "regression1/provider_filter_members.png": "404b915d44bc62f45eed8869022007df55a30d3e6378145efaf7fe83ccf81fc0",
+      "regression1/provider_ip_picker_false.png": "265d96b878ed9926f04252e6145a6e63dc61d95e10657522a3dde4f25e205170",
+      "regression1/provider_ip_picker_true.png": "d695c02c62291534f244a17703044c150eb558654962e7ac95d6ceadfb2266e2",
+      "regression1/provider_option_picker_false.png": "4fccc1dd92c4088d6aa9436b71e7283b5c16cc11554e5f9e106ff9f6c72ceddd",
+      "regression1/provider_option_picker_true.png": "72af6a60eb1cd7ce0604ec5245a0cb71f163359c70510d0d2a384996c78c285e",
+      "regression1/provider_options_error_false.png": "fa31f0272984e1255156e3889560d689b7f6b3adf846f4304ee7b0815aa1d0a5",
+      "regression1/provider_options_error_true.png": "a9b6b466b5c94e01cd0f73d241ed6822fd37741eaafcc1ef00204b3989021d68",
+      "regression1/provider_quick_yaml_error.png": "f47ac0ace703f64258187938bddd93fcc5805d1b56f9dbea61c4ade1e013e403",
+      "regression1/provider_reference_bound.png": "306b0ceec5f441689ff89b572bb5e18336fcd1cbf58c94936966a263a7827c32",
+      "regression1/provider_reference_missing.png": "707c2a47b7fef012fa5065a0e7283eb148f8ec0bc0a7b685ba692dcced0d6b84",
+      "regression1/result-run1.json": "6c1ec2292cb5d2b85e40d2d6fa547743c642711128ed6f222095b42ee5538006",
+      "regression1/visual-review.json": "874cb65261e66f549a3920c9a3c097c34e229ccdc4590f3c1eb7f5e01f6a1d6a",
+      "recovery4/recovery.log": "8dc6f1463fd2baa126c2c6a40524e31f2d1afd7072f98ba8ea51cb50d482cffa",
+      "recovery4/result.json": "b520ee2697892b0db4c2c6b9f025966fa868010433226e1e3629f4aa39fb8f82",
+      "recovery5/fixture-marker.json": "0752524c7acdd172b6b03f6280fb1eca6d7969082173b1a04b7ff2598febd97c",
+      "recovery5/installation.json": "05143788d84f3b6d277e1af3da558ea392602da33964837c87bb8383fcce5864",
+      "recovery5/profiles-after-install.json": "876bfad0da350276042e8ee5412fe34dbc9f99ef6863bb9607f67b1d850f0656",
+      "recovery5/profiles-after-install.log": "49668fe7fa4856835cd066ea1b99aec319ec982214f26cd739d96536ef1e72cb",
+      "recovery5/profiles-after.json": "242f4b73fce9ab8bb20ebf1deccb4b98bb4a0630b94284e46c1fdeab157cc8b0",
+      "recovery5/profiles-after.log": "b9886a7f2b2aa2dd2d00ceee4b6c6f00e50cee8406bdf78ab8e80d275bcdb24a",
+      "recovery5/profiles-before-install.json": "876bfad0da350276042e8ee5412fe34dbc9f99ef6863bb9607f67b1d850f0656",
+      "recovery5/profiles-before-install.log": "3a98d8be6d3aa505d1197caeef4aa0b7ce5441cd829ff2a86e3948b6b8c0b45a",
+      "recovery5/recovery.log": "08c48c3d0cbd9f1bf6e4d2e83d4c8111daa93bd426e50923694c9570caa60c7c",
+      "recovery5/summary.json": "2668d2b101e6514a71b7b2ba0c57ee55c2c64c267688c2b23c80b449169a8cfb",
+      "switch-red/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml": "22a180ccadf1bbecabef6f9bdae18bc005a2b480a99515e32593ff97275968f4",
+      "switch-red/test.log": "81ea4d7062198212da676e7cc98328fb0edc4b05b92c8a74b1739a41cd48069b",
+      "switch-green/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml": "663f52d8731491a5b5936323306c2767de7728ad5a2120b6953260ddfc4dfe1d",
+      "switch-green/test.log": "d21223e80e28ba72eb9988e4dd4af0cf5b4d8520adf8578eb1fdd56280bfc7f5",
+      "same-id-red/TEST-com.lonnnnnng.flclash.service.CoreRuntimeManagerTest.xml": "e0e724a9dd65d5dc09677aa581e08b5446957c887f760fc311ff2e8b85754733",
+      "same-id-red/test.log": "0004abcec5ce3169599add6664a5ba87d262bf209fa13f86486ee452cbde4911"
+    }
+  }
+}

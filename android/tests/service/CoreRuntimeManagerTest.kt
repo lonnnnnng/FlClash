@@ -1252,6 +1252,149 @@ class CoreRuntimeManagerTest {
         assertEquals(7891, com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(File(home, "config.yaml").readText())).asJsonObject["mixed-port"].asInt)
     }
 
+    @Test fun brokenCurrentSourceCanSwitchToValidTargetWhileStoppedOrRunning() = runTest {
+        for (running in listOf(false, true)) {
+            val oldSource = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+            val nextSource = temporaryFolder.newFile().apply { writeText("mixed-port: 7891\n") }
+            val old = ActiveProfile(81, "原配置", oldSource.path, mapOf("Proxy" to "old-node"))
+            val next = ActiveProfile(82, "目标", nextSource.path, mapOf("Proxy" to "next-node"))
+            var selected: Long? = old.id
+            val selections = mutableListOf<Long?>()
+            val provider = object : ActiveProfileProvider {
+                override suspend fun activeProfile(): ActiveProfile? = when (selected) {
+                    old.id -> { oldSource.readText(); old }
+                    next.id -> next
+                    else -> null
+                }
+                override suspend fun activeProfileId() = selected
+                override suspend fun profileSelectedMap(id: Long) = if (id == old.id) old.selectedMap else next.selectedMap
+            }
+            val home = temporaryFolder.newFolder(); val bridge = FakeBridge(); val services = FakeServiceController()
+            val runtime = manager(old, home, bridge, services, profileProvider = provider)
+            if (running) runtime.startProxy().getOrThrow()
+            val since = runtime.runningSinceElapsedMillis.value
+            assertTrue(oldSource.delete())
+            runtime.selectProfile(next.id) { selections += it; selected = it }
+            assertEquals(listOf(next.id), selections)
+            assertEquals(next.id, selected); assertEquals(next.selectedMap, bridge.setupSelectedMap)
+            assertTrue(File(home, "config.yaml").readText().contains("7891"))
+            assertEquals(if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED, runtime.state.value)
+            assertEquals(since, runtime.runningSinceElapsedMillis.value)
+            assertEquals(running, services.started)
+            if (!running) { assertTrue(services.events.isEmpty()); assertFalse(bridge.listenerStarted) }
+            runtime.stop().getOrThrow()
+        }
+    }
+
+    @Test fun brokenCurrentSourceTargetFailureRestoresMetadataIdAndAppliedInput() = runTest {
+        for (running in listOf(false, true)) {
+            val oldSource = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+            val nextSource = temporaryFolder.newFile().apply { writeText("mixed-port: 7891\n") }
+            val old = ActiveProfile(83, "原配置", oldSource.path, mapOf("Proxy" to "old-node"))
+            val next = ActiveProfile(84, "目标", nextSource.path)
+            var selected: Long? = old.id
+            val selections = mutableListOf<Long?>()
+            val provider = object : ActiveProfileProvider {
+                override suspend fun activeProfile(): ActiveProfile? = when (selected) {
+                    old.id -> { oldSource.readText(); old }
+                    next.id -> next
+                    else -> null
+                }
+                override suspend fun activeProfileId() = selected
+                override suspend fun profileSelectedMap(id: Long) = old.selectedMap
+            }
+            val home = temporaryFolder.newFolder(); val bridge = FakeBridge(); val services = FakeServiceController()
+            val runtime = manager(old, home, bridge, services, profileProvider = provider)
+            if (running) runtime.startProxy().getOrThrow() else runtime.getProxyGroups().getOrThrow()
+            val bytes = File(home, "config.yaml").readBytes(); val since = runtime.runningSinceElapsedMillis.value
+            val events = services.events.toList()
+            assertTrue(oldSource.delete()); bridge.failNextValidation = true
+            assertTrue(runCatching { runtime.selectProfile(next.id) { selections += it; selected = it } }.isFailure)
+            assertEquals(listOf(next.id, old.id), selections); assertEquals(old.id, selected)
+            assertTrue(bytes.contentEquals(File(home, "config.yaml").readBytes()))
+            assertEquals(old.selectedMap, bridge.setupSelectedMap)
+            assertEquals(if (running) CoreRuntimeStatus.RUNNING else CoreRuntimeStatus.STOPPED, runtime.state.value)
+            assertEquals(since, runtime.runningSinceElapsedMillis.value); assertEquals(events, services.events)
+            runtime.stop().getOrThrow()
+        }
+    }
+
+    @Test fun brokenCurrentSourceDoubleSetupFailureStopsSessionAndKeepsOriginalId() = runTest {
+        val oldSource = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val nextSource = temporaryFolder.newFile().apply { writeText("mixed-port: 7891\n") }
+        val old = ActiveProfile(85, "原配置", oldSource.path, mapOf("Proxy" to "old-node"))
+        val next = ActiveProfile(86, "目标", nextSource.path)
+        var selected: Long? = old.id
+        val provider = object : ActiveProfileProvider {
+            override suspend fun activeProfile(): ActiveProfile? = when (selected) {
+                old.id -> { oldSource.readText(); old }
+                next.id -> next
+                else -> null
+            }
+            override suspend fun activeProfileId() = selected
+            override suspend fun profileSelectedMap(id: Long) = old.selectedMap
+        }
+        val bridge = FakeBridge(); val services = FakeServiceController(); val resume = FakeRuntimeResumeStore()
+        val runtime = CoreRuntimeManager(CoreRuntimePaths(temporaryFolder.newFolder()), provider, bridge, services,
+            DefaultVpnOptionsProvider(), resume, elapsedRealtimeMillis = { 0L })
+        runtime.startProxy().getOrThrow(); assertTrue(oldSource.delete()); bridge.failSetups = 2
+        assertTrue(runCatching { runtime.selectProfile(next.id) { selected = it } }.isFailure)
+        assertEquals(old.id, selected); assertEquals(CoreRuntimeStatus.FAILED, runtime.state.value)
+        assertFalse(services.started); assertFalse(bridge.listenerStarted)
+        assertFalse(resume.shouldResume()); assertNull(runtime.runningSinceElapsedMillis.value)
+        assertNull(runtime.vpnSettings.value.appliedEnabled)
+    }
+
+    @Test fun brokenCurrentSourceTargetCancellationRestoresOriginalSessionAndPropagates() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val old = ActiveProfile(87, "原配置", source.path, mapOf("Proxy" to "old-node"))
+        var selected: Long? = old.id
+        val cancelled = CancellationException("target cancelled")
+        val provider = object : ActiveProfileProvider {
+            override suspend fun activeProfile(): ActiveProfile? = when (selected) {
+                old.id -> { source.readText(); old }
+                88L -> throw cancelled
+                else -> null
+            }
+            override suspend fun activeProfileId() = selected
+            override suspend fun profileSelectedMap(id: Long) = old.selectedMap
+        }
+        val home = temporaryFolder.newFolder(); val bridge = FakeBridge(); val services = FakeServiceController()
+        val runtime = manager(old, home, bridge, services, profileProvider = provider)
+        runtime.startProxy().getOrThrow(); val bytes = File(home, "config.yaml").readBytes()
+        assertTrue(source.delete())
+        val result = runCatching { runtime.selectProfile(88) { selected = it } }
+        assertTrue(result.exceptionOrNull() is CancellationException)
+        assertEquals(cancelled.message, result.exceptionOrNull()?.message)
+        assertEquals(old.id, selected); assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value)
+        assertTrue(bytes.contentEquals(File(home, "config.yaml").readBytes()))
+        assertEquals(old.selectedMap, bridge.setupSelectedMap); assertTrue(services.started)
+        runtime.stop().getOrThrow()
+    }
+
+    @Test fun brokenCurrentSourceSameIdPreflightDoesNotReloadOrStopRunningSession() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val old = ActiveProfile(89, "原配置", source.path, mapOf("Proxy" to "old-node"))
+        val provider = object : ActiveProfileProvider {
+            override suspend fun activeProfile(): ActiveProfile { source.readText(); return old }
+            override suspend fun activeProfileId() = old.id
+            override suspend fun profileSelectedMap(id: Long) = old.selectedMap
+        }
+        val home = temporaryFolder.newFolder(); val bridge = FakeBridge(); val services = FakeServiceController()
+        val runtime = manager(old, home, bridge, services, profileProvider = provider)
+        runtime.startProxy().getOrThrow()
+        val calls = bridge.calls.toList(); val events = services.events.toList()
+        val bytes = File(home, "config.yaml").readBytes(); val since = runtime.runningSinceElapsedMillis.value
+        assertTrue(source.delete()); bridge.failSetups = 1
+        var selections = 0
+        assertTrue(runCatching { runtime.selectProfile(old.id) { selections++ } }.isFailure)
+        assertEquals(0, selections); assertEquals(calls, bridge.calls); assertEquals(events, services.events)
+        assertTrue(bytes.contentEquals(File(home, "config.yaml").readBytes()))
+        assertEquals(CoreRuntimeStatus.RUNNING, runtime.state.value); assertEquals(since, runtime.runningSinceElapsedMillis.value)
+        assertEquals(old.selectedMap, bridge.setupSelectedMap); assertTrue(services.started)
+        runtime.stop().getOrThrow()
+    }
+
     @Test fun hotSwitchRebuildsChangedVpnPortAndRestoresItOnServiceFailure() = runTest {
         val a = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
         val b = temporaryFolder.newFile().apply { writeText("mixed-port: 17890\n") }

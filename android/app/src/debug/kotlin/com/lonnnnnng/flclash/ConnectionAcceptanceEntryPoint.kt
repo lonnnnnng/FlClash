@@ -20,6 +20,7 @@ interface ConnectionAcceptanceEntryPoint {
     fun profileDraftStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
     @javax.inject.Named("script-picker") fun scriptPickerStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
     @javax.inject.Named("provider-picker") fun providerPickerStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
+    @javax.inject.Named("provider-document") fun providerDocumentStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
     @javax.inject.Named("local-proxy-draft") fun localProxyDraftStore(): com.lonnnnnng.flclash.data.ProfileDraftStore
     fun database(): KClashDatabase
     fun paths(): CoreRuntimePaths

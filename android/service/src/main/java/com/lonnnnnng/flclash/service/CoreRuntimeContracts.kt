@@ -68,6 +68,9 @@ interface ActiveProfileProvider {
 
     suspend fun activeProfileId(): Long? = activeProfile()?.id
 
+    // 作者 long：切走损坏配置仍需保留原节点选择用于失败回滚；持久仓库须只读元数据，不能先解析正文或外部引用。
+    suspend fun profileSelectedMap(id: Long): Map<String, String> = profileById(id)?.selectedMap.orEmpty()
+
     // 作者 long：后台更新资源只刷新实际引用者，不能因同名标签或未使用的Provider定义重载当前会话。
     suspend fun referencesProfile(profileId: Long, resourceId: Long): Boolean = false
 }

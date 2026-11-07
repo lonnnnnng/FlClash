@@ -565,12 +565,21 @@ class CoreRuntimeManager(
 
     private suspend fun applyProfileLocked(id: Long, select: suspend (Long?) -> Unit) {
         withContext(Dispatchers.IO) {
-            val previous = profileProvider.activeProfile()
-            if (previous?.id == id && loadedConfigKey == configKey(previous)) return@withContext
+            // 作者 long：旧引用或脚本损坏不能挡住切往有效配置；回滚只需原ID、节点选择和已应用字节，不应先重建旧投影。
+            val previousId = profileProvider.activeProfileId()
+            val previousSelectedMap = previousId?.let { profileProvider.profileSelectedMap(it) }.orEmpty()
+            if (previousId == id) {
+                // 作者 long：同配置预检尚未产生写入；源已损坏时直接反馈，不能触发补偿加载而扰动仍可用的旧会话。
+                val current = profileProvider.activeProfile()
+                if (current != null && loadedConfigKey == configKey(current)) return@withContext
+            }
             val previousContent = paths.configFile.takeIf { it.isFile }?.readBytes()
             val previousKey = loadedConfigKey
             val previousAutomaticKey = loadedAutomaticConfigKey
             val previousOptions = appliedVpnOptions
+            check(!mutableState.value.isRunning || previousId != null && previousContent != null && previousKey?.firstOrNull() == previousId) {
+                "原运行配置无法确认，请停止服务后切换"
+            }
             var servicesChanged = false
             try {
                 select(id)
@@ -592,13 +601,13 @@ class CoreRuntimeManager(
                 var restored = true
                 // 作者 long：加载失败必须恢复选择和已应用输入，不能让页面新配置与仍在服务的旧节点分裂。
                 withContext(kotlinx.coroutines.NonCancellable) {
-                    select(previous?.id)
+                    select(previousId)
                     loadedConfigKey = null
-                    if (previousContent != null && previousKey != null && previous != null) {
+                    if (previousContent != null && previousKey != null && previousId != null) {
                         try {
                             paths.configFile.writeBytes(previousContent)
                             bridge.setupConfig(
-                                previous.selectedMap,
+                                previousSelectedMap,
                                 skipCertVerify = !mutableGeneralSettings.value.checkCertificate,
                                 testTimeoutMs = mutableGeneralSettings.value.delayTestTimeout.toLong(),
                             )
@@ -1352,11 +1361,16 @@ class CoreRuntimeManager(
     }
 
     override suspend fun restoreProfileProvider(profileId: Long, name: String, recoveryKey: String, digest: String): ProfileProviderDocument {
+        return recoverProfileProviderDocument(profileId, name, recoveryKey, digest, null)
+    }
+
+    override suspend fun recoverProfileProviderDocument(profileId: Long, name: String, recoveryKey: String, digest: String,
+        intendedContent: String?): ProfileProviderDocument {
         transitionLock.withLock {
             check(profileProvider.activeProfile()?.id == profileId)
             ensureConfigLoaded()
         }
-        return super<ProfileStatisticsRuntime>.restoreProfileProvider(profileId, name, recoveryKey, digest)
+        return super<ProfileStatisticsRuntime>.recoverProfileProviderDocument(profileId, name, recoveryKey, digest, intendedContent)
     }
 
     override suspend fun saveProfileProvider(document: ProfileProviderDocument, content: String): Unit = withContext(Dispatchers.IO) {

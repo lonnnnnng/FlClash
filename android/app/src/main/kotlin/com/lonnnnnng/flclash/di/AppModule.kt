@@ -155,6 +155,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    @javax.inject.Named("provider-document")
+    fun provideProviderDocumentStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "provider-document.v1", "com.lonnnnnng.flclash.provider.document.v1")
+
+    @Provides
+    @Singleton
     @javax.inject.Named("local-proxy-draft")
     fun provideLocalProxyDraftStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
         com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "local-proxy-draft.v1", "com.lonnnnnng.flclash.local.proxy.draft.v1")

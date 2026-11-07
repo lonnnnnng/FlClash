@@ -1,6 +1,18 @@
 # Testing
 
-## 正式本地代理异常链路（2026-11-07，当前）
+## Provider正文独立密文与正式冷恢复（2026-11-07，当前）
+
+Provider正文独立加密草稿与正式冷恢复已验：正文/选区/失败/放弃确认跨进程保持；保存前中断等待显式重试、提交后恢复不重放；外部正文冲突、配置删除、引用源记录/文件删除保留草稿并阻止写入；派生缓存缺失由未变源安全重建。KUI-010失效引用配置无法切走已修，保留原ID/节点选择及已应用输入用于失败回滚。Redmi final5九场景首次恢复9/9、提交后及两类源删除再次恢复3/3，相邻回归10/10，22图完整校验并目视。802项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；App521/Service212本次重跑，Core38/Common31复用，build11共389任务60执行/329复用。Debug Lint0错误/67警告/10提示，Release0错误/66警告/9提示。安装回拉与源码匹配，正式两份配置/正文SHA-size-mtime/脚本/偏好值/选择、原1.yaml、Flutter包与设备设置保持，临时对象和密文清除，收尾无服务。
+
+本组为STOPPED下真实MainActivity/Hilt/Room/Bridge、受控force-stop与授权原1.yaml的自有副本；不推广运行态死亡窗口、MRS只读冷恢复、全部Provider类型、OEM自然回收或完整Flutter视觉。KUI-010运行态回滚有JVM证据，尚非实网验证。
+
+首轮质量缓存ip_quality_cache_v1变化、提交后准备失败、final3旧提示提前放行、final4源删除后切换缺陷以及对应精确恢复均独立保留；本次键级归因不追认前组未知偏好变化，第6项原保护异常与网络稳定性仍待查。
+
+`ProviderDocumentColdInstrumentedTest`必须方法级调用并传`kclashProviderColdAcceptance=true`、准确场景及原`kclashLocalYamlSha256`；prepare命中后保持存活，外部确认同PID再force-stop，verify不得主动open补回草稿。缓存删除必须在旧PID消失后核对本例准确路径/SHA再删除，源删除仅作用于本例ID。失败保留marker，精确恢复方法必须另加显式门禁，不得整类运行。正文不截屏，检查UTF8/UTF16 Bundle与密文均不含固定正文标记；每场核对正式行/正文/脚本/偏好/选择并清本例对象。
+
+证据`docs/acceptance/provider-document-cold-redmi-20261107.json`；溯源`docs/provider-document-recovery-defect.md`、`docs/broken-current-profile-switch-defect.md`；附件`../acceptance-artifacts/provider-document-cold-20261107/`。下一组继续管理窗口与扩展页冷进程、保存受理中断、目标外部删除，再统一Flutter视觉/连续动效；Provider运行态与MRS只读冷恢复另列补验。蜂窝延期，效果/性能/兼容/发布按原顺序，玻璃默认关闭。
+
+## 正式本地代理异常链路（2026-11-07，历史）
 
 正式MainActivity本地代理异常链路已验：真实Room失败经Snackbar反馈、菜单重试只新增一次并跨重建回读；真实配置卡片在受理前切换拒绝写入、受理后保存冻结原节点；40份原正文CUSTOM副本的真实引用查询、首尾滚动、取消保留批选、等待防重复、删除失败原位提示/重建/重试及引用正文保持通过。Redmi final3精确18/18（4新增+14相邻回归）、55图完整校验及16拼图目视；788项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过，安装/源码匹配。两份正式配置/脚本/正文/偏好值/选择、原1.yaml、Flutter和设备设置保持，临时副本/本地节点/SQL触发器清理，收尾无服务。
 
