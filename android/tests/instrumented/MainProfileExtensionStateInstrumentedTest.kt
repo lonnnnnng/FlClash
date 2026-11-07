@@ -236,6 +236,7 @@ class MainProfileExtensionStateInstrumentedTest {
         val repository = entry.profileRepository()
         repository.profilesLoaded.first { it }
         assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
+        assertNull("不覆盖用户扩展草稿", entry.profileExtensionStore().read())
         val rows = entry.database().profiles().getAll()
         val selected = requireNotNull(repository.currentProfileId.value)
         val files = rows.associate { it.id to signature(repository.profileFile(it.id)) }
@@ -265,6 +266,15 @@ class MainProfileExtensionStateInstrumentedTest {
                 // 作者 long：即使窗口恢复失败也只清理本次唯一ID；正式配置、脚本、正文和偏好必须逐项保持。
                 val row = requireNotNull(entry.database().profiles().getById(profile.id))
                 check(row.type == ProfileType.FILE && row.label == label)
+                entry.profileExtensionStore().read()?.let { bytes ->
+                    val draft = com.google.gson.Gson().fromJson(bytes.decodeToString(), ProfileExtensionDraft::class.java)
+                    check(draft.profileId == profile.id)
+                    lateinit var controller: ProfileExtensionController
+                    compose.runOnIdle { controller = androidx.lifecycle.ViewModelProvider(compose.activity)[ProfilesViewModel::class.java].extension }
+                    compose.runOnIdle { controller.closeWithoutApplying { } }
+                    compose.waitUntil(20_000) { controller.state.value.draft == null }
+                    assertNull(entry.profileExtensionStore().read())
+                }
                 repository.deleteProfile(profile.id)
                 session.scripts.forEach { id ->
                     val script = requireNotNull(entry.database().scripts().getById(id))

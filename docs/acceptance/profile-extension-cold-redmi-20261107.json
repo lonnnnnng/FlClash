@@ -1,0 +1,563 @@
+{
+  "date": "2026-11-07",
+  "scope": "扩展页局部/全局规则独立加密会话、保存中断与外部冲突保护",
+  "status": "DONE-VERIFIED within named slice; overall todo9 PARTIAL",
+  "sourceBase": "f9888f1b79fe37ed946ee8fcf325acc84cc44c40",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 50s",
+    "tasks": "389 actionable tasks: 7 executed, 382 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 547,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 73
+      },
+      "service": {
+        "tests": 212,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :app:testDebugUnitTest UP-TO-DATE",
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE"
+    ],
+    "executionNote": "App547在本组build3实际执行，Service212/Core38/Common31复用。build4仅纠正测试注释，四模块测试UP-TO-DATE、389任务7执行/382复用；三份APK哈希与已验build3完全相同。",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 13
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 12
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "b1e0970506f2ebf255c8f305869259c33dc6ef370d5a32be9a531fb95c76bc50",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "2c8dab8021a8c27dfa9817aba1148fffb8a9e1f63e1ed64a75c81f816587ea3f",
+        "bytes": 5455119,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "ff43517ec99344e9fd710cd773ae997331608e26f089bcb344f1b5b67ceba717",
+        "bytes": 48264836,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "release": {
+    "sha256": "ff43517ec99344e9fd710cd773ae997331608e26f089bcb344f1b5b67ceba717",
+    "snapshotFields": {
+      "ui.ProfileExtensionDraft": [
+        "error",
+        "pending",
+        "profileId",
+        "saveResultVersion",
+        "session",
+        "uiDraft",
+        "version"
+      ],
+      "ui.ProfileExtensionCommit": [
+        "abandoned",
+        "after",
+        "afterGlobal",
+        "before",
+        "beforeGlobal",
+        "committed",
+        "global",
+        "operationId"
+      ],
+      "data.ProfileExtensionValues": [
+        "matchTarget",
+        "mode",
+        "scriptId",
+        "settings"
+      ]
+    },
+    "debugMarkersAbsent": {
+      "prepareAndHoldExtensionDraftForExternalDeath": true,
+      "kclash_extension_cold_ready": true,
+      "EXTENSION_INTENT": true,
+      "EXTENSION_APPLIED": true,
+      "EXTENSION_COMMITTED": true,
+      "fixture-extension-save-failure": true,
+      "profile-extension-cold.json": true,
+      "private-extension-cold-20261107.test": true
+    },
+    "sourceFilesMatched": 578,
+    "scope": "R8 DEX static check only; unsigned APK not runtime acceptance"
+  },
+  "cold": {
+    "batch": "final2",
+    "cases": 18,
+    "firstRecoveryPassed": 18,
+    "secondRecoveryPassed": 4,
+    "actualResultAssertions": "Local/global rules and source body signature read before/after interrupted commits; same-transaction receipt prevents replay after external value reversal; external rule/profile deletion and edits remain intact",
+    "scenarios": [
+      {
+        "case": "local-draft",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "local-before",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "local-after",
+        "first": true,
+        "again": true,
+        "pidChanged": true
+      },
+      {
+        "case": "local-applied",
+        "first": true,
+        "again": true,
+        "pidChanged": true
+      },
+      {
+        "case": "local-failure",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "local-deleted",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "local-conflict",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "local-host",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "local-batch",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "global-draft",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "global-before",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "global-after",
+        "first": true,
+        "again": true,
+        "pidChanged": true
+      },
+      {
+        "case": "global-applied",
+        "first": true,
+        "again": true,
+        "pidChanged": true
+      },
+      {
+        "case": "global-failure",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "global-deleted",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "global-conflict",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "global-host",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      },
+      {
+        "case": "global-batch",
+        "first": true,
+        "again": null,
+        "pidChanged": true
+      }
+    ]
+  },
+  "regression": {
+    "batch": "regression1",
+    "passed": 11,
+    "methods": [
+      "com.lonnnnnng.flclash.ui.MainProfileManagementStateInstrumentedTest#renameDraftSurvivesRecreationAndOnlyExplicitSaveUpdatesTemporaryMetadata",
+      "com.lonnnnnng.flclash.ui.MainProfileManagementStateInstrumentedTest#deleteConfirmationSurvivesRecreationAndCancelNeverDeletesProfile",
+      "com.lonnnnnng.flclash.ui.MainProfileManagementStateInstrumentedTest#reorderDraftAndDiscardConfirmationSurviveRecreationBeforeExplicitSave",
+      "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#scriptSelectionLongListRecreationAndLibraryReturnKeepNoncurrentProfile",
+      "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#batchSelectionAndDeleteConfirmationSurviveRecreationBeforeExplicitCommit",
+      "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#ruleTargetDraftAndDiscardConfirmationSurviveRecreationWithoutWriting",
+      "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#validationErrorImeBackAndRepeatedConfirmKeepOneSavedRule",
+      "com.lonnnnnng.flclash.ui.MainProfileExtensionStateInstrumentedTest#globalSubpageSearchRestoresAndBackReturnsOneLevelWithoutChangingRules",
+      "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#tabGroupAndScrollSurviveProfilesAndDashboardRoundTrips",
+      "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#listLayoutAndScrollSurviveProfilesRoundTripAndActivityRecreation",
+      "com.lonnnnnng.flclash.ui.MainNavigationStateInstrumentedTest#emptySearchSurvivesMainDestinationsAndRecreationThenClearRecoversNodes"
+    ],
+    "images": [
+      {
+        "path": "main_profile_rename_before.png",
+        "bytes": 123678,
+        "sha256": "e998a6512b5a816da23b063094eed0408fc12d63decfb0f1198897fc4cc45415"
+      },
+      {
+        "path": "main_profile_rename_recreated.png",
+        "bytes": 124123,
+        "sha256": "9bb9e66bee5fa9e3ed9cf841f7376db2b8e2925c3ef6636a5986ccce9051436d"
+      },
+      {
+        "path": "main_profile_rename_saved.png",
+        "bytes": 113414,
+        "sha256": "64efa4ab816b64048948e61f156596286978fa19f02355036da1bb29cdcb2674"
+      },
+      {
+        "path": "main_profile_delete_before.png",
+        "bytes": 125390,
+        "sha256": "af1a9cf0e9713a8123a91926a5ab2aa3805164d979c90a257fcb246adc9d7ec4"
+      },
+      {
+        "path": "main_profile_delete_recreated.png",
+        "bytes": 125390,
+        "sha256": "af1a9cf0e9713a8123a91926a5ab2aa3805164d979c90a257fcb246adc9d7ec4"
+      },
+      {
+        "path": "main_profile_delete_confirmed.png",
+        "bytes": 92888,
+        "sha256": "799c480eb8b106d642f0058be7a79e0cc6e7c6e6bc5304673e78f444c79961a0"
+      },
+      {
+        "path": "main_profile_order_draft.png",
+        "bytes": 89887,
+        "sha256": "fa972418366ddcde09585147184b0957df0ecbc86c6d89280ba3f06fcfd00bf7"
+      },
+      {
+        "path": "main_profile_order_recreated.png",
+        "bytes": 89887,
+        "sha256": "fa972418366ddcde09585147184b0957df0ecbc86c6d89280ba3f06fcfd00bf7"
+      },
+      {
+        "path": "main_profile_order_discard_recreated.png",
+        "bytes": 101690,
+        "sha256": "12d868d106f7ca2d6029a0df854597341c75b2a71b677c244c01282480715999"
+      },
+      {
+        "path": "main_profile_order_saved_reopened.png",
+        "bytes": 89887,
+        "sha256": "fa972418366ddcde09585147184b0957df0ecbc86c6d89280ba3f06fcfd00bf7"
+      },
+      {
+        "path": "main_extension_script_selected.png",
+        "bytes": 203334,
+        "sha256": "fe796aaed53e0fff9ba2e6140cbf8e8b0649c362c663d6313a6f5891cf594545"
+      },
+      {
+        "path": "main_extension_script_recreated.png",
+        "bytes": 203334,
+        "sha256": "fe796aaed53e0fff9ba2e6140cbf8e8b0649c362c663d6313a6f5891cf594545"
+      },
+      {
+        "path": "main_extension_script_unbound.png",
+        "bytes": 203501,
+        "sha256": "2a7e96accba4233456377cfb73b89faab3b74a7f0d75b29e86f6939434f01ed7"
+      },
+      {
+        "path": "main_extension_batch_selected.png",
+        "bytes": 141744,
+        "sha256": "120121fe9a500e361e2275edb126137388eff5e5c061061dd8818cd874fbd1b1"
+      },
+      {
+        "path": "main_extension_batch_confirm.png",
+        "bytes": 139744,
+        "sha256": "b81a9c3bdad4a291214b5db2d29929213674917a25f062307ac6c475654a6d2a"
+      },
+      {
+        "path": "main_extension_batch_confirm_recreated.png",
+        "bytes": 139337,
+        "sha256": "97dd0a9905795b4c1bba17d69024bbe7f1212ded114df1a3f710bae0ae8eca92"
+      },
+      {
+        "path": "main_extension_batch_saved.png",
+        "bytes": 146517,
+        "sha256": "d16fff7b2dfd28fc944cc2ed1cba96d04ddc451b3a455bd80699833a953a45a9"
+      },
+      {
+        "path": "main_extension_rule_target_recreated.png",
+        "bytes": 102410,
+        "sha256": "21ea355967e566adaa62e8d77bba9883adb1089dd8c56bc1bc476fe03ed885f2"
+      },
+      {
+        "path": "main_extension_discard_recreated.png",
+        "bytes": 112940,
+        "sha256": "38103277f9885bbc059d5bc74303a410d580515ad23901d66c20c4c6ffb609c6"
+      },
+      {
+        "path": "main_extension_validation_ime.png",
+        "bytes": 161936,
+        "sha256": "9a7cbd16b79066cf76f6d3d9e4b7a9da3d64f5d0cccbe81ac65b0f72dc184644"
+      },
+      {
+        "path": "main_extension_validation_recreated.png",
+        "bytes": 107067,
+        "sha256": "97a2c4a94a8d7f64169cae9555dfb32f13cd1d6359cd394e84b279981ac45327"
+      },
+      {
+        "path": "main_extension_rule_saved_once.png",
+        "bytes": 153292,
+        "sha256": "f94f3229cc12c43de9cd810914aefb5aa52ae1132e7e8efbaef703bc18667b54"
+      },
+      {
+        "path": "main_extension_global_search_recreated.png",
+        "bytes": 67663,
+        "sha256": "160f8f13cb9e52cd313d32505e6c185ead24039576736db673de5824ad2c9666"
+      },
+      {
+        "path": "main_extension_global_returned.png",
+        "bytes": 144921,
+        "sha256": "d721377fdf74f0d4a9e647cc92d982530ebc3a481f13580808c4eb03f1517bb3"
+      },
+      {
+        "path": "main_navigation_tab_before.png",
+        "bytes": 143055,
+        "sha256": "29af4af1795fa8df173389d92329487f28ba0e073c6b3033d722c6b19aa44667"
+      },
+      {
+        "path": "main_navigation_tab_after_profiles.png",
+        "bytes": 143055,
+        "sha256": "29af4af1795fa8df173389d92329487f28ba0e073c6b3033d722c6b19aa44667"
+      },
+      {
+        "path": "main_navigation_tab_after_dashboard.png",
+        "bytes": 143055,
+        "sha256": "29af4af1795fa8df173389d92329487f28ba0e073c6b3033d722c6b19aa44667"
+      },
+      {
+        "path": "main_navigation_list_before.png",
+        "bytes": 143556,
+        "sha256": "f32ffe61ae2ba6cf4b95335b17c7ef74392992268e23a00f9c772e725b2392e2"
+      },
+      {
+        "path": "main_navigation_list_after_profiles.png",
+        "bytes": 143556,
+        "sha256": "f32ffe61ae2ba6cf4b95335b17c7ef74392992268e23a00f9c772e725b2392e2"
+      },
+      {
+        "path": "main_navigation_list_recreated.png",
+        "bytes": 143556,
+        "sha256": "f32ffe61ae2ba6cf4b95335b17c7ef74392992268e23a00f9c772e725b2392e2"
+      },
+      {
+        "path": "main_navigation_search_returned.png",
+        "bytes": 177261,
+        "sha256": "5cc7dbcb49917cec8bd86ec893f7b1a3a77f807ee1078c7e7d559b1b4080d803"
+      },
+      {
+        "path": "main_navigation_search_recreated.png",
+        "bytes": 177256,
+        "sha256": "b7d905875c634d56f985643e5453dce1d0f00b67cc8ea54c64cebfd5895ca1b5"
+      },
+      {
+        "path": "main_navigation_search_cleared.png",
+        "bytes": 171051,
+        "sha256": "fb47dedeaa665fad441cc856bddfcd43661326952c0c69fe7f8dae27756c0660"
+      }
+    ]
+  },
+  "visualReview": {
+    "reviewedImages": 33,
+    "contactSheets": 11,
+    "method": "主代理逐张查看11张拼图，核对全部33张原图对应画面",
+    "findings": [
+      "重命名/删除/排序及放弃确认的重建前后内容与操作位置稳定",
+      "扩展长脚本列表、批选删除、规则目标及放弃确认可见且无意外重叠",
+      "校验错误、输入字段和确认按钮位于真实IME上方；重建后草稿与错误保留",
+      "代理Tab/List往返与重建画面保持目标组和滚动位置；搜索空态清除后恢复节点"
+    ],
+    "limits": [
+      "静态截图与目标交互断言，不证明连续动画帧性能或完整Flutter逐像素等价",
+      "本批只覆盖Redmi竖屏默认字号及当前主题"
+    ],
+    "overallVisualParity": "PARTIAL",
+    "sheets": [
+      {
+        "path": "contact-sheets/sheet-1.jpg",
+        "sha256": "d572472b06f42835a1e64c824748efc530cd1415cdd94b0ff7f9641ab73a3ae1"
+      },
+      {
+        "path": "contact-sheets/sheet-2.jpg",
+        "sha256": "c33ed3741ecca48cfa46012c1266858acf6a108ed66bdf5e4f7763de47dab14b"
+      },
+      {
+        "path": "contact-sheets/sheet-3.jpg",
+        "sha256": "95964034ae431cd942d8f55a20b208447a7ca456e363b6069bcc99e6c34c9caf"
+      },
+      {
+        "path": "contact-sheets/sheet-4.jpg",
+        "sha256": "2da1b489cca8150fded14b19d0b10783b28da513859828febb8c31745ef62d8f"
+      },
+      {
+        "path": "contact-sheets/sheet-5.jpg",
+        "sha256": "02c43db8413a0a9e0bb7a758d1cf721dc047b75c1b2cd51b2836cce450bddf96"
+      },
+      {
+        "path": "contact-sheets/sheet-6.jpg",
+        "sha256": "e6b117d4a4f5860806b25924aab39846226215d36dd5964dabbe2bc3b6b2b263"
+      },
+      {
+        "path": "contact-sheets/sheet-7.jpg",
+        "sha256": "d710545dbf3f969d40ba442c6a25f884eb354c9f0622e3e92591d1149b1c2d7d"
+      },
+      {
+        "path": "contact-sheets/sheet-8.jpg",
+        "sha256": "e9d030cede75d2fd965e1ad4536423c865889ab98f6031d53ae26f132e4b29a4"
+      },
+      {
+        "path": "contact-sheets/sheet-9.jpg",
+        "sha256": "fe6def4b60d8056d5cf0e9fdf227fd6954fb37a1408c75e834d7c059668a7a47"
+      },
+      {
+        "path": "contact-sheets/sheet-10.jpg",
+        "sha256": "1c576e6213076d90e34322a8533f9b3ad25ea596522c1a7dd9e1dcdce5e7d6ef"
+      },
+      {
+        "path": "contact-sheets/sheet-11.jpg",
+        "sha256": "78e627e7b432ccff11fff622fd6daae9a3d9af6d81148f55e14a70c8b8db4075"
+      }
+    ]
+  },
+  "installation": {
+    "com.lonnnnnng.flclash": {
+      "builtSha256": "b1e0970506f2ebf255c8f305869259c33dc6ef370d5a32be9a531fb95c76bc50",
+      "pulledSha256": "b1e0970506f2ebf255c8f305869259c33dc6ef370d5a32be9a531fb95c76bc50"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "builtSha256": "2c8dab8021a8c27dfa9817aba1148fffb8a9e1f63e1ed64a75c81f816587ea3f",
+      "pulledSha256": "2c8dab8021a8c27dfa9817aba1148fffb8a9e1f63e1ed64a75c81f816587ea3f"
+    }
+  },
+  "sourceFilesMatched": 578,
+  "preservation": {
+    "formalProfiles": 2,
+    "formalRowsBodiesSizeMtimePreferencesScriptsSelection": true,
+    "originalYamlFlutterAndDeviceSettings": true,
+    "noServicesAtEnd": true,
+    "ownFixturesDraftAndReceiptsRemoved": true
+  },
+  "failuresRetained": [
+    {
+      "run": "unit1",
+      "kind": "test compilation",
+      "result": "Store omitted updateProfileSelectedMap; no test executed; fixed before unit2/build1"
+    },
+    {
+      "run": "final1",
+      "kind": "device assertion",
+      "result": "local-draft/local-before/local-after and after repeat passed; local-applied read committed before recovery receipt reconciliation finished; matrix stopped"
+    },
+    {
+      "run": "applied-diagnostic1",
+      "kind": "diagnostic only",
+      "result": "same preserved fixture recovered successfully in later process; not counted toward final matrix"
+    },
+    {
+      "run": "recovery1",
+      "kind": "exact fixture cleanup",
+      "result": "1/1; own temporary profile/draft/receipt removed, formal snapshot preserved"
+    },
+    {
+      "run": "readiness-red",
+      "kind": "product regression reproduction",
+      "result": "1/1 failure on old ready state while receipt read suspended; build2 fixed and 13 controller tests passed"
+    },
+    {
+      "run": "receipt-ui-red",
+      "kind": "product regression reproduction",
+      "result": "1/1 failure: asynchronous receipt read overwrote newer UI tree; fixed by merging latest state"
+    }
+  ],
+  "defect": "docs/profile-extension-cold-recovery-defect.md KUI-012",
+  "limitations": [
+    "STOPPED and controlled force-stop only; no running death or OEM natural reclaim claim",
+    "Global rules tested through profile extension route; standalone GlobalRulesPage cold protocol not newly verified",
+    "No full Flutter pixel parity, continuous motion/performance, low API, cellular, signed Release runtime, Go or remote CI in this batch",
+    "Older todo6 protection anomaly, earlier unknown preference changes and network stability remain unresolved"
+  ],
+  "next": "Provider运行态/MRS只读冷恢复与失效引用实核回滚；随后统一Flutter视觉，再回补原保护异常/网络稳定性及系统、性能、兼容和发布",
+  "artifacts": "../acceptance-artifacts/extension-cold-20261107/"
+}

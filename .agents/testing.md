@@ -1,6 +1,14 @@
 # Testing
 
-## 配置管理窗口独立密文与正式冷恢复（2026-11-07，当前）
+## 扩展页独立密文与正式冷恢复（2026-11-07，当前）
+
+扩展页局部/全局规则独立加密会话、提交前后冷恢复、事务回执防重放、外部规则修改/删除及宿主删除保护已验，KUI-012本组闭环。Redmi final2首次冷恢复18/18、提交后与回执缺口再次恢复4/4，相邻回归11/11，33张PNG完整校验并经11张拼图目视。828项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；执行/复用明细以本组JSON为准。Debug Lint0错误/67警告/13提示，Release0错误/66警告/12提示。安装回拉和578份源码匹配；两份正式配置/正文SHA-size-mtime/脚本/偏好/选择、原1.yaml、Flutter包及设备设置保持，临时对象、密文和提交标记清除，收尾无服务。首轮local-applied恢复过早就绪及后台回执覆盖新UI树已分别红绿复现并修复，原失败保留。本组仅STOPPED/受控force-stop；不推广运行态死亡、OEM自然回收、独立全局规则页冷恢复或完整Flutter视觉。下一组Provider运行态/MRS只读冷恢复及失效引用实核回滚，再统一Flutter视觉；第6项原保护异常、未知偏好变化和网络稳定性仍待查。蜂窝延期，玻璃默认关闭。证据`docs/acceptance/profile-extension-cold-redmi-20261107.json`；溯源`docs/profile-extension-cold-recovery-defect.md`；附件`../acceptance-artifacts/extension-cold-20261107/`。
+
+`ProfileExtensionColdInstrumentedTest`仅按方法调用。门禁`kclashExtensionColdAcceptance=true`、`kclashExtensionColdCase`及原`kclashLocalYamlSha256`；局部/全局各draft、before、after、applied、failure、deleted、conflict、host、batch共18场景，after/applied各再次新进程恢复。prepare保持存活至外部核对PID并force-stop，verify必须自动恢复，禁止主动open补恢复。失败仅通过`recoverExactOwnInterruptedExtensionFixture`及额外`kclashExtensionFixtureRecovery=true`精确收尾；禁止整类运行。
+
+只复制原1.yaml为本例FILE，原全局偏好行独立加密保护，marker只记自身UUID及摘要。逐场核对正式行/正文SHA-size-mtime/脚本/偏好/选择与STOPPED。提交标记与规则同Room事务，APPLIED场景将值外部改回旧值后仍必须不重放；首次恢复须等回执与密文落盘后ready，后续异步回执合并最新UI树。Bundle与密文均不得出现私密标记。相邻11方法与33图完整集合见JSON，截图不等于完整Flutter视觉验收。
+
+## 配置管理窗口独立密文与正式冷恢复（2026-11-07，历史）
 
 配置管理重命名/删除/排序独立加密会话、保存意图与提交结果核对、失败原位重试及外部目标冲突保护已验，KUI-011本组闭环。Redmi final7首次冷恢复17/17、提交后再次恢复3/3，相邻回归11/11，33张PNG完整校验并经11张拼图目视。814项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；App533在本组build4实际执行，Service212/Core38/Common31复用，最终build8四模块UP-TO-DATE、389任务11执行/378复用。Debug Lint0错误/67警告/12提示，Release0错误/66警告/11提示。安装回拉和572份源码匹配；正式两份配置/正文SHA-size-mtime/脚本/偏好值/选择、原1.yaml、Flutter包与设备设置保持，临时对象与草稿清除，收尾无服务。本组仅STOPPED下真实MainActivity/Hilt/Room、受控force-stop；不代表运行态死亡、OEM自然回收或完整Flutter视觉。final5早先17+3通过独立保留，final7增加实际Room名称/顺序和正文结果断言；中间失败与精确恢复见KUI-011，不累计。下一组为扩展页独立冷恢复、保存中断与原规则外部修改/删除保护；Provider运行态/MRS只读冷恢复、统一Flutter视觉及第6项原保护异常/网络稳定性继续待补。蜂窝延期，玻璃默认关闭。证据`docs/acceptance/profile-management-cold-redmi-20261107.json`；溯源`docs/profile-management-cold-recovery-defect.md`；附件`../acceptance-artifacts/management-cold-20261107/`。
 

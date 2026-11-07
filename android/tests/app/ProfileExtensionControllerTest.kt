@@ -18,14 +18,15 @@ class ProfileExtensionControllerTest {
         val next = listOf(ExtensionRule("new", "DOMAIN,retry.test,DIRECT"))
         store.failSave = true
         repeat(2) { attempt ->
-            model.rules(next); runCurrent()
+            if (attempt == 0) model.rules(next) else model.retryPending()
+            runCurrent()
             assertEquals(attempt + 1L, model.state.value.saveResultVersion)
             assertEquals(original, model.state.value.settings.rules)
             assertFalse(model.state.value.saving)
-            assertEquals("保存失败", model.state.value.error)
+            assertEquals("扩展保存失败，请重试", model.state.value.error)
         }
         store.failSave = false
-        model.rules(next); runCurrent()
+        model.retryPending(); runCurrent()
         assertEquals(3L, model.state.value.saveResultVersion)
         assertEquals(next, model.state.value.settings.rules)
         assertNull(model.state.value.error)
@@ -37,13 +38,14 @@ class ProfileExtensionControllerTest {
         val next = listOf(ExtensionRule("new", "DOMAIN,retry.test,DIRECT"))
         store.failSave = true
         repeat(2) { attempt ->
-            model.globalRules(next); runCurrent()
+            if (attempt == 0) model.globalRules(next) else model.retryPending()
+            runCurrent()
             assertEquals(attempt + 1L, model.state.value.saveResultVersion)
             assertTrue(model.state.value.globalRules.isEmpty())
-            assertEquals("保存失败", model.state.value.error)
+            assertEquals("扩展保存失败，请重试", model.state.value.error)
         }
         store.failSave = false
-        model.globalRules(next); runCurrent()
+        model.retryPending(); runCurrent()
         assertEquals(3L, model.state.value.saveResultVersion)
         assertEquals(next, model.state.value.globalRules)
         assertNull(model.state.value.error)

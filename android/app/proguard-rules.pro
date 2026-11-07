@@ -45,3 +45,8 @@
 -keep class com.lonnnnnng.flclash.ui.ProviderPickerSnapshot { *; }
 -keep class com.lonnnnnng.flclash.ui.ProviderDocumentDraft { *; }
 -keep class com.lonnnnnng.flclash.ui.ProfileManagementDraft { *; }
+-keep class com.lonnnnnng.flclash.ui.ProfileExtensionDraft { *; }
+-keep class com.lonnnnnng.flclash.ui.ProfileExtensionCommit { *; }
+-keep class com.lonnnnnng.flclash.data.ProfileExtensionValues { *; }
+-keep class com.lonnnnnng.flclash.service.ProfileExtensionOverrides { *; }
+-keep class com.lonnnnnng.flclash.service.ExtensionRule { *; }

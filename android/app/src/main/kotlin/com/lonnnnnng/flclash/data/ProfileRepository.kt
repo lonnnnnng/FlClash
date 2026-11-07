@@ -180,8 +180,18 @@ interface ProfileStore {
         check(globalExtensionRules() == expected) { "全局规则已变化，请重新读取后保存" }
         saveGlobalExtensionRules(rules)
     }
+    suspend fun compareAndSaveGlobalExtensionRulesForProfile(id: Long, expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String? = null) {
+        checkNotNull(extensionProfile(id)) { "配置不存在" }
+        compareAndSaveGlobalExtensionRules(expected, rules)
+    }
     suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile =
         error("此数据源不支持扩展设置")
+    suspend fun extensionCommitApplied(commitId: String): Boolean = false
+    suspend fun forgetExtensionCommit(commitId: String) = Unit
+    suspend fun compareAndSaveExtension(id: Long, expected: ProfileExtensionValues, next: ProfileExtensionValues, commitId: String? = null): Profile {
+        check(extensionProfile(id)?.let(ProfileExtensionValues::from) == expected) { "扩展已被修改或删除，请重新打开" }
+        return saveExtension(id, next.mode, next.scriptId, next.matchTarget, next.settings)
+    }
     suspend fun updateRemoteProfile(id: Long): Profile
     suspend fun deleteProfile(id: Long)
     suspend fun proxyResourceUsers(id: Long): List<String> = emptyList()
@@ -996,6 +1006,16 @@ class ProfileRepository(
         }
     }
 
+    override suspend fun compareAndSaveGlobalExtensionRulesForProfile(id: Long, expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String?) = withContext(Dispatchers.IO) {
+        database.withTransaction {
+            if (commitId != null && extensionCommitApplied(commitId)) return@withTransaction
+            // 作者 long：宿主删除检查与共享规则提交不能分离，否则旧扩展窗口仍可能在配置消失后写全局目录。
+            checkNotNull(profileDao.getById(id)) { "配置不存在" }
+            compareAndSaveGlobalExtensionRules(expected, rules)
+            if (commitId != null) recordExtensionCommit(commitId)
+        }
+    }
+
     override suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile =
         withContext(Dispatchers.IO) {
             require(mode in setOf("standard", "script")) { "未知扩展模式" }
@@ -1009,6 +1029,33 @@ class ProfileRepository(
                 val overrides = ProfileProviderOverrides.fromJsonString(current.overridesJson).copy(extension = extension.copy(configured = true))
                 current.copy(extendType = mode, scriptId = scriptId, matchTarget = matchTarget, overridesJson = overrides.toJsonString()).also {
                     profileDao.update(it.toEntity())
+                }
+            }
+        }
+
+    override suspend fun extensionCommitApplied(commitId: String): Boolean = preferenceDao.get(extensionCommitKey(commitId)) != null
+
+    override suspend fun forgetExtensionCommit(commitId: String) = preferenceDao.delete(extensionCommitKey(commitId))
+
+    private suspend fun recordExtensionCommit(commitId: String) {
+        // 作者 long：提交标记与规则同事务，值改回旧值也不能让冷恢复误判“从未提交”；标记不含规则或凭据。
+        preferenceDao.put(AppPreferenceEntity(extensionCommitKey(commitId), "committed", System.currentTimeMillis()))
+    }
+
+    private fun extensionCommitKey(commitId: String): String {
+        require(UUID.fromString(commitId).toString() == commitId)
+        return "extension_commit/$commitId"
+    }
+
+    override suspend fun compareAndSaveExtension(id: Long, expected: ProfileExtensionValues, next: ProfileExtensionValues, commitId: String?): Profile =
+        withContext(Dispatchers.IO) {
+            database.withTransaction {
+                // 作者 long：比较与更新同处Room事务，外部删除/修改规则后旧窗口不能把整份旧规则列表写回来。
+                val current = profileDao.getById(id)?.toDomain()
+                if (commitId != null && extensionCommitApplied(commitId)) return@withTransaction checkNotNull(current)
+                check(current?.let(ProfileExtensionValues::from) == expected) { "扩展已被修改或删除，请重新打开" }
+                saveExtension(id, next.mode, next.scriptId, next.matchTarget, next.settings).also {
+                    if (commitId != null) recordExtensionCommit(commitId)
                 }
             }
         }

@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Script
@@ -30,11 +31,23 @@ internal fun ProfileExtensionRoute(id: Long, controller: ProfileExtensionControl
     val state by controller.state.collectAsState()
     LaunchedEffect(id) { controller.open(id) }
     LaunchedEffect(scripts) { controller.refreshApplied() }
-    ProfileExtensionEditor(state, scripts, onDismiss = { controller.close(onDismiss) }, onApply = controller::apply,
-        onMode = controller::mode, onScript = controller::script, onTarget = controller::target,
-        onRules = controller::rules, onGlobalRules = controller::globalRules, onDisabled = controller::disabled,
-        onOpenScripts = onOpenScripts, onRetry = { controller.open(id, reload = true) },
-        onSkipApply = { controller.closeWithoutApplying(onDismiss) }, canEditSource = canEditSource, onDns = onDns, onProviders = onProviders)
+    if (!state.ready || state.loading) {
+        // 作者 long：首次读库结束前不能让空profile消费已恢复的保存树，否则子页与批选会被初始空快照重置。
+        ProfileEditorPage({}, { Text("扩展") }, { CircularProgressIndicator(Modifier.padding(24.dp)) })
+        return
+    }
+    val draft = state.draft ?: return
+    EncryptedEditorState(draft.session, draft.uiDraft, { controller.ui(draft.session, it) }, controller::uiFailure) { checkpoint ->
+        ProfileExtensionEditor(state, scripts, onDismiss = { controller.close(onDismiss) }, onApply = controller::apply,
+            onMode = { if (checkpoint()) controller.mode(it) }, onScript = { if (checkpoint()) controller.script(it) },
+            onTarget = { if (checkpoint()) controller.target(it) }, onRules = controller::rules,
+            onGlobalRules = controller::globalRules, onDisabled = { if (checkpoint()) controller.disabled(it) },
+            onRulesFromSnapshot = { before, after -> if (checkpoint()) controller.rules(before, after) },
+            onGlobalRulesFromSnapshot = { before, after -> if (checkpoint()) controller.globalRules(before, after) },
+            onRetryPending = controller::retryPending, onDiscardPending = controller::discardPending,
+            onOpenScripts = onOpenScripts, onRetry = { controller.open(id, reload = true) },
+            onSkipApply = { controller.closeWithoutApplying(onDismiss) }, canEditSource = canEditSource, onDns = onDns, onProviders = onProviders)
+    }
 }
 
 /** 作者 long：列表操作即时保存为扩展元数据；当前配置显式或退出应用，未选中的配置只保存，不切换核心。 */
@@ -43,28 +56,36 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
     onApply: () -> Unit, onMode: (String) -> Unit, onScript: (Long?) -> Unit, onTarget: (String?) -> Unit,
     onRules: (List<ExtensionRule>) -> Unit, onGlobalRules: (List<ExtensionRule>) -> Unit, onDisabled: (Set<String>) -> Unit,
     onOpenScripts: () -> Unit, onRetry: () -> Unit, onSkipApply: () -> Unit, canEditSource: Boolean = false,
-    onDns: () -> Unit = {}, onProviders: () -> Unit = {}) {
-    var subpage by rememberSaveable(state.profile?.id) { mutableIntStateOf(0) }
+    onDns: () -> Unit = {}, onProviders: () -> Unit = {},
+    onRulesFromSnapshot: ((List<ExtensionRule>, List<ExtensionRule>) -> Unit)? = null,
+    onGlobalRulesFromSnapshot: ((List<ExtensionRule>, List<ExtensionRule>) -> Unit)? = null,
+    onRetryPending: () -> Unit = {}, onDiscardPending: () -> Unit = {}) {
+    val ownerId = state.draft?.profileId ?: state.profile?.id
+    var subpage by rememberSaveable(ownerId) { mutableStateOf(0) }
     var query by rememberSaveable(subpage) { mutableStateOf("") }
     var formId by rememberSaveable { mutableStateOf<String?>(null) }
+    // 作者 long：表单持有打开时的原规则身份与原值；列表回读失去该ID不能把“编辑”解释为“新增”。
+    var formOriginalValue by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRuleId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRuleValue by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() })
-    var selected by rememberSaveable(state.profile?.id, subpage, stateSaver = selectedSaver) { mutableStateOf(setOf<String>()) }
+    var selected by rememberSaveable(ownerId, subpage, stateSaver = selectedSaver) { mutableStateOf(setOf<String>()) }
     var sorting by rememberSaveable(subpage) { mutableStateOf(false) }
     var showTarget by rememberSaveable { mutableStateOf(false) }
     var showPresets by rememberSaveable { mutableStateOf(false) }
-    var confirmDelete by rememberSaveable(state.profile?.id, subpage) { mutableStateOf(false) }
-    var deleteAttempted by rememberSaveable(state.profile?.id, subpage) { mutableStateOf(false) }
-    var pendingDeleteIds by rememberSaveable(state.profile?.id, subpage) { mutableStateOf(emptyList<String>()) }
-    var pendingDeleteVersion by rememberSaveable(state.profile?.id, subpage) { mutableStateOf<Long?>(null) }
+    var confirmDelete by rememberSaveable(ownerId, subpage) { mutableStateOf(false) }
+    var deleteAttempted by rememberSaveable(ownerId, subpage) { mutableStateOf(false) }
+    var pendingDeleteIds by rememberSaveable(ownerId, subpage) { mutableStateOf(emptyList<String>()) }
+    var pendingDeleteVersion by rememberSaveable(ownerId, subpage) { mutableStateOf<Long?>(null) }
     val busy = state.loading || state.saving || state.applying || pendingDeleteVersion != null
+    val canChange = !busy && !state.blocked && !state.interrupted
     val global = subpage == 2
     val rules = if (global) state.globalRules else state.settings.rules
     var ordered by remember(rules) { mutableStateOf(rules) }
     val visible = ordered.filter { it.value.contains(query, true) }
     val selectedVisibleIds = visible.map { it.id }.filter { it in selected }.toSet()
     LaunchedEffect(rules, query, state.loading, state.profile?.id, state.saving, state.saveResultVersion, pendingDeleteVersion) {
+        if (!state.loading && !state.saving && (state.profile == null || state.interrupted)) pendingDeleteVersion = null
         if (!state.loading && state.profile != null) {
             // 作者 long：规则被其他入口移除后只保留仍存在的选择；加载中空列表不能擦除重建恢复的批选。
             selected = selected.intersect(rules.map { it.id }.toSet())
@@ -88,7 +109,11 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
             formId = null; pendingRuleId = null; pendingRuleValue = null
         }
     }
-    fun persist(value: List<ExtensionRule>) { if (global) onGlobalRules(value) else onRules(value) }
+    fun persist(value: List<ExtensionRule>) {
+        if (!canChange) return
+        if (global) onGlobalRulesFromSnapshot?.invoke(rules, value) ?: onGlobalRules(value)
+        else onRulesFromSnapshot?.invoke(rules, value) ?: onRules(value)
+    }
     fun back() {
         if (!busy) {
             if (selected.isNotEmpty()) selected = emptySet()
@@ -99,7 +124,7 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
     ProfileEditorPage(onDismissRequest = ::back, backTag = "profile_extension_back",
         title = { Text(when (subpage) { 1 -> "管理全局附加规则"; 2 -> "全局附加规则"; else -> "扩展" }) },
         confirmButton = {
-            if (subpage == 0 && state.isCurrent && (!state.applied || state.applying)) TextButton(onClick = onApply, enabled = !busy,
+            if (subpage == 0 && state.isCurrent && (!state.applied || state.applying)) TextButton(onClick = onApply, enabled = canChange,
                 modifier = Modifier.testTag("profile_extension_apply")) {
                 if (state.applying) CircularProgressIndicator(Modifier.size(20.dp)) else Text("立即应用")
             }
@@ -108,7 +133,9 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                 state.error?.let { error ->
                     Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_extension_error"))
                     Row {
-                        TextButton(onClick = if (state.profile == null) onRetry else onApply, enabled = !busy) { Text("重试") }
+                        TextButton(onClick = when { state.draft?.pending != null -> onRetryPending; state.profile == null -> onRetry; else -> onApply },
+                            enabled = !busy && !state.blocked) { Text(if (state.draft?.pending?.committed == true) "继续编辑" else "重试") }
+                        if (state.draft?.pending != null) TextButton(onClick = onDiscardPending, enabled = !busy) { Text("放弃这次保存") }
                         TextButton(onClick = onSkipApply, enabled = !busy) { Text("暂不应用并退出") }
                     }
                 }
@@ -116,11 +143,11 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                 state.profile?.let { profile ->
                     if (subpage == 0) {
                         Text(profile.realLabel, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(if (state.saving) "保存中…" else if (!state.isCurrent) "已保存，选用此配置时应用" else if (state.applied) "已应用" else "已保存，返回时自动应用",
+                        Text(if (state.saving) "保存中…" else if (state.draft?.pending != null) "上次保存待处理" else if (!state.isCurrent) "已保存，选用此配置时应用" else if (state.applied) "已应用" else "已保存，返回时自动应用",
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         ProfileFormSection {
                             listOf("standard" to "标准", "script" to "脚本").forEach { (mode, label) ->
-                                Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(enabled = !busy) { onMode(mode) }.testTag("profile_extension_mode_$mode"), verticalAlignment = Alignment.CenterVertically) {
+                                Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(enabled = canChange) { onMode(mode) }.testTag("profile_extension_mode_$mode"), verticalAlignment = Alignment.CenterVertically) {
                                     RadioButton(selected = state.mode == mode, onClick = null)
                                     Column(Modifier.padding(start = 12.dp).weight(1f)) {
                                         Text(label, style = MaterialTheme.typography.titleSmall)
@@ -134,11 +161,11 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                     if (subpage == 1) {
                         OutlinedTextField(query, { query = it }, label = { Text("搜索全局规则") }, modifier = Modifier.fillMaxWidth().testTag("extension_global_search"), singleLine = true)
                         state.globalRules.filter { it.value.contains(query, true) }.forEach { rule ->
-                            Row(Modifier.fillMaxWidth().clickable(!busy) { onDisabled(state.settings.disabledGlobalRuleIds.let { if (rule.id in it) it - rule.id else it + rule.id }) }, verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.fillMaxWidth().clickable(canChange) { onDisabled(state.settings.disabledGlobalRuleIds.let { if (rule.id in it) it - rule.id else it + rule.id }) }, verticalAlignment = Alignment.CenterVertically) {
                                 Text(rule.value, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                                 Switch(checked = rule.id !in state.settings.disabledGlobalRuleIds, onCheckedChange = { checked ->
                                     onDisabled(if (checked) state.settings.disabledGlobalRuleIds - rule.id else state.settings.disabledGlobalRuleIds + rule.id)
-                                }, enabled = !busy, modifier = Modifier.testTag("extension_global_toggle_${rule.id}"))
+                                }, enabled = canChange, modifier = Modifier.testTag("extension_global_toggle_${rule.id}"))
                             }
                         }
                         if (state.globalRules.isEmpty()) Text("暂无全局附加规则", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -148,28 +175,28 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text(if (selected.isEmpty()) "附加规则 · ${rules.size}" else "已选 ${selected.size} 项", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                             if (selected.isNotEmpty()) {
-                                IconButton(onClick = { selected = if (visible.all { it.id in selected }) emptySet() else visible.map { it.id }.toSet() }, enabled = !busy,
+                                IconButton(onClick = { selected = if (visible.all { it.id in selected }) emptySet() else visible.map { it.id }.toSet() }, enabled = canChange,
                                     modifier = Modifier.testTag("extension_select_all")) { Icon(Icons.Outlined.SelectAll, null) }
-                                IconButton(onClick = { deleteAttempted = false; confirmDelete = true }, enabled = !busy && selectedVisibleIds.isNotEmpty(), modifier = Modifier.testTag("extension_delete_selected")) { Icon(Icons.Outlined.Delete, null) }
+                                IconButton(onClick = { deleteAttempted = false; confirmDelete = true }, enabled = canChange && selectedVisibleIds.isNotEmpty(), modifier = Modifier.testTag("extension_delete_selected")) { Icon(Icons.Outlined.Delete, null) }
                             } else {
-                                IconButton(onClick = { sorting = !sorting }, enabled = !busy && rules.size > 1, modifier = Modifier.testTag("extension_sort")) { Icon(Icons.Outlined.SwapVert, null) }
-                                IconButton(onClick = { showPresets = true }, enabled = !busy, modifier = Modifier.testTag("extension_presets")) { Icon(Icons.Outlined.AutoAwesome, null) }
-                                IconButton(onClick = { formId = "new" }, enabled = !busy, modifier = Modifier.testTag("extension_rule_add")) { Icon(Icons.Outlined.Add, null) }
+                                IconButton(onClick = { sorting = !sorting }, enabled = canChange && rules.size > 1, modifier = Modifier.testTag("extension_sort")) { Icon(Icons.Outlined.SwapVert, null) }
+                                IconButton(onClick = { showPresets = true }, enabled = canChange, modifier = Modifier.testTag("extension_presets")) { Icon(Icons.Outlined.AutoAwesome, null) }
+                                IconButton(onClick = { formOriginalValue = null; formId = "new" }, enabled = canChange, modifier = Modifier.testTag("extension_rule_add")) { Icon(Icons.Outlined.Add, null) }
                             }
                         }
                         if (sorting) Text("长按拖动调整顺序，或使用上下移动按钮", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (rules.isEmpty()) Text("暂无附加规则", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         visible.forEach { rule -> key(rule.id) {
-                            ExtensionRuleRow(rule, ordered.indexOf(rule), ordered.size, sorting, !busy, rule.id in selected,
+                            ExtensionRuleRow(rule, ordered.indexOf(rule), ordered.size, sorting, canChange, rule.id in selected,
                                 onSelected = { selected = if (rule.id in selected) selected - rule.id else selected + rule.id },
-                                onEdit = { formId = rule.id },
+                                onEdit = { formOriginalValue = rule.value; formId = rule.id },
                                 onMove = { to ->
                                     val from = ordered.indexOfFirst { it.id == rule.id }
                                     if (from >= 0 && to in ordered.indices) ordered = ordered.toMutableList().apply { add(to, removeAt(from)) }
                                 }, onDrop = { persist(ordered) }, onCancel = { ordered = rules })
                         } }
                         if (!global) {
-                            ProfileSectionRow("默认目标", profile.matchTarget ?: "跟随配置", Icons.Outlined.Route, !busy,
+                            ProfileSectionRow("默认目标", profile.matchTarget ?: "跟随配置", Icons.Outlined.Route, canChange,
                                 Modifier.testTag("extension_match_target")) { showTarget = true }
                             if (profile.matchTarget != null && profile.matchTarget !in state.targets) Text("默认目标已不在配置中，请重新选择", color = MaterialTheme.colorScheme.error)
                             TextButton(onClick = { subpage = 1; selected = emptySet(); sorting = false }, modifier = Modifier.testTag("extension_global_control")) { Text("管理全局附加规则") }
@@ -178,19 +205,19 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                         Text("脚本", style = MaterialTheme.typography.titleSmall)
                         if (scripts.isEmpty()) Text("暂无脚本，请先前往配置脚本", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         scripts.forEach { script ->
-                            Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { onScript(if (profile.scriptId == script.id) null else script.id) }
+                            Row(Modifier.fillMaxWidth().clickable(enabled = canChange) { onScript(if (profile.scriptId == script.id) null else script.id) }
                                 .padding(vertical = 8.dp).testTag("extension_script_${script.id}"), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Outlined.Code, null)
                                 Text(script.label, Modifier.weight(1f).padding(horizontal = 16.dp), maxLines = 2, overflow = TextOverflow.Ellipsis)
                                 Checkbox(profile.scriptId == script.id, onCheckedChange = null)
                             }
                         }
-                        TextButton(onClick = onOpenScripts, enabled = !busy, modifier = Modifier.testTag("extension_manage_scripts")) { Text("前往配置脚本") }
+                        TextButton(onClick = onOpenScripts, enabled = canChange, modifier = Modifier.testTag("extension_manage_scripts")) { Text("前往配置脚本") }
                     }
                     if (subpage == 0) {
                         HorizontalDivider(Modifier.padding(top = 12.dp))
-                        ProfileSectionRow("DNS", "覆盖当前配置的 DNS 设置", Icons.Outlined.Dns, canEditSource && !busy, Modifier.testTag("profile_extension_dns"), onDns)
-                        ProfileSectionRow("Provider", "代理和规则资源", Icons.Outlined.Cloud, canEditSource && !busy, Modifier.testTag("profile_extension_providers"), onProviders)
+                        ProfileSectionRow("DNS", "覆盖当前配置的 DNS 设置", Icons.Outlined.Dns, canEditSource && canChange, Modifier.testTag("profile_extension_dns"), onDns)
+                        ProfileSectionRow("Provider", "代理和规则资源", Icons.Outlined.Cloud, canEditSource && canChange, Modifier.testTag("profile_extension_providers"), onProviders)
                     }
                     Spacer(Modifier.height(16.dp))
                 }
@@ -201,17 +228,36 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
         persist(rules + values.map { ExtensionRule(UUID.randomUUID().toString(), it) }); showPresets = false
     }
     formId?.let { id ->
-        val initial = rules.firstOrNull { it.id == id }
-        ExtensionRuleForm(initial, state.targets, state.saving, state.error, { formId = null; pendingRuleId = null; pendingRuleValue = null }) { rule ->
-            pendingRuleId = rule.id; pendingRuleValue = rule.value
-            persist(if (initial == null) rules + rule else rules.map { if (it.id == rule.id) rule else it })
+        val initial = formOriginalValue?.let { ExtensionRule(id, it) }
+        val actual = rules.firstOrNull { it.id == id }
+        val ownResult = pendingRuleId == id && actual?.value == pendingRuleValue
+        val conflict = when {
+            state.blocked -> "配置或规则已变化，草稿已保留，请返回后重新打开"
+            id != "new" && !ownResult && actual != initial -> "原规则已被修改或删除，草稿已保留，请返回后重新打开"
+            else -> null
+        }
+        ExtensionRuleForm(initial, state.targets, state.saving, state.error,
+            blockedMessage = conflict,
+            onRetryPending = onRetryPending.takeIf { state.interrupted },
+            onDiscardPending = onDiscardPending.takeIf { state.interrupted },
+            committed = state.draft?.pending?.committed == true,
+            onDismiss = { formId = null; formOriginalValue = null; pendingRuleId = null; pendingRuleValue = null; if (state.draft?.pending != null) onDiscardPending() }) { rule ->
+            if (conflict == null && canChange) {
+                pendingRuleId = rule.id; pendingRuleValue = rule.value
+                persist(if (id == "new") rules + rule else rules.map { if (it.id == id) rule else it })
+            }
         }
     }
-    if (confirmDelete) AlertDialog(onDismissRequest = { if (!busy) confirmDelete = false }, title = { Text("删除规则") }, text = {
+    if (confirmDelete) EditorAlertDialog(onDismissRequest = { if (!busy) confirmDelete = false }, title = { Text("删除规则") }, text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("删除所选 ${selectedVisibleIds.size} 条规则？")
             if (deleteAttempted && pendingDeleteVersion == null) state.error?.let {
                 Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_delete_error"))
+            }
+            if (state.interrupted) Row {
+                TextButton(onClick = onRetryPending, enabled = !busy && !state.blocked,
+                    modifier = Modifier.testTag("extension_delete_retry")) { Text(if (state.draft?.pending?.committed == true) "继续编辑" else "重试删除") }
+                TextButton(onClick = { confirmDelete = false; onDiscardPending() }, enabled = !busy) { Text("放弃这次保存") }
             }
         }
     }, confirmButton = { TextButton(onClick = {
@@ -222,9 +268,9 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
             deleteAttempted = true
             persist(rules.filterNot { it.id in selectedVisibleIds })
         }
-    }, enabled = !busy && selectedVisibleIds.isNotEmpty(), modifier = Modifier.testTag("extension_delete_confirm")) {
+    }, enabled = canChange && selectedVisibleIds.isNotEmpty(), modifier = Modifier.testTag("extension_delete_confirm")) {
         Text(if (pendingDeleteVersion != null) "删除中…" else "删除")
-    } }, dismissButton = { TextButton(onClick = { confirmDelete = false }, enabled = !busy,
+    } }, dismissButton = { TextButton(onClick = { confirmDelete = false; if (state.draft?.pending != null) onDiscardPending() }, enabled = !busy,
         modifier = Modifier.testTag("extension_delete_cancel")) { Text("取消") } })
 }
 
@@ -276,57 +322,67 @@ private fun ExtensionTargetPicker(selected: String?, targets: List<String>, foll
 }
 
 @Composable
-internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, saving: Boolean, saveError: String?, onDismiss: () -> Unit, onSave: (ExtensionRule) -> Unit) {
+internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, saving: Boolean, saveError: String?,
+    blockedMessage: String? = null, onRetryPending: (() -> Unit)? = null, onDiscardPending: (() -> Unit)? = null,
+    committed: Boolean = false, onDismiss: () -> Unit, onSave: (ExtensionRule) -> Unit) {
     val fields = remember(initial) { initial?.let { ExtensionRules.fields(it.value) }.orEmpty() }
     var type by rememberSaveable { mutableStateOf(fields.firstOrNull() ?: "DOMAIN-SUFFIX") }
-    var content by rememberSaveable { mutableStateOf(if (fields.size > 2) fields[1] else "") }
+    var content by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(if (fields.size > 2) fields[1] else "")) }
+    val ruleId = rememberSaveable { initial?.id ?: UUID.randomUUID().toString() }
     var target by rememberSaveable { mutableStateOf(fields.getOrNull(if (fields.lastOrNull() == "no-resolve") fields.lastIndex - 1 else fields.lastIndex) ?: "DIRECT") }
     var noResolve by rememberSaveable { mutableStateOf(fields.lastOrNull() == "no-resolve") }
     var rawMode by rememberSaveable { mutableStateOf(false) }
-    var raw by rememberSaveable { mutableStateOf(initial?.value.orEmpty()) }
+    var raw by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(initial?.value.orEmpty())) }
     // 作者 long：错误和放弃确认属于尚未提交的表单，重建后应继续原决策，不得静默撤销确认或隐藏错误。
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     var selectTarget by rememberSaveable { mutableStateOf(false) }
-    var typeMenu by remember { mutableStateOf(false) }
+    var typeMenu by rememberSaveable { mutableStateOf(false) }
     var discard by rememberSaveable { mutableStateOf(false) }
-    val value = if (rawMode) raw.trim() else listOfNotNull(type, content.trim().takeUnless { type in setOf("MATCH", "FINAL") }, target, "no-resolve".takeIf { noResolve }).joinToString(",")
-    fun back() { if (saving) return; if (value != initial?.value && (initial != null || content.isNotEmpty() || raw.isNotEmpty())) discard = true else onDismiss() }
+    val editable = !saving && onRetryPending == null
+    val value = if (rawMode) raw.text.trim() else listOfNotNull(type, content.text.trim().takeUnless { type in setOf("MATCH", "FINAL") }, target, "no-resolve".takeIf { noResolve }).joinToString(",")
+    fun back() { if (saving) return; if (value != initial?.value && (initial != null || content.text.isNotEmpty() || raw.text.isNotEmpty())) discard = true else onDismiss() }
     ProfileEditorPage(::back, { Text(if (initial == null) "添加规则" else "编辑规则") }, {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            (blockedMessage ?: error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_rule_error")) }
+            if (onRetryPending != null) Row {
+                TextButton(onClick = onRetryPending, enabled = !saving && blockedMessage == null,
+                    modifier = Modifier.testTag("extension_rule_retry")) { Text(if (committed) "继续编辑" else "重试保存") }
+                if (onDiscardPending != null) TextButton(onClick = onDiscardPending, enabled = !saving,
+                    modifier = Modifier.testTag("extension_rule_discard_pending")) { Text("放弃这次保存") }
+            }
             TextButton(onClick = {
-                if (!rawMode) { raw = value; rawMode = true } else runCatching {
-                    ExtensionRules.validate(listOf(ExtensionRule("draft", raw)))
-                    val parsed = ExtensionRules.fields(raw)
-                    type = parsed.first(); content = if (parsed.size > 2) parsed[1] else ""
+                if (!rawMode) { raw = TextFieldValue(value); rawMode = true } else runCatching {
+                    ExtensionRules.validate(listOf(ExtensionRule("draft", raw.text)))
+                    val parsed = ExtensionRules.fields(raw.text)
+                    type = parsed.first(); content = TextFieldValue(if (parsed.size > 2) parsed[1] else "")
                     noResolve = parsed.last() == "no-resolve"
                     target = parsed[if (noResolve) parsed.lastIndex - 1 else parsed.lastIndex]
                     rawMode = false; error = null
                 }.onFailure { error = it.message }
-            }, enabled = !saving, modifier = Modifier.testTag("extension_rule_raw_mode")) { Text(if (rawMode) "表单编辑" else "原始规则") }
-            if (rawMode) OutlinedTextField(raw, { raw = it }, label = { Text("规则") }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_raw"))
+            }, enabled = editable, modifier = Modifier.testTag("extension_rule_raw_mode")) { Text(if (rawMode) "表单编辑" else "原始规则") }
+            if (rawMode) OutlinedTextField(raw, { raw = it }, readOnly = !editable, label = { Text("规则") }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_raw"))
             else {
                 Box {
-                    OutlinedButton(onClick = { typeMenu = true }) { Text("类型：$type") }
+                    OutlinedButton(onClick = { typeMenu = true }, enabled = editable) { Text("类型：$type") }
                     DropdownMenu(typeMenu, { typeMenu = false }) {
                         listOf("DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-REGEX", "GEOSITE", "GEOIP", "IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR", "DST-PORT", "SRC-PORT", "PROCESS-NAME", "PROCESS-PATH", "NETWORK", "UID", "AND", "OR", "NOT", "MATCH").forEach { action ->
                             DropdownMenuItem({ Text(action) }, onClick = { type = action; typeMenu = false })
                         }
                     }
                 }
-                if (type !in setOf("MATCH", "FINAL")) OutlinedTextField(content, { content = it }, label = { Text("匹配内容") }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_content"))
-                ProfileSectionRow("目标", target, Icons.Outlined.Route, true, Modifier.testTag("extension_rule_target")) { selectTarget = true }
-                Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(noResolve, { noResolve = it }); Text("no-resolve") }
+                if (type !in setOf("MATCH", "FINAL")) OutlinedTextField(content, { content = it }, readOnly = !editable, label = { Text("匹配内容") }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_content"))
+                ProfileSectionRow("目标", target, Icons.Outlined.Route, editable, Modifier.testTag("extension_rule_target")) { selectTarget = true }
+                Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(noResolve, { noResolve = it }, enabled = editable); Text("no-resolve") }
             }
             Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }, confirmButton = { TextButton(onClick = {
-        if (saving) return@TextButton
-        val rule = ExtensionRule(initial?.id ?: UUID.randomUUID().toString(), value)
+        if (saving || blockedMessage != null || onRetryPending != null) return@TextButton
+        val rule = ExtensionRule(ruleId, value)
         runCatching { ExtensionRules.validate(listOf(rule)) }.onSuccess { onSave(rule) }.onFailure { error = it.message }
-    }, enabled = !saving, modifier = Modifier.testTag("extension_rule_confirm")) { Text(if (saving) "保存中…" else "确认") } })
+    }, enabled = !saving && blockedMessage == null && onRetryPending == null, modifier = Modifier.testTag("extension_rule_confirm")) { Text(if (saving) "保存中…" else "确认") } })
     if (selectTarget) ExtensionTargetPicker(target, (listOf("MATCH") + targets).distinct(), false, { selectTarget = false }) { target = it ?: "DIRECT"; selectTarget = false }
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃未保存修改？") },
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃未保存修改？") },
         confirmButton = { TextButton(onClick = onDismiss) { Text("放弃") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }
 

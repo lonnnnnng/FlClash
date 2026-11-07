@@ -172,6 +172,12 @@ object AppModule {
         com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "profile-management.v1", "com.lonnnnnng.flclash.profile.management.v1")
 
     @Provides
+    @Singleton
+    @javax.inject.Named("profile-extension")
+    fun provideProfileExtensionStore(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
+        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "profile-extension.v1", "com.lonnnnnng.flclash.profile.extension.v1")
+
+    @Provides
     fun provideRuleResourceCompiler(compiler: com.lonnnnnng.flclash.data.NativeRuleResourceCompiler): com.lonnnnnng.flclash.data.RuleResourceCompiler = compiler
 
     @Provides

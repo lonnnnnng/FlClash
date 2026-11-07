@@ -348,6 +348,7 @@ fun KClashApp(
     val diagnosticHistory by runtimeViewModel.diagnosticHistory.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
     val managementState by profilesViewModel.management.state.collectAsState()
+    val extensionSession by profilesViewModel.extension.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
     val remoteEditorState by profilesViewModel.remoteEditorState.collectAsState()
     val documentEditorState by profilesViewModel.documentEditorState.collectAsState()
@@ -451,6 +452,10 @@ fun KClashApp(
     LaunchedEffect(managementState.draft?.session, managementState.recoveryFailed) {
         // 作者 long：进程重启后原管理窗口必须在配置页可见；导航不修改当前配置或启动核心。
         if (managementState.draft != null || managementState.recoveryFailed) selectedDestinationIndex = MainDestination.PROFILES.ordinal
+    }
+    LaunchedEffect(extensionSession.draft?.session, extensionSession.recoveryFailed) {
+        // 作者 long：独立密文恢复后回到扩展所属配置页，不依赖已经消失的Activity导航Bundle。
+        if (extensionSession.draft != null || extensionSession.recoveryFailed) selectedDestinationIndex = MainDestination.PROFILES.ordinal
     }
     var toolsSubpage by rememberSaveable { mutableStateOf(ToolsSubpage.MENU) }
     var showAccessUnsavedChanges by rememberSaveable { mutableStateOf(false) }
@@ -1746,6 +1751,10 @@ internal fun ProfilesPanel(
     }
     var scriptBindingProfileId by remember { mutableStateOf<Long?>(null) }
     var extensionProfileId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val extensionSession = extensionController?.state?.collectAsState()?.value
+    LaunchedEffect(extensionSession?.draft?.session) {
+        extensionSession?.draft?.profileId?.let { extensionProfileId = it }
+    }
     var showBackupRestoreDialog by remember { mutableStateOf(false) }
     var showWebDavDialog by remember { mutableStateOf(false) }
     var showWebDavRestoreDialog by remember { mutableStateOf(false) }
@@ -1995,13 +2004,15 @@ internal fun ProfilesPanel(
         )
     }
 
-    extensionProfileId?.let { id ->
-        state.profiles.firstOrNull { it.id == id }?.let { profile ->
-            if (extensionController != null) ProfileExtensionRoute(id, extensionController, scripts, canChangeFiles,
-                { extensionProfileId = null }, onOpenScripts, { onOpenDnsEditor(profile) }, { onOpenProvidersEditor(profile) })
-            else ProfileExtensionPage(profile.realLabel, canChangeFiles, { extensionProfileId = null },
+    if (extensionSession?.recoveryFailed == true && extensionController != null) {
+        AlertDialog(onDismissRequest = {}, title = { Text("扩展草稿") }, text = { Text(extensionSession.error.orEmpty()) },
+            confirmButton = { TextButton(extensionController::retryRecovery, enabled = !extensionSession.loading) { Text("重试恢复") } })
+    } else extensionProfileId?.let { id ->
+        val profile = state.profiles.firstOrNull { it.id == id }
+        if (extensionController != null) ProfileExtensionRoute(id, extensionController, scripts, canChangeFiles && profile != null,
+            { extensionProfileId = null }, onOpenScripts, { profile?.let(onOpenDnsEditor) }, { profile?.let(onOpenProvidersEditor) })
+        else if (profile != null) ProfileExtensionPage(profile.realLabel, canChangeFiles, { extensionProfileId = null },
                 { onOpenDnsEditor(profile) }, { onOpenProvidersEditor(profile) }, { scriptBindingProfileId = id })
-        }
     }
 
     editorState.profile?.let { profile ->

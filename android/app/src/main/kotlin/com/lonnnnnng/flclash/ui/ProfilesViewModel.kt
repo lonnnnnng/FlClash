@@ -212,6 +212,7 @@ class ProfilesViewModel internal constructor(
     private val groupFilterValidator: ProxyGroupFilterValidator = ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
     private val draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
     managementStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    extensionStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
 ) : ViewModel() {
     @Inject constructor(
         repository: ProfileStore,
@@ -221,10 +222,11 @@ class ProfilesViewModel internal constructor(
         groupFilterValidator: ProxyGroupFilterValidator = ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
         draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
         @javax.inject.Named("profile-management") managementStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
-    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore, managementStore)
+        @javax.inject.Named("profile-extension") extensionStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    ) : this(repository, runtimeManager, configValidator, fileReader, Dispatchers.Default, groupFilterValidator, draftStore, managementStore, extensionStore)
     internal val management = ProfileManagementController(repository, runtimeManager, managementStore, viewModelScope)
     internal val globalRules = GlobalRulesController(repository, runtimeManager, viewModelScope)
-    internal val extension = ProfileExtensionController(repository, runtimeManager, viewModelScope)
+    internal val extension = ProfileExtensionController(repository, runtimeManager, viewModelScope, store = extensionStore)
     internal val fileImport = ProfileFileImportController(repository, runtimeManager, fileReader, configValidator, viewModelScope, overviewDispatcher)
     private val mutableRecentGroupIcons = MutableStateFlow<List<String>>(emptyList())
     val recentGroupIcons: StateFlow<List<String>> = mutableRecentGroupIcons
