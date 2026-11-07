@@ -304,7 +304,13 @@ class ProfilesViewModelTest {
             advanceUntilIdle()
             assertNotNull(if (remote) second.remoteEditorState.value.replacement else second.editorState.value.replacement)
             assertEquals("rules: []", store.content); assertTrue(store.fileUpdates.isEmpty())
-            second.closeEditor(); advanceUntilIdle(); owner2.clear(); assertNull(saved)
+            second.closeEditor()
+            // 作者 long：文件预检经过真实IO线程，排空测试调度器不代表持久化写锁已归还；页面关闭终态才证明密文清理完成。
+            kotlinx.coroutines.withTimeout(5_000) {
+                if (remote) second.remoteEditorState.first { it.profile == null }
+                else second.editorState.first { it.profile == null }
+            }
+            advanceUntilIdle(); owner2.clear(); assertNull(saved)
         }
     }
 

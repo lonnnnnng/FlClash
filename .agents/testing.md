@@ -1,6 +1,12 @@
 # Testing
 
-## Provider运行态与MRS只读冷恢复（2026-11-07，当前）
+## Provider选项IME与子面板交互（2026-11-07，当前）
+
+KUI-014已红绿复现并修复：选项页重复同一错误按提交次数回顶，选项/快捷YAML从实际Dialog取得焦点与IME控制器，保存后收键盘。Redmi final2精确9/9（6新增+3相邻回归）、21张PNG完整校验及7拼图目视；覆盖长过滤与YAML、逐层返回/放弃重开、校验/保存防重复、代理/规则各40项绑定失败取消重试及别名保持。build4 App549执行、Service212/Core38/Common31复用，共830项JVM零失败/错误/跳过；389任务22执行/367复用，Debug/Test/未签名Release-R8及双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。安装回拉与577份源码匹配；正式两配置/正文SHA-size-mtime/偏好/选择、原1.yaml/Flutter包/设备设置保持，收尾无服务。red1 0/2、final1 6/9和build3既有Picker单测清理等待失败保留；单测改等实际关闭终态后build4全量通过。此组为正式Compose页面的固定组件宿主/受控回调，非新增MainActivity/Room/核心/实网或冷进程验收；返回先等Window入场，静态终帧不等于连续动效。本组选项/绑定Activity重建与入场中Back、独立全局规则页/资源选择器冷恢复、上一组正文保存终帧继续待补，再统一Flutter排版/连续动效。第6项原保护异常、未知偏好变化、网络稳定性和前组final6超时仍待查；玻璃默认关闭，既有暂缓/取消范围保持。证据`docs/acceptance/provider-options-interactions-redmi-20261107.json`；溯源`docs/provider-options-validation-defect.md`；附件`../acceptance-artifacts/provider-options-interactions-20261107/`。
+
+`ProviderPagesInstrumentedTest`按JSON列出的9个精确方法运行，禁止扩大为其他整类。组件用例不改正式配置，保护入口仍需先核对两份FILE/URL、STOPPED、设备型号/字号和原文件；只安装Kotlin App/Test并回拉比对。`kclashCapturePng=true`与`kclashCapturePngChunks=true`采集21图，接收端校验完整名称集合、分片/哈希/PNG解码后目视7拼图。IME必须在曾经显示的同一Window回读明确隐藏，缺失Window/Insets不可判通过；静态采样650ms不作为连续动效性能证据。
+
+## Provider运行态与MRS只读冷恢复（2026-11-07，历史）
 
 Provider本组已验：MRS只读正文首次/再次冷恢复及原面板返回通过；纯代理保存前后SIGKILL经外部独立观察系统新PID/前台服务，恢复不自动重放、显式重试仅一次；停止态/运行态各源文件或源记录缺失4类真实setup拒绝后回滚旧输入/选择/会话并成功切往有效目标，epoch各增加2。KUI-013父面板冷恢复后错误常驻已红绿复现并修复，KUI-010补齐实核回滚证据。Redmi final7运行态/回滚6/6、12次同socket核心归因HTTP200，MRS 1+1、相邻回归10/10，22张PNG完整校验及8拼图目视。build7 App549实际执行、Service212/Core38/Common31复用，共830项JVM零失败/错误/跳过；389任务28执行/361复用，Debug/Test/未签名Release-R8及双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。安装回拉及579份Android源码匹配；正式两配置/正文SHA-size-mtime/偏好/脚本/选择、原1.yaml/Flutter包/设备基线保持，临时对象/密文/标记清除，无服务或tun0。MRS为真实MainActivity STOPPED，首次存活PID受控force-stop、再次恢复前进程已退出，运行态为Debug宿主真实VM/Room/核心的纯代理SIGKILL，非VPN/OEM自然回收或完整点击导航。final6-before的verify超时原因未定，后续通过不抹除；第6项原保护异常、未知偏好变化与网络稳定性仍待查。选项错误截图滚动后提示部分裁切、筛选与保存图含转场中间帧，下一组补键盘错误可见性、稳定终帧及剩余子页/面板，再集中Flutter排版/连续动效；独立全局规则页/资源选择器冷进程另列。效果/性能/兼容/发布按原顺序，蜂窝延期、玻璃默认关闭。证据`docs/acceptance/provider-runtime-redmi-20261107.json`；溯源`docs/provider-cold-parent-refresh-defect.md`；附件`../acceptance-artifacts/provider-runtime-20261107/`。
 

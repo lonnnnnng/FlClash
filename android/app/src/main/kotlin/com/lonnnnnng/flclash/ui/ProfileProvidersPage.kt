@@ -166,13 +166,14 @@ private fun ProviderQuickYaml(initialProxy: String, initialRule: String, busy: B
     var discard by rememberSaveable { mutableStateOf(false) }
     var attempts by remember { mutableIntStateOf(0) }
     val scroll = rememberScrollState()
-    val focus = LocalFocusManager.current
-    val keyboard = LocalSoftwareKeyboardController.current
     // 作者 long：长正文底部提交及相同错误的重复重试都要回到提示处，收起输入焦点以免键盘再次把失败提示推出视口。
     LaunchedEffect(failure, error, busy, attempts) { if (!busy && (failure ?: error) != null) scroll.animateScrollTo(0) }
     val dirty = proxy != initialProxy || rule != initialRule
     val close = { if (!busy) { if (dirty) discard = true else onDismiss() } }
     ProfileEditorPage(onDismissRequest = close, backTag = "providers_yaml_back", title = { Text("快捷 YAML") }, confirmButton = {
+        // 作者 long：快捷编辑同样使用独立Dialog，必须控制当前输入窗口，不能沿用资源父页的焦点管理器。
+        val focus = LocalFocusManager.current
+        val keyboard = LocalSoftwareKeyboardController.current
         TextButton(onClick = {
             focus.clearFocus(force = true); keyboard?.hide(); attempts++
             runCatching {

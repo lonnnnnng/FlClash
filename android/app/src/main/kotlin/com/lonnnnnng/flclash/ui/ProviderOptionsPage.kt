@@ -15,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,11 +43,12 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
     var discard by remember { mutableStateOf(false) }
     var localError by remember { mutableStateOf<String?>(null) }
     var validating by remember { mutableStateOf(false) }
+    var attempts by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     val scroll = rememberScrollState()
     val busy = saving || validating
-    // 作者 long：用户可能在长选项页底部保存，失败后回到提示位置，避免只在屏外出现错误而像按钮无响应。
-    LaunchedEffect(localError, error, busy) { if (!busy && (localError ?: error) != null) scroll.animateScrollTo(0) }
+    // 作者 long：相同错误不会改变文案，仍需按每次提交回到提示位置，避免滚离后再保存像按钮无响应。
+    LaunchedEffect(localError, error, busy, attempts) { if (!busy && (localError ?: error) != null) scroll.animateScrollTo(0) }
     val initialValues = remember(initial) { ProviderOption.entries.mapNotNull { option -> option.value(initial)?.let { option.name to it } }.toMap() }
     val dirty = filters != initial || values != initialValues
     val close = { if (!busy) { if (dirty) discard = true else onDismiss() } }
@@ -56,6 +59,7 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
     fun changeFilters(updated: ProxyProviderOverride) { filterJson = updated.toJson().toString(); localError = null }
     fun save() {
         if (busy) return
+        attempts++
         val frozen = runCatching {
             ProviderOption.entries.fold(filters) { model, option ->
                 val text = values[option.name]
@@ -80,7 +84,14 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
         }
     }
     ProfileEditorPage(onDismissRequest = close, backTag = "provider_options_back", title = { Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        confirmButton = { TextButton(onClick = ::save, enabled = !busy, modifier = Modifier.testTag("provider_options_save")) { Text(if (validating) "校验中…" else if (saving) "保存中…" else "保存") } }, text = {
+        confirmButton = {
+            // 作者 long：整页编辑器是独立Dialog，必须在其内容内取得焦点和IME控制器，父窗口的控制器不能结束本页输入。
+            val focus = LocalFocusManager.current
+            val keyboard = LocalSoftwareKeyboardController.current
+            TextButton(onClick = {
+                if (!busy) { focus.clearFocus(force = true); keyboard?.hide(); save() }
+            }, enabled = !busy, modifier = Modifier.testTag("provider_options_save")) { Text(if (validating) "校验中…" else if (saving) "保存中…" else "保存") }
+        }, text = {
             Column(Modifier.fillMaxSize().verticalScroll(scroll).testTag("provider_options_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 (localError ?: error)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("provider_options_error")) }
