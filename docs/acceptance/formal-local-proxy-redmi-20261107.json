@@ -1,0 +1,820 @@
+{
+  "date": "2026-11-07",
+  "title": "正式主页面本地代理失败与配置切换边界",
+  "status": "DONE-VERIFIED-SCOPED",
+  "overallVisualParity": "PARTIAL",
+  "summary": "正式MainActivity本地代理异常链路已验：真实Room失败经Snackbar反馈、菜单重试只新增一次并跨重建回读；真实配置卡片在受理前切换拒绝写入、受理后保存冻结原节点；40份原正文CUSTOM副本的真实引用查询、首尾滚动、取消保留批选、等待防重复、删除失败原位提示/重建/重试及引用正文保持通过。Redmi final3精确18/18（4新增+14相邻回归）、55图完整校验及16拼图目视；788项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过，安装/源码匹配。两份正式配置/脚本/正文/偏好值/选择、原1.yaml、Flutter和设备设置保持，临时副本/本地节点/SQL触发器清理，收尾无服务。",
+  "scope": {
+    "sourceBaseCommit": "abc10bc62959661ec2170ff45009b3df77ea0ec9",
+    "changedSources": {
+      "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/LocalProxyOperationProbe.kt": "765dcd13cec57481044a07639b639f9075612ed4ef9988e48d0e25f7646c959e",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxyEditorOperations.kt": "87387cb4c98841e85a31024d6aec630378c21e685d23944cd9d5615eb495a996",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LocalProxyOperationWindow.kt": "d7b0682a880f598b7cc476405cec90718cc037ef4ba493c63400322c842174c8",
+      "android/app/src/release/kotlin/com/lonnnnnng/flclash/ui/LocalProxyOperationProbe.kt": "8fcff2260917d7374bdd03309658a2ca322b7eff078e474162fd2f0d93c1a0f9",
+      "android/tests/instrumented/MainLocalProxyFailureInstrumentedTest.kt": "f02505a845c70a11f4fb8483068a5f2ca0bd733364c51576ee2380db2eba0cc8",
+      "android/tests/instrumented/MainLocalProxyRecoveryInstrumentedTest.kt": "c0633cef9c39af6a04953c5884fce9a7d71af88e12d2e5f26e097b350c700743"
+    },
+    "productBehavior": "只增加默认关闭的Debug时序/固定SQL故障观测；正式定义、校验、保存均保持真实链路，Release空实现。",
+    "boundary": "本组为STOPPED下真实MainActivity/Hilt/Bridge/正式Room；窄Debug门闩仅控制校验/保存前等待，SQL错误类型与固定标记计数证明故障命中，Release无布置接口/测试标记。长引用按名称扫描原文，原文同名inline节点优先，不证明删除后路由失效。未新验运行态、冷进程、全部输入法或完整Flutter视觉。"
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 42s",
+    "tasks": "389 actionable tasks: 11 executed, 378 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 512,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 70
+      },
+      "service": {
+        "tests": 207,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :app:testDebugUnitTest UP-TO-DATE",
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE"
+    ],
+    "executionNote": "App512在本组build1/build2实际执行，其余276复用；最终build3四模块UP-TO-DATE，389任务11执行/378复用。Debug Lint0错误/67警告/10提示，Release0错误/66警告/9提示。最终build3仅前移精确恢复入口参数检查，产品App及Release与build2保持；Go未重跑。",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 10
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 9
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "8a8872f267a15ea8bec50ed24c1ae9813f8378c16ad81ee5120f7ef9eeb500f6",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "9f6cb16d1728efdb4e28d2f311f3af78e23d59c04b52531f8e3f64732512acc5",
+        "bytes": 5901908,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "746ce8a9ac4a820c53adb784a597d641f9a3a28428efbd7f8a4a78ccfbb11f43",
+        "bytes": 48220120,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    },
+    "releaseProbeTestControlsAbsent": true
+  },
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "flutterHashes": [
+      "700570428bde3a1b316ae7f7e8f10d77f9e23ee8bf8b3f45557362a061fbefb3"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "installation": {
+    "com.lonnnnnng.flclash": {
+      "builtSha256": "8a8872f267a15ea8bec50ed24c1ae9813f8378c16ad81ee5120f7ef9eeb500f6",
+      "pulledSha256": "8a8872f267a15ea8bec50ed24c1ae9813f8378c16ad81ee5120f7ef9eeb500f6"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "builtSha256": "9f6cb16d1728efdb4e28d2f311f3af78e23d59c04b52531f8e3f64732512acc5",
+      "pulledSha256": "9f6cb16d1728efdb4e28d2f311f3af78e23d59c04b52531f8e3f64732512acc5"
+    }
+  },
+  "acceptance": {
+    "passed": 18,
+    "total": 18,
+    "newMethods": 4,
+    "regressions": 14,
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainLocalProxyFailureInstrumentedTest#formalNodeMenuDatabaseFailureRetriesThroughSnackbarAndPersistsOnce",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainLocalProxyFailureInstrumentedTest#formalNodeMenuProfileSwitchBeforeAcceptanceRejectsWithoutWriting",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainLocalProxyFailureInstrumentedTest#formalNodeMenuProfileSwitchAfterAcceptanceCommitsFrozenNodeOnce",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainLocalProxyFailureInstrumentedTest#formalLocalProxyDeleteQueriesLongCustomReferencesCancelsThenRetriesRealRoomFailure",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyAlpnBoundaryInstrumentedTest#immediateSemanticInputAndFocusTransferPreserveAlpn",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyAlpnBoundaryInstrumentedTest#platformInputConnectionCommitAndImmediateRecreationPreserveAlpn",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#singleLinksImeBackDiscardAndRecreationKeepParentWithoutSaving",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#listDeleteCancellationKeepsSelectionAndSecondBackExitsSelectionOnly",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#actualCoreValidationAndDatabaseFailureRecoverAndSelectionSwitchRespectsAcceptanceBoundary",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#batchLinksLongInputImeBackAndRecreationKeepDirectoryWithoutSaving",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyInteractionInstrumentedTest#longDeleteReferencesCancelKeepsParentAndFailedSaveRetriesOnce",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#mapDraftSurvivesRealActivityRecreationAndCredentialsStayOutOfBundle",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.StageOneDraftInstrumentedTest#listDraftReturnsToParentCanRemoveLastValueAndRejectsOldSession",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenusInstrumentedTest#selectorPreferredAndNonselectableMenusKeepSelectionAndDelayIndependentInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProxyNodeMenusInstrumentedTest#customProviderAndBuiltinPoliciesApplyToBothPageLayouts",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest#missingReferencesDeleteAndUnsavedDraftRequireConfirmation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#localDirectoryDragScrollsCancelsAndSavesOnceThenSearchDisablesSorting",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.LocalProxyLinksInstrumentedTest#linkDraftErrorsReplacementAndDiscardRenderInBothThemes",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "seconds": 217.53,
+    "images": [
+      {
+        "path": "formal_local_add_failed.png",
+        "bytes": 180786,
+        "sha256": "df7bcb3f4be7f606555bad990185c7dbaff5769ed7e5fde67605c9d3c4f0ec11"
+      },
+      {
+        "path": "formal_local_add_retry_saved.png",
+        "bytes": 180817,
+        "sha256": "040ff11ff30c28344442bfb7d081274303d259e24de686fd6625ad8c1830bf37"
+      },
+      {
+        "path": "formal_local_add_recreated.png",
+        "bytes": 60989,
+        "sha256": "5f6b7b7045b13e1645793a0259c4d1e25e17a3d5e8739858d5acfe081399d758"
+      },
+      {
+        "path": "formal_local_switch_rejected.png",
+        "bytes": 143797,
+        "sha256": "91ffb16399520d6d116718418e5fe45c32592f645e8560420b3bd197f0fd31fb"
+      },
+      {
+        "path": "formal_local_switch_accepted.png",
+        "bytes": 146290,
+        "sha256": "b418d32de199f5849c5db8d1d9f21a2ef1f7b7736ddedbb427448fcac6aaf973"
+      },
+      {
+        "path": "formal_local_refs_first.png",
+        "bytes": 188742,
+        "sha256": "da720edde8df1dcdaef5ed9ee98fa4e65286c9fa0cb07b93cd7c6944dab65d86"
+      },
+      {
+        "path": "formal_local_refs_last.png",
+        "bytes": 191437,
+        "sha256": "9974b5f3ca83904cc4d95719feffe93e1d0caec0a9f8ede17944a1079994cfea"
+      },
+      {
+        "path": "formal_local_refs_cancel.png",
+        "bytes": 61090,
+        "sha256": "dc75cf141fcd96e95209e1063d18ed58beca84e9e532153c7d45e6632aa29245"
+      },
+      {
+        "path": "formal_local_refs_pending.png",
+        "bytes": 184466,
+        "sha256": "f23277043ab5596b54241b6a27b5ab729e6987ea038f6ed934fe0f04ee0f9a36"
+      },
+      {
+        "path": "formal_local_refs_failed.png",
+        "bytes": 204978,
+        "sha256": "5a125ac1621144930bca8eb1829bc16f9e2c4990fb2315bc5f962ea3719f34a2"
+      },
+      {
+        "path": "formal_local_refs_failed_recreated.png",
+        "bytes": 204978,
+        "sha256": "5a125ac1621144930bca8eb1829bc16f9e2c4990fb2315bc5f962ea3719f34a2"
+      },
+      {
+        "path": "formal_local_refs_deleted.png",
+        "bytes": 80300,
+        "sha256": "999b698452027105a24bbe7dd03af0e29da658f6a1c7d796c93c020fa7975fb6"
+      },
+      {
+        "path": "local_links_single_first_ime.png",
+        "bytes": 212316,
+        "sha256": "496acfcc2adb2b3d305434ca3b85164dc899f2c3d256892a5b50de12d48d7209"
+      },
+      {
+        "path": "local_links_single_last_ime.png",
+        "bytes": 213763,
+        "sha256": "527a1896fb0dd3f26e1d748d4729b2c1c4e974a4645d98cfc9b19fe79ab5dbc3"
+      },
+      {
+        "path": "local_links_single_discard.png",
+        "bytes": 222346,
+        "sha256": "2f2b3a2d720c6082bfbcdc959daa96c2e99a2056f50cb890eaad6d86182d6ed2"
+      },
+      {
+        "path": "local_links_single_recreated.png",
+        "bytes": 231976,
+        "sha256": "6d3fa63d5d680cccd19d7dcf83127a4447d0efdc950fea5e3b2f5ee632e33406"
+      },
+      {
+        "path": "local_links_single_returned.png",
+        "bytes": 61049,
+        "sha256": "4b00753b5a53fc979b022a0a552ab09059370a01725da9da9b1af9a985725469"
+      },
+      {
+        "path": "local_delete_cancel_selection.png",
+        "bytes": 61049,
+        "sha256": "4b00753b5a53fc979b022a0a552ab09059370a01725da9da9b1af9a985725469"
+      },
+      {
+        "path": "local_add_core_rejected.png",
+        "bytes": 89200,
+        "sha256": "bff42e2063f38740f398aa5e65ad38dc8ead73060f82cefebe7cb94d6260a755"
+      },
+      {
+        "path": "local_add_database_failed.png",
+        "bytes": 87874,
+        "sha256": "d1c2a794d035cb1116f8deef92a042a251b853cb2dfeacda6a10711f9d840f49"
+      },
+      {
+        "path": "local_add_profile_changed.png",
+        "bytes": 83483,
+        "sha256": "e5add88fa0fa86e4d8228f1d01e8cf4a0f3d7962ecaa14e77f2f89298cf32ac8"
+      },
+      {
+        "path": "local_add_accepted_original.png",
+        "bytes": 78530,
+        "sha256": "df42ec76671363874450bab1cbdcf17f69e1123b715d7cc6ed16a8a92cec8873"
+      },
+      {
+        "path": "local_links_batch_first_ime.png",
+        "bytes": 217026,
+        "sha256": "781dadccf00c6f5824e4cadb748c908865e61efe6dccb48e91b5135c40d2aa05"
+      },
+      {
+        "path": "local_links_batch_last_ime.png",
+        "bytes": 218222,
+        "sha256": "f3e565257baf5f86a581efc9b066693a1e3d654f73a8152ed8ab56af5c536344"
+      },
+      {
+        "path": "local_links_batch_discard.png",
+        "bytes": 226218,
+        "sha256": "438bf858139b19b08415a4b6b09e13ecdef102e4ffe3336c3e690c3715a17dd2"
+      },
+      {
+        "path": "local_links_batch_recreated.png",
+        "bytes": 236526,
+        "sha256": "3341599b715f2b5d8c63a356f47af80b54c3f291604d10eedaf1e0d9b58c754f"
+      },
+      {
+        "path": "local_links_batch_returned.png",
+        "bytes": 61049,
+        "sha256": "4b00753b5a53fc979b022a0a552ab09059370a01725da9da9b1af9a985725469"
+      },
+      {
+        "path": "local_delete_first.png",
+        "bytes": 195151,
+        "sha256": "1f4a852d79462170e7dbef77d8b487d9a6e985d91b3f18d0d551492b67df3287"
+      },
+      {
+        "path": "local_delete_last.png",
+        "bytes": 195588,
+        "sha256": "5fca200bec77d44aa240f9cb6bab159d033f4492785ccd92848f34a7b10ec51c"
+      },
+      {
+        "path": "local_delete_pending.png",
+        "bytes": 193809,
+        "sha256": "b7f8b41ac6b4c2e8cf2c66ba0638b442c154618217279e3abc4f6285116c738c"
+      },
+      {
+        "path": "local_delete_failed.png",
+        "bytes": 216324,
+        "sha256": "7ae95966071bada0739a96038e33161f5978ffb4818b0e4fa22f0fb3f632dbbc"
+      },
+      {
+        "path": "local_delete_failed_recreated.png",
+        "bytes": 216324,
+        "sha256": "7ae95966071bada0739a96038e33161f5978ffb4818b0e4fa22f0fb3f632dbbc"
+      },
+      {
+        "path": "local_delete_saved.png",
+        "bytes": 80019,
+        "sha256": "29be7f75de8fb5bc72f1cc92d9104af9a4e11967e28e8dbcdb71f1bc5a990989"
+      },
+      {
+        "path": "node_menu_Selector_false.png",
+        "bytes": 73473,
+        "sha256": "a5525f19af8a082848dc874247e1a592abd20711829a67a8e8bd2801f8628ea7"
+      },
+      {
+        "path": "node_menu_URLTest_false.png",
+        "bytes": 55281,
+        "sha256": "f7f2c7d3596544ae5c2000012b3a372910e299a0db0d6bf644687270aedfa16d"
+      },
+      {
+        "path": "node_menu_Fallback_false.png",
+        "bytes": 61557,
+        "sha256": "c0129e17f0037e99f6a3ac5dfa41ef5e930a9f195c31985ad24b388ca1c7eb6e"
+      },
+      {
+        "path": "node_menu_LoadBalance_false.png",
+        "bytes": 50866,
+        "sha256": "0f391afe83d74f6c5ae98ad556d0587fdb520b12aecfdcf8bf0618661946977f"
+      },
+      {
+        "path": "node_menu_Selector_true.png",
+        "bytes": 66369,
+        "sha256": "182bd2c76056d9b252a1c6832f55219d4b9dd6776a4befc10b7821d1089ee6b0"
+      },
+      {
+        "path": "node_menu_URLTest_true.png",
+        "bytes": 56595,
+        "sha256": "ee0d7cb345e9eaac78fea4b21ec98f8ded7bb8e4420cd358d58e47b5e0a3ff40"
+      },
+      {
+        "path": "node_menu_Fallback_true.png",
+        "bytes": 70711,
+        "sha256": "fd524878c918d892b62bedb36d3f13ba5744a0f1b5f8dac2cfc94b0ddaff9739"
+      },
+      {
+        "path": "node_menu_LoadBalance_true.png",
+        "bytes": 57921,
+        "sha256": "d4c02b0b574ece1da4324500b3f7fe84fec00087e43e6f5ee1c271a3b482ddbb"
+      },
+      {
+        "path": "node_provider_TAB_false.png",
+        "bytes": 88735,
+        "sha256": "f96949e0cea60c3c580f7edff27806fe63f4cf0d6f00a3620dbe56b65de3b2f8"
+      },
+      {
+        "path": "node_provider_TAB_true.png",
+        "bytes": 94701,
+        "sha256": "8def76893e65418ac9934d4b97ca94d96c99b4041d20d9ecb4857e53a4a74f58"
+      },
+      {
+        "path": "node_provider_LIST_false.png",
+        "bytes": 105829,
+        "sha256": "c5293623ace16a66ba36dee8ea0c8f78e071f0c87e603a39ca43217b1282406c"
+      },
+      {
+        "path": "node_provider_LIST_true.png",
+        "bytes": 106564,
+        "sha256": "4a09548d6d5961e9da07b0854a989e07dcb5430534fec4ed507cde595184a8af"
+      },
+      {
+        "path": "local_proxy_discard.png",
+        "bytes": 134427,
+        "sha256": "62cc87c9f736b73a3d9b102ee05b89e3e7db1581f6a9af40af4d7359cb80f506"
+      },
+      {
+        "path": "local_proxy_delete_references.png",
+        "bytes": 131708,
+        "sha256": "0feaab9e849b2a21c96dddf5b6be8c108cb912415dd1dbd7ea20a2dbdac88b84"
+      },
+      {
+        "path": "local_proxy_empty.png",
+        "bytes": 69006,
+        "sha256": "3d08a45e32af7178b7e99247250e9459c657533c286e3e76e29542d846fd7bd6"
+      },
+      {
+        "path": "local_proxies_drag_saved.png",
+        "bytes": 127371,
+        "sha256": "58af076b8c878d154dad32e78a69388477bc958d8bd8cd624fdd8bbc0acd1a91"
+      },
+      {
+        "path": "local_proxy_links_error_false.png",
+        "bytes": 157914,
+        "sha256": "9993ebe26c6f85c0df727e4f0163f1af672dcded0d4695e611311d54a8450224"
+      },
+      {
+        "path": "local_proxy_links_discard_false.png",
+        "bytes": 124275,
+        "sha256": "1843c1916a58b6648be7ce79c90a60b3c1095a4b96c37688b061386cb9b5b96c"
+      },
+      {
+        "path": "local_proxy_links_replacement_false.png",
+        "bytes": 138643,
+        "sha256": "e7474c563c99e1d426088858a702a99b3426410281966971b1b0df5877967359"
+      },
+      {
+        "path": "local_proxy_links_error_true.png",
+        "bytes": 158551,
+        "sha256": "da5c1da3cf8c03e99bbebba6ff4d277e629269ac559de63f23f16ec53e201280"
+      },
+      {
+        "path": "local_proxy_links_discard_true.png",
+        "bytes": 123992,
+        "sha256": "f597b6da2cfc8f262ba41cb240e0e8c7c991dd8ec7abc5270bb19e6a540b83ce"
+      },
+      {
+        "path": "local_proxy_links_replacement_true.png",
+        "bytes": 138157,
+        "sha256": "ddf79f7c406a9cc3554ed472ec3aac5a95c5eb99f1e5467ddae685b08b4f33f7"
+      }
+    ],
+    "visualReview": {
+      "methods": 18,
+      "images": 55,
+      "sources": 1672,
+      "installationMatched": true,
+      "preserved": true,
+      "contactSheets": [
+        {
+          "path": "review-1-1.png",
+          "images": [
+            "formal_local_add_failed.png",
+            "formal_local_add_recreated.png",
+            "formal_local_add_retry_saved.png",
+            "formal_local_refs_cancel.png"
+          ],
+          "sha256": "305f765c7c733743c518be3df15f3c700a60179d8d386dbfe47cf67629415f0e"
+        },
+        {
+          "path": "review-1-2.png",
+          "images": [
+            "formal_local_refs_deleted.png",
+            "formal_local_refs_failed.png",
+            "formal_local_refs_failed_recreated.png",
+            "formal_local_refs_first.png"
+          ],
+          "sha256": "798322363b621b0dbbfefe95ce6d30b644ebc0ebc15b938f07297b87d9867f1c"
+        },
+        {
+          "path": "review-1-3.png",
+          "images": [
+            "formal_local_refs_last.png",
+            "formal_local_refs_pending.png",
+            "formal_local_switch_accepted.png",
+            "formal_local_switch_rejected.png"
+          ],
+          "sha256": "4e832416050c3022abb5bb42282b0ee362ece2b6911a330f71bfc53d0c2ce947"
+        },
+        {
+          "path": "review-2-1.png",
+          "images": [
+            "local_delete_cancel_selection.png",
+            "local_delete_failed.png",
+            "local_delete_failed_recreated.png",
+            "local_delete_first.png"
+          ],
+          "sha256": "af9eec960aa649aaa766cb601db54122bc182da502dd97a63a35d13c0ee06f93"
+        },
+        {
+          "path": "review-2-2.png",
+          "images": [
+            "local_delete_last.png",
+            "local_delete_pending.png",
+            "local_delete_saved.png"
+          ],
+          "sha256": "ebf87ce4524899c839df52a248005ba566fe1622cf29d030d481a4b7728964b8"
+        },
+        {
+          "path": "review-3-1.png",
+          "images": [
+            "local_add_accepted_original.png",
+            "local_add_core_rejected.png",
+            "local_add_database_failed.png",
+            "local_add_profile_changed.png"
+          ],
+          "sha256": "106c13a45dc6b569950a1b9adbb071d682c56595c51383e42358867990599c9f"
+        },
+        {
+          "path": "review-4-1.png",
+          "images": [
+            "local_links_single_discard.png",
+            "local_links_single_first_ime.png",
+            "local_links_single_last_ime.png",
+            "local_links_single_recreated.png"
+          ],
+          "sha256": "4205c577f93080ccc643e2554928fc8f31bd9ea18cd00a42202f1cc4415d2383"
+        },
+        {
+          "path": "review-4-2.png",
+          "images": [
+            "local_links_single_returned.png"
+          ],
+          "sha256": "b341a901635cc5c618b0f2c7d781159c12eef68ed7e719567f9fd2c87e6782e0"
+        },
+        {
+          "path": "review-5-1.png",
+          "images": [
+            "local_links_batch_discard.png",
+            "local_links_batch_first_ime.png",
+            "local_links_batch_last_ime.png",
+            "local_links_batch_recreated.png"
+          ],
+          "sha256": "b831ed973fea3f7b9365b2617f05d07363495682b878343588dd2d34f169d699"
+        },
+        {
+          "path": "review-5-2.png",
+          "images": [
+            "local_links_batch_returned.png"
+          ],
+          "sha256": "7550ab7f406ae58bda5dc6f7b53ba32d97c1613458dc30b69db607a41db7a586"
+        },
+        {
+          "path": "review-6-1.png",
+          "images": [
+            "node_menu_Fallback_false.png",
+            "node_menu_Fallback_true.png",
+            "node_menu_LoadBalance_false.png",
+            "node_menu_LoadBalance_true.png"
+          ],
+          "sha256": "4e7de71c7b4fc64f119ff7e92e9f1f6704337b672ea1ad7ad4a3ae2eb3e4bf2f"
+        },
+        {
+          "path": "review-6-2.png",
+          "images": [
+            "node_menu_Selector_false.png",
+            "node_menu_Selector_true.png",
+            "node_menu_URLTest_false.png",
+            "node_menu_URLTest_true.png"
+          ],
+          "sha256": "8e51048d517b690308ba9a1966f5ad6cae9a608bf07cf3709fc551c190bcbaea"
+        },
+        {
+          "path": "review-6-3.png",
+          "images": [
+            "node_provider_LIST_false.png",
+            "node_provider_LIST_true.png",
+            "node_provider_TAB_false.png",
+            "node_provider_TAB_true.png"
+          ],
+          "sha256": "65841ec090b56d47b83b70609412e1dc2f9ede5cdc088f88beba59bf71188e83"
+        },
+        {
+          "path": "review-7-1.png",
+          "images": [
+            "local_proxy_delete_references.png",
+            "local_proxy_discard.png",
+            "local_proxy_empty.png",
+            "local_proxy_links_discard_false.png"
+          ],
+          "sha256": "790f365efe49d14b8f10f0f5e538b99baa4abcd699f5a9431ed39fce3a5afa1f"
+        },
+        {
+          "path": "review-7-2.png",
+          "images": [
+            "local_proxy_links_discard_true.png",
+            "local_proxy_links_error_false.png",
+            "local_proxy_links_error_true.png",
+            "local_proxy_links_replacement_false.png"
+          ],
+          "sha256": "3fae6b3752c50ab520eae48357b533ab09070f842ab5615ed201c0d8d12364e7"
+        },
+        {
+          "path": "review-7-3.png",
+          "images": [
+            "local_proxy_links_replacement_true.png",
+            "local_proxies_drag_saved.png"
+          ],
+          "sha256": "d1a9ed4b41339804e69ac6b448f822ba9d1d50ca9c717bdd3d94f703eee64e67"
+        }
+      ],
+      "reviewed": true,
+      "reviewScope": "55张原图经16张拼图逐张目视，正式MainActivity12张与相邻回归43张；仅本组交互画面，不认定完整Flutter视觉或连续动效。",
+      "observations": [
+        "正式菜单失败与成功Snackbar、受理前后切配置反馈清楚；重建后目录只保留一个新增节点。",
+        "40份真实长引用首尾可滚动，确认/取消按钮可见；等待禁用、失败重建及删除后空态正常。",
+        "相邻分享链接IME/滚动/放弃/重建、节点菜单和目录排序未见本组可见回归；组件宿主背景不作为全应用暗色证明。"
+      ]
+    },
+    "formalChainAssertions": {
+      "databaseTriggerAbortCount": 1,
+      "databaseDeleteAbortCount": 1,
+      "duplicatePendingSaveCalls": 1,
+      "retryTotalSaveCalls": 2,
+      "preAcceptanceSwitchSaveCalls": 0,
+      "postAcceptanceSwitchSaveCalls": 1,
+      "actualCustomReferenceCount": 40,
+      "customReferenceBodiesShaSizeMtimePreserved": true,
+      "formalPreferenceComparison": "key/value; current selection/local-directory timestamps may be rewritten during explicit restoration"
+    }
+  },
+  "preservation": {
+    "preinstall": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "before": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "after": {
+      "count": 2,
+      "files": [
+        {
+          "id": 159739760026274966,
+          "type": "FILE",
+          "bytes": 35165,
+          "mtime": 1793996856880,
+          "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+        },
+        {
+          "id": 2450184680308753036,
+          "type": "URL",
+          "bytes": 35166,
+          "mtime": 1793996858348,
+          "sha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+        }
+      ],
+      "rowsSha256": "57048c53d0769f8a4b642a930a24abeb4c26e0fb34241edb22a4576e1ac8d0c0",
+      "preferencesSha256": "58ef23f027c3aecc4c4214ef1d13e69d3b6c8df2dd011871cc512175538bffcd",
+      "preferenceDigests": {
+        "58255ade477382af6936f39b956c46e9a95af4b089a3935a47a796d9dad0acf2": "a2e9eafde7ac8090fa9498b39d2e521ff4354326359c4d9e39090af0b9ea35c0",
+        "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "05d2b9128a5ffe87b9f087440bde727a365f9b96845a5b58f0b27f78fe83d08b"
+      },
+      "selected": "159739760026274966",
+      "runtime": "STOPPED"
+    },
+    "equal": true,
+    "scriptsCheckedPerFormalMethod": true,
+    "preparation": "复用两份正式FILE/URL，无订阅下载；只复制原1.yaml，回收本轮唯一ID。"
+  },
+  "earlierRuns": [
+    {
+      "name": "final1",
+      "passed": 14,
+      "total": 18,
+      "preservationPassed": false,
+      "incident": "首轮final1为14/18：直接await等待菜单退场后的动作却未推进Compose测试时钟，超时后迟到动作导致一份测试副本和本地节点残留；其后3条因重复原文拒绝准备。精确恢复1/1只按唯一ID/名称/原文及节点定义回收，恢复后完整快照与原安装前一致。修正帧推进及分步清理后final2为18/18；最终build3前移恢复门禁，final3同清单再次18/18。各轮独立，不累计。"
+    },
+    {
+      "name": "recovery1",
+      "passed": 1,
+      "total": 1,
+      "restoredSnapshotEqualsOriginal": true
+    },
+    {
+      "name": "final2",
+      "passed": 18,
+      "total": 18,
+      "images": 55,
+      "preserved": true,
+      "note": "中间测试包；与最终同4+14清单，不累计"
+    }
+  ],
+  "notVerified": [
+    "运行态正式入口异常注入及冷进程",
+    "管理窗口/扩展/Provider独立加密草稿与剩余恢复边界",
+    "长引用中的真实路由缺失结果，原文inline节点保持",
+    "前批ALPN原始空值完整因果与全部输入法",
+    "完整Flutter视觉/连续动效/实时背景/性能",
+    "第6项保护异常、前组偏好变化、长期网络稳定性",
+    "在线age密文、蜂窝、首次安装/第三方/OEM、低API核心/VPN/实网、远端CI/签名/正式发布"
+  ],
+  "artifacts": {
+    "base": "../acceptance-artifacts/formal-local-proxy-redmi-20261107/",
+    "manifest": "manifest.json",
+    "manifestSha256": "59e74378c3f9d4650ef6f971397f279f1bb3cbcf0f38337e6352c481851954d0",
+    "finalBuild": "build3/summary.json",
+    "finalResults": "final3/result-run1.json",
+    "sourceAndLogsLocalOnly": true
+  },
+  "next": "下一组推进管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及Provider独立加密草稿，再统一Flutter视觉/连续动效。第6项原保护异常、前组偏好变化及网络稳定性仍待查；蜂窝延期，效果/性能/兼容/发布按原顺序，玻璃默认关闭。"
+}

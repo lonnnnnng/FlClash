@@ -38,3 +38,5 @@ Redmi最终final2精确12/12，43张原图经集合/哈希/解码校验及13张�
 诊断build3加入重建前后VM断言后通过；build4改为主线程只读断言仍通过；build5不在输入和重建之间增加等待，连续8次立即重建仍通过。以上不能定位根因，也不能抹去final1失败。最终build6回归加强为8轮交替输入再立即重建，同时断言VM和页面内容，final2通过；后续需继续观察并在再现时区分IME迟到回调、注册表回放或测试输入同步问题。未因诊断通过改写产品代码，暂不标为已修缺陷。
 
 后续定位（2026-11-07）：独立KUI-008通过平台InputConnection两次复现旧窗口ON_STOP后的onBlur覆盖新值，已加宿主生命周期门禁并以14/14集中回归验证，见`local-proxy-stopped-input-defect.md`。这解决已复现的回写路径；本节历史final1缺少VM轨迹，仍不倒推其完整因果。
+
+正式入口补验（2026-11-07）：KUI-006/007相关正式MainActivity菜单失败重试、受理前后真实配置卡片切换、40份CUSTOM原文副本真实引用查询与删除恢复已完成，final3 18/18、55图，见`formal-local-proxy-acceptance.md`及`acceptance/formal-local-proxy-redmi-20261107.json`。本组STOPPED，不扩大为运行态异常、冷进程或完整Flutter视觉。

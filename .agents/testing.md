@@ -1,6 +1,22 @@
 # Testing
 
-## ALPN停止回写边界（2026-11-07，当前）
+## 正式本地代理异常链路（2026-11-07，当前）
+
+正式MainActivity本地代理异常链路已验：真实Room失败经Snackbar反馈、菜单重试只新增一次并跨重建回读；真实配置卡片在受理前切换拒绝写入、受理后保存冻结原节点；40份原正文CUSTOM副本的真实引用查询、首尾滚动、取消保留批选、等待防重复、删除失败原位提示/重建/重试及引用正文保持通过。Redmi final3精确18/18（4新增+14相邻回归）、55图完整校验及16拼图目视；788项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过，安装/源码匹配。两份正式配置/脚本/正文/偏好值/选择、原1.yaml、Flutter和设备设置保持，临时副本/本地节点/SQL触发器清理，收尾无服务。
+
+App512在本组build1/build2实际执行，其余276复用；最终build3四模块UP-TO-DATE，389任务11执行/378复用。Debug Lint0错误/67警告/10提示，Release0错误/66警告/9提示。
+
+`MainLocalProxyFailureInstrumentedTest`只运行四个精确方法，需`kclashMainLocalProxyAcceptance=true`和当前`kclashLocalYamlSha256`；正式库必须非空/STOPPED/无已有本地草稿，只复制授权原文。不得整类调用独立恢复测试。正式Hilt/Room/Bridge均不替换，门闩仅在Debug显式开启；必须用Compose帧推进等待菜单退场，不可直接挂起冻结测试时钟。
+
+SQL故障必须验证固定标记与异常类型计数，不能只以Snackbar/错误文案认定命中；逐方法核对正式全部行/脚本/正文SHA-size-mtime、偏好key/value和选择，TEMP触发器清理且加密草稿为空。恢复键时间戳不作逐值保护结论。
+
+首轮final1为14/18：直接await等待菜单退场后的动作却未推进Compose测试时钟，超时后迟到动作导致一份测试副本和本地节点残留；其后3条因重复原文拒绝准备。精确恢复1/1只按唯一ID/名称/原文及节点定义回收，恢复后完整快照与原安装前一致。修正帧推进及分步清理后final2为18/18；最终build3前移恢复门禁，final3同清单再次18/18。各轮独立，不累计。
+
+本组为STOPPED下真实MainActivity/Hilt/Bridge/正式Room；窄Debug门闩仅控制校验/保存前等待，SQL错误类型与固定标记计数证明故障命中，Release无布置接口/测试标记。长引用按名称扫描原文，原文同名inline节点优先，不证明删除后路由失效。未新验运行态、冷进程、全部输入法或完整Flutter视觉。
+
+证据`docs/acceptance/formal-local-proxy-redmi-20261107.json`，范围与首轮失败记录`docs/formal-local-proxy-acceptance.md`，附件`../acceptance-artifacts/formal-local-proxy-redmi-20261107/`。下一组推进管理窗口/扩展/Provider正文冷进程、保存受理中断、目标外部删除及Provider独立加密草稿，再统一Flutter视觉/连续动效。第6项原保护异常、前组偏好变化及网络稳定性仍待查；蜂窝延期，效果/性能/兼容/发布按原顺序，玻璃默认关闭。
+
+## ALPN停止回写边界（2026-11-07，历史）
 
 KUI-008已定位并修复：本地代理输入提交后立即重建，旧窗口ON_STOP后由Compose onBlur回传旧文本；正式页面拒绝已停止宿主的业务修改，独立保存树照常捕获。Redmi final1精确14/14、43图完整校验及13拼图目视；语义输入/失焦与平台InputConnection各8轮，含合法清空，VM及页面精确值保持。788项JVM零失败/错误/跳过，Debug/Test、未签名Release-R8及双Lint通过；安装回拉匹配，两份正式配置/脚本/正文/偏好/选择及原1.yaml/Flutter/设备设置保持。
 

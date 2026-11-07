@@ -28,13 +28,19 @@ internal class RepositoryLocalProxyEditorOperations(
     override val changes = profiles.localProxyChanges.map { Unit }
     override val selectedId get() = profiles.currentProfileId.value
     override suspend fun rows() = profiles.localProxies()
-    override suspend fun save(expected: List<LocalProxy>, next: List<LocalProxy>, rename: Pair<String, String>?) =
-        profiles.saveLocalProxies(expected, next, rename)
+    override suspend fun save(expected: List<LocalProxy>, next: List<LocalProxy>, rename: Pair<String, String>?) {
+        LocalProxyOperationProbe.checkpoint(LocalProxyOperationWindow.BEFORE_SAVE)
+        try { profiles.saveLocalProxies(expected, next, rename) }
+        catch (error: Exception) { LocalProxyOperationProbe.saveFailed(error); throw error }
+    }
     override suspend fun groups() = profiles.profiles.value.filter { it.type == ProfileType.CUSTOM }.flatMap {
         ProxyGroupDrafts.read(profiles.readLocalProfileContent(it.id)).map { group -> group.name }
     }.toSet()
     override suspend fun users(names: Set<String>) = profiles.localProxyUsers(names)
-    override suspend fun validate(nodes: List<JsonObject>) = bridge.validateProxies(nodes)
+    override suspend fun validate(nodes: List<JsonObject>): List<String> {
+        LocalProxyOperationProbe.checkpoint(LocalProxyOperationWindow.BEFORE_VALIDATE)
+        return bridge.validateProxies(nodes)
+    }
     override suspend fun encode(nodes: List<JsonObject>) = bridge.encodeShareLinks(nodes)
     override suspend fun decode(links: List<String>) = bridge.decodeShareLinks(links)
     override suspend fun definition(profileId: Long, name: String) = runtime.getProxyDefinition(profileId, name)
