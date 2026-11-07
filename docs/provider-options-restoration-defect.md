@@ -38,4 +38,8 @@
 
 ## 最终验收
 
-KUI-015已红绿复现并修复：Provider选项本地错误/放弃确认与快捷YAML格式错误随Activity重建保存；局部校验忙态不持久化。Redmi final4精确16/16（7条正式MainActivity/Hilt/VM/Repository/Room用例＋9条组件回归），36张PNG完整校验及12拼图目视；过滤/IP/绑定搜索恢复、保存等待重建与防重复、7个子页入场中系统Back均通过。build5共830项JVM零失败/错误/跳过，App549在build1执行、其余276复用，最终四模块UP-TO-DATE；389任务11执行/378复用，Debug/Test/未签名Release-R8及双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。双包安装回拉和578份源码匹配；正式两配置/正文SHA-size-mtime/脚本行/偏好/选择、原1.yaml/Flutter包/设备设置保持，7次保护回报确认临时Room行及正文文件均删除，收尾无服务。red1 0/3、final1 14/16、final2与final3各15/16独立保留，不累计。新增正式用例为Activity重建，非冷进程/VPN/OEM自然回收；入场Back已确认目标窗口焦点及64ms时横向位移，非焦点交接前按键或连续动效性能。局部异步校验重建取消、正文保存终帧、独立全局规则页/资源选择器冷恢复仍待补，再统一Flutter排版/连续动效。第6项原保护异常、未知偏好变化、网络稳定性和前组final6超时仍待查；玻璃默认关闭，既有暂缓/取消范围保持。证据`docs/acceptance/provider-options-state-redmi-20261107.json`；溯源`docs/provider-options-restoration-defect.md`；附件`../acceptance-artifacts/provider-options-state-20261107/`。
+KUI-015已红绿复现并修复：Provider选项本地错误/放弃确认与快捷YAML格式错误随Activity重建保存；局部校验忙态不持久化。Redmi final4精确16/16（7条正式MainActivity/Hilt/VM/Repository/Room用例＋9条组件回归），36张PNG完整校验及12拼图目视；过滤/IP/绑定搜索恢复、保存等待重建与防重复、7个子页入场中系统Back均通过。build5共830项JVM零失败/错误/跳过，App549在build1执行、其余281复用，最终四模块UP-TO-DATE；389任务11执行/378复用，Debug/Test/未签名Release-R8及双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。双包安装回拉和578份源码匹配；正式两配置/正文SHA-size-mtime/脚本行/偏好/选择、原1.yaml/Flutter包/设备设置保持，7次保护回报确认临时Room行及正文文件均删除，收尾无服务。red1 0/3、final1 14/16、final2与final3各15/16独立保留，不累计。新增正式用例为Activity重建，非冷进程/VPN/OEM自然回收；入场Back已确认目标窗口焦点及64ms时横向位移，非焦点交接前按键或连续动效性能。局部异步校验重建取消、正文保存终帧、独立全局规则页/资源选择器冷恢复仍待补，再统一Flutter排版/连续动效。第6项原保护异常、未知偏好变化、网络稳定性和前组final6超时仍待查；玻璃默认关闭，既有暂缓/取消范围保持。证据`docs/acceptance/provider-options-state-redmi-20261107.json`；溯源`docs/provider-options-restoration-defect.md`；附件`../acceptance-artifacts/provider-options-state-20261107/`。
+
+## 后续边界补验（2026-11-07）
+
+`provider-validation-boundary-redmi-20261107.json`追加校验返回后/onSave前重建取消，旧任务不迟到提交，显式重试revision只增加1；连同本组原16项及正文终帧共18/18。原生回调执行中未挂起注入，不能据此宣称该窗口已实测。KUI-015产品修复保持，新增仅Debug等待点与测试证据。

@@ -157,6 +157,57 @@ class MainProviderOptionsStateInstrumentedTest {
         }
     }
 
+    @Test fun localValidationCancelledByRecreationKeepsDraftUntilExplicitRetry() = runBlocking {
+        fixture { s ->
+            options(); addOption("INTERVAL")
+            compose.onNodeWithTag("provider_option_INTERVAL").performTextReplacement("450")
+            closeSoftKeyboard()
+            compose.onNodeWithTag("provider_filters_add").performScrollTo().performClick()
+            compose.onNodeWithTag("provider_filter_custom").performTextReplacement("^recreated-provider$")
+            compose.onNodeWithTag("provider_filter_custom_add").performScrollTo().performClick()
+            closeSoftKeyboard()
+            compose.onNodeWithTag("provider_filter_picker_back").performClick()
+            val before = model().providersEditorState.value.revision
+            val gate = ProviderValidationProbe.arm()
+            try {
+                compose.onNodeWithTag("provider_options_save").performClick()
+                compose.waitUntil(10_000) { gate.isReached() }
+                compose.onNodeWithTag("provider_options_save").assertIsNotEnabled().assertTextContains("校验中…")
+                    .performTouchInput { click(); advanceEventTime(40); click() }
+                back()
+                compose.onNodeWithText("放弃选项修改？").assertDoesNotExist()
+                assertFalse(model().providersEditorState.value.isSaving)
+                unchanged(s)
+                recreate()
+                compose.waitUntil(5_000) { gate.isCancelled() }
+                compose.onNodeWithTag("provider_options_save").assertIsEnabled().assertTextContains("保存")
+                compose.onNodeWithTag("provider_option_INTERVAL").performScrollTo().assertTextContains("450")
+                compose.onNodeWithTag("provider_filter_row_0").assertTextContains("^recreated-provider$")
+                compose.onNodeWithTag("provider_options_error").assertDoesNotExist()
+                compose.onNodeWithText("放弃选项修改？").assertDoesNotExist()
+                // 作者 long：校验结果已返回但尚未受理保存；旧窗口取消后即使释放旧门闩也不能迟到写库。
+                gate.release()
+                compose.waitForIdle()
+                assertEquals(1, gate.visits())
+                assertEquals(before, model().providersEditorState.value.revision)
+                assertFalse(model().providersEditorState.value.isSaving)
+                unchanged(s)
+                capture("main_provider_validation_cancelled_recreated")
+                compose.onNodeWithTag("provider_options_save").performClick()
+                compose.waitUntil(20_000) { !model().providersEditorState.value.isSaving && !exists("provider_options_save") }
+                assertEquals(2, gate.visits())
+                assertEquals(before + 1, model().providersEditorState.value.revision)
+                assertEquals(450, persisted(s)?.interval)
+                assertEquals("^recreated-provider$", persisted(s)?.filter)
+                compose.onNodeWithTag("profile_providers_page").assertIsDisplayed()
+                capture("main_provider_validation_retried_saved")
+                InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
+                    putString("kclash_provider_validation_cancel", "cancelled=true;local-validations=2;revision-delta=1;explicit-retry=true")
+                })
+            } finally { ProviderValidationProbe.reset() }
+        }
+    }
+
     @Test fun acceptedSaveSurvivesActivityRecreationAndRejectsRepeatedActions() = runBlocking {
         fixture { s ->
             options(); addOption("INTERVAL")

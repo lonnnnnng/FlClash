@@ -104,7 +104,16 @@ class ProviderDocumentLifecycleInstrumentedTest {
         assertTrue(model.document.value?.saving == true)
         compose.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
         compose.activityRule.scenario.recreate()
+        compose.runOnIdle { assertSame(model, compose.activity.model) }
+        editor().assertTextEquals("example.org")
+        compose.onNodeWithTag("profile_provider_document_save").assertDoesNotExist()
         compose.onNodeWithTag("profile_provider_document_saving").assertIsDisplayed()
+        // 作者 long：本例保存仍挂起，只检查真正完成入场的页面，不能把半透明位移中间帧当作稳定保存态。
+        val page = compose.onNode(hasTestTag("profile_editor_page") and hasAnyDescendant(hasTestTag("profile_provider_document_saving")))
+        compose.waitUntil(5_000) { kotlin.math.abs(page.fetchSemanticsNode().boundsInWindow.left) < 1f }
+        assertEquals(0f, page.fetchSemanticsNode().boundsInWindow.left, 1f)
+        assertTrue(model.document.value?.saving == true)
+        assertEquals("example.com", compose.activity.fixture.content)
         capture("provider_document_saving_recreated")
         assertEquals(1, compose.activity.fixture.saves)
         compose.runOnIdle { gate.complete(Unit) }
@@ -140,7 +149,8 @@ class ProviderDocumentLifecycleInstrumentedTest {
     private fun capture(name: String) {
         compose.waitForIdle()
         val instrumentation = InstrumentationRegistry.getInstrumentation()
-        instrumentation.waitForIdleSync(); android.os.SystemClock.sleep(250)
+        // 作者 long：系统Window退场有450ms且不受Compose时钟驱动，跨过该窗口后才采静态终帧。
+        instrumentation.waitForIdleSync(); android.os.SystemClock.sleep(650)
         val bitmap = checkNotNull(instrumentation.uiAutomation.takeScreenshot())
         recordVisualPng(name, java.io.ByteArrayOutputStream().also { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }.toByteArray())
     }

@@ -77,6 +77,7 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
         scope.launch {
             try {
                 val errors = validateFilters(listOf(frozen.filter.orEmpty(), frozen.excludeFilter.orEmpty()))
+                ProviderValidationProbe.checkpoint()
                 require(errors.size == 2 && errors.all(String::isEmpty)) { "过滤表达式无效，请检查后重试" }
                 onSave(frozen)
             } catch (cancelled: CancellationException) { throw cancelled }

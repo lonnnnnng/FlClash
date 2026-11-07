@@ -1,0 +1,502 @@
+{
+  "date": "2026-11-07",
+  "status": "DONE-VERIFIED for this slice; overall todo 9 remains PARTIAL",
+  "scope": "Provider校验返回后受理保存前的Activity重建取消/显式重试与正文保存稳定终帧，另16条相邻回归",
+  "sourceBase": "0fb03997988fc3c9f3c7b3339b72953fc4b40c1b",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "flutterHashes": [
+      "700570428bde3a1b316ae7f7e8f10d77f9e23ee8bf8b3f45557362a061fbefb3"
+    ],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 3m 13s",
+    "tasks": "389 actionable tasks: 45 executed, 344 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 549,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 73
+      },
+      "service": {
+        "tests": 212,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE",
+      "> Task :app:testDebugUnitTest"
+    ],
+    "executionNote": "执行/复用状态以本组jvmExecution为准",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 68,
+        "hints": 13
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 12
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "2d7b55aa6b265fe0841ea2b37c5f8b4f56543e64824805d5e7bf08aab5b5a44a",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "a904b0cbf915654672da39eba5e86b121f5991eb6ba4773a022e115ec6ccfe3c",
+        "bytes": 5520154,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "32958105c6e10aea86e28f1851129aef899da3267e9d2ab8902f2c8fb963368b",
+        "bytes": 48265528,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "jvmExecutionNote": "App549本组实际执行，Service212/Core38/Common31复用，共830项零失败/错误/跳过。",
+  "release": {
+    "sourceFilesMatched": 580,
+    "debugMarkersAbsent": {
+      "ProviderRuntimeAcceptanceActivity": true,
+      "ProviderRuntimeKillReceiver": true,
+      "KClashProviderRuntime": true,
+      "provider-runtime-acceptance.v1": true,
+      "kclash-invalid-group": true,
+      "mrs-preview": true,
+      "kclash_provider_cold_ready": true,
+      "ProviderValidationProbe$Gate": true,
+      "Provider校验验收等待超时": true,
+      "本进程已有Provider校验等待点": true
+    },
+    "releaseComponentIsolation": true,
+    "sha256": "32958105c6e10aea86e28f1851129aef899da3267e9d2ab8902f2c8fb963368b",
+    "scope": "R8 DEX and manifest static checks; unsigned APK not installed"
+  },
+  "instrumentation": {
+    "methods": [
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest#optionDiscardConfirmationSurvivesActualActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest#optionFilterAndIpChildDraftsSurviveActualActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest#proxyAndRuleBindingSearchSurviveActualActivityRecreationWithoutWriting",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest#systemBackDuringProviderChildEntranceKeepsParentSession",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest#optionErrorAndInputSurviveActualActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest#acceptedSaveSurvivesActivityRecreationAndRejectsRepeatedActions",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest#quickYamlErrorAndDiscardSurviveActualActivityRecreation",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest#localValidationCancelledByRecreationKeepsDraftUntilExplicitRetry",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#quickYamlRepeatedErrorLongDraftAndDiscardRespectKeyboard",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionValidationHidesRealImeAndKeepsInputForCorrection",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#optionValidationAndPersistenceBusyRejectDuplicateSaveAndBack",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#proxyAndRuleBindingLongListsKeepAliasOnFailureCancelAndRetry",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#filterLongInputBackAndDiscardKeepParentBoundary",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest#repeatedIdenticalOptionErrorReturnsToTopWithoutEditing",
+        "code": 0,
+        "passed": true
+      },
+      {
+        "method": "com.lonnnnnng.flclash.ui.ProviderDocumentLifecycleInstrumentedTest#acceptedSaveCompletesAcrossBackgroundAndRecreationOnlyOnce",
+        "code": 0,
+        "passed": true
+      }
+    ],
+    "seconds": 234.003,
+    "images": [
+      {
+        "path": "main_provider_option_discard_recreated.png",
+        "bytes": 113044,
+        "sha256": "e5ec64b64a07f582cd1c239eb51c3c3c70dbd95af4a7877f364f93b4110573bc"
+      },
+      {
+        "path": "main_provider_option_discard_reopened.png",
+        "bytes": 78568,
+        "sha256": "89c1d86e077faf771bfa4ede68f4a979b5b9f2918589a76f57318b3b300a0d1e"
+      },
+      {
+        "path": "main_provider_ip_recreated.png",
+        "bytes": 41808,
+        "sha256": "211bfa4a0c2728cebed022e67b96941764842d9976286936301d58248b86b8e5"
+      },
+      {
+        "path": "main_provider_filter_recreated.png",
+        "bytes": 100166,
+        "sha256": "44214897e10a0c6c1102e64bd4062a462f38d9f1077cf997087e7dc31db90767"
+      },
+      {
+        "path": "main_provider_filter_saved.png",
+        "bytes": 100436,
+        "sha256": "bb2cdec347aea8c049e24ed6aa63a88ba1e52c05da2b7dcf3096c225a3b2edcb"
+      },
+      {
+        "path": "main_provider_binding_proxy_recreated.png",
+        "bytes": 49154,
+        "sha256": "18e257ff1c15ad703cbc76ecd0193a4bd2b9747864a07a2d6527b6e40dc1a874"
+      },
+      {
+        "path": "main_provider_binding_rule_recreated.png",
+        "bytes": 61396,
+        "sha256": "00743d8767e9b9a6b0465871a58c030582c2c4d563b8d71da04dc12161e7e74a"
+      },
+      {
+        "path": "main_provider_entrance_parent_options.png",
+        "bytes": 87709,
+        "sha256": "2dea08306278d78676b6f7c57617a55c9ed715910d84f060a5bea9ef0d0edc92"
+      },
+      {
+        "path": "main_provider_entrance_parent_resources.png",
+        "bytes": 101048,
+        "sha256": "e482e8a9e49bba9213ec60a8f1c558abeedf3bb6203194fdf3c18d8b00dbe215"
+      },
+      {
+        "path": "main_provider_option_error_recreated.png",
+        "bytes": 102103,
+        "sha256": "ad999e93e1a0f7970c327b3721fa44ab99571f4e73d519844a6e2d356bb1da58"
+      },
+      {
+        "path": "main_provider_option_error_corrected.png",
+        "bytes": 101048,
+        "sha256": "e482e8a9e49bba9213ec60a8f1c558abeedf3bb6203194fdf3c18d8b00dbe215"
+      },
+      {
+        "path": "main_provider_save_recreated_waiting.png",
+        "bytes": 89895,
+        "sha256": "4470d66e9cb3a7dbb5044373725d3f18da2f6559c497b5cf6cff0d83aebc088d"
+      },
+      {
+        "path": "main_provider_save_recreated_complete.png",
+        "bytes": 100949,
+        "sha256": "9ccff631468ec04c1badca434d4568bdd16a8ba038f0e3ba439c1c325e7f047d"
+      },
+      {
+        "path": "main_provider_yaml_error_recreated.png",
+        "bytes": 101416,
+        "sha256": "cbb98126e1ae06099d584daff96eaf942f80566a4b952fbe2827c94634ff3569"
+      },
+      {
+        "path": "main_provider_yaml_discard_recreated.png",
+        "bytes": 116350,
+        "sha256": "3f210586bcf900facffdb41c7a97de3157143f462aed934c56b8475c32db9f75"
+      },
+      {
+        "path": "main_provider_validation_cancelled_recreated.png",
+        "bytes": 95242,
+        "sha256": "840580fb2714a672cec8ec5066182b83c480f67aab678524ec48cb461b9f3207"
+      },
+      {
+        "path": "main_provider_validation_retried_saved.png",
+        "bytes": 101005,
+        "sha256": "0928d5acccfee678ece975d270b3b4b1f2b1bfe5ad604b4e7719fee8d25be0db"
+      },
+      {
+        "path": "provider_yaml_repeated_error.png",
+        "bytes": 230491,
+        "sha256": "0c7862e61849d4f48a18b4b0bccf8af9b512ee240f80494049fe619598ce7276"
+      },
+      {
+        "path": "provider_options_invalid_ime.png",
+        "bytes": 123662,
+        "sha256": "72d19a4e70e161b1251572a5826dcc54d27cffe3e7e117068572cb50a57fe4b9"
+      },
+      {
+        "path": "provider_options_error_ime_hidden.png",
+        "bytes": 94350,
+        "sha256": "261b0227ff38fcfe2b537d88cbaa1cc7d090948b2c5e81fed928ea2216d7c062"
+      },
+      {
+        "path": "provider_option_picker_false.png",
+        "bytes": 81980,
+        "sha256": "0bb9c4f26e015795153204794821f51ba6fa21948a3f5cef60ba30304b2f3319"
+      },
+      {
+        "path": "provider_ip_picker_false.png",
+        "bytes": 41933,
+        "sha256": "453f8651e9c0c1dec4d1bdadcf8f3eacb6f29fcc959e84940a2a3b29269d73d9"
+      },
+      {
+        "path": "provider_options_error_false.png",
+        "bytes": 134579,
+        "sha256": "d00f19eed82a5ed9db95a91154fddd68afcc2da15944628f785b1bc4e98b12f9"
+      },
+      {
+        "path": "provider_option_picker_true.png",
+        "bytes": 82682,
+        "sha256": "7b86c64c0bd8f15ba4cd9deaf03bdec85a88ac78016dd811ddc6701325a25324"
+      },
+      {
+        "path": "provider_ip_picker_true.png",
+        "bytes": 42404,
+        "sha256": "4aa67f675df6f93b52243bfbde0e54edd45a4764267ef8c1c44514b2e98740eb"
+      },
+      {
+        "path": "provider_options_error_true.png",
+        "bytes": 135273,
+        "sha256": "fa8cfc36730586a181a5ab8bfa540129f8cc5f44092b437401df8dcf2b97185a"
+      },
+      {
+        "path": "provider_options_saving_stable.png",
+        "bytes": 80391,
+        "sha256": "ebf04e8b1f01b445b1cbc96652091c7f74bffad6fb5d2c64c64fae6cfd98c8ce"
+      },
+      {
+        "path": "provider_binding_failure_true.png",
+        "bytes": 71172,
+        "sha256": "7f69236807fcad0ddb55cc3f313dd71abc4f09fce8c922395e003d255a04251c"
+      },
+      {
+        "path": "provider_binding_saved_true.png",
+        "bytes": 62700,
+        "sha256": "4f46f397241630d01df3cea6712532a078762f74388d7df6e42783ee8674d459"
+      },
+      {
+        "path": "provider_binding_failure_false.png",
+        "bytes": 68270,
+        "sha256": "7a994330aa940678638a1154ea354ecf725a2f363cf80e7e9eb9bda99f38830a"
+      },
+      {
+        "path": "provider_binding_saved_false.png",
+        "bytes": 56262,
+        "sha256": "06d1a063f7b55f708db60fc07a31e5d473718265f91011616d70400867da32ea"
+      },
+      {
+        "path": "provider_filter_members.png",
+        "bytes": 92910,
+        "sha256": "5f98ab3ef0447294d27c00604841b351fbf87aa3cc37d999864a8b8fb4424e01"
+      },
+      {
+        "path": "provider_reference_missing.png",
+        "bytes": 49347,
+        "sha256": "15f478464dbfe67a8bd5bc827a60894f99aab7146a757205ccc5d75d0cba707b"
+      },
+      {
+        "path": "provider_reference_bound.png",
+        "bytes": 37343,
+        "sha256": "5556c46d854cbc88335569b43d4a4438dc70059ff923c9aaf7d5d89e6980d356"
+      },
+      {
+        "path": "provider_quick_yaml_error.png",
+        "bytes": 72474,
+        "sha256": "2e19b1401103b47cd1c12f054ad862294e1c15e331cf1ffb855284d6f76947b1"
+      },
+      {
+        "path": "provider_filter_long_ime.png",
+        "bytes": 185890,
+        "sha256": "e8a986d9a087fa1e073af199e7a79d59df390642257fd05a92aed850f6a110fe"
+      },
+      {
+        "path": "provider_filter_return_stable.png",
+        "bytes": 78381,
+        "sha256": "fda1fdb0816436ec488920778de4d3a48b1e550ccb33a24b5e6f66deab07c314"
+      },
+      {
+        "path": "provider_options_repeated_error.png",
+        "bytes": 153100,
+        "sha256": "1280e9f2016339348abbdc4807aee4a5b0a0b06b924953638c126cebdc2df508"
+      },
+      {
+        "path": "provider_document_saving_recreated.png",
+        "bytes": 34601,
+        "sha256": "b49968511eb65154b8f51184343b796c27cda4a84b610130634a3ed40749a454"
+      }
+    ],
+    "formalMainActivityMethods": 8,
+    "componentRegressions": 9,
+    "fixedRuntimeDocumentMethods": 1,
+    "entranceSamples": [
+      "provider_options_back;openingFrames=1;childAdvanceMs=64;translatedLeftPx=262.5703;focused=true",
+      "provider_option_picker_back;openingFrames=1;childAdvanceMs=64;translatedLeftPx=262.5703;focused=true",
+      "provider_ip_back;openingFrames=1;childAdvanceMs=64;translatedLeftPx=262.5703;focused=true",
+      "provider_filter_picker_back;openingFrames=1;childAdvanceMs=64;translatedLeftPx=262.5703;focused=true",
+      "provider_binding_back;openingFrames=1;childAdvanceMs=64;translatedLeftPx=262.5703;focused=true",
+      "provider_binding_back;openingFrames=1;childAdvanceMs=64;translatedLeftPx=262.5703;focused=true",
+      "providers_yaml_back;openingFrames=16;childAdvanceMs=64;translatedLeftPx=262.5703;focused=true"
+    ],
+    "formalPreservationReports": [
+      "formal-count=2;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+      "formal-count=2;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+      "formal-count=2;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+      "formal-count=2;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+      "formal-count=2;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+      "formal-count=2;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+      "formal-count=2;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+      "formal-count=2;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED"
+    ],
+    "validationCancellation": [
+      "cancelled=true;local-validations=2;revision-delta=1;explicit-retry=true"
+    ]
+  },
+  "visualReview": {
+    "method": "Primary visual inspection of all 13 contact sheets; 39 PNGs verified by SHA/bytes and full Pillow decode",
+    "contactSheets": [
+      "contact-sheets/sheet-1.jpg",
+      "contact-sheets/sheet-2.jpg",
+      "contact-sheets/sheet-3.jpg",
+      "contact-sheets/sheet-4.jpg",
+      "contact-sheets/sheet-5.jpg",
+      "contact-sheets/sheet-6.jpg",
+      "contact-sheets/sheet-7.jpg",
+      "contact-sheets/sheet-8.jpg",
+      "contact-sheets/sheet-9.jpg",
+      "contact-sheets/sheet-10.jpg",
+      "contact-sheets/sheet-11.jpg",
+      "contact-sheets/sheet-12.jpg",
+      "contact-sheets/sheet-13.jpg"
+    ],
+    "inspected": true,
+    "findings": [
+      "局部校验取消后过滤表达式和450秒草稿保持，保存按钮重新可用；显式重试后返回资源父页。",
+      "正文保存重建图完整显示标题、example.org与保存进度，页面位移归零，未见上一组转场中间帧。",
+      "深浅主题错误、确认、绑定失败、IME与长过滤回归图可见；未声称Flutter逐像素一致或连续动效性能。"
+    ],
+    "scope": "Static frames for this slice only"
+  },
+  "installation": {
+    "com.lonnnnnng.flclash": {
+      "builtSha256": "2d7b55aa6b265fe0841ea2b37c5f8b4f56543e64824805d5e7bf08aab5b5a44a",
+      "pulledSha256": "2d7b55aa6b265fe0841ea2b37c5f8b4f56543e64824805d5e7bf08aab5b5a44a"
+    },
+    "com.lonnnnnng.flclash.test": {
+      "builtSha256": "a904b0cbf915654672da39eba5e86b121f5991eb6ba4773a022e115ec6ccfe3c",
+      "pulledSha256": "a904b0cbf915654672da39eba5e86b121f5991eb6ba4773a022e115ec6ccfe3c"
+    }
+  },
+  "preservation": {
+    "formalProfilesAndBodiesAndPreferences": true,
+    "originalYamlFlutterDevice": true,
+    "noServices": true
+  },
+  "productChange": "仅增加Debug可布置、Release无操作的校验后检查点；正式取消/保存行为不变，未新认定源码缺陷。",
+  "failuresRetained": [],
+  "limitations": [
+    "取消注入点位于真实原生过滤校验返回后、onSave调用前；不证明原生回调执行中取消。静态CoreBridge失活continuation保护不能替代该窗口实测。",
+    "正式8方法为MainActivity/Hilt/VM/Repository/Room的Activity重建；不代表独立全局规则页或资源选择器冷进程、VPN/OEM自然回收。",
+    "正文终帧使用固定运行时宿主和正式ProfileStatisticsViewModel；正文仅写fixture内存，非本轮正式缓存/核心写入或冷恢复证据。",
+    "7入口Back沿用获得焦点后冻结Compose64ms的专项检查，39张静态图不证明自然时钟连续动效或性能。",
+    "低API/蜂窝/第三方入口/Go/远端CI/正式签名运行未新增；第6项原保护异常、未知偏好变化、网络稳定性及运行态final6-before超时继续待查。"
+  ],
+  "next": "按docs/remaining-main-page-acceptance.md先推进独立全局规则页GR-01至GR-05，再资源选择器SAF-01至SAF-05；随后统一Flutter视觉与连续动效。",
+  "artifacts": "../acceptance-artifacts/provider-validation-boundary-20261107/",
+  "driverSha256": "f57e7a0c2c60d749d8e2c8b65e04315275df9577d6d241a4a7f94a3dab7b5b08"
+}
