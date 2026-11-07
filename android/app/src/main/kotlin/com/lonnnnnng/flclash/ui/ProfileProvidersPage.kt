@@ -162,7 +162,8 @@ private fun ProviderBindingPicker(proxy: Boolean, profiles: List<Profile>, rules
 private fun ProviderQuickYaml(initialProxy: String, initialRule: String, busy: Boolean, error: String?, onDismiss: () -> Unit, onSave: (String, String) -> Unit) {
     var proxy by rememberSaveable { mutableStateOf(initialProxy) }
     var rule by rememberSaveable { mutableStateOf(initialRule) }
-    var failure by remember { mutableStateOf<String?>(null) }
+    // 作者 long：格式错误与两段正文属于同一次编辑，重建不能只恢复无效正文却隐藏原来的拒绝原因。
+    var failure by rememberSaveable { mutableStateOf<String?>(null) }
     var discard by rememberSaveable { mutableStateOf(false) }
     var attempts by remember { mutableIntStateOf(0) }
     val scroll = rememberScrollState()

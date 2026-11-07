@@ -1,6 +1,12 @@
 # Testing
 
-## Provider选项IME与子面板交互（2026-11-07，当前）
+## Provider子页正式重建与入场返回（2026-11-07，当前）
+
+KUI-015已红绿复现并修复：Provider选项本地错误/放弃确认与快捷YAML格式错误随Activity重建保存；局部校验忙态不持久化。Redmi final4精确16/16（7条正式MainActivity/Hilt/VM/Repository/Room用例＋9条组件回归），36张PNG完整校验及12拼图目视；过滤/IP/绑定搜索恢复、保存等待重建与防重复、7个子页入场中系统Back均通过。build5共830项JVM零失败/错误/跳过，App549在build1执行、其余276复用，最终四模块UP-TO-DATE；389任务11执行/378复用，Debug/Test/未签名Release-R8及双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。双包安装回拉和578份源码匹配；正式两配置/正文SHA-size-mtime/脚本行/偏好/选择、原1.yaml/Flutter包/设备设置保持，7次保护回报确认临时Room行及正文文件均删除，收尾无服务。red1 0/3、final1 14/16、final2与final3各15/16独立保留，不累计。新增正式用例为Activity重建，非冷进程/VPN/OEM自然回收；入场Back已确认目标窗口焦点及64ms时横向位移，非焦点交接前按键或连续动效性能。局部异步校验重建取消、正文保存终帧、独立全局规则页/资源选择器冷恢复仍待补，再统一Flutter排版/连续动效。第6项原保护异常、未知偏好变化、网络稳定性和前组final6超时仍待查；玻璃默认关闭，既有暂缓/取消范围保持。证据`docs/acceptance/provider-options-state-redmi-20261107.json`；溯源`docs/provider-options-restoration-defect.md`；附件`../acceptance-artifacts/provider-options-state-20261107/`。
+
+`MainProviderOptionsStateInstrumentedTest`只按JSON中的7个精确方法运行，需`kclashProviderOptionsStateAcceptance=true`与原`1.yaml`的`kclashLocalYamlSha256`。正式MainActivity/Hilt/Room仅创建本例CUSTOM副本；finally即使关窗失败仍回收副本并检查正文确实不存在，逐场保护正式全部行、正文签名、脚本行、偏好和选择。相邻9方法与36张图要求完整集合匹配、分片/SHA/PNG解码；不扩大为整类。保存等待持有真实Room事务而不写入；入场Back冻结Compose时钟64ms并核对焦点/横向位移后经真实Window投递。
+
+## Provider选项IME与子面板交互（2026-11-07，历史）
 
 KUI-014已红绿复现并修复：选项页重复同一错误按提交次数回顶，选项/快捷YAML从实际Dialog取得焦点与IME控制器，保存后收键盘。Redmi final2精确9/9（6新增+3相邻回归）、21张PNG完整校验及7拼图目视；覆盖长过滤与YAML、逐层返回/放弃重开、校验/保存防重复、代理/规则各40项绑定失败取消重试及别名保持。build4 App549执行、Service212/Core38/Common31复用，共830项JVM零失败/错误/跳过；389任务22执行/367复用，Debug/Test/未签名Release-R8及双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。安装回拉与577份源码匹配；正式两配置/正文SHA-size-mtime/偏好/选择、原1.yaml/Flutter包/设备设置保持，收尾无服务。red1 0/2、final1 6/9和build3既有Picker单测清理等待失败保留；单测改等实际关闭终态后build4全量通过。此组为正式Compose页面的固定组件宿主/受控回调，非新增MainActivity/Room/核心/实网或冷进程验收；返回先等Window入场，静态终帧不等于连续动效。本组选项/绑定Activity重建与入场中Back、独立全局规则页/资源选择器冷恢复、上一组正文保存终帧继续待补，再统一Flutter排版/连续动效。第6项原保护异常、未知偏好变化、网络稳定性和前组final6超时仍待查；玻璃默认关闭，既有暂缓/取消范围保持。证据`docs/acceptance/provider-options-interactions-redmi-20261107.json`；溯源`docs/provider-options-validation-defect.md`；附件`../acceptance-artifacts/provider-options-interactions-20261107/`。
 

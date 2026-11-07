@@ -40,8 +40,10 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
     var pickingFilters by rememberSaveable(name) { mutableStateOf(false) }
     var choosingIp by rememberSaveable(name) { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
-    var discard by remember { mutableStateOf(false) }
-    var localError by remember { mutableStateOf<String?>(null) }
+    // 作者 long：Activity重建后草稿仍在，拒绝保存的原因和已打开的放弃确认也必须随同一资源恢复。
+    var discard by rememberSaveable(name) { mutableStateOf(false) }
+    var localError by rememberSaveable(name) { mutableStateOf<String?>(null) }
+    // 作者 long：局部校验协程随旧窗口取消，不能保存忙态；新窗口保留输入，等待用户明确重试。
     var validating by remember { mutableStateOf(false) }
     var attempts by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
