@@ -334,7 +334,8 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun refreshStats() {
-        mutableStats.value = mutableStats.value.copy(isLoading = true, error = null)
+        // 作者 long：已有采样时保留数值和错误直到下一次成功，不让每秒后台读取变成可见加载/错误闪烁。
+        mutableStats.value = mutableStats.value.copy(isLoading = mutableStats.value.trafficHistory.isEmpty())
         val result = runtimeManager.getStats()
         currentCoroutineContext().ensureActive()
         result

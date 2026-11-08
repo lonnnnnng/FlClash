@@ -1185,6 +1185,25 @@ class CoreRuntimeManager(
         ensureInitialized()
         withTimeout(3_000L) { bridge.ipRouteStamp() }
     }
+    override suspend fun reuseOutboundIp(
+        hits: List<com.lonnnnnng.flclash.core.CoreRouteHit>,
+        expected: com.lonnnnnng.flclash.core.CoreRouteStamp,
+    ): Boolean {
+        if (hits.isEmpty() || hits.any { !it.reusable }) return false
+        val revision = transitionLock.withLock {
+            ensureInitialized()
+            if (withTimeout(3_000L) { bridge.ipRouteStamp() } != expected) throw ServiceRouteChangedException()
+            mutableIpRouteRevision.value
+        }
+        // 作者 long：其他自动组/规则资源变化不一定影响当前出口；复用Flutter的命中核验，避免整页重新联网探测。
+        val checked = withTimeout(3_000L) { bridge.checkRoutes(listOf(hits)) }
+        return transitionLock.withLock {
+            if (mutableIpRouteRevision.value != revision || checked.stamp != expected ||
+                withTimeout(3_000L) { bridge.ipRouteStamp() } != expected) throw ServiceRouteChangedException()
+            check(checked.held.size == 1) { "出口路由核验结果不完整" }
+            checked.held.single()
+        }
+    }
     override fun networkChanged() {
         invalidateIpRoute()
     }

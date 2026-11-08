@@ -9,6 +9,7 @@ class CoreIpResponse(
     val error: String,
     val statusCode: Int,
     val stamp: CoreRouteStamp,
+    val hits: List<CoreRouteHit> = emptyList(),
 ) {
     override fun toString() = "CoreIpResponse(statusCode=$statusCode, stamp=$stamp)"
 }

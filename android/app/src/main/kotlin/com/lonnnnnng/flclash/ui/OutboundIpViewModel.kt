@@ -47,6 +47,7 @@ class OutboundIpViewModel @Inject constructor(
     private var retryPolls = 0
     private var lastRouteKey: List<Any?>? = null
     private var currentStamp: com.lonnnnnng.flclash.core.CoreRouteStamp? = null
+    private var lastAnswer: com.lonnnnnng.flclash.data.RoutedIpInfo? = null
 
     init {
         viewModelScope.launch {
@@ -57,6 +58,7 @@ class OutboundIpViewModel @Inject constructor(
                 if (lastRouteKey != routeKey) {
                     lastRouteKey = routeKey
                     currentStamp = null
+                    lastAnswer = null
                     mutableState.value = OutboundIpUiState()
                 }
                 request?.cancel()
@@ -77,8 +79,16 @@ class OutboundIpViewModel @Inject constructor(
                     try {
                         val stamp = runtime.ipRouteStamp()
                         if (stamp != currentStamp) {
+                            val answer = lastAnswer
+                            val held = answer != null && mutableState.value.info != null && answer.stamp.epoch == stamp.epoch &&
+                                runtime.reuseOutboundIp(answer.hits, stamp)
+                            val sameSession = mutableState.value.info != null &&
+                                (currentStamp == null || currentStamp?.epoch == stamp.epoch)
                             currentStamp = stamp
-                            invalidate()
+                            if (held) lastAnswer = answer?.copy(stamp = stamp) else {
+                                // 作者 long：自动组可能自行换节点；后台更新期间保留上次成功展示，避免整块国家/IP闪回加载态。
+                                invalidate(keepInfo = sameSession)
+                            }
                         } else if ((mutableState.value.info == null || mutableState.value.error != null) && request?.isActive != true) {
                             // 作者 long：路由收敛或短暂断网会使查询失效，首页可见时每五轮重试，避免永久停在失败状态。
                             if (mutableState.value.error == null || ++retryPolls >= 5) refresh()
@@ -86,10 +96,8 @@ class OutboundIpViewModel @Inject constructor(
                             mutableState.value.qualityFailures.isEmpty() && request?.isActive != true
                         ) {
                             startQuality(force = false)
-                        } else if (request?.isActive != true && ++retryPolls >= 60) {
-                            // 作者 long：节点后端可能更换出口而不改变本地选择，首页前台定期复查实际 IP。
-                            refresh()
                         }
+                        // 作者 long：稳定出口不定时重查；仅手动刷新、底层网络变化或核心确认命中出口改变才重新获取。
                     } catch (error: CancellationException) {
                         throw error
                     } catch (_: Exception) {
@@ -106,10 +114,12 @@ class OutboundIpViewModel @Inject constructor(
     fun networkChanged() { runtime.networkChanged() }
     fun setDashboardVisible(value: Boolean) { dashboardVisible.value = value }
 
-    private fun invalidate(startRequest: Boolean = true) {
+    private fun invalidate(startRequest: Boolean = true, keepInfo: Boolean = false) {
         request?.cancel()
         generation++
-        mutableState.value = OutboundIpUiState()
+        lastAnswer = null
+        mutableState.value = if (keepInfo) mutableState.value.copy(isLoading = false, qualityLoading = false)
+            else OutboundIpUiState()
         if (startRequest) refresh()
     }
 
@@ -124,13 +134,15 @@ class OutboundIpViewModel @Inject constructor(
                 val stamp = runtime.ipRouteStamp()
                 if (token != generation || answer.stamp != stamp) {
                     if (token == generation) {
+                        val keep = currentStamp?.epoch == stamp.epoch
                         currentStamp = null
-                        mutableState.value = OutboundIpUiState()
+                        invalidate(startRequest = false, keepInfo = keep)
                     }
                     return@launch
                 }
                 val old = mutableState.value
                 currentStamp = stamp
+                lastAnswer = answer
                 val sameIp = old.info?.ip == answer.info.ip
                 mutableState.value = OutboundIpUiState(
                     info = answer.info, quality = old.quality.takeIf { sameIp }, qualityLoading = true,
@@ -160,9 +172,19 @@ class OutboundIpViewModel @Inject constructor(
         try {
             val quality = repository.quality(ip, force)
             // 作者 long：缓存命中也要核对路由，避免一秒轮询之前的切换让旧质量重新出现在卡片。
-            if (runtime.ipRouteStamp() != currentStamp) {
-                if (token == generation) { currentStamp = null; invalidate(startRequest = false) }
-                return
+            val stamp = runtime.ipRouteStamp()
+            if (stamp != currentStamp) {
+                val answer = lastAnswer
+                val held = answer != null && answer.stamp.epoch == stamp.epoch && runtime.reuseOutboundIp(answer.hits, stamp)
+                if (token != generation) return
+                if (!held) {
+                    val keep = currentStamp?.epoch == stamp.epoch
+                    currentStamp = null
+                    invalidate(startRequest = false, keepInfo = keep)
+                    return
+                }
+                currentStamp = stamp
+                lastAnswer = answer?.copy(stamp = stamp)
             }
             if (token == generation && mutableState.value.info?.ip == ip) {
                 mutableState.update { it.copy(quality = quality, qualityLoading = false, qualityFailures = emptyMap()) }

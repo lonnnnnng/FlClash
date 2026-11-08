@@ -72,11 +72,19 @@ class MainActivity : ComponentActivity() {
     private val resourcesViewModel: com.lonnnnnng.flclash.ui.ResourcesViewModel by viewModels()
     private val filterPresetsViewModel: com.lonnnnnng.flclash.ui.FilterPresetsViewModel by viewModels()
     private val scriptsViewModel: ScriptsViewModel by viewModels()
+    private val ipNetworkProperties = mutableMapOf<android.net.Network, String>()
     private val networkCallback = object : android.net.ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: android.net.Network) { outboundIpViewModel.networkChanged() }
-        override fun onLost(network: android.net.Network) { outboundIpViewModel.networkChanged() }
+        override fun onLost(network: android.net.Network) = synchronized(ipNetworkProperties) {
+            if (ipNetworkProperties.remove(network) != null) outboundIpViewModel.networkChanged()
+        }
         override fun onLinkPropertiesChanged(network: android.net.Network, properties: android.net.LinkProperties) {
-            outboundIpViewModel.networkChanged()
+            synchronized(ipNetworkProperties) {
+                // 作者 long：注册回调/回到前台会重发同一链路，只有地址、DNS、路由等属性真变了才失效出口。
+                val snapshot = properties.toString()
+                if (ipNetworkProperties.put(network, snapshot) != snapshot) {
+                    outboundIpViewModel.networkChanged()
+                }
+            }
         }
     }
     private var observingNetwork = false
@@ -325,7 +333,12 @@ class MainActivity : ComponentActivity() {
         // 作者 long：只观察底层互联网链路，VPN 自身的出现不应造成反复探测；重连和地址变化使旧出口失效。
         if (!observingNetwork) {
             observingNetwork = runCatching {
-                getSystemService(android.net.ConnectivityManager::class.java).registerNetworkCallback(
+                val connectivity = getSystemService(android.net.ConnectivityManager::class.java)
+                synchronized(ipNetworkProperties) {
+                    // 作者 long：后台可能错过断网通知，恢复时先移除已消失的链路，不能无条件清掉仍有效的出口。
+                    if (ipNetworkProperties.keys.retainAll(connectivity.allNetworks.toSet())) outboundIpViewModel.networkChanged()
+                }
+                connectivity.registerNetworkCallback(
                     android.net.NetworkRequest.Builder()
                         .addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
                         .addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN).build(),
@@ -333,7 +346,6 @@ class MainActivity : ComponentActivity() {
                 )
             }.isSuccess
         }
-        outboundIpViewModel.networkChanged()
         onDemandCoordinator.refresh()
         batteryOptimizationIgnored = BatteryOptimization.isIgnored(this)
         alwaysOnVpnState = AlwaysOnVpn.state(this)

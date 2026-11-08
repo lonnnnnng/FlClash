@@ -729,6 +729,21 @@ class CoreRuntimeManagerTest {
         assertTrue(request.await().isFailure)
     }
 
+    @Test fun outboundIpReuseValidatesHitsAndRejectsNetworkOrStampRaces() = runTest {
+        val bridge = FakeBridge()
+        val runtime = manager(null, temporaryFolder.newFolder(), bridge, FakeServiceController())
+        val hits = listOf(CoreRouteHit("fixture.invalid", "", "node-a"))
+        bridge.routeRead = { CoreRouteCheck(bridge.ipStamp, listOf(true)) }
+        assertTrue(runtime.reuseOutboundIp(hits, bridge.ipStamp))
+        assertFalse(runtime.reuseOutboundIp(emptyList(), bridge.ipStamp))
+        bridge.routeRead = { CoreRouteCheck(bridge.ipStamp, listOf(false)) }
+        assertFalse(runtime.reuseOutboundIp(hits, bridge.ipStamp))
+        bridge.routeRead = { runtime.networkChanged(); CoreRouteCheck(bridge.ipStamp, listOf(true)) }
+        assertTrue(runCatching { runtime.reuseOutboundIp(hits, bridge.ipStamp) }.exceptionOrNull() is ServiceRouteChangedException)
+        bridge.routeRead = { CoreRouteCheck(CoreRouteStamp(9, 9), listOf(true)) }
+        assertTrue(runCatching { runtime.reuseOutboundIp(hits, bridge.ipStamp) }.exceptionOrNull() is ServiceRouteChangedException)
+    }
+
     @Test fun routeReuseKeepsOnlyHeldTargetsAndOriginalDetectionTime() = runTest {
         val bridge = FakeBridge(); val controller = FakeServiceController()
         val runtime = manager(null, temporaryFolder.newFolder(), bridge, controller)

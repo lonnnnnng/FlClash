@@ -10,6 +10,7 @@ interface OutboundIpRuntime {
     val runningSinceElapsedMillis: StateFlow<Long?>
     val ipRouteRevision: StateFlow<Long>
     suspend fun ipRouteStamp(): CoreRouteStamp
+    suspend fun reuseOutboundIp(hits: List<com.lonnnnnng.flclash.core.CoreRouteHit>, expected: CoreRouteStamp): Boolean = false
     suspend fun queryOutboundIp(urls: List<String>): CoreIpResponse
     suspend fun queryIpMetadata(url: String): CoreIpResponse
 }

@@ -14,7 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
-data class RoutedIpInfo(val info: OutboundIpInfo, val stamp: CoreRouteStamp)
+data class RoutedIpInfo(val info: OutboundIpInfo, val stamp: CoreRouteStamp, val hits: List<com.lonnnnnng.flclash.core.CoreRouteHit> = emptyList())
 
 interface IpInformationStore {
     suspend fun outbound(): RoutedIpInfo
@@ -37,7 +37,7 @@ class IpInformationRepository internal constructor(
 
     override suspend fun outbound(): RoutedIpInfo {
         val response = runtime.queryOutboundIp(outboundIpSources)
-        return RoutedIpInfo(parseOutboundIp(response), response.stamp)
+        return RoutedIpInfo(parseOutboundIp(response), response.stamp, response.hits)
     }
 
     override suspend fun quality(ip: String, force: Boolean): IpQuality {

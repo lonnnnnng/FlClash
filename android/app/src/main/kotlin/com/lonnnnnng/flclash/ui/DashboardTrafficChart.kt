@@ -23,7 +23,8 @@ internal fun DashboardTrafficChart(samples: List<Long>, tag: String) {
     val slopes = remember(heights) { dashboardTrafficSlopes(heights) }
     val color = MaterialTheme.colorScheme.primary
     Canvas(
-        Modifier.fillMaxWidth().height(36.dp).testTag(tag),
+        // 作者 long：累计流量下面只保留紧凑趋势，避免低速/空闲时出现大块空白。
+        Modifier.fillMaxWidth().height(18.dp).testTag(tag),
     ) {
         val stroke = 2.dp.toPx()
         val step = size.width / (DASHBOARD_TRAFFIC_CAPACITY - 1)

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -111,6 +112,31 @@ class MainViewModelTelemetryTest {
             runCurrent()
             manager.stop().getOrThrow()
         }
+    }
+
+    @Test fun backgroundSamplingKeepsTheLastValueWithoutLoadingOrErrorFlicker() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val bridge = TelemetryBridge()
+        val manager = manager(bridge) { testScheduler.currentTime + 1_000 }
+        manager.startProxy().getOrThrow()
+        val model = MainViewModel(manager)
+        try {
+            model.setObservationVisible(true); runCurrent()
+            val pending = CompletableDeferred<CoreTraffic>()
+            bridge.readTraffic = { pending.await() }
+            advanceTimeBy(1_000); runCurrent()
+            assertFalse(model.stats.value.isLoading)
+            assertEquals(CoreTraffic(1, 2), model.stats.value.traffic)
+            pending.completeExceptionally(IllegalStateException("暂不可用")); runCurrent()
+            val retry = CompletableDeferred<CoreTraffic>()
+            bridge.readTraffic = { retry.await() }
+            advanceTimeBy(1_000); runCurrent()
+            assertFalse(model.stats.value.isLoading)
+            assertEquals("暂不可用", model.stats.value.error)
+            retry.complete(CoreTraffic(7, 8)); runCurrent()
+            assertEquals(null, model.stats.value.error)
+            assertEquals(CoreTraffic(7, 8), model.stats.value.traffic)
+        } finally { model.viewModelScope.cancel(); runCurrent(); manager.stop().getOrThrow() }
     }
 
     private fun manager(bridge: CoreRuntimeBridge, clock: () -> Long): CoreRuntimeManager {

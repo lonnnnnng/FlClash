@@ -136,8 +136,13 @@ jobs:
           KCLASH_RELEASE_KEY_ALIAS: ${{ startsWith(github.ref, 'refs/tags/kclash-v') && secrets.KCLASH_RELEASE_KEY_ALIAS || '' }}
           KCLASH_RELEASE_KEY_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/kclash-v') && secrets.KCLASH_RELEASE_KEY_PASSWORD || '' }}
         run: |
-          ./gradlew test :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease \
+          ./gradlew test :app:assembleDebug :app:assembleRelease \
             --no-daemon -Ptarget-platform=android-arm64 \
+            -PkclashVersionName="$BUILD_VERSION_NAME" \
+            -PkclashVersionCode="$BUILD_VERSION_CODE"
+          # 作者 long：先完成两套kapt输出再分析Lint，避免Lint读取另一变体正在重建的Hilt源码。
+          ./gradlew :app:lintDebug :app:lintRelease --no-daemon --max-workers=2 \
+            -Ptarget-platform=android-arm64 \
             -PkclashVersionName="$BUILD_VERSION_NAME" \
             -PkclashVersionCode="$BUILD_VERSION_CODE"
 

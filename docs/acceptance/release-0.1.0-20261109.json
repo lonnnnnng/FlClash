@@ -3,18 +3,18 @@
   "version": "0.1.0",
   "versionCode": 1000,
   "tag": "kclash-v0.1.0",
-  "status": "local_verified_remote_pending",
+  "status": "final_local_and_redmi_verified_tag_publish_pending",
   "sourceBase": "967099ec89a51bfc2e0eb2a6284113e6e18de2f6",
   "coreCommit": "7038231e026b710088b9c369899b3a8b7f281739",
   "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
-  "jvmScope": "849 debug JVM results; app568 executed this build, service212/core38/common31 up-to-date; not 1698 independent cases",
+  "jvmScope": "854 total; app572/service213/core38/common31, no failures/errors/skips; app suite rerun on final source, other modules reuse results from same source. Not double-counted by variants.",
   "goRace": [
     "core: go test -race ./... PASS",
     "core: go test -race github.com/metacubex/mihomo/hub/route PASS"
   ],
   "keyStorage": "Independent JKS outside repository, macOS Keychain passwords, verified same-machine backup; see ADR0013",
   "limits": [
-    "Remote release asset verification pending",
+    "Final tag CI and remote asset verification pending",
     "Cross-version signed upgrade not covered; same-version signed replacement checked",
     "VPN smoke has browser/counters/services but no per-socket route attribution",
     "Low API, cellular/OEM, full Flutter visual and performance remain partial"
@@ -143,7 +143,14 @@
     "newPid": "4282",
     "scope": "UI smoke only; no VPN or proxy traffic; Redmi unchanged"
   },
-  "local": {
+  "productDefect": {
+    "id": "KREL-001",
+    "document": "docs/release-r8-yaml-defect.md",
+    "red": "original SAF import crashed in TypeDescription.<clinit>",
+    "green": "same original file through real SAF validated/saved, VPN running, stopped and retained across cold restart",
+    "status": "fixed_verified_local_release"
+  },
+  "r8FixedIntermediateLocal": {
     "manifest": {
       "application-id": "com.lonnnnnng.flclash",
       "version-name": "0.1.0",
@@ -229,7 +236,7 @@
       "PropertySubstitute": "removed as unused in usage.txt"
     }
   },
-  "redmiSmoke": {
+  "r8FixedIntermediateRedmi": {
     "serial": "wsvwypiz7xwslvl7",
     "model": "Redmi Note 8 Pro",
     "api": 36,
@@ -259,11 +266,137 @@
     "finalState": "one authorized local profile; core stopped; signed app retained",
     "scope": "Basic release UI/VPN/network smoke; no per-socket route attribution, cross-version upgrade, cellular or complete OEM coverage"
   },
-  "productDefect": {
-    "id": "KREL-001",
-    "document": "docs/release-r8-yaml-defect.md",
-    "red": "original SAF import crashed in TypeDescription.<clinit>",
-    "green": "same original file through real SAF validated/saved, VPN running, stopped and retained across cold restart",
-    "status": "fixed_verified_local_release"
-  }
+  "local": {
+    "sha256": "72527d6543808f6a09e33bf44fc42e6ff269a21e6a00fdb4d9006e370de6548d",
+    "size": 48331708,
+    "appId": "com.lonnnnnng.flclash",
+    "version": "0.1.0",
+    "versionCode": 1000,
+    "minSdk": 24,
+    "targetSdk": 37,
+    "debuggable": false,
+    "abis": [
+      "arm64-v8a"
+    ],
+    "debugMarkersAbsent": 22
+  },
+  "redmiFinal": {
+    "apkSha256": "72527d6543808f6a09e33bf44fc42e6ff269a21e6a00fdb4d9006e370de6548d",
+    "manualRefreshKeepsCountryAndIp": true,
+    "foregroundResumeKeepsCountryAndIp": true,
+    "coldProcessKeepsAuthorizedProfile": true,
+    "coldPids": [
+      "30834",
+      "31875"
+    ],
+    "newAppCrashes": 0,
+    "stoppedAtEnd": true,
+    "fixedNode": "final-fixed-node/result.json",
+    "automatic": "final-automatic/result.json",
+    "originalAutomaticSelectionRestored": true,
+    "originalSourceSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "noEmulatorAfterUserInstruction": true
+  },
+  "dashboardWindows": {
+    "final-fixed-node": {
+      "durationSeconds": 76.91,
+      "sampleCount": 18,
+      "uniqueIps": 1,
+      "countrySets": [
+        [
+          "US"
+        ]
+      ],
+      "queryingSamples": 0,
+      "allHaveIp": true,
+      "allRunning": true,
+      "cardDeltasPx": [
+        617
+      ],
+      "passed": true
+    },
+    "final-automatic": {
+      "durationSeconds": 76.32,
+      "sampleCount": 18,
+      "uniqueIps": 1,
+      "countrySets": [
+        [
+          "US"
+        ]
+      ],
+      "queryingSamples": 0,
+      "allHaveIp": true,
+      "allRunning": true,
+      "cardDeltasPx": [
+        617
+      ],
+      "passed": true
+    }
+  },
+  "jvm": {
+    "app": {
+      "tests": 572,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 213,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "common": {
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "lint": {
+    "debug": {
+      "Warning": 68,
+      "Hint": 14
+    },
+    "release": {
+      "Warning": 66,
+      "Hint": 13
+    }
+  },
+  "build": "test + assembleDebug + signed assembleRelease PASS; lintDebug + lintRelease separate invocation PASS",
+  "dashboardDefect": {
+    "id": "KUI-020",
+    "document": "docs/dashboard-refresh-defect.md",
+    "firstCandidateFailed": {
+      "seconds": 77.87,
+      "samples": 18,
+      "queryingSamples": 4,
+      "cardDeltaPx": 617
+    },
+    "finalFixedAndAutomaticPassed": true,
+    "cardDeltaBeforePx": 694,
+    "cardDeltaAfterPx": 617,
+    "underlyingAutomaticExitChangesConfirmedByTemporaryHashedDiagnostics": true,
+    "temporaryDiagnosticsRemoved": true
+  },
+  "verifiedCiHistory": [
+    {
+      "runId": 42505946353,
+      "commit": "39233a280aa088982a22c6afbd8f0f24136ab465",
+      "conclusion": "success",
+      "scope": "SDK fixes validated; predates R8 and dashboard final changes"
+    },
+    {
+      "runId": 42506998956,
+      "commit": "d5f992fcd9ce732af1d43129daafa110025b7300",
+      "conclusion": "success",
+      "scope": "R8 fix validated; predates dashboard final changes"
+    }
+  ]
 }

@@ -407,7 +407,7 @@ internal fun RuntimeStatsCard(state: RuntimeStatsUiState, runtimeState: CoreRunt
                 }
             }
         }
-        if (state.isLoading && active) CircularProgressIndicator(Modifier.padding(top = 10.dp).size(18.dp), strokeWidth = 2.dp)
+        // 作者 long：每秒统计是后台采样，沿用Flutter直接更新数值；插入加载行会让整张卡片反复跳高。
         state.error?.let { Text(it, Modifier.padding(top = 10.dp), color = MaterialTheme.colorScheme.error) }
     }
 }
@@ -548,7 +548,7 @@ internal fun OutboundModeCard(
 private fun DashboardSpeedTile(label: String, icon: ImageVector, speed: Long, total: Long, samples: List<Long>, chartTag: String, modifier: Modifier) {
     Surface(modifier, shape = AppSuperellipseShape(22.dp), color = dashboardBlockColor()) {
         Column {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(icon, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
                     Text(label, style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurfaceVariant)

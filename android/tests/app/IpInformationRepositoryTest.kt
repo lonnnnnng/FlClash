@@ -164,8 +164,10 @@ internal class IpTestRuntime : OutboundIpRuntime {
     override val runningSinceElapsedMillis = MutableStateFlow<Long?>(1L)
     override val ipRouteRevision = MutableStateFlow(1L)
     var stamp = CoreRouteStamp(1, 1)
+    var reuse: suspend (List<com.lonnnnnng.flclash.core.CoreRouteHit>, CoreRouteStamp) -> Boolean = { _, _ -> false }
     var metadata: suspend (String) -> CoreIpResponse = { error("无夹具") }
     override suspend fun ipRouteStamp() = stamp
+    override suspend fun reuseOutboundIp(hits: List<com.lonnnnnng.flclash.core.CoreRouteHit>, expected: CoreRouteStamp) = reuse(hits, expected)
     override suspend fun queryOutboundIp(urls: List<String>) = error("不应访问出口")
     override suspend fun queryIpMetadata(url: String) = metadata(url)
 }

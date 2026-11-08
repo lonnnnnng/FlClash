@@ -59,7 +59,7 @@ internal fun OutboundIpPanel(
             onClick = onRefresh, enabled = !state.isLoading,
             modifier = Modifier.testTag("dashboard_ip_refresh"),
         ) {
-            if (state.isLoading) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+            if (state.isLoading && info == null) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
             else Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(info?.countryCode ?: "—", style = MaterialTheme.typography.labelMedium)
                 Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp))
@@ -83,8 +83,8 @@ internal fun OutboundIpPanel(
                 when {
                     state.error != null -> "点击图标重试"
                     info == null -> "出口 IP"
-                    state.qualityLoading -> "正在查询 IP 类型…"
                     state.quality != null -> "${state.quality.type.label} · ${state.quality.levelLabel}"
+                    state.qualityLoading -> "正在查询 IP 类型…"
                     else -> "IP 类型查询失败"
                 },
                 style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,

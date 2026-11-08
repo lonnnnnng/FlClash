@@ -35,19 +35,58 @@ class OutboundIpViewModelTest {
         } finally { model.viewModelScope.cancel(); runCurrent() }
     }
 
-    @Test fun successfulExitIsRecheckedWhileTheRouteStaysTheSame() = runTest {
+    @Test fun stableExitStaysCachedUntilManualRefresh() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val runtime = IpTestRuntime()
         val store = FakeIpStore(runtime)
         val model = OutboundIpViewModel(runtime, store)
         try {
             model.setForeground(true); model.setDashboardVisible(true); runCurrent()
-            advanceTimeBy(59_000); runCurrent()
+            advanceTimeBy(300_000); runCurrent()
             assertEquals(1, store.outboundCalls)
+            assertFalse(model.state.value.isLoading)
             store.outboundRead = { RoutedIpInfo(OutboundIpInfo("1.1.1.1", "US"), runtime.stamp) }
-            advanceTimeBy(1_000); runCurrent()
+            model.refresh(); runCurrent()
             assertEquals(2, store.outboundCalls)
             assertEquals("1.1.1.1", model.state.value.info?.ip)
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun unrelatedRouteRevisionKeepsTheValidatedExitButActualExitMoveReloads() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = IpTestRuntime()
+        val store = FakeIpStore(runtime)
+        val hits = listOf(com.lonnnnnng.flclash.core.CoreRouteHit("fixture.invalid", "", "node-a"))
+        store.outboundRead = { RoutedIpInfo(OutboundIpInfo("8.8.8.8", "US"), runtime.stamp, hits) }
+        runtime.reuse = { received, _ -> assertEquals(hits, received); true }
+        val model = OutboundIpViewModel(runtime, store)
+        try {
+            model.setForeground(true); model.setDashboardVisible(true); runCurrent()
+            val before = model.state.value
+            runtime.stamp = CoreRouteStamp(1, 2)
+            advanceTimeBy(1_000); runCurrent()
+            assertEquals(before, model.state.value)
+            assertEquals(1, store.outboundCalls)
+            runtime.reuse = { _, _ -> false }
+            runtime.stamp = CoreRouteStamp(1, 3)
+            store.outboundRead = { RoutedIpInfo(OutboundIpInfo("1.1.1.1", "AU"), runtime.stamp, hits) }
+            advanceTimeBy(1_000); runCurrent()
+            assertEquals(2, store.outboundCalls)
+            assertEquals("AU", model.state.value.info?.countryCode)
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun networkInvalidationCannotReuseAnOldExitEvenIfCoreStampIsUnchanged() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = IpTestRuntime()
+        runtime.reuse = { _, _ -> error("网络变化必须重新查询") }
+        val store = FakeIpStore(runtime)
+        val model = OutboundIpViewModel(runtime, store)
+        try {
+            model.setForeground(true); model.setDashboardVisible(true); runCurrent()
+            runtime.ipRouteRevision.value++
+            runCurrent()
+            assertEquals(2, store.outboundCalls)
         } finally { model.viewModelScope.cancel(); runCurrent() }
     }
 
@@ -138,8 +177,30 @@ class OutboundIpViewModelTest {
             model.setForeground(true); model.setDashboardVisible(true); runCurrent()
             runtime.stamp = CoreRouteStamp(1, 2)
             answer.complete(quality()); runCurrent()
-            assertNull(model.state.value.info)
+            assertEquals("8.8.8.8", model.state.value.info?.ip)
             assertNull(model.state.value.quality)
+            assertFalse(model.state.value.qualityLoading)
+        } finally { model.viewModelScope.cancel(); runCurrent() }
+    }
+
+    @Test fun automaticExitMoveKeepsLastDisplayUntilFreshAnswerArrives() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val runtime = IpTestRuntime()
+        val store = FakeIpStore(runtime)
+        val model = OutboundIpViewModel(runtime, store)
+        try {
+            model.setForeground(true); model.setDashboardVisible(true); runCurrent()
+            val previous = model.state.value
+            val pending = CompletableDeferred<RoutedIpInfo>()
+            store.outboundRead = { pending.await() }
+            runtime.stamp = CoreRouteStamp(1, 2)
+            advanceTimeBy(1_000); runCurrent()
+            assertTrue(model.state.value.isLoading)
+            assertEquals(previous.info, model.state.value.info)
+            assertEquals(previous.quality, model.state.value.quality)
+            pending.complete(RoutedIpInfo(OutboundIpInfo("1.1.1.1", "AU"), runtime.stamp)); runCurrent()
+            assertEquals("1.1.1.1", model.state.value.info?.ip)
+            assertFalse(model.state.value.isLoading)
         } finally { model.viewModelScope.cancel(); runCurrent() }
     }
 }

@@ -510,6 +510,7 @@ class CoreBridge {
             error = text("error"),
             statusCode = number("status-code", 200L).toInt(),
             stamp = CoreRouteStamp(number("core-epoch"), number("route-version")),
+            hits = parseRouteHits(result.get("hits")),
         )
     }
 

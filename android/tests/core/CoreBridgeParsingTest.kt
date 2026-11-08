@@ -177,10 +177,11 @@ class CoreBridgeParsingTest {
     @Test
     fun ipInformationPreservesBodyStatusAndRouteButDoesNotLogBody() {
         val parsed = CoreBridge().parseIpJson(JsonParser.parseString(
-            """{"url":"https://fixture.invalid","body":"sensitive-body","status-code":429,"core-epoch":3,"route-version":7}""",
+            """{"url":"https://fixture.invalid","body":"sensitive-body","status-code":429,"core-epoch":3,"route-version":7,"hits":[{"host":"fixture.invalid","proxy":"","exit":"node-a"}]}""",
         ).asJsonObject)
         assertEquals(429, parsed.statusCode)
         assertEquals(CoreRouteStamp(3, 7), parsed.stamp)
+        assertEquals(listOf(CoreRouteHit("fixture.invalid", "", "node-a")), parsed.hits)
         assertEquals("sensitive-body", parsed.body)
         assertFalse(parsed.toString().contains("sensitive-body"))
         assertFalse(parsed.toString().contains("fixture.invalid"))
