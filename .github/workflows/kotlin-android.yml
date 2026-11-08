@@ -53,6 +53,10 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # 作者 long：新版SDK源已移除旧tools包；只安装构建实际需要的平台工具，避免初始化中断。
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
 
       - name: Install Android build tools
         shell: bash

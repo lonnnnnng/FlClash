@@ -119,5 +119,17 @@
     "Full Flutter visual and performance acceptance remain partial"
   ],
   "artifacts": "../acceptance-artifacts/release-0.1.0-20261109/",
-  "remote": null
+  "remote": null,
+  "ciFailures": [
+    {
+      "runId": 42505363799,
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42505363799",
+      "source": "android-actions/setup-android@v3 action.yml inputs.packages default: tools platform-tools",
+      "stage": "Set up Android SDK",
+      "error": "Warning: Failed to find package 'tools'; sdkmanager exited 1",
+      "fix": "Explicit packages: platform-tools; platform37/build-tools36/NDK28 remain installed by following step",
+      "scope": "Remote CI initialization defect; not an Android app or key failure",
+      "log": "ci-42505363799-failed.log"
+    }
+  ]
 }
