@@ -182,7 +182,7 @@ DashboardModalSheet以pageKey/depth保存标题、正文及滚动状态，450ms�
 
 ## 源快照菜单与代码正文视图（2026-11-04）
 
-- `AppMenuSource`记录源按钮GraphicsLayer，在内存快照成功后交接原绘制；没有快照保留普通200ms退场。`AppMenuMorph`/`AppMenuGoo`负责开场、从中断帧回源及距离场桥接；`present`独立保留500ms回源图层，不能依赖未发生透明度变化的AnimatedVisibility生命周期。
+- `AppMenuSource`记录源按钮GraphicsLayer，在内存快照成功后交接原绘制；没有快照保留普通200ms退场。2026-11-09 KUI-025由源控件显式提供真实底色，普通材质按sRGB交接，玻璃仅叠源底色透明度；无底色时沿用浮动面板/透明默认。玻璃准备结束必须由实际变形进度证明，source.hidden仅表示快照交接。`AppMenuMorph`/`AppMenuGoo`负责开场、从中断帧回源及距离场桥接；`present`独立保留500ms回源图层，不能依赖未发生透明度变化的AnimatedVisibility生命周期。
 - `AppDropdownMenu`在退场完成且宿主仍STARTED、原expanded仍有效时才执行待办操作；ON_STOP撤销，源销毁恢复绘制。子菜单旧层移除语义并禁用命中，`opensSubmenu`只表示导航停留，普通保持打开的开关不触发400ms导航。
 - `AppMenuCarry`区分长按、跨slop拖动、释放与取消；源手指未释放前Popup不抢Window焦点，源持续更新Window坐标。语义长按没有物理指针，不进入携带状态，由Popup接管系统返回。可滚动菜单不抢竖向手势；取消路径撤销悬停，不执行最后条目。
 - 玻璃开关默认关闭，开启时用宿主Window的PixelCopy内存背景，先隐藏源绘制后抓帧；API33+使用折射shader，旧API保留fallback。API27离线材质、Window捕获、菜单与子页已通过；API24/25、31/32、其他ABI及低API网络/VPN/核心路径未测。

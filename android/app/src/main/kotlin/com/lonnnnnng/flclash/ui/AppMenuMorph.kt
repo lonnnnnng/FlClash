@@ -52,6 +52,15 @@ internal fun appMenuShadowRadiusPx(density: Float) = ((APP_MENU_SHADOW_SIGMA_DP 
 internal fun AppMenuMorphFrame.outerShadowStrength(glass: Boolean) =
     shadowProgress * if (returning && !glass) 1f - progress else 1f
 
+/** 作者 long：Flutter按sRGB通道交接按钮与菜单底色；玻璃只叠逐渐退去的按钮色，不能额外盖一层不透明菜单底。 */
+internal fun AppMenuMorphFrame.fillColor(source: Color, surface: Color, glass: Boolean): Color {
+    val progress = materialProgress.coerceIn(0f, 1f)
+    if (glass) return source.copy(alpha = source.alpha * (1f - progress))
+    fun channel(from: Float, to: Float) = from + (to - from) * progress
+    return Color(channel(source.red, surface.red), channel(source.green, surface.green),
+        channel(source.blue, surface.blue), channel(source.alpha, surface.alpha))
+}
+
 internal fun AppMenuMorphFrame.contentScale(size: Size): Float {
     val source = contentBounds?.size ?: size
     val widthScale = platter.width / source.width.coerceAtLeast(1f)
@@ -210,6 +219,7 @@ internal class AppMenuMorphShape(private val frame: (Size) -> AppMenuMorphFrame)
 
 internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorphFrame, source: ImageBitmap? = null,
     backdrop: AppMenuBackdrop? = null, backdropOffset: Offset = Offset.Zero,
+    sourceColor: Color = Color.Unspecified,
     drawSurface: () -> Boolean = { true }) = composed {
     val glass = remember { AppMenuGlassRenderer() }
     val dark = LocalKClashDarkTheme.current
@@ -232,8 +242,9 @@ internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorph
         val refracted = backdrop != null && glass.draw(this, motion, backdrop, backdropOffset, tint, dark, style = material, quality = quality)
         if (!refracted) {
             if (backdrop != null) clipPath(outline) { drawAppGlassFallback(motion, backdrop, backdropOffset, material, quality) }
-            else drawPath(outline, surface)
         }
+        val controlFill = sourceColor.takeOrElse { if (backdrop != null) Color.Transparent else surface }
+        drawPath(outline, motion.fillColor(controlFill, surface, backdrop != null))
         motion.droplet?.let { drop -> if (source != null && drop.width > 0 && drop.height > 0) {
             drawAppMenuFiltered(sourceLayer, drop, motion.sourceBlur, motion.sourceAlpha) {
                 // 作者 long：浮点变换保留亚像素轨迹，整数目标框会让小图标在吸收阶段逐像素抖动。

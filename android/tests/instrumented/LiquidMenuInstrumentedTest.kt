@@ -27,15 +27,17 @@ class LiquidMenuInstrumentedTest {
     @Test fun sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes() {
         var open by mutableStateOf(false); var dark by mutableStateOf(false); var glass by mutableStateOf(false)
         lateinit var source: AppMenuSource
+        lateinit var stack: AppMenuStackState
         var actions = 0
         compose.setContent { KClashTheme(darkTheme = dark) { CompositionLocalProvider(LocalAppMenuGlass provides glass) {
             source = rememberAppMenuSource()
             Surface(Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding().padding(20.dp)) {
                 Text("配置与代理菜单", Modifier.align(Alignment.Center))
                 AppMenuSourceContent(source) {
-                    Button({ open = true }, Modifier.appMenuSource(source).align(Alignment.TopEnd).testTag("liquid_open")) { Text("菜单") }
+                    Button({ open = true }, Modifier.appMenuSource(source, MaterialTheme.colorScheme.primary).align(Alignment.TopEnd).testTag("liquid_open")) { Text("菜单") }
                 }
                 AppDropdownMenu(open, { open = false }, source = source) {
+                    stack = checkNotNull(LocalAppMenuStack.current)
                     AppDropdownMenuItem({ Text("打开子页") }, { actions++; open = false }, Modifier.testTag("liquid_action"))
                     AppDropdownMenuItem({ Text("禁用项") }, { actions += 100 }, enabled = false)
                 }
@@ -47,16 +49,19 @@ class LiquidMenuInstrumentedTest {
             // 作者 long：真实触点会启动按钮涟漪，覆盖隐藏期间取消动画与回源后的再次点击，语义点击无法验证这条路径。
             compose.onNodeWithTag("liquid_open").performTouchInput { click() }
             compose.mainClock.advanceTimeByFrame()
-            compose.waitUntil(5_000) { compose.mainClock.advanceTimeByFrame(); source.hidden }
-            if (material) {
-                // 作者 long：PixelCopy在真实Window帧完成后异步回调；手动时钟须先让出这帧，再采样开场，避免把等待背景的源按钮误记为液滴。
+            // 作者 long：隐藏源按钮只证明快照完成，不能证明异步背景就绪；观察实际platter开始增长后再采展开帧。
+            compose.waitUntil(10_000) {
                 compose.mainClock.advanceTimeByFrame()
                 compose.waitForIdle()
-                androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-                android.os.SystemClock.sleep(150)
-                compose.mainClock.advanceTimeByFrame()
+                val control = source.bounds
+                val initialWidth = .41f * minOf(control.width, control.height) + maxOf(0, control.width - control.height)
+                source.hidden && (stack.outerBounds?.width ?: 0f) > initialWidth + 1f
             }
-            compose.mainClock.advanceTimeBy(160)
+            compose.mainClock.advanceTimeBy(144)
+            compose.runOnIdle {
+                val opening = checkNotNull(stack.outerBounds)
+                assertTrue("采集必须已离开源按钮准备帧", opening.width > source.bounds.width * 1.2f)
+            }
             capture("open_${theme}_$material")
             compose.mainClock.advanceTimeBy(500)
             val before = actions
@@ -68,6 +73,24 @@ class LiquidMenuInstrumentedTest {
             compose.mainClock.autoAdvance = true
             compose.runOnIdle { assertEquals(before + 1, actions); assertFalse(source.hidden) }
             compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+
+            if (material) {
+                // 作者 long：背景准备期间取消不能让迟到PixelCopy重新展开，也不能执行尚未选中的菜单项。
+                compose.mainClock.autoAdvance = false
+                compose.onNodeWithTag("liquid_open").performTouchInput { click() }
+                compose.mainClock.advanceTimeByFrame()
+                compose.waitUntil(5_000) { compose.mainClock.advanceTimeByFrame(); source.hidden }
+                compose.runOnIdle {
+                    val control = source.bounds
+                    val initialWidth = .41f * minOf(control.width, control.height) + maxOf(0, control.width - control.height)
+                    assertTrue("取消窗口须仍在背景准备阶段", checkNotNull(stack.outerBounds).width <= initialWidth + 1f)
+                    open = false
+                }
+                compose.mainClock.advanceTimeBy(600)
+                compose.mainClock.autoAdvance = true
+                compose.runOnIdle { assertFalse(source.hidden); assertEquals(before + 1, actions) }
+                compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+            }
 
             compose.mainClock.autoAdvance = false
             compose.onNodeWithTag("liquid_open").performTouchInput { click() }

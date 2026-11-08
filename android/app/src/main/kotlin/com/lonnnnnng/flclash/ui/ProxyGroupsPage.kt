@@ -239,7 +239,7 @@ private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (I
             val source = rememberAppMenuSource()
             AppMenuSourceContent(source) {
                 IconButton(onClick = { showGroups = true },
-                    modifier = Modifier.appMenuSource(source).background(dashboardCardColor(), CircleShape).testTag("proxy_group_more")) {
+                    modifier = Modifier.appMenuSource(source, dashboardCardColor()).background(dashboardCardColor(), CircleShape).testTag("proxy_group_more")) {
                     AppGlyphIcon(AppGlyphs.chevronDown)
                 }
             }
@@ -372,7 +372,7 @@ internal fun ProxyGroupsCard(
                                 toolsMenuPage = ProxyToolsMenuPage.ROOT
                                 toolsExpanded = true
                             },
-                            modifier = Modifier.appMenuSource(source).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("proxy_tools"),
+                            modifier = Modifier.appMenuSource(source, dashboardCardColor()).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("proxy_tools"),
                         ) {
                             AppGlyphIcon(AppGlyphs.more)
                         }

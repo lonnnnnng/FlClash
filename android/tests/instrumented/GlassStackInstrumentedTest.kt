@@ -125,16 +125,19 @@ class GlassStackInstrumentedTest {
 
     @Test fun glassSubmenuKeepsCapturedHostAndReturnsInBothThemes() {
         var dark by mutableStateOf(false); var open by mutableStateOf(false); var child by mutableStateOf(false)
+        var shifted by mutableStateOf(false)
         lateinit var source: AppMenuSource
+        lateinit var stack: AppMenuStackState
         compose.setContent { KClashTheme(darkTheme = dark) { CompositionLocalProvider(LocalAppMenuGlass provides true) {
             source = rememberAppMenuSource()
             Box(Modifier.fillMaxSize().safeDrawingPadding().padding(20.dp)) {
-                Canvas(Modifier.fillMaxSize()) { repeat(16) { i ->
-                    drawRect(if (i % 2 == 0) Color(.25f,.5f,.75f) else Color(.8f,.4f,.3f), Offset(0f,i*size.height/16), androidx.compose.ui.geometry.Size(size.width,size.height/16))
+                Canvas(Modifier.fillMaxSize().testTag("glass_stack_host")) { repeat(16) { i ->
+                    drawRect(if ((i % 2 == 0) != shifted) Color(.25f,.5f,.75f) else Color(.8f,.4f,.3f), Offset(0f,i*size.height/16), androidx.compose.ui.geometry.Size(size.width,size.height/16))
                 } }
-                Button({ child = false; open = true }, Modifier.align(Alignment.TopEnd).appMenuSource(source).testTag("glass_stack_open")) { Text("菜单") }
+                Button({ child = false; open = true }, Modifier.align(Alignment.TopEnd).appMenuSource(source, MaterialTheme.colorScheme.primary).testTag("glass_stack_open")) { Text("菜单") }
                 AppDropdownMenu(open, { open = false }, source = source, pageKey = child,
                     onNavigateBack = if (child) ({ child = false }) else null) { level ->
+                    stack = checkNotNull(LocalAppMenuStack.current)
                     if (level as Boolean) {
                         AppDropdownMenuItem({ Text("返回") }, { child = false }, Modifier.testTag("glass_stack_back"), dismissOnClick = false, isBack = true)
                         repeat(4) { AppDropdownMenuItem({ Text("选项$it") }, {}, dismissOnClick = false) }
@@ -147,16 +150,60 @@ class GlassStackInstrumentedTest {
             }
         } } }
         for (theme in listOf(false,true)) {
-            compose.runOnIdle { dark = theme }
+            compose.runOnIdle { dark = theme; shifted = false }
+            compose.mainClock.autoAdvance = false
             compose.onNodeWithTag("glass_stack_open").performClick()
-            compose.onNodeWithTag("app_popup_menu").assertIsDisplayed()
+            compose.waitUntil(10_000) {
+                compose.mainClock.advanceTimeByFrame(); compose.waitForIdle()
+                val control = source.bounds
+                val initialWidth = .41f * minOf(control.width, control.height) + maxOf(0, control.width - control.height)
+                source.hidden && (stack.outerBounds?.width ?: 0f) > initialWidth + 1f
+            }
+            compose.mainClock.advanceTimeBy(144)
+            compose.runOnIdle { assertTrue(checkNotNull(stack.outerBounds).width > source.bounds.width * 1.2f) }
+            capture("glass_stack_opening_$theme")
             compose.mainClock.advanceTimeBy(600)
+            compose.mainClock.autoAdvance = true
+            val beforeHost = compose.onNodeWithTag("glass_stack_host").captureToImage().toPixelMap()
+            val beforeMenu = compose.onNodeWithTag("app_menu_level_0", useUnmergedTree = true).captureToImage().toPixelMap()
+            compose.runOnIdle { shifted = true }
+            val afterHost = compose.onNodeWithTag("glass_stack_host").captureToImage().toPixelMap()
+            val afterMenu = compose.onNodeWithTag("app_menu_level_0", useUnmergedTree = true).captureToImage().toPixelMap()
+            assertTrue("背景必须实际变化，才能验证菜单仍持有捕获帧", delta(beforeHost[10, 10], afterHost[10, 10]) > .5f)
+            var changed = 0
+            for (y in 20 until beforeMenu.height - 20 step 4) for (x in 20 until beforeMenu.width - 20 step 4) {
+                if (delta(beforeMenu[x,y], afterMenu[x,y]) > .01f) changed++
+            }
+            assertEquals("玻璃菜单展开期间继续使用同一捕获背景", 0, changed)
+            capture("glass_stack_frozen_host_$theme")
             compose.onNodeWithTag("glass_stack_next").performClick()
             compose.onNodeWithTag("glass_stack_back").assertIsDisplayed()
             compose.onNodeWithTag("app_menu_level_1", useUnmergedTree = true).assertExists()
             capture("glass_stack_$theme")
             compose.onNodeWithTag("glass_stack_back").performClick()
             compose.onNodeWithTag("glass_stack_next").assertIsDisplayed()
+            compose.onNodeWithTag("app_popup_outside").performTouchInput { click(Offset(4f,centerY)) }
+            compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+            compose.runOnIdle { assertFalse(source.hidden) }
+
+            // 作者 long：重开必须采到已变化的宿主；否则“冻结一致”也可能只是捕获失败后一直显示普通底色。
+            compose.mainClock.autoAdvance = false
+            compose.onNodeWithTag("glass_stack_open").performClick()
+            compose.waitUntil(10_000) {
+                compose.mainClock.advanceTimeByFrame(); compose.waitForIdle()
+                val control = source.bounds
+                val initialWidth = .41f * minOf(control.width, control.height) + maxOf(0, control.width - control.height)
+                source.hidden && (stack.outerBounds?.width ?: 0f) > initialWidth + 1f
+            }
+            compose.mainClock.advanceTimeBy(600)
+            compose.mainClock.autoAdvance = true
+            val recaptured = compose.onNodeWithTag("app_menu_level_0", useUnmergedTree = true).captureToImage().toPixelMap()
+            var refreshed = 0
+            for (y in 20 until beforeMenu.height - 20 step 4) for (x in 20 until beforeMenu.width - 20 step 4) {
+                if (delta(beforeMenu[x,y], recaptured[x,y]) > .05f) refreshed++
+            }
+            assertTrue("重开应换成当前宿主的真实捕获背景", refreshed > 100)
+            capture("glass_stack_recaptured_$theme")
             compose.onNodeWithTag("app_popup_outside").performTouchInput { click(Offset(4f,centerY)) }
             compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
             compose.runOnIdle { assertFalse(source.hidden) }

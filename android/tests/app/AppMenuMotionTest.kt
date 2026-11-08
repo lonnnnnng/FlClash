@@ -33,6 +33,26 @@ class AppMenuMotionTest {
         }
     }
 
+    @Test fun fillReturnsToControlColorAndGlassDoesNotPaintOpaqueMenuSurface() {
+        val source = Color(.1f, .4f, .8f, .7f)
+        val surface = Color(.9f, .8f, .7f, 1f)
+        val start = AppMenuMorphFrame(Rect.Zero, 0f, 0f, materialProgress = 0f)
+        assertEquals(source, start.fillColor(source, surface, false))
+        assertEquals(source, start.fillColor(source, surface, true))
+        val middle = start.copy(materialProgress = .5f)
+        val plain = middle.fillColor(source, surface, false)
+        // 作者 long：sRGB在Compose中以8位通道存储，用精确量化值检查插值，不能把半个色阶误判为算法偏差。
+        assertEquals(128f / 255f, plain.red, .00001f)
+        assertEquals(153f / 255f, plain.green, .00001f)
+        assertEquals(192f / 255f, plain.blue, .00001f)
+        assertEquals(.85f, plain.alpha, .005f)
+        assertEquals(.35f, middle.fillColor(source, surface, true).alpha, .005f)
+        val end = start.copy(materialProgress = 1f)
+        assertEquals(surface, end.fillColor(source, surface, false))
+        assertEquals(0f, end.fillColor(source, surface, true).alpha, 0f)
+        assertEquals(0f, middle.fillColor(Color.Transparent, surface, true).alpha, 0f)
+    }
+
     @Test fun nestedReturnKeepsTopCardGeometryAndUniformContentScale() {
         val top = Rect(20f, 48f, 280f, 188f)
         val from = AppMenuMorphFrame(top, 24f, 1f, contentBounds = top)

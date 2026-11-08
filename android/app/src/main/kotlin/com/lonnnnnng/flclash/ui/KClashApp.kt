@@ -239,7 +239,7 @@ internal fun ProfilesTopBarActions(
             IconButton(
                 onClick = onAdd,
                 enabled = !busy,
-                modifier = (if (addSource != null) Modifier.appMenuSource(addSource) else Modifier).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("profiles_add_fab")
+                modifier = (if (addSource != null) Modifier.appMenuSource(addSource, dashboardCardColor()) else Modifier).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("profiles_add_fab")
                     .onGloballyPositioned { onAddAnchorChanged(it.boundsInWindow().roundToIntRect()) },
             ) { AppGlyphIcon(AppGlyphs.addCircle) }
         }
@@ -1872,7 +1872,7 @@ internal fun ProfilesPanel(
                     // 作者 long：空态和顶栏共享同一受理条件，启停/导入期间不能通过第二个入口重复开启配置操作。
                     AppMenuSourceContent(localAddSource) {
                         androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog, enabled = canMutateProfiles,
-                            modifier = Modifier.testTag("profiles_empty_add").appMenuSource(localAddSource).onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
+                            modifier = Modifier.testTag("profiles_empty_add").appMenuSource(localAddSource, androidx.compose.material3.ButtonDefaults.filledTonalButtonColors().containerColor).onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
                             AppGlyphIcon(AppGlyphs.addCircle)
                             Spacer(Modifier.size(8.dp))
                             Text("添加配置")

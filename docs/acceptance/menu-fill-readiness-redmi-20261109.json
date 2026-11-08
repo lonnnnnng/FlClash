@@ -1,0 +1,728 @@
+{
+  "date": "2026-11-09",
+  "issue": "KUI-025",
+  "baseCommit": "1d70403ac47decc5336107ab977be69ae493296f",
+  "scope": "源按钮真实底色与普通/玻璃菜单交接；实际展开帧门禁；准备期取消、宿主背景冻结与重开重采。",
+  "reference": {
+    "flutter": "be84736605527034689c95bf27828ff27d912c5e",
+    "prism": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "popupSha256": "55dc14e65088f0cac0a464488b52fd1ab8d393157a7d86302cbd74f0fa7387c6"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "core": "stopped"
+  },
+  "jvm": {
+    "total": 860,
+    "executedApp": 578,
+    "reusedOthers": 282,
+    "modules": {
+      "app": {
+        "tests": 578,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "build": {
+    "debug": true,
+    "signedReleaseR8": true,
+    "motionFixture": true,
+    "motionAndroidTest": true,
+    "lint": {
+      "debug": {
+        "Warning": 68,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 13
+      }
+    }
+  },
+  "instrumentation": {
+    "passed": 22,
+    "failed": 0,
+    "sameFixture": true,
+    "distinctMethods": true,
+    "pngCount": 56,
+    "batches": {
+      "focused1": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+            "test": "sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest",
+            "test": "glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.MenuFillParityInstrumentedTest",
+            "test": "coloredControlTransfersFillAndGlassReturnsToUncoveredBackdrop",
+            "code": 0
+          }
+        ],
+        "images": {
+          "liquid_open_false_false": {
+            "count": 2,
+            "bytes": 54208,
+            "sha256": "ebd2e4d8ed231760441ceec376e98eb357736fe60e90830e7609b2c2e03f56d0"
+          },
+          "liquid_return_false_false": {
+            "count": 2,
+            "bytes": 64469,
+            "sha256": "9f609846d34ab6f0a8602223f02e031d3b5127efd99d2ad6bff93c479a14b9f3"
+          },
+          "liquid_open_false_true": {
+            "count": 2,
+            "bytes": 57874,
+            "sha256": "2a853d7417695d6a311290c14f9463451e8a6997581d3475ad253929bb4ff875"
+          },
+          "liquid_return_false_true": {
+            "count": 2,
+            "bytes": 50865,
+            "sha256": "9ffa2c712770b8be5a7d04ec10a63ea6fde0187408d6c84df2c025936ed42fcb"
+          },
+          "liquid_open_true_false": {
+            "count": 2,
+            "bytes": 54022,
+            "sha256": "e824321af98f77d339c3b3c662136a44ed84d3b2bc3e4466c2c27c110eea2f21"
+          },
+          "liquid_return_true_false": {
+            "count": 2,
+            "bytes": 57462,
+            "sha256": "5b87e378f83d2b946c5aa254851c70eacfc81c83b63663edb3477636c6e5cb25"
+          },
+          "liquid_open_true_true": {
+            "count": 2,
+            "bytes": 63046,
+            "sha256": "8b775c5aa9225ed418505b76aa88298b8a3bbd30d2f64c651505c327e8bec446"
+          },
+          "liquid_return_true_true": {
+            "count": 2,
+            "bytes": 54539,
+            "sha256": "25472ebf85f5668717a640078b5caa2f7a03de70b70719a35e4babfd626a7d96"
+          },
+          "glass_stack_opening_false": {
+            "count": 3,
+            "bytes": 89762,
+            "sha256": "5ab5c3a1aa05695680fe08154daf201e1c69971ab8ff13cd365884f606fcb3bf"
+          },
+          "glass_stack_frozen_host_false": {
+            "count": 2,
+            "bytes": 63361,
+            "sha256": "85843d61cbc30635e6fd2fb351b5f67b707a3b0c3e1f35334636d833490c4637"
+          },
+          "glass_stack_false": {
+            "count": 3,
+            "bytes": 101314,
+            "sha256": "76daa55397479b79f3049a1f21c8225b1a7e731eaee1ad8b4ca3eb5558d75898"
+          },
+          "glass_stack_recaptured_false": {
+            "count": 2,
+            "bytes": 62133,
+            "sha256": "3b827c09845b090e7e58bc1854a863381f0a5119ec7361962df6a2a5de7ea62a"
+          },
+          "glass_stack_opening_true": {
+            "count": 3,
+            "bytes": 97196,
+            "sha256": "66fdbf1c7bad385b343254557f562fdaaaa84a05d1fc75e9a27c1d02cd29818c"
+          },
+          "glass_stack_frozen_host_true": {
+            "count": 2,
+            "bytes": 70750,
+            "sha256": "6f87f07cd98374531ddf9dbb9a308a2ee30a76b987415c1394e17bb178220f7f"
+          },
+          "glass_stack_true": {
+            "count": 4,
+            "bytes": 114638,
+            "sha256": "c7b77ae9b36da2ac86a71609ef840ac6a2413c873a65dd5aae47f8702d49b65e"
+          },
+          "glass_stack_recaptured_true": {
+            "count": 2,
+            "bytes": 69765,
+            "sha256": "77d06479c91e1c1ab8dcd0cbc208b57945171e31290a04fff6af63c43fecbd51"
+          },
+          "plain_source_false": {
+            "count": 1,
+            "bytes": 7699,
+            "sha256": "1a36003b61cac49760386fb53e8f8ffe10c215bc7fc0899a176b3ce762387627"
+          },
+          "plain_middle_false": {
+            "count": 1,
+            "bytes": 7274,
+            "sha256": "7f3daef7ae723cddd94bf328ebaf9dae14a1541fa7c66757f83b0dd31fe8c250"
+          },
+          "plain_menu_false": {
+            "count": 1,
+            "bytes": 6797,
+            "sha256": "3cd08ee64f89c4fd6dfc8d24f2a9d89e2334c9200101b26f1dd27163dbc01c6f"
+          },
+          "glass_source_false": {
+            "count": 1,
+            "bytes": 7941,
+            "sha256": "0b92a6552b1b6a2fe829be18e23b3d60da33ce871e0c0a73de050b8de6b59eb9"
+          },
+          "glass_menu_false": {
+            "count": 1,
+            "bytes": 11656,
+            "sha256": "341f336c75034e70f909297f3df76bc66ae009b633776e2546298a4c10be681f"
+          },
+          "glass_transparent_source_false": {
+            "count": 1,
+            "bytes": 11656,
+            "sha256": "341f336c75034e70f909297f3df76bc66ae009b633776e2546298a4c10be681f"
+          },
+          "plain_source_true": {
+            "count": 1,
+            "bytes": 7699,
+            "sha256": "1a36003b61cac49760386fb53e8f8ffe10c215bc7fc0899a176b3ce762387627"
+          },
+          "plain_middle_true": {
+            "count": 1,
+            "bytes": 7274,
+            "sha256": "7f3daef7ae723cddd94bf328ebaf9dae14a1541fa7c66757f83b0dd31fe8c250"
+          },
+          "plain_menu_true": {
+            "count": 1,
+            "bytes": 6797,
+            "sha256": "3cd08ee64f89c4fd6dfc8d24f2a9d89e2334c9200101b26f1dd27163dbc01c6f"
+          },
+          "glass_source_true": {
+            "count": 1,
+            "bytes": 7936,
+            "sha256": "9ef78b83338e3220932c6e71a2f5447d5b2b7f4072be30838edd3041cb2e4226"
+          },
+          "glass_menu_true": {
+            "count": 1,
+            "bytes": 12072,
+            "sha256": "421f2cb1dc00b7ed21c6e68aa6259a83597b03a9b62074448884a615d1177c05"
+          },
+          "glass_transparent_source_true": {
+            "count": 1,
+            "bytes": 12072,
+            "sha256": "421f2cb1dc00b7ed21c6e68aa6259a83597b03a9b62074448884a615d1177c05"
+          }
+        },
+        "passed": true
+      },
+      "remaining1": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+            "test": "longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+            "test": "carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+            "test": "nestedSelectionReturnsOnlyTopCardBeforeRunningAction",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+            "test": "longMenuFingerScrollDoesNotExecuteHoveredRows",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+            "test": "overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+            "test": "sortSubmenuSupportsKeyboardEscapeAndAppliesNameOrder",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+            "test": "overflowingGroupMenuSupportsKeyboardSelectionAndEscapeDismissal",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest",
+            "test": "profilesScreenshotMatrixMatchesBaseline",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest",
+            "test": "profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest",
+            "test": "textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.MenuShadowParityInstrumentedTest",
+            "test": "platterShadowLeavesInteriorAndDetachedDropletClearInBothThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.MenuContentParityInstrumentedTest",
+            "test": "sourceSnapshotBlursInScreenSpaceAndLeavesNoResidueWhenHidden",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.MenuContentParityInstrumentedTest",
+            "test": "contentBlurKeepsScreenWidthAfterCardShrinksAndClearsAtZero",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest",
+            "test": "sharedMaterialsAndQualityRenderDistinctPixelsAcrossThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest",
+            "test": "transparentFrostKeepsColorAndFallbackInterpolatesPremultipliedAlpha",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.AppGlassInstrumentedTest",
+            "test": "windowCaptureAndDefaultDisabledStayUsableOnCurrentApi",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest",
+            "test": "threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest",
+            "test": "edgeRefractionChangesPixelsWhileCenterKeepsSameFrostInBothThemes",
+            "code": 0
+          }
+        ],
+        "images": {
+          "liquid_return_nested_top": {
+            "count": 2,
+            "bytes": 53618,
+            "sha256": "2d553eb204aa65aa0a03c19cd037931fb553ee778c8f4f70db98433ed1a9224c"
+          },
+          "proxy_keyboard_name_sort": {
+            "count": 2,
+            "bytes": 45831,
+            "sha256": "e809dae69a71693a7a1ea0f2b14ab15d9622b9795c79b974e51ba7124a9bee74"
+          },
+          "profiles_empty": {
+            "count": 3,
+            "bytes": 76842,
+            "sha256": "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b"
+          },
+          "profiles_custom_selected": {
+            "count": 2,
+            "bytes": 56500,
+            "sha256": "cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04"
+          },
+          "profiles_remote_usage": {
+            "count": 2,
+            "bytes": 63023,
+            "sha256": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5"
+          },
+          "profiles_empty_light": {
+            "count": 3,
+            "bytes": 80086,
+            "sha256": "e927577b0286da4661107040263b601bd2f143a5e3723a07a3294585661728c6"
+          },
+          "profiles_custom_selected_light": {
+            "count": 2,
+            "bytes": 62288,
+            "sha256": "8746be9c5c380e7d59d9e11deba5b32d1be41a7d6b76d7c5ebc46befa0a0c748"
+          },
+          "profiles_remote_usage_light": {
+            "count": 2,
+            "bytes": 68310,
+            "sha256": "6e51244231247327cc81e78863c96481e3e5f9b8ed94beb7f77dc46c2dd22019"
+          },
+          "profiles_source_menu_light": {
+            "count": 1,
+            "bytes": 36591,
+            "sha256": "dc7d62b52a44ba02593aa077145d3526a89e45ff92f0708f274577122268c0d4"
+          },
+          "profiles_source_menu_dark": {
+            "count": 1,
+            "bytes": 36423,
+            "sha256": "ddbd99c021b665a6bf18508e1f5c372f84e79ec42648dcb8eaf3add0ac21c26b"
+          },
+          "profile_document_light_failed_search": {
+            "count": 5,
+            "bytes": 161047,
+            "sha256": "dd2b1dfd627a702356df31b9415fd1a66a6d9ae8aeef43c8f356afa4accb0c1d"
+          },
+          "profile_document_dark_exit": {
+            "count": 4,
+            "bytes": 121415,
+            "sha256": "d0252c06d20fa77e4d91bf9cf7dc37f4f7452683189fd8e656dd5b8718133863"
+          },
+          "provider_filter_members": {
+            "count": 3,
+            "bytes": 92403,
+            "sha256": "6271488ea657635575570a1d4bd480453360d563a94ccaa54ca7ae260fc74a19"
+          },
+          "platter_shadow_false_legacy_false": {
+            "count": 1,
+            "bytes": 14428,
+            "sha256": "5cdbdcb4741d08b14dcad8472fc136844681b490ac1e053c7a301335913bcc40"
+          },
+          "platter_shadow_true_legacy_false": {
+            "count": 1,
+            "bytes": 12072,
+            "sha256": "ed5a136e1b2456f3142dfaa7ecea8b24ab83dbad8229a345d48a00b32f5b99df"
+          },
+          "source_blur": {
+            "count": 1,
+            "bytes": 9733,
+            "sha256": "38c341ac4e1ffcd9fb2e3c13b2fa724ab76b2c8a32754454a14f0a19bb3516e7"
+          },
+          "source_hidden": {
+            "count": 1,
+            "bytes": 4551,
+            "sha256": "1c8dfcf969480f5d706961c6caa2f59c381965f8b088e5a85964d53596cbfdaf"
+          },
+          "content_blur_scale_1.0": {
+            "count": 1,
+            "bytes": 9720,
+            "sha256": "15b9d576d41bdb5499e6ff48e552ae95fa0834de566397c3e94aec33a3f98735"
+          },
+          "content_blur_scale_0.5": {
+            "count": 1,
+            "bytes": 9661,
+            "sha256": "330aaa1a59dc7020836325331f918b12690039f9f8562d8172271e663e491989"
+          },
+          "content_blur_cleared": {
+            "count": 1,
+            "bytes": 4601,
+            "sha256": "7ef4dd35e2007566cf0448820f5943b0c905ea7edb00898fc9053da9ee93fb91"
+          },
+          "materials_36_false_ULTRA": {
+            "count": 6,
+            "bytes": 202940,
+            "sha256": "2dbfc09af9f93262b7e46404c284881f5664bbd39f846f95713be577f441fcd1"
+          },
+          "materials_36_false_STANDARD": {
+            "count": 6,
+            "bytes": 186845,
+            "sha256": "eaf78ec2aa389025abf7a7e85324c98d9cb831409801270f7be6cd3d83270ee1"
+          },
+          "materials_36_true_ULTRA": {
+            "count": 6,
+            "bytes": 209407,
+            "sha256": "99a7afc85af8fdc3f29b8c5ac2b61ae3bfe5f02c6cc9f60adf0c1bb135bd3920"
+          },
+          "materials_36_true_STANDARD": {
+            "count": 6,
+            "bytes": 195224,
+            "sha256": "1368137c0737d6b5a3a2dadc7ae2b96713006143117adccfe3ed3be437da50da"
+          },
+          "stack_three": {
+            "count": 2,
+            "bytes": 68899,
+            "sha256": "c14237f7fbf251ed1220785d08a82bc4e7b2911e946c1333a89c95fd6642d221"
+          },
+          "stack_fold_middle": {
+            "count": 2,
+            "bytes": 73353,
+            "sha256": "b645f69c7f206f2d721bd06a623a71980262cc4a315f21742cc1cebb0d3df254"
+          },
+          "glass_optics_false": {
+            "count": 2,
+            "bytes": 45158,
+            "sha256": "d8967e4edc5b1cb823c152179e7a9a586ec9919c8eee51859314dce6ba004314"
+          },
+          "glass_optics_true": {
+            "count": 2,
+            "bytes": 47448,
+            "sha256": "da4d75c1d6f28958e5b2e5a0de977cd1ea0476a9cd40946755f125e2239d8359"
+          }
+        },
+        "passed": true
+      }
+    }
+  },
+  "visual": {
+    "reviewedSheets": [
+      "focused-sheet-1.png",
+      "focused-sheet-2.png",
+      "focused-sheet-3.png",
+      "focused-sheet-4.png",
+      "remaining-sheet-1.png",
+      "remaining-sheet-2.png",
+      "remaining-sheet-3.png",
+      "remaining-sheet-4.png"
+    ],
+    "actualGlassOpeningVerified": true,
+    "preparationCancellationVerified": true,
+    "capturedBackdropFrozenAndRecapturedVerified": true,
+    "terminalPixelPairs": {
+      "dark-root": {
+        "samePixelsBelowStatusBar": true
+      },
+      "dark-sub": {
+        "samePixelsBelowStatusBar": true
+      },
+      "dark-fold": {
+        "samePixelsBelowStatusBar": true
+      },
+      "dark-closed": {
+        "samePixelsBelowStatusBar": true
+      },
+      "light-root": {
+        "samePixelsBelowStatusBar": true
+      },
+      "light-sub": {
+        "samePixelsBelowStatusBar": true
+      },
+      "light-fold": {
+        "samePixelsBelowStatusBar": true
+      },
+      "light-closed": {
+        "samePixelsBelowStatusBar": true
+      }
+    },
+    "video": {
+      "dark": {
+        "frames": 102,
+        "videoSha256": "40370ff0fc6dfac36f4c291b3af0ae02019064b2907b116383dbc12550ada984",
+        "originalPtsVerified": true,
+        "reviewedSampleCount": 24
+      },
+      "light": {
+        "frames": 103,
+        "videoSha256": "c89b8729bae9f4c7d213b14eb4f5e46e2cb6b4ae893f76718cd61df446b1ca8f",
+        "originalPtsVerified": true,
+        "reviewedSampleCount": 24
+      }
+    }
+  },
+  "performance": {
+    "baseline": {
+      "open": {
+        "process": {
+          "janky": 74,
+          "frames": 201,
+          "jankPercent": 36.816
+        },
+        "popup": {
+          "janky": 31,
+          "frames": 129,
+          "availableStages": 6,
+          "jankPercent": 24.031
+        }
+      },
+      "expand": {
+        "process": {
+          "janky": 24,
+          "frames": 185,
+          "jankPercent": 12.973
+        },
+        "popup": {
+          "janky": 24,
+          "frames": 185,
+          "availableStages": 6,
+          "jankPercent": 12.973
+        }
+      },
+      "fold": {
+        "process": {
+          "janky": 18,
+          "frames": 134,
+          "jankPercent": 13.433
+        },
+        "popup": {
+          "janky": 18,
+          "frames": 134,
+          "availableStages": 6,
+          "jankPercent": 13.433
+        }
+      },
+      "close": {
+        "process": {
+          "janky": 23,
+          "frames": 168,
+          "jankPercent": 13.69
+        },
+        "popup": {
+          "janky": null,
+          "frames": null,
+          "availableStages": 0,
+          "jankPercent": null,
+          "coverage": "window destroyed; not observable"
+        }
+      }
+    },
+    "final": {
+      "open": {
+        "process": {
+          "janky": 74,
+          "frames": 190,
+          "jankPercent": 38.947
+        },
+        "popup": {
+          "janky": 37,
+          "frames": 124,
+          "availableStages": 6,
+          "jankPercent": 29.839
+        }
+      },
+      "expand": {
+        "process": {
+          "janky": 25,
+          "frames": 185,
+          "jankPercent": 13.514
+        },
+        "popup": {
+          "janky": 25,
+          "frames": 185,
+          "availableStages": 6,
+          "jankPercent": 13.514
+        }
+      },
+      "fold": {
+        "process": {
+          "janky": 19,
+          "frames": 131,
+          "jankPercent": 14.504
+        },
+        "popup": {
+          "janky": 19,
+          "frames": 131,
+          "availableStages": 6,
+          "jankPercent": 14.504
+        }
+      },
+      "close": {
+        "process": {
+          "janky": 21,
+          "frames": 172,
+          "jankPercent": 12.209
+        },
+        "popup": {
+          "janky": null,
+          "frames": null,
+          "availableStages": 0,
+          "jankPercent": null,
+          "coverage": "window destroyed; not observable"
+        }
+      }
+    }
+  },
+  "install": {
+    "sha256": "a67e030a2fcdee594e179adadc61f8541708dbc797cec4b3466a8f4e0e6a4b58",
+    "installedMatches": true,
+    "formalDataCleared": false
+  },
+  "fixtures": {
+    "com.lonnnnnng.flclash.motion": {
+      "sha256": "7b30bbe81c2c24b3ad0b9375c63debe8c1a51b3bbf851431e77148c8f5f6dcf9",
+      "installedMatches": true
+    },
+    "com.lonnnnnng.flclash.motion.test": {
+      "sha256": "e027847c300b19a07cee1e284e94c9881313b760ff7d356172404b633ffaf1e8",
+      "installedMatches": true
+    }
+  },
+  "cleanup": {
+    "removedOwnedFiles": [
+      "/sdcard/kclash-fill-dark.mp4",
+      "/sdcard/kclash-fill-light.mp4",
+      "/sdcard/kclash-menu-release.xml",
+      "/sdcard/kclash-fill-motion.xml"
+    ],
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "mainInstalledSha256": "a67e030a2fcdee594e179adadc61f8541708dbc797cec4b3466a8f4e0e6a4b58",
+    "mainDataCleared": false,
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "nightMode": "Night mode: yes",
+    "fontScale": "1.0",
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "flutterPackageModified": false
+  },
+  "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+  "sources": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt": "a190be6cfadb757ccd92fb2f4b60c4c8858794204f682ec102b3647e2ed22a34",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuSource.kt": "ce2c87d4fa87e6d0848d8a4b980a147bbeae4696340f7a3823208008e02a1e5e",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt": "d9ba099af38fc84ed2bfdbecafaadb24b7abee4c7ee70c09bb18918948f71918",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "622336159552134e0651f69f7efabe2f997cd97f6510161abd935cb31697efcb",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt": "acc3203151de985a3cd2d8646abc19469392caaad07b34cf3b5a9978884d174b",
+    "android/tests/app/AppMenuMotionTest.kt": "5f18a41de37cc80597bb778341d51834746f23eaa85c583c5aa0e2d5acfef344",
+    "android/tests/instrumented/GlassStackInstrumentedTest.kt": "126065d0719d4b9b6a058fa15538c038d363c1d668302a9be6d8806ceefe8ac2",
+    "android/tests/instrumented/LiquidMenuInstrumentedTest.kt": "15b6bbd976cb79cfa2ff78492cb41158f8a5b6b6652076676913765d102c1a19",
+    "android/tests/instrumented/MenuFillParityInstrumentedTest.kt": "a66f58743a105741e0dee36c24c2072b0b94eb42e23175d2e75c18f6665edaeb"
+  },
+  "initialFailures": [
+    "build1: KClashApp新增ButtonDefaults读取缺导入，改全限定引用。",
+    "build2: 单测理想0.5与8位sRGB的128/255不符，改精确量化断言，未改产品逻辑；原失败XML保留。",
+    "录屏抽帧enc_time_base=-1被拒绝，改实际stream的1/90000；102/103张与ffprobe原帧、严格递增PTS一致，未重复或补帧。"
+  ],
+  "boundaries": [
+    "视觉修正通过，性能未通过：打开进程36.82%到38.95%、Popup24.03%到29.84%，保留退化观察，不声称收益或唯一因果。",
+    "24个正式菜单测量终态通过；进程/Window原始分母独立，关闭Popup缺席记不可观测。UI/Render区间不是CPU/GPU归因。",
+    "玻璃默认关闭；新增实际展开证据不回写前组仅源按钮准备帧的失败边界。玻璃在本次菜单持有一帧背景，不代表Flutter实时材质/完整光学逐像素一致。",
+    "仅专用Redmi API36竖屏默认字号；不运行模拟器、低API、蜂窝/OEM及网络/VPN负载。",
+    "未清正式配置、未更改代理组选择；本轮没有正式Room/正文逐字段保护回读，不能声称数据库完整一致性已验。",
+    "视频各24张抽样人工检查，终态像素一致不证明动效逐帧一致或性能通过。",
+    "同签名本地0.1.0修正版已安装，公开kclash-v0.1.0不覆盖、不重发；完整Flutter视觉、其余子页、菜单慢帧继续PARTIAL。"
+  ],
+  "artifacts": "../acceptance-artifacts/menu-fill-readiness-20261109/",
+  "artifactSha256": {
+    "source-final1-sha256.json": "134f9418d97d8e2a147e5a156f854eed007585c34807be33d9fb87d3654cb27a",
+    "build1.log": "53205fbcfa7986d5c5f0c7576c9462fcd0ee30d783bf74b04dabd31b6b44c93a",
+    "build2.log": "8e5d1dee2a0243fcc225f95e6afc13ecde26479492a64454897ed76969561f77",
+    "build3.log": "ceaa78c3f5285c29f749492d107b8fc0d3272394595c61c8d77e000299b455e2",
+    "fixture1.log": "b26d91d96ec108878963e50323c636ab57936a80924712c5974574b7c08e5cf6",
+    "lint1.log": "605cda779a446f930c6a08a100ae0bd027408e004697e650b9fe9dd2e88a80c9",
+    "build2-color-quantization-failure.xml": "739861656688580e4f82ca315a003d21c8fd8743cacc6b21577e49043c35fe58",
+    "focused1/instrument.log": "39db8c24b41254b1a5c0ace7a4c40fe646a07ed9ee2521bc008ff537275d9e29",
+    "remaining1/instrument.log": "22fe5366bdaf233150ec50855abf8685afea74bb771bd752527cceccbe2a9d06",
+    "window-report.json": "64d16f7054004fe280bd97454568d87b8bd008e891c24f437a86c4d1999faacc",
+    "performance-comparison.json": "4ec69ccacb6a7af73b6be07a017d2f31f65801341e8c776cecb34fdb6ae4927b",
+    "terminal-comparison.json": "fd1d50d62875236edd7598b6a980b7a47044e0037b52108f404c314af6c7e688",
+    "final1-dark-motion.mp4": "40370ff0fc6dfac36f4c291b3af0ae02019064b2907b116383dbc12550ada984",
+    "final1-light-motion.mp4": "c89b8729bae9f4c7d213b14eb4f5e46e2cb6b4ae893f76718cd61df446b1ca8f",
+    "cleanup.json": "2a0f7ba1ae76d3d74214683f8c689113a8b670fd817183abe1404bfa9b3801f6",
+    "signer.txt": "7979b4aeceff54c7119332671bfa951d5b22b8f24b25659a2a69bffdb38aa50d"
+  }
+}

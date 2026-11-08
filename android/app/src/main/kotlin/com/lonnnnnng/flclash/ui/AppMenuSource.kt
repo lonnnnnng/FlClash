@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
@@ -34,6 +35,7 @@ import kotlin.coroutines.resume
 internal class AppMenuSource {
     var bounds by mutableStateOf(IntRect.Zero)
     var hidden by mutableStateOf(false)
+    var color by mutableStateOf(Color.Unspecified)
     var layer: GraphicsLayer? = null
     suspend fun capture(): ImageBitmap? = try { layer?.toImageBitmap() }
         catch (cancelled: CancellationException) { throw cancelled }
@@ -51,8 +53,10 @@ internal fun AppMenuSourceContent(source: AppMenuSource?, content: @Composable (
     CompositionLocalProvider(LocalRippleConfiguration provides ripple.takeUnless { source?.hidden == true }, content = content)
 }
 
-internal fun Modifier.appMenuSource(source: AppMenuSource): Modifier = composed {
+internal fun Modifier.appMenuSource(source: AppMenuSource, color: Color = Color.Unspecified): Modifier = composed {
     val layer = rememberGraphicsLayer()
+    // 作者 long：底色由真实控件提供，不从图标像素猜测；同一来源切换空态/顶栏或主题后使用新底色。
+    SideEffect { source.color = color }
     DisposableEffect(source, layer) { source.layer = layer; onDispose { source.hidden = false; source.layer = null } }
     onGloballyPositioned { source.bounds = it.boundsInWindow().roundToIntRect() }
         .drawWithContent {

@@ -322,6 +322,7 @@ internal fun AppDropdownMenu(
                         // 作者 long：正文先保留为独立绘制节点；外层每帧重录变形/模糊时复用它，避免重复遍历菜单正文与软件阴影。
                         Box(Modifier.appMenuMorph(surface, morph, sourceImage, backdrop,
                             Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()),
+                            sourceColor = source?.color ?: Color.Unspecified,
                             drawSurface = { opening.value < .45f || !active }).graphicsLayer()) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
                             LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
