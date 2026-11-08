@@ -37,6 +37,8 @@ Release 预发布检查（没有独立签名身份时输出未签名 APK）：
 
 菜单独立ART方法采样只选`VisualMotionNaturalInstrumentedTest#darkMenuOpenAndCloseMethodSamples`，参数`kclashMotionMethodTrace=true`、`kclashMotionInlineTrace=true`及唯一安全名称`kclashMotionRun`，不要启用PNG。每轮分别回传open/close，共6份trace；`kclash_method_chunk`分片必须核验name/index/count/bytes/sha256再解码。设备文件在完整发送后核对原字节并删除。Perfetto59.1只导入dual-clock墙钟，线程CPU需另解析原字段并交叉验证，不能把slice.dur称为CPU；见`docs/menu-content-compositing-defect.md`与`docs/acceptance/menu-methods-redmi-20261109.json`。
 
+gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --expected-window 弹出式窗口 --output report.json input.gfx`。保留进程与各Window的原始计数，不相加；RTAnimation/Skipped位可重叠，区间只使用各窗口重置后的Flags=0行。关闭后Popup缺席必须报告不可观测，不可记零耗时。解析器验证：`python3 -m unittest discover -s tool -p test_android_menu_frame_report.py -v`。边界见`docs/menu-source-preparation-investigation.md`。
+
 当前重置后的Redmi连Debug包也拒绝`run-as`的SELinux上下文，Debug自然视觉同样启用内联帧表。中断采集只执行`removeExactOwnInterruptedFrameArtifacts`，显式`kclashMotionCleanup=true`、原run及JSON `kclashMotionCleanupManifest`（name/bytes/sha256）；先核对清单全部文件再精确删除，空清单只断言采集缓存为空。正式配置当前0份，不能用旧两份配置门禁或静默导入补齐测试前提。
 
 ## Go core

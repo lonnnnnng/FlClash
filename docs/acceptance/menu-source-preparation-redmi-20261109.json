@@ -1,0 +1,265 @@
+{
+  "date": "2026-11-09",
+  "baseCommit": "eb9b7b8f8793dc8c75f76551d33090c6febfcd19",
+  "scope": "菜单源图像准备候选与分窗口统计复核",
+  "productChangesRetained": false,
+  "deliveredTools": [
+    "tool/android_menu_frame_report.py",
+    "tool/test_android_menu_frame_report.py"
+  ],
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "core": "stopped"
+  },
+  "performance": {
+    "baseline": {
+      "open": {
+        "frames": 210,
+        "janky": 62,
+        "percent": 29.524
+      },
+      "expand": {
+        "frames": 188,
+        "janky": 26,
+        "percent": 13.83
+      },
+      "fold": {
+        "frames": 135,
+        "janky": 16,
+        "percent": 11.852
+      },
+      "close": {
+        "frames": 179,
+        "janky": 17,
+        "percent": 9.497
+      }
+    },
+    "early-ripple": {
+      "open": {
+        "frames": 205,
+        "janky": 73,
+        "percent": 35.61
+      },
+      "expand": {
+        "frames": 188,
+        "janky": 22,
+        "percent": 11.702
+      },
+      "fold": {
+        "frames": 134,
+        "janky": 17,
+        "percent": 12.687
+      },
+      "close": {
+        "frames": 178,
+        "janky": 21,
+        "percent": 11.798
+      }
+    },
+    "cleared-layer": {
+      "open": {
+        "frames": 206,
+        "janky": 65,
+        "percent": 31.553
+      },
+      "expand": {
+        "frames": 188,
+        "janky": 22,
+        "percent": 11.702
+      },
+      "fold": {
+        "frames": 133,
+        "janky": 16,
+        "percent": 12.03
+      },
+      "close": {
+        "frames": 180,
+        "janky": 17,
+        "percent": 9.444
+      }
+    }
+  },
+  "windowAudit": {
+    "openWindows": {
+      "baseline": {
+        "MainActivity": {
+          "frames": 55,
+          "janky": 41,
+          "rowsAfterReset": 61,
+          "flagZeroRows": 12,
+          "rtAnimationRows": 49,
+          "skippedRows": 6
+        },
+        "弹出式窗口": {
+          "frames": 149,
+          "janky": 21,
+          "rowsAfterReset": 143,
+          "flagZeroRows": 126,
+          "rtAnimationRows": 17,
+          "skippedRows": 0
+        }
+      },
+      "early-ripple": {
+        "MainActivity": {
+          "frames": 53,
+          "janky": 48,
+          "rowsAfterReset": 59,
+          "flagZeroRows": 12,
+          "rtAnimationRows": 47,
+          "skippedRows": 6
+        },
+        "弹出式窗口": {
+          "frames": 146,
+          "janky": 25,
+          "rowsAfterReset": 140,
+          "flagZeroRows": 130,
+          "rtAnimationRows": 10,
+          "skippedRows": 0
+        }
+      },
+      "cleared-layer": {
+        "MainActivity": {
+          "frames": 55,
+          "janky": 39,
+          "rowsAfterReset": 61,
+          "flagZeroRows": 12,
+          "rtAnimationRows": 49,
+          "skippedRows": 6
+        },
+        "弹出式窗口": {
+          "frames": 145,
+          "janky": 26,
+          "rowsAfterReset": 139,
+          "flagZeroRows": 137,
+          "rtAnimationRows": 2,
+          "skippedRows": 0
+        }
+      }
+    },
+    "gfxFiles": 72,
+    "missingPopupFiles": [
+      "../acceptance-artifacts/menu-preparation-20261109/baseline-dark/0-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/baseline-dark/1-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/baseline-dark/2-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/baseline-light/0-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/baseline-light/1-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/baseline-light/2-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/early-ripple-dark/0-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/early-ripple-dark/1-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/early-ripple-dark/2-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/early-ripple-light/0-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/early-ripple-light/1-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/early-ripple-light/2-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/cleared-layer-dark/0-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/cleared-layer-dark/1-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/cleared-layer-dark/2-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/cleared-layer-light/0-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/cleared-layer-light/1-close.gfx",
+      "../acceptance-artifacts/menu-preparation-20261109/cleared-layer-light/2-close.gfx"
+    ]
+  },
+  "decision": {
+    "earlyRipple": "REJECTED: 打开与关闭均退化",
+    "clearHiddenLayer": "REJECTED: 未改善Popup或背景窗口动画，恢复HEAD产品源码"
+  },
+  "validation": {
+    "parserTests": 4,
+    "parserFailures": 0,
+    "actualGfxFiles": 72,
+    "missingPopupAtClose": 18,
+    "terminalUiPerBatch": 24,
+    "signedReleaseBuildsPassed": [
+      "baseline(previous delivered)",
+      "early-ripple",
+      "cleared-layer"
+    ],
+    "clearedFixtureBuildPassed": true,
+    "clearedFixtureInstalled": false,
+    "androidJvmRerun": false,
+    "androidLintRerun": false
+  },
+  "video": {
+    "path": "baseline-open.mp4",
+    "purpose": "single-run visual diagnostic only",
+    "extractedPtsRangeSeconds": [
+      0.5,
+      1.6
+    ],
+    "extractedFrames": 31,
+    "reviewedContactFrames": 24,
+    "prematureFullMenuFlashObserved": false,
+    "performanceIncluded": false,
+    "extractorWarnings": "FFmpeg image2 reported non monotonically increasing dts; extracted count matched original pts list; no duplicated/interpolated output frames requested."
+  },
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/aosp-mirror/platform_frameworks_base/android-16.0.0_r3/libs/hwui/FrameInfo.h",
+      "symbols": {
+        "WindowVisibilityChanged": 1,
+        "RTAnimation": 2,
+        "SurfaceCanvas": 4,
+        "SkippedFrame": 8
+      },
+      "retrieved": "2026-11-09"
+    },
+    {
+      "prism": "63450c0",
+      "symbols": [
+        "popup.dart::_paintFrame",
+        "popup.dart::_captureSource",
+        "popup.dart::_paintShadows"
+      ],
+      "boundary": "source reference; not Flutter runtime pixel-parity proof"
+    }
+  ],
+  "cleanup": {
+    "installedSha256": "8e2f579c1f23377b57322ab31fd87b91c4798e6f7f5608f9df4c76490005d110",
+    "installedMatchesBaseline": true,
+    "productSourceCommit": "eb9b7b8f8793dc8c75f76551d33090c6febfcd19",
+    "nightMode": "yes",
+    "fontScale": "1.0",
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "removedOwnFiles": [
+      "/sdcard/kclash-menu-release.xml",
+      "/sdcard/kclash-preparation-baseline.mp4",
+      "/sdcard/kclash-preparation.xml"
+    ],
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "formalDataCleared": false,
+    "flutterPackageOperated": false,
+    "fixtureInstalledThisGroup": false
+  },
+  "next": "按Popup独立帧表继续；对照固定Flutter完整阴影/裁剪/回源透明度链路，再决定产品改动。",
+  "boundaries": [
+    "进程计数、窗口计数与有限帧表不共用分母；RTAnimation与Skipped位可重叠，不能求和。",
+    "UI/Render区间是Flags=0的经过时间，不是CPU/GPU归因。",
+    "关闭时Popup已销毁，18份帧表均缺席；不能用宿主单行记录证明Popup无卡顿。",
+    "单次开场视频未观察到整菜单闪现，不推广全部运行/设备窗口。",
+    "正式数据未清除或编辑，但未做Room全字段快照，不声称完整数据保护验收。",
+    "两个候选未保留；本轮未重复Android854项JVM或双Lint，历史通过与本轮区分。",
+    "完整菜单性能与Flutter视觉仍PARTIAL；原生RenderThread采样仍受ROM权限限制。"
+  ],
+  "artifacts": "../acceptance-artifacts/menu-preparation-20261109/",
+  "artifactSha256": {
+    "baseline-open.mp4": "8f4c10aee5586b12131eb363e7cae46a669c79b4f6b58c01f6b063109757a89e",
+    "baseline-pts.json": "8f22547594bf7fbe1abeafa7cc7a034bd98a8fe41df55f0bcad57a6ca8b0e206",
+    "baseline-contact.jpg": "b8bd4348838cc73ad0007569a3f5ade7e91762ad4f98b1cc63780fa1cd371ab7",
+    "build-early-ripple.log": "c2ffba8fe7ef29536b8f3b207939403343f6238ba05df992e056ad52b24d3964",
+    "build-cleared-layer.log": "946f5fd1827f98c840ad5e74d51f52c2f10dd18924fab760546433b729d8b0d3",
+    "build-cleared-fixture.log": "f7ecce14284082af420fc1ad9ff663b7e8f43a7f5cc0eeb269f97c9bd4abccc9",
+    "frame-report-tests.log": "fe81cb26b0bb81ec2cf0253e45d207fd9cb456c72938a4fb9c68150861824345",
+    "window-report.json": "03fad998ec6ba357df7e3079599ed8772de1929bdc3bd0b508b30ccf037a67e8",
+    "window-summary.json": "60256845a6ce21a7fd73e74032406815b4f23447734f1ba72104432504128835",
+    "android16-frame-info.md": "aa52089329cf99936bdf41c5b22b56d92e4669e2464f00fd9a81b84d16723e83",
+    "cleanup.json": "8fc1555bc8abf771e7cf9fa649cec2a3071a65d8521c6dffcf410ce4d27338c8"
+  },
+  "toolSha256": {
+    "tool/android_menu_frame_report.py": "1b6a18b74d95f098fcc98a9ff872cdacaa6bf5d2de97887b111a3268c6f2ae19",
+    "tool/test_android_menu_frame_report.py": "62bda090af0b9cfa302bea5527c621bafedfe47642b64a833a3a44e26a23f2b9"
+  }
+}

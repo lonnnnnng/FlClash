@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **菜单准备阶段与分窗口复核（2026-11-09）**：截图准备即停涟漪、清空隐藏图层两个候选均未改善并已撤回，手机恢复KUI-022优化版。新增离线分窗口报告工具，4项边界测试及72份真实帧表解析通过；18次关闭Popup均已销毁，明确标不可观测。当前对照进程打开62/210、Popup自身21/149，两者不能混称；Android16 RTAnimation/Skipped位可重叠。下一步按Popup独立数据核对固定Flutter阴影轮廓、裁剪与回源透明度，完整性能/视觉仍PARTIAL。证据 `docs/acceptance/menu-source-preparation-redmi-20261109.json`，记录 `docs/menu-source-preparation-investigation.md`。
+
 > **隐藏源按钮涟漪优化（2026-11-09，KUI-022）**：菜单接管按钮快照后暂停隐藏按钮的Material3涟漪，回源恢复；代理工具/组选单、配置顶栏与空态新增、Provider过滤、正文历史共6个入口复用。正式签名R8深浅各三轮，原包反测打开130/228帧jank（57.02%）→最终67/205（32.68%），关闭17/179→17/180未见退化；背景Window绘制99→53帧，8对终态排除状态栏后逐像素一致。854项JVM结果（App572执行，其余282复用）、Debug/签名Release/独立测试包和双Lint通过；Redmi最终11/11、20图校验目视，首轮10/11的Espresso焦点失败保留并修正测试。文字模糊诊断无收益已撤回；Simpleperf原生采样被本ROM SELinux上下文拒绝，探针保留、临时权限/组件撤回。手机保留本地签名优化版，公开0.1.0资产不覆盖；菜单剩余慢帧和完整视觉仍PARTIAL。证据 `docs/acceptance/menu-source-ripple-redmi-20261109.json`，溯源 `docs/menu-hidden-source-ripple-defect.md`。
 
 > **菜单线程归因与阴影候选（2026-11-09，KUI-021续）**：6份ART dual-clock trace已完整校验，软件阴影关闭窗口主线程采样CPU约89–138ms，渲染提交长等待主要不在主线程CPU；没有原生RenderThread证据，不能认定GPU/模糊唯一根因。完整裁边与75%分辨率候选固定帧外观通过，半分辨率失败保留；正式签名深浅各三轮对照打开jank58.74%→55.51%/55.60%，收益不足，产品候选全部撤回，仅保留独立方法采样入口。手机恢复23284d4b网速卡紧凑版。完整Flutter视觉/菜单性能仍PARTIAL；下一步分离原生渲染线程等待、文字模糊合成和窗口初建。证据 `docs/acceptance/menu-methods-redmi-20261109.json`，溯源 `docs/menu-content-compositing-defect.md`。
@@ -743,7 +745,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步`chen08209/Clash.Meta:FlClash`，不直接同步`MetaCubeX/mihomo`分支/tag/提交/PR；连续4项`25fb0699`、`4a8e40cf`、`04f718e6`、`024245dc`已通过`852d3ad1`合入自己的`kclash-fixes`，当前为`7038231e`，本地修复保留 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
-| 单元测试 | 本轮854项JVM结果零失败/错误/跳过：App572执行，Service213/Core38/Common31复用。双Lint0错误（Debug68警告14提示、Release66警告13提示）；Go本轮未改未重跑，发布前双层race仅历史证据。 |
+| 单元测试 | 最近产品组854项JVM结果零失败/错误/跳过：App572执行，Service213/Core38/Common31复用。双Lint0错误（Debug68警告14提示、Release66警告13提示）；Go本轮未改未重跑，发布前双层race仅历史证据。 |
 | 最新真机 | KUI-022正式签名包深浅三轮，打开jank130/228→67/205（57.02%→32.68%），关闭17/179→17/180；24/24终态、8对终态像素一致。隔离11/11回归、20PNG；首轮10/11焦点失败保留。完整性能/视觉仍PARTIAL，见menu-source-ripple-redmi-20261109.json。 |
 | 当前设备数据 | 保留1份授权本地配置及同签名本地优化版，原1.yaml哈希保持、服务停止；本轮motion/test已卸载。Flutter参考包未操作，后续只用Redmi验收。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
