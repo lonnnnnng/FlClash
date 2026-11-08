@@ -28,7 +28,9 @@
 
 ## 发布验证
 
-849 项 JVM 结果零失败、错误和跳过（App 568 项本轮执行，其余模块 281 项复用）；Debug、签名 Release/R8 及双 Lint 通过。Lint 均为 0 错误，现有警告仍保留；Go 父模块与 Mihomo route 包 race 检查通过。签名 APK 已在独立 Android 15 / API35 ARM64 模拟器完成干净安装、首页/配置空态/工具导航和冷启动，安装回拉字节一致。本轮未覆盖签名 Release 真机 VPN、实网与跨版本升级，不将既有 Debug 验收等同于这些结论。
+849 项 JVM 结果零失败、错误和跳过（App 568 项本轮执行，其余模块 281 项复用）；Debug、签名 Release/R8 及双 Lint 通过。Lint 均为 0 错误，现有警告仍保留；Go 父模块与 Mihomo route 包 race 检查通过。
+
+发布前 Redmi 正式包回归发现并修复 SnakeYAML 被 R8 移入默认包导致的首次 YAML 导入崩溃（KREL-001，已保留溯源）。修复包通过真实系统选择器导入原始授权文件、首次 VPN 授权、双前台服务/tun0/双向流量、浏览器 HTTPS 页面、停止与冷进程配置保持，安装回拉字节一致。只代表本轮真机基本流程，未覆盖跨版本升级、全部规则/节点、蜂窝和所有 OEM。
 
 完整进度与历史验收范围见 [roadmap](https://github.com/lonnnnnng/FlClash/blob/kclash-v0.1.0/docs/roadmap.md)。
 

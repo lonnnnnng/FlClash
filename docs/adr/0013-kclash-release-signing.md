@@ -10,4 +10,4 @@ KClash 在发布阶段创建新的 release keystore，不复用 FlClash 的签�
 
 GitHub Actions secrets 为 `KCLASH_RELEASE_KEYSTORE_BASE64`、`KCLASH_RELEASE_STORE_PASSWORD`、`KCLASH_RELEASE_KEY_ALIAS`、`KCLASH_RELEASE_KEY_PASSWORD`。只有 `kclash-v*` 标签构建注入签名；PR/分支验证不使用发布密码。签名后固定核验证书指纹、包名、版本和 ABI，再生成下载校验文件并发布；runner 结束删除其临时密钥库。
 
-Gradle 本地签名支持同名前缀环境变量（密钥库路径使用 `KCLASH_RELEASE_KEYSTORE`），仍兼容既有未提交 `local.properties` 的签名字段；没有签名配置时只生成 unsigned Release。Debug 与正式签名不同，不能直接覆盖设备上的 Debug 应用或清除其数据来完成安装验收。
+Gradle 本地签名支持同名前缀环境变量（密钥库路径使用 `KCLASH_RELEASE_KEYSTORE`），仍兼容既有未提交 `local.properties` 的签名字段；没有签名配置时只生成 unsigned Release。Debug 与正式签名不同，不能直接覆盖。2026-11-09 用户明确授权在专用 Redmi Note 8 Pro 卸载 KClash 测试包并清除残留应用数据后验收正式包；今后只用该真机验收，不使用模拟器，Flutter 原版和其他应用不在清理范围。

@@ -10,6 +10,11 @@
 # 只在非安全构造器路径中引用这些类，KClash 使用 SafeConstructor，不把该不可达路径当成运行时依赖。
 -dontwarn java.beans.**
 
+# 作者 long：SnakeYAML 2.3 静态日志初始化依赖 Class.getPackage().getName()。
+# R8 把这两类移入默认包会让 Android 返回 null，首次解析 YAML 即崩溃；仅保留类名，成员仍可优化。
+-keepnames class org.yaml.snakeyaml.TypeDescription
+-keepnames class org.yaml.snakeyaml.introspector.PropertySubstitute
+
 -keep class com.lonnnnnng.flclash.service.GeneralSettings { *; }
 
 # 作者 long：加密草稿的JSON字段跨进程/发布版读取，不能由R8重命名其快照字段。

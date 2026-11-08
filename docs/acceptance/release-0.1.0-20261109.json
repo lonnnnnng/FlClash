@@ -7,7 +7,44 @@
   "sourceBase": "967099ec89a51bfc2e0eb2a6284113e6e18de2f6",
   "coreCommit": "7038231e026b710088b9c369899b3a8b7f281739",
   "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
-  "local": {
+  "jvmScope": "849 debug JVM results; app568 executed this build, service212/core38/common31 up-to-date; not 1698 independent cases",
+  "goRace": [
+    "core: go test -race ./... PASS",
+    "core: go test -race github.com/metacubex/mihomo/hub/route PASS"
+  ],
+  "keyStorage": "Independent JKS outside repository, macOS Keychain passwords, verified same-machine backup; see ADR0013",
+  "limits": [
+    "Remote release asset verification pending",
+    "Cross-version signed upgrade not covered; same-version signed replacement checked",
+    "VPN smoke has browser/counters/services but no per-socket route attribution",
+    "Low API, cellular/OEM, full Flutter visual and performance remain partial"
+  ],
+  "artifacts": "../acceptance-artifacts/release-0.1.0-20261109/",
+  "remote": null,
+  "ciFailures": [
+    {
+      "runId": 42505363799,
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42505363799",
+      "source": "android-actions/setup-android@v3 action.yml inputs.packages default: tools platform-tools",
+      "stage": "Set up Android SDK",
+      "error": "Warning: Failed to find package 'tools'; sdkmanager exited 1",
+      "fix": "Explicit packages: platform-tools; platform37/build-tools36/NDK28 remain installed by following step",
+      "scope": "Remote CI initialization defect; not an Android app or key failure",
+      "log": "ci-42505363799-failed.log"
+    },
+    {
+      "runId": 42505590656,
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42505590656",
+      "stage": "Install Android build tools",
+      "error": "Failed to find package 'platforms;android-37'",
+      "fix": "Use platform package android-37.0 and commandline-tools23.0 build16111833, matched against Google repository2-3.xml and local installed SDK",
+      "source": "https://dl.google.com/android/repository/repository2-3.xml",
+      "scope": "SDK package naming and minimum tools version; compile/target API remain37",
+      "log": "ci-42505590656-failed.log"
+    }
+  ],
+  "devicePolicy": "User confirmed 2026-11-09: subsequent acceptance uses Redmi Note8Pro only; KClash test packages and residual app data may be removed. Prior emulator check is historical, not the release device gate.",
+  "preFixLocal": {
     "manifest": {
       "application-id": "com.lonnnnnng.flclash",
       "version-name": "0.1.0",
@@ -88,7 +125,7 @@
     },
     "testsMayBeUpToDate": true
   },
-  "localSmoke": {
+  "preFixEmulatorSmoke": {
     "avd": "KClash_Release_API35",
     "serial": "emulator-5554",
     "api": 35,
@@ -106,41 +143,127 @@
     "newPid": "4282",
     "scope": "UI smoke only; no VPN or proxy traffic; Redmi unchanged"
   },
-  "jvmScope": "849 debug JVM results; app568 executed this build, service212/core38/common31 up-to-date; not 1698 independent cases",
-  "goRace": [
-    "core: go test -race ./... PASS",
-    "core: go test -race github.com/metacubex/mihomo/hub/route PASS"
-  ],
-  "keyStorage": "Independent JKS outside repository, macOS Keychain passwords, verified same-machine backup; see ADR0013",
-  "limits": [
-    "Signed release Redmi/VPN/network not rerun",
-    "Cross-version signed upgrade not covered",
-    "Low API and cellular/OEM remain partial",
-    "Full Flutter visual and performance acceptance remain partial"
-  ],
-  "artifacts": "../acceptance-artifacts/release-0.1.0-20261109/",
-  "remote": null,
-  "ciFailures": [
-    {
-      "runId": 42505363799,
-      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42505363799",
-      "source": "android-actions/setup-android@v3 action.yml inputs.packages default: tools platform-tools",
-      "stage": "Set up Android SDK",
-      "error": "Warning: Failed to find package 'tools'; sdkmanager exited 1",
-      "fix": "Explicit packages: platform-tools; platform37/build-tools36/NDK28 remain installed by following step",
-      "scope": "Remote CI initialization defect; not an Android app or key failure",
-      "log": "ci-42505363799-failed.log"
+  "local": {
+    "manifest": {
+      "application-id": "com.lonnnnnng.flclash",
+      "version-name": "0.1.0",
+      "version-code": "1000",
+      "min-sdk": "24",
+      "target-sdk": "37",
+      "debuggable": "false"
     },
-    {
-      "runId": 42505590656,
-      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42505590656",
-      "stage": "Install Android build tools",
-      "error": "Failed to find package 'platforms;android-37'",
-      "fix": "Use platform package android-37.0 and commandline-tools23.0 build16111833, matched against Google repository2-3.xml and local installed SDK",
-      "source": "https://dl.google.com/android/repository/repository2-3.xml",
-      "scope": "SDK package naming and minimum tools version; compile/target API remain37",
-      "log": "ci-42505590656-failed.log"
+    "abis": [
+      "arm64-v8a"
+    ],
+    "sha256": "23d7f1996de1a9e4a12b2d85ef4fe68df0919fcb46183560d2beefa21c3391bb",
+    "size": 48330820,
+    "debugMarkersAbsent": 21,
+    "jvm": {
+      "Debug": {
+        "app": {
+          "tests": 568,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "service": {
+          "tests": 212,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "core": {
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "common": {
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "Release": {
+        "app": {
+          "tests": 0,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "service": {
+          "tests": 0,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "core": {
+          "tests": 0,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "common": {
+          "tests": 0,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      }
+    },
+    "lint": {
+      "debug": {
+        "Warning": 68,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 13
+      }
+    },
+    "testsMayBeUpToDate": true,
+    "r8FixBuild": "assembleRelease lintRelease PASS, 170 tasks:12 executed/158 up-to-date; JVM results retained from preceding full build",
+    "r8YamlNames": {
+      "TypeDescription": "full name retained",
+      "PropertySubstitute": "removed as unused in usage.txt"
     }
-  ],
-  "devicePolicy": "User confirmed 2026-11-09: subsequent acceptance uses Redmi Note8Pro only; KClash test packages and residual app data may be removed. Prior emulator check is historical, not the release device gate."
+  },
+  "redmiSmoke": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "apkSha256": "23d7f1996de1a9e4a12b2d85ef4fe68df0919fcb46183560d2beefa21c3391bb",
+    "checks": [
+      "clean initial signed install; fixed APK updated with same release certificate",
+      "real SAF import of unchanged 1.yaml",
+      "YAML validation and save",
+      "initial Android VPN consent",
+      "RUNNING with both foreground services and tun0",
+      "positive upload/download counters",
+      "Via https://example.com page",
+      "stop services",
+      "force-stop cold process profile persistence",
+      "installed APK matches build"
+    ],
+    "oldPid": "27650",
+    "newPid": "28346",
+    "sourceYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "newCrashesAfterFix": 0,
+    "originalCrashRetained": true,
+    "testPackagesRemoved": [
+      "com.lonnnnnng.flclash.test",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "ownTransferCopyRemoved": true,
+    "finalState": "one authorized local profile; core stopped; signed app retained",
+    "scope": "Basic release UI/VPN/network smoke; no per-socket route attribution, cross-version upgrade, cellular or complete OEM coverage"
+  },
+  "productDefect": {
+    "id": "KREL-001",
+    "document": "docs/release-r8-yaml-defect.md",
+    "red": "original SAF import crashed in TypeDescription.<clinit>",
+    "green": "same original file through real SAF validated/saved, VPN running, stopped and retained across cold restart",
+    "status": "fixed_verified_local_release"
+  }
 }

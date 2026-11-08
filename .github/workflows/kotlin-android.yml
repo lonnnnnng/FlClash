@@ -165,6 +165,15 @@ jobs:
           test "$(apkanalyzer manifest version-code "$apk")" = "$VERSION_CODE"
           test "$(apkanalyzer manifest debuggable "$apk")" = "false"
           test "$(apkanalyzer manifest min-sdk "$apk")" = "24"
+          # 作者 long：JVM/Debug不经过R8，直接检查Release映射，防止YAML静态初始化再次丢失包名。
+          for type in org.yaml.snakeyaml.TypeDescription org.yaml.snakeyaml.introspector.PropertySubstitute; do
+            if grep -Fq "$type -> " android/app/build/outputs/mapping/release/mapping.txt; then
+              grep -Fqx "$type -> $type:" android/app/build/outputs/mapping/release/mapping.txt
+            else
+              # 作者 long：未使用的JavaBean路径可被删除；必须由R8 usage证实，不能把映射缺失当通过。
+              grep -Fqx "$type" android/app/build/outputs/mapping/release/usage.txt
+            fi
+          done
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
             "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$apk" > android/app/build/outputs/apk/release/signature.txt
             grep -q 'Signer #1 certificate SHA-256 digest: 3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49' android/app/build/outputs/apk/release/signature.txt
