@@ -25,6 +25,8 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkPagesPanelsEmptyAndContinuousMotion() = run(true)
     @Test fun lightMenuFirstOpenAndRepeatedTopCard() = runMenus(false)
     @Test fun darkMenuFirstOpenAndRepeatedTopCard() = runMenus(true)
+    @Test fun lightMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(false)
+    @Test fun darkMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(true)
 
     @Test fun removeExactOwnInterruptedFrameArtifacts() {
         val args = InstrumentationRegistry.getArguments()
@@ -81,6 +83,45 @@ class VisualMotionNaturalInstrumentedTest {
                 }
             }
         } finally { ProxyPageOptionsStore.save(context,old) }
+    }
+
+    private fun runMenuBoundaryDiagnostic(dark: Boolean) {
+        assertPortraitDefaultFontConfiguration()
+        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))
+        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashMotionProfile"))
+        suffix = if (dark) "dark" else "light"
+        val context=ins.targetContext
+        val old=ProxyPageOptionsStore.load(context)
+        try {
+            ProxyPageOptionsStore.save(context,ProxyPageOptions(displayMode=ProxyDisplayMode.TAB))
+            ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+                scenario.onActivity { it.dark=dark }
+                await("nav_proxy");click("nav_proxy");await("proxy_tools");settle()
+                event("diagnostic-ready")
+                // 作者 long：只测首次打开与根菜单收回，十次独立窗口扩充样本，不把submenu交互或录像开销混进trace。
+                repeat(10) { pass ->
+                    event("diagnostic-$pass-open-start")
+                    traceSection("kclash_menu_open_$pass") {
+                        click("proxy_tools");await("样式：标签")
+                    }
+                    event("diagnostic-$pass-open-visible")
+                    SystemClock.sleep(550)
+                    event("diagnostic-$pass-close-start")
+                    traceSection("kclash_menu_close_$pass") {
+                        back();awaitGone("样式：标签")
+                    }
+                    event("diagnostic-$pass-close-visible")
+                    SystemClock.sleep(250)
+                }
+                scenario.onActivity { assertEquals("常用节点",it.selectedGroup);assertEquals(0,it.nodeSelections) }
+                event("diagnostic-completed")
+            }
+        } finally { ProxyPageOptionsStore.save(context,old) }
+    }
+
+    private inline fun traceSection(name: String, action: () -> Unit) {
+        android.os.Trace.beginSection(name)
+        try { action() } finally { android.os.Trace.endSection() }
     }
 
     private fun run(dark: Boolean) {
@@ -163,6 +204,12 @@ class VisualMotionNaturalInstrumentedTest {
         capture("failure")
         val values=root()?.let { nodes(it).map { n -> "${n.viewIdResourceName}:${n.text}" }.toList() }
         error("未找到自然场景入口 $value; nodes=$values")
+    }
+    private fun awaitGone(value:String) {
+        val deadline=SystemClock.uptimeMillis()+15_000
+        while(SystemClock.uptimeMillis()<deadline) { if(find(value)==null)return;SystemClock.sleep(50) }
+        capture("failure")
+        error("菜单退出后仍存在 $value")
     }
     private fun click(value:String){await(value);tap(bounds(checkNotNull(find(value))))}
     private fun tap(rect:Rect){

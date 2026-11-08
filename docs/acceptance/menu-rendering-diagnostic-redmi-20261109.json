@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-09",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "fontScale": "1.0",
+    "orientation": "portrait"
+  },
+  "source": {
+    "head": "a75d6147e2f8212eee5787b2fee914bf8981565e",
+    "workingTreeDiffSha256": "29b28369dcc9901c6bc817255a2efe7fc5c14d424fc01ba91447b1eb9b9f7aa8",
+    "diagnostic": "VisualMotionNaturalInstrumentedTest#lightMenuFirstOpenAndCloseFrameTimeline, #darkMenuFirstOpenAndCloseFrameTimeline",
+    "traceSection": "android.os.Trace sections cover each open/close action through the accessibility-visible terminal state"
+  },
+  "menuDiagnostic": {
+    "dark": {
+      "batch": "menu-diag-dark3",
+      "instrumentation": "1/1",
+      "trace": {
+        "sha256": "e4bb0ee67b2a827cec9551070694c87a2c5002c39496a91d8ef58f7def1da8d5",
+        "naturalEnd": true,
+        "health": "invalid",
+        "stats": {
+          "tracedFlushesFailed": 1,
+          "tracedFinalFlushFailed": 1,
+          "schedSliceRows": 0,
+          "applicationThreadNames": 0,
+          "menuSlices": 0
+        }
+      }
+    },
+    "light": {
+      "batch": "not-run",
+      "reason": "dark trace proved the Redmi/API36 shell session cannot provide valid flush/thread evidence; no duplicate invalid long batch was started"
+    }
+  },
+  "conclusion": {
+    "firstOpenCloseRenderThread": "UNRESOLVED_DEVICE_TRACE",
+    "reason": "Perfetto periodic/final flush times out on this device and produces no sched/app thread rows; gfxinfo remains a frame symptom source only",
+    "productCodeChange": false,
+    "next": "retain the diagnostic test and retry on a trace-capable device/ROM before changing menu drawing code"
+  },
+  "memorySubpage": {
+    "test": "DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight",
+    "result": "1/1",
+    "build": {
+      "appDebugSha256": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d",
+      "testDebugSha256": "1e062840ab524bc4c8d0d79b8c9bd00e8e9bc4a4126ac2e77b0b723dde09b5e5"
+    },
+    "screenshots": "../acceptance-artifacts/memory-visual-redmi-20261109/screenshots.json",
+    "visualReview": "dark/light card and detail screen captured; no overlap or clipping observed",
+    "fixtureBoundary": "fixed DashboardTestActivity memory fixture; not real Go memory values"
+  },
+  "preservation": {
+    "formalProfileCount": 0,
+    "servicesRunning": false,
+    "flutterReferencePresent": false,
+    "localYamlBytes": 35165,
+    "localYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+  }
+}

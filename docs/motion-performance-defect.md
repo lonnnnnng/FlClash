@@ -1,5 +1,13 @@
 # KUI-018：菜单阴影缓存失效与动效测量污染
 
+## 2026-11-09：首开/关闭线程归因诊断 — UNRESOLVED_DEVICE_TRACE
+
+作者 long。本轮保留未提交诊断测试 `VisualMotionNaturalInstrumentedTest#lightMenuFirstOpenAndCloseFrameTimeline` / `#darkMenuFirstOpenAndCloseFrameTimeline`，将 `android.os.Trace` 区间覆盖到菜单打开或收回的可见终态；深色 Redmi 批次 `menu-diag-dark3` 的 1/1 用例通过，正式库快照、`1.yaml`、设备设置和服务状态保持。源改动指纹为 `29b28369dcc9901c6bc817255a2efe7fc5c14d424fc01ba91447b1eb9b9f7aa8`。
+
+Perfetto 仍不能提供可用的线程归因：自然结束 trace 的 `traced_flushes_failed=1`、`traced_final_flush_failed=1`，`sched_slice` 为 0，应用线程名与 `kclash_menu_*` slice 均为 0；系统日志记录 `Periodic flush timed out`。去掉 SurfaceFlinger 数据源的短探针也没有得到 sched 样本，说明问题位于本 Redmi/API36 shell trace 会话或 ROM 采集层，不能据此指向 Compose、UI 线程或 RenderThread。该 trace 只作失败证据，不计入性能改善或根因结论；gfxinfo 的首开/关闭慢帧仍是症状数据。
+
+同时完成 `DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight` Redmi 1/1：深浅主题内存卡、详情面板和完整窗口截图均通过，固定 fixture 的图形层级无重叠或裁切。截图哈希与设备/安装证据见 `docs/acceptance/menu-rendering-diagnostic-redmi-20261109.json` 及 `../acceptance-artifacts/memory-visual-redmi-20261109/`；该页仍不代表真实 Go 内存数值或 Flutter 同版本逐像素一致。
+
 2026-11-08，作者 long。起点为Kotlin `db195142a895b57072a140a52311a5bc5840b240`。附件保存在`../acceptance-artifacts/motion-performance-20261108/`；最终验收结论以本轮JSON为准，本节先保留定位过程。
 
 最终菜单热点优化已验，整体流畅度仍PARTIAL。权威证据为[验收JSON](acceptance/motion-performance-redmi-20261108.json)：final-build2的849项JVM、Debug/Test/未签名Release-R8/双Lint通过；同套包21/21回归、自然深浅2/2与独立深色补验1/1，593源码/安装回拉匹配。88PNG/31拼图及7组PTS序列已核对；正式两配置和所列设备基线全组保持，独立测量双包及采集文件已收尾。

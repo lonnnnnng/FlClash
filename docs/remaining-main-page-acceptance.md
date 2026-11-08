@@ -69,10 +69,16 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 8张液滴图为过程帧；稳定菜单与深浅List完整节点另由自然流程确认。裸组件inset和固定浅色宿主状态栏白图标继续作为已知边界。新旧包12图一致排除本补丁引入静态差异，不追认具体字体/渲染原因。
 
+## 2026-11-09 诊断与内存子页更新
+
+菜单首开/关闭诊断已把 Trace 区间覆盖到打开/收回可见终态，Redmi 深色 `menu-diag-dark3` 精确 `1/1` 通过；Perfetto 在该 API36/ROM 上仍 `traced_flushes_failed=1`、`traced_final_flush_failed=1`，没有 `sched_slice`、应用线程或菜单 slice，RenderThread 根因保持未归因。失败 trace 只作平台证据，不计性能通过；待可用 trace 设备/ROM 再重跑。
+
+内存详情子页已完成本轮固定 fixture 真机视觉验收：`DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight` Redmi `1/1`，深浅主题卡片、详情面板和完整窗口截图已回收并目视，无重叠或裁切。证据 `docs/acceptance/menu-rendering-diagnostic-redmi-20261109.json`、`../acceptance-artifacts/memory-visual-redmi-20261109/`；固定 fixture 不代表真实 Go 内存数值或 Flutter 同版本逐像素一致。
+
 ## 视觉、异常与后续顺序
 
 1. 优先继续菜单首次打开、关闭卡顿率退化与剩余RenderThread慢帧，分开启动首帧、主线程、RenderThread及Buffer Stuffing；在当前分段测量基础上补正式R8运行边界。KUI-018/019已证实的缓存及收回收益保留，旧31.62%与中间面板退化记录不覆盖，整体流畅度仍未完成。
-2. 继续CUSTOM组数芯片、首页无流量三列统计、内存图形层级及其余子页完整视觉；补可复现的固定Flutter运行对比。逐页列明实际比较状态，不用Kotlin自身截图哈希证明Flutter一致。浅色正式状态栏、逐帧连续性和最终性能独立核验。
+2. 继续CUSTOM组数芯片、首页无流量三列统计及其余子页完整视觉；内存详情固定 fixture 已验，仍需真实 Go 数值和可复现的固定Flutter运行对比。逐页列明实际比较状态，不用Kotlin自身截图哈希证明Flutter一致。浅色正式状态栏、逐帧连续性和最终性能独立核验。
 3. 回补第6项元数据/mtime保护异常、未知偏好变化、Provider运行态 final6-before 超时和网络恢复稳定性。原失败保留，后续绿测不反向证明原因。
 4. 蜂窝可用后补 Wi-Fi↔蜂窝，其余首次安装/第三方入口/OEM 按真实条件逐项验收。
 5. 再推进第10项实时背景/触点光效、玻璃品质、8 MiB 正文性能，以及第11项低 API、远端 CI、独立签名和 Release 真机/更新/发布资产；当前已观测的动效掉帧按第1项优先处理。
