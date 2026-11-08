@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "versionCode": 1000,
   "tag": "kclash-v0.1.0",
-  "status": "final_local_and_redmi_verified_tag_publish_pending",
+  "status": "published_and_download_verified_redmi_verified",
   "sourceBase": "967099ec89a51bfc2e0eb2a6284113e6e18de2f6",
   "coreCommit": "7038231e026b710088b9c369899b3a8b7f281739",
   "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
@@ -14,13 +14,62 @@
   ],
   "keyStorage": "Independent JKS outside repository, macOS Keychain passwords, verified same-machine backup; see ADR0013",
   "limits": [
-    "Final tag CI and remote asset verification pending",
     "Cross-version signed upgrade not covered; same-version signed replacement checked",
     "VPN smoke has browser/counters/services but no per-socket route attribution",
     "Low API, cellular/OEM, full Flutter visual and performance remain partial"
   ],
   "artifacts": "../acceptance-artifacts/release-0.1.0-20261109/",
-  "remote": null,
+  "remote": {
+    "releaseUrl": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.0",
+    "tag": "kclash-v0.1.0",
+    "publishedAt": "2026-11-08T19:01:12Z",
+    "draft": false,
+    "prerelease": false,
+    "sha256": "ed063b9ba59d0825308b2d442da38e5e8ecdcb456cc7c55cd385f11b05ad1082",
+    "checksumFileMatched": true,
+    "githubDigestMatched": true,
+    "size": 48321640,
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "manifest": {
+      "application-id": "com.lonnnnnng.flclash",
+      "version-name": "0.1.0",
+      "version-code": "1000",
+      "min-sdk": "24",
+      "debuggable": "false"
+    },
+    "abi": "arm64-v8a",
+    "runId": 42511426890,
+    "runUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/42511426890",
+    "sourceCommit": "961b147da6692183a275ef7b177010d684c17636",
+    "redmiPublishedAsset": {
+      "installedSha256": "ed063b9ba59d0825308b2d442da38e5e8ecdcb456cc7c55cd385f11b05ad1082",
+      "sameVersionSignedUpdate": true,
+      "vpnAndProxyServices": true,
+      "tun0": true,
+      "dashboard": {
+        "durationSeconds": 67.7,
+        "sampleCount": 16,
+        "uniqueIps": 1,
+        "countrySets": [
+          [
+            "US"
+          ]
+        ],
+        "queryingSamples": 0,
+        "allHaveIp": true,
+        "allRunning": true,
+        "cardDeltasPx": [
+          617
+        ],
+        "passed": true
+      },
+      "coldLaunch": true,
+      "stopVerified": true,
+      "newCrashes": 0,
+      "finalState": "published signed app installed; one authorized local profile; automatic group restored; services stopped"
+    },
+    "latest": true
+  },
   "ciFailures": [
     {
       "runId": 42505363799,
