@@ -1,0 +1,287 @@
+{
+  "date": "2026-11-09",
+  "issue": "KUI-021",
+  "baseCommit": "23284d4bebadc5529efc90065edefc82f8e75bf5",
+  "productChangesRetained": false,
+  "diagnosticChange": "添加darkMenuOpenAndCloseMethodSamples和分片trace回传，三轮各独立open/close窗口，无截图/UI查询/gfxinfo混入采样窗口。",
+  "sampling": {
+    "instrumentationPassed": 1,
+    "traceFiles": 6,
+    "shaAndLengthsVerified": true,
+    "sampleIntervalUs": 1000,
+    "overflow": false,
+    "parserErrors": 0,
+    "dualClock": true,
+    "threadsIncludeNativeRenderThread": false,
+    "mainThreadSamples": [
+      {
+        "window": "0-close",
+        "shadowSpans": 11,
+        "shadowCpuMs": 89.141,
+        "shadowWallMs": 92.913,
+        "renderSyncCpuMs": 8.856,
+        "renderSyncWallMs": 292.98,
+        "crossCheckedMethods": 40,
+        "unclosedFramesExcluded": 9
+      },
+      {
+        "window": "0-open",
+        "shadowSpans": 1,
+        "shadowCpuMs": 15.081,
+        "shadowWallMs": 15.373,
+        "renderSyncCpuMs": 2.213,
+        "renderSyncWallMs": 92.425,
+        "crossCheckedMethods": 40,
+        "unclosedFramesExcluded": 13
+      },
+      {
+        "window": "1-close",
+        "shadowSpans": 22,
+        "shadowCpuMs": 103.451,
+        "shadowWallMs": 110.431,
+        "renderSyncCpuMs": 12.448,
+        "renderSyncWallMs": 187.821,
+        "crossCheckedMethods": 40,
+        "unclosedFramesExcluded": 9
+      },
+      {
+        "window": "1-open",
+        "shadowSpans": 8,
+        "shadowCpuMs": 127.689,
+        "shadowWallMs": 130.317,
+        "renderSyncCpuMs": 9.252,
+        "renderSyncWallMs": 129.383,
+        "crossCheckedMethods": 40,
+        "unclosedFramesExcluded": 58
+      },
+      {
+        "window": "2-close",
+        "shadowSpans": 30,
+        "shadowCpuMs": 138.191,
+        "shadowWallMs": 147.112,
+        "renderSyncCpuMs": 23.569,
+        "renderSyncWallMs": 116.851,
+        "crossCheckedMethods": 40,
+        "unclosedFramesExcluded": 9
+      },
+      {
+        "window": "2-open",
+        "shadowSpans": 11,
+        "shadowCpuMs": 167.103,
+        "shadowWallMs": 170.815,
+        "renderSyncCpuMs": 11.306,
+        "renderSyncWallMs": 53.301,
+        "crossCheckedMethods": 40,
+        "unclosedFramesExcluded": 43
+      }
+    ],
+    "scope": "独立非debuggable未混淆motion夹具。采样区间CPU差值不是精确逐调用耗时；未闭合栈不纳入。Perfetto仅导入墙钟，独立CPU解码用每份前40个自耗时方法逐项核对span数量/墙钟包容与自耗时。所有闭合main nDrawPath均有DropShadowRenderer祖先。",
+    "run": "methods-open-close-1；初批未加窗口外额外1秒稳定等待，只用于诊断热点，不作为首帧或完整关闭窗口计时。"
+  },
+  "parserSource": {
+    "url": "https://raw.githubusercontent.com/google/perfetto/v59.1/src/trace_processor/importers/art_method/art_method_tokenizer.cc",
+    "symbol": "ArtMethodTokenizer::ParseRecord",
+    "fact": "dual时使用record偏移8的wall字段；线程CPU字段未进入slice.thread_dur。",
+    "local": "perfetto-art-tokenizer.md"
+  },
+  "performance": {
+    "baseline": {
+      "open": {
+        "janky": 131,
+        "frames": 223,
+        "percent": 58.744
+      },
+      "expand": {
+        "janky": 28,
+        "frames": 183,
+        "percent": 15.301
+      },
+      "fold": {
+        "janky": 20,
+        "frames": 132,
+        "percent": 15.152
+      },
+      "close": {
+        "janky": 19,
+        "frames": 182,
+        "percent": 10.44
+      }
+    },
+    "cropped": {
+      "open": {
+        "janky": 131,
+        "frames": 236,
+        "percent": 55.508
+      },
+      "expand": {
+        "janky": 25,
+        "frames": 183,
+        "percent": 13.661
+      },
+      "fold": {
+        "janky": 20,
+        "frames": 132,
+        "percent": 15.152
+      },
+      "close": {
+        "janky": 18,
+        "frames": 180,
+        "percent": 10.0
+      }
+    },
+    "three-quarter": {
+      "open": {
+        "janky": 134,
+        "frames": 241,
+        "percent": 55.602
+      },
+      "expand": {
+        "janky": 25,
+        "frames": 186,
+        "percent": 13.441
+      },
+      "fold": {
+        "janky": 13,
+        "frames": 139,
+        "percent": 9.353
+      },
+      "close": {
+        "janky": 16,
+        "frames": 188,
+        "percent": 8.511
+      }
+    },
+    "decision": "两候选均不保留：打开仍55%左右，关闭小幅变化，未消除目标瓶颈；保持原实现。"
+  },
+  "visual": {
+    "cropped": {
+      "framePairs": 16,
+      "pngs": 32,
+      "maxChannelDifference": 1,
+      "maxMeanChannelDifference": 8.854781582054309e-06,
+      "passed": true
+    },
+    "halfResolution": {
+      "passed": false,
+      "failedFrame": "light/open/140ms",
+      "maxChannelDifference": 1,
+      "meanMaxChannelDifference": 0.027497048406139316,
+      "thresholdMean": 0.02,
+      "performanceRun": false,
+      "failurePngs": 6
+    },
+    "threeQuarterResolution": {
+      "framePairs": 16,
+      "pngs": 32,
+      "maxChannelDifference": 1,
+      "maxMeanChannelDifference": 0.015521448248720976,
+      "passed": true
+    },
+    "menuRegression": {
+      "passed": 4,
+      "pngs": 8,
+      "reviewed": true,
+      "boundary": "两张玻璃开场图为按钮中间态，不能作展开终帧一致证据。"
+    }
+  },
+  "candidateValidation": {
+    "appJvmTests": 572,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "builds": [
+      "cropped Release/R8",
+      "cropped motion/app-test",
+      "three-quarter Release/R8",
+      "three-quarter motion/app-test"
+    ],
+    "lintCropped": {
+      "debug": {
+        "errors": 0,
+        "warnings": 69,
+        "hints": 14
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 67,
+        "hints": 13
+      }
+    },
+    "finalProduct": "已恢复HEAD产品源码；候选额外UseKtx警告随候选移除，未称其为最终产品检查。"
+  },
+  "next": "用不改变交付视觉的诊断分离原生渲染线程等待、文字模糊合成与窗口初建；需要原生线程证据才能把渲染区间当CPU归因。",
+  "boundaries": [
+    "正式包对照各深浅三轮，24/24终态；未随机盲测，不能声称统计显著性。",
+    "关闭Popup销毁后的Flags=0记录缺口仍在；关闭jank来自存活窗口累计计数，不以一行帧明细作线程归因。",
+    "本轮没有性能修复交付，完整Flutter视觉与菜单性能仍PARTIAL；不是所有剩余项已完成。",
+    "正式配置未清除、未手动编辑；没有正式Room逐字段前后快照，不声明全库保护验收。",
+    "Flutter参考包未操作，Mihomo未改动，公开0.1.0资产未覆盖。"
+  ],
+  "artifacts": "../acceptance-artifacts/menu-methods-20261109/",
+  "artifactSha256": {
+    "traces/motion-method-methods-open-close-1-0-close.trace": "932a1812467fac9204cbf3115bb9d835e53c23df01fdba8c2e9ea5155aba55c1",
+    "traces/motion-method-methods-open-close-1-0-open.trace": "f6a6a4bfbea1a20b638af4a43f17583875b1421a146b4407cda49d31f366f97c",
+    "traces/motion-method-methods-open-close-1-1-close.trace": "b2cdb870a8f0d4dbb146d74582915940e78e4a2499414b4cc61780f1116f0612",
+    "traces/motion-method-methods-open-close-1-1-open.trace": "f356e628f4e4165625b58fe967068d1ea05974bfe7298222957db9cbea8eef6a",
+    "traces/motion-method-methods-open-close-1-2-close.trace": "3c3ee60641da42ba97b7db0df49b2f7b972c12f99eaf62347c21f9758ce90752",
+    "traces/motion-method-methods-open-close-1-2-open.trace": "07f2ee421560f0acf5b54812af3b446ef8c3cdbbac8445aedb93ea95dcdf7839",
+    "analyze-dual-clock.py": "a1a8f9a6e16452bff30b07c6d9742d7abea6107f0a5f523cf8e1b6fe9c861bfd",
+    "dual-clock-summary.json": "44ac454f083a4289c2ba1f60bf986f93f003da70e3f73967ab248069e5644c43",
+    "cropped-shadow-fixture.log": "49aada4e0af83ad51a1861cf955d8e3edd3d4d1dbd4403811ce721210ea0cb18",
+    "half-shadow-fixture.log": "b0d43bb9958993bfb3a267e9b27f8a9255391d9ee90615be777db049b2a71374",
+    "three-quarter-shadow-fixture.log": "ed21cf06e946451abdec8a7a6239ddf973b9c041261269aa27ee4b535999f382",
+    "three-quarter-menu-regression.log": "f55e6845a7e2586e20d51d5ac45ddc22cf8cf98cf5c56c8c870e2ab72ed5936a",
+    "final3/traces/motion-method-methods-final-3-0-close.trace": "d649aaa0c097c2ed6fbd7b1d436d0d08726eaad630c44dc1ab7d854bf4f469af",
+    "final3/traces/motion-method-methods-final-3-0-open.trace": "88abd2d7911775b981faaf75a07ca5f5707d424e3b25f8d54e641e730f157e87",
+    "final3/traces/motion-method-methods-final-3-1-close.trace": "9756bb76e5bd311960b62531c0e4ed2939acd30b7f9c2861d8d248d2577ca657",
+    "final3/traces/motion-method-methods-final-3-1-open.trace": "376b9a8436fc0aa02d5c7546b331a58b5abc9a642e6bc251a93540b1d7527ea4",
+    "final3/traces/motion-method-methods-final-3-2-close.trace": "9e3a4cbdcbdbf67673e4752100b18297db61be83c0468ce9b5981c46943637d9",
+    "final3/traces/motion-method-methods-final-3-2-open.trace": "03969569677988a5ca80c81be6a9e7d08eb5a97a5d3760c18bc95aecd3218356",
+    "analyze-final.py": "4d3f7546d45a380e776b07c034ead19471ccd707b45e80b9d9d02dbb52a4ffd0",
+    "instrument-final3.log": "c9e16dd8153ec51fbac8dc40d5b43f770376da86d0e4faf473e06198804ed620",
+    "build-final-diagnostic3.log": "fba16afbbc405b76a664c84b22683bce2f9e4674fd469e80d1551a682ce5c497"
+  },
+  "finalDiagnosticVerification": {
+    "buildPassed": true,
+    "instrumentationPassed": 1,
+    "run": "methods-final-3",
+    "traceFiles": 6,
+    "allChunksVerified": true,
+    "stabilityGuard": "打开/关闭采样结束并校验UI后，在窗口外各等待1秒，下一窗口从稳定状态开始。",
+    "parserErrors": {
+      "motion-method-methods-final-3-2-open.trace": {
+        "slice_max_depth_exceeded": 2
+      }
+    },
+    "partialImportBoundary": "第3次打开Perfetto丢弃2个深栈事件，不称全部trace无损；全部trace前40个自耗时方法的数量和墙钟仍与独立解码相符。",
+    "closeShadowCpuMs": [
+      111.111,
+      96.912,
+      147.148
+    ],
+    "intermediateRun": "methods-final-2用例1/1通过，未加额外稳定等待；独立保留，不与最终批次累加。"
+  },
+  "cleanup": {
+    "testPackagesRemoved": true,
+    "ownedXmlFilesRemoved": true,
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "nightMode": "Night mode: yes",
+    "fontScale": "1.0",
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "restored": {
+      "sha256": "b12ddc3a2a442acb38f657483f7178b235fc125686738a8496de30f98fea4d24",
+      "installedMatches": true,
+      "package": "com.lonnnnnng.flclash",
+      "sourceCommit": "23284d4bebadc5529efc90065edefc82f8e75bf5"
+    }
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait"
+  },
+  "finalSourceSha256": "25d445afef7383fd7218a965eebd2944779f0f78a9b4300e97390381cb9b4c37"
+}

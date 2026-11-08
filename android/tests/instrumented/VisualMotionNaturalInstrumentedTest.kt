@@ -27,6 +27,44 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkMenuFirstOpenAndRepeatedTopCard() = runMenus(true)
     @Test fun lightMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(false)
     @Test fun darkMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(true)
+    @Test fun darkMenuOpenAndCloseMethodSamples() {
+        assertPortraitDefaultFontConfiguration()
+        val args = InstrumentationRegistry.getArguments()
+        assertEquals("true", args.getString("kclashMotionMethodTrace"))
+        assertEquals("true", args.getString("kclashMotionInlineTrace"))
+        assertNotEquals("true", args.getString("kclashCapturePng"))
+        val run = checkNotNull(args.getString("kclashMotionRun"))
+        require(run.matches(Regex("[a-z0-9-]+")))
+        suffix = "dark"
+        val context = ins.targetContext
+        val old = ProxyPageOptionsStore.load(context)
+        try {
+            ProxyPageOptionsStore.save(context, ProxyPageOptions(displayMode = ProxyDisplayMode.TAB))
+            ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+                scenario.onActivity { it.dark = true }
+                click("nav_proxy"); await("proxy_tools"); settle()
+                val source = bounds(checkNotNull(find("proxy_tools")))
+                // 作者 long：采样窗口内只注入已定位触点/Back并等待动效，不让查找节点、截图或gfxinfo混入热点。
+                repeat(3) { pass ->
+                    sampleMenuMethods("$run-$pass-open") { tap(source) }
+                    await("样式：标签")
+                    // 作者 long：采样会拖慢首开，窗口外等动效结束后再测关闭，避免把中断入场误当稳定回源。
+                    settle()
+                    sampleMenuMethods("$run-$pass-close") { back() }
+                    awaitGone("样式：标签")
+                    settle()
+                }
+                scenario.onActivity { assertEquals("常用节点", it.selectedGroup); assertEquals(0, it.nodeSelections) }
+            }
+        } finally { stopMethodTrace(); ProxyPageOptionsStore.save(context, old) }
+    }
+
+    private fun sampleMenuMethods(name: String, action: () -> Unit) {
+        val file = java.io.File(ins.targetContext.cacheDir, "motion-method-$name.trace")
+        check(!file.exists()); methodTrace = file
+        android.os.Debug.startMethodTracingSampling(file.absolutePath, 32 * 1024 * 1024, 1_000)
+        try { action(); SystemClock.sleep(700) } finally { stopMethodTrace() }
+    }
 
     @Test fun removeExactOwnInterruptedFrameArtifacts() {
         val args = InstrumentationRegistry.getArguments()
@@ -276,8 +314,20 @@ class VisualMotionNaturalInstrumentedTest {
         val file=methodTrace ?: return
         android.os.Debug.stopMethodTracing();methodTrace=null
         val bytes=file.readBytes()
+        val sha = java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+        if (InstrumentationRegistry.getArguments().getString("kclashMotionInlineTrace") == "true") {
+            // 作者 long：Redmi拒绝run-as；通过既有Instrumentation分片回传，接收端必须核验全部索引、长度及SHA。
+            val chunks = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP).chunked(48 * 1024)
+            chunks.forEachIndexed { index, chunk ->
+                ins.sendStatus(2, Bundle().apply { putString("kclash_method_chunk", JSONObject()
+                    .put("name", file.name).put("index", index).put("count", chunks.size)
+                    .put("bytes", bytes.size).put("sha256", sha).put("base64", chunk).toString()) })
+            }
+            check(file.length() == bytes.size.toLong() && file.readBytes().contentEquals(bytes))
+            check(file.delete())
+        }
         ins.sendStatus(2,Bundle().apply { putString("kclash_motion_trace",JSONObject().put("name",file.name)
-            .put("sha256",java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString(""){"%02x".format(it)})
+            .put("sha256",sha)
             .put("bytes",bytes.size).toString()) })
     }
 }

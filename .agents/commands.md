@@ -35,6 +35,8 @@ Release 预发布检查（没有独立签名身份时输出未签名 APK）：
 
 仅该次Gradle调用创建`motionBenchmark`变体及对应测试任务，包名为`com.lonnnnnng.flclash.motion`；应用非debuggable、未压缩混淆，库按debug回退并复用固定UI验收宿主。它不等于正式签名/R8 Release，默认构建不携带这些组件。`VisualMotionNaturalInstrumentedTest`按方法筛选：完整流程为`lightPagesPanelsEmptyAndContinuousMotion`/`darkPagesPanelsEmptyAndContinuousMotion`，三轮菜单为`lightMenuFirstOpenAndRepeatedTopCard`/`darkMenuFirstOpenAndRepeatedTopCard`；每批只选其中一对，不运行整个类，也不混用同名主题gfx输出。分段参数`kclashNaturalMotion=true`、`kclashMotionProfile=true`、`kclashCapturePng=false`、`kclashMotionInlineFrames=true`及唯一`kclashMotionRun`；不同时录屏。非Debug包禁止依赖run-as，帧表由Instrumentation内联回传并核验SHA。方法采样仅用于独立诊断，不与性能对照合计。完整保护、环境重置后的空库门禁及复测记录见`docs/menu-rendering-performance-defect.md`，前组历史见`docs/motion-performance-defect.md`。
 
+菜单独立ART方法采样只选`VisualMotionNaturalInstrumentedTest#darkMenuOpenAndCloseMethodSamples`，参数`kclashMotionMethodTrace=true`、`kclashMotionInlineTrace=true`及唯一安全名称`kclashMotionRun`，不要启用PNG。每轮分别回传open/close，共6份trace；`kclash_method_chunk`分片必须核验name/index/count/bytes/sha256再解码。设备文件在完整发送后核对原字节并删除。Perfetto59.1只导入dual-clock墙钟，线程CPU需另解析原字段并交叉验证，不能把slice.dur称为CPU；见`docs/menu-content-compositing-defect.md`与`docs/acceptance/menu-methods-redmi-20261109.json`。
+
 当前重置后的Redmi连Debug包也拒绝`run-as`的SELinux上下文，Debug自然视觉同样启用内联帧表。中断采集只执行`removeExactOwnInterruptedFrameArtifacts`，显式`kclashMotionCleanup=true`、原run及JSON `kclashMotionCleanupManifest`（name/bytes/sha256）；先核对清单全部文件再精确删除，空清单只断言采集缓存为空。正式配置当前0份，不能用旧两份配置门禁或静默导入补齐测试前提。
 
 ## Go core
