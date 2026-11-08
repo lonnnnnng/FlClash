@@ -16,10 +16,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
@@ -38,6 +40,7 @@ internal class AppMenuLevel(val key: Any?, val owner: AppMenuOwner? = null, val 
     val scroll = ScrollState(0)
     val initialFocusRequester = FocusRequester()
     var bounds = Rect.Zero
+    var coordinates: LayoutCoordinates? = null
     private var initialFocusTargetAssigned = false
 
     fun claimInitialFocusTarget(enabled: Boolean): Boolean {
@@ -129,68 +132,86 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
     Layout(content = {
         levels.forEachIndexed { index, level -> key(level) {
             val top = index == levels.lastIndex
-            val distance = if (top) 0f else levels.lastIndex - index - 1 + state.unfold.value.coerceIn(0f, 1f)
-            val scale = max(0f, 1f - .05f * distance)
+            val distance = { if (top) 0f else levels.lastIndex - index - 1 + state.unfold.value.coerceIn(0f, 1f) }
+            val scale = { max(0f, 1f - .05f * distance()) }
+            val frameCache = remember { AppMenuFrameCache() }
             val frame: (Size) -> AppMenuMorphFrame = { size ->
                 val p = if (top && index > 0) state.unfold.value else 1f
                 val rect = if (index == 0 || !top) Rect(Offset.Zero, size) else appMenuStackRect(size, level.top, level.ownerTop,
                     level.owner?.bounds?.height ?: 48f * density, p, density)
-                AppMenuMorphFrame(rect, max(0f, (16f + 8f * p) * density), 1f)
+                frameCache.resolve(AppMenuMorphFrame(rect, max(0f, (16f + 8f * p) * density), 1f))
             }
             // 作者 long：根卡/后层只有缩放和明暗变化，轮廓没有变形；稳定Shape让Compose复用阴影位图，不能每帧制造新缓存键。
-            val shape = if (top && index > 0) AppMenuMorphShape(frame) else AppSuperellipseShape(24.dp)
+            val shape = AppSuperellipseShape(24.dp)
+            val measuredSize = remember { mutableStateOf(IntSize.Zero) }
             val renderer = remember { AppMenuGlassRenderer() }
             val dark = com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current
             val tint = if (dark) Color(0xFF343537) else MaterialTheme.colorScheme.surfaceBright
             val quality = LocalAppGlassQuality.current
             val dim = MaterialTheme.colorScheme.surface
-            val material = if (top && index > 0) (state.unfold.value / .35f).coerceIn(0f, 1f) else 1f
             val enabled = active && top && !state.folding && level.key == pageKey
             // 作者 long：maxValue首帧尚未测量时是Int.MAX_VALUE；在组合阶段订阅它，测量后必须撤回“可滚动”，否则短菜单会永久拒绝拖选。
             val hasScroll = level.scroll.maxValue > 0
             SideEffect { if (top) onScrollable(hasScroll) }
             val minWidth = if (index == 0) 160.dp else with(LocalDensity.current) { (level.fromWidth * 1.12f).toDp().coerceAtMost(280.dp) }
             val cardWidth = if (index == 0) Modifier.widthIn(min = minWidth, max = 280.dp).width(IntrinsicSize.Max)
-                else Modifier.width(with(LocalDensity.current) {
-                    val from = level.fromWidth.toDp().coerceIn(160.dp, 280.dp)
+                else Modifier.layout { measurable, constraints ->
+                    // 作者 long：前30%展开仍按真实宽度重排，但只使布局失效，正文组合身份与焦点不跟每帧宽度重建。
+                    val from = level.fromWidth.coerceIn(160.dp.toPx(), 280.dp.toPx())
                     val p = if (top) (state.unfold.value / .3f).coerceIn(0f, 1f) else 1f
-                    from + (minWidth - from) * p
-                })
+                    val width = constraints.constrainWidth((from + (minWidth.toPx() - from) * p).roundToInt())
+                    val child = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
+                    layout(child.width, child.height) { child.place(0, 0) }
+                }
             Box(cardWidth
                 .graphicsLayer {
-                    scaleX = scale; scaleY = scale
+                    scaleX = scale(); scaleY = scaleX
                     transformOrigin = TransformOrigin(1f, if (size.height > 0) ((levels.last().top - level.top) / size.height).coerceIn(0f, 1f) else 0f)
                 }
                 .onGloballyPositioned {
                     // 作者 long：采样原点使用未裁剪的局部原点；展开裁剪不能反过来移动背景，否则边缘会随高度游走。
-                    level.bounds = Rect(it.localToWindow(Offset.Zero), Size(it.size.width * scale, it.size.height * scale))
-                }.testTag("app_menu_level_$index")) {
+                    level.coordinates = it
+                    level.bounds = Rect(it.localToWindow(Offset.Zero), Size(it.size.width * scale(), it.size.height * scale()))
+                }.onSizeChanged { measuredSize.value = it }.testTag("app_menu_level_$index")) {
                 // 作者 long：阴影单独留在绘制层，明暗只调制该层；Compose的Shadow颜色/alpha都属于位图缓存键，不能随动画重建。
-                Box(Modifier.matchParentSize().graphicsLayer {
+                if (top && index > 0) AppMenuFrameShadow(Modifier.matchParentSize(), measuredSize, frame,
+                    visible = { opening.value >= .45f && active }, opacity = { state.unfold.value.coerceIn(0f, 1f) }, dark = dark)
+                else Box(Modifier.matchParentSize().graphicsLayer {
                     compositingStrategy = CompositingStrategy.ModulateAlpha
                     alpha = if (opening.value < .45f || !active) 0f else
-                        if (top && index > 0) state.unfold.value.coerceIn(0f, 1f) else max(1f / 6, 1f - distance / 3)
+                        max(1f / 6, 1f - distance() / 3)
                 }.dropShadow(shape, Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
                     color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp))))
-                Box(Modifier.graphicsLayer { this.shape = shape; clip = true }.drawWithContent {
+                Box(Modifier.graphicsLayer {
+                    // 作者 long：顶卡仍按当前轮廓精确裁剪，轮廓状态在图层读取，避免把动画提升到整个菜单的组合范围。
+                    this.shape = if (top && index > 0) {
+                        val current = frame(size)
+                        AppMenuMorphShape { current }
+                    } else shape
+                    clip = true
+                }.drawWithContent {
+                    val paintScale = scale()
+                    level.coordinates?.takeIf { it.isAttached }?.let {
+                        level.bounds = Rect(it.localToWindow(Offset.Zero), Size(it.size.width * paintScale, it.size.height * paintScale))
+                    }
                     val motion = frame(size)
                     if (top) {
                         val rect = motion.platter.translate(level.bounds.topLeft)
                         val hit = state.outerBounds?.let(rect::intersect) ?: rect
                         if (state.hitBounds != hit) { state.hitBounds = hit; state.hitRevision++ }
                     }
+                    val material = if (top && index > 0) (state.unfold.value / .35f).coerceIn(0f, 1f) else 1f
                     val style = AppGlassStyle.menu(dark, tint).resolve(quality, material)
-                    clipPath(motion.path()) {
+                    // 作者 long：外层图层已按同一帧轮廓裁剪，正文不再叠加第二次路径裁剪，避免每帧重复生成裁剪遮罩。
                         if (opening.value >= .45f && active) {
                             if (backdrop == null || !renderer.draw(this, motion, backdrop,
-                                Offset(-level.bounds.left, -level.bounds.top), tint, dark, paintScale = scale.coerceAtLeast(.001f), style = style, quality = quality)) {
-                                if (backdrop != null) drawAppGlassFallback(motion, backdrop, Offset(-level.bounds.left, -level.bounds.top), style, quality, scale.coerceAtLeast(.001f))
+                                Offset(-level.bounds.left, -level.bounds.top), tint, dark, paintScale = paintScale.coerceAtLeast(.001f), style = style, quality = quality)) {
+                                if (backdrop != null) drawAppGlassFallback(motion, backdrop, Offset(-level.bounds.left, -level.bounds.top), style, quality, paintScale.coerceAtLeast(.001f))
                                 else drawPath(motion.path(), surface)
                             }
                         }
                         this@drawWithContent.drawContent()
-                        if (!top) drawPath(motion.path(), dim.copy(alpha = min(.4f, .2f * distance)))
-                    }
+                        if (!top) drawPath(motion.path(), dim.copy(alpha = min(.4f, .2f * distance())))
                 }) {
                 CompositionLocalProvider(LocalAppMenuStack provides state, LocalAppMenuLevel provides level,
                     LocalAppMenuEnabled provides enabled, LocalAppMenuHeaderEnabled provides (active && top),

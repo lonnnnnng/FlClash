@@ -3,6 +3,14 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import androidx.compose.ui.draw.drawWithContent
@@ -19,8 +27,33 @@ import kotlin.math.*
 internal data class AppMenuMorphFrame(val platter: Rect, val radius: Float, val progress: Float,
     val droplet: Rect? = null, val blend: Float = 0f, val blur: Float = 0f, val sourceAlpha: Float = 0f,
     val materialProgress: Float = 1f, val frostProgress: Float = 1f) {
-    fun path() = superellipsePath(platter.size, List(4) { radius }).apply { translate(platter.topLeft) }
-    fun outline() = droplet?.let { appMenuGooPath(platter, radius, it, blend) } ?: path()
+    // 作者 long：一份不可变帧同时供阴影、裁剪和材质读取；只算一次轮廓，读者不能修改返回的Path。
+    private val platterPath by lazy(LazyThreadSafetyMode.NONE) {
+        superellipsePath(platter.size, List(4) { radius }).apply { translate(platter.topLeft) }
+    }
+    private val outlinePath by lazy(LazyThreadSafetyMode.NONE) { droplet?.let { appMenuGooPath(platter, radius, it, blend) } ?: platterPath }
+    fun path() = platterPath
+    fun outline() = outlinePath
+}
+
+/** 作者 long：只保留最后一份几何，不把每帧路径长期塞进缓存；同一时刻的多次绘制共享路径。 */
+internal class AppMenuFrameCache {
+    private var previous: AppMenuMorphFrame? = null
+    fun resolve(frame: AppMenuMorphFrame): AppMenuMorphFrame = previous?.takeIf { it == frame } ?: frame.also { previous = it }
+}
+
+/** 作者 long：变形轮廓仍需重新生成阴影，但逐帧状态只重组阴影本身，不能把菜单行、测量和焦点树一起重建。 */
+@Composable
+internal fun AppMenuFrameShadow(modifier: Modifier, size: State<IntSize>, frame: (Size) -> AppMenuMorphFrame,
+    visible: () -> Boolean, opacity: () -> Float, dark: Boolean) {
+    if (!visible()) return
+    val measured = size.value
+    if (measured.width <= 0 || measured.height <= 0) return
+    val current = frame(Size(measured.width.toFloat(), measured.height.toFloat()))
+    val shape = remember(current) { AppMenuMorphShape { current } }
+    Box(modifier.graphicsLayer { compositingStrategy = CompositingStrategy.ModulateAlpha; alpha = opacity() }
+        .dropShadow(shape, Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
+            color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp))))
 }
 
 private fun menuSpring(stiffness: Float, damping: Float, time: Float): Float {
@@ -97,9 +130,10 @@ internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorph
     val regular = AppGlassStyle.regular(dark)
     val menu = AppGlassStyle.menu(dark, tint)
     val quality = LocalAppGlassQuality.current
+    val contentPaint = remember { Paint() }
     drawWithContent {
-        val motion = frame(size)
         if (!drawSurface()) { drawContent(); return@drawWithContent }
+        val motion = frame(size)
         val scale = motion.platter.width / size.width.coerceAtLeast(1f)
         val path = motion.path()
         val outline = motion.outline()
@@ -120,9 +154,8 @@ internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorph
                 scale(scale, scale, Offset.Zero)
                 translate(-size.width / 2f, -size.height / 2f)
             }) {
-                drawContext.canvas.saveLayer(Rect(Offset.Zero, size), Paint().apply {
-                    alpha = motion.progress.coerceIn(0f, 1f)
-                })
+                contentPaint.alpha = motion.progress.coerceIn(0f, 1f)
+                drawContext.canvas.saveLayer(Rect(Offset.Zero, size), contentPaint)
                 this@drawWithContent.drawContent()
                 drawContext.canvas.restore()
             }

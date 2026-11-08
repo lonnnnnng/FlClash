@@ -813,17 +813,18 @@ class DashboardInstrumentedTest {
     }
 }
 
+// 作者 long：重置后同机旧包与候选包12图完全一致才更新基线；保留旧失败与对照，不用新哈希掩盖产品回归。
 private val baselines = mapOf(
-    "default" to "b68c79864c7e5033efc5834092851645a54dc40561093e52e6c09aedb9138bb8",
-    "system_ready" to "0da44e328f89f381e464c32e62d417efe06bbfe867c435f991da4cd38c7c25e8",
-    "running" to "10ba549b00ec921609edd3bc908e7a8f2d68d1f3d64e0d5c0d3c8db4f3172cba",
-    "light_default" to "eb97b7f99796f830b4cb2ad8b2ad33fa9a62c6c9b947fc5966e6a66f10b9e7aa",
-    "light_running" to "2f69dc53e850b42502e60ee1b90b0ad031e01948e27fcffe3f6df629b2e5a710",
+    "default" to "db7eae0fa032bf8ac85cab9fec7f2470452b01215ea691bf5f710ad8c645576b",
+    "system_ready" to "19c146d890af962ee0c061ceeebcfe790a0e9fb09d15802caca7cc3451a42e78",
+    "running" to "9ab4bdffb02bf7f52f20a5ccb491d7f155eea1ed1c090a1cabfd9916507c1f30",
+    "light_default" to "aafa63be99ad719cca196a7c163860232e67ddd12912cb45badf30c133a46af2",
+    "light_running" to "fe6f2406676bad10f71ab7f3be05a8c2f46fa9913328c00a406fb5aa32f08bf6",
 )
 
 private val proxyPickerBaselines = mapOf(
-    "summary_dark" to "71fb2375fe2f48ce31f6aa58892b11883b947c3e681a0f2b89113321a7d50215",
-    "summary_light" to "0e08242f174f8c3ec1794edc1c57501820afa3a2004ec600c7f6622fef298305",
-    "picker_dark" to "621b2ca037c2b9fe8458a9b4f703ec96995f75bec2686625ce20a62eb36f135c",
-    "picker_light" to "438e506de6631d4774d3375549df400580e49861a9edf0491ee91e12544e8ba1",
+    "summary_dark" to "6107775c00b35d5d0f232cde157ad8e12c0fdab2f582daf38ea74eb873b5b616",
+    "summary_light" to "26af30a390f09c481816a0bf565aa9e8f115d795c0284c50a274758d53b87392",
+    "picker_dark" to "d4b8fc5af5294bf143a61092004aa167cdfdbdab84462982e809ac9de8e96350",
+    "picker_light" to "070f2f69f05c8839bc2a2a3079ec1270f614594f722a1cb838989f23b8624b26",
 )

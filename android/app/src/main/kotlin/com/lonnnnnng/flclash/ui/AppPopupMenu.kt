@@ -34,6 +34,7 @@ import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -293,6 +294,8 @@ internal fun AppDropdownMenu(
                 AppMenuVisibility(sourceReady, visible) {
                     val dark = LocalKClashDarkTheme.current
                     val surface = if (dark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceBright
+                    val frameCache = remember { AppMenuFrameCache() }
+                    val measuredSize = remember { mutableStateOf(IntSize.Zero) }
                     val morph: (androidx.compose.ui.geometry.Size) -> AppMenuMorphFrame = { size ->
                         val origin = source?.bounds?.takeUnless { it == IntRect.Zero } ?: anchor ?: parentBounds
                         val localAnchor = Rect((origin.left - menuPosition.x).toFloat(), (origin.top - menuPosition.y).toFloat(),
@@ -301,20 +304,22 @@ internal fun AppDropdownMenu(
                             appMenuMorphFrame(localAnchor, size, returnFrom, density.density, true), returning.value, density.density)
                         else appMenuMorphFrame(localAnchor, size, opening.value, density.density, sourceReady)
                         stack.outerBounds = if (active && opening.value < .45f) motion.platter.translate(Offset(menuPosition.x.toFloat(), menuPosition.y.toFloat())) else null
-                        motion
+                        frameCache.resolve(motion)
                     }
                     Box(modifier.widthIn(min = 160.dp, max = 280.dp).width(IntrinsicSize.Max)
-                        .dropShadow(AppMenuMorphShape(morph), Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
-                            color = Color.Black.copy(alpha = if (opening.value >= .45f && active) 0f else .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp)))
-                        .appMenuMorph(surface, morph, sourceImage, backdrop,
+                        .onSizeChanged { measuredSize.value = it }.testTag("app_popup_menu")) {
+                        // 作者 long：只有入场/回源绘制外层变形阴影，展开完成交给各层；零透明度阴影也会产生缓存和路径工作。
+                        AppMenuFrameShadow(Modifier.matchParentSize(), measuredSize, morph,
+                            visible = { opening.value < .45f || !active }, opacity = { 1f }, dark = dark)
+                        Box(Modifier.appMenuMorph(surface, morph, sourceImage, backdrop,
                             Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()),
-                            drawSurface = { opening.value < .45f || !active })
-                        .testTag("app_popup_menu")) {
+                            drawSurface = { opening.value < .45f || !active })) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
                             LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
                             LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {
                             AppMenuStack(stack, pageKey, active, surface, backdrop, menuPosition, opening.asState(), returning.asState(),
                                 onScrollable = { scrollable = it }, content = content)
+                        }
                         }
                     }
                 }

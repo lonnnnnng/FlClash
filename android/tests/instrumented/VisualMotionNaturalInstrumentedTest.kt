@@ -23,6 +23,65 @@ class VisualMotionNaturalInstrumentedTest {
     private var methodTrace: java.io.File? = null
     @Test fun lightPagesPanelsEmptyAndContinuousMotion() = run(false)
     @Test fun darkPagesPanelsEmptyAndContinuousMotion() = run(true)
+    @Test fun lightMenuFirstOpenAndRepeatedTopCard() = runMenus(false)
+    @Test fun darkMenuFirstOpenAndRepeatedTopCard() = runMenus(true)
+
+    @Test fun removeExactOwnInterruptedFrameArtifacts() {
+        val args = InstrumentationRegistry.getArguments()
+        assertEquals("true", args.getString("kclashMotionCleanup"))
+        val run = checkNotNull(args.getString("kclashMotionRun"))
+        require(run.matches(Regex("[a-z0-9-]+")))
+        val manifest = org.json.JSONArray(checkNotNull(args.getString("kclashMotionCleanupManifest")))
+        val cache = ins.targetContext.cacheDir
+        // 作者 long：部分系统拒绝run-as；仅应用UID能回收中断采集文件，先逐个核对全部原始SHA，再删除，不能清整个缓存。
+        val files = (0 until manifest.length()).map { index ->
+            val item = manifest.getJSONObject(index)
+            val name = item.getString("name")
+            require(name.matches(Regex("visual-motion-${Regex.escape(run)}-(light|dark)\\.gfx")))
+            val expected = item.getString("sha256")
+            require(expected.matches(Regex("[0-9a-f]{64}")))
+            java.io.File(cache, name).also { file ->
+                val bytes = file.readBytes()
+                assertEquals(item.getLong("bytes"), bytes.size.toLong())
+                assertEquals(expected, java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) })
+            }
+        }
+        require(files.distinct().size == files.size)
+        files.forEach { file -> assertTrue(file.delete()); assertFalse(file.exists()) }
+        val remaining = cache.listFiles().orEmpty().filter { it.name.startsWith("visual-motion-") || it.name.startsWith("motion-method-") }
+        assertTrue("验收帧文件仍未精确回收：${remaining.map { it.name }}", remaining.isEmpty())
+        ins.sendStatus(2, Bundle().apply { putString("kclash_motion_cleanup", JSONObject().put("removed", files.size).put("remaining", remaining.size).toString()) })
+    }
+
+    private fun runMenus(dark: Boolean) {
+        assertPortraitDefaultFontConfiguration()
+        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))
+        suffix = if (dark) "dark" else "light"
+        val context=ins.targetContext
+        val old=ProxyPageOptionsStore.load(context)
+        try {
+            ProxyPageOptionsStore.save(context,ProxyPageOptions(displayMode=ProxyDisplayMode.TAB))
+            ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+                scenario.onActivity { it.dark=dark }
+                await("nav_proxy");click("nav_proxy");await("proxy_tools");settle()
+                event("menu-ready")
+                // 作者 long：首次菜单与同进程重复打开分开记，循环期间不访问其他面板来预热阴影或文字缓存。
+                repeat(3) { pass ->
+                    event("menu-$pass-open-start");click("proxy_tools");await("样式：标签");settle();capture("menu_${pass}_open")
+                    click("样式：标签");await("列表");settle();capture("menu_${pass}_top")
+                    back();settle();await("样式：标签");capture("menu_${pass}_fold")
+                    back();settle();assertNull(find("样式：标签"));capture("menu_${pass}_closed")
+                }
+                scenario.onActivity { assertEquals("常用节点",it.selectedGroup);assertEquals(0,it.nodeSelections) }
+                event("menu-completed")
+                if (!profileFrames) {
+                    val run=checkNotNull(InstrumentationRegistry.getArguments().getString("kclashMotionRun"))
+                    require(run.matches(Regex("[a-z0-9-]+")))
+                    saveFrames("visual-motion-$run-$suffix.gfx")
+                }
+            }
+        } finally { ProxyPageOptionsStore.save(context,old) }
+    }
 
     private fun run(dark: Boolean) {
         assertPortraitDefaultFontConfiguration()

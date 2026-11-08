@@ -1,0 +1,1485 @@
+{
+  "date": "2026-11-08",
+  "author": "long",
+  "status": "IMPROVED_PARTIAL",
+  "defect": "KUI-019",
+  "baseCommit": "907a37c618bc07973524eb291635f73668f0677f",
+  "scope": "菜单首开/重复打开/动态顶卡；完整性能与Flutter视觉仍PARTIAL。",
+  "artifacts": "../acceptance-artifacts/menu-rendering-20261108/",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": "36",
+    "abi": "arm64-v8a",
+    "resolution": "Physical size: 1080x2340",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "flutterHashes": [],
+    "localYaml": {
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+    },
+    "appServicesRunning": false
+  },
+  "environmentBoundary": {
+    "userConfirmedReset": true,
+    "formalProfiles": 0,
+    "flutterRemainsAbsent": true,
+    "configurationImported": false,
+    "subscriptionAccessed": false,
+    "oldTwoProfileClaimsAreHistorical": true
+  },
+  "changes": [
+    "动态阴影隔离到小组合范围；不可见时不创建",
+    "同帧轮廓和Paint复用，最后一帧有界缓存",
+    "宽度在layout读取、缩放/材质/裁剪在绘制读取",
+    "移除相同轮廓的重复裁剪",
+    "新增两条每主题三循环自然菜单用例及精确采集回收入口"
+  ],
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL in 57s",
+    "tasks": "389 actionable tasks: 11 executed, 378 up-to-date",
+    "jvmByModule": {
+      "app": {
+        "tests": 568,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 74
+      },
+      "service": {
+        "tests": 212,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 20
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 1
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 4
+      }
+    },
+    "jvmExecution": [
+      "> Task :app:testDebugUnitTest UP-TO-DATE",
+      "> Task :common:testDebugUnitTest UP-TO-DATE",
+      "> Task :core:testDebugUnitTest UP-TO-DATE",
+      "> Task :service:testDebugUnitTest UP-TO-DATE"
+    ],
+    "executionNote": "执行/复用状态以本组jvmExecution为准",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 68,
+        "hints": 14
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 13
+      }
+    },
+    "apks": {
+      "debug": {
+        "sha256": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d",
+        "bytes": 90701078,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      },
+      "androidTest": {
+        "sha256": "9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d",
+        "bytes": 5623069,
+        "nativeAbis": []
+      },
+      "releaseUnsigned": {
+        "sha256": "90a284d55e681a97e0120fd062260305256b3bfe2cfe137b00ef78676a5f6fe4",
+        "bytes": 48310764,
+        "nativeAbis": [
+          "arm64-v8a"
+        ]
+      }
+    },
+    "releaseManifest": {
+      "debuggable": false,
+      "testActivitiesAbsent": true,
+      "activities": [
+        "com.lonnnnnng.flclash.MainActivity",
+        "com.lonnnnnng.flclash.QuickActionActivity",
+        "com.lonnnnnng.flclash.ExternalActionActivity",
+        "com.google.android.gms.common.api.GoogleApiActivity"
+      ]
+    }
+  },
+  "releaseCheck": {
+    "sourceFilesMatched": 593,
+    "debugMarkersAbsent": {
+      "VisualMotionTestActivity": true,
+      "VisualMotionNaturalInstrumentedTest": true,
+      "kclash_motion_event": true,
+      "ResourcePickerColdInstrumentedTest": true,
+      "kclash_resource_cold_ready": true,
+      "resource-picker-cold.json": true,
+      "resource-picker-fixture.v1": true,
+      "EditorCommitProbe$Gate": true,
+      "GlobalRulesProbe": true,
+      "fixture-global-rules-failure": true,
+      "kclash_global_rules_ready": true,
+      "ProviderRuntimeAcceptanceActivity": true,
+      "ProviderRuntimeKillReceiver": true,
+      "KClashProviderRuntime": true,
+      "provider-runtime-acceptance.v1": true,
+      "kclash-invalid-group": true,
+      "mrs-preview": true,
+      "kclash_provider_cold_ready": true,
+      "ProviderValidationProbe$Gate": true,
+      "Provider校验验收等待超时": true,
+      "本进程已有Provider校验等待点": true
+    },
+    "releaseComponentIsolation": true,
+    "sha256": "90a284d55e681a97e0120fd062260305256b3bfe2cfe137b00ef78676a5f6fe4",
+    "scope": "R8 DEX and manifest static checks; unsigned APK not installed"
+  },
+  "sourceFilesMatched": 593,
+  "productSourceIdentity": {
+    "performanceCandidate": "optimize2-apks",
+    "finalBuild": "final-build3",
+    "sameProductSources": true,
+    "changedOnlyTestCode": [
+      "android/tests/instrumented/DashboardInstrumentedTest.kt",
+      "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt",
+      "android/tests/instrumented/VisualMotionNaturalInstrumentedTest.kt"
+    ],
+    "debugAndReleaseApksSameAsFinalBuild1": true
+  },
+  "executionHistory": {
+    "finalBuild": "final-build3",
+    "jvm": "849项结果；App568在final-build1执行，其他281复用，final-build2/3四模块UP-TO-DATE。",
+    "go": "未重跑，核心与Go源码未改",
+    "r8": "未签名产物静态检查；未安装正式Release。"
+  },
+  "menuPerformance": {
+    "beforeBatches": [
+      "baseline2",
+      "baseline3"
+    ],
+    "afterBatches": [
+      "optimized1",
+      "optimized2"
+    ],
+    "measurements": {
+      "firstOpen": {
+        "before": {
+          "frames": 159,
+          "janky": 42,
+          "percent": 26.415,
+          "uiInterval": {
+            "sampleCount": 90,
+            "p50Ms": 17.067,
+            "p90Ms": 52.325
+          },
+          "renderInterval": {
+            "sampleCount": 90,
+            "p50Ms": 10.808,
+            "p90Ms": 20.121
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 8,
+            "p50Ms": 37.404,
+            "p90Ms": 102.962
+          }
+        },
+        "after": {
+          "frames": 177,
+          "janky": 41,
+          "percent": 23.164,
+          "uiInterval": {
+            "sampleCount": 108,
+            "p50Ms": 19.653,
+            "p90Ms": 32.572
+          },
+          "renderInterval": {
+            "sampleCount": 108,
+            "p50Ms": 10.285,
+            "p90Ms": 18.566
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 8,
+            "p50Ms": 33.993,
+            "p90Ms": 80.676
+          }
+        }
+      },
+      "repeatOpen": {
+        "before": {
+          "frames": 335,
+          "janky": 105,
+          "percent": 31.343,
+          "uiInterval": {
+            "sampleCount": 209,
+            "p50Ms": 17.426,
+            "p90Ms": 34.248
+          },
+          "renderInterval": {
+            "sampleCount": 209,
+            "p50Ms": 9.026,
+            "p90Ms": 19.207
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 16,
+            "p50Ms": 28.76,
+            "p90Ms": 70.4
+          }
+        },
+        "after": {
+          "frames": 361,
+          "janky": 83,
+          "percent": 22.992,
+          "uiInterval": {
+            "sampleCount": 224,
+            "p50Ms": 18.504,
+            "p90Ms": 29.613
+          },
+          "renderInterval": {
+            "sampleCount": 224,
+            "p50Ms": 8.615,
+            "p90Ms": 17.972
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 16,
+            "p50Ms": 25.106,
+            "p90Ms": 64.636
+          }
+        }
+      },
+      "topCard": {
+        "before": {
+          "frames": 357,
+          "janky": 80,
+          "percent": 22.409,
+          "uiInterval": {
+            "sampleCount": 278,
+            "p50Ms": 10.931,
+            "p90Ms": 47.482
+          },
+          "renderInterval": {
+            "sampleCount": 278,
+            "p50Ms": 11.307,
+            "p90Ms": 19.943
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 12,
+            "p50Ms": 52.186,
+            "p90Ms": 55.667
+          }
+        },
+        "after": {
+          "frames": 392,
+          "janky": 64,
+          "percent": 16.327,
+          "uiInterval": {
+            "sampleCount": 292,
+            "p50Ms": 11.385,
+            "p90Ms": 24.405
+          },
+          "renderInterval": {
+            "sampleCount": 292,
+            "p50Ms": 11.5,
+            "p90Ms": 18.077
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 12,
+            "p50Ms": 9.871,
+            "p90Ms": 11.516
+          }
+        }
+      },
+      "fold": {
+        "before": {
+          "frames": 202,
+          "janky": 78,
+          "percent": 38.614,
+          "uiInterval": {
+            "sampleCount": 202,
+            "p50Ms": 25.513,
+            "p90Ms": 38.371
+          },
+          "renderInterval": {
+            "sampleCount": 202,
+            "p50Ms": 11.988,
+            "p90Ms": 22.09
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 12,
+            "p50Ms": 37.109,
+            "p90Ms": 39.262
+          }
+        },
+        "after": {
+          "frames": 263,
+          "janky": 37,
+          "percent": 14.068,
+          "uiInterval": {
+            "sampleCount": 263,
+            "p50Ms": 9.59,
+            "p90Ms": 29.65
+          },
+          "renderInterval": {
+            "sampleCount": 263,
+            "p50Ms": 15.263,
+            "p90Ms": 19.736
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 12,
+            "p50Ms": 11.42,
+            "p90Ms": 13.388
+          }
+        }
+      },
+      "close": {
+        "before": {
+          "frames": 376,
+          "janky": 26,
+          "percent": 6.915,
+          "uiInterval": {
+            "sampleCount": 12,
+            "p50Ms": 34.077,
+            "p90Ms": 37.7
+          },
+          "renderInterval": {
+            "sampleCount": 12,
+            "p50Ms": 20.158,
+            "p90Ms": 20.374
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 12,
+            "p50Ms": 34.077,
+            "p90Ms": 37.7
+          }
+        },
+        "after": {
+          "frames": 362,
+          "janky": 36,
+          "percent": 9.945,
+          "uiInterval": {
+            "sampleCount": 12,
+            "p50Ms": 24.364,
+            "p90Ms": 26.6
+          },
+          "renderInterval": {
+            "sampleCount": 12,
+            "p50Ms": 18.284,
+            "p90Ms": 19.675
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 12,
+            "p50Ms": 24.364,
+            "p90Ms": 26.6
+          }
+        }
+      },
+      "allMenu": {
+        "before": {
+          "frames": 1429,
+          "janky": 331,
+          "percent": 23.163,
+          "uiInterval": {
+            "sampleCount": 791,
+            "p50Ms": 17.5,
+            "p90Ms": 40.888
+          },
+          "renderInterval": {
+            "sampleCount": 791,
+            "p50Ms": 11.009,
+            "p90Ms": 20.442
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 60,
+            "p50Ms": 37.349,
+            "p90Ms": 69.164
+          }
+        },
+        "after": {
+          "frames": 1555,
+          "janky": 261,
+          "percent": 16.785,
+          "uiInterval": {
+            "sampleCount": 899,
+            "p50Ms": 12.254,
+            "p90Ms": 29.341
+          },
+          "renderInterval": {
+            "sampleCount": 899,
+            "p50Ms": 11.386,
+            "p90Ms": 19.086
+          },
+          "firstRecordedFlagZeroUi": {
+            "sampleCount": 60,
+            "p50Ms": 12.649,
+            "p90Ms": 63.233
+          }
+        }
+      }
+    },
+    "capturePng": false,
+    "record": false,
+    "debuggable": false,
+    "minified": false,
+    "librariesUseDebugFallback": true,
+    "randomized": false,
+    "fixture": "固定UI宿主；不接实网/核心/正式配置。",
+    "acceptance": "顶卡展开/收回及合计改善；首开有限，关闭jank退化保留。"
+  },
+  "adjacentNaturalPerformance": {
+    "before": {
+      "nonStartup": {
+        "frames": 2166,
+        "janky": 327,
+        "percent": 15.097
+      },
+      "qualityWindow": {
+        "frames": 363,
+        "janky": 58,
+        "percent": 15.978
+      }
+    },
+    "after": {
+      "nonStartup": {
+        "frames": 2211,
+        "janky": 296,
+        "percent": 13.388
+      },
+      "qualityWindow": {
+        "frames": 374,
+        "janky": 55,
+        "percent": 14.706
+      }
+    }
+  },
+  "finalDeviceTests": {
+    "final-regression3": {
+      "passed": 19,
+      "total": 19,
+      "seconds": 93.351,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRemoteProfileSyncShowsBusyState",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProxySummaryAndPickerCaptureDarkAndLight",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#serviceSystemBackReturnsFromQualityAndManagementBeforeClosing",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetHostInstrumentedTest#profilePickerFitsTwoRowsAndNativeBackPreservesSelection",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#shortContentRefitsAfterGrowthAndShrinkInBothThemes",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.DashboardSheetInstrumentedTest#longBodyMiddleDragKeepsSheetAndFixedActionsReachable",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#tabAndListSearchEmptyCanClearWithoutChangingSelectedNode",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.MainPageStatesInstrumentedTest#proxyLoadingErrorRetryAndEmptyRemainReadableInBothThemes",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest#longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#threeLevelsKeepParentsAndFoldCanReverseWithoutExecutingHiddenRows",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest#glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+          "code": 0,
+          "passed": true
+        }
+      ],
+      "images": 40,
+      "preservation": {
+        "formalProfilesAndBodiesAndPreferences": true,
+        "originalYamlFlutterDevice": true,
+        "noServices": true
+      },
+      "installHashes": {
+        "com.lonnnnnng.flclash": {
+          "builtSha256": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d",
+          "pulledSha256": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d"
+        },
+        "com.lonnnnnng.flclash.test": {
+          "builtSha256": "9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d",
+          "pulledSha256": "9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d"
+        }
+      }
+    },
+    "final-visual2": {
+      "passed": 2,
+      "total": 2,
+      "seconds": 90.512,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#darkPagesPanelsEmptyAndContinuousMotion",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#lightPagesPanelsEmptyAndContinuousMotion",
+          "code": 0,
+          "passed": true
+        }
+      ],
+      "images": 28,
+      "preservation": {
+        "formalProfilesAndBodiesAndPreferences": true,
+        "originalYamlFlutterDevice": true,
+        "noServices": true
+      },
+      "installHashes": {
+        "com.lonnnnnng.flclash": {
+          "builtSha256": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d",
+          "pulledSha256": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d"
+        },
+        "com.lonnnnnng.flclash.test": {
+          "builtSha256": "9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d",
+          "pulledSha256": "9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d"
+        }
+      }
+    },
+    "final-menu-visual1": {
+      "passed": 2,
+      "total": 2,
+      "seconds": 54.706,
+      "methods": [
+        {
+          "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#darkMenuFirstOpenAndRepeatedTopCard",
+          "code": 0,
+          "passed": true
+        },
+        {
+          "method": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest#lightMenuFirstOpenAndRepeatedTopCard",
+          "code": 0,
+          "passed": true
+        }
+      ],
+      "images": 24,
+      "preservation": {
+        "formalProfilesAndBodiesAndPreferences": true,
+        "originalYamlFlutterDevice": true,
+        "noServices": true
+      },
+      "installHashes": {
+        "com.lonnnnnng.flclash": {
+          "builtSha256": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d",
+          "pulledSha256": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d"
+        },
+        "com.lonnnnnng.flclash.test": {
+          "builtSha256": "9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d",
+          "pulledSha256": "9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d"
+        }
+      }
+    }
+  },
+  "visualReview": {
+    "finalImages": 92,
+    "finalContactSheets": 32,
+    "sampledSequences": 8,
+    "pngHashAndDecodeVerified": true,
+    "finalRegressionReview": "先核对final-regression2全部14张拼图，再按像素差异复核final-regression3的8张有变化拼图；其余差异仅状态栏或字节一致。",
+    "pagesAndMenusReviewed": true,
+    "notes": [
+      "8张liquid开场/回源图为过渡帧，稳定菜单另有自然流程与玻璃子菜单证据。",
+      "裸组件顶部inset与固定浅色宿主状态栏白图标沿用已知边界，不作为正式视觉通过。",
+      "深浅List终帧本次均有完整节点；没有新增List补验。",
+      "视频是变帧率录屏，8组原PTS抽样不等于所有帧或渲染耗时。"
+    ]
+  },
+  "images": [
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_light_default.png",
+      "bytes": 180389,
+      "sha256": "aafa63be99ad719cca196a7c163860232e67ddd12912cb45badf30c133a46af2"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_light_running.png",
+      "bytes": 193766,
+      "sha256": "fe6f2406676bad10f71ab7f3be05a8c2f46fa9913328c00a406fb5aa32f08bf6"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_running.png",
+      "bytes": 170531,
+      "sha256": "9ab4bdffb02bf7f52f20a5ccb491d7f155eea1ed1c090a1cabfd9916507c1f30"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_default.png",
+      "bytes": 158360,
+      "sha256": "db7eae0fa032bf8ac85cab9fec7f2470452b01215ea691bf5f710ad8c645576b"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_system_ready.png",
+      "bytes": 148584,
+      "sha256": "19c146d890af962ee0c061ceeebcfe790a0e9fb09d15802caca7cc3451a42e78"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_proxy_summary_dark.png",
+      "bytes": 23577,
+      "sha256": "6107775c00b35d5d0f232cde157ad8e12c0fdab2f582daf38ea74eb873b5b616"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_proxy_picker_dark.png",
+      "bytes": 69907,
+      "sha256": "d4b8fc5af5294bf143a61092004aa167cdfdbdab84462982e809ac9de8e96350"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_proxy_summary_light.png",
+      "bytes": 25365,
+      "sha256": "26af30a390f09c481816a0bf565aa9e8f115d795c0284c50a274758d53b87392"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_proxy_picker_light.png",
+      "bytes": 70247,
+      "sha256": "070f2f69f05c8839bc2a2a3079ec1270f614594f722a1cb838989f23b8624b26"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_sheet_service_quality.png",
+      "bytes": 144823,
+      "sha256": "5528444429f68aea37a668339270f2b49c27c1faf05a7c6ca31a3ccdbb289859"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_sheet_service_manage.png",
+      "bytes": 128147,
+      "sha256": "de5c1630cd3bdd856135fcc45b4c9c4446842faf7ecc7d80829114361850f5b4"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_sheet_profile_picker_true.png",
+      "bytes": 140589,
+      "sha256": "c7ed02825f621d288c18de92e842e2cebcc46eae0502f733aa0a32e86248cbd5"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_sheet_profile_picker_false.png",
+      "bytes": 150147,
+      "sha256": "bc71dc645b9132d9bf761783f5e2c8fdbd0c0d38e01652f6bedfbafd2ccb81be"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_sheet_short_false.png",
+      "bytes": 35022,
+      "sha256": "5c201470d5e51f5b10e89de3f492e06a9191536a50c9a34a749214a9e082825f"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_sheet_long_false.png",
+      "bytes": 150587,
+      "sha256": "5ebf2dc812472e730a5c230599a47bea17e0dad0993b30ec12db9cabc2e144aa"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_sheet_short_true.png",
+      "bytes": 35241,
+      "sha256": "fa2fff0a9273b016c91c98627a19f7b33e8fd924c38db37b42b2175e6adacfbc"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "dashboard_sheet_long_true.png",
+      "bytes": 150739,
+      "sha256": "d45f603f57a511e964333a33b59af42496ec1b6ea913f79443800f747c9db4d6"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "proxy_search_empty_TAB.png",
+      "bytes": 140695,
+      "sha256": "49cba401371af728cc4f2110471948cd85383e264adf68509ed23296e437f544"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "proxy_search_cleared_TAB.png",
+      "bytes": 113539,
+      "sha256": "fe434d5969c46a30b522a600b14eb38a3652178e70cb5db3f696facc562f39f7"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "proxy_search_empty_LIST.png",
+      "bytes": 140695,
+      "sha256": "49cba401371af728cc4f2110471948cd85383e264adf68509ed23296e437f544"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "proxy_search_cleared_LIST.png",
+      "bytes": 120160,
+      "sha256": "b84c5e1a6765e2d65df75c3f6b090b63feac1ba2e4201296ed4d40709c52a797"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "proxy_empty_failed_false.png",
+      "bytes": 68531,
+      "sha256": "8b1efb5382bbf936d6c764837a2ee0078f3eb01bcf6a37bac0d5a0be2910de9b"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "proxy_empty_plain_false.png",
+      "bytes": 49877,
+      "sha256": "1539d176ebb715b37022b5f155d3f8150bbe7ad484d7ace5b06eccdb2e65b1ae"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "proxy_empty_failed_true.png",
+      "bytes": 74219,
+      "sha256": "8357df1e90525ef1bbe854dcbfcfef5a3bd601740e465389eefb51d199c7e24e"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "proxy_empty_plain_true.png",
+      "bytes": 54545,
+      "sha256": "cb457dad9a2c4506c6852da3c712fb793104dbf44bbb7dab904ac6ba3288fb97"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "profiles_empty.png",
+      "bytes": 76842,
+      "sha256": "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "profiles_custom_selected.png",
+      "bytes": 54973,
+      "sha256": "8787bf4afbbcaddf18c0817afd2d59113e2542c301ef164b93b4715c41271bfa"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "profiles_remote_usage.png",
+      "bytes": 63023,
+      "sha256": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "liquid_open_false_false.png",
+      "bytes": 53984,
+      "sha256": "c3fc656e612c6b7321a3c517a6d4922dcbfcbf85dfba29f091c739abf0d97227"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "liquid_return_false_false.png",
+      "bytes": 43820,
+      "sha256": "8a4a5b5197cde8e7673fa4c7bda8f684abf5731d49178fef93ce446cd0e4708a"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "liquid_open_false_true.png",
+      "bytes": 35671,
+      "sha256": "c362eb61f21327286d317141b76bffdbd194de4e349629d08ca252e2460d3f83"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "liquid_return_false_true.png",
+      "bytes": 46780,
+      "sha256": "eada9d2cac9c2fb6a992fa0a7981cba37414ca7cc4cb7f3fb1bb970aea484afa"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "liquid_open_true_false.png",
+      "bytes": 54097,
+      "sha256": "0f88c3c06025afad889722b11d675ee747eb34928bc80b0f0df42ae816f94647"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "liquid_return_true_false.png",
+      "bytes": 44092,
+      "sha256": "b976aabaea28ec1b5e93414cfc0ec3c2f6b7210e14a95ab39b141f5632bee461"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "liquid_open_true_true.png",
+      "bytes": 37014,
+      "sha256": "760e9577767ad5f7c7d957c7cae54c4632c48ae2107e8785a7fdb4a0abf24092"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "liquid_return_true_true.png",
+      "bytes": 49890,
+      "sha256": "aab8c6fbfbaa3cc2d66d78b00174063271447ac7a91442ef2c5577572a84b329"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "stack_three.png",
+      "bytes": 68979,
+      "sha256": "0d828e1eb864bc48f9ad7260341c3186745d68b9d2bfde304e64a33221445313"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "stack_fold_middle.png",
+      "bytes": 69459,
+      "sha256": "a8081afc79c99a614238bd5f76ef35b0cb208f30c4d419f063b45c90b27112c5"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "glass_stack_false.png",
+      "bytes": 107687,
+      "sha256": "194737a59e867c483187ab281b3646f0d71a9d4118aacfdfc3858a8561ec1704"
+    },
+    {
+      "batch": "final-regression3",
+      "path": "glass_stack_true.png",
+      "bytes": 122319,
+      "sha256": "884c748af1314753f092cbd33e8ca0f596d2a6a1782b924ab16854670326492a"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_home.png",
+      "bytes": 101496,
+      "sha256": "f58f92cb5d658a9d99691e9ac6afba2e0f296c182dc304c970422b82bf51b275"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_profile_picker.png",
+      "bytes": 127945,
+      "sha256": "74eaf180961202fae52b43a6cb7d958effed90c7d832fa426ff3eb737d256793"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_profiles.png",
+      "bytes": 86372,
+      "sha256": "ed710398e7160815a5e05edd3d156be0b13e0bd47a23f42b3213a6b2e73c1d55"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_profiles_sources.png",
+      "bytes": 113321,
+      "sha256": "278b8580ac2212ed7aeeefe1188b46ec2856c6b77e6bf91764e32ce2a485bdf6"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_proxy.png",
+      "bytes": 77211,
+      "sha256": "4158ccae7b3c80767a2c2376e89d89a69635346d13638ba30cce0e3a3f633a9e"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_proxy_search_empty.png",
+      "bytes": 136024,
+      "sha256": "c1b8785e90874995f391c4f402b42444d132e95d9327042cd24cbf6b6add0af8"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_proxy_partial.png",
+      "bytes": 114913,
+      "sha256": "18ffd3a739313cfce72624c313703aba019ca1189c5816238870dff3d038fc88"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_proxy_menu.png",
+      "bytes": 116334,
+      "sha256": "8cc11b6fd099d4332cf30e14838f4cff2c72d794488bb5dc6d18f0aa78eeff51"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_proxy_submenu.png",
+      "bytes": 116710,
+      "sha256": "1e1fd78a32c3db7f02041a454ccf808afed0f8e302024ef191ab5149168df58f"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_proxy_list.png",
+      "bytes": 102425,
+      "sha256": "da5bf49fcf0ad96a4a5eb1ccb229cd2984b55e2dcc5bbcb9ac0987779ea1d6ad"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_quality_loading.png",
+      "bytes": 113952,
+      "sha256": "44fe7613369966c48849d87897a70b9dc9c51964828ba59e5eabec6c3ca18e0c"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_quality_ready.png",
+      "bytes": 134537,
+      "sha256": "992a6de21a8509bacdc4c23f1d0121238bae22598352823f4059ce9ffd03ce5e"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_profiles_empty.png",
+      "bytes": 83862,
+      "sha256": "fca80026a5c07cc4d35256f10fb7e9ad75655197fa21c98fb03a3f910535c9ff"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_dark_proxy_empty.png",
+      "bytes": 72862,
+      "sha256": "391fc932add3984ff9cfe9346ad2171022cb5fd27faf1eb7c7acacbdd620718d"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_home.png",
+      "bytes": 108218,
+      "sha256": "b65a6f89e0fec86168f16bea119615cac9cec3a23eb6a06fe536290a68679960"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_profile_picker.png",
+      "bytes": 133149,
+      "sha256": "af842a8731b26773e611a4614a2bb261352bc12c88ff9aa94fc1cbf15a4c1feb"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_profiles.png",
+      "bytes": 88013,
+      "sha256": "f4cb7428a81157e17579b9284ed04cbe2bb153f3292af47b59d0cd767479a6d4"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_profiles_sources.png",
+      "bytes": 117959,
+      "sha256": "a590853ccdacac86b34851bf16605d9f39ceee392e364c63631bee43bdf59510"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_proxy.png",
+      "bytes": 78365,
+      "sha256": "ca3f7cf497ea20357284d6eaad3068bf0504f17b838dc0075ecaa6f663110e0f"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_proxy_search_empty.png",
+      "bytes": 129058,
+      "sha256": "7e347603758f944072247a948d999822c5cff8f4c150cd7ad06b40de34010e28"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_proxy_partial.png",
+      "bytes": 110359,
+      "sha256": "e7f94772510e7350d7b387779c88f5accb1821d8e397ed736b4406c847ceca43"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_proxy_menu.png",
+      "bytes": 122030,
+      "sha256": "b47cb0708f09a14d807c95f393fd17ca6ffe136bebaa34329465ff1c1713a2c2"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_proxy_submenu.png",
+      "bytes": 128245,
+      "sha256": "3fb7e8b10058e69ae5a693c00b18e5207821857c6444152021ca6c50a1121f70"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_proxy_list.png",
+      "bytes": 103159,
+      "sha256": "ab1893f16265830bd3e2e04a65f212acc1b4f13e1664d20176b9ec3113049144"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_quality_loading.png",
+      "bytes": 111178,
+      "sha256": "8556f9ea6b46dd546ea8ba75d81dbd771e633f150b14fe08726e3874ee67a1e2"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_quality_ready.png",
+      "bytes": 131621,
+      "sha256": "18602b69995515092946de1b45f75b291ea61485dc0bd4ec4d3f10f39b6ee468"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_profiles_empty.png",
+      "bytes": 82179,
+      "sha256": "3346c988c8dec924ef6b43793124895dee195627ac91148390750b8d41756fe2"
+    },
+    {
+      "batch": "final-visual2",
+      "path": "natural_light_proxy_empty.png",
+      "bytes": 72054,
+      "sha256": "79f4285497bfb429b4987062b634212028504025d4b25b11390ce006f200c1aa"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_0_open.png",
+      "bytes": 116056,
+      "sha256": "8293b53d63a463a9bb430d1cdc7781a284269af43c1e74e22b47791201c05032"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_0_top.png",
+      "bytes": 116609,
+      "sha256": "db0e1679a7a9bf47bce75751dc672fb8fbcd805905b9d327327ff956a4999a24"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_0_fold.png",
+      "bytes": 116256,
+      "sha256": "6079a26708d74e9453801a45d294b04fa99e75bb23f2b8f7a65b873970764cfa"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_0_closed.png",
+      "bytes": 77129,
+      "sha256": "12f992cb042e7701a823fced128af13c5c4ed7dfc92c686ff0424fa54f7aed61"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_1_open.png",
+      "bytes": 116256,
+      "sha256": "6079a26708d74e9453801a45d294b04fa99e75bb23f2b8f7a65b873970764cfa"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_1_top.png",
+      "bytes": 116609,
+      "sha256": "db0e1679a7a9bf47bce75751dc672fb8fbcd805905b9d327327ff956a4999a24"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_1_fold.png",
+      "bytes": 116256,
+      "sha256": "6079a26708d74e9453801a45d294b04fa99e75bb23f2b8f7a65b873970764cfa"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_1_closed.png",
+      "bytes": 77129,
+      "sha256": "12f992cb042e7701a823fced128af13c5c4ed7dfc92c686ff0424fa54f7aed61"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_2_open.png",
+      "bytes": 116256,
+      "sha256": "6079a26708d74e9453801a45d294b04fa99e75bb23f2b8f7a65b873970764cfa"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_2_top.png",
+      "bytes": 116609,
+      "sha256": "db0e1679a7a9bf47bce75751dc672fb8fbcd805905b9d327327ff956a4999a24"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_2_fold.png",
+      "bytes": 116256,
+      "sha256": "6079a26708d74e9453801a45d294b04fa99e75bb23f2b8f7a65b873970764cfa"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_dark_menu_2_closed.png",
+      "bytes": 77129,
+      "sha256": "12f992cb042e7701a823fced128af13c5c4ed7dfc92c686ff0424fa54f7aed61"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_0_open.png",
+      "bytes": 122179,
+      "sha256": "83eb3ec95fab097e3166ac1f1c46ac2dbcf60fdfde52b92aa7fbbfe1b67e2bba"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_0_top.png",
+      "bytes": 128365,
+      "sha256": "88b48de42d0e6c9e2b64c09706fd27bbb6af48cb0f7dc8dc3bcf2615015cc805"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_0_fold.png",
+      "bytes": 122179,
+      "sha256": "83eb3ec95fab097e3166ac1f1c46ac2dbcf60fdfde52b92aa7fbbfe1b67e2bba"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_0_closed.png",
+      "bytes": 78483,
+      "sha256": "4381483bb95515e65f434f6174248d0e3f9896ed3db7e73f35b32856aaa1fda0"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_1_open.png",
+      "bytes": 122179,
+      "sha256": "83eb3ec95fab097e3166ac1f1c46ac2dbcf60fdfde52b92aa7fbbfe1b67e2bba"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_1_top.png",
+      "bytes": 128365,
+      "sha256": "88b48de42d0e6c9e2b64c09706fd27bbb6af48cb0f7dc8dc3bcf2615015cc805"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_1_fold.png",
+      "bytes": 122179,
+      "sha256": "83eb3ec95fab097e3166ac1f1c46ac2dbcf60fdfde52b92aa7fbbfe1b67e2bba"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_1_closed.png",
+      "bytes": 78483,
+      "sha256": "4381483bb95515e65f434f6174248d0e3f9896ed3db7e73f35b32856aaa1fda0"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_2_open.png",
+      "bytes": 122179,
+      "sha256": "83eb3ec95fab097e3166ac1f1c46ac2dbcf60fdfde52b92aa7fbbfe1b67e2bba"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_2_top.png",
+      "bytes": 128365,
+      "sha256": "88b48de42d0e6c9e2b64c09706fd27bbb6af48cb0f7dc8dc3bcf2615015cc805"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_2_fold.png",
+      "bytes": 122179,
+      "sha256": "83eb3ec95fab097e3166ac1f1c46ac2dbcf60fdfde52b92aa7fbbfe1b67e2bba"
+    },
+    {
+      "batch": "final-menu-visual1",
+      "path": "natural_light_menu_2_closed.png",
+      "bytes": 78483,
+      "sha256": "4381483bb95515e65f434f6174248d0e3f9896ed3db7e73f35b32856aaa1fda0"
+    }
+  ],
+  "screenshotEnvironment": {
+    "baselineStatic": "baseline-static1 0/5原哈希失败",
+    "candidateFirstRegression": "final-regression1 14/19；5项静态哈希矩阵失败",
+    "matchedImages": [
+      {
+        "path": "dashboard_light_default.png",
+        "before": "aafa63be99ad719cca196a7c163860232e67ddd12912cb45badf30c133a46af2",
+        "after": "aafa63be99ad719cca196a7c163860232e67ddd12912cb45badf30c133a46af2",
+        "equal": true
+      },
+      {
+        "path": "dashboard_light_running.png",
+        "before": "fe6f2406676bad10f71ab7f3be05a8c2f46fa9913328c00a406fb5aa32f08bf6",
+        "after": "fe6f2406676bad10f71ab7f3be05a8c2f46fa9913328c00a406fb5aa32f08bf6",
+        "equal": true
+      },
+      {
+        "path": "dashboard_running.png",
+        "before": "9ab4bdffb02bf7f52f20a5ccb491d7f155eea1ed1c090a1cabfd9916507c1f30",
+        "after": "9ab4bdffb02bf7f52f20a5ccb491d7f155eea1ed1c090a1cabfd9916507c1f30",
+        "equal": true
+      },
+      {
+        "path": "dashboard_default.png",
+        "before": "db7eae0fa032bf8ac85cab9fec7f2470452b01215ea691bf5f710ad8c645576b",
+        "after": "db7eae0fa032bf8ac85cab9fec7f2470452b01215ea691bf5f710ad8c645576b",
+        "equal": true
+      },
+      {
+        "path": "dashboard_system_ready.png",
+        "before": "19c146d890af962ee0c061ceeebcfe790a0e9fb09d15802caca7cc3451a42e78",
+        "after": "19c146d890af962ee0c061ceeebcfe790a0e9fb09d15802caca7cc3451a42e78",
+        "equal": true
+      },
+      {
+        "path": "dashboard_proxy_summary_dark.png",
+        "before": "6107775c00b35d5d0f232cde157ad8e12c0fdab2f582daf38ea74eb873b5b616",
+        "after": "6107775c00b35d5d0f232cde157ad8e12c0fdab2f582daf38ea74eb873b5b616",
+        "equal": true
+      },
+      {
+        "path": "dashboard_proxy_picker_dark.png",
+        "before": "d4b8fc5af5294bf143a61092004aa167cdfdbdab84462982e809ac9de8e96350",
+        "after": "d4b8fc5af5294bf143a61092004aa167cdfdbdab84462982e809ac9de8e96350",
+        "equal": true
+      },
+      {
+        "path": "dashboard_proxy_summary_light.png",
+        "before": "26af30a390f09c481816a0bf565aa9e8f115d795c0284c50a274758d53b87392",
+        "after": "26af30a390f09c481816a0bf565aa9e8f115d795c0284c50a274758d53b87392",
+        "equal": true
+      },
+      {
+        "path": "dashboard_proxy_picker_light.png",
+        "before": "070f2f69f05c8839bc2a2a3079ec1270f614594f722a1cb838989f23b8624b26",
+        "after": "070f2f69f05c8839bc2a2a3079ec1270f614594f722a1cb838989f23b8624b26",
+        "equal": true
+      },
+      {
+        "path": "profiles_empty.png",
+        "before": "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b",
+        "after": "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b",
+        "equal": true
+      },
+      {
+        "path": "profiles_custom_selected.png",
+        "before": "8787bf4afbbcaddf18c0817afd2d59113e2542c301ef164b93b4715c41271bfa",
+        "after": "8787bf4afbbcaddf18c0817afd2d59113e2542c301ef164b93b4715c41271bfa",
+        "equal": true
+      },
+      {
+        "path": "profiles_remote_usage.png",
+        "before": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
+        "after": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
+        "equal": true
+      }
+    ],
+    "baselineUpdate": {
+      "evidence": "static-environment-comparison.json",
+      "matched": 12,
+      "entries": [
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "default",
+          "old": "b68c79864c7e5033efc5834092851645a54dc40561093e52e6c09aedb9138bb8",
+          "new": "db7eae0fa032bf8ac85cab9fec7f2470452b01215ea691bf5f710ad8c645576b",
+          "image": "dashboard_default.png"
+        },
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "system_ready",
+          "old": "0da44e328f89f381e464c32e62d417efe06bbfe867c435f991da4cd38c7c25e8",
+          "new": "19c146d890af962ee0c061ceeebcfe790a0e9fb09d15802caca7cc3451a42e78",
+          "image": "dashboard_system_ready.png"
+        },
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "running",
+          "old": "10ba549b00ec921609edd3bc908e7a8f2d68d1f3d64e0d5c0d3c8db4f3172cba",
+          "new": "9ab4bdffb02bf7f52f20a5ccb491d7f155eea1ed1c090a1cabfd9916507c1f30",
+          "image": "dashboard_running.png"
+        },
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "light_default",
+          "old": "eb97b7f99796f830b4cb2ad8b2ad33fa9a62c6c9b947fc5966e6a66f10b9e7aa",
+          "new": "aafa63be99ad719cca196a7c163860232e67ddd12912cb45badf30c133a46af2",
+          "image": "dashboard_light_default.png"
+        },
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "light_running",
+          "old": "2f69dc53e850b42502e60ee1b90b0ad031e01948e27fcffe3f6df629b2e5a710",
+          "new": "fe6f2406676bad10f71ab7f3be05a8c2f46fa9913328c00a406fb5aa32f08bf6",
+          "image": "dashboard_light_running.png"
+        },
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "summary_dark",
+          "old": "71fb2375fe2f48ce31f6aa58892b11883b947c3e681a0f2b89113321a7d50215",
+          "new": "6107775c00b35d5d0f232cde157ad8e12c0fdab2f582daf38ea74eb873b5b616",
+          "image": "dashboard_proxy_summary_dark.png"
+        },
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "summary_light",
+          "old": "0e08242f174f8c3ec1794edc1c57501820afa3a2004ec600c7f6622fef298305",
+          "new": "26af30a390f09c481816a0bf565aa9e8f115d795c0284c50a274758d53b87392",
+          "image": "dashboard_proxy_summary_light.png"
+        },
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "picker_dark",
+          "old": "621b2ca037c2b9fe8458a9b4f703ec96995f75bec2686625ce20a62eb36f135c",
+          "new": "d4b8fc5af5294bf143a61092004aa167cdfdbdab84462982e809ac9de8e96350",
+          "image": "dashboard_proxy_picker_dark.png"
+        },
+        {
+          "source": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+          "key": "picker_light",
+          "old": "438e506de6631d4774d3375549df400580e49861a9edf0491ee91e12544e8ba1",
+          "new": "070f2f69f05c8839bc2a2a3079ec1270f614594f722a1cb838989f23b8624b26",
+          "image": "dashboard_proxy_picker_light.png"
+        },
+        {
+          "source": "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt",
+          "key": "empty",
+          "old": "80902cd421286571e3fb11e68a8ee1f818d371eb77d2ed47921f20feac430e0c",
+          "new": "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b",
+          "image": "profiles_empty.png"
+        },
+        {
+          "source": "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt",
+          "key": "custom_selected",
+          "old": "2225a95a722601cc43737fb20c485c2391c389f33a74365ce41e69ef7fcfa14f",
+          "new": "8787bf4afbbcaddf18c0817afd2d59113e2542c301ef164b93b4715c41271bfa",
+          "image": "profiles_custom_selected.png"
+        },
+        {
+          "source": "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt",
+          "key": "remote_usage",
+          "old": "eeb5d0ed2077d39bfb06bb777878e74a0c11518f65cd88d5cbce7bea877ab9dc",
+          "new": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
+          "image": "profiles_remote_usage.png"
+        }
+      ]
+    },
+    "specificFontOrRenderingCause": "未定位；仅证明同机旧产品与候选12图完全一致。"
+  },
+  "preservedFailures": [
+    "baseline1参考包缺席门禁失败，不计通过",
+    "两次探索子代理工具配置失败，无独立核验结果",
+    "final-regression1 14/19及baseline-static1 0/5原哈希失败",
+    "final-visual1用例2/2完成但run-as SELinux拒绝，gfx回拉SHA失败，不计最终通过",
+    "归档Path相对路径IndexError及两个错误检索路径已纠正"
+  ],
+  "recovery": {
+    "interruptedFrames": "interrupted-frame-cleanup.log：1/1，先核对两文件原SHA，removed=2/remaining=0",
+    "finalEmptyCache": "final-cache-check.log：1/1，空清单remaining=0",
+    "recording": "final-visual1/recovery.json原视频SHA核对后删除设备副本",
+    "inlineFramesUsedForFinalVisual": true
+  },
+  "cleanup": {
+    "removedMeasurementPackages": {
+      "com.lonnnnnng.flclash.motion.test": {
+        "sha256BeforeRemoval": "1e91093391122bd41ba020f5d18e7d819049c35d29b3334d5033882df051b5e3",
+        "uninstall": "Success",
+        "absentAfter": true
+      },
+      "com.lonnnnnng.flclash.motion": {
+        "sha256BeforeRemoval": "f3f96e5d61e746b8b8c89814d1e67cf8b7544e7e5027bf6ef319ed9550676dd2",
+        "uninstall": "Success",
+        "absentAfter": true
+      }
+    },
+    "formalInstalledSha256": {
+      "com.lonnnnnng.flclash": "5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d",
+      "com.lonnnnnng.flclash.test": "9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d"
+    },
+    "flutterRemainsAbsent": true,
+    "noOwnFrameOrTraceCache": true,
+    "noServices": true,
+    "noTun0": true,
+    "formalProfileCount": 0,
+    "formalSnapshotsMatched": 44,
+    "originalYamlMatched": true,
+    "interfaces": [
+      "ap0",
+      "ccmni-lan",
+      "ccmni0",
+      "ccmni1",
+      "ccmni10",
+      "ccmni11",
+      "ccmni12",
+      "ccmni13",
+      "ccmni14",
+      "ccmni15",
+      "ccmni16",
+      "ccmni17",
+      "ccmni18",
+      "ccmni19",
+      "ccmni2",
+      "ccmni20",
+      "ccmni3",
+      "ccmni4",
+      "ccmni5",
+      "ccmni6",
+      "ccmni7",
+      "ccmni8",
+      "ccmni9",
+      "dummy0",
+      "ifb0",
+      "ifb1",
+      "ip6_vti0",
+      "ip6tnl0",
+      "ip_vti0",
+      "lo",
+      "p2p0",
+      "sit0",
+      "wlan0",
+      "wlan1"
+    ],
+    "scope": "Only exact .motion packages removed after APK SHA verification; formal app and test retained.",
+    "finalProfileInspectionPassed": true,
+    "deviceSettingsMatchedAfterCleanup": true
+  },
+  "limitations": [
+    "首次打开UI区间中位17.067→19.653ms，关闭jank26/376→36/362，均不能记全部改善。",
+    "帧表首条Flags=0不是触摸后真实首帧；Vsync→SyncQueued不是纯CPU时间。",
+    "单机、前后非随机轮次、非混淆独立包及库debug回退；不推广正式签名Release或生产负载。",
+    "8张液滴图为过程截图，8组视频为原PTS抽样；不声明全帧无缺陷。",
+    "Flutter本机3.41.9低于固定Prism3.47要求，本轮无可复现同版本Flutter运行逐像素对比。",
+    "当前空库排除两条MainNavigationState方法及6张图；历史通过不计本批。",
+    "完整Flutter视觉、其余子页、R8运行和剩余渲染慢帧仍待。"
+  ]
+}

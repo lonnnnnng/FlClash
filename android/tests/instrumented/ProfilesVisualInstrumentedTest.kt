@@ -39,10 +39,11 @@ class ProfilesVisualInstrumentedTest {
         composeRule.onNodeWithTag("profile_expiry_602", useUnmergedTree = true).assertIsDisplayed()
         composeRule.onNodeWithText("3.0GB / 10.0GB").assertIsDisplayed()
 
+        // 作者 long：此组基线经重置后的旧包/候选包逐图哈希对照；环境变化独立记录在KUI-019，不能冒充Flutter像素一致。
         val expected = mapOf(
-            "empty" to "80902cd421286571e3fb11e68a8ee1f818d371eb77d2ed47921f20feac430e0c",
-            "custom_selected" to "2225a95a722601cc43737fb20c485c2391c389f33a74365ce41e69ef7fcfa14f",
-            "remote_usage" to "eeb5d0ed2077d39bfb06bb777878e74a0c11518f65cd88d5cbce7bea877ab9dc",
+            "empty" to "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b",
+            "custom_selected" to "8787bf4afbbcaddf18c0817afd2d59113e2542c301ef164b93b4715c41271bfa",
+            "remote_usage" to "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
         )
         val mismatches = actual.mapNotNull { (state, hash) ->
             val baseline = expected.getValue(state)
