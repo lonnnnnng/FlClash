@@ -1,0 +1,123 @@
+{
+  "date": "2026-11-09",
+  "version": "0.1.0",
+  "versionCode": 1000,
+  "tag": "kclash-v0.1.0",
+  "status": "local_verified_remote_pending",
+  "sourceBase": "967099ec89a51bfc2e0eb2a6284113e6e18de2f6",
+  "coreCommit": "7038231e026b710088b9c369899b3a8b7f281739",
+  "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+  "local": {
+    "manifest": {
+      "application-id": "com.lonnnnnng.flclash",
+      "version-name": "0.1.0",
+      "version-code": "1000",
+      "min-sdk": "24",
+      "target-sdk": "37",
+      "debuggable": "false"
+    },
+    "abis": [
+      "arm64-v8a"
+    ],
+    "sha256": "0377f152b9a02482ecb4e0be30037108e1bdc8c98e716dffc535d026fb9f1026",
+    "size": 48330848,
+    "debugMarkersAbsent": 21,
+    "jvm": {
+      "Debug": {
+        "app": {
+          "tests": 568,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "service": {
+          "tests": 212,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "core": {
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "common": {
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "Release": {
+        "app": {
+          "tests": 0,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "service": {
+          "tests": 0,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "core": {
+          "tests": 0,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "common": {
+          "tests": 0,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      }
+    },
+    "lint": {
+      "debug": {
+        "Warning": 68,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 13
+      }
+    },
+    "testsMayBeUpToDate": true
+  },
+  "localSmoke": {
+    "avd": "KClash_Release_API35",
+    "serial": "emulator-5554",
+    "api": 35,
+    "installedSha256": "0377f152b9a02482ecb4e0be30037108e1bdc8c98e716dffc535d026fb9f1026",
+    "checks": [
+      "clean install",
+      "home render",
+      "profiles empty page",
+      "tools navigation",
+      "force-stop cold launch",
+      "installed APK byte identity",
+      "no app crash buffer entries"
+    ],
+    "oldPid": "2389",
+    "newPid": "4282",
+    "scope": "UI smoke only; no VPN or proxy traffic; Redmi unchanged"
+  },
+  "jvmScope": "849 debug JVM results; app568 executed this build, service212/core38/common31 up-to-date; not 1698 independent cases",
+  "goRace": [
+    "core: go test -race ./... PASS",
+    "core: go test -race github.com/metacubex/mihomo/hub/route PASS"
+  ],
+  "keyStorage": "Independent JKS outside repository, macOS Keychain passwords, verified same-machine backup; see ADR0013",
+  "limits": [
+    "Signed release Redmi/VPN/network not rerun",
+    "Cross-version signed upgrade not covered",
+    "Low API and cellular/OEM remain partial",
+    "Full Flutter visual and performance acceptance remain partial"
+  ],
+  "artifacts": "../acceptance-artifacts/release-0.1.0-20261109/",
+  "remote": null
+}

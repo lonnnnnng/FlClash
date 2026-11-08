@@ -1,87 +1,57 @@
 <div align="center">
 
-<img src="assets/images/icon.png" alt="FlClash" width="88">
+<img src="assets/images/icon.png" alt="KClash" width="80">
 
-# FlClash
+# KClash
 
-基于 ClashMeta 的多平台代理客户端，简单易用，开源无广告。
+基于 Kotlin、Jetpack Compose 与 Mihomo 内核构建的原生 Android 代理客户端。
 
 [English](README.md) · **简体中文**
 
-[![Release](https://img.shields.io/github/v/release/chen08209/FlClash?style=flat-square&label=release)](https://github.com/chen08209/FlClash/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/chen08209/FlClash/total?style=flat-square&logo=github)](https://github.com/chen08209/FlClash/releases)
-[![License](https://img.shields.io/github/license/chen08209/FlClash?style=flat-square)](LICENSE)
-[![Telegram](https://img.shields.io/badge/Telegram-channel-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/FlClash)
+[![Android](https://img.shields.io/badge/platform-Android-3ddc84?style=flat-square&logo=android&logoColor=white)](https://github.com/lonnnnnng/FlClash)
+[![Release](https://img.shields.io/github/v/release/lonnnnnng/FlClash?filter=kclash-v*&style=flat-square&label=版本)](https://github.com/lonnnnnng/FlClash/releases)
+[![License](https://img.shields.io/github/license/lonnnnnng/FlClash?style=flat-square)](LICENSE)
 
-[官网](https://chen08209.github.io/FlClash/zh) · [下载](#下载) · [更新日志](CHANGELOG.md) · [从源码构建](#从源码构建)
+[下载](https://github.com/lonnnnnng/FlClash/releases/latest) · [从源码构建](#从源码构建) · [反馈问题](https://github.com/lonnnnnng/FlClash/issues)
 
 </div>
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="snapshots/preview-dark.png">
-    <img alt="FlClash 在 MacBook 与手机上的仪表盘" src="snapshots/preview.png" width="92%">
-  </picture>
-</p>
+KClash 是本仓库的 Android Kotlin 主线，将 [FlClash](https://github.com/chen08209/FlClash) 的 Android 体验重写为原生应用。Flutter 工程仅作为功能行为和 UI/UX 参考，不属于 Kotlin 版本的运行时。
 
 ## 功能
 
-- **一个应用覆盖 Android、Windows、macOS 和 Linux**，桌面端同时提供 x64 与 ARM64 版本。
-- **mihomo（Clash.Meta）内核**：规则分流、代理组、延迟测试、系统代理与 TUN 模式。
-- **配置管理**：通过订阅链接或文件导入配置，内置编辑器，支持覆写脚本以及自定义规则、代理和代理组。
-- **实时查看**连接、请求、DNS 查询和日志。
-- **Material You 设计，融合 Apple 式交互**：支持动态取色、浅色与深色主题，连续曲率圆角，弹出面板可在几档高度间吸附，布局随屏幕从手机到桌面自适应。
-- **备份与恢复**：通过 WebDAV 或本地文件。
-- **平台细节**：Android 上有快捷设置磁贴、分应用代理和 Android TV 支持；桌面端有托盘菜单和全局快捷键。
-- **开源无广告**，以 GPL-3.0 协议发布。
+- **Mihomo 代理内核**：规则、全局和直连模式，策略组、节点选择与延迟测试。
+- **配置管理**：支持订阅链接、YAML 文件和自定义配置，可编辑规则、代理、策略组、Providers 及已接入的配置分区。
+- **流量与观测**：实时上传/下载速度和历史、连接、请求、DNS、核心日志及请求链路详情。
+- **Android VPN 与代理控制**：VPN/TUN、本地代理模式、按应用代理、快捷设置磁贴和显式自动化 Action。
+- **配置资源与备份**：本地资源、脚本、文件导入/导出，以及用户主动触发的本地或 WebDAV 备份/恢复。
+- **无广告**，以 GPL-3.0 协议发布。
 
-## 下载
+## 平台与状态
 
-从 [GitHub Releases](https://github.com/chen08209/FlClash/releases/latest) 获取最新版本，或打开
-[官网](https://chen08209.github.io/FlClash/zh#download)，它会自动为你的设备选好安装包。
+| 项目 | 支持范围 |
+| --- | --- |
+| 平台 | Android 手机 |
+| 最低 Android 版本 | Android 7.0（API 24） |
+| 发布 ABI | 仅 `arm64-v8a` |
+| Application ID | `com.lonnnnnng.flclash` |
+| 桌面端、Android TV 和其他 ABI | 不属于当前 Kotlin 版本 |
 
-| 平台 | 安装包 | 说明 |
-| --- | --- | --- |
-| Android | `arm64-v8a`、`armeabi-v7a`、`x86_64` 三种 APK | 绝大多数手机选 `arm64-v8a`。也可以通过下方的 F-Droid 仓库安装。 |
-| Windows 10 及以上 | 安装版（`.exe`）或便携版（`.zip`），分 x64 与 ARM64 | 骁龙等 ARM 架构笔记本选 ARM64。 |
-| macOS 12 及以上 | Apple Silicon 与 Intel 两种 DMG | 也可以通过 Homebrew 安装。 |
-| Linux | `.deb`、`.rpm` 和 AppImage，分 x64 与 ARM64 | 托盘依赖见下方说明。 |
+Kotlin 版本仍在持续开发。配置、代理、VPN 和观测主流程已有自动化测试及 Redmi Note 8 Pro 真机覆盖；完整 Flutter 视觉一致性、不同设备/ROM 的性能归因、低 API 覆盖以及部分系统/OEM 场景仍在推进中。范围和验收证据见 [`docs/roadmap.md`](docs/roadmap.md)。固定夹具测试通过不代表所有设备或生产网络均已验证。
 
-<p>
-  <a href="https://chen08209.github.io/FlClash-fdroid-repo/repo?fingerprint=789D6D32668712EF7672F9E58DEEB15FBD6DCEEC5AE7A4371EA72F2AAE8A12FD"><img alt="Get it on F-Droid" src="snapshots/get-it-on-fdroid.svg" height="56"></a>
-  <a href="https://github.com/chen08209/FlClash/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
-</p>
+## 下载与安装
 
-**Homebrew**
+从 [GitHub Releases](https://github.com/lonnnnnng/FlClash/releases/latest) 下载签名安装包 `KClash-0.1.0-android-arm64-v8a.apk`。当前版本适用于 ARM64 Android 设备。Android 可能要求允许当前浏览器或文件管理器安装应用。
 
-```bash
-brew tap chen08209/tap
-brew install --cask flclash
-```
+KClash 使用独立的 Android Application ID 和签名身份，会与上游 Flutter 应用并行安装，也不会迁移 Flutter/Drift 的应用数据。升级 KClash 时必须继续使用同一发布签名身份，Android 才能验证更新。
 
-**Linux 托盘图标**
+已有的 KClash Debug 版本使用不同证书，不能用正式 APK 直接覆盖。请先导出需要保留的配置再卸载；卸载会清除应用数据。后续正式版本可以沿用该签名升级。
 
-`.deb` 安装包会自动安装所需依赖。使用 AppImage 或 `.rpm` 时，需要先安装 AyatanaAppIndicator 库，托盘图标才能显示：
+安装后可从订阅链接或 YAML 文件导入配置。启动 VPN 模式需要通过 Android 系统授权；代理节点和订阅服务由用户自行提供，本项目不包含代理节点或订阅访问权限。
 
-```bash
-sudo apt-get install libayatana-appindicator3-1   # Debian 与 Ubuntu
-sudo dnf install libayatana-appindicator-gtk3     # Fedora
-```
+## Android 自动化
 
-**无人值守的桌面环境**
-
-FlClash 要在免责声明被接受后才会启动核心。在容器等无人点击的环境里，可在应用的环境变量中设置
-`FLCLASH_ACCEPT_DISCLAIMER=1`，首次启动时即视为接受。
-
-## 使用
-
-**通过链接导入配置。** 打开下面格式的链接，即可把订阅导入 FlClash。`clashmeta://` 和 `flclash://` 开头的链接同样可用。
-
-```text
-clash://install-config?url=<经过 URL 编码的订阅链接>
-```
-
-**Android 自动化。** Tasker、MacroDroid 等应用可以用下面的 KClash Action 启动 Activity，从而启动、停止或切换代理：
+Tasker、MacroDroid 等 Android 自动化应用可以通过以下 Action 启动 KClash Activity：
 
 ```text
 com.lonnnnnng.flclash.action.START
@@ -89,49 +59,47 @@ com.lonnnnnng.flclash.action.STOP
 com.lonnnnnng.flclash.action.TOGGLE
 ```
 
-在电脑上也可以通过 adb 触发：
+也可以从已连接的设备通过 ADB 触发：
 
 ```bash
-adb shell am start -a com.lonnnnnng.flclash.action.TOGGLE
+adb -s <设备序列号> shell am start -a com.lonnnnnng.flclash.action.TOGGLE
 ```
 
-KClash 只接受这三个不带 URI 和额外参数的 Action；启动核心时仍遵循 Android 系统 VPN 授权流程。
+应用只接受这三个显式 Action；启动 VPN 仍遵循 Android 系统授权流程。
 
 ## 从源码构建
 
-需要 [Flutter](https://docs.flutter.dev/get-started/install) 3.47（正式版构建使用 3.47.6）、[Go](https://go.dev/dl/) 1.27，
-以及通过 rustup 安装的 [Rust](https://rustup.rs/)。桌面端需要在对应系统上构建，Android 在任意系统上都能构建。
+Kotlin Android 构建使用 Java 17、Go 1.27.1、Android SDK Platform 37 和 NDK `28.2.13676358`。克隆 Kotlin 分支及 Mihomo 子模块：
 
 ```bash
-git clone --recursive https://github.com/chen08209/FlClash.git
+git clone --branch kotlin --recurse-submodules https://github.com/lonnnnnng/FlClash.git
 cd FlClash
-flutter pub get
-dart setup.dart android   # 或 windows、macos、linux
+./gradlew :app:assembleDebug
 ```
 
-安装包输出到 `dist/`。Go 内核和 Rust 库会在 Flutter 构建过程中一并编译。
+Debug APK 输出到 `android/app/build/outputs/apk/debug/app-debug.apk`。运行 JVM 测试和检查：
 
-| 平台 | 额外依赖 |
-| --- | --- |
-| Android | 带 NDK 的 Android SDK。加上 `--arch arm64` 可以只构建单个 ABI。 |
-| Windows | 编译内核用的 GCC（MinGW-w64），以及打包安装程序用的 [Inno Setup](https://jrsoftware.org/isinfo.php) 6。 |
-| macOS | Xcode 与 Node.js。脚本会通过 npm 安装 `appdmg`。 |
-| Linux | Debian 或 Ubuntu。脚本会用 apt 安装构建所需的软件包，并下载 `appimagetool`。 |
+```bash
+./gradlew test :app:lintDebug
+```
 
-其余选项可以运行 `dart setup.dart --help` 查看，例如用 `--targets` 只构建部分安装包格式。
+构建未签名、已启用混淆的 arm64 Release：
 
-## 支持
+```bash
+./gradlew :app:assembleRelease :app:lintRelease \
+  -Ptarget-platform=android-arm64 \
+  -PkclashVersionName=0.1.0 \
+  -PkclashVersionCode=1000
+```
 
-给仓库点一个 Star 是支持项目最简单的方式。问题讨论和更新通知请关注 [Telegram 频道](https://t.me/FlClash)，
-Bug 与功能建议请提交到 [GitHub Issues](https://github.com/chen08209/FlClash/issues)。
+未签名 APK 输出到 `android/app/build/outputs/apk/release/app-release-unsigned.apk`。正式发布由 GitHub Actions 使用项目独立的 Android 签名密钥签名；不要将签名密钥库或密码提交到 Git。
 
-<a href="https://star-history.com/#chen08209/FlClash&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=chen08209/FlClash&type=Date&theme=dark">
-    <img alt="Star history" src="https://api.star-history.com/svg?repos=chen08209/FlClash&type=Date" width="640">
-  </picture>
-</a>
+## 项目边界
 
-## 许可证
+- Kotlin Android 应用在 `kotlin` 分支开发。
+- Flutter [FlClash 仓库](https://github.com/chen08209/FlClash)只作功能行为与视觉交互参考，不将其应用提交合入 Kotlin 主线。
+- Mihomo 改动仅通过 `chen08209/Clash.Meta` 的 FlClash 分支及配置的 `lonnnnnng/mihomo` fork / `kclash-fixes` 分支同步。
 
-FlClash 以 [GPL-3.0 协议](LICENSE)发布。
+## 许可证与反馈
+
+KClash 按 [GNU GPL v3.0](LICENSE) 发布。请通过 [GitHub Issues](https://github.com/lonnnnnng/FlClash/issues) 提交可复现的问题或功能建议。请提供应用版本、Android 版本和设备型号；分享日志前先删除订阅地址、凭据和私人配置正文。

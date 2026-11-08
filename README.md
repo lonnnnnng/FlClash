@@ -1,93 +1,57 @@
 <div align="center">
 
-<img src="assets/images/icon.png" alt="FlClash" width="88">
+<img src="assets/images/icon.png" alt="KClash" width="80">
 
-# FlClash
+# KClash
 
-A multi-platform proxy client based on ClashMeta. Simple to use, open source and ad-free.
+Native Android proxy client built with Kotlin, Jetpack Compose and the Mihomo core.
 
-**English** · [简体中文](README_zh_CN.md)
+[English](README.md) · [简体中文](README_zh_CN.md)
 
-[![Release](https://img.shields.io/github/v/release/chen08209/FlClash?style=flat-square&label=release)](https://github.com/chen08209/FlClash/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/chen08209/FlClash/total?style=flat-square&logo=github)](https://github.com/chen08209/FlClash/releases)
-[![License](https://img.shields.io/github/license/chen08209/FlClash?style=flat-square)](LICENSE)
-[![Telegram](https://img.shields.io/badge/Telegram-channel-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/FlClash)
+[![Android](https://img.shields.io/badge/platform-Android-3ddc84?style=flat-square&logo=android&logoColor=white)](https://github.com/lonnnnnng/FlClash)
+[![Release](https://img.shields.io/github/v/release/lonnnnnng/FlClash?filter=kclash-v*&style=flat-square&label=release)](https://github.com/lonnnnnng/FlClash/releases)
+[![License](https://img.shields.io/github/license/lonnnnnng/FlClash?style=flat-square)](LICENSE)
 
-[Website](https://chen08209.github.io/FlClash) · [Download](#download) · [Changelog](CHANGELOG.md) · [Build from source](#build-from-source)
+[Download](https://github.com/lonnnnnng/FlClash/releases/latest) · [Build from source](#build-from-source) · [Report an issue](https://github.com/lonnnnnng/FlClash/issues)
 
 </div>
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="snapshots/preview-dark.png">
-    <img alt="FlClash dashboard on a MacBook and a phone" src="snapshots/preview.png" width="92%">
-  </picture>
-</p>
+KClash is the Android Kotlin mainline in this repository. It rebuilds the Android experience of [FlClash](https://github.com/chen08209/FlClash) as a native application. The Flutter project is a behavior and UI reference; Flutter application code is not part of the Kotlin runtime.
 
 ## Features
 
-- **One app for Android, Windows, macOS and Linux**, with x64 and ARM64 builds on the desktop.
-- **mihomo (Clash.Meta) core** with rule routing, proxy groups, latency tests, system proxy and TUN mode.
-- **Profiles** from a subscription link or a file, with a built-in editor, override scripts, and custom rules,
-  proxies and proxy groups.
-- **Live views** of connections, requests, DNS queries and logs.
-- **Material You design with Apple-style interaction**: dynamic color, light and dark themes, continuous corners,
-  sheets that snap between heights, and layouts that adapt from phones to desktops.
-- **Backup and restore** through WebDAV or a local file.
-- **Platform touches**: a Quick Settings tile, per-app proxy and Android TV support on Android; a tray menu and
-  global hotkeys on the desktop.
-- **Open source and ad-free**, licensed under GPL-3.0.
+- **Mihomo proxy core** for rule, global and direct modes, proxy groups, node selection and delay tests.
+- **Profile management** for subscription URLs, YAML files and custom profiles, with editing for rules, proxies, proxy groups, providers and supported profile settings.
+- **Traffic and diagnostics** including live upload/download rates and history, connections, requests, DNS, logs and request-path details.
+- **Android VPN and proxy controls** with VPN/TUN, local proxy mode, per-app proxy settings, Quick Settings tile and explicit automation actions.
+- **Profile resources and backup** including local resources, scripts, file import/export and user-initiated local or WebDAV backup/restore.
+- **No ads**, licensed under GPL-3.0.
 
-## Download
+## Platform and status
 
-Get the latest build from [GitHub Releases](https://github.com/chen08209/FlClash/releases/latest), or open the
-[website](https://chen08209.github.io/FlClash#download), which picks the right file for your device.
+| Item | Support |
+| --- | --- |
+| Platform | Android phones |
+| Minimum Android version | Android 7.0 (API 24) |
+| Release ABI | `arm64-v8a` only |
+| Application ID | `com.lonnnnnng.flclash` |
+| Desktop, Android TV and other ABIs | Not included in this Kotlin release |
 
-| Platform | Packages | Notes |
-| --- | --- | --- |
-| Android | APK for `arm64-v8a`, `armeabi-v7a` and `x86_64` | Most phones use `arm64-v8a`. Also on the F-Droid repository below. |
-| Windows 10 and later | Installer (`.exe`) or portable `.zip`, for x64 and ARM64 | Pick ARM64 on Snapdragon and other ARM laptops. |
-| macOS 12 and later | DMG for Apple Silicon and Intel | Also on Homebrew. |
-| Linux | `.deb`, `.rpm` and AppImage, for x64 and ARM64 | See the tray note below. |
+The Kotlin app is under active development. Core profile, proxy, VPN and diagnostics flows have automated and Redmi Note 8 Pro device coverage. Full Flutter visual parity, performance attribution on every device/ROM, low-API coverage and some system/OEM scenarios remain in progress. See [`docs/roadmap.md`](docs/roadmap.md) for scope and evidence. A passing fixture test does not imply that every device or production network has been verified.
 
-<p>
-  <a href="https://chen08209.github.io/FlClash-fdroid-repo/repo?fingerprint=789D6D32668712EF7672F9E58DEEB15FBD6DCEEC5AE7A4371EA72F2AAE8A12FD"><img alt="Get it on F-Droid" src="snapshots/get-it-on-fdroid.svg" height="56"></a>
-  <a href="https://github.com/chen08209/FlClash/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
-</p>
+## Download and install
 
-**Homebrew**
+Download the signed `KClash-0.1.0-android-arm64-v8a.apk` from [GitHub Releases](https://github.com/lonnnnnng/FlClash/releases/latest). The release supports ARM64 Android devices. Android may ask you to allow installation from the browser or file manager used to open the APK.
 
-```bash
-brew tap chen08209/tap
-brew install --cask flclash
-```
+KClash has its own Android application ID and signing identity. It installs separately from the upstream Flutter app and does not migrate Flutter/Drift application data. Keep the release signing identity stable when upgrading KClash so Android can verify the update.
 
-**Linux tray icon**
+An existing KClash Debug installation uses a different certificate and cannot be updated with the release APK. Export the profiles you need before uninstalling it; uninstalling removes its app data. Later signed releases can update this release normally.
 
-The `.deb` package installs its own dependencies. With the AppImage or the `.rpm`, install the AyatanaAppIndicator
-library so the tray icon can show:
+After installation, import a profile from a subscription URL or a YAML file. Starting VPN mode requires Android's system VPN consent. Subscription services and proxy infrastructure are supplied by the user; this project does not include proxy nodes or subscription access.
 
-```bash
-sudo apt-get install libayatana-appindicator3-1   # Debian and Ubuntu
-sudo dnf install libayatana-appindicator-gtk3     # Fedora
-```
+## Android automation
 
-**Unattended desktop**
-
-FlClash starts the core only after the disclaimer is accepted. Where nobody can click it, such as a container, set
-`FLCLASH_ACCEPT_DISCLAIMER=1` in the app's environment to accept it on first launch.
-
-## Usage
-
-**Import a profile from a link.** Opening a link in this form imports the subscription into FlClash. The `clashmeta://`
-and `flclash://` schemes work the same way.
-
-```text
-clash://install-config?url=<URL-encoded subscription link>
-```
-
-**Automate on Android.** Tasker, MacroDroid and similar apps can start, stop or toggle the proxy by starting an
-activity with one of these KClash actions:
+Tasker, MacroDroid and other Android automation apps can start the KClash activity with one of these actions:
 
 ```text
 com.lonnnnnng.flclash.action.START
@@ -95,51 +59,47 @@ com.lonnnnnng.flclash.action.STOP
 com.lonnnnnng.flclash.action.TOGGLE
 ```
 
-From a computer, the same works over adb:
+For example, from a connected device:
 
 ```bash
-adb shell am start -a com.lonnnnnng.flclash.action.TOGGLE
+adb -s <device-serial> shell am start -a com.lonnnnnng.flclash.action.TOGGLE
 ```
 
-KClash accepts only these three actions without a data URI or extra arguments. Starting still follows Android's VPN consent flow.
+Only these explicit actions are accepted; VPN startup still follows Android's consent flow.
 
 ## Build from source
 
-You need [Flutter](https://docs.flutter.dev/get-started/install) 3.47 (release builds use 3.47.6),
-[Go](https://go.dev/dl/) 1.27 and [Rust](https://rustup.rs/) installed through rustup. Each platform builds on its own
-host, except Android, which builds anywhere.
+The Kotlin Android build uses Java 17, Go 1.27.1, Android SDK platform 37 and NDK `28.2.13676358`. Clone the Kotlin branch with its Mihomo submodule:
 
 ```bash
-git clone --recursive https://github.com/chen08209/FlClash.git
+git clone --branch kotlin --recurse-submodules https://github.com/lonnnnnng/FlClash.git
 cd FlClash
-flutter pub get
-dart setup.dart android   # or windows, macos, linux
+./gradlew :app:assembleDebug
 ```
 
-Packages land in `dist/`. The Go core and the Rust libraries are compiled as part of the Flutter build.
+The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Run JVM tests and checks with:
 
-| Platform | Also needed |
-| --- | --- |
-| Android | Android SDK with the NDK. Add `--arch arm64` to build a single ABI. |
-| Windows | GCC (MinGW-w64) for the core and [Inno Setup](https://jrsoftware.org/isinfo.php) 6 for the installer. |
-| macOS | Xcode and Node.js. The script installs `appdmg` through npm. |
-| Linux | Debian or Ubuntu. The script installs the build packages with apt and downloads `appimagetool`. |
+```bash
+./gradlew test :app:lintDebug
+```
 
-Run `dart setup.dart --help` for the remaining options, such as `--targets` to build only some package formats.
+Build an unsigned, minified arm64 release package with:
 
-## Support
+```bash
+./gradlew :app:assembleRelease :app:lintRelease \
+  -Ptarget-platform=android-arm64 \
+  -PkclashVersionName=0.1.0 \
+  -PkclashVersionCode=1000
+```
 
-Starring the repository is the easiest way to support the project. Questions and announcements go to the
-[Telegram channel](https://t.me/FlClash); bugs and feature requests go to
-[GitHub Issues](https://github.com/chen08209/FlClash/issues).
+The unsigned APK is written to `android/app/build/outputs/apk/release/app-release-unsigned.apk`. Official release builds are signed by GitHub Actions using the project's independent Android signing key; signing secrets and keystore files must never be committed.
 
-<a href="https://star-history.com/#chen08209/FlClash&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=chen08209/FlClash&type=Date&theme=dark">
-    <img alt="Star history" src="https://api.star-history.com/svg?repos=chen08209/FlClash&type=Date" width="640">
-  </picture>
-</a>
+## Project boundaries
 
-## License
+- The Kotlin Android application is developed on the `kotlin` branch.
+- The Flutter [FlClash repository](https://github.com/chen08209/FlClash) is used only as a functional and visual reference; its application commits are not merged into the Kotlin mainline.
+- Mihomo changes follow the `chen08209/Clash.Meta` FlClash branch through the configured `lonnnnnng/mihomo` fork and its `kclash-fixes` branch.
 
-FlClash is released under the [GPL-3.0 license](LICENSE).
+## License and support
+
+KClash is distributed under the [GNU GPL v3.0](LICENSE). Please report reproducible bugs and feature requests through [GitHub Issues](https://github.com/lonnnnnng/FlClash/issues). Include the app version, Android version and device model; remove subscription URLs, credentials and private profile contents from logs before sharing them.

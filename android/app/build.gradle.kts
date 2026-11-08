@@ -15,16 +15,21 @@ val localProperties = Properties().apply {
     }
 }
 
-val releaseStoreFile = file("keystore.jks")
+// 作者 long：正式身份由本地密钥管理或CI注入，未配置时保持未签名产物，不借用上游或debug密钥。
+val releaseStoreFile = providers.environmentVariable("KCLASH_RELEASE_KEYSTORE").orNull?.let(::file)
+    ?: file("keystore.jks")
 val releaseStorePassword = localProperties.getProperty("storePassword")
+    ?: providers.environmentVariable("KCLASH_RELEASE_STORE_PASSWORD").orNull
 val releaseKeyAlias = localProperties.getProperty("keyAlias")
+    ?: providers.environmentVariable("KCLASH_RELEASE_KEY_ALIAS").orNull
 val releaseKeyPassword = localProperties.getProperty("keyPassword")
+    ?: providers.environmentVariable("KCLASH_RELEASE_KEY_PASSWORD").orNull
 val hasReleaseSigning = releaseStoreFile.exists() &&
     releaseStorePassword != null &&
     releaseKeyAlias != null &&
     releaseKeyPassword != null
 
-val defaultVersionCode = 1
+val defaultVersionCode = 1000
 val defaultVersionName = "0.1.0"
 // 作者 long：性能诊断显式启用独立包名的非Debug运行时；默认构建/正式Release不携带验收宿主。
 val motionBenchmarkEnabled = providers.gradleProperty("kclashMotionBenchmark").orNull == "true"

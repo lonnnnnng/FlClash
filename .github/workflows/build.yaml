@@ -2,8 +2,9 @@ name: build
 
 on:
   push:
-    branches:
-      - '**'
+    # 作者 long：Kotlin手机主线走独立发布检查，不触发参考Flutter/桌面构建。
+    branches-ignore:
+      - kotlin
     tags:
       - 'v*'
   workflow_dispatch:

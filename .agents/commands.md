@@ -25,7 +25,7 @@ Release 预发布检查（没有独立签名身份时输出未签名 APK）：
 ./gradlew :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64
 ```
 
-`.github/workflows/kotlin-android.yml` 使用同一根目录 Wrapper，负责 Kotlin 主线的 arm64 单元测试、Debug/Release 构建、R8、Lint 和未签名 Release 产物检查；Flutter 发布 workflow 不作为 Kotlin 主线的构建入口。
+`.github/workflows/kotlin-android.yml` 使用同一根目录 Wrapper，负责 Kotlin 主线的 arm64 单元测试、Debug/Release 构建、R8 与 Lint。分支/PR 检查未签名产物；`kclash-vMAJOR.MINOR.PATCH` 标签注入独立发布签名，校验证书/版本/包名/ABI 后发布正式 APK 和 SHA256SUMS。签名身份及本机保管方式见 `docs/adr/0013-kclash-release-signing.md`；Flutter 发布 workflow 不作为 Kotlin 主线的构建入口。
 
 自然交互性能诊断可以显式开启独立包名的非Debug应用：
 
