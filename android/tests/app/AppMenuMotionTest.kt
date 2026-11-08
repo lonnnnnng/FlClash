@@ -11,6 +11,42 @@ class AppMenuMotionTest {
     private val anchor = Rect(180f, -40f, 224f, 4f)
     private val card = Size(260f, 380f)
 
+    @Test fun returnTransfersShadowFromContentToPlatterWithoutTintingGlassTwice() {
+        val opened = appMenuMorphFrame(anchor, card, .45f, 1f, true)
+        val start = appMenuReturnFrame(anchor, opened, 0f, 1f)
+        assertEquals(0f, start.outerShadowStrength(false), .00001f)
+        assertEquals(1f, start.outerShadowStrength(true), .00001f)
+        val textGone = appMenuReturnFrame(anchor, opened, .1f, 1f)
+        assertEquals(0f, textGone.progress, .00001f)
+        assertTrue(textGone.outerShadowStrength(false) > 0f)
+        assertEquals(textGone.outerShadowStrength(true), textGone.outerShadowStrength(false), .00001f)
+        val end = appMenuReturnFrame(anchor, opened, .5f, 1f)
+        assertEquals(0f, end.outerShadowStrength(false), .00001f)
+        assertEquals(0f, end.outerShadowStrength(true), .00001f)
+    }
+
+    @Test fun flutterShadowSigmaIsPreservedAtDifferentPixelDensities() {
+        for (density in listOf(1f, 2f, 2.75f, 3.5f)) {
+            val androidSigma = appMenuShadowRadiusPx(density) * .57735f + .5f
+            // 作者 long：固定Flutter的blurRadius=29对应17.24315逻辑像素sigma；不能把29的一半当模糊标准差。
+            assertEquals(17.24315f, androidSigma / density, .00001f)
+        }
+    }
+
+    @Test fun nestedReturnKeepsTopCardGeometryAndUniformContentScale() {
+        val top = Rect(20f, 48f, 280f, 188f)
+        val from = AppMenuMorphFrame(top, 24f, 1f, contentBounds = top)
+        val first = appMenuReturnFrame(anchor, from, 0f, 1f)
+        assertEquals(top, first.platter)
+        assertEquals(top, first.contentBounds)
+        assertEquals(1f, first.contentScale(Size(280f, 420f)), .00001f)
+        val partial = appMenuReturnFrame(anchor, from, .06f, 1f)
+        assertEquals(top, partial.contentBounds)
+        val scale = partial.contentScale(Size(280f, 420f))
+        assertTrue(top.width * scale <= partial.platter.width + .00001f)
+        assertTrue(top.height * scale <= partial.platter.height + .00001f)
+    }
+
     @Test fun returnStartsAtInterruptedPlatterAndEndsExactlyAtSource() {
         for (time in listOf(.04f, .12f, .45f)) {
             val from = appMenuMorphFrame(anchor, card, time, 1f, true)

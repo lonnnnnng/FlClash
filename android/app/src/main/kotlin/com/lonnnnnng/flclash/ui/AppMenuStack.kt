@@ -60,6 +60,7 @@ internal class AppMenuStackState(private val scope: CoroutineScope, root: Any?) 
     var unit = 1f
     var onBack: () -> Unit = {}
     var hitBounds = Rect.Zero
+    var topCardBounds = Rect.Zero
     var outerBounds by mutableStateOf<Rect?>(null)
     var hitRevision by mutableIntStateOf(0)
     private var externalFold = false
@@ -116,7 +117,7 @@ internal fun appMenuStackRect(size: Size, top: Float, ownerTop: Float, ownerHeig
 /** 作者 long：完整内容先布局，仅改变卡片裁剪范围；文字不做纵向缩放，后层既不暴露语义也不接收内部点击。 */
 @Composable
 internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boolean, surface: Color,
-    backdrop: AppMenuBackdrop?, menuPosition: IntOffset, opening: State<Float>, returning: State<Float>,
+    backdrop: AppMenuBackdrop?, menuPosition: IntOffset, opening: State<Float>, returning: State<Float>, sourceReady: Boolean,
     onScrollable: (Boolean) -> Unit, content: @Composable ColumnScope.(Any?) -> Unit) {
     val density = LocalDensity.current.density
     val inputModeManager = LocalInputModeManager.current
@@ -144,6 +145,7 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
             // 作者 long：根卡/后层只有缩放和明暗变化，轮廓没有变形；稳定Shape让Compose复用阴影位图，不能每帧制造新缓存键。
             val shape = AppSuperellipseShape(24.dp)
             val measuredSize = remember { mutableStateOf(IntSize.Zero) }
+            val shadowRadius = with(LocalDensity.current) { appMenuShadowRadiusPx(density).toDp() }
             val renderer = remember { AppMenuGlassRenderer() }
             val dark = com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current
             val tint = if (dark) Color(0xFF343537) else MaterialTheme.colorScheme.surfaceBright
@@ -165,6 +167,8 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                 }
             Box(cardWidth
                 .graphicsLayer {
+                    // 作者 long：回源只带走最上层卡片；后层保持组合与滚动身份，但不穿过收回中的主体露出。
+                    alpha = if (!top && sourceReady && (opening.value < .45f || !active)) 0f else 1f
                     scaleX = scale(); scaleY = scaleX
                     transformOrigin = TransformOrigin(1f, if (size.height > 0) ((levels.last().top - level.top) / size.height).coerceIn(0f, 1f) else 0f)
                 }
@@ -174,13 +178,14 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                     level.bounds = Rect(it.localToWindow(Offset.Zero), Size(it.size.width * scale(), it.size.height * scale()))
                 }.onSizeChanged { measuredSize.value = it }.testTag("app_menu_level_$index")) {
                 // 作者 long：阴影单独留在绘制层，明暗只调制该层；Compose的Shadow颜色/alpha都属于位图缓存键，不能随动画重建。
+                // 作者 long：普通卡片的阴影随正文一同回源淡出；玻璃在变形阶段保持裸内容，由外层承担阴影，避免重复叠黑。
                 if (top && index > 0) AppMenuFrameShadow(Modifier.matchParentSize(), measuredSize, frame,
-                    visible = { opening.value >= .45f && active }, opacity = { state.unfold.value.coerceIn(0f, 1f) }, dark = dark)
+                    visible = { backdrop == null || opening.value >= .45f && active }, opacity = { state.unfold.value.coerceIn(0f, 1f) }, dark = dark)
                 else Box(Modifier.matchParentSize().graphicsLayer {
                     compositingStrategy = CompositingStrategy.ModulateAlpha
-                    alpha = if (opening.value < .45f || !active) 0f else
+                    alpha = if (backdrop != null && (opening.value < .45f || !active)) 0f else
                         max(1f / 6, 1f - distance() / 3)
-                }.dropShadow(shape, Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
+                }.dropShadow(shape, Shadow(radius = shadowRadius,
                     color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp))))
                 Box(Modifier.graphicsLayer {
                     // 作者 long：顶卡仍按当前轮廓精确裁剪，轮廓状态在图层读取，避免把动画提升到整个菜单的组合范围。
@@ -197,13 +202,15 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                     val motion = frame(size)
                     if (top) {
                         val rect = motion.platter.translate(level.bounds.topLeft)
+                        // 作者 long：关闭几何使用实际顶卡，不复用可能仍被入场裁剪限制的触点边界。
+                        state.topCardBounds = rect
                         val hit = state.outerBounds?.let(rect::intersect) ?: rect
                         if (state.hitBounds != hit) { state.hitBounds = hit; state.hitRevision++ }
                     }
                     val material = if (top && index > 0) (state.unfold.value / .35f).coerceIn(0f, 1f) else 1f
                     val style = AppGlassStyle.menu(dark, tint).resolve(quality, material)
                     // 作者 long：外层图层已按同一帧轮廓裁剪，正文不再叠加第二次路径裁剪，避免每帧重复生成裁剪遮罩。
-                        if (opening.value >= .45f && active) {
+                        if (backdrop == null || opening.value >= .45f && active) {
                             if (backdrop == null || !renderer.draw(this, motion, backdrop,
                                 Offset(-level.bounds.left, -level.bounds.top), tint, dark, paintScale = paintScale.coerceAtLeast(.001f), style = style, quality = quality)) {
                                 if (backdrop != null) drawAppGlassFallback(motion, backdrop, Offset(-level.bounds.left, -level.bounds.top), style, quality, paintScale.coerceAtLeast(.001f))

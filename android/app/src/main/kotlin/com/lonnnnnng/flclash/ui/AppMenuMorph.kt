@@ -19,14 +19,18 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import kotlin.math.*
 
 internal data class AppMenuMorphFrame(val platter: Rect, val radius: Float, val progress: Float,
     val droplet: Rect? = null, val blend: Float = 0f, val blur: Float = 0f, val sourceAlpha: Float = 0f,
-    val materialProgress: Float = 1f, val frostProgress: Float = 1f) {
+    val materialProgress: Float = 1f, val frostProgress: Float = 1f,
+    val returning: Boolean = false, val shadowProgress: Float = 1f, val contentBounds: Rect? = null) {
     // 作者 long：一份不可变帧同时供阴影、裁剪和材质读取；只算一次轮廓，读者不能修改返回的Path。
     private val platterPath by lazy(LazyThreadSafetyMode.NONE) {
         superellipsePath(platter.size, List(4) { radius }).apply { translate(platter.topLeft) }
@@ -34,6 +38,45 @@ internal data class AppMenuMorphFrame(val platter: Rect, val radius: Float, val 
     private val outlinePath by lazy(LazyThreadSafetyMode.NONE) { droplet?.let { appMenuGooPath(platter, radius, it, blend) } ?: platterPath }
     fun path() = platterPath
     fun outline() = outlinePath
+}
+
+// 作者 long：Flutter的29dp是blurRadius而非sigma；Android在物理像素上再换算，补偿常数项才能跨密度保留同一模糊宽度。
+internal const val APP_MENU_SHADOW_SIGMA_DP = 29f * .57735f + .5f
+internal fun appMenuShadowRadiusPx(density: Float) = ((APP_MENU_SHADOW_SIGMA_DP * density - .5f) / .57735f).coerceAtLeast(0f)
+
+internal fun AppMenuMorphFrame.outerShadowStrength(glass: Boolean) =
+    shadowProgress * if (returning && !glass) 1f - progress else 1f
+
+internal fun AppMenuMorphFrame.contentScale(size: Size): Float {
+    val source = contentBounds?.size ?: size
+    val widthScale = platter.width / source.width.coerceAtLeast(1f)
+    return if (returning) min(widthScale, platter.height / source.height.coerceAtLeast(1f)) else widthScale
+}
+
+/** 作者 long：外层只投影platter，液滴内部不染黑；普通回源由正文阴影渐交给外层，玻璃则由外层贯穿承担。 */
+@Composable
+internal fun AppMenuPlatterShadow(modifier: Modifier, size: State<IntSize>, frame: (Size) -> AppMenuMorphFrame,
+    visible: () -> Boolean, dark: Boolean, glass: Boolean) {
+    if (!visible()) return
+    val measured = size.value
+    if (measured.width <= 0 || measured.height <= 0) return
+    val current = frame(Size(measured.width.toFloat(), measured.height.toFloat()))
+    val strength = current.outerShadowStrength(glass)
+    if (strength <= 0f) return
+    val shape = remember(current.platter, current.radius) { object : Shape {
+        override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density) = Outline.Generic(current.path())
+    } }
+    val radius = with(LocalDensity.current) { appMenuShadowRadiusPx(density).toDp() }
+    Box(modifier.graphicsLayer { compositingStrategy = CompositingStrategy.ModulateAlpha; alpha = strength }
+        .drawWithContent {
+            // 作者 long：Flutter的evenOdd裁剪先限定三倍sigma加偏移的外界，再扣内部；不让反向路径裁剪扩展到整个透明Window。
+            val bounds = current.outline().getBounds().inflate((3 * APP_MENU_SHADOW_SIGMA_DP + 8f) * density)
+            clipRect(bounds.left, bounds.top, bounds.right, bounds.bottom) {
+                clipPath(current.outline(), clipOp = ClipOp.Difference) { this@drawWithContent.drawContent() }
+            }
+        }
+        .dropShadow(shape, Shadow(radius = radius,
+            color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp))))
 }
 
 /** 作者 long：只保留最后一份几何，不把每帧路径长期塞进缓存；同一时刻的多次绘制共享路径。 */
@@ -51,8 +94,9 @@ internal fun AppMenuFrameShadow(modifier: Modifier, size: State<IntSize>, frame:
     if (measured.width <= 0 || measured.height <= 0) return
     val current = frame(Size(measured.width.toFloat(), measured.height.toFloat()))
     val shape = remember(current) { AppMenuMorphShape { current } }
+    val radius = with(LocalDensity.current) { appMenuShadowRadiusPx(density).toDp() }
     Box(modifier.graphicsLayer { compositingStrategy = CompositingStrategy.ModulateAlpha; alpha = opacity() }
-        .dropShadow(shape, Shadow(radius = ((29f / 2f - .5f) / .57735f).dp,
+        .dropShadow(shape, Shadow(radius = radius,
             color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp))))
 }
 
@@ -88,12 +132,13 @@ internal fun appMenuMorphFrame(anchor: Rect, card: Size, seconds: Float, unit: F
     val settled = progress.coerceIn(0f, 1f)
     return AppMenuMorphFrame(Rect(center - Offset(size.width / 2f, size.height / 2f), size), radius, settled,
         droplet, 28f * unit, sqrt((4f * (1f - settled)).pow(2) + (1.9f * riseAndFall(seconds, .069f, 2.1f)).pow(2)) * unit,
-        1f - min(1f, settled / .25f), materialProgress = settled)
+        1f - min(1f, settled / .25f), materialProgress = settled, shadowProgress = settled)
 }
 
 /** 作者 long：回源从实际中断帧起算，500ms内消除弹簧余振；100ms隐去文字，470ms重建按钮图像。 */
 internal fun appMenuReturnFrame(anchor: Rect, from: AppMenuMorphFrame, seconds: Float, unit: Float): AppMenuMorphFrame {
-    if (seconds >= .5f) return AppMenuMorphFrame(anchor, anchor.size.minDimension / 2f, 0f, anchor, 0f, 0f, 1f, materialProgress = 0f, frostProgress = 0f)
+    if (seconds >= .5f) return AppMenuMorphFrame(anchor, anchor.size.minDimension / 2f, 0f, anchor, 0f, 0f, 1f,
+        materialProgress = 0f, frostProgress = 0f, returning = true, shadowProgress = 0f)
     val ringing = 1f - androidx.compose.animation.core.FastOutLinearInEasing.transform(((seconds - .4f) / .1f).coerceIn(0f, 1f))
     val p = 1f + (menuSpring(165f, .8f, seconds) - 1f) * ringing
     val distance = from.platter.center.y - anchor.center.y
@@ -113,7 +158,8 @@ internal fun appMenuReturnFrame(anchor: Rect, from: AppMenuMorphFrame, seconds: 
         from.blur + (8f * unit * (1f - reveal) - from.blur) * min(1f, seconds / .1f),
         from.sourceAlpha + (1f - from.sourceAlpha) * androidx.compose.animation.core.CubicBezierEasing(.25f, .1f, .25f, 1f).transform((seconds / .47f).coerceIn(0f, 1f)),
         materialProgress = from.materialProgress * (1f - p).coerceIn(0f, 1f),
-        frostProgress = from.frostProgress * (1f - absorbed))
+        frostProgress = from.frostProgress * (1f - absorbed), returning = true, shadowProgress = (1f - p).coerceIn(0f, 1f),
+        contentBounds = from.contentBounds)
 }
 
 internal class AppMenuMorphShape(private val frame: (Size) -> AppMenuMorphFrame) : Shape {
@@ -134,7 +180,8 @@ internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorph
     drawWithContent {
         if (!drawSurface()) { drawContent(); return@drawWithContent }
         val motion = frame(size)
-        val scale = motion.platter.width / size.width.coerceAtLeast(1f)
+        val scale = motion.contentScale(size)
+        val contentCenter = motion.contentBounds?.center ?: Offset(size.width / 2f, size.height / 2f)
         val path = motion.path()
         val outline = motion.outline()
         // 作者 long：文字100ms先退场，材质沿回源弹簧继续；磨砂只在按钮吸收阶段减弱，三条时间线互不替代。
@@ -148,17 +195,22 @@ internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorph
             drawImage(source, dstOffset = androidx.compose.ui.unit.IntOffset(drop.left.roundToInt(), drop.top.roundToInt()),
                 dstSize = androidx.compose.ui.unit.IntSize(drop.width.roundToInt().coerceAtLeast(1), drop.height.roundToInt().coerceAtLeast(1)), alpha = motion.sourceAlpha)
         } }
-        clipPath(path) {
+        val content: ContentDrawScope.() -> Unit = {
             withTransform({
                 translate(motion.platter.center.x, motion.platter.center.y)
                 scale(scale, scale, Offset.Zero)
-                translate(-size.width / 2f, -size.height / 2f)
+                translate(-contentCenter.x, -contentCenter.y)
             }) {
                 contentPaint.alpha = motion.progress.coerceIn(0f, 1f)
-                drawContext.canvas.saveLayer(Rect(Offset.Zero, size), contentPaint)
-                this@drawWithContent.drawContent()
-                drawContext.canvas.restore()
+                if (contentPaint.alpha > 0f) {
+                    // 作者 long：回源正文带着自身阴影淡出，不能按platter边界切掉；开场仍受主体裁剪，防止未展开文字泄漏。
+                    val reach = if (motion.returning) (3 * APP_MENU_SHADOW_SIGMA_DP + 8f) * density else 0f
+                    drawContext.canvas.saveLayer(Rect(Offset.Zero, size).inflate(reach), contentPaint)
+                    this@drawWithContent.drawContent()
+                    drawContext.canvas.restore()
+                }
             }
         }
+        if (motion.returning) content() else clipPath(path) { content(this@drawWithContent) }
 }
 }

@@ -196,6 +196,7 @@ internal fun AppDropdownMenu(
     val opening = remember { Animatable(0f) }
     val returning = remember { Animatable(0f) }
     var returnFrom by remember { mutableFloatStateOf(.45f) }
+    var returnCard by remember { mutableStateOf<Rect?>(null) }
     val sourceReady = sourceImage != null
     val close: () -> Unit = { if (active) requestedClose = true }
     val carry = carriedPointer ?: remember { AppMenuCarry() }
@@ -231,6 +232,7 @@ internal fun AppDropdownMenu(
     LaunchedEffect(active) {
         if (active) {
             stack.reset(pageKey)
+            returnCard = null
             present = true
             opening.snapTo(0f)
             returning.snapTo(0f)
@@ -242,6 +244,9 @@ internal fun AppDropdownMenu(
             opening.animateTo(.45f, tween(450, easing = LinearEasing))
         } else {
             returnFrom = opening.value
+            // 作者 long：稳定多层菜单从最上层实际卡片回源；保存局部矩形，后层退出或布局回调不能改变收回起点。
+            returnCard = if (returnFrom >= .45f) stack.topCardBounds.takeUnless { it.isEmpty }
+                ?.translate(Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat())) else null
             returning.snapTo(0f)
             val duration = if (sourceReady) 500 else 200
             returning.animateTo(duration / 1000f, tween(duration, easing = LinearEasing))
@@ -300,8 +305,11 @@ internal fun AppDropdownMenu(
                         val origin = source?.bounds?.takeUnless { it == IntRect.Zero } ?: anchor ?: parentBounds
                         val localAnchor = Rect((origin.left - menuPosition.x).toFloat(), (origin.top - menuPosition.y).toFloat(),
                             (origin.right - menuPosition.x).toFloat(), (origin.bottom - menuPosition.y).toFloat())
+                        val closing = returnCard ?: if (!active && opening.value >= .45f) stack.topCardBounds.takeUnless { it.isEmpty }
+                            ?.translate(Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat())) else null
                         val motion = if (!active && sourceReady) appMenuReturnFrame(localAnchor,
-                            appMenuMorphFrame(localAnchor, size, returnFrom, density.density, true), returning.value, density.density)
+                            closing?.let { AppMenuMorphFrame(it, 24f * density.density, 1f, contentBounds = it) }
+                                ?: appMenuMorphFrame(localAnchor, size, returnFrom, density.density, true), returning.value, density.density)
                         else appMenuMorphFrame(localAnchor, size, opening.value, density.density, sourceReady)
                         stack.outerBounds = if (active && opening.value < .45f) motion.platter.translate(Offset(menuPosition.x.toFloat(), menuPosition.y.toFloat())) else null
                         frameCache.resolve(motion)
@@ -309,15 +317,15 @@ internal fun AppDropdownMenu(
                     Box(modifier.widthIn(min = 160.dp, max = 280.dp).width(IntrinsicSize.Max)
                         .onSizeChanged { measuredSize.value = it }.testTag("app_popup_menu")) {
                         // 作者 long：只有入场/回源绘制外层变形阴影，展开完成交给各层；零透明度阴影也会产生缓存和路径工作。
-                        AppMenuFrameShadow(Modifier.matchParentSize(), measuredSize, morph,
-                            visible = { opening.value < .45f || !active }, opacity = { 1f }, dark = dark)
+                        AppMenuPlatterShadow(Modifier.matchParentSize(), measuredSize, morph,
+                            visible = { opening.value < .45f || !active }, dark = dark, glass = backdrop != null)
                         Box(Modifier.appMenuMorph(surface, morph, sourceImage, backdrop,
                             Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()),
                             drawSurface = { opening.value < .45f || !active })) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
                             LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
                             LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {
-                            AppMenuStack(stack, pageKey, active, surface, backdrop, menuPosition, opening.asState(), returning.asState(),
+                            AppMenuStack(stack, pageKey, active, surface, backdrop, menuPosition, opening.asState(), returning.asState(), sourceReady,
                                 onScrollable = { scrollable = it }, content = content)
                         }
                         }

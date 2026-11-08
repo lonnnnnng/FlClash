@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **菜单阴影与顶卡回源（2026-11-09，KUI-023）**：对照固定Flutter/Prism修正29dp半径的sigma换算、仅主体投影并扣内部、普通/玻璃阴影接续，以及顶层卡片矩形/等比回源和后层隐藏。857项JVM结果（App575执行、其余282复用）、Debug/签名Release/独立测试包与双Lint通过；Redmi最终13/13、23图和深浅两段107/103帧原PTS视频已核验，旧联合阴影红测失败保留。GPU替换未过像素门槛已撤回。正式包进程打开69/209→68/209、关闭20/178→20/176；Popup打开24/147→29/144，未证明性能收益。手机保留本地签名修正版，完整Flutter视觉/慢帧仍PARTIAL。证据 `acceptance/menu-shadow-parity-redmi-20261109.json`，溯源 `menu-shadow-parity-defect.md`。
+
 > **菜单准备阶段与分窗口复核（2026-11-09）**：截图准备即停涟漪、清空隐藏图层两个候选均未改善并已撤回，手机恢复KUI-022优化版。新增离线分窗口报告工具，4项边界测试及72份真实帧表解析通过；18次关闭Popup均已销毁，明确标不可观测。当前对照进程打开62/210、Popup自身21/149，两者不能混称；Android16 RTAnimation/Skipped位可重叠。下一步按Popup独立数据核对固定Flutter阴影轮廓、裁剪与回源透明度，完整性能/视觉仍PARTIAL。证据 `acceptance/menu-source-preparation-redmi-20261109.json`，记录 `menu-source-preparation-investigation.md`。
 
 2026-11-09 当前源码盘点。GR-01～05、SAF-01～05、VIS-01～06、MOT-01交互范围已验；KUI-018/019为历史优化切片，最新KUI-022在正式签名Redmi包暂停隐藏源按钮涟漪，打开jank130/228→67/205（57.02%→32.68%），关闭17/179→17/180。8对终态像素一致、11/11回归、20图已验；整体流畅度与完整Flutter视觉仍PARTIAL。原生采样被本ROM SELinux拒绝，剩余慢帧/关闭早段与其余子页继续待办。证据`acceptance/menu-source-ripple-redmi-20261109.json`；不同包/批次不累计。

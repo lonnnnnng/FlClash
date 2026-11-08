@@ -1,0 +1,355 @@
+{
+  "date": "2026-11-09",
+  "issue": "KUI-023",
+  "baseCommit": "af1e357893f78d0233b913e1ad8679a05132103f",
+  "scope": "修正Flutter源码已确认的菜单主体投影、内部扣除、回源阴影接续、顶卡矩形与等比收回。",
+  "productChangesRetained": true,
+  "performanceImprovementClaimed": false,
+  "references": {
+    "flutter": "be84736605527034689c95bf27828ff27d912c5e",
+    "prism": "63450c0",
+    "symbols": [
+      "popup.dart::_paintShadows",
+      "popup.dart::_paintReturn",
+      "popup.dart::_handleStatusChanged",
+      "liquid_glass.dart::menuShadows",
+      "dart:ui Shadow.convertRadiusToSigma"
+    ],
+    "excerpts": "reference-excerpts.json",
+    "runtimeFlutterPixelComparison": false
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "core": "stopped",
+    "glassDefault": false
+  },
+  "changes": [
+    "从Flutter blurRadius29换算17.24315dp sigma，再按Android物理像素转换；全菜单阴影共用",
+    "外层投影仅platter，限定外界并扣除联合轮廓内部",
+    "普通卡片正文阴影先淡出再交外层；玻璃由外层贯穿承担",
+    "关闭快照实际顶层卡片，后层不再绘制，正文按宽高比例最小值等比收回并保留阴影范围"
+  ],
+  "build": {
+    "finalLogs": [
+      "build-final4.log",
+      "build-final4-fixture.log",
+      "lint-final4.log"
+    ],
+    "jvm": {
+      "app": 575,
+      "service": 213,
+      "core": 38,
+      "common": 31,
+      "total": 857,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "execution": "App575在本组实际执行，Service213/Core38/Common31复用；最终以日志任务状态为准。"
+    },
+    "debug": true,
+    "signedReleaseR8": true,
+    "motionAndTest": true,
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 68,
+        "hints": 14
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 13
+      }
+    }
+  },
+  "regression": {
+    "finalRun": "final4-regression",
+    "passed": 13,
+    "failed": 0,
+    "methods": [
+      "LiquidMenuInstrumentedTest",
+      "ProxyPageParityInstrumentedTest#overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+      "ProxyPageParityInstrumentedTest#overflowingGroupMenuSupportsKeyboardSelectionAndEscapeDismissal",
+      "ProxyPageParityInstrumentedTest#sortSubmenuSupportsKeyboardEscapeAndAppliesNameOrder",
+      "ProfilesVisualInstrumentedTest",
+      "ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+      "ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+      "MenuShadowParityInstrumentedTest"
+    ],
+    "pngCount": 23,
+    "chunksAndHashesVerified": true,
+    "reviewedContactSheets": 3,
+    "intermediateRun": "regression1 13/13及首个shadow-fixture1 1/1单独保留，不累计。",
+    "redTest": {
+      "run": "shadow-red",
+      "passed": 0,
+      "failed": 1,
+      "expectedFailure": "主体内部不能被阴影染黑",
+      "boundary": "旧联合轮廓分支使用本次半径，仅验证轮廓/扣除断言，不冒充旧APK回放。"
+    }
+  },
+  "visual": {
+    "productionVideos": [
+      {
+        "theme": "dark",
+        "file": "final4-dark-motion.mp4",
+        "originalFrameCount": 107,
+        "extractedFrameCount": 107,
+        "review": "原PTS抽样24格；后段相同时点可能复用同一源帧，只是拼图，不新增视频帧。",
+        "closedUiVerified": true
+      },
+      {
+        "theme": "light",
+        "file": "final4-light-motion.mp4",
+        "originalFrameCount": 103,
+        "extractedFrameCount": 103,
+        "review": "原PTS抽样24格；后段相同时点可能复用同一源帧，只是拼图，不新增视频帧。",
+        "closedUiVerified": true
+      }
+    ],
+    "observed": "根菜单/子菜单展开、外部点按后仅顶卡回源，后层消失；观察终态无残影。",
+    "boundary": "23图中玻璃浅色开场仍为源按钮中间态；过程帧非完整Flutter运行截图逐像素等价，不证明所有场景流畅。"
+  },
+  "performance": {
+    "baseline": {
+      "open": {
+        "frames": 209,
+        "janky": 69,
+        "percent": 33.014
+      },
+      "expand": {
+        "frames": 188,
+        "janky": 24,
+        "percent": 12.766
+      },
+      "fold": {
+        "frames": 131,
+        "janky": 20,
+        "percent": 15.267
+      },
+      "close": {
+        "frames": 178,
+        "janky": 20,
+        "percent": 11.236
+      }
+    },
+    "final": {
+      "open": {
+        "frames": 208,
+        "janky": 72,
+        "percent": 34.615
+      },
+      "expand": {
+        "frames": 185,
+        "janky": 24,
+        "percent": 12.973
+      },
+      "fold": {
+        "frames": 132,
+        "janky": 17,
+        "percent": 12.879
+      },
+      "close": {
+        "frames": 176,
+        "janky": 23,
+        "percent": 13.068
+      }
+    },
+    "bounded": {
+      "open": {
+        "frames": 213,
+        "janky": 75,
+        "percent": 35.211
+      },
+      "expand": {
+        "frames": 180,
+        "janky": 28,
+        "percent": 15.556
+      },
+      "fold": {
+        "frames": 130,
+        "janky": 22,
+        "percent": 16.923
+      },
+      "close": {
+        "frames": 178,
+        "janky": 19,
+        "percent": 10.674
+      }
+    },
+    "final4": {
+      "open": {
+        "frames": 209,
+        "janky": 68,
+        "percent": 32.536
+      },
+      "expand": {
+        "frames": 183,
+        "janky": 27,
+        "percent": 14.754
+      },
+      "fold": {
+        "frames": 131,
+        "janky": 22,
+        "percent": 16.794
+      },
+      "close": {
+        "frames": 176,
+        "janky": 20,
+        "percent": 11.364
+      }
+    }
+  },
+  "windowSummary": {
+    "baselineOpen": {
+      "host": {
+        "janky": 45,
+        "frames": 56
+      },
+      "popup": {
+        "janky": 24,
+        "frames": 147
+      }
+    },
+    "final4Open": {
+      "host": {
+        "janky": 39,
+        "frames": 59
+      },
+      "popup": {
+        "janky": 29,
+        "frames": 144
+      }
+    },
+    "interpretation": "进程打开69/209→68/209、关闭20/178→20/176；Popup打开24/147→29/144。没有证明性能收益，剩余绘制成本继续待办。"
+  },
+  "performanceConditions": {
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "cyclesPerTheme": 3,
+    "terminalChecksPerBatch": 24,
+    "screenshotsVideoInstrumentationDuringMeasuredWindow": false,
+    "randomized": false,
+    "closedPopupFramesUnavailable": true
+  },
+  "rejectedHardwareCandidate": {
+    "reason": "140ms浅色打开max4/mean0.420345超过max3/mean0.2",
+    "failurePngs": 4,
+    "performanceMeasured": false,
+    "codeRemoved": true
+  },
+  "retainedFailures": [
+    "build-focused: ContentDrawScope implicit receiver DSL_SCOPE_VIOLATION，改显式接收者",
+    "build-hardware-fixture: Dp.toPx隐式接收者错误，改外层物理偏移",
+    "shadow-red: 旧联合轮廓未扣内部失败",
+    "hardware-visual: GPU模糊像素门槛失败"
+  ],
+  "sourceSha256": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt": "4aa1b837ed380879da807ac4f959a36b882b33080cb886182e431a2cabcfacc6",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuStack.kt": "64aca86f8d7629d0f7fe1fd55d2e6dbe9fe6693334c48765e18c1f9388383de1",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt": "2a74e5e75d2362abb71b1a7af93bc3ee0b370b56f64b191f2343aa50b5bc1799",
+    "android/tests/app/AppMenuMotionTest.kt": "60472606002156cfc22001036678024ce050f8afd340a4085c3bc2004af1e3b7",
+    "android/tests/instrumented/LiquidMenuInstrumentedTest.kt": "3685911b48493bfcd72a5f93f9dd9f177a4592f6682dc762d93dfe2faecdf81a",
+    "android/tests/instrumented/MenuShadowParityInstrumentedTest.kt": "1554a0ede15557a5899ce9fd9e98e560510f14612997bef49153cc9c34758bba"
+  },
+  "install": {
+    "package": "com.lonnnnnng.flclash",
+    "versionName": "0.1.0",
+    "versionCode": 1000,
+    "sha256": "1ab169bdfe5cadec33447cd8227104943a09a99ed375fd49ebef67b07043d55f",
+    "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "publicReleaseAssetsChanged": false
+  },
+  "boundaries": [
+    "只证明当前Redmi竖屏默认字号，本组无低API、蜂窝或VPN运行负载验收。",
+    "Mihomo与Flutter参考包未改，原1.yaml未改；未做正式Room全字段快照，不宣称全库数据保持验证。",
+    "稳定顶层菜单选择/外部关闭已验，任意子菜单展开/收回中断相位仍需更多逐帧核对。",
+    "其它源图像模糊/液滴曲线/玻璃等完整Flutter运行视觉仍PARTIAL。",
+    "原生RenderThread证据仍受ROM权限限制；区间/计数不作精确CPU或GPU归因。"
+  ],
+  "artifacts": "../acceptance-artifacts/menu-shadow-parity-20261109/",
+  "artifactSha256": {
+    "build-final4.log": "66c7270a94a5b430138651c243ec061b4ba64d10e949ac73dfdc1db7aa2eca95",
+    "build-final4-fixture.log": "f7bf52952fdf5c3d423806193ae06ed443a226507d7234313e3c2a6778299829",
+    "lint-final4.log": "2ca1cdfaf9420f2eec8ac79576ed9c86510b590f9b195620a5e91e4e15287768",
+    "final4-regression.log": "3754c48fdd5f3c7b182c98f89cfedb8dd5e4260d8460b59829e746016b63e2a0",
+    "shadow-red.log": "0cd98ee7614d442e6661f1e3e853aa8ec585b5522ba47de017c35bf4003201b8",
+    "hardware-visual.log": "f96f668f5fd4837c0ca7ae70facaa57e3b71cbd7583d4a87cb4f0a240ffd135a",
+    "reference-excerpts.json": "ff79935be8f60d8f419ab90eb55711832d0106062370b0cb94e81d69f5123cec",
+    "final-performance.json": "359a2ca30dceecaf76e720701e477eee5538acf15b704496669a2f877f8cf850",
+    "final4-window-report.json": "81a5301426a691e4ad6702cc78014a48ed9762c54b8fee8fdca352ea50dbbcb9",
+    "final4-dark-motion.mp4": "89b0e412034ffdfe47190b461f38a0afe4d1a1453e60e395ac4be22a5312b704",
+    "final4-light-motion.mp4": "ed580557cfc7e91c61dbb01381479b64924c3eadf5449f937c3602ff51326bc2",
+    "final4-png/provider_filter_members.png": "a14db5b28946384b41f2b8c176bf68db14ccb479c976708227426d2754a9a7f8",
+    "final4-png/profiles_empty_light.png": "e927577b0286da4661107040263b601bd2f143a5e3723a07a3294585661728c6",
+    "final4-png/profile_document_dark_exit.png": "722bfe149b0d948494a328b8e6f65abe500f3262df05afe6f97a39f2df642299",
+    "final4-png/liquid_open_false_false.png": "eb4e263158ded5bb9acb173cfe9f784c170f88f687ff405dcf470f97410db4e3",
+    "final4-png/liquid_open_true_false.png": "1784a94611d65a94ab9e13860f04198ce4fbb444188e0e0a23689b5ea87a2002",
+    "final4-png/platter_shadow_true_legacy_false.png": "ed5a136e1b2456f3142dfaa7ecea8b24ab83dbad8229a345d48a00b32f5b99df",
+    "final4-png/liquid_return_false_true.png": "d6ec7c1fc9653eebd583018c1a9d49c42344704f85901ae05125610244c04ce2",
+    "final4-png/liquid_return_false_false.png": "50aa95181007c29b1b18d9ffe9607c6029753add4d5f7a154c4bb889376599f7",
+    "final4-png/profiles_remote_usage_light.png": "6e51244231247327cc81e78863c96481e3e5f9b8ed94beb7f77dc46c2dd22019",
+    "final4-png/profiles_source_menu_light.png": "dc7d62b52a44ba02593aa077145d3526a89e45ff92f0708f274577122268c0d4",
+    "final4-png/profiles_remote_usage.png": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
+    "final4-png/liquid_return_nested_top.png": "fef0890af2d72b1e09d525dd9fc97ac525d8fe9e4c9f2787963857ac9b7d5ffa",
+    "final4-png/proxy_keyboard_name_sort.png": "558f51da091307017f3206ab0043796124fbc0524356b0f02ab56cd234bc7d0a",
+    "final4-png/liquid_return_true_false.png": "ddeca357f49d4eaf132e0aa97276108283361e767419af609c96c8306c0d2475",
+    "final4-png/platter_shadow_false_legacy_false.png": "5cdbdcb4741d08b14dcad8472fc136844681b490ac1e053c7a301335913bcc40",
+    "final4-png/liquid_open_false_true.png": "ea764b4a5d1de07930d2bbc5a4eb9cdf8eb4f7c0644363865194880accf4a633",
+    "final4-png/liquid_return_true_true.png": "b7b2bf24644ecf262786b3490e7ab0db2454a49fa5d0f3e4845a9219b5aef0fd",
+    "final4-png/profiles_source_menu_dark.png": "ddbd99c021b665a6bf18508e1f5c372f84e79ec42648dcb8eaf3add0ac21c26b",
+    "final4-png/profiles_custom_selected_light.png": "8746be9c5c380e7d59d9e11deba5b32d1be41a7d6b76d7c5ebc46befa0a0c748",
+    "final4-png/profiles_custom_selected.png": "cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04",
+    "final4-png/liquid_open_true_true.png": "61771b034ad4fda861d1007f94221082c15e828697bbc261a768a600b1dec953",
+    "final4-png/profile_document_light_failed_search.png": "7e6cdbd0f31ca9caed429745b944a5b578b073d052c6bbaff18efcf97d24cfe5",
+    "final4-png/profiles_empty.png": "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b",
+    "final4-dark/1-close.gfx": "42bd4d11b1f0f960565b28d108fa88253214fd7764798f0d225272a31f86a440",
+    "final4-dark/1-expand.gfx": "ac72a31b5f58022632ca92396037485f4a27bad30227b5ee153c483f687f30cd",
+    "final4-dark/2-open.gfx": "c507405fdd86e44b73d213103e509af5ef343f31f4b84ed7e77af106a952e62f",
+    "final4-dark/1-fold.gfx": "d7d4080cc239269a1cf1ef51956317d4d9444ff12c2917ca15cbe56dfa5d32c6",
+    "final4-dark/0-fold.gfx": "612992b3c4e49c99c5efb367c23667843d622520ccbb763b1e2be2f2f8791621",
+    "final4-dark/0-close.gfx": "6b7646c35459f52a6268203d3867740fa0603014fb003194b2c49df1248c1cd7",
+    "final4-dark/0-expand.gfx": "89d2b84f70b5cd36dccc2635fd5339119652c9f53b5a0a57b9c9991dafb32a4b",
+    "final4-dark/2-close.gfx": "5b98e6796c5f736984e45add3b55356cb13517b43b47d7c829b5bf7e6da11dac",
+    "final4-dark/2-expand.gfx": "a5b7b17076cb85b09c36748722322026fcef6a945d44d30dda4469c182c41928",
+    "final4-dark/2-fold.gfx": "6e89cbadf653e7db23f722af5ccbf7abea661e34617a060bd45dc39927716c86",
+    "final4-dark/1-open.gfx": "1876f24eee7cf9df65f30da684ed598904101c5334dac9906ff44c218abe79a5",
+    "final4-dark/0-open.gfx": "f8c91daab001dd01e43c94d0d363791e5434108babe770eb9b9fe6b9b854e940",
+    "final4-light/1-close.gfx": "4793aa1645a1227579038b2987823a93c6c14502698139fe063bf5d0ea224033",
+    "final4-light/1-expand.gfx": "2d410aaabcb1e0f83b0975fee2fa8807cc94f381bb8e571c7a5f23e7607dc637",
+    "final4-light/2-open.gfx": "cb335ef035075db8b3e00053908fdd722066fea4343d91f67b534b64fed7ca2e",
+    "final4-light/1-fold.gfx": "9afddc90c138f1c9f5b608d6960d8ae1aa93e16e78b07724322d781ce1477984",
+    "final4-light/0-fold.gfx": "be5b91aeb6b76db8635e2cac2848f35d14d8a2ce4292b071635549b27df65142",
+    "final4-light/0-close.gfx": "f858daedc1ecfe106bb221426def75c4a813bf37e0c8f72efa18e21ae4ce000b",
+    "final4-light/0-expand.gfx": "12509f280a7350473217480ff3409a74dd845bcf0cef4e1733eee455144cccbc",
+    "final4-light/2-close.gfx": "ce338ce2147e5f3d1a7724b26425c7aa309fdaeb191d2a619ee017b8946bcae9",
+    "final4-light/2-expand.gfx": "20f81e5f94c79cbc41978306a51df122df652917b04bffcf35e5eb31982011ac",
+    "final4-light/2-fold.gfx": "51e9d0e39bf4a3540caa9b674bb3ccd3cf134e7debc8d66bf14071517b48febd",
+    "final4-light/1-open.gfx": "8a172ca1d412f917c13e3fd9d7f3a4b7ce0f6dd93844ed49f21842c2f65ea4ab",
+    "final4-light/0-open.gfx": "ee42a75473a919161d3d28bc3ed3ea5bd758ac58eab9ddcf82e62747cc866a35",
+    "cleanup.json": "7927fa65ba64273a0cac49f431be0185edec8b1b9fe4e92a3df90ae19b85ea7e"
+  },
+  "cleanup": {
+    "installedSha256": {
+      "com.lonnnnnng.flclash.motion": "bf7b795159d2e48e7057148b3a8fa51a5fb1e6c04b28dc273b1b2ac335a7c88b",
+      "com.lonnnnnng.flclash.motion.test": "4bd399629e6119d521307ac95a94b3d32a4b4c8a61db240dea6e267ceff99908",
+      "com.lonnnnnng.flclash": "1ab169bdfe5cadec33447cd8227104943a09a99ed375fd49ebef67b07043d55f"
+    },
+    "allInstalledBytesMatch": true,
+    "fixturePackagesRemoved": true,
+    "ownedDeviceFilesRemoved": true,
+    "nightMode": "Night mode: yes",
+    "fontScale": "1.0",
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "formalDataCleared": false,
+    "flutterPackageOperated": false
+  }
+}

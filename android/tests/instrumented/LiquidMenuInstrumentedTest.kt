@@ -125,6 +125,43 @@ class LiquidMenuInstrumentedTest {
         compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
     }
 
+    @Test fun nestedSelectionReturnsOnlyTopCardBeforeRunningAction() {
+        var open by mutableStateOf(false)
+        var page by mutableStateOf("root")
+        var actions = 0
+        lateinit var source: AppMenuSource
+        compose.setContent { KClashTheme {
+            source = rememberAppMenuSource()
+            Surface(Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding().padding(20.dp)) {
+                AppMenuSourceContent(source) {
+                    Button({ open = true; page = "root" }, Modifier.appMenuSource(source).align(Alignment.TopEnd).testTag("nested_open")) { Text("菜单") }
+                }
+                AppDropdownMenu(open, { open = false }, source = source, pageKey = page,
+                    onNavigateBack = if (page == "sub") ({ page = "root" }) else null) { key ->
+                    if (key == "root") {
+                        AppDropdownMenuItem({ Text("进入子菜单") }, { page = "sub" }, Modifier.testTag("nested_enter"),
+                            dismissOnClick = false, opensSubmenu = true)
+                        repeat(5) { AppDropdownMenuItem({ Text("后层项目$it") }, {}, enabled = false) }
+                    } else AppDropdownMenuItem({ Text("确认选择") }, { actions++; open = false }, Modifier.testTag("nested_select"))
+                }
+            } }
+        } }
+        compose.onNodeWithTag("nested_open").performTouchInput { click() }
+        compose.onNodeWithTag("nested_enter").performClick()
+        compose.onNodeWithTag("nested_select").assertIsDisplayed()
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag("nested_select").performClick()
+        compose.mainClock.advanceTimeBy(64)
+        compose.runOnIdle { assertEquals(0, actions); assertTrue(source.hidden) }
+        capture("return_nested_top")
+        compose.mainClock.advanceTimeBy(550)
+        compose.mainClock.autoAdvance = true
+        compose.runOnIdle { assertEquals(1, actions); assertFalse(source.hidden) }
+        compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+        compose.onNodeWithTag("nested_open").performTouchInput { click() }
+        compose.onNodeWithTag("nested_enter").assertIsDisplayed()
+    }
+
     @Test fun longMenuFingerScrollDoesNotExecuteHoveredRows() {
         var open by mutableStateOf(false); var calls = 0
         compose.setContent { KClashTheme {
