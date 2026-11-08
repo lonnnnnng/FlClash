@@ -1,0 +1,340 @@
+{
+  "date": "2026-11-09",
+  "issue": "KUI-020",
+  "scope": "用户再次要求缩短累计流量下方区域；仅将趋势带18dp改为8dp，保留4dp间距与固定高度。",
+  "baseCommit": "82292722fa3c559366cf148b4240775b9c6b08d4",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait"
+  },
+  "layout": {
+    "oldChartDp": 18,
+    "newChartDp": 8,
+    "gapDp": 4,
+    "oldLowerRegionDp": 22,
+    "newLowerRegionDp": 12,
+    "oldTitleDeltaPx": 617,
+    "newTitleDeltaPx": 589,
+    "reductionPx": 28
+  },
+  "checks": {
+    "jvm": {
+      "class": "DashboardTelemetryTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "signedReleaseBuild": true,
+    "motionFixtureBuild": true,
+    "releaseLint": {
+      "errors": 0,
+      "warnings": 66,
+      "hints": 13
+    },
+    "instrumentation": {
+      "package": "com.lonnnnnng.flclash.motion",
+      "passed": 2,
+      "methods": [
+        "DashboardInstrumentedTest#dashboardRunningStateRendersMainCardsWithoutDiagnosticExtras",
+        "DashboardInstrumentedTest#dashboardShowsSessionDurationAndSampledHistoryAcrossRecreation"
+      ]
+    },
+    "visualReviewed": [
+      "before-dark.png",
+      "after-dark.png",
+      "after-light.png",
+      "running-5.png"
+    ],
+    "layoutDetectorFindings": 0
+  },
+  "geometry": {
+    "darkStopped": {
+      "speedTitle": [
+        171,
+        1041,
+        981,
+        1101
+      ],
+      "modeTitle": [
+        171,
+        1630,
+        981,
+        1690
+      ],
+      "deltaPx": 589,
+      "running": false,
+      "totals": [
+        [
+          143,
+          1416,
+          257,
+          1464
+        ],
+        [
+          598,
+          1416,
+          712,
+          1464
+        ]
+      ]
+    },
+    "lightStopped": {
+      "speedTitle": [
+        171,
+        1041,
+        981,
+        1101
+      ],
+      "modeTitle": [
+        171,
+        1630,
+        981,
+        1690
+      ],
+      "deltaPx": 589,
+      "running": false,
+      "totals": [
+        [
+          143,
+          1416,
+          257,
+          1464
+        ],
+        [
+          598,
+          1416,
+          712,
+          1464
+        ]
+      ]
+    },
+    "running": [
+      {
+        "speedTitle": [
+          171,
+          1041,
+          981,
+          1101
+        ],
+        "modeTitle": [
+          171,
+          1630,
+          981,
+          1690
+        ],
+        "deltaPx": 589,
+        "running": true,
+        "totals": [
+          [
+            143,
+            1416,
+            332,
+            1464
+          ],
+          [
+            598,
+            1416,
+            788,
+            1464
+          ]
+        ]
+      },
+      {
+        "speedTitle": [
+          171,
+          1041,
+          981,
+          1101
+        ],
+        "modeTitle": [
+          171,
+          1630,
+          981,
+          1690
+        ],
+        "deltaPx": 589,
+        "running": true,
+        "totals": [
+          [
+            143,
+            1416,
+            332,
+            1464
+          ],
+          [
+            598,
+            1416,
+            788,
+            1464
+          ]
+        ]
+      },
+      {
+        "speedTitle": [
+          171,
+          1041,
+          981,
+          1101
+        ],
+        "modeTitle": [
+          171,
+          1630,
+          981,
+          1690
+        ],
+        "deltaPx": 589,
+        "running": true,
+        "totals": [
+          [
+            143,
+            1416,
+            332,
+            1464
+          ],
+          [
+            598,
+            1416,
+            788,
+            1464
+          ]
+        ]
+      },
+      {
+        "speedTitle": [
+          171,
+          1041,
+          981,
+          1101
+        ],
+        "modeTitle": [
+          171,
+          1630,
+          981,
+          1690
+        ],
+        "deltaPx": 589,
+        "running": true,
+        "totals": [
+          [
+            143,
+            1416,
+            332,
+            1464
+          ],
+          [
+            598,
+            1416,
+            788,
+            1464
+          ]
+        ]
+      },
+      {
+        "speedTitle": [
+          171,
+          1041,
+          981,
+          1101
+        ],
+        "modeTitle": [
+          171,
+          1630,
+          981,
+          1690
+        ],
+        "deltaPx": 589,
+        "running": true,
+        "totals": [
+          [
+            143,
+            1416,
+            332,
+            1464
+          ],
+          [
+            598,
+            1416,
+            788,
+            1464
+          ]
+        ]
+      },
+      {
+        "speedTitle": [
+          171,
+          1041,
+          981,
+          1101
+        ],
+        "modeTitle": [
+          171,
+          1630,
+          981,
+          1690
+        ],
+        "deltaPx": 589,
+        "running": true,
+        "totals": [
+          [
+            143,
+            1416,
+            332,
+            1464
+          ],
+          [
+            598,
+            1416,
+            788,
+            1464
+          ]
+        ]
+      }
+    ],
+    "passed": true,
+    "finalServices": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n"
+  },
+  "install": {
+    "sha256": "b12ddc3a2a442acb38f657483f7178b235fc125686738a8496de30f98fea4d24",
+    "installedMatches": true,
+    "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49"
+  },
+  "cleanup": {
+    "testPackagesRemoved": true,
+    "ownXmlRemoved": true,
+    "mainPackageRetained": true,
+    "formalDataCleared": false,
+    "nightMode": "Night mode: yes",
+    "fontScale": "1.0",
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+  },
+  "source": {
+    "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardTrafficChart.kt",
+    "sha256": "0f6fd5d162371903436a163644ecc1c738512559103e30af5492f61f52543daa"
+  },
+  "initialFailure": "首次将testDebugUnitTest与kclashMotionBenchmark=true同批调用，诊断变体不提供该任务，配置阶段失败；拆分后全部通过，原build.log保留。",
+  "boundaries": [
+    "仅本次竖屏默认字号、深浅停止态与深色运行态；不代表全部页面或性能验收。",
+    "4项定向单测为本轮运行；不沿用854项历史结果冒充全量重跑。",
+    "手机保留同签名本地修正版，版本名仍0.1.0；未重发、改写或覆盖已发布的kclash-v0.1.0资产。",
+    "旧菜单方法采样代码未纳入本次提交；6份trace已完整解码与SHA校验保留，归因继续待办。"
+  ],
+  "artifacts": "../acceptance-artifacts/traffic-card-compact-20261109/",
+  "artifactSha256": {
+    "before-dark.png": "9b8d5177e2a299a1aa3c11a87c71870ed870e3edbbec8c0d905675a285afd4ff",
+    "before-light.png": "4f1ec8739e6d639c5114460bf742f539cf4d37c9b3d7a663efc517ef1a3b7e0d",
+    "after-dark.png": "8a1b5086f5220051a1d3b92dad6b9f3d8b6a92032da86c9c1c6dc4deea8ac1a1",
+    "after-light.png": "0ab8c903549a155b86761c0e6b6ad1688c5e3f59c85ccb6dd9b33f29cfb612be",
+    "running-0.png": "7f668c2dfacdd50895018722b8c2cdf72f06943b4e1f67608ff708f34f35d517",
+    "running-5.png": "5ddafecd6383a4b6891728ca13bc1c73004a7514a02058e866ffae8d8bc8bfd5",
+    "instrument.log": "21a9ebe0bc3f78e0892d6a78d1239cbd5a947787ca62ab2c6c5000a708b5f171",
+    "build-final.log": "8ec7f1cc198ab0ce1888f618d415a5132f7bfc5a943bcc6e778e635fa1e791a9",
+    "build-fixture.log": "d856d19209afc1ae72437c98f21e2278235f2130aa2bed0df7fdfb62b0c38a48",
+    "lint.log": "88c5cb316bb228f0a7e5a55c70498ef1221af8fdf2a3156ab58f6a03d0426497"
+  }
+}
