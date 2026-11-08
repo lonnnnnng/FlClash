@@ -224,11 +224,7 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                     LocalAppMenuEnabled provides enabled, LocalAppMenuHeaderEnabled provides (active && top),
                     LocalAppMenuCarry provides if (top) LocalAppMenuCarry.current else null) {
                     Column(Modifier.then(if (!top) Modifier.clearAndSetSemantics {} else Modifier)
-                        .verticalScroll(level.scroll, enabled = top && !state.folding).padding(8.dp).graphicsLayer {
-                            val time = if (active) opening.value else returning.value
-                            val blur = if (active) 4f * (1f - (time / .25f).coerceIn(0f, 1f)) else 8f * (time / .1f).coerceIn(0f, 1f)
-                            renderEffect = if (blur > .1f && android.os.Build.VERSION.SDK_INT >= 31) BlurEffect(blur * density, blur * density) else null
-                        }) { content(level.key) }
+                        .verticalScroll(level.scroll, enabled = top && !state.folding).padding(8.dp)) { content(level.key) }
                 }
                 if (!top) Box(Modifier.matchParentSize().clickable(enabled = active) { state.onBack() }.clearAndSetSemantics {})
                 }

@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **菜单胶囊与屏幕模糊（2026-11-09，KUI-024）**：补齐源按钮胶囊长边、Flutter稳定回源曲线/20%源图/50ms桥接；正文先变形再按屏幕sigma模糊，源图使用浮点轨迹，正文独立绘制节点复用。859项JVM（App577执行、其余282复用）、Debug/签名Release/独立测试包与双Lint通过；Redmi最终15/15、28图、8对终态像素一致，正文原尺寸/半尺寸/源图模糊宽度均29px。正式包打开进程75/206→73/206、Popup35/139→34/142，关闭20/178→19/167；仅回到基线附近，不宣称性能提升。首版80/183退化保留。深浅视频104/102原PTS帧核对并各抽样24张，玻璃开场两图仍为准备阶段；完整Flutter视觉/慢帧仍PARTIAL。手机保留同签名修正版、配置未清，测试包已清理、服务停止。 证据 `docs/acceptance/menu-content-parity-redmi-20261109.json`，溯源 `docs/menu-content-parity-defect.md`。
+
 > **菜单阴影与顶卡回源（2026-11-09，KUI-023）**：对照固定Flutter/Prism修正29dp半径的sigma换算、仅主体投影并扣内部、普通/玻璃阴影接续，以及顶层卡片矩形/等比回源和后层隐藏。857项JVM结果（App575执行、其余282复用）、Debug/签名Release/独立测试包与双Lint通过；Redmi最终13/13、23图和深浅两段107/103帧原PTS视频已核验，旧联合阴影红测失败保留。GPU替换未过像素门槛已撤回。正式包进程打开69/209→68/209、关闭20/178→20/176；Popup打开24/147→29/144，未证明性能收益。手机保留本地签名修正版，完整Flutter视觉/慢帧仍PARTIAL。证据 `docs/acceptance/menu-shadow-parity-redmi-20261109.json`，溯源 `docs/menu-shadow-parity-defect.md`。
 
 > **菜单准备阶段与分窗口复核（2026-11-09）**：截图准备即停涟漪、清空隐藏图层两个候选均未改善并已撤回，手机恢复KUI-022优化版。新增离线分窗口报告工具，4项边界测试及72份真实帧表解析通过；18次关闭Popup均已销毁，明确标不可观测。当前对照进程打开62/210、Popup自身21/149，两者不能混称；Android16 RTAnimation/Skipped位可重叠。下一步按Popup独立数据核对固定Flutter阴影轮廓、裁剪与回源透明度，完整性能/视觉仍PARTIAL。证据 `docs/acceptance/menu-source-preparation-redmi-20261109.json`，记录 `docs/menu-source-preparation-investigation.md`。
@@ -739,7 +741,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，追踪`origin/kotlin`；本组按验收结果提交推送，远端关系以Git核对为准 |
-| 当前版本 | 公开正式 `0.1.0` / code `1000`，标签 `kclash-v0.1.0`不覆盖；手机保留同签名本地修正版（网速卡紧凑/KUI-022/KUI-023），本轮不发新Release |
+| 当前版本 | 公开正式 `0.1.0` / code `1000`，标签 `kclash-v0.1.0`不覆盖；手机保留同签名本地修正版（网速卡紧凑/KUI-022/KUI-023/KUI-024），本轮不发新Release |
 | Gradle 工程 | 根目录Wrapper + `app` / `core` / `service` / `common` |
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
@@ -747,8 +749,8 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步`chen08209/Clash.Meta:FlClash`，不直接同步`MetaCubeX/mihomo`分支/tag/提交/PR；连续4项`25fb0699`、`4a8e40cf`、`04f718e6`、`024245dc`已通过`852d3ad1`合入自己的`kclash-fixes`，当前为`7038231e`，本地修复保留 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
-| 单元测试 | 最近产品组857项JVM结果零失败/错误/跳过：App575执行，Service213/Core38/Common31复用。双Lint0错误（Debug68警告14提示、Release66警告13提示）；Go本轮未改未重跑，发布前双层race仅历史证据。 |
-| 最新真机 | KUI-023主体投影/阴影接续/顶卡回源13/13回归、23图及深浅原PTS视频107/103帧。正式包24/24终态；打开进程68/209、Popup29/144，性能未改善。完整视觉/性能仍PARTIAL，见menu-shadow-parity-redmi-20261109.json。 |
+| 单元测试 | 最近产品组859项JVM结果零失败/错误/跳过：App577执行，Service213/Core38/Common31复用。双Lint0错误（Debug68警告14提示、Release66警告13提示）；Go本轮未改未重跑，发布前双层race仅历史证据。 |
+| 最新真机 | KUI-024胶囊/屏幕模糊/回源15/15、28图、8对终态像素一致及深浅原PTS视频104/102帧；打开进程73/206、Popup34/142，性能处于基线附近。完整视觉/性能仍PARTIAL，见menu-content-parity-redmi-20261109.json。 |
 | 当前设备数据 | 保留1份授权本地配置及同签名本地优化版，原1.yaml哈希保持、服务停止；本轮motion/test已卸载。Flutter参考包未操作，后续只用Redmi验收。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
@@ -1288,6 +1290,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 - 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
+
+**菜单胶囊与屏幕模糊（2026-11-09，KUI-024）**：补齐源按钮胶囊长边、Flutter稳定回源曲线/20%源图/50ms桥接；正文先变形再按屏幕sigma模糊，源图使用浮点轨迹，正文独立绘制节点复用。859项JVM（App577执行、其余282复用）、Debug/签名Release/独立测试包与双Lint通过；Redmi最终15/15、28图、8对终态像素一致，正文原尺寸/半尺寸/源图模糊宽度均29px。正式包打开进程75/206→73/206、Popup35/139→34/142，关闭20/178→19/167；仅回到基线附近，不宣称性能提升。首版80/183退化保留。深浅视频104/102原PTS帧核对并各抽样24张，玻璃开场两图仍为准备阶段；完整Flutter视觉/慢帧仍PARTIAL。手机保留同签名修正版、配置未清，测试包已清理、服务停止。 详见`docs/acceptance/menu-content-parity-redmi-20261109.json`。
 
 **最新验收（2026-11-09，KUI-023）**：857项JVM结果、Debug/签名Release/独立测试包与双Lint通过，Redmi最终13/13、23图、两段原PTS视频；旧联合阴影红测/GPU失败保留。当前为视觉/回源行为修正，性能未判改善；完整Flutter运行视觉仍PARTIAL，见`docs/acceptance/menu-shadow-parity-redmi-20261109.json`。
 

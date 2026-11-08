@@ -319,9 +319,10 @@ internal fun AppDropdownMenu(
                         // 作者 long：只有入场/回源绘制外层变形阴影，展开完成交给各层；零透明度阴影也会产生缓存和路径工作。
                         AppMenuPlatterShadow(Modifier.matchParentSize(), measuredSize, morph,
                             visible = { opening.value < .45f || !active }, dark = dark, glass = backdrop != null)
+                        // 作者 long：正文先保留为独立绘制节点；外层每帧重录变形/模糊时复用它，避免重复遍历菜单正文与软件阴影。
                         Box(Modifier.appMenuMorph(surface, morph, sourceImage, backdrop,
                             Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()),
-                            drawSurface = { opening.value < .45f || !active })) {
+                            drawSurface = { opening.value < .45f || !active }).graphicsLayer()) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
                             LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
                             LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {

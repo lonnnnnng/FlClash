@@ -1,0 +1,580 @@
+{
+  "date": "2026-11-09",
+  "issue": "KUI-024",
+  "baseCommit": "d088f9cee172780bf71caf0c8e161df2157b4c32",
+  "scope": "菜单胶囊长边、稳定回源曲线、源图与正文屏幕sigma模糊，以及正文独立绘制节点复用。",
+  "reference": {
+    "flutter": "be84736605527034689c95bf27828ff27d912c5e",
+    "prism": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "popupSha256": "55dc14e65088f0cac0a464488b52fd1ab8d393157a7d86302cbd74f0fa7387c6"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "core": "stopped"
+  },
+  "jvm": {
+    "results": {
+      "app": {
+        "tests": 577,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 859,
+    "executedApp": 577,
+    "reusedOthers": 282
+  },
+  "build": {
+    "debug": true,
+    "signedReleaseR8": true,
+    "motionFixture": true,
+    "motionAndroidTest": true,
+    "lint": {
+      "debug": {
+        "Warning": 68,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 13
+      }
+    }
+  },
+  "instrumentation": {
+    "passed": 15,
+    "failed": 0,
+    "tests": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "nestedSelectionReturnsOnlyTopCardBeforeRunningAction",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "longMenuFingerScrollDoesNotExecuteHoveredRows",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+        "test": "overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+        "test": "sortSubmenuSupportsKeyboardEscapeAndAppliesNameOrder",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyPageParityInstrumentedTest",
+        "test": "overflowingGroupMenuSupportsKeyboardSelectionAndEscapeDismissal",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest",
+        "test": "profilesScreenshotMatrixMatchesBaseline",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest",
+        "test": "profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest",
+        "test": "textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+        "test": "filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuShadowParityInstrumentedTest",
+        "test": "platterShadowLeavesInteriorAndDetachedDropletClearInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuContentParityInstrumentedTest",
+        "test": "sourceSnapshotBlursInScreenSpaceAndLeavesNoResidueWhenHidden",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuContentParityInstrumentedTest",
+        "test": "contentBlurKeepsScreenWidthAfterCardShrinksAndClearsAtZero",
+        "code": 0
+      }
+    ],
+    "pngCount": 28,
+    "images": {
+      "liquid_return_nested_top": {
+        "count": 2,
+        "bytes": 51204,
+        "sha256": "562df413095440c3a4c4661a4a5f760b6c52a7f46b8185146935d7b2c9020f82"
+      },
+      "liquid_open_false_false": {
+        "count": 2,
+        "bytes": 54016,
+        "sha256": "aaa805914babd2e88220a3ebd12293e1e980d6d2230260dc9f10d6826a545183"
+      },
+      "liquid_return_false_false": {
+        "count": 2,
+        "bytes": 64686,
+        "sha256": "b0968aa64c428d208fee9da9b53d7d1ceff135a8c87bb7070d8532523e8b08a9"
+      },
+      "liquid_open_false_true": {
+        "count": 1,
+        "bytes": 30456,
+        "sha256": "8fce5e85eecf115e0ca91011b1dc01882050d050984f9bd11ff59aa3d27a3799"
+      },
+      "liquid_return_false_true": {
+        "count": 2,
+        "bytes": 50085,
+        "sha256": "fdb7a50e8a7f68ed26223821fef89b86c19e825f5d71dafd70d1a2cc51057392"
+      },
+      "liquid_open_true_false": {
+        "count": 2,
+        "bytes": 53066,
+        "sha256": "411078e532bfbeb28ada84a0adc8310375beea6ff4e76ddeac1973e0dcd0ee4e"
+      },
+      "liquid_return_true_false": {
+        "count": 2,
+        "bytes": 53802,
+        "sha256": "bc75e8b2eb999118f01420a24571f4af1a6003d9ca2ba8c64a5e7eecaf7482c1"
+      },
+      "liquid_open_true_true": {
+        "count": 1,
+        "bytes": 35580,
+        "sha256": "2837311035eaf08f4f7f90d57d4acae2f5c6945e9a0f46231ffa1a18adeec699"
+      },
+      "liquid_return_true_true": {
+        "count": 2,
+        "bytes": 52612,
+        "sha256": "49142adce5a5b95567b337321531942d44cb488b42390271ce36a16736c46bb4"
+      },
+      "proxy_keyboard_name_sort": {
+        "count": 2,
+        "bytes": 45831,
+        "sha256": "e809dae69a71693a7a1ea0f2b14ab15d9622b9795c79b974e51ba7124a9bee74"
+      },
+      "profiles_empty": {
+        "count": 3,
+        "bytes": 76842,
+        "sha256": "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b"
+      },
+      "profiles_custom_selected": {
+        "count": 2,
+        "bytes": 56500,
+        "sha256": "cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04"
+      },
+      "profiles_remote_usage": {
+        "count": 2,
+        "bytes": 63023,
+        "sha256": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5"
+      },
+      "profiles_empty_light": {
+        "count": 3,
+        "bytes": 80086,
+        "sha256": "e927577b0286da4661107040263b601bd2f143a5e3723a07a3294585661728c6"
+      },
+      "profiles_custom_selected_light": {
+        "count": 2,
+        "bytes": 62288,
+        "sha256": "8746be9c5c380e7d59d9e11deba5b32d1be41a7d6b76d7c5ebc46befa0a0c748"
+      },
+      "profiles_remote_usage_light": {
+        "count": 2,
+        "bytes": 68310,
+        "sha256": "6e51244231247327cc81e78863c96481e3e5f9b8ed94beb7f77dc46c2dd22019"
+      },
+      "profiles_source_menu_light": {
+        "count": 1,
+        "bytes": 36591,
+        "sha256": "dc7d62b52a44ba02593aa077145d3526a89e45ff92f0708f274577122268c0d4"
+      },
+      "profiles_source_menu_dark": {
+        "count": 1,
+        "bytes": 36423,
+        "sha256": "ddbd99c021b665a6bf18508e1f5c372f84e79ec42648dcb8eaf3add0ac21c26b"
+      },
+      "profile_document_light_failed_search": {
+        "count": 5,
+        "bytes": 160005,
+        "sha256": "47e1e1e63f978c8f3142f138e46c8d20f76e17880e3dafe6174f1da577d5810d"
+      },
+      "profile_document_dark_exit": {
+        "count": 4,
+        "bytes": 120985,
+        "sha256": "183abe558482c0dc57a9821a4befd307b606130a3bc7c0dfe01903a64a8f2dc6"
+      },
+      "provider_filter_members": {
+        "count": 3,
+        "bytes": 92279,
+        "sha256": "79b9e4dc0960d6ff2e6a01e7ab7a08b850dc6015ae895a4dc130ec6cf4d125ae"
+      },
+      "platter_shadow_false_legacy_false": {
+        "count": 1,
+        "bytes": 14428,
+        "sha256": "5cdbdcb4741d08b14dcad8472fc136844681b490ac1e053c7a301335913bcc40"
+      },
+      "platter_shadow_true_legacy_false": {
+        "count": 1,
+        "bytes": 12072,
+        "sha256": "ed5a136e1b2456f3142dfaa7ecea8b24ab83dbad8229a345d48a00b32f5b99df"
+      },
+      "source_blur": {
+        "count": 1,
+        "bytes": 9733,
+        "sha256": "38c341ac4e1ffcd9fb2e3c13b2fa724ab76b2c8a32754454a14f0a19bb3516e7"
+      },
+      "source_hidden": {
+        "count": 1,
+        "bytes": 4551,
+        "sha256": "1c8dfcf969480f5d706961c6caa2f59c381965f8b088e5a85964d53596cbfdaf"
+      },
+      "content_blur_scale_1.0": {
+        "count": 1,
+        "bytes": 9720,
+        "sha256": "15b9d576d41bdb5499e6ff48e552ae95fa0834de566397c3e94aec33a3f98735"
+      },
+      "content_blur_scale_0.5": {
+        "count": 1,
+        "bytes": 9661,
+        "sha256": "330aaa1a59dc7020836325331f918b12690039f9f8562d8172271e663e491989"
+      },
+      "content_blur_cleared": {
+        "count": 1,
+        "bytes": 4601,
+        "sha256": "7ef4dd35e2007566cf0448820f5943b0c905ea7edb00898fc9053da9ee93fb91"
+      }
+    }
+  },
+  "screenBlur": {
+    "content_blur_scale_0.5": {
+      "widthPx": 29,
+      "widthDp": 10.545454545454545
+    },
+    "content_blur_scale_1.0": {
+      "widthPx": 29,
+      "widthDp": 10.545454545454545
+    },
+    "source_blur": {
+      "widthPx": 29,
+      "widthDp": 10.545454545454545
+    }
+  },
+  "terminalPixelPairs": {
+    "dark-root": {
+      "samePixelsBelowStatusBar": true
+    },
+    "dark-sub": {
+      "samePixelsBelowStatusBar": true
+    },
+    "dark-fold": {
+      "samePixelsBelowStatusBar": true
+    },
+    "dark-closed": {
+      "samePixelsBelowStatusBar": true
+    },
+    "light-root": {
+      "samePixelsBelowStatusBar": true
+    },
+    "light-sub": {
+      "samePixelsBelowStatusBar": true
+    },
+    "light-fold": {
+      "samePixelsBelowStatusBar": true
+    },
+    "light-closed": {
+      "samePixelsBelowStatusBar": true
+    }
+  },
+  "performance": {
+    "baseline": {
+      "open": {
+        "process": {
+          "janky": 75,
+          "frames": 206,
+          "jankPercent": 36.408
+        },
+        "popup": {
+          "janky": 35,
+          "frames": 139,
+          "availableStages": 6,
+          "jankPercent": 25.18
+        }
+      },
+      "expand": {
+        "process": {
+          "janky": 22,
+          "frames": 191,
+          "jankPercent": 11.518
+        },
+        "popup": {
+          "janky": 22,
+          "frames": 191,
+          "availableStages": 6,
+          "jankPercent": 11.518
+        }
+      },
+      "fold": {
+        "process": {
+          "janky": 19,
+          "frames": 132,
+          "jankPercent": 14.394
+        },
+        "popup": {
+          "janky": 19,
+          "frames": 132,
+          "availableStages": 6,
+          "jankPercent": 14.394
+        }
+      },
+      "close": {
+        "process": {
+          "janky": 20,
+          "frames": 178,
+          "jankPercent": 11.236
+        },
+        "popup": {
+          "janky": null,
+          "frames": null,
+          "availableStages": 0,
+          "jankPercent": null,
+          "coverage": "window destroyed; no closing window counters available"
+        }
+      }
+    },
+    "final": {
+      "open": {
+        "process": {
+          "janky": 80,
+          "frames": 183,
+          "jankPercent": 43.716
+        },
+        "popup": {
+          "janky": 35,
+          "frames": 121,
+          "availableStages": 6,
+          "jankPercent": 28.926
+        }
+      },
+      "expand": {
+        "process": {
+          "janky": 26,
+          "frames": 184,
+          "jankPercent": 14.13
+        },
+        "popup": {
+          "janky": 26,
+          "frames": 184,
+          "availableStages": 6,
+          "jankPercent": 14.13
+        }
+      },
+      "fold": {
+        "process": {
+          "janky": 21,
+          "frames": 129,
+          "jankPercent": 16.279
+        },
+        "popup": {
+          "janky": 21,
+          "frames": 129,
+          "availableStages": 6,
+          "jankPercent": 16.279
+        }
+      },
+      "close": {
+        "process": {
+          "janky": 19,
+          "frames": 172,
+          "jankPercent": 11.047
+        },
+        "popup": {
+          "janky": null,
+          "frames": null,
+          "availableStages": 0,
+          "jankPercent": null,
+          "coverage": "window destroyed; no closing window counters available"
+        }
+      }
+    },
+    "final2": {
+      "open": {
+        "process": {
+          "janky": 73,
+          "frames": 206,
+          "jankPercent": 35.437
+        },
+        "popup": {
+          "janky": 34,
+          "frames": 142,
+          "availableStages": 6,
+          "jankPercent": 23.944
+        }
+      },
+      "expand": {
+        "process": {
+          "janky": 19,
+          "frames": 189,
+          "jankPercent": 10.053
+        },
+        "popup": {
+          "janky": 19,
+          "frames": 189,
+          "availableStages": 6,
+          "jankPercent": 10.053
+        }
+      },
+      "fold": {
+        "process": {
+          "janky": 20,
+          "frames": 131,
+          "jankPercent": 15.267
+        },
+        "popup": {
+          "janky": 20,
+          "frames": 131,
+          "availableStages": 6,
+          "jankPercent": 15.267
+        }
+      },
+      "close": {
+        "process": {
+          "janky": 19,
+          "frames": 167,
+          "jankPercent": 11.377
+        },
+        "popup": {
+          "janky": null,
+          "frames": null,
+          "availableStages": 0,
+          "jankPercent": null,
+          "coverage": "window destroyed; no closing window counters available"
+        }
+      }
+    }
+  },
+  "video": {
+    "dark": {
+      "frames": 104,
+      "videoSha256": "f9fe24a31bc83ee540056ae9fd09ecd4cd6e7593ee4ec8dd6ae24b0623c6ba03",
+      "originalPtsVerified": true,
+      "reviewedSampleCount": 24
+    },
+    "light": {
+      "frames": 102,
+      "videoSha256": "11debdbae3f467bdcb2f8a5ecc3aa8004591a3ac98ce7d5e5dd4b942b9ee3f1d",
+      "originalPtsVerified": true,
+      "reviewedSampleCount": 24
+    }
+  },
+  "install": {
+    "sha256": "810a3195cd7dad45c70f0e8477af163394ea2e4fe1b802d22c8d8992739e277d",
+    "installedMatches": true,
+    "formalDataCleared": false
+  },
+  "fixtures": {
+    "com.lonnnnnng.flclash.motion": {
+      "sha256": "530cbeaaedbf7ed202968fac1ca3bc2878ad14d9234031da2a14d3f8cc90406f",
+      "installedMatches": true
+    },
+    "com.lonnnnnng.flclash.motion.test": {
+      "sha256": "c1c883baab20ee69588542712c3f06eae98d86e08401feefd95791ca39cd1035",
+      "installedMatches": true
+    }
+  },
+  "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+  "sources": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt": "a706ed7c9f85b54b15be830c4875ac6b95e5f9c421098a01a2d2bb7d28472ead",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuStack.kt": "4fe9110f5aba4f73dc2794f2fe9020133c3a64b253b9ee5578ea233cda523c91",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt": "1ac18e3cec3abc986c46197f5f039eb60b8ddc4f09f1a9e09ca8732b05578aba",
+    "android/tests/app/AppMenuMotionTest.kt": "d5ffacfcd132bcf76317fb6c654d52f443b7b9045e7e96ead1bad945640c3d22",
+    "android/tests/instrumented/MenuContentParityInstrumentedTest.kt": "7a9b8a31c6de8fc386502573e1b8a36b1ccbb526c98ca0fb7a1c3fa99595be4e"
+  },
+  "cleanup": {
+    "removedOwnedFiles": [
+      "/sdcard/kclash-content-dark.mp4",
+      "/sdcard/kclash-content-light.mp4",
+      "/sdcard/kclash-menu-release.xml",
+      "/sdcard/kclash-content-motion.xml"
+    ],
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "mainInstalledSha256": "810a3195cd7dad45c70f0e8477af163394ea2e4fe1b802d22c8d8992739e277d",
+    "mainDataCleared": false,
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "nightMode": "Night mode: yes",
+    "fontScale": "1.0",
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "flutterPackageModified": false,
+    "cleanupScriptRecovery": "已卸载包的pm path返回1，首批脚本误判并中止；按真实状态完成剩余motion卸载，再核验全部精确文件与包缺席。未重装或清正式数据。"
+  },
+  "boundaries": [
+    "本组为视觉正确性修正；最终性能回到基线附近，不认定显著收益。打开进程与Popup分开，关闭Popup销毁后不可观测，不记0耗时。",
+    "首版未隔离正文时打开80/183退化保留；首版2项新绘制与13项旧回归不与最终15/15累计。",
+    "快速中断开场保留blur/sourceAlpha/bridge连续性，这是区别于上游光学初值跳变的明确保留。",
+    "两张玻璃开场截图仍在异步背景准备阶段，不证明已展开；玻璃默认关闭，完整光学和Flutter运行时逐帧像素一致未验。",
+    "API31以下保持无RenderEffect降级；本轮未运行模拟器、低API设备、网络/VPN负载及其他OEM。",
+    "正式数据未清除，操作不修改组选择；本轮未读取正式Room/正文逐字段保护摘要，不声称数据库完整一致性已验证。",
+    "抽帧ffmpeg提示非严格递增输出DTS，退出0；核对104/102张与ffprobe原帧数、原PTS对应；人工各检查24张抽样，不替代无录屏性能统计。",
+    "手机保留同签名0.1.0本地修正版，公开kclash-v0.1.0资产未改写。完整视觉/慢帧/其余子页继续待办。"
+  ],
+  "artifacts": "../acceptance-artifacts/menu-content-parity-20261109/",
+  "artifactSha256": {
+    "signer-final2.txt": "7979b4aeceff54c7119332671bfa951d5b22b8f24b25659a2a69bffdb38aa50d",
+    "source-final2-sha256.json": "a4c1fd19c5dc9db3bfcdddf4c23d028194a6bdec15e496b78edc51e15a0370bb",
+    "build2.log": "48bd1faee8a62331c258c9262d1ecebcaee1fe426a389caadfd3fa116ae97602",
+    "fixture2.log": "1053fef9d313b9cb23745639572226607e227f4e163e451c28b203c04eb46d91",
+    "lint2.log": "1a895cce16b3571729df6a7a2fabd88e0d7d1e450535f5867878d6387ce2c886",
+    "final-window-report.json": "a723456b5abc3ca4ef200321ac2d37b11afa0255614b838edd1bbbf1f83c2ccd",
+    "performance-comparison.json": "b1d8e9b35ecd4ebd7ce4319dea87fa347b3696ff51566374efd355dca58720ff",
+    "terminal-comparison.json": "fd1d50d62875236edd7598b6a980b7a47044e0037b52108f404c314af6c7e688",
+    "final2-regression/instrument.log": "fc0c3bce95c527c8aea0b3df6cb5f90caf0bff9799ea78b54f3273e34f3e42c9",
+    "final2-dark-motion.mp4": "f9fe24a31bc83ee540056ae9fd09ecd4cd6e7593ee4ec8dd6ae24b0623c6ba03",
+    "final2-light-motion.mp4": "11debdbae3f467bdcb2f8a5ecc3aa8004591a3ac98ce7d5e5dd4b942b9ee3f1d",
+    "cleanup.json": "53f329c04e0ad9136020224c08580757fb79e41808ec1a4eabe2f65235bfccff"
+  }
+}

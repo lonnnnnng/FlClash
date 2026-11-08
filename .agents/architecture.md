@@ -177,7 +177,7 @@ DashboardModalSheet以pageKey/depth保存标题、正文及滚动状态，450ms�
 
 - `AppMenuSource`的PixelCopy结果通过`prepareAppMenuBackdrop`在Default后台降采样/三次盒式卷积，分离raw/frosted；取消每16行检查。`AppMenuGlassRenderer` API33+用RuntimeShader/BitmapShader绘制连续圆角SDF、折射/bevel及goo高光，窗口坐标与父层paintScale参与背景采样；API27离线捕获与fallback已在手机AVD验收，API24/25、31/32和其他ABI未验，API27设置恢复不能由证据JSON确认。
 - `AppMenuStackState`保留Level/Owner及每层ScrollState/key。新卡从owner触发行按分段曲线展开，父卡缩小/压暗/减影；同一Animatable收回可反向，退完才remove。外部祖先同步不可被用户返回误反向，标题复用触发行并旋转箭头。后层清语义/禁用命中，露出父卡只返回一级。
-- 交互clip与开场外层morph相交，释放使用最后真实落点重新命中，hitRevision使动画/滚动后重新计算；`maxValue`必须在组合读取后发布可滚动性，不能只在SideEffect里读而漏掉首帧测量变化。回源t=0保留全部材质/blur/sourceAlpha，稳定卡与开场光学层互斥。
+- 交互clip与开场外层morph相交，释放使用最后真实落点重新命中，hitRevision使动画/滚动后重新计算；`maxValue`必须在组合读取后发布可滚动性，不能只在SideEffect里读而漏掉首帧测量变化。开场中断的回源t=0保留材质/blur/sourceAlpha，稳定卡与开场光学层互斥。2026-11-09 KUI-024补齐稳定回源的Flutter曲线、20%源图和50ms桥接；正文先变形再按屏幕sigma过滤，独立正文节点避免外层重录时重复遍历，详见`docs/menu-content-parity-defect.md`。
 - `ProfileFormRow`承载56dp同行标签/值与右侧编辑，`ProfileFormSection`允许按页面关闭默认内边距/间距；本地代理认证/可选分组、Provider选项与资源引用仅改排版，不改保存、草稿与核心边界。共享regular/pill/menu/alert/tinted/lens材质及STANDARD/ULTRA等级可复用，默认玻璃仍关闭；策略组/更多/链式代理覆盖子页已验，其他页面和完整全局parity仍PARTIAL。三次盒式卷积只是预模糊近似。
 
 ## 源快照菜单与代码正文视图（2026-11-04）

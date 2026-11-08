@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **菜单胶囊与屏幕模糊（2026-11-09，KUI-024）**：补齐源按钮胶囊长边、Flutter稳定回源曲线/20%源图/50ms桥接；正文先变形再按屏幕sigma模糊，源图使用浮点轨迹，正文独立绘制节点复用。859项JVM（App577执行、其余282复用）、Debug/签名Release/独立测试包与双Lint通过；Redmi最终15/15、28图、8对终态像素一致，正文原尺寸/半尺寸/源图模糊宽度均29px。正式包打开进程75/206→73/206、Popup35/139→34/142，关闭20/178→19/167；仅回到基线附近，不宣称性能提升。首版80/183退化保留。深浅视频104/102原PTS帧核对并各抽样24张，玻璃开场两图仍为准备阶段；完整Flutter视觉/慢帧仍PARTIAL。手机保留同签名修正版、配置未清，测试包已清理、服务停止。 证据 `acceptance/menu-content-parity-redmi-20261109.json`，溯源 `menu-content-parity-defect.md`。
+
 > **菜单阴影与顶卡回源（2026-11-09，KUI-023）**：对照固定Flutter/Prism修正29dp半径的sigma换算、仅主体投影并扣内部、普通/玻璃阴影接续，以及顶层卡片矩形/等比回源和后层隐藏。857项JVM结果（App575执行、其余282复用）、Debug/签名Release/独立测试包与双Lint通过；Redmi最终13/13、23图和深浅两段107/103帧原PTS视频已核验，旧联合阴影红测失败保留。GPU替换未过像素门槛已撤回。正式包进程打开69/209→68/209、关闭20/178→20/176；Popup打开24/147→29/144，未证明性能收益。手机保留本地签名修正版，完整Flutter视觉/慢帧仍PARTIAL。证据 `acceptance/menu-shadow-parity-redmi-20261109.json`，溯源 `menu-shadow-parity-defect.md`。
 
 > **菜单准备阶段与分窗口复核（2026-11-09）**：截图准备即停涟漪、清空隐藏图层两个候选均未改善并已撤回，手机恢复KUI-022优化版。新增离线分窗口报告工具，4项边界测试及72份真实帧表解析通过；18次关闭Popup均已销毁，明确标不可观测。当前对照进程打开62/210、Popup自身21/149，两者不能混称；Android16 RTAnimation/Skipped位可重叠。下一步按Popup独立数据核对固定Flutter阴影轮廓、裁剪与回源透明度，完整性能/视觉仍PARTIAL。证据 `acceptance/menu-source-preparation-redmi-20261109.json`，记录 `menu-source-preparation-investigation.md`。

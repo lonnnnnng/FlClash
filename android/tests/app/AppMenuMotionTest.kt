@@ -48,7 +48,7 @@ class AppMenuMotionTest {
     }
 
     @Test fun returnStartsAtInterruptedPlatterAndEndsExactlyAtSource() {
-        for (time in listOf(.04f, .12f, .45f)) {
+        for (time in listOf(.04f, .12f)) {
             val from = appMenuMorphFrame(anchor, card, time, 1f, true)
             val first = appMenuReturnFrame(anchor, from, 0f, 1f)
             assertEquals(from.platter.left, first.platter.left, .0001f)
@@ -58,9 +58,41 @@ class AppMenuMotionTest {
             assertEquals(from.blend, first.blend, .0001f)
             assertEquals(from.blur, first.blur, .0001f)
             assertEquals(from.sourceAlpha, first.sourceAlpha, .0001f)
+            assertEquals(from.sourceBlur, first.sourceBlur, .0001f)
             val last = appMenuReturnFrame(anchor, from, .5f, 1f)
             assertEquals(anchor, last.platter); assertEquals(anchor, last.droplet)
             assertEquals(0f, last.progress); assertEquals(1f, last.sourceAlpha)
+        }
+    }
+
+    @Test fun settledReturnUsesFlutterRevealGlyphAndAbsorptionCurves() {
+        val from = appMenuMorphFrame(anchor, card, .45f, 1f, true)
+        val start = appMenuReturnFrame(anchor, from, 0f, 1f)
+        assertEquals(.2f, start.sourceAlpha, .00001f)
+        assertEquals(0f, start.blend, .00001f)
+        val middle = appMenuReturnFrame(anchor, from, .05f, 1f)
+        // 作者 long：数值由固定上游的三次贝塞尔独立求根得到，防止误换成Material同名近似曲线。
+        assertEquals(.3153568f, middle.progress, .0001f)
+        assertEquals(.2838922f, middle.sourceAlpha, .0001f)
+        assertEquals(5.4771457f, middle.blur, .001f)
+        assertEquals(28f, middle.blend, .0001f)
+        val absorbed = appMenuReturnFrame(anchor, from, .35f, 1f)
+        assertEquals(.7682252f, absorbed.frostProgress, .0001f)
+    }
+
+    @Test fun capsuleKeepsItsLongAxisWhenMeetingTheSource() {
+        for (density in listOf(1f, 2.75f)) {
+            for (horizontal in listOf(true, false)) {
+                val control = if (horizontal) Rect(0f, 0f, 120f * density, 40f * density)
+                    else Rect(0f, 0f, 40f * density, 120f * density)
+                val initial = appMenuMorphFrame(control, card * density, 0f, density, true)
+                assertEquals(96.4f * density, initial.platter.size.maxDimension, .001f)
+                assertEquals(16.4f * density, initial.platter.size.minDimension, .001f)
+                val opened = appMenuMorphFrame(control, card * density, .45f, density, true)
+                val returning = appMenuReturnFrame(control, opened, .49f, density)
+                assertTrue("胶囊回源不能坍成圆形", returning.platter.size.maxDimension > returning.platter.size.minDimension + 75f * density)
+                assertEquals(control, appMenuReturnFrame(control, opened, .5f, density).droplet)
+            }
         }
     }
 
