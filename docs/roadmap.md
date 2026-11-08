@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **隐藏源按钮涟漪优化（2026-11-09，KUI-022）**：菜单接管按钮快照后暂停隐藏按钮的Material3涟漪，回源恢复；代理工具/组选单、配置顶栏与空态新增、Provider过滤、正文历史共6个入口复用。正式签名R8深浅各三轮，原包反测打开130/228帧jank（57.02%）→最终67/205（32.68%），关闭17/179→17/180未见退化；背景Window绘制99→53帧，8对终态排除状态栏后逐像素一致。854项JVM结果（App572执行，其余282复用）、Debug/签名Release/独立测试包和双Lint通过；Redmi最终11/11、20图校验目视，首轮10/11的Espresso焦点失败保留并修正测试。文字模糊诊断无收益已撤回；Simpleperf原生采样被本ROM SELinux上下文拒绝，探针保留、临时权限/组件撤回。手机保留本地签名优化版，公开0.1.0资产不覆盖；菜单剩余慢帧和完整视觉仍PARTIAL。证据 `docs/acceptance/menu-source-ripple-redmi-20261109.json`，溯源 `docs/menu-hidden-source-ripple-defect.md`。
+
 > **菜单线程归因与阴影候选（2026-11-09，KUI-021续）**：6份ART dual-clock trace已完整校验，软件阴影关闭窗口主线程采样CPU约89–138ms，渲染提交长等待主要不在主线程CPU；没有原生RenderThread证据，不能认定GPU/模糊唯一根因。完整裁边与75%分辨率候选固定帧外观通过，半分辨率失败保留；正式签名深浅各三轮对照打开jank58.74%→55.51%/55.60%，收益不足，产品候选全部撤回，仅保留独立方法采样入口。手机恢复23284d4b网速卡紧凑版。完整Flutter视觉/菜单性能仍PARTIAL；下一步分离原生渲染线程等待、文字模糊合成和窗口初建。证据 `docs/acceptance/menu-methods-redmi-20261109.json`，溯源 `docs/menu-content-compositing-defect.md`。
 
 > **网速卡留白再压缩（2026-11-09，KUI-020补充）**：按用户反馈将累计值下方趋势带18dp→8dp，含间距区域22dp→12dp；Redmi正式签名本地修正版深浅停止态、深色运行态6次采样均保持卡片标题间距589px，较公开0.1.0的617px减少28px，累计数值与趋势可见。4项定向JVM、2/2首页组件回归、签名Release与独立测试包构建、Release Lint（0错误/66警告/13提示）通过；不冒充本轮854项全量重跑。手机已覆盖安装并回拉核对，保留配置，测试包清理、深色/字号1.0、服务停止。公开Release资产未改写；菜单首开/关闭线程归因和剩余视觉仍待继续。证据 `docs/acceptance/traffic-card-compact-redmi-20261109.json`。
@@ -733,7 +735,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，追踪`origin/kotlin`；本组按验收结果提交推送，远端关系以Git核对为准 |
-| 当前版本 | 正式 `0.1.0` / code `1000`，标签 `kclash-v0.1.0`，Latest、非预发布 |
+| 当前版本 | 公开正式 `0.1.0` / code `1000`，标签 `kclash-v0.1.0` 不覆盖；手机保留同签名本地修正版（网速卡紧凑/KUI-022），本轮不发新Release |
 | Gradle 工程 | 根目录Wrapper + `app` / `core` / `service` / `common` |
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
@@ -741,12 +743,12 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步`chen08209/Clash.Meta:FlClash`，不直接同步`MetaCubeX/mihomo`分支/tag/提交/PR；连续4项`25fb0699`、`4a8e40cf`、`04f718e6`、`024245dc`已通过`852d3ad1`合入自己的`kclash-fixes`，当前为`7038231e`，本地修复保留 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
-| 单元测试 | 最终854项JVM零失败/错误/跳过（App572/Service213/Core38/Common31，含同源码结果复用）。双Lint0错误（Debug68警告14提示、Release66警告13提示）；Go父模块及route包race本组已通过。 |
-| 最新真机 | KUI-019菜单合计23.16%→16.78%、顶卡收回38.61%→14.07%；首开有限、关闭6.91%→9.94%退化保留。最终19/19回归＋整页2/2＋三轮菜单2/2；92PNG/32拼图/8组PTS，整体仍PARTIAL。 |
-| 当前设备数据 | 本轮按用户授权卸载两个KClash测试包，正式签名包保留1份从原1.yaml导入的本地配置；服务停止，Flutter参考包未安装/改动。后续只用Redmi验收。 |
+| 单元测试 | 本轮854项JVM结果零失败/错误/跳过：App572执行，Service213/Core38/Common31复用。双Lint0错误（Debug68警告14提示、Release66警告13提示）；Go本轮未改未重跑，发布前双层race仅历史证据。 |
+| 最新真机 | KUI-022正式签名包深浅三轮，打开jank130/228→67/205（57.02%→32.68%），关闭17/179→17/180；24/24终态、8对终态像素一致。隔离11/11回归、20PNG；首轮10/11焦点失败保留。完整性能/视觉仍PARTIAL，见menu-source-ripple-redmi-20261109.json。 |
+| 当前设备数据 | 保留1份授权本地配置及同签名本地优化版，原1.yaml哈希保持、服务停止；本轮motion/test已卸载。Flutter参考包未操作，后续只用Redmi验收。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | final-build3安装回拉一致：Debug `5e56210bd3adaf1a63a1a820b3ef4f7859f2259d4abceb19a75b8b0558ed465d`，Test `9d2c99fda7e952c592e76927f6c2a0206a34e408d5c02f864e5237e61668249d`；593源码匹配，产品源码与性能候选一致，核心不改。 |
+| Debug / Test | 本轮Debug已构建、未覆盖正式包；独立motion/AppTest安装回拉一致，SHA分别 `a4bd35b6…` / `6eb8721f…`，完整值见本轮验收JSON。旧final-build3/593源码记录仅历史。 |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
 | Release | 已正式发布；公开签名arm64/R8 APK SHA `ed063b9ba59d0825308b2d442da38e5e8ecdcb456cc7c55cd385f11b05ad1082`，下载校验/证书/Redmi安装回拉与运行通过。本地包哈希不同，两个构建的证据分别保留；跨版本升级未验。 |
@@ -1282,6 +1284,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 - 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
+
+**当前发布后验收（2026-11-09，KUI-022）**：854项JVM结果（App572执行、其余282复用）、Debug/签名Release/独立测试包与双Lint通过，11/11定向回归、20图及8对正式菜单终态一致。首开57.02%→32.68%，剩余慢帧仍待；原生采样受ROM权限阻塞，不计通过。手机保留本地修正版，公开Release不覆盖，见`docs/acceptance/menu-source-ripple-redmi-20261109.json`。
 
 **正式发布完成（2026-11-09，KClash 0.1.0）**：中英文README、独立发布密钥/备份和标签签名CI已落地；`kclash-v0.1.0`固定`961b147d`，versionCode1000，Release为非预发布/Latest。CI[42511426890](https://github.com/lonnnnnng/FlClash/actions/runs/42511426890)全通过，854项JVM、本地双Lint与Go双层race通过；KREL-001正式YAML导入崩溃、KUI-020出口闪烁/网速跳高已修并留溯源。公开APK下载SHA256/资产digest/签名/版本/ABI全部核对，Redmi安装回拉一致；公开包67.7秒16次样本0查询态、IP/国家不变、卡片间距恒定617px（旧694px），VPN/tun0、停止/冷启动通过。本地最终固定/自动两轮各18次也通过。手机保留正式包、一份授权本地配置和原自动选择，服务停止；后续只用Redmi。发布页：https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.0 。证据 `docs/acceptance/release-0.1.0-20261109.json`。跨版本升级、完整视觉/性能、低API及蜂窝/OEM仍PARTIAL，玻璃默认关闭。
 

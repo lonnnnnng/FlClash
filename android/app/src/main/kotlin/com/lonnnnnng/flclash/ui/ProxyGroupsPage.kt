@@ -237,9 +237,11 @@ private fun ProxyGroupTabs(names: List<String>, selectedIndex: Int, onSelect: (I
         }
         if (hasOverflow) Box(Modifier.padding(start = 8.dp, end = 16.dp)) {
             val source = rememberAppMenuSource()
-            IconButton(onClick = { showGroups = true },
-                modifier = Modifier.appMenuSource(source).background(dashboardCardColor(), CircleShape).testTag("proxy_group_more")) {
-                AppGlyphIcon(AppGlyphs.chevronDown)
+            AppMenuSourceContent(source) {
+                IconButton(onClick = { showGroups = true },
+                    modifier = Modifier.appMenuSource(source).background(dashboardCardColor(), CircleShape).testTag("proxy_group_more")) {
+                    AppGlyphIcon(AppGlyphs.chevronDown)
+                }
             }
             AppDropdownMenu(expanded = showGroups, onDismissRequest = { showGroups = false }, source = source) {
                 names.forEachIndexed { index, name ->
@@ -364,14 +366,16 @@ internal fun ProxyGroupsCard(
             secondaryActions = {
                 Box {
                     val source = rememberAppMenuSource()
-                    IconButton(
-                        onClick = {
-                            toolsMenuPage = ProxyToolsMenuPage.ROOT
-                            toolsExpanded = true
-                        },
-                        modifier = Modifier.appMenuSource(source).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("proxy_tools"),
-                    ) {
-                        AppGlyphIcon(AppGlyphs.more)
+                    AppMenuSourceContent(source) {
+                        IconButton(
+                            onClick = {
+                                toolsMenuPage = ProxyToolsMenuPage.ROOT
+                                toolsExpanded = true
+                            },
+                            modifier = Modifier.appMenuSource(source).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("proxy_tools"),
+                        ) {
+                            AppGlyphIcon(AppGlyphs.more)
+                        }
                     }
                     AppDropdownMenu(
                         expanded = toolsExpanded,

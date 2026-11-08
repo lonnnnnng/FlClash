@@ -314,6 +314,14 @@ class ProviderPagesInstrumentedTest {
         compose.setContent { KClashTheme { if (visible) CompositionLocalProvider(LocalFilterPresets provides listOf(FilterPreset("地区", "HK`JP"))) {
             ProviderOptionsPage("cloud", initial, false, null, {}, { saved = it; visible = false }, { values -> List(values.size) { "" } })
         } } }
+        // 作者 long：用触点启动涟漪并两次回源取消，过滤草稿应保持，菜单按钮必须能再次打开。
+        repeat(2) {
+            compose.onNodeWithTag("provider_filter_menu").performTouchInput { click() }
+            compose.onNodeWithText("沿用源过滤").assertIsDisplayed()
+            back()
+            compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
+            compose.onNodeWithTag("provider_filter_menu").assertIsDisplayed()
+        }
         compose.onNodeWithTag("provider_filters_add").performScrollTo().performClick()
         compose.onNodeWithTag("provider_filter_category_FILTER").performClick()
         compose.onNodeWithTag("provider_filter_pick_FILTER_地区").performClick()

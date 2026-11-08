@@ -1,0 +1,496 @@
+{
+  "date": "2026-11-09",
+  "issue": "KUI-022",
+  "baseCommit": "5df4a89676a32064324d131ecacdcc17c7ad9042",
+  "summary": "暂停已隐藏菜单源按钮的Material3涟漪，回源后恢复原反馈；不修改液滴/阴影/文字模糊。",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "core": "stopped",
+    "glassDefault": false
+  },
+  "scope": [
+    "代理工具",
+    "代理组溢出选择",
+    "配置顶栏新增",
+    "配置空态新增",
+    "Provider过滤",
+    "正文历史"
+  ],
+  "sourceReferences": [
+    {
+      "url": "https://developer.android.com/develop/ui/compose/touch-input/user-interactions/migrate-indication-ripple",
+      "retrieved": "2026-11-09",
+      "symbol": "LocalRippleConfiguration provides null",
+      "local": "ripple-reference.md"
+    },
+    {
+      "flutter": "be84736605527034689c95bf27828ff27d912c5e",
+      "prism": "63450c0",
+      "symbols": [
+        "popup.dart::_paintSource",
+        "popup.dart::_paintContent"
+      ],
+      "boundary": "仅参考Flutter渲染意图，不认定Flutter有Kotlin Material3同一缺陷，不合并Flutter提交。"
+    }
+  ],
+  "performance": {
+    "baseline": {
+      "open": {
+        "frames": 228,
+        "janky": 129,
+        "percent": 56.579
+      },
+      "expand": {
+        "frames": 187,
+        "janky": 24,
+        "percent": 12.834
+      },
+      "fold": {
+        "frames": 133,
+        "janky": 20,
+        "percent": 15.038
+      },
+      "close": {
+        "frames": 179,
+        "janky": 20,
+        "percent": 11.173
+      }
+    },
+    "no-text-blur": {
+      "open": {
+        "frames": 235,
+        "janky": 141,
+        "percent": 60.0
+      },
+      "expand": {
+        "frames": 184,
+        "janky": 24,
+        "percent": 13.043
+      },
+      "fold": {
+        "frames": 131,
+        "janky": 19,
+        "percent": 14.504
+      },
+      "close": {
+        "frames": 181,
+        "janky": 18,
+        "percent": 9.945
+      }
+    },
+    "hidden-ripple": {
+      "open": {
+        "frames": 209,
+        "janky": 72,
+        "percent": 34.45
+      },
+      "expand": {
+        "frames": 194,
+        "janky": 19,
+        "percent": 9.794
+      },
+      "fold": {
+        "frames": 134,
+        "janky": 16,
+        "percent": 11.94
+      },
+      "close": {
+        "frames": 180,
+        "janky": 17,
+        "percent": 9.444
+      }
+    },
+    "baseline2": {
+      "open": {
+        "frames": 228,
+        "janky": 130,
+        "percent": 57.018
+      },
+      "expand": {
+        "frames": 182,
+        "janky": 28,
+        "percent": 15.385
+      },
+      "fold": {
+        "frames": 134,
+        "janky": 16,
+        "percent": 11.94
+      },
+      "close": {
+        "frames": 179,
+        "janky": 17,
+        "percent": 9.497
+      }
+    },
+    "final": {
+      "open": {
+        "frames": 205,
+        "janky": 67,
+        "percent": 32.683
+      },
+      "expand": {
+        "frames": 189,
+        "janky": 21,
+        "percent": 11.111
+      },
+      "fold": {
+        "frames": 136,
+        "janky": 15,
+        "percent": 11.029
+      },
+      "close": {
+        "frames": 180,
+        "janky": 17,
+        "percent": 9.444
+      }
+    }
+  },
+  "windowBreakdown": {
+    "windows": {
+      "baseline": {
+        "MainActivity": {
+          "janky": 83,
+          "frames": 97
+        },
+        "弹出式窗口": {
+          "janky": 46,
+          "frames": 125
+        }
+      },
+      "no-text-blur": {
+        "MainActivity": {
+          "janky": 91,
+          "frames": 108
+        },
+        "弹出式窗口": {
+          "janky": 50,
+          "frames": 121
+        }
+      },
+      "hidden-ripple": {
+        "MainActivity": {
+          "janky": 47,
+          "frames": 56
+        },
+        "弹出式窗口": {
+          "janky": 25,
+          "frames": 147
+        }
+      },
+      "baseline2": {
+        "MainActivity": {
+          "janky": 83,
+          "frames": 99
+        },
+        "弹出式窗口": {
+          "janky": 47,
+          "frames": 123
+        }
+      },
+      "final": {
+        "MainActivity": {
+          "janky": 42,
+          "frames": 53
+        },
+        "弹出式窗口": {
+          "janky": 25,
+          "frames": 146
+        }
+      }
+    },
+    "batteryCelsius": {
+      "baseline": [
+        27.6,
+        27.9
+      ],
+      "no-text-blur": [
+        28.2,
+        28.4
+      ],
+      "hidden-ripple": [
+        28.2,
+        28.1
+      ],
+      "baseline2": [
+        28.5,
+        28.3
+      ],
+      "final": [
+        28.5,
+        28.6
+      ]
+    }
+  },
+  "performanceScope": {
+    "eachBatchTerminalChecks": 24,
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "cyclesPerTheme": 3,
+    "screenshotsDuringMeasuredWindows": false,
+    "methodSamplingDuringMeasuredWindows": false,
+    "instrumentationDuringMeasuredWindows": false,
+    "order": [
+      "baseline",
+      "no-text-blur",
+      "hidden-ripple",
+      "baseline2",
+      "final"
+    ],
+    "randomized": false,
+    "result": "打开130/228(57.018%)→67/205(32.683%)；关闭17/179→17/180，未见退化。整体仍PARTIAL。",
+    "gpuAttribution": "未取得原生线程栈或sched，不称GPU/驱动/BlurEffect根因已确认。"
+  },
+  "visual": {
+    "terminalPairs": [
+      {
+        "theme": "dark",
+        "frame": "root",
+        "maxChannelDifference": 0,
+        "meanChannelDifference": 0.0
+      },
+      {
+        "theme": "dark",
+        "frame": "sub",
+        "maxChannelDifference": 0,
+        "meanChannelDifference": 0.0
+      },
+      {
+        "theme": "dark",
+        "frame": "fold",
+        "maxChannelDifference": 0,
+        "meanChannelDifference": 0.0
+      },
+      {
+        "theme": "dark",
+        "frame": "closed",
+        "maxChannelDifference": 0,
+        "meanChannelDifference": 0.0
+      },
+      {
+        "theme": "light",
+        "frame": "root",
+        "maxChannelDifference": 0,
+        "meanChannelDifference": 0.0
+      },
+      {
+        "theme": "light",
+        "frame": "sub",
+        "maxChannelDifference": 0,
+        "meanChannelDifference": 0.0
+      },
+      {
+        "theme": "light",
+        "frame": "fold",
+        "maxChannelDifference": 0,
+        "meanChannelDifference": 0.0
+      },
+      {
+        "theme": "light",
+        "frame": "closed",
+        "maxChannelDifference": 0,
+        "meanChannelDifference": 0.0
+      }
+    ],
+    "excludedRegion": "截图顶部100px系统状态栏",
+    "terminalImagesReviewed": true,
+    "continuousFramesEquivalentClaimed": false,
+    "transitionScreenshotBoundary": "玻璃开场两图为源按钮中间状态；回源图确认绘制存在，未宣称所有动效帧一致。"
+  },
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 572,
+        "executed": true
+      },
+      "service": {
+        "tests": 213,
+        "reused": true
+      },
+      "core": {
+        "tests": 38,
+        "reused": true
+      },
+      "common": {
+        "tests": 31,
+        "reused": true
+      },
+      "total": 854,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debug": true,
+    "signedReleaseR8": true,
+    "motionFixture": true,
+    "testApkFinalBuild": "build-final-tests3.log",
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 68,
+        "hints": 14
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 13
+      }
+    },
+    "finalTestLint": "lint-final-tests3.log"
+  },
+  "diagnostics": {
+    "noTextBlur": "打开无收益；临时禁用效果已撤回，原源码保持。",
+    "simpleperf": {
+      "shellControl": "cpu-cycles:u计数成功",
+      "taskClockUser": "u/k修饰符被kernel拒绝",
+      "taskClock": "提示必须使用:u",
+      "formalPid": "Permission denied",
+      "profileableFixturePid": "Permission denied",
+      "profileableFixtureApp": "simpleperf_app_runner不能设置SELinux context",
+      "profileableManifestConfirmed": true,
+      "nativeSamplesObtained": false,
+      "temporaryManifestAndTestRemoved": true,
+      "deviceGlobalSecurityChanged": false
+    },
+    "originalFailure": "首轮回归10/11，Provider新增取消用例Espresso.pressBack等待无焦点的底层Activity失败；复用既有系统Back helper并断言Popup消失后完整复测，产品未改。"
+  },
+  "install": {
+    "package": "com.lonnnnnng.flclash",
+    "versionName": "0.1.0",
+    "versionCode": 1000,
+    "sha256": "8e2f579c1f23377b57322ab31fd87b91c4798e6f7f5608f9df4c76490005d110",
+    "installedMatches": true,
+    "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "publicReleaseReplaced": false
+  },
+  "boundaries": [
+    "正式包性能验证为停止态菜单；未外推实网/VPN负载、低API、蜂窝或全部OEM。",
+    "原配置未删除/编辑，实际节点选择通过UI维持；没有正式Room逐字段快照，不称全库保持验收。",
+    "关闭Popup销毁后的逐帧明细缺口仍在；关闭jank采用窗口累计结果。",
+    "本地签名修正版覆盖安装，不重发已公开0.1.0资产。"
+  ],
+  "artifacts": "../acceptance-artifacts/menu-native-20261109/",
+  "sourceSha256": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuSource.kt": "c3484148874140e29bfb4be6c09c7d3af79367b9087c0cc794fc3f32b72116b0",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "b5f1163f282bc656f8d70784b0acefd8d5f02f82ec613c2008f54e1525188cae",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupsPage.kt": "db84f40620cdf9a90f9bd782edfd34220b948e6f62dee256a6bfd42e777d890f",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProviderOptionsPage.kt": "4fa4edaefe644c0820e956fb84349af9f586b026996db43ef6ac466bb44676d5",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDocumentEditor.kt": "305b648289363a3f82cad5a97bf16e5abdb9a44602a76ee09be23b34f16b119b",
+    "android/tests/instrumented/LiquidMenuInstrumentedTest.kt": "774458f3161d5c462117f62c41822d4f740c1f4bd08a2f81bd1ef905a5b62f35",
+    "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt": "3a6f0afb505effd63bb22759fd4d81b029ef681c24221229952ec3d0d62beb04",
+    "android/tests/instrumented/ProviderPagesInstrumentedTest.kt": "58c5655515a8003481e0e7b4ae1de0240f7f3d9e946b7076a20bf0c8a8a5f085"
+  },
+  "regression": {
+    "passed": 11,
+    "failed": 0,
+    "run": "final-regression2",
+    "selector": [
+      "LiquidMenuInstrumentedTest",
+      "ProxyPageParityInstrumentedTest#overflowingGroupsCanBePickedAndSearchClearsWithoutLosingSelection",
+      "ProxyPageParityInstrumentedTest#overflowingGroupMenuSupportsKeyboardSelectionAndEscapeDismissal",
+      "ProxyPageParityInstrumentedTest#sortSubmenuSupportsKeyboardEscapeAndAppliesNameOrder",
+      "ProfilesVisualInstrumentedTest",
+      "ProfileDocumentUiInstrumentedTest#textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+      "ProviderPagesInstrumentedTest#filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear"
+    ],
+    "pngCount": 20,
+    "pngHashVerified": true,
+    "contactSheetsReviewed": 3,
+    "fixtureInstalledSha256": {
+      "com.lonnnnnng.flclash.motion": "a4bd35b628665f072173c8cde1ee785a9ade4a4a10162cc7995fa563b4abd1db",
+      "com.lonnnnnng.flclash.motion.test": "6eb8721f125a9a9abbb29732d1776d934fc382a05e879ba8cbb01c346d5ada6a"
+    },
+    "previousFailure": {
+      "run": "final-regression",
+      "passed": 10,
+      "failed": 1,
+      "retained": true
+    },
+    "boundary": "隔离motion夹具/UI行为回归，不冒充正式Room、VPN或冷进程实网验收。"
+  },
+  "cleanup": {
+    "fixturePackagesRemoved": true,
+    "ownXmlFilesRemoved": true,
+    "failedPerfFilesRemoved": [
+      {
+        "path": "/data/local/tmp/kclash-native-menu-2.data",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "installedFinalSha256": "8e2f579c1f23377b57322ab31fd87b91c4798e6f7f5608f9df4c76490005d110",
+    "nightMode": "Night mode: yes",
+    "fontScale": "1.0",
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "formalDataCleared": false,
+    "flutterPackageOperated": false
+  },
+  "artifactSha256": {
+    "build-final.log": "ccc99008cc2d354606a23c3ff1ec39414555e42d72458f47b856ccc68d106d0f",
+    "build-final-fixture.log": "7aa709093e87a29ac67b3ad834f51dcbd2eceef4b531ea0234a441cf0e7138dc",
+    "build-final-tests3.log": "de5e6b4dd5fdd3b52d80a2d8174f9af99cb2a4aaf0f4143ddeb289460fff0f3a",
+    "lint-final.log": "2ca1cdfaf9420f2eec8ac79576ed9c86510b590f9b195620a5e91e4e15287768",
+    "final-regression.log": "98934bb15ea7167808f75d73b89e0ab16f1bfb09817cb52936f6e7ca2714d91f",
+    "final-regression2.log": "bcad88d049ed6f54b4064663618126bbe30ea6535650aa22139091047eadf48b",
+    "native-record1.log": "b9390d75296dcf0f555c1e641bb59460df1a2e5ad1f7e9978765dac9fe01bc21",
+    "native-record2.log": "1b7a8742d2b3b1872b708e3b774d01789a83e8d3df4ae07a52854c09aa4f64cd",
+    "simpleperf-shell-control.log": "8b3cb1d60af57986be35025cf9579aacd0e7a98299c49ac84b6cf873d37ed4f7",
+    "ripple-reference.md": "7eb78ca17d9d7a9153e38aebdb9efd482c32a2f63633e63c37b53a95a03281d9",
+    "performance-comparison.json": "3b3eec401cf3ee10251f571652aba964aa532bcceacc0e23b0db9ff0bbe1ae96",
+    "window-final-comparison.json": "4e3ecfaf16d5b69f83763aab829356cf8c072b0de0a90bc0578ba60cb7cfdb33",
+    "terminal-visual-comparison.json": "b260c3b2de0566714ba8783f291d53b1ec8464682fb47a78d486dada29d9324c",
+    "cleanup.json": "783f44896327862cd9e9ed44406151c55a53c2236cc629aa0c43bb1b63a25cc1",
+    "regression2-png/provider_filter_members.png": "52b700c2f50e6a208a63ffaa9886b08f09e47adc18f872cf018a235c926cb1b4",
+    "regression2-png/profiles_empty_light.png": "e927577b0286da4661107040263b601bd2f143a5e3723a07a3294585661728c6",
+    "regression2-png/profile_document_dark_exit.png": "ed73df70836b0a1b53f6d97717fb340d1e1dea0cfb294563d3e3486e72edbeca",
+    "regression2-png/liquid_open_false_false.png": "715d3a1b04549784f081ef149d89362eca4ccaadf1cdc97dbf7ce1e6c75ad508",
+    "regression2-png/liquid_open_true_false.png": "0e4d56c8a829ef079de61d3f663755450af9a10f1abd97b0f380cc2f9a9f599b",
+    "regression2-png/liquid_return_false_true.png": "c9aee6f3ac2fd1bbde08967f1e49ad931a5ceb9787e050b1b53d53a1d0d6d27d",
+    "regression2-png/liquid_return_false_false.png": "af69c1a86a2eb74663338d6f456d1795629e722b1d8daa1d7b55d1333967a3e6",
+    "regression2-png/profiles_remote_usage_light.png": "6e51244231247327cc81e78863c96481e3e5f9b8ed94beb7f77dc46c2dd22019",
+    "regression2-png/profiles_source_menu_light.png": "00a8966ec00127e0292fbf3f6d0d409e0103bdbefc6323cb3a424965c199fabf",
+    "regression2-png/profiles_remote_usage.png": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
+    "regression2-png/proxy_keyboard_name_sort.png": "558f51da091307017f3206ab0043796124fbc0524356b0f02ab56cd234bc7d0a",
+    "regression2-png/liquid_return_true_false.png": "22bebe5d1b878844dab360134ff279dd212212941e4de0c60db6756e8863f5fc",
+    "regression2-png/liquid_open_false_true.png": "e4bbc1451511e1e1d31c5d1b56f5c76aa708e2508c6b83f51de95db71b8048fe",
+    "regression2-png/liquid_return_true_true.png": "f1a1c44474f08b7e4f6c44510cdb42ece43ee1e6a068fb64a4115dfa6ac5fcbd",
+    "regression2-png/profiles_source_menu_dark.png": "878177b97cd41029e2723e6d94c29c7b9e76b858dd68d863efee05dc7656336e",
+    "regression2-png/profiles_custom_selected_light.png": "8746be9c5c380e7d59d9e11deba5b32d1be41a7d6b76d7c5ebc46befa0a0c748",
+    "regression2-png/profiles_custom_selected.png": "cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04",
+    "regression2-png/liquid_open_true_true.png": "e251c442cf9a61e58fbbf22b41b5f105ad916bd68842b630572a1495a4d22103",
+    "regression2-png/profile_document_light_failed_search.png": "317d046e8b6153e6be1fa4252433224b71914b7cbdcd8462e0b03d0f34cac545",
+    "regression2-png/profiles_empty.png": "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b",
+    "final-dark/1-close.gfx": "ec9fac6e45d4ea29c05c1c8e4dd409872549556c6caf2ead3a7294a3bc062ff9",
+    "final-dark/1-expand.gfx": "8f3231d4e8ab71e433ce0bcaf7832dbd6441ad1e0cbc7724a4bbdbb5efd51532",
+    "final-dark/2-open.gfx": "83fd2246f708e55638ebb39e8d9d5d71a7b147d8f37f49393d8171227c292a17",
+    "final-dark/1-fold.gfx": "3a2e8f77c40938264cad90c314c7ba68556958a407a2f3a0a4e3939c564acbf6",
+    "final-dark/0-fold.gfx": "47eca0188f88934904219b2eded9a40cd6312c72b2845c7ae4343aa55fa77440",
+    "final-dark/0-close.gfx": "fc6144f99883f10416654b83bf8c3369e57918f420bc49ac2d49cb212eb290e5",
+    "final-dark/0-expand.gfx": "678d97f509e939c94bdcf5bc4485eaec8302a6d9404e469ceb6190a49951a845",
+    "final-dark/2-close.gfx": "f819a606af591e926ebc9c37b96ff2b731825e0dca91524012e368c197f971a1",
+    "final-dark/2-expand.gfx": "e0557d703db44abdf0e9391e43b7cf0f2fe87dc1a8f8c3b6dc8c00c62c8f9dee",
+    "final-dark/2-fold.gfx": "bb930c4071b597d4746b3d8932b6f1b8fe99ca30ce67191468715dd95fb7554a",
+    "final-dark/1-open.gfx": "bde1378a8579716a8987a09082bcf8853117eac4715fe697de72b98d92a24ea9",
+    "final-dark/0-open.gfx": "4157378164f43d128852a4990dd00597433d97f13b1aa4e34d21d280780f5971",
+    "final-light/1-close.gfx": "37bc5ac724e5367854f15d3881f51dd284fc6174f3831fcbbd050b9c055d06d6",
+    "final-light/1-expand.gfx": "977ad15f6a10f9d577e6cb63d39d016835c87ad4b595852f423d52d19da5128c",
+    "final-light/2-open.gfx": "26a5a8d16fbdf6c6d1c20cb2fab1f3de4b7e61d7986891674c36d5061cdea240",
+    "final-light/1-fold.gfx": "8fc30bbf0c4a97636375f31ab8aeb8e192a21b33139a574890fc1f406ed1d074",
+    "final-light/0-fold.gfx": "567a90d91675368aaff5d32c8aa73e64b9358cdcc8baa27e9148d7ab534ce9eb",
+    "final-light/0-close.gfx": "fc53b4c6f7778f4011564d0a52aafde60156c5728d532170d1f86bb750fd5581",
+    "final-light/0-expand.gfx": "12c088239845e9840076d0d44329ae79cc6b1b55eb53932b6660f364679c4fbb",
+    "final-light/2-close.gfx": "af90fc4af57da8ee851fd27c015f2f58442d827c5027471c23399fa8824e32db",
+    "final-light/2-expand.gfx": "457bdc402dd69a791ce3375d2000ffad6c7b6ba34af9a0c017dcc9d6d7c0b9a4",
+    "final-light/2-fold.gfx": "8f1c8a3a904bae27b5e25373d2e6fca0d003ac2e3948aa77a56746bc581750a5",
+    "final-light/1-open.gfx": "08768fda583580b8e4af5180914b95e9312764d466100f5ff0e0c74625725b46",
+    "final-light/0-open.gfx": "37a3a6d595808cd55d364e1ce5836e38329c9a0a5a35e05448992b191f800d04",
+    "lint-final-tests3.log": "21493e7a6f202fef062078ce1aa952401a3db5be1e302119f5548e87cb5a1706"
+  }
+}

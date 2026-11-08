@@ -102,7 +102,9 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                     Text("过滤", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                     Box {
                         val source = rememberAppMenuSource()
-                        IconButton(onClick = { menu = true }, enabled = !busy, modifier = Modifier.testTag("provider_filter_menu").appMenuSource(source)) { Icon(Icons.Outlined.MoreVert, null) }
+                        AppMenuSourceContent(source) {
+                            IconButton(onClick = { menu = true }, enabled = !busy, modifier = Modifier.testTag("provider_filter_menu").appMenuSource(source)) { Icon(Icons.Outlined.MoreVert, null) }
+                        }
                         AppDropdownMenu(menu && !busy, { menu = false }, source = source) {
                             AppDropdownMenuItem(text = { Text("沿用源过滤") }, enabled = filters.filter != null, onClick = { menu = false; changeFilters(filters.copy(filter = null, memberLayout = null)) })
                             AppDropdownMenuItem(text = { Text("沿用源排除过滤") }, enabled = filters.excludeFilter != null, onClick = { menu = false; changeFilters(filters.copy(excludeFilter = null, memberLayout = null)) })

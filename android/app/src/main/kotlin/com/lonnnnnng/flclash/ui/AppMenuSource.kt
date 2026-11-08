@@ -11,6 +11,8 @@ import android.view.PixelCopy
 import android.view.View
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.composed
@@ -40,6 +42,14 @@ internal class AppMenuSource {
 
 @Composable
 internal fun rememberAppMenuSource() = remember { AppMenuSource() }
+
+/** 作者 long：液滴接管按钮快照后取消不可见涟漪，避免背景Window持续重绘；按钮回源后恢复原交互反馈。 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun AppMenuSourceContent(source: AppMenuSource?, content: @Composable () -> Unit) {
+    val ripple = LocalRippleConfiguration.current
+    CompositionLocalProvider(LocalRippleConfiguration provides ripple.takeUnless { source?.hidden == true }, content = content)
+}
 
 internal fun Modifier.appMenuSource(source: AppMenuSource): Modifier = composed {
     val layer = rememberGraphicsLayer()

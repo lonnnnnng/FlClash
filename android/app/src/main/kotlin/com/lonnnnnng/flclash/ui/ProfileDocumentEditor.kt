@@ -96,7 +96,9 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
         }
     }, confirmButton = {
         Box {
-            IconButton({ history = true }, modifier = Modifier.appMenuSource(historySource).testTag("profile_document_history")) { AppGlyphIcon(AppGlyphs.more) }
+            AppMenuSourceContent(historySource) {
+                IconButton({ history = true }, modifier = Modifier.appMenuSource(historySource).testTag("profile_document_history")) { AppGlyphIcon(AppGlyphs.more) }
+            }
             AppDropdownMenu(history, { history = false }, source = historySource) {
                 AppDropdownMenuItem({ Text("撤销") }, {
                     history = false; redo.add(value.text); value = TextFieldValue(undo.removeAt(undo.lastIndex)); onChange(value.text)

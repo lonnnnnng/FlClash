@@ -32,7 +32,9 @@ class LiquidMenuInstrumentedTest {
             source = rememberAppMenuSource()
             Surface(Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding().padding(20.dp)) {
                 Text("配置与代理菜单", Modifier.align(Alignment.Center))
-                Button({ open = true }, Modifier.appMenuSource(source).align(Alignment.TopEnd).testTag("liquid_open")) { Text("菜单") }
+                AppMenuSourceContent(source) {
+                    Button({ open = true }, Modifier.appMenuSource(source).align(Alignment.TopEnd).testTag("liquid_open")) { Text("菜单") }
+                }
                 AppDropdownMenu(open, { open = false }, source = source) {
                     AppDropdownMenuItem({ Text("打开子页") }, { actions++; open = false }, Modifier.testTag("liquid_action"))
                     AppDropdownMenuItem({ Text("禁用项") }, { actions += 100 }, enabled = false)
@@ -42,7 +44,8 @@ class LiquidMenuInstrumentedTest {
         for (theme in listOf(false, true)) for (material in listOf(false, true)) {
             compose.runOnIdle { dark = theme; glass = material }
             compose.mainClock.autoAdvance = false
-            compose.onNodeWithTag("liquid_open").performClick()
+            // 作者 long：真实触点会启动按钮涟漪，覆盖隐藏期间取消动画与回源后的再次点击，语义点击无法验证这条路径。
+            compose.onNodeWithTag("liquid_open").performTouchInput { click() }
             compose.mainClock.advanceTimeByFrame()
             compose.waitUntil(5_000) { compose.mainClock.advanceTimeByFrame(); source.hidden }
             if (material) {
@@ -67,7 +70,7 @@ class LiquidMenuInstrumentedTest {
             compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
 
             compose.mainClock.autoAdvance = false
-            compose.onNodeWithTag("liquid_open").performClick()
+            compose.onNodeWithTag("liquid_open").performTouchInput { click() }
             compose.mainClock.advanceTimeByFrame()
             compose.waitUntil(5_000) { compose.mainClock.advanceTimeByFrame(); source.hidden }
             compose.mainClock.advanceTimeBy(48)
@@ -88,7 +91,9 @@ class LiquidMenuInstrumentedTest {
         compose.setContent { KClashTheme {
             source = rememberAppMenuSource()
             Box(Modifier.fillMaxSize().safeDrawingPadding()) {
-                Button({ open = true }, Modifier.appMenuSource(source).align(Alignment.TopEnd).testTag("liquid_open")) { Text("菜单") }
+                AppMenuSourceContent(source) {
+                    Button({ open = true }, Modifier.appMenuSource(source).align(Alignment.TopEnd).testTag("liquid_open")) { Text("菜单") }
+                }
                 AppDropdownMenu(open, { open = false }, source = source, carriedPointer = pointer) {
                     stack = checkNotNull(LocalAppMenuStack.current)
                     registry = checkNotNull(LocalAppMenuCarry.current)

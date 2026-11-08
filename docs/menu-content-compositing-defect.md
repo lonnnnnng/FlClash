@@ -86,3 +86,7 @@ Perfetto `ArtMethodTokenizer::ParseRecord` 在dual模式只使用墙钟；`slice
 下一步优先分离原生渲染线程等待、文字模糊合成与窗口初建，继续保留视觉门槛；RenderThread因果及完整性能仍未闭环。权威证据 `docs/acceptance/menu-methods-redmi-20261109.json`，原始trace、解码脚本、候选源码/APK和失败图片均在 `../acceptance-artifacts/menu-methods-20261109/`。
 
 最终采样入口追加窗口外1秒稳定等待，确保关闭从稳定菜单开始，最终build3构建及`methods-final-3`用例1/1通过、6份trace全部回收。初批上表保持为原窗口证据，不冒充首帧/完整关闭计时。最终三个关闭窗口的软件阴影CPU差值为111.111、96.912、147.148ms，继续支持热点判断；第3次打开有2条`slice_max_depth_exceeded`，不能称整组无损导入。每份前40个自耗时方法仍与独立解码的数量及墙钟核对一致，完整失败/限制保留；不通过重复采样挑选无错误结果覆盖原日志。
+
+## 后续已确认的改进方向（2026-11-09，KUI-022）
+
+进一步分窗核对发现，源按钮隐藏后Material3涟漪仍驱动背景Window。正式签名原包反测打开130/228帧jank，隐藏期间暂停源按钮涟漪后最终67/205；8对深浅终态逐像素一致。临时取消文字模糊无收益并撤回；原生Simpleperf采样在本ROM被SELinux上下文拒绝，失败探针保留。修复范围、复测与剩余边界见`docs/menu-hidden-source-ripple-defect.md`和`docs/acceptance/menu-source-ripple-redmi-20261109.json`。这不推翻本文件阴影负结果，也不表示原生RenderThread或全部慢帧已闭环。

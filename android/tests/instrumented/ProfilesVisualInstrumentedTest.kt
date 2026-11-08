@@ -59,6 +59,13 @@ class ProfilesVisualInstrumentedTest {
         assertPortraitDefaultFontConfiguration()
         composeRule.activityRule.scenario.onActivity { it.showTheme(false) }
         captureHash("empty_light")
+        // 作者 long：空态按钮也有液滴回源，真实点击后取消并重开，确认恢复点击反馈没有遗失入口。
+        repeat(2) {
+            composeRule.onNodeWithTag("profiles_empty_add").performTouchInput { click() }
+            composeRule.onNodeWithTag("profile_add_source_file").assertIsDisplayed()
+            androidx.test.espresso.Espresso.pressBack()
+            composeRule.onNodeWithTag("profiles_empty_add").assertIsDisplayed()
+        }
         composeRule.activityRule.scenario.onActivity { it.showCustomSelectedScenario() }
         captureHash("custom_selected_light")
         composeRule.activityRule.scenario.onActivity { it.showRemoteUsageScenario() }

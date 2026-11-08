@@ -235,12 +235,14 @@ internal fun ProfilesTopBarActions(
             }
         }
         Spacer(Modifier.size(8.dp))
-        IconButton(
-            onClick = onAdd,
-            enabled = !busy,
-            modifier = (if (addSource != null) Modifier.appMenuSource(addSource) else Modifier).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("profiles_add_fab")
-                .onGloballyPositioned { onAddAnchorChanged(it.boundsInWindow().roundToIntRect()) },
-        ) { AppGlyphIcon(AppGlyphs.addCircle) }
+        AppMenuSourceContent(addSource) {
+            IconButton(
+                onClick = onAdd,
+                enabled = !busy,
+                modifier = (if (addSource != null) Modifier.appMenuSource(addSource) else Modifier).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("profiles_add_fab")
+                    .onGloballyPositioned { onAddAnchorChanged(it.boundsInWindow().roundToIntRect()) },
+            ) { AppGlyphIcon(AppGlyphs.addCircle) }
+        }
         Spacer(Modifier.size(12.dp))
     }
 }
@@ -1868,11 +1870,13 @@ internal fun ProfilesPanel(
                     )
                     Spacer(Modifier.height(24.dp))
                     // 作者 long：空态和顶栏共享同一受理条件，启停/导入期间不能通过第二个入口重复开启配置操作。
-                    androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog, enabled = canMutateProfiles,
-                        modifier = Modifier.testTag("profiles_empty_add").appMenuSource(localAddSource).onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
-                        AppGlyphIcon(AppGlyphs.addCircle)
-                        Spacer(Modifier.size(8.dp))
-                        Text("添加配置")
+                    AppMenuSourceContent(localAddSource) {
+                        androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog, enabled = canMutateProfiles,
+                            modifier = Modifier.testTag("profiles_empty_add").appMenuSource(localAddSource).onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
+                            AppGlyphIcon(AppGlyphs.addCircle)
+                            Spacer(Modifier.size(8.dp))
+                            Text("添加配置")
+                        }
                     }
                 }
             }
