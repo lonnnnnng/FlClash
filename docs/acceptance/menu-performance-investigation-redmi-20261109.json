@@ -1,0 +1,272 @@
+{
+  "date": "2026-11-09",
+  "sourceBase": "78c3acff076b24678c4c0f154a0da75192801646",
+  "status": "hypotheses_rejected_closing_evidence_expanded",
+  "productionChangesRetained": false,
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "density": 440,
+    "fontScale": 1.0,
+    "nightRestored": "Night mode: yes",
+    "emulatorUsed": false
+  },
+  "baselineLocalSha256": "72527d6543808f6a09e33bf44fc42e6ff269a21e6a00fdb4d9006e370de6548d",
+  "restoredPublishedApkSha256": "ed063b9ba59d0825308b2d442da38e5e8ecdcb456cc7c55cd385f11b05ad1082",
+  "sourceRestoredToRelease": true,
+  "sourceYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+  "experiments": {
+    "baseline2": {
+      "decision": "control",
+      "stats": {
+        "open": {
+          "frames": 238,
+          "janky": 134,
+          "percent": 56.303
+        },
+        "expand": {
+          "frames": 176,
+          "janky": 35,
+          "percent": 19.886
+        },
+        "fold": {
+          "frames": 131,
+          "janky": 20,
+          "percent": 15.267
+        },
+        "close": {
+          "frames": 187,
+          "janky": 17,
+          "percent": 9.091
+        }
+      },
+      "terminalChecks": 24
+    },
+    "candidate": {
+      "decision": "transparent alpha layer: no target benefit",
+      "stats": {
+        "open": {
+          "frames": 224,
+          "janky": 133,
+          "percent": 59.375
+        },
+        "expand": {
+          "frames": 187,
+          "janky": 27,
+          "percent": 14.439
+        },
+        "fold": {
+          "frames": 130,
+          "janky": 21,
+          "percent": 16.154
+        },
+        "close": {
+          "frames": 177,
+          "janky": 19,
+          "percent": 10.734
+        }
+      },
+      "terminalChecks": 24
+    },
+    "cached": {
+      "decision": "cached software shadow: pixel identical, no target benefit",
+      "stats": {
+        "open": {
+          "frames": 226,
+          "janky": 136,
+          "percent": 60.177
+        },
+        "expand": {
+          "frames": 187,
+          "janky": 27,
+          "percent": 14.439
+        },
+        "fold": {
+          "frames": 136,
+          "janky": 17,
+          "percent": 12.5
+        },
+        "close": {
+          "frames": 176,
+          "janky": 18,
+          "percent": 10.227
+        }
+      },
+      "terminalChecks": 24
+    },
+    "layer": {
+      "decision": "source GraphicsLayer reuse: small open difference, closing worse; rejected",
+      "stats": {
+        "open": {
+          "frames": 221,
+          "janky": 119,
+          "percent": 53.846
+        },
+        "expand": {
+          "frames": 190,
+          "janky": 24,
+          "percent": 12.632
+        },
+        "fold": {
+          "frames": 134,
+          "janky": 16,
+          "percent": 11.94
+        },
+        "close": {
+          "frames": 178,
+          "janky": 20,
+          "percent": 11.236
+        }
+      },
+      "terminalChecks": 24
+    }
+  },
+  "closingLive": {
+    "scope": "Closing lifetime diagnostic only; shell dispatch not touch timestamp; no CPU thread attribution",
+    "samples": [
+      {
+        "pauseSeconds": 0.12,
+        "dumpStartFromDispatchMs": 132.35,
+        "dumpEndFromDispatchMs": 264.18,
+        "flagZeroRows": 4,
+        "terminalClosed": true,
+        "uiInterval": {
+          "p50Ms": 34.036,
+          "maxMs": 75.928
+        },
+        "renderInterval": {
+          "p50Ms": 13.358,
+          "maxMs": 27.901
+        }
+      },
+      {
+        "pauseSeconds": 0.26,
+        "dumpStartFromDispatchMs": 263.43,
+        "dumpEndFromDispatchMs": 343.19,
+        "flagZeroRows": 9,
+        "terminalClosed": true,
+        "uiInterval": {
+          "p50Ms": 19.744,
+          "maxMs": 71.891
+        },
+        "renderInterval": {
+          "p50Ms": 5.763,
+          "maxMs": 25.172
+        }
+      },
+      {
+        "pauseSeconds": 0.38,
+        "dumpStartFromDispatchMs": 391.91,
+        "dumpEndFromDispatchMs": 485.18,
+        "flagZeroRows": 18,
+        "terminalClosed": true,
+        "uiInterval": {
+          "p50Ms": 9.617,
+          "maxMs": 62.191
+        },
+        "renderInterval": {
+          "p50Ms": 6.104,
+          "maxMs": 22.771
+        }
+      }
+    ]
+  },
+  "tests": {
+    "jvm": 854,
+    "failed": 0,
+    "lintDebug": {
+      "error": 0,
+      "warning": 68,
+      "hint": 14
+    },
+    "lintRelease": {
+      "error": 0,
+      "warning": 66,
+      "hint": 13
+    },
+    "scope": "Each built product candidate passed local checks; these do not prove performance. Restored product matches previously verified release source."
+  },
+  "visual": {
+    "pngCount": 20,
+    "pairs": [
+      {
+        "frame": "shadow_false_false_140",
+        "identical": true,
+        "softwareSha": "9c6b576052f2e7ab70cb9a297f9a72a6380a49da343753a2674e330059d2b2af",
+        "cachedSha": "9c6b576052f2e7ab70cb9a297f9a72a6380a49da343753a2674e330059d2b2af"
+      },
+      {
+        "frame": "shadow_false_false_300",
+        "identical": true,
+        "softwareSha": "c14730e1965b36479ec4453d2e8d48acfc3ea6f12d55bde9a43550cd2edf8bcb",
+        "cachedSha": "c14730e1965b36479ec4453d2e8d48acfc3ea6f12d55bde9a43550cd2edf8bcb"
+      },
+      {
+        "frame": "shadow_false_false_60",
+        "identical": true,
+        "softwareSha": "f6e1efcf47f65577874dfba8e221e2cff674c42b48d303235ebdecb02b9525ff",
+        "cachedSha": "f6e1efcf47f65577874dfba8e221e2cff674c42b48d303235ebdecb02b9525ff"
+      },
+      {
+        "frame": "shadow_false_true_120",
+        "identical": true,
+        "softwareSha": "adc02e9e362835448cb573d456e92b4f65872c4808070cfcd6c469a77e7434d1",
+        "cachedSha": "adc02e9e362835448cb573d456e92b4f65872c4808070cfcd6c469a77e7434d1"
+      },
+      {
+        "frame": "shadow_false_true_300",
+        "identical": true,
+        "softwareSha": "53b9cc22cae91875dbc502f8cc5f60a171236946f8e3f58e6cbe4e18e1d4c4a8",
+        "cachedSha": "53b9cc22cae91875dbc502f8cc5f60a171236946f8e3f58e6cbe4e18e1d4c4a8"
+      },
+      {
+        "frame": "shadow_true_false_140",
+        "identical": true,
+        "softwareSha": "65e730751486cffbb3f9ced2d62327cb04b97065f7fec2b0add3df07e9ae5b67",
+        "cachedSha": "65e730751486cffbb3f9ced2d62327cb04b97065f7fec2b0add3df07e9ae5b67"
+      },
+      {
+        "frame": "shadow_true_false_300",
+        "identical": true,
+        "softwareSha": "1de6c90e0ccf81d80b18675891a6b206c2775a091e94db004909eacc0839153a",
+        "cachedSha": "1de6c90e0ccf81d80b18675891a6b206c2775a091e94db004909eacc0839153a"
+      },
+      {
+        "frame": "shadow_true_false_60",
+        "identical": true,
+        "softwareSha": "b08940e8a17d0ea11f6a1060040789e57c9345194706236809f70a204994146c",
+        "cachedSha": "b08940e8a17d0ea11f6a1060040789e57c9345194706236809f70a204994146c"
+      },
+      {
+        "frame": "shadow_true_true_120",
+        "identical": true,
+        "softwareSha": "9d3c2c67ad3e374581b026cf2d1be3157ae045eee1300cab6477848985e17fa3",
+        "cachedSha": "9d3c2c67ad3e374581b026cf2d1be3157ae045eee1300cab6477848985e17fa3"
+      },
+      {
+        "frame": "shadow_true_true_300",
+        "identical": true,
+        "softwareSha": "2e28e16c2b621dd298c1943784d134aa948305ac40db90b508d471071e8bbf1d",
+        "cachedSha": "2e28e16c2b621dd298c1943784d134aa948305ac40db90b508d471071e8bbf1d"
+      }
+    ],
+    "pixelIdentical": true,
+    "fixtureScope": "10 fixed motion frames, two themes; not whole-window dynamic equivalence"
+  },
+  "liquidInteraction": {
+    "tests": 4,
+    "failed": 0,
+    "pngs": 8,
+    "scope": "Source-layer candidate in isolated .motion fixture; two glass opening captures show source transition, not final expanded geometry"
+  },
+  "excluded": [
+    "baseline-dark package pull overlapped; excluded from before/after aggregate",
+    "hardware shadow failed pixel gate twice; not benchmarked as accepted candidate",
+    "Perfetto not rerun; prior ROM flush failure remains",
+    "gfxinfo UI/render intervals are elapsed phases, not CPU attribution"
+  ],
+  "finalState": "published 0.1.0 installed; test packages removed; core stopped; automatic selection and one authorized profile retained; original system dark theme restored",
+  "artifacts": "../acceptance-artifacts/menu-transparent-20261109/",
+  "next": "Profile main-thread work in first open and first 100ms of closing; capture closing-window frames before disappearance. Do not repeat already rejected readback/alpha/cache hypotheses without new evidence."
+}

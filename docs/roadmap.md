@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **菜单性能调查（2026-11-09，KUI-021）**：完成透明正文图层、硬件阴影、缓存软件阴影、源按钮图层复用四种候选核验。三个签名R8候选深浅各三轮24/24终态均通过，854JVM/双Lint通过，但首开/关闭无充分收益；硬件阴影未过外观门禁，全部撤回，产品源码与公开0.1.0保持一致。缓存软件阴影10对固定帧像素完全一致仍不足以证明性能。新增关闭窗口存活期诊断回收4/9/18条帧，早段UI区间最大75.928ms、渲染最大27.901ms，仅经过时间不作CPU归因。下一步采样首开/关闭前100ms的主线程工作，保留关闭前帧表。公开APK已恢复到Redmi，测试包清理、night=yes、服务停止；原配置/1.yaml保持。证据 `docs/acceptance/menu-performance-investigation-redmi-20261109.json`，溯源 `docs/menu-content-compositing-defect.md`。
+
 > **发布后接续（2026-11-09，正式Release菜单基线）**：公开0.1.0签名R8包在Redmi停止态深色、冷进程三轮真实菜单开/展开/收回/关闭，12/12终态通过；无录屏/截图采样。打开68/116帧jank（58.62%）、展开14/92（15.22%）、收回10/65（15.38%）、关闭10/90（11.11%）。这是真实配置正式包基线，不能与旧.motion夹具直接比较；关闭Popup消失后每轮只剩1条Flags=0记录，RenderThread仍未归因。下一步优先正式菜单首开，关闭需在窗口消失前采帧再归因；透明内容层是源码候选，尚未修改/证实收益。证据 `docs/acceptance/release-menu-redmi-20261109.json`。
 
 > **正式发布完成（2026-11-09，KClash 0.1.0）**：中英文README、独立发布密钥/备份和标签签名CI已落地；`kclash-v0.1.0`固定`961b147d`，versionCode1000，Release为非预发布/Latest。CI[42511426890](https://github.com/lonnnnnng/FlClash/actions/runs/42511426890)全通过，854项JVM、本地双Lint与Go双层race通过；KREL-001正式YAML导入崩溃、KUI-020出口闪烁/网速跳高已修并留溯源。公开APK下载SHA256/资产digest/签名/版本/ABI全部核对，Redmi安装回拉一致；公开包67.7秒16次样本0查询态、IP/国家不变、卡片间距恒定617px（旧694px），VPN/tun0、停止/冷启动通过。本地最终固定/自动两轮各18次也通过。手机保留正式包、一份授权本地配置和原自动选择，服务停止；后续只用Redmi。发布页：https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.0 。证据 `docs/acceptance/release-0.1.0-20261109.json`。跨版本升级、完整视觉/性能、低API及蜂窝/OEM仍PARTIAL，玻璃默认关闭。
