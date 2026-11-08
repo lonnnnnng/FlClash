@@ -56,6 +56,7 @@ class ProfilesTestActivity : ComponentActivity() {
                             state = ProfilesUiState(
                                 profiles = profiles,
                                 currentProfileId = profiles.firstOrNull()?.id,
+                                proxyGroupCounts = mapOf(601L to 6),
                             ),
                             toolbarAction = toolbarAction,
                             onToolbarActionHandled = { toolbarAction = null },

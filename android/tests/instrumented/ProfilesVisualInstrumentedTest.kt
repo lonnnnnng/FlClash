@@ -32,6 +32,7 @@ class ProfilesVisualInstrumentedTest {
         composeRule.onAllNodesWithTag("profiles_sync_all").assertCountEquals(0)
         composeRule.activityRule.scenario.onActivity { it.showCustomSelectedScenario() }
         actual["custom_selected"] = captureHash("custom_selected")
+        composeRule.onNodeWithTag("profile_groups_count_601", useUnmergedTree = true).assertIsDisplayed()
         composeRule.onNodeWithTag("profiles_sync_all").assertIsDisplayed()
         composeRule.activityRule.scenario.onActivity { it.showRemoteUsageScenario() }
         actual["remote_usage"] = captureHash("remote_usage")
@@ -42,7 +43,7 @@ class ProfilesVisualInstrumentedTest {
         // 作者 long：此组基线经重置后的旧包/候选包逐图哈希对照；环境变化独立记录在KUI-019，不能冒充Flutter像素一致。
         val expected = mapOf(
             "empty" to "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b",
-            "custom_selected" to "8787bf4afbbcaddf18c0817afd2d59113e2542c301ef164b93b4715c41271bfa",
+            "custom_selected" to "cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04",
             "remote_usage" to "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
         )
         val mismatches = actual.mapNotNull { (state, hash) ->

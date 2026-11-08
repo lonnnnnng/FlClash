@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.async
@@ -60,6 +61,7 @@ data class ProfilesUiState(
     val orderRevision: Long = 0,
     val orderError: String? = null,
     val profilesLoaded: Boolean = true,
+    val proxyGroupCounts: Map<Long, Int?> = emptyMap(),
 )
 
 data class ProfileEditorUiState(
@@ -289,16 +291,33 @@ class ProfilesViewModel internal constructor(
     private var overviewJob: kotlinx.coroutines.Job? = null
     val ageKeyRequired: StateFlow<Boolean> = mutableAgeKeyRequired
 
+    private val proxyGroupCounts: StateFlow<Map<Long, Int?>> = repository.profiles
+        .map { profiles ->
+            withContext(Dispatchers.IO) {
+                profiles.asSequence()
+                    .filter { it.type == ProfileType.CUSTOM }
+                    .associate { profile ->
+                        profile.id to runCatching {
+                            // 作者 long：组数只展示本地 CUSTOM 正文的已解析组，缺失或损坏时隐藏芯片，避免把错误正文显示成 0 组。
+                            ProxyGroupDrafts.read(repository.readProfileSourceContent(profile.id)).size
+                        }.getOrNull()
+                    }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
     val state: StateFlow<ProfilesUiState> = flow {
         // 作者 long：先等仓库首读与选择校正完成再订阅快照，避免独立合流把就绪标记配到旧空列表并误关恢复中的详情。
         repository.profilesLoaded.first { it }
-        emitAll(combine(
+        val base = combine(
             repository.profiles,
             repository.currentProfileId,
             busy, mutableSync, orderResult,
         ) { profiles, currentId, isBusy, sync, order ->
-            ProfilesUiState(profiles, currentId, isBusy, repository.proxyResourceUsage(), sync, order.first, order.second)
-        })
+            ProfilesUiState(profiles, currentId, isBusy = isBusy, resourceUsers = repository.proxyResourceUsage(), sync = sync,
+                orderRevision = order.first, orderError = order.second)
+        }
+        emitAll(combine(base, proxyGroupCounts) { state, counts -> state.copy(proxyGroupCounts = counts) })
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfilesUiState(profilesLoaded = false))
 
     val errors = mutableErrors.asSharedFlow()

@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-09",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "fontScale": "1.0",
+    "orientation": "portrait"
+  },
+  "source": {
+    "workingTreeDiffSha256": "05fb0eaa6a03b7cf222ba185399af9ab7f0131c90788bcc0f7bd60fa0b97430b",
+    "appDebugSha256": "eba6d4b80f0a5028006ff58427e4894093277c4d7991493ec051d46d8e49224d",
+    "testDebugSha256": "f1914f368537f6def5b3fb22e2c9886a5b5b34a2ee014dffcdee8f48cc6121ed"
+  },
+  "customGroupsChip": {
+    "test": "ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline",
+    "result": "1/1",
+    "fixture": "CUSTOM profile 601 with 6 parsed proxy groups",
+    "chip": {
+      "text": "6",
+      "tag": "profile_groups_count_601",
+      "contentDescription": "代理组数量 6",
+      "customSelectedPngSha256": "cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04",
+      "remoteUsageBaselinePreserved": true
+    },
+    "longListRegression": "ProfilesPageParityInstrumentedTest#selectedProfileRevealsInLongListAndLongPressKeepsSelection 1/1"
+  },
+  "dashboardSummary": {
+    "tests": [
+      "DashboardInstrumentedTest#dashboardRunningStateRendersMainCardsWithoutDiagnosticExtras",
+      "DashboardInstrumentedTest#dashboardShowsSessionDurationAndSampledHistoryAcrossRecreation"
+    ],
+    "result": "2/2",
+    "trafficShape": "upload/download dual cards with 30-point history",
+    "threeColumnShape": "connections/requests/DNS summary",
+    "flutterParityCorrection": "Flutter mobile reference also uses upload/download dual cards; no three-column traffic card"
+  },
+  "boundaries": {
+    "fixtureOnly": true,
+    "formalProfileCount": 0,
+    "servicesRunning": false,
+    "flutterReferencePresent": false,
+    "localYamlUnchanged": true
+  }
+}

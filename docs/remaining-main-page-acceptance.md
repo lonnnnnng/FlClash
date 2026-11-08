@@ -75,10 +75,12 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 内存详情子页已完成本轮固定 fixture 真机视觉验收：`DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight` Redmi `1/1`，深浅主题卡片、详情面板和完整窗口截图已回收并目视，无重叠或裁切。证据 `docs/acceptance/menu-rendering-diagnostic-redmi-20261109.json`、`../acceptance-artifacts/memory-visual-redmi-20261109/`；固定 fixture 不代表真实 Go 内存数值或 Flutter 同版本逐像素一致。
 
+CUSTOM 配置卡组数芯片已完成固定 fixture 真机视觉验收：`ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline` `1/1`，6 组芯片与选中标记并存；长列表选中/长按回归 `1/1`。首页统计核对 `DashboardInstrumentedTest` 运行态与历史重建 `2/2`，确认上传/下载双块、30 点历史和连接/请求/DNS 三列摘要；Flutter 手机参考同样是双流量块，旧“无流量三列统计”描述已纠正。证据 `docs/acceptance/custom-profile-chip-dashboard-redmi-20261109.json`。
+
 ## 视觉、异常与后续顺序
 
 1. 优先继续菜单首次打开、关闭卡顿率退化与剩余RenderThread慢帧，分开启动首帧、主线程、RenderThread及Buffer Stuffing；在当前分段测量基础上补正式R8运行边界。KUI-018/019已证实的缓存及收回收益保留，旧31.62%与中间面板退化记录不覆盖，整体流畅度仍未完成。
-2. 继续CUSTOM组数芯片、首页无流量三列统计及其余子页完整视觉；内存详情固定 fixture 已验，仍需真实 Go 数值和可复现的固定Flutter运行对比。逐页列明实际比较状态，不用Kotlin自身截图哈希证明Flutter一致。浅色正式状态栏、逐帧连续性和最终性能独立核验。
+2. 继续其余子页完整视觉；CUSTOM 组数芯片、首页双向流量/历史与连接三列摘要的固定 fixture 已验，仍需真实 Go 数值和可复现的固定Flutter运行对比。逐页列明实际比较状态，不用Kotlin自身截图哈希证明Flutter一致。浅色正式状态栏、逐帧连续性和最终性能独立核验。
 3. 回补第6项元数据/mtime保护异常、未知偏好变化、Provider运行态 final6-before 超时和网络恢复稳定性。原失败保留，后续绿测不反向证明原因。
 4. 蜂窝可用后补 Wi-Fi↔蜂窝，其余首次安装/第三方入口/OEM 按真实条件逐项验收。
 5. 再推进第10项实时背景/触点光效、玻璃品质、8 MiB 正文性能，以及第11项低 API、远端 CI、独立签名和 Release 真机/更新/发布资产；当前已观测的动效掉帧按第1项优先处理。

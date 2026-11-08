@@ -73,6 +73,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -1898,6 +1900,7 @@ internal fun ProfilesPanel(
                                 ProfileCard(
                                     modifier = Modifier.weight(1f),
                                     profile = profile,
+                                    proxyGroupCount = state.proxyGroupCounts[profile.id],
                                     selected = profile.id == state.currentProfileId,
                                     canMutate = canMutateProfiles,
                                     canEdit = canMutateProfiles,
@@ -4232,6 +4235,7 @@ internal fun ProfileCard(
     modifier: Modifier = Modifier,
     canEdit: Boolean = canMutate,
     canDelete: Boolean = canMutate,
+    proxyGroupCount: Int? = null,
 ) {
     var showActions by remember(profile.id, canMutate, canEdit, canDelete, exportBusy) { mutableStateOf(false) }
     var showMore by remember(profile.id, canMutate, canEdit, canDelete, exportBusy) { mutableStateOf(false) }
@@ -4267,8 +4271,27 @@ internal fun ProfileCard(
                             style = androidx.compose.ui.text.TextStyle(fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
+                            // 作者 long：只有带组数芯片的 CUSTOM 卡需要为徽标保留稳定宽度，其他配置沿用原有标题测量，避免无关截图变化。
+                            modifier = if (profile.type == ProfileType.CUSTOM && proxyGroupCount != null) Modifier.weight(1f)
+                            else Modifier.weight(1f, fill = false),
                         )
+                        if (profile.type == ProfileType.CUSTOM && proxyGroupCount != null) {
+                            Surface(
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .semantics { contentDescription = "代理组数量 $proxyGroupCount" }
+                                    .testTag("profile_groups_count_${profile.id}"),
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = .15f),
+                                contentColor = MaterialTheme.colorScheme.primary,
+                            ) {
+                                Text(
+                                    compactProfileGroupCount(proxyGroupCount),
+                                    style = androidx.compose.ui.text.TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 1.dp),
+                                )
+                            }
+                        }
                         expiryDate?.let { date ->
                             Surface(
                                 modifier = Modifier.padding(start = 8.dp),
@@ -4425,6 +4448,18 @@ internal fun ProfileCard(
         confirmButton = { TextButton(onClick = { showUpdateError = false; onUpdate() }, enabled = canMutate) { Text("重试") } },
         dismissButton = { TextButton(onClick = { showUpdateError = false }) { Text("关闭") } },
     )
+}
+
+private fun compactProfileGroupCount(value: Int): String = when {
+    value < 1_000 -> value.toString()
+    value < 1_000_000 -> {
+        val compact = value / 1_000f
+        if (compact % 1f == 0f) "${compact.toInt()}K" else "${"%.1f".format(java.util.Locale.ROOT, compact)}K"
+    }
+    else -> {
+        val compact = value / 1_000_000f
+        if (compact % 1f == 0f) "${compact.toInt()}M" else "${"%.1f".format(java.util.Locale.ROOT, compact)}M"
+    }
 }
 
 @Composable
