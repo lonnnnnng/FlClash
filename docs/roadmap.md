@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **发布后接续（2026-11-09，正式Release菜单基线）**：公开0.1.0签名R8包在Redmi停止态深色、冷进程三轮真实菜单开/展开/收回/关闭，12/12终态通过；无录屏/截图采样。打开68/116帧jank（58.62%）、展开14/92（15.22%）、收回10/65（15.38%）、关闭10/90（11.11%）。这是真实配置正式包基线，不能与旧.motion夹具直接比较；关闭Popup消失后每轮只剩1条Flags=0记录，RenderThread仍未归因。下一步优先正式菜单首开，关闭需在窗口消失前采帧再归因；透明内容层是源码候选，尚未修改/证实收益。证据 `docs/acceptance/release-menu-redmi-20261109.json`。
+
 > **正式发布完成（2026-11-09，KClash 0.1.0）**：中英文README、独立发布密钥/备份和标签签名CI已落地；`kclash-v0.1.0`固定`961b147d`，versionCode1000，Release为非预发布/Latest。CI[42511426890](https://github.com/lonnnnnng/FlClash/actions/runs/42511426890)全通过，854项JVM、本地双Lint与Go双层race通过；KREL-001正式YAML导入崩溃、KUI-020出口闪烁/网速跳高已修并留溯源。公开APK下载SHA256/资产digest/签名/版本/ABI全部核对，Redmi安装回拉一致；公开包67.7秒16次样本0查询态、IP/国家不变、卡片间距恒定617px（旧694px），VPN/tun0、停止/冷启动通过。本地最终固定/自动两轮各18次也通过。手机保留正式包、一份授权本地配置和原自动选择，服务停止；后续只用Redmi。发布页：https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.0 。证据 `docs/acceptance/release-0.1.0-20261109.json`。跨版本升级、完整视觉/性能、低API及蜂窝/OEM仍PARTIAL，玻璃默认关闭。
 
 > **最新切片（2026-11-09，CUSTOM 组数芯片与首页统计核对）**：CUSTOM 配置卡新增按本地正文解析的代理组数芯片，未就绪/正文缺失时隐藏，已就绪时显示紧凑数量并保留完整语义描述；Redmi `ProfilesVisualInstrumentedTest#profilesScreenshotMatrixMatchesBaseline` `1/1`，固定 CUSTOM 6 组截图哈希更新为 `cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04`，远程配置旧基线保持；长列表选中/长按回归 `1/1`。首页统计核对 `DashboardInstrumentedTest` 运行态卡片与历史重建 `2/2`：上传/下载双流量块、30 点历史，以及连接/请求/DNS 三列摘要均已覆盖；Flutter 手机参考同样是双流量块，不新增“三列流量”实现。证据 `docs/acceptance/custom-profile-chip-dashboard-redmi-20261109.json`。Perfetto 首开/关闭线程归因仍受 Redmi/API36 flush 阻塞，下一步待可用 trace 设备/ROM；继续剩余子页视觉，玻璃默认关闭。

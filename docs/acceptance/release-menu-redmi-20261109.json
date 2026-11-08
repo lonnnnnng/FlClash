@@ -1,0 +1,341 @@
+{
+  "package": "com.lonnnnnng.flclash",
+  "serial": "wsvwypiz7xwslvl7",
+  "api": 36,
+  "publishedSha256": "ed063b9ba59d0825308b2d442da38e5e8ecdcb456cc7c55cd385f11b05ad1082",
+  "theme": "dark",
+  "core": "stopped",
+  "stages": [
+    {
+      "frames": 39,
+      "janky": 23,
+      "flagZeroRows": 27,
+      "uiInterval": {
+        "n": 27,
+        "p50Ms": 25.978,
+        "maxMs": 78.877
+      },
+      "renderInterval": {
+        "n": 27,
+        "p50Ms": 11.414,
+        "maxMs": 57.601
+      },
+      "totalInterval": {
+        "n": 27,
+        "p50Ms": 60.733,
+        "maxMs": 407.211
+      },
+      "stage": "0-open",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 31,
+      "janky": 5,
+      "flagZeroRows": 14,
+      "uiInterval": {
+        "n": 14,
+        "p50Ms": 21.943,
+        "maxMs": 47.556
+      },
+      "renderInterval": {
+        "n": 14,
+        "p50Ms": 13.203,
+        "maxMs": 27.281
+      },
+      "totalInterval": {
+        "n": 14,
+        "p50Ms": 45.224,
+        "maxMs": 96.882
+      },
+      "stage": "0-expand",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 21,
+      "janky": 4,
+      "flagZeroRows": 21,
+      "uiInterval": {
+        "n": 21,
+        "p50Ms": 9.206,
+        "maxMs": 37.893
+      },
+      "renderInterval": {
+        "n": 21,
+        "p50Ms": 15.903,
+        "maxMs": 26.895
+      },
+      "totalInterval": {
+        "n": 21,
+        "p50Ms": 37.606,
+        "maxMs": 71.788
+      },
+      "stage": "0-fold",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 29,
+      "janky": 3,
+      "flagZeroRows": 1,
+      "uiInterval": {
+        "n": 1,
+        "p50Ms": 21.801,
+        "maxMs": 21.801
+      },
+      "renderInterval": {
+        "n": 1,
+        "p50Ms": 55.641,
+        "maxMs": 55.641
+      },
+      "totalInterval": {
+        "n": 1,
+        "p50Ms": 84.158,
+        "maxMs": 84.158
+      },
+      "stage": "0-close",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 41,
+      "janky": 20,
+      "flagZeroRows": 32,
+      "uiInterval": {
+        "n": 32,
+        "p50Ms": 14.436,
+        "maxMs": 56.77
+      },
+      "renderInterval": {
+        "n": 32,
+        "p50Ms": 8.734,
+        "maxMs": 56.151
+      },
+      "totalInterval": {
+        "n": 32,
+        "p50Ms": 48.224,
+        "maxMs": 318.946
+      },
+      "stage": "1-open",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 31,
+      "janky": 4,
+      "flagZeroRows": 31,
+      "uiInterval": {
+        "n": 31,
+        "p50Ms": 11.099,
+        "maxMs": 35.196
+      },
+      "renderInterval": {
+        "n": 31,
+        "p50Ms": 11.323,
+        "maxMs": 23.962
+      },
+      "totalInterval": {
+        "n": 31,
+        "p50Ms": 28.462,
+        "maxMs": 70.431
+      },
+      "stage": "1-expand",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 22,
+      "janky": 3,
+      "flagZeroRows": 22,
+      "uiInterval": {
+        "n": 22,
+        "p50Ms": 8.275,
+        "maxMs": 40.397
+      },
+      "renderInterval": {
+        "n": 22,
+        "p50Ms": 15.294,
+        "maxMs": 26.132
+      },
+      "totalInterval": {
+        "n": 22,
+        "p50Ms": 37.76,
+        "maxMs": 72.928
+      },
+      "stage": "1-fold",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 30,
+      "janky": 3,
+      "flagZeroRows": 1,
+      "uiInterval": {
+        "n": 1,
+        "p50Ms": 25.394,
+        "maxMs": 25.394
+      },
+      "renderInterval": {
+        "n": 1,
+        "p50Ms": 36.856,
+        "maxMs": 36.856
+      },
+      "totalInterval": {
+        "n": 1,
+        "p50Ms": 69.011,
+        "maxMs": 69.011
+      },
+      "stage": "1-close",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 36,
+      "janky": 25,
+      "flagZeroRows": 27,
+      "uiInterval": {
+        "n": 27,
+        "p50Ms": 24.71,
+        "maxMs": 66.231
+      },
+      "renderInterval": {
+        "n": 27,
+        "p50Ms": 10.26,
+        "maxMs": 65.347
+      },
+      "totalInterval": {
+        "n": 27,
+        "p50Ms": 70.173,
+        "maxMs": 294.999
+      },
+      "stage": "2-open",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 30,
+      "janky": 5,
+      "flagZeroRows": 13,
+      "uiInterval": {
+        "n": 13,
+        "p50Ms": 13.065,
+        "maxMs": 33.412
+      },
+      "renderInterval": {
+        "n": 13,
+        "p50Ms": 17.773,
+        "maxMs": 25.858
+      },
+      "totalInterval": {
+        "n": 13,
+        "p50Ms": 44.412,
+        "maxMs": 69.023
+      },
+      "stage": "2-expand",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 22,
+      "janky": 3,
+      "flagZeroRows": 22,
+      "uiInterval": {
+        "n": 22,
+        "p50Ms": 7.496,
+        "maxMs": 41.631
+      },
+      "renderInterval": {
+        "n": 22,
+        "p50Ms": 9.0,
+        "maxMs": 27.561
+      },
+      "totalInterval": {
+        "n": 22,
+        "p50Ms": 23.091,
+        "maxMs": 72.161
+      },
+      "stage": "2-fold",
+      "terminalUiVerified": true
+    },
+    {
+      "frames": 31,
+      "janky": 4,
+      "flagZeroRows": 1,
+      "uiInterval": {
+        "n": 1,
+        "p50Ms": 20.114,
+        "maxMs": 20.114
+      },
+      "renderInterval": {
+        "n": 1,
+        "p50Ms": 41.705,
+        "maxMs": 41.705
+      },
+      "totalInterval": {
+        "n": 1,
+        "p50Ms": 68.31,
+        "maxMs": 68.31
+      },
+      "stage": "2-close",
+      "terminalUiVerified": true
+    }
+  ],
+  "scope": "One cold app process, three real menu cycles; no screenshots/video during measured stages; shell input and gfxinfo overhead remains. No Perfetto thread attribution or comparable before/after baseline.",
+  "date": "2026-11-09",
+  "status": "baseline_captured_performance_not_accepted",
+  "releaseUrl": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.0",
+  "sourceCommit": "961b147da6692183a275ef7b177010d684c17636",
+  "aggregates": {
+    "open": {
+      "frames": 116,
+      "janky": 68,
+      "percent": 58.62,
+      "terminalChecks": 3,
+      "flagZeroRows": 86
+    },
+    "expand": {
+      "frames": 92,
+      "janky": 14,
+      "percent": 15.22,
+      "terminalChecks": 3,
+      "flagZeroRows": 58
+    },
+    "fold": {
+      "frames": 65,
+      "janky": 10,
+      "percent": 15.38,
+      "terminalChecks": 3,
+      "flagZeroRows": 65
+    },
+    "close": {
+      "frames": 90,
+      "janky": 10,
+      "percent": 11.11,
+      "terminalChecks": 3,
+      "flagZeroRows": 3
+    }
+  },
+  "limits": [
+    "Dark theme only; one cold process and 3 repeats",
+    "Actual current profile differs from historical fixture; cannot compare percentages directly",
+    "Close popup disappears before readback, only 1 Flags=0 row per close; counters do not recover full per-frame thread timing",
+    "gfxinfo UI/render intervals are not thread CPU attribution",
+    "No before/after implementation change, no performance acceptance claim",
+    "No Perfetto rerun due previously confirmed ROM flush failure"
+  ],
+  "next": "Prioritize actual menu first-open profiling; preserve live closing-window frames before attributing close/RenderThread. Transparent-content layer after fade is a source candidate only, not yet measured/fixed.",
+  "artifactHashes": {
+    "1-close.gfx": "60b5410acbaf844db09b42c30e1a46decc0d4e86b8ca1fb55475e0bb120d7615",
+    "1-expand.gfx": "2169e742826a2a9954e4c8493d524e372c34793620668c17267fa604b9750671",
+    "2-open.gfx": "8c69e072bd9d58142cf7e26812310336f9ee043975adfe131ec9cfdec5581122",
+    "1-fold.gfx": "f01eecd3bea8edc2a333e92f207c6fefac6d8363021ba1525bf106089eecb94d",
+    "0-fold.gfx": "e93bdd2496031f9e780c936b07e307ff575e398e394661cce1e2c67218f30311",
+    "0-close.gfx": "274ddd82daf8c1524f7685ba4d2202e2513d9b656ce10c1d4b4dfa8f3876eaf1",
+    "0-expand.gfx": "d368fd8bf4f6d7f8b98baabb22bafacdaf56c9cf25bf6cf41d4a7864507e0e07",
+    "2-close.gfx": "889923d713c10c2d767d721046a7096df4af5a59cea2e9bcf8f0cf7860cb6918",
+    "2-expand.gfx": "3571bfb4eaa5416a21b2b5dfbef2372d821e38fdb093b119577743936b604ebb",
+    "2-fold.gfx": "c36d5b5d6ef51e4a984694f99e8e7c701da30d52bd8983aab06e2bf0fce40d41",
+    "1-open.gfx": "984cffe18a24fd5f28f74340e696e0ff071be015d94d30c30aef6a97f20d9217",
+    "0-open.gfx": "9afdf4f67d539da5d5f62aeee4d20a719dcba9bcc40ffdf6069e279c8d8eccff"
+  },
+  "deviceBaseline": {
+    "window_animation_scale": "1.0",
+    "transition_animation_scale": "1.0",
+    "animator_duration_scale": "null",
+    "density": "Physical density: 440",
+    "fontScale": "1.0"
+  },
+  "finalState": "menu closed, proxy page, core stopped, original automatic selection retained; published APK retained",
+  "artifacts": "../acceptance-artifacts/release-menu-20261109/"
+}
