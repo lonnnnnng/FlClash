@@ -54,6 +54,8 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
+          # 作者 long：SDK37采用主次版本包名，需要与本地一致的23.0命令行工具解析仓库。
+          cmdline-tools-version: '16111833'
           # 作者 long：新版SDK源已移除旧tools包；只安装构建实际需要的平台工具，避免初始化中断。
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
@@ -61,7 +63,7 @@ jobs:
       - name: Install Android build tools
         shell: bash
         run: |
-          sdkmanager "platforms;android-37" "build-tools;36.0.0" "ndk;28.2.13676358"
+          sdkmanager "platforms;android-37.0" "build-tools;36.0.0" "ndk;28.2.13676358"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6

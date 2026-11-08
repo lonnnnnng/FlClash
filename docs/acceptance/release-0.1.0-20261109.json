@@ -130,6 +130,17 @@
       "fix": "Explicit packages: platform-tools; platform37/build-tools36/NDK28 remain installed by following step",
       "scope": "Remote CI initialization defect; not an Android app or key failure",
       "log": "ci-42505363799-failed.log"
+    },
+    {
+      "runId": 42505590656,
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42505590656",
+      "stage": "Install Android build tools",
+      "error": "Failed to find package 'platforms;android-37'",
+      "fix": "Use platform package android-37.0 and commandline-tools23.0 build16111833, matched against Google repository2-3.xml and local installed SDK",
+      "source": "https://dl.google.com/android/repository/repository2-3.xml",
+      "scope": "SDK package naming and minimum tools version; compile/target API remain37",
+      "log": "ci-42505590656-failed.log"
     }
-  ]
+  ],
+  "devicePolicy": "User confirmed 2026-11-09: subsequent acceptance uses Redmi Note8Pro only; KClash test packages and residual app data may be removed. Prior emulator check is historical, not the release device gate."
 }
