@@ -24,6 +24,49 @@ class ProfileMoreEditorInstrumentedTest {
     private var exits = 0
     private var reject = false
 
+    @androidx.test.filters.SdkSuppress(minSdkVersion = 29)
+    @Test fun fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft() {
+        render(); add("port")
+        compose.onNodeWithTag("more_open_port").performClick()
+        compose.onNodeWithTag("more_port_value").performClick().performTextReplacement("0")
+        val valueWindow = awaitVisibleIme()
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        awaitHiddenIme(valueWindow)
+        compose.onNodeWithTag("more_value_error").assertIsDisplayed()
+        compose.onNodeWithTag("more_port_value").assertTextContains("0")
+        capture("more_value_error_ime_hidden")
+        compose.onNodeWithTag("more_value_back").performClick(); compose.onNodeWithText("放弃").performClick()
+        compose.onNodeWithTag("profile_more_yaml").performClick()
+        compose.onNodeWithTag("more_yaml_content").performClick().performTextReplacement("port: 0")
+        val yamlWindow = awaitVisibleIme()
+        compose.onNodeWithTag("more_yaml_confirm").performClick()
+        awaitHiddenIme(yamlWindow)
+        compose.onNodeWithTag("more_yaml_error").assertIsDisplayed()
+        compose.onNodeWithTag("more_yaml_content").assertTextContains("port: 0")
+        capture("more_yaml_error_ime_hidden")
+        compose.runOnIdle { assertEquals(123, savedNtp?.port) }
+    }
+
+    private fun ime(): Pair<android.os.IBinder, Boolean>? {
+        var state: Pair<android.os.IBinder, Boolean>? = null
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val view = android.view.inspector.WindowInspector.getGlobalWindowViews().lastOrNull { it.hasWindowFocus() }
+            val insets = view?.let(androidx.core.view.ViewCompat::getRootWindowInsets)
+            if (view != null && insets != null) state = view.windowToken to insets.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime())
+        }
+        return state
+    }
+
+    private fun awaitVisibleIme(): android.os.IBinder {
+        compose.waitUntil(5_000) { ime()?.second == true }
+        return checkNotNull(ime()).first
+    }
+
+    private fun awaitHiddenIme(token: android.os.IBinder) {
+        // 作者 long：只接受刚才实际显示键盘的同一Dialog回报隐藏，切窗或空Insets不能当成功。
+        compose.waitUntil(5_000) { ime()?.let { it.first == token && !it.second } == true }
+    }
+
     @Test fun ntpAddsDefaultsValidatesEditsAndSavesOnlySelectedFields() {
         render()
         compose.onNodeWithTag("profile_more_empty").assertIsDisplayed()

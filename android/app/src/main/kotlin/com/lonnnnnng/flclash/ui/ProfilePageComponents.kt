@@ -109,7 +109,8 @@ internal fun ProfileFormSection(
 internal fun ProfileFormRow(title: String, modifier: Modifier = Modifier, leading: (@Composable () -> Unit)? = null,
     content: @Composable RowScope.() -> Unit) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
-    val titleLimit = ((maxWidth - 32.dp - 16.dp) / 2).coerceAtLeast(0.dp)
+    // 作者 long：Flutter的标题上限在leading布局之后计算；Android保留48dp删除触点，不能把它再挤进标题和值的共享宽度。
+    val titleLimit = ((maxWidth - 32.dp - 16.dp - if (leading != null) 48.dp else 0.dp) / 2).coerceAtLeast(0.dp)
     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         leading?.invoke()
         Text(title, maxLines = 2, style = MaterialTheme.typography.bodyLarge,

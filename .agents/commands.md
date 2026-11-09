@@ -54,6 +54,10 @@ go test -race github.com/metacubex/mihomo/hub/route
 
 gomobile AAR 构建需要服从 `core/go.mod`、Android SDK、NDK 和 Gradle 配置；不要手工复制或修改生成的 AAR/classes。
 
+## 授权本地配置验收
+
+`readAuthorizedProxyProfile()`读取设备`/sdcard/Download/1.yaml`前要求显式`kclashAuthorizedProfileSha256`和`kclashAuthorizedProfileBytes`，由当轮工作区原`../1.yaml`生成；设备内容必须匹配。不能恢复旧硬编码哈希或自行构造配置满足用例。上传前检查目标是否存在，已有不同文件必须保留；本轮新上传的副本收尾按哈希精确清理。该输入不等于正式配置已导入。
+
 ## Android devices
 
 ```zsh

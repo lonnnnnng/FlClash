@@ -132,7 +132,14 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                 Text("选项", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     ProviderOption.entries.filter { it.name in values }.forEach { option -> key(option) {
-                        ProfileFormRow(option.title, leading = {
+                        // 作者 long：开关和IP选择沿用整行点击，右侧控件保留独立操作；删除按钮消费自己的触点，不触发整行。
+                        val rowAction: (() -> Unit)? = when {
+                            option.boolean -> ({ set(option, (values[option.name] != "true").toString()) })
+                            option == ProviderOption.IP_VERSION -> ({ choosingIp = true })
+                            else -> null
+                        }
+                        ProfileFormRow(option.title, modifier = Modifier.testTag("provider_option_row_${option.name}")
+                            .then(if (rowAction != null) Modifier.clickable(enabled = !busy, onClick = rowAction) else Modifier), leading = {
                             IconButton(onClick = { set(option, null) }, enabled = !busy, modifier = Modifier.testTag("provider_option_remove_${option.name}")) {
                                 Icon(Icons.Outlined.RemoveCircleOutline, null, Modifier.size(24.dp))
                             }
@@ -148,7 +155,12 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                                         textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = androidx.compose.ui.text.style.TextAlign.End, color = MaterialTheme.colorScheme.onSurface),
                                         cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
                                         keyboardOptions = KeyboardOptions(keyboardType = if (option.number) KeyboardType.Number else KeyboardType.Text),
-                                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).wrapContentHeight().testTag("provider_option_${option.name}"))
+                                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).wrapContentHeight().testTag("provider_option_${option.name}"),
+                                        decorationBox = { field -> Box(contentAlignment = Alignment.CenterEnd) {
+                                            if (values[option.name].isNullOrEmpty()) Text("可选", style = MaterialTheme.typography.bodyLarge,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            field()
+                                        } })
                                     if (option.number) { Spacer(Modifier.width(4.dp)); Text(if (option == ProviderOption.INTERVAL) "s" else "ms") }
                                 }
                             }
@@ -160,20 +172,24 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                 Spacer(Modifier.height(20.dp))
             }
         })
+    // 作者 long：最后一项添加后回到父表单；上游SelectionSheet也是最后选择自动关闭，不留下没有可操作项的空页。
+    LaunchedEffect(adding, values.size) { if (adding && values.size == ProviderOption.entries.size) adding = false }
     if (adding) ProfileEditorPage(onDismissRequest = { adding = false }, backTag = "provider_option_picker_back", title = { Text("添加设置项") }, text = {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             ProviderOption.entries.filterNot { it.name in values }.groupBy { it.section }.forEach { (section, options) ->
                 Text(section, style = MaterialTheme.typography.titleSmall)
-                ProfileFormSection { options.forEach { option -> ProfileSectionRow(option.title, icon = Icons.Outlined.Add, enabled = !busy,
+                ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) { options.forEach { option -> ProfileSectionRow(option.title, icon = Icons.Outlined.Add, enabled = !busy,
                     modifier = Modifier.testTag("provider_option_pick_${option.name}")) { set(option, option.default) } } }
             }
             if (values.size == ProviderOption.entries.size) Text("已添加全部设置项", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     })
     if (choosingIp) ProfileEditorPage(onDismissRequest = { choosingIp = false }, backTag = "provider_ip_back", title = { Text("IP 版本") }, text = {
-        Column(Modifier.selectableGroup()) { listOf("dual" to "双栈", "ipv4" to "IPv4", "ipv6" to "IPv6").forEach { (value, title) ->
-            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(values[ProviderOption.IP_VERSION.name] == value, enabled = !busy, ) { set(ProviderOption.IP_VERSION, value); choosingIp = false }.padding(12.dp).testTag("provider_ip_$value"), verticalAlignment = Alignment.CenterVertically) {
-                Text(title, Modifier.weight(1f)); RadioButton(values[ProviderOption.IP_VERSION.name] == value, null)
+        ProfileFormSection(modifier = Modifier.padding(top = 12.dp).selectableGroup(), contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
+            listOf("dual" to "双栈", "ipv4" to "IPv4", "ipv6" to "IPv6").forEach { (value, title) ->
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).selectable(values[ProviderOption.IP_VERSION.name] == value, enabled = !busy, ) { set(ProviderOption.IP_VERSION, value); choosingIp = false }.padding(horizontal = 16.dp).testTag("provider_ip_$value"), verticalAlignment = Alignment.CenterVertically) {
+                Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                if (values[ProviderOption.IP_VERSION.name] == value) AppGlyphIcon(AppGlyphs.check, tint = MaterialTheme.colorScheme.primary)
             }
         } }
     })

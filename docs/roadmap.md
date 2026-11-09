@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **配置子页与输入恢复（2026-11-09，KUI-026）**：修正Provider表单扣除删除触点后的标签/值宽度、开关与IP整行点击、可选提示、最后一项添加自动返回及分组选择排版；配置资源区分搜索无结果/目录为空并可清除恢复，NTP/Sniffer空态按视口定位。字段/YAML确认从子Dialog取IME控制器；旧包同一新增用例在awaitHiddenIme五秒超时，最终包通过。860项JVM（App578执行、其余282复用）、Debug/签名Release/独立测试包及双Lint通过；同套Redmi4+18个不重复方法22/22、68图/10拼图已验。正式签名安装回拉、原配置详情/Provider缓存与底部配置Tab烟测通过；配置未清，测试包及本轮上传原1.yaml副本已精确清理。当前仅本组视觉/交互修正，完整Flutter页面与菜单性能仍PARTIAL，KUI-025首开退化不覆盖。 证据 `docs/acceptance/config-subpages-parity-redmi-20261109.json`，溯源 `docs/config-subpages-parity-defect.md`。
+
 > **源按钮底色与玻璃开场（2026-11-09，KUI-025）**：配置/代理按钮携带真实底色，普通材质按sRGB交接、玻璃只叠源底色。测试改等实际轮廓增长，补齐深浅玻璃展开帧、准备期取消、真实宿主背景冻结与重开重采；860项JVM（App578执行、其余282复用）、Debug/签名Release/独立测试包及双Lint通过。同套Redmi两批3+19个不重复方法22/22、56图/8拼图、8对终态像素一致；正式深浅视频102/103原PTS帧核对、各抽样24张。打开进程74/201→74/190、Popup31/129→37/124，退化观察保留，不认定性能收益；关闭23/168→21/172。手机保留同签名本地修正版，配置未清、测试包/采集文件已清理、服务停止。玻璃默认关闭，完整视觉/慢帧仍PARTIAL。 证据 `docs/acceptance/menu-fill-readiness-redmi-20261109.json`，溯源 `docs/menu-fill-readiness-defect.md`。
 
 > **菜单胶囊与屏幕模糊（2026-11-09，KUI-024）**：补齐源按钮胶囊长边、Flutter稳定回源曲线/20%源图/50ms桥接；正文先变形再按屏幕sigma模糊，源图使用浮点轨迹，正文独立绘制节点复用。859项JVM（App577执行、其余282复用）、Debug/签名Release/独立测试包与双Lint通过；Redmi最终15/15、28图、8对终态像素一致，正文原尺寸/半尺寸/源图模糊宽度均29px。正式包打开进程75/206→73/206、Popup35/139→34/142，关闭20/178→19/167；仅回到基线附近，不宣称性能提升。首版80/183退化保留。深浅视频104/102原PTS帧核对并各抽样24张，玻璃开场两图仍为准备阶段；完整Flutter视觉/慢帧仍PARTIAL。手机保留同签名修正版、配置未清，测试包已清理、服务停止。 证据 `docs/acceptance/menu-content-parity-redmi-20261109.json`，溯源 `docs/menu-content-parity-defect.md`。
@@ -743,7 +745,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，追踪`origin/kotlin`；本组按验收结果提交推送，远端关系以Git核对为准 |
-| 当前版本 | 公开正式 `0.1.0` / code `1000`，标签 `kclash-v0.1.0`不覆盖；手机保留同签名本地修正版（网速卡紧凑/KUI-022至025），本轮不发新Release |
+| 当前版本 | 公开正式 `0.1.0` / code `1000`，标签 `kclash-v0.1.0`不覆盖；手机保留同签名本地修正版（网速卡紧凑/KUI-022至026），本轮不发新Release |
 | Gradle 工程 | 根目录Wrapper + `app` / `core` / `service` / `common` |
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
@@ -752,7 +754,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
 | 单元测试 | 最近产品组860项JVM结果零失败/错误/跳过：App578执行，Service213/Core38/Common31复用。双Lint0错误（Debug68警告14提示、Release66警告13提示）；Go本轮未改未重跑，发布前双层race仅历史证据。 |
-| 最新真机 | KUI-025源底色/玻璃实际开场22/22（3+19不重复方法）、56图、8对终态像素一致、正式深浅视频102/103原PTS帧；打开进程74/190、Popup37/124，有退化观察，性能未完成。完整视觉仍PARTIAL，见menu-fill-readiness-redmi-20261109.json。 |
+| 最新真机 | KUI-026配置子页22/22（4+18不重复方法）、68图/10拼图、旧包IME红测失败与最终通过；签名包安装回拉/原配置详情/配置Tab烟测通过。本轮不测性能，KUI-025打开退化仍待查；完整视觉仍PARTIAL，见config-subpages-parity-redmi-20261109.json。 |
 | 当前设备数据 | 保留1份授权本地配置及同签名本地优化版，原1.yaml哈希保持、服务停止；本轮motion/test已卸载。Flutter参考包未操作，后续只用Redmi验收。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
@@ -1292,6 +1294,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 - 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
+
+**配置子页与输入恢复（2026-11-09，KUI-026）**：修正Provider表单扣除删除触点后的标签/值宽度、开关与IP整行点击、可选提示、最后一项添加自动返回及分组选择排版；配置资源区分搜索无结果/目录为空并可清除恢复，NTP/Sniffer空态按视口定位。字段/YAML确认从子Dialog取IME控制器；旧包同一新增用例在awaitHiddenIme五秒超时，最终包通过。860项JVM（App578执行、其余282复用）、Debug/签名Release/独立测试包及双Lint通过；同套Redmi4+18个不重复方法22/22、68图/10拼图已验。正式签名安装回拉、原配置详情/Provider缓存与底部配置Tab烟测通过；配置未清，测试包及本轮上传原1.yaml副本已精确清理。当前仅本组视觉/交互修正，完整Flutter页面与菜单性能仍PARTIAL，KUI-025首开退化不覆盖。 详见`docs/acceptance/config-subpages-parity-redmi-20261109.json`。
 
 **源按钮底色与玻璃开场（2026-11-09，KUI-025）**：配置/代理按钮携带真实底色，普通材质按sRGB交接、玻璃只叠源底色。测试改等实际轮廓增长，补齐深浅玻璃展开帧、准备期取消、真实宿主背景冻结与重开重采；860项JVM（App578执行、其余282复用）、Debug/签名Release/独立测试包及双Lint通过。同套Redmi两批3+19个不重复方法22/22、56图/8拼图、8对终态像素一致；正式深浅视频102/103原PTS帧核对、各抽样24张。打开进程74/201→74/190、Popup31/129→37/124，退化观察保留，不认定性能收益；关闭23/168→21/172。手机保留同签名本地修正版，配置未清、测试包/采集文件已清理、服务停止。玻璃默认关闭，完整视觉/慢帧仍PARTIAL。 详见`docs/acceptance/menu-fill-readiness-redmi-20261109.json`。
 

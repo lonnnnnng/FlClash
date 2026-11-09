@@ -23,6 +23,33 @@ import org.junit.Test
 class ProviderPagesInstrumentedTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun optionLabelTapTogglesOnceDeleteStaysIndependentAndLastAdditionReturns() {
+        assertPortraitDefaultFontConfiguration()
+        var saved: ProxyProviderOverride? = null
+        val initial = ProviderOption.entries.filterNot { it == ProviderOption.PREFIX }.fold(ProxyProviderOverride()) { value, option -> option.apply(value, option.default) }
+        compose.setContent { KClashTheme {
+            ProviderOptionsPage("整行选项", initial, false, null, {}, { saved = it })
+        } }
+        val toggle = ProviderOption.entries.first { it.boolean }
+        val before = toggle.value(initial) == "true"
+        val row = compose.onNodeWithTag("provider_option_row_${toggle.name}").performScrollTo()
+        // 作者 long：点击标签区域而非Switch语义，证明整行可操作；删除随后单独命中，不能顺带再切一次开关。
+        row.performTouchInput { click(Offset(width * .45f, height / 2f)) }
+        if (before) compose.onNodeWithTag("provider_option_${toggle.name}").assertIsOff()
+        else compose.onNodeWithTag("provider_option_${toggle.name}").assertIsOn()
+        compose.onNodeWithTag("provider_option_row_IP_VERSION").performScrollTo().performTouchInput { click(Offset(width * .4f, height / 2f)) }
+        compose.onNodeWithTag("provider_ip_ipv6").performClick()
+        compose.onNodeWithTag("provider_option_add").performScrollTo().performClick()
+        compose.onNodeWithTag("provider_option_pick_PREFIX").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("provider_option_picker_back").fetchSemanticsNodes().isEmpty() }
+        compose.onNodeWithTag("provider_option_PREFIX").performScrollTo().assertIsDisplayed()
+        capture("provider_last_add_returns")
+        compose.onNodeWithTag("provider_option_remove_${toggle.name}").performScrollTo().performClick()
+        compose.onNodeWithTag("provider_option_${toggle.name}").assertDoesNotExist()
+        compose.onNodeWithTag("provider_options_save").performClick()
+        compose.runOnIdle { assertEquals("ipv6", saved?.ipVersion); assertNull(toggle.value(checkNotNull(saved))) }
+    }
+
     @Test fun repeatedIdenticalOptionErrorReturnsToTopWithoutEditing() {
         assertPortraitDefaultFontConfiguration()
         var saves = 0

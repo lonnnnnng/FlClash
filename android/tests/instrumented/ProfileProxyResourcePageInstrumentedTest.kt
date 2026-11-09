@@ -34,8 +34,11 @@ class ProfileProxyResourcePageInstrumentedTest {
             compose.onNodeWithText("选择").performClick()
             capture("proxy_resources_picker_$theme")
             compose.onNodeWithTag("proxy_resource_search").performTextInput("不存在")
-            compose.onNodeWithText("暂无可选配置，请先在配置页添加订阅或文件。").assertIsDisplayed()
-            compose.onNodeWithTag("proxy_resource_search").performTextClearance()
+            compose.onNodeWithText("无搜索结果").assertIsDisplayed()
+            capture("proxy_resources_search_empty_$theme")
+            compose.onNodeWithTag("proxy_resource_clear_search").performClick()
+            assertEquals("", compose.onNodeWithTag("proxy_resource_search").fetchSemanticsNode()
+                .config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text)
             compose.onNodeWithTag("proxy_resource_pick_122").performClick()
             compose.onNodeWithText("配置资源 · 本地节点资源").assertIsDisplayed()
             compose.runOnIdle { assertEquals(122L, ProfileProxyResources.idOf(ProfileProxyResources.definitions(section)["旧资源"])) }

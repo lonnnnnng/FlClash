@@ -1,0 +1,669 @@
+{
+  "date": "2026-11-09",
+  "issue": "KUI-026",
+  "baseCommit": "d069aaddc8e8d462fc78bb801758e3d6258b9f1e",
+  "scope": "Provider行宽/整行操作/添加与IP选择、配置资源搜索空态、NTP/Sniffer空态及子窗口IME。",
+  "reference": {
+    "flutter": "be847366",
+    "prism": "63450c0",
+    "sourceHashes": {
+      "lib/views/config/ntp.dart": "d77597a82fb5083a92dde9e02e7f798267bc4c68ee0b4a765c2e2b123b6dddbf",
+      "lib/views/config/override.dart": "1b1f2d81cfb2e161e3176848d17f0d46da170ba822614b1aba80bb4b43102c38",
+      "lib/views/config/sniffer.dart": "fe4420b7a611e1dd9f6b68b83b37dad15896672d057eb8d9b3d439f4e95e7fa8",
+      "lib/views/profiles/custom/providers.dart": "4b620131daad7aae518eb51ad8ac889c89969db7a728374174e560df99ed2003",
+      "lib/features/form/form_row.dart": "573523cde6588821f2e77a04e062f9a0ef78746443c2e8cec10a8cf816c031c2",
+      "lib/features/form/selection_sheet.dart": "88fe22ee87606c457b62b8d0c2fe8650c552a7b40482b3d92c20671a78091335"
+    }
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "core": "stopped"
+  },
+  "jvm": {
+    "total": 860,
+    "executedApp": 578,
+    "reusedOthers": 282,
+    "modules": {
+      "app": {
+        "tests": 578,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "build": {
+    "debug": true,
+    "signedReleaseR8": true,
+    "motionFixture": true,
+    "motionAndroidTest": true,
+    "lint": {
+      "debug": {
+        "Warning": 68,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 13
+      }
+    }
+  },
+  "instrumentation": {
+    "passed": 22,
+    "sameFixture": true,
+    "distinctMethods": true,
+    "pngCount": 68,
+    "batches": {
+      "focused1": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "optionLabelTapTogglesOnceDeleteStaysIndependentAndLastAdditionReturns",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+            "test": "fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileProxyResourcePageInstrumentedTest",
+            "test": "missingBindingCanChooseProfileInBothThemesAndKeepAlias",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderOptionsFormGeometryInstrumentedTest",
+            "test": "leadingActionLeavesLongLabelAndEditableValueSeparateAcrossThemes",
+            "code": 0
+          }
+        ],
+        "images": {
+          "provider_last_add_returns": {
+            "count": 5,
+            "bytes": 168267,
+            "sha256": "cc7f3462ab30614a02eccaf4eb21d0d03fad81a3fed0fada29d55e37275a7aa2"
+          },
+          "more_value_error_ime_hidden": {
+            "count": 2,
+            "bytes": 42945,
+            "sha256": "ee00dd4af274999e34aa93478e99ce6c766e27c60836e139df1bd736ac8ad973"
+          },
+          "more_yaml_error_ime_hidden": {
+            "count": 3,
+            "bytes": 97766,
+            "sha256": "f55ea8e685359cffc425c5ebb993c7620ad9507a763b1b715b958c71372d4929"
+          },
+          "proxy_resources_missing_false": {
+            "count": 2,
+            "bytes": 65833,
+            "sha256": "1ad67d1573d743269993254f0ff0a7be576ae4418078ffee6a7178a661545d05"
+          },
+          "proxy_resources_picker_false": {
+            "count": 2,
+            "bytes": 53251,
+            "sha256": "39eec1af67c030233050f413637f52b6b6c29c6953f557b61a23eb5b9ab0294f"
+          },
+          "proxy_resources_search_empty_false": {
+            "count": 5,
+            "bytes": 158220,
+            "sha256": "7c39ecce1d3e2e99d14934f26ddf099fb6280f4c253bad0c8e9b829817792dcb"
+          },
+          "proxy_resources_bound_false": {
+            "count": 2,
+            "bytes": 61673,
+            "sha256": "b37fa25cd825034120902d59015f83449c70ef4eba752c418fac876280d8301b"
+          },
+          "proxy_resources_missing_true": {
+            "count": 2,
+            "bytes": 66327,
+            "sha256": "8f58fe49460fe7cb4ecd1e4d36054f61032dbe1954bd79d446d5eb7a32bbedad"
+          },
+          "proxy_resources_picker_true": {
+            "count": 2,
+            "bytes": 53450,
+            "sha256": "c765323cafcc774fbd1a88b0e5db49eb11ac5b383c9cdee0c041e6fa8f30f3c7"
+          },
+          "proxy_resources_search_empty_true": {
+            "count": 5,
+            "bytes": 159740,
+            "sha256": "cc662d21a352f24df4b48afd7712df33adb2b262e7e90b1a59db6e250bcbbcfa"
+          },
+          "proxy_resources_bound_true": {
+            "count": 2,
+            "bytes": 61630,
+            "sha256": "567884e4ad0bce65b7ad84e4045da94becd1ac8454d9343fa722e710709681a8"
+          }
+        },
+        "passed": true
+      },
+      "remaining1": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "quickYamlRepeatedErrorLongDraftAndDiscardRespectKeyboard",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "optionValidationHidesRealImeAndKeepsInputForCorrection",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "optionDefaultsValidationFailureRetryAndRemovalWorkInBothThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "optionValidationAndPersistenceBusyRejectDuplicateSaveAndBack",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "proxyAndRuleBindingLongListsKeepAliasOnFailureCancelAndRetry",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "filterMembersMixPresetsAndCustomConditionsAndKeepExplicitClear",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "missingReferenceBindingAndQuickYamlKeepAliasAndFailedDraft",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "filterLongInputBackAndDiscardKeepParentBoundary",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+            "test": "repeatedIdenticalOptionErrorReturnsToTopWithoutEditing",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+            "test": "ntpAddsDefaultsValidatesEditsAndSavesOnlySelectedFields",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+            "test": "snifferYamlValidationProtocolInheritanceAndExplicitEmptyStayDistinct",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+            "test": "protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+            "test": "returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+            "test": "morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+            "test": "failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+            "test": "nestedSelectionReturnsOnlyTopCardBeforeRunningAction",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.LocalProxiesPageInstrumentedTest",
+            "test": "pageSearchSelectionAndProtocolEditorRenderInBothThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+            "test": "groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+            "code": 0
+          }
+        ],
+        "images": {
+          "provider_yaml_repeated_error": {
+            "count": 7,
+            "bytes": 236889,
+            "sha256": "aec6e38b6e482348c1dd6468d3ae9208478e55034f499265c80fde0432b19d0f"
+          },
+          "provider_options_invalid_ime": {
+            "count": 4,
+            "bytes": 126680,
+            "sha256": "be0b0101274a120b2ae3d77e1480b0472b18e4823edc403e2f6654956cf3b612"
+          },
+          "provider_options_error_ime_hidden": {
+            "count": 3,
+            "bytes": 93272,
+            "sha256": "173143248daafc6e9fa624c32ea84a27d5ef33d91a6c13a2929daa8f897ff55f"
+          },
+          "provider_option_picker_false": {
+            "count": 3,
+            "bytes": 79979,
+            "sha256": "c97a1f37dd50098d93ca028c9cec3c18947005cac5aab11c0c972674778d8d6b"
+          },
+          "provider_ip_picker_false": {
+            "count": 2,
+            "bytes": 38761,
+            "sha256": "e6c8c105cca5b2b2598a725497416b32c5a6bb15655fef49e38c4628448c0243"
+          },
+          "provider_options_error_false": {
+            "count": 4,
+            "bytes": 133363,
+            "sha256": "9b6e9bd7b613768c6031ea969be1fd5901e565e37a5d6cfed940f7932932a718"
+          },
+          "provider_option_picker_true": {
+            "count": 3,
+            "bytes": 80509,
+            "sha256": "7d099a2c76887c6bb1be86fbb1d9e84ccc65c44687ccb4d27bc8637bed5e4b3f"
+          },
+          "provider_ip_picker_true": {
+            "count": 2,
+            "bytes": 38983,
+            "sha256": "d0a43ab56507db2c6d3d84e6e2d5b7dd39c90aa4dbf4ba5bfe0b933efbad1e24"
+          },
+          "provider_options_error_true": {
+            "count": 4,
+            "bytes": 134547,
+            "sha256": "88264a149f3d964967ec0a6fbabea1209c70da116eaef1d5d66ac7fe6b6830d8"
+          },
+          "provider_options_saving_stable": {
+            "count": 3,
+            "bytes": 79781,
+            "sha256": "0276acefd29fb8e6522cdab5bb7d6ad7ec958d9208cfc3e3c971e43b91bc5d29"
+          },
+          "provider_binding_failure_true": {
+            "count": 2,
+            "bytes": 70601,
+            "sha256": "3e54068ef1b0d561556d48291ce8d2a82be20030d41b0663373162b21ebdcd19"
+          },
+          "provider_binding_saved_true": {
+            "count": 2,
+            "bytes": 63275,
+            "sha256": "e270cae6badc4e584f8db59c45c31210681c102b185cf4b861ed2ce81819ece4"
+          },
+          "provider_binding_failure_false": {
+            "count": 2,
+            "bytes": 69116,
+            "sha256": "187fd76028ad5bfa4d51378a329fa2968971309d029b7510bde10e7a4c9be6d6"
+          },
+          "provider_binding_saved_false": {
+            "count": 2,
+            "bytes": 56850,
+            "sha256": "9a90fe1473b88d4e5b3b6504e0a2369619dd56f7a0de8dda11bbe8d3a924fe72"
+          },
+          "provider_filter_members": {
+            "count": 3,
+            "bytes": 93142,
+            "sha256": "472bb653e47d245cb1184e448a530c653c7ec977648f84505ce996b2b1f101ff"
+          },
+          "provider_reference_missing": {
+            "count": 2,
+            "bytes": 49574,
+            "sha256": "3aec8911ae083a62e97f0ce08bdef694eb8a70b175f5ba7eaa4b0cb9156c6b68"
+          },
+          "provider_reference_bound": {
+            "count": 2,
+            "bytes": 38135,
+            "sha256": "0db8fbadd515f97cf62534546e32789ebdef16a4a5953652bfe4a356ea6bec2a"
+          },
+          "provider_quick_yaml_error": {
+            "count": 3,
+            "bytes": 73945,
+            "sha256": "8c9cfe3062177258009e03f33c286b1a13db23655b077d7aa21ca806cc76abbf"
+          },
+          "provider_filter_long_ime": {
+            "count": 6,
+            "bytes": 193614,
+            "sha256": "490278ccd26490a9fc68e47a0d77cee2e8c75f725504a2302d3af12dad75b7c7"
+          },
+          "provider_filter_return_stable": {
+            "count": 3,
+            "bytes": 79407,
+            "sha256": "7c64da41b5520f362d58d5814f563eb54b2c4d477b5703e2783d9630a5946c4b"
+          },
+          "provider_options_repeated_error": {
+            "count": 5,
+            "bytes": 158930,
+            "sha256": "f854a92eea3179f16e455dcc818ea89a3e60e1a116bb65669032936665550101"
+          },
+          "more_ntp_empty_light": {
+            "count": 2,
+            "bytes": 70161,
+            "sha256": "3cf30f156cb21f327605d09b368df81536013e8211f71f6fa9d2fd9841a2adbf"
+          },
+          "more_ntp_add_light": {
+            "count": 4,
+            "bytes": 123545,
+            "sha256": "b45d663a500a3d42e352bf91fdc269d0521abbf9f39128233a40c1683cb2a8df"
+          },
+          "more_ntp_fields_light": {
+            "count": 3,
+            "bytes": 99984,
+            "sha256": "75792d1385cdaab43c2cbeabcf7c70f1dc1237a5a17bc3824471a82bb964dd75"
+          },
+          "more_ntp_error_light": {
+            "count": 2,
+            "bytes": 43673,
+            "sha256": "02650d4f0e3d150b27c54b1d59fe5a405307aa48dc1684d0a2ed1d1d99954af7"
+          },
+          "more_sniffer_protocol_light": {
+            "count": 2,
+            "bytes": 47045,
+            "sha256": "32787a54eb96f6026d8cd6726338dde89638cfd89eb49de826c22d9cf0d86087"
+          },
+          "more_sniffer_ports_light": {
+            "count": 2,
+            "bytes": 62687,
+            "sha256": "6b4d089fc111eb8b4a8aa2b9d6ed721b23dc5f8b7dff6619b8cdda4d184f38ff"
+          },
+          "more_sniffer_yaml_light": {
+            "count": 3,
+            "bytes": 96128,
+            "sha256": "3021947f82bb7f592784c836a5da3f6a34dc71fa1b82935d47605b5a63faadc6"
+          },
+          "more_ntp_empty_dark": {
+            "count": 2,
+            "bytes": 69512,
+            "sha256": "b7c4bc803ba0ddf0c337d1d981d2b03293665146c85416868ab7e8ec0b095ede"
+          },
+          "more_ntp_add_dark": {
+            "count": 4,
+            "bytes": 124315,
+            "sha256": "2992a1710d949fcfe6a24e5255dae39314a02914080961e5f5d35813dbc6d9fb"
+          },
+          "more_ntp_fields_dark": {
+            "count": 3,
+            "bytes": 100855,
+            "sha256": "8c5312007c6b716975fae9b0482bf8257d2ad9605c30a8808296cd0a5fa24025"
+          },
+          "more_ntp_error_dark": {
+            "count": 2,
+            "bytes": 43703,
+            "sha256": "e2ed1d92422c4420e5b54cf3b18968cd303ce74ce839d7e36372012654142d4a"
+          },
+          "more_sniffer_protocol_dark": {
+            "count": 2,
+            "bytes": 46955,
+            "sha256": "356bec79448cdbcb27ab9c81075c9a273734e162cb8d9341035a01c5b8efd441"
+          },
+          "more_sniffer_ports_dark": {
+            "count": 2,
+            "bytes": 62810,
+            "sha256": "0f2609d73a95fe4e3271d370b59be4463dbd3f810cc86a2ecc782806e06e2951"
+          },
+          "more_sniffer_yaml_dark": {
+            "count": 3,
+            "bytes": 96759,
+            "sha256": "7a0a9e9b7c63e3e7abc0885bffe36ad446003104541d768da9722ca9069e97dc"
+          },
+          "more_field_save_failure": {
+            "count": 2,
+            "bytes": 41930,
+            "sha256": "e1549fd4be61bc17154bf54c856e17a36825f3af9dfe15fe2678b873c6be2bd2"
+          },
+          "liquid_return_nested_top": {
+            "count": 2,
+            "bytes": 45870,
+            "sha256": "37802f218b29c49ad9672e07a1cd8c6d838ff59def4c1da63f5671e13dfd960f"
+          },
+          "local_proxies_list_false": {
+            "count": 2,
+            "bytes": 51903,
+            "sha256": "f384a15495d2454392a5a6736b39205c6e16dd84a720b1e027a6e844e0f79a8c"
+          },
+          "local_proxy_ss_editor_false": {
+            "count": 4,
+            "bytes": 124154,
+            "sha256": "8af5ee756f8cc70c4b8bac3477720542a32f3d3857b4a792af062f49313aab39"
+          },
+          "local_proxy_options_false": {
+            "count": 3,
+            "bytes": 98309,
+            "sha256": "8f68b6fcc70a1484c494721fc87da3a127b6d7032ea30138f5834463be1a33eb"
+          },
+          "local_proxy_transport_false": {
+            "count": 5,
+            "bytes": 163961,
+            "sha256": "d926cc1932299e92396b661a6ce7862832733741f7810de74e191690a2cc24c0"
+          },
+          "local_proxies_list_true": {
+            "count": 4,
+            "bytes": 117029,
+            "sha256": "c95e1db685e909e6815bbc9e0f813d375c50a789e10b891f1a21f373262bf4cb"
+          },
+          "local_proxy_ss_editor_true": {
+            "count": 4,
+            "bytes": 125036,
+            "sha256": "ff9f392521af8d820d9950050f853dd8245045cb6525fa3761f6d93368ad6355"
+          },
+          "local_proxy_options_true": {
+            "count": 3,
+            "bytes": 98373,
+            "sha256": "192c5b0de1c07cdd43ab1bf8985da0a27d54325ed77fb24d204349f0f7b75d8c"
+          },
+          "local_proxy_transport_true": {
+            "count": 5,
+            "bytes": 164114,
+            "sha256": "78f2ebff8a0434a1da258a7af766e4eaa9f89d91b59f8a7e29dc72607da27cc1"
+          },
+          "groups_list_light": {
+            "count": 2,
+            "bytes": 72661,
+            "sha256": "25d2cf947ed54182582c90f14404d5f6ed3353c24a117b6bbeff7d985bee4815"
+          },
+          "groups_member_picker_light": {
+            "count": 3,
+            "bytes": 76606,
+            "sha256": "cd6e50cf675eccbbb06b2a497dc4e7b8a5c95e835fa5aa156dc07839d388fec3"
+          },
+          "groups_members_light": {
+            "count": 3,
+            "bytes": 80193,
+            "sha256": "2c816553da5594b6f7907f2e3a3ef4e7333da1c7c7172b5ab1eda0f29a84dc80"
+          },
+          "groups_add_options_light": {
+            "count": 3,
+            "bytes": 105362,
+            "sha256": "32593e83bb67db4a68906718c3cbbcfccaefa8f4e27c1d3a2d079ccf181858e6"
+          },
+          "groups_options_light": {
+            "count": 5,
+            "bytes": 150237,
+            "sha256": "12237c7e03346ee27810cbdab57b451d2a81f80e67813d2b3d63560413000c9f"
+          },
+          "groups_quick_yaml_light": {
+            "count": 2,
+            "bytes": 65299,
+            "sha256": "dfb66596670ce2718823900f24ae89f10c30d7476c0b48933f9562ea56840672"
+          },
+          "groups_list_dark": {
+            "count": 2,
+            "bytes": 72004,
+            "sha256": "03894950f5a2cda30f7a6f3992c9a280997b107ac7794878fae4ced46d815a3e"
+          },
+          "groups_member_picker_dark": {
+            "count": 3,
+            "bytes": 75140,
+            "sha256": "13c66752aca394ad33d94ce37d3e2ffcebb991792a7b190318cb7e9c31a00a05"
+          },
+          "groups_members_dark": {
+            "count": 3,
+            "bytes": 79445,
+            "sha256": "d6d20be36c6794367b2b6ba3a5062d26634d2e8a28b68d04de31acc023cbfc6f"
+          },
+          "groups_add_options_dark": {
+            "count": 3,
+            "bytes": 103545,
+            "sha256": "4be96f0a68463277819e1d3e98d6f6a76d64fbf0f23c4a63eb411eee3f8e0cc8"
+          },
+          "groups_options_dark": {
+            "count": 5,
+            "bytes": 150530,
+            "sha256": "c3a310928265baa90f90cc769bcb83f862933578eb418a3dd9bb65ee3e87bff8"
+          },
+          "groups_quick_yaml_dark": {
+            "count": 2,
+            "bytes": 65703,
+            "sha256": "f6d15fd908d7cf48f25c7c88839b4107379b72ac17c353370cdea391c364fb20"
+          }
+        },
+        "passed": true
+      }
+    }
+  },
+  "imeRedGreen": {
+    "legacyResult": {
+      "returncode": 0,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft",
+          "code": -2
+        }
+      ],
+      "images": {},
+      "passed": false
+    },
+    "restore": {
+      "oldSha256": "7b30bbe81c2c24b3ad0b9375c63debe8c1a51b3bbf851431e77148c8f5f6dcf9",
+      "legacyCommandExit": 1,
+      "finalRestoredSha256": "df5d5fd73dc68db62e057c0935e581e552689ca64955e42027772b9234fdb034"
+    },
+    "failedAt": "awaitHiddenIme after 5000ms on field validation",
+    "finalSameWindowHiddenAndDraftRetained": true
+  },
+  "visual": {
+    "reviewedSheets": [
+      "focused-sheet-1.png",
+      "focused-sheet-2.png",
+      "remaining-sheet-1.png",
+      "remaining-sheet-2.png",
+      "remaining-sheet-3.png",
+      "remaining-sheet-4.png",
+      "remaining-sheet-5.png",
+      "remaining-sheet-6.png",
+      "remaining-sheet-7.png",
+      "remaining-sheet-8.png"
+    ],
+    "formalImages": [
+      "formal-profiles.png",
+      "formal-profiles-tab.png"
+    ]
+  },
+  "authorizedInput": {
+    "path": "/sdcard/Download/1.yaml",
+    "bytes": 35165,
+    "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "alreadyPresent": false
+  },
+  "install": {
+    "sha256": "a68d118253282d4e4641ff1d36618322a36bccb78bb54dbc5671ee4bcdc7ce18",
+    "installedMatches": true,
+    "formalDataCleared": false,
+    "mainStarted": true,
+    "profilesPageNonempty": true,
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "scope": "正式签名包启动、原配置详情/Provider缓存及底部配置Tab列表烟测；详细子页由独立fixture验证，未改正式配置。",
+    "profileDetailLoaded": true,
+    "profilesTabVerified": true,
+    "initialNavigationCorrection": "最初点击首页配置详情，原formal-profiles.png实为详情；第二次底部阈值仍发现两文本而停在点击前；最终按已观测最下方导航项进入配置Tab并独立核对。"
+  },
+  "fixtures": {
+    "com.lonnnnnng.flclash.motion": {
+      "sha256": "df5d5fd73dc68db62e057c0935e581e552689ca64955e42027772b9234fdb034",
+      "installedMatches": true
+    },
+    "com.lonnnnnng.flclash.motion.test": {
+      "sha256": "8dc8d0a47612a9d5d818c1d382e28bf9520e9dacb4d64b8518efa1c521c51c3a",
+      "installedMatches": true
+    }
+  },
+  "cleanup": {
+    "removedOwnedFiles": [
+      "/sdcard/Download/1.yaml",
+      "/sdcard/kclash-config-subpages.xml",
+      "/sdcard/kclash-config-check2.xml"
+    ],
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "mainInstalledSha256": "a68d118253282d4e4641ff1d36618322a36bccb78bb54dbc5671ee4bcdc7ce18",
+    "mainDataCleared": false,
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+    "nightMode": "Night mode: yes",
+    "fontScale": "1.0",
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "flutterPackageModified": false
+  },
+  "sources": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt": "c6d8e1d58e042b8ab92d36d94b96efaba89ab15bf03b5d98243196d3a261d17c",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": "ab98380b646487074c7ee413cc61753456ebf113184418e53acbb43b8f209e3b",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProxyResourceBindings.kt": "50f3b0c43ecaf08db1c3a3d623f5f4df5274568b48139b81b8c2a182d7bb89c7",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProviderOptionsPage.kt": "e4687f321cd06356c47ed59edc7626379a4056af86326a45b4d48e7c35503884",
+    "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt": "72dba64914fcf574475809e0f79048f0ed12eb2642d2fa8f0ab3b26d0309e91c",
+    "android/tests/instrumented/ProfileProxyResourcePageInstrumentedTest.kt": "4c321f90fd5d4b51d4e6ed74a6c6723da90e327cdb421a8050b211cfc74f6938",
+    "android/tests/instrumented/ProfileProxyResourcesInstrumentedTest.kt": "e6f22b5631d998a481ec768d7480c202909864f2e135d951316b488d6662d3ec",
+    "android/tests/instrumented/ProviderPagesInstrumentedTest.kt": "bee8c6ca9fa0bb59c9fa0da379b72f3c4bc584d9244f867ba18b7b8559b6cb3d",
+    "android/tests/instrumented/ProviderOptionsFormGeometryInstrumentedTest.kt": "a30968fac1af21c307753f87df0c012186db3434f6df9025958215f5cd471898"
+  },
+  "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+  "boundaries": [
+    "22个方法为独立motion包组件/受控回调验收，不是正式Room/Mihomo运行态或冷进程全链路；旧包IME失败不与最终绿测累计。",
+    "正式签名启动、原配置详情/Provider缓存及底部配置Tab可读；未清或修改配置，没有数据库/正文逐字段保护回读。初次同名点击与第二次定位门禁失败均记录，未把错误路径计作列表通过。",
+    "68张定向截图及几何证明本组状态，非Flutter运行时逐像素或连续动效等价；本轮未测性能，KUI-025首开退化仍未闭环。",
+    "NTP/Sniffer插图、添加面板/协议目标选择、资源搜索栏等完整Flutter形态仍待补。",
+    "仅Redmi API36竖屏默认字号；无模拟器、低API、蜂窝/OEM及实网/VPN负载；玻璃默认关闭。",
+    "公开kclash-v0.1.0资产未改；手机保留同签名本地修正版。用户已清除持续目标，当前组收尾后停止自动推进。"
+  ],
+  "artifacts": "../acceptance-artifacts/config-subpages-parity-20261109/",
+  "artifactSha256": {
+    "build1.log": "b977543db3108b137480579ebbf9469f58f918bfc335c48c08eb9b0156950d95",
+    "fixture1.log": "1062d67872ad8c4aeb2b62b18f36e8aeafa7a400b9f08a18a66bb7b89fd26834",
+    "lint1.log": "ff3a258400d58849b89c81215f11d70a7187a1262acf414c1952049b94edc99e",
+    "focused1/instrument.log": "4b31efdaeed35841875c94fe5453a90b1512cd712c709b6e7f01e79cda33bc9c",
+    "remaining1/instrument.log": "4f016aeeead36395e368521c089d1b5e546b5dfb0d8f00f121f9b4240dd59a60",
+    "legacy-ime/instrument.log": "e7360fd444a12aabd6a6a8ca5a859f3fe769b61ebe9fcb1b1bd8ceb5738bba5e",
+    "legacy-ime-restore.json": "9a84a00d78300f776e58fd6bd42ed15e82ef8f48c2bb2f46b6a2fae0c10d72b4",
+    "source-final1-sha256.json": "a185c578703ddc257f29c0344dcd1a486da9aa6df1fd0a69b9a749009911279c",
+    "authorized-input.json": "ea88fe96f5fe85b7701764bd5700cc75752740e8898fa60a6869089351a558b7",
+    "formal-profiles.png": "b5b4257f1d4c4d9e8a6f9d50587c11bd11eae037836ba096c3025bf1e1d983d7",
+    "formal-profiles-tab.png": "140daeae460b589b8aac627e17adbf41f966bf843d0e9fe2b482d57f1aacc86b",
+    "cleanup.json": "f7993b4c35804a60dea53c055f97a0bf585d5cb10fbfa4b2c3d81690520630c1",
+    "signer.txt": "7979b4aeceff54c7119332671bfa951d5b22b8f24b25659a2a69bffdb38aa50d"
+  }
+}

@@ -97,9 +97,14 @@ class ProfileProxyResourcesInstrumentedTest {
 }
 
 internal fun readAuthorizedProxyProfile(): ByteArray {
+    val arguments = InstrumentationRegistry.getArguments()
+    val expectedHash = checkNotNull(arguments.getString("kclashAuthorizedProfileSha256"))
+    val expectedSize = checkNotNull(arguments.getString("kclashAuthorizedProfileBytes")).toInt()
+    require(expectedHash.matches(Regex("[0-9a-f]{64}")) && expectedSize > 0)
     val descriptor = InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand("cat /sdcard/Download/1.yaml")
     val bytes = descriptor.use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
-    assertEquals(34814, bytes.size)
-    assertEquals("bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898", java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) })
+    // 作者 long：授权文件会由用户更新，不能锁死旧正文；每轮由工作区原文件生成清单，设备必须逐字节身份匹配后才能供测试读取。
+    assertEquals(expectedSize, bytes.size)
+    assertEquals(expectedHash, java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) })
     return bytes
 }

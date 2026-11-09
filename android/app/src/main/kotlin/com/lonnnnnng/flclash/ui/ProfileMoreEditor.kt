@@ -3,7 +3,6 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,6 +18,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -74,22 +75,28 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
         IconButton(onClick = { adding = true }, enabled = !state.isSaving && remaining.isNotEmpty(), modifier = Modifier.testTag("profile_more_add")) { Icon(Icons.Outlined.AddCircleOutline, null) }
         IconButton(onClick = { yaml = true }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_yaml")) { Icon(Icons.Outlined.Code, null) }
     }, text = {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("profile_more_editor_scroll"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.fillMaxSize().testTag("profile_more_editor_scroll")) {
             if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("profile_more_saving"))
             (error ?: state.error)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_more_editor_error")) }
             if (listed.isEmpty()) {
-                Column(Modifier.fillMaxWidth().padding(top = 80.dp, bottom = 40.dp).testTag("profile_more_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
+                // 作者 long：空态按剩余视口偏上居中，沿用Flutter的-0.2对齐；固定80dp会让高屏留下整片空白。
+                Box(Modifier.fillMaxSize(), contentAlignment = BiasAlignment(0f, -.2f)) {
+                Column(Modifier.widthIn(max = 320.dp).verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 24.dp).testTag("profile_more_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(if (ntp) Icons.Outlined.Schedule else Icons.Outlined.Radar, null, Modifier.size(72.dp), tint = MaterialTheme.colorScheme.primary)
                     Text("暂无设置项", Modifier.padding(top = 20.dp), style = MaterialTheme.typography.titleMedium)
-                    Text("未添加的字段沿用原配置。添加设置项后可单独调整。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("未添加的字段沿用原配置。添加设置项后可单独调整。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     FilledTonalButton(onClick = { adding = true }, enabled = !state.isSaving, modifier = Modifier.padding(top = 20.dp).testTag("profile_more_empty_add")) { Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(8.dp)); Text("添加设置项") }
                 }
+                }
             } else {
+                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 listOf(false, true).forEach { protocols ->
                     val entries = listed.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
                     if (entries.isNotEmpty()) {
-                        Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleSmall)
-                        Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
+                        Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(start = 16.dp, top = 12.dp),
+                            style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
                             Column {
                                 entries.forEachIndexed { index, field ->
                                     if (index > 0) HorizontalDivider(Modifier.padding(start = 56.dp, end = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
@@ -104,8 +111,9 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                 if (dialer.isNotBlank() && targets.isNotEmpty() && dialer !in targets) Text("出站代理已不在配置中，请检查节点或策略组名称", color = MaterialTheme.colorScheme.error)
                 Text("修改会自动保存。未添加的字段沿用原配置；移除或清空设置项可恢复继承。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 TextButton(onClick = { clear = true }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_reset")) { Text("清除本分区覆盖") }
+                Spacer(Modifier.height(16.dp))
+                }
             }
-            Spacer(Modifier.height(16.dp))
         }
     })
     if (adding) ModalBottomSheet(onDismissRequest = { if (!state.isSaving) adding = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
@@ -169,7 +177,7 @@ private fun MoreProtocolEditor(field: MoreField, value: JsonObject, root: JsonOb
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (saving) LinearProgressIndicator(Modifier.fillMaxWidth())
             saveError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
+            Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
                 Column {
                     MoreProtocolRow("端口", if (portCount == 0) "默认端口" else "$portCount 个端口或范围",
                         Modifier.testTag("more_protocol_ports"), enabled = !saving, onClick = { ports = true })
@@ -243,18 +251,20 @@ private fun MoreValueEditor(field: MoreField, initial: JsonElement, root: JsonOb
     var text by rememberSaveable(field.key) { mutableStateOf(original) }
     var error by remember { mutableStateOf<String?>(null) }
     var discard by rememberSaveable { mutableStateOf(false) }
-    val focus = LocalFocusManager.current
-    val keyboard = LocalSoftwareKeyboardController.current
     fun exit() { if (!saving) { if (text != original) discard = true else onDismiss() } }
     ProfileEditorPage(::exit, title = { Text(field.label) }, backTag = "more_value_back", confirmButton = {
+        // 作者 long：字段页有自己的Window；确认前结束本页输入，校验失败时错误也能完整露出，不能操作父页IME控制器。
+        val focus = LocalFocusManager.current
+        val keyboard = LocalSoftwareKeyboardController.current
         TextButton(enabled = !saving, modifier = Modifier.testTag("more_value_confirm"), onClick = {
+            focus.clearFocus(force = true); keyboard?.hide()
             runCatching {
                 val value = if (protocol) initial.asJsonObject.deepCopy().apply {
                     add("ports", Gson().toJsonTree(splitMoreList(text)))
                 } else if (list) splitMoreList(text).takeIf { it.isNotEmpty() }?.let { Gson().toJsonTree(it) }
                 else text.trim().takeIf(String::isNotEmpty)?.let { Gson().toJsonTree(it) }
                 val next = root.deepCopy(); setMoreField(next, field, value); validateMoreFields(next, ntp)
-                focus.clearFocus(force = true); keyboard?.hide(); onConfirm(moreFieldValue(next, field))
+                onConfirm(moreFieldValue(next, field))
             }.onFailure { error = it.message ?: "字段无效，请检查后重试" }
         }) { Text("确认") }
     }, text = {
@@ -282,22 +292,24 @@ private fun MoreYamlEditor(title: String, initial: JsonObject, ntp: Boolean, sav
     var discard by rememberSaveable { mutableStateOf(false) }
     var checking by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val focus = LocalFocusManager.current
-    val keyboard = LocalSoftwareKeyboardController.current
     fun submit(fromBack: Boolean) { if (checking || saving) return; scope.launch {
             checking = true
             try {
                 val next = withContext(Dispatchers.Default) {
                     applyMoreFieldsYaml(initial, content, ntp)
                 }
-                focus.clearFocus(force = true); keyboard?.hide(); onConfirm(next)
+                onConfirm(next)
             } catch (failure: kotlinx.coroutines.CancellationException) { throw failure }
             catch (failure: IllegalArgumentException) { error = failure.message ?: "YAML 字段无效"; if (fromBack) discard = true }
             finally { checking = false }
         } }
     fun exit() { if (!checking && !saving) { if (content == original) onDismiss() else submit(true) } }
     ProfileEditorPage(::exit, title = { Text("$title · YAML") }, backTag = "more_yaml_back", confirmButton = {
-        TextButton(enabled = !checking && !saving, modifier = Modifier.testTag("more_yaml_confirm"), onClick = { submit(false) }) {
+        val focus = LocalFocusManager.current
+        val keyboard = LocalSoftwareKeyboardController.current
+        TextButton(enabled = !checking && !saving, modifier = Modifier.testTag("more_yaml_confirm"), onClick = {
+            focus.clearFocus(force = true); keyboard?.hide(); submit(false)
+        }) {
             if (checking || saving) CircularProgressIndicator(Modifier.size(20.dp)) else Text("确认")
         }
     }, text = {
