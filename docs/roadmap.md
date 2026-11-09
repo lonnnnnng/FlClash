@@ -1,6 +1,6 @@
 # KClash Kotlin 重写路线图
 
-> **Geo下载断流修复（2026-11-09，KCORE-005）**：确认应用自身mihomo请求走原代理链；Android强制Connection:close触发当前链路正文截断。curl交叉keep-alive4/4、close1/6，Go双路径close均失败/keep均完整。核心20bc0fc4取消强制close并在Body.Close/请求失败回收独立Transport；页面保留脱敏错误分类。HTTP5项race/父模块全量race/route race、864项JVM、Debug/签名Release-R8/双Lint通过。Redmi原GitHub四Geo首次更新4/4（约52秒）、重复操作4/4（约7秒，含缓存校验边界）；未换节点/未用加速。正式包a8c490c1安装回拉一致，原配置保留、VPN运行。远端具体丢尾实现、首轮504和历史TLS问题不追认同因。证据`docs/acceptance/geo-download-connection-redmi-20261109.json`，溯源`docs/geo-download-connection-defect.md`。
+> **Geo下载连接修复与换网复核（2026-11-09，KCORE-005）**：Android强制`Connection: close`导致正文提前结束的源码缺陷已由核心`20bc0fc4`修正，并通过HTTP生命周期回归、864项JVM、Go race、Debug/签名Release-R8/双Lint及Redmi既有4/4原址更新。后续日志在旧网络时记录四项TLS握手超时和504；用户换网后报告更新恢复。复核中同机通过核心SOCKS对四个原始GitHub地址完整下载4/4（HTTP 200，字节数吻合）；GEOSITE App单项更新通过。但随后MMDB App单项在自动选择改用`CF-VLESS-WARP-8880`时再次于`github.com`握手超时，此前对应连接链为`CF-VLESS-WARP-80`。因此换网与成功相关，但仍有出口节点波动，不能宣称所有当前网络路径都稳定，也不能归为Kotlin下载器问题已全解。未使用镜像、未改原URL/配置。复核证据`docs/acceptance/geo-network-recurrence-redmi-20261109.json`；代码缺陷与历史结果见`docs/geo-download-connection-defect.md`及原验收`docs/acceptance/geo-download-connection-redmi-20261109.json`。
 
 > **添加条目动效、关闭留窗与45分钟观察（2026-11-09，KUI-029）**：更多设置候选/分组标题按固定Prism独立300ms收起，保存失败保留、连选不重启、搜索退场清理已补。最终860项JVM、Debug/签名Release-R8/motion及双Lint通过；Redmi同套13/13、自然动效1/1，32PNG/4拼图与两套原PTS视频核验。固定Prism组件实机参考已建立，不代表完整Flutter页等价。关闭Popup三轮16/27/27帧、jank3/2/2已可见，Simpleperf正确PID仍拒绝，原生栈未得。独立纯代理45分钟10次Provider读取90项（61–112ms），HTTPS8/10、前两次TLS失败保留；元数据/文件SHA-mtime/选择保持，受控死亡系统恢复，审计/质量缓存/显式stop键变化可识别。正式包`a72a955a…`安装回拉与首页/配置烟测通过；原配置保留，独立包已清、服务停止。整体视觉/性能/历史因果仍PARTIAL。证据`docs/acceptance/selection-motion-stability-redmi-20261109.json`；溯源`docs/selection-entry-motion-defect.md`、`docs/menu-close-window-investigation.md`、`docs/historical-stability-investigation.md`。
 
@@ -762,7 +762,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
 | 单元测试 | 864项JVM零失败/错误/跳过：App582执行，Service213/Core38/Common31复用。双Lint0错误（Debug69警告14提示、Release66警告13提示）；Go HTTP5项race、父模块全量race及route race通过。 |
-| 最新真机 | KCORE-005原GitHub四Geo首次更新4/4、重复操作4/4（第二轮小传输/缓存校验，不计完整重下）；内部代理归因已核实。KUI-029的13/13及自然1/1仍为前序具名视觉证据。 |
+| 最新真机 | KCORE-005代码修复的原址4/4仍成立；本轮复核中本机SOCKS完整下载4/4、GEOSITE App单更成功，随后MMDB App单更在自动选到`CF-VLESS-WARP-8880`时TLS握手超时。换网后的总体更新成功是用户报告，当前网络/自动出口节点波动仍待稳定性复测。KUI-029的13/13及自然1/1仍为前序具名视觉证据。 |
 | 当前设备数据 | 保留原本地配置、原Geo URL和代理选择，服务已恢复VPN运行；未清正式数据。原1.yaml SHA保持，诊断程序与临时下载已精确回收。正式库本组未采逐字段快照。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
@@ -1303,7 +1303,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ### 7.7 测试、发布和运维
 
-**Geo下载断流修复（2026-11-09，KCORE-005）**：确认应用自身mihomo请求走原代理链；Android强制Connection:close触发当前链路正文截断。curl交叉keep-alive4/4、close1/6，Go双路径close均失败/keep均完整。核心20bc0fc4取消强制close并在Body.Close/请求失败回收独立Transport；页面保留脱敏错误分类。HTTP5项race/父模块全量race/route race、864项JVM、Debug/签名Release-R8/双Lint通过。Redmi原GitHub四Geo首次更新4/4（约52秒）、重复操作4/4（约7秒，含缓存校验边界）；未换节点/未用加速。正式包a8c490c1安装回拉一致，原配置保留、VPN运行。远端具体丢尾实现、首轮504和历史TLS问题不追认同因。证据`docs/acceptance/geo-download-connection-redmi-20261109.json`，溯源`docs/geo-download-connection-defect.md`。
+**Geo下载连接修复与换网复核（2026-11-09，KCORE-005）**：确认应用自身mihomo请求走原代理链；Android强制`Connection: close`导致正文提前结束，核心`20bc0fc4`取消强制close并在Body.Close/请求失败后回收独立Transport。HTTP5项race、父模块全量race、route race、864项JVM、Debug/签名Release-R8/双Lint通过；既有Redmi完整更新4/4及重复缓存校验4/4保留为修复验证。后续复核读取原GitHub URL且未更换资源配置：旧现场日志四项TLS握手超时、后续有504；用户报告换网后更新恢复。复核时手机经KClash SOCKS完整下载四项4/4，HTTP 200且字节数吻合；GEOSITE App单项更新成功。随后MMDB App单项更新在实际代理链改到`CF-VLESS-WARP-8880`后TLS握手超时，先前成功样本实际叶节点为`CF-VLESS-WARP-80`。因此源码连接缺陷仍视为已修，网络与自动选路的稳定性另列PARTIAL，尚无同一网络、同一出口的受控前后对照。未使用加速地址、未改原URL/正式配置。见`docs/acceptance/geo-network-recurrence-redmi-20261109.json`、`docs/geo-download-connection-defect.md`及原`docs/acceptance/geo-download-connection-redmi-20261109.json`。
 
 **添加条目动效、关闭留窗与45分钟观察（2026-11-09，KUI-029）**：更多设置候选/分组标题按固定Prism独立300ms收起，保存失败保留、连选不重启、搜索退场清理已补。最终860项JVM、Debug/签名Release-R8/motion及双Lint通过；Redmi同套13/13、自然动效1/1，32PNG/4拼图与两套原PTS视频核验。固定Prism组件实机参考已建立，不代表完整Flutter页等价。关闭Popup三轮16/27/27帧、jank3/2/2已可见，Simpleperf正确PID仍拒绝，原生栈未得。独立纯代理45分钟10次Provider读取90项（61–112ms），HTTPS8/10、前两次TLS失败保留；元数据/文件SHA-mtime/选择保持，受控死亡系统恢复，审计/质量缓存/显式stop键变化可识别。正式包`a72a955a…`安装回拉与首页/配置烟测通过；原配置保留，独立包已清、服务停止。整体视觉/性能/历史因果仍PARTIAL。证据`docs/acceptance/selection-motion-stability-redmi-20261109.json`；溯源`docs/selection-entry-motion-defect.md`、`docs/menu-close-window-investigation.md`、`docs/historical-stability-investigation.md`。
 

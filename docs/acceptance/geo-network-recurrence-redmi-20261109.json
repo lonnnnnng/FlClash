@@ -1,0 +1,110 @@
+{
+  "id": "KCORE-005-network-recurrence",
+  "date": "2026-11-09",
+  "status": "NETWORK_AND_AUTO_SELECTED_EGRESS_VARIANCE_UNRESOLVED",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "serial": "wsvwypiz7xwslvl7",
+    "api": 36,
+    "appPid": "10300",
+    "apkSha256": "a8c490c16c60c5594f81314f90b01bae4a740c00cc0ddfdd9622faac809249cd",
+    "vpnServiceRunning": true,
+    "proxyServiceRunning": true
+  },
+  "networkChange": {
+    "userReportedUpdateSucceededAfterSwitch": true,
+    "currentUnderlyingTransport": "WIFI",
+    "currentWifiNetworkCreatedLocal": "2026-11-09 17:22 CST",
+    "preSwitchNetworkSnapshotAvailable": false,
+    "controlledSameEgressBeforeAfter": false
+  },
+  "priorFailures": [
+    {
+      "localTime": "15:25",
+      "resources": ["MMDB", "ASN", "GEOSITE", "GEOIP"],
+      "targetHost": "github.com",
+      "error": "TLS handshake timeout"
+    },
+    {
+      "localTime": "15:26-15:39",
+      "resources": ["GEOIP", "MMDB"],
+      "error": "504 Gateway Time-out"
+    },
+    {
+      "localTime": "15:26",
+      "resources": ["GEOSITE", "MMDB"],
+      "targetHost": ["github.com", "release-assets.githubusercontent.com"],
+      "error": "TLS handshake timeout"
+    }
+  ],
+  "originalUrls": {
+    "allResourceHosts": "github.com",
+    "redirectHost": "release-assets.githubusercontent.com",
+    "allFourUrlsMatchPreviouslyRecordedValues": true,
+    "mirrorUsed": false,
+    "configOrNodeSelectionChangedByAgent": false
+  },
+  "coreSocksFullBodyChecks": [
+    {
+      "resource": "GEOSITE",
+      "httpStatus": 200,
+      "receivedBytes": 4355962,
+      "contentLength": 4355962,
+      "elapsedSeconds": 3.857
+    },
+    {
+      "resource": "MMDB",
+      "httpStatus": 200,
+      "receivedBytes": 8406197,
+      "contentLength": 8406197,
+      "elapsedSeconds": 7.609
+    },
+    {
+      "resource": "ASN",
+      "httpStatus": 200,
+      "receivedBytes": 9054248,
+      "contentLength": 9054248,
+      "elapsedSeconds": 6.166
+    },
+    {
+      "resource": "GEOIP",
+      "httpStatus": 200,
+      "receivedBytes": 16475153,
+      "contentLength": 16475153,
+      "elapsedSeconds": 6.611
+    }
+  ],
+  "appChecks": [
+    {
+      "resource": "GEOSITE",
+      "localTime": "17:42",
+      "result": "success",
+      "elapsedSeconds": 6.884,
+      "observedHost": "release-assets.githubusercontent.com",
+      "rule": "RuleSet(github)",
+      "selectedLeaf": "CF-VLESS-WARP-80"
+    },
+    {
+      "resource": "MMDB",
+      "localTime": "17:50",
+      "result": "failure",
+      "observedHost": "github.com",
+      "error": "TLS handshake timeout",
+      "rule": "RuleSet(github)",
+      "selectedLeaf": "CF-VLESS-WARP-8880"
+    }
+  ],
+  "interpretation": {
+    "connectionCloseCodeDefect": "previously fixed and independently regression-tested",
+    "networkSwitchCorrelation": "consistent with user's report and four complete post-switch core-SOCKS transfers",
+    "automaticEgressVariance": "observed; successful and failed app checks used different selected leaves",
+    "singleRootCauseProven": false,
+    "overallGeoUpdateReliabilityClosed": false
+  },
+  "verification": {
+    "failureMessageUnitTests": "4/4 passed",
+    "newAndroidBuildRun": false,
+    "sourceChanged": false
+  },
+  "evidenceBoundary": "No controlled comparison held both the underlying network and selected proxy leaf constant. The user-reported full update success is retained separately from the one observed app success and one later app failure. Raw signed redirect URLs are excluded."
+}

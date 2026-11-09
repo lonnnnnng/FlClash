@@ -10,7 +10,7 @@
 | KCORE-002 | 控制器异步重建的全局指针竞态和旧任务覆盖新请求 | Mihomo `hub/route` | 已修，核心提交 `f83e9b1032ed02831457d4da5a414e063e932694`；验证见下文 |
 | KCORE-003 | TLS 控制器绑定后校验失败，监听器失去回收路径 | Mihomo `hub/route` | 已修，核心提交 `f83e9b1032ed02831457d4da5a414e063e932694`；验证见下文 |
 | KCORE-004 | 宿主测速超时未传入自动健康检查，手动/后台期限可能分叉 | FlClash Go 适配层与 Mihomo Provider | 已修，核心提交 `852d3ad1`、`7038231e` 与 Kotlin setup 适配；完整 Redmi 实网复验待完成 |
-| KCORE-005 | Android下载器强制Connection:close触发当前代理链响应尾段截断，取消限制后还需回收私有连接池 | Mihomo `component/http` | 已修，核心提交 `20bc0fc4`；原址Redmi验证见专页 |
+| KCORE-005 | Android下载器强制Connection:close触发当前代理链响应尾段截断，取消限制后还需回收私有连接池 | Mihomo `component/http` | 代码缺陷已修，核心提交 `20bc0fc4`；后续网络/自动选路握手波动仍调查，见复核记录 |
 
 ## KCORE-001：TUN 启动保护缺口
 
@@ -55,6 +55,7 @@
 - 证据：正式App内部mihomo请求确实命中github规则及非DIRECT链。手机curl HTTP/1.1交叉对照keep-alive4/4完整，Connection:close仅1/6完整；同版Go两种路径均close失败/keep成功，正文缺失时context未到期。远端具体丢尾代码无服务端证据，首轮504因果仍单列。
 - 修正：核心`20bc0fc4`取消Android强制close，正文Close后回收本次请求及重定向的独立Transport；Do失败也清理。调用方显式close、证书验证、下载预算保持。Kotlin资源页按白名单显示真实错误类别，不泄露URL。
 - 验证：HTTP五项race、父模块全量race、route race通过；旧源码两项连接回收红测保留。Android和Redmi原GitHub四资源实网、安装/服务恢复证据见[验收JSON](acceptance/geo-download-connection-redmi-20261109.json)。不换节点/不加速/不自动重试掩盖失败。
+- 后续复核：旧网络现场四项出现TLS握手超时，随后部分请求返回504。用户报告换网后更新恢复；在Redmi上核心SOCKS对四个原始资源完整下载4/4、GEOSITE App单项通过。之后MMDB App单项在运行请求实际走到`CF-VLESS-WARP-8880`时又遇TLS握手超时，之前成功请求走`CF-VLESS-WARP-80`。这说明网络变化与成功相关，同时自动选择叶节点变化也是混杂因素；尚未构成固定网络/固定出口的A/B，不把后续失败回归为`Connection: close`源码缺陷，也不把整组资源更新稳定性标成通过。详见[换网复核](acceptance/geo-network-recurrence-redmi-20261109.json)。
 - 同步复查：只有上游等价实现正文生命周期和重定向/失败回收，并通过对应回归及Android原址下载，才可撤销本地补丁。详细归因与边界见[专页](geo-download-connection-defect.md)。
 
 ## 未定因果调查：Always-on 首请求 TLS EOF

@@ -42,3 +42,13 @@ build1重新执行gomobile核心构建，864项JVM结果零失败/错误/跳过�
 两轮新进程日志无Geo更新错误。结束服务保持运行；连接页分页观察未见遗留GitHub下载连接，这仅为该时点观察，连接回收保证另由HTTP生命周期回归支持。公开0.1.0 Release不覆盖，本地修正版交给用户继续使用。
 
 核心提交20bc0fc467cac942bf55009017f87474114fe90c已推送lonnnnnng/mihomo:kclash-fixes。后续仍需不同节点/服务端更多覆盖；首次504及历史Always-on TLS失败不由本组追认根因。
+
+## 换网后的复核（2026-11-09）
+
+用户反馈：资源更新失败时怀疑是网络问题，切换网络后可以更新。该观察与旧现场相符：15:25时MMDB、ASN、GEOSITE、GEOIP均出现`github.com` TLS handshake timeout；其后MMDB/GEOIP有HTTP 504。服务与核心在场，不能据此认定VPN或应用自身没有代理。
+
+同日稍后的Redmi复核保持原四个GitHub地址和正式配置。当前页面URL逐项回读均与原值相同。经`127.0.0.1:7890`核心SOCKS逐项读取完整正文，GEOSITE/MMDB/ASN/GEOIP均收到HTTP 200；传输字节数分别为4,355,962、8,406,197、9,054,248、16,475,153，均与最终Content-Length一致，耗时约3.9–7.6秒。未使用镜像或加速地址。同一窗口GEOSITE的App单项更新成功，大小与更新时间显示正常；最近请求指向`RuleSet(github)`并经`CF-VLESS-WARP-80`，证明该次应用流量走非DIRECT节点。
+
+随后App单项MMDB复测失败，核心日志为`TLS handshake timeout`，最近请求显示本次实际链路经自动选择叶节点`CF-VLESS-WARP-8880`；先前成功请求经过`CF-VLESS-WARP-80`。设备快照显示当前Wi-Fi网络自17:22建立，但没有切网前的SSID/网络接口快照，无法完成受控同节点A/B。故**已验证**换网后的SOCKS正文可以完整传输，且一次Geo App更新成功；**用户报告**换网后整体恢复；**未验证**换网是唯一原因或当前网络对自动组内所有叶节点都稳定。当前最准确结论是网络路径及自动选中叶节点会影响握手结果，KCORE-005的`Connection: close`正文截断修复仍成立，但全部环境稳定性未闭环。
+
+复核元数据与脱敏结果见`acceptance/geo-network-recurrence-redmi-20261109.json`。原始设备日志含签名重定向地址，只保留在仓库外本地验收目录，不纳入Git。
