@@ -103,7 +103,7 @@ class ResourceUpdatesRepository @Inject constructor(
                     runtime.requestGeoUpdate(GeoResourceType.valueOf(row.id))
                     // 作者 long：等待核心下载完成，不能把已受理当成成功；超时后仍由核心状态保留更新标记。
                     val completion = withTimeout(180_000L) { runtime.geoUpdates.first { it[row.id]?.updating == false }.getValue(row.id) }
-                    check(completion.error.isEmpty()) { "Geo 下载失败" }
+                    if (completion.error.isNotEmpty()) return ResourceUpdateFailure(row.label, geoUpdateFailureMessage(completion.error))
                 }
                 ResourceKind.ICONS -> icons.sync(icons.all().first { it.id == row.id && it.url == row.url })
                 ResourceKind.RULE -> {
@@ -150,4 +150,18 @@ class ResourceUpdatesRepository @Inject constructor(
         return mutable.value.failures.isEmpty()
     }
     fun clearFeedback() { mutable.update { it.copy(failures = emptyList(), message = null) } }
+}
+
+/** 作者 long：核心错误可能带完整订阅/重定向地址，只展示白名单分类；下载阶段失败未写资源，保存阶段失败不能声称旧文件完整。 */
+internal fun geoUpdateFailureMessage(error: String): String {
+    val download = error.startsWith("can't download ")
+    if (!download) return "资源更新失败，请查看核心日志后重试"
+    val detail = error.substringAfter("database file:", "").trim()
+    return when {
+        detail == "unexpected EOF" || detail == "EOF" -> "下载中断，文件未完整接收；旧资源未改动，请重试"
+        detail.startsWith("504 ") -> "下载服务器返回 HTTP 504（网关超时）；旧资源未改动，请稍后重试"
+        Regex("[45]\\d{2} [^\\r\\n]+").matches(detail) -> "下载服务器返回 HTTP ${detail.take(3)}；旧资源未改动，请检查地址或稍后重试"
+        "context deadline exceeded" in detail || "timeout" in detail -> "资源下载超时；旧资源未改动，请稍后重试"
+        else -> "资源下载失败；旧资源未改动，请查看核心日志后重试"
+    }
 }

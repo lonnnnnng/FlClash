@@ -126,7 +126,7 @@ jobs:
         working-directory: core
         run: |
           go test -race ./...
-          go test -race github.com/metacubex/mihomo/hub/route
+          go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http
 
       - name: Verify tests, R8 and arm64 Release package
         env:

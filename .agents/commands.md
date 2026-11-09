@@ -57,7 +57,7 @@ gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --e
 go version
 cd core
 go test -race ./...
-go test -race github.com/metacubex/mihomo/hub/route
+go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http
 ```
 
 `core` 是 Go module 根目录，Mihomo 是嵌套 module；父模块 `./...` 不运行控制器缺陷回归，必须另执行 route 包。核心修复来源、固定提交和同步复查条件见 `docs/upstream-source-defects.md`。

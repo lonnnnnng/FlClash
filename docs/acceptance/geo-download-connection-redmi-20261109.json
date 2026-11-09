@@ -1,0 +1,912 @@
+{
+  "id": "KCORE-005",
+  "date": "2026-11-09",
+  "status": "FIXED_CURRENT_ROUTE_VERIFIED",
+  "baselineParent": "5b0682f055e34e45d19f39bd30e3884f56aff7cc",
+  "baselineCore": "7038231e026b710088b9c369899b3a8b7f281739",
+  "fixedCore": "20bc0fc467cac942bf55009017f87474114fe90c",
+  "originCommit": "3564e96a0010a415e5dd22fc9deeb7efd381dcb5",
+  "onlySyncUpstream": "chen08209/Clash.Meta:FlClash",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "rootCauseEvidence": {
+    "internalTrafficUsesProxy": true,
+    "internalProcess": "mihomo",
+    "rule": "RuleSet(github)",
+    "host": "release-assets.githubusercontent.com",
+    "sameNonDirectLeafObservedBeforeAfter": true,
+    "originalURLs": {
+      "MMDB": "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb",
+      "ASN": "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb",
+      "GEOIP": "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat",
+      "GEOSITE": "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
+    },
+    "androidForcedConnectionClose": true,
+    "connectionCloseTriggeredTruncation": true,
+    "peerEOFBeforeClientClose": true,
+    "contextExpired": false,
+    "gzipResponse": false,
+    "remoteExactFaultLocation": "not proven without server-side evidence",
+    "initial504SameCause": "unconfirmed"
+  },
+  "comparison": {
+    "expectedBytes": 4355962,
+    "curlCases": [
+      {
+        "connection": "keep-alive",
+        "encoding": "identity",
+        "code": 0,
+        "bytes": 4355962,
+        "seconds": 7.54214
+      },
+      {
+        "connection": "close",
+        "encoding": "identity",
+        "code": 0,
+        "bytes": 4355962,
+        "seconds": 23.731414
+      },
+      {
+        "connection": "keep-alive",
+        "encoding": "gzip",
+        "code": 0,
+        "bytes": 4355962,
+        "seconds": 7.673563
+      },
+      {
+        "connection": "close",
+        "encoding": "gzip",
+        "code": 56,
+        "bytes": 3354496,
+        "seconds": 7.542523
+      },
+      {
+        "connection": "close",
+        "encoding": "gzip",
+        "code": 56,
+        "bytes": 3505919,
+        "seconds": 7.034946
+      },
+      {
+        "connection": "keep-alive",
+        "encoding": "gzip",
+        "code": 0,
+        "bytes": 4355962,
+        "seconds": 7.849127
+      },
+      {
+        "connection": "close",
+        "encoding": "identity",
+        "code": 56,
+        "bytes": 3423808,
+        "seconds": 6.722832
+      },
+      {
+        "connection": "close",
+        "encoding": "gzip",
+        "code": 56,
+        "bytes": 4275648,
+        "seconds": 7.766607
+      },
+      {
+        "connection": "keep-alive",
+        "encoding": "identity",
+        "code": 0,
+        "bytes": 4355962,
+        "seconds": 8.107905
+      },
+      {
+        "connection": "close",
+        "encoding": "identity",
+        "code": 56,
+        "bytes": 3111296,
+        "seconds": 6.370641
+      }
+    ],
+    "curlTotals": {
+      "close": {
+        "total": 6,
+        "full": 1
+      },
+      "keep-alive": {
+        "total": 4,
+        "full": 4
+      }
+    },
+    "goCases": [
+      {
+        "file": "0-socks-close.jsonl",
+        "events": [
+          {
+            "event": "dial",
+            "host": "github.com",
+            "ms": 30
+          },
+          {
+            "bytes": 8888,
+            "event": "transport-close",
+            "host": "github.com",
+            "ms": 1374
+          },
+          {
+            "event": "redirect",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 1375
+          },
+          {
+            "event": "dial",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 1378
+          },
+          {
+            "close": true,
+            "declaredLength": 4355962,
+            "encoding": "",
+            "event": "response",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 2740,
+            "protocol": "HTTP/1.1",
+            "status": 200,
+            "uncompressed": false
+          },
+          {
+            "bytes": 4333745,
+            "error": "EOF",
+            "event": "transport-read-end",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 8139,
+            "n": 0
+          },
+          {
+            "bytes": 4333745,
+            "event": "transport-close",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 8141
+          },
+          {
+            "bytes": 4308735,
+            "contextError": "",
+            "disableKeepAlives": true,
+            "encoding": "auto",
+            "error": "unexpected EOF",
+            "event": "complete",
+            "mode": "socks",
+            "ms": 8175,
+            "sha256": "4da907a64623c4c33a7acb9a29ef5898eee27b88d452bf3edc37ca6e7d5e1a97"
+          }
+        ]
+      },
+      {
+        "file": "1-socks-keep.jsonl",
+        "events": [
+          {
+            "event": "dial",
+            "host": "github.com",
+            "ms": 38
+          },
+          {
+            "event": "redirect",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 1247
+          },
+          {
+            "event": "dial",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 1250
+          },
+          {
+            "close": false,
+            "declaredLength": 4355962,
+            "encoding": "",
+            "event": "response",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 2562,
+            "protocol": "HTTP/1.1",
+            "status": 200,
+            "uncompressed": false
+          },
+          {
+            "bytes": 4355962,
+            "contextError": "",
+            "disableKeepAlives": false,
+            "encoding": "auto",
+            "error": "",
+            "event": "complete",
+            "mode": "socks",
+            "ms": 7947,
+            "sha256": "85073a00a3c3eb80ac76b97df2f97f7dab00cb36c8b5e7ed2354cbd016f8b088"
+          },
+          {
+            "bytes": 8843,
+            "event": "transport-close",
+            "host": "github.com",
+            "ms": 7948
+          },
+          {
+            "bytes": 8843,
+            "error": "read tcp 127.0.0.1:42738->127.0.0.1:7890: use of closed network connection",
+            "event": "transport-read-end",
+            "host": "github.com",
+            "ms": 7949,
+            "n": 0
+          },
+          {
+            "bytes": 4368582,
+            "event": "transport-close",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 7950
+          },
+          {
+            "bytes": 4368582,
+            "error": "read tcp 127.0.0.1:42746->127.0.0.1:7890: use of closed network connection",
+            "event": "transport-read-end",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 7951,
+            "n": 0
+          }
+        ]
+      },
+      {
+        "file": "2-pipe-close.jsonl",
+        "events": [
+          {
+            "event": "dial",
+            "host": "github.com",
+            "ms": 31
+          },
+          {
+            "bytes": 8886,
+            "error": "EOF",
+            "event": "transport-read-end",
+            "host": "github.com",
+            "ms": 1330,
+            "n": 0
+          },
+          {
+            "event": "redirect",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 1331
+          },
+          {
+            "bytes": 8886,
+            "event": "transport-close",
+            "host": "github.com",
+            "ms": 1331
+          },
+          {
+            "bytes": 8886,
+            "event": "transport-close",
+            "host": "github.com",
+            "ms": 1332
+          },
+          {
+            "event": "dial",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 1333
+          },
+          {
+            "close": true,
+            "declaredLength": 4355962,
+            "encoding": "",
+            "event": "response",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 2647,
+            "protocol": "HTTP/1.1",
+            "status": 200,
+            "uncompressed": false
+          },
+          {
+            "bytes": 3526705,
+            "error": "EOF",
+            "event": "transport-read-end",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 6942,
+            "n": 0
+          },
+          {
+            "bytes": 3526705,
+            "event": "transport-close",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 6942
+          },
+          {
+            "bytes": 3526705,
+            "event": "transport-close",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 6947
+          },
+          {
+            "bytes": 3507008,
+            "contextError": "",
+            "disableKeepAlives": true,
+            "encoding": "auto",
+            "error": "unexpected EOF",
+            "event": "complete",
+            "mode": "pipe",
+            "ms": 6972,
+            "sha256": "df936829649a75249e515914300a3b0bb6388ccdecd5e5684356e6fd286282ed"
+          }
+        ]
+      },
+      {
+        "file": "3-pipe-keep.jsonl",
+        "events": [
+          {
+            "event": "dial",
+            "host": "github.com",
+            "ms": 31
+          },
+          {
+            "event": "redirect",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 1608
+          },
+          {
+            "event": "dial",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 1612
+          },
+          {
+            "close": false,
+            "declaredLength": 4355962,
+            "encoding": "",
+            "event": "response",
+            "host": "release-assets.githubusercontent.com",
+            "ms": 2716,
+            "protocol": "HTTP/1.1",
+            "status": 200,
+            "uncompressed": false
+          },
+          {
+            "bytes": 4355962,
+            "contextError": "",
+            "disableKeepAlives": false,
+            "encoding": "auto",
+            "error": "",
+            "event": "complete",
+            "mode": "pipe",
+            "ms": 8115,
+            "sha256": "85073a00a3c3eb80ac76b97df2f97f7dab00cb36c8b5e7ed2354cbd016f8b088"
+          }
+        ]
+      }
+    ]
+  },
+  "fix": {
+    "removeAndroidForcedConnectionClose": true,
+    "bodyCloseReclaimsRequestAndRedirectIdleConnections": true,
+    "requestFailureReclaimsIdleConnections": true,
+    "explicitCallerClosePreserved": true,
+    "tlsVerificationUnchanged": true,
+    "resourceTimeout90SecondsUnchanged": true,
+    "mirrorFallbackAdded": false,
+    "automaticRetryAdded": false,
+    "userErrorDetails": "allowlisted status/truncation/timeout; URLs not echoed"
+  },
+  "goTests": {
+    "httpLifecycleRace": "5/5 passed",
+    "parentRace": "go test -race ./... passed",
+    "routeRace": "passed",
+    "oldSourceRed": "same 2 idle connection cleanup tests failed, preserved"
+  },
+  "androidBuild": {
+    "jvm": [
+      {
+        "module": "app",
+        "tests": 582,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "service",
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "core",
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "common",
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "lint": {
+      "debug": {
+        "Warning": 69,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 13
+      }
+    },
+    "coreSourceSha256": "e04af96ac03a0b5bd89e8b2f2e8abb607e8ba54164d28d1bc3633803cc417024",
+    "coreAarSha256": "a57982ac22249865b83ef6d3de15f8f658d6aa201dc838f6dee312361fe26d6f"
+  },
+  "installed": {
+    "sha256": "a8c490c16c60c5594f81314f90b01bae4a740c00cc0ddfdd9622faac809249cd",
+    "pid": 10300,
+    "vpnRestored": true,
+    "dataCleared": false,
+    "certSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49"
+  },
+  "formalUI": {
+    "firstAll": {
+      "label": "fixed-all1",
+      "elapsedSeconds": 51.749847173690796,
+      "passed": true,
+      "texts": [
+        "自动更新",
+        "资源更新周期",
+        "24 小时",
+        "资源更新完成",
+        "Geo 资源",
+        "MMDB",
+        "更新于 0分钟前",
+        "8.4 MB",
+        "ASN",
+        "更新于 0分钟前",
+        "9.1 MB",
+        "GEOIP",
+        "更新于 0分钟前",
+        "16 MB",
+        "GEOSITE",
+        "更新于 0分钟前",
+        "4.4 MB",
+        "资源"
+      ],
+      "startedEpoch": 1794207619.9462998,
+      "completedEpoch": 1794207671.6961532
+    },
+    "repeatAll": {
+      "label": "fixed-all2",
+      "elapsedSeconds": 6.998121976852417,
+      "passed": true,
+      "texts": [
+        "自动更新",
+        "资源更新周期",
+        "24 小时",
+        "资源更新完成",
+        "Geo 资源",
+        "MMDB",
+        "更新于 0分钟前",
+        "8.4 MB",
+        "ASN",
+        "更新于 0分钟前",
+        "9.1 MB",
+        "GEOIP",
+        "更新于 0分钟前",
+        "16 MB",
+        "GEOSITE",
+        "更新于 0分钟前",
+        "4.4 MB",
+        "资源"
+      ],
+      "startedEpoch": 1794207730.4580119,
+      "completedEpoch": 1794207737.456141
+    },
+    "repeatBoundary": "small payload observed; not claimed as four full body re-downloads",
+    "geoUpdateErrorsInNewPid": 0,
+    "screenshotsReviewed": [
+      "fixed-all1.png",
+      "fixed-all2.png",
+      "fixed-connections.png"
+    ]
+  },
+  "finalState": {
+    "geoUrlsUnchanged": true,
+    "mirrorUsed": false,
+    "nodeSelectionChangedByAgent": false,
+    "vpnRunning": true,
+    "pid": "10300",
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "dataCleared": false,
+    "flutterBaselineModified": false,
+    "formalDbFieldSnapshot": false,
+    "geoHostsAbsentInObservedActiveConnectionPages": true
+  },
+  "formalDatabaseFieldSnapshot": false,
+  "originalSceneFailures": [
+    "initial 12 logs: two 504 and ten unexpected EOF",
+    "four-update reproduction: all EOF",
+    "single GEOSITE: EOF",
+    "curl header and Go client negatives retained"
+  ],
+  "knownScope": [
+    "current Redmi and selected proxy chain verified",
+    "remote exact truncation implementation not proven",
+    "initial504 and historical TLS EOF not retrospectively attributed",
+    "no raw config or signed redirect URL committed"
+  ],
+  "artifacts": {
+    "app-logcat-after-socks.txt": {
+      "sha256": "37f7f922c4a177f1b1912c518605a9f62a0a22b9204180dba675db0268f56dfa",
+      "bytes": 16576
+    },
+    "app-logcat-reproduction.txt": {
+      "sha256": "c12e72ae8c0fed9c7b43e91ea8eea2719869464e7335fd1218c9ebe09888212e",
+      "bytes": 19465
+    },
+    "app-logcat.txt": {
+      "sha256": "21cff4b4f6a396bbacad84e0f7c79a5fefca7cb7738323af867394f0397291ef",
+      "bytes": 8693
+    },
+    "before-reproduce.xml": {
+      "sha256": "b2995ffa377baf9d3d9c159e5e329e8233310c21cea646255dd34c483244ba4d",
+      "bytes": 21378
+    },
+    "before-upgrade.xml": {
+      "sha256": "ab1b430efefe100afa564943078ee3b373c2af696f0089b839fca913b36444fb",
+      "bytes": 20138
+    },
+    "build-results.json": {
+      "sha256": "a5e2f8e3e869c3e72c092bf90f8eb623081dade46d3861e5acdae6e0d09829cc",
+      "bytes": 799
+    },
+    "build1.log": {
+      "sha256": "3ea91ba713fdd4b80a8534eae7e2b3bf9b1c65e604167d1c30c80498103a8c2a",
+      "bytes": 21306
+    },
+    "comparison.json": {
+      "sha256": "04c22bd9d1c35b496d44b1178c382314bca80cbe20f334f48f8b0084a1ad2689",
+      "bytes": 8308
+    },
+    "connections-inner.xml": {
+      "sha256": "754c053abfa5459b4752d11df501890ac44e54a7990185c25778eee1696de590",
+      "bytes": 10408
+    },
+    "current-geo-urls.json": {
+      "sha256": "1660a8b63f2004f8d9cf9801019f1d176b59d30bc1b95265127beee52da6a033",
+      "bytes": 387
+    },
+    "diagnosis.json": {
+      "sha256": "b16dade9c266ce7bc0effe2497556678bf16142d4faef86ae36d6775cab849df",
+      "bytes": 2809
+    },
+    "diagnosis.md": {
+      "sha256": "dbb4d46d2bd689cd27bacd544a8b252c2275321b03f7d28e3247bbbab733e6db",
+      "bytes": 2021
+    },
+    "final-check.py": {
+      "sha256": "61cbf0122fe8b5ca41965e1d0d10075ca249e5ae134fa84e3018d1b55fec5ec3",
+      "bytes": 2402
+    },
+    "final-connections-bottom.xml": {
+      "sha256": "91d1a3673ed8e20ab7bee644f0f792f963637402dcdf9a50f2e6e57a0c442463",
+      "bytes": 23788
+    },
+    "final-connections-top.xml": {
+      "sha256": "91d1a3673ed8e20ab7bee644f0f792f963637402dcdf9a50f2e6e57a0c442463",
+      "bytes": 23788
+    },
+    "final-resource-ASN.xml": {
+      "sha256": "21d4d07e966f6db67d3dc37f2292a271fcbab204a3b7bde58e34e347e7f0aab5",
+      "bytes": 18294
+    },
+    "final-resource-GEOIP.xml": {
+      "sha256": "21d4d07e966f6db67d3dc37f2292a271fcbab204a3b7bde58e34e347e7f0aab5",
+      "bytes": 18294
+    },
+    "final-resource-GEOSITE.xml": {
+      "sha256": "21d4d07e966f6db67d3dc37f2292a271fcbab204a3b7bde58e34e347e7f0aab5",
+      "bytes": 18294
+    },
+    "final-resource-MMDB.xml": {
+      "sha256": "21d4d07e966f6db67d3dc37f2292a271fcbab204a3b7bde58e34e347e7f0aab5",
+      "bytes": 18294
+    },
+    "final-resources.xml": {
+      "sha256": "21d4d07e966f6db67d3dc37f2292a271fcbab204a3b7bde58e34e347e7f0aab5",
+      "bytes": 18294
+    },
+    "final-state.json": {
+      "sha256": "08ff100b00618cc815e05da4f53e3953a8a5dfadf753e49078656f14a4fd846d",
+      "bytes": 1706
+    },
+    "final-tools.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "final-tools2.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "final-url-ASN.xml": {
+      "sha256": "df7acdd7bb3b0c655a1e0fdaaebe189daea0b2a7d0f1fd9b09508563d0db9e94",
+      "bytes": 8043
+    },
+    "final-url-GEOIP.xml": {
+      "sha256": "774fda168fcd1c265f83ee76722c880629bd9657883e73d8163ed167f263239d",
+      "bytes": 8037
+    },
+    "final-url-GEOSITE.xml": {
+      "sha256": "70cad2b8f38218dc7287719929017546510012dc91b24184247d79a9c78111e3",
+      "bytes": 8041
+    },
+    "final-url-MMDB.xml": {
+      "sha256": "11a20d7b99ebc05dfd31dcc7847330214c8941e5e24f865bf8c36bc84f22d930",
+      "bytes": 8039
+    },
+    "fix-plan.md": {
+      "sha256": "5643cd9550efb70159ae5f55a413e4cf47253546a4b0fffc6f15b2c11039c8d7",
+      "bytes": 1292
+    },
+    "fixed-all1-before.xml": {
+      "sha256": "8b9971b818ad206f243f2a207eb22efcb5509772050805bb942db32f542a15a1",
+      "bytes": 17919
+    },
+    "fixed-all1-logcat.txt": {
+      "sha256": "6d6cb743423d1c064b48c20f1ed5999618602561f057a04750c5bfb1a016719d",
+      "bytes": 20061
+    },
+    "fixed-all1-poll-0.xml": {
+      "sha256": "7bd1d26e428ef77164911dbc731ea90f58e8bc122872ee82de0772756f8f65f7",
+      "bytes": 17191
+    },
+    "fixed-all1-poll-1.xml": {
+      "sha256": "7bd1d26e428ef77164911dbc731ea90f58e8bc122872ee82de0772756f8f65f7",
+      "bytes": 17191
+    },
+    "fixed-all1-poll-2.xml": {
+      "sha256": "796a73283e8abb7fecfe5d9f5c1aa2387f6095d9b8e2ed3d0eb0b7103f9881b0",
+      "bytes": 17546
+    },
+    "fixed-all1-poll-3.xml": {
+      "sha256": "796a73283e8abb7fecfe5d9f5c1aa2387f6095d9b8e2ed3d0eb0b7103f9881b0",
+      "bytes": 17546
+    },
+    "fixed-all1-poll-4.xml": {
+      "sha256": "796a73283e8abb7fecfe5d9f5c1aa2387f6095d9b8e2ed3d0eb0b7103f9881b0",
+      "bytes": 17546
+    },
+    "fixed-all1-poll-5.xml": {
+      "sha256": "796a73283e8abb7fecfe5d9f5c1aa2387f6095d9b8e2ed3d0eb0b7103f9881b0",
+      "bytes": 17546
+    },
+    "fixed-all1-poll-6.xml": {
+      "sha256": "f1646b7a6545fda84215623a8f7e65c1bba3c418417d759f36a5c2d3b7842430",
+      "bytes": 17899
+    },
+    "fixed-all1-poll-7.xml": {
+      "sha256": "b309673ccd563390615e4ab1651cd56eae0dbcbcf41cc12d1e328edaae9c8a6d",
+      "bytes": 18294
+    },
+    "fixed-all1.json": {
+      "sha256": "a022df61fe4d04c130863e3e1959ef1d6350505bdf7f57c874dea9a18ab781b7",
+      "bytes": 520
+    },
+    "fixed-all1.png": {
+      "sha256": "e63357aa04e5a351823e166b724440ab4c387794a330eefc1dee2bfc89868218",
+      "bytes": 118076
+    },
+    "fixed-all2-before.xml": {
+      "sha256": "b309673ccd563390615e4ab1651cd56eae0dbcbcf41cc12d1e328edaae9c8a6d",
+      "bytes": 18294
+    },
+    "fixed-all2-logcat.txt": {
+      "sha256": "6d6cb743423d1c064b48c20f1ed5999618602561f057a04750c5bfb1a016719d",
+      "bytes": 20061
+    },
+    "fixed-all2-poll-0.xml": {
+      "sha256": "b309673ccd563390615e4ab1651cd56eae0dbcbcf41cc12d1e328edaae9c8a6d",
+      "bytes": 18294
+    },
+    "fixed-all2.json": {
+      "sha256": "e267e6e28c6ef04fc34d18f26ef952bbabdc856ab446ca70ea812a78e5d87c83",
+      "bytes": 518
+    },
+    "fixed-all2.png": {
+      "sha256": "48433c7c92a0abcccb2be8f7fff6e632507b53999cd0472d79b95b7f62076e85",
+      "bytes": 118435
+    },
+    "fixed-connections.png": {
+      "sha256": "a91e737657aa258f3df43378f2a10164bc54e8650cd289b72f3c104753e87f32",
+      "bytes": 269924
+    },
+    "fixed-connections.xml": {
+      "sha256": "d7b393ff98f9eced220ce37ba38ad23c526c9728bcc802e2ceebc86e3da72101",
+      "bytes": 37623
+    },
+    "fixed-requests.xml": {
+      "sha256": "aa6981aa404d9d27c1c3654ac5b9dc9e312e1ad8f198297c25c3a2d694a655c3",
+      "bytes": 40050
+    },
+    "fixed-tools.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "fixed-tools2.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "go-http-old-red.log": {
+      "sha256": "86627de792d56c62fd205a67c08b0f02ef40e5ba28cc31aea12263c4e66adb0d",
+      "bytes": 476
+    },
+    "go-http-tests.log": {
+      "sha256": "667b6b29d5c4e5d00a33286bb82676892be22e9c2501fe60de6c1f563df6f887",
+      "bytes": 283
+    },
+    "go-http-tests2.log": {
+      "sha256": "c2eae3dda0670c40668a4b52a36e0a589097a4f778ee4db2aa6cca6a4fdfbd8e",
+      "bytes": 770
+    },
+    "go-probe/0-socks-close.jsonl": {
+      "sha256": "974953b83645bfdf59dcb3bafa6b57a946426838f87e7f87054e4a490aa4eef5",
+      "bytes": 898
+    },
+    "go-probe/1-socks-keep.jsonl": {
+      "sha256": "29d51be967089fe234cdde692f2be99512e9d923ef002da0610c7e355eb23487",
+      "bytes": 1132
+    },
+    "go-probe/2-pipe-close.jsonl": {
+      "sha256": "34734507bed9e3df03420d4588584a8ee33bb114703925e7518ea91bb85b36fd",
+      "bytes": 1162
+    },
+    "go-probe/3-pipe-keep.jsonl": {
+      "sha256": "a4308bfed0a1cca4a00d5e97c38cbac97a76761f1d36ec05c4c83e508c2c8919",
+      "bytes": 591
+    },
+    "go-probe/main.go": {
+      "sha256": "63da1003cb63453b4027556a433c70bdfa03bb6ded4de463c80813914d0410ed",
+      "bytes": 3454
+    },
+    "go-race.log": {
+      "sha256": "36c249310ae28bdf379bd9c118c2ef434fe408b20bee9d57f5867192bf4a2008",
+      "bytes": 52
+    },
+    "go-route-race.log": {
+      "sha256": "bc71b670444c6a8d0c32947e5c3aa538d6ff8fc72e250b9a16c6b273041a61f3",
+      "bytes": 50
+    },
+    "header-matrix/result.json": {
+      "sha256": "6b4f93ec90351750b32fee407fcb65731d15173effda9115bee9ba986d81723b",
+      "bytes": 3177
+    },
+    "header-repeat/results.json": {
+      "sha256": "622e2908569c4f59caecc6feac509469a3cb487e48b68df467e30b5c669461f6",
+      "bytes": 1733
+    },
+    "http-before.go": {
+      "sha256": "85dcc3499d7446db09d603ae068bef1d48fb86d043f90b4d51b96bd84801f541",
+      "bytes": 2415
+    },
+    "inner-detail.xml": {
+      "sha256": "a3f6737169c7991de3c784df6deb0635630a40cdce4a265af9cec1f2c08bd4a6",
+      "bytes": 12994
+    },
+    "installed.json": {
+      "sha256": "47a4147a995345c7ff79bcaeb151b1f1f3efa5478f9e760790a9f486ea4233a0",
+      "bytes": 113
+    },
+    "logcat-single.txt": {
+      "sha256": "0e85ae2ec97f25a1c227e324154dfd52e9933e9c0bf5f2c344e485af0e061d3b",
+      "bytes": 26459
+    },
+    "new-installed.json": {
+      "sha256": "d88df3daf3ecab683fe9778f5bed76affcac25c2082be738f16c26fa0b5f4215",
+      "bytes": 230
+    },
+    "new-resources-before.xml": {
+      "sha256": "8b9971b818ad206f243f2a207eb22efcb5509772050805bb942db32f542a15a1",
+      "bytes": 17919
+    },
+    "new-running-home.xml": {
+      "sha256": "d4b081d78fdaa230e40902deec28a0ae36cf6445eac1e01f4f398a74e32e0046",
+      "bytes": 22866
+    },
+    "new-start-ready.xml": {
+      "sha256": "782c8fbe3167a259e04b62b0c186b3554d1df00f41e45fc928dbf84a0dce01c4",
+      "bytes": 22856
+    },
+    "new-tools.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "old-http-overlay.json": {
+      "sha256": "7c33d6c2514aaf2dc16237056451c54edd9cf48e778af74d575e7bcba393e7cd",
+      "bytes": 233
+    },
+    "phone-socks-geosite-second-summary.json": {
+      "sha256": "2c827df6e92bcc54be5193a6bda10fa020d53cc0009dea67a6caa34f9ce5f926",
+      "bytes": 230
+    },
+    "phone-socks-geosite-summary.json": {
+      "sha256": "96417dafbb3ab16e06b11a9e73fbb82206eeda98d58df3ac41a24957eed16841",
+      "bytes": 280
+    },
+    "pre-stop-home.xml": {
+      "sha256": "bccda60c4ec49cfdb2bffaa381bb3e9c22a1736e284a86afd413845bf2582991",
+      "bytes": 23255
+    },
+    "pre-stop-resource.xml": {
+      "sha256": "ab1b430efefe100afa564943078ee3b373c2af696f0089b839fca913b36444fb",
+      "bytes": 20138
+    },
+    "pre-stop-tools.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "requests-all.xml": {
+      "sha256": "e8ffef340a85721d3175df6464e02cc6b08d6d36215ef072b9b29cb0165ebb0a",
+      "bytes": 40950
+    },
+    "requests-before-all.xml": {
+      "sha256": "38c3f3503835914f7df8134da3d11c0011ad9f49ad0a549ee037687bd7496819",
+      "bytes": 40052
+    },
+    "requests-summary.xml": {
+      "sha256": "38c3f3503835914f7df8134da3d11c0011ad9f49ad0a549ee037687bd7496819",
+      "bytes": 40052
+    },
+    "resource-before-single.xml": {
+      "sha256": "99122e9988576a31aa864e7919997249212b73d94c8eb63de085b2ab39b0a7b4",
+      "bytes": 21378
+    },
+    "run-updates.py": {
+      "sha256": "c983432631b2dc0b84474dcce99d38f453b52364c1397903436edc622f070a34",
+      "bytes": 1793
+    },
+    "scenario-start.xml": {
+      "sha256": "b2995ffa377baf9d3d9c159e5e329e8233310c21cea646255dd34c483244ba4d",
+      "bytes": 21378
+    },
+    "screen.xml": {
+      "sha256": "b2995ffa377baf9d3d9c159e5e329e8233310c21cea646255dd34c483244ba4d",
+      "bytes": 21378
+    },
+    "single-menu.xml": {
+      "sha256": "d812a2ee1de5e0a1cce14abab298fbb4c46c8f6356132666e339046b1a440196",
+      "bytes": 4052
+    },
+    "single-result.xml": {
+      "sha256": "ab1b430efefe100afa564943078ee3b373c2af696f0089b839fca913b36444fb",
+      "bytes": 20138
+    },
+    "single-start.json": {
+      "sha256": "4bf8e1126e277f6addd4dcf78fcd37980be09f1fe0465d4d612914a62b359174",
+      "bytes": 44
+    },
+    "stop-ready.xml": {
+      "sha256": "ffcc6bac84433a427b3589ee3856480299ab93a3bf37b933d2154a23acbcb831",
+      "bytes": 23255
+    },
+    "tools-after-update.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "tools-before-single.xml": {
+      "sha256": "e8ffef340a85721d3175df6464e02cc6b08d6d36215ef072b9b29cb0165ebb0a",
+      "bytes": 40950
+    },
+    "tools-single-ready.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "tools-single.xml": {
+      "sha256": "e8ffef340a85721d3175df6464e02cc6b08d6d36215ef072b9b29cb0165ebb0a",
+      "bytes": 40950
+    },
+    "tools2.xml": {
+      "sha256": "5eb153a37563add1c031bab35a84a098578481b393fa468cc16f02699ee8962c",
+      "bytes": 17173
+    },
+    "upgrade.py": {
+      "sha256": "5e28879e0c46db5c84fb0940c553ccfe87f1b400e984f55afdfbc707b402cca0",
+      "bytes": 2539
+    }
+  }
+}

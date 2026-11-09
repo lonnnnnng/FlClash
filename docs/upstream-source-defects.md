@@ -10,6 +10,7 @@
 | KCORE-002 | 控制器异步重建的全局指针竞态和旧任务覆盖新请求 | Mihomo `hub/route` | 已修，核心提交 `f83e9b1032ed02831457d4da5a414e063e932694`；验证见下文 |
 | KCORE-003 | TLS 控制器绑定后校验失败，监听器失去回收路径 | Mihomo `hub/route` | 已修，核心提交 `f83e9b1032ed02831457d4da5a414e063e932694`；验证见下文 |
 | KCORE-004 | 宿主测速超时未传入自动健康检查，手动/后台期限可能分叉 | FlClash Go 适配层与 Mihomo Provider | 已修，核心提交 `852d3ad1`、`7038231e` 与 Kotlin setup 适配；完整 Redmi 实网复验待完成 |
+| KCORE-005 | Android下载器强制Connection:close触发当前代理链响应尾段截断，取消限制后还需回收私有连接池 | Mihomo `component/http` | 已修，核心提交 `20bc0fc4`；原址Redmi验证见专页 |
 
 ## KCORE-001：TUN 启动保护缺口
 
@@ -47,6 +48,14 @@
 - 修复：核心合并 `852d3ad1` 引入 `provider.SetDefaultTestTimeout`、显式 Provider timeout 查询、Provider 版本重测和 url-test 惰性失效；核心适配 `7038231e` 暴露查询给宿主。外层 `SetupParams.test-timeout`、`CoreBridge.setupConfig` 和 `CoreRuntimeManager` 在配置应用/失败回滚时传递毫秒期限，并把 `delayTestTimeout` 纳入 runtime key，设置变更会重新应用核心。
 - 验证：内核定向 `go test -race ./adapter/provider ./adapter/outboundgroup ./common/singledo ./hub/route` 与外层 `go test ./...` 已通过；Kotlin Service/App 单测及 Core Debug 编译已通过。完整 APK、Redmi 真机自动 Provider/URLTest、跨进程重建与显式 Provider timeout 仍需在统一构建批次验收。
 - 同步复查：以后只比较 `chen08209/Clash.Meta:FlClash` 的新实现；确认 `SetDefaultTestTimeout` 的全局状态在失败回滚/重启中随 setup 更新，确认 Provider 显式 timeout 仍覆盖宿主默认值。Flutter v0.9.3 的 UI/功能提交不能合入 Kotlin 主线。
+
+## KCORE-005：Geo下载提前断流与请求连接生命周期
+
+- 固定来源：7038231e的`component/http/http.go:73`，来源提交3564e96a；固定Flutter核心024245dc行为相同。只修自己的kclash-fixes，不同步官方提交。
+- 证据：正式App内部mihomo请求确实命中github规则及非DIRECT链。手机curl HTTP/1.1交叉对照keep-alive4/4完整，Connection:close仅1/6完整；同版Go两种路径均close失败/keep成功，正文缺失时context未到期。远端具体丢尾代码无服务端证据，首轮504因果仍单列。
+- 修正：核心`20bc0fc4`取消Android强制close，正文Close后回收本次请求及重定向的独立Transport；Do失败也清理。调用方显式close、证书验证、下载预算保持。Kotlin资源页按白名单显示真实错误类别，不泄露URL。
+- 验证：HTTP五项race、父模块全量race、route race通过；旧源码两项连接回收红测保留。Android和Redmi原GitHub四资源实网、安装/服务恢复证据见[验收JSON](acceptance/geo-download-connection-redmi-20261109.json)。不换节点/不加速/不自动重试掩盖失败。
+- 同步复查：只有上游等价实现正文生命周期和重定向/失败回收，并通过对应回归及Android原址下载，才可撤销本地补丁。详细归因与边界见[专页](geo-download-connection-defect.md)。
 
 ## 未定因果调查：Always-on 首请求 TLS EOF
 
