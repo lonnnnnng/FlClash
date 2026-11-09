@@ -156,7 +156,8 @@ class ResourceUpdatesRepository @Inject constructor(
 internal fun geoUpdateFailureMessage(error: String): String {
     val download = error.startsWith("can't download ")
     if (!download) return "资源更新失败，请查看核心日志后重试"
-    val detail = error.substringAfter("database file:", "").trim()
+    // 作者 long：核心有界重试在最终错误后带尝试次数，原因分类仍按原始白名单，不能因此丢失截断提示。
+    val detail = error.substringAfter("database file:", "").trim().substringBefore(" (attempts=")
     return when {
         detail == "unexpected EOF" || detail == "EOF" -> "下载中断，文件未完整接收；旧资源未改动，请重试"
         detail.startsWith("504 ") -> "下载服务器返回 HTTP 504（网关超时）；旧资源未改动，请稍后重试"

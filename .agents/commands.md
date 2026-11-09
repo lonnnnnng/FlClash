@@ -57,10 +57,12 @@ gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --e
 go version
 cd core
 go test -race ./...
-go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http
+go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http github.com/metacubex/mihomo/component/updater
 ```
 
-`core` 是 Go module 根目录，Mihomo 是嵌套 module；父模块 `./...` 不运行控制器缺陷回归，必须另执行 route 包。核心修复来源、固定提交和同步复查条件见 `docs/upstream-source-defects.md`。
+`core` 是 Go module 根目录，Mihomo 是嵌套 module；父模块 `./...` 不运行控制器、HTTP生命周期及Geo恢复回归，必须另执行 route/http/updater 包。核心修复来源、固定提交和同步复查条件见 `docs/upstream-source-defects.md`。
+
+Geo恢复定向验收使用`GeoDownloadRecoveryInstrumentedTest`，只允许空`.motion`库和原`1.yaml`哈希门禁。`#geoRetriesKeepBusyProtectOldFileAndAllowManualRecovery`显式传`kclashGeoRecovery=true`；`#originalGeoUrlsDownloadFullBodiesAcrossAutomaticAndFixedLeaves`显式传`kclashGeoLive=true`，原配置须包含代码托管selector及已有80/8880叶节点，不满足则报告输入条件。先确认正式VPN/ProxyService已停止，避免独立核心DNS端口争用；不能用正式包承接故障改源。实网仅独立暂存配置关闭ETag并临时选组，原文件不改；`kclash_geo_live_chunk`逐轮验证index/count/bytes/SHA后解码，检查四轮每项HTTP200、bytes/length/文件大小一致及实际代理链，不能只凭JUnit成功认定全部固定叶通过。结束逐项恢复设置/选择/暂存文件并删除自有Profile；失败批次保留。证据见`docs/acceptance/geo-download-recovery-redmi-20261110.json`。
 
 gomobile AAR 构建需要服从 `core/go.mod`、Android SDK、NDK 和 Gradle 配置；不要手工复制或修改生成的 AAR/classes。
 

@@ -4,6 +4,11 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GeoUpdateFailureMessageTest {
+    @Test fun exhaustedRetriesKeepTheirOriginalFailureCategory() {
+        assertTrue(geoUpdateFailureMessage("can't download GeoSite database file: unexpected EOF (attempts=3)").contains("文件未完整接收"))
+        assertTrue(geoUpdateFailureMessage("can't download MMDB database file: network timeout (attempts=3)").contains("超时"))
+        assertTrue(geoUpdateFailureMessage("can't download ASN database file: 504 Gateway Timeout (attempts=3)").contains("HTTP 504"))
+    }
     @Test fun incompleteBodyRemainsAnExplicitFailure() {
         val message = geoUpdateFailureMessage("can't download GeoSite database file: unexpected EOF")
         assertTrue(message.contains("文件未完整接收")); assertTrue(message.contains("旧资源未改动"))

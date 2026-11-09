@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **Geo更新恢复闭环（2026-11-10，KCORE-006）**：共享核心补齐瞬断重试，最多3次、1/2秒退避及165秒总预算，旧文件保护、唯一终态和安全错误日志保留；核心`464552e4`已推自己的kclash-fixes。865项JVM、Go父模块及route/http/updater race、Debug/签名Release-R8/motion与双Lint通过。Redmi故障注入5场景通过；独立motion按自动80→固定80→固定8880→恢复自动2086四轮原GitHub完整正文16/16（HTTP200，bytes/length/文件大小一致），正式R8包三轮全部更新12项成功（缓存校验路径）。正式包`033d6c10…`已覆盖安装回读，配置及原URL保持、VPN/ProxyService运行，测试包和本轮手机输入已清。瞬断恢复能力及当前新网络更新范围闭环；实网均首次成功，旧网络具体根因、切网/蜂窝/OEM及长期稳定性仍未确认，历史失败不覆盖。证据`docs/acceptance/geo-download-recovery-redmi-20261110.json`；溯源`docs/geo-download-recovery-defect.md`。
+
 > **Geo下载断流修复（2026-11-09，KCORE-005）**：确认应用自身mihomo请求走原代理链；Android强制Connection:close触发当前链路正文截断。curl交叉keep-alive4/4、close1/6，Go双路径close均失败/keep均完整。核心20bc0fc4取消强制close并在Body.Close/请求失败回收独立Transport；页面保留脱敏错误分类。HTTP5项race/父模块全量race/route race、864项JVM、Debug/签名Release-R8/双Lint通过。Redmi原GitHub四Geo首次更新4/4（约52秒）、重复操作4/4（约7秒，含缓存校验边界）；未换节点/未用加速。正式包a8c490c1安装回拉一致，原配置保留、VPN运行。远端具体丢尾实现、首轮504和历史TLS问题不追认同因。证据`docs/acceptance/geo-download-connection-redmi-20261109.json`，溯源`docs/geo-download-connection-defect.md`。
 
 > **添加条目动效、关闭留窗与45分钟观察（2026-11-09，KUI-029）**：更多设置候选/分组标题按固定Prism独立300ms收起，保存失败保留、连选不重启、搜索退场清理已补。最终860项JVM、Debug/签名Release-R8/motion及双Lint通过；Redmi同套13/13、自然动效1/1，32PNG/4拼图与两套原PTS视频核验。固定Prism组件实机参考已建立，不代表完整Flutter页等价。关闭Popup三轮16/27/27帧、jank3/2/2已可见，Simpleperf正确PID仍拒绝，原生栈未得。独立纯代理45分钟10次Provider读取90项（61–112ms），HTTPS8/10、前两次TLS失败保留；元数据/文件SHA-mtime/选择保持，受控死亡系统恢复，审计/质量缓存/显式stop键变化可识别。正式包`a72a955a…`安装回拉与首页/配置烟测通过；原配置保留，独立包已清、服务停止。整体视觉/性能/历史因果仍PARTIAL。证据`docs/acceptance/selection-motion-stability-redmi-20261109.json`；溯源`docs/selection-entry-motion-defect.md`、`docs/menu-close-window-investigation.md`、`docs/historical-stability-investigation.md`。
@@ -97,7 +99,7 @@ CUSTOM 配置卡组数芯片已完成固定 fixture 真机视觉验收：`Profil
 
 1. 优先继续菜单首次打开、关闭卡顿率退化与剩余RenderThread慢帧，分开启动首帧、主线程、RenderThread及Buffer Stuffing；在当前分段测量基础上补正式R8运行边界。KUI-018/019已证实的缓存及收回收益保留，旧31.62%与中间面板退化记录不覆盖，整体流畅度仍未完成。
 2. 继续其余子页完整视觉；CUSTOM 组数芯片、首页双向流量/历史与连接三列摘要的固定 fixture 已验，仍需真实 Go 数值和可复现的固定Flutter运行对比。逐页列明实际比较状态，不用Kotlin自身截图哈希证明Flutter一致。浅色正式状态栏、逐帧连续性和最终性能独立核验。
-3. 回补第6项元数据/mtime保护异常、未知偏好变化、Provider运行态 final6-before 超时和网络恢复稳定性。原失败保留，后续绿测不反向证明原因。
+3. 回补第6项元数据/mtime保护异常、未知偏好变化、Provider运行态 final6-before 超时，以及旧网络根因与长期网络恢复稳定性。Geo有界恢复及当前新网络更新范围已由KCORE-006验收；原失败保留，后续绿测不反向证明原因。
 4. 蜂窝可用后补 Wi-Fi↔蜂窝，其余首次安装/第三方入口/OEM 按真实条件逐项验收。
 5. 再推进第10项实时背景/触点光效、玻璃品质、8 MiB正文性能，以及第11项低API、跨版本升级。0.1.0远端CI、独立签名、正式发布资产下载/签名与Redmi运行已于2026-11-09完成，见 `docs/acceptance/release-0.1.0-20261109.json`；当前动效问题仍按第1项优先处理。
 

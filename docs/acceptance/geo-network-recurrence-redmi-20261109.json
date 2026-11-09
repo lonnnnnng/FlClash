@@ -106,5 +106,12 @@
     "newAndroidBuildRun": false,
     "sourceChanged": false
   },
-  "evidenceBoundary": "No controlled comparison held both the underlying network and selected proxy leaf constant. The user-reported full update success is retained separately from the one observed app success and one later app failure. Raw signed redirect URLs are excluded."
+  "evidenceBoundary": "No controlled comparison held both the underlying network and selected proxy leaf constant. The user-reported full update success is retained separately from the one observed app success and one later app failure. Raw signed redirect URLs are excluded.",
+  "followUp": {
+    "date": "2026-11-10",
+    "record": "geo-download-recovery-redmi-20261110.json",
+    "recoveryCapabilityAndCurrentNetworkScopeVerified": true,
+    "historicalFailuresPreserved": true,
+    "oldNetworkRootCauseStillUnknown": true
+  }
 }

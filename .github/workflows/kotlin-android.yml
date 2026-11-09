@@ -122,11 +122,11 @@ jobs:
           chmod 600 android/app/keystore.jks
           echo "KCLASH_RELEASE_KEYSTORE=$GITHUB_WORKSPACE/android/app/keystore.jks" >> "$GITHUB_ENV"
 
-      - name: Verify Go core and controller lifecycle with race detector
+      - name: Verify Go core, controllers and Geo recovery with race detector
         working-directory: core
         run: |
           go test -race ./...
-          go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http
+          go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http github.com/metacubex/mihomo/component/updater
 
       - name: Verify tests, R8 and arm64 Release package
         env:

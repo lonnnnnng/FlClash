@@ -1,5 +1,7 @@
 # KCORE-005：Geo 下载 Connection: close 触发截断与连接回收
 
+> 2026-11-10接续：Geo瞬断有界恢复和当前Redmi新网络多出口更新已由[KCORE-006](geo-download-recovery-defect.md)完成本组验收。下文保留2026-11-09原始连接修复及换网失败现场；旧网络的具体远端因果仍未确认。
+
 2026-11-09；现场正式APK a72a955a，父仓库5b0682f0，Mihomo7038231e。来源仍为chen08209/Clash.Meta:FlClash，本组没有同步官方Mihomo提交，也不改资源地址或节点选择。
 
 ## 现场和因果边界

@@ -10,7 +10,8 @@
 | KCORE-002 | 控制器异步重建的全局指针竞态和旧任务覆盖新请求 | Mihomo `hub/route` | 已修，核心提交 `f83e9b1032ed02831457d4da5a414e063e932694`；验证见下文 |
 | KCORE-003 | TLS 控制器绑定后校验失败，监听器失去回收路径 | Mihomo `hub/route` | 已修，核心提交 `f83e9b1032ed02831457d4da5a414e063e932694`；验证见下文 |
 | KCORE-004 | 宿主测速超时未传入自动健康检查，手动/后台期限可能分叉 | FlClash Go 适配层与 Mihomo Provider | 已修，核心提交 `852d3ad1`、`7038231e` 与 Kotlin setup 适配；完整 Redmi 实网复验待完成 |
-| KCORE-005 | Android下载器强制Connection:close触发当前代理链响应尾段截断，取消限制后还需回收私有连接池 | Mihomo `component/http` | 代码缺陷已修，核心提交 `20bc0fc4`；后续网络/自动选路握手波动仍调查，见复核记录 |
+| KCORE-005 | Android下载器强制Connection:close触发当前代理链响应尾段截断，取消限制后还需回收私有连接池 | Mihomo `component/http` | 已修，核心提交 `20bc0fc4`；旧网络根因未确认，后续恢复能力见KCORE-006 |
+| KCORE-006 | Geo单次下载将TLS/网关/截断等瞬断直接结束为最终失败，缺少有界恢复 | Mihomo `component/updater` | 已修，核心提交 `464552e4`；恢复能力、Redmi当前网络多出口和正式更新闭环，旧网络因果与长期稳定性单列 |
 
 ## KCORE-001：TUN 启动保护缺口
 
@@ -57,6 +58,14 @@
 - 验证：HTTP五项race、父模块全量race、route race通过；旧源码两项连接回收红测保留。Android和Redmi原GitHub四资源实网、安装/服务恢复证据见[验收JSON](acceptance/geo-download-connection-redmi-20261109.json)。不换节点/不加速/不自动重试掩盖失败。
 - 后续复核：旧网络现场四项出现TLS握手超时，随后部分请求返回504。用户报告换网后更新恢复；在Redmi上核心SOCKS对四个原始资源完整下载4/4、GEOSITE App单项通过。之后MMDB App单项在运行请求实际走到`CF-VLESS-WARP-8880`时又遇TLS握手超时，之前成功请求走`CF-VLESS-WARP-80`。这说明网络变化与成功相关，同时自动选择叶节点变化也是混杂因素；尚未构成固定网络/固定出口的A/B，不把后续失败回归为`Connection: close`源码缺陷，也不把整组资源更新稳定性标成通过。详见[换网复核](acceptance/geo-network-recurrence-redmi-20261109.json)。
 - 同步复查：只有上游等价实现正文生命周期和重定向/失败回收，并通过对应回归及Android原址下载，才可撤销本地补丁。详细归因与边界见[专页](geo-download-connection-defect.md)。
+
+## KCORE-006：Geo下载瞬断恢复缺口
+
+- 固定来源：核心`20bc0fc4`的`component/updater/update_geo.go`四类资源仅一次`vehicle.Read`；与固定Flutter核心024245dc的文件blob同为`229833859f0806c427fb877dc0ea9542b7a92dfb`。本项是共享实现的恢复能力缺口，不证明历史TLS/504的远端根因。
+- 修正：`464552e44ddf92affe5c41ee5a5d653a0e1e8daf`只在Geo下载层增加最多3次、1/2秒退避和165秒共享预算，遵守Retry-After/取消；白名单瞬断重试，原URL完整重下，校验/写入只执行一次。每次失败保留安全日志，最终只发一次终态，Kotlin错误分类识别尝试次数后缀。
+- 验证：旧源码公开入口红测为一次504即失败，修复后恢复且保护旧文件；Go父模块及route/http/updater race通过，含真实TLS握手超时后成功。865项JVM、Debug/签名Release-R8/motion及双Lint通过；Redmi故障5场景、独立motion原GitHub四轮16/16完整正文（自动80→固定80→固定8880→自动2086）及正式包三轮12项更新通过。实网均首次成功，正式三轮为缓存校验路径，不与独立完整正文混称。
+- 收尾：正式包`033d6c10…`同签名安装回读一致，正式配置/URL/选择保持，VPN运行；本轮独立包和手机输入副本清理。失败批次保留；旧网络具体层级、长期切网/蜂窝/OEM及其他历史异常不追认为已修。
+- 同步复查：仅比较chen08209/Clash.Meta:FlClash后续等价恢复；撤销前复验白名单、共享预算、重定向重新取址、Retry-After/取消、唯一终态/旧文件保护与安全日志。详见[缺陷专页](geo-download-recovery-defect.md)、[验收JSON](acceptance/geo-download-recovery-redmi-20261110.json)。
 
 ## 未定因果调查：Always-on 首请求 TLS EOF
 
