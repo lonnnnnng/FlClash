@@ -6,6 +6,12 @@
 # 作者 long：网络设置通过 Gson 持久化，发布版必须保留字段名和默认构造器，避免混淆后重启丢失已确认的路由选择。
 -keep class com.lonnnnnng.flclash.service.NetworkSettings { *; }
 
+# 作者 long：ML Kit 从清单中的字符串反射创建注册器；依赖自带规则仅保留类，
+# R8仍会删除无参构造器，导致扫码器取得空组件后崩溃。只保留该注册协议需要的入口。
+-keep class com.google.mlkit.** implements com.google.firebase.components.ComponentRegistrar {
+    public <init>();
+}
+
 # 作者 long：Android 没有 java.beans 运行时；SnakeYAML 的通用 JavaBean introspector
 # 只在非安全构造器路径中引用这些类，KClash 使用 SafeConstructor，不把该不可达路径当成运行时依赖。
 -dontwarn java.beans.**

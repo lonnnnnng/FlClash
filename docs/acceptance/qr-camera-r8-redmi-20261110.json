@@ -1,0 +1,471 @@
+{
+  "id": "KREL-002-mlkit-registrar-r8",
+  "date": "2026-11-10",
+  "status": "FIXED_AND_VERIFIED_ON_SIGNED_RELEASE_REDMI",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "serial": "wsvwypiz7xwslvl7",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "oldInstalledApk": {
+    "sha256": "033d6c108c732ed4718af05c714a43ab3d80776f5fd69e35e97b364f96a83fb8",
+    "releaseMappingId": "20f278acbc4b265f5c8648f56eb551a9ba5df659c4172bc4372ec8be9d9c6743",
+    "reproducedReleaseCrashes": 2,
+    "initialUserReportedCrashes": 2
+  },
+  "rootCause": {
+    "confirmed": true,
+    "summary": "Firebase ComponentDiscovery read registrar names from manifest, but R8 removed all three public no-arg constructors; NoSuchMethodException left ML Kit components unavailable and BarcodeScanning.getClient then threw NPE.",
+    "registrars": [
+      "com.google.mlkit.common.internal.CommonComponentRegistrar",
+      "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+      "com.google.mlkit.vision.common.internal.VisionCommonRegistrar"
+    ],
+    "cameraPermissionGranted": true,
+    "manifestDeclarationsPresent": true
+  },
+  "historyBoundary": {
+    "priorCameraAcceptanceBuildType": "Debug",
+    "exactUserPreviouslyUsedApkUnknown": true,
+    "firstIntroducingCommitConfirmed": false,
+    "notAttributedToGeoUpdateCommit": true
+  },
+  "fix": {
+    "file": "android/app/proguard-rules.pro",
+    "rule": "-keep class com.google.mlkit.** implements com.google.firebase.components.ComponentRegistrar { public <init>(); }",
+    "r8MinifyKeptEnabled": true,
+    "cameraOrMlkitDependencyVersionChanged": false,
+    "releaseDexCheck": "tool/check_mlkit_release.py"
+  },
+  "build": {
+    "jvmByModule": {
+      "app": {
+        "tests": 583,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "jvmTotal": 865,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "signedReleaseBuilt": true,
+    "releaseApkSha256": "125647a6d1c4d8f65ecc27727ed012ad20905afa149b7c7307fc0c776c01f339",
+    "releaseVersionedBuild": {
+      "versionName": "0.1.1",
+      "versionCode": 1001,
+      "apkSha256": "9cbc1307c67b4139de4599d54677e6e38290a1eca18d3bb6a6f96c0f9dc7c3bb",
+      "tagPushed": false,
+      "remoteReleasePublished": false
+    },
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 69,
+        "hints": 14
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 66,
+        "hints": 13
+      }
+    },
+    "releaseArtifactCheck": {
+      "apk": "app-release.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "oldArtifactNegativeCheck": {
+      "apk": "baseline-release.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": false,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": false,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": false,
+          "concrete": true
+        }
+      ],
+      "errors": [
+        "注册器无法通过公共无参构造器实例化：com.google.mlkit.common.internal.CommonComponentRegistrar",
+        "注册器无法通过公共无参构造器实例化：com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+        "注册器无法通过公共无参构造器实例化：com.google.mlkit.vision.common.internal.VisionCommonRegistrar"
+      ],
+      "passed": false
+    },
+    "gradleBuildLog": "../../../acceptance-artifacts/qr-camera-crash-20261110/build1.log",
+    "lintLog": "../../../acceptance-artifacts/qr-camera-crash-20261110/lint1.log",
+    "jvmExecution": "Forced ./gradlew test --no-daemon --rerun-tasks on 2026-11-10; 865 tests executed, 0 failures, 0 errors, 0 skipped (App583/Service213/Core38/Common31)",
+    "localFinalVerification": {
+      "date": "2026-11-10",
+      "debugAndReleaseBuild": "BUILD SUCCESSFUL; Debug and Release assembled with versionName 0.1.1/versionCode 1001",
+      "jvm": {
+        "command": "./gradlew test --no-daemon --rerun-tasks",
+        "tests": 865,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "gradleTasksExecuted": 95
+      },
+      "lint": {
+        "command": "./gradlew :app:lintDebug :app:lintRelease --no-daemon --max-workers=2 -Ptarget-platform=android-arm64 -PkclashVersionName=0.1.1 -PkclashVersionCode=1001",
+        "debugErrors": 0,
+        "releaseErrors": 0
+      },
+      "releaseArtifact": {
+        "file": "app-release-unsigned.apk",
+        "signed": false,
+        "sha256": "3e25385368df88bc37306ae0e09622d1f3c136b3fbd11efb356fa964dfc13251",
+        "applicationId": "com.lonnnnnng.flclash",
+        "versionName": "0.1.1",
+        "versionCode": 1001,
+        "registrarCheckPassed": true,
+        "registrarsRetained": 3
+      },
+      "releaseSigning": "Final signed APK is produced with the existing GitHub release secret by the kclash-v0.1.1 tag workflow; no signing secret or keystore is present in this local build environment."
+    },
+    "artifactVersion": "0.1.0 / code1000 local signed fix; 0.1.1 release verification is tracked separately"
+  },
+  "redmi": {
+    "installedHashMatches": true,
+    "install": {
+      "oldApkSha256": "033d6c108c732ed4718af05c714a43ab3d80776f5fd69e35e97b364f96a83fb8",
+      "newApkSha256": "125647a6d1c4d8f65ecc27727ed012ad20905afa149b7c7307fc0c776c01f339",
+      "installedHashMatches": true,
+      "installOutput": "Performing Streamed Install\nSuccess",
+      "formalDataCleared": false,
+      "servicesStoppedBeforeInstall": true
+    },
+    "cameraLifecycle": [
+      {
+        "phase": "lifecycle2-open",
+        "pid": "31581",
+        "activeCamera": true,
+        "waitSeconds": 0.191
+      },
+      {
+        "phase": "lifecycle2-torch-on",
+        "pid": "31581",
+        "activeCamera": true,
+        "waitSeconds": 0.194
+      },
+      {
+        "phase": "lifecycle2-torch-off",
+        "pid": "31581",
+        "activeCamera": true,
+        "waitSeconds": 0.177
+      },
+      {
+        "phase": "lifecycle2-background",
+        "pid": "31581",
+        "activeCamera": false,
+        "waitSeconds": 0.762
+      },
+      {
+        "phase": "lifecycle2-resumed",
+        "pid": "31581",
+        "activeCamera": true,
+        "waitSeconds": 0.194
+      },
+      {
+        "phase": "lifecycle2-closed",
+        "pid": "31581",
+        "activeCamera": false,
+        "waitSeconds": 0.646
+      }
+    ],
+    "postFixRegistrarWarningsForAppProcess": [],
+    "albumQr": {
+      "passed": true,
+      "prefilledUrl": "https://example.com/qr-release.yaml",
+      "prefilledLabel": "ReleaseQR",
+      "submitted": false,
+      "pid": "31581"
+    },
+    "userIndependentRetest": "User confirmed the scanner opens without crashing.",
+    "formalDataCleared": false,
+    "profileImportSubmitted": false,
+    "profileProtection": "No import/submit/delete actions; original one-profile card still visible and selected after cancelling; no full Room/mtime snapshot in this Release run",
+    "cameraLensQrNotClaimed": true,
+    "localSignedFixVersion": "0.1.0 / code1000",
+    "versionedCandidateAcceptance": {
+      "versionName": "0.1.1",
+      "versionCode": 1001,
+      "apkSha256": "9cbc1307c67b4139de4599d54677e6e38290a1eca18d3bb6a6f96c0f9dc7c3bb",
+      "cameraActiveOnOpen": true,
+      "cameraReleasedOnClose": true,
+      "newProcessCrashCount": 0,
+      "formalDataCleared": false,
+      "scope": "local signed candidate installed for pre-publish validation; GitHub tag artifact still pending"
+    },
+    "invalidQrTestPerformed": false,
+    "temporaryInvalidQrWasUploadedButNotTested": true,
+    "fatalCrashesInFixedPidBuffer": 0
+  },
+  "priorFailures": {
+    "preserved": true,
+    "originalCrashes": "../../../acceptance-artifacts/qr-camera-crash-20261110/initial-crash-redacted.log",
+    "releaseReproductions": "../../../acceptance-artifacts/qr-camera-crash-20261110/reproduced-crash-redacted.log",
+    "initialUserCrashesSavedBeforeLogBufferClear": true,
+    "reproductionCrashesRetainedAfterInstall": true
+  },
+  "deviceInputs": [
+    {
+      "devicePath": "/sdcard/Download/kclash-qr-release-20261110-valid.png",
+      "bytes": 31074,
+      "sha256": "827a7cbd2913fe97448c63949854ecaca9206a8f33b3eb8b27eb81d30945db21",
+      "existedBefore": false
+    },
+    {
+      "devicePath": "/sdcard/Download/kclash-qr-release-20261110-invalid.png",
+      "bytes": 23582,
+      "sha256": "41eb4d4c2b459800b756a1673d08b9056e93aaaf8cf0d474e85ac30f9a95cef7",
+      "existedBefore": false
+    }
+  ],
+  "evidenceDirectory": "../../../acceptance-artifacts/qr-camera-crash-20261110/",
+  "limitations": [
+    "Physical printed QR was not used; generated offline QR went through the real system picker and ML Kit decoder.",
+    "New signed Release was verified on this Redmi API36 only.",
+    "An initial camera release poll of 0.8 seconds was premature; final verification polled actual camera-service state."
+  ],
+  "source": {
+    "parentBaseline": "c22095dd32ca0e7e7f2d7fe669b6982e441e459d",
+    "coreUnchanged": "464552e44ddf92affe5c41ee5a5d653a0e1e8daf",
+    "mlkitBarcodeScanning": "17.3.0",
+    "mlkitCommon": "18.11.0",
+    "firebaseComponents": "16.1.0",
+    "cameraX": "1.6.2",
+    "r8": "9.4.24"
+  },
+  "cleanup": {
+    "deletedFiles": [
+      {
+        "devicePath": "/sdcard/Download/kclash-qr-release-20261110-valid.png",
+        "bytes": 31074,
+        "sha256": "827a7cbd2913fe97448c63949854ecaca9206a8f33b3eb8b27eb81d30945db21",
+        "existedBefore": false
+      },
+      {
+        "devicePath": "/sdcard/Download/kclash-qr-release-20261110-invalid.png",
+        "bytes": 23582,
+        "sha256": "41eb4d4c2b459800b756a1673d08b9056e93aaaf8cf0d474e85ac30f9a95cef7",
+        "existedBefore": false
+      }
+    ],
+    "allDeletedAfterHashMatch": true,
+    "cameraReleased": true,
+    "vpnRunning": false,
+    "proxyRunning": false,
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "formalDataCleared": false
+  },
+  "artifacts": [
+    {
+      "name": "initial-crash-redacted.log",
+      "bytes": 6879,
+      "sha256": "86aa2969e0c380277a6429089c44a1f100cbedd304910bd2cbd50e52db21f061"
+    },
+    {
+      "name": "reproduced-crash-redacted.log",
+      "bytes": 6880,
+      "sha256": "0facf03e1d6d7d4225db499d7c2db0bcb684a2da30fa6a0178f8a9c90a1b6443"
+    },
+    {
+      "name": "reproduced-main-redacted.log",
+      "bytes": 30975,
+      "sha256": "c66c17614c287202cd4edb5aaaafb0c4b13b2c1cfb63610ca2e0e9b070e48e6a"
+    },
+    {
+      "name": "baseline-mapping.txt",
+      "bytes": 113763535,
+      "sha256": "a32c5eaf61f676a51e44442d833ddb8179591c396f208d2f1ffaeee72a2be03c"
+    },
+    {
+      "name": "baseline-usage.txt",
+      "bytes": 6691616,
+      "sha256": "34f5d58389d28df3551bcdb76b9908c3483326e0d880334ea716eb6007ba25f3"
+    },
+    {
+      "name": "baseline-configuration.txt",
+      "bytes": 94911,
+      "sha256": "3bbf95341a76ef257b97e2e4f47447e11c89582e24fb6c0ad450e657d83744bd"
+    },
+    {
+      "name": "old-apk-check.json",
+      "bytes": 962,
+      "sha256": "5fe0c2190d02efd1950c18622d6dfbf521c6f52ce527362fd6f15114da3b7285"
+    },
+    {
+      "name": "fixed-apk-check.json",
+      "bytes": 636,
+      "sha256": "8fac6f399efc88827ab1b692f58debfbed4ff0f5aba719abc37a8dfcc0450ccc"
+    },
+    {
+      "name": "fixed-mapping.txt",
+      "bytes": 113763643,
+      "sha256": "58c13b724477ba9990e9a4bfc5096638134e7b2e11611557696bd96823367a36"
+    },
+    {
+      "name": "fixed-usage.txt",
+      "bytes": 6691360,
+      "sha256": "ee13fdbd145f84f835cb8a93ce9f5d06eaf27c29ab5b72baed9ae2cda5afe97a"
+    },
+    {
+      "name": "fixed-configuration.txt",
+      "bytes": 95254,
+      "sha256": "113ddde8cb50bc31cda280307e9e03b71688fddc0d17dc87a21033baf73122d6"
+    },
+    {
+      "name": "build1.log",
+      "bytes": 15879,
+      "sha256": "f94e82adf35c776e7c94eeb327b06ace1c17762f3577df148d4293b7399c2fa3"
+    },
+    {
+      "name": "lint1.log",
+      "bytes": 14486,
+      "sha256": "5e2bb23813a297243e595ef80c7c262182b0b363b5d57bdc0092bcc4840e666c"
+    },
+    {
+      "name": "release011-build.log",
+      "bytes": 17806,
+      "sha256": "a0a2c159c0bb244149367b27083dd31d6becb156689c72fa75c29f4c3a26d9cc"
+    },
+    {
+      "name": "release011-lint.log",
+      "bytes": 14683,
+      "sha256": "1d65e5fc2e02a833210145c6c84a007989da3405355082bf1def5d7d847a966a"
+    },
+    {
+      "name": "signature.txt",
+      "bytes": 974,
+      "sha256": "3fd9715bfedff52f1b2d6f2dd58a69f748509aca366a345e92db1b68d4497798"
+    },
+    {
+      "name": "install.json",
+      "bytes": 336,
+      "sha256": "a1f0060ef9b0d6ca2f3db28fb399a971e696d18e2c4d5c67e474aa7a7e2e626d"
+    },
+    {
+      "name": "camera-lifecycle.json",
+      "bytes": 697,
+      "sha256": "49bcb96356b1d4427bba1387637c9038a081442e3ba6299d832a51752a6649b0"
+    },
+    {
+      "name": "camera-lifecycle-final.log",
+      "bytes": 719,
+      "sha256": "c37520a41b648fe29025e4391cd4ff7d3b597f54b885beb089c803995995fbc3"
+    },
+    {
+      "name": "initial-camera-lifecycle.log",
+      "bytes": 726,
+      "sha256": "4e5a38113e540580fc3449bf39c62762f2bc9d8559d3ac2732d6d11690833576"
+    },
+    {
+      "name": "album-valid-result.json",
+      "bytes": 151,
+      "sha256": "0a1d01e56686319dccc334ee17cc99ca88ce33ccff80214519f440a046966f36"
+    },
+    {
+      "name": "album-confirmation-final.xml",
+      "bytes": 12947,
+      "sha256": "8b61ddce2595eb77ab5e2f93d5d1acbeb6b0f7395983b487e242bbd9f09c0935"
+    },
+    {
+      "name": "album-confirmation-final.png",
+      "bytes": 150123,
+      "sha256": "c677a65e51c5875983641d70b0b2c6ebbe25488f448da795a5d73df61719056c"
+    },
+    {
+      "name": "final-profile-list.xml",
+      "bytes": 13218,
+      "sha256": "075850b69a7c600e582582d1bdb2a514a9e2e59ff16c494818cee672ed41dd88"
+    },
+    {
+      "name": "uploaded-qr-inputs.json",
+      "bytes": 431,
+      "sha256": "166cdfd399f0b9e9d22ad838aa2b953b0a79a89fd8690390e6cb42cd9056a112"
+    },
+    {
+      "name": "cleanup.json",
+      "bytes": 711,
+      "sha256": "9dc4b857fe758acfe9dbb0860561e74efc0ba9bfc2c7b0e14aa9620ad27b9816"
+    },
+    {
+      "name": "fixed-pid-crash.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "candidate-0.1.1-redmi.json",
+      "bytes": 443,
+      "sha256": "947ac21487d264ab92d1f432bad42fb57589c1a707d1bbd9cebe03e53ddb25fd"
+    },
+    {
+      "name": "candidate-0.1.1-camera-open.png",
+      "bytes": 1181598,
+      "sha256": "b2b6a6da21437c3ac65ead7b7364c9327c6981803eb02d65572cbfbfcc863551"
+    },
+    {
+      "name": "r8-official.md",
+      "bytes": 24255,
+      "sha256": "dbfd13ca0d32e3528c1ce9bf39f6bd72e1a831f29f0dddfd742989f6b079894a"
+    }
+  ],
+  "localSourceHashes": {
+    "android/app/proguard-rules.pro": "50216d6b1706a1bd4cb2295d3bb970f0e401b8e16a5b20874bbef5e4953e644a",
+    "tool/check_mlkit_release.py": "eafe0359b7037ef1ce403196369d5d8ab78531662e4f3027bec649585ac77071"
+  },
+  "officialReference": {
+    "url": "https://developer.android.com/topic/performance/app-optimization/keep-rule-examples",
+    "accessed": "2026-11-10",
+    "section": "Reflection with classes loaded by name",
+    "supports": "Keep the class and its no-argument constructor for Class.forName/getDeclaredConstructor.newInstance"
+  }
+}

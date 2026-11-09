@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **扫码崩溃修复与0.1.1发布准备（2026-11-10，KREL-002）**：已复现正式R8包打开取景崩溃，根因是ML Kit三类注册器无参构造器被裁剪。仅补ML Kit反射入口keep规则，并新增最终APK清单/DEX检查及CI门禁；旧包3/3缺失，修复包3/3保留。Redmi此前安装签名0.1.1/code1001候选覆盖回读通过；扫码取景开关、手电筒、后台释放/恢复及关闭释放通过；相册离线二维码识别到确认表单，未提交导入。正式配置未清，用户独立复试确认无崩溃。本轮865项JVM强制执行（App583/Service213/Core38/Common31），失败/错误/跳过均0；Debug/Release构建、双Lint零错误、最终未签名R8 APK注册器3/3门禁通过。候选SHA `9cbc1307…`；GitHub标签CI签名和Release资产仍待完成，不能称已发版。实体二维码/低API未验。证据`docs/acceptance/qr-camera-r8-redmi-20261110.json`，溯源`docs/release-mlkit-registrar-defect.md`。
+
 > **Geo更新恢复闭环（2026-11-10，KCORE-006）**：共享核心补齐瞬断重试，最多3次、1/2秒退避及165秒总预算，旧文件保护、唯一终态和安全错误日志保留；核心`464552e4`已推自己的kclash-fixes。865项JVM、Go父模块及route/http/updater race、Debug/签名Release-R8/motion与双Lint通过。Redmi故障注入5场景通过；独立motion按自动80→固定80→固定8880→恢复自动2086四轮原GitHub完整正文16/16（HTTP200，bytes/length/文件大小一致），正式R8包三轮全部更新12项成功（缓存校验路径）。正式包`033d6c10…`已覆盖安装回读，配置及原URL保持、VPN/ProxyService运行，测试包和本轮手机输入已清。瞬断恢复能力及当前新网络更新范围闭环；实网均首次成功，旧网络具体根因、切网/蜂窝/OEM及长期稳定性仍未确认，历史失败不覆盖。证据`docs/acceptance/geo-download-recovery-redmi-20261110.json`；溯源`docs/geo-download-recovery-defect.md`。
 
 > **Geo下载断流修复（2026-11-09，KCORE-005）**：确认应用自身mihomo请求走原代理链；Android强制Connection:close触发当前链路正文截断。curl交叉keep-alive4/4、close1/6，Go双路径close均失败/keep均完整。核心20bc0fc4取消强制close并在Body.Close/请求失败回收独立Transport；页面保留脱敏错误分类。HTTP5项race/父模块全量race/route race、864项JVM、Debug/签名Release-R8/双Lint通过。Redmi原GitHub四Geo首次更新4/4（约52秒）、重复操作4/4（约7秒，含缓存校验边界）；未换节点/未用加速。正式包a8c490c1安装回拉一致，原配置保留、VPN运行。远端具体丢尾实现、首轮504和历史TLS问题不追认同因。证据`docs/acceptance/geo-download-connection-redmi-20261109.json`，溯源`docs/geo-download-connection-defect.md`。

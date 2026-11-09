@@ -41,7 +41,7 @@ The Kotlin app is under active development. Core profile, proxy, VPN and diagnos
 
 ## Download and install
 
-Download the signed `KClash-0.1.0-android-arm64-v8a.apk` from [GitHub Releases](https://github.com/lonnnnnng/FlClash/releases/latest). The release supports ARM64 Android devices. Android may ask you to allow installation from the browser or file manager used to open the APK.
+Download the signed `KClash-0.1.1-android-arm64-v8a.apk` from [GitHub Releases](https://github.com/lonnnnnng/FlClash/releases/latest). The release supports ARM64 Android devices. Android may ask you to allow installation from the browser or file manager used to open the APK.
 
 KClash has its own Android application ID and signing identity. It installs separately from the upstream Flutter app and does not migrate Flutter/Drift application data. Keep the release signing identity stable when upgrading KClash so Android can verify the update.
 
@@ -88,8 +88,8 @@ Build an unsigned, minified arm64 release package with:
 ```bash
 ./gradlew :app:assembleRelease :app:lintRelease \
   -Ptarget-platform=android-arm64 \
-  -PkclashVersionName=0.1.0 \
-  -PkclashVersionCode=1000
+  -PkclashVersionName=0.1.1 \
+  -PkclashVersionCode=1001
 ```
 
 The unsigned APK is written to `android/app/build/outputs/apk/release/app-release-unsigned.apk`. Official release builds are signed by GitHub Actions using the project's independent Android signing key; signing secrets and keystore files must never be committed.

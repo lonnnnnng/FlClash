@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **扫码崩溃修复与0.1.1发布准备（2026-11-10，KREL-002）**：已复现正式R8包打开取景崩溃，根因是ML Kit三类注册器无参构造器被裁剪。仅补ML Kit反射入口keep规则，并新增最终APK清单/DEX检查及CI门禁；旧包3/3缺失，修复包3/3保留。Redmi此前安装的签名0.1.1/code1001候选覆盖回读及扫码取景通过，相机关闭后释放；正式配置未清，手电筒/前后台释放恢复/相册离线识别到确认表单通过，用户独立复试确认无崩溃，未提交测试导入。本轮865项JVM强制重跑（App583/Service213/Core38/Common31），失败/错误/跳过均0；Debug/Release构建、双Lint（0错误）及最终未签名R8 APK注册器3/3门禁通过。当前Redmi候选SHA `9cbc1307…`；GitHub标签CI签名和Release资产仍待完成，不能称已发版。实体二维码/低API未验。证据`docs/acceptance/qr-camera-r8-redmi-20261110.json`，溯源`docs/release-mlkit-registrar-defect.md`。
+
 > **Geo更新恢复闭环（2026-11-10，KCORE-006）**：共享核心补齐瞬断重试，最多3次、1/2秒退避及165秒总预算，旧文件保护、唯一终态和安全错误日志保留；核心`464552e4`已推自己的kclash-fixes。865项JVM、Go父模块及route/http/updater race、Debug/签名Release-R8/motion与双Lint通过。Redmi故障注入5场景通过；独立motion按自动80→固定80→固定8880→恢复自动2086四轮原GitHub完整正文16/16（HTTP200，bytes/length/文件大小一致），正式R8包三轮全部更新12项成功（缓存校验路径）。正式包`033d6c10…`已覆盖安装回读，配置及原URL保持、VPN/ProxyService运行，测试包和本轮手机输入已清。瞬断恢复能力及当前新网络更新范围闭环；实网均首次成功，旧网络具体根因、切网/蜂窝/OEM及长期稳定性仍未确认，历史失败不覆盖。证据`docs/acceptance/geo-download-recovery-redmi-20261110.json`；溯源`docs/geo-download-recovery-defect.md`。
 
 > **添加条目动效、关闭留窗与45分钟观察（2026-11-09，KUI-029）**：更多设置候选/分组标题按固定Prism独立300ms收起，保存失败保留、连选不重启、搜索退场清理已补。最终860项JVM、Debug/签名Release-R8/motion及双Lint通过；Redmi同套13/13、自然动效1/1，32PNG/4拼图与两套原PTS视频核验。固定Prism组件实机参考已建立，不代表完整Flutter页等价。关闭Popup三轮16/27/27帧、jank3/2/2已可见，Simpleperf正确PID仍拒绝，原生栈未得。独立纯代理45分钟10次Provider读取90项（61–112ms），HTTPS8/10、前两次TLS失败保留；元数据/文件SHA-mtime/选择保持，受控死亡系统恢复，审计/质量缓存/显式stop键变化可识别。正式包`a72a955a…`安装回拉与首页/配置烟测通过；原配置保留，独立包已清、服务停止。整体视觉/性能/历史因果仍PARTIAL。证据`docs/acceptance/selection-motion-stability-redmi-20261109.json`；溯源`docs/selection-entry-motion-defect.md`、`docs/menu-close-window-investigation.md`、`docs/historical-stability-investigation.md`。
@@ -753,7 +755,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，追踪`origin/kotlin`；本组按验收结果提交推送，远端关系以Git核对为准 |
-| 当前版本 | 公开正式0.1.0/code1000及标签不覆盖；手机保留同签名KCORE-006修正版，APK `033d6c10…`，本组不发新Release。 |
+| 当前版本 | 0.1.1/code1001等待标签CI，公开0.1.0资产保留；Redmi已安装签名候选 `9cbc1307…` 并完成扫码回归。 |
 | Gradle 工程 | 根目录Wrapper + `app` / `core` / `service` / `common` |
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
@@ -761,16 +763,16 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步chen08209/Clash.Meta:FlClash；本组本地修复464552e4，不从MetaCubeX/mihomo同步提交/PR，Flutter代码不合并。 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
-| 单元测试 | 865项JVM零失败/错误/跳过：App583执行，Service213/Core38/Common31复用。双Lint0错误（Debug69警告14提示、Release66警告13提示），最终测试源码补Debug Lint通过；Go父模块全量及route/http/updater race通过，updater 8顶层/26通过事件（含子项），真实TLS超时后恢复已验。 |
-| 最新真机 | Redmi独立motion故障恢复5场景通过；原GitHub四轮16/16完整正文，自动实际80→固定80→固定8880→恢复自动2086；正式R8包VPN运行三轮全部更新12项通过（缓存校验路径）。本组Geo恢复能力/当前新网络范围已验，旧网络远端根因及长期稳定性不追认。KUI-029的13/13及自然1/1仍为前序视觉证据。 |
-| 当前设备数据 | 正式数据未清、正式选择未改、四原Geo URL回读一致；VPN/ProxyService保持运行。原1.yaml SHA保持，独立motion/test和本轮新上传手机副本精确清理。固定出口只在独立motion核心临时操作；正式库本组未采逐字段快照。 |
+| 单元测试 | 本轮强制执行865项JVM（App583/Service213/Core38/Common31），失败/错误/跳过均0；Debug/Release构建、双Lint（0错误）通过。最终未签名R8 APK注册器门禁3/3通过，旧包负测3/3失败符合预期；签名APK由标签CI生成并复验，Go race由标签CI重跑。 |
+| 最新真机 | KREL-002正式R8扫码页取景、手电筒、后台释放/恢复及关闭释放通过；系统相册识别固定离线QR并预填确认，未提交。用户独立复试确认无崩溃；实体二维码未验。KCORE-006实网和KUI-029视觉仍按具名历史证据保留。 |
+| 当前设备数据 | 同签名覆盖未清正式数据，原单份配置卡片及选中状态保持；没有完整Room/mtime快照。原1.yaml SHA保持，本轮两张手机QR图片核验后删除，无测试包安装，相机已释放；VPN/ProxyService停止。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | Debug/签名Release-R8/motion及测试包构建通过；正式包033d6c10回读一致。故障场景使用motion-build2，实网使用motion-build5测试包，产品APK一致；测试包不同不合称同套，详见本组JSON。 |
+| Debug / Test | Debug与未签名Release-R8由本轮源码构建；未签名APK包名/版本/注册器门禁通过。Redmi此前已安装同版本签名候选并完成扫码验收；最终GitHub签名资产还需标签CI和设备回拉验收。 |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
 | Release | 已正式发布；公开签名arm64/R8 APK SHA `ed063b9ba59d0825308b2d442da38e5e8ecdcb456cc7c55cd385f11b05ad1082`，下载校验/证书/Redmi安装回拉与运行通过。本地包哈希不同，两个构建的证据分别保留；跨版本升级未验。 |
-| 最新证据 | 当前Geo恢复：geo-download-recovery-redmi-20261110.json、geo-download-recovery-defect.md及KCORE-006；原KCORE-005连接修复/换网失败记录保留。视觉/长窗仍见selection-motion-stability-redmi-20261109.json；完整Flutter、原生慢帧和历史异常因果继续PARTIAL。 |
+| 最新证据 | 扫码：qr-camera-r8-redmi-20261110.json及release-mlkit-registrar-defect.md。Geo恢复、视觉/长窗见各自具名证据；完整Flutter、原生慢帧和历史异常因果继续PARTIAL。 |
 
 
 ## 4. 目标架构图
@@ -1302,6 +1304,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 - 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
+
+**扫码崩溃修复与0.1.1发布准备（2026-11-10，KREL-002）**：已复现正式R8包打开取景崩溃，根因是ML Kit三类注册器无参构造器被裁剪。仅补ML Kit反射入口keep规则，并新增最终APK清单/DEX检查及CI门禁；旧包3/3缺失，修复包3/3保留。Redmi此前安装签名0.1.1/code1001候选覆盖回读通过，扫码取景开关、手电筒、后台释放/恢复及关闭释放通过；相册离线二维码识别并预填确认表单，未提交导入；正式配置未清，用户独立复试确认无崩溃。本轮865项JVM强制重跑（App583/Service213/Core38/Common31），失败/错误/跳过均0；Debug/Release构建、双Lint零错误及最终未签名R8 APK注册器3/3门禁通过。Redmi候选SHA `9cbc1307…`；签名正式资产由标签CI生成并回验，实体二维码/低API未验。证据`docs/acceptance/qr-camera-r8-redmi-20261110.json`，溯源`docs/release-mlkit-registrar-defect.md`。
 
 **Geo更新恢复闭环（2026-11-10，KCORE-006）**：共享核心补齐瞬断重试，最多3次、1/2秒退避及165秒总预算，旧文件保护、唯一终态和安全错误日志保留；核心`464552e4`已推自己的kclash-fixes。865项JVM、Go父模块及route/http/updater race、Debug/签名Release-R8/motion与双Lint通过。Redmi故障注入5场景通过；独立motion按自动80→固定80→固定8880→恢复自动2086四轮原GitHub完整正文16/16（HTTP200，bytes/length/文件大小一致），正式R8包三轮全部更新12项成功（缓存校验路径）。正式包`033d6c10…`已覆盖安装回读，配置及原URL保持、VPN/ProxyService运行，测试包和本轮手机输入已清。瞬断恢复能力及当前新网络更新范围闭环；实网均首次成功，旧网络具体根因、切网/蜂窝/OEM及长期稳定性仍未确认，历史失败不覆盖。证据`docs/acceptance/geo-download-recovery-redmi-20261110.json`；溯源`docs/geo-download-recovery-defect.md`。 KCORE-005连接修复和旧TLS/504现场见原`geo-network-recurrence-redmi-20261109.json`，其原状态与失败保持。
 

@@ -85,8 +85,8 @@ jobs:
               version_code=$((major * 1000000 + minor * 1000 + patch))
             fi
           fi
-          version_name="${version_name:-0.1.0}"
-          version_code="${version_code:-1000}"
+          version_name="${version_name:-0.1.1}"
+          version_code="${version_code:-1001}"
           if [[ ! "$version_code" =~ ^[1-9][0-9]*$ ]]; then
             echo "version_code must be a positive integer" >&2
             exit 1
@@ -170,6 +170,8 @@ jobs:
           test "$(apkanalyzer manifest version-code "$apk")" = "$VERSION_CODE"
           test "$(apkanalyzer manifest debuggable "$apk")" = "false"
           test "$(apkanalyzer manifest min-sdk "$apk")" = "24"
+          # 作者 long：扫码组件从清单反射创建，必须检查最终DEX构造器，Debug回归不能覆盖R8裁剪。
+          python3 tool/check_mlkit_release.py "$apk"
           # 作者 long：JVM/Debug不经过R8，直接检查Release映射，防止YAML静态初始化再次丢失包名。
           for type in org.yaml.snakeyaml.TypeDescription org.yaml.snakeyaml.introspector.PropertySubstitute; do
             if grep -Fq "$type -> " android/app/build/outputs/mapping/release/mapping.txt; then

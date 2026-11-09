@@ -12,6 +12,7 @@
 | KCORE-004 | 宿主测速超时未传入自动健康检查，手动/后台期限可能分叉 | FlClash Go 适配层与 Mihomo Provider | 已修，核心提交 `852d3ad1`、`7038231e` 与 Kotlin setup 适配；完整 Redmi 实网复验待完成 |
 | KCORE-005 | Android下载器强制Connection:close触发当前代理链响应尾段截断，取消限制后还需回收私有连接池 | Mihomo `component/http` | 已修，核心提交 `20bc0fc4`；旧网络根因未确认，后续恢复能力见KCORE-006 |
 | KCORE-006 | Geo单次下载将TLS/网关/截断等瞬断直接结束为最终失败，缺少有界恢复 | Mihomo `component/updater` | 已修，核心提交 `464552e4`；恢复能力、Redmi当前网络多出口和正式更新闭环，旧网络因果与长期稳定性单列 |
+| KREL-002 | ML Kit注册器无参构造器被R8删除，正式包打开扫码页崩溃 | Kotlin Release打包／依赖consumer rules | 已修并在Redmi签名R8包验证；见[溯源](release-mlkit-registrar-defect.md)，非Mihomo缺陷 |
 
 ## KCORE-001：TUN 启动保护缺口
 
