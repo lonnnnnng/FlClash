@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **发布后边界与资源长目录（2026-11-10，KUI-030）**：原始正式0.1.0→0.1.1覆盖升级已验，UID、单FILE配置21字段/选择、2条偏好、238条测速记录及正文SHA-size-mtime在安装边界保持；启动后配置保持但测速value/时间更新，未确定事件归因。Perfetto在KClash无进程时，process_stats成功而最小sched ftrace使traced_probes进入D并flush失败，原生慢帧仍未归因。代理/规则64项目录补首次显现当前选择，Redmi深浅两例各2/2、相邻回归2/2，4个不重复方法共6次执行全过、23PNG已核验；真实IME清空/末项选择、一次回调/别名与重开取消已验。865项JVM（App583执行，其余282复用）、Debug/签名Release-R8/独立测试包及双Lint零错误通过。最终本地候选SHA `9b7fad97…88fcaa7`已安装回拉匹配，公开0.1.1资产和标签未替换；正式配置保留，3个自有测试包与12个手机诊断文件已精确清理，服务停止。实体QR、完整Flutter视觉/动效、低API和历史异常因果继续待验。证据`docs/acceptance/post-release-boundaries-redmi-20261110.json`；溯源`docs/resource-picker-long-list-defect.md`、`docs/release-upgrade-acceptance.md`。
+
 > **扫码崩溃修复与0.1.1正式发布（2026-11-10，KREL-002）**：已复现正式R8包打开取景崩溃，根因是ML Kit三类注册器无参构造器被裁剪。仅补ML Kit反射入口keep规则，并新增最终APK清单/DEX检查及CI门禁；旧包3/3缺失，修复包3/3保留。提交`5aed72fe`及标签`kclash-v0.1.1`已推送；标签CI 42673055574与分支CI 42672964498均成功，Go race、JVM test、Debug/签名Release-R8、双Lint零错误及最终DEX门禁通过。正式Release为Latest且非预发布/非草稿，APK `KClash-0.1.1-android-arm64-v8a.apk` SHA-256 `02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437`，证书SHA-256 `3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49`。Redmi覆盖安装后从设备回拉base.apk哈希一致；相机取景/手电筒开关/退后台释放与恢复/关闭释放6阶段通过，同PID 4709，原配置卡仍可见，未清正式数据或提交导入。此前本机强制执行865项JVM（App583/Service213/Core38/Common31），零失败/错误/跳过；实体二维码/低API未验。Release：https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.1。证据`docs/acceptance/qr-camera-r8-redmi-20261110.json`及`../../../acceptance-artifacts/qr-camera-published-0.1.1-20261110/`，溯源`docs/release-mlkit-registrar-defect.md`。
 
 > **Geo更新恢复闭环（2026-11-10，KCORE-006）**：共享核心补齐瞬断重试，最多3次、1/2秒退避及165秒总预算，旧文件保护、唯一终态和安全错误日志保留；核心`464552e4`已推自己的kclash-fixes。865项JVM、Go父模块及route/http/updater race、Debug/签名Release-R8/motion与双Lint通过。Redmi故障注入5场景通过；独立motion按自动80→固定80→固定8880→恢复自动2086四轮原GitHub完整正文16/16（HTTP200，bytes/length/文件大小一致），正式R8包三轮全部更新12项成功（缓存校验路径）。正式包`033d6c10…`已覆盖安装回读，配置及原URL保持、VPN/ProxyService运行，测试包和本轮手机输入已清。瞬断恢复能力及当前新网络更新范围闭环；实网均首次成功，旧网络具体根因、切网/蜂窝/OEM及长期稳定性仍未确认，历史失败不覆盖。证据`docs/acceptance/geo-download-recovery-redmi-20261110.json`；溯源`docs/geo-download-recovery-defect.md`。
@@ -748,14 +750,14 @@ App453/Service193/Core38/Common31共715项单测零失败/错误/跳过；build3
 
 App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4 Debug/Test、未签名Release/R8及独立lint4双变体通过，各0错误/64警告（Debug10/Release9提示）。Redmi最终生产/测试包同批final5 28/28，63张PNG已目视，安装哈希匹配。首批26/28、两次6/7、motion4补验1/1及系统设置覆盖页面的final4 27/28独立保留、不累计。正式1份配置/原选择/正文SHA-size-mtime及逐字段摘要保持；原1.yaml双端、Flutter APK及旋转/字号/动画设置保持，结束无服务/tun0。证据`docs/acceptance/main-subpages-recovery-redmi-20261105.json`。
 
-整体Flutter视觉仍PARTIAL；服务子页边缘拖回、精确缓动/全应用视觉、未覆盖子页/空态/异常恢复与性能仍待补。本组规则重建是保存状态模拟恢复，未做冷进程；未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。玻璃默认关闭，Dock/按钮实时背景和触点光效后排；备份/系统恢复、观测次要打磨、语言/主题继续暂缓。
+以上仅记录2026-11-05该批验收边界：当时规则重建使用保存状态模拟，未做冷进程，未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。后续编辑器、独立全局规则及资源选择器冷恢复已有具名证据；0.1.1正式签名、Go race、远端CI和Redmi发布资产回验已完成，当前状态以第3节和`acceptance/qr-camera-r8-redmi-20261110.json`为准。整体Flutter视觉、菜单性能和低API仍PARTIAL；玻璃默认关闭，Dock/按钮实时背景和触点光效后排，既定暂缓项保持。
 
 ## 3. 当前快照
 
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，追踪`origin/kotlin`；本组按验收结果提交推送，远端关系以Git核对为准 |
-| 当前版本 | 正式0.1.1/code1001，Latest，标签`kclash-v0.1.1`；正式APK SHA `02924c48…f4437`，Redmi已安装并回拉匹配。 |
+| 当前版本 | 公开正式0.1.1/code1001，Latest，标签`kclash-v0.1.1`/资产SHA `02924c48…f4437`；Redmi现装同签名未发布本地修正候选`9b7fad97…88fcaa7`，回拉一致。 |
 | Gradle 工程 | 根目录Wrapper + `app` / `core` / `service` / `common` |
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
@@ -763,16 +765,16 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步chen08209/Clash.Meta:FlClash；本组本地修复464552e4，不从MetaCubeX/mihomo同步提交/PR，Flutter代码不合并。 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |
-| 单元测试 | 本轮强制执行865项JVM（App583/Service213/Core38/Common31），失败/错误/跳过均0；标签CI完整test、Go race、Debug/签名Release-R8、双Lint及DEX门禁均成功。最终Release DEX三注册器3/3保留，旧包负测3/3失败符合预期。 |
-| 最新真机 | 发布资产在Redmi覆盖安装且回拉SHA一致；相机取景、手电筒、后台释放/恢复、关闭释放6/6，PID 4709保持，关闭后相机空闲。用户此前独立复试也确认无崩溃；实体二维码未验。KCORE-006实网和KUI-029视觉仍按具名历史证据保留。 |
-| 当前设备数据 | 正式资产安装未清数据；验收后配置卡`kclash-release-0.1.0`仍可见，未提交导入，相机已释放、VPN/ProxyService停止；没有完整Room/mtime快照。原1.yaml SHA保持。 |
+| 单元测试 | 最终源码865项JVM（App583本轮执行，Service213/Core38/Common31共282项复用），零失败/错误/跳过；Debug/签名Release-R8、双Lint零错误、最终DEX扫码注册器3/3通过。本轮未改Go，沿用发布CI race证据。 |
+| 最新真机 | KUI-030代理/规则64项资源目录深浅各2/2，真实IME/清空/末项选择/别名/一次回调/重开取消通过。原始正式0.1.0→0.1.1覆盖升级具名范围通过；候选首页/原配置卡烟测通过。实体QR仍待镜头识别。 |
+| 当前设备数据 | 未清正式数据；1份FILE配置21字段/选择及正文SHA-size-mtime在升级、候选安装/烟测后保持。安装边界2偏好/238测速缓存保持；启动后测速value/时间变化，候选首页更新ip_quality_cache_v1，当前ID不变，不能称所有缓存静止。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | Debug与Release-R8构建通过。GitHub签名资产SHA `02924c48…f4437`、版本/证书/ABI/DEX门禁及Redmi安装回拉已全部复验；扫码生命周期证据见KREL-002 JSON。 |
+| Debug / Test | 最终Debug/正常签名Release-R8/非debuggable独立motion及测试APK已构建；motion双包和签名候选安装回拉一致。Debug Lint0错误/69警告/14提示，Release0错误/66警告/13提示。 |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
-| Release | `kclash-v0.1.1`已正式发布并设为Latest；公开签名arm64/R8 APK SHA `02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437`，SHA256SUMS/证书/版本/ABI/DEX/Redmi安装回拉及扫码运行通过。此前0.1.0记录保留；跨版本升级未验。 |
-| 最新证据 | 扫码：qr-camera-r8-redmi-20261110.json及release-mlkit-registrar-defect.md。Geo恢复、视觉/长窗见各自具名证据；完整Flutter、原生慢帧和历史异常因果继续PARTIAL。 |
+| Release | 公开`kclash-v0.1.1`/签名arm64/R8 APK `02924c48…f4437`保持。真实原始0.1.0→0.1.1单FILE配置数据保留已验，同schema6；不推广混合库、未提交草稿、运行VPN或低API升级。当前本地候选未发布。 |
+| 最新证据 | post-release-boundaries-redmi-20261110.json：升级、Perfetto隔离、长资源目录及候选安装。扫码/Geo恢复仍按具名历史证据；完整Flutter、原生慢帧、历史异常和低API继续PARTIAL。 |
 
 
 ## 4. 目标架构图
@@ -1304,6 +1306,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 - 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
+
+**发布后边界与资源长目录（2026-11-10，KUI-030）**：原始正式0.1.0→0.1.1覆盖升级已验，UID、单FILE配置21字段/选择、2条偏好、238条测速记录及正文SHA-size-mtime在安装边界保持；启动后配置保持但测速value/时间更新，未确定事件归因。Perfetto在KClash无进程时，process_stats成功而最小sched ftrace使traced_probes进入D并flush失败，原生慢帧仍未归因。代理/规则64项目录补首次显现当前选择，Redmi深浅两例各2/2、相邻回归2/2，4个不重复方法共6次执行全过、23PNG已核验；真实IME清空/末项选择、一次回调/别名与重开取消已验。865项JVM（App583执行，其余282复用）、Debug/签名Release-R8/独立测试包及双Lint零错误通过。最终本地候选SHA `9b7fad97…88fcaa7`已安装回拉匹配，公开0.1.1资产和标签未替换；正式配置保留，3个自有测试包与12个手机诊断文件已精确清理，服务停止。实体QR、完整Flutter视觉/动效、低API和历史异常因果继续待验。证据`docs/acceptance/post-release-boundaries-redmi-20261110.json`；溯源`docs/resource-picker-long-list-defect.md`、`docs/release-upgrade-acceptance.md`。
 
 **扫码崩溃修复与0.1.1正式发布（2026-11-10，KREL-002）**：正式Release修复ML Kit三类注册器构造器被R8裁剪；仅添加必要反射入口keep规则，并由CI检查最终manifest/DEX。源码提交`5aed72fe`、标签`kclash-v0.1.1`已推送；标签CI 42673055574和分支CI 42672964498通过，含Go race、JVM测试、签名R8构建、双Lint及最终APK门禁。GitHub Release为Latest；APK SHA-256 `02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437`，签名证书匹配既有身份。Redmi Note 8 Pro正式资产安装回拉字节一致；相机取景/手电筒/后台释放恢复/关闭释放6阶段通过，同一PID 4709，配置卡仍显示、未清正式数据或提交导入；当前相机空闲且VPN/ProxyService停止。此前本机实际执行865项JVM，失败/错误/跳过均0。实体摄像二维码和低API未验。Release：https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.1。证据`docs/acceptance/qr-camera-r8-redmi-20261110.json`及`../../../acceptance-artifacts/qr-camera-published-0.1.1-20261110/`，溯源`docs/release-mlkit-registrar-defect.md`。
 

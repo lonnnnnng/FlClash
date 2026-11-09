@@ -1,0 +1,1153 @@
+{
+  "date": "2026-11-10",
+  "status": "SLICE_VERIFIED_OVERALL_PARTIAL",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "systemDebuggable": false
+  },
+  "sourceCommit": "37f3e8b09ee6fa1704c31a0b95d3af8dadbed1be",
+  "documentCi": {
+    "runId": 42677805263,
+    "conclusion": "success"
+  },
+  "upgrade": {
+    "passed": true,
+    "sourceVersion": "0.1.0",
+    "targetVersion": "0.1.1",
+    "uidPreserved": true,
+    "allComparedTablesEqual": true,
+    "profileFieldCount": 21,
+    "profiles": 1,
+    "preferences": 2,
+    "delayRecords": 238,
+    "configFilesIncludingMtimeEqual": true,
+    "otherFileChanges": [
+      "files/profileinstaller_profileWrittenFor_lastUpdateTime.dat",
+      "no_backup/androidx.work.workdb-shm",
+      "databases/kclash.db-wal",
+      "databases/kclash.db",
+      "no_backup/androidx.work.workdb",
+      "no_backup/androidx.work.workdb-wal",
+      "files/profileInstalled",
+      "databases/kclash.db-shm"
+    ]
+  },
+  "afterStartup": {
+    "tables": {
+      "profiles": {
+        "before": 1,
+        "after": 1,
+        "equal": true
+      },
+      "app_preferences": {
+        "before": 2,
+        "after": 2,
+        "equal": true
+      },
+      "scripts": {
+        "before": 0,
+        "after": 0,
+        "equal": true
+      },
+      "proxy_delay_results": {
+        "before": 238,
+        "after": 238,
+        "equal": false
+      }
+    },
+    "userFilesEqual": true
+  },
+  "signedArtifacts": {
+    "old": "ed063b9ba59d0825308b2d442da38e5e8ecdcb456cc7c55cd385f11b05ad1082",
+    "new": "02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437",
+    "preparationOnly": "70a1b64ce1a8ac360593e0cca1e0d21991df2ba47fb8940aa7e4e2adf8327092",
+    "certificate": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49"
+  },
+  "preparation": {
+    "privateArchiveVerified": true,
+    "uninstalledFormalApp": false,
+    "clearedFormalData": false,
+    "restoredFromBackup": false,
+    "changedRomSecurity": false,
+    "debuggableBridgeNotStarted": true,
+    "finalInstalledIsOriginalOfficial011": false,
+    "official011RestoredBeforeCandidate": true
+  },
+  "perfetto": {
+    "processOnly": {
+      "exit": 0,
+      "appBefore": [],
+      "appAfter": [],
+      "daemonBefore": [
+        "nobody         983     1   10842068   4960 0                   0 S traced_probes",
+        "nobody         985     1   10827700   5280 0                   0 S traced"
+      ],
+      "daemonAfter": [
+        "nobody         983     1   10843092   4960 0                   0 S traced_probes",
+        "nobody         985     1   10829492   5784 0                   0 S traced"
+      ]
+    },
+    "ftraceOnly": {
+      "exit": 0,
+      "appBefore": [],
+      "appAfter": [],
+      "daemonBefore": [
+        "nobody         983     1   10843092   4960 0                   0 S traced_probes",
+        "nobody         985     1   10829628   5796 0                   0 S traced"
+      ],
+      "daemonAfter": [
+        "nobody         983     1   10916848   9308 0                   0 D traced_probes",
+        "nobody         985     1   10829628   5816 0                   0 S traced"
+      ]
+    },
+    "processRecords": 777,
+    "processFlushSucceeded": true,
+    "schedRows": 0,
+    "ftraceFlushFailed": true,
+    "ftraceFinalFlushFailed": true,
+    "nativeRenderThreadAttributionComplete": false,
+    "initialSmokeAppWasAbsent": false,
+    "secondPairAppAbsentBeforeAndAfter": true
+  },
+  "camera": {
+    "realCameraQrRecognition": "PENDING_USER_PHYSICAL_ALIGNMENT",
+    "testInput": "camera-live-qr.png",
+    "submitted": false
+  },
+  "limitations": [
+    "Existing single FILE profile; no mixed URL/CUSTOM or running VPN upgrade",
+    "Same Room schema 6, not a migration test",
+    "Delay cache values and timestamps changed after startup; cause not yet attributed",
+    "Framework database/WAL/SHM and ProfileInstaller file changes retained",
+    "First reboot probe had KClash background PID; only second isolated pair proves absent app",
+    "Kernel stack denied; exact ftrace kernel function unknown",
+    "Single portrait default-font Redmi API36; long list cold-process and wider font/orientation matrix not tested",
+    "Published Release assets unchanged; final installed local signed candidate is not a new public version",
+    "Candidate smoke changed ip_quality_cache_v1 and delay values/timestamps; current profile and body preserved",
+    "Adjacent screenshots from component theme loops can retain IME; not a production global theme parity conclusion"
+  ],
+  "evidenceDirectory": "../../../acceptance-artifacts/post-release-20261110/",
+  "artifacts": [
+    {
+      "name": "probe/UpgradeSnapshot.java",
+      "bytes": 6365,
+      "sha256": "7a6b0fa2f737a60998315692ac729df5273e2d371fefab0de12b286c63fa8c65"
+    },
+    {
+      "name": "probe/AndroidManifest.xml",
+      "bytes": 477,
+      "sha256": "b8b8419acdaa64322a784b1a8d25ca531f9a407d12bc8dbe1c6aee367a42e165"
+    },
+    {
+      "name": "probe/upgrade-probe.apk",
+      "bytes": 16787,
+      "sha256": "65cc317a3ebaa4940cfff763e2a0803728d79bd8582aad4d7b58f2b650d9f24a"
+    },
+    {
+      "name": "upgrade-bridge.init.gradle",
+      "bytes": 356,
+      "sha256": "935f25c5630933de3868898ff1b9cd229214f4ee6ba04e147c3f958222ab66a0"
+    },
+    {
+      "name": "bridge-build.log",
+      "bytes": 11669,
+      "sha256": "c226911429a7f227e84e236ec581daf528c6b75698ecfb3f708eda618a773563"
+    },
+    {
+      "name": "original-011.json",
+      "bytes": 154176,
+      "sha256": "cddaaa788e6106a9c0ef5b05693e014c4a5e1ed5240aa17484c4072cb89aeb20"
+    },
+    {
+      "name": "official-010-before-launch.json",
+      "bytes": 154064,
+      "sha256": "e2d8db83631f1133f9216e4de607fa43a94fd54f73ee8549ff18d275d2a28633"
+    },
+    {
+      "name": "official-010-upgrade-baseline.json",
+      "bytes": 154064,
+      "sha256": "3e3085cb4d2af39edcfe4fdf1666f51a24a97a706c12a28bf20feaa368b36fb7"
+    },
+    {
+      "name": "official-011-after-upgrade.json",
+      "bytes": 154064,
+      "sha256": "06a3e6e368c14830bf4fbac3ec29e07a53147058cd6fc8bbe68b5537f06ac6d8"
+    },
+    {
+      "name": "official-011-after-cold-launch.json",
+      "bytes": 154064,
+      "sha256": "6077376ee98a68662a5208fa7cc4634b89cf1ca27ddef069aee6998620e025ff"
+    },
+    {
+      "name": "upgrade-comparison.json",
+      "bytes": 600,
+      "sha256": "614387dacee7b6d04f9d33334c603dd1c3c2b3ca5be9082fdec9b373e88869bf"
+    },
+    {
+      "name": "after-launch-differences.json",
+      "bytes": 397,
+      "sha256": "829251919831d0a4aaaed0fdb4dc3fa76b3463ed1a0e87a81df6b4b344082da2"
+    },
+    {
+      "name": "preparation-file-differences.json",
+      "bytes": 558,
+      "sha256": "879a6ad6ec976a72fa76df97300d6323f099650a361874637423edaf323ad09a"
+    },
+    {
+      "name": "process-only.pbtxt",
+      "bytes": 184,
+      "sha256": "5703cd87e74b64b98591d9ea6b28051dae6deb82676d850aaa30180b00ef995d"
+    },
+    {
+      "name": "process-only.pftrace",
+      "bytes": 41335,
+      "sha256": "ea89d7b5bd9bcd7cead1d7f7934dadd76027a0a2bbba5ad8926b84e84866ea48"
+    },
+    {
+      "name": "process-only-query.txt",
+      "bytes": 372,
+      "sha256": "5eb9856580586018269f58f417896cb3b102e5d799a873868e0a9c7778313385"
+    },
+    {
+      "name": "process-only-process-state.json",
+      "bytes": 438,
+      "sha256": "d53518017e2de5b785f58f681c8bcbd0089adf8b4a1c26e15f2378ebdc45d2dd"
+    },
+    {
+      "name": "ftrace-only.pbtxt",
+      "bytes": 208,
+      "sha256": "d0b4af29f846737ecdde6c645dfa4a52c8ebfe455a7662f64111fc1db070ee50"
+    },
+    {
+      "name": "ftrace-only.pftrace",
+      "bytes": 758,
+      "sha256": "9d389c502cb741643591027506e263c0cb30693eec85f6315174182fe5384531"
+    },
+    {
+      "name": "ftrace-only-query.txt",
+      "bytes": 467,
+      "sha256": "0e372a36b66202180fd6fd0d5a4edead2dfca21d24bcc51f782a6a36e8a39cd2"
+    },
+    {
+      "name": "ftrace-only-process-state.json",
+      "bytes": 438,
+      "sha256": "c3cd949b77cb77abc72ae1f69bf7257a03b0bcad1c83569aa0914f3b4557cd17"
+    },
+    {
+      "name": "traced-probes-state.txt",
+      "bytes": 1090,
+      "sha256": "c6737693001e3c8235f43a2b9b640a45cc1c0df496cb5bd93a3cbd5ae6d2edb2"
+    },
+    {
+      "name": "final-build.log",
+      "bytes": 21430,
+      "sha256": "d034715e4bd4932fc072a367961f7985b0d8fbd4ffa5b71bbe9d1a81e977c14b"
+    },
+    {
+      "name": "final-lint.log",
+      "bytes": 14683,
+      "sha256": "1d65e5fc2e02a833210145c6c84a007989da3405355082bf1def5d7d847a966a"
+    },
+    {
+      "name": "final-build-results.json",
+      "bytes": 457,
+      "sha256": "0430bfbb5678f9de2a83a1a1ad7525652e3fed051689beee1517dedaee8d20e0"
+    },
+    {
+      "name": "final-unit-results.json",
+      "bytes": 357,
+      "sha256": "4f5f879c05cfca9e0a3073add7bf66d2673ce33897e52f940cb82c4a390d4550"
+    },
+    {
+      "name": "candidate-artifacts.json",
+      "bytes": 1011,
+      "sha256": "ae5f960ce6a11ec00fb9b283e669de539f6fd58c5a08636c18f191996294afa7"
+    },
+    {
+      "name": "candidate-manifest.xml",
+      "bytes": 17210,
+      "sha256": "1beb41e305d5d46b92f650da576a989705d3c607044aa81bb608ad3408f7e5e0"
+    },
+    {
+      "name": "candidate-certificate.txt",
+      "bytes": 326,
+      "sha256": "7979b4aeceff54c7119332671bfa951d5b22b8f24b25659a2a69bffdb38aa50d"
+    },
+    {
+      "name": "candidate-before-install.json",
+      "bytes": 154064,
+      "sha256": "f8853721f328ab96b9f7703590fb9bc158bc26675297acebe222031ac11f48df"
+    },
+    {
+      "name": "candidate-after-install.json",
+      "bytes": 154064,
+      "sha256": "55ee24b959370071b822674ef6f7bc789f74816bbedac88abce3a08aee8c9839"
+    },
+    {
+      "name": "candidate-after-smoke.json",
+      "bytes": 154064,
+      "sha256": "481f120d8b8dbb97fa863eaf15b41c3b5cff0cc3f6fb4aec6eb11236df151942"
+    },
+    {
+      "name": "candidate-install-comparison.json",
+      "bytes": 166,
+      "sha256": "64dc8f6bb7e75d223ca7e8542b8dd53d1ead2c3519577526d2dea571e0e0605c"
+    },
+    {
+      "name": "candidate-smoke-comparison.json",
+      "bytes": 431,
+      "sha256": "a5fb3a5d5604f00f6a9d7431562fc79ebad135f3e93788c80f3c48572185df5b"
+    },
+    {
+      "name": "candidate-preference-differences.json",
+      "bytes": 218,
+      "sha256": "d82427e543f5d2fa7c8ad6af7876c981075216c7332c9f1d65546ddba2d558e8"
+    },
+    {
+      "name": "cleanup-result.json",
+      "bytes": 4056,
+      "sha256": "afcc282303350024c12994fe138886b713ae4bb99b05039ce6ee5759091305f3"
+    },
+    {
+      "name": "candidate-home.png",
+      "bytes": 187190,
+      "sha256": "f16a6e47cab6cdaa10025276d42a951fc50b9bb36d42c4637d46b60232a219bd"
+    },
+    {
+      "name": "candidate-profiles.png",
+      "bytes": 65872,
+      "sha256": "0e07a5e0edef01b781b190ffa1fc86da81431a5dda362938494dec5bd09250a1"
+    },
+    {
+      "name": "long-resource-dark-contact.jpg",
+      "bytes": 64536,
+      "sha256": "a7c1fea42af0e069cad216d4f5d8ce771d454b1f0c4be85d0ccd0e95237e75de"
+    },
+    {
+      "name": "long-resource-light-contact.jpg",
+      "bytes": 60984,
+      "sha256": "ac9e68ead712806fcecbed1a859f0f235598dfed1d67460b540c4fd53deede44"
+    },
+    {
+      "name": "resource-final-contact-1.jpg",
+      "bytes": 56796,
+      "sha256": "82b34d719d5ba9a62f7d0053bfef5c38220e52e243e6391b3ec59e3aa84aee17"
+    },
+    {
+      "name": "resource-final-contact-2.jpg",
+      "bytes": 43747,
+      "sha256": "4e095da95fe1bab341c7c34348ddc8c78bfb0fbe696b338e2847d4376f73e630"
+    },
+    {
+      "name": "run-long-resource.py",
+      "bytes": 2905,
+      "sha256": "31a5dd3b313aab3bb860351aebc3911692cb684a8d698f8dba7e15210f06f7b7"
+    },
+    {
+      "name": "long-resource-red/instrument.log",
+      "bytes": 9843,
+      "sha256": "d8b15e47dc1a3adbeffe1d93c036c373cf096f062d4812b826e7ef552cb78da4"
+    },
+    {
+      "name": "long-resource-red/result.json",
+      "bytes": 457,
+      "sha256": "9526ab70f030a1588f13806ba3297c06de689c07b257aeada2509d76a7a1bc27"
+    },
+    {
+      "name": "long-resource-red-unlocked/instrument.log",
+      "bytes": 4594,
+      "sha256": "bdbb83d92a4f1b85b776b434e18c39a3b841546be81c01e365aa4cc3c5cd88db"
+    },
+    {
+      "name": "long-resource-red-unlocked/result.json",
+      "bytes": 457,
+      "sha256": "9526ab70f030a1588f13806ba3297c06de689c07b257aeada2509d76a7a1bc27"
+    },
+    {
+      "name": "long-resource-green-dark/instrument.log",
+      "bytes": 858557,
+      "sha256": "2c71b150b2d321f29a4ea18dbde32b9a9c62d7c84356c0ce179fa5093f6f8267"
+    },
+    {
+      "name": "long-resource-green-dark/result.json",
+      "bytes": 1099,
+      "sha256": "62fdd8d7fba0723524071fbddae54b95b547f8063260911e75fe54b184dc3341"
+    },
+    {
+      "name": "long-resource-green-dark/long_proxy_selected.png",
+      "bytes": 143246,
+      "sha256": "0875795cc4bf758444a019aaa11e032ef61bcaeccc91b79fe27fcffb315899c5"
+    },
+    {
+      "name": "long-resource-green-dark/long_proxy_empty_ime.png",
+      "bytes": 163639,
+      "sha256": "e4774216327c281464cbed00ebd469c1e4021ae8083297cfc3cadf0191268fec"
+    },
+    {
+      "name": "long-resource-green-dark/long_rule_empty_ime.png",
+      "bytes": 167481,
+      "sha256": "55f8beb04281a5c734c1dc47a71acfd2fe9d31187d71139fbfb4283a14bfb8cd"
+    },
+    {
+      "name": "long-resource-green-dark/long_rule_selected.png",
+      "bytes": 156717,
+      "sha256": "c9ec2a853a063dd0bd586dfe8a680d431d64db1acb8e5ed9313a987a1c38d519"
+    },
+    {
+      "name": "long-resource-final-dark/instrument.log",
+      "bytes": 2401974,
+      "sha256": "4b17cbb253ec8923f8ae31643fee8bb260573684f47ce34e203c72d17b245c81"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_editor_false.png",
+      "bytes": 121541,
+      "sha256": "f1a2a851f68e87ed1e67466221fbbaf149b29cf7ad85e4526af184cceac00f1d"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_no_results_true.png",
+      "bytes": 108102,
+      "sha256": "b6de5e0173cad400877b993c4b27b8fa619cc8d5f284cf6aa93a68a44bffa485"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_delete_true.png",
+      "bytes": 107252,
+      "sha256": "c5bcf6ee513042396c22383d7eecf1fea3daa1a278e25a0d8d48faf656adac68"
+    },
+    {
+      "name": "long-resource-final-dark/result.json",
+      "bytes": 3320,
+      "sha256": "82f4be5b848c839ae811f071fa87387cc82076ded7babc73deaa91709e7b0da8"
+    },
+    {
+      "name": "long-resource-final-dark/long_proxy_selected.png",
+      "bytes": 143756,
+      "sha256": "55e74d8b25a96b9a48329ac78b6d8982c6f4cff508d82a5e5fccc7eb2b3f12a8"
+    },
+    {
+      "name": "long-resource-final-dark/long_proxy_empty_ime.png",
+      "bytes": 163908,
+      "sha256": "7834fc39b24f788327e6266340e14285a8e8d35a74513a893ba3a787b27b33c1"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_delete_false.png",
+      "bytes": 108406,
+      "sha256": "56d81be5c40417bd4561c6ff23395ac7ac4b98b1a62c958fc177cb827e7bac72"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_list_false.png",
+      "bytes": 64282,
+      "sha256": "9aa852079db6cae542aa8a10204e2a7fc4382b24b813fd1d6a390b91cd774095"
+    },
+    {
+      "name": "long-resource-final-dark/long_rule_empty_ime.png",
+      "bytes": 167965,
+      "sha256": "65e93512677c5fc7ff3175215121ce9b1227d58505575b60954061a520b42c8c"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_binding_empty.png",
+      "bytes": 160105,
+      "sha256": "be92abefe605383012a80f7f0118cb81a304497cf715c559d60a70452ac7f754"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_no_results_false.png",
+      "bytes": 107945,
+      "sha256": "43a6b654534470ee0e12e34ab263482b2923c8414a194118cb2605e56b89d5c5"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_editor_true.png",
+      "bytes": 121715,
+      "sha256": "c754b53c84a1ad16d60a16c9576b3b0fb70873f932891fad25c7d546cf556693"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_list_true.png",
+      "bytes": 122180,
+      "sha256": "73dd509f6b11d7b3c44c73ecd0c780a85b62d6696bbbdb331109ff124cb16bb2"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_missing_reference.png",
+      "bytes": 69583,
+      "sha256": "cfcf8ab80c70756ea709164e715480f57ba11bd4b94834daec894ebd5e416e76"
+    },
+    {
+      "name": "long-resource-final-dark/rule_resources_choose.png",
+      "bytes": 54319,
+      "sha256": "9d326622ff2112811998fe051406d537c93763fbcb777039bf8bbe3235581822"
+    },
+    {
+      "name": "long-resource-final-dark/long_rule_selected.png",
+      "bytes": 157188,
+      "sha256": "3eec096431381d5b1db34a9cc42dabcc71cbbd8acec0b3c2d396a9e6f1637e96"
+    },
+    {
+      "name": "long-resource-final2-dark/instrument.log",
+      "bytes": 1279133,
+      "sha256": "4f6b7db9adf30d3e96bd90004985cc43bda57da2c2b389174dccc29dd0105723"
+    },
+    {
+      "name": "long-resource-final2-dark/result.json",
+      "bytes": 1415,
+      "sha256": "944f13f1d5da38b92970f8b430734af0b423391fb92dd26b77db77842c33b726"
+    },
+    {
+      "name": "long-resource-final2-dark/long_proxy_selected.png",
+      "bytes": 143601,
+      "sha256": "4a41bb4c1796174736eb0e5fd9e401e23c1dfdb218eb424803c28125500305e5"
+    },
+    {
+      "name": "long-resource-final2-dark/long_proxy_empty_ime.png",
+      "bytes": 163786,
+      "sha256": "d19c239d70a4cb098c59e7ed32319ca6b24496cbdde27bcddfab3c91141a554c"
+    },
+    {
+      "name": "long-resource-final2-dark/long_proxy_last_ime.png",
+      "bytes": 153963,
+      "sha256": "ac35b7a52f72c21ef43858064c29294f69545ec0720f5bdcb1fae0af6993a58a"
+    },
+    {
+      "name": "long-resource-final2-dark/long_rule_empty_ime.png",
+      "bytes": 167814,
+      "sha256": "c427099a734b6c3e79368dcfa41806c2d1c7ddb59b9350f430103881447e8351"
+    },
+    {
+      "name": "long-resource-final2-dark/long_rule_last_ime.png",
+      "bytes": 163786,
+      "sha256": "09df5f3c9fb691e0d3fdb07beac991638144dbd0a1927f7e7943520620af62e4"
+    },
+    {
+      "name": "long-resource-final2-dark/long_rule_selected.png",
+      "bytes": 157057,
+      "sha256": "8c63e3dc4b6e08657b16cd0116505bc33e2eb4405f22fba8a6e837f9f7bead91"
+    },
+    {
+      "name": "long-resource-final-light/instrument.log",
+      "bytes": 1281405,
+      "sha256": "c4223b058222957290198339bb67e9b89b468f14f429d057830be59b59aa32a1"
+    },
+    {
+      "name": "long-resource-final-light/result.json",
+      "bytes": 1415,
+      "sha256": "4a57cc97859d7502b06d6ef402f02d900137cf2f1c82f9b7089574ea32428efe"
+    },
+    {
+      "name": "long-resource-final-light/long_proxy_selected.png",
+      "bytes": 143827,
+      "sha256": "a027dd321a151893bb8f500d618db7097b91f83e8f42ab9770c59368a2364057"
+    },
+    {
+      "name": "long-resource-final-light/long_proxy_empty_ime.png",
+      "bytes": 163563,
+      "sha256": "8a99989b19d2c8f1205caa9208f1ef16e728cd382a62c8966138a3d69f4b2c50"
+    },
+    {
+      "name": "long-resource-final-light/long_proxy_last_ime.png",
+      "bytes": 155190,
+      "sha256": "51f467dfc160a42b4701303a83718a73deab6425704b18982a0747c4899f922b"
+    },
+    {
+      "name": "long-resource-final-light/long_rule_empty_ime.png",
+      "bytes": 167456,
+      "sha256": "c1f59a466c74150303ff630edddf93d29cacbce03226309c452a6b5aef24f485"
+    },
+    {
+      "name": "long-resource-final-light/long_rule_last_ime.png",
+      "bytes": 164503,
+      "sha256": "803934497594b8e06a1195ba717f31ca35dbb3da825f4d1371b59cae56417598"
+    },
+    {
+      "name": "long-resource-final-light/long_rule_selected.png",
+      "bytes": 157171,
+      "sha256": "afd543a1f0be0edf5275a7435cb36a864df9a49e4a384600b1b79f69578f9773"
+    },
+    {
+      "name": "resource-final-regression/instrument.log",
+      "bytes": 1535766,
+      "sha256": "2c390f31c3b7ea2bde8d4bba10715b38c68fc3d4ddb0dbe7b76abc7920d26176"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_editor_false.png",
+      "bytes": 121086,
+      "sha256": "ca688f68cdc4dc168bc7187bdf1f9b12337a9c6a404f2012d76b4bab46c13ce2"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_no_results_true.png",
+      "bytes": 107668,
+      "sha256": "9fffac0443e5a9e9208aafa6f2ee59db3ddf89859004987cebe13ca630e3f3f2"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_delete_true.png",
+      "bytes": 106823,
+      "sha256": "9f6293715602b898220e5d0c56d66fa28e0045e2c603560d5de9656d49a82740"
+    },
+    {
+      "name": "resource-final-regression/result.json",
+      "bytes": 2296,
+      "sha256": "a09dad192af360c1c941b071a737a110391ae8a4d8451ffe2e01140f18411b31"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_delete_false.png",
+      "bytes": 107791,
+      "sha256": "49aa8cfe21176e97d71d568c10717a87fb68a65eda94ac12fb69b3c420e2624d"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_list_false.png",
+      "bytes": 63830,
+      "sha256": "8714943c23e89f5675ca679f794479f04c7a6c048da18b12172d2ca6cf63e648"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_binding_empty.png",
+      "bytes": 159753,
+      "sha256": "262cf3975680f48e7dda6d25f282c1058eebf2422f5ba6e99cc3c5e5ba4ed137"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_no_results_false.png",
+      "bytes": 107482,
+      "sha256": "56236fd7692bd1b90d94eab93bed346fed161e16b5d0975f1bd2805db7ed3be9"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_editor_true.png",
+      "bytes": 121326,
+      "sha256": "a07f33a85bca67f6d43a87860dc6ae9bb79b3f274c1ec296922b05161e6edd77"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_list_true.png",
+      "bytes": 121754,
+      "sha256": "8d40981307e3e8af73c268aebafb145ac290f84b01bbe925be8c688e2e7067cc"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_missing_reference.png",
+      "bytes": 69225,
+      "sha256": "5fac3e4fed300c0564417c508701f0a77922dbfcd5e2de97a45ad4885f62c872"
+    },
+    {
+      "name": "resource-final-regression/rule_resources_choose.png",
+      "bytes": 53857,
+      "sha256": "f42c5f4f1e21af530f1f4fd0acb18356bf996878fb70f4656422643a484313cd"
+    }
+  ],
+  "priorFailures": [
+    {
+      "step": "privateFileIdentity",
+      "outcome": "FAIL",
+      "reason": "Framework WorkManager and ProfileInstaller files changed; all original files and diffs retained"
+    },
+    {
+      "step": "postLaunchAllTablesIdentity",
+      "outcome": "FAIL",
+      "reason": "238 delay cache values and timestamps changed; Profile/preferences/files unchanged; cause unconfirmed"
+    },
+    {
+      "step": "perfettoWrongDirectory",
+      "outcome": "FAIL",
+      "reason": "/data/local/tmp output Permission denied; reran in existing /data/misc/perfetto-traces directory"
+    },
+    {
+      "step": "firstRebootIsolation",
+      "outcome": "NOT_ISOLATED",
+      "reason": "KClash process auto-started on reboot; second pair force-stopped after boot and verified absent both sides"
+    },
+    {
+      "step": "longResourceFirstRun",
+      "outcome": "FAIL_ENVIRONMENT",
+      "reason": "USB/lockscreen blocked Compose hierarchy"
+    },
+    {
+      "step": "longResourceUnlockedBaseline",
+      "outcome": "FAIL_PRODUCT",
+      "reason": "Both current selected items are outside initial visible list"
+    },
+    {
+      "step": "long-resource-green-dark",
+      "outcome": "FAIL_TEST_ASSERTION",
+      "reason": "Empty query incorrectly compared with placeholder Text"
+    },
+    {
+      "step": "long-resource-final-dark",
+      "outcome": "FAIL_TEST_ASSERTION",
+      "reason": "Empty AnnotatedString object equality includes styling; final assertion compares EditableText.text"
+    },
+    {
+      "step": "resource_reveal_review",
+      "outcome": "AGENT_RUNTIME_ERROR",
+      "reason": "thinking_signature_invalid; no independent review result"
+    }
+  ],
+  "sourceCommitRole": "base before local ResourcePickerListState changes; see sourceSnapshot",
+  "candidate": {
+    "version": "0.1.1",
+    "versionCode": 1001,
+    "published": false,
+    "debuggable": false,
+    "abis": [
+      "arm64-v8a"
+    ],
+    "artifacts": {
+      "release": {
+        "path": "android/app/build/outputs/apk/release/app-release.apk",
+        "sha256": "9b7fad9769543e74ba7dcd8990fc3e1fbff3db840aa02c66dc5e2f49888fcaa7",
+        "bytes": 48348468
+      },
+      "debug": {
+        "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "sha256": "9413b18564de4ba324de9b08fa1a0616fd298215ec03e3ec7700665007c111d9",
+        "bytes": 106280831
+      },
+      "motion": {
+        "path": "android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+        "sha256": "dc64750037e56c4536fb8cb1615407f6ce8bcefafb5e3cf52313202936142b51",
+        "bytes": 65937001
+      },
+      "motionTest": {
+        "path": "android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+        "sha256": "5a5e3290201db8a6feffadc1340a3ef7227e650ecc82f82daf875f0852be9930",
+        "bytes": 2772798
+      }
+    },
+    "installedApkHashMatches": true,
+    "installComparison": {
+      "profiles": true,
+      "app_preferences": true,
+      "scripts": true,
+      "proxy_delay_results": true,
+      "configFilesIncludingMtimeEqual": true,
+      "uidPreserved": true
+    },
+    "afterSmoke": {
+      "tables": {
+        "profiles": {
+          "before": 1,
+          "after": 1,
+          "equal": true
+        },
+        "app_preferences": {
+          "before": 2,
+          "after": 2,
+          "equal": false
+        },
+        "scripts": {
+          "before": 0,
+          "after": 0,
+          "equal": true
+        },
+        "proxy_delay_results": {
+          "before": 238,
+          "after": 238,
+          "equal": false
+        }
+      },
+      "configurationFilesEqual": true,
+      "uidPreserved": true
+    },
+    "preferenceChanges": [
+      {
+        "key": "current_profile_id",
+        "sameKey": true,
+        "changedColumns": []
+      },
+      {
+        "key": "ip_quality_cache_v1",
+        "sameKey": true,
+        "changedColumns": [
+          "value",
+          "updatedAt"
+        ]
+      }
+    ],
+    "homeAndOriginalProfileVisible": true
+  },
+  "build": {
+    "commands": [
+      {
+        "step": "final-build",
+        "command": [
+          "./gradlew",
+          "test",
+          ":app:assembleDebug",
+          ":app:assembleRelease",
+          "--no-daemon",
+          "-Ptarget-platform=android-arm64"
+        ],
+        "exit": 0
+      },
+      {
+        "step": "final-lint",
+        "command": [
+          "./gradlew",
+          ":app:lintDebug",
+          ":app:lintRelease",
+          "--no-daemon",
+          "--max-workers=2",
+          "-Ptarget-platform=android-arm64"
+        ],
+        "exit": 0
+      }
+    ],
+    "unitTests": {
+      "app": {
+        "tests": 583,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "appUnitExecuted": 583,
+    "otherUnitReused": 282,
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "goChanged": false,
+    "goRerun": false,
+    "lint": {
+      "debug": {
+        "Warning": 69,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 13
+      }
+    }
+  },
+  "resourcePickers": {
+    "defect": "KUI-030",
+    "flutterReference": "be84736605527034689c95bf27828ff27d912c5e",
+    "source": "lib/features/form/selection_sheet.dart",
+    "directorySize": 64,
+    "initialSelectedIndex": 45,
+    "lastSelectedIndex": 63,
+    "runs": {
+      "long-resource-final2-dark": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.ResourcePickerLongListInstrumentedTest",
+            "test": "proxyPickerRevealsCurrentChoiceAndHandlesLongDirectoryAboveIme",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ResourcePickerLongListInstrumentedTest",
+            "test": "rulePickerRevealsCurrentChoiceAndHandlesLongDirectoryAboveIme",
+            "code": 0
+          }
+        ],
+        "images": {
+          "long_proxy_selected": {
+            "count": 4,
+            "bytes": 143601,
+            "sha256": "4a41bb4c1796174736eb0e5fd9e401e23c1dfdb218eb424803c28125500305e5"
+          },
+          "long_proxy_empty_ime": {
+            "count": 5,
+            "bytes": 163786,
+            "sha256": "d19c239d70a4cb098c59e7ed32319ca6b24496cbdde27bcddfab3c91141a554c"
+          },
+          "long_proxy_last_ime": {
+            "count": 5,
+            "bytes": 153963,
+            "sha256": "ac35b7a52f72c21ef43858064c29294f69545ec0720f5bdcb1fae0af6993a58a"
+          },
+          "long_rule_selected": {
+            "count": 5,
+            "bytes": 157057,
+            "sha256": "8c63e3dc4b6e08657b16cd0116505bc33e2eb4405f22fba8a6e837f9f7bead91"
+          },
+          "long_rule_empty_ime": {
+            "count": 5,
+            "bytes": 167814,
+            "sha256": "c427099a734b6c3e79368dcfa41806c2d1c7ddb59b9350f430103881447e8351"
+          },
+          "long_rule_last_ime": {
+            "count": 5,
+            "bytes": 163786,
+            "sha256": "09df5f3c9fb691e0d3fdb07beac991638144dbd0a1927f7e7943520620af62e4"
+          }
+        },
+        "passed": true
+      },
+      "long-resource-final-light": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.ResourcePickerLongListInstrumentedTest",
+            "test": "proxyPickerRevealsCurrentChoiceAndHandlesLongDirectoryAboveIme",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ResourcePickerLongListInstrumentedTest",
+            "test": "rulePickerRevealsCurrentChoiceAndHandlesLongDirectoryAboveIme",
+            "code": 0
+          }
+        ],
+        "images": {
+          "long_proxy_selected": {
+            "count": 4,
+            "bytes": 143827,
+            "sha256": "a027dd321a151893bb8f500d618db7097b91f83e8f42ab9770c59368a2364057"
+          },
+          "long_proxy_empty_ime": {
+            "count": 5,
+            "bytes": 163563,
+            "sha256": "8a99989b19d2c8f1205caa9208f1ef16e728cd382a62c8966138a3d69f4b2c50"
+          },
+          "long_proxy_last_ime": {
+            "count": 5,
+            "bytes": 155190,
+            "sha256": "51f467dfc160a42b4701303a83718a73deab6425704b18982a0747c4899f922b"
+          },
+          "long_rule_selected": {
+            "count": 5,
+            "bytes": 157171,
+            "sha256": "afd543a1f0be0edf5275a7435cb36a864df9a49e4a384600b1b79f69578f9773"
+          },
+          "long_rule_empty_ime": {
+            "count": 5,
+            "bytes": 167456,
+            "sha256": "c1f59a466c74150303ff630edddf93d29cacbce03226309c452a6b5aef24f485"
+          },
+          "long_rule_last_ime": {
+            "count": 5,
+            "bytes": 164503,
+            "sha256": "803934497594b8e06a1195ba717f31ca35dbb3da825f4d1371b59cae56417598"
+          }
+        },
+        "passed": true
+      },
+      "resource-final-regression": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.RuleResourcesPageInstrumentedTest",
+            "test": "missingReferenceCanBindAnExistingGlobalResourceWithoutRenamingRules",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.RuleResourcesPageInstrumentedTest",
+            "test": "completeResourcePageSearchMenusDraftAndDeleteWorkInBothThemes",
+            "code": 0
+          }
+        ],
+        "images": {
+          "rule_resources_missing_reference": {
+            "count": 2,
+            "bytes": 69225,
+            "sha256": "5fac3e4fed300c0564417c508701f0a77922dbfcd5e2de97a45ad4885f62c872"
+          },
+          "rule_resources_choose": {
+            "count": 2,
+            "bytes": 53857,
+            "sha256": "f42c5f4f1e21af530f1f4fd0acb18356bf996878fb70f4656422643a484313cd"
+          },
+          "rule_resources_binding_empty": {
+            "count": 5,
+            "bytes": 159753,
+            "sha256": "262cf3975680f48e7dda6d25f282c1058eebf2422f5ba6e99cc3c5e5ba4ed137"
+          },
+          "rule_resources_list_false": {
+            "count": 2,
+            "bytes": 63830,
+            "sha256": "8714943c23e89f5675ca679f794479f04c7a6c048da18b12172d2ca6cf63e648"
+          },
+          "rule_resources_no_results_false": {
+            "count": 3,
+            "bytes": 107482,
+            "sha256": "56236fd7692bd1b90d94eab93bed346fed161e16b5d0975f1bd2805db7ed3be9"
+          },
+          "rule_resources_editor_false": {
+            "count": 4,
+            "bytes": 121086,
+            "sha256": "ca688f68cdc4dc168bc7187bdf1f9b12337a9c6a404f2012d76b4bab46c13ce2"
+          },
+          "rule_resources_delete_false": {
+            "count": 3,
+            "bytes": 107791,
+            "sha256": "49aa8cfe21176e97d71d568c10717a87fb68a65eda94ac12fb69b3c420e2624d"
+          },
+          "rule_resources_list_true": {
+            "count": 4,
+            "bytes": 121754,
+            "sha256": "8d40981307e3e8af73c268aebafb145ac290f84b01bbe925be8c688e2e7067cc"
+          },
+          "rule_resources_no_results_true": {
+            "count": 3,
+            "bytes": 107668,
+            "sha256": "9fffac0443e5a9e9208aafa6f2ee59db3ddf89859004987cebe13ca630e3f3f2"
+          },
+          "rule_resources_editor_true": {
+            "count": 4,
+            "bytes": 121326,
+            "sha256": "a07f33a85bca67f6d43a87860dc6ae9bb79b3f274c1ec296922b05161e6edd77"
+          },
+          "rule_resources_delete_true": {
+            "count": 3,
+            "bytes": 106823,
+            "sha256": "9f6293715602b898220e5d0c56d66fa28e0045e2c603560d5de9656d49a82740"
+          }
+        },
+        "passed": true
+      }
+    },
+    "uniqueMethods": 4,
+    "executionsPassed": 6,
+    "screenshotsValidated": 23,
+    "contactSheetsVisuallyReviewed": 4,
+    "scope": "In-memory components on nondebuggable unminified motion build; no formal database or real subscription",
+    "fullFlutterParity": false
+  },
+  "cleanup": {
+    "removedFiles": [
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/original-011.json",
+        "local": "original-011.json",
+        "sha256": "cddaaa788e6106a9c0ef5b05693e014c4a5e1ed5240aa17484c4072cb89aeb20",
+        "bytes": 154176,
+        "removed": true
+      },
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/original-011-private.zip",
+        "local": "original-011-private.zip",
+        "sha256": "71508ba6dbba5f1089b5b7ded96aad5404f07f36e9b8ef737edbb00656eb60d7",
+        "bytes": 15842096,
+        "removed": true
+      },
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/official-010-before-launch.json",
+        "local": "official-010-before-launch.json",
+        "sha256": "e2d8db83631f1133f9216e4de607fa43a94fd54f73ee8549ff18d275d2a28633",
+        "bytes": 154064,
+        "removed": true
+      },
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/official-010-upgrade-baseline.json",
+        "local": "official-010-upgrade-baseline.json",
+        "sha256": "3e3085cb4d2af39edcfe4fdf1666f51a24a97a706c12a28bf20feaa368b36fb7",
+        "bytes": 154064,
+        "removed": true
+      },
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/official-011-after-upgrade.json",
+        "local": "official-011-after-upgrade.json",
+        "sha256": "06a3e6e368c14830bf4fbac3ec29e07a53147058cd6fc8bbe68b5537f06ac6d8",
+        "bytes": 154064,
+        "removed": true
+      },
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/official-011-after-cold-launch.json",
+        "local": "official-011-after-cold-launch.json",
+        "sha256": "6077376ee98a68662a5208fa7cc4634b89cf1ca27ddef069aee6998620e025ff",
+        "bytes": 154064,
+        "removed": true
+      },
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/candidate-before-install.json",
+        "local": "candidate-before-install.json",
+        "sha256": "f8853721f328ab96b9f7703590fb9bc158bc26675297acebe222031ac11f48df",
+        "bytes": 154064,
+        "removed": true
+      },
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/candidate-after-install.json",
+        "local": "candidate-after-install.json",
+        "sha256": "55ee24b959370071b822674ef6f7bc789f74816bbedac88abce3a08aee8c9839",
+        "bytes": 154064,
+        "removed": true
+      },
+      {
+        "remote": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/candidate-after-smoke.json",
+        "local": "candidate-after-smoke.json",
+        "sha256": "481f120d8b8dbb97fa863eaf15b41c3b5cff0cc3f6fb4aec6eb11236df151942",
+        "bytes": 154064,
+        "removed": true
+      },
+      {
+        "remote": "/data/misc/perfetto-traces/kclash-reboot-smoke-20261110.pftrace",
+        "local": "perfetto-reboot-smoke.pftrace",
+        "sha256": "0eb5448512fea4a65dcf056d4dffdd852d68d96c80008fcbe96eb2ff89afda29",
+        "bytes": 839,
+        "removed": true
+      },
+      {
+        "remote": "/data/misc/perfetto-traces/kclash-process-only-20261110.pftrace",
+        "local": "process-only.pftrace",
+        "sha256": "ea89d7b5bd9bcd7cead1d7f7934dadd76027a0a2bbba5ad8926b84e84866ea48",
+        "bytes": 41335,
+        "removed": true
+      },
+      {
+        "remote": "/data/misc/perfetto-traces/kclash-ftrace-only-20261110.pftrace",
+        "local": "ftrace-only.pftrace",
+        "sha256": "9d389c502cb741643591027506e263c0cb30693eec85f6315174182fe5384531",
+        "bytes": 758,
+        "removed": true
+      }
+    ],
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.upgradeprobe"
+    ],
+    "remaining": [
+      "package:com.lonnnnnng.flclash"
+    ],
+    "servicesStopped": true,
+    "night": "yes",
+    "formalDataCleared": false,
+    "flutterTouched": false,
+    "localRawArchiveMode": "0o600"
+  },
+  "sourceSnapshot": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ResourcePickerListState.kt",
+      "sha256": "15c92a02bfbfec431471b7fa7a82711774c70def2c93775c5a3ddf61f3efd13e"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProxyResourceBindings.kt",
+      "sha256": "b4cefa6dc2f4fb094e1dbcb3978594f521701e5586047daba90719a45001339b"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuleResourceBindings.kt",
+      "sha256": "fefbb99c100815f8c1094f3f358e4699a6505c29ded89900cd58333f92b04d32"
+    },
+    {
+      "path": "android/tests/instrumented/ResourcePickerLongListInstrumentedTest.kt",
+      "sha256": "cb8ef40fc5dec9af408346ea38597ca743a24306edfa4b63bf20286b0bc61c92"
+    }
+  ]
+}

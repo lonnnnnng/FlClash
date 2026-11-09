@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **发布后边界与资源长目录（2026-11-10，KUI-030）**：原始正式0.1.0→0.1.1覆盖升级已验，UID、单FILE配置21字段/选择、2条偏好、238条测速记录及正文SHA-size-mtime在安装边界保持；启动后配置保持但测速value/时间更新，未确定事件归因。Perfetto在KClash无进程时，process_stats成功而最小sched ftrace使traced_probes进入D并flush失败，原生慢帧仍未归因。代理/规则64项目录补首次显现当前选择，Redmi深浅两例各2/2、相邻回归2/2，4个不重复方法共6次执行全过、23PNG已核验；真实IME清空/末项选择、一次回调/别名与重开取消已验。865项JVM（App583执行，其余282复用）、Debug/签名Release-R8/独立测试包及双Lint零错误通过。最终本地候选SHA `9b7fad97…88fcaa7`已安装回拉匹配，公开0.1.1资产和标签未替换；正式配置保留，3个自有测试包与12个手机诊断文件已精确清理，服务停止。实体QR、完整Flutter视觉/动效、低API和历史异常因果继续待验。证据`docs/acceptance/post-release-boundaries-redmi-20261110.json`；溯源`docs/resource-picker-long-list-defect.md`、`docs/release-upgrade-acceptance.md`。
+
 > **扫码崩溃修复与0.1.1正式发布（2026-11-10，KREL-002）**：正式Release修复ML Kit三类注册器构造器被R8裁剪；旧包3/3缺失、修复APK DEX门禁3/3保留，源码`5aed72fe`和标签`kclash-v0.1.1`已发布。标签CI 42673055574成功，Go race、JVM test、签名R8、双Lint及最终APK门禁通过。公开Latest APK SHA `02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437`；Redmi覆盖安装回拉哈希一致，相机取景/手电筒/后台释放恢复/关闭释放6阶段通过，同PID 4709。配置卡仍可见，未清正式数据或提交导入；验收后相机空闲、VPN/ProxyService停止。865项JVM本机强制执行零失败/错误/跳过；实体摄像二维码/低API未验。证据`docs/acceptance/qr-camera-r8-redmi-20261110.json`及`../../../acceptance-artifacts/qr-camera-published-0.1.1-20261110/`，溯源`docs/release-mlkit-registrar-defect.md`。
 
 > **Geo更新恢复闭环（2026-11-10，KCORE-006）**：共享核心补齐瞬断重试，最多3次、1/2秒退避及165秒总预算，旧文件保护、唯一终态和安全错误日志保留；核心`464552e4`已推自己的kclash-fixes。865项JVM、Go父模块及route/http/updater race、Debug/签名Release-R8/motion与双Lint通过。Redmi故障注入5场景通过；独立motion按自动80→固定80→固定8880→恢复自动2086四轮原GitHub完整正文16/16（HTTP200，bytes/length/文件大小一致），正式R8包三轮全部更新12项成功（缓存校验路径）。正式包`033d6c10…`已覆盖安装回读，配置及原URL保持、VPN/ProxyService运行，测试包和本轮手机输入已清。瞬断恢复能力及当前新网络更新范围闭环；实网均首次成功，旧网络具体根因、切网/蜂窝/OEM及长期稳定性仍未确认，历史失败不覆盖。证据`docs/acceptance/geo-download-recovery-redmi-20261110.json`；溯源`docs/geo-download-recovery-defect.md`。
@@ -103,7 +105,7 @@ CUSTOM 配置卡组数芯片已完成固定 fixture 真机视觉验收：`Profil
 2. 继续其余子页完整视觉；CUSTOM 组数芯片、首页双向流量/历史与连接三列摘要的固定 fixture 已验，仍需真实 Go 数值和可复现的固定Flutter运行对比。逐页列明实际比较状态，不用Kotlin自身截图哈希证明Flutter一致。浅色正式状态栏、逐帧连续性和最终性能独立核验。
 3. 回补第6项元数据/mtime保护异常、未知偏好变化、Provider运行态 final6-before 超时，以及旧网络根因与长期网络恢复稳定性。Geo有界恢复及当前新网络更新范围已由KCORE-006验收；原失败保留，后续绿测不反向证明原因。
 4. 蜂窝可用后补 Wi-Fi↔蜂窝，其余首次安装/第三方入口/OEM 按真实条件逐项验收。
-5. 再推进第10项实时背景/触点光效、玻璃品质、8 MiB正文性能，以及第11项低API、跨版本升级。0.1.0远端CI、独立签名、正式发布资产下载/签名与Redmi运行已于2026-11-09完成，见 `docs/acceptance/release-0.1.0-20261109.json`；当前动效问题仍按第1项优先处理。
+5. 再推进第10项实时背景/触点光效、玻璃品质、8 MiB正文性能，以及第11项低API及更广的升级场景；原始0.1.0→0.1.1单FILE配置保留已于2026-11-10验收。0.1.0远端CI、独立签名、正式发布资产下载/签名与Redmi运行已于2026-11-09完成，见 `docs/acceptance/release-0.1.0-20261109.json`；当前动效问题仍按第1项优先处理。
 
 玻璃默认关闭。备份/系统恢复、观测次要打磨、语言和主题暂缓；TalkBack/自定义无障碍及早期 Room 兼容不进入本清单。Flutter 包 `com.follow.clash` 仅供参考，不修改；正式配置及授权原文件持续保护。
 
@@ -122,5 +124,5 @@ KREL-001与KUI-020已修，公开APK在Redmi验证：真实SAF/首次VPN及运�
 ## KUI-029后续顺序
 
 1. 菜单关闭Popup帧已补齐；继续可用原生采样的调用栈归因。当前ROM正确PID仍被拒绝，保留首开/关闭/RenderThread慢帧为未完成，不能由留窗诊断称性能通过。
-2. NTP/Sniffer添加候选及标题连续退场本组已验；完整工具栏搜索展开/收回、长资源目录+IME和其余页面连续过渡继续推进。Prism组件运行对照已建立，完整Flutter页面仍未等价验收。
+2. NTP/Sniffer添加候选及标题连续退场本组已验；代理/规则64项目录定位和真实IME已由KUI-030具名验收；完整工具栏搜索展开/收回、其余页面连续过渡及更广长目录场景继续推进。Prism组件运行对照已建立，完整Flutter页面仍未等价验收。
 3. 长窗先保留首次TLS失败并关联DNS/节点拨号/远端关闭，再补更长及重复恢复。加入写入来源/时刻诊断后继续追查历史元数据/mtime/偏好异常；本轮未复现不关闭历史记录。

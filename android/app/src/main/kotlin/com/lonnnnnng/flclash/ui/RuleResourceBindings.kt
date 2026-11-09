@@ -56,12 +56,14 @@ internal fun RuleResourceBindings(section: String, source: String, resources: Li
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             ProfileSearchField(search, { search = it }, "rule_resource_binding_search")
             val matches = resources.filter { it.label.contains(search.trim(), true) }
+            val listState = rememberResourcePickerListState(matches.map { it.id },
+                alias?.let { RuleResources.idOf(definitions?.get(it)) })
             if (resources.isEmpty()) { Text("暂无全局规则资源，请先添加资源。"); TextButton(onClick = { choosing = false; onManage() }) { Text("管理资源") } }
             else if (matches.isEmpty()) Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 ProxyPageEmptyState("无搜索结果", "试试其他关键词，或清除搜索查看全部规则资源。", "rule_resource_binding_empty",
                     searching = true, actionLabel = "清除搜索", actionTag = "rule_resource_binding_clear", onAction = { search = "" })
             } else Surface(Modifier.fillMaxWidth().weight(1f, fill = false), shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
-            LazyColumn {
+            LazyColumn(state = listState) {
                 items(matches, key = { it.id }) { resource ->
                     Row(Modifier.fillMaxWidth().clickable(enabled = enabled) {
                         // 作者 long：缺失引用用原别名重新绑定，不改规则目标；添加时按全局名称登记。

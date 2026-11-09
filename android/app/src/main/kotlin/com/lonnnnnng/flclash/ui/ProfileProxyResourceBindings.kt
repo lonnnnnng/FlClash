@@ -50,6 +50,8 @@ internal fun ProfileProxyResourceBindings(section: String, source: String, profi
             ProfileSearchField(query, { query = it }, "proxy_resource_search")
             val available = profiles.filter { it.type != ProfileType.CUSTOM }
             val choices = available.filter { it.realLabel.contains(query.trim(), true) }
+            val listState = rememberResourcePickerListState(choices.map { it.id },
+                alias?.let { ProfileProxyResources.idOf(definitions?.get(it)) })
             if (choices.isEmpty()) Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 // 作者 long：搜索无结果不代表资源目录为空，保留查询并给出清除入口，不能误导用户重新导入配置。
                 ProxyPageEmptyState(if (available.isEmpty()) "暂无可选配置" else "无搜索结果",
@@ -58,7 +60,7 @@ internal fun ProfileProxyResourceBindings(section: String, source: String, profi
                     actionLabel = if (available.isNotEmpty()) "清除搜索" else null,
                     actionTag = "proxy_resource_clear_search", onAction = { query = "" })
             } else Surface(Modifier.fillMaxWidth().weight(1f, fill = false), shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
-            LazyColumn {
+            LazyColumn(state = listState) {
                 items(choices, key = { it.id }) { profile ->
                     Row(Modifier.fillMaxWidth().clickable(enabled = enabled) {
                         runCatching { ProfileProxyResources.bind(section, profile, alias) }.onSuccess {

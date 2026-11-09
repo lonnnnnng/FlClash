@@ -41,3 +41,9 @@
 本轮没有不明Profile/mtime变动，不能反向解释历史异常。新快照不等于逐次写入来源审计；仍缺全生产写入的来源/时刻关联。此窗口是独立包、单FILE、纯代理、无自动下载，不推广正式包完整库、URL同步、VPN/OEM、蜂窝或更长运行。
 
 准备/驱动初次失败及修正脚本均保留于`../acceptance-artifacts/stability-window-20261109/`；明文临时输入已精确删除。最终摘要和停止快照见对应验收JSON，禁止后续绿测覆盖首失败。
+
+## 2026-11-10：正式升级后的测速缓存变化
+
+原始正式0.1.0覆盖为原始正式0.1.1后、启动主页面前，1份FILE配置21字段、2条偏好、238条测速缓存逐字段保持。0.1.1正常启动和冷启动后，配置/偏好/正文SHA-size-mtime保持；238条测速缓存的键/数量保持，但value与updatedAtMillis均变化。安装保留与启动后更新须分开结论，见 `release-upgrade-acceptance.md` 和 `acceptance/post-release-boundaries-redmi-20261110.json`。
+
+候选路径为 `ProxyGroupsViewModel` 的 `CoreEvent.Delay` 订阅及持久化；`restoreDelayResults` 回读本身不重设时间。授权配置存在 `lazy:false` 健康检查，与自动结果刷新相容；本轮未记录该窗口逐条事件，不能确定归因，也不能据此解释11月5日元数据/mtime变化。下一轮在独立包中关联Delay事件、写入时刻、键摘要和实际冷启动路径；不回写旧快照掩盖差异。
