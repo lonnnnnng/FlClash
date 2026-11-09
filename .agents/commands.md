@@ -43,6 +43,14 @@ gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --e
 
 独立线程计数诊断选择`VisualMotionNaturalInstrumentedTest#darkMenuOpenAndCloseThreadCpuSamples`，显式`kclashMotionThreadCpu=true`、安全名称`kclashMotionRun`，禁用PNG/方法采样。用`python3 tool/android_menu_thread_report.py instrument.log --output report.json`解析；按TID/startTicks分开同名RenderThread，读取失败/线程死亡保留缺口，计划100ms不等于实际采样间隔。该入口仅测试源码，不等于正式R8包性能或原生调用栈；见`docs/menu-cpu-geometry-investigation.md`。
 
+## 关闭留窗、条目动效与长窗诊断
+
+关闭留窗仅使用 `VisualMotionNaturalInstrumentedTest#darkMenuCloseFramesBeforeWindowRemoval`，参数 `kclashCloseWindowCapture=true`、`kclashMotionInlineFrames=true`、`kclashCapturePng=false` 和安全唯一 `kclashMotionRun`。原回源动画结束后才保留Popup并取帧，正式Release实现为空；不与正式性能或录屏窗口混算。原生探针 `#darkMenuCloseOwnUidNativeProbe` 需显式 `kclashNativeProbe=true`，当前Redmi已连续失败，详见`docs/menu-close-window-investigation.md`，不要无条件重复。
+
+条目自然时钟选择 `#moreSelectionEntriesUseNaturalContinuousExit`，显式 `kclashNaturalMotion=true`；独立Dialog按可见文案定位，测试标签不跨Window继承。更多设置回归按 `ProfileMoreEditorInstrumentedTest#method` 精确选取。当前AGP在 `-PkclashMotionBenchmark=true` 下只创建motion对应App单测任务，默认 `test` / Debug单测与motion构建分开调用，不混写不存在的 `:app:testDebugUnitTest`。
+
+`StabilityWindowPreparationTest` 和 `StabilityWindowAcceptanceActivity` 仅允许 `.motion` 独立空库、原1.yaml及外层AGENTS授权目标；输入加密、token/PID门禁受控死亡，长窗checkpoint不启动服务。逐阶段等待预算与哈希化Profile/文件/偏好快照用于诊断，首失败不能被重试覆盖。当前45分钟网络8/10，不能作为全绿脚本样板；驱动和原始批次见`docs/acceptance/selection-motion-stability-redmi-20261109.json`及其本机附件。
+
 ## Go core
 
 ```zsh

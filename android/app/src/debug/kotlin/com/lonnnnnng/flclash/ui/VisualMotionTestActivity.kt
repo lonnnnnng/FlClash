@@ -28,6 +28,8 @@ class VisualMotionTestActivity : ComponentActivity() {
     var profileSelections = 0
     var addRequests = 0
     var syncRequests = 0
+    var showMoreEditor by mutableStateOf(false)
+    private var moreState by mutableStateOf(ProfileMoreEditorUiState(Profile.custom(903, "动效参考")))
     private var showAdd by mutableStateOf(false)
     private var toolbarAction by mutableStateOf<ProfilesToolbarAction?>(null)
     private var selectedNode by mutableStateOf("香港节点")
@@ -52,7 +54,10 @@ class VisualMotionTestActivity : ComponentActivity() {
             val proxyState = ProxyGroupsUiState(groups = groups, selectedMap = mapOf("常用节点" to selectedNode), unfoldSet = unfolded)
             KClashTheme(darkTheme = dark) {
                 Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
-                    MainNavigationHost(destination, MainDestination.entries, { destination = it }) { page ->
+                    if (showMoreEditor) ProfileMoreEditor(moreState, "ntp", "", { showMoreEditor = false }) { ntp, sniffer ->
+                        // 作者 long：自然录制复用正式添加面板；固定保存回执只驱动UI，不接正式Room或网络。
+                        moreState = moreState.copy(ntp = ntp, sniffer = sniffer, revision = moreState.revision + 1)
+                    } else MainNavigationHost(destination, MainDestination.entries, { destination = it }) { page ->
                         if (page == MainDestination.PROXY) ProxyGroupsCard(modifier = Modifier.statusBarsPadding(), state = proxyState, runtimeState = CoreRuntimeStatus.STOPPED,
                             currentProfileId = selectedProfile, currentGroupName = selectedGroup,
                             onSelectGroup = { selectedGroup = it }, onToggleGroup = { unfolded = if (it in unfolded) unfolded - it else unfolded + it },

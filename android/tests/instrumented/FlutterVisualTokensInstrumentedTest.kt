@@ -83,6 +83,9 @@ class FlutterVisualTokensInstrumentedTest {
         assertEquals(0, actions)
         compose.onNodeWithTag("morph_open").performClick()
         compose.onNodeWithText("菜单项 3").performClick()
+        // 作者 long：动作在回源结束后交给目标页，点击受理不等于动作已执行；须等退出回执再验证次数。
+        compose.waitUntil(5_000) { actions == 1 }
+        compose.onNodeWithTag("app_popup_menu").assertDoesNotExist()
         assertEquals(1, actions)
     }
 }

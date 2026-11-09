@@ -27,6 +27,78 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkMenuFirstOpenAndRepeatedTopCard() = runMenus(true)
     @Test fun lightMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(false)
     @Test fun darkMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(true)
+    @Test fun moreSelectionEntriesUseNaturalContinuousExit() {
+        assertPortraitDefaultFontConfiguration()
+        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))
+        ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+            scenario.onActivity { it.showMoreEditor = true }
+            // 作者 long：正式编辑器是独立Dialog，外层宿主的testTagsAsResourceId不会跨Window；按当前窗口可见文案定位真实触点。
+            await("添加设置项"); click("添加设置项"); await("服务器"); settle()
+            ins.sendStatus(2, Bundle().apply { putString("kclash_selection_motion", "server-dispatch:${System.nanoTime()}") })
+            click("服务器"); awaitGone("服务器"); settle()
+            click("端口"); awaitGone("端口"); settle()
+            assertNotNull(find("同步间隔（分钟）"))
+            click("完成"); awaitGone("完成")
+            await("服务器"); await("端口")
+        }
+    }
+    @Test fun darkMenuCloseFramesBeforeWindowRemoval() = kotlinx.coroutines.runBlocking {
+        assertPortraitDefaultFontConfiguration()
+        val args = InstrumentationRegistry.getArguments()
+        assertEquals("true", args.getString("kclashCloseWindowCapture"))
+        assertEquals("true", args.getString("kclashMotionInlineFrames"))
+        assertNotEquals("true", args.getString("kclashCapturePng"))
+        val run = checkNotNull(args.getString("kclashMotionRun"))
+        require(run.matches(Regex("[a-z0-9-]+")))
+        val old = ProxyPageOptionsStore.load(ins.targetContext)
+        try {
+            ProxyPageOptionsStore.save(ins.targetContext, ProxyPageOptions(displayMode = ProxyDisplayMode.TAB))
+            ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+                scenario.onActivity { it.dark = true }
+                click("nav_proxy"); await("proxy_tools"); settle()
+                val source = bounds(checkNotNull(find("proxy_tools")))
+                repeat(3) { pass ->
+                    tap(source); await("样式：标签"); settle()
+                    shell("dumpsys gfxinfo ${ins.targetContext.packageName} reset")
+                    val gate = MenuCloseCaptureProbe.arm()
+                    val dispatched = System.nanoTime()
+                    back()
+                    val completed = kotlinx.coroutines.withTimeout(5_000) { gate.completed.await() }
+                    // 作者 long：动画结束后才执行dumpsys；留窗只改变收尾寿命，不在待测500ms内查询UI或采图。
+                    SystemClock.sleep(100)
+                    saveFrames("visual-motion-$run-dark-close-$pass.gfx")
+                    ins.sendStatus(2, Bundle().apply { putString("kclash_close_capture", JSONObject()
+                        .put("pass", pass).put("dispatchNs", dispatched).put("animationCompletedNs", completed)
+                        .put("capturedBeforeRemoval", true).toString()) })
+                    gate.release(); awaitGone("样式：标签"); settle()
+                }
+            }
+        } finally { MenuCloseCaptureProbe.reset(); ProxyPageOptionsStore.save(ins.targetContext, old) }
+    }
+
+    @Test fun darkMenuCloseOwnUidNativeProbe() {
+        assertPortraitDefaultFontConfiguration()
+        val args = InstrumentationRegistry.getArguments()
+        assertEquals("true", args.getString("kclashNativeProbe"))
+        assertNotEquals("true", args.getString("kclashCapturePng"))
+        val run = checkNotNull(args.getString("kclashMotionRun"))
+        require(run.matches(Regex("[a-z0-9-]+")))
+        val old = ProxyPageOptionsStore.load(ins.targetContext)
+        try {
+            ProxyPageOptionsStore.save(ins.targetContext, ProxyPageOptions(displayMode = ProxyDisplayMode.TAB))
+            ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+                scenario.onActivity { it.dark = true }
+                click("nav_proxy"); await("proxy_tools"); settle()
+                var targetPid = -1
+                scenario.onActivity { targetPid = android.os.Process.myPid() }
+                click("proxy_tools"); await("样式：标签"); settle()
+                MenuNativeProbe().record(run, targetPid) { back(); SystemClock.sleep(750) }
+                // 作者 long：权限失败也必须正常关闭现场；失败原文和状态由探针独立报告，不能冒充采样成功。
+                if (find("样式：标签") != null) { back(); settle() }
+                awaitGone("样式：标签")
+            }
+        } finally { ProxyPageOptionsStore.save(ins.targetContext, old) }
+    }
     @Test fun darkMenuOpenAndCloseThreadCpuSamples() {
         assertPortraitDefaultFontConfiguration()
         val args = InstrumentationRegistry.getArguments()

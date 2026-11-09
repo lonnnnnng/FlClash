@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **添加条目动效、关闭留窗与45分钟观察（2026-11-09，KUI-029）**：更多设置候选/分组标题按固定Prism独立300ms收起，保存失败保留、连选不重启、搜索退场清理已补。最终860项JVM、Debug/签名Release-R8/motion及双Lint通过；Redmi同套13/13、自然动效1/1，32PNG/4拼图与两套原PTS视频核验。固定Prism组件实机参考已建立，不代表完整Flutter页等价。关闭Popup三轮16/27/27帧、jank3/2/2已可见，Simpleperf正确PID仍拒绝，原生栈未得。独立纯代理45分钟10次Provider读取90项（61–112ms），HTTPS8/10、前两次TLS失败保留；元数据/文件SHA-mtime/选择保持，受控死亡系统恢复，审计/质量缓存/显式stop键变化可识别。正式包`a72a955a…`安装回拉与首页/配置烟测通过；原配置保留，独立包已清、服务停止。整体视觉/性能/历史因果仍PARTIAL。证据`docs/acceptance/selection-motion-stability-redmi-20261109.json`；溯源`docs/selection-entry-motion-defect.md`、`docs/menu-close-window-investigation.md`、`docs/historical-stability-investigation.md`。
+
 > **更多设置与资源选择（2026-11-09，KUI-028）**：NTP/Sniffer换为clock/eye复合插图；添加面板分组/搜索/清空、最后一项成功回执后关闭，协议目标改行尾锚定菜单，代理/规则资源与图标搜索统一胶囊。修复保存中Back/外点先退场的缺口；旧包同断言失败，新包未点击区域像素差0并可失败重试。最终860项JVM、Debug/签名Release/独立包与双Lint通过，Redmi同套27/27、84图/11拼图；正式菜单24阶段、8终态图及首页/配置烟测完成。正式包SHA `ad5b0604…`，测试包/本轮输入已清理、原配置保留。最终菜单进程打开75/198、Popup31/138，关闭20/165且Popup销毁不可观测，仍不认定性能闭环。完整工具栏搜索/条目连续动效、固定Flutter运行对照及历史稳定性根因仍待补。证据`docs/acceptance/more-selection-parity-redmi-20261109.json`，溯源`docs/more-selection-parity-defect.md`。
 
 > **配置子页与输入恢复（2026-11-09，KUI-026）**：修正Provider表单扣除删除触点后的标签/值宽度、开关与IP整行点击、可选提示、最后一项添加自动返回及分组选择排版；配置资源区分搜索无结果/目录为空并可清除恢复，NTP/Sniffer空态按视口定位。字段/YAML确认从子Dialog取IME控制器；旧包同一新增用例在awaitHiddenIme五秒超时，最终包通过。860项JVM（App578执行、其余282复用）、Debug/签名Release/独立测试包及双Lint通过；同套Redmi4+18个不重复方法22/22、68图/10拼图已验。正式签名安装回拉、原配置详情/Provider缓存与底部配置Tab烟测通过；配置未清，测试包及本轮上传原1.yaml副本已精确清理。当前仅本组视觉/交互修正，完整Flutter页面与菜单性能仍PARTIAL，KUI-025首开退化不覆盖。 证据 `acceptance/config-subpages-parity-redmi-20261109.json`，溯源 `config-subpages-parity-defect.md`。
@@ -110,3 +112,9 @@ KREL-001与KUI-020已修，公开APK在Redmi验证：真实SAF/首次VPN及运�
 ## 菜单性能候选与关闭窗口诊断
 
 **菜单性能调查（2026-11-09，KUI-021）**：完成透明正文图层、硬件阴影、缓存软件阴影、源按钮图层复用四种候选核验。三个签名R8候选深浅各三轮24/24终态均通过，854JVM/双Lint通过，但首开/关闭无充分收益；硬件阴影未过外观门禁，全部撤回，产品源码与公开0.1.0保持一致。缓存软件阴影10对固定帧像素完全一致仍不足以证明性能。新增关闭窗口存活期诊断回收4/9/18条帧，早段UI区间最大75.928ms、渲染最大27.901ms，仅经过时间不作CPU归因。下一步采样首开/关闭前100ms的主线程工作，保留关闭前帧表。公开APK已恢复到Redmi，测试包清理、night=yes、服务停止；原配置/1.yaml保持。证据 `docs/acceptance/menu-performance-investigation-redmi-20261109.json`，溯源 `docs/menu-content-compositing-defect.md`。
+
+## KUI-029后续顺序
+
+1. 菜单关闭Popup帧已补齐；继续可用原生采样的调用栈归因。当前ROM正确PID仍被拒绝，保留首开/关闭/RenderThread慢帧为未完成，不能由留窗诊断称性能通过。
+2. NTP/Sniffer添加候选及标题连续退场本组已验；完整工具栏搜索展开/收回、长资源目录+IME和其余页面连续过渡继续推进。Prism组件运行对照已建立，完整Flutter页面仍未等价验收。
+3. 长窗先保留首次TLS失败并关联DNS/节点拨号/远端关闭，再补更长及重复恢复。加入写入来源/时刻诊断后继续追查历史元数据/mtime/偏好异常；本轮未复现不关闭历史记录。

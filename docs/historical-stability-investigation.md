@@ -29,3 +29,15 @@
 ## 网络恢复
 
 控制器重建竞态和坏 TLS 配置端口泄漏已有独立修复与回归；旧 Always-on 首请求 TLS EOF 的完整因果及长期恢复仍未闭环。后续长窗口需同步采集上述写入诊断与网络阶段，保留第一次请求结果。无蜂窝条件下继续 Wi-Fi 可执行范围，Wi-Fi↔蜂窝单列延期；不启动模拟器、不改变 ROM 安全配置。
+
+## 2026-11-09：独立包45分钟观察
+
+同一 Redmi、原1.yaml副本、独立非debuggable motion包，实际窗口2703.218秒。只启纯代理，原配置路由/节点保持；5分钟检查因前序驱动修正实际在400.196秒执行，其余按原始起点调度，不能写严格等间隔全程采样。首个TLS失败后继续观察原会话，没有重启或重试覆盖失败；15分钟token+PID受控SIGKILL，verify前独立观察旧4304→新4941及系统恢复的ProxyService。
+
+10次运行态读取均有90个Provider，读取耗时61–112ms；HTTPS最初两次TLS握手失败，之后8次HTTP200、同socket核心归属、正双向流量及非DIRECT链。长窗实网总结果为8/10，不能标全通过。首次失败只有阶段/异常类，尚缺DNS/节点拨号/服务端关闭的完整关联链；旧Provider verify超时因果仍不能由本次快速读取关闭。
+
+11份快照（含停止）逐字段Profile摘要、当前ID、配置正文SHA/35165字节/mtime一致。运行态偏好变化只观察到：自动更新审计runs由2条增至4条（新增两轮attempted=0、无checks/下载/应用）；30分钟起新增Room质量缓存ip_quality_cache_v1。Worker即使没有到期项也记录结果，见SubscriptionAutoUpdateWorker、SubscriptionAutoUpdateAudit；质量缓存仅成功查询后写入，见IpInformationRepository/RoomIpQualityCache。25分钟打开首页与30分钟新增缓存符合这条路径，但未记录写入时调用栈，具体入口只能推断。显式stop后runtime_should_resume由true变false符合停止语义。
+
+本轮没有不明Profile/mtime变动，不能反向解释历史异常。新快照不等于逐次写入来源审计；仍缺全生产写入的来源/时刻关联。此窗口是独立包、单FILE、纯代理、无自动下载，不推广正式包完整库、URL同步、VPN/OEM、蜂窝或更长运行。
+
+准备/驱动初次失败及修正脚本均保留于`../acceptance-artifacts/stability-window-20261109/`；明文临时输入已精确删除。最终摘要和停止快照见对应验收JSON，禁止后续绿测覆盖首失败。

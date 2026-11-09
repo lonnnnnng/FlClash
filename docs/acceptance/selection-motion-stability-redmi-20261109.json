@@ -1,0 +1,1138 @@
+{
+  "date": "2026-11-09",
+  "id": "KUI-029",
+  "baseline": "00c353c9f17a2fb428aa58076423f05af8e11833",
+  "status": "PARTIAL_OVERALL",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "densityDpi": 440,
+    "fontScale": 1.0
+  },
+  "productChanges": [
+    "NTP/Sniffer successful selection exits independently over 300ms, matching fixed Prism size and opacity curves",
+    "section header exits with final visible entry",
+    "failed/pending saves retain candidate and block repeated submission",
+    "changing query during exit clears saved candidate identity"
+  ],
+  "build": {
+    "logs": [
+      "final-build4.log",
+      "final-fixture6.log",
+      "final-fixture8.log",
+      "final-lint5.log"
+    ],
+    "jvm": [
+      {
+        "module": "app",
+        "tests": 578,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "service",
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "core",
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "common",
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "jvmExecution": {
+      "app": "executed final-build4",
+      "service": "up-to-date",
+      "core": "up-to-date",
+      "common": "up-to-date"
+    },
+    "lint": {
+      "debug": {
+        "Warning": 69,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 66,
+        "Hint": 13
+      }
+    },
+    "debug": true,
+    "signedReleaseR8": true,
+    "motionAndTest": true,
+    "releaseContainsStabilityHost": false,
+    "sourceManifestSha256": "803ac2b19b98855b297f80921440707a5047b60969734ef84319f183dc595782"
+  },
+  "apks": {
+    "debug": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "903e882ba7ffcc6c7a76f8866abb6aa87e0e815bc8506f97f522404c14719cb8",
+      "bytes": 82822693
+    },
+    "motion": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+      "sha256": "022d5e142d9b7710cf605f58931887c90cc6bdd21ce5d5eb6b411962f19d00e0",
+      "bytes": 65927581
+    },
+    "test": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+      "sha256": "76845a47c4f4bd56d958765b2665129a6fa5b181a80c227d1ccf0912f41624a9",
+      "bytes": 2736826
+    },
+    "release": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release.apk",
+      "sha256": "a72a955acab3501b649dcedd3731458c7e0c2d6e897df72eaf21f3d5171f0fe9",
+      "bytes": 48343892
+    }
+  },
+  "installedRelease": {
+    "sha256": "a72a955acab3501b649dcedd3731458c7e0c2d6e897df72eaf21f3d5171f0fe9",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "package": "com.lonnnnnng.flclash",
+    "dataCleared": false
+  },
+  "installedFixture": {
+    "motion": {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "022d5e142d9b7710cf605f58931887c90cc6bdd21ce5d5eb6b411962f19d00e0"
+    },
+    "test": {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "76845a47c4f4bd56d958765b2665129a6fa5b181a80c227d1ccf0912f41624a9"
+    }
+  },
+  "finalRegression": {
+    "returncode": 0,
+    "tests": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "ntpAddsDefaultsValidatesEditsAndSavesOnlySelectedFields",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "snifferYamlValidationProtocolInheritanceAndExplicitEmptyStayDistinct",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "changingSearchDuringExitDoesNotRetainAnEmptyProtocolGroup",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "addSearchKeepsQueryAndLastSuccessfulChoiceClosesOnlyAfterSave",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "pendingDestinationIgnoresBackAndOutsideThenKeepsFailedChoiceForRetry",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "lastAdditionWaitsForAsyncReceiptAndFailedSaveCanRetry",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "successfulAdditionsCollapseIndependentlyAndFailureKeepsCandidate",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.FlutterVisualTokensInstrumentedTest",
+        "test": "anchoredMenuPaintsDistinctIntermediateFramesAndCanCloseDuringOpening",
+        "code": 0
+      }
+    ],
+    "images": {
+      "more_ntp_empty_light": {
+        "count": 3,
+        "bytes": 75869,
+        "sha256": "dcc36c17e1af47a459e1d1ade20f2c7cdac710241d575239e6da6fc22874b96d"
+      },
+      "more_ntp_add_light": {
+        "count": 4,
+        "bytes": 111407,
+        "sha256": "7f081e6ca7624ee54b8a7117c42a8ea576b581cdd6027c97a977467492a0a596"
+      },
+      "more_ntp_fields_light": {
+        "count": 3,
+        "bytes": 99564,
+        "sha256": "0465a3c00481d8c0f8010c33c53fce8f469c41777dbb63451b18bd07bdc72fc7"
+      },
+      "more_ntp_error_light": {
+        "count": 2,
+        "bytes": 42841,
+        "sha256": "e6db1f3315cf2a32bcaf9fcde19d1955433511f08e80ae2a22c4f800505ea48a"
+      },
+      "more_sniffer_empty_light": {
+        "count": 3,
+        "bytes": 77497,
+        "sha256": "b9bec60cf12e42759466b36bae55f1fbf2b284707a4c9cbd4b9a2fae3c141717"
+      },
+      "more_sniffer_add_light": {
+        "count": 4,
+        "bytes": 126080,
+        "sha256": "cab85feb21d9ffd0539ae8223ad7254c69446c0d33c230d092eac2d10c5815e7"
+      },
+      "more_sniffer_protocol_light": {
+        "count": 2,
+        "bytes": 47784,
+        "sha256": "28192c424a696c514072f5c8fba770e460347e57fe825e1efdfce435233ea09a"
+      },
+      "more_sniffer_destination_light": {
+        "count": 2,
+        "bytes": 62928,
+        "sha256": "bde77ea8e34a1bb239dd095a723479242f1e5a61357b54ff721ca610557ef540"
+      },
+      "more_sniffer_ports_light": {
+        "count": 2,
+        "bytes": 62347,
+        "sha256": "139b8b8575b855156fae1613826a366223b8c9b54c4bea2f48473f6bb646140d"
+      },
+      "more_sniffer_yaml_light": {
+        "count": 3,
+        "bytes": 95755,
+        "sha256": "7324ed2c5ee4b7701d512389d704712e9da19d2e3c24d5ec67501457c2d607eb"
+      },
+      "more_ntp_empty_dark": {
+        "count": 3,
+        "bytes": 78207,
+        "sha256": "cb9b7663e8480b5d7a3e59725f7edc60d5c9afabb18b0ff90899dd47de10d5d1"
+      },
+      "more_ntp_add_dark": {
+        "count": 4,
+        "bytes": 111359,
+        "sha256": "a6ff87445547af52c850e8daf96147b4754f3464df31326d287c7cd87b29dc81"
+      },
+      "more_ntp_fields_dark": {
+        "count": 3,
+        "bytes": 100640,
+        "sha256": "676aafbd2a44498d2537dc68e567481072bce96c425960e2394dc237d989baf0"
+      },
+      "more_ntp_error_dark": {
+        "count": 2,
+        "bytes": 43113,
+        "sha256": "a5a9b87b6146c9c15a92e017427d5b3b20320d12d3eee3d5a5444242015db0a0"
+      },
+      "more_sniffer_empty_dark": {
+        "count": 3,
+        "bytes": 80629,
+        "sha256": "45fbc6ce4ee756d50893738bbea369e8471d586d03c61cbf1bd39cf9fdf1061f"
+      },
+      "more_sniffer_add_dark": {
+        "count": 4,
+        "bytes": 126487,
+        "sha256": "8271541400b4f265cbf386ea9c01d062654d104a28e1f7466ae22f05ca99588f"
+      },
+      "more_sniffer_protocol_dark": {
+        "count": 2,
+        "bytes": 48047,
+        "sha256": "5d0386e9a634628e6a9be47ffa09cfdef7252d47bf828197defa0e4486774460"
+      },
+      "more_sniffer_destination_dark": {
+        "count": 2,
+        "bytes": 58259,
+        "sha256": "d76da0ef24399bcf69aa4f8c7ca212b8cad79caa8a0bffa9f6c74a98bf923c66"
+      },
+      "more_sniffer_ports_dark": {
+        "count": 2,
+        "bytes": 62948,
+        "sha256": "7bf46d2dd367a45843c765b8dffdbb5b9d1f292e2d2108226343ce2c9c14c3c0"
+      },
+      "more_sniffer_yaml_dark": {
+        "count": 3,
+        "bytes": 96941,
+        "sha256": "48d58f7efa0068785d7e5ad234f531f624f87d4fb6c51eb8f9e47c45163358e3"
+      },
+      "more_add_query_after_exit": {
+        "count": 1,
+        "bytes": 7354,
+        "sha256": "2178806b6b4e778c245c9e79175468549c577fe86341808f668fe41d669ca423"
+      },
+      "more_sniffer_search_empty": {
+        "count": 4,
+        "bytes": 133816,
+        "sha256": "7a2bc5d10ab84e9c0d8dbe47b9e688abc7a32679e71603d5bcd8aea591583606"
+      },
+      "more_field_save_failure": {
+        "count": 2,
+        "bytes": 41115,
+        "sha256": "cc753264088c758a811e8d7cc06aa0345563843a1c23e05adc381bd91eee30ac"
+      },
+      "more_value_error_ime_hidden": {
+        "count": 2,
+        "bytes": 43300,
+        "sha256": "c40e35f15d12c054a9a2f81f459b371138f8f68f52114250fc437a5292668f72"
+      },
+      "more_yaml_error_ime_hidden": {
+        "count": 3,
+        "bytes": 98061,
+        "sha256": "7c5aaf2989dabd8c0ced4e8eb1674528be12697836a6154c83fcb6a6cfbbcfcf"
+      },
+      "more_pending_destination_before": {
+        "count": 1,
+        "bytes": 18999,
+        "sha256": "2417f116f4503289501b6b24c77b1a3fabcbd2a1f689a738b93e9cb6df3f101b"
+      },
+      "more_pending_destination_during": {
+        "count": 1,
+        "bytes": 20143,
+        "sha256": "76b677b2210d0add6bc4f5723858545a5a02983826d40be61c2d028ffa845c74"
+      },
+      "more_add_two_leaving": {
+        "count": 3,
+        "bytes": 91185,
+        "sha256": "91ede51186f1487ba20ea4e1a9d0eb307127a16730ba854648030ddcf055c221"
+      },
+      "menu_morph_0": {
+        "count": 1,
+        "bytes": 28510,
+        "sha256": "59f6017961c197cd5261534a56571e87411571611caf18619e6b9b7d106cfd29"
+      },
+      "menu_morph_1": {
+        "count": 2,
+        "bytes": 58751,
+        "sha256": "ab79186129552d366e9582bba0268d5ab868cc6ba8b6ec063fe6c30518ed4b88"
+      },
+      "menu_morph_2": {
+        "count": 2,
+        "bytes": 72772,
+        "sha256": "f5170f5569005c8145367d02ba918a36461800219d26dee1b214effbaf3afe1f"
+      },
+      "menu_morph_3": {
+        "count": 2,
+        "bytes": 46289,
+        "sha256": "b2bcc47f42fbba64773ec5180354d5a6559e70ce877e91eaef23669459206b53"
+      }
+    },
+    "passed": true
+  },
+  "naturalMotion": {
+    "returncode": 0,
+    "passed": true,
+    "sha256": "1bf3cacb6674831030898f72054f27349c30c4d991bc8cd7db09ae76b9a2ceb7",
+    "bytes": 5724415
+  },
+  "visualReview": {
+    "pngCount": 32,
+    "sheetCount": 4,
+    "formalSmokePngCount": 2,
+    "checked": "all final3 PNG bytes/SHA verified, four sheets and two formal screenshots reviewed; natural original-PTS frames reviewed",
+    "fullFlutterParity": false
+  },
+  "flutterRuntime": {
+    "flutterSdk": "3.47.2",
+    "flutterSdkCommit": "d3b14c876900e553bc736ca19295fc09e3853e8e",
+    "flClashCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "prismCommit": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "package": "com.lonnnnnng.kclash.reference.motion_reference",
+    "files": {
+      "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/flutter-motion-host/lib/main.dart": {
+        "sha256": "3e25e591dbfd946f51950b1ee7c5d7a1cd6cc9535a95c8cb18ad4cdda003eb41",
+        "bytes": 1896
+      },
+      "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/flutter-motion-host/lib/reference_app.dart": {
+        "sha256": "e30626ea6121ca3f8ebfa4ff2f3c1119c4166be7b2a62320626a6967cd2fa43e",
+        "bytes": 5287
+      },
+      "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/flutter-motion-host/pubspec.yaml": {
+        "sha256": "3d38406c3feadebcdcc8f3c963597c917df5a51d465a62f7976a833aa1e69afb",
+        "bytes": 341
+      },
+      "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/flutter-motion-host/pubspec.lock": {
+        "sha256": "8d04a512efea3d2e5708eaf6e61968bcca55b06cae2e8c7bccb3550c8ea8fbb4",
+        "bytes": 3256
+      },
+      "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/flutter-motion-host/build/app/outputs/flutter-apk/app-release.apk": {
+        "sha256": "4da5ef98ce4ea68e6452850969328163073cd6f3fe571bac120520669008856c",
+        "bytes": 16707009
+      },
+      "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/visual-motion-20261107/reference/prism_ui/lib/animated_entries.dart": {
+        "sha256": "b26e8dea653d6947a0256dfdfee58c792bf2c33de3f7529f6f12091f9fb240f3",
+        "bytes": 6594
+      },
+      "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/visual-motion-20261107/reference/prism_ui/lib/metrics.dart": {
+        "sha256": "df5e8b4979415de530ac1ff1d80bc9ec48ae276ab4e7a4777305e57f143285f0",
+        "bytes": 1053
+      }
+    },
+    "runtimeScope": [
+      "original Prism PopupAnchor/PopupMenu",
+      "original Prism AnimatedEntries/EntryTransition",
+      "SearchField rendered only; toolbar expansion not verified"
+    ],
+    "visualOutcome": "entry content fades before height completes; stable following rows move without text compression; Kotlin BottomSheet container also follows its bottom anchor",
+    "parity": "component behavior comparison only, not identical full app pixels",
+    "videos": {
+      "flutter": {
+        "events": [
+          {
+            "name": "remove-row-1",
+            "hostSeconds": 1.504776874999152
+          },
+          {
+            "name": "menu-open",
+            "hostSeconds": 3.108925749998889
+          },
+          {
+            "name": "menu-back",
+            "hostSeconds": 4.7117981249994045
+          }
+        ],
+        "sha256": "8df1d8472bcf2738174db829047e5b7277dd4170ec92574d8d2ee787947b8017",
+        "bytes": 1653732,
+        "deviceFile": "/sdcard/kclash-flutter-motion-20261109.mp4"
+      },
+      "kotlin": {
+        "returncode": 0,
+        "passed": true,
+        "sha256": "1bf3cacb6674831030898f72054f27349c30c4d991bc8cd7db09ae76b9a2ceb7",
+        "bytes": 5724415
+      }
+    },
+    "frames": {
+      "flutter": 74,
+      "kotlin": 238
+    }
+  },
+  "closingDiagnostic": {
+    "log": "closing1.log",
+    "fixture": "fixture1.apk",
+    "passes": 3,
+    "instrumentationPassed": true,
+    "popupFrames": [
+      16,
+      27,
+      27
+    ],
+    "popupJankyFrames": [
+      3,
+      2,
+      2
+    ],
+    "normalFrameCoveragePercent": [
+      100,
+      100,
+      100
+    ],
+    "hostFrames": [
+      0,
+      0,
+      0
+    ],
+    "renderElapsedMedianMs": [
+      2.683,
+      3.858,
+      3.799
+    ],
+    "renderElapsedMaxMs": [
+      166.134,
+      32.109,
+      22.787
+    ],
+    "dispatchToAnimationCompleteMs": [
+      569.238,
+      554.191,
+      540.95
+    ],
+    "measurement": "Popup retained only after original animation; diagnostics with no screenshots/video, not formal R8 performance",
+    "cpuAttribution": false
+  },
+  "nativeProbe": {
+    "logs": [
+      "native1.log",
+      "native2.log"
+    ],
+    "recorded": [
+      false,
+      false
+    ],
+    "exitCode": [
+      1,
+      1
+    ],
+    "error": "simpleperf E utils.cpp:473 no process with pid",
+    "secondProbeVerifiedTargetPid": 3959,
+    "targetAndCollectorSamePid": true,
+    "reasonNotProven": "ROM process visibility/profiling path; not wrong PID",
+    "perfPropertiesUnchanged": true,
+    "securitySettingsChanged": false
+  },
+  "longWindow": {
+    "seconds": 2703.218,
+    "networkPassed": 8,
+    "networkAttempts": 10,
+    "allNetworkPassed": false,
+    "recovery": {
+      "oldPid": 4304,
+      "newPid": 4941,
+      "observedBeforeVerify": true
+    },
+    "snapshots": [
+      {
+        "command": "start",
+        "elapsedSeconds": 8.855,
+        "passed": false,
+        "failedStep": "tls-handshake",
+        "pid": 4304,
+        "providerCount": 90,
+        "network": null,
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [],
+        "sharedChanged": [],
+        "runtime": "RUNNING",
+        "auditRuns": 2,
+        "providerMs": 112
+      },
+      {
+        "command": "checkpoint-5",
+        "elapsedSeconds": 400.196,
+        "passed": false,
+        "failedStep": "tls-handshake",
+        "pid": 4304,
+        "providerCount": 90,
+        "network": null,
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [],
+        "sharedChanged": [],
+        "runtime": "RUNNING",
+        "auditRuns": 2,
+        "providerMs": 86
+      },
+      {
+        "command": "checkpoint-10",
+        "elapsedSeconds": 602.766,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4304,
+        "providerCount": 90,
+        "network": {
+          "http": 200,
+          "attributed": true,
+          "positiveTraffic": true,
+          "nonDirect": true
+        },
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [],
+        "sharedChanged": [],
+        "runtime": "RUNNING",
+        "auditRuns": 2,
+        "providerMs": 69
+      },
+      {
+        "command": "checkpoint-15",
+        "elapsedSeconds": 905.704,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4941,
+        "providerCount": 90,
+        "network": {
+          "http": 200,
+          "attributed": true,
+          "positiveTraffic": true,
+          "nonDirect": true
+        },
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [],
+        "sharedChanged": [],
+        "runtime": "RUNNING",
+        "auditRuns": 2,
+        "providerMs": 104
+      },
+      {
+        "command": "checkpoint-20",
+        "elapsedSeconds": 1202.659,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4941,
+        "providerCount": 90,
+        "network": {
+          "http": 200,
+          "attributed": true,
+          "positiveTraffic": true,
+          "nonDirect": true
+        },
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [],
+        "sharedChanged": [
+          {
+            "storeHash": "79faeb0eaf0f4734a1cf94fec80e934219c0c6c5913fb941b5aae7109deaf557",
+            "keyHash": "1f64fff08d787e732e04559f4d241876b399d9d4251af79833bd22adbb2d331a"
+          }
+        ],
+        "runtime": "RUNNING",
+        "auditRuns": 3,
+        "providerMs": 79
+      },
+      {
+        "command": "checkpoint-25",
+        "elapsedSeconds": 1502.679,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4941,
+        "providerCount": 90,
+        "network": {
+          "http": 200,
+          "attributed": true,
+          "positiveTraffic": true,
+          "nonDirect": true
+        },
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [],
+        "sharedChanged": [
+          {
+            "storeHash": "79faeb0eaf0f4734a1cf94fec80e934219c0c6c5913fb941b5aae7109deaf557",
+            "keyHash": "1f64fff08d787e732e04559f4d241876b399d9d4251af79833bd22adbb2d331a"
+          }
+        ],
+        "runtime": "RUNNING",
+        "auditRuns": 3,
+        "providerMs": 70
+      },
+      {
+        "command": "checkpoint-30",
+        "elapsedSeconds": 1802.649,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4941,
+        "providerCount": 90,
+        "network": {
+          "http": 200,
+          "attributed": true,
+          "positiveTraffic": true,
+          "nonDirect": true
+        },
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [
+          "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871"
+        ],
+        "sharedChanged": [
+          {
+            "storeHash": "79faeb0eaf0f4734a1cf94fec80e934219c0c6c5913fb941b5aae7109deaf557",
+            "keyHash": "1f64fff08d787e732e04559f4d241876b399d9d4251af79833bd22adbb2d331a"
+          }
+        ],
+        "runtime": "RUNNING",
+        "auditRuns": 3,
+        "providerMs": 79
+      },
+      {
+        "command": "checkpoint-35",
+        "elapsedSeconds": 2102.711,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4941,
+        "providerCount": 90,
+        "network": {
+          "http": 200,
+          "attributed": true,
+          "positiveTraffic": true,
+          "nonDirect": true
+        },
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [
+          "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871"
+        ],
+        "sharedChanged": [
+          {
+            "storeHash": "79faeb0eaf0f4734a1cf94fec80e934219c0c6c5913fb941b5aae7109deaf557",
+            "keyHash": "1f64fff08d787e732e04559f4d241876b399d9d4251af79833bd22adbb2d331a"
+          }
+        ],
+        "runtime": "RUNNING",
+        "auditRuns": 3,
+        "providerMs": 61
+      },
+      {
+        "command": "checkpoint-40",
+        "elapsedSeconds": 2402.707,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4941,
+        "providerCount": 90,
+        "network": {
+          "http": 200,
+          "attributed": true,
+          "positiveTraffic": true,
+          "nonDirect": true
+        },
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [
+          "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871"
+        ],
+        "sharedChanged": [
+          {
+            "storeHash": "79faeb0eaf0f4734a1cf94fec80e934219c0c6c5913fb941b5aae7109deaf557",
+            "keyHash": "1f64fff08d787e732e04559f4d241876b399d9d4251af79833bd22adbb2d331a"
+          }
+        ],
+        "runtime": "RUNNING",
+        "auditRuns": 4,
+        "providerMs": 61
+      },
+      {
+        "command": "checkpoint-45",
+        "elapsedSeconds": 2702.722,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4941,
+        "providerCount": 90,
+        "network": {
+          "http": 200,
+          "attributed": true,
+          "positiveTraffic": true,
+          "nonDirect": true
+        },
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [
+          "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871"
+        ],
+        "sharedChanged": [
+          {
+            "storeHash": "79faeb0eaf0f4734a1cf94fec80e934219c0c6c5913fb941b5aae7109deaf557",
+            "keyHash": "1f64fff08d787e732e04559f4d241876b399d9d4251af79833bd22adbb2d331a"
+          }
+        ],
+        "runtime": "RUNNING",
+        "auditRuns": 4,
+        "providerMs": 66
+      },
+      {
+        "command": "stop",
+        "elapsedSeconds": 2703.217,
+        "passed": true,
+        "failedStep": null,
+        "pid": 4941,
+        "providerCount": null,
+        "network": null,
+        "rowsEqual": true,
+        "filesEqual": true,
+        "selectedEqual": true,
+        "roomChanged": [
+          "1ba8936b2f07d68a9e23b3f26601151214f5abd23dd148693486efdbb78e86a9",
+          "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871"
+        ],
+        "sharedChanged": [
+          {
+            "storeHash": "79faeb0eaf0f4734a1cf94fec80e934219c0c6c5913fb941b5aae7109deaf557",
+            "keyHash": "1f64fff08d787e732e04559f4d241876b399d9d4251af79833bd22adbb2d331a"
+          }
+        ],
+        "runtime": "STOPPED",
+        "auditRuns": 4,
+        "providerMs": null
+      }
+    ],
+    "knownKeys": {
+      "045c3022b5e7199ac3aaa71cff82bfdf5af9223a2da04a2f179a9da73794e871": "ip_quality_cache_v1",
+      "1ba8936b2f07d68a9e23b3f26601151214f5abd23dd148693486efdbb78e86a9": "runtime_should_resume",
+      "79faeb0eaf0f4734a1cf94fec80e934219c0c6c5913fb941b5aae7109deaf557": "subscription-auto-update-audit",
+      "1f64fff08d787e732e04559f4d241876b399d9d4251af79833bd22adbb2d331a": "runs"
+    },
+    "boundaries": [
+      "isolated motion package and exact original local configuration",
+      "not formal package metadata snapshot",
+      "not VPN or Wi-Fi cellular transition",
+      "first TLS failures retained",
+      "historical failures not retrospectively attributed"
+    ]
+  },
+  "formalSmoke": {
+    "profileLabelVisible": true,
+    "formalDataCleared": false,
+    "formalDatabaseSnapshot": false,
+    "servicesStopped": true
+  },
+  "cleanup": {
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.kclash.reference.motion_reference"
+    ],
+    "removedFiles": [
+      "/sdcard/kclash-selection-motion-smoke.xml",
+      "/sdcard/kclash-flutter-reference.xml"
+    ],
+    "formalDataCleared": false,
+    "formalDatabaseSnapshot": false,
+    "formalServicesStopped": true,
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "originalYamlBytes": 35165,
+    "flutterBaselinePresent": false,
+    "flutterBaselineModified": false,
+    "fontScale": "1.0",
+    "cleanupFirstFailure": "pm path returned 1 for already uninstalled test package; corrected absence check"
+  },
+  "failedBatches": [
+    {
+      "name": "final-build1",
+      "reason": "testDebugUnitTest unavailable with motion benchmark test build type; corrected to separate default test build"
+    },
+    {
+      "name": "focused1",
+      "result": "1/2",
+      "reason": "text selector matched parent Sniffer section; changed to add-sheet-specific tag"
+    },
+    {
+      "name": "final1",
+      "result": "12/13",
+      "reason": "menu callback asserted before return completed; now waits for action and closed menu"
+    },
+    {
+      "name": "natural-first",
+      "result": "0/1",
+      "reason": "Dialog does not inherit outer testTagsAsResourceId; visible text locator used"
+    },
+    {
+      "name": "window.log/window-continuation.log",
+      "reason": "first TLS failure stopped driver, then substring service guard falsely matched motion; continued original clock/session, failure retained"
+    },
+    {
+      "name": "cleanup-first",
+      "reason": "pm path absence uses exit 1; target test package already successfully uninstalled"
+    }
+  ],
+  "remaining": [
+    "native call-stack attribution and menu first-open/closing/RenderThread performance",
+    "toolbar search open/close, long resource lists plus IME and complete fixed Flutter application runtime comparison",
+    "first TLS failure with DNS/dial/remote-close correlation and longer repeated recovery windows",
+    "source-aware auditing of profile metadata/file modification and preferences; prior anomalies unresolved"
+  ],
+  "artifacts": {
+    "acceptance-artifacts/menu-close-native-20261109/flutter-pts.json": {
+      "sha256": "a2c8f0bef4e1e3c453ad798f6259dcd45773da4c6eb96fa99a54f70d80faea29",
+      "bytes": 5501
+    },
+    "acceptance-artifacts/menu-close-native-20261109/kotlin-natural.log": {
+      "sha256": "3f74779d71913bd33b438bf15c79f963ab196dc845d0bed607940ec470f5ae64",
+      "bytes": 944
+    },
+    "acceptance-artifacts/menu-close-native-20261109/flutter-frames.json": {
+      "sha256": "7eb86d4ea36d91204012162873a2ab0c547c67c505a371889461685a1416abb1",
+      "bytes": 3291
+    },
+    "acceptance-artifacts/menu-close-native-20261109/gradle-tasks.log": {
+      "sha256": "588ee002039b758da13c7d9d4fc8cc9f7163e04adbd3fef29e1b62d61a0a7201",
+      "bytes": 16995
+    },
+    "acceptance-artifacts/menu-close-native-20261109/flutter-build.log": {
+      "sha256": "a4da381ab7d6c7bf6977f0224ec363e045b4165781381cf0aa4395645924080b",
+      "bytes": 933
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-lint5.log": {
+      "sha256": "3dbe88075e99eba175e36f54cd70ac8a2ff60dc7a3632356ea2af87467b46fe8",
+      "bytes": 8834
+    },
+    "acceptance-artifacts/menu-close-native-20261109/perf-properties-before.json": {
+      "sha256": "63f25f30ddb4ded4a80bf10d74ada90263b7582ff71da25b85a48c6e35208e24",
+      "bytes": 165
+    },
+    "acceptance-artifacts/menu-close-native-20261109/flutter-pub.log": {
+      "sha256": "2f2fb2814a8ad5a0a11053d265a747a5d7d36ee3995d43303c591e4b029fcf09",
+      "bytes": 979
+    },
+    "acceptance-artifacts/menu-close-native-20261109/closing-report.json": {
+      "sha256": "d6e7250b637b7b3b1b4c7b0f5d57ab8781b14da4bd95867dccae1707624acfd6",
+      "bytes": 10357
+    },
+    "acceptance-artifacts/menu-close-native-20261109/flutter-motion.mp4": {
+      "sha256": "8df1d8472bcf2738174db829047e5b7277dd4170ec92574d8d2ee787947b8017",
+      "bytes": 1653732
+    },
+    "acceptance-artifacts/menu-close-native-20261109/visual-motion-closing1-dark-close-0.gfx": {
+      "sha256": "e13c58670e23e193e34f1e6c9ed5277f6027844ea599739f01117914a94f4384",
+      "bytes": 16436
+    },
+    "acceptance-artifacts/menu-close-native-20261109/run-regression.py": {
+      "sha256": "8d0c3e7951956252f27828bbeaacc4f3c7267d88e53ec8ae84f61e2ccbb8b104",
+      "bytes": 3022
+    },
+    "acceptance-artifacts/menu-close-native-20261109/visual-motion-closing1-dark-close-1.gfx": {
+      "sha256": "bf92db37df73c7626c12b9b19b0299ebcbe65fd6e522ffdba9d38502a8008b93",
+      "bytes": 20081
+    },
+    "acceptance-artifacts/menu-close-native-20261109/jvm.json": {
+      "sha256": "80683bc0894fd9d61383946f0ec70aec1c134191ea5c390bb2860204064e9205",
+      "bytes": 413
+    },
+    "acceptance-artifacts/menu-close-native-20261109/record-kotlin.py": {
+      "sha256": "3c9ccbc74f03275caa9cf347e2ff0d3799e1c1e6c1848b9ef6a2a3df0d5e7a1b",
+      "bytes": 1519
+    },
+    "acceptance-artifacts/menu-close-native-20261109/visual-motion-closing1-dark-close-2.gfx": {
+      "sha256": "fcf03c9659597aedfd3442c68d957da4215ef93ee5f25bc50990c38af67f4322",
+      "bytes": 19747
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-fixture8.log": {
+      "sha256": "9c168f34b0f1c7dabd8ffa47cd1df52cf8b8340516fe4905dfb8f99143403f18",
+      "bytes": 8945
+    },
+    "acceptance-artifacts/menu-close-native-20261109/runtime-comparison.json": {
+      "sha256": "10375cfa7a323ed8f376a3e4ff807f7bd9c7a099559fa50185fc932905e8679e",
+      "bytes": 3178
+    },
+    "acceptance-artifacts/menu-close-native-20261109/installed-release.json": {
+      "sha256": "3a8fbb421423da6cb7a4bfa5c690fc8f37c2bb311caaa1bda335e8db5e105761",
+      "bytes": 236
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-fixture7.log": {
+      "sha256": "9ae8149e9f74827eb612829f09176271ad149d337c0b2b2b52aca0c423920e85",
+      "bytes": 8945
+    },
+    "acceptance-artifacts/menu-close-native-20261109/cleanup.json": {
+      "sha256": "c0e3152df1db0e82f2403f04deec9cebf7a2916f284050315ac3abbdfada9572",
+      "bytes": 701
+    },
+    "acceptance-artifacts/menu-close-native-20261109/perf-properties-after.json": {
+      "sha256": "63f25f30ddb4ded4a80bf10d74ada90263b7582ff71da25b85a48c6e35208e24",
+      "bytes": 165
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-fixture6.log": {
+      "sha256": "3498ff4545f3cbce6cbfa42b9a48d65782823a875a027433a7da9a91a0ca26b8",
+      "bytes": 13045
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-fixture4.log": {
+      "sha256": "ee0456557facb68c463bf2e5e471b3b1f24eb7782770839c08dbb574d21831d7",
+      "bytes": 8945
+    },
+    "acceptance-artifacts/menu-close-native-20261109/formal-smoke.json": {
+      "sha256": "ca225a92042343b69622e97b338add1abddce5e8c297bf778bf61506e0b85832",
+      "bytes": 126
+    },
+    "acceptance-artifacts/menu-close-native-20261109/flutter-sdk-version.log": {
+      "sha256": "2751aaa0c057bbb68311a07239bead4929c12e1da1efaa8ef3dbf4c6a2c373a4",
+      "bytes": 9210
+    },
+    "acceptance-artifacts/menu-close-native-20261109/flutter-sdk-clone.log": {
+      "sha256": "0d1886650187a824411eb185cf766b9b39945bfc6b4fb6faf5cd89fcff435632",
+      "bytes": 2875
+    },
+    "acceptance-artifacts/menu-close-native-20261109/apk-final.json": {
+      "sha256": "b392fd78aa4d420d182df1d593ab27d0c209dd39a427a90334ec59dee041010b",
+      "bytes": 1048
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-fixture5.log": {
+      "sha256": "ee0456557facb68c463bf2e5e471b3b1f24eb7782770839c08dbb574d21831d7",
+      "bytes": 8945
+    },
+    "acceptance-artifacts/menu-close-native-20261109/formal-smoke.py": {
+      "sha256": "b655e6af1ab29560ffc9f4588f5698fe750b6adf05ecd63988d1fe8c5654f7ea",
+      "bytes": 1843
+    },
+    "acceptance-artifacts/menu-close-native-20261109/flutter-events.json": {
+      "sha256": "27788e44f8d2f7c0ef810c9f980ee00f460e7f6c11bff8937382f8a4fcde4882",
+      "bytes": 424
+    },
+    "acceptance-artifacts/menu-close-native-20261109/kotlin-natural.json": {
+      "sha256": "cd645e8fd682a126abf8df33d9d94f5fb7fcebc8088c337717a4814190589a3a",
+      "bytes": 140
+    },
+    "acceptance-artifacts/menu-close-native-20261109/native2.log": {
+      "sha256": "3be304d0a08dce4ab1583d286ba6f547133e1b186b691a6310b96acfb8cc3fb9",
+      "bytes": 1439
+    },
+    "acceptance-artifacts/menu-close-native-20261109/kotlin-pts.json": {
+      "sha256": "65bda6214bcdbe85f5fcd9609d773c78d8de36a3d766052ca27cd4777b62f42f",
+      "bytes": 17637
+    },
+    "acceptance-artifacts/menu-close-native-20261109/regression-selector.json": {
+      "sha256": "64fbade90902f5bf78a2c399955f1d7ee779b74ffc909fb794c7d01627dbdd46",
+      "bytes": 1314
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-fixture3.log": {
+      "sha256": "60f4002d81d570f09c7d8894e656d6621cb22e44d76d79b2b4c9fb474e468669",
+      "bytes": 12959
+    },
+    "acceptance-artifacts/menu-close-native-20261109/native1.log": {
+      "sha256": "f4bc312503ff67e5f5bc2d961869e909ef5603139c77d2128564c15cbabd413c",
+      "bytes": 1354
+    },
+    "acceptance-artifacts/menu-close-native-20261109/fixture1.log": {
+      "sha256": "e2d4186ac4adfbe51f7c4676e545601d1437e330565ff04a2563e59e92091898",
+      "bytes": 13189
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-build1.log": {
+      "sha256": "867274256bdd4a1c133401ad0a498e4e88d8ec72518a2e37202a164f752e0ed2",
+      "bytes": 1507
+    },
+    "acceptance-artifacts/menu-close-native-20261109/closing1.log": {
+      "sha256": "81426308313e7c2495c1d0610fcee176e3a5105144e3f4c2a5af3d76ca69fd83",
+      "bytes": 77330
+    },
+    "acceptance-artifacts/menu-close-native-20261109/fixture2.log": {
+      "sha256": "723bc0a8039f829f20de67a61842d1c049fd692053be0238958ae693c9ee577f",
+      "bytes": 13083
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-build2.log": {
+      "sha256": "4aaf23eb5dbb9ab4ae1bdb73b9964b8b2364415c0bbf18bb5ec7e7a112973f1d",
+      "bytes": 12604
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-build3.log": {
+      "sha256": "8ce8f3ba49ba993dd99c74a741bbdcec42b415f75a3229e8c4b5ac634f89e130",
+      "bytes": 21609
+    },
+    "acceptance-artifacts/menu-close-native-20261109/kotlin-entry-frames.json": {
+      "sha256": "11ea5dd5737703f4091ce6b3b96048d9497c600716bfccf4072985bc176ca605",
+      "bytes": 1607
+    },
+    "acceptance-artifacts/menu-close-native-20261109/kotlin-motion.mp4": {
+      "sha256": "1bf3cacb6674831030898f72054f27349c30c4d991bc8cd7db09ae76b9a2ceb7",
+      "bytes": 5724415
+    },
+    "acceptance-artifacts/menu-close-native-20261109/source-final.json": {
+      "sha256": "803ac2b19b98855b297f80921440707a5047b60969734ef84319f183dc595782",
+      "bytes": 85579
+    },
+    "acceptance-artifacts/menu-close-native-20261109/flutter-create.log": {
+      "sha256": "443a2beed8ec845129362e05d53cd1c52f3a869df3987898bb4cb552362c07cd",
+      "bytes": 1515
+    },
+    "acceptance-artifacts/menu-close-native-20261109/final-build4.log": {
+      "sha256": "66a66537918dcacd9781393202eb045a9fc9473ddb00efc74068f9199934c66e",
+      "bytes": 21424
+    },
+    "acceptance-artifacts/menu-close-native-20261109/installed-fixture.json": {
+      "sha256": "9394eee0ebe997ddac1ba4a3634a1d3d5b41b3fd0dbbbd8c2addc8591a99efeb",
+      "bytes": 300
+    },
+    "acceptance-artifacts/stability-window-20261109/summary.json": {
+      "sha256": "85fce7c12171e7224209237b9df6024aa6c8f87d539ff76633aca4b91ee6a5bc",
+      "bytes": 8160
+    },
+    "acceptance-artifacts/stability-window-20261109/window-result.json": {
+      "sha256": "ff08c58c5e8164cc4ac3b49e766e3a4302486ea62ad0c142cca12a6b632a9a83",
+      "bytes": 102362
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-10.json": {
+      "sha256": "96f96f35f0d7ce2b267f4b71deecf381af1575ba665c2d4a1a9c2dcfbba15279",
+      "bytes": 6308
+    },
+    "acceptance-artifacts/stability-window-20261109/window-continuation.log": {
+      "sha256": "f01b51dc33c70c5c582c82613543aee126b3802a0ac6541a9312567b8abddb7c",
+      "bytes": 429
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-30.json": {
+      "sha256": "93905f8a5802fd21bfd8e7e1c3426f91478073663d5cf5d424ef062a5ff153ea",
+      "bytes": 6865
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-40.json": {
+      "sha256": "3f41b0aa33da1d680e9546064a2f2e7ffce112babd4abd45b84ad88ff321b89d",
+      "bytes": 7279
+    },
+    "acceptance-artifacts/stability-window-20261109/window.log": {
+      "sha256": "c1697c0f9546ed84447b2fe68fa21c8cf7566352b8a56801c69e21889b0e40dc",
+      "bytes": 435
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-5.json": {
+      "sha256": "e1c2a7380e1ef58cc8da6b6b0f870685b5ef12c9d8077e24dae0fd9a0232da27",
+      "bytes": 6050
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-20.json": {
+      "sha256": "4c6a2c9dcf95ec38d747eb7741364dcd6b8a30260392cc33d35eeb1d20a13c18",
+      "bytes": 6723
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-15.json": {
+      "sha256": "7d5bcedced32957d3ea1004a628909d2d406c03624620ddea71675ad4fc7cc10",
+      "bytes": 6313
+    },
+    "acceptance-artifacts/stability-window-20261109/window-final.log": {
+      "sha256": "5a68004afef4e725806ce5efd1903c2a469e436140cb788500daa93916310ed5",
+      "bytes": 929
+    },
+    "acceptance-artifacts/stability-window-20261109/start.json": {
+      "sha256": "ce9c2901d67046e5b097d81ea3e393e0c5ac277b243a0efe16617fd6587e3688",
+      "bytes": 6488
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-35.json": {
+      "sha256": "705004194e40f12e442e193514d7f58d18c98a4aae54edd109eb7731a0b2a041",
+      "bytes": 6866
+    },
+    "acceptance-artifacts/stability-window-20261109/run-window-first.py": {
+      "sha256": "8b61d42151325484108a45ca72e2f771ce2146846a242993acd88af1b63256e7",
+      "bytes": 3616
+    },
+    "acceptance-artifacts/stability-window-20261109/prepare.log": {
+      "sha256": "fadb872ee60739859a38864c09a8ccfda0105ffac60af6fa3ea2cd9ff0350c47",
+      "bytes": 1027
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-25.json": {
+      "sha256": "d7d72b01138ad1c5f4305d788b81324a5bb22e939d11bc7d67d2128edf1825fe",
+      "bytes": 6724
+    },
+    "acceptance-artifacts/stability-window-20261109/recovery.json": {
+      "sha256": "d7bbe637293e87564317079e764e3dc5a7098e99135d58217fe584dce906e478",
+      "bytes": 20916
+    },
+    "acceptance-artifacts/stability-window-20261109/stop.json": {
+      "sha256": "80c55cad09a7f348ee8ffb649aeb064dcdd89b3346c37ccae50c9e3d61e04eba",
+      "bytes": 6093
+    },
+    "acceptance-artifacts/stability-window-20261109/checkpoint-45.json": {
+      "sha256": "24e023acebdb3f5064d677338e0a15e84c32f6d87a2f777ed178bd72a6d2ef49",
+      "bytes": 7280
+    },
+    "acceptance-artifacts/stability-window-20261109/run-window.py": {
+      "sha256": "0bf557d98f237cf3f3a1b7a6adc842081ffddeb6c692188c24e5d7f5be3aa152",
+      "bytes": 3852
+    }
+  }
+}

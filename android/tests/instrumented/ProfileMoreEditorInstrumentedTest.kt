@@ -28,6 +28,69 @@ class ProfileMoreEditorInstrumentedTest {
     private var pendingSave: Pair<ProfileNtpOverrides, ProfileSnifferOverrides>? = null
     private var saveCalls = 0
 
+    @Test fun successfulAdditionsCollapseIndependentlyAndFailureKeepsCandidate() {
+        render()
+        compose.onNodeWithTag("profile_more_empty_add").performClick()
+        compose.runOnIdle { holdSave = true }
+        fun height(key: String) = compose.onNodeWithTag("more_add_transition_$key").fetchSemanticsNode().boundsInRoot.height
+        val fullHeight = height("server")
+        compose.onNodeWithTag("more_add_server").performClick()
+        compose.onNodeWithTag("more_add_server").assertIsNotEnabled()
+        compose.runOnIdle { assertEquals(1, saveCalls); completeHeldSave(false) }
+        compose.onNodeWithTag("more_add_server").assertIsEnabled()
+        assertEquals(fullHeight, height("server"), 1f)
+        compose.onNodeWithTag("more_add_server").performClick()
+        compose.mainClock.autoAdvance = false
+        compose.runOnIdle { completeHeldSave(true) }
+        compose.mainClock.advanceTimeBy(112)
+        val firstHeight = height("server")
+        assertTrue("成功回执后条目应逐渐收起", firstHeight > 0f && firstHeight < fullHeight)
+        compose.onNodeWithTag("more_add_server").assertIsNotEnabled()
+        compose.onNodeWithTag("more_add_port").performClick()
+        compose.runOnIdle { completeHeldSave(true) }
+        compose.mainClock.advanceTimeBy(80)
+        assertTrue("第二次添加不能重置第一条的退场进度", height("server") < firstHeight)
+        assertTrue("后添加的条目应保留独立时间轴", height("port") > height("server"))
+        captureEntries("more_add_two_leaving")
+        compose.mainClock.advanceTimeBy(144)
+        compose.onNodeWithTag("more_add_transition_server").assertDoesNotExist()
+        compose.onNodeWithTag("more_add_transition_port").assertExists()
+        compose.mainClock.advanceTimeBy(160)
+        compose.onNodeWithTag("more_add_transition_port").assertDoesNotExist()
+        compose.onNodeWithTag("more_add_interval").assertIsEnabled()
+        compose.onNodeWithTag("profile_more_add_done").assertExists()
+        compose.runOnIdle { assertEquals(3, saveCalls); assertEquals(123, savedNtp?.port) }
+        compose.mainClock.autoAdvance = true
+    }
+
+    @Test fun changingSearchDuringExitDoesNotRetainAnEmptyProtocolGroup() {
+        section = "sniffer"; render()
+        compose.onNodeWithTag("profile_more_empty_add").performClick()
+        compose.onNodeWithTag("profile_more_add_search").performTextReplacement("HTTP")
+        val headerHeight = compose.onNodeWithTag("more_add_header_true").fetchSemanticsNode().boundsInRoot.height
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag("more_add_sniff.HTTP").performClick()
+        compose.mainClock.advanceTimeBy(80)
+        val leavingHeaderHeight = compose.onNodeWithTag("more_add_header_true").fetchSemanticsNode().boundsInRoot.height
+        assertTrue("分组标题须随最后条目连续收起", leavingHeaderHeight > 0f && leavingHeaderHeight < headerHeight)
+        compose.onNodeWithTag("profile_more_add_search").performTextReplacement("TLS")
+        compose.mainClock.advanceTimeBy(32)
+        compose.onNodeWithTag("more_add_sniff.TLS").assertIsDisplayed()
+        compose.onNodeWithTag("profile_more_add_search").performTextReplacement("HTTP")
+        compose.mainClock.advanceTimeBy(32)
+        compose.onNodeWithTag("profile_more_add_empty").assertIsDisplayed()
+        compose.onNodeWithTag("more_add_header_true").assertDoesNotExist()
+        captureEntries("more_add_query_after_exit")
+        compose.runOnIdle { assertEquals(1, saveCalls); assertNotNull(savedSniffer?.sniff?.get("HTTP")) }
+        compose.mainClock.autoAdvance = true
+    }
+
+    private fun captureEntries(name: String) {
+        // 作者 long：冻结测试时钟后直接采集列表，不能调用终态截图助手推进或等待掉过渡帧。
+        val bitmap = compose.onNodeWithTag("profile_more_available_fields").captureToImage().asAndroidBitmap()
+        recordVisualPng(name, ByteArrayOutputStream().also { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }.toByteArray())
+    }
+
     @Test fun pendingDestinationIgnoresBackAndOutsideThenKeepsFailedChoiceForRetry() {
         section = "sniffer"; render(); add("sniff.HTTP")
         compose.onNodeWithTag("more_open_sniff.HTTP").performClick()

@@ -255,6 +255,7 @@ internal fun AppDropdownMenu(
             returning.snapTo(0f)
             val duration = if (sourceReady) 500 else 200
             returning.animateTo(duration / 1000f, tween(duration, easing = LinearEasing))
+            MenuCloseCaptureProbe.afterAnimation()
             source?.hidden = false
             // 作者 long：源按钮重新接管绘制后才打开目标子页，避免新Window先出现导致液滴被截断；外部状态撤销不执行旧操作。
             val action = pendingAction.takeIf { expandedLatest && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
