@@ -54,6 +54,19 @@ class MenuFrameReportTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "非整数"):
             parse_gfxinfo(raw.replace("200,200,300", "bad,200,300"))
 
+    def test_completion_and_queue_reject_missing_or_reversed_clocks(self):
+        raw = counters(100, 3, 1) + window("Popup", 100,
+            "0,150,160,200,300,400,500,\n"
+            "0,170,180,400,300,400,0,\n"
+            "2,190,200,400,500,600,700,\n")
+        raw = raw.replace(HEADER, HEADER.replace("SwapBuffers,", "SwapBuffers,FrameCompleted,"))
+        report = parse_gfxinfo(raw)["windows"][0]
+        self.assertEqual(66.667, report["regularRowCoveragePercent"])
+        self.assertEqual(1, report["syncQueueElapsed"]["samples"])
+        self.assertEqual(1, report["syncQueueElapsed"]["rejected"])
+        self.assertEqual(1, report["completionElapsed"]["samples"])
+        self.assertEqual(1, report["completionElapsed"]["rejected"])
+
 
 if __name__ == "__main__":
     unittest.main()

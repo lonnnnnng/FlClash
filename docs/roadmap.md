@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **菜单线程计数与几何候选（2026-11-09，KUI-027）**：补齐首次/复开分窗口径与自身线程CPU计数；20对固定动效帧完全一致、候选6方法通过，但反测首开12/28→14/30、关闭9/85→9/84，收益不稳定，三个产品候选文件全部撤回。手机恢复KUI-026签名包；仅保留诊断工具、7项解析器边界测试及负结果。Perfetto/原生函数栈和关闭Popup完整帧仍缺失，菜单性能保持PARTIAL。历史配置/偏好/Provider异常已核查写入与审计盲区，未追认根因。证据`docs/acceptance/menu-cpu-geometry-redmi-20261109.json`，调查`docs/menu-cpu-geometry-investigation.md`、`docs/historical-stability-investigation.md`。
+
 > **配置子页与输入恢复（2026-11-09，KUI-026）**：修正Provider表单扣除删除触点后的标签/值宽度、开关与IP整行点击、可选提示、最后一项添加自动返回及分组选择排版；配置资源区分搜索无结果/目录为空并可清除恢复，NTP/Sniffer空态按视口定位。字段/YAML确认从子Dialog取IME控制器；旧包同一新增用例在awaitHiddenIme五秒超时，最终包通过。860项JVM（App578执行、其余282复用）、Debug/签名Release/独立测试包及双Lint通过；同套Redmi4+18个不重复方法22/22、68图/10拼图已验。正式签名安装回拉、原配置详情/Provider缓存与底部配置Tab烟测通过；配置未清，测试包及本轮上传原1.yaml副本已精确清理。当前仅本组视觉/交互修正，完整Flutter页面与菜单性能仍PARTIAL，KUI-025首开退化不覆盖。 证据 `docs/acceptance/config-subpages-parity-redmi-20261109.json`，溯源 `docs/config-subpages-parity-defect.md`。
 
 > **源按钮底色与玻璃开场（2026-11-09，KUI-025）**：配置/代理按钮携带真实底色，普通材质按sRGB交接、玻璃只叠源底色。测试改等实际轮廓增长，补齐深浅玻璃展开帧、准备期取消、真实宿主背景冻结与重开重采；860项JVM（App578执行、其余282复用）、Debug/签名Release/独立测试包及双Lint通过。同套Redmi两批3+19个不重复方法22/22、56图/8拼图、8对终态像素一致；正式深浅视频102/103原PTS帧核对、各抽样24张。打开进程74/201→74/190、Popup31/129→37/124，退化观察保留，不认定性能收益；关闭23/168→21/172。手机保留同签名本地修正版，配置未清、测试包/采集文件已清理、服务停止。玻璃默认关闭，完整视觉/慢帧仍PARTIAL。 证据 `docs/acceptance/menu-fill-readiness-redmi-20261109.json`，溯源 `docs/menu-fill-readiness-defect.md`。
@@ -758,11 +760,11 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 当前设备数据 | 保留1份授权本地配置及同签名本地优化版，原1.yaml哈希保持、服务停止；本轮motion/test已卸载。Flutter参考包未操作，后续只用Redmi验收。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | 本轮Debug已构建、未覆盖正式包；最终motion/AppTest安装回拉一致，SHA分别 `bf7b7951…` / `4bd39962…`；正式签名包 `1ab169bd…`。完整哈希和源码快照见本轮验收JSON。 |
+| Debug / Test | 本轮Debug已构建、未覆盖正式包；最终motion/AppTest安装回拉一致，KUI-026交付SHA分别 `df5d5fd7…` / `8dc8d0a4…`；正式签名包 `a68d1182…`；KUI-027仅保留诊断测试，候选APK单列撤回。完整哈希和源码快照见本轮验收JSON。 |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
 | Release | 已正式发布；公开签名arm64/R8 APK SHA `ed063b9ba59d0825308b2d442da38e5e8ecdcb456cc7c55cd385f11b05ad1082`，下载校验/证书/Redmi安装回拉与运行通过。本地包哈希不同，两个构建的证据分别保留；跨版本升级未验。 |
-| 最新证据 | 发布：`release-0.1.0-20261109.json`；视觉：`custom-profile-chip-dashboard-redmi-20261109.json`与`menu-rendering-diagnostic-redmi-20261109.json`。Perfetto失败保留，整体视觉/性能仍PARTIAL。 |
+| 最新证据 | 发布：`release-0.1.0-20261109.json`；视觉：`config-subpages-parity-redmi-20261109.json`；性能调查：`menu-cpu-geometry-redmi-20261109.json`。Perfetto失败保留，整体视觉/性能仍PARTIAL。 |
 
 
 ## 4. 目标架构图
@@ -1294,6 +1296,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 - 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
+
+**菜单线程计数与几何候选（2026-11-09，KUI-027）**：补齐首次/复开分窗口径与自身线程CPU计数；20对固定动效帧完全一致、候选6方法通过，但反测首开12/28→14/30、关闭9/85→9/84，收益不稳定，三个产品候选文件全部撤回。手机恢复KUI-026签名包；仅保留诊断工具、7项解析器边界测试及负结果。Perfetto/原生函数栈和关闭Popup完整帧仍缺失，菜单性能保持PARTIAL。历史配置/偏好/Provider异常已核查写入与审计盲区，未追认根因。证据`docs/acceptance/menu-cpu-geometry-redmi-20261109.json`，调查`docs/menu-cpu-geometry-investigation.md`、`docs/historical-stability-investigation.md`。
 
 **配置子页与输入恢复（2026-11-09，KUI-026）**：修正Provider表单扣除删除触点后的标签/值宽度、开关与IP整行点击、可选提示、最后一项添加自动返回及分组选择排版；配置资源区分搜索无结果/目录为空并可清除恢复，NTP/Sniffer空态按视口定位。字段/YAML确认从子Dialog取IME控制器；旧包同一新增用例在awaitHiddenIme五秒超时，最终包通过。860项JVM（App578执行、其余282复用）、Debug/签名Release/独立测试包及双Lint通过；同套Redmi4+18个不重复方法22/22、68图/10拼图已验。正式签名安装回拉、原配置详情/Provider缓存与底部配置Tab烟测通过；配置未清，测试包及本轮上传原1.yaml副本已精确清理。当前仅本组视觉/交互修正，完整Flutter页面与菜单性能仍PARTIAL，KUI-025首开退化不覆盖。 详见`docs/acceptance/config-subpages-parity-redmi-20261109.json`。
 

@@ -27,6 +27,33 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkMenuFirstOpenAndRepeatedTopCard() = runMenus(true)
     @Test fun lightMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(false)
     @Test fun darkMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(true)
+    @Test fun darkMenuOpenAndCloseThreadCpuSamples() {
+        assertPortraitDefaultFontConfiguration()
+        val args = InstrumentationRegistry.getArguments()
+        assertEquals("true", args.getString("kclashMotionThreadCpu"))
+        assertNotEquals("true", args.getString("kclashCapturePng"))
+        assertNotEquals("true", args.getString("kclashMotionMethodTrace"))
+        val run = checkNotNull(args.getString("kclashMotionRun"))
+        require(run.matches(Regex("[a-z0-9-]+")))
+        val context = ins.targetContext
+        val old = ProxyPageOptionsStore.load(context)
+        try {
+            ProxyPageOptionsStore.save(context, ProxyPageOptions(displayMode = ProxyDisplayMode.TAB))
+            ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+                scenario.onActivity { it.dark = true }
+                click("nav_proxy"); await("proxy_tools"); settle()
+                val source = bounds(checkNotNull(find("proxy_tools")))
+                val probe = MenuThreadCpuProbe()
+                repeat(3) { pass ->
+                    probe.sample("$run-$pass-open") { tap(source) }
+                    await("样式：标签"); settle()
+                    probe.sample("$run-$pass-close") { back() }
+                    awaitGone("样式：标签"); settle()
+                }
+                scenario.onActivity { assertEquals("常用节点", it.selectedGroup); assertEquals(0, it.nodeSelections) }
+            }
+        } finally { ProxyPageOptionsStore.save(context, old) }
+    }
     @Test fun darkMenuOpenAndCloseMethodSamples() {
         assertPortraitDefaultFontConfiguration()
         val args = InstrumentationRegistry.getArguments()

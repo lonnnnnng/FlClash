@@ -43,6 +43,8 @@ gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --e
 
 ## Go core
 
+独立线程计数诊断选择`VisualMotionNaturalInstrumentedTest#darkMenuOpenAndCloseThreadCpuSamples`，显式`kclashMotionThreadCpu=true`、安全名称`kclashMotionRun`，禁用PNG/方法采样。用`python3 tool/android_menu_thread_report.py instrument.log --output report.json`解析；按TID/startTicks分开同名RenderThread，读取失败/线程死亡保留缺口，计划100ms不等于实际采样间隔。该入口仅测试源码，不等于正式R8包性能或原生调用栈；见`docs/menu-cpu-geometry-investigation.md`。
+
 ```zsh
 go version
 cd core

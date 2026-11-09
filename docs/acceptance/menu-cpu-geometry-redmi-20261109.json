@@ -1,0 +1,438 @@
+{
+  "id": "KUI-027",
+  "date": "2026-11-09",
+  "baseCommit": "2f2479b7e2e05a2be8b722ef6b92653b78750997",
+  "status": "PARTIAL",
+  "productCandidateRetained": false,
+  "decision": "20 fixed frame pairs exact, but reverse/repeat did not reproduce material first-open or closing benefit. All three product files restored; measurement tools retained.",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "core": "stopped",
+    "onlyDeviceOperated": true
+  },
+  "measurement": {
+    "baseline": {
+      "first-open": {
+        "process": {
+          "stages": 2,
+          "frames": 60,
+          "janky": 27,
+          "jankPercent": 45.0
+        },
+        "popup": {
+          "stages": 2,
+          "frames": 35,
+          "janky": 11,
+          "jankPercent": 31.429
+        }
+      },
+      "reopen": {
+        "process": {
+          "stages": 4,
+          "frames": 128,
+          "janky": 53,
+          "jankPercent": 41.406
+        },
+        "popup": {
+          "stages": 4,
+          "frames": 88,
+          "janky": 26,
+          "jankPercent": 29.545
+        }
+      },
+      "open": {
+        "process": {
+          "stages": 6,
+          "frames": 188,
+          "janky": 80,
+          "jankPercent": 42.553
+        },
+        "popup": {
+          "stages": 6,
+          "frames": 123,
+          "janky": 37,
+          "jankPercent": 30.081
+        }
+      },
+      "expand": {
+        "process": {
+          "stages": 6,
+          "frames": 181,
+          "janky": 28,
+          "jankPercent": 15.47
+        },
+        "popup": {
+          "stages": 6,
+          "frames": 181,
+          "janky": 28,
+          "jankPercent": 15.47
+        }
+      },
+      "fold": {
+        "process": {
+          "stages": 6,
+          "frames": 131,
+          "janky": 20,
+          "jankPercent": 15.267
+        },
+        "popup": {
+          "stages": 6,
+          "frames": 131,
+          "janky": 20,
+          "jankPercent": 15.267
+        }
+      },
+      "close": {
+        "process": {
+          "stages": 6,
+          "frames": 170,
+          "janky": 20,
+          "jankPercent": 11.765
+        },
+        "popup": {
+          "stages": 0,
+          "frames": null,
+          "janky": null,
+          "jankPercent": null
+        }
+      }
+    },
+    "candidate": {
+      "first-open": {
+        "process": {
+          "stages": 2,
+          "frames": 63,
+          "janky": 27,
+          "jankPercent": 42.857
+        },
+        "popup": {
+          "stages": 2,
+          "frames": 41,
+          "janky": 12,
+          "jankPercent": 29.268
+        }
+      },
+      "reopen": {
+        "process": {
+          "stages": 4,
+          "frames": 144,
+          "janky": 47,
+          "jankPercent": 32.639
+        },
+        "popup": {
+          "stages": 4,
+          "frames": 96,
+          "janky": 18,
+          "jankPercent": 18.75
+        }
+      },
+      "open": {
+        "process": {
+          "stages": 6,
+          "frames": 207,
+          "janky": 74,
+          "jankPercent": 35.749
+        },
+        "popup": {
+          "stages": 6,
+          "frames": 137,
+          "janky": 30,
+          "jankPercent": 21.898
+        }
+      },
+      "expand": {
+        "process": {
+          "stages": 6,
+          "frames": 188,
+          "janky": 22,
+          "jankPercent": 11.702
+        },
+        "popup": {
+          "stages": 6,
+          "frames": 188,
+          "janky": 22,
+          "jankPercent": 11.702
+        }
+      },
+      "fold": {
+        "process": {
+          "stages": 6,
+          "frames": 128,
+          "janky": 20,
+          "jankPercent": 15.625
+        },
+        "popup": {
+          "stages": 6,
+          "frames": 128,
+          "janky": 20,
+          "jankPercent": 15.625
+        }
+      },
+      "close": {
+        "process": {
+          "stages": 6,
+          "frames": 175,
+          "janky": 20,
+          "jankPercent": 11.429
+        },
+        "popup": {
+          "stages": 0,
+          "frames": null,
+          "janky": null,
+          "jankPercent": null
+        }
+      }
+    },
+    "reverseBaseline": {
+      "first-open": {
+        "process": {
+          "stages": 1,
+          "frames": 28,
+          "janky": 12,
+          "jankPercent": 42.857
+        },
+        "popup": {
+          "stages": 1,
+          "frames": 17,
+          "janky": 6,
+          "jankPercent": 35.294
+        }
+      },
+      "reopen": {
+        "process": {
+          "stages": 2,
+          "frames": 68,
+          "janky": 28,
+          "jankPercent": 41.176
+        },
+        "popup": {
+          "stages": 2,
+          "frames": 45,
+          "janky": 14,
+          "jankPercent": 31.111
+        }
+      },
+      "open": {
+        "process": {
+          "stages": 3,
+          "frames": 96,
+          "janky": 40,
+          "jankPercent": 41.667
+        },
+        "popup": {
+          "stages": 3,
+          "frames": 62,
+          "janky": 20,
+          "jankPercent": 32.258
+        }
+      },
+      "expand": {
+        "process": {
+          "stages": 3,
+          "frames": 94,
+          "janky": 14,
+          "jankPercent": 14.894
+        },
+        "popup": {
+          "stages": 3,
+          "frames": 94,
+          "janky": 14,
+          "jankPercent": 14.894
+        }
+      },
+      "fold": {
+        "process": {
+          "stages": 3,
+          "frames": 65,
+          "janky": 11,
+          "jankPercent": 16.923
+        },
+        "popup": {
+          "stages": 3,
+          "frames": 65,
+          "janky": 11,
+          "jankPercent": 16.923
+        }
+      },
+      "close": {
+        "process": {
+          "stages": 3,
+          "frames": 85,
+          "janky": 9,
+          "jankPercent": 10.588
+        },
+        "popup": {
+          "stages": 0,
+          "frames": null,
+          "janky": null,
+          "jankPercent": null
+        }
+      }
+    },
+    "repeatCandidate": {
+      "first-open": {
+        "process": {
+          "stages": 1,
+          "frames": 30,
+          "janky": 14,
+          "jankPercent": 46.667
+        },
+        "popup": {
+          "stages": 1,
+          "frames": 16,
+          "janky": 6,
+          "jankPercent": 37.5
+        }
+      },
+      "reopen": {
+        "process": {
+          "stages": 2,
+          "frames": 66,
+          "janky": 25,
+          "jankPercent": 37.879
+        },
+        "popup": {
+          "stages": 2,
+          "frames": 46,
+          "janky": 11,
+          "jankPercent": 23.913
+        }
+      },
+      "open": {
+        "process": {
+          "stages": 3,
+          "frames": 96,
+          "janky": 39,
+          "jankPercent": 40.625
+        },
+        "popup": {
+          "stages": 3,
+          "frames": 62,
+          "janky": 17,
+          "jankPercent": 27.419
+        }
+      },
+      "expand": {
+        "process": {
+          "stages": 3,
+          "frames": 95,
+          "janky": 11,
+          "jankPercent": 11.579
+        },
+        "popup": {
+          "stages": 3,
+          "frames": 95,
+          "janky": 11,
+          "jankPercent": 11.579
+        }
+      },
+      "fold": {
+        "process": {
+          "stages": 3,
+          "frames": 62,
+          "janky": 14,
+          "jankPercent": 22.581
+        },
+        "popup": {
+          "stages": 3,
+          "frames": 62,
+          "janky": 14,
+          "jankPercent": 22.581
+        }
+      },
+      "close": {
+        "process": {
+          "stages": 3,
+          "frames": 84,
+          "janky": 9,
+          "jankPercent": 10.714
+        },
+        "popup": {
+          "stages": 0,
+          "frames": null,
+          "janky": null,
+          "jankPercent": null
+        }
+      }
+    }
+  },
+  "threadDiagnostics": {
+    "baseline": "baseline-cpu-report.json",
+    "candidate": "candidate-cpu-report.json",
+    "runs": 12,
+    "counterSource": "own /proc/self/task/<tid>/schedstat",
+    "threadsSeparatedBy": [
+      "tid",
+      "startTicks"
+    ],
+    "nativeStacks": false,
+    "limitations": [
+      "Non-minified isolated fixture, not signed R8 performance",
+      "Threads created after discovery excluded",
+      "Multiple RenderThread names kept separate",
+      "First baseline open input blocked until ~230ms; no valid first 100ms bucket",
+      "CPU/read overhead/ready queue wait distinct; scheduler wait excludes sleeping/driver waits",
+      "No Popup-only closing per-frame capture; destroyed windows remain unavailable"
+    ]
+  },
+  "checks": {
+    "jvm": [
+      {
+        "module": "app",
+        "tests": 578,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "service",
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "core",
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "common",
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "debugReleaseMotionLint": "passed for candidate build",
+    "parserTests": 7,
+    "baselineGeometryMethods": 1,
+    "candidateGeometryAndMenuMethods": 6,
+    "baselineCpuMethods": 1,
+    "candidateCpuMethods": 1,
+    "fixedFramePairs": 20,
+    "fixedFrameMaxChannelDifference": 0,
+    "candidatePngCount": 29
+  },
+  "finalFormalApkSha256": "a68d118253282d4e4641ff1d36618322a36bccb78bb54dbc5671ee4bcdc7ce18",
+  "protection": {
+    "formalDataCleared": false,
+    "formalDatabaseFullSnapshot": "not collected; UI/unchanged APK does not prove metadata invariants",
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "flutterPackageOperated": false
+  },
+  "artifacts": "../acceptance-artifacts/menu-cpu-geometry-20261109/",
+  "historicalStabilityAudit": "docs/historical-stability-investigation.md",
+  "sources": [
+    {
+      "url": "https://docs.kernel.org/scheduler/sched-stats.html",
+      "accessDate": "2026-11-09",
+      "claim": "schedstat fields: on-CPU ns, runqueue wait ns, timeslices",
+      "artifact": "linux-schedstats.md"
+    }
+  ]
+}

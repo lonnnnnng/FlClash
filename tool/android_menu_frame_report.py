@@ -75,8 +75,12 @@ def parse_gfxinfo(raw: str, expected_window: str | None = None) -> dict:
             "skippedRows": sum(bool(row["Flags"] & 8) for row in rows),
             "unknownFlagRows": sum(bool(row["Flags"] & ~15) for row in rows),
             "flagZeroRows": len(regular),
+            "regularRowCoveragePercent": round(len(regular) / len(rows) * 100, 3) if rows else None,
+            "vsyncDelayElapsed": _intervals(regular, "IntendedVsync", "Vsync"),
             "uiElapsed": _intervals(regular, "Vsync", "SyncQueued"),
+            "syncQueueElapsed": _intervals(regular, "SyncQueued", "SyncStart"),
             "renderElapsed": _intervals(regular, "SyncStart", "SwapBuffers"),
+            "completionElapsed": _intervals(regular, "IntendedVsync", "FrameCompleted"),
             "coverage": "available" if regular else "no-regular-frame-rows"})
     if expected_window is not None:
         available = any(expected_window in item["name"] for item in report["windows"])
@@ -88,6 +92,7 @@ def parse_gfxinfo(raw: str, expected_window: str | None = None) -> dict:
         "保留进程与各窗口原始计数，不相加、不从部分帧表重算卡顿分母。"
         "区间仅使用Flags=0且位于该窗口重置后的记录，是经过时间，不是CPU/GPU归因；"
         "RT动画与Skipped标记可能重叠，静态终态或窗口消失不证明动效流畅。"
+        "普通帧覆盖率只描述帧表样本；完成时刻不等于实际呈现，Vsync延后/同步排队也不是线程CPU时间。"
     )
     return report
 
