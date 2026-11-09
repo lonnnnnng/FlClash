@@ -75,9 +75,12 @@
     "releaseVersionedBuild": {
       "versionName": "0.1.1",
       "versionCode": 1001,
-      "apkSha256": "9cbc1307c67b4139de4599d54677e6e38290a1eca18d3bb6a6f96c0f9dc7c3bb",
-      "tagPushed": false,
-      "remoteReleasePublished": false
+      "localCandidateApkSha256": "9cbc1307c67b4139de4599d54677e6e38290a1eca18d3bb6a6f96c0f9dc7c3bb",
+      "publishedApkSha256": "02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437",
+      "tagPushed": true,
+      "remoteReleasePublished": true,
+      "releaseTag": "kclash-v0.1.1",
+      "releaseUrl": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.1"
     },
     "lint": {
       "debug": {
@@ -170,7 +173,7 @@
       },
       "releaseSigning": "Final signed APK is produced with the existing GitHub release secret by the kclash-v0.1.1 tag workflow; no signing secret or keystore is present in this local build environment."
     },
-    "artifactVersion": "0.1.0 / code1000 local signed fix; 0.1.1 release verification is tracked separately"
+    "artifactVersion": "0.1.0/code1000 local signed fix; 0.1.1/code1001 published signed asset and Redmi acceptance are recorded under publication"
   },
   "redmi": {
     "installedHashMatches": true,
@@ -242,7 +245,7 @@
       "cameraReleasedOnClose": true,
       "newProcessCrashCount": 0,
       "formalDataCleared": false,
-      "scope": "local signed candidate installed for pre-publish validation; GitHub tag artifact still pending"
+      "scope": "local signed candidate installed for pre-publish validation; published GitHub asset is separately installed and verified under publication.redmiOfficialAsset"
     },
     "invalidQrTestPerformed": false,
     "temporaryInvalidQrWasUploadedButNotTested": true,
@@ -467,5 +470,86 @@
     "accessed": "2026-11-10",
     "section": "Reflection with classes loaded by name",
     "supports": "Keep the class and its no-argument constructor for Class.forName/getDeclaredConstructor.newInstance"
+  },
+  "publication": {
+    "tag": "kclash-v0.1.1",
+    "sourceCommit": "5aed72feff494d9bdd7be9b709108b68ee788656",
+    "branchCi": {
+      "runId": 42672964498,
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42672964498",
+      "conclusion": "success"
+    },
+    "tagCi": {
+      "runId": 42673055574,
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42673055574",
+      "conclusion": "success",
+      "goRace": "passed",
+      "jvmTestTask": "passed",
+      "debugAndSignedReleaseBuild": "passed",
+      "debugLintErrors": 0,
+      "releaseLintErrors": 0,
+      "signedReleaseArtifactCheck": "passed",
+      "mlkitRegistrarDexCheck": {
+        "passed": true,
+        "registrarsRetained": 3
+      }
+    },
+    "release": {
+      "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.1",
+      "latest": true,
+      "draft": false,
+      "prerelease": false
+    },
+    "asset": {
+      "name": "KClash-0.1.1-android-arm64-v8a.apk",
+      "url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.1/KClash-0.1.1-android-arm64-v8a.apk",
+      "sha256": "02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437",
+      "bytes": 48339448,
+      "sha256SumsMatches": true,
+      "signatureVerified": true,
+      "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+      "applicationId": "com.lonnnnnng.flclash",
+      "versionName": "0.1.1",
+      "versionCode": 1001,
+      "minSdk": 24,
+      "debuggable": false,
+      "abi": "arm64-v8a",
+      "mlkitRegistrarDexCheckPassed": true
+    },
+    "redmiOfficialAsset": {
+      "device": "Redmi Note 8 Pro",
+      "serial": "wsvwypiz7xwslvl7",
+      "coveredInstalledCandidate": true,
+      "installOutput": "Success",
+      "versionName": "0.1.1",
+      "versionCode": 1001,
+      "installedBaseApkSha256": "02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437",
+      "installedHashMatchesPublishedAsset": true,
+      "processPid": "4709",
+      "cameraLifecycle": [
+        {"phase": "open", "cameraActive": true},
+        {"phase": "torchOn", "cameraActive": true},
+        {"phase": "torchOff", "cameraActive": true},
+        {"phase": "background", "cameraActive": false},
+        {"phase": "resume", "cameraActive": true},
+        {"phase": "closed", "cameraActive": false}
+      ],
+      "singleProcessAcrossLifecycle": true,
+      "androidRuntimeErrorsForProcess": 0,
+      "activeCameraAfterAcceptance": false,
+      "originalProfileVisibleAfterAcceptance": "kclash-release-0.1.0",
+      "formalDataCleared": false,
+      "profileImportSubmitted": false,
+      "vpnRunningAfterAcceptance": false,
+      "proxyServiceRunningAfterAcceptance": false,
+      "lensQrNotTested": true,
+      "evidenceDirectory": "../../../acceptance-artifacts/qr-camera-published-0.1.1-20261110/",
+      "evidenceFiles": {
+        "camera-lifecycle.json": "49a1d0d080ae3630a6d6ebd4000d8a404fc3e3ba9cac010dafe0c40771c891e9",
+        "lifecycle2-open.png": "0d4172d97ab6816f92c69820293749f718b5df479b3b41f3dd2d4a4cdded557f",
+        "lifecycle2-torch-on.png": "cef4775bddfa8eec43e60877046501b299797433d7ff63a27c8281839aa6d064",
+        "lifecycle2-resumed.png": "f977f0022459c3840d222d4ef73b28800d11c31332ef3ec1d30f5c481c0436a3"
+      }
+    }
   }
 }
