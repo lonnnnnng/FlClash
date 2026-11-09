@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **搜索动效接续参考（2026-11-10）**：固定Flutter原Scaffold已在Redmi独立包验证根页顶栏搜索、推入子页下沿搜索及真实IME取消；原始录屏777帧、32个采样位置已检查。仅浅色组件参考，Kotlin连续过渡尚未适配。下一切片优先代理根页搜索展开/收回，再补资源/添加Sheet的下沿搜索，见`docs/search-motion-reference.md`。独立参考包已清理，原Flutter包未操作。
+
 > **发布后边界与资源长目录（2026-11-10，KUI-030）**：原始正式0.1.0→0.1.1覆盖升级已验，UID、单FILE配置21字段/选择、2条偏好、238条测速记录及正文SHA-size-mtime在安装边界保持；启动后配置保持但测速value/时间更新，未确定事件归因。Perfetto在KClash无进程时，process_stats成功而最小sched ftrace使traced_probes进入D并flush失败，原生慢帧仍未归因。代理/规则64项目录补首次显现当前选择，Redmi深浅两例各2/2、相邻回归2/2，4个不重复方法共6次执行全过、23PNG已核验；真实IME清空/末项选择、一次回调/别名与重开取消已验。865项JVM（App583执行，其余282复用）、Debug/签名Release-R8/独立测试包及双Lint零错误通过。最终本地候选SHA `9b7fad97…88fcaa7`已安装回拉匹配，公开0.1.1资产和标签未替换；正式配置保留，3个自有测试包与12个手机诊断文件已精确清理，服务停止。实体QR、完整Flutter视觉/动效、低API和历史异常因果继续待验。证据`docs/acceptance/post-release-boundaries-redmi-20261110.json`；溯源`docs/resource-picker-long-list-defect.md`、`docs/release-upgrade-acceptance.md`。
 
 > **扫码崩溃修复与0.1.1正式发布（2026-11-10，KREL-002）**：正式Release修复ML Kit三类注册器构造器被R8裁剪；旧包3/3缺失、修复APK DEX门禁3/3保留，源码`5aed72fe`和标签`kclash-v0.1.1`已发布。标签CI 42673055574成功，Go race、JVM test、签名R8、双Lint及最终APK门禁通过。公开Latest APK SHA `02924c48f20fa6885fec061deebcb82bb18ef9c90930c24fab3b25aa8fef4437`；Redmi覆盖安装回拉哈希一致，相机取景/手电筒/后台释放恢复/关闭释放6阶段通过，同PID 4709。配置卡仍可见，未清正式数据或提交导入；验收后相机空闲、VPN/ProxyService停止。865项JVM本机强制执行零失败/错误/跳过；实体摄像二维码/低API未验。证据`docs/acceptance/qr-camera-r8-redmi-20261110.json`及`../../../acceptance-artifacts/qr-camera-published-0.1.1-20261110/`，溯源`docs/release-mlkit-registrar-defect.md`。

@@ -1,0 +1,246 @@
+{
+  "date": "2026-11-10",
+  "status": "REFERENCE_BEHAVIOR_VERIFIED_KOTLIN_ADAPTATION_PENDING",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "source": {
+    "flutterCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "prismCommit": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "package": "com.lonnnnnng.kclash.reference.search_reference",
+    "sourceFiles": {
+      "lib/main.dart": "6d0ed2e6829f3447ee8a20d16432d215fe2aab548b1608482b20b804fc23b5cc",
+      "lib/reference_app.dart": "e30626ea6121ca3f8ebfa4ff2f3c1119c4166be7b2a62320626a6967cd2fa43e",
+      "lib/upstream_scaffold/scaffold.dart": "9ebbfb1bb0293e97ff366f52834dd6a8a31b4357b6afe067ea2a6bfbb2b9d52e",
+      "lib/upstream_scaffold/scaffold_search.dart": "da30487fd6fecc575f3a420f9808446bb962789beb08655e8fb88323014f0858",
+      "lib/upstream_scaffold/scaffold_actions.dart": "0d3fee5a534de3f5b5e101c91e887558deb6145358544ae10fde7d213c9e2557"
+    },
+    "scaffoldFilesUnchangedFromReference": true,
+    "apkSha256": "626629b06657facdb18ec7a7c160826b979d4d3a4096c68ddc615cac6ecde032",
+    "failures": [
+      "initial host omitted ViewScope and displayed Flutter ErrorWidget; preserved log",
+      "second host body ignored floating toolbar inset; fixed host-only padding using sectionsTopPadding"
+    ]
+  },
+  "scenarios": [
+    "root search open/filter/hide IME/cancel/reopen cleared/close",
+    "pushed page docked search/filter/cancel stays on page/back"
+  ],
+  "frames": 777,
+  "ptsStrictlyIncreasing": true,
+  "samplePositions": 32,
+  "visualScope": "light component host; not full Flutter app or pixel parity",
+  "performanceConclusion": null,
+  "hostToVideoClockSynchronized": false,
+  "cleanup": {
+    "independentReferenceRemoved": true,
+    "originalFlutterTouched": false,
+    "formalKotlinTouched": false,
+    "installedApkMatched": true
+  },
+  "artifacts": [
+    {
+      "name": "reference-source.json",
+      "bytes": 1091,
+      "sha256": "9bfaa5cc8ff4a1f1b82f4711b45798931771f90b254dec50ac0d44c2d364d5a7"
+    },
+    {
+      "name": "root-search.mp4",
+      "bytes": 4290120,
+      "sha256": "e16e373b4cfcbd08b7b0d169eff6610c5f392505d47277a0bb56768b9a28337e"
+    },
+    {
+      "name": "root-search-pts.json",
+      "bytes": 9400,
+      "sha256": "bc5bf219f1f1967b1d9c41ed4555b1aad9b2a1778f800e4ef7f7d680ecf50e94"
+    },
+    {
+      "name": "root-search-events.json",
+      "bytes": 350,
+      "sha256": "84b2b9c661bde2d367d02ea674d77e0a4b102e701bfbfcfe6670492afdd66c29"
+    },
+    {
+      "name": "root-search-motion-window.json",
+      "bytes": 4157,
+      "sha256": "70eb7dfb410c30c164456b2400f2f77264d111d27f03000ffed349802979fc87"
+    },
+    {
+      "name": "root-search-motion-window.jpg",
+      "bytes": 119944,
+      "sha256": "eb96c403e53be03c3e6d26d303fb9b97d760409d85e673063081054dc1d0ac29"
+    },
+    {
+      "name": "record-root-search.py",
+      "bytes": 2350,
+      "sha256": "e959aa0b98b5f0969ddf4dd5e6acdee8096701258f01178fbe789f93d2e11de7"
+    },
+    {
+      "name": "observe-search.py",
+      "bytes": 789,
+      "sha256": "e2272967260468e41ef95fca5289545588b2809b1246b9d9951d368ccf917220"
+    },
+    {
+      "name": "cleanup.json",
+      "bytes": 140,
+      "sha256": "93fdb16a8a2433b170c3470113bad0f6b954a1ec42be162e0b46e98006eb23a1"
+    },
+    {
+      "name": "reference-initial-log.txt",
+      "bytes": 19695,
+      "sha256": "fcae2056a67b391dc3aa2623afd6c9bf581f199ac6e95387cadced4218211cb2"
+    },
+    {
+      "name": "reference-build.log",
+      "bytes": 767,
+      "sha256": "15b0ede7775b9b933835342d1958564abfdafa197993d67b05f13c5c68e7b015"
+    },
+    {
+      "name": "reference-build2.log",
+      "bytes": 452,
+      "sha256": "9507953b285e24fac16101591909636c59c863cabbf808c6f00df0b3e2a11c4f"
+    },
+    {
+      "name": "reference-build3.log",
+      "bytes": 452,
+      "sha256": "93947de289d5aefd765b8d12971faf697359001ec453fe843b752c0f7b026588"
+    },
+    {
+      "name": "lib/main.dart",
+      "bytes": 1913,
+      "sha256": "6d0ed2e6829f3447ee8a20d16432d215fe2aab548b1608482b20b804fc23b5cc"
+    },
+    {
+      "name": "lib/reference_app.dart",
+      "bytes": 5287,
+      "sha256": "e30626ea6121ca3f8ebfa4ff2f3c1119c4166be7b2a62320626a6967cd2fa43e"
+    },
+    {
+      "name": "pubspec.yaml",
+      "bytes": 341,
+      "sha256": "7e33ce4503184e7394b020726305bcaaf25c05cc4da13a13a771d543b29cb5e4"
+    },
+    {
+      "name": "pubspec.lock",
+      "bytes": 3256,
+      "sha256": "8d04a512efea3d2e5708eaf6e61968bcca55b06cae2e8c7bccb3550c8ea8fbb4"
+    },
+    {
+      "name": "lib/upstream_scaffold/scaffold.dart",
+      "bytes": 27999,
+      "sha256": "9ebbfb1bb0293e97ff366f52834dd6a8a31b4357b6afe067ea2a6bfbb2b9d52e"
+    },
+    {
+      "name": "lib/upstream_scaffold/scaffold_search.dart",
+      "bytes": 26144,
+      "sha256": "da30487fd6fecc575f3a420f9808446bb962789beb08655e8fb88323014f0858"
+    },
+    {
+      "name": "lib/upstream_scaffold/scaffold_actions.dart",
+      "bytes": 7672,
+      "sha256": "0d3fee5a534de3f5b5e101c91e887558deb6145358544ae10fde7d213c9e2557"
+    },
+    {
+      "name": "final-root-search.xml",
+      "bytes": 9403,
+      "sha256": "b612422ab104eceb97856c50e41d77b88c9374f8c6d372764575ccb8e7842f31"
+    },
+    {
+      "name": "final-root-returned.xml",
+      "bytes": 12633,
+      "sha256": "0b8889628ed65961d32b35a64ca0eb7a8fda2e7444156b99a69a96dc5c3af181"
+    },
+    {
+      "name": "final-root-closed.xml",
+      "bytes": 12634,
+      "sha256": "4751cfe2717439065a5bbecc09ead8d66114dfff1f82b8c4f4c72698a70b3545"
+    },
+    {
+      "name": "final-pushed-idle.xml",
+      "bytes": 12264,
+      "sha256": "e66c5919a638e86110412afed1a5da26cb6c99f5c54e4ecb94216ca65f52b46d"
+    },
+    {
+      "name": "final-pushed-filtered.xml",
+      "bytes": 8926,
+      "sha256": "2d40108336f9141cac7fda03ef8f22b10e901ce6e543ed1d77a0e50bbaaefae8"
+    },
+    {
+      "name": "final-pushed-cleared.xml",
+      "bytes": 12264,
+      "sha256": "e66c5919a638e86110412afed1a5da26cb6c99f5c54e4ecb94216ca65f52b46d"
+    },
+    {
+      "name": "final-root-search.png",
+      "bytes": 187338,
+      "sha256": "ac2248e9cba054e0affeae59053e1fb87cc332cc0ae027c021a6a7ec80312ad4"
+    },
+    {
+      "name": "final-root-returned.png",
+      "bytes": 205197,
+      "sha256": "770d3235820d28cfb8e9c58c103252467fc6cb4b58184388867c0ca2d1293e2d"
+    },
+    {
+      "name": "final-root-closed.png",
+      "bytes": 205292,
+      "sha256": "49090a7af2d67f74d49f15c2b09126a96bbb5a53aae7a954158cfba2b649d63e"
+    },
+    {
+      "name": "final-pushed-filtered.png",
+      "bytes": 166749,
+      "sha256": "65923ea9e68d7943c12867529c8a06a227a880c50eb8887a63e993ce9b861b35"
+    },
+    {
+      "name": "final-pushed-idle.png",
+      "bytes": 202813,
+      "sha256": "11bc6fce7cffecd9dcf422102ff2c68bc58ecf430552d28c327f95a247fb0450"
+    },
+    {
+      "name": "final-pushed-cleared.png",
+      "bytes": 202899,
+      "sha256": "7fce2cfb7e2d64ba5292599e4aac3bc65bdb60f3fa7bd86824c122ceb5136b0c"
+    },
+    {
+      "name": "motion-root-reopened.xml",
+      "bytes": 9403,
+      "sha256": "b612422ab104eceb97856c50e41d77b88c9374f8c6d372764575ccb8e7842f31"
+    },
+    {
+      "name": "motion-root-after-first-back.xml",
+      "bytes": 8135,
+      "sha256": "46037f8001ded2ee9d9fe5998d0db556aa2d7ca5bf0b73b2eb6cf42d39cb8dea"
+    },
+    {
+      "name": "motion-root-filtered.xml",
+      "bytes": 8135,
+      "sha256": "8838c45f37f230cb75f797f469639f5d1076ee01839e75bf7b2b1a67ed378ba0"
+    },
+    {
+      "name": "motion-root-closed.xml",
+      "bytes": 12633,
+      "sha256": "0b8889628ed65961d32b35a64ca0eb7a8fda2e7444156b99a69a96dc5c3af181"
+    },
+    {
+      "name": "motion-root-reopened.png",
+      "bytes": 187512,
+      "sha256": "e3b80d65c6290c5093824b938b0e995a896209aa28400d83935c48c61f8d6100"
+    },
+    {
+      "name": "motion-root-after-first-back.png",
+      "bytes": 78071,
+      "sha256": "46f222ead916a23484b59d8814f6052ee8e44f4675dd3259ebd72bb7c07a2206"
+    },
+    {
+      "name": "motion-root-filtered.png",
+      "bytes": 135587,
+      "sha256": "c9e7097cbb5da02df3e45d6f5f68227cb110da61e177700ee116b7b9434aea28"
+    },
+    {
+      "name": "motion-root-closed.png",
+      "bytes": 205412,
+      "sha256": "cd375ade186814d9f3270454d03d8963fe96d96ac44403960746322d8151e265"
+    }
+  ],
+  "evidenceDirectory": "../../../acceptance-artifacts/flutter-search-host-20261110/"
+}
