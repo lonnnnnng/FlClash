@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -41,6 +43,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
     val ntp = section == "ntp"
     val root = if (ntp) state.ntp.toJson() else state.sniffer.toJson()
     var adding by rememberSaveable { mutableStateOf(false) }
+    var addQuery by rememberSaveable(profile.id, section) { mutableStateOf("") }
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
     var yaml by rememberSaveable { mutableStateOf(false) }
     var clear by rememberSaveable { mutableStateOf(false) }
@@ -51,7 +54,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
     val targets = remember(profile.id, sourceContent) { runCatching { ProfileExtensionApplier.targets(sourceContent) }.getOrDefault(emptyList()) }
     var pendingChild by remember(profile.id, section) { mutableStateOf<String?>(null) }
     LaunchedEffect(profile.id, section, state.revision) {
-        when (pendingChild) { "value" -> editing = null; "yaml" -> yaml = false }
+        when (pendingChild) { "value" -> editing = null; "yaml" -> yaml = false; "last-add" -> { adding = false; addQuery = "" } }
         pendingChild = null
     }
     fun submit(next: JsonObject, child: String? = null) {
@@ -72,7 +75,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
         val next = root.deepCopy(); setMoreField(next, field, value); submit(next, child)
     }
     ProfileEditorPage({ if (!state.isSaving) onDismiss() }, title = { Text(if (ntp) "NTP" else "Sniffer") }, backTag = "profile_more_editor_back", confirmButton = {
-        IconButton(onClick = { adding = true }, enabled = !state.isSaving && remaining.isNotEmpty(), modifier = Modifier.testTag("profile_more_add")) { Icon(Icons.Outlined.AddCircleOutline, null) }
+        if (listed.isNotEmpty()) IconButton(onClick = { adding = true }, enabled = !state.isSaving && remaining.isNotEmpty(), modifier = Modifier.testTag("profile_more_add")) { Icon(Icons.Outlined.AddCircleOutline, null) }
         IconButton(onClick = { yaml = true }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_yaml")) { Icon(Icons.Outlined.Code, null) }
     }, text = {
         Column(Modifier.fillMaxSize().testTag("profile_more_editor_scroll")) {
@@ -82,7 +85,8 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                 // 作者 long：空态按剩余视口偏上居中，沿用Flutter的-0.2对齐；固定80dp会让高屏留下整片空白。
                 Box(Modifier.fillMaxSize(), contentAlignment = BiasAlignment(0f, -.2f)) {
                 Column(Modifier.widthIn(max = 320.dp).verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 24.dp).testTag("profile_more_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(if (ntp) Icons.Outlined.Schedule else Icons.Outlined.Radar, null, Modifier.size(72.dp), tint = MaterialTheme.colorScheme.primary)
+                    ProfileEmptyIllustration(if (ntp) AppGlyphs.clock else AppGlyphs.eye,
+                        extent = if (with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() < 560.dp }) 120.dp else 160.dp)
                     Text("暂无设置项", Modifier.padding(top = 20.dp), style = MaterialTheme.typography.titleMedium)
                     Text("未添加的字段沿用原配置。添加设置项后可单独调整。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -116,29 +120,37 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
             }
         }
     })
-    if (adding) ModalBottomSheet(onDismissRequest = { if (!state.isSaving) adding = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    if (adding) ModalBottomSheet(onDismissRequest = { if (!state.isSaving) { adding = false; addQuery = "" } }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("添加设置项", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
-                TextButton(onClick = { adding = false }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_add_done")) { Text("完成") }
+                TextButton(onClick = { adding = false; addQuery = "" }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_add_done")) { Text("完成") }
             }
             if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
             state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            if (remaining.size >= 10 || addQuery.isNotEmpty()) ProfileSearchField(addQuery, { addQuery = it }, "profile_more_add_search", enabled = !state.isSaving)
             Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()).testTag("profile_more_available_fields")) {
                 if (remaining.isEmpty()) Text("所有设置项均已添加", Modifier.padding(vertical = 24.dp))
+                val matching = remaining.filter { addQuery.isBlank() || it.label.contains(addQuery.trim(), true) || it.key.contains(addQuery.trim(), true) }
+                if (matching.isEmpty() && remaining.isNotEmpty()) Text("无搜索结果", Modifier.padding(24.dp).testTag("profile_more_add_empty"))
                 listOf(false, true).forEach { protocols ->
-                    val entries = remaining.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
+                    val entries = matching.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
                     if (entries.isNotEmpty()) {
-                        Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(top = 16.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
-                        entries.forEach { field ->
-                            Row(Modifier.fillMaxWidth().clickable(enabled = !state.isSaving) { change(field, field.defaultValue()) }.heightIn(min = 64.dp).testTag("more_add_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Outlined.AddCircleOutline, null, Modifier.padding(end = 16.dp), tint = MaterialTheme.colorScheme.primary)
+                        Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
+                        Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) { Column {
+                        entries.forEachIndexed { index, field ->
+                            if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
+                            Row(Modifier.fillMaxWidth().clickable(enabled = !state.isSaving) {
+                                // 作者 long：只在最后一个候选实际提交成功并更新revision后退出，失败仍留层重试；筛选结果为空不代表全部已添加。
+                                change(field, field.defaultValue(), if (remaining.size == 1) "last-add" else null)
+                            }.heightIn(min = 64.dp).padding(horizontal = 16.dp).testTag("more_add_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
                                     Text(field.label)
                                     if (field.description.isNotEmpty()) Text(field.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
+                        } }
                     }
                 }
             }
@@ -173,6 +185,7 @@ private fun MoreProtocolEditor(field: MoreField, value: JsonObject, root: JsonOb
     }
     val currentDestination = value.get("override-destination")?.asBoolean
     val portCount = value.get("ports")?.asJsonArray?.size() ?: 0
+    val destinationSource = rememberAppMenuSource()
     ProfileEditorPage({ if (!saving) onDismiss() }, title = { Text(field.label) }, backTag = "more_protocol_back", text = {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (saving) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -182,8 +195,38 @@ private fun MoreProtocolEditor(field: MoreField, value: JsonObject, root: JsonOb
                     MoreProtocolRow("端口", if (portCount == 0) "默认端口" else "$portCount 个端口或范围",
                         Modifier.testTag("more_protocol_ports"), enabled = !saving, onClick = { ports = true })
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp))
-                    MoreProtocolRow("覆盖目标地址", when (currentDestination) { true -> "启用"; false -> "禁用"; null -> "默认，跟随 Sniffer" },
-                        Modifier.testTag("more_protocol_destination"), enabled = !saving, onClick = { destination = true })
+                    Box {
+                        AppMenuSourceContent(destinationSource) {
+                            Row(Modifier.fillMaxWidth().clickable(enabled = !saving) { destination = true }
+                                .heightIn(min = 64.dp).padding(16.dp).testTag("more_protocol_destination"), verticalAlignment = Alignment.CenterVertically) {
+                                Text("覆盖目标地址", Modifier.weight(1f))
+                                Spacer(Modifier.width(12.dp))
+                                // 作者 long：源快照只接管行尾picker；菜单打开后标签仍是页面的稳定定位信息，不能把整行一并隐藏。
+                                Row(Modifier.appMenuSource(destinationSource, dashboardCardColor()).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text(when (currentDestination) { true -> "启用"; false -> "禁用"; null -> "默认，跟随 Sniffer" },
+                                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                AppGlyphIcon(AppGlyphs.chevronDown, Modifier.padding(start = 8.dp).size(20.dp))
+                                }
+                            }
+                        }
+                        AppDropdownMenu(destination, { if (!saving) destination = false }, source = destinationSource, dismissEnabled = !saving) {
+                            saveError?.let { Text(it, color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(12.dp).testTag("more_protocol_error")) }
+                            listOf(null to "默认，跟随 Sniffer", true to "启用", false to "禁用").forEach { (selected, label) ->
+                                AppDropdownMenuItem(text = { Text(label) }, enabled = !saving, dismissOnClick = false,
+                                    modifier = Modifier.testTag("more_protocol_destination_${selected ?: "default"}"),
+                                    trailingIcon = if (selected == currentDestination) ({ AppGlyphIcon(AppGlyphs.check) }) else null,
+                                    onClick = {
+                                        // 作者 long：菜单选择先等持久化回执，失败继续显示原选择并留层；不能在回源后才发现保存失败却丢失重试入口。
+                                        if (selected == currentDestination) destination = false else {
+                                            val next = value.deepCopy()
+                                            if (selected == null) next.remove("override-destination") else next.addProperty("override-destination", selected)
+                                            pending = "destination"; onChange(next)
+                                        }
+                                    })
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -191,23 +234,6 @@ private fun MoreProtocolEditor(field: MoreField, value: JsonObject, root: JsonOb
     if (ports) MoreValueEditor(field, value, root, false, saving, saveError, { ports = false }) { next ->
         if (next == value) ports = false else { pending = "ports"; onChange(checkNotNull(next).asJsonObject) }
     }
-    if (destination) AlertDialog(onDismissRequest = { if (!saving) destination = false },
-        title = { Text("覆盖目标地址") }, text = {
-            Column {
-                saveError?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("more_protocol_error")) }
-                listOf(null to "默认，跟随 Sniffer", true to "启用", false to "禁用").forEach { (selected, label) ->
-                    Row(Modifier.fillMaxWidth().clickable(enabled = !saving) {
-                        if (selected == currentDestination) destination = false else {
-                            val next = value.deepCopy()
-                            if (selected == null) next.remove("override-destination") else next.addProperty("override-destination", selected)
-                            pending = "destination"; onChange(next)
-                        }
-                    }.heightIn(min = 56.dp).testTag("more_protocol_destination_${selected ?: "default"}"), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(currentDestination == selected, onClick = null); Text(label, Modifier.padding(start = 12.dp))
-                    }
-                }
-            }
-        }, confirmButton = { TextButton(enabled = !saving, onClick = { destination = false }) { Text("取消") } })
 }
 
 @Composable

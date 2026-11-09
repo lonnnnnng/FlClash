@@ -47,8 +47,7 @@ internal fun ProfileProxyResourceBindings(section: String, source: String, profi
     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     if (choosing) ProfileEditorPage(onDismissRequest = { choosing = false; query = "" }, backTag = "proxy_resource_picker_back", title = { Text("选择代理资源") }, text = {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(query, { query = it }, label = { Text("搜索") }, singleLine = true,
-                modifier = Modifier.fillMaxWidth().testTag("proxy_resource_search"))
+            ProfileSearchField(query, { query = it }, "proxy_resource_search")
             val available = profiles.filter { it.type != ProfileType.CUSTOM }
             val choices = available.filter { it.realLabel.contains(query.trim(), true) }
             if (choices.isEmpty()) Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {

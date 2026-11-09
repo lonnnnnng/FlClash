@@ -63,6 +63,10 @@ class RuleResourcesPageInstrumentedTest {
         capture("rule_resources_missing_reference")
         compose.onNodeWithText("选择").performClick()
         capture("rule_resources_choose")
+        compose.onNodeWithTag("rule_resource_binding_search").performTextReplacement("无匹配资源")
+        compose.onNodeWithTag("rule_resource_binding_empty").assertExists()
+        capture("rule_resources_binding_empty")
+        compose.onNodeWithTag("rule_resource_binding_search_clear").performClick()
         compose.onNodeWithText("常用规则").performClick()
         compose.runOnIdle { assertTrue(section.contains("缺失规则")); assertTrue(section.contains("kclash-resource:page-rule")) }
         compose.onNodeWithText("全局资源 · 常用规则").assertIsDisplayed()

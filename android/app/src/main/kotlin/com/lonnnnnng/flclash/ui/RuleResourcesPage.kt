@@ -74,8 +74,7 @@ internal fun RuleResourcesPage(
                     ResourceOrderItem(it.id, it.label, (if (it.url.isBlank()) "本地" else "远程") + " · " + it.behavior)
                 }, state.busy, "rule_resources", onReorder, Modifier.fillMaxWidth().weight(1f))
                 else {
-                OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索规则资源") }, modifier = Modifier.fillMaxWidth().testTag("rule_resources_search"),
-                    leadingIcon = { Icon(Icons.Outlined.Search, null) }, trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, null, modifier = Modifier.testTag("action:清除搜索")) } })
+                ProfileSearchField(query, { query = it }, "rule_resources_search", "搜索规则资源")
                 val rows = state.rows.filter { query.isBlank() || it.label.contains(query, true) }
                 if (!state.loading && rows.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(if (query.isBlank()) "暂无规则资源" else "没有匹配的结果", color = MaterialTheme.colorScheme.onSurfaceVariant)

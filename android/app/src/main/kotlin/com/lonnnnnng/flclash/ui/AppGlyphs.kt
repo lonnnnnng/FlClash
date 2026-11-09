@@ -2,6 +2,12 @@ package com.lonnnnnng.flclash.ui
 
 // 作者 long：坐标直接移植 main:lib/ui/icons/app_glyphs.dart，保持上游图形语义与24单位网格；渲染规则见AppGlyph。
 internal object AppGlyphs {
+    // 作者 long：NTP空态沿用固定Flutter be847366的clock/requests几何，不能用系统时钟图标替换复合插图。
+    val clock by lazy { AppGlyph(listOf(
+        GlyphCircle(12f, 12f, 8.8f),
+        GlyphPolyline(listOf(GlyphVertex(12f, 7.2f), GlyphVertex(12f, 12f, .6f), GlyphVertex(15.2f, 14f)), role = GlyphRole.detail),
+    )) }
+
     val dashboard by lazy { AppGlyph(listOf(
     GlyphBox(3.5f, 3.5f, 10.5f, 11.5f, 2f),
     GlyphBox(13.5f, 3.5f, 20.5f, 9.5f, 2f),

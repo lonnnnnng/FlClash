@@ -39,11 +39,11 @@ Release 预发布检查（没有独立签名身份时输出未签名 APK）：
 
 gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --expected-window 弹出式窗口 --output report.json input.gfx`。保留进程与各Window的原始计数，不相加；RTAnimation/Skipped位可重叠，区间只使用各窗口重置后的Flags=0行。关闭后Popup缺席必须报告不可观测，不可记零耗时。解析器验证：`python3 -m unittest discover -s tool -p test_android_menu_frame_report.py -v`。边界见`docs/menu-source-preparation-investigation.md`。
 
-当前重置后的Redmi连Debug包也拒绝`run-as`的SELinux上下文，Debug自然视觉同样启用内联帧表。中断采集只执行`removeExactOwnInterruptedFrameArtifacts`，显式`kclashMotionCleanup=true`、原run及JSON `kclashMotionCleanupManifest`（name/bytes/sha256）；先核对清单全部文件再精确删除，空清单只断言采集缓存为空。正式配置当前0份，不能用旧两份配置门禁或静默导入补齐测试前提。
-
-## Go core
+当前重置后的Redmi连Debug包也拒绝`run-as`的SELinux上下文，Debug自然视觉同样启用内联帧表。中断采集只执行`removeExactOwnInterruptedFrameArtifacts`，显式`kclashMotionCleanup=true`、原run及JSON `kclashMotionCleanupManifest`（name/bytes/sha256）；先核对清单全部文件再精确删除，空清单只断言采集缓存为空。2026-11-08重置窗口曾为0份；后续已恢复授权本地配置，当前数量必须按当轮正式环境核对，不能沿用旧两份或零份门禁，也不能静默导入补齐测试前提。
 
 独立线程计数诊断选择`VisualMotionNaturalInstrumentedTest#darkMenuOpenAndCloseThreadCpuSamples`，显式`kclashMotionThreadCpu=true`、安全名称`kclashMotionRun`，禁用PNG/方法采样。用`python3 tool/android_menu_thread_report.py instrument.log --output report.json`解析；按TID/startTicks分开同名RenderThread，读取失败/线程死亡保留缺口，计划100ms不等于实际采样间隔。该入口仅测试源码，不等于正式R8包性能或原生调用栈；见`docs/menu-cpu-geometry-investigation.md`。
+
+## Go core
 
 ```zsh
 go version

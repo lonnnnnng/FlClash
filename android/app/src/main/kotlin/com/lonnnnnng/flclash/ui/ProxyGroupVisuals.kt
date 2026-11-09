@@ -181,7 +181,7 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
             IconButton(onClick = { link = true }, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_link")) { Icon(Icons.Outlined.Link, null) }
         }, text = {
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().testTag("group_icon_search"), label = { Text("搜索图标") }, singleLine = true)
+                ProfileSearchField(query, { query = it }, "group_icon_search", "搜索图标")
                 (error ?: pickerState?.error)?.takeUnless { link }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
                 if (pickerState?.recoveryFailed == true) TextButton({ durable?.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text("重试恢复") }
                 if (imageBusy || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())

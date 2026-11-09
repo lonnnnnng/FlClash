@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.data.Profile
@@ -23,6 +24,92 @@ class ProfileMoreEditorInstrumentedTest {
     private var savedSniffer: ProfileSnifferOverrides? = null
     private var exits = 0
     private var reject = false
+    private var holdSave = false
+    private var pendingSave: Pair<ProfileNtpOverrides, ProfileSnifferOverrides>? = null
+    private var saveCalls = 0
+
+    @Test fun pendingDestinationIgnoresBackAndOutsideThenKeepsFailedChoiceForRetry() {
+        section = "sniffer"; render(); add("sniff.HTTP")
+        compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
+        compose.onNodeWithTag("more_protocol_destination").performClick()
+        compose.runOnIdle { holdSave = true }
+        compose.onNodeWithTag("more_protocol_destination_false").performClick()
+        compose.onNodeWithTag("more_protocol_destination_false").assertIsNotEnabled()
+        compose.mainClock.autoAdvance = false
+        compose.mainClock.advanceTimeBy(600)
+        val before = compose.onNodeWithTag("app_popup_menu").captureToImage().asAndroidBitmap()
+        val calls = saveCalls
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        compose.onNodeWithTag("app_popup_outside").performTouchInput { click(androidx.compose.ui.geometry.Offset(5f, 5f)) }
+        compose.mainClock.advanceTimeBy(180)
+        val during = compose.onNodeWithTag("app_popup_menu").captureToImage().asAndroidBitmap()
+        listOf("before" to before, "during" to during).forEach { (phase, bitmap) ->
+            recordVisualPng("more_pending_destination_$phase", ByteArrayOutputStream().also {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+            }.toByteArray())
+        }
+        assertEquals(before.width, during.width); assertEquals(before.height, during.height)
+        // 作者 long：被点击的第三行涟漪由Android独立时钟推进；比较未点击的上半部仍须逐像素一致，回源缩放/模糊不能被容差放过。
+        val upperBefore = android.graphics.Bitmap.createBitmap(before, 0, 0, before.width, before.height / 2)
+        val upperDuring = android.graphics.Bitmap.createBitmap(during, 0, 0, during.width, during.height / 2)
+        assertTrue("保存中返回/外点不得先启动回源", upperBefore.sameAs(upperDuring))
+        compose.runOnIdle { assertEquals(calls, saveCalls); completeHeldSave(false) }
+        compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("more_protocol_error").assertIsDisplayed()
+        compose.runOnIdle { holdSave = false }
+        compose.onNodeWithTag("more_protocol_destination_false").performClick()
+        waitGone("more_protocol_destination_false")
+        compose.runOnIdle { assertEquals(false, savedSniffer?.sniff?.get("HTTP")?.overrideDestination) }
+    }
+
+    @Test fun lastAdditionWaitsForAsyncReceiptAndFailedSaveCanRetry() {
+        render(); add(*ntpFields.dropLast(1).map { it.key }.toTypedArray())
+        compose.onNodeWithTag("profile_more_add").performClick()
+        compose.runOnIdle { holdSave = true }
+        compose.onNodeWithTag("more_add_write-to-system").performClick()
+        compose.onNodeWithTag("profile_more_add_done").assertIsNotEnabled()
+        compose.onNodeWithTag("more_add_write-to-system").assertIsNotEnabled()
+        compose.runOnIdle { assertNull(savedNtp?.writeToSystem); completeHeldSave(false) }
+        compose.onNodeWithTag("more_add_write-to-system").assertIsEnabled().performClick()
+        compose.onNodeWithTag("profile_more_add_done").assertExists()
+        compose.runOnIdle { completeHeldSave(true) }
+        waitGone("profile_more_add_done")
+        compose.runOnIdle { assertEquals(false, savedNtp?.writeToSystem) }
+    }
+
+    private fun completeHeldSave(success: Boolean) {
+        val (ntp, sniffer) = checkNotNull(pendingSave); pendingSave = null
+        if (success) {
+            savedNtp = ntp; savedSniffer = sniffer
+            state = state.copy(ntp = ntp, sniffer = sniffer, isSaving = false, revision = state.revision + 1, error = null)
+        } else state = state.copy(isSaving = false, error = "保存失败，请重试")
+    }
+
+    @Test fun addSearchKeepsQueryAndLastSuccessfulChoiceClosesOnlyAfterSave() {
+        section = "sniffer"; render()
+        compose.onNodeWithTag("profile_more_empty_add").performClick()
+        compose.onNodeWithTag("profile_more_add_search").performTextReplacement("not-a-field")
+        compose.onNodeWithTag("profile_more_add_empty").assertIsDisplayed()
+        capture("more_sniffer_search_empty")
+        compose.onNodeWithTag("profile_more_add_search_clear").performClick()
+        compose.onNodeWithTag("profile_more_add_search").performTextReplacement("HTTP")
+        compose.onNodeWithTag("more_add_sniff.HTTP").performClick()
+        compose.onNodeWithTag("profile_more_add_empty").assertIsDisplayed()
+        compose.onNodeWithTag("profile_more_add_search").assertTextContains("HTTP")
+        compose.onNodeWithTag("profile_more_add_search_clear").performClick()
+        compose.onNodeWithTag("profile_more_add_done").performClick()
+        compose.runOnIdle { section = "ntp" }
+        compose.onNodeWithTag("profile_more_empty_add").performClick()
+        ntpFields.dropLast(1).forEach { compose.onNodeWithTag("more_add_${it.key}").performScrollTo().performClick() }
+        compose.runOnIdle { reject = true }
+        compose.onNodeWithTag("more_add_write-to-system").performScrollTo().performClick()
+        compose.onNodeWithTag("profile_more_add_done").assertIsDisplayed()
+        compose.onNode(hasText("保存失败，请重试") and !hasTestTag("profile_more_editor_error")).assertIsDisplayed()
+        compose.runOnIdle { reject = false }
+        compose.onNodeWithTag("more_add_write-to-system").performClick()
+        waitGone("profile_more_add_done")
+        compose.runOnIdle { assertEquals(false, savedNtp?.writeToSystem) }
+    }
 
     @androidx.test.filters.SdkSuppress(minSdkVersion = 29)
     @Test fun fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft() {
@@ -204,7 +291,7 @@ class ProfileMoreEditorInstrumentedTest {
         for (theme in listOf("light", "dark")) {
             compose.runOnIdle { dark = theme == "dark"; section = "ntp"; state = ProfileMoreEditorUiState(Profile.custom(if (dark) 922 else 921, "更多设置")) }
             capture("more_ntp_empty_$theme")
-            compose.onNodeWithTag("profile_more_add").performClick()
+            compose.onNodeWithTag("profile_more_empty_add").performClick()
             capture("more_ntp_add_$theme")
             for (key in listOf("enable", "server", "port")) compose.onNodeWithTag("more_add_$key").performScrollTo().performClick()
             compose.onNodeWithTag("profile_more_add_done").performClick()
@@ -215,9 +302,17 @@ class ProfileMoreEditorInstrumentedTest {
             capture("more_ntp_error_$theme")
             compose.onNodeWithTag("more_value_back").performClick(); compose.onNodeWithText("放弃").performClick()
             compose.runOnIdle { section = "sniffer" }
+            capture("more_sniffer_empty_$theme")
+            compose.onNodeWithTag("profile_more_empty_add").performClick()
+            capture("more_sniffer_add_$theme")
+            compose.onNodeWithTag("profile_more_add_done").performClick()
             add("enable", "sniff.HTTP")
             compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
             capture("more_sniffer_protocol_$theme")
+            compose.onNodeWithTag("more_protocol_destination").performClick()
+            capture("more_sniffer_destination_$theme")
+            compose.onNodeWithTag("more_protocol_destination_default").performClick()
+            waitGone("more_protocol_destination_default")
             compose.onNodeWithTag("more_protocol_ports").performClick()
             capture("more_sniffer_ports_$theme")
             compose.onNodeWithTag("more_value_back").performClick()
@@ -232,15 +327,18 @@ class ProfileMoreEditorInstrumentedTest {
         assertPortraitDefaultFontConfiguration()
         compose.setContent { KClashTheme(darkTheme = dark) {
             ProfileMoreEditor(state, section, "", { exits++ }) { ntp, sniffer ->
-                if (reject) state = state.copy(error = "保存失败，请重试")
+                saveCalls++
+                if (holdSave) { pendingSave = ntp to sniffer; state = state.copy(isSaving = true, error = null) }
+                else if (reject) state = state.copy(error = "保存失败，请重试")
                 else { savedNtp = ntp; savedSniffer = sniffer; state = state.copy(ntp = ntp, sniffer = sniffer, revision = state.revision + 1, error = null) }
             }
         } }
     }
     private fun add(vararg keys: String) {
-        compose.onNodeWithTag("profile_more_add").performClick()
+        val tag = if (compose.onAllNodesWithTag("profile_more_empty_add").fetchSemanticsNodes().isNotEmpty()) "profile_more_empty_add" else "profile_more_add"
+        compose.onNodeWithTag(tag).performClick()
         keys.forEach { compose.onNodeWithTag("more_add_$it").performScrollTo().performClick() }
-        compose.onNodeWithTag("profile_more_add_done").performClick()
+        if (compose.onAllNodesWithTag("profile_more_add_done").fetchSemanticsNodes().isNotEmpty()) compose.onNodeWithTag("profile_more_add_done").performClick()
     }
     private fun yaml(content: String) {
         compose.onNodeWithTag("profile_more_yaml").performClick()

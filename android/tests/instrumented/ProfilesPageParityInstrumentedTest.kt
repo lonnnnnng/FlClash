@@ -138,7 +138,7 @@ class ProfilesPageParityInstrumentedTest {
             compose.onNodeWithTag("custom_profile_ntp").performClick()
             capture("profiles_custom_ntp_" + theme)
             if (theme == "light") {
-                compose.onNodeWithTag("profile_more_add").performClick()
+                compose.onNodeWithTag("profile_more_empty_add").performClick()
                 compose.onNodeWithTag("more_add_enable").performScrollTo().performClick()
                 compose.onNodeWithTag("profile_more_add_done").performClick()
                 compose.onNodeWithTag("more_enable_value").performClick()
@@ -157,7 +157,7 @@ class ProfilesPageParityInstrumentedTest {
             compose.onNodeWithTag("profile_more_editor_back").performClick()
             compose.onNodeWithTag("custom_profile_sniffer").performClick()
             if (theme == "light") {
-                compose.onNodeWithTag("profile_more_add").performClick()
+                compose.onNodeWithTag("profile_more_empty_add").performClick()
                 compose.onNodeWithTag("more_add_enable").performScrollTo().performClick()
                 compose.onNodeWithTag("profile_more_add_done").performClick()
                 compose.onNodeWithTag("more_enable_value").performClick()

@@ -162,6 +162,7 @@ internal fun AppDropdownMenu(
     onNavigateBack: (() -> Unit)? = null,
     source: AppMenuSource? = null,
     carriedPointer: AppMenuCarry? = null,
+    dismissEnabled: Boolean = true,
     content: @Composable ColumnScope.(Any?) -> Unit,
 ) {
     val visible = remember { MutableTransitionState(false) }
@@ -169,6 +170,7 @@ internal fun AppDropdownMenu(
     var requestedClose by remember { mutableStateOf(false) }
     var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val expandedLatest by rememberUpdatedState(expanded)
+    val dismissEnabledLatest by rememberUpdatedState(dismissEnabled)
     val active = expanded && !requestedClose
     visible.targetState = active
     if (!expanded && !present && !requestedClose) return
@@ -198,7 +200,8 @@ internal fun AppDropdownMenu(
     var returnFrom by remember { mutableFloatStateOf(.45f) }
     var returnCard by remember { mutableStateOf<Rect?>(null) }
     val sourceReady = sourceImage != null
-    val close: () -> Unit = { if (active) requestedClose = true }
+    // 作者 long：异步选择保存期间必须在受理返回/外点时禁退，等退场结束才拒绝回调会导致重开或吞掉失败重试菜单。
+    val close: () -> Unit = { if (active && dismissEnabledLatest) requestedClose = true }
     val carry = carriedPointer ?: remember { AppMenuCarry() }
     var sourceHeld by remember(expanded) { mutableStateOf(expanded && carriedPointer?.armed == true) }
     LaunchedEffect(carry.armed) { if (!carry.armed) sourceHeld = false }
@@ -206,7 +209,9 @@ internal fun AppDropdownMenu(
     val stackScope = rememberCoroutineScope()
     val stack = remember { AppMenuStackState(stackScope, pageKey) }
     stack.unit = density.density
-    val navigateBack: () -> Unit = { if (stack.levels.size > 1) stack.back { back?.invoke() } else (back ?: close)() }
+    val navigateBack: () -> Unit = { if (dismissEnabledLatest) {
+        if (stack.levels.size > 1) stack.back { back?.invoke() } else (back ?: close)()
+    } }
     stack.onBack = navigateBack
     LaunchedEffect(pageKey) { stack.sync(pageKey) }
     var scrollable by remember { mutableStateOf(false) }

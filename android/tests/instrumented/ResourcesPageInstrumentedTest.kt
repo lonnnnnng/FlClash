@@ -85,6 +85,8 @@ class ResourcesPageInstrumentedTest {
         capture("icon_set_preview_$theme")
         compose.onNodeWithTag("icon_set_search").performTextInput("没有")
         compose.onNodeWithText("没有匹配的图标").assertIsDisplayed()
+        compose.onNodeWithTag("icon_set_search_clear").performClick()
+        compose.onNodeWithText("图库节点图标").assertIsDisplayed()
         compose.onNodeWithTag("icon_set_preview_back").performClick()
         compose.runOnIdle { showPicker = true }
         compose.onNodeWithTag("group_icon_search").performTextInput("图库节点")

@@ -99,8 +99,7 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
         val context = LocalContext.current
         ProfileEditorPage(onDismissRequest = { previewId = null }, title = { Text(item?.name ?: "图标集") }, backTag = "icon_set_preview_back", text = {
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().testTag("icon_set_search"), singleLine = true,
-                    label = { Text("搜索图标") }, leadingIcon = { Icon(Icons.Outlined.Search, null) })
+                ProfileSearchField(query, { query = it }, "icon_set_search", "搜索图标")
                 if (shown.isEmpty()) Text("没有匹配的图标", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 LazyVerticalGrid(GridCells.Adaptive(80.dp), modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     items(shown, key = { it.url }) { icon ->
