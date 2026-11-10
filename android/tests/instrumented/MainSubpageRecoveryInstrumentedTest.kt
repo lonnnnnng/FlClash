@@ -114,6 +114,7 @@ class MainSubpageRecoveryInstrumentedTest {
         compose.onNodeWithTag("proxy_group_quick_yaml").performClick()
         compose.onNodeWithTag("proxy_group_yaml_content").performTextReplacement("name: [")
         compose.onNodeWithTag("proxy_group_yaml_confirm").performClick()
+        compose.waitUntil(5_000) { runCatching { compose.onNodeWithTag("proxy_group_yaml_error").assertIsDisplayed(); true }.getOrDefault(false) }
         compose.onNodeWithTag("proxy_group_yaml_error").assertIsDisplayed()
         // 作者 long：系统返回先消费 IME；明确等键盘收起后才验证页面返回，避免把系统两级返回混成一次。
         closeSoftKeyboard()

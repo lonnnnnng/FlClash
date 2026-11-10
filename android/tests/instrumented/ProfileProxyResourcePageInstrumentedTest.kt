@@ -55,13 +55,13 @@ class ProfileProxyResourcePageInstrumentedTest {
             VisualProxyGroupsEditor(Profile.custom(124, "成员选择"), ProfileProxyGroupsEditor.extractGroups(source), source, false,
                 initialGroupIndex = 0, onDismiss = {}, onSave = {}, onSaveDraft = { saved = it }, resourceProfiles = listOf(resource))
         } }
-        compose.onNodeWithTag("proxy_group_members").performScrollTo().performClick()
-        compose.onNodeWithTag("group_members_add").performClick()
+
+        compose.onNodeWithTag("group_members_add").performScrollTo().performClick()
         compose.onNodeWithTag("group_member_search").performTextInput("可选文件资源")
         compose.onNodeWithTag("group_member_choice_true_可选文件资源").performClick()
         capture("proxy_resources_group_picker")
-        compose.onNodeWithTag("group_member_picker_done").performClick()
-        compose.onNodeWithTag("proxy_group_members_confirm").performClick()
+        compose.onNodeWithTag("group_member_picker_back").performClick()
+
         compose.onNodeWithTag("proxy_group_form_confirm").performClick()
         compose.waitUntil(10_000) { saved != null }
         val save = checkNotNull(saved)

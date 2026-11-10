@@ -35,6 +35,48 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkMenuDispatchThreadTimeline() = runMenuDispatchTimeline(true)
     @Test fun lightMenuWindowFramesWithoutThreadSampling() = runMenuDispatchTimeline(false, sampleCpu = false)
     @Test fun darkMenuWindowFramesWithoutThreadSampling() = runMenuDispatchTimeline(true, sampleCpu = false)
+    @Test fun lightGroupSheetMembersGalleryAndReturnUseNaturalMotion() = runGroupSheet(false)
+    @Test fun darkGroupSheetMembersGalleryAndReturnUseNaturalMotion() = runGroupSheet(true)
+
+    private fun runGroupSheet(dark: Boolean) {
+        assertPortraitDefaultFontConfiguration()
+        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))
+        suffix = if (dark) "dark" else "light"
+        ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+            scenario.onActivity { it.dark = dark; it.showGroupEditor = true }
+            await("编辑策略组"); settle(); capture("group-sheet-partial")
+            val header = bounds(checkNotNull(find("编辑策略组")))
+            val density = ins.targetContext.resources.displayMetrics.density
+            // 作者 long：柄与48dp工具栏同窗，中心相距34dp；从实际标题定位，避免依赖Dialog不导出的测试ID。
+            val handleY = header.centerY() - (34 * density).toInt()
+            event("group-expand"); tap(Rect(header.centerX() - 8, handleY - 8, header.centerX() + 8, handleY + 8)); settle(); capture("group-sheet-expanded")
+            click("添加节点"); await("添加节点"); settle()
+            val query = checkNotNull(root()?.let { nodes(it).firstOrNull { n -> n.isEditable } })
+            event("group-member-search"); tap(bounds(query)); settle()
+            assertTrue(query.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
+                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "REJECT-DROP")
+            }))
+            click("REJECT-DROP"); settle(); capture("group-sheet-member-selected")
+            back(); settle(); back(); settle(); await("编辑策略组")
+            click("图标"); await("非空参考图库"); settle(); capture("group-sheet-gallery")
+            val label = bounds(checkNotNull(find("Red")))
+            val y = label.top - (28 * density).toInt()
+            tap(Rect(label.centerX() - 8, y - 8, label.centerX() + 8, y + 8)); settle(); await("编辑策略组")
+            click("添加设置项"); await("健康检查"); settle(); capture("group-sheet-options")
+            back(); settle(); await("编辑策略组")
+            val title = bounds(checkNotNull(find("编辑策略组")))
+            val save = checkNotNull(root()?.let { nodes(it).filter { node ->
+                val r = bounds(node); node.isClickable && r.left > title.right && kotlin.math.abs(r.centerY() - title.centerY()) < 30
+            }.maxByOrNull { node -> bounds(node).right } })
+            event("group-save-close"); tap(bounds(save)); settle(); awaitGone("编辑策略组")
+            scenario.onActivity {
+                assertEquals(1, it.groupSaveRequests)
+                assertTrue(checkNotNull(it.savedGroup).strings("proxies").contains("REJECT-DROP"))
+                assertTrue(checkNotNull(it.savedGroup).text("icon").startsWith("data:image/png;base64,"))
+            }
+            capture("group-sheet-closed")
+        }
+    }
 
     private fun runDockedSearch(dark: Boolean) {
         assertPortraitDefaultFontConfiguration()

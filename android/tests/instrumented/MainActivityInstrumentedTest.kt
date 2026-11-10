@@ -469,18 +469,24 @@ class MainActivityInstrumentedTest {
             composeRule.onNodeWithTag("proxy_group_name").performClick()
             composeRule.onNodeWithTag("group_value_input").performTextInput("AUTO-TEST")
             composeRule.onNodeWithTag("group_value_confirm").performClick()
-            composeRule.onNodeWithTag("proxy_group_members").performClick()
-            composeRule.onNodeWithTag("group_members_add").performClick()
-            composeRule.onNodeWithText("DIRECT").performClick()
-            composeRule.onNodeWithTag("group_member_picker_done").performClick()
-            composeRule.onNodeWithTag("proxy_group_members_confirm").performClick()
+
+            composeRule.onNodeWithTag("group_members_add").performScrollTo().performClick()
+            composeRule.onNodeWithTag("group_member_search").performTextReplacement("DIRECT")
+            composeRule.onNodeWithTag("group_member_choice_false_DIRECT").performClick()
+            composeRule.onNodeWithTag("group_member_picker_back").performClick()
+
             composeRule.onNodeWithTag("proxy_group_form_confirm").performClick()
-            composeRule.waitUntil(10_000) { composeRule.onAllNodesWithTag("proxy_group_list_save").fetchSemanticsNodes().isEmpty() }
+            composeRule.waitUntil(10_000) {
+                composeRule.onAllNodesWithTag("proxy_group_form_confirm").fetchSemanticsNodes().isEmpty() &&
+                    runBlocking(Dispatchers.IO) { repository.readLocalProfileContent(checkNotNull(createdId)).contains("AUTO-TEST") }
+            }
             val content = runBlocking(Dispatchers.IO) { repository.readLocalProfileContent(checkNotNull(createdId)) }
             val group = com.lonnnnnng.flclash.data.ProxyGroupDrafts.read(content).single()
             assertEquals("AUTO-TEST", group.name)
             assertEquals(listOf("DIRECT"), group.strings("proxies"))
-            composeRule.onNodeWithTag("custom_profile_group_0").performScrollTo().performClick()
+            // 作者 long：文件提交与概览重新解析异步完成，等组行真正返回再执行下一次编辑。
+            composeRule.waitUntil(15_000) { composeRule.onAllNodesWithTag("custom_profile_group_0", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+            composeRule.onNodeWithTag("custom_profile_group_0", useUnmergedTree = true).performScrollTo().performClick()
             composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("proxy_group_name").fetchSemanticsNodes().isNotEmpty() }
             composeRule.onNodeWithTag("proxy_group_name").assertTextContains("AUTO-TEST", substring = true)
             composeRule.onNodeWithTag("proxy_group_form_back").performClick()
@@ -1181,7 +1187,10 @@ private fun MainActivityInstrumentedTest.verifyPreservedProfileMetadata() {
 
 // 作者 long：所有配置 E2E 从同一来源选择进入创建后编辑，避免继续依赖旧版先回列表再手动编辑的路径。
 private fun MainActivityInstrumentedTest.startCustomProfileEditor(label: String) {
-    composeRule.onNodeWithTag("profiles_add_fab").performClick()
+    // 作者 long：空库从正文入口创建，非空库才有顶栏添加；不能依赖专用验收机保留上一轮配置。
+    val tags = listOf("profiles_empty_add", "profiles_add_fab")
+    composeRule.waitUntil(5_000) { tags.any { composeRule.onAllNodesWithTag(it).fetchSemanticsNodes().isNotEmpty() } }
+    composeRule.onNodeWithTag(tags.first { composeRule.onAllNodesWithTag(it).fetchSemanticsNodes().isNotEmpty() }).performClick()
     composeRule.onNodeWithTag("profile_add_source_custom").performClick()
     composeRule.waitUntil(5_000) {
         composeRule.onAllNodesWithTag("custom_profile_title_menu").fetchSemanticsNodes().isNotEmpty()

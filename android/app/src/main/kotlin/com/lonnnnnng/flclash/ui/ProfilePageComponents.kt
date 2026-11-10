@@ -39,6 +39,10 @@ internal fun ProfileEditorPage(
     backTag: String = "profile_editor_back",
     bottomBar: (@Composable () -> Unit)? = null,
 ) {
+    LocalEmbeddedProfilePage.current?.let { page ->
+        EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar)
+        return
+    }
     val draftRegistry = rememberEditorWindowRegistry()
     Dialog(
         onDismissRequest = onDismissRequest,

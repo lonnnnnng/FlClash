@@ -42,13 +42,14 @@ internal fun profileYamlText(text: String, key: Color, comment: Color, literal: 
 @Composable
 internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) -> Unit, enabled: Boolean, modifier: Modifier = Modifier,
     contentTag: String = "profile_editor_content",
-    highlightYaml: Boolean = true) {
+    highlightYaml: Boolean = true,
+    scrollState: androidx.compose.foundation.ScrollState = rememberScrollState()) {
     val style = profileCodeStyle().copy(color = MaterialTheme.colorScheme.onSurface)
     val colors = MaterialTheme.colorScheme
     val transformation = remember(colors.primary, colors.onSurfaceVariant, colors.tertiary, highlightYaml) {
         VisualTransformation { TransformedText(if (highlightYaml) profileYamlText(it.text, colors.primary, colors.onSurfaceVariant, colors.tertiary) else it, OffsetMapping.Identity) }
     }
-    val scroll = rememberScrollState()
+    val scroll = scrollState
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val starts = remember(value.text) { buildList {
         add(0)

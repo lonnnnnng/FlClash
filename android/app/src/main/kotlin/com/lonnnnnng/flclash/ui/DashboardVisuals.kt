@@ -91,14 +91,18 @@ import kotlin.math.sin
 
 // 作者 long：首页单独使用 Flutter Dashboard 的层级和尺寸，避免改变其他尚未逐页还原的组件基线。
 @Composable
-internal fun dashboardPageColor(): Color = if (LocalKClashDarkTheme.current) {
+internal fun dashboardPageColor(): Color = if (LocalEmbeddedProfilePage.current != null) {
+    MaterialTheme.colorScheme.surfaceContainer
+} else if (LocalKClashDarkTheme.current) {
     MaterialTheme.colorScheme.surface
 } else {
     MaterialTheme.colorScheme.surfaceContainer
 }
 
 @Composable
-internal fun dashboardCardColor(): Color = if (LocalKClashDarkTheme.current) {
+internal fun dashboardCardColor(): Color = if (LocalEmbeddedProfilePage.current != null && LocalKClashDarkTheme.current) {
+    MaterialTheme.colorScheme.surfaceContainerHigh
+} else if (LocalKClashDarkTheme.current) {
     MaterialTheme.colorScheme.surfaceContainer
 } else {
     MaterialTheme.colorScheme.surfaceBright

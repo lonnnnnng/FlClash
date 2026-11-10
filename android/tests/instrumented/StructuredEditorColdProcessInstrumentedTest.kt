@@ -111,31 +111,26 @@ class StructuredEditorColdProcessInstrumentedTest {
                     compose.onNodeWithTag("proxy_group_check_0").performClick()
                 }
                 "groups-members", "groups-members-sort" -> {
-                    compose.onNodeWithTag("proxy_group_members").performScrollTo().performClick()
-                    compose.onNodeWithTag("group_members_add").performClick()
+                    compose.onNodeWithTag("connection_detail_handle").performClick()
                     if (case == "groups-members") {
-                        compose.onNodeWithTag("group_member_search").performTextReplacement("DIRECT")
-                        val choice = memberCheckbox("DIRECT")
-                        val wasChecked = choice.fetchSemanticsNode().config[SemanticsProperties.ToggleableState] == androidx.compose.ui.state.ToggleableState.On
-                        record.addProperty("directChecked", !wasChecked)
-                        compose.onNodeWithTag("group_member_choice_false_DIRECT").performClick()
+                        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_members_add"))
+                        compose.onNodeWithTag("group_members_add").performClick()
+                        // 作者 long：选择页不再提供原有项；仅选原授权配置中未使用的内建策略，保留真实正文。
+                        compose.onNodeWithTag("group_member_search").performTextReplacement("REJECT-DROP")
+                        compose.onNodeWithTag("group_member_choice_false_REJECT-DROP").performClick()
+                        record.addProperty("memberQuery", "REJECT-DROP")
                     } else {
-                        // 作者 long：只补正式成员选择器中的内建项，保留原1.yaml副本，不生成替代配置或提交成员变更。
-                        for (name in listOf("DIRECT", "REJECT")) {
-                            compose.onNodeWithTag("group_member_search").performTextReplacement(name)
-                            val choice = memberCheckbox(name)
-                            if (choice.fetchSemanticsNode().config[SemanticsProperties.ToggleableState] != androidx.compose.ui.state.ToggleableState.On)
-                                compose.onNodeWithTag("group_member_choice_false_$name").performClick()
+                        val list = compose.onNodeWithTag("group_form_list")
+                        list.performScrollToNode(hasTestTag("group_member_label_0"))
+                        val first = compose.onNodeWithTag("group_member_label_0").fetchSemanticsNode().config[SemanticsProperties.Text].single().text
+                        val second = compose.onNodeWithTag("group_member_label_1").fetchSemanticsNode().config[SemanticsProperties.Text].single().text
+                        val row = compose.onNodeWithTag("group_member_row_PROXY:$first")
+                        row.performTouchInput {
+                            down(center); advanceEventTime(800)
+                            moveTo(center + androidx.compose.ui.geometry.Offset(0f, height * 1.2f), delayMillis = 300); up()
                         }
-                        closeSoftKeyboard()
-                        compose.onNodeWithTag("group_member_picker_done").performClick()
-                        compose.onNodeWithTag("group_members_sort").performClick()
-                        val beforeOrder = memberOrder()
-                        assertTrue(beforeOrder.size >= 2)
-                        compose.onNodeWithTag("group_move_down_0").performScrollTo().performClick()
-                        val expected = beforeOrder.toMutableList().apply { add(1, removeAt(0)) }
-                        assertEquals(expected, memberOrder())
-                        record.add("memberOrder", Gson().toJsonTree(expected))
+                        compose.onNodeWithTag("group_member_label_0").assertTextEquals(second)
+                        record.addProperty("firstMember", second); record.addProperty("secondMember", first)
                     }
                 }
                 "groups-icon" -> {
@@ -208,6 +203,24 @@ class StructuredEditorColdProcessInstrumentedTest {
         capture("${case}_prepared")
     }
 
+    @Test fun discardInterruptedOwnedFixture(): Unit = runBlocking {
+        val case = scenario()
+        val record = JsonParser.parseString(marker().readText()).asJsonObject
+        assertEquals(case, record.get("case").asString)
+        val id = record.get("id").asLong
+        val e = entry(); val repo = e.profileRepository()
+        assertEquals(CoreRuntimeStatus.STOPPED, e.runtimeManager().state.value)
+        e.database().profiles().getById(id)?.let { assertEquals("cold-editor", it.label) }
+        // 作者 long：失败批次只回收marker精确登记的临时配置；不得把后续重跑变成清空用户库。
+        compose.runOnIdle { ViewModelProvider(compose.activity)[ProfilesViewModel::class.java].closeEditor() }
+        withTimeout(15_000) { while (e.profileDraftStore().read() != null) delay(100) }
+        repo.deleteProfile(id)
+        assertEquals(record.get("rows").asString, digest(Gson().toJson(e.database().profiles().getAll().sortedBy { it.id }).toByteArray()))
+        assertEquals(record.get("files").asString, files(e.database().profiles().getAll().map { it.id }))
+        assertEquals(record.get("selected")?.takeUnless { it.isJsonNull }?.asLong, repo.currentProfileId.value)
+        assertTrue(marker().delete())
+    }
+
     @Test fun verifyDifferentProcessRestoresExactSubpageAndClearsDiscardedDraft(): Unit = runBlocking {
         val case = scenario()
         val record = JsonParser.parseString(marker().readText()).asJsonObject
@@ -248,22 +261,21 @@ class StructuredEditorColdProcessInstrumentedTest {
                     compose.onNodeWithTag("custom_rules_back").performClick()
                 }
                 "groups-members" -> {
-                    compose.onNodeWithTag("group_member_search").assertTextContains("DIRECT")
-                    if (record.get("directChecked").asBoolean) memberCheckbox("DIRECT").assertIsOn() else memberCheckbox("DIRECT").assertIsOff()
+                    compose.onNodeWithTag("group_member_search").assertTextContains(record.get("memberQuery").asString)
                     capture("${case}_restored")
                     compose.onNodeWithTag("group_member_picker_back").performClick()
-                    compose.onNodeWithTag("proxy_group_members_back").performClick()
-                    compose.onNodeWithText("放弃修改", substring = false).performClick()
+                    compose.onNodeWithTag("group_form_list").performScrollToNode(hasText("REJECT-DROP"))
+                    compose.onNodeWithText("REJECT-DROP").assertIsDisplayed()
                     compose.onNodeWithTag("proxy_group_form_back").performClick()
+                    compose.onNodeWithText("放弃修改", substring = false).performClick()
                 }
                 "groups-members-sort" -> {
-                    compose.onNodeWithText("长按拖动调整代理与资源顺序").assertExists()
-                    compose.onNodeWithTag("group_member_remove_0").assertDoesNotExist()
-                    assertEquals(record.getAsJsonArray("memberOrder").map { it.asString }, memberOrder())
+                    compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_member_label_0"))
+                    compose.onNodeWithTag("group_member_label_0").assertTextEquals(record.get("firstMember").asString)
+                    compose.onNodeWithTag("group_member_label_1").assertTextEquals(record.get("secondMember").asString)
                     capture("${case}_restored")
-                    compose.onNodeWithTag("proxy_group_members_back").performClick()
-                    compose.onNodeWithText("放弃修改", substring = false).performClick()
                     compose.onNodeWithTag("proxy_group_form_back").performClick()
+                    compose.onNodeWithText("放弃修改", substring = false).performClick()
                 }
                 "groups-batch" -> {
                     compose.onNodeWithText("已选择 1 项").assertIsDisplayed()
@@ -348,7 +360,7 @@ class StructuredEditorColdProcessInstrumentedTest {
             val after = e.database().profiles().getAll().sortedBy { it.id }
             assertEquals(record.get("rows").asString, digest(Gson().toJson(after).toByteArray()))
             assertEquals(record.get("files").asString, files(after.map { it.id }))
-            assertEquals(record.get("selected").asLong, repo.currentProfileId.value)
+            assertEquals(record.get("selected")?.takeUnless { it.isJsonNull }?.asLong, repo.currentProfileId.value)
             assertTrue(marker().delete())
         }
     }
@@ -368,7 +380,6 @@ class StructuredEditorColdProcessInstrumentedTest {
     }
 
     private fun files(ids: List<Long>) = ids.joinToString("|") { id -> entry().profileRepository().profileFile(id).let { "$id:${it.length()}:${it.lastModified()}:${digest(it.readBytes())}" } }
-    private fun memberCheckbox(name: String) = compose.onNode(isToggleable() and hasAnyAncestor(hasTestTag("group_member_choice_false_$name")))
     private fun memberOrder(): List<String> {
         // 作者 long：同名文本存在不能证明顺序；按显示行索引读取成员标签，核对完整有序列表。
         return generateSequence(0) { it + 1 }.map { index ->

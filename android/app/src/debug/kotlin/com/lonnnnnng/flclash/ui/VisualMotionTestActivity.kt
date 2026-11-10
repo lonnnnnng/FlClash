@@ -33,6 +33,9 @@ class VisualMotionTestActivity : ComponentActivity() {
     var moreSection by mutableStateOf("ntp")
     var moreSaveRequests = 0
     var showDnsPage by mutableStateOf(false)
+    var showGroupEditor by mutableStateOf(false)
+    var groupSaveRequests = 0
+    var savedGroup: ProxyGroupDraft? = null
     private var dnsQuery by mutableStateOf("")
     private var dnsSearchExpanded by mutableStateOf(false)
     private var moreState by mutableStateOf(ProfileMoreEditorUiState(Profile.custom(903, "动效参考")))
@@ -47,6 +50,10 @@ class VisualMotionTestActivity : ComponentActivity() {
     @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 作者 long：非空图库使用有效PNG字节验证解码与转场，避免把失败占位图冒充已加载图片。
+        val image = android.graphics.Bitmap.createBitmap(32, 32, android.graphics.Bitmap.Config.ARGB_8888).apply { eraseColor(android.graphics.Color.RED) }
+        val encoded = java.io.ByteArrayOutputStream().also { image.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
+        val gallery = ResourceIconSet("motion", "非空参考图库", icons = listOf(ResourceIcon("Red", "data:image/png;base64," + android.util.Base64.encodeToString(encoded, android.util.Base64.NO_WRAP))), updatedAt = 1)
         setContent {
             val profiles = if (empty) emptyList() else listOf(
                 Profile.remote(901, "https://example.test/never-requested", "常用线路 · 很长的订阅配置名称用于检查排版").copy(
@@ -60,6 +67,12 @@ class VisualMotionTestActivity : ComponentActivity() {
             val proxyState = ProxyGroupsUiState(groups = groups, selectedMap = mapOf("常用节点" to selectedNode), unfoldSet = unfolded)
             KClashTheme(darkTheme = dark) {
                 Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
+                    if (showGroupEditor) CompositionLocalProvider(LocalResourceIconSets provides listOf(gallery)) {
+                        val source = """{"proxies":[{"name":"Local","type":"direct"}],"proxy-groups":[{"name":"Main","type":"select","proxies":["DIRECT","Local"]}]}"""
+                        VisualProxyGroupsEditor(Profile.custom(3104, "Sheet动效"), "", source, false, initialGroupIndex = 0,
+                            onDismiss = { showGroupEditor = false }, onSave = {},
+                            onSaveDraft = { groupSaveRequests++; savedGroup = it.groups.single(); showGroupEditor = false })
+                    }
                     if (showMoreEditor) ProfileMoreEditor(moreState, moreSection, "", { showMoreEditor = false }) { ntp, sniffer ->
                         // 作者 long：自然录制复用正式添加面板；固定保存回执只驱动UI，不接正式Room或网络。
                         moreSaveRequests++

@@ -48,9 +48,12 @@ class ProxyGroupEditorInstrumentedTest {
         compose.onNodeWithTag("group_member_choice_FILTER_HK`JP").performClick()
         compose.onNodeWithTag("group_member_search").performTextReplacement("zzzz-no-results")
         compose.onNodeWithTag("group_member_empty").assertTextEquals("无搜索结果")
-        compose.onNodeWithTag("group_member_search_cancel").performClick()
-        compose.onNodeWithTag("group_member_choice_false_Local").performClick()
-        compose.onNodeWithTag("group_member_choice_ALL_PROXIES_*").performClick()
+        // 作者 long：本用例只验重建后的选择状态；取消的IME触点和动画由独立memberDock用例验，避免平台键盘位移干扰撤回断言。
+        compose.onNodeWithTag("group_member_search_cancel").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) { it() }
+        compose.onNodeWithTag("group_member_search").assertTextContains("")
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("group_member_choice_false_Local").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("group_member_choice_false_Local").performScrollTo().performClick()
+        compose.onNodeWithTag("group_member_choice_ALL_PROXIES_*").performScrollTo().performClick()
         compose.runOnIdle { assertEquals(original, current) }
         capture("member_categories_undone")
     }
@@ -62,8 +65,8 @@ class ProxyGroupEditorInstrumentedTest {
             ProfileProxyGroupsEditorDialog(Profile.custom(214, "成员搜索"), ProfileProxyGroupsEditor.extractGroups(source), false,
                 {}, {}, sourceContent = source, initialGroupIndex = 0, onSaveDraft = { writes++ })
         } }
-        compose.onNodeWithTag("proxy_group_members").performClick()
-        compose.onNodeWithTag("group_members_add").performClick()
+
+        compose.onNodeWithTag("group_members_add").performScrollTo().performClick()
         compose.onNodeWithTag("group_member_search").performClick().performTextReplacement("Local")
         fun imeTop(): Int? {
             var result: Int? = null
@@ -82,10 +85,11 @@ class ProxyGroupEditorInstrumentedTest {
         capture("member_dock_ime")
         compose.onNodeWithTag("group_member_search_cancel").performClick()
         compose.waitUntil(5_000) { imeTop() == null }
-        compose.onNodeWithTag("group_member_picker_done").assertIsDisplayed()
+        compose.onNodeWithTag("group_member_picker_back").assertIsDisplayed()
         assertEquals("", compose.onNodeWithTag("group_member_search").fetchSemanticsNode()
             .config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text)
-        compose.onNodeWithTag("group_member_picker_done").performClick()
+        compose.onNodeWithTag("group_member_picker_back").performClick()
+        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_member_label_0"))
         compose.onNodeWithTag("group_member_label_0").assertTextEquals("DIRECT")
         compose.onAllNodesWithTag("group_member_label_1").assertCountEquals(0)
         assertEquals(0, writes)
@@ -155,19 +159,25 @@ class ProxyGroupEditorInstrumentedTest {
             compose.onNodeWithTag("proxy_group_name").performClick()
             compose.onNodeWithTag("group_value_input").performTextReplacement("Primary")
             compose.onNodeWithTag("group_value_confirm").performClick()
-            compose.onNodeWithTag("proxy_group_members").performClick()
-            compose.onNodeWithTag("group_members_add").performClick()
+
+            compose.onNodeWithTag("group_members_add").performScrollTo().performClick()
             compose.onNodeWithTag("group_member_category_local").performClick()
             compose.onNodeWithText("Local").performClick()
             compose.onNodeWithTag("group_member_category_providers").performScrollTo().performClick()
             compose.onNodeWithText("cloud").performScrollTo().performClick()
             capture("groups_member_picker_$theme")
-            compose.onNodeWithTag("group_member_picker_done").performClick()
-            compose.onNodeWithTag("group_members_sort").performClick()
-            compose.onNodeWithTag("group_move_down_0").performClick()
+            compose.onNodeWithTag("group_member_picker_back").performClick()
+            val sheetHeight = compose.onNodeWithTag("proxy_group_editor_sheet").fetchSemanticsNode().boundsInRoot.height
+            val viewportHeight = compose.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot.height
+            if (sheetHeight < viewportHeight * .8f) compose.onNodeWithTag("connection_detail_handle").performClick()
+            compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_member_label_0"))
+            compose.onNodeWithTag("group_member_row_PROXY:DIRECT").performTouchInput {
+                down(center); advanceEventTime(650); moveTo(center + Offset(0f, height * 1.2f), delayMillis = 350); up()
+            }
             capture("groups_members_$theme")
-            compose.onNodeWithTag("proxy_group_members_confirm").performClick()
-            compose.onNodeWithTag("proxy_group_add_option").performScrollTo().performClick()
+
+            compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("proxy_group_add_option"))
+            compose.onNodeWithTag("proxy_group_add_option").performClick()
             compose.onNodeWithTag("group_add_timeout").performScrollTo().performClick()
             compose.onNodeWithTag("group_add_timeout").assertDoesNotExist()
             capture("groups_add_options_$theme")
@@ -206,7 +216,8 @@ class ProxyGroupEditorInstrumentedTest {
                 {}, { writes++ }, sourceContent = source, onSaveDraft = { writes++ })
         } }
         compose.onNodeWithTag("proxy_group_row_0").performClick()
-        compose.onNodeWithTag("proxy_group_add_option").performScrollTo().performClick()
+        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("proxy_group_add_option"))
+            compose.onNodeWithTag("proxy_group_add_option").performClick()
         val options = listOf("empty-fallback", "url", "interval", "timeout", "max-failed-times", "lazy", "expected-status", "default-selected", "hidden", "disable-udp")
         options.forEachIndexed { index, option ->
             compose.onNodeWithTag("group_add_$option").performScrollTo().performClick()

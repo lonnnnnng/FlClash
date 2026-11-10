@@ -53,8 +53,9 @@ internal fun ProxyGroupMemberPicker(initial: ProxyGroupDraft, groups: List<Proxy
     }
     ProfileEditorPage(onDismissRequest = onDismiss, backTag = "group_member_picker_back", title = { Text("添加节点") },
         bottomBar = { DockedProfileSearch(query, { query = it }, "group_member_search") },
-        confirmButton = { TextButton(onDismiss, Modifier.testTag("group_member_picker_done")) { Text("完成") } }, text = {
-            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).testTag("group_member_categories")) {
+        confirmButton = { if (LocalEmbeddedProfilePage.current == null) TextButton(onDismiss, Modifier.testTag("group_member_picker_done")) { Text("完成") } }, text = {
+            val scroll = LocalEmbeddedProfilePage.current?.scroll ?: rememberScrollState()
+            Column(Modifier.fillMaxWidth().verticalScroll(scroll).testTag("group_member_categories")) {
                 if (matching.isEmpty()) Text(if (searching) "无搜索结果" else "暂无可添加的节点", Modifier.padding(24.dp).testTag("group_member_empty"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 matching.forEach { section -> key(section.id) {

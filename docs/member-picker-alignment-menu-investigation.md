@@ -45,6 +45,8 @@ Perfetto 服务可查询不代表 ftrace 可用；本轮没有重复已知会使
 
 ## 验证边界与后续
 
+本节是KUI-035交付时的历史边界；组Sheet/原位成员/徽标/拖拽、非空图库及具名转场已由后续[KUI-036](group-editor-sheet-alignment.md)推进。菜单负结果仍有效；不能把旧未完成描述当成当前实现。
+
 本组 Debug、未签名 Release/R8、motion/Test 构建与双 Lint 零错误，JVM 879 项（App594/Service216/Core38/Common31）零失败/错误/跳过，含 Gradle 复用；ML Kit 最终 DEX 门禁 3/3，帧表/线程报告器独立测试通过。Redmi 精确结果及 APK 回读哈希见验收 JSON；不冒充签名 Release 或本轮正式库/真实网络验收。
 
 成员组件的分类/恢复/IME 有真机证据，但 Flutter 原组编辑仍是可展开 Sheet 内嵌成员，Kotlin 仍为独立全页成员编辑；窗口形态、顶栏、协议徽标/原位拖拽及全程自然时钟转场不能记成完整一致。非空图标/图库、其他工具栏/子页、完整自然动效与原生慢帧归因继续 `PARTIAL`。新增布局在真实 Room 保存→冷进程恢复的端到端矩阵仍待补，当前恢复证据限组件 SavedInstanceState 和 JVM 元数据往返。

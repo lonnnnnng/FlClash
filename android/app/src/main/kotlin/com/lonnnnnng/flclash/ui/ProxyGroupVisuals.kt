@@ -23,7 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.lonnnnnng.flclash.data.ProxyGroupIssue
 import com.lonnnnnng.flclash.data.IconRecommendations
@@ -100,7 +102,8 @@ internal val LocalPersistGroupImageParent = staticCompositionLocalOf<suspend () 
 @Composable
 internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: List<String>,
     onRecord: (String, Boolean) -> Unit, onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
-    onDismiss: () -> Unit, onSelect: (String) -> Unit) {
+    onDismiss: () -> Unit, onSelect: (String) -> Unit,
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()) {
     var query by rememberSaveable { mutableStateOf("") }
     var link by rememberSaveable { mutableStateOf(false) }
     var draft by rememberSaveable { mutableStateOf(value.takeIf { it.startsWith("http") }.orEmpty()) }
@@ -186,8 +189,16 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
                 if (pickerState?.recoveryFailed == true) TextButton({ durable?.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text("重试恢复") }
                 if (imageBusy || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())
                 if (sources.isNotEmpty()) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    sources.forEach { item -> FilterChip(source?.key == item.key, onClick = { sourceKey = item.key },
-                        label = { Text(item.label) }, modifier = Modifier.testTag("group_icon_source_${item.key}")) }
+                    sources.forEach { item ->
+                        val selected = source?.key == item.key
+                        Surface(onClick = { sourceKey = item.key }, shape = AppSuperellipseShape(16.dp),
+                            color = if (selected) MaterialTheme.colorScheme.primary else dashboardCardColor(),
+                            modifier = Modifier.testTag("group_icon_source_${item.key}")) {
+                            Text(item.label, Modifier.padding(12.dp), fontSize = 15.sp, lineHeight = 20.sp,
+                                fontWeight = FontWeight.Normal, letterSpacing = 0.sp,
+                                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
                 }
                 if (value.isNotBlank()) Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = MaterialTheme.shapes.medium) {
                     Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -202,18 +213,20 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
                 if (shown.isEmpty() && loadedSources != null) Text(if (query.isBlank()) "暂无图标，可添加图标地址或选择本地图片" else "没有匹配的图标",
                     Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 else {
-                    LazyVerticalGrid(GridCells.Adaptive(72.dp), modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LazyVerticalGrid(GridCells.Adaptive(72.dp), state = gridState, modifier = Modifier.weight(1f).testTag("group_icon_grid"),
+                        verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(shown, key = { it.url }) { icon ->
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Surface(shape = MaterialTheme.shapes.medium,
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Surface(shape = AppSuperellipseShape(16.dp),
                                     color = if (icon.url == value) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
                                     modifier = Modifier.size(56.dp).testTag("group_icon_choice_${source?.icons?.indexOf(icon)}")
                                         .combinedClickable(onClick = { choose(icon.url) },
                                             onLongClick = if (source?.key == IconRecommendations.RECOMMENDED && icon.url in recent) ({ deleteRecord = icon.url }) else null)) {
                                     Box(contentAlignment = Alignment.Center) { ProfileGroupIcon(icon.url, IconRecommendations.label(icon), Modifier.size(40.dp)) }
                                 }
-                                Text(IconRecommendations.label(icon), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall)
+                                Text(IconRecommendations.label(icon), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, lineHeight = 18.sp,
+                                    fontWeight = FontWeight.Normal, letterSpacing = 0.sp)
                                 if (source?.key == IconRecommendations.RECOMMENDED && icon.url in recent) IconButton(onClick = { deleteRecord = icon.url }, modifier = Modifier.size(40.dp)) { Icon(Icons.Outlined.Close, null, Modifier.size(16.dp)) }
                             }
                         }

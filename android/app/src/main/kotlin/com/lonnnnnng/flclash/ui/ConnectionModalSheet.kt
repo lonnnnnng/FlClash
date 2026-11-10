@@ -186,14 +186,22 @@ internal fun ConnectionModalSheet(
     sheetTag: String = "connections_detail_sheet",
     sheetShape: Shape = ConnectionSheetSuperellipseShape(),
     onBackRequest: (() -> Boolean)? = null,
+    dismissAllowed: () -> Boolean = { true },
+    closeRequested: Boolean = false,
+    handleHeight: Dp = 48.dp,
+    handleWidth: Dp = 32.dp,
     content: @Composable ColumnScope.(onDismissRequest: () -> Unit) -> Unit,
 ) {
-    var savedDetent by rememberSaveable { mutableStateOf(ConnectionSheetDetent.PARTIAL) }
+    // 作者 long：编辑器的加密注册表只接受明确值类型，停靠档位保存名称，避免枚举对象阻断正式草稿恢复。
+    var savedDetent by rememberSaveable(stateSaver = androidx.compose.runtime.saveable.Saver(
+        save = { it: ConnectionSheetDetent -> it.name }, restore = { ConnectionSheetDetent.valueOf(it) },
+    )) { mutableStateOf(ConnectionSheetDetent.PARTIAL) }
     val state = remember { AnchoredDraggableState(savedDetent) }
     val scope = rememberCoroutineScope()
     val dismissSheet by rememberUpdatedState(onDismiss)
     val contentAtTop by rememberUpdatedState(isContentAtTop)
     val backRequest by rememberUpdatedState(onBackRequest)
+    val canDismiss by rememberUpdatedState(dismissAllowed)
     val presentation = remember { Animatable(0f) }
     val presentationSpec = remember { ConnectionSheetMotion.presentationSpec() }
     var hasEntered by remember { mutableStateOf(false) }
@@ -201,7 +209,9 @@ internal fun ConnectionModalSheet(
     var dismissalStarted by rememberSaveable { mutableStateOf(false) }
     var dismissedByDrag by rememberSaveable { mutableStateOf(false) }
     var scrimFade by remember { mutableFloatStateOf(1f) }
-    val requestDismiss: () -> Unit = { dismissalStarted = true }
+    val requestDismiss: () -> Unit = { if (canDismiss()) dismissalStarted = true }
+    // 作者 long：编辑器确认保存/放弃后才退出；拒绝关闭的草稿仍留在原窗口，不先播放退场再重新弹出。
+    LaunchedEffect(closeRequested) { if (closeRequested) dismissalStarted = true }
     Dialog(
         onDismissRequest = { if (!dismissalStarted && backRequest?.invoke() != true) requestDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
@@ -299,8 +309,10 @@ internal fun ConnectionModalSheet(
                         snapshotFlow { state.settledValue }.collect { detent ->
                             if (detent == ConnectionSheetDetent.HIDDEN) {
                                 if (!dismissalStarted) {
-                                    dismissedByDrag = true
-                                    dismissalStarted = true
+                                    if (canDismiss()) {
+                                        dismissedByDrag = true
+                                        dismissalStarted = true
+                                    } else state.animateTo(savedDetent, settleSpec)
                                 }
                             } else {
                                 savedDetent = detent
@@ -381,7 +393,7 @@ internal fun ConnectionModalSheet(
                     ) {
                         Column(Modifier.fillMaxSize().blockSheetInput(dismissalStarted).windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
                             Box(
-                                Modifier.fillMaxWidth().height(48.dp).testTag("connection_detail_handle")
+                                Modifier.fillMaxWidth().height(handleHeight).testTag("connection_detail_handle")
                                     .clickable(
                                         enabled = geometry.hasExpandedDetent && hasEntered && !dismissalStarted,
                                     ) {
@@ -394,7 +406,7 @@ internal fun ConnectionModalSheet(
                                     },
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Box(Modifier.size(32.dp, 4.dp).background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(2.dp)))
+                                Box(Modifier.size(handleWidth, 4.dp).background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(2.dp)))
                             }
                             content(requestDismiss)
                         }
