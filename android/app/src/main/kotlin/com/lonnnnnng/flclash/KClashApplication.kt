@@ -34,11 +34,16 @@ class KClashApplication : Application() {
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
+        // 作者 long：恢复进程的Room/Hilt初始化也可能写状态，显式诊断必须先挂接；Release入口为空。
+        if(!ValidationProcess.isCurrent())com.lonnnnnng.flclash.data.StateAuditPlatform.initialize(this)
         // 作者 long：服务进程也依赖同一个应用上下文，必须在任何前台服务启动前初始化共享状态。
         GlobalState.init(this)
     }
 
+    @android.annotation.SuppressLint("MissingSuperCall")
     override fun onCreate() {
+        // 作者 long：Hilt生成的super.onCreate先构建数据库和核心；隔离校验必须在这一步之前分流，避免无权限进程执行恢复。
+        if(ValidationProcess.isCurrent())return
         super.onCreate()
         // 作者 long：与Flutter初始化顺序一致，停止态的Provider/DNS和进程恢复加载也需要底层DNS。
         // 观察器属于应用进程，不能等前台服务创建后才注册，更不能由任一服务销毁时清空。

@@ -45,7 +45,7 @@ interface GlobalDnsSettingsStore {
 }
 
 class SharedPreferencesGlobalDnsSettingsStore(context: Context) : GlobalDnsSettingsStore {
-    private val preferences = context.applicationContext.getSharedPreferences("global_dns", Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, "global_dns")
     override fun read(): ProfileDnsOverrides = preferences.getString("overrides", null)?.let {
         GlobalDnsSettings.validate(ProfileDnsOverrides.fromJson(JsonParser.parseString(it).asJsonObject))
     } ?: ProfileDnsOverrides()

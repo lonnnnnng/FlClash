@@ -11,7 +11,7 @@ class RoomRuntimeResumeStore(
     override suspend fun shouldResume(): Boolean =
         preferences.get(RUNTIME_RESUME_KEY) == "true"
 
-    override suspend fun setShouldResume(value: Boolean) {
+    override suspend fun setShouldResume(value: Boolean) = com.lonnnnnng.flclash.common.StateWriteAudit.operation("runtime.resume.persist") {
         if (value) {
             preferences.put(
                 AppPreferenceEntity(

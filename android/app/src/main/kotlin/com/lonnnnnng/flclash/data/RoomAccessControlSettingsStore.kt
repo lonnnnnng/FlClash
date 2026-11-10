@@ -21,7 +21,7 @@ class RoomAccessControlSettingsStore @Inject constructor(
         return decode(raw).sanitize()
     }
 
-    override suspend fun save(value: AccessControlProps) {
+    override suspend fun save(value: AccessControlProps) = com.lonnnnnng.flclash.common.StateWriteAudit.operation("preference.accessControl.save") {
         preferences.put(
             AppPreferenceEntity(
                 key = KEY,

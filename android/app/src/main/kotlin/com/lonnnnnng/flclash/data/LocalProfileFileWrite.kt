@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.data
 
 import java.io.File
 import java.io.IOException
+import com.lonnnnnng.flclash.common.StateWriteAudit
 
 internal class LocalProfileFileSnapshot(val bytes: ByteArray?, val modified: Long) {
     override fun toString(): String = "LocalProfileFileSnapshot(size=${bytes?.size})"
@@ -41,12 +42,16 @@ internal suspend fun <T> replaceLocalProfileFile(
                 target.lastModified() == modified && target.inputStream().use { readProfileFileBytes(it, allowEmpty = true) }.contentEquals(original)
             require(unchanged) { "配置文件已变化，请重新打开编辑器" }
             // 作者 long：新旧文件位于同一目录，rename 失败直接终止，禁止退化为可能截断旧文件的流式覆盖。
-            if (!rename(temporary, target)) throw IOException("无法替换配置文件，原配置已保留")
+            StateWriteAudit.fileMutation(target, "profile.atomic.replace") {
+                if (!rename(temporary, target)) throw IOException("无法替换配置文件，原配置已保留")
+            }
             replaced = true
         }
     } catch (error: Throwable) {
         if (replaced) {
-            val restored = if (backup != null) rename(backup, target) else target.delete()
+            val restored = StateWriteAudit.fileMutation(target, "profile.atomic.rollback") {
+                if (backup != null) rename(backup, target) else target.delete()
+            }
             if (!restored) {
                 // 作者 long：回滚失败时保留独占旧文件用于恢复，不能在 finally 中删除最后一份原正文。
                 keepBackup = true

@@ -78,7 +78,7 @@ interface GeneralSettingsStore {
 }
 
 class SharedPreferencesGeneralSettingsStore(context: Context) : GeneralSettingsStore {
-    private val preferences = context.applicationContext.getSharedPreferences("general_settings", Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, "general_settings")
     private val gson = Gson()
     override fun read(): GeneralSettings = preferences.getString("settings", null)?.let {
         gson.fromJson(it, GeneralSettings::class.java).validated()

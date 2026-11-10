@@ -27,7 +27,7 @@ object NoopLanSharingStore : LanSharingStore {
 }
 
 class SharedPreferencesLanSharingStore(context: Context) : LanSharingStore {
-    private val preferences = context.getSharedPreferences("kclash_runtime_preferences", Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context, "kclash_runtime_preferences")
     override fun read(): Boolean? = if (preferences.contains("allow_lan")) preferences.getBoolean("allow_lan", false) else null
     override fun write(value: Boolean?) {
         val edit = preferences.edit()

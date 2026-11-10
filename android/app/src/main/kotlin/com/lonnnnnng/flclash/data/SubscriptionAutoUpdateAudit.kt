@@ -10,7 +10,7 @@ object SubscriptionAutoUpdateAudit {
     private const val STORE = "subscription-auto-update-audit"
 
     fun read(context: Context): JSONArray = runCatching {
-        JSONArray(context.getSharedPreferences(STORE, Context.MODE_PRIVATE).getString("runs", "[]"))
+        JSONArray(com.lonnnnnng.flclash.common.auditedPreferences(context, STORE).getString("runs", "[]"))
     }.getOrElse { JSONArray() }
 
     @Synchronized
@@ -34,6 +34,6 @@ object SubscriptionAutoUpdateAudit {
             put(entry)
         }
         // 作者 long：在Worker返回前落盘，避免进程结束后只剩WorkInfo成功却无法归因本次下载与应用。
-        context.getSharedPreferences(STORE, Context.MODE_PRIVATE).edit().putString("runs", runs.toString()).commit()
+        com.lonnnnnng.flclash.common.auditedPreferences(context, STORE).edit().putString("runs", runs.toString()).commit()
     }
 }

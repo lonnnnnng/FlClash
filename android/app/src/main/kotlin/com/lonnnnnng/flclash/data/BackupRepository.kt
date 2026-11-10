@@ -142,7 +142,7 @@ class BackupRepository(
         else runtimeManager.withStoppedDataRestore { restoreStopped(archive, scope, strategy) }
     }
 
-    private suspend fun restoreStopped(archive: ByteArray, scope: BackupRestoreScope, strategy: BackupRestoreStrategy) = withContext(Dispatchers.IO) {
+    private suspend fun restoreStopped(archive: ByteArray, scope: BackupRestoreScope, strategy: BackupRestoreStrategy) = com.lonnnnnng.flclash.common.auditedStateIo("backup.restore") withContext@ {
         require(archive.isNotEmpty()) { "备份文件为空" }
         val read = parseArchive(archive)
         read.resourcePreferences?.filters?.takeIf { it.isNotEmpty() }?.let { presets ->
@@ -404,7 +404,7 @@ class BackupRepository(
             require(source.isFile) { "备份暂存文件缺失：$name" }
             val target = resolveAppFile(name)
             target.parentFile?.mkdirs()
-            source.copyTo(target, overwrite = true)
+            com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(target, "backup.restore.copy") { source.copyTo(target, overwrite = true) }
         }
     }
 
@@ -414,9 +414,9 @@ class BackupRepository(
             val target = resolveAppFile(name)
             if (snapshot.isFile) {
                 target.parentFile?.mkdirs()
-                snapshot.copyTo(target, overwrite = true)
+                com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(target, "backup.restore.rollback") { snapshot.copyTo(target, overwrite = true) }
             } else {
-                target.delete()
+                com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(target, "backup.restore.rollbackNew") { target.delete() }
             }
         }
     }
@@ -431,7 +431,7 @@ class BackupRepository(
             directory.listFiles()?.filter { it.extension == "yaml" || it.extension == "js" }?.forEach { file ->
                 val numeric = file.nameWithoutExtension.toLongOrNull() ?: return@forEach
                 val relative = if (file.extension == "yaml") profileEntry(numeric) else scriptEntry(numeric)
-                if (relative !in incomingFiles) file.delete()
+                if (relative !in incomingFiles) com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(file, "backup.restore.orphan") { file.delete() }
             }
         }
     }

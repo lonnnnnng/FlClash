@@ -1,0 +1,174 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "48fa766116ab21e6fad8128d5984f88d4c449ecb",
+  "status": "BASIC_FLOW_VERIFIED_BOUNDARIES_PENDING",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "jvm": {
+    "app": {
+      "tests": 613,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 217,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "common": {
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "checks": {
+    "debugReleaseR8": true,
+    "debugReleaseLint": true,
+    "mlkitRegistrars": 3,
+    "motionTests": 4,
+    "motionFailures": 0,
+    "productSourceChangedAfterCandidate": false,
+    "onlyTestFixtureChangedAfterCandidate": "android/tests/instrumented/AppUpdateVerificationInstrumentedTest.kt"
+  },
+  "candidate": {
+    "sha256": "0e037e7c8ee5e1503585a82fa164be88958320c39247c85df7f64a6a7a8c153e",
+    "bytes": 48434172
+  },
+  "upgrade": {
+    "before": "updater-install-boundary-before",
+    "after": "updater-install-boundary-after",
+    "uidPreserved": true,
+    "schemaPreserved": true,
+    "tablesSame": {
+      "profiles": true,
+      "app_preferences": true,
+      "scripts": true,
+      "proxy_delay_results": true
+    },
+    "allProfileFileBytesHashMtimePreserved": true,
+    "beforeCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 238
+    },
+    "afterCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 238
+    },
+    "versionBefore": "0.1.1",
+    "versionAfter": "0.1.2",
+    "passed": true
+  },
+  "installedArtifact": {
+    "sha256": "96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538",
+    "matchesPublic012": true,
+    "bytes": 48354860
+  },
+  "scenarios": {
+    "realCheckStable012": true,
+    "cancelAndRestartDownload": true,
+    "coreStoppedDirectAttempt": "FAILED_CONNECTION_INTERRUPTED",
+    "runningCoreOriginalGithubDownload": "READY_VERIFIED",
+    "unknownSourceDeniedReturn": true,
+    "unknownSourceGrantedReturn": true,
+    "systemInstallCancelAndRetry": true,
+    "readyStateAfterProcessRecreation": true,
+    "actualSelfUpgrade011To012": true,
+    "exactSocketAttributionVerified": false
+  },
+  "remaining": [
+    "下载中进程死亡与WorkManager恢复",
+    "认证代理/按需暂停下载路径真机",
+    "错误签名/降级实际APK拒绝",
+    "未提交安装session中断与确认Intent丢失重建",
+    "升级到含新接收器版本后的成功回执/清理",
+    "非空脚本/未提交草稿/运行VPN覆盖升级",
+    "低API实际行为"
+  ],
+  "limits": [
+    "目标为既有公开0.1.2，不含新更新实现，不能验证升级后新接收器回执和私有APK清理",
+    "四业务表中scripts为0行，不能推广非空脚本升级",
+    "停止核心后进行实际安装，不称运行VPN覆盖升级",
+    "独立motion非正式R8，正式升级另有签名证据"
+  ],
+  "failuresPreserved": [
+    "probe-apk-tests1.log",
+    "probe-apk-tests2.log",
+    "validation-probe-test3.log",
+    "final2/probe-updater-tests.log",
+    "ui-foreground-after-download.xml"
+  ],
+  "rawEvidence": [
+    {
+      "path": "acceptance-artifacts/app-update-20261111/final2/final-checks.log",
+      "sha256": "c1e9647c850be57b647bb0955d818dde76241c4cb1abc67cbe75906a987202da",
+      "bytes": 16718
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/final2/probe-updater-tests-final.log",
+      "sha256": "cd511ea799d55e87d9d6a048078263c888a6e83622f311f09cec9376735e62cf",
+      "bytes": 3352
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/downloaded-apk-identity.json",
+      "sha256": "f4203f862d6007918274728482a94cb1d87c69c5fad39e84c226bed50d44b893",
+      "bytes": 135
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/updater-real-upgrade-data.json",
+      "sha256": "af837549bad445972cfb0c1c520f1f02b5c6f6745a90543928a0f4bb5db844e3",
+      "bytes": 632
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/self-upgraded-identity.json",
+      "sha256": "e77d1e622f72310cccb7a71350fc2c842f2cbbc6633af506e3a1400fcb953c78",
+      "bytes": 132
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/updater-stage-evidence.json",
+      "sha256": "bb63659efc89b816b72b0dbd918730352c0043465f55bdb3dab9fb473fc833f6",
+      "bytes": 2506
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/ui-system-install-prompt.xml",
+      "sha256": "4673656360db5954fd51acc45ab5d9aca368c8c224225eafe38061eb850ef735",
+      "bytes": 14115
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/ui-system-install-canceled.xml",
+      "sha256": "f9c86b53e69da11476c88e28a73583036671b927d5fab47ba35f616db017eb61",
+      "bytes": 12792
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/ui-update-restored-after-process.xml",
+      "sha256": "f9c86b53e69da11476c88e28a73583036671b927d5fab47ba35f616db017eb61",
+      "bytes": 12792
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/ui-final-system-prompt.xml",
+      "sha256": "4673656360db5954fd51acc45ab5d9aca368c8c224225eafe38061eb850ef735",
+      "bytes": 14115
+    }
+  ],
+  "additionalAuditBatch": {
+    "tests": 7,
+    "passed": 7,
+    "failed": 0,
+    "releaseUpdateSourceUnchanged": true
+  }
+}

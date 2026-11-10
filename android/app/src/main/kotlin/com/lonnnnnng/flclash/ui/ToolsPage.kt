@@ -23,6 +23,8 @@ import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Card
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,6 +52,7 @@ internal fun ToolsPanel(
     onOpenResources: () -> Unit = { onShowUnavailable("资源") },
     onOpenAdvanced: () -> Unit = { onShowUnavailable("高级配置") },
 ) {
+    val context = LocalContext.current
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -102,6 +105,9 @@ internal fun ToolsPanel(
             }
             ToolMenuRow("常规", Icons.Outlined.Settings, "tools_item_general") {
                 onOpenGeneral()
+            }
+            ToolMenuRow("应用更新", Icons.Outlined.SystemUpdate, "tools_item_app_update") {
+                context.startActivity(android.content.Intent(context, com.lonnnnnng.flclash.update.AppUpdateActivity::class.java))
             }
         }
 

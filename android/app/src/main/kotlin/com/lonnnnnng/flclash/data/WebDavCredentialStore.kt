@@ -41,7 +41,7 @@ interface WebDavCredentialStore {
 }
 
 class AndroidWebDavCredentialStore(context: Context) : WebDavCredentialStore {
-    private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context, PREFERENCES_NAME)
     private val gson = Gson()
     private val lock = Any()
 

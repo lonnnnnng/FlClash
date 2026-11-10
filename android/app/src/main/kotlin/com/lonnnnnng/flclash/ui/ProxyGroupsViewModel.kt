@@ -344,7 +344,7 @@ class ProxyGroupsViewModel @Inject constructor(
                     if (updates.isEmpty()) return@collect
                     if (generation == profileGeneration && profileId == profileStore.currentProfileId.value) {
                         mutableState.update { it.copy(delayResults = it.delayResults + updates) }
-                        persistDelayUpdates(profileId, generation, updates)
+                        persistDelayUpdates(profileId, generation, updates, "delay.core_event")
                     }
                 }
             }
@@ -563,7 +563,9 @@ class ProxyGroupsViewModel @Inject constructor(
     ): Map<ProxyDelayKey, ProxyDelayUiState> {
         val retained = retainDelayResults(groups, current, nowMillis)
         if (profileId == null) return retained
-        proxyDelayStore.deleteOlderThan(profileId, nowMillis - DELAY_RESULT_TTL_MS)
+        com.lonnnnnng.flclash.common.StateWriteAudit.operation("delay.cache_expiry") {
+            proxyDelayStore.deleteOlderThan(profileId, nowMillis - DELAY_RESULT_TTL_MS)
+        }
         val valid = groups.flatMap { group ->
             group.all.map { proxy -> ProxyDelayKey(group.name, proxy, group.testUrl.orDefaultTestUrl()) }
         }.toSet()
@@ -585,12 +587,13 @@ class ProxyGroupsViewModel @Inject constructor(
         profileId: Long?,
         generation: Long,
         updates: Map<ProxyDelayKey, ProxyDelayUiState>,
+        source: String = "delay.manual_batch",
     ) {
         if (profileId == null) return
         updates.forEach { (key, value) ->
             if (value.isTesting || generation != profileGeneration || profileId != profileStore.currentProfileId.value) return@forEach
             try {
-                persistDelayResult(profileId, key, value)
+                persistDelayResult(profileId, key, value, source, generation)
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Throwable) {
@@ -603,7 +606,16 @@ class ProxyGroupsViewModel @Inject constructor(
         profileId: Long,
         key: ProxyDelayKey,
         value: ProxyDelayUiState,
-    ) {
+        source: String = "delay.manual_single",
+        generation: Long = profileGeneration,
+    ) = com.lonnnnnng.flclash.common.StateWriteAudit.operation(source) {
+        // 作者 long：核心事件与手动测速可能更新同一个键，保留来源和代际才能解释启动后的缓存刷新。
+        if (com.lonnnnnng.flclash.common.StateWriteAudit.enabled) {
+            com.lonnnnnng.flclash.common.StateWriteAudit.event("delay_result", mapOf("profileId" to profileId, "generation" to generation,
+                "group" to com.lonnnnnng.flclash.common.StateWriteAudit.value(key.groupName),
+                "proxy" to com.lonnnnnng.flclash.common.StateWriteAudit.value(key.proxyName),
+                "target" to com.lonnnnnng.flclash.common.StateWriteAudit.value(key.testUrl), "value" to value.value, "updatedAt" to value.updatedAtMillis))
+        }
         val result = value.value
         if (result == null) {
             // 作者 long：空结果代表核心没有返回可用数值，必须删除旧缓存，不能在重建后伪造失败。

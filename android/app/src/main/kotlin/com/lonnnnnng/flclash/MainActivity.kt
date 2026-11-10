@@ -391,7 +391,7 @@ class MainActivity : ComponentActivity() {
                 showBackgroundLocationGuide = true
             return
         }
-        val preferences = getSharedPreferences("on_demand_permissions", MODE_PRIVATE)
+        val preferences = com.lonnnnnng.flclash.common.auditedPreferences(this, "on_demand_permissions")
         if (preferences.getBoolean("requested", false) && !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
             openLocationAppSettings()
         } else {

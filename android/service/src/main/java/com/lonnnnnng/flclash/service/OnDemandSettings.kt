@@ -29,7 +29,7 @@ interface OnDemandSettingsStore {
 }
 
 class SharedPreferencesOnDemandSettingsStore(context: Context) : OnDemandSettingsStore {
-    private val preferences = context.applicationContext.getSharedPreferences("on_demand", Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, "on_demand")
     private val mutable = MutableStateFlow(read())
     override val changes = mutable.asStateFlow()
     @Synchronized override fun read(): List<String> = preferences.getString("exclude_ssids", null)?.let { raw ->

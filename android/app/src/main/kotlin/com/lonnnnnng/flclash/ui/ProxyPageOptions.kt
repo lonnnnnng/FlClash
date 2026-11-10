@@ -54,7 +54,7 @@ internal object ProxyPageOptionsStore {
     private const val KEY_HIDE_TIMEOUT = "hide_timeout"
 
     fun load(context: Context): ProxyPageOptions {
-        val preferences = context.applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
         return ProxyPageOptions(
             displayMode = preferences.enumValue(KEY_DISPLAY_MODE, ProxyDisplayMode.TAB),
             sort = preferences.enumValue(KEY_SORT, ProxySortOption.DEFAULT),
@@ -66,7 +66,7 @@ internal object ProxyPageOptionsStore {
     }
 
     fun save(context: Context, options: ProxyPageOptions) {
-        context.applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
             .edit()
             .putString(KEY_DISPLAY_MODE, options.displayMode.name)
             .putString(KEY_SORT, options.sort.name)
@@ -78,7 +78,7 @@ internal object ProxyPageOptionsStore {
     }
 
     internal fun clear(context: Context) {
-        context.applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
             .edit().clear().apply()
     }
 

@@ -16,7 +16,7 @@ object NoopOutboundModeStore : OutboundModeStore {
 }
 
 class SharedPreferencesOutboundModeStore(context: Context) : OutboundModeStore {
-    private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context, PREFERENCES_NAME)
 
     override fun read(): CoreOutboundMode? {
         val value = preferences.getString(MODE_KEY, null) ?: return null

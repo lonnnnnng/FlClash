@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 @Singleton
 class AndroidGeoResourceSettingsStore @Inject constructor(@ApplicationContext context: Context) : GeoResourceSettingsStore {
-    private val preferences = context.getSharedPreferences("resource_settings", Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context, "resource_settings")
     private val mutableChanges = kotlinx.coroutines.flow.MutableStateFlow(read())
     override val changes = mutableChanges.asStateFlow()
     override fun read(): GeoResourceSettings = runCatching {

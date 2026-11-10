@@ -237,7 +237,7 @@ class ProfileRepository(
                 if (mutableCurrentProfileId.value !in next.map(Profile::id)) {
                     val fallback = next.firstOrNull()?.id
                     mutableCurrentProfileId.value = fallback
-                    persistCurrentProfile(fallback)
+                    com.lonnnnnng.flclash.common.StateWriteAudit.operation("profile.selection.fallback") { persistCurrentProfile(fallback) }
                 }
                 mutableProfilesLoaded.value = true
             }
@@ -253,7 +253,7 @@ class ProfileRepository(
         }.getOrDefault(emptyList())
     }
 
-    override suspend fun recordGroupIcon(icon: String, remove: Boolean) = withContext(Dispatchers.IO) {
+    override suspend fun recordGroupIcon(icon: String, remove: Boolean) = com.lonnnnnng.flclash.common.auditedStateIo("profile.recordGroupIcon") withContext@ {
         if (icon.isBlank() || icon.length > 256 * 1024) return@withContext
         iconHistoryMutex.withLock {
             val previous = recentGroupIcons().filterNot { it == icon }
@@ -274,7 +274,7 @@ class ProfileRepository(
         }
     }
 
-    suspend fun saveLocalProxies(expected: List<LocalProxy>, next: List<LocalProxy>, rename: Pair<String, String>? = null) = withContext(Dispatchers.IO) {
+    suspend fun saveLocalProxies(expected: List<LocalProxy>, next: List<LocalProxy>, rename: Pair<String, String>? = null) = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveLocalProxies") withContext@ {
         fileMutationMutex.withLock {
             check(localProxies() == expected) { "本地代理已变化，请重新打开编辑器" }
             val custom = profileDao.getAll().filter { it.type == ProfileType.CUSTOM }
@@ -320,13 +320,13 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun selectProfile(id: Long?) {
+    override suspend fun selectProfile(id: Long?) = com.lonnnnnng.flclash.common.StateWriteAudit.operation("profile.select") {
         val valid = id?.takeIf { candidate -> profileDao.getById(candidate) != null }
         mutableCurrentProfileId.value = valid
         persistCurrentProfile(valid)
     }
 
-    override suspend fun refreshCurrentProfile() = withContext(Dispatchers.IO) {
+    override suspend fun refreshCurrentProfile() = com.lonnnnnng.flclash.common.auditedStateIo("profile.refreshCurrentProfile") withContext@ {
         val restored = preferenceDao.get(CURRENT_PROFILE_KEY)?.toLongOrNull()
         val valid = restored?.takeIf { profileDao.getById(it) != null }
             ?: profileDao.getAll().firstOrNull()?.id
@@ -334,7 +334,7 @@ class ProfileRepository(
         persistCurrentProfile(valid)
     }
 
-    override suspend fun addRemoteProfile(url: String, label: String, ageSecretKey: String): Profile = withContext(Dispatchers.IO) {
+    override suspend fun addRemoteProfile(url: String, label: String, ageSecretKey: String): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.addRemoteProfile") withContext@ {
         val normalizedUrl = url.trim()
         require(normalizedUrl.isNotEmpty()) { "订阅链接不能为空" }
         require(mutableProfiles.value.none { it.url == normalizedUrl }) { "该订阅已经添加" }
@@ -355,7 +355,7 @@ class ProfileRepository(
         replaceFileAtomically(id, plaintext)
         runCatching { profileDao.insert(profile.toEntity()) }
             .onFailure {
-                profileFile(id).delete()
+                com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(profileFile(id), "profile.add.rollback") { profileFile(id).delete() }
                 throw it
             }
         ensureCurrentProfile(profile.id)
@@ -365,7 +365,7 @@ class ProfileRepository(
     override suspend fun addFileProfile(label: String, bytes: ByteArray, ageSecretKey: String): Profile =
         importFileProfile(label, bytes, ageSecretKey) { true }
 
-    override suspend fun importFileProfile(label: String, bytes: ByteArray, ageSecretKey: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun importFileProfile(label: String, bytes: ByteArray, ageSecretKey: String, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.importFileProfile") withContext@ {
         require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
         val plaintext = contentDecoder.decode(bytes, ageSecretKey)
         require(plaintext.isNotEmpty() && plaintext.size <= MAX_PROFILE_FILE_BYTES) { "解密后的配置为空或超过 8 MiB" }
@@ -396,13 +396,13 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun addCustomProfile(label: String): Profile = withContext(Dispatchers.IO) {
+    override suspend fun addCustomProfile(label: String): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.addCustomProfile") withContext@ {
         val profile = Profile.custom(newId(), label.trim().ifEmpty { "未命名配置" }).copy(
             orderIndex = mutableProfiles.value.size,
         )
         profileFile(profile.id).apply {
             parentFile?.mkdirs()
-            if (!exists()) createNewFile()
+            if (!exists()) com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(this, "profile.custom.create") { createNewFile() }
         }
         profileDao.insert(profile.toEntity())
         ensureCurrentProfile(profile.id)
@@ -434,7 +434,7 @@ class ProfileRepository(
     }
 
     override suspend fun saveProfileDocument(expected: ProfileDocumentSnapshot, settings: ProfileDocumentSettings,
-        replacement: ByteArray?, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+        replacement: ByteArray?, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveProfileDocument") withContext@ {
         val before = expected.profile
         require(before.type == ProfileType.FILE || before.type == ProfileType.URL)
         val label = settings.label.trim()
@@ -489,7 +489,7 @@ class ProfileRepository(
         readProfileExport(profileFile(profileId), profile.realLabel)
     }
 
-    override suspend fun updateLocalProfileContent(id: Long, content: String): Profile = withContext(Dispatchers.IO) {
+    override suspend fun updateLocalProfileContent(id: Long, content: String): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.updateLocalProfileContent") withContext@ {
         require(content.isNotBlank()) { "配置内容不能为空" }
         val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
         require(current.type != ProfileType.URL) { "远程订阅不能直接编辑" }
@@ -500,7 +500,7 @@ class ProfileRepository(
         updated
     }
 
-    override suspend fun saveCustomRules(id: Long, rules: String, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun saveCustomRules(id: Long, rules: String, expectedContent: String, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveCustomRules") withContext@ {
         fileMutationMutex.withLock {
             val content = ProfileRulesEditor.replaceRules(expectedContent, rules)
             configValidator.validate(content.toByteArray(Charsets.UTF_8))
@@ -526,7 +526,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun saveCustomDocument(id: Long, content: String, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun saveCustomDocument(id: Long, content: String, expectedContent: String, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveCustomDocument") withContext@ {
         val bytes = content.toByteArray(Charsets.UTF_8)
         profileDocumentText(bytes)
         configValidator.validate(bytes)
@@ -552,7 +552,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun saveCustomProxyGroups(id: Long, save: ProxyGroupsSave, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun saveCustomProxyGroups(id: Long, save: ProxyGroupsSave, expectedContent: String, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveCustomProxyGroups") withContext@ {
         fileMutationMutex.withLock {
             save.providerProfiles.values.distinct().forEach { resourceId ->
                 require(profileDao.getById(resourceId)?.type?.let { it != ProfileType.CUSTOM } == true) { "代理资源已删除，请重新选择" }
@@ -583,7 +583,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, expectedOverrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>?, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun saveCustomProviders(id: Long, sections: ProfileProvidersEditor.Sections, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedContent: String, expectedOverrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>?, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveCustomProviders") withContext@ {
         fileMutationMutex.withLock {
             // 作者 long：只保存选项覆盖时正文应逐字节保持，避免一次字段确认无意义地重排资源定义。
             val content = if (sections == ProfileProvidersEditor.extract(expectedContent)) expectedContent else ProfileProvidersEditor.replace(expectedContent, sections)
@@ -625,7 +625,7 @@ class ProfileRepository(
         customProfileImportContent(contentDecoder.decode(bytes, ageSecretKey))
     }
 
-    override suspend fun replaceCustomProfile(id: Long, content: String, expected: Profile, expectedContent: String, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun replaceCustomProfile(id: Long, content: String, expected: Profile, expectedContent: String, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.replaceCustomProfile") withContext@ {
         require(content.toByteArray(Charsets.UTF_8).size <= MAX_PROFILE_FILE_BYTES && content.isNotBlank()) { "配置为空或超过 8 MiB" }
         configValidator.validate(content.toByteArray(Charsets.UTF_8))
         check(canWrite()) { "核心运行中，请先停止核心后再修改配置" }
@@ -682,7 +682,7 @@ class ProfileRepository(
             (resources?.importResources(proxyImport.content, commit) ?: commit(proxyImport.content) {}).also { committed = true }
         } finally {
             // 作者 long：Room 回滚后只回收本次新分配的代理文件，已有订阅和当前配置始终保留。
-            if (!committed) createdFiles.forEach { it.delete() }
+            if (!committed) createdFiles.forEach { file -> com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(file, "profile.import.rollback") { file.delete() } }
         }
     }
 
@@ -747,7 +747,7 @@ class ProfileRepository(
         replacement: ByteArray?,
         label: String?,
         canWrite: () -> Boolean,
-    ): Profile = withContext(Dispatchers.IO) {
+    ): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.updateFileProfile") withContext@ {
         // 作者 long：文件恢复发生在 Room 事务退出之后，整笔保存都要串行，避免旧事务回滚覆盖另一笔已保存的正文。
         fileMutationMutex.withLock {
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
@@ -792,7 +792,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun updateProfileLabel(id: Long, label: String): Profile = withContext(Dispatchers.IO) {
+    override suspend fun updateProfileLabel(id: Long, label: String): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.updateProfileLabel") withContext@ {
         database.withTransaction {
             val normalized = label.trim()
             require(normalized.isNotEmpty()) { "配置名称不能为空" }
@@ -805,7 +805,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun compareAndRenameProfile(id: Long, expectedLabel: String, label: String): Profile = withContext(Dispatchers.IO) {
+    override suspend fun compareAndRenameProfile(id: Long, expectedLabel: String, label: String): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.compareAndRenameProfile") withContext@ {
         database.withTransaction {
             // 作者 long：检查与写入同处Room事务，旧窗口不能覆盖并发改名；只改名称，保留其他最新元数据。
             check(profileDao.getById(id)?.label == expectedLabel) { "配置名称已变化，请重新打开" }
@@ -815,7 +815,7 @@ class ProfileRepository(
 
     override suspend fun managementProfileOrder(): List<Long> = withContext(Dispatchers.IO) { profileDao.getAll().map(ProfileEntity::id) }
 
-    override suspend fun compareAndReorderProfiles(expected: List<Long>, ids: List<Long>) = withContext(Dispatchers.IO) {
+    override suspend fun compareAndReorderProfiles(expected: List<Long>, ids: List<Long>) = com.lonnnnnng.flclash.common.auditedStateIo("profile.compareAndReorderProfiles") withContext@ {
         database.withTransaction {
             val latest = profileDao.getAll().map(ProfileEntity::id)
             check(expected.filter { it in latest } + latest.filterNot { it in expected } == latest) { "配置排序已变化，请重新打开" }
@@ -834,7 +834,7 @@ class ProfileRepository(
         autoUpdate: Boolean,
         intervalMillis: Long,
         ageSecretKey: String,
-    ): Profile = withContext(Dispatchers.IO) {
+    ): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.updateRemoteProfileSettings") withContext@ {
         database.withTransaction {
             val normalizedLabel = label.trim()
             require(normalizedLabel.length <= MAX_PROFILE_LABEL_LENGTH) {
@@ -858,7 +858,7 @@ class ProfileRepository(
     }
 
     override suspend fun updateProfileOverrides(id: Long, overridesJson: String): Profile =
-        withContext(Dispatchers.IO) {
+        com.lonnnnnng.flclash.common.auditedStateIo("profile.updateProfileOverrides") withContext@ {
             database.withTransaction {
                 val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
                 val updated = current.copy(overridesJson = overridesJson)
@@ -867,7 +867,7 @@ class ProfileRepository(
             }
         }
 
-    override suspend fun saveMoreOptions(id: Long, patch: ProfileMorePatch, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun saveMoreOptions(id: Long, patch: ProfileMorePatch, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveMoreOptions") withContext@ {
         database.withTransaction {
             // 作者 long：事务内重读最新整行，仅提交本次差异；启停或会话变更必须回滚，且不重写原YAML文件。
             check(canWrite()) { "更多设置编辑状态已变化，请停止核心后重试" }
@@ -880,7 +880,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun patchProfileOverrides(id: Long, canWrite: () -> Boolean, patch: (ProfileProviderOverrides) -> ProfileProviderOverrides): Profile = withContext(Dispatchers.IO) {
+    override suspend fun patchProfileOverrides(id: Long, canWrite: () -> Boolean, patch: (ProfileProviderOverrides) -> ProfileProviderOverrides): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.patchProfileOverrides") withContext@ {
         database.withTransaction {
             // 作者 long：DNS/链式代理在事务内仅合并本分区，排队保存时不能把其他分区的新值换回旧快照。
             check(canWrite()) { "编辑会话已变化" }
@@ -892,7 +892,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedOverrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>?, canWrite: () -> Boolean): Profile = withContext(Dispatchers.IO) {
+    override suspend fun saveProviderOptions(id: Long, overrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>, expectedOverrides: Map<String, com.lonnnnnng.flclash.service.ProxyProviderOverride>?, canWrite: () -> Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveProviderOptions") withContext@ {
         database.withTransaction {
             // 作者 long：订阅/文件配置仅更新本分区，事务内读取最新 DNS/脚本等元数据，并拒绝关闭或启停后的迟到提交。
             check(canWrite()) { "资源编辑状态已变化" }
@@ -907,7 +907,7 @@ class ProfileRepository(
     }
 
     override suspend fun updateProfileSelectedMap(id: Long, selectedMap: Map<String, String>): Profile =
-        withContext(Dispatchers.IO) {
+        com.lonnnnnng.flclash.common.auditedStateIo("profile.updateProfileSelectedMap") withContext@ {
             database.withTransaction {
                 val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
                 val updated = current.copy(selectedMapJson = encodeSelectedMap(selectedMap))
@@ -916,7 +916,7 @@ class ProfileRepository(
             }
         }
 
-    override suspend fun updateProfileProxySelection(id: Long, groupName: String, proxyName: String?): Profile = withContext(Dispatchers.IO) {
+    override suspend fun updateProfileProxySelection(id: Long, groupName: String, proxyName: String?): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.updateProfileProxySelection") withContext@ {
         database.withTransaction {
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
             // 作者 long：一次节点点击只修改自己的组，保留其他入口刚保存的选择和配置元数据。
@@ -934,7 +934,7 @@ class ProfileRepository(
         groupName: String,
         unfoldSet: Set<String>,
     ): Profile =
-        withContext(Dispatchers.IO) {
+        com.lonnnnnng.flclash.common.auditedStateIo("profile.updateProfileGroupViewState") withContext@ {
             database.withTransaction {
                 val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
                 // 作者 long：当前组和折叠状态由同一次 Room 更新保存，避免并发写整行时互相覆盖。
@@ -948,7 +948,7 @@ class ProfileRepository(
         }
 
     override suspend fun updateProfileCurrentGroupName(id: Long, groupName: String): Profile =
-        withContext(Dispatchers.IO) {
+        com.lonnnnnng.flclash.common.auditedStateIo("profile.updateProfileCurrentGroupName") withContext@ {
             database.withTransaction {
                 val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
                 // 作者 long：组页记忆按 Profile 隔离，切回同一配置时可恢复上次查看的组，不改动核心 YAML。
@@ -962,7 +962,7 @@ class ProfileRepository(
         id: Long,
         enabled: Boolean,
         intervalMillis: Long,
-    ): Profile = withContext(Dispatchers.IO) {
+    ): Profile = com.lonnnnnng.flclash.common.auditedStateIo("profile.updateProfileAutoUpdate") withContext@ {
         database.withTransaction {
             val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
             require(current.type == ProfileType.URL) { "只有订阅配置支持自动更新" }
@@ -976,7 +976,7 @@ class ProfileRepository(
     }
 
     override suspend fun updateProfileScript(id: Long, scriptId: Long?): Profile =
-        withContext(Dispatchers.IO) {
+        com.lonnnnnng.flclash.common.auditedStateIo("profile.updateProfileScript") withContext@ {
             database.withTransaction {
                 // 作者 long：校验脚本存在与写入 Profile 必须原子完成，避免脚本删除并发时留下悬挂绑定。
                 val current = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
@@ -995,12 +995,12 @@ class ProfileRepository(
     override suspend fun globalExtensionRules(): List<ExtensionRule> =
         ExtensionRules.decode(preferenceDao.get(ExtensionRules.PREFERENCE_KEY))
 
-    override suspend fun saveGlobalExtensionRules(rules: List<ExtensionRule>) = withContext(Dispatchers.IO) {
+    override suspend fun saveGlobalExtensionRules(rules: List<ExtensionRule>) = com.lonnnnnng.flclash.common.auditedStateIo("profile.saveGlobalExtensionRules") withContext@ {
         ExtensionRules.validate(rules)
         preferenceDao.put(AppPreferenceEntity(ExtensionRules.PREFERENCE_KEY, ExtensionRules.toJson(rules).toString(), System.currentTimeMillis()))
     }
 
-    override suspend fun compareAndSaveGlobalExtensionRules(expected: List<ExtensionRule>, rules: List<ExtensionRule>) = withContext(Dispatchers.IO) {
+    override suspend fun compareAndSaveGlobalExtensionRules(expected: List<ExtensionRule>, rules: List<ExtensionRule>) = com.lonnnnnng.flclash.common.auditedStateIo("profile.compareAndSaveGlobalExtensionRules") withContext@ {
         ExtensionRules.validate(rules)
         // 作者 long：全局管理页和配置扩展页共享目录；事务内复核完整旧快照，拒绝迟到页面覆盖新的规则或排序。
         database.withTransaction {
@@ -1009,7 +1009,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun commitGlobalExtensionRules(expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String) = withContext(Dispatchers.IO) {
+    override suspend fun commitGlobalExtensionRules(expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String) = com.lonnnnnng.flclash.common.auditedStateIo("profile.commitGlobalExtensionRules") withContext@ {
         // 作者 long：独立全局目录不要求Profile存在，CAS和提交回执仍须处于同一事务，值改回旧值后也不能重放。
         database.withTransaction {
             if (extensionCommitApplied(commitId)) return@withTransaction
@@ -1018,7 +1018,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun compareAndSaveGlobalExtensionRulesForProfile(id: Long, expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String?) = withContext(Dispatchers.IO) {
+    override suspend fun compareAndSaveGlobalExtensionRulesForProfile(id: Long, expected: List<ExtensionRule>, rules: List<ExtensionRule>, commitId: String?) = com.lonnnnnng.flclash.common.auditedStateIo("profile.compareAndSaveGlobalExtensionRulesForProfile") withContext@ {
         database.withTransaction {
             if (commitId != null && extensionCommitApplied(commitId)) return@withTransaction
             // 作者 long：宿主删除检查与共享规则提交不能分离，否则旧扩展窗口仍可能在配置消失后写全局目录。
@@ -1029,7 +1029,7 @@ class ProfileRepository(
     }
 
     override suspend fun saveExtension(id: Long, mode: String, scriptId: Long?, matchTarget: String?, extension: ProfileExtensionOverrides): Profile =
-        withContext(Dispatchers.IO) {
+        com.lonnnnnng.flclash.common.auditedStateIo("profile.saveExtension") withContext@ {
             require(mode in setOf("standard", "script")) { "未知扩展模式" }
             ExtensionRules.validate(extension.rules)
             require(matchTarget == null || matchTarget.isNotBlank() && ',' !in matchTarget && '\n' !in matchTarget) { "默认目标无效" }
@@ -1047,7 +1047,9 @@ class ProfileRepository(
 
     override suspend fun extensionCommitApplied(commitId: String): Boolean = preferenceDao.get(extensionCommitKey(commitId)) != null
 
-    override suspend fun forgetExtensionCommit(commitId: String) = preferenceDao.delete(extensionCommitKey(commitId))
+    override suspend fun forgetExtensionCommit(commitId: String) = com.lonnnnnng.flclash.common.StateWriteAudit.operation("profile.extension.forgetCommit") {
+        preferenceDao.delete(extensionCommitKey(commitId))
+    }
 
     private suspend fun recordExtensionCommit(commitId: String) {
         // 作者 long：提交标记与规则同事务，值改回旧值也不能让冷恢复误判“从未提交”；标记不含规则或凭据。
@@ -1060,7 +1062,7 @@ class ProfileRepository(
     }
 
     override suspend fun compareAndSaveExtension(id: Long, expected: ProfileExtensionValues, next: ProfileExtensionValues, commitId: String?): Profile =
-        withContext(Dispatchers.IO) {
+        com.lonnnnnng.flclash.common.auditedStateIo("profile.compareAndSaveExtension") withContext@ {
             database.withTransaction {
                 // 作者 long：比较与更新同处Room事务，外部删除/修改规则后旧窗口不能把整份旧规则列表写回来。
                 val current = profileDao.getById(id)?.toDomain()
@@ -1074,7 +1076,7 @@ class ProfileRepository(
 
     override suspend fun updateRemoteProfile(id: Long): Profile = updateRemoteProfile(id, automatic = false)
 
-    private suspend fun updateRemoteProfile(id: Long, automatic: Boolean): Profile = withContext(Dispatchers.IO) {
+    private suspend fun updateRemoteProfile(id: Long, automatic: Boolean): Profile = com.lonnnnnng.flclash.common.auditedStateIo(if (automatic) "profile.sync.automatic" else "profile.sync.manual") withContext@ {
         val (current, original) = fileMutationMutex.withLock {
             val row = requireNotNull(profileDao.getById(id)) { "配置不存在" }.toDomain()
             require(row.type == ProfileType.URL) { "只有订阅配置支持更新" }
@@ -1120,7 +1122,7 @@ class ProfileRepository(
         }
     }
 
-    override suspend fun updateDueProfiles(nowMillis: Long): AutoUpdateResult = withContext(Dispatchers.IO) {
+    override suspend fun updateDueProfiles(nowMillis: Long): AutoUpdateResult = com.lonnnnnng.flclash.common.auditedStateIo("profile.updateDueProfiles") withContext@ {
         automaticUpdateMutex.withLock {
             val failures = mutableListOf<AutoUpdateFailure>()
             val applyFailures = mutableListOf<AutoUpdateFailure>()
@@ -1196,13 +1198,13 @@ class ProfileRepository(
         usage
     }
 
-    override suspend fun deleteProfile(id: Long) = withContext(Dispatchers.IO) {
+    override suspend fun deleteProfile(id: Long) = com.lonnnnnng.flclash.common.auditedStateIo("profile.deleteProfile") withContext@ {
         // 作者 long：删除与本地文件保存共用锁，避免失败保存恢复旧文件时把已删除的配置正文重新留在磁盘。
         fileMutationMutex.withLock {
             val profile = profileDao.getById(id)
             if (profile == null) {
                 // 作者 long：上次可能停在Room删除后、文件清理前；显式重试只清理这个已不存在ID的正文。
-                check(!profileFile(id).exists() || profileFile(id).delete()) { "配置正文清理失败，请重试" }
+                check(!profileFile(id).exists() || com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(profileFile(id), "profile.delete.retry") { profileFile(id).delete() }) { "配置正文清理失败，请重试" }
                 return@withLock
             }
             var fallback = mutableCurrentProfileId.value
@@ -1215,11 +1217,12 @@ class ProfileRepository(
             }
             // 作者 long：先提交Room再清理正文；事务失败必须保留旧源和当前选择，供管理器恢复原运行配置。
             mutableCurrentProfileId.value = fallback
-            profileFile(id).delete()
+            com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(profileFile(id), "profile.delete.afterDatabase") { profileFile(id).delete() }
+            Unit
         }
     }
 
-    override suspend fun reorder(ids: List<Long>) = withContext(Dispatchers.IO) {
+    override suspend fun reorder(ids: List<Long>) = com.lonnnnnng.flclash.common.auditedStateIo("profile.reorder") withContext@ {
         database.withTransaction {
             val existingIds = profileDao.getAll().map(ProfileEntity::id)
             val requested = ids
@@ -1275,7 +1278,9 @@ class ProfileRepository(
                         projection.parentFile?.mkdirs()
                         val temporary = File(projection.parentFile, ".${profile.id}.tmp")
                         temporary.writeText(resolved)
-                        check(temporary.renameTo(projection)) { "无法写入资源投影配置" }
+                        com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(projection, "projection.resolved.replace") {
+                            check(temporary.renameTo(projection)) { "无法写入资源投影配置" }
+                        }
                     }
                     projection.path
                 }
@@ -1321,7 +1326,9 @@ class ProfileRepository(
                 snapshot.parentFile?.mkdirs()
                 val temporary = File(snapshot.parentFile, ".$resourceId.tmp")
                 temporary.writeBytes(bytes)
-                check(temporary.renameTo(snapshot)) { "无法写入代理资源投影" }
+                com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(snapshot, "projection.provider.replace") {
+                    check(temporary.renameTo(snapshot)) { "无法写入代理资源投影" }
+                }
             }
             definition.asJsonObject.addProperty("path", snapshot.path)
         }
@@ -1351,10 +1358,12 @@ class ProfileRepository(
         target.parentFile?.mkdirs()
         val temporary = File(target.parentFile, ".${target.name}.tmp")
         temporary.writeBytes(bytes)
-        if (!temporary.renameTo(target)) {
-            target.outputStream().use { it.write(bytes) }
-            if (!temporary.delete()) {
-                throw IOException("无法清理配置临时文件")
+        com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(target, "profile.legacy.replace") {
+            if (!temporary.renameTo(target)) {
+                target.outputStream().use { it.write(bytes) }
+                if (!temporary.delete()) {
+                    throw IOException("无法清理配置临时文件")
+                }
             }
         }
     }

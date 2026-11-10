@@ -23,7 +23,7 @@ interface ServiceSettingsStore {
 }
 
 class AndroidServiceSettingsStore @Inject constructor(@ApplicationContext context: Context) : ServiceSettingsStore {
-    private val preferences = context.applicationContext.getSharedPreferences("service_status", Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, "service_status")
     override fun read(): ServiceSettings {
         fun targets(key: String) = preferences.getString(key, null).orEmpty().split(',').mapNotNull { id -> ServiceTarget.entries.firstOrNull { it.id == id } }
         return ServiceSettings(targets("order"), targets("disabled").toSet()).normalized()

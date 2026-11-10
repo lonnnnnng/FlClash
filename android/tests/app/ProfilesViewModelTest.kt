@@ -7,6 +7,7 @@ import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
 import com.lonnnnnng.flclash.service.ProfileProviderOverrides
 import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -33,6 +34,22 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
+    private val modelJobs = mutableListOf<kotlinx.coroutines.Job>()
+    private val modelSchedulers = mutableSetOf<kotlinx.coroutines.test.TestCoroutineScheduler>()
+
+    // 作者 long：真实IO可以晚于runTest虚拟队列结束，统一跟踪VM工作，不能让迟到回调跨越resetMain污染下一用例。
+    private fun newModel(
+        repository: ProfileStore,
+        runtimeManager: CoreRuntimeStatusProvider,
+        configValidator: com.lonnnnnng.flclash.data.ProfileConfigValidator = com.lonnnnnng.flclash.data.YamlProfileConfigValidator(),
+        fileReader: com.lonnnnnng.flclash.data.ProfileFileDocumentReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("文件读取器不可用") },
+        overviewDispatcher: kotlinx.coroutines.CoroutineDispatcher,
+        groupFilterValidator: com.lonnnnnng.flclash.data.ProxyGroupFilterValidator = com.lonnnnnng.flclash.data.ProxyGroupFilterValidator { error("过滤表达式校验不可用") },
+        draftStore: com.lonnnnnng.flclash.data.ProfileDraftStore = com.lonnnnnng.flclash.data.NoopProfileDraftStore,
+    ): ProfilesViewModel = ProfilesViewModel(repository, runtimeManager, configValidator, fileReader, overviewDispatcher, groupFilterValidator, draftStore).also { model ->
+        modelJobs += checkNotNull(model.viewModelScope.coroutineContext[kotlinx.coroutines.Job])
+        (overviewDispatcher as? kotlinx.coroutines.test.TestDispatcher)?.let { modelSchedulers += it.scheduler }
+    }
 
     @Test fun metadataOnlyGroupRecoveryRequiresCommittedLayoutsAndNeverReplays() = runTest {
         Dispatchers.setMain(mainDispatcher)
@@ -51,14 +68,14 @@ class ProfilesViewModelTest {
             }
             val drafts = PickerMemoryStore()
             val owner = androidx.lifecycle.ViewModelStore()
-            val first = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val first = newModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
             owner.put("draft", first); first.openEditor(profile); advanceUntilIdle()
             val snapshot = com.google.gson.Gson().fromJson(drafts.bytes!!.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java)
             owner.clear()
             drafts.bytes = com.google.gson.Gson().toJson(snapshot.copy(groups = ProfileProxyGroupsEditorUiState(profile = profile,
                 sourceContent = body, isSaving = true, pendingContent = body,
                 pendingLayouts = com.lonnnnnng.flclash.data.ProxyGroupMembers.layoutsJson(save.groups)))).toByteArray()
-            val second = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val second = newModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
             val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
             advanceUntilIdle()
             if (committed) assertNull(second.proxyGroupsEditorState.value.profile)
@@ -74,7 +91,7 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(profile).apply { profiles.value = emptyList(); currentProfileId.value = null }
         val loaded = MutableStateFlow(false)
         val pending = object : ProfileStore by store { override val profilesLoaded: StateFlow<Boolean> = loaded }
-        val model = ProfilesViewModel(pending, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(pending, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         val owner = androidx.lifecycle.ViewModelStore().apply { put("profiles", model) }
         val collection = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { model.state.collect {} }
         try {
@@ -108,7 +125,7 @@ class ProfilesViewModelTest {
                 if (hasSaved) bytes = com.google.gson.Gson().toJson(snapshot).toByteArray()
                 readGate = gate
             }
-            val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
             val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
             when (entry) {
                 0 -> model.openEditor(profile)
@@ -147,7 +164,7 @@ class ProfilesViewModelTest {
         val wrapper = object : ProfileStore by store {
             override suspend fun extensionProfile(id: Long): Profile? { entered.complete(Unit); release.await(); return profile }
         }
-        val model = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val model = newModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
         val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
         entered.await(); model.closeEditor(); release.complete(Unit); advanceUntilIdle()
         assertNull(model.editorState.value.profile)
@@ -166,7 +183,7 @@ class ProfilesViewModelTest {
                 override suspend fun read(): ByteArray? { check(!failRead); return bytes?.copyOf() }
                 override suspend fun write(content: ByteArray?) { writes++; bytes = content?.copyOf() }
             }
-            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            fun model() = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
             val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
             first.openEditor(profile); advanceUntilIdle(); first.openProxiesEditor(profile); advanceUntilIdle()
             val ui = EditorSaveableState(mapOf("private" to listOf(EditorSavedValue.capture("private-proxies-io"))))
@@ -201,7 +218,7 @@ class ProfilesViewModelTest {
         val original = "proxies: [{name: original, type: direct}]\nrules: [MATCH,DIRECT]\n"
         val store = FakeProfileStore(profile).apply { content = original }
         val drafts = PickerMemoryStore()
-        fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        fun model() = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
         val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
         first.openEditor(profile); advanceUntilIdle(); first.openProxiesEditor(profile); advanceUntilIdle()
         val session = first.proxiesEditorState.value.session
@@ -237,7 +254,7 @@ class ProfilesViewModelTest {
                 }
             }
             val drafts = PickerMemoryStore()
-            fun model() = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            fun model() = newModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
             val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
             first.openEditor(profile); advanceUntilIdle(); first.openProxiesEditor(profile); advanceUntilIdle()
             first.saveProxies("- name: renamed\n  type: direct"); entered.await()
@@ -263,7 +280,7 @@ class ProfilesViewModelTest {
             content = "proxies: []"
             beforeRead = { entered.complete(Unit); release.await() }
         }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
         model.openProxiesEditor(profile); entered.await(); model.closeProxiesEditor(); advanceUntilIdle()
         release.complete(Unit); advanceUntilIdle(); assertNull(model.proxiesEditorState.value.profile); owner.clear()
@@ -276,7 +293,7 @@ class ProfilesViewModelTest {
                 else Profile.custom(816, "pending").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
             val store = FakeProfileStore(profile).apply { content = "rules: []" }
             val drafts = PickerMemoryStore()
-            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+            fun model() = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
                 fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader {
                     com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "rules: []\n".toByteArray())
                 }, overviewDispatcher = mainDispatcher, draftStore = drafts)
@@ -318,7 +335,7 @@ class ProfilesViewModelTest {
                 override suspend fun read() = saved
                 override suspend fun write(content: ByteArray?) { saved = content?.copyOf() }
             }
-            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+            fun model() = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
                 fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader {
                     com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "rules: []\n".toByteArray())
                 }, overviewDispatcher = mainDispatcher, draftStore = drafts)
@@ -367,7 +384,7 @@ class ProfilesViewModelTest {
                 saved = content?.copyOf()
             }
         }
-        val model = ProfilesViewModel(FakeProfileStore(profile), FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val model = newModel(FakeProfileStore(profile), FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
         val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
         model.openEditor(profile); advanceUntilIdle(); assertNotNull(saved)
         delayNext = true; model.changeCustomDraft("rules: ['MATCH,DIRECT']"); entered.await()
@@ -386,7 +403,7 @@ class ProfilesViewModelTest {
                 return store.patchProfileOverrides(id, canWrite, patch)
             }
         }
-        val model = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openDnsEditor(profile)
         val dns = ProfileDnsOverrides(enable = true)
         model.saveDns(dns); advanceUntilIdle()
@@ -407,7 +424,7 @@ class ProfilesViewModelTest {
         val profile = Profile.custom(811, "运行编辑")
         val store = FakeProfileStore(profile).apply { content = "rules: []" }
         val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING)
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = mainDispatcher)
         model.openEditor(profile); advanceUntilIdle()
         assertEquals(profile.id, model.editorState.value.profile?.id)
         store.content = "rules: []\n"
@@ -431,14 +448,14 @@ class ProfilesViewModelTest {
             override suspend fun read() = saved?.copyOf()
             override suspend fun write(content: ByteArray?) { saved = content?.copyOf() }
         }
-        val first = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val first = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
         val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
         first.openEditor(profile); advanceUntilIdle()
         first.updateRemoteDraft(first.remoteEditorState.value.draft.copy(label = "pending-name", ageKey = "pending-key"))
         first.openProfileDocument(true); first.changeProfileDocument("rules: ['MATCH,DIRECT']"); advanceUntilIdle()
         assertNotNull(saved); owner.clear()
         store.content = "rules: []\n"
-        val second = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val second = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
         val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
         advanceUntilIdle()
         assertEquals("pending-name", second.remoteEditorState.value.draft.label)
@@ -461,7 +478,7 @@ class ProfilesViewModelTest {
             val original = "proxy-groups:\n  - name: group\n    type: select\n    proxies: [DIRECT]\nrules:\n  - MATCH,DIRECT\n"
             val store = FakeProfileStore(profile).apply { content = original }
             val drafts = PickerMemoryStore()
-            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            fun model() = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
             val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
             first.openEditor(profile); advanceUntilIdle()
             if (rules) first.openRulesEditor(profile) else first.openSingleProxyGroupEditor(profile, 0)
@@ -521,7 +538,7 @@ class ProfilesViewModelTest {
                 }
             }
             val drafts = PickerMemoryStore()
-            fun model() = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            fun model() = newModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
             val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
             first.openEditor(profile); advanceUntilIdle()
             if (rules) { first.openRulesEditor(profile); advanceUntilIdle(); first.saveRules("DOMAIN,pending.test,DIRECT\nMATCH,DIRECT") }
@@ -563,7 +580,7 @@ class ProfilesViewModelTest {
                 bytes = content?.copyOf()
             }
         }
-        val model = ProfilesViewModel(FakeProfileStore(profile).apply { content = "rules: [MATCH,DIRECT]" }, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+        val model = newModel(FakeProfileStore(profile).apply { content = "rules: [MATCH,DIRECT]" }, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
         val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", model) }
         model.openRulesEditor(profile); advanceUntilIdle()
         val session = model.rulesEditorState.value.session
@@ -582,7 +599,7 @@ class ProfilesViewModelTest {
             val profile = Profile.custom(822, "restore-race")
             val store = FakeProfileStore(profile).apply { content = "proxy-groups: []\nrules: []\n" }
             val drafts = PickerMemoryStore()
-            fun model() = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            fun model() = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
             val first = model(); val owner = androidx.lifecycle.ViewModelStore().apply { put("draft", first) }
             first.openEditor(profile); advanceUntilIdle()
             if (rules) first.openRulesEditor(profile) else first.openProxyGroupsEditor(profile)
@@ -604,7 +621,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(801, "https://example.test/source", "source")
         val store = FakeProfileStore(profile).apply { content = "rules: []" }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
         model.openEditor(profile); advanceUntilIdle()
         model.openProfileDocument(true)
         model.changeProfileDocument("rules: [bad")
@@ -636,7 +653,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(817, "正文定位")
         val store = FakeProfileStore(profile).apply { content = "rules: []" }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openEditor(profile); advanceUntilIdle(); model.openProfileDocument(false)
         val invalid = "name: 😀\r\nrules: [ok, }"
         model.changeProfileDocument(invalid); model.acceptProfileDocument(); advanceUntilIdle()
@@ -657,7 +674,7 @@ class ProfilesViewModelTest {
         val profile = Profile.remote(802, "https://example.test/source", "source")
         val store = FakeProfileStore(profile).apply { content = "rules: []" }
         var reads = 0
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { reads++; com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "rules: []".toByteArray()) }, overviewDispatcher = mainDispatcher)
         model.openEditor(profile); advanceUntilIdle()
         val old = checkNotNull(model.beginRemoteFilePick())
@@ -692,7 +709,7 @@ class ProfilesViewModelTest {
             override val state = MutableStateFlow(CoreRuntimeStatus.RUNNING)
             override suspend fun applyCurrentProfile(id: Long) { applied += id }
         }
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = mainDispatcher)
         model.updateAll(); model.updateAll(); model.update(rows.first()); model.rename(rows.first(), "must not run")
         assertEquals(4, peak)
         assertEquals(4, store.remoteUpdateCalls.size)
@@ -719,7 +736,7 @@ class ProfilesViewModelTest {
             override val state = MutableStateFlow(CoreRuntimeStatus.RUNNING)
             override suspend fun applyCurrentProfile(id: Long) { applies++; error("apply failed") }
         }
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = mainDispatcher)
         model.updateAll(); advanceUntilIdle()
         assertNotNull(model.syncState.value.applyError)
         model.retrySyncFailures(); advanceUntilIdle()
@@ -744,7 +761,7 @@ class ProfilesViewModelTest {
             override val state = MutableStateFlow(CoreRuntimeStatus.RUNNING)
             override suspend fun applyCurrentProfile(id: Long) { applied += id; if (reject) error("core secret") }
         }
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = mainDispatcher)
         model.update(row)
         store.currentProfileId.value = other.id
         release.complete(Unit); advanceUntilIdle()
@@ -765,7 +782,7 @@ class ProfilesViewModelTest {
         val row = Profile.remote(12L, "https://example.test/sub", "订阅")
         val store = FakeProfileStore(row)
         val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING)
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = mainDispatcher)
         model.openEditor(row)
         assertEquals(row, model.remoteEditorState.value.profile)
         model.saveRemoteEditor("新名称", row.url, true, 60)
@@ -785,7 +802,7 @@ class ProfilesViewModelTest {
         val profile = Profile.custom(501, "资源")
         val store = FakeProfileStore(profile).apply { content = "proxy-providers:\n  cloud:\n    type: file\n    path: cloud.yaml\n" }
         val validation = kotlinx.coroutines.CompletableDeferred<List<String>>()
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher,
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher,
             groupFilterValidator = com.lonnnnnng.flclash.data.ProxyGroupFilterValidator { validation.await() })
         model.openProvidersEditor(profile); advanceUntilIdle()
         val state = model.providersEditorState.value
@@ -814,7 +831,7 @@ class ProfilesViewModelTest {
             beforeRead = { id -> if (id == first.id) read.await() }
         }
         val validation = kotlinx.coroutines.CompletableDeferred<List<String>>()
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher,
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher,
             groupFilterValidator = com.lonnnnnng.flclash.data.ProxyGroupFilterValidator { validation.await() })
         model.openProvidersEditor(first); model.closeProvidersEditor(); model.openProvidersEditor(second)
         read.complete(Unit); advanceUntilIdle()
@@ -834,7 +851,7 @@ class ProfilesViewModelTest {
             content = "proxy-providers:\n  cloud:\n    type: file\n"
             beforeProviderSave = { error("持久化失败") }
         }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openProvidersEditor(profile); advanceUntilIdle()
         val state = model.providersEditorState.value
         val options = mapOf("cloud" to ProxyProviderOverride(timeout = 5000))
@@ -855,7 +872,7 @@ class ProfilesViewModelTest {
         val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
         val store = FakeProfileStore(profile).apply { beforeMoreSave = { gate.await() } }
         val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = mainDispatcher)
         model.openMoreEditor(profile)
         val ntp = com.lonnnnnng.flclash.service.ProfileNtpOverrides(enable = false)
         model.saveMoreEditor(ntp, com.lonnnnnng.flclash.service.ProfileSnifferOverrides())
@@ -877,7 +894,7 @@ class ProfilesViewModelTest {
         val first = Profile.custom(512, "旧分区"); val second = Profile.custom(513, "新分区")
         val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
         val store = FakeProfileStore(first, listOf(second)).apply { beforeMoreSave = { gate.await() } }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openMoreEditor(first)
         model.saveMoreEditor(com.lonnnnnng.flclash.service.ProfileNtpOverrides(enable = true), com.lonnnnnng.flclash.service.ProfileSnifferOverrides())
         model.openMoreEditor(second); gate.complete(Unit); advanceUntilIdle()
@@ -890,7 +907,7 @@ class ProfilesViewModelTest {
         val profile = Profile.custom(111, "草稿").copy(overridesJson = ProfileProviderOverrides(dns = ProfileDnsOverrides(enable = true)).toJsonString())
         val store = FakeProfileStore(profile)
         val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = mainDispatcher)
         model.openEditor(profile, isNew = true)
         advanceUntilIdle()
         model.openMoreEditor(profile)
@@ -910,7 +927,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(112, "目标")
         val store = FakeProfileStore(profile).apply { content = "rules: []" }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("导入.yaml", "rules: [MATCH,DIRECT]".toByteArray()) },
             overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
@@ -937,7 +954,7 @@ class ProfilesViewModelTest {
         val profile = Profile.custom(113, "草稿")
         val store = FakeProfileStore(profile)
         val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = mainDispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = mainDispatcher)
         model.openEditor(profile, isNew = true)
         advanceUntilIdle()
         model.importCustomFromUrl("https://example.test/import")
@@ -962,7 +979,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(98, "old name").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
         val store = FakeProfileStore(profile).apply { content = "original"; fileSaveFailure = IllegalStateException("write failed") }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
         advanceUntilIdle()
         val failure = async(start = CoroutineStart.UNDISPATCHED) { model.errors.first() }
@@ -984,7 +1001,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(99, "https://example.test/sub", "remote")
         val store = FakeProfileStore(profile).apply { content = "proxy-providers:\n  cloud:\n    type: http\n" }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openProvidersEditor(profile)
         advanceUntilIdle()
         assertEquals(profile.id, model.providersEditorState.value.profile?.id)
@@ -1006,7 +1023,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(91, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
         val store = FakeProfileStore(profile).apply { content = "original" }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
         advanceUntilIdle()
         model.saveFileEditor(null, " local-fixture \n")
@@ -1022,7 +1039,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(92, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
         val store = FakeProfileStore(profile)
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader { error("cancelled picker cannot read") }, overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
         advanceUntilIdle()
@@ -1039,7 +1056,7 @@ class ProfilesViewModelTest {
         val bytes = "selected".toByteArray()
         val profile = Profile.custom(93, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
         val store = FakeProfileStore(profile).apply { content = "original" }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             com.lonnnnnng.flclash.data.ProfileConfigValidator {},
             com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", bytes) }, overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
@@ -1061,7 +1078,7 @@ class ProfilesViewModelTest {
         val finished = kotlinx.coroutines.CompletableDeferred<Unit>()
         val profile = Profile.custom(94, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
         val store = FakeProfileStore(profile)
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             com.lonnnnnng.flclash.data.ProfileConfigValidator {},
             com.lonnnnnng.flclash.data.ProfileFileDocumentReader {
                 kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { gate.await() }
@@ -1095,7 +1112,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(95, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
         val store = FakeProfileStore(profile).apply { fileSaveFailure = com.lonnnnnng.flclash.data.AgeSecretKeyRequiredException() }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             com.lonnnnnng.flclash.data.ProfileConfigValidator {},
             com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("1.yaml", "fixture".toByteArray()) }, overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
@@ -1121,7 +1138,7 @@ class ProfilesViewModelTest {
         val profile = Profile.custom(96, "file").copy(type = com.lonnnnnng.flclash.data.ProfileType.FILE)
         val store = FakeProfileStore(profile)
         val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
-        val model = ProfilesViewModel(store, runtime,
+        val model = newModel(store, runtime,
             com.lonnnnnng.flclash.data.ProfileConfigValidator { error("invalid") },
             com.lonnnnnng.flclash.data.ProfileFileDocumentReader { com.lonnnnnng.flclash.data.ProfileFileDocument("invalid.yaml", "fixture".toByteArray()) }, overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
@@ -1143,7 +1160,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(35, "https://same.example/subscription").copy(ageSecretKey = "old-fixture")
         val store = FakeProfileStore(profile)
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openEditor(profile)
         model.saveRemoteEditor("source", profile.url, true, 60, " new-fixture \n")
         advanceUntilIdle()
@@ -1158,7 +1175,7 @@ class ProfilesViewModelTest {
     @Test fun `single import asks for missing key once and retries with trimmed input`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val store = FakeProfileStore(Profile.custom(1, "existing")).apply { requiresAgeKey = true }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.addRemote("https://example.test/encrypted", "import")
         advanceUntilIdle()
         assertTrue(model.ageKeyRequired.value)
@@ -1172,7 +1189,7 @@ class ProfilesViewModelTest {
     @Test fun `cancelling missing key discards retry and running state blocks retry writes`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val store = FakeProfileStore(Profile.custom(1, "existing")).apply { requiresAgeKey = true }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.addRemote("https://example.test/encrypted", "import")
         advanceUntilIdle()
         model.cancelAgeImport()
@@ -1180,7 +1197,7 @@ class ProfilesViewModelTest {
         advanceUntilIdle()
         assertTrue(!model.ageKeyRequired.value)
         assertEquals(1, store.remoteAddCalls.size)
-        val running = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
+        val running = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
         running.addRemote("https://example.test/encrypted", "import", "fixture")
         advanceUntilIdle()
         assertEquals(1, store.remoteAddCalls.size)
@@ -1193,7 +1210,7 @@ class ProfilesViewModelTest {
             requiresAgeKey = true
             beforeRemoteAdd = { gate.await() }
         }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.addRemote("https://example.test/slow", "import")
         model.cancelAgeImport()
         gate.complete(Unit)
@@ -1209,7 +1226,7 @@ class ProfilesViewModelTest {
             requiresAgeKey = true
             remoteAddFailures += url
         }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.addRemote(url, "import")
         advanceUntilIdle()
         assertTrue(model.ageKeyRequired.value)
@@ -1222,7 +1239,14 @@ class ProfilesViewModelTest {
     }
 
     @After
-    fun tearDown() {
+    fun tearDown() = kotlinx.coroutines.runBlocking(Dispatchers.Default) {
+        modelJobs.forEach { it.cancel() }
+        kotlinx.coroutines.withTimeout(5_000) {
+            while (modelJobs.any { !it.isCompleted }) {
+                modelSchedulers.forEach { it.runCurrent() }
+                kotlinx.coroutines.delay(1)
+            }
+        }
         Dispatchers.resetMain()
     }
 
@@ -1231,7 +1255,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(1L, "运行中配置")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STARTING),
             overviewDispatcher = mainDispatcher,
@@ -1250,7 +1274,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(2L, "已停止配置")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1274,7 +1298,7 @@ class ProfilesViewModelTest {
             CoreRuntimeStatus.STOPPING,
         ).forEach { status ->
             val store = FakeProfileStore(current, listOf(target))
-            val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(status), overviewDispatcher = mainDispatcher)
+            val viewModel = newModel(store, FakeRuntimeStatusProvider(status), overviewDispatcher = mainDispatcher)
             viewModel.select(target.id)
             advanceUntilIdle()
 
@@ -1287,7 +1311,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(24L, "新草稿")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
 
         viewModel.addCustom(profile.label)
         advanceUntilIdle()
@@ -1311,7 +1335,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(25L, "新草稿")
         val store = FakeProfileStore(profile).apply { deleteFailure = true }
-        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         viewModel.addCustom(profile.label)
         advanceUntilIdle()
         val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
@@ -1331,7 +1355,7 @@ class ProfilesViewModelTest {
         val profile = Profile.custom(27L, "新草稿")
         val original = "mixed-port: 7890\nrules:\n  - DOMAIN,example.com,DIRECT\n"
         val store = FakeProfileStore(profile).apply { content = original }
-        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
 
         viewModel.addCustom(profile.label)
         advanceUntilIdle()
@@ -1356,7 +1380,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(28L, "新草稿")
         val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
-        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
 
         viewModel.addCustom(profile.label)
         advanceUntilIdle()
@@ -1376,7 +1400,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(29L, "未命名配置")
         val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
-        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
 
         viewModel.addCustom(profile.label)
         advanceUntilIdle()
@@ -1397,7 +1421,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(31L, "未命名配置")
         val store = FakeProfileStore(profile).apply { content = "rules: ['MATCH,DIRECT']" }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.addCustom(profile.label)
         advanceUntilIdle()
         model.rename(profile, "家庭配置")
@@ -1416,7 +1440,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(32L, "未命名配置")
         val store = FakeProfileStore(profile).apply { content = "dns: {enable: true}" }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.addCustom(profile.label)
         advanceUntilIdle()
         model.bindScript(profile, 7L)
@@ -1433,7 +1457,7 @@ class ProfilesViewModelTest {
     fun `custom creation is rejected while core is running`() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val store = FakeProfileStore(Profile.custom(26L, "已有配置"))
-        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
         val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
 
         viewModel.addCustom("新配置")
@@ -1449,7 +1473,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(3L, "https://example.test/subscription")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1467,7 +1491,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(31L, "https://old.example/subscription", "旧名称")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1496,7 +1520,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(32L, "https://old.example/subscription")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1518,7 +1542,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(33L, "https://same.example/subscription", "旧名称")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1545,7 +1569,7 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(Profile.custom(36L, "自定义"), listOf(existing)).apply {
             remoteAddFailures += "https://failed.invalid/sub"
         }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1585,7 +1609,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.remote(34L, "https://same.example/subscription")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1604,7 +1628,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(4L, "旧名称")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1622,7 +1646,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(5L, "运行中名称")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
         viewModel.rename(profile, "新名称")
         advanceUntilIdle()
         assertEquals("新名称", store.updatedLabel)
@@ -1636,7 +1660,7 @@ class ProfilesViewModelTest {
         val second = Profile.custom(21L, "第二项")
         val third = Profile.custom(22L, "第三项")
         val store = FakeProfileStore(first, listOf(second, third))
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1654,7 +1678,7 @@ class ProfilesViewModelTest {
         val first = Profile.custom(23L, "第一项")
         val second = Profile.custom(24L, "第二项")
         val store = FakeProfileStore(first, listOf(second))
-        val viewModel = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.RUNNING), overviewDispatcher = mainDispatcher)
         viewModel.reorder(listOf(second.id, first.id))
         advanceUntilIdle()
         assertEquals(listOf(second.id, first.id), store.reorderedIds)
@@ -1666,7 +1690,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(25L, "脚本配置")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1688,7 +1712,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(26L, "运行中脚本配置")
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STARTING),
             overviewDispatcher = mainDispatcher,
@@ -1709,7 +1733,7 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(profile).apply {
             content = "mixed-port: 7890\nrules:\n  - DOMAIN,example.com,DIRECT\ndns:\n  enable: true\n"
         }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1735,7 +1759,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(4L, "非法规则")
         val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1761,7 +1785,7 @@ class ProfilesViewModelTest {
                 return "rules: ['MATCH,DIRECT']"
             }
         }
-        val model = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         model.openRulesEditor(profile)
         testScheduler.runCurrent()
         assertTrue(model.rulesEditorState.value.isLoading)
@@ -1779,7 +1803,7 @@ class ProfilesViewModelTest {
         val original = "rules: ['MATCH,DIRECT']"
         val store = FakeProfileStore(profile).apply { content = original }
         val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
-        val model = ProfilesViewModel(store, runtime, overviewDispatcher = dispatcher)
+        val model = newModel(store, runtime, overviewDispatcher = dispatcher)
         model.openRulesEditor(profile)
         advanceUntilIdle()
         model.saveRules("MATCH,REJECT")
@@ -1813,7 +1837,7 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(profile).apply {
             content = "mixed-port: 7890\nproxies:\n  - name: old\n    type: vmess\nrules:\n  - MATCH,DIRECT\n"
         }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1838,7 +1862,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(6L, "非法代理")
         val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1862,7 +1886,7 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(profile).apply {
             content = "mixed-port: 7890\nproxy-groups:\n  - name: Old\n    type: select\nrules:\n  - MATCH,DIRECT\n"
         }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1890,7 +1914,7 @@ class ProfilesViewModelTest {
             content = "proxy-groups:\n  - {name: Main, type: select, proxies: [DIRECT]}\nrules: ['MATCH,Main']\n"
         }
         val runtime = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED)
-        val viewModel = ProfilesViewModel(repository = store, runtimeManager = runtime, overviewDispatcher = mainDispatcher)
+        val viewModel = newModel(repository = store, runtimeManager = runtime, overviewDispatcher = mainDispatcher)
         viewModel.openEditor(profile)
         advanceUntilIdle()
         viewModel.openSingleProxyGroupEditor(profile, 0)
@@ -1922,7 +1946,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(8L, "非法代理组")
         val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1946,7 +1970,7 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(profile).apply {
             content = "mixed-port: 7890\nproxy-providers:\n  old:\n    type: http\nrules:\n  - MATCH,DIRECT\n"
         }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -1974,7 +1998,7 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(profile).apply {
             content = "proxy-providers:\n  cloud:\n    type: http\n"
         }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -2007,7 +2031,7 @@ class ProfilesViewModelTest {
             ).toJsonString(),
         )
         val store = FakeProfileStore(profile)
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -2046,7 +2070,7 @@ class ProfilesViewModelTest {
                   - node-a
         """.trimIndent() + "\n"
         val store = FakeProfileStore(profile).apply { content = original }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -2072,7 +2096,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(19L, "非法 Dialers")
         val store = FakeProfileStore(profile).apply { content = "proxies:\n  - name: node-a\n    type: vmess\n" }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -2095,7 +2119,7 @@ class ProfilesViewModelTest {
         val overrides = ProfileProviderOverrides(dialers = mapOf("node-a" to "Relay"))
         val profile = Profile.custom(20L, "共存覆盖").copy(overridesJson = overrides.toJsonString())
         val store = FakeProfileStore(profile).apply { content = "proxy-providers:\n  cloud:\n    type: http\n" }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
@@ -2119,7 +2143,7 @@ class ProfilesViewModelTest {
             content = "proxy-groups: [{name: Main, type: select, proxies: [A, B]}]"
             globalNodes = listOf("A", "B").map { com.lonnnnnng.flclash.data.LocalProxy(json = """{"name":"$it","type":"direct"}""") }
         }
-        val vm = ProfilesViewModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+        val vm = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         vm.openRulesEditor(profile); advanceUntilIdle()
         assertTrue(vm.rulesEditorState.value.catalog.targets.containsAll(listOf("A", "B", "Main")))
         assertEquals(store.content, vm.rulesEditorState.value.sourceContent)
@@ -2143,7 +2167,7 @@ class ProfilesViewModelTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(15L, "非法 Provider")
         val store = FakeProfileStore(profile).apply { content = "mixed-port: 7890\n" }
-        val viewModel = ProfilesViewModel(
+        val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,

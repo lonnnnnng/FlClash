@@ -55,17 +55,41 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 check(input.getString("token") == token)
                 val repo = entry.profileRepository(); val runtime = entry.runtimeManager()
                 timed("profile-load", 10_000) { repo.profilesLoaded.first { it } }
+                if (command in setOf("configure-auto", "restore-auto", "manual-sync", "automatic-scan")) {
+                    val remote = entry.database().profiles().getAll().single { it.type == ProfileType.URL && it.url == input.getString("authorizedUrl") }
+                    when (command) {
+                        "configure-auto" -> {
+                            check(runtime.state.value == CoreRuntimeStatus.STOPPED && !input.has("autoUpdateOriginal"))
+                            input.put("autoUpdateOriginal", JSONObject().put("id", remote.id).put("enabled", remote.autoUpdate).put("interval", remote.autoUpdateIntervalMillis))
+                            stabilityInput(this@StabilityWindowAcceptanceActivity).write(input.toString().toByteArray())
+                            repo.updateProfileAutoUpdate(remote.id, true, 15 * 60_000)
+                        }
+                        "restore-auto" -> {
+                            check(runtime.state.value == CoreRuntimeStatus.STOPPED)
+                            val previous = input.getJSONObject("autoUpdateOriginal"); check(previous.getLong("id") == remote.id)
+                            repo.updateProfileAutoUpdate(remote.id, previous.getBoolean("enabled"), previous.getLong("interval"))
+                            input.remove("autoUpdateOriginal")
+                            stabilityInput(this@StabilityWindowAcceptanceActivity).write(input.toString().toByteArray())
+                        }
+                        "manual-sync" -> timed("manual-authorized-sync", 90_000) { repo.updateRemoteProfile(remote.id) }
+                        "automatic-scan" -> timed("automatic-due-scan", 90_000) { repo.updateDueProfiles(System.currentTimeMillis()) }.also {
+                            report.put("automaticAttempted", it.attempted).put("automaticDownloaded", it.succeeded)
+                        }
+                    }
+                }
                 if (command == "start" || command.startsWith("start-")) {
                     check(runtime.state.value == CoreRuntimeStatus.STOPPED)
                     val rows = entry.database().profiles().getAll()
-                    check(rows.size == 1 && rows.single().type == ProfileType.FILE)
-                    check(stabilitySha(repo.profileFile(rows.single().id).readBytes()) == input.getString("localSha256"))
+                    val local = rows.single { it.type == ProfileType.FILE && stabilitySha(repo.profileFile(it.id).readBytes()) == input.getString("localSha256") }
+                    // 作者 long：诊断组复用原FILE和唯一获准URL；新增第二份获准基线不能放宽到任意用户配置。
+                    check(rows.size in 1..2 && rows.all { it.id == local.id || it.type == ProfileType.URL && it.url == input.getString("authorizedUrl") })
                     timed("pure-proxy-settings", 10_000) { runtime.setVpnEnabled(false).getOrThrow() }
-                    timed("select-local", 30_000) { runtime.selectProfile(rows.single().id, repo::selectProfile) }
+                    timed("select-local", 30_000) { runtime.selectProfile(local.id, repo::selectProfile) }
                     timed("core-start", 60_000) { runtime.startProxy().getOrThrow() }
                 }
                 if (command == "stop" || command.startsWith("stop-")) timed("core-stop", 30_000) { runtime.stop().getOrThrow() }
-                if (command != "stop" && !command.startsWith("stop-")) {
+                if (command != "stop" && !command.startsWith("stop-") && !command.startsWith("snapshot-") &&
+                    command !in setOf("configure-auto", "restore-auto", "manual-sync", "automatic-scan")) {
                     timed("runtime-ready", 40_000) { runtime.state.first { it == CoreRuntimeStatus.RUNNING || it == CoreRuntimeStatus.FAILED } }
                     check(runtime.state.value == CoreRuntimeStatus.RUNNING && !ServiceConfig.vpnAlive.value)
                     report.put("directRunningObservedElapsedMs", SystemClock.elapsedRealtime())
@@ -116,6 +140,7 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 key to stabilitySha(value.toString().toByteArray()) }))
             val file = entry.profileRepository().profileFile(row.id)
             files.put(JSONObject().put("id", row.id).put("bytes", file.length()).put("mtime", file.lastModified())
+                .put("auditFile", JSONObject(com.lonnnnnng.flclash.common.StateWriteAudit.fileState(file)))
                 .put("sha256", if (file.isFile) stabilitySha(file.readBytes()) else "missing"))
         }
         val preferenceRows = entry.database().appPreferences().getByPrefix("")
@@ -135,6 +160,12 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 .mapValues { stabilitySha(gson.toJson(it.value).toByteArray()) }))
         }
         return JSONObject().put("rows", fields).put("files", files).put("roomPreferences", JSONObject(preferences))
+            .put("auditStatus", JSONObject(com.lonnnnnng.flclash.common.StateWriteAudit.sink?.status().orEmpty()))
+            .put("auditProfileFields", JSONObject(rows.associate { row -> row.id.toString() to JSONObject(gson.toJsonTree(row).asJsonObject.entrySet()
+                .associate { it.key to com.lonnnnnng.flclash.common.StateWriteAudit.value(it.value.toString()) }) }))
+            .put("auditPreferenceFields", JSONObject(preferenceRows.associate { row ->
+                (com.lonnnnnng.flclash.common.StateWriteAudit.digest(row.key.toByteArray()) ?: "disabled") to JSONObject(gson.toJsonTree(row).asJsonObject.entrySet()
+                    .associate { it.key to com.lonnnnnng.flclash.common.StateWriteAudit.value(it.value.toString()) }) }))
             .put("roomPreferenceUpdatedAt", JSONObject(preferenceTimes)).put("delayResults", delays)
             .put("sharedPreferences", shared).put("selected", entry.profileRepository().currentProfileId.value)
             .put("runtime", entry.runtimeManager().state.value.name).put("autoUpdateEnabled", rows.any { it.autoUpdate })

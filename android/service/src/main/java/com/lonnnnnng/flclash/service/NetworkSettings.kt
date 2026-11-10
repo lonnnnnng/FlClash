@@ -50,7 +50,7 @@ interface NetworkSettingsStore {
 }
 
 class SharedPreferencesNetworkSettingsStore(context: Context) : NetworkSettingsStore {
-    private val preferences = context.applicationContext.getSharedPreferences("network_settings", Context.MODE_PRIVATE)
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, "network_settings")
     private val gson = Gson()
     override fun read(): NetworkSettings = preferences.getString("settings", null)?.let {
         // 作者 long：保存损坏不能悄悄重置接管范围，否则界面与实际流量路径会不一致。

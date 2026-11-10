@@ -13,9 +13,7 @@ object DefaultVpnSettingsStore : VpnSettingsStore {
 }
 
 class SharedPreferencesVpnSettingsStore(context: Context) : VpnSettingsStore {
-    private val preferences = context.applicationContext.getSharedPreferences(
-        "vpn_settings", Context.MODE_PRIVATE,
-    )
+    private val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, "vpn_settings")
     override fun read() = preferences.getBoolean("enabled", true)
     override fun write(enabled: Boolean) {
         // 作者 long：开关必须落盘成功后才更新页面，避免进程重建恢复成另一个接管模式。

@@ -107,6 +107,7 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): KClashDatabase =
         Room.databaseBuilder(context, KClashDatabase::class.java, "kclash.db")
+            .openHelperFactory(com.lonnnnnng.flclash.data.StateAuditPlatform.factory())
             .addMigrations(KClashDatabase.MIGRATION_1_2)
             .addMigrations(KClashDatabase.MIGRATION_2_3)
             .addMigrations(KClashDatabase.MIGRATION_3_4)

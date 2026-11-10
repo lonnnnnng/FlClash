@@ -6,18 +6,20 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
-interface AppPreferenceDao {
+abstract class AppPreferenceDao {
     @Query("SELECT value FROM app_preferences WHERE `key` = :key LIMIT 1")
-    fun observe(key: String): kotlinx.coroutines.flow.Flow<String?>
+    abstract fun observe(key: String): kotlinx.coroutines.flow.Flow<String?>
     @Query("SELECT value FROM app_preferences WHERE `key` = :key LIMIT 1")
-    suspend fun get(key: String): String?
+    abstract suspend fun get(key: String): String?
 
     @Query("SELECT * FROM app_preferences WHERE `key` LIKE :prefix || '%'")
-    suspend fun getByPrefix(prefix: String): List<AppPreferenceEntity>
+    abstract suspend fun getByPrefix(prefix: String): List<AppPreferenceEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun put(preference: AppPreferenceEntity)
+    protected abstract suspend fun putRecord(preference: AppPreferenceEntity)
+    suspend fun put(preference: AppPreferenceEntity) = auditedDaoWrite("preference.dao.put", "app_preferences", preference) { putRecord(preference) }
 
     @Query("DELETE FROM app_preferences WHERE `key` = :key")
-    suspend fun delete(key: String)
+    protected abstract suspend fun deleteRecord(key: String)
+    suspend fun delete(key: String) = auditedDaoWrite("preference.dao.delete", "app_preferences", mapOf("key" to key)) { deleteRecord(key) }
 }

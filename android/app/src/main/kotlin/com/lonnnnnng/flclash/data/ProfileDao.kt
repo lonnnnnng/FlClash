@@ -9,31 +9,37 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ProfileDao {
+abstract class ProfileDao {
     @Query("SELECT * FROM profiles ORDER BY orderIndex ASC, id ASC")
-    fun observeAll(): Flow<List<ProfileEntity>>
+    abstract fun observeAll(): Flow<List<ProfileEntity>>
 
     @Query("SELECT * FROM profiles ORDER BY orderIndex ASC, id ASC")
-    suspend fun getAll(): List<ProfileEntity>
+    abstract suspend fun getAll(): List<ProfileEntity>
 
     @Query("SELECT * FROM profiles WHERE id = :id LIMIT 1")
-    suspend fun getById(id: Long): ProfileEntity?
+    abstract suspend fun getById(id: Long): ProfileEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(profile: ProfileEntity)
+    protected abstract suspend fun insertRecord(profile: ProfileEntity)
+    suspend fun insert(profile: ProfileEntity) = auditedDaoWrite("profile.dao.insert", "profiles", profile) { insertRecord(profile) }
 
     @Update
-    suspend fun update(profile: ProfileEntity)
+    protected abstract suspend fun updateRecord(profile: ProfileEntity)
+    suspend fun update(profile: ProfileEntity) = auditedDaoWrite("profile.dao.update", "profiles", profile) { updateRecord(profile) }
 
     @Delete
-    suspend fun delete(profile: ProfileEntity)
+    protected abstract suspend fun deleteRecord(profile: ProfileEntity)
+    suspend fun delete(profile: ProfileEntity) = auditedDaoWrite("profile.dao.delete", "profiles", profile) { deleteRecord(profile) }
 
     @Query("UPDATE profiles SET orderIndex = :orderIndex WHERE id = :id")
-    suspend fun updateOrder(id: Long, orderIndex: Int)
+    protected abstract suspend fun updateOrderRecord(id: Long, orderIndex: Int)
+    suspend fun updateOrder(id: Long, orderIndex: Int) = auditedDaoWrite("profile.dao.order", "profiles", mapOf("id" to id, "orderIndex" to orderIndex)) { updateOrderRecord(id, orderIndex) }
 
     @Query("UPDATE profiles SET scriptId = NULL WHERE scriptId = :scriptId")
-    suspend fun clearScriptBinding(scriptId: Long)
+    protected abstract suspend fun clearScriptBindingRecord(scriptId: Long)
+    suspend fun clearScriptBinding(scriptId: Long) = auditedDaoWrite("script.delete.clearBinding", "profiles", mapOf("scriptId" to scriptId)) { clearScriptBindingRecord(scriptId) }
 
     @Query("DELETE FROM profiles")
-    suspend fun deleteAll()
+    protected abstract suspend fun deleteAllRecords()
+    suspend fun deleteAll() = auditedDaoWrite("profile.dao.deleteAll", "profiles", null) { deleteAllRecords() }
 }

@@ -2672,6 +2672,22 @@ class CoreRuntimeManagerTest {
         assertFalse(service.started)
     }
 
+    @Test fun updateDownloadRouteUsesAppliedPortAndCredentialsAndPausedModeGoesDirect() = runTest {
+        val source=temporaryFolder.newFile().apply {writeText("mixed-port: 18992\nauthentication: ['account:secret:tail']\nproxies: []\n")}
+        val bridge=FakeBridge();val home=temporaryFolder.newFolder();val runtime=manager(ActiveProfile(992,"update-route",source.path),home,bridge,FakeServiceController())
+        assertNull(runtime.downloadRoute().port)
+        runtime.startProxy().getOrThrow()
+        val route=runtime.downloadRoute()
+        assertEquals(18992,route.port);assertEquals("account",route.username);assertEquals("secret:tail",route.password)
+        assertFalse(route.toString().contains("secret"))
+        val calls=bridge.calls.toList();source.writeText("mixed-port: 19999\n")
+        assertEquals(18992,runtime.downloadRoute().port)
+        assertEquals(calls.count{it=="setup"},bridge.calls.count{it=="setup"})
+        runtime.setOnDemandExcluded(true).getOrThrow()
+        assertNull(runtime.downloadRoute().port)
+        runtime.stop().getOrThrow();assertNull(runtime.downloadRoute().port)
+    }
+
     private fun manager(
         profile: ActiveProfile?,
         homeDir: File,

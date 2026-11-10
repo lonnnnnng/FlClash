@@ -1483,6 +1483,22 @@ class CoreRuntimeManager(
     private class StatisticsInput(val profile: ActiveProfile, val key: List<Any?>?, val revision: Long,
         val stamp: com.lonnnnnng.flclash.core.CoreRouteStamp, val content: String)
 
+    suspend fun downloadRoute(): CoreDownloadRoute = withContext(Dispatchers.IO) {
+        transitionLock.withLock {
+            check(mutableState.value !in setOf(CoreRuntimeStatus.STARTING, CoreRuntimeStatus.STOPPING)) { "核心正在启停，请稍后重试下载" }
+            if (mutableState.value != CoreRuntimeStatus.RUNNING || mutableOnDemandSuspended.value) return@withLock CoreDownloadRoute(null, null, null, mutableIpRouteRevision.value)
+            // 作者 long：用户偏好可能尚未应用，必须读取已加载暂存输入及核心真实端口；不能猜7890或依赖本应用被VPN接管。
+            check(loadedConfigKey != null)
+            val root = com.google.gson.JsonParser.parseString(YamlConfigCodec.toJson(readPreviewFile(paths.configFile, 8 * 1024 * 1024))).asJsonObject
+            val mixed = withTimeout(3_000L) { bridge.getLanConfig() }.mixedPort
+            val port = mixed.takeIf { it > 0 } ?: root["port"]?.asInt?.takeIf { it > 0 }
+                ?: error("当前核心未启用HTTP下载入站，请开启混合端口后重试")
+            require(port in 1..65535)
+            val account = root["authentication"]?.takeIf { it.isJsonArray }?.asJsonArray?.firstOrNull()?.asString?.split(':', limit = 2)
+            CoreDownloadRoute(port, account?.firstOrNull(), account?.getOrNull(1), mutableIpRouteRevision.value)
+        }
+    }
+
     override suspend fun previewConfig(profileId: Long): RuntimeConfigPreview = withContext(Dispatchers.IO) {
         val snapshot = transitionLock.withLock {
             val target = requireNotNull(profileProvider.profileById(profileId)) { "配置不存在" }

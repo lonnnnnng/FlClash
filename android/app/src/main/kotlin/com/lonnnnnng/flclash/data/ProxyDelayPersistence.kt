@@ -28,28 +28,32 @@ data class ProxyDelayEntity(
 )
 
 @Dao
-interface ProxyDelayDao {
+abstract class ProxyDelayDao {
     @Query(
         "SELECT * FROM proxy_delay_results " +
             "WHERE profileId = :profileId ORDER BY updatedAtMillis DESC",
     )
-    suspend fun load(profileId: Long): List<ProxyDelayEntity>
+    abstract suspend fun load(profileId: Long): List<ProxyDelayEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsert(value: ProxyDelayEntity)
+    protected abstract suspend fun upsertRecord(value: ProxyDelayEntity)
+    suspend fun upsert(value: ProxyDelayEntity) = auditedDaoWrite("delay.dao.upsert", "proxy_delay_results", value) { upsertRecord(value) }
 
     @Query(
         "DELETE FROM proxy_delay_results " +
             "WHERE profileId = :profileId AND groupName = :groupName " +
             "AND proxyName = :proxyName AND testUrl = :testUrl",
     )
-    suspend fun delete(profileId: Long, groupName: String, proxyName: String, testUrl: String)
+    protected abstract suspend fun deleteRecord(profileId: Long, groupName: String, proxyName: String, testUrl: String)
+    suspend fun delete(profileId: Long, groupName: String, proxyName: String, testUrl: String) = auditedDaoWrite("delay.dao.delete", "proxy_delay_results",
+        mapOf("profileId" to profileId, "groupName" to groupName, "proxyName" to proxyName, "testUrl" to testUrl)) { deleteRecord(profileId, groupName, proxyName, testUrl) }
 
     @Query(
         "DELETE FROM proxy_delay_results " +
             "WHERE profileId = :profileId AND updatedAtMillis < :cutoffMillis",
     )
-    suspend fun deleteOlderThan(profileId: Long, cutoffMillis: Long)
+    protected abstract suspend fun deleteOlderThanRecord(profileId: Long, cutoffMillis: Long)
+    suspend fun deleteOlderThan(profileId: Long, cutoffMillis: Long) = auditedDaoWrite("delay.dao.expiry", "proxy_delay_results", mapOf("profileId" to profileId, "cutoff" to cutoffMillis)) { deleteOlderThanRecord(profileId, cutoffMillis) }
 }
 
 interface ProxyDelayStore {

@@ -1,0 +1,194 @@
+{
+  "date": "2026-11-11",
+  "kind": "interim-functional-status",
+  "committedBase": "48fa766116ab21e6fad8128d5984f88d4c449ecb",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro"
+  },
+  "overallComplete": false,
+  "uncommittedImplementation": false,
+  "stateAuditWindow": {
+    "seconds": 2703.222963166998,
+    "timelineEvents": 23,
+    "networkRequests": 10,
+    "allRequestsPassed": true,
+    "files": 5,
+    "exportBytes": 118100258,
+    "records": 310058,
+    "snapshots": 17,
+    "integrity": [
+      {
+        "file": "3986-50528035.jsonl.gz",
+        "records": 2,
+        "zeroDrops": true,
+        "sequenceContiguous": true
+      },
+      {
+        "file": "4032-50528397.jsonl.gz",
+        "records": 103358,
+        "zeroDrops": true,
+        "sequenceContiguous": true
+      },
+      {
+        "file": "4939-51429700.jsonl.gz",
+        "records": 206694,
+        "zeroDrops": true,
+        "sequenceContiguous": true
+      },
+      {
+        "file": "6433-53256761.jsonl.gz",
+        "records": 2,
+        "zeroDrops": true,
+        "sequenceContiguous": true
+      },
+      {
+        "file": "6699-53411597.jsonl.gz",
+        "records": 2,
+        "zeroDrops": true,
+        "sequenceContiguous": true
+      }
+    ],
+    "committedEntitySources": {
+      "profile.updateProfileAutoUpdate": 2,
+      "profile.select": 1,
+      "runtime.resume.persist": 3,
+      "delay.cache_expiry": 3,
+      "delay.core_event": 44268,
+      "profile.sync.manual": 1,
+      "profile.updateDueProfiles": 2,
+      "preference.dao.put": 1
+    },
+    "ambiguousDaoMappingGroups": 2,
+    "limitations": [
+      "snapshot reads are not atomic; report clock is completion only",
+      "matching committed entity supports value provenance, not unique interval causality",
+      "deleted keys and shared-preference per-key provenance require separate review",
+      "delay rows counted by whole-row changes including timestamps; no exact per-key HMAC join in this build"
+    ],
+    "historicalFailuresExplained": false,
+    "completePersistenceAttribution": false,
+    "compositePreferenceOperationsReviewed": 2,
+    "ambiguousDaoMappingGroupsRemainingAfterManualReview": 0,
+    "preferenceTimestampChangesMatchedToCommittedEntity": 3,
+    "sharedPreferenceChangedWindowsIdentified": 3,
+    "deletedRuntimeResumeKeyCommitted": true
+  },
+  "appUpdate": {
+    "mainFlowImplemented": true,
+    "candidateInstallation": {
+      "sha256": "37e48b429862f5935b94c748ce8c3deacaed4f0bd3c5a7f8cc34ce4d7466f104",
+      "matches": true,
+      "package": "com.lonnnnnng.flclash",
+      "version": "0.1.1",
+      "separateMotionUntouched": true
+    },
+    "actualSelfUpgradePassed": true,
+    "upgradeDataPreservationVerified": "本批四表/两配置/238测速/UID保持；scripts空，不推广全部边界",
+    "finalSourceValidationComplete": true
+  },
+  "probeBatch2": {
+    "tests": 3,
+    "passed": 2,
+    "failed": 1,
+    "passingMethods": [
+      "rejectsCorruptHashAndWrongPackageBeforeInstaller",
+      "explicitStateProtocolSurvivesDiskAndRejectsTamperedPaths"
+    ],
+    "failingMethod": "isolatedNativeProcessReadsOnlyPassedPipeAndCannotReadMainFile",
+    "scope": "独立motion包，失败保留；不代表完整核心语义预检已接入"
+  },
+  "originalLocalInput": {
+    "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "bytes": 35165,
+    "mtimeNs": 1793892313800697973,
+    "matchesBaseline": true
+  },
+  "remainingFunctionalItems": [
+    "启动/恢复首请求历史失败归因",
+    "配置/偏好长期状态与逐键审计分析",
+    "Provider运行态历史恢复超时归因",
+    "导入前完整核心语义预检",
+    "应用内更新实际升级/恢复/数据保留验收"
+  ],
+  "rawEvidence": [
+    {
+      "path": "acceptance-artifacts/state-write-audit-20261111/window3/analysis.json",
+      "sha256": "2a18dde298df2be21d967cb7d3484d2ec60101503bc9b9278fdf23777108782a",
+      "bytes": 8550
+    },
+    {
+      "path": "acceptance-artifacts/state-write-audit-20261111/window3/network-summary.json",
+      "sha256": "7afab4f93e21fcadf9a031b76aaa8006e637f2aa98429d2dc3c5869b60c223f9",
+      "bytes": 3054
+    },
+    {
+      "path": "acceptance-artifacts/state-write-audit-20261111/window3/terminal.json",
+      "sha256": "158e51d1614dd2d23a49ac50ab84bf285b8953543a48b3242a03ef31fbe96fcf",
+      "bytes": 71
+    },
+    {
+      "path": "acceptance-artifacts/state-write-audit-20261111/window3/audit-files.json",
+      "sha256": "ce1c4d52bdce7451e173020767fb9eea20d9535842b7bca40e2369be49fd3886",
+      "bytes": 1813
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/candidate-install.json",
+      "sha256": "f026cebe1ad5fcd44042166317272a9b425a471735f8c7994c0717bb2ea26dd0",
+      "bytes": 197
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/probe2-installation.json",
+      "sha256": "1214ba6586bd8141d1af37de7fbbd87df3d9cc79a97262704799ac74bc39d6db",
+      "bytes": 397
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/probe-apk-tests2.log",
+      "sha256": "8112e64ed1591a9c68ba97db21ededdf3498420195269a1129aa5f4fd34f9535",
+      "bytes": 5773
+    },
+    {
+      "path": "acceptance-artifacts/state-write-audit-20261111/window3/composite-preference-review.json",
+      "sha256": "7ad28d55c7bd8fc6fc53570c41e46b909475461d7bf8b482c933af500c1e1681",
+      "bytes": 1288
+    },
+    {
+      "path": "acceptance-artifacts/state-write-audit-20261111/window3/preference-boundary-review.json",
+      "sha256": "08de9b5905f02fbd864f545d56f843aeb581375d92503de779ebbc5129078c3b",
+      "bytes": 1554
+    },
+    {
+      "path": "acceptance-artifacts/state-write-audit-20261111/window3/preference-times-review-final.json",
+      "sha256": "4a31850ba4b939d816e7fa838f19409e7545b879222211cedae4f2191e0a4ed2",
+      "bytes": 828
+    }
+  ],
+  "probeBatchFinal": {
+    "tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "isolationNativeProbePassed": true
+  },
+  "evidenceSnapshot": "随本组提交保存，整体目标未完成、未新发版",
+  "finalAuditRegression": {
+    "tests": 7,
+    "passed": 7,
+    "failed": 0,
+    "failureOnlyTransactionOutcomeVerified": true,
+    "logSha256": "85fcc71e9c0cf085382f33cfdf1eec296100d2decb70b570f6d7d43d0ee75779",
+    "installedApks": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "c161a6384eec909274028a6e5734cb59cc88af9dfa1febd273f1c7e62500f79a",
+        "readbackMatches": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "499d9cf874748d850820519bea14418411b6b7e8e3635f148e787ad8c480769c",
+        "readbackMatches": true
+      }
+    ],
+    "finalDebugReleaseLintPassed": true,
+    "releaseDiagnosticIsolationPassed": true
+  }
+}

@@ -98,8 +98,7 @@ internal object DashboardLayoutStore {
     private const val KEY_KNOWN_SECTIONS = "known_sections"
 
     fun load(context: Context): DashboardLayoutState {
-        val preferences = context.applicationContext
-            .getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        val preferences = com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
         return DashboardLayoutState.fromStored(
             orderNames = preferences.getString(KEY_ORDER, null)?.split(','),
             visibleNames = preferences.getString(KEY_VISIBLE, null)?.split(','),
@@ -108,7 +107,7 @@ internal object DashboardLayoutStore {
     }
 
     fun save(context: Context, layout: DashboardLayoutState) {
-        context.applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
             .edit()
             .putString(KEY_ORDER, layout.order.joinToString(",") { it.name })
             .putString(KEY_VISIBLE, layout.visible.joinToString(",") { it.name })
@@ -117,7 +116,7 @@ internal object DashboardLayoutStore {
     }
 
     internal fun clear(context: Context) {
-        context.applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
             .edit().clear().apply()
     }
 }

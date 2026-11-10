@@ -17,10 +17,8 @@ class ProfileSyncRepositoryInstrumentedTest {
     private fun fixture(action: suspend (ProfileRepository, KClashDatabase, ByteArray, (suspend () -> Unit) -> Unit) -> Unit) = runBlocking {
         assertPortraitDefaultFontConfiguration()
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val descriptor = InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand("cat /sdcard/Download/1.yaml")
-        val bytes = ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
-        assertEquals("bd5cb67dc9332cf144f4ccb2f9ef597aa3299c9d207e8cc7cc4e3cda67480898",
-            java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) })
+        // 作者 long：授权正文会更新，使用当轮原文件的大小/摘要门禁，不能为了旧固定SHA换回旧配置。
+        val bytes = readAuthorizedProxyProfile()
         val directory = File(context.cacheDir, "profile-sync-${System.nanoTime()}").apply { mkdirs() }
         val isolated = object : ContextWrapper(context) {
             override fun getApplicationContext(): Context = this
