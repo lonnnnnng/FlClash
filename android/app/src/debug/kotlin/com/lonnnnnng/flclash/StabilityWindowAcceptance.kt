@@ -11,7 +11,6 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
-import com.google.gson.JsonParser
 import com.lonnnnnng.flclash.data.*
 import com.lonnnnnng.flclash.service.*
 import dagger.hilt.android.EntryPointAccessors
@@ -20,13 +19,8 @@ import kotlinx.coroutines.flow.first
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.net.Socket
 import java.net.URI
 import java.security.MessageDigest
-import javax.net.ssl.SSLSocket
-import javax.net.ssl.SSLSocketFactory
 
 internal fun stabilityInput(context: Context) = EncryptedDraftFile(context, "stability-input.v1", "kclash.motion.stability-input")
 internal fun stabilitySha(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
@@ -61,7 +55,7 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 check(input.getString("token") == token)
                 val repo = entry.profileRepository(); val runtime = entry.runtimeManager()
                 timed("profile-load", 10_000) { repo.profilesLoaded.first { it } }
-                if (command == "start") {
+                if (command == "start" || command.startsWith("start-")) {
                     check(runtime.state.value == CoreRuntimeStatus.STOPPED)
                     val rows = entry.database().profiles().getAll()
                     check(rows.size == 1 && rows.single().type == ProfileType.FILE)
@@ -70,14 +64,23 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                     timed("select-local", 30_000) { runtime.selectProfile(rows.single().id, repo::selectProfile) }
                     timed("core-start", 60_000) { runtime.startProxy().getOrThrow() }
                 }
-                if (command == "stop") timed("core-stop", 30_000) { runtime.stop().getOrThrow() }
-                if (command != "stop") {
+                if (command == "stop" || command.startsWith("stop-")) timed("core-stop", 30_000) { runtime.stop().getOrThrow() }
+                if (command != "stop" && !command.startsWith("stop-")) {
                     timed("runtime-ready", 40_000) { runtime.state.first { it == CoreRuntimeStatus.RUNNING || it == CoreRuntimeStatus.FAILED } }
                     check(runtime.state.value == CoreRuntimeStatus.RUNNING && !ServiceConfig.vpnAlive.value)
+                    report.put("directRunningObservedElapsedMs", SystemClock.elapsedRealtime())
+                        .put("runningSinceElapsedMs", runtime.runningSinceElapsedMillis.value)
+                    val network = timed("network-total", 90_000) {
+                        acceptedProxyRequest(entry, URI(input.getString("authorizedUrl"))) { phase, detail ->
+                            stabilityReport(token, "$command-$phase", detail)
+                        }
+                    }
+                    report.put("network", network)
+                    check(network.getBoolean("passed"))
+                    check(network.getBoolean("hasNonDirectChain"))
                     val id = checkNotNull(repo.currentProfileId.value)
                     val providers = timed("provider-list", 8_000) { runtime.profileProviders(id) }
                     report.put("providerCount", providers.size)
-                    report.put("network", timed("network-total", 65_000) { network(URI(input.getString("authorizedUrl"))) })
                 }
                 report.put("passed", true)
             } catch (failure: Exception) {
@@ -105,43 +108,6 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun network(target: URI): JSONObject = supervisorScope {
-        check(target.scheme == "https" && target.host != null && target.port in listOf(-1, 443))
-        val config = JsonParser.parseString(YamlConfigCodec.toJson(entry.paths().configFile.readText())).asJsonObject
-        val port = listOf("mixed-port", "socks-port").firstNotNullOf { config[it]?.asInt?.takeIf { p -> p > 0 } }
-        Socket(Proxy(Proxy.Type.SOCKS, InetSocketAddress("127.0.0.1", port))).use { socket ->
-            timed("socks-connect", 22_000) { socket.connect(InetSocketAddress.createUnresolved(target.host, 443), 20_000) }
-            socket.soTimeout = 20_000
-            val observed = async { withTimeout(60_000) {
-                while (true) {
-                    entry.coreBridge().getConnections().firstOrNull { it.metadata.sourcePort == socket.localPort.toString() &&
-                        it.metadata.destinationPort == "443" && it.upload > 0 && it.download > 0 }?.let { return@withTimeout it }
-                    delay(100)
-                }
-                @Suppress("UNREACHABLE_CODE") error("missing")
-            } }
-            try {
-                (SSLSocketFactory.getDefault() as SSLSocketFactory).createSocket(socket, target.host, 443, true).use { raw ->
-                    val tls = raw as SSLSocket
-                    tls.sslParameters = tls.sslParameters.apply { endpointIdentificationAlgorithm = "HTTPS" }
-                    timed("tls-handshake", 22_000) { tls.startHandshake() }
-                    val status = timed("http-headers", 22_000) {
-                        val path = target.rawPath.ifBlank { "/" } + target.rawQuery?.let { "?$it" }.orEmpty()
-                        tls.getOutputStream().apply { write("GET $path HTTP/1.1\r\nHost: ${target.host}\r\nUser-Agent: clash-verge/Platform/android\r\nConnection: keep-alive\r\n\r\n".toByteArray()); flush() }
-                        val stream = tls.getInputStream().buffered(); var budget = 32768
-                        fun line() = buildString { while (true) { check(budget-- > 0); val c = stream.read(); check(c >= 0); if (c == 10) break; if (c != 13) append(c.toChar()) } }
-                        val code = line().split(' ').getOrNull(1)?.toIntOrNull()
-                        while (line().isNotEmpty()) Unit
-                        check(code == 200); code
-                    }
-                    val connection = timed("connection-attribution", 20_000) { observed.await() }
-                    JSONObject().put("http", status).put("attributed", true).put("positiveTraffic", true)
-                        .put("nonDirect", connection.chains.any { it != "DIRECT" })
-                }
-            } finally { observed.cancelAndJoin() }
-        }
-    }
-
     private suspend fun snapshot(): JSONObject {
         val gson = Gson(); val rows = entry.database().profiles().getAll().sortedBy { it.id }
         val fields = JSONObject(); val files = JSONArray()
@@ -152,7 +118,16 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
             files.put(JSONObject().put("id", row.id).put("bytes", file.length()).put("mtime", file.lastModified())
                 .put("sha256", if (file.isFile) stabilitySha(file.readBytes()) else "missing"))
         }
-        val preferences = entry.database().appPreferences().getByPrefix("").associate { stabilitySha(it.key.toByteArray()) to stabilitySha(it.value.toByteArray()) }
+        val preferenceRows = entry.database().appPreferences().getByPrefix("")
+        val preferences = preferenceRows.associate { stabilitySha(it.key.toByteArray()) to stabilitySha(it.value.toByteArray()) }
+        val preferenceTimes = preferenceRows.associate { stabilitySha(it.key.toByteArray()) to it.updatedAt }
+        val delays = JSONObject()
+        for (row in rows) entry.database().proxyDelayResults().load(row.id).forEach { value ->
+            // 作者 long：测速按四列复合主键核对，值与时间单独摘要，不能按查询返回顺序误判节点身份丢失。
+            val key = gson.toJson(listOf(value.profileId, value.groupName, value.proxyName, value.testUrl))
+            delays.put(stabilitySha(key.toByteArray()), JSONObject().put("valueHash", stabilitySha(gson.toJson(value).toByteArray()))
+                .put("updatedAtMillis", value.updatedAtMillis))
+        }
         val shared = JSONObject()
         File(applicationInfo.dataDir, "shared_prefs").listFiles().orEmpty().filter { it.extension == "xml" }.forEach { file ->
             val values = getSharedPreferences(file.nameWithoutExtension, Context.MODE_PRIVATE).all
@@ -160,6 +135,7 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 .mapValues { stabilitySha(gson.toJson(it.value).toByteArray()) }))
         }
         return JSONObject().put("rows", fields).put("files", files).put("roomPreferences", JSONObject(preferences))
+            .put("roomPreferenceUpdatedAt", JSONObject(preferenceTimes)).put("delayResults", delays)
             .put("sharedPreferences", shared).put("selected", entry.profileRepository().currentProfileId.value)
             .put("runtime", entry.runtimeManager().state.value.name).put("autoUpdateEnabled", rows.any { it.autoUpdate })
             .put("autoUpdateAudit", SubscriptionAutoUpdateAudit.read(this))

@@ -20,13 +20,8 @@ import com.lonnnnnng.flclash.ui.*
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import java.io.File
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.net.Socket
 import java.net.URI
 import java.security.MessageDigest
-import javax.net.ssl.SSLSocket
-import javax.net.ssl.SSLSocketFactory
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import org.json.JSONObject
@@ -36,8 +31,17 @@ private fun providerBackup(context: Context) = EncryptedDraftFile(context,
     "provider-runtime-acceptance.v1", "com.lonnnnnng.flclash.acceptance.provider-runtime")
 private fun providerSha(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
 private fun providerReport(token: String, phase: String, detail: JSONObject = JSONObject()) {
-    Log.i(PROVIDER_TAG, detail.put("token", token).put("phase", phase).put("pid", Process.myPid())
-        .put("epochMs", System.currentTimeMillis()).toString())
+    val text = detail.put("token", token).put("phase", phase).put("pid", Process.myPid())
+        .put("epochMs", System.currentTimeMillis()).put("elapsedMs", android.os.SystemClock.elapsedRealtime()).toString()
+    if (text.toByteArray().size <= 2800) Log.i(PROVIDER_TAG, text)
+    else {
+        // 作者 long：拨号/DNS摘要可能超过单条Logcat预算，分片校验避免恢复失败时恰好丢掉最需要的证据。
+        val raw = text.toByteArray(); val hash = providerSha(raw)
+        val chunks = android.util.Base64.encodeToString(raw, android.util.Base64.NO_WRAP).chunked(2200)
+        chunks.forEachIndexed { index, chunk -> Log.i(PROVIDER_TAG, JSONObject().put("token", token).put("phase", "chunk")
+            .put("sourcePhase", phase).put("sha256", hash).put("bytes", raw.size).put("index", index).put("count", chunks.size)
+            .put("base64", chunk).toString()) }
+    }
 }
 private data class ProviderRuntimeSnapshot(
     val token: String, val case: String, val profiles: List<ProfileEntity>, val files: Map<Long, String>,
@@ -61,6 +65,22 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
     private val gson = Gson()
     @Volatile private var acceptanceStep = "initialize"
 
+    private suspend fun <T> waitStep(name: String, budget: Long, block: suspend () -> T): T {
+        val token = intent.getStringExtra("token").orEmpty()
+        acceptanceStep = name
+        val start = android.os.SystemClock.elapsedRealtime()
+        providerReport(token, "wait-begin", JSONObject().put("name", name).put("budgetMs", budget).put("startElapsedMs", start))
+        try {
+            return withTimeout(budget) { block() }.also {
+                providerReport(token, "wait-end", JSONObject().put("name", name).put("durationMs", android.os.SystemClock.elapsedRealtime() - start))
+            }
+        } catch (failure: Exception) {
+            providerReport(token, "wait-failed", JSONObject().put("name", name).put("type", failure.javaClass.simpleName)
+                .put("durationMs", android.os.SystemClock.elapsedRealtime() - start).put("budgetMs", budget))
+            throw failure
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(TextView(this).apply { text = "KClash Debug Provider 验收" })
@@ -70,9 +90,19 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 when (command) {
+                    "preflight" -> {
+                        // 作者 long：部分ROM拒绝run-as；只读密文门禁必须在外部隔离进程前完成，不能先杀进程再猜备份不存在。
+                        check(backup.read() == null)
+                        waitStep("preflight-initialization", 15_000) { (application as KClashApplication).awaitRuntimeInitialization() }
+                        check(entry.runtimeManager().state.value == CoreRuntimeStatus.STOPPED)
+                        check(!ServiceConfig.proxyAlive.value && !ServiceConfig.vpnAlive.value)
+                        check(entry.database().appPreferences().get("runtime_should_resume") != "true")
+                        providerReport(token, "preflight", JSONObject().put("noBackup", true).put("stopped", true))
+                    }
                     "prepare" -> prepare(token)
                     "verify" -> verify(token, intent.getIntExtra("expectedPid", -1))
                     "broken-switch" -> brokenSwitch(token)
+                    "diagnostic-failure" -> diagnosticFailure(token)
                     "restore" -> restore(token)
                     else -> error("未知验收阶段")
                 }
@@ -116,7 +146,7 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
         val snapshot = ProviderRuntimeSnapshot(token, intent.getStringExtra("case").orEmpty(), rows,
             rows.associate { it.id to signature(repo.profileFile(it.id)) }, preferences(), scripts(), selected,
             e.vpnSettingsStore().read(), runtime.outboundMode.value, id, id + 1, id + 2, originalSha, urlSha, Process.myPid())
-        require(snapshot.case in setOf("before", "after", "stopped-file", "stopped-row", "running-file", "running-row"))
+        require(snapshot.case in setOf("before", "after", "stopped-file", "stopped-row", "running-file", "running-row", "diagnostic-close", "diagnostic-timeout"))
         check(snapshot.preferences["runtime_should_resume"] != "true")
         persist(snapshot)
         // 作者 long：先持久化独占ID，再暂停正式源自动更新；跨进程窗口不能依赖本进程互斥锁保护正式正文。
@@ -146,14 +176,14 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
         var snapshot = initialize(token)
         check(snapshot.case in setOf("before", "after"))
         val runtime = entry.runtimeManager()
-        runtime.startProxy().getOrThrow()
+        waitStep("prepare-core-start", 60_000) { runtime.startProxy().getOrThrow() }
         val since = checkNotNull(runtime.runningSinceElapsedMillis.value)
         acceptanceStep = "prepare-network"; proxyEvidence(snapshot)
         withContext(Dispatchers.Main) { model.setForeground(true); model.show(snapshot.customId) }
         acceptanceStep = "prepare-provider-list"
-        withTimeout(30_000) { model.providers.first { it.providers?.any { row -> row.name == snapshot.alias } == true && !it.isLoading } }
+        waitStep("prepare-provider-list", 30_000) { model.providers.first { it.providers?.any { row -> row.name == snapshot.alias } == true && !it.isLoading } }
         withContext(Dispatchers.Main) { model.openProvider(snapshot.alias, edit = true) }
-        val original = withTimeout(20_000) { model.document.first { it?.draft != null && !it.loading } }!!
+        val original = waitStep("prepare-document-bind", 20_000) { model.document.first { it?.draft != null && !it.loading } }!!
         check(original.error == null && original.editing)
         val root = JsonParser.parseString(YamlConfigCodec.toJson(original.content)).asJsonObject
         // 作者 long：只改原1.yaml副本中一个节点的名称，核心成员变化才足以证明侧载已应用，注释变化只能证明文件写入。
@@ -163,7 +193,7 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
         val window = if (snapshot.case == "before") EditorCommitWindow.PROVIDER_INTENT else EditorCommitWindow.PROVIDER_COMMITTED
         val gate = EditorCommitProbe.arm(window)
         withContext(Dispatchers.Main) { model.changeProviderContent(intended); model.saveProvider() }
-        withTimeout(30_000) { gate.awaitReached() }
+        waitStep("prepare-commit-window", 30_000) { gate.awaitReached() }
         val committed = snapshot.case == "after"
         check(EditorCommitProbe.visits(window) == 1)
         check(providerSha(cache(snapshot).readBytes()) == if (committed) snapshot.intendedSha else snapshot.originalSha)
@@ -175,7 +205,7 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
             .put("committed", EditorCommitProbe.visits(EditorCommitWindow.PROVIDER_COMMITTED)))
     }
 
-    private suspend fun coreMembers(snapshot: ProviderRuntimeSnapshot) = withTimeout(10_000) {
+    private suspend fun coreMembers(snapshot: ProviderRuntimeSnapshot) = waitStep("$acceptanceStep-core-members", 10_000) {
         entry.coreBridge().getProxyGroups().groups.single { it.name == snapshot.group }.all
     }
 
@@ -194,10 +224,10 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
         val since = entry.runtimeManager().runningSinceElapsedMillis.value
         withContext(Dispatchers.Main) { model.setForeground(true) }
         acceptanceStep = "verify-encrypted-route"
-        withTimeout(20_000) { model.restoredProviderProfileId.first { it == snapshot.customId } }
+        waitStep("verify-encrypted-route", 20_000) { model.restoredProviderProfileId.first { it == snapshot.customId } }
         acceptanceStep = "verify-document-bind"
         withContext(Dispatchers.Main) { model.resumeProviderDocument(snapshot.customId) }
-        val restored = withTimeout(20_000) { model.document.first { it?.document != null && !it.loading } }!!
+        val restored = waitStep("verify-document-bind", 20_000) { model.document.first { it?.document != null && !it.loading } }!!
         check(!restored.recoveryBlocked && restored.committed == committed && restored.dirty != committed)
         check(providerSha(restored.content.toByteArray()) == snapshot.intendedSha)
         check(EditorCommitProbe.visits(EditorCommitWindow.PROVIDER_INTENT) == 0 && EditorCommitProbe.visits(EditorCommitWindow.PROVIDER_COMMITTED) == 0)
@@ -207,7 +237,7 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
             check(EditorCommitProbe.visits(EditorCommitWindow.PROVIDER_INTENT) == 0)
             withContext(Dispatchers.Main) { model.closeProvider() }
         }
-        withTimeout(20_000) { model.document.first { it == null } }
+        waitStep("verify-save-close", 20_000) { model.document.first { it == null } }
         check(EditorCommitProbe.visits(EditorCommitWindow.PROVIDER_INTENT) == if (committed) 0 else 1)
         check(EditorCommitProbe.visits(EditorCommitWindow.PROVIDER_COMMITTED) == if (committed) 0 else 1)
         check(providerSha(cache(snapshot).readBytes()) == snapshot.intendedSha && snapshot.changedNode in coreMembers(snapshot))
@@ -271,47 +301,56 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
 
     private suspend fun proxyEvidence(snapshot: ProviderRuntimeSnapshot, selected: Long = snapshot.customId): JSONObject {
         val runtime = entry.runtimeManager()
-        withTimeout(40_000) { runtime.state.first { it == CoreRuntimeStatus.RUNNING || it == CoreRuntimeStatus.FAILED } }
+        val ownerStep = acceptanceStep
+        waitStep("$ownerStep-runtime-ready", 40_000) { runtime.state.first { it == CoreRuntimeStatus.RUNNING || it == CoreRuntimeStatus.FAILED } }
         check(runtime.state.value == CoreRuntimeStatus.RUNNING && ServiceConfig.proxyAlive.value && !ServiceConfig.vpnAlive.value)
         check(ServiceConfig.proxyState.value == VpnRuntimeState.CONNECTED && runtime.vpnSettings.value.appliedEnabled == false)
         check(entry.profileRepository().currentProfileId.value == selected && entry.database().appPreferences().get("runtime_should_resume") == "true")
         val target = URI(snapshot.profiles.single { it.type == ProfileType.URL && providerSha(it.url.toByteArray()) == snapshot.urlSha }.url)
         check(target.scheme == "https" && target.host != null && target.port in listOf(-1, 443))
-        val config = JsonParser.parseString(YamlConfigCodec.toJson(entry.paths().configFile.readText())).asJsonObject
-        val port = listOf("mixed-port", "socks-port").firstNotNullOf { config[it]?.asInt?.takeIf { value -> value > 0 } }
-        return supervisorScope {
-            Socket(Proxy(Proxy.Type.SOCKS, InetSocketAddress("127.0.0.1", port))).use { socket ->
-                socket.connect(InetSocketAddress.createUnresolved(target.host, 443), 20_000); socket.soTimeout = 20_000
-                val observed = async { withTimeout(20_000) {
-                    while (true) {
-                        entry.coreBridge().getConnections().singleOrNull { it.metadata.sourcePort == socket.localPort.toString() &&
-                            it.metadata.destinationPort == "443" && it.upload > 0 && it.download > 0 }?.let { return@withTimeout it }
-                        delay(50)
-                    }
-                    @Suppress("UNREACHABLE_CODE") error("未捕获本次连接")
-                } }
-                try {
-                    (SSLSocketFactory.getDefault() as SSLSocketFactory).createSocket(socket, target.host, 443, true).use { secure ->
-                        secure as SSLSocket
-                        secure.sslParameters = secure.sslParameters.apply { endpointIdentificationAlgorithm = "HTTPS" }
-                        secure.startHandshake()
-                        val path = target.rawPath.ifBlank { "/" } + target.rawQuery?.let { "?$it" }.orEmpty()
-                        secure.getOutputStream().apply {
-                            write("GET $path HTTP/1.1\r\nHost: ${target.host}\r\nUser-Agent: clash-verge/Platform/android\r\nConnection: keep-alive\r\n\r\n".toByteArray()); flush()
-                        }
-                        val reader = secure.getInputStream().buffered(); var budget = 32768
-                        fun line() = buildString { while (true) { check(budget-- > 0); val c = reader.read(); check(c >= 0); if (c == 10) break; if (c != 13) append(c.toChar()) } }
-                        check(line().split(' ').getOrNull(1) == "200")
-                        while (line().isNotEmpty()) { /* 作者 long：只丢弃有界HTTP头，不记录订阅响应或凭据。 */ }
-                        val connection = observed.await()
-                        JSONObject().put("http", 200).put("attributedSocket", true).put("positiveTraffic", true)
-                            .put("hasNonDirectChain", connection.chains.any { it != "DIRECT" }).also {
-                                providerReport(snapshot.token, "network-verified", JSONObject(it.toString()).put("step", acceptanceStep))
-                            }
-                    }
-                } finally { observed.cancelAndJoin() }
-            }
+        val evidence = acceptedProxyRequest(entry, target) { phase, detail ->
+            providerReport(snapshot.token, "request-$phase", JSONObject(detail.toString()).put("ownerStep", ownerStep))
         }
+        check(evidence.getBoolean("passed")) { "首笔网络请求失败，完整分段证据已保留" }
+        check(evidence.getBoolean("hasNonDirectChain")) { "未观察到非DIRECT代理链" }
+        providerReport(snapshot.token, "network-verified", JSONObject(evidence.toString()).put("step", ownerStep))
+        return evidence
+    }
+
+    private suspend fun diagnosticFailure(token: String) {
+        check(packageName == "com.lonnnnnng.flclash.motion")
+        val snapshot = initialize(token)
+        val fault = when (snapshot.case) {
+            "diagnostic-close" -> AcceptanceRequestFault.CLOSE_AFTER_SOCKS
+            "diagnostic-timeout" -> AcceptanceRequestFault.TIMEOUT_AFTER_SOCKS
+            else -> error("未授权的诊断故障")
+        }
+        waitStep("diagnostic-core-start", 60_000) { entry.runtimeManager().startProxy().getOrThrow() }
+        val target = URI(snapshot.profiles.single { it.type == ProfileType.URL && providerSha(it.url.toByteArray()) == snapshot.urlSha }.url)
+        var result: JSONObject? = null
+        var cancelled = false
+        try {
+            acceptedProxyRequest(entry, target, fault) { phase, detail ->
+                providerReport(token, "request-$phase", detail)
+                if (phase == "request-result") result = JSONObject(detail.toString())
+            }
+        } catch (failure: TimeoutCancellationException) {
+            check(fault == AcceptanceRequestFault.TIMEOUT_AFTER_SOCKS)
+            cancelled = true
+        }
+        val report = checkNotNull(result)
+        check(!report.getBoolean("passed") && report.getBoolean("diagnosticLogRestored"))
+        check(report.getInt("sourcePort") > 0 && report.has("dialDiagnostic") && report.has("networkAfter"))
+        check(report.getString("injectedFault") == fault.name && report.getBoolean("faultApplied"))
+        // 作者 long：TLS实现可能延迟到握手才访问底层socket，两种失败点都必须已完成明确的关闭注入。
+        check(report.getString("failedStep") in if (cancelled) setOf("injected-timeout") else setOf("tls-create", "tls-handshake"))
+        check(cancelled == (fault == AcceptanceRequestFault.TIMEOUT_AFTER_SOCKS))
+        // 作者 long：后续正常请求只验证清理没有污染同一核心会话，不覆盖前一条受控失败，也不充当首请求成功样本。
+        acceptanceStep = "diagnostic-follow-up"; proxyEvidence(snapshot)
+        providerReport(token, "verified", JSONObject().put("case", snapshot.case).put("injected", true)
+            .put("failurePhase", report.getString("failedStep")).put("failureType", report.getString("failureType"))
+            .put("cancellationPropagated", cancelled).put("resultPreserved", true).put("diagnosticLogRestored", true))
+        restore(token)
     }
 
     private suspend fun restore(token: String) {

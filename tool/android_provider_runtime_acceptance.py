@@ -2,6 +2,7 @@
 """作者 long：Provider运行态以SIGKILL验证系统自主恢复；仅准备前在无服务/无遗留备份时force-stop隔离Debug探针。"""
 
 import argparse
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -11,17 +12,20 @@ import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-APP = "com.lonnnnnng.flclash"
-ACTIVITY = APP + "/.ProviderRuntimeAcceptanceActivity"
-RECEIVER = APP + "/.ProviderRuntimeKillReceiver"
+COMPONENT_PACKAGE = "com.lonnnnnng.flclash"
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--case", required=True, choices=["before", "after", "stopped-file", "stopped-row", "running-file", "running-row"])
+    parser.add_argument("--case", required=True, choices=["before", "after", "stopped-file", "stopped-row", "running-file", "running-row", "diagnostic-close", "diagnostic-timeout"])
     parser.add_argument("--serial", required=True)
+    parser.add_argument("--app", choices=[COMPONENT_PACKAGE, COMPONENT_PACKAGE + ".motion"], default=COMPONENT_PACKAGE)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
+    APP = args.app
+    assert not args.case.startswith("diagnostic-") or APP.endswith(".motion"), "受控故障仅限独立诊断包"
+    ACTIVITY = APP + "/" + COMPONENT_PACKAGE + ".ProviderRuntimeAcceptanceActivity"
+    RECEIVER = APP + "/" + COMPONENT_PACKAGE + ".ProviderRuntimeKillReceiver"
     assert args.serial == "wsvwypiz7xwslvl7"
     args.output.mkdir(parents=True, exist_ok=False)
     urls = re.findall(r"https://[^\s`<>]+", (ROOT.parent / "AGENTS.md").read_text())
@@ -32,7 +36,7 @@ def main():
     timeline = []
     events = []
     commands = []
-    result = {"token": token, "serial": args.serial, "passed": False}
+    result = {"token": token, "serial": args.serial, "app": APP, "passed": False}
 
     def safe(value):
         return value.replace(urls[0], "[REDACTED_SECRET]")
@@ -55,11 +59,29 @@ def main():
         nonlocal events
         log = text("logcat", "-d", "-v", "raw", "-s", "KClashProviderRuntime:I", "*:S")
         values = []
+        chunks = {}
         for line in log.splitlines():
             if line.startswith("{"):
                 row = json.loads(line)
-                if row.get("token") == token:
+                if row.get("token") != token:
+                    continue
+                if row.get("phase") == "chunk":
+                    key = (row["sourcePhase"], row["sha256"])
+                    item = chunks.setdefault(key, {"meta": row, "parts": {}})
+                    assert (item["meta"]["bytes"], item["meta"]["count"]) == (row["bytes"], row["count"])
+                    item["parts"][row["index"]] = row["base64"]
+                else:
                     values.append(row)
+        for item in chunks.values():
+            meta, parts = item["meta"], item["parts"]
+            if sorted(parts) != list(range(meta["count"])):
+                continue
+            raw = base64.b64decode("".join(parts[i] for i in range(meta["count"])), validate=True)
+            assert len(raw) == meta["bytes"] and hashlib.sha256(raw).hexdigest() == meta["sha256"]
+            row = json.loads(raw)
+            assert row["token"] == token and row["phase"] == meta["sourcePhase"]
+            values.append(row)
+        values.sort(key=lambda row: (row.get("elapsedMs", 0), row.get("epochMs", 0)))
         events = values
         (args.output / "events.json").write_text(json.dumps(events, ensure_ascii=False, indent=2) + "\n")
         return values
@@ -111,7 +133,8 @@ def main():
         assert text("shell", "settings", "get", "system", "font_scale") == "1.0"
         display = text("shell", "dumpsys", "window", "displays")
         assert "mRotation=0 " in display and " port " in display
-        apk = ROOT / "android/app/build/outputs/apk/debug/app-debug.apk"
+        variant = "motionBenchmark" if APP.endswith(".motion") else "debug"
+        apk = ROOT / f"android/app/build/outputs/apk/{variant}/app-{variant}.apk"
         expected_sha = hashlib.sha256(apk.read_bytes()).hexdigest()
         installed_path = text("shell", "pm", "path", APP).splitlines()[0].removeprefix("package:")
         installed_sha = text("shell", "sha256sum", installed_path).split()[0]
@@ -120,8 +143,13 @@ def main():
         before = service_snapshot()
         assert not before["hasProxyService"] and not before["hasVpnService"] and not before["hasTun0"]
         result["before"] = before
-        leftover = adb("shell", "run-as", APP, "test", "-e", "no_backup/provider-runtime-acceptance.v1", check=False)
-        assert leftover.returncode == 1, "上轮备份仍存在，禁止重启准备或覆盖恢复现场"
+        activity("preflight")
+        preflight = wait_phase("preflight", seconds=30)
+        assert preflight["noBackup"] and preflight["stopped"]
+        result["preflight"] = preflight
+        isolation = service_snapshot()
+        assert not isolation["hasProxyService"] and not isolation["hasVpnService"] and not isolation["hasTun0"]
+        result["beforePreparationIsolation"] = isolation
         # 作者 long：上一场显式重试会留下进程内探针计数；此处仅隔离准备进程，不计入系统自主恢复证据。
         adb("shell", "am", "force-stop", APP)
         assert not pids()
@@ -171,7 +199,7 @@ def main():
             assert result["verified"]["pid"] == recovered["pids"][0]
             assert result["verified"]["restartAt"] > result["ready"]["readyAt"] == result["verified"]["readyAt"]
         else:
-            activity("broken-switch")
+            activity("diagnostic-failure" if args.case.startswith("diagnostic-") else "broken-switch")
             result["verified"] = wait_phase("verified", seconds=180)
             result["restored"] = wait_phase("restored")
         after = service_snapshot()

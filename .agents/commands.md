@@ -53,6 +53,8 @@ gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --e
 
 `StabilityWindowPreparationTest` 和 `StabilityWindowAcceptanceActivity` 仅允许 `.motion` 独立空库、原1.yaml及外层AGENTS授权目标；输入加密、token/PID门禁受控死亡，长窗checkpoint不启动服务。逐阶段等待预算与哈希化Profile/文件/偏好快照用于诊断，首失败不能被重试覆盖。当前45分钟网络8/10，不能作为全绿脚本样板；驱动和原始批次见`docs/acceptance/selection-motion-stability-redmi-20261109.json`及其本机附件。
 
+Provider恢复诊断使用`python3 tool/android_provider_runtime_acceptance.py --serial wsvwypiz7xwslvl7 --app com.lonnnnnng.flclash.motion --case <before|after|diagnostic-close|diagnostic-timeout> --output <全新目录>`。需已准备原FILE和唯一授权URL、停止服务；不得为门禁静默覆盖配置。driver核对包SHA后通过应用内只读preflight检查无遗留备份、初始化完成及恢复意图为关闭，再隔离准备进程；真实死亡仍必须在外部观察系统新PID/前台服务后才能verify。诊断失败两例仅限motion，不能当成旧TLS EOF复现。报告分片按SHA/字节数核验，失败原目录不覆盖；当前结果见`docs/functional-network-investigation.md`。
+
 ## 菜单无线程采样对照（KUI-035）
 
 精确选择 `VisualMotionNaturalInstrumentedTest#lightMenuWindowFramesWithoutThreadSampling` 或 `#darkMenuWindowFramesWithoutThreadSampling`，显式设置 `kclashMenuWindowFrames=true`、`kclashCloseWindowCapture=true`、`kclashMotionInlineFrames=true`、`kclashCapturePng=false` 和唯一安全 `kclashMotionRun`；不得启用线程/方法采样或录屏。每方法三轮开关，预期6份内联帧表、3次关闭留窗、0份线程计数。与线程诊断分开报告，A-B-A按窗口原始计数比较，关闭留窗不是正式R8场景。固定范围候选无稳定收益已撤回，见 `docs/member-picker-alignment-menu-investigation.md`。

@@ -1,0 +1,318 @@
+{
+  "date": "2026-11-11",
+  "scope": "首请求及Provider恢复诊断；不是六项功能目标完成",
+  "baseCommit": "99da6121859da97ab24f171f23a8210e91c6ce14",
+  "serial": "wsvwypiz7xwslvl7",
+  "device": "Redmi Note 8 Pro",
+  "api": 36,
+  "app": "com.lonnnnnng.flclash.motion",
+  "installation": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "adb529033f89f079ead991619d3ed7d3cfb113d4eef3c8bf26202e7963c1511e",
+      "bytes": 66050081,
+      "deviceReadbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "975b3c092d93707c21e98dfd8a7fc37f2f94bafb250887cdde636388ea6e10f7",
+      "bytes": 2863606,
+      "deviceReadbackMatches": true
+    }
+  ],
+  "finalBatch": {
+    "passed": 4,
+    "total": 4,
+    "cases": [
+      {
+        "case": "diagnostic-close",
+        "passed": true,
+        "result": {
+          "path": "acceptance-artifacts/functional-network-20261111/final9-diagnostic-close/result.json",
+          "sha256": "b4cfd25f6915eaf698d31454775ba5306de7a4341c53bbb9d601cec56a9833a6",
+          "bytes": 1954
+        },
+        "events": {
+          "path": "acceptance-artifacts/functional-network-20261111/final9-diagnostic-close/events.json",
+          "sha256": "ef9491be9d82d05b094bf8eaf34678c00a5bf4b088465b3679cc7dbe24e2b830",
+          "bytes": 25423
+        },
+        "normalHttpsRequests": 1,
+        "protectedBaseProfilesRestored": true,
+        "backupCleared": true,
+        "servicesAbsent": true,
+        "verified": {
+          "injected": true,
+          "failurePhase": "tls-handshake",
+          "failureType": "SocketException",
+          "cancellationPropagated": false,
+          "resultPreserved": true,
+          "diagnosticLogRestored": true
+        }
+      },
+      {
+        "case": "diagnostic-timeout",
+        "passed": true,
+        "result": {
+          "path": "acceptance-artifacts/functional-network-20261111/final9-diagnostic-timeout/result.json",
+          "sha256": "834e7228cfd851fedef2d46d643894b66de490df7991656ee0b6ab44d6eb6545",
+          "bytes": 1971
+        },
+        "events": {
+          "path": "acceptance-artifacts/functional-network-20261111/final9-diagnostic-timeout/events.json",
+          "sha256": "7bcbb7ec25ae534b9be06b5c7704e4d063bb8535d09b4ed159c80aa1cffa6214",
+          "bytes": 25665
+        },
+        "normalHttpsRequests": 1,
+        "protectedBaseProfilesRestored": true,
+        "backupCleared": true,
+        "servicesAbsent": true,
+        "verified": {
+          "injected": true,
+          "failurePhase": "injected-timeout",
+          "failureType": "TimeoutCancellationException",
+          "cancellationPropagated": true,
+          "resultPreserved": true,
+          "diagnosticLogRestored": true
+        }
+      },
+      {
+        "case": "before",
+        "passed": true,
+        "result": {
+          "path": "acceptance-artifacts/functional-network-20261111/final9-before/result.json",
+          "sha256": "9ae482d408768a15111e2917d4ff829ab04d15d972e0cd751a38f2b62055caf8",
+          "bytes": 7909
+        },
+        "events": {
+          "path": "acceptance-artifacts/functional-network-20261111/final9-before/events.json",
+          "sha256": "ca053fff332cc467803ded86b842058e27edf6354cd736b63938cd0049942856",
+          "bytes": 60968
+        },
+        "normalHttpsRequests": 3,
+        "protectedBaseProfilesRestored": true,
+        "backupCleared": true,
+        "servicesAbsent": true,
+        "verified": {
+          "diagnosticLogRestored": true,
+          "noAutomaticReplay": true,
+          "explicitRetryCommits": 1,
+          "cacheAndCoreMatched": true,
+          "sourcePreserved": true
+        },
+        "recovery": {
+          "oldPid": 29661,
+          "newPid": 29804,
+          "observedBeforeVerify": true,
+          "serviceObservationSeconds": 1.808,
+          "httpRecoveryDurationClaimed": false
+        }
+      },
+      {
+        "case": "after",
+        "passed": true,
+        "result": {
+          "path": "acceptance-artifacts/functional-network-20261111/final9-after/result.json",
+          "sha256": "570a830226c3f9ed8b6335a5ff1103c076cd83534a8637ce893a552575896290",
+          "bytes": 7907
+        },
+        "events": {
+          "path": "acceptance-artifacts/functional-network-20261111/final9-after/events.json",
+          "sha256": "1f97bd78b8c6183b78400cb0dc0e7fad63fae7b3585d3e37ac93f152e05fcd87",
+          "bytes": 60963
+        },
+        "normalHttpsRequests": 3,
+        "protectedBaseProfilesRestored": true,
+        "backupCleared": true,
+        "servicesAbsent": true,
+        "verified": {
+          "diagnosticLogRestored": true,
+          "noAutomaticReplay": true,
+          "explicitRetryCommits": 0,
+          "cacheAndCoreMatched": true,
+          "sourcePreserved": true
+        },
+        "recovery": {
+          "oldPid": 30014,
+          "newPid": 30162,
+          "observedBeforeVerify": true,
+          "serviceObservationSeconds": 1.861,
+          "httpRecoveryDurationClaimed": false
+        }
+      }
+    ],
+    "normalRequests": 8,
+    "normalRequests200AttributedPositiveNonDirect": 8,
+    "injectedFailures": 2,
+    "historicalFailuresReproduced": false
+  },
+  "initialNetworkProbe": {
+    "passed": 3,
+    "sourceSnapshot": "source3.json",
+    "evidence": "initial-summary.json",
+    "dnsOverflowFirstStart": 126,
+    "countsMergedWithFinalBatch": false
+  },
+  "jvm": {
+    "suites": {
+      "app": {
+        "tests": 604,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 216,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 889,
+    "result": "zero failure/error/skip",
+    "finalLog": {
+      "path": "acceptance-artifacts/functional-network-20261111/final-build4.log",
+      "sha256": "c23369403440e9b806b95bc9da3870fdd6a9dace4d181dd4a820e6157d45e57e",
+      "bytes": 21470
+    },
+    "previousFullRunFailed": {
+      "path": "acceptance-artifacts/functional-network-20261111/final-build3.log",
+      "sha256": "6f209162540bd060d207a5a1b1747062f7a920a53d56764810d427c917428576",
+      "bytes": 21664
+    },
+    "previousFailureXml": {
+      "path": "acceptance-artifacts/functional-network-20261111/jvm-final-build3-profiles-failure.xml",
+      "sha256": "0a21af9e740226d8257422ce5f9585881663c7dae749d904afcbbe12e8d4836d",
+      "bytes": 21740
+    },
+    "fix": "仅JVM用例将相同5000ms关闭等待切到Default的真实时钟",
+    "focusedLog": {
+      "path": "acceptance-artifacts/functional-network-20261111/jvm-picker-focused.log",
+      "sha256": "e4662accb429efa07e4f86750a331fdd3fdb45930fa5e0a50f34b4f5f81d410b",
+      "bytes": 5885
+    }
+  },
+  "build": {
+    "motion": {
+      "path": "acceptance-artifacts/functional-network-20261111/compile9.log",
+      "sha256": "25f6e7ec26dd0664966013253aa3d0ce1f15be4e8b00abcd120f989bf6e35e72",
+      "bytes": 13241
+    },
+    "debug": {
+      "path": "FlClash/android/app/build/outputs/apk/debug/app-debug.apk",
+      "sha256": "03734ad9885795ab74cb992931de057cb966575d7d57b8c076915158b4e75a1a",
+      "bytes": 83109415
+    },
+    "releaseUnsigned": {
+      "path": "FlClash/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "0c854465783daf5a453e3d6d029c61488ab3e97dcf368ddbf80a754e0d8d5281",
+      "bytes": 48377492
+    },
+    "lint": {
+      "debug": {
+        "counts": {
+          "Warning": 73,
+          "Hint": 14
+        },
+        "reportSha256": "c0f1c35ab233ae33e7358697c4af0e0b5811bb28fb14a6e45f1e976e56f7682e"
+      },
+      "release": {
+        "counts": {
+          "Warning": 69,
+          "Hint": 13
+        },
+        "reportSha256": "d8b406a5e4315c7bcff11cefcfb4bab284a374329cc4e26f02f9db1fa27b8f79"
+      }
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "releaseIsolation": {
+      "sha256": "0c854465783daf5a453e3d6d029c61488ab3e97dcf368ddbf80a754e0d8d5281",
+      "unsigned": true,
+      "acceptanceTypesAbsent": {
+        "ProviderRuntimeAcceptance": true,
+        "StabilityWindowAcceptance": true,
+        "CoreRequestAcceptance": true,
+        "AcceptanceRequestFault": true
+      },
+      "manifestSha256": "db30ba4ec4cfc6ae75bff0d8639d445342b1abb3cc1d80f25e73c31d3bc556f6"
+    }
+  },
+  "sourceIdentity": {
+    "compiledMotionSources": {
+      "path": "acceptance-artifacts/functional-network-20261111/source9.json",
+      "sha256": "8c578d536520838d65005e9371162f26e929ede5f2b5c3a44dfd5d495f2de342",
+      "bytes": 83177
+    },
+    "finalSources": {
+      "path": "acceptance-artifacts/functional-network-20261111/source-after-jvm-fix.json",
+      "sha256": "21e02d1c12b912cff14ecde7e0001af8b7aa5e7a6c626f96a244da708b04f777",
+      "bytes": 84509
+    },
+    "postInstallDelta": [
+      "android/tests/app/ProfilesViewModelTest.kt"
+    ],
+    "apkRuntimeSourcesUnchanged": true
+  },
+  "preservedFailure": {
+    "diagnosticCloseBeforeAssertionFix": {
+      "path": "acceptance-artifacts/functional-network-20261111/diagnostic-close-final/result.json",
+      "sha256": "3e0f6c3d4b2d96a7d5dd7b85f2a1c30c2484a82f035739d9349d2c5c4fc256ef",
+      "bytes": 1240
+    },
+    "reason": "TLS包装延迟到handshake访问已关闭socket；已修诊断断言并确认faultApplied",
+    "retryResultsMerged": false
+  },
+  "protection": {
+    "originalLocalSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "originalLocalBytes": 35165,
+    "originalLocalMtimeNs": 1793892313800697973,
+    "motionServicesAbsent": true,
+    "tun0Absent": true,
+    "testPackagesKeptForNextInvestigation": true,
+    "formalPackageTouched": false,
+    "flutterReferenceTouched": false,
+    "otherDeviceTouched": false
+  },
+  "remaining": [
+    "旧首请求TLS EOF根因未定",
+    "旧Provider final6-before超时根因未定",
+    "全写入来源/真实提交审计未实现",
+    "长期配置偏好Delay归因未完成",
+    "完整核心语义预检未实现",
+    "应用内更新未实现"
+  ],
+  "rawArtifacts": "../acceptance-artifacts/functional-network-20261111/"
+}

@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **功能性网络诊断集中复验（2026-11-11）**：首请求源端口/dial/DNS和逐等待分片诊断已接通；Redmi最终同套motion/Test保存前后SIGKILL、受控关闭/超时共4/4，8笔正常HTTPS200及同socket正流量/非DIRECT通过，2笔注入失败独立留证。四场基线行/正文/偏好值/脚本/选择恢复、备份清空、结束无服务。889JVM及Debug/未签名Release-R8/双Lint零错误/DEX3项通过；既有JVM虚拟时钟超时和首轮诊断断言失败已保留并修正。旧TLS EOF、旧Provider超时仍未复现，不关闭根因；全写入来源审计、长窗口、语义预检和应用内更新继续。独立包和授权FILE/URL副本暂留供后续调查，原1.yaml保持。见[调查与证据](functional-network-investigation.md)。
+
 > **按应用代理名单保护（2026-11-11，KUI-038）**：智能选择保留系统/联网筛选范围外及未安装项，搜索不参与；无效剪贴板不覆盖，计数使用完整已安装集合，无Launcher包可选。返回刷新保留草稿，损坏设置拒绝空默认回写，扫描/保存补启停版本和串行守卫。889JVM零失败、Debug/未签名Release-R8及双Lint零错误、DEX3/3；Redmi同套motion/Test精确13/13。2张稳定页图及2张过程图已核对；双包回拉一致后清理，原文件/参考包/设置保持。OEM授权真机、正式R8及新全包TUN流量不在本组结论；剩余五项功能目标继续。见[溯源](access-control-protection-defect.md)、[证据](acceptance/access-protection-redmi-20261111.json)及[六项清单](functional-closure.md)。
 
 > **功能性收尾进行中（2026-11-11）**：按用户新优先级推进名单保护、首次联网、长期状态稳定性、Provider运行态恢复、核心语义预检和应用内更新；KUI-038名单保护已完成真机13/13，其他五项未完成，不能由视觉验收替代。见[六项清单](functional-closure.md)。
