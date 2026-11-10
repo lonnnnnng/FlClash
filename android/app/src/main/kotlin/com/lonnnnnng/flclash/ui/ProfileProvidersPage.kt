@@ -117,6 +117,7 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
         onDismiss = { editing = null; submitted = null }, validateFilters = validateFilters,
         onSave = { next -> submit(proxySection, ruleSection, if (next.isEmpty) overrides - name else overrides + (name to next)) }) }
     binding?.let { alias -> ProviderBindingPicker(bindingProxy, profiles, rules, saving, error,
+        selectedKey = if (bindingProxy) ProfileProxyResources.idOf(proxyDefs?.get(alias))?.toString() else RuleResources.idOf(ruleDefs?.get(alias)),
         onDismiss = { if (!saving) { binding = null; submitted = null } }, onProxy = { resource -> submit(ProfileProxyResources.bind(proxySection, resource, alias), ruleSection, overrides) },
         onRule = { resource -> submit(proxySection, RuleResources.bind(ruleSection, resource, alias), overrides) }) }
     if (quick) ProviderQuickYaml(proxySection, ruleSection, saving, error, onDismiss = { if (!saving) { quick = false; submitted = null } },
@@ -137,18 +138,21 @@ private fun ProviderResourceRow(name: String, subtitle: String?, missing: Boolea
 }
 
 @Composable
-private fun ProviderBindingPicker(proxy: Boolean, profiles: List<Profile>, rules: List<RuleResource>, busy: Boolean, error: String?, onDismiss: () -> Unit,
+internal fun ProviderBindingPicker(proxy: Boolean, profiles: List<Profile>, rules: List<RuleResource>, busy: Boolean, error: String?, onDismiss: () -> Unit,
+    selectedKey: String? = null,
     onProxy: (Profile) -> Unit, onRule: (RuleResource) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
-    ProfileEditorPage(onDismissRequest = onDismiss, backTag = "provider_binding_back", title = { Text(if (proxy) "选择代理资源" else "选择规则资源") }, text = {
+    ProfileEditorPage(onDismissRequest = onDismiss, backTag = "provider_binding_back", title = { Text(if (proxy) "选择代理资源" else "选择规则资源") },
+        bottomBar = { DockedProfileSearch(query, { query = it }, "provider_binding_search", enabled = !busy) }, text = {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            OutlinedTextField(query, { query = it }, singleLine = true, enabled = !busy, label = { Text("搜索") }, modifier = Modifier.fillMaxWidth().testTag("provider_binding_search"))
             val proxyChoices = profiles.filter { it.type != ProfileType.CUSTOM && it.realLabel.contains(query, true) }
             val ruleChoices = rules.filter { it.label.contains(query, true) }
             if (if (proxy) proxyChoices.isEmpty() else ruleChoices.isEmpty()) Text(if (query.isNotEmpty()) "没有匹配的资源" else "暂无可选资源，请先在资源管理中添加。", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            LazyColumn(Modifier.weight(1f)) {
+            val listState = rememberResourcePickerListState(
+                if (proxy) proxyChoices.map { it.id.toString() } else ruleChoices.map { it.id }, selectedKey)
+            LazyColumn(Modifier.weight(1f), state = listState) {
                 if (proxy) items(proxyChoices, key = { it.id }) { resource -> ProfileSectionRow(resource.realLabel, if (resource.type == ProfileType.URL) "订阅配置" else "文件配置", Icons.Outlined.CloudQueue, !busy,
                     Modifier.testTag("provider_binding_proxy_${resource.id}")) { onProxy(resource) } }
                 else items(ruleChoices, key = { it.id }) { resource -> ProfileSectionRow(resource.label, resource.behavior + " · " + resource.format, Icons.Outlined.Description, !busy,

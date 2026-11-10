@@ -176,12 +176,12 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
     fun label(icon: String): String = labels[icon] ?: IconRecommendations.label(IconRecommendations.record(icon))
     val shown = source?.icons.orEmpty().filter { query.isBlank() || IconRecommendations.label(it).contains(query, true) }
     ProfileEditorPage(onDismissRequest = dismiss, title = { Text("图标") }, backTag = "group_icon_back",
+        bottomBar = { DockedProfileSearch(query, { query = it }, "group_icon_search", "搜索图标", enabled = !imageBusy) },
         confirmButton = {
             IconButton(onClick = ::launchImage, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_local")) { Icon(Icons.Outlined.Image, null) }
             IconButton(onClick = { link = true }, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_link")) { Icon(Icons.Outlined.Link, null) }
         }, text = {
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                ProfileSearchField(query, { query = it }, "group_icon_search", "搜索图标")
                 (error ?: pickerState?.error)?.takeUnless { link }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
                 if (pickerState?.recoveryFailed == true) TextButton({ durable?.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text("重试恢复") }
                 if (imageBusy || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())

@@ -37,6 +37,7 @@ internal fun ProfileEditorPage(
     dismissButton: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     backTag: String = "profile_editor_back",
+    bottomBar: (@Composable () -> Unit)? = null,
 ) {
     val draftRegistry = rememberEditorWindowRegistry()
     Dialog(
@@ -86,6 +87,8 @@ internal fun ProfileEditorPage(
             Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding().padding(contentPadding)) {
                 Box(Modifier.weight(1f).fillMaxWidth()) { text() }
                 if (dismissButton != null) Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.End) { dismissButton() }
+                // 作者 long：输入停靠当前Dialog的可用下沿，安全区/IME只由本层消费，长列表不能把搜索推走。
+                if (bottomBar != null) Box(Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 16.dp)) { bottomBar() }
             }
         }
       }

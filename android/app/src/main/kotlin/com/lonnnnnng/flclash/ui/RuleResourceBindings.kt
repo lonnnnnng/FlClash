@@ -52,9 +52,8 @@ internal fun RuleResourceBindings(section: String, source: String, resources: Li
         TextButton(onClick = onManage, enabled = enabled) { Text("管理资源") }
     }
     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-    if (choosing) ProfileEditorPage(onDismissRequest = { choosing = false; search = "" }, title = { Text("选择规则资源") }, backTag = "resource_picker_back", text = {
+    if (choosing) ProfileEditorPage(onDismissRequest = { choosing = false; search = "" }, title = { Text("选择规则资源") }, backTag = "resource_picker_back", bottomBar = { DockedProfileSearch(search, { search = it }, "rule_resource_binding_search", enabled = enabled) }, text = {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            ProfileSearchField(search, { search = it }, "rule_resource_binding_search")
             val matches = resources.filter { it.label.contains(search.trim(), true) }
             val listState = rememberResourcePickerListState(matches.map { it.id },
                 alias?.let { RuleResources.idOf(definitions?.get(it)) })

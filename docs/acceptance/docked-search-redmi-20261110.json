@@ -1,0 +1,1971 @@
+{
+  "date": "2026-11-10",
+  "status": "NAMED_SLICE_VERIFIED_OVERALL_PARTIAL",
+  "defect": "KUI-032",
+  "baseCommit": "0bf636d0aa6d3fa24c2a4e7419c831b75ef6f6ad",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "sourceSnapshot": {
+    "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/VisualMotionTestActivity.kt": "252cd263088a21c195cf07327f3d2f5f69e8f16ed37f8a2453ddb376a8bba041",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/CustomRulesEditor.kt": "fa06740879a9cdcd665d99e4e377004c8f5911745f79ea5fa4a2f4db046eb46c",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/IconSetsPage.kt": "a573045e24dc66cb3417905a72d2f5972e326d3d4a58a85bfc586455e9ba9cf1",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "e4b5905458ae833270f829e4292fa64ebf165199dd2ddbf8804806326221783b",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ObservationListPage.kt": "5284191c67ca5e419223f6accb9c4f02a5f6523d73c20322de195e10c9b82ea6",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDocumentEditor.kt": "a56b9e7644910e33603d42a045e09192b0166626ba3a681c64911349129400ab",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt": "2bb74fd7d54b40ccf232c43b6b93a8f37b42e38eb755355cbfc7a3bf5a36de89",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": "1072eb5e2e6e704d8e7287a9ff2a8a7f1c622811e1839714f93f6ad1ddf02a8c",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProvidersPage.kt": "b998f7906021860e422416bea92761041ffbda8753937a8bdfed7df88c20241b",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProxyResourceBindings.kt": "c11d31d9942944295eb9f2f9cb5d21557e3c9ae0a6668b22e51537cace5dfb40",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileSearchField.kt": "6bc5a162ecb331058d846ed92b1fd2a7b04d34018d1ac7bf975d02e74bcb1f02",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupVisuals.kt": "67ad98af5c7f814e1e120f80949867041db738927c28ffa31f400a669af8ab68",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuleResourceBindings.kt": "f76ba12936af4a188c110b52608c39230743ca4bac021f2626d561ec6471db11",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuntimeConfigPreviewSheet.kt": "f78430ac634e72171669008393f9a7e74d21239c71e19974aa0c73aeaeb31602",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ScriptsPage.kt": "e11150abf1e522432cb45ca28ac92cc89a354cc74e7f22a584bd04b38e95702e",
+    "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt": "143b043465cdf3ef68b4e421466acde7c7c0387cdf5666b17abbb6cd124e784e",
+    "android/tests/instrumented/VisualMotionNaturalInstrumentedTest.kt": "c10fd67d20c1ddbb447c07512c7bab0cafdafa7a721bab40bdca55bf995b379d",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/SearchOptionsTransition.kt": "442338a6b765ac2248efedb1290d9d7e5701d727cdbd5b7f6f0fefe069e68bca",
+    "android/tests/instrumented/DockedSearchInstrumentedTest.kt": "90286d613976c43fec5d7ddff614027b81745a384e1714da2499e42398a1d155"
+  },
+  "build": {
+    "unit": {
+      "app": {
+        "tests": 587,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 213,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lint": {
+      "debug": {
+        "Warning": 71,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 68,
+        "Hint": 13
+      }
+    },
+    "releaseRebuiltWithoutCache": {
+      "log": "release-regenerate.log",
+      "command": [
+        "./gradlew",
+        ":app:assembleRelease",
+        "--rerun-tasks",
+        "--no-build-cache",
+        "--no-daemon",
+        "-Ptarget-platform=android-arm64",
+        "--max-workers=2"
+      ],
+      "exitCode": 0
+    },
+    "finalDebugTestLintLog": "final-check5.log",
+    "releaseLintLog": "final-lint2.log",
+    "motionLog": "final-motion3.log",
+    "testOnlyFinalLog": "final-motion-test5.log",
+    "mlkitRegistrarsPassed": 3,
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49"
+  },
+  "packages": {
+    "motion": {
+      "sha256": "1dd308b2f6e93832651e681006e875ac3788fca63c49fb29f986c4a173162ecb",
+      "bytes": 65967177,
+      "installedMatches": true
+    },
+    "testForFirst8": {
+      "sha256": "cfa5c20198573648b997eb88f58f0268228c32db0058ffb898b6a5d736f8120b",
+      "bytes": 2787686,
+      "installedMatches": true
+    },
+    "testForRemaining9": {
+      "sha256": "f402e0003d7cd187931fd2afc320aa6d8f390a0b91025e1edc838a584a31e489",
+      "bytes": 2787866,
+      "installedMatches": true
+    },
+    "release": {
+      "sha256": "475e5a740395eb1befb73f628bcd531459c367f90540ccc0b47093ba3d7edcf2",
+      "bytes": 48364704,
+      "installedMatches": true,
+      "uidPreserved": true,
+      "allTablesPreserved": true,
+      "profilesPreserved": true,
+      "profileFileCount": 1,
+      "tableCounts": {
+        "profiles": 1,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 238
+      },
+      "fileChanges": [
+        "databases/kclash.db-shm",
+        "no_backup/androidx.work.workdb-wal",
+        "databases/kclash.db",
+        "no_backup/androidx.work.workdb-shm",
+        "databases/kclash.db-wal"
+      ]
+    }
+  },
+  "tests": {
+    "distinctMethods": 17,
+    "componentMethods": 15,
+    "naturalClockMethods": 2,
+    "runs": {
+      "final3-components": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+            "test": "proxyBindingBottomSearchCancelKeepsLayerSelectionAndImeBoundary",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+            "test": "ruleBindingBottomSearchCancelKeepsLayerSelectionAndImeBoundary",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+            "test": "addDockCancelKeepsSheetAndDraftWithoutSaving",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ResourcePickerLongListInstrumentedTest",
+            "test": "proxyPickerRevealsCurrentChoiceAndHandlesLongDirectoryAboveIme",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ResourcePickerLongListInstrumentedTest",
+            "test": "rulePickerRevealsCurrentChoiceAndHandlesLongDirectoryAboveIme",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ObservationListInstrumentedTest",
+            "test": "logsPageFiltersByLevelKeywordAndExportsFromToolbar",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ObservationListInstrumentedTest",
+            "test": "expandedSearchReplacesToolbarActionsAndClearKeepsSearchOpen",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProxySearchMotionInstrumentedTest",
+            "test": "interruptedOpeningAndClosingPreserveIntermediateGeometry",
+            "code": 0
+          }
+        ],
+        "images": {
+          "dock_true_ime": {
+            "count": 4,
+            "bytes": 117734,
+            "sha256": "6f41b54086b49d0353a9fc04f953f20e4fbfd11cc5e7665c48950b0f93b6402a"
+          },
+          "dock_true_cancel": {
+            "count": 5,
+            "bytes": 172224,
+            "sha256": "5a3049ed9de3b6baa00c4bf6b90e17de03aa556e17b7534a023b40a7b54a1fce"
+          },
+          "dock_false_ime": {
+            "count": 4,
+            "bytes": 116961,
+            "sha256": "75bf13c69377b6f7c57f6c4f72cf0d1a1d7eef26d828b42a0471b99c90e76021"
+          },
+          "dock_false_cancel": {
+            "count": 5,
+            "bytes": 157975,
+            "sha256": "267bdd39f9c85f0bbcc1c5554e43661795300ca15ec9ccf351e3aab787bd7c9d"
+          },
+          "more_dock_query": {
+            "count": 4,
+            "bytes": 132231,
+            "sha256": "c005d04537d74a361a80c42b30131bba81e9e3562e39080ae95bd6ce2bd346d3"
+          },
+          "more_dock_cancel": {
+            "count": 4,
+            "bytes": 125756,
+            "sha256": "92231d2f2893559f85e05d57fcde0951d8d379f1e502ad9862eeb088c58541d7"
+          },
+          "long_proxy_selected": {
+            "count": 4,
+            "bytes": 139383,
+            "sha256": "ec3738838043e88f3f184c062214ce89aeead47a1d365f676a0b1cdf6c5de55b"
+          },
+          "long_proxy_empty_ime": {
+            "count": 5,
+            "bytes": 163590,
+            "sha256": "8a158b5681a31e731291a769adbd4305bb5fae044a1a23e6117699700b557559"
+          },
+          "long_proxy_last_ime": {
+            "count": 5,
+            "bytes": 152069,
+            "sha256": "5261accf2700cbb65c939b21bad7f400621af19d3eec9da6d34ccd2b3464e078"
+          },
+          "long_rule_selected": {
+            "count": 5,
+            "bytes": 155028,
+            "sha256": "5f6218f3074d70bf9de45b1ca9818e5b9f23b7b13d00efa8810d5ac2fce893c0"
+          },
+          "long_rule_empty_ime": {
+            "count": 5,
+            "bytes": 167024,
+            "sha256": "553e37167210825d9631b034e3e05309c4468bf20097aa0bb884a37e5e657dd0"
+          },
+          "long_rule_last_ime": {
+            "count": 5,
+            "bytes": 159456,
+            "sha256": "173069da3211e4d614c4b01a10d05f8d169981d80988a4bcc84f2cbbe4c66dbe"
+          },
+          "search_group_opening_130ms": {
+            "count": 3,
+            "bytes": 99173,
+            "sha256": "07a84852d09178eb2281dc5bec33e9ac3bdf707f9b6d5f470918f8e7b7523b26"
+          },
+          "search_group_reversing": {
+            "count": 1,
+            "bytes": 30695,
+            "sha256": "d9fd3b9a98e36ef703d94c6ee58545c3fbce8d520d5675c3592e382c31dee54a"
+          },
+          "search_group_closing_150ms": {
+            "count": 2,
+            "bytes": 40383,
+            "sha256": "d3f9594a42ebea4ca70b415312fda9d7e243da4a0608940717cfa358735e0df8"
+          }
+        },
+        "passed": true
+      },
+      "final5-shared-transitions": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.ScriptsUiInstrumentedTest",
+            "test": "editorSearchReplaceUndoAndUnsavedExitKeepFailedDraft",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.CustomRulesEditorInstrumentedTest",
+            "test": "addingDuplicatingSearchingAndBatchDeletingSaveImmediately",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ProfileDocumentUiInstrumentedTest",
+            "test": "textSearchReplaceUndoAndValidationFailureKeepDraftUntilParentAccepts",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.DashboardInstrumentedTest",
+            "test": "dashboardProfilePreviewLoadsRetriesAndClosesInBothThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest",
+            "test": "searchAndSelectPackageUpdatesBlacklist",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest",
+            "test": "iconSourcesRecommendMatchKeepCurrentGalleryAndRemoveOnlyRecentRecord",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.ResourcesPageInstrumentedTest",
+            "test": "iconSetPreviewAndGroupPickerUseGalleryNamesAndSelection",
+            "code": 0
+          }
+        ],
+        "images": {
+          "script_editor_light_search": {
+            "count": 4,
+            "bytes": 140758,
+            "sha256": "2898c020fc16cc5ed74d5625b70f920d0d8fb1ba010f3899108ef4d31663c67f"
+          },
+          "script_editor_light_failed": {
+            "count": 2,
+            "bytes": 61321,
+            "sha256": "c2938d94a215be6da16e6c96ce8b15c05de49d0549a0b447a35631b3ae761bff"
+          },
+          "profile_document_light_failed_search": {
+            "count": 5,
+            "bytes": 157004,
+            "sha256": "9dbf79be68f9d5209019ac3c372f62a261892c080e7e7f49bef0c763cfc0fce0"
+          },
+          "profile_document_dark_exit": {
+            "count": 4,
+            "bytes": 119502,
+            "sha256": "2f1d486e7e604023050ddaf3e8ffa2e127d0208c70633fc6c7ed4058f48ecbdb"
+          },
+          "runtime_config_preview_dark": {
+            "count": 2,
+            "bytes": 49260,
+            "sha256": "e2c674864d2df40aa7dded07a07871b03f00797b2b8fbdab8c117cacd89ebabf"
+          },
+          "runtime_config_preview_light": {
+            "count": 2,
+            "bytes": 48134,
+            "sha256": "f74d719f9a9204fa2f6985684ca572860075d49dfd5519dbd8cac686848edd71"
+          },
+          "group_icon_current_gallery_false": {
+            "count": 2,
+            "bytes": 65242,
+            "sha256": "ee033631f31f5ae46f885e124cce74fb23f349ea7bf24d90e399106c3018c63e"
+          },
+          "group_icon_recommended_false": {
+            "count": 2,
+            "bytes": 68867,
+            "sha256": "b9edc6ef77b43a4509dbd5d20b9563c5e2c64862f43e88a05c067fd94d7b815b"
+          },
+          "group_icon_current_gallery_true": {
+            "count": 2,
+            "bytes": 66060,
+            "sha256": "813091d236683ed20b6a081e5dab9c9da3be4526cad40d4aac6282bfb5fe056a"
+          },
+          "group_icon_recommended_true": {
+            "count": 2,
+            "bytes": 69951,
+            "sha256": "a64018a8e50b08b6e2750f6cf18f6dce2699fdb067d1653bafc26ef0fe367517"
+          },
+          "icon_set_list_false": {
+            "count": 2,
+            "bytes": 43977,
+            "sha256": "ee882279b3f2902dd8eb55936e81b22b226988df25476b5522903098b00faf07"
+          },
+          "icon_set_preview_false": {
+            "count": 2,
+            "bytes": 46142,
+            "sha256": "19f8a86253a0cf7289341c29ab94f374f101dc00197eae196241f82a322d3428"
+          },
+          "icon_set_group_picker_false": {
+            "count": 3,
+            "bytes": 106509,
+            "sha256": "527731cb81d658da167930f45a851603e07690f0f41342b21b0dcac787bfb13f"
+          },
+          "icon_set_list_true": {
+            "count": 2,
+            "bytes": 43923,
+            "sha256": "b83d125c366c73999fb589232c6a3b0284dab7c60c0f9bb7ff45646b30350fda"
+          },
+          "icon_set_preview_true": {
+            "count": 2,
+            "bytes": 46059,
+            "sha256": "13b8aa03261dc619202e09e2075de6701e9b0be3ece2939c892af3cb5f2edbff"
+          },
+          "icon_set_group_picker_true": {
+            "count": 3,
+            "bytes": 107354,
+            "sha256": "0652064d016265a89cea98284b2804541af04b5dc2ab74c2a97d0a08270316ca"
+          }
+        },
+        "passed": true
+      },
+      "final5-dock-light": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest",
+            "test": "lightDockedSearchKeepsSheetAcrossImeAndCancel",
+            "code": 0
+          }
+        ],
+        "images": {
+          "natural_light_dock_idle": {
+            "count": 4,
+            "bytes": 124824,
+            "sha256": "ba5329e3d5f31161f7a9e3c9c37da6ee67e47da35df33f5fa3045bd83ea9f4fb"
+          },
+          "natural_light_dock_ime": {
+            "count": 4,
+            "bytes": 131489,
+            "sha256": "58c51bf1825e4e3205d528c4b00ae912ef50923b383edcc8e67a1dbad6174b9c"
+          },
+          "natural_light_dock_cancel": {
+            "count": 4,
+            "bytes": 124824,
+            "sha256": "ba5329e3d5f31161f7a9e3c9c37da6ee67e47da35df33f5fa3045bd83ea9f4fb"
+          },
+          "natural_light_dock_parent": {
+            "count": 3,
+            "bytes": 83981,
+            "sha256": "f1de5a05bf8f5b9e336f546c77d6227c852ceed406b41ced042a088ce47a54cc"
+          }
+        },
+        "passed": true
+      },
+      "final5-dock-dark": {
+        "returncode": 0,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest",
+            "test": "darkDockedSearchKeepsSheetAcrossImeAndCancel",
+            "code": 0
+          }
+        ],
+        "images": {
+          "natural_dark_dock_idle": {
+            "count": 4,
+            "bytes": 125314,
+            "sha256": "97d066d6c144bca2b89a165eda0552f0d349568f1b9cefa74c5a29d841293897"
+          },
+          "natural_dark_dock_ime": {
+            "count": 4,
+            "bytes": 133276,
+            "sha256": "0875a8f200371a95b01086e3606673f6d932e86e33f86efec62ccfedc302c52a"
+          },
+          "natural_dark_dock_cancel": {
+            "count": 4,
+            "bytes": 125314,
+            "sha256": "97d066d6c144bca2b89a165eda0552f0d349568f1b9cefa74c5a29d841293897"
+          },
+          "natural_dark_dock_parent": {
+            "count": 3,
+            "bytes": 84524,
+            "sha256": "5a20996d4bfcc529d3674b27f4a6d7af253e36d3391f86d35fa997282d62e1d7"
+          }
+        },
+        "passed": true
+      }
+    },
+    "sameProductApkAcrossRuns": true,
+    "testChangesAfterFirst8": "only natural dock tests and terminal screenshot wait; first 8 executed source unchanged"
+  },
+  "visual": {
+    "pngCount": 39,
+    "pngs": [
+      {
+        "path": "final3-components/dock_true_ime.png",
+        "count": 4,
+        "bytes": 117734,
+        "sha256": "6f41b54086b49d0353a9fc04f953f20e4fbfd11cc5e7665c48950b0f93b6402a"
+      },
+      {
+        "path": "final3-components/dock_true_cancel.png",
+        "count": 5,
+        "bytes": 172224,
+        "sha256": "5a3049ed9de3b6baa00c4bf6b90e17de03aa556e17b7534a023b40a7b54a1fce"
+      },
+      {
+        "path": "final3-components/dock_false_ime.png",
+        "count": 4,
+        "bytes": 116961,
+        "sha256": "75bf13c69377b6f7c57f6c4f72cf0d1a1d7eef26d828b42a0471b99c90e76021"
+      },
+      {
+        "path": "final3-components/dock_false_cancel.png",
+        "count": 5,
+        "bytes": 157975,
+        "sha256": "267bdd39f9c85f0bbcc1c5554e43661795300ca15ec9ccf351e3aab787bd7c9d"
+      },
+      {
+        "path": "final3-components/more_dock_query.png",
+        "count": 4,
+        "bytes": 132231,
+        "sha256": "c005d04537d74a361a80c42b30131bba81e9e3562e39080ae95bd6ce2bd346d3"
+      },
+      {
+        "path": "final3-components/more_dock_cancel.png",
+        "count": 4,
+        "bytes": 125756,
+        "sha256": "92231d2f2893559f85e05d57fcde0951d8d379f1e502ad9862eeb088c58541d7"
+      },
+      {
+        "path": "final3-components/long_proxy_selected.png",
+        "count": 4,
+        "bytes": 139383,
+        "sha256": "ec3738838043e88f3f184c062214ce89aeead47a1d365f676a0b1cdf6c5de55b"
+      },
+      {
+        "path": "final3-components/long_proxy_empty_ime.png",
+        "count": 5,
+        "bytes": 163590,
+        "sha256": "8a158b5681a31e731291a769adbd4305bb5fae044a1a23e6117699700b557559"
+      },
+      {
+        "path": "final3-components/long_proxy_last_ime.png",
+        "count": 5,
+        "bytes": 152069,
+        "sha256": "5261accf2700cbb65c939b21bad7f400621af19d3eec9da6d34ccd2b3464e078"
+      },
+      {
+        "path": "final3-components/long_rule_selected.png",
+        "count": 5,
+        "bytes": 155028,
+        "sha256": "5f6218f3074d70bf9de45b1ca9818e5b9f23b7b13d00efa8810d5ac2fce893c0"
+      },
+      {
+        "path": "final3-components/long_rule_empty_ime.png",
+        "count": 5,
+        "bytes": 167024,
+        "sha256": "553e37167210825d9631b034e3e05309c4468bf20097aa0bb884a37e5e657dd0"
+      },
+      {
+        "path": "final3-components/long_rule_last_ime.png",
+        "count": 5,
+        "bytes": 159456,
+        "sha256": "173069da3211e4d614c4b01a10d05f8d169981d80988a4bcc84f2cbbe4c66dbe"
+      },
+      {
+        "path": "final3-components/search_group_opening_130ms.png",
+        "count": 3,
+        "bytes": 99173,
+        "sha256": "07a84852d09178eb2281dc5bec33e9ac3bdf707f9b6d5f470918f8e7b7523b26"
+      },
+      {
+        "path": "final3-components/search_group_reversing.png",
+        "count": 1,
+        "bytes": 30695,
+        "sha256": "d9fd3b9a98e36ef703d94c6ee58545c3fbce8d520d5675c3592e382c31dee54a"
+      },
+      {
+        "path": "final3-components/search_group_closing_150ms.png",
+        "count": 2,
+        "bytes": 40383,
+        "sha256": "d3f9594a42ebea4ca70b415312fda9d7e243da4a0608940717cfa358735e0df8"
+      },
+      {
+        "path": "final5-shared-transitions/script_editor_light_search.png",
+        "count": 4,
+        "bytes": 140758,
+        "sha256": "2898c020fc16cc5ed74d5625b70f920d0d8fb1ba010f3899108ef4d31663c67f"
+      },
+      {
+        "path": "final5-shared-transitions/script_editor_light_failed.png",
+        "count": 2,
+        "bytes": 61321,
+        "sha256": "c2938d94a215be6da16e6c96ce8b15c05de49d0549a0b447a35631b3ae761bff"
+      },
+      {
+        "path": "final5-shared-transitions/profile_document_light_failed_search.png",
+        "count": 5,
+        "bytes": 157004,
+        "sha256": "9dbf79be68f9d5209019ac3c372f62a261892c080e7e7f49bef0c763cfc0fce0"
+      },
+      {
+        "path": "final5-shared-transitions/profile_document_dark_exit.png",
+        "count": 4,
+        "bytes": 119502,
+        "sha256": "2f1d486e7e604023050ddaf3e8ffa2e127d0208c70633fc6c7ed4058f48ecbdb"
+      },
+      {
+        "path": "final5-shared-transitions/runtime_config_preview_dark.png",
+        "count": 2,
+        "bytes": 49260,
+        "sha256": "e2c674864d2df40aa7dded07a07871b03f00797b2b8fbdab8c117cacd89ebabf"
+      },
+      {
+        "path": "final5-shared-transitions/runtime_config_preview_light.png",
+        "count": 2,
+        "bytes": 48134,
+        "sha256": "f74d719f9a9204fa2f6985684ca572860075d49dfd5519dbd8cac686848edd71"
+      },
+      {
+        "path": "final5-shared-transitions/group_icon_current_gallery_false.png",
+        "count": 2,
+        "bytes": 65242,
+        "sha256": "ee033631f31f5ae46f885e124cce74fb23f349ea7bf24d90e399106c3018c63e"
+      },
+      {
+        "path": "final5-shared-transitions/group_icon_recommended_false.png",
+        "count": 2,
+        "bytes": 68867,
+        "sha256": "b9edc6ef77b43a4509dbd5d20b9563c5e2c64862f43e88a05c067fd94d7b815b"
+      },
+      {
+        "path": "final5-shared-transitions/group_icon_current_gallery_true.png",
+        "count": 2,
+        "bytes": 66060,
+        "sha256": "813091d236683ed20b6a081e5dab9c9da3be4526cad40d4aac6282bfb5fe056a"
+      },
+      {
+        "path": "final5-shared-transitions/group_icon_recommended_true.png",
+        "count": 2,
+        "bytes": 69951,
+        "sha256": "a64018a8e50b08b6e2750f6cf18f6dce2699fdb067d1653bafc26ef0fe367517"
+      },
+      {
+        "path": "final5-shared-transitions/icon_set_list_false.png",
+        "count": 2,
+        "bytes": 43977,
+        "sha256": "ee882279b3f2902dd8eb55936e81b22b226988df25476b5522903098b00faf07"
+      },
+      {
+        "path": "final5-shared-transitions/icon_set_preview_false.png",
+        "count": 2,
+        "bytes": 46142,
+        "sha256": "19f8a86253a0cf7289341c29ab94f374f101dc00197eae196241f82a322d3428"
+      },
+      {
+        "path": "final5-shared-transitions/icon_set_group_picker_false.png",
+        "count": 3,
+        "bytes": 106509,
+        "sha256": "527731cb81d658da167930f45a851603e07690f0f41342b21b0dcac787bfb13f"
+      },
+      {
+        "path": "final5-shared-transitions/icon_set_list_true.png",
+        "count": 2,
+        "bytes": 43923,
+        "sha256": "b83d125c366c73999fb589232c6a3b0284dab7c60c0f9bb7ff45646b30350fda"
+      },
+      {
+        "path": "final5-shared-transitions/icon_set_preview_true.png",
+        "count": 2,
+        "bytes": 46059,
+        "sha256": "13b8aa03261dc619202e09e2075de6701e9b0be3ece2939c892af3cb5f2edbff"
+      },
+      {
+        "path": "final5-shared-transitions/icon_set_group_picker_true.png",
+        "count": 3,
+        "bytes": 107354,
+        "sha256": "0652064d016265a89cea98284b2804541af04b5dc2ab74c2a97d0a08270316ca"
+      },
+      {
+        "path": "final5-dock-light/natural_light_dock_idle.png",
+        "count": 4,
+        "bytes": 124824,
+        "sha256": "ba5329e3d5f31161f7a9e3c9c37da6ee67e47da35df33f5fa3045bd83ea9f4fb"
+      },
+      {
+        "path": "final5-dock-light/natural_light_dock_ime.png",
+        "count": 4,
+        "bytes": 131489,
+        "sha256": "58c51bf1825e4e3205d528c4b00ae912ef50923b383edcc8e67a1dbad6174b9c"
+      },
+      {
+        "path": "final5-dock-light/natural_light_dock_cancel.png",
+        "count": 4,
+        "bytes": 124824,
+        "sha256": "ba5329e3d5f31161f7a9e3c9c37da6ee67e47da35df33f5fa3045bd83ea9f4fb"
+      },
+      {
+        "path": "final5-dock-light/natural_light_dock_parent.png",
+        "count": 3,
+        "bytes": 83981,
+        "sha256": "f1de5a05bf8f5b9e336f546c77d6227c852ceed406b41ced042a088ce47a54cc"
+      },
+      {
+        "path": "final5-dock-dark/natural_dark_dock_idle.png",
+        "count": 4,
+        "bytes": 125314,
+        "sha256": "97d066d6c144bca2b89a165eda0552f0d349568f1b9cefa74c5a29d841293897"
+      },
+      {
+        "path": "final5-dock-dark/natural_dark_dock_ime.png",
+        "count": 4,
+        "bytes": 133276,
+        "sha256": "0875a8f200371a95b01086e3606673f6d932e86e33f86efec62ccfedc302c52a"
+      },
+      {
+        "path": "final5-dock-dark/natural_dark_dock_cancel.png",
+        "count": 4,
+        "bytes": 125314,
+        "sha256": "97d066d6c144bca2b89a165eda0552f0d349568f1b9cefa74c5a29d841293897"
+      },
+      {
+        "path": "final5-dock-dark/natural_dark_dock_parent.png",
+        "count": 3,
+        "bytes": 84524,
+        "sha256": "5a20996d4bfcc529d3674b27f4a6d7af253e36d3391f86d35fa997282d62e1d7"
+      }
+    ],
+    "videos": [
+      {
+        "theme": "light",
+        "file": "final5-dock-light/docked-search.mp4",
+        "sha256": "e5c68aff5a307b184f40f6ac8c68a8ff1ef0721e67770a920189e82390592243",
+        "frames": 275,
+        "ptsStrictlyIncreasing": true,
+        "samplePositions": 24
+      },
+      {
+        "theme": "dark",
+        "file": "final5-dock-dark/docked-search.mp4",
+        "sha256": "f07b96d53dbe94127dd3935c47b027b151b908cb255db5a1182b7f2c45766b08",
+        "frames": 265,
+        "ptsStrictlyIncreasing": true,
+        "samplePositions": 24
+      }
+    ],
+    "pixelParity": false,
+    "renderThreadPerformanceClaim": false
+  },
+  "flutter": {
+    "source": {
+      "flutterCommit": "be84736605527034689c95bf27828ff27d912c5e",
+      "prismCommit": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+      "coreCommit": "024245dc72bc92f48237f865119afe0cd53ac9e6",
+      "applicationId": "com.lonnnnnng.kclash.reference.full.dev",
+      "namespace": "com.follow.clash",
+      "safeMode": true,
+      "flutterSdk": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/menu-close-native-20261109/flutter-sdk-3.47.2",
+      "modifications": [
+        "applicationId only; android/local.properties"
+      ]
+    },
+    "build": {
+      "package": "com.lonnnnnng.kclash.reference.full.dev",
+      "apkSha256": "0d3ab0ee4016bae7c75c727457357222feb3e267444f4c9b19adc9d62a0109d3",
+      "apkBytes": 65148968,
+      "lockUnchanged": true,
+      "safeModeDefine": true
+    },
+    "userConfirmedDisclaimer": true,
+    "originalFlutterPackageTouched": false,
+    "observed": [
+      "dashboard",
+      "profiles empty/list and add-source menu",
+      "DocumentsUI file import of authorized 1.yaml copy",
+      "profile edit/context/nested more",
+      "tools and Geo resources",
+      "advanced configuration",
+      "global rules/rule set/icon set empty states",
+      "profile extension",
+      "MATCH-TARGET selection sheet",
+      "add-rule form and anchored rule-type menu"
+    ],
+    "limits": [
+      "only dark full application observed",
+      "safe mode core not started",
+      "local FILE profile does not expose CUSTOM NTP/Sniffer routes",
+      "rule set and icon set libraries empty; no populated provider/gallery comparison",
+      "visible rule-type menu count is viewport only, not total available types",
+      "no full app pixel equality or complete motion comparison"
+    ],
+    "referenceBehaviorSource": "prior fixed original Scaffold host plus current fixed full application observations"
+  },
+  "formalSmoke": {
+    "pages": [
+      "home STOPPED",
+      "profile list",
+      "Geo resources"
+    ],
+    "data": {
+      "uidPreserved": true,
+      "tableEquality": {
+        "profiles": true,
+        "app_preferences": true,
+        "scripts": true,
+        "proxy_delay_results": false
+      },
+      "changedColumns": {
+        "profiles": [],
+        "app_preferences": [],
+        "scripts": [],
+        "proxy_delay_results": [
+          "proxyName",
+          "updatedAtMillis",
+          "value"
+        ]
+      },
+      "profileFilesPreserved": true,
+      "profileFileCount": 1,
+      "fileChanges": {
+        "databases/kclash.db": {
+          "before": {
+            "bytes": 131072,
+            "mtime": 1794277233292,
+            "sha256": "c32fcc0c4d1ef445fcd6e20f3f1d9c7e3208b051cedcdd367b1eac736911ec06"
+          },
+          "after": {
+            "bytes": 131072,
+            "mtime": 1794285028348,
+            "sha256": "0e30fe73d05168d0b10815b5539bc61da593da51985a52ab99664823f87e27f4"
+          }
+        },
+        "databases/kclash.db-shm": {
+          "before": {
+            "bytes": 32768,
+            "mtime": 1794284835596,
+            "sha256": "e81854df72cb02ab37ba6ab2f2c6fc80f43850b4d7f75c68c33c21c93f66f7a9"
+          },
+          "after": {
+            "bytes": 32768,
+            "mtime": 1794285032124,
+            "sha256": "4555953acdfce805c8c0e8a531e2da863a8b6d60af083ef7be4b758208c4ed7e"
+          }
+        },
+        "databases/kclash.db-wal": {
+          "before": {
+            "bytes": 494432,
+            "mtime": 1794278549836,
+            "sha256": "3cf0a1cd55003448b8f52f7a611ec2ce81da48166606a7aa67480a4ff2866166"
+          },
+          "after": {
+            "bytes": 494432,
+            "mtime": 1794285028356,
+            "sha256": "8c314b197c3d4061528e6bcbe8ef8e815ee5c2a09231a3217d5433c52e21225d"
+          }
+        },
+        "files/mihomo/config.yaml": {
+          "before": {
+            "bytes": 37880,
+            "mtime": 1794277241432,
+            "sha256": "3e759adcaf4a6bfccbed7179efd183ff32eea5098eab0aea9523047c7ab55199"
+          },
+          "after": {
+            "bytes": 37880,
+            "mtime": 1794284904808,
+            "sha256": "3e759adcaf4a6bfccbed7179efd183ff32eea5098eab0aea9523047c7ab55199"
+          }
+        },
+        "files/profileInstalled": {
+          "before": {
+            "bytes": 24,
+            "mtime": 1794278554780,
+            "sha256": "522bb08957c7fa1721578750cab75b3a2a236ffcc28d2b4a5a9be32888577298"
+          },
+          "after": {
+            "bytes": 24,
+            "mtime": 1794284908568,
+            "sha256": "5bae5bff872133473166cb78546a1b715ceaaa9e60e384b6da1817e4efff8c4b"
+          }
+        },
+        "files/profileinstaller_profileWrittenFor_lastUpdateTime.dat": {
+          "before": {
+            "bytes": 8,
+            "mtime": 1794276587352,
+            "sha256": "c0bbd68492ee080ee2cd44a29d1b1c2612b3beaa8376b780984e2bffaa8325c6"
+          },
+          "after": {
+            "bytes": 8,
+            "mtime": 1794284908564,
+            "sha256": "4759adbaa0a8cee5c9321e3771174ca6327793f0a68f3314206a8d4eb9171fac"
+          }
+        },
+        "no_backup/androidx.work.workdb-shm": {
+          "before": {
+            "bytes": 32768,
+            "mtime": 1794284835592,
+            "sha256": "fe6c51afc5651a4e8aa4d068e409feeaa076695bd7cfddbb1a48759a31d974b7"
+          },
+          "after": {
+            "bytes": 32768,
+            "mtime": 1794285032120,
+            "sha256": "148671759d88159498d1f29a3f77e4168dce57c6332d49d82d27323f328e1767"
+          }
+        },
+        "no_backup/androidx.work.workdb-wal": {
+          "before": {
+            "bytes": 420272,
+            "mtime": 1794284835628,
+            "sha256": "bc7ca3ee0e9a197ab2bf8e673174f6f202481282b251fe1b7f71fa3b22595495"
+          },
+          "after": {
+            "bytes": 420272,
+            "mtime": 1794285032156,
+            "sha256": "90d9f07fb6a26d2d61102fe0d6f85510ec16b632fa4cd3454ad1b76e46d1b223"
+          }
+        }
+      },
+      "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)\n",
+      "allTablesUnchangedAssertionPassed": false,
+      "rootCauseClaim": null,
+      "delayKeyComparison": {
+        "keyColumns": [
+          "profileId",
+          "groupName",
+          "proxyName"
+        ],
+        "keysEqual": true,
+        "beforeCount": 238,
+        "afterCount": 238,
+        "changedFieldsByKey": {
+          "profileId": 0,
+          "groupName": 0,
+          "proxyName": 0,
+          "testUrl": 0,
+          "value": 238,
+          "updatedAtMillis": 238
+        }
+      }
+    }
+  },
+  "cleanup": {
+    "removedFileCount": 68,
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.kclash.reference.full.dev",
+      "com.lonnnnnng.flclash.upgradeprobe"
+    ],
+    "deviceSettingsPreserved": true,
+    "originalYamlPreserved": true,
+    "originalFlutterAbsentAndUntouched": true,
+    "servicesStopped": true,
+    "releaseRetained": true
+  },
+  "failuresPreserved": [
+    "initial parallel Debug/Release R8 reported missing Hilt generated classes; full Release --rerun-tasks --no-build-cache succeeded",
+    "record driver missing run-natural.py before instrumentation; no test executed",
+    "first natural test waited for offscreen HTTP before filtering; test corrected",
+    "final4 parent PNG was a Sheet exit frame; final5 adds stable wait and both themes passed",
+    "post-smoke raw all-table equality failed; composite-key analysis shows 238 delay value/time updates, roots unresolved",
+    "incremental install unavailable; adb streamed fallback succeeded"
+  ],
+  "remaining": [
+    "complete Flutter CUSTOM and populated resource/toolbar/subpage runtime matrix",
+    "all remaining continuous transitions and full pixel alignment",
+    "menu first-open/close/RenderThread attribution",
+    "historical metadata/preferences/provider timeout and long-window network causes",
+    "low API physical hardware, cellular and OEM coverage"
+  ],
+  "evidenceDirectory": "../../../acceptance-artifacts/docked-search-20261110/",
+  "artifacts": [
+    {
+      "name": "build1-apk-sha.json",
+      "sha256": "db6eaa083d98af6503514a7f6c59df72fe52db0c2a13c05fbb519fbf29c06635",
+      "bytes": 209
+    },
+    {
+      "name": "build2-results.json",
+      "sha256": "df6f6416ffb1e03f9278742665dbf961583bf52d4720b7e1d15f636b72d0b485",
+      "bytes": 799
+    },
+    {
+      "name": "cleanup.json",
+      "sha256": "260aced50b290ba3e4733657e5be573559337d20e98f93f5711acf344ea58da1",
+      "bytes": 13522
+    },
+    {
+      "name": "contact-0.jpg",
+      "sha256": "ba4743c4790ec0107213ff9347abb3fbfe17358fa28601d387d3148dc8e8e8f2",
+      "bytes": 54931
+    },
+    {
+      "name": "contact-1.jpg",
+      "sha256": "e2fa71019687fed8a6635ff0d3ad5ecdc9ec8b45856aa99c3c3b48b7b195eb7e",
+      "bytes": 55590
+    },
+    {
+      "name": "contact-2.jpg",
+      "sha256": "def5135405a83339d508587e34f4c4924dfa0cf2706bd7861745360bf9233008",
+      "bytes": 43369
+    },
+    {
+      "name": "contact-3.jpg",
+      "sha256": "30e333082d798183243e87d26f920d8e472594b36a980dde5feeafa64e9c3110",
+      "bytes": 18140
+    },
+    {
+      "name": "dock-after-install.json",
+      "sha256": "13642e93117bc9ac969942881c9ae5399e51aa843579199fd6d699b0a60c73b2",
+      "bytes": 154064
+    },
+    {
+      "name": "dock-after-install.log",
+      "sha256": "6be632649e269cc497f44fd478dc71e6a940f4932e539cb130b64ef348e607f5",
+      "bytes": 306
+    },
+    {
+      "name": "dock-after-smoke.json",
+      "sha256": "c525bb501288c6fe64c3945e1fdbce25322ba362e411854264451ad231023e7b",
+      "bytes": 154064
+    },
+    {
+      "name": "dock-after-smoke.log",
+      "sha256": "3a8911449600b6e31f266abdd6fb5b729ae8d7a6a014e51b33861cf930a0ee07",
+      "bytes": 304
+    },
+    {
+      "name": "dock-before-install.json",
+      "sha256": "90aafb59224befefc12d9c74ef59fe7a898fafff1cff3bd6bdacd995761f68ff",
+      "bytes": 154064
+    },
+    {
+      "name": "dock-before-install.log",
+      "sha256": "516b9f025ee0570ef8d07b736d3ee6eb2841190d98d1ee3d086464e1b62d9299",
+      "bytes": 307
+    },
+    {
+      "name": "dock-first/dock_false_cancel.png",
+      "sha256": "a30c2b163f9bb044ccf48c70833dcd25f58201a431e038c6153d231d6bab5b84",
+      "bytes": 157372
+    },
+    {
+      "name": "dock-first/dock_false_ime.png",
+      "sha256": "ce9e7c885d8909e6a9b6dc9f15dc4fdfe9489b58a84535255a9f92eb1e5a3a04",
+      "bytes": 116284
+    },
+    {
+      "name": "dock-first/dock_true_cancel.png",
+      "sha256": "1e46049275ea56612ed4a2d1c36a238cc3b2e6daa9829dd6c62b621766a8efb7",
+      "bytes": 171939
+    },
+    {
+      "name": "dock-first/dock_true_ime.png",
+      "sha256": "c5906e59e580b8f014bc85e63f9405d917fbb2a3ac926aa3341fb4c1a90eb290",
+      "bytes": 117532
+    },
+    {
+      "name": "dock-first/instrument.log",
+      "sha256": "bef324fbb167da5e021ef64441bdedf3c2011aefb13145c2bbf5f433fbc18ff3",
+      "bytes": 1105584
+    },
+    {
+      "name": "dock-first/more_dock_cancel.png",
+      "sha256": "1bee07ae0733f49f33cc60d039d2814ffc9b9bc93b604415c9f1ff26192b85ab",
+      "bytes": 125286
+    },
+    {
+      "name": "dock-first/more_dock_query.png",
+      "sha256": "393914341be924c80eaa52dfce86da8c77aea9b6eae7e7a2cb9a1671429a8c4e",
+      "bytes": 131818
+    },
+    {
+      "name": "dock-first/result.json",
+      "sha256": "c5ca756891b676c9b7bc13b1a638d701e3d6109c466d91f4fd42b168b2429aa3",
+      "bytes": 1543
+    },
+    {
+      "name": "final-build-results.json",
+      "sha256": "e7b732f60398215aef725742108ff97038375d28f373a45eb55930becdabb039",
+      "bytes": 236
+    },
+    {
+      "name": "final-build-summary.json",
+      "sha256": "532f343557a10e71bb595c2e3c04dc3cd60c55f587ecefcea223e4cfba5cb873",
+      "bytes": 83255
+    },
+    {
+      "name": "final-build.log",
+      "sha256": "353c99da441e46d83ac0c61afaf941d8b710b2858b1061d4319970a75836c161",
+      "bytes": 29990
+    },
+    {
+      "name": "final-check5.log",
+      "sha256": "d50387e0b40b6f326d9f2defb9d1c6e9353648ef7b5727d8e895db8b36fe7640",
+      "bytes": 12252
+    },
+    {
+      "name": "final-lint2.log",
+      "sha256": "55d2872c6306acf191fdfb128095c5b2797e42b454603a75f07abba9268b0fb2",
+      "bytes": 14508
+    },
+    {
+      "name": "final-motion-test4.log",
+      "sha256": "be0763564e31c02f05610f2fa220139ef3f502f7d12b42080b543b11fa832bf4",
+      "bytes": 8945
+    },
+    {
+      "name": "final-motion-test5.log",
+      "sha256": "be0763564e31c02f05610f2fa220139ef3f502f7d12b42080b543b11fa832bf4",
+      "bytes": 8945
+    },
+    {
+      "name": "final-motion2.log",
+      "sha256": "7bd4703c0f677a851c14b5ca825c7ba33bb732246bce332c4cbe7b7cc82b2391",
+      "bytes": 13575
+    },
+    {
+      "name": "final-motion3.log",
+      "sha256": "79f5208b59dde68b8274d6620a244c642d177a3b2ed957aaff147bf087d888fc",
+      "bytes": 12979
+    },
+    {
+      "name": "final3-components/dock_false_cancel.png",
+      "sha256": "267bdd39f9c85f0bbcc1c5554e43661795300ca15ec9ccf351e3aab787bd7c9d",
+      "bytes": 157975
+    },
+    {
+      "name": "final3-components/dock_false_ime.png",
+      "sha256": "75bf13c69377b6f7c57f6c4f72cf0d1a1d7eef26d828b42a0471b99c90e76021",
+      "bytes": 116961
+    },
+    {
+      "name": "final3-components/dock_true_cancel.png",
+      "sha256": "5a3049ed9de3b6baa00c4bf6b90e17de03aa556e17b7534a023b40a7b54a1fce",
+      "bytes": 172224
+    },
+    {
+      "name": "final3-components/dock_true_ime.png",
+      "sha256": "6f41b54086b49d0353a9fc04f953f20e4fbfd11cc5e7665c48950b0f93b6402a",
+      "bytes": 117734
+    },
+    {
+      "name": "final3-components/instrument.log",
+      "sha256": "5d7cdc34001bce009a1efe241965c2ab71f70bc1c3604793499dc26c145002dc",
+      "bytes": 2601715
+    },
+    {
+      "name": "final3-components/long_proxy_empty_ime.png",
+      "sha256": "8a158b5681a31e731291a769adbd4305bb5fae044a1a23e6117699700b557559",
+      "bytes": 163590
+    },
+    {
+      "name": "final3-components/long_proxy_last_ime.png",
+      "sha256": "5261accf2700cbb65c939b21bad7f400621af19d3eec9da6d34ccd2b3464e078",
+      "bytes": 152069
+    },
+    {
+      "name": "final3-components/long_proxy_selected.png",
+      "sha256": "ec3738838043e88f3f184c062214ce89aeead47a1d365f676a0b1cdf6c5de55b",
+      "bytes": 139383
+    },
+    {
+      "name": "final3-components/long_rule_empty_ime.png",
+      "sha256": "553e37167210825d9631b034e3e05309c4468bf20097aa0bb884a37e5e657dd0",
+      "bytes": 167024
+    },
+    {
+      "name": "final3-components/long_rule_last_ime.png",
+      "sha256": "173069da3211e4d614c4b01a10d05f8d169981d80988a4bcc84f2cbbe4c66dbe",
+      "bytes": 159456
+    },
+    {
+      "name": "final3-components/long_rule_selected.png",
+      "sha256": "5f6218f3074d70bf9de45b1ca9818e5b9f23b7b13d00efa8810d5ac2fce893c0",
+      "bytes": 155028
+    },
+    {
+      "name": "final3-components/more_dock_cancel.png",
+      "sha256": "92231d2f2893559f85e05d57fcde0951d8d379f1e502ad9862eeb088c58541d7",
+      "bytes": 125756
+    },
+    {
+      "name": "final3-components/more_dock_query.png",
+      "sha256": "c005d04537d74a361a80c42b30131bba81e9e3562e39080ae95bd6ce2bd346d3",
+      "bytes": 132231
+    },
+    {
+      "name": "final3-components/result.json",
+      "sha256": "7631ed0b87adbbe64665c7c08b81f39fa2879f14405960deea23a9606fa057c7",
+      "bytes": 3910
+    },
+    {
+      "name": "final3-components/search_group_closing_150ms.png",
+      "sha256": "d3f9594a42ebea4ca70b415312fda9d7e243da4a0608940717cfa358735e0df8",
+      "bytes": 40383
+    },
+    {
+      "name": "final3-components/search_group_opening_130ms.png",
+      "sha256": "07a84852d09178eb2281dc5bec33e9ac3bdf707f9b6d5f470918f8e7b7523b26",
+      "bytes": 99173
+    },
+    {
+      "name": "final3-components/search_group_reversing.png",
+      "sha256": "d9fd3b9a98e36ef703d94c6ee58545c3fbce8d520d5675c3592e382c31dee54a",
+      "bytes": 30695
+    },
+    {
+      "name": "final3-dock-light/failed-recording.mp4",
+      "sha256": "b7a3550fb9d66b2724e5d42b6a362adc8a8e844ed6a66c2a8808d4d071053979",
+      "bytes": 24506
+    },
+    {
+      "name": "final3-dock-light/record-result.json",
+      "sha256": "09db267609927b18e1bcd4ffbccaddb01023f3dd33d8aedb1220777f4119cc50",
+      "bytes": 185
+    },
+    {
+      "name": "final3-dock-light/screenrecord.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "final3-dock-light2/failed-recording.mp4",
+      "sha256": "8f309a8556cb5dd8b8fa4fc5fde098e9cf9bd6943b458755e91083488802a11b",
+      "bytes": 3278769
+    },
+    {
+      "name": "final3-dock-light2/instrument.log",
+      "sha256": "c56341c59f54d6c73d2d4d9bc6b46f4c843468e6eb8b969d17caef93904e4d5e",
+      "bytes": 174354
+    },
+    {
+      "name": "final3-dock-light2/natural_light_failure.png",
+      "sha256": "6dad9e0e27759c83f21dd6c884e867f4cf80c9980813e1132ebfa9a9f1a7ad39",
+      "bytes": 126123
+    },
+    {
+      "name": "final3-dock-light2/record-result.json",
+      "sha256": "10f356113d96a568cf9da5d716c4abdf968fb220885bfd15d91ba043a3daafd2",
+      "bytes": 186
+    },
+    {
+      "name": "final3-dock-light2/result.json",
+      "sha256": "6707e56a30909d063961f7a59a608737f0d54d1b033771bb929c3997200f728a",
+      "bytes": 410
+    },
+    {
+      "name": "final3-dock-light2/screenrecord.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "final3-installed.json",
+      "sha256": "1417669ffa86e6127b392d3452e43c74199c069b287a9673b110938c7e82b0a1",
+      "bytes": 306
+    },
+    {
+      "name": "final4-dock-dark/contact.jpg",
+      "sha256": "2942352a3bcb969e102593cc72e183f3f05e01ca38dcf1becc3a7a854e55905a",
+      "bytes": 48729
+    },
+    {
+      "name": "final4-dock-dark/docked-search.mp4",
+      "sha256": "d5cf733867ec0fc1d5ec11b071ddc69628b26a2bc4992285a468dd21410b249f",
+      "bytes": 5260224
+    },
+    {
+      "name": "final4-dock-dark/instrument.log",
+      "sha256": "ef6c3877f2f500e750a1bfd02de2440cac3ea4033fafcef43324ffcf0b650416",
+      "bytes": 670696
+    },
+    {
+      "name": "final4-dock-dark/natural_dark_dock_cancel.png",
+      "sha256": "5978da0255352c0967038e508494fbaf5c865da8005b0c485ceef7305c6122ec",
+      "bytes": 125520
+    },
+    {
+      "name": "final4-dock-dark/natural_dark_dock_idle.png",
+      "sha256": "5978da0255352c0967038e508494fbaf5c865da8005b0c485ceef7305c6122ec",
+      "bytes": 125520
+    },
+    {
+      "name": "final4-dock-dark/natural_dark_dock_ime.png",
+      "sha256": "b37f5c3e7e6b02bb6c54856125e8745576368ef837c1cf7611b7856063628d6c",
+      "bytes": 133391
+    },
+    {
+      "name": "final4-dock-dark/natural_dark_dock_parent.png",
+      "sha256": "e2cfbf29bbcdfe898f55d8d440e0bb8cad33c98ef846777db0ada5362344b910",
+      "bytes": 84636
+    },
+    {
+      "name": "final4-dock-dark/original-pts-contact.jpg",
+      "sha256": "46b30e55deeb6f95f6c15c02f8cbfd9b280705c975b5ccd86e56b205a4400f42",
+      "bytes": 111906
+    },
+    {
+      "name": "final4-dock-dark/pts.json",
+      "sha256": "53c3c10e7b40b1454fee4fd647fc82db98ba5807cd75d497ae8de827b66f6a23",
+      "bytes": 20234
+    },
+    {
+      "name": "final4-dock-dark/record-result.json",
+      "sha256": "5138e2f596eb0652e4e802a9f6277bb821272077ea6763bbb4973e4816ed85a6",
+      "bytes": 368
+    },
+    {
+      "name": "final4-dock-dark/result.json",
+      "sha256": "38c1f1d4a46d4651fc0e5cfb0bc7b838e7d8cce579ea8c744424e847cb49f94d",
+      "bytes": 899
+    },
+    {
+      "name": "final4-dock-dark/screenrecord.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "final4-dock-light/contact.jpg",
+      "sha256": "bc862da712cd2e86f96264d93f365b60927ceef1361bfaaf3daad9f470d23cdb",
+      "bytes": 49759
+    },
+    {
+      "name": "final4-dock-light/docked-search.mp4",
+      "sha256": "fce2156b0a9e1c3d3acadab2a1f950ed623eaa5ff182cb7051833c9e1d59153c",
+      "bytes": 5370758
+    },
+    {
+      "name": "final4-dock-light/instrument.log",
+      "sha256": "6046ea807bad3b4b2d918c4fc05108eb6544e248320c1922ecbff1810f14cbaa",
+      "bytes": 748826
+    },
+    {
+      "name": "final4-dock-light/natural_light_dock_cancel.png",
+      "sha256": "b002825b8fc24e4312bff1fe114e735458a5f10c839a72c2cb656258717362c4",
+      "bytes": 125925
+    },
+    {
+      "name": "final4-dock-light/natural_light_dock_idle.png",
+      "sha256": "b002825b8fc24e4312bff1fe114e735458a5f10c839a72c2cb656258717362c4",
+      "bytes": 125925
+    },
+    {
+      "name": "final4-dock-light/natural_light_dock_ime.png",
+      "sha256": "42eb34bb36c1f79dd84c2a842c756cf1a796aeb9010e36c9b4c9a3b7cef217e1",
+      "bytes": 132438
+    },
+    {
+      "name": "final4-dock-light/natural_light_dock_parent.png",
+      "sha256": "06726d36a5bffad742bb2f50dc5190ef0caaf2e76e9be24a755302a7f9716d27",
+      "bytes": 143079
+    },
+    {
+      "name": "final4-dock-light/original-pts-contact.jpg",
+      "sha256": "15d82803cdc9af50fd70096cb11d869b98517e0b93c294c418e843eefdc1a826",
+      "bytes": 102648
+    },
+    {
+      "name": "final4-dock-light/pts.json",
+      "sha256": "48aa80e833c79ceef2e7721570d17d099cbabed0995010d55ff866b69604305c",
+      "bytes": 20014
+    },
+    {
+      "name": "final4-dock-light/record-result.json",
+      "sha256": "c6c9fc81196e74c8002ce02d4d36e82b05d8703e479b186b3f3c2d8de360ae23",
+      "bytes": 371
+    },
+    {
+      "name": "final4-dock-light/result.json",
+      "sha256": "5f1704058474992f1e6b76c46543cb7ddc52b00754885a7f486b6a1e667998d9",
+      "bytes": 905
+    },
+    {
+      "name": "final4-dock-light/screenrecord.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "final4-test-installed.json",
+      "sha256": "fa9d685f58b160659e5b533bdfa4f42f53be96088ed07914f1448e0297fbe937",
+      "bytes": 131
+    },
+    {
+      "name": "final5-dock-dark/docked-search.mp4",
+      "sha256": "f07b96d53dbe94127dd3935c47b027b151b908cb255db5a1182b7f2c45766b08",
+      "bytes": 5601760
+    },
+    {
+      "name": "final5-dock-dark/instrument.log",
+      "sha256": "ce0b8f1e83d4bfc628b0c03952cd9c0da2a61c1dcb45d807b78f3b31c4406a57",
+      "bytes": 669444
+    },
+    {
+      "name": "final5-dock-dark/natural_dark_dock_cancel.png",
+      "sha256": "97d066d6c144bca2b89a165eda0552f0d349568f1b9cefa74c5a29d841293897",
+      "bytes": 125314
+    },
+    {
+      "name": "final5-dock-dark/natural_dark_dock_idle.png",
+      "sha256": "97d066d6c144bca2b89a165eda0552f0d349568f1b9cefa74c5a29d841293897",
+      "bytes": 125314
+    },
+    {
+      "name": "final5-dock-dark/natural_dark_dock_ime.png",
+      "sha256": "0875a8f200371a95b01086e3606673f6d932e86e33f86efec62ccfedc302c52a",
+      "bytes": 133276
+    },
+    {
+      "name": "final5-dock-dark/natural_dark_dock_parent.png",
+      "sha256": "5a20996d4bfcc529d3674b27f4a6d7af253e36d3391f86d35fa997282d62e1d7",
+      "bytes": 84524
+    },
+    {
+      "name": "final5-dock-dark/original-pts-contact.jpg",
+      "sha256": "aaedb0008d861abec9dfb753e023cea97be45c4d2aff43f122e0206fb6c0adfb",
+      "bytes": 110713
+    },
+    {
+      "name": "final5-dock-dark/pts.json",
+      "sha256": "09c8ff8dc6a333baba01f509502928141566110279892e0f6045ebd37b6c290c",
+      "bytes": 19716
+    },
+    {
+      "name": "final5-dock-dark/record-result.json",
+      "sha256": "1233d6f181a93d2a58c638474b5577283555bf9649bf6b0e6f5d3389d63d0364",
+      "bytes": 368
+    },
+    {
+      "name": "final5-dock-dark/result.json",
+      "sha256": "ab6ac707264048838beb4a969d60ca91bb7f5c0912a6b573328581690ed9c62f",
+      "bytes": 899
+    },
+    {
+      "name": "final5-dock-dark/screenrecord.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "final5-dock-light/docked-search.mp4",
+      "sha256": "e5c68aff5a307b184f40f6ac8c68a8ff1ef0721e67770a920189e82390592243",
+      "bytes": 5396889
+    },
+    {
+      "name": "final5-dock-light/instrument.log",
+      "sha256": "0611351218644885e61df8d8874046709421e19b4e8f7817e7acc2f1089167d4",
+      "bytes": 664230
+    },
+    {
+      "name": "final5-dock-light/natural_light_dock_cancel.png",
+      "sha256": "ba5329e3d5f31161f7a9e3c9c37da6ee67e47da35df33f5fa3045bd83ea9f4fb",
+      "bytes": 124824
+    },
+    {
+      "name": "final5-dock-light/natural_light_dock_idle.png",
+      "sha256": "ba5329e3d5f31161f7a9e3c9c37da6ee67e47da35df33f5fa3045bd83ea9f4fb",
+      "bytes": 124824
+    },
+    {
+      "name": "final5-dock-light/natural_light_dock_ime.png",
+      "sha256": "58c51bf1825e4e3205d528c4b00ae912ef50923b383edcc8e67a1dbad6174b9c",
+      "bytes": 131489
+    },
+    {
+      "name": "final5-dock-light/natural_light_dock_parent.png",
+      "sha256": "f1de5a05bf8f5b9e336f546c77d6227c852ceed406b41ced042a088ce47a54cc",
+      "bytes": 83981
+    },
+    {
+      "name": "final5-dock-light/original-pts-contact.jpg",
+      "sha256": "05e124a01c003944d11b0914f3c03b263c76b56d7869aa7190cd9d7e4622fd0b",
+      "bytes": 101094
+    },
+    {
+      "name": "final5-dock-light/pts.json",
+      "sha256": "3b887fa769d5d0091abc56255096f5d5b7a9a0d60070b34db8f80aee7d67b8b8",
+      "bytes": 20458
+    },
+    {
+      "name": "final5-dock-light/record-result.json",
+      "sha256": "437c7e49f84d8d4242d2089b6af0507cb24fd01d52625fca271046b7bf566f8f",
+      "bytes": 371
+    },
+    {
+      "name": "final5-dock-light/result.json",
+      "sha256": "82816cc9658e1f7767c50c43ac8e3a7a336025ac337044cdcbe4c530ea794a12",
+      "bytes": 904
+    },
+    {
+      "name": "final5-dock-light/screenrecord.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "final5-shared-transitions/group_icon_current_gallery_false.png",
+      "sha256": "ee033631f31f5ae46f885e124cce74fb23f349ea7bf24d90e399106c3018c63e",
+      "bytes": 65242
+    },
+    {
+      "name": "final5-shared-transitions/group_icon_current_gallery_true.png",
+      "sha256": "813091d236683ed20b6a081e5dab9c9da3be4526cad40d4aac6282bfb5fe056a",
+      "bytes": 66060
+    },
+    {
+      "name": "final5-shared-transitions/group_icon_recommended_false.png",
+      "sha256": "b9edc6ef77b43a4509dbd5d20b9563c5e2c64862f43e88a05c067fd94d7b815b",
+      "bytes": 68867
+    },
+    {
+      "name": "final5-shared-transitions/group_icon_recommended_true.png",
+      "sha256": "a64018a8e50b08b6e2750f6cf18f6dce2699fdb067d1653bafc26ef0fe367517",
+      "bytes": 69951
+    },
+    {
+      "name": "final5-shared-transitions/icon_set_group_picker_false.png",
+      "sha256": "527731cb81d658da167930f45a851603e07690f0f41342b21b0dcac787bfb13f",
+      "bytes": 106509
+    },
+    {
+      "name": "final5-shared-transitions/icon_set_group_picker_true.png",
+      "sha256": "0652064d016265a89cea98284b2804541af04b5dc2ab74c2a97d0a08270316ca",
+      "bytes": 107354
+    },
+    {
+      "name": "final5-shared-transitions/icon_set_list_false.png",
+      "sha256": "ee882279b3f2902dd8eb55936e81b22b226988df25476b5522903098b00faf07",
+      "bytes": 43977
+    },
+    {
+      "name": "final5-shared-transitions/icon_set_list_true.png",
+      "sha256": "b83d125c366c73999fb589232c6a3b0284dab7c60c0f9bb7ff45646b30350fda",
+      "bytes": 43923
+    },
+    {
+      "name": "final5-shared-transitions/icon_set_preview_false.png",
+      "sha256": "19f8a86253a0cf7289341c29ab94f374f101dc00197eae196241f82a322d3428",
+      "bytes": 46142
+    },
+    {
+      "name": "final5-shared-transitions/icon_set_preview_true.png",
+      "sha256": "13b8aa03261dc619202e09e2075de6701e9b0be3ece2939c892af3cb5f2edbff",
+      "bytes": 46059
+    },
+    {
+      "name": "final5-shared-transitions/instrument.log",
+      "sha256": "f4be1684c1f504f0b80c552654141dc0966f888cffe45fe6875a9323b030b6c2",
+      "bytes": 1674485
+    },
+    {
+      "name": "final5-shared-transitions/profile_document_dark_exit.png",
+      "sha256": "2f1d486e7e604023050ddaf3e8ffa2e127d0208c70633fc6c7ed4058f48ecbdb",
+      "bytes": 119502
+    },
+    {
+      "name": "final5-shared-transitions/profile_document_light_failed_search.png",
+      "sha256": "9dbf79be68f9d5209019ac3c372f62a261892c080e7e7f49bef0c763cfc0fce0",
+      "bytes": 157004
+    },
+    {
+      "name": "final5-shared-transitions/result.json",
+      "sha256": "bbfd5f451bc425638577da50907ba317309dc908009109b9510a7c4c1fc73a51",
+      "bytes": 3987
+    },
+    {
+      "name": "final5-shared-transitions/runtime_config_preview_dark.png",
+      "sha256": "e2c674864d2df40aa7dded07a07871b03f00797b2b8fbdab8c117cacd89ebabf",
+      "bytes": 49260
+    },
+    {
+      "name": "final5-shared-transitions/runtime_config_preview_light.png",
+      "sha256": "f74d719f9a9204fa2f6985684ca572860075d49dfd5519dbd8cac686848edd71",
+      "bytes": 48134
+    },
+    {
+      "name": "final5-shared-transitions/script_editor_light_failed.png",
+      "sha256": "c2938d94a215be6da16e6c96ce8b15c05de49d0549a0b447a35631b3ae761bff",
+      "bytes": 61321
+    },
+    {
+      "name": "final5-shared-transitions/script_editor_light_search.png",
+      "sha256": "2898c020fc16cc5ed74d5625b70f920d0d8fb1ba010f3899108ef4d31663c67f",
+      "bytes": 140758
+    },
+    {
+      "name": "final5-test-installed.json",
+      "sha256": "515b861113d75da030c53455e4ea13ca610416d32bf63bf0ad4aad0fcadb7791",
+      "bytes": 131
+    },
+    {
+      "name": "flutter-add-config-sheet.png",
+      "sha256": "f2e3a0a40a710dc7ecbcc5d34381c119cd7f0fc27f02e787f81f2c8361966a16",
+      "bytes": 650281
+    },
+    {
+      "name": "flutter-add-panel.png",
+      "sha256": "afc0852b0b68008d67211eefb9df0719bb18ec7a7f4ad5bbd16b8766a684c318",
+      "bytes": 102939
+    },
+    {
+      "name": "flutter-advanced-final.png",
+      "sha256": "6c4b4290881966be226c3776943ea3cb7db3caa6c1ee67307bd2c1e86ddeb480",
+      "bytes": 96645
+    },
+    {
+      "name": "flutter-advanced-reopen.png",
+      "sha256": "32799c43c8f002ec966624cdd56139d44037b73a1bd2edf5bdc12ab8555c69c5",
+      "bytes": 96226
+    },
+    {
+      "name": "flutter-advanced-root.png",
+      "sha256": "6fa0d15eedb4d7303e824bc24790bc865594e4500631bac07d16636b513ddc20",
+      "bytes": 96346
+    },
+    {
+      "name": "flutter-advanced.png",
+      "sha256": "ca671d57851f998a095d69e0f69fc52ab3cd8ea194b63da884032af6eb5cbbd9",
+      "bytes": 96229
+    },
+    {
+      "name": "flutter-back-config.png",
+      "sha256": "4d3688ecbe4132ca5fa079dc362fd6e52e013b02c7de1e877787fe0b771ef3df",
+      "bytes": 88929
+    },
+    {
+      "name": "flutter-config-current.png",
+      "sha256": "dfcd9a61eaa453eea01b81eb088346e635186d7c9f6927a1d2aa3cc195372ec3",
+      "bytes": 90436
+    },
+    {
+      "name": "flutter-config-edit.png",
+      "sha256": "826d6d6c7ac9febe5a02ab4aecccb1c784c10e17e6764495dafa6a7b22859e86",
+      "bytes": 83459
+    },
+    {
+      "name": "flutter-config-menu2.png",
+      "sha256": "60b47102d4f434651622e0816a6add625dc6633be6177b5858aa5de4cfbcf6bf",
+      "bytes": 109627
+    },
+    {
+      "name": "flutter-config-profile.png",
+      "sha256": "51ec882bf36998392d0f18f490798c3dd420002993e542aea81efa051fd97b96",
+      "bytes": 89482
+    },
+    {
+      "name": "flutter-config-tab.png",
+      "sha256": "91be69ec2d0215c3e9ada38df958c5fb9b144604da7de47159001c1df38deaa9",
+      "bytes": 136163
+    },
+    {
+      "name": "flutter-config.png",
+      "sha256": "dfc4395bce2b490e54fff913c6a9fd0b19774ca4fb357395a8ff4fbd0c897dbc",
+      "bytes": 90258
+    },
+    {
+      "name": "flutter-current.png",
+      "sha256": "d48c7ca26f7fd7efe8980d7557d4be917dd90250f9efd977a7f4e78d96b50145",
+      "bytes": 83642
+    },
+    {
+      "name": "flutter-edit-menu-open.png",
+      "sha256": "74c069e4ade899842b6f29230a2716a7307abf11b8a1ee74596da56de60ebd0d",
+      "bytes": 84885
+    },
+    {
+      "name": "flutter-edit-menu-return.png",
+      "sha256": "1bdb09eda943a634fa3f8ab17e621bd04dc79e56cee86e5a66b2ae9b3763278c",
+      "bytes": 110920
+    },
+    {
+      "name": "flutter-file-picker.png",
+      "sha256": "b05864d189064519884ba18c501759c0b738157defc0aa1c926dc1dcd22e96d9",
+      "bytes": 104657
+    },
+    {
+      "name": "flutter-full-build.log",
+      "sha256": "5192e103ec9ef0c298c84fe9279d47cfa2f90d2bf3f905c5e43feceb29d4ce16",
+      "bytes": 3567
+    },
+    {
+      "name": "flutter-full-home-ready.png",
+      "sha256": "6f6572a2b616a61b4efc62a526c27708bb96e19571a2d904fc6c84016f184c5b",
+      "bytes": 201138
+    },
+    {
+      "name": "flutter-full-home.png",
+      "sha256": "265acdb616371abdb34d356bd54715766de6e3684be2db947baf4cf27b8804c3",
+      "bytes": 355884
+    },
+    {
+      "name": "flutter-global-rules.png",
+      "sha256": "9074e55ac5f7fe5534dbdfdd93d21d9cbcc81fbda4fcf2138404b710c163497f",
+      "bytes": 77145
+    },
+    {
+      "name": "flutter-icons.png",
+      "sha256": "a9000d0f5486d917039b460e0c43517fc042d4c7b7221f822c3ff65fbe3a7061",
+      "bytes": 66277
+    },
+    {
+      "name": "flutter-imported-config.png",
+      "sha256": "6c1446902a7b540baf490d21e305b06c7b24c29b2fd9e518bf2027e1365d3452",
+      "bytes": 87886
+    },
+    {
+      "name": "flutter-more-menu-new.png",
+      "sha256": "90139ee96b7c3bf5a4fb94b830cde555a095c16dce4c24b281f27c0653e99310",
+      "bytes": 118743
+    },
+    {
+      "name": "flutter-more-menu.png",
+      "sha256": "b2404a3928d1a0a652b61a171981c4a8e3eb058780b64915f7d87e29f607b7a3",
+      "bytes": 109677
+    },
+    {
+      "name": "flutter-more-page.png",
+      "sha256": "ffb5a2a4899054ebbe07335926a4a8c9089cbf0267cc1e16180132fdae923cf2",
+      "bytes": 117682
+    },
+    {
+      "name": "flutter-more-search.png",
+      "sha256": "f4588fae4ecb7a6e6234cda84280b81f36ba520282f1c5bf7e9572e30abdbf42",
+      "bytes": 88114
+    },
+    {
+      "name": "flutter-more-settings.png",
+      "sha256": "2d03fe835e299b31a5be4fcdfaf497ec2c44a121ac6f0cef16b93a9027aee1d5",
+      "bytes": 109609
+    },
+    {
+      "name": "flutter-picker-download.png",
+      "sha256": "c013299140ab616ef914a302ca374178b67e2d99db0baf7d9aa4a2530ec08a1b",
+      "bytes": 66263
+    },
+    {
+      "name": "flutter-picker-roots.png",
+      "sha256": "9da2d02bd0eba4aaa9797a27afe903748984d3d9abbc5ff05f6cc9c18d113002",
+      "bytes": 88237
+    },
+    {
+      "name": "flutter-picker-selected.png",
+      "sha256": "044edd4f4c7e47e90774c81b5e3140b716ae520b4438612c57d2b9d60a2e2ce5",
+      "bytes": 87034
+    },
+    {
+      "name": "flutter-profile-cancel-delete.png",
+      "sha256": "a415157e015c1733984ed3fbcb6815ddbe41f7281f7629d68ca51fab0581871e",
+      "bytes": 88088
+    },
+    {
+      "name": "flutter-profile-close.png",
+      "sha256": "162cf092bcadc39b01b2698dc95b03d6e3070d69be1e75b16a49a3c4845e73ad",
+      "bytes": 105901
+    },
+    {
+      "name": "flutter-profile-detail.png",
+      "sha256": "51ec882bf36998392d0f18f490798c3dd420002993e542aea81efa051fd97b96",
+      "bytes": 89482
+    },
+    {
+      "name": "flutter-profile-details.png",
+      "sha256": "a415157e015c1733984ed3fbcb6815ddbe41f7281f7629d68ca51fab0581871e",
+      "bytes": 88088
+    },
+    {
+      "name": "flutter-profile-longpress.png",
+      "sha256": "47ce8f2809f61ca893e02f5cc41fe78552c89dbf2a3b3bca90e13c62bc99499f",
+      "bytes": 109542
+    },
+    {
+      "name": "flutter-profile-menu-new.png",
+      "sha256": "28adfb0577b4c6455233f5d2fa1f98f11d703a5eedb8c736ca1d747ae479c680",
+      "bytes": 110857
+    },
+    {
+      "name": "flutter-pub-get.log",
+      "sha256": "3ba24bfc617b53e1788e832b1ceec60744ef271addb5d0fcc8d9572ba4712987",
+      "bytes": 3321
+    },
+    {
+      "name": "flutter-ref-add-rule.png",
+      "sha256": "43af540fd1afe19cf39e94fba19358ba10877e4ded4726ae09924bc335e536d5",
+      "bytes": 160463
+    },
+    {
+      "name": "flutter-ref-advanced-recover.png",
+      "sha256": "8844a7fc798a2a5187ba950b5133e34b092d84df0c4fd103bc0751703b858258",
+      "bytes": 96566
+    },
+    {
+      "name": "flutter-ref-advanced.png",
+      "sha256": "39131e56660f4dcc8e60de25ee76a2d15501e3882c9c7e91f17504c08279f58c",
+      "bytes": 96886
+    },
+    {
+      "name": "flutter-ref-config-return.png",
+      "sha256": "c5ea1a345575dde357f81e58e412b6b27b98a625dbee93a9aaa70f412c11748b",
+      "bytes": 88902
+    },
+    {
+      "name": "flutter-ref-config-root.png",
+      "sha256": "124f6b4f23f4a0836dac17abe55e42cbad1ce15156b21c1fe9d658a779eaa390",
+      "bytes": 96293
+    },
+    {
+      "name": "flutter-ref-config-tab.png",
+      "sha256": "8bcb285d2cdf59846e4e1e4931d8fd714b570ea2f85477c885eb47c03ecb55d7",
+      "bytes": 88943
+    },
+    {
+      "name": "flutter-ref-exit-config.png",
+      "sha256": "d9a181776ba369d30dea53e330f3c65f77768a0c83d45f8c6129cf6fc1bdf7de",
+      "bytes": 89456
+    },
+    {
+      "name": "flutter-ref-extension-back.png",
+      "sha256": "92180fffdaf33bc3fc4da2898733e35203c0075224890c84924f8284e39472f1",
+      "bytes": 122576
+    },
+    {
+      "name": "flutter-ref-extension.png",
+      "sha256": "a102c9f91508ce6308c74ba3676a4fc35930327a329a53b559a96be4c62a3561",
+      "bytes": 122922
+    },
+    {
+      "name": "flutter-ref-profile-context.png",
+      "sha256": "3e0f91ac580e4485bbbc16580c3068c0ff40256e3e57ea80674bb79ed5761ea2",
+      "bytes": 110080
+    },
+    {
+      "name": "flutter-ref-rule-editor-close.png",
+      "sha256": "fcd88eb12013d6795a4ec3acfac0e1fc05a9556dac369a7bc480850053930717",
+      "bytes": 122740
+    },
+    {
+      "name": "flutter-ref-rule-picker-back.png",
+      "sha256": "aec2a7e6e28ff418b12d18ab6294e5f0973f0336c2ad9e49937b580a2c0460d6",
+      "bytes": 160545
+    },
+    {
+      "name": "flutter-ref-rule-types.png",
+      "sha256": "33d3fc614e14530c3f30b042b455073e11a68a59cac1a1a64691e7b568f5886a",
+      "bytes": 189730
+    },
+    {
+      "name": "flutter-ref-rules.png",
+      "sha256": "415e8c89c885c9f37043ba60f917a7488d7fbbdc335d366e674d7236dbe22162",
+      "bytes": 76925
+    },
+    {
+      "name": "flutter-ref-target-sheet.png",
+      "sha256": "7b4a7549c6b95aa60fad1d3e1bc4d5984e01f9ee3187ff7c82bdfeb995c5543f",
+      "bytes": 161505
+    },
+    {
+      "name": "flutter-ref-tools-recover.png",
+      "sha256": "e7d50a700fa98a50ff8a258731f2152a2c6cd72d8e39f5595a5779ae0cb562ec",
+      "bytes": 131819
+    },
+    {
+      "name": "flutter-ref-tools-return.png",
+      "sha256": "124f6b4f23f4a0836dac17abe55e42cbad1ce15156b21c1fe9d658a779eaa390",
+      "bytes": 96293
+    },
+    {
+      "name": "flutter-ref-tools-root.png",
+      "sha256": "6628e19903aef9343eb8c2f1801476c124223a207aee65a3fa59dd596e507edd",
+      "bytes": 132123
+    },
+    {
+      "name": "flutter-reference-build.json",
+      "sha256": "27721ea63fd95df5d5a26a23693fdaad0a69571aae44c0893b7e8c7b4f61d887",
+      "bytes": 217
+    },
+    {
+      "name": "flutter-reference-source.json",
+      "sha256": "6ec27ed73e9ab562fc77bd6deb3c858a20782b140de6074cb28928ebf2a44f58",
+      "bytes": 516
+    },
+    {
+      "name": "flutter-resource-overview.png",
+      "sha256": "a3917f7ddf2e85fbfeb8ee528fe87af6421b6cc2ed74471916577682f8a97232",
+      "bytes": 130781
+    },
+    {
+      "name": "flutter-resources-lower.png",
+      "sha256": "88b3dc9934a0ecf253d7f4729aa3eb36cb026a411dc633e3e713dcd7929cffae",
+      "bytes": 104829
+    },
+    {
+      "name": "flutter-resources.png",
+      "sha256": "88b3dc9934a0ecf253d7f4729aa3eb36cb026a411dc633e3e713dcd7929cffae",
+      "bytes": 104829
+    },
+    {
+      "name": "flutter-resume.png",
+      "sha256": "550e6d2426af5e1e7e3d66192b18e8ce434504589d7f875eea6da73648d10950",
+      "bytes": 84520
+    },
+    {
+      "name": "flutter-rule-cancel.png",
+      "sha256": "e3d55201df09f71d14c6b47b0b9f0a82e0689ea4a291467c9f00db412d171e3f",
+      "bytes": 79302
+    },
+    {
+      "name": "flutter-rule-library.png",
+      "sha256": "158e4f470455a15d52bec738a5a4be58c92a445f7e77fc138002063c60670839",
+      "bytes": 66097
+    },
+    {
+      "name": "flutter-rule-search-cancel.png",
+      "sha256": "7886afc10839a942191e244e21e5275234ee473aa5d389703d3cd5e4c51fb608",
+      "bytes": 76885
+    },
+    {
+      "name": "flutter-tools-final.png",
+      "sha256": "e3629312882e54fb1b81290e7e06beeccc3ea5f88dc37e0b7d1e08bd6eea5001",
+      "bytes": 131909
+    },
+    {
+      "name": "flutter-tools-return.png",
+      "sha256": "38eaeca449cde9500d5531217a3866aa51bcb9c9013af533495a392a5a7008b4",
+      "bytes": 131529
+    },
+    {
+      "name": "flutter-tools.png",
+      "sha256": "e1789bca3ceb7ab340ae68adb9b26ab8f5a04d9bd52c09782846150e0251f09d",
+      "bytes": 131401
+    },
+    {
+      "name": "kotlin-build1.log",
+      "sha256": "0ce67995b7d21a368ddd344fe69ca13c0d78a91b1eee85f1d256068c0f202bab",
+      "bytes": 21082
+    },
+    {
+      "name": "kotlin-build2.log",
+      "sha256": "d494574b3fa7c650e662d91b37165aad482e7de8c2bfcc8f6d624475025c27cf",
+      "bytes": 13608
+    },
+    {
+      "name": "pre-release-state.json",
+      "sha256": "3f8a4a4247187fc09458508308e642a5294d8c00afc4fab37f922dee1223aaac",
+      "bytes": 555
+    },
+    {
+      "name": "record-docked-search.py",
+      "sha256": "fed22141125db90dcb527192e9649071e690af7cf2d25988d005311d3507bf5f",
+      "bytes": 2274
+    },
+    {
+      "name": "release-config.png",
+      "sha256": "ba18d48c90eff1e5e38a61a1e57dda9df893bc582eabd12cdf51183a46d80665",
+      "bytes": 64572
+    },
+    {
+      "name": "release-home.png",
+      "sha256": "965037d2069446898837e8be3fc4d3a03ec86d03c0e2263bc02fe3330ea9df90",
+      "bytes": 165041
+    },
+    {
+      "name": "release-install.json",
+      "sha256": "98ba9ced5935b25f529a913d8f72fa865ba307a432fd5a789a48d1653b74b135",
+      "bytes": 554
+    },
+    {
+      "name": "release-regenerate.log",
+      "sha256": "7a1f4be010cd4d6205f635eb1e96b3bc1d7b5d940ead257b225e020ebf5c9737",
+      "bytes": 12580
+    },
+    {
+      "name": "release-resources.png",
+      "sha256": "eb0faaee4c879006745565f25b887c54f7786ec3b8d71da6f7e4e65e71759f64",
+      "bytes": 104753
+    },
+    {
+      "name": "release-smoke-protection.json",
+      "sha256": "49d54adb0d37a28befd1119207516c4749700574787f7c1ff46951fcf8701ddf",
+      "bytes": 3974
+    },
+    {
+      "name": "release-tools.png",
+      "sha256": "cca0364e6c6dee819c3141085f74c9737aacb1a41f1b74ca3e82d6046034205b",
+      "bytes": 135315
+    },
+    {
+      "name": "run-natural.py",
+      "sha256": "73b528cc1260456c133c718dedf6a52d0ec7fa0f35bca60c8df1b33aa28169c2",
+      "bytes": 3415
+    },
+    {
+      "name": "run-tests.py",
+      "sha256": "31a5dd3b313aab3bb860351aebc3911692cb684a8d698f8dba7e15210f06f7b7",
+      "bytes": 2905
+    },
+    {
+      "name": "shared-contact-0.jpg",
+      "sha256": "b3ece5d5c3ca4d60e3ded85fc2e7bf5fd5b5d6379aa3c2b7f25a7ebd7aac0eb5",
+      "bytes": 65417
+    },
+    {
+      "name": "shared-contact-1.jpg",
+      "sha256": "bcf81499a301d3a75efc7afbd5e2347510fab58b5911a2ee2a2fdd47370e4bee",
+      "bytes": 59626
+    },
+    {
+      "name": "shared-contact-2.jpg",
+      "sha256": "5088fe43b4a8d1e39fe0c1acb74cfdc6d6b9a720218ecdaa00846e3b3aa99bcb",
+      "bytes": 45537
+    },
+    {
+      "name": "ui.py",
+      "sha256": "20062d5b883df6c99eeedf35a2c0c0a6ea8f7e06ddeb1a14f6c2d863a9b7d404",
+      "bytes": 1008
+    }
+  ]
+}

@@ -2616,25 +2616,26 @@ internal fun AccessControlCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 itemVerticalAlignment = Alignment.CenterVertically,
             ) {
-                if (searchExpanded) {
+                androidx.compose.animation.AnimatedContent(searchExpanded,
+                    modifier = Modifier.weight(1f), label = "accessSearch") { searching ->
+                if (searching) {
                     OutlinedTextField(
                         value = state.searchQuery,
                         onValueChange = onSearchChange,
                         enabled = canEdit,
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("access_control_search"),
+                        modifier = Modifier.fillMaxWidth().testTag("access_control_search"),
                         singleLine = true,
                         label = { Text("搜索应用或包名") },
                     )
                 } else {
                     Text(
                         "按应用代理",
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
+                }
                 }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

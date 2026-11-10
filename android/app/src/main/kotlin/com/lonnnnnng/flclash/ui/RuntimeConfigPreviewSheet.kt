@@ -122,7 +122,7 @@ internal fun RuntimeConfigPreviewSheet(
                     )
                     val lines = remember(state.preview.content) { state.preview.content.lines() }
                     val matches = remember(lines, query) { if (query.isEmpty()) emptyList() else lines.indices.filter { lines[it].contains(query, true) } }
-                    if (searching) {
+                    SearchOptionsTransition(searching) {
                         OutlinedTextField(query, { query = it; match = 0 }, Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("runtime_config_preview_query"),
                             label = { Text("查找") }, singleLine = true)
                         Row {

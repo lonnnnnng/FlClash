@@ -132,7 +132,9 @@ internal fun ProfileRulesEditorDialog(profile: Profile, initialRules: String, sa
             }
         }, text = {
             Column(Modifier.fillMaxSize()) {
-                if (search) OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索类型、内容或策略") }, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).testTag("custom_rules_search"))
+                SearchOptionsTransition(search) {
+                OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索类型、内容或策略") }, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).testTag("custom_rules_search"))
+                }
                 (error ?: saveError)?.let { Text(it, Modifier.padding(vertical = 8.dp).testTag("custom_rules_error"), color = MaterialTheme.colorScheme.error) }
                 retryRules?.let { text -> Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(enabled = !busy, modifier = Modifier.testTag("custom_rules_retry_interrupted"), onClick = {

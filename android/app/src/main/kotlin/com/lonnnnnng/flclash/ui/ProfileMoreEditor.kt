@@ -123,6 +123,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
     if (adding) ModalBottomSheet(onDismissRequest = { if (!state.isSaving) { adding = false; addQuery = "" } }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         // 作者 long：候选身份固定在本次面板，不因保存回执立即移除组合；先完成条目收起，后续条目才能连续上移。
         var shownChoices by remember(profile.id, section) { mutableStateOf(remaining) }
+        val offeredSearch = remember(profile.id, section) { remaining.size >= 10 }
         val remainingKeys = remaining.map { it.key }.toSet()
         fun matchesQuery(field: MoreField) = addQuery.isBlank() || field.label.contains(addQuery.trim(), true) || field.key.contains(addQuery.trim(), true)
         LaunchedEffect(remainingKeys, addQuery) {
@@ -131,15 +132,14 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                 candidate.key in remainingKeys || matchesQuery(candidate) && shownChoices.any { it.key == candidate.key }
             }
         }
-        Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp)) {
+        Column(Modifier.fillMaxWidth().navigationBarsPadding().heightIn(max = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() * .9f }).padding(horizontal = 16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("添加设置项", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
                 TextButton(onClick = { adding = false; addQuery = "" }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_add_done")) { Text("完成") }
             }
             if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
             state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            if (remaining.size >= 10 || addQuery.isNotEmpty()) ProfileSearchField(addQuery, { addQuery = it }, "profile_more_add_search", enabled = !state.isSaving)
-            Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()).testTag("profile_more_available_fields")) {
+            Column(Modifier.weight(1f, fill = false).heightIn(max = 480.dp).verticalScroll(rememberScrollState()).testTag("profile_more_available_fields")) {
                 if (remaining.isEmpty()) Text("所有设置项均已添加", Modifier.padding(vertical = 24.dp))
                 val matching = shownChoices.filter(::matchesQuery)
                 if (matching.isEmpty() && remaining.isNotEmpty()) Text("无搜索结果", Modifier.padding(24.dp).testTag("profile_more_add_empty"))
@@ -178,6 +178,8 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                     }
                 }
             }
+            if (offeredSearch || addQuery.isNotEmpty()) DockedProfileSearch(addQuery, { addQuery = it },
+                "profile_more_add_search", enabled = !state.isSaving, modifier = Modifier.padding(top = 12.dp))
             Spacer(Modifier.height(16.dp))
         }
     }

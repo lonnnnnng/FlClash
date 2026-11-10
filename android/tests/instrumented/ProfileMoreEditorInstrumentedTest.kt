@@ -174,6 +174,22 @@ class ProfileMoreEditorInstrumentedTest {
         compose.runOnIdle { assertEquals(false, savedNtp?.writeToSystem) }
     }
 
+    @Test fun addDockCancelKeepsSheetAndDraftWithoutSaving() {
+        section = "sniffer"; render()
+        compose.onNodeWithTag("profile_more_empty_add").performClick()
+        compose.onNodeWithTag("profile_more_add_search").performClick().performTextReplacement("HTTP")
+        val candidate = compose.onNodeWithTag("more_add_sniff.HTTP").assertIsDisplayed().fetchSemanticsNode().boundsInWindow
+        val dock = compose.onNodeWithTag("profile_more_add_search_dock").fetchSemanticsNode().boundsInWindow
+        assertTrue("候选须位于下沿搜索上方", candidate.bottom <= dock.top)
+        capture("more_dock_query")
+        compose.onNodeWithTag("profile_more_add_search_cancel").performClick()
+        compose.onNodeWithTag("profile_more_add_done").assertIsDisplayed()
+        assertEquals("", compose.onNodeWithTag("profile_more_add_search").fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text)
+        compose.runOnIdle { assertEquals(0, saveCalls); assertEquals(0, exits) }
+        capture("more_dock_cancel")
+    }
+
     @androidx.test.filters.SdkSuppress(minSdkVersion = 29)
     @Test fun fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft() {
         render(); add("port")

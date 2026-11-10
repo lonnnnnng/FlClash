@@ -27,6 +27,60 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkMenuFirstOpenAndRepeatedTopCard() = runMenus(true)
     @Test fun lightMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(false)
     @Test fun darkMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(true)
+    @Test fun lightDockedSearchKeepsSheetAcrossImeAndCancel() = runDockedSearch(false)
+    @Test fun darkDockedSearchKeepsSheetAcrossImeAndCancel() = runDockedSearch(true)
+
+    private fun runDockedSearch(dark: Boolean) {
+        assertPortraitDefaultFontConfiguration()
+        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))
+        suffix = if (dark) "dark" else "light"
+        ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+            scenario.onActivity { it.dark = dark; it.moreSection = "sniffer"; it.showMoreEditor = true }
+            click("添加设置项"); await("完成"); settle(); capture("dock_idle")
+            fun field() = checkNotNull(root()?.let { nodes(it).firstOrNull { node -> node.isEditable } })
+            fun text(value: String) {
+                assertTrue(field().performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
+                    putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, value)
+                }))
+            }
+            fun cancel() {
+                val editBounds = bounds(field())
+                // 作者 long：Dialog不继承宿主测试ID；从实际输入框同行的最右可点击节点定位取消，避免固定屏幕坐标受IME位移影响。
+                val button = checkNotNull(root()?.let { nodes(it).filter { node ->
+                    val rect = bounds(node)
+                    node.isClickable && node.isEnabled && rect.left > editBounds.right &&
+                        rect.top <= editBounds.centerY() && rect.bottom >= editBounds.centerY()
+                }.maxByOrNull { node -> bounds(node).right } })
+                tap(bounds(button))
+            }
+            event("dock-focus"); tap(bounds(field())); settle()
+            text("HTTP"); await("HTTP"); settle(); capture("dock_ime")
+            var imeShown = false
+            ins.runOnMainSync {
+                val view = android.view.inspector.WindowInspector.getGlobalWindowViews().lastOrNull { it.hasWindowFocus() }
+                imeShown = view?.let(androidx.core.view.ViewCompat::getRootWindowInsets)
+                    ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == true
+            }
+            assertTrue("自然触点必须实际唤起IME", imeShown)
+            event("dock-cancel"); cancel(); settle(); await("完成")
+            assertTrue(field().text.isNullOrEmpty())
+            scenario.onActivity { assertEquals(0, it.moreSaveRequests); assertTrue(it.showMoreEditor) }
+            capture("dock_cancel")
+            event("dock-reopen-select"); tap(bounds(field())); text("HTTP"); await("HTTP"); settle()
+            click("HTTP"); await("无搜索结果"); settle()
+            scenario.onActivity { assertEquals(1, it.moreSaveRequests) }
+            cancel(); settle(); click("完成"); awaitGone("完成"); await("HTTP"); settle()
+            capture("dock_parent")
+            scenario.onActivity { assertEquals(1, it.moreSaveRequests) }
+            event("dock-completed")
+            if (!profileFrames) {
+                val run = checkNotNull(InstrumentationRegistry.getArguments().getString("kclashMotionRun"))
+                require(run.matches(Regex("[a-z0-9-]+")))
+                saveFrames("visual-motion-$run-$suffix.gfx")
+            }
+        }
+    }
+
     @Test fun moreSelectionEntriesUseNaturalContinuousExit() {
         assertPortraitDefaultFontConfiguration()
         assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))

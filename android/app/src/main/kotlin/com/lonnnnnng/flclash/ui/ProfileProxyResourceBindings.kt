@@ -45,9 +45,8 @@ internal fun ProfileProxyResourceBindings(section: String, source: String, profi
     }
     TextButton(onClick = { alias = null; choosing = true }, enabled = enabled, modifier = Modifier.testTag("proxy_resource_binding_add")) { Text("选择代理资源") }
     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-    if (choosing) ProfileEditorPage(onDismissRequest = { choosing = false; query = "" }, backTag = "proxy_resource_picker_back", title = { Text("选择代理资源") }, text = {
+    if (choosing) ProfileEditorPage(onDismissRequest = { choosing = false; query = "" }, backTag = "proxy_resource_picker_back", title = { Text("选择代理资源") }, bottomBar = { DockedProfileSearch(query, { query = it }, "proxy_resource_search", enabled = enabled) }, text = {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            ProfileSearchField(query, { query = it }, "proxy_resource_search")
             val available = profiles.filter { it.type != ProfileType.CUSTOM }
             val choices = available.filter { it.realLabel.contains(query.trim(), true) }
             val listState = rememberResourcePickerListState(choices.map { it.id },

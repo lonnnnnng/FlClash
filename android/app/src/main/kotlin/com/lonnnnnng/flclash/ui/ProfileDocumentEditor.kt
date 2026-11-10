@@ -73,7 +73,7 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
                     if (state.errorLocation != null) TextButton(::locateError, Modifier.testTag("profile_document_locate_error")) { Text("定位") }
                 }
             }
-            if (search) {
+            SearchOptionsTransition(search) {
                 OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("profile_document_query"), label = { Text("查找") }, singleLine = true)
                 Row(Modifier.padding(horizontal = 16.dp)) {
                     TextButton({ find(false) }, enabled = query.isNotEmpty()) { Text("上一处") }

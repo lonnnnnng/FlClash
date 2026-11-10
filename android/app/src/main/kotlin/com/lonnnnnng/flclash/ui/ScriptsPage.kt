@@ -191,7 +191,7 @@ internal fun ScriptEditorDialog(
                     label = { Text("脚本名称") }, singleLine = true, enabled = !state.isSaving && !state.loadFailed)
                 state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("script_editor_error")) }
                 if (state.loadFailed) TextButton(onClick = onRetry) { Text("重新读取") }
-                if (searching) {
+                SearchOptionsTransition(searching) {
                     OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().testTag("script_query"), label = { Text("查找") }, singleLine = true)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(if (query.isEmpty()) "输入查找文字" else "${Regex(Regex.escape(query), RegexOption.IGNORE_CASE).findAll(value.text).count()} 处匹配",

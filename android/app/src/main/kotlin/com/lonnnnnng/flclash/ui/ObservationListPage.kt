@@ -1,6 +1,11 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -83,18 +88,15 @@ internal fun ObservationListPage(
         MaterialTheme.colorScheme.surfaceBright
     }
     val searchFocusRequester = remember { FocusRequester() }
-    LaunchedEffect(searchExpanded) {
-        if (searchExpanded) searchFocusRequester.requestFocus()
-    }
-    BackHandler(enabled = searchExpanded) {
-        onSearchQueryChange("")
-        onSearchExpandedChange(false)
-    }
 
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
+        BackHandler(enabled = searchExpanded) {
+            onSearchQueryChange("")
+            onSearchExpandedChange(false)
+        }
         Surface(
             modifier = Modifier.fillMaxSize().imePadding().testTag("observation_list_page"),
             color = recordPageColor(),
@@ -115,7 +117,11 @@ internal fun ObservationListPage(
                             }
                         },
                         title = {
-                            if (searchExpanded) {
+                            AnimatedContent(searchExpanded, transitionSpec = {
+                                fadeIn(tween(180)) togetherWith fadeOut(tween(80))
+                            }, label = "observationSearchTitle") { searching ->
+                            if (searching) {
+                                LaunchedEffect(Unit) { searchFocusRequester.requestFocus() }
                                 Surface(
                                     modifier = Modifier.fillMaxWidth().padding(end = 12.dp).height(44.dp)
                                         .testTag("observation_search_capsule"),
@@ -186,6 +192,7 @@ internal fun ObservationListPage(
                                 }
                             } else {
                                 Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
                             }
                         },
                         actions = {
