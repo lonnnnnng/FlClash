@@ -44,5 +44,6 @@
     "local-all.bundle": "d496f44915b74e714c6b82467af20bb4b7e3fe19f83e88be67b3c9094af05e40"
   },
   "validationScope": "Repository identity, complete Git history and submodule checkout; no new runtime test claims.",
-  "artifactDirectory": "../acceptance-artifacts/mihomo-refork-migration-20261110/"
+  "artifactDirectory": "../acceptance-artifacts/mihomo-refork-migration-20261110/",
+  "followUpBuildAndDeviceEvidence": "mihomo-refork-build-redmi-20261110.json"
 }

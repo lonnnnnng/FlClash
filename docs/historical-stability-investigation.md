@@ -47,3 +47,9 @@
 原始正式0.1.0覆盖为原始正式0.1.1后、启动主页面前，1份FILE配置21字段、2条偏好、238条测速缓存逐字段保持。0.1.1正常启动和冷启动后，配置/偏好/正文SHA-size-mtime保持；238条测速缓存的键/数量保持，但value与updatedAtMillis均变化。安装保留与启动后更新须分开结论，见 `release-upgrade-acceptance.md` 和 `acceptance/post-release-boundaries-redmi-20261110.json`。
 
 候选路径为 `ProxyGroupsViewModel` 的 `CoreEvent.Delay` 订阅及持久化；`restoreDelayResults` 回读本身不重设时间。授权配置存在 `lazy:false` 健康检查，与自动结果刷新相容；本轮未记录该窗口逐条事件，不能确定归因，也不能据此解释11月5日元数据/mtime变化。下一轮在独立包中关联Delay事件、写入时刻、键摘要和实际冷启动路径；不回写旧快照掩盖差异。
+
+## 2026-11-10：内核迁移后重新打包的启动窗口
+
+新fork全新源码签名包（App `300efb31`，核心仍为`464552e4`，APK `afd2a28c…100af068`）在Redmi首轮三个目标SOCKS→HTTPS均通过。显式STOP后本地端口拒绝连接；再次START并观察前台ProxyService后，首个Example HTTPS约5秒后curl35 TLS失败，随后同会话Example／Google／GitHub均通过。原始7次HTTPS为6成功／1失败；没有重试覆盖首失败。前台服务存在不是直接核心READY门禁，此记录不足以区分核心就绪、节点拨号、远端链路或网络时序，也不能因源码未变就断言是网络原因。
+
+未观察本轮崩溃，Profile21字段／2偏好／脚本／正文SHA-size-mtime保持；238条测速缓存按完整复合主键核对后，键／数量保持而value／时间变化。原探针只按首列排序，逐行位置比较产生的proxyName差异不代表键丢失；本轮已改用四列主键摘要重新比较。安装期间WAL／SHM、运行期间WorkManager／审计／配置投影mtime变化保留，投影正文SHA保持。证据见`acceptance/mihomo-refork-build-redmi-20261110.json`。后续网络恢复仍须同时记录直接READY时刻与首请求各阶段，不能以随后恢复追认根因。

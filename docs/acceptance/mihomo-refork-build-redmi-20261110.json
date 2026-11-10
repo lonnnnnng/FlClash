@@ -1,0 +1,405 @@
+{
+  "recordedAt": "2026-11-10T10:25:37.272245+08:00",
+  "scope": "Fresh rebuild from the migrated core fork and signed Release smoke on the dedicated Redmi; not a full functional or long-term network regression.",
+  "source": {
+    "appCommit": "300efb312aee9b99d19906881fbe3f78d74c6831",
+    "coreCommit": "464552e44ddf92affe5c41ee5a5d653a0e1e8daf",
+    "coreRemote": "https://github.com/lonnnnnng/Clash.Meta.git",
+    "freshRecursiveClone": true,
+    "sourceClean": true,
+    "isolatedGoBuildCache": true,
+    "priorCoreOutputAbsent": true,
+    "coreBindTaskExecuted": true,
+    "gradleTasksExecuted": 165,
+    "gradleBuildCacheDisabled": true,
+    "forceRerunTasks": true
+  },
+  "build": {
+    "releasePassed": true,
+    "releaseLint": {
+      "Warning": 66,
+      "Hint": 13
+    },
+    "nativeProvenance": {
+      "aarCoreSha256": "54f39ec25e7f9f9a92dd358de4842140cb2ee8881228ff12889d212afa3b10a7",
+      "mergedCoreSha256": "54f39ec25e7f9f9a92dd358de4842140cb2ee8881228ff12889d212afa3b10a7",
+      "strippedCoreSha256": "6daa786aafe574c1a0352f778a11dbcc1eb294075455de0b0f8e7393fbf5e003",
+      "apkCoreSha256": "6daa786aafe574c1a0352f778a11dbcc1eb294075455de0b0f8e7393fbf5e003",
+      "aarMatchesMerged": true,
+      "strippedMatchesApk": true,
+      "independentStripMatchesApk": true
+    },
+    "coreAarSha256": "c8e4b23f6a4216be7bc5ea1edd4bc11dfeb79d53dd1a3230aaa293bc8ed6ba25",
+    "mlkitR8CheckPassed": true,
+    "appId": "com.lonnnnnng.flclash",
+    "versionName": "0.1.1",
+    "versionCode": "1001",
+    "debuggable": false,
+    "abi": "arm64-v8a",
+    "apkSha256": "afd2a28c15bbf751aba68471e86b6e72f9e049dcf8b99e10476a12eb100af068",
+    "apkBytes": 48362232,
+    "releaseCertificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "commands": [
+      [
+        "./gradlew",
+        ":core:bindCore",
+        ":app:assembleRelease",
+        "--no-daemon",
+        "--no-build-cache",
+        "--no-configuration-cache",
+        "--rerun-tasks",
+        "--console=plain",
+        "-Ptarget-platform=android-arm64"
+      ],
+      [
+        "./gradlew",
+        ":app:lintRelease",
+        "--no-daemon",
+        "--max-workers=2",
+        "--no-build-cache",
+        "--no-configuration-cache",
+        "--console=plain",
+        "-Ptarget-platform=android-arm64"
+      ]
+    ]
+  },
+  "ci": {
+    "runId": 42738505695,
+    "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42738505695",
+    "headSha": "300efb312aee9b99d19906881fbe3f78d74c6831",
+    "conclusion": "success",
+    "scope": "Go race, JVM tests, Debug/unsigned Release/R8, dual lint and artifact checks; publish job skipped"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "installedMatchesBuild": true,
+    "retainedNewSignedRelease": true,
+    "vpnAndProxyForegroundServicesObserved": true,
+    "tunObserved": true,
+    "runningHomeObserved": true,
+    "providerPage": {
+      "statisticsCount": 90,
+      "visibleRuntimeEntries": [
+        {
+          "name": "abema",
+          "rules": 21
+        },
+        {
+          "name": "amazon",
+          "rules": 247
+        },
+        {
+          "name": "apple",
+          "rules": 1794
+        }
+      ],
+      "loadingResolved": true,
+      "batchUpdateNotInvoked": true
+    },
+    "explicitStopObserved": true,
+    "stoppedSocksPortRefused": true,
+    "explicitRestartServicesObserved": true,
+    "coldAppLaunchAfterStopObserved": true,
+    "newCrashObserved": false
+  },
+  "network": {
+    "firstSession": [
+      {
+        "name": "example",
+        "url": "https://example.com/",
+        "exitCode": 0,
+        "output": "200 577 1.476276 127.0.0.1",
+        "error": "",
+        "expectedHttp": 200,
+        "passed": true,
+        "path": "Android curl -> device 127.0.0.1:7890 SOCKS5 -> running KClash core -> HTTPS with default certificate validation"
+      },
+      {
+        "name": "google",
+        "url": "https://www.gstatic.com/generate_204",
+        "exitCode": 0,
+        "output": "204 0 1.356156 127.0.0.1",
+        "error": "",
+        "expectedHttp": 204,
+        "passed": true,
+        "path": "Android curl -> device 127.0.0.1:7890 SOCKS5 -> running KClash core -> HTTPS with default certificate validation"
+      },
+      {
+        "name": "github",
+        "url": "https://github.com/robots.txt",
+        "exitCode": 0,
+        "output": "200 29821 1.624010 127.0.0.1",
+        "error": "",
+        "expectedHttp": 200,
+        "passed": true,
+        "path": "Android curl -> device 127.0.0.1:7890 SOCKS5 -> running KClash core -> HTTPS with default certificate validation"
+      }
+    ],
+    "immediateAfterRestart": {
+      "exitCode": 35,
+      "output": "000 0 5.003972",
+      "error": "curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0)",
+      "passed": false
+    },
+    "laterSameRestartSession": [
+      {
+        "name": "example",
+        "url": "https://example.com/",
+        "exitCode": 0,
+        "output": "200 577 1.405997 127.0.0.1",
+        "error": "",
+        "passed": true
+      },
+      {
+        "name": "google",
+        "url": "https://www.gstatic.com/generate_204",
+        "exitCode": 0,
+        "output": "204 0 1.771840 127.0.0.1",
+        "error": "",
+        "passed": true
+      },
+      {
+        "name": "github",
+        "url": "https://github.com/robots.txt",
+        "exitCode": 0,
+        "output": "200 29821 1.654139 127.0.0.1",
+        "error": "",
+        "passed": true
+      }
+    ],
+    "httpsSuccessCount": 6,
+    "httpsFailureCount": 1,
+    "allRequestsPassed": false,
+    "tlsCertificateValidationEnabled": true,
+    "route": "Device curl explicitly connects to KClash SOCKS5 127.0.0.1:7890; no per-socket outbound-node attribution collected",
+    "boundary": "Immediate probe followed foreground-service observation, not a direct CoreRuntimeManager READY gate. One TLS failure remains unexplained; later success does not erase it or establish migration causality."
+  },
+  "dataProtection": {
+    "uidPreserved": true,
+    "installAllFourTablesPreserved": true,
+    "installStrictAllPrivateFilesEqual": false,
+    "installChangedFiles": [
+      {
+        "file": "databases/kclash.db-shm",
+        "changedFields": [
+          "mtime"
+        ]
+      },
+      {
+        "file": "no_backup/androidx.work.workdb-shm",
+        "changedFields": [
+          "sha256",
+          "mtime"
+        ]
+      },
+      {
+        "file": "no_backup/androidx.work.workdb-wal",
+        "changedFields": [
+          "sha256",
+          "mtime"
+        ]
+      }
+    ],
+    "afterRuntimeProfileAll21FieldsPreserved": true,
+    "afterRuntimePreferencesPreserved": true,
+    "afterRuntimeScriptsPreserved": true,
+    "sourceProfileShaSizeMtimePreserved": true,
+    "runtimeConfigBytesPreserved": true,
+    "runtimeConfigMtimeChanged": true,
+    "delayCache": {
+      "keysPreserved": true,
+      "beforeCount": 238,
+      "afterCount": 238,
+      "changedCount": 238,
+      "changedFields": [
+        "updatedAtMillis",
+        "value"
+      ]
+    },
+    "delayWriteEventAttribution": "not collected",
+    "otherChangedFiles": [
+      "databases/kclash.db",
+      "databases/kclash.db-shm",
+      "databases/kclash.db-wal",
+      "files/mihomo/config.yaml",
+      "files/profileInstalled",
+      "files/profileinstaller_profileWrittenFor_lastUpdateTime.dat",
+      "no_backup/androidx.work.workdb",
+      "no_backup/androidx.work.workdb-shm",
+      "no_backup/androidx.work.workdb-wal",
+      "shared_prefs/subscription-auto-update-audit.xml"
+    ],
+    "originalFixturePreserved": true,
+    "deviceSettingsPreserved": true
+  },
+  "cleanup": {
+    "probeUninstalled": true,
+    "ownDeviceFilesVerifiedAndRemoved": 10,
+    "servicesStopped": true,
+    "tunAbsent": true,
+    "flutterReferenceAbsentAndUntouched": true
+  },
+  "limitations": [
+    "No new public release or APK asset replacement.",
+    "No repeated full device acceptance suite, low API, cellular or long-window coverage.",
+    "The first post-restart TLS failure is retained for network-readiness diagnosis.",
+    "SQLite and WorkManager sidecar differences mean the whole private directory is not unchanged."
+  ],
+  "diagnosticCorrections": [
+    {
+      "initialCheck": "AAR native bytes equal APK native bytes",
+      "result": "failed",
+      "resolution": "AAR equals merged library; independent NDK --strip-unneeded output equals packaged native bytes."
+    },
+    {
+      "initialCheck": "All private files unchanged across install",
+      "result": "failed",
+      "resolution": "All four tables and source profile files preserved; sidecar changes are recorded, not discarded."
+    },
+    {
+      "initialCheck": "Delay rows compared by list position",
+      "result": "not authoritative for stable keys",
+      "resolution": "Recompared by composite primary key; all 238 keys retained, only value/updatedAtMillis changed."
+    }
+  ],
+  "artifactDirectory": "../acceptance-artifacts/mihomo-refork-build-20261110/",
+  "artifacts": [
+    {
+      "name": "build.py",
+      "bytes": 3504,
+      "sha256": "9124e30e0c3ab6f290e15b58c9d534b73287355e79588899db971a1470f3818e"
+    },
+    {
+      "name": "build-result.json",
+      "bytes": 1910,
+      "sha256": "fe6756e10c168331b7479521735f4a618e62b8a35e1c2f79db6a9e2078949853"
+    },
+    {
+      "name": "build.log",
+      "bytes": 15500,
+      "sha256": "1d2c31c4d0be0d35c0f6620009e6afabeb13f5f283a72637886af099bb82be11"
+    },
+    {
+      "name": "lint-release.log",
+      "bytes": 7147,
+      "sha256": "ef3248218b3893d2a98328970c720fe189664c3efa542c44873c0ea7f7381fcf"
+    },
+    {
+      "name": "lint-summary.json",
+      "bytes": 34,
+      "sha256": "fa910f51ec903bb8929972f5c69047f71de1a6a741d36dce01126c6214db04fe"
+    },
+    {
+      "name": "release-artifact.json",
+      "bytes": 1003,
+      "sha256": "e47615d2c1daed1f9e0605ad78ec9f020ff65bf6feff2278861db171dbec20df"
+    },
+    {
+      "name": "release-cert.txt",
+      "bytes": 974,
+      "sha256": "3fd9715bfedff52f1b2d6f2dd58a69f748509aca366a345e92db1b68d4497798"
+    },
+    {
+      "name": "mlkit-check.txt",
+      "bytes": 685,
+      "sha256": "1ec9332b141c5e007498ffb4d2be37b675cd8b7fb3c65a62b77f285934a8cc23"
+    },
+    {
+      "name": "ci-run.json",
+      "bytes": 3792,
+      "sha256": "5e4e5c566872a8ab8c908999676ac770062e3581ded24abfe54d6aa03527d083"
+    },
+    {
+      "name": "install.log",
+      "bytes": 36,
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "name": "install-comparison.json",
+      "bytes": 754,
+      "sha256": "8ace575992b75e12076a38e279f3d2220e8ea45c5f744aef7efe8ed72eeb629f"
+    },
+    {
+      "name": "smoke-data-comparison.json",
+      "bytes": 33053,
+      "sha256": "bf37717b4505ad1f9472b2d5bb3e1577b7bc0d1f282bf2708404d7d31888e9c5"
+    },
+    {
+      "name": "https-probes.json",
+      "bytes": 983,
+      "sha256": "49293067e9a03cce6688ea8ffab12e9f7191f58ae768109181e5ee3a775249f3"
+    },
+    {
+      "name": "post-restart-https-probes.json",
+      "bytes": 524,
+      "sha256": "118d19544e809d335bf70219a7707f3b17c262172b09e55bff20cf3070414145"
+    },
+    {
+      "name": "explicit-stop-restart.json",
+      "bytes": 976,
+      "sha256": "17fb93ab1e6d2157355cf4b8a02d5469536d73e97837d3f86bf671b8cefea0da"
+    },
+    {
+      "name": "providers-detail.png",
+      "bytes": 136101,
+      "sha256": "66961a129c40248815602f4cbc12c48096d799d32ea2057fcad36187c5db20d9"
+    },
+    {
+      "name": "providers-detail.xml",
+      "bytes": 21583,
+      "sha256": "bf06bbe6378ea6fdd1b44bdf4980cbcddec7de81343223c01ea2c0935e761050"
+    },
+    {
+      "name": "running-home.png",
+      "bytes": 167008,
+      "sha256": "4eefdf78c046af8ecd674d74f375e11b53f0c65ef9b7c9d45fdb6fe055474ae3"
+    },
+    {
+      "name": "running-services.txt",
+      "bytes": 5329,
+      "sha256": "da5d795e87858a9261b6356dec354697e2f6503269a6cf14f0b53ee25cb797c5"
+    },
+    {
+      "name": "cold-home.png",
+      "bytes": 164966,
+      "sha256": "3e982c914c77060dcf479f7c479c0121917037925b6ba0bffb55e3dfd061805c"
+    },
+    {
+      "name": "cleanup.json",
+      "bytes": 2704,
+      "sha256": "594265b90cb71a5c02418772d10a014eaca6b852204ff599180d4f82dabfeac9"
+    },
+    {
+      "name": "crash-log.txt",
+      "bytes": 281,
+      "sha256": "3ec1096faa0ee6041284935008d48b4b1328d30c7a035963bfd4e132739f0682"
+    },
+    {
+      "name": "refork-before-install.json",
+      "bytes": 154064,
+      "sha256": "284c8cf9682d7684f22a3babf14c1535e2d56d8e1806b37c23f7f0fdb5cbaa10"
+    },
+    {
+      "name": "refork-after-install.json",
+      "bytes": 154064,
+      "sha256": "bdb7c6562f4cf423b0e9686cf31e2e0866a061dca219685937723c622207e810"
+    },
+    {
+      "name": "refork-after-smoke.json",
+      "bytes": 154064,
+      "sha256": "e33bec87daca9c320aa5842439063d266e5a4953ee08436170ff7f1a2f096031"
+    },
+    {
+      "name": "system-settings-before.json",
+      "bytes": 317,
+      "sha256": "e565a9c77528592a05b0b48b27eef1e97d98458aef4c5930739f9595a3584c00"
+    },
+    {
+      "name": "system-settings-after.json",
+      "bytes": 317,
+      "sha256": "e565a9c77528592a05b0b48b27eef1e97d98458aef4c5930739f9595a3584c00"
+    }
+  ]
+}

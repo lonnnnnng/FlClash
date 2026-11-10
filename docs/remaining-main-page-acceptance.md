@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **新内核仓库重新构建与真机运行（2026-11-10）**：App `300efb31`／新fork核心 `464552e4` 全新递归检出、独立Go编译缓存、关闭Gradle构建缓存并强制重编，165任务执行；签名Release与Lint零错误通过，AAR→独立符号剥离→APK原生库逐字节吻合。同提交CI 42738505695全检查成功。Redmi覆盖安装回拉SHA `afd2a28c…100af068`；核心/VPN启动、90项Provider页面、停止释放端口已验。HTTPS首轮3成功，显式重启紧接前台服务出现的首请求TLS失败，后续同会话3成功，总6/7保留失败；未直接等待核心READY，因果未定，不记网络恢复闭环。配置21字段／偏好／正文SHA-size-mtime保持，测速238键保持但值／时间更新；WAL/SHM等变化单列。探针和10个手机文件已清，服务停止，手机保留新签名包，公开Release未替换。证据[构建与Redmi验收](acceptance/mihomo-refork-build-redmi-20261110.json)，见[迁移记录](mihomo-fork-migration.md)。
+
 > **内核 fork 迁移（2026-11-10）**：已迁至 `lonnnnnng/Clash.Meta:kclash-fixes`，GitHub 直接 parent 为 `chen08209/Clash.Meta`；唯一同步上游仍为其 `FlClash` 分支。五项修复／合并提交及产品 gitlink `464552e4` 原样保留，独立核心克隆完整性、当前子模块初始化及旧版0.1.0/0.1.1固定提交检出均通过；新 fork 原分支／标签保持。主线引用、README和溯源链接已更新；未新增功能验收计数。见[迁移记录](mihomo-fork-migration.md)及[证据](acceptance/mihomo-fork-migration-20261110.json)。
 
 > **代理搜索连续过渡与实体扫码（2026-11-10，KUI-031）**：代理根页搜索接固定Flutter分段弹簧/透明度、组合入口和单入口液滴回收；快速反向保留位置/速度，搜索中只有一个测速按钮，取消清空并收IME。修复开发中异步组加载导致搜索/测速重叠及材质退场顺序。869项JVM（App587执行、其余282复用）、Debug/签名Release-R8/motion及双Lint零错误通过；Redmi深色8/8、浅色4/4、自然深浅2/2、动画关闭1/1，共10个不重复方法15次执行通过，56PNG/12拼图及两套原PTS视频已检查。签名本地候选`5f00dc54…5098d250`安装回拉一致；实际代理搜索/Back通过，配置21字段/选择、2偏好及正文SHA-size-mtime保持，测速缓存更新仍未逐条归因。用户实体摄像识别测试QR，确认表单精确匹配且相机释放，未导入；此证据属于当前候选，公开0.1.1未替换。测试包/手机诊断文件已清理，服务停止。接续资源/添加Sheet下沿搜索、剩余完整Flutter及菜单/RenderThread性能；历史异常/低API/蜂窝/OEM仍PARTIAL。证据`docs/acceptance/proxy-search-motion-redmi-20261110.json`，溯源`docs/proxy-search-motion-defect.md`。
