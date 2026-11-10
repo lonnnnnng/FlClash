@@ -1,0 +1,490 @@
+{
+  "defect": "KUI-034",
+  "date": "2026-11-10",
+  "repositoryBase": "2486f0f5fc790b13d5710e8d68491d23f7a3911a",
+  "summary": "Kotlin stop omitted the existing acknowledged resetTraffic bridge action. Explicit stop now resets core totals and speed samples before STOPPED; failed reset is retried before the next session opens its listener.",
+  "flutterReference": {
+    "commit": "be84736605527034689c95bf27828ff27d912c5e",
+    "file": "lib/providers/actions/setup.dart",
+    "stopLines": "227-248",
+    "resetCallLine": 327,
+    "mode": "source reference only; no Flutter merge"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "authorizedYamlBytes": 35165,
+    "authorizedYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+  },
+  "unit": {
+    "modules": {
+      "app": {
+        "tests": 587,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 215,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 871,
+    "newRegressionMethods": 2,
+    "redLog": "red-unit2.log",
+    "redFailed": 2,
+    "targetedGreenLog": "red-unit3.log",
+    "targetedGreenPassed": 2,
+    "finalBuild": "build-final2.log",
+    "finalTasks": {
+      "executed": 11,
+      "upToDate": 379
+    },
+    "executionNotes": "Service and App unit tasks executed in build-final; final2 reused the resulting XML. Core/Common were reused."
+  },
+  "checks": {
+    "debugBuild": true,
+    "debugTestBuild": true,
+    "signedReleaseR8": true,
+    "motionBuild": true,
+    "motionTestBuild": true,
+    "debugLint": {
+      "errors": 0,
+      "warnings": 71,
+      "hints": 14
+    },
+    "releaseLint": {
+      "errors": 0,
+      "warnings": 68,
+      "hints": 13
+    },
+    "mlkitDexRegistrars": {
+      "passed": 3,
+      "total": 3
+    },
+    "goChanged": false,
+    "goTestsRerun": false
+  },
+  "instrumentation": {
+    "method": "TrafficSessionResetInstrumentedTest#realCoreStopResetsTotalsAndSuspensionKeepsCurrentSession",
+    "targetPackage": "com.lonnnnnng.flclash.motion",
+    "configuration": "Original authorized 1.yaml in initially empty isolated Room; VPN preference false, runtime DIRECT. No MainActivity ViewModel network polling. Test cleans its own profile and restores preferences.",
+    "transport": "Real core mixed/SOCKS listener with 127.0.0.1 endpoint, first 65536/131072 upload/download bytes, then 4096/8192 bytes.",
+    "red": {
+      "log": "device-red4.log",
+      "passed": 0,
+      "failed": 1,
+      "failure": "STOPPED retained prior totalTraffic",
+      "snapshots": [
+        {
+          "stage": "first-start",
+          "pid": 17167,
+          "up": 34546,
+          "down": 0,
+          "proxyUp": 39052,
+          "proxyDown": 0,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "first-transfer",
+          "pid": 17167,
+          "up": 194708,
+          "down": 131072,
+          "proxyUp": 129172,
+          "proxyDown": 0,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "suspended",
+          "pid": 17167,
+          "up": 194708,
+          "down": 131072,
+          "proxyUp": 132176,
+          "proxyDown": 0,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "resumed",
+          "pid": 17167,
+          "up": 303096,
+          "down": 134166,
+          "proxyUp": 237560,
+          "proxyDown": 3094,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "first-stop",
+          "pid": 17167,
+          "up": 304598,
+          "down": 134166,
+          "proxyUp": 239062,
+          "proxyDown": 3094,
+          "state": "STOPPED"
+        }
+      ]
+    },
+    "green": {
+      "log": "device-green1.log",
+      "passed": 1,
+      "failed": 0,
+      "snapshots": [
+        {
+          "stage": "first-start",
+          "pid": 17405,
+          "up": 22530,
+          "down": 0,
+          "proxyUp": 76602,
+          "proxyDown": 0,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "first-transfer",
+          "pid": 17405,
+          "up": 184439,
+          "down": 134166,
+          "proxyUp": 118903,
+          "proxyDown": 3094,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "suspended",
+          "pid": 17405,
+          "up": 184439,
+          "down": 134166,
+          "proxyUp": 118903,
+          "proxyDown": 3094,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "resumed",
+          "pid": 17405,
+          "up": 256535,
+          "down": 134166,
+          "proxyUp": 190999,
+          "proxyDown": 3094,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "first-stop",
+          "pid": 17405,
+          "up": 0,
+          "down": 0,
+          "proxyUp": 0,
+          "proxyDown": 0,
+          "state": "STOPPED"
+        },
+        {
+          "stage": "second-start",
+          "pid": 17405,
+          "up": 36779,
+          "down": 9440,
+          "proxyUp": 36779,
+          "proxyDown": 9440,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "second-transfer",
+          "pid": 17405,
+          "up": 43879,
+          "down": 17632,
+          "proxyUp": 39783,
+          "proxyDown": 9440,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "second-suspended",
+          "pid": 17405,
+          "up": 43879,
+          "down": 17632,
+          "proxyUp": 39783,
+          "proxyDown": 9440,
+          "state": "RUNNING"
+        },
+        {
+          "stage": "stop-while-suspended",
+          "pid": 17405,
+          "up": 0,
+          "down": 0,
+          "proxyUp": 0,
+          "proxyDown": 0,
+          "state": "STOPPED"
+        },
+        {
+          "stage": "repeated-stop",
+          "pid": 17405,
+          "up": 0,
+          "down": 0,
+          "proxyUp": 0,
+          "proxyDown": 0,
+          "state": "STOPPED"
+        }
+      ],
+      "allStagesSamePid": true,
+      "normalAndSuspendedStopsAndRepeatedStopZero": true,
+      "speedResetAsserted": true,
+      "authorizedSourceUnchangedAsserted": true,
+      "isolatedProfileCleanupAsserted": true
+    },
+    "readLimit": "all/proxy snapshots are separate sequential bridge calls, not one atomic sample. Health checks can generate new traffic on initial start and restart. Nonzero proxy totals were observed but no particular remote health-check success is claimed."
+  },
+  "artifacts": {
+    "baseline-motion.apk": {
+      "sha256": "0cfcd44a4eff02d9ab9c3497d6dcabb37d90dad21bd7ed544a53f7167acf5150",
+      "bytes": 65969477
+    },
+    "fixed-motion.apk": {
+      "sha256": "3d3e87c3c77eb8a7626674725424561a0b15ba10d042219177a5b28f1713976b",
+      "bytes": 65970197
+    },
+    "traffic-test-final.apk": {
+      "sha256": "b68390b8eff2aa5373720284e43bb7d441aa0ff7b02f9c78a2342857bbff86cb",
+      "bytes": 2804874
+    },
+    "KClash-traffic-session-fixed.apk": {
+      "sha256": "0ab4cb72359e8c8d0742d2581ffa84b309f4ece4569f0ba23387cab56879974f",
+      "bytes": 48363860
+    }
+  },
+  "installed": {
+    "package": "com.lonnnnnng.flclash",
+    "sha256": "0ab4cb72359e8c8d0742d2581ffa84b309f4ece4569f0ba23387cab56879974f",
+    "matches": true
+  },
+  "formalSmoke": {
+    "versionName": "0.1.1",
+    "versionCode": 1001,
+    "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "running": {
+      "upDisplayed": "107.5KB",
+      "downDisplayed": "155.0KB",
+      "vpnAndProxyServices": true
+    },
+    "stopped": {
+      "upDisplayed": "0B",
+      "downDisplayed": "0B",
+      "servicesStopped": true
+    },
+    "scope": "Signed Release home start/stop smoke. Same-process two-session raw core regression was done in motion, not injected into Release.",
+    "publicReleaseReplaced": false
+  },
+  "dataProtection": {
+    "installBoundary": {
+      "uidPreserved": true,
+      "schemaBefore": 6,
+      "schemaAfter": 6,
+      "tableCountsBefore": {
+        "profiles": 1,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 238
+      },
+      "tableCountsAfter": {
+        "profiles": 1,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 238
+      },
+      "tablesSame": true,
+      "fileChanges": {
+        "databases/kclash.db-wal": {
+          "before": {
+            "bytes": 494432,
+            "mtime": 1794301605428,
+            "sha256": "0dc68cfc4daf8bdd8181e3234729d0ab3f5ccdf362ba93f1aee3db9fe4a6b24b"
+          },
+          "after": {
+            "bytes": 494432,
+            "mtime": 1794302308977,
+            "sha256": "8f1442c421f5adf30b1ea324ab29e8759c818049926ff4c41059508e1113a746"
+          }
+        },
+        "no_backup/androidx.work.workdb-wal": {
+          "before": {
+            "bytes": 424392,
+            "mtime": 1794301608224,
+            "sha256": "27e2795a5f78ea7e5a1a920677f84ca99dd823fc4fd0ea1b90e79bb5a5db9cb8"
+          },
+          "after": {
+            "bytes": 424392,
+            "mtime": 1794302830173,
+            "sha256": "934e37d688f851ae94313a3de0f5e07973f3b0246ea6ad99633e9577dcd1a27f"
+          }
+        },
+        "shared_prefs/subscription-auto-update-audit.xml": {
+          "before": {
+            "bytes": 6647,
+            "mtime": 1794300416484,
+            "sha256": "af1b36adc6cae910224c1616d2b1ae77073b1460c0ce01e1915b109bebc467f9"
+          },
+          "after": {
+            "bytes": 6647,
+            "mtime": 1794302830141,
+            "sha256": "629dc549f75870966293b92966d8d8bfe130eddd0609d0fa566516f361732cb0"
+          }
+        },
+        "databases/kclash.db-shm": {
+          "before": {
+            "bytes": 32768,
+            "mtime": 1794301608184,
+            "sha256": "dc8ebe5ec8a577f52e4d2da6d727b1473b21661eaaaa9b1ca84a07496975b3ef"
+          },
+          "after": {
+            "bytes": 32768,
+            "mtime": 1794303140685,
+            "sha256": "2d9afe16939a6455ae7c66a00815b5bb090e4fd47cfb93bed7b7e5dccd2a2082"
+          }
+        },
+        "files/profileInstalled": {
+          "before": {
+            "bytes": 24,
+            "mtime": 1794296821436,
+            "sha256": "770a9876a4c87123337425a7e16e7f22aa04f8d9a51210d9fdcb6e23c90a5701"
+          },
+          "after": {
+            "bytes": 24,
+            "mtime": 1794301621832,
+            "sha256": "2435e906e411090ea332a4103eb861aedb7a91bf6a8b62f2212229cb30d5aff8"
+          }
+        },
+        "no_backup/androidx.work.workdb-shm": {
+          "before": {
+            "bytes": 32768,
+            "mtime": 1794301608184,
+            "sha256": "af46e582c64f5a1d838fd0495938a9d96e80d5103933841a949b7f0ca192b369"
+          },
+          "after": {
+            "bytes": 32768,
+            "mtime": 1794303140681,
+            "sha256": "b562fc507c9964c0a170b2746982cdf41e518a5636db0520973fd1dbb8aaeeb0"
+          }
+        }
+      }
+    },
+    "afterSmokeTables": {
+      "profiles": {
+        "keysSame": true,
+        "before": 1,
+        "after": 1,
+        "same": true,
+        "changedFields": {}
+      },
+      "app_preferences": {
+        "keysSame": true,
+        "before": 2,
+        "after": 2,
+        "same": false,
+        "changedFields": {
+          "value": 1,
+          "updatedAt": 1
+        }
+      },
+      "scripts": {
+        "keysSame": true,
+        "before": 0,
+        "after": 0,
+        "same": true,
+        "changedFields": {}
+      },
+      "proxy_delay_results": {
+        "keysSame": true,
+        "before": 238,
+        "after": 238,
+        "same": false,
+        "changedFields": {
+          "updatedAtMillis": 238,
+          "value": 68
+        }
+      }
+    },
+    "profileSourceShaSizeMtimePreserved": true,
+    "runtimeProjectionShaPreservedMtimeChanged": true,
+    "preferenceAndDelayUpdatesCauseUnresolved": true
+  },
+  "cleanup": {
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.upgradeprobe"
+    ],
+    "removedVerifiedFiles": 7,
+    "probeFiles": [
+      {
+        "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/traffic-before-install.json",
+        "sha256": "d79a000b6ce30987e595bf00015c527e556777a156fa4fcd9bf971943df94e7e",
+        "removed": true
+      },
+      {
+        "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/traffic-after-install.json",
+        "sha256": "796ee797ead53adf5a801baa25fb8ba92d4c34d9b017fa2a6ccdcb9dc0fcb1c2",
+        "removed": true
+      },
+      {
+        "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/traffic-after-smoke.json",
+        "sha256": "a62490e2963bf2c537692f76da05c424bdbf55efaf742982ddfcac048cdcb3e9",
+        "removed": true
+      }
+    ],
+    "formalPackageRetained": true,
+    "flutterReferenceRetained": true,
+    "formalServicesStopped": true,
+    "localYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+  },
+  "retainedFailures": [
+    {
+      "log": "red-unit.log",
+      "reason": "Test compilation used getOrThrow on Unit; corrected before product red test."
+    },
+    {
+      "log": "build-motion.log",
+      "reason": "Invoked wrapper from android/ instead of repository root; no build ran."
+    },
+    {
+      "log": "device-red.log",
+      "reason": "Initial absolute zero premise failed because real background traffic had already been generated."
+    },
+    {
+      "log": "device-red2.log",
+      "reason": "Global connection-count zero wait timed out; it includes non-test trackers."
+    },
+    {
+      "log": "device-red3.log",
+      "reason": "Exact pause/resume total equality failed while new background traffic was generated; corrected to retained lower bound."
+    }
+  ],
+  "limits": [
+    "Normal explicit stop / restart and suspended stop only; system VPN revoke, OEM process recovery and arbitrary failure exits were not newly tested.",
+    "Running profile apply preserves totals and reset-failure retry are JVM assertions, not new live fault injection.",
+    "No change to Go or Mihomo gitlink; no remote Release published.",
+    "Menu native rendering attribution, full Flutter parity and historical long-window anomalies remain open."
+  ],
+  "artifactDirectory": "../acceptance-artifacts/traffic-session-reset-20261110",
+  "logSha256": {
+    "device-red4.log": "ef6765231eca7050abb36fc00e7799de5a1e48567f6a864830699ce68744d644",
+    "device-green1.log": "e2768b87222b3fbc4e0fa56266ee866d35c70afb38ef5187657bb2e0ea494327",
+    "build-final.log": "88ccce1cce2ebcb5518e2405fcc723e946154d5ec8afaf1f01e921a93b2ee6d8",
+    "build-final2.log": "5bac56f586e1bfdeebd316add0f8e2023d3ae17938f1656d92bca8bd2d979fcd",
+    "ui-before.xml": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4",
+    "ui-running.xml": "f5217aad885651b88c805837fa81f7a5a6bb34e44066889509d3edaa56a90ad9",
+    "ui-stopped.xml": "696b3eed03e02fe4bbbc2169f8c7f47afc390778d66e6ef77cbd81665a7b30c9",
+    "motion-installed.json": "e87cdb8fc0f9866224a6ad4d28b502f598890b3c2b49d1befb11f873ddc1a500",
+    "release-installed.json": "5b4b7f7246de27a58cc708e18b69cd7ee0eb9fb18829eba24363c3cec44d9000",
+    "cleanup.json": "d98105468880ab7add4ff34c36d917cffd7ffaf42763891b74b642eff9cf2b5a"
+  }
+}

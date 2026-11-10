@@ -393,6 +393,8 @@ interface CoreRuntimeBridge {
 
     suspend fun getTotalTraffic(): CoreTraffic
 
+    suspend fun resetTraffic()
+
     suspend fun getConnectionCount(): Int
 
     suspend fun getConnections(): List<CoreConnection>
@@ -480,6 +482,8 @@ class NativeCoreRuntimeBridge(
     override suspend fun getTraffic(): CoreTraffic = coreBridge.getTraffic()
 
     override suspend fun getTotalTraffic(): CoreTraffic = coreBridge.getTotalTraffic()
+
+    override suspend fun resetTraffic() = coreBridge.resetTraffic()
 
     override suspend fun getConnectionCount(): Int = coreBridge.getConnectionCount()
 

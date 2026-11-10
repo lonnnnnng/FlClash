@@ -517,6 +517,11 @@ class CoreBridge {
     suspend fun getTotalTraffic(onlyProxy: Boolean = false): CoreTraffic =
         parseTrafficResponse(invoke("getTotalTraffic", onlyProxy).optJSONObject("result"))
 
+    suspend fun resetTraffic() {
+        // 作者 long：结束本次运行需要清除核心累计值，不能只让页面暂时显示零；等待原生回执避免下次启动读到旧计数。
+        check(invoke("resetTraffic", JSONObject()).get("result") == true) { "清除本次流量统计失败" }
+    }
+
     suspend fun closeConnections() {
         check(invoke("closeConnections", JSONObject()).optBoolean("result", false)) { "关闭旧连接失败" }
     }

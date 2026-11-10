@@ -72,6 +72,7 @@ class MainViewModelTelemetryTest {
             model.setObservationVisible(true)
             runCurrent()
             assertEquals(listOf(CoreTraffic(1, 2)), model.stats.value.trafficHistory)
+            assertEquals(CoreTraffic(10, 20), model.stats.value.totalTraffic)
             // 作者 long：不让调度器处理中间 STOPPED，模拟快速重启时 StateFlow 合并枚举状态。
             manager.stop().getOrThrow()
             now += 100
@@ -79,6 +80,7 @@ class MainViewModelTelemetryTest {
             manager.startProxy().getOrThrow()
             runCurrent()
             assertEquals(listOf(CoreTraffic(9, 10)), model.stats.value.trafficHistory)
+            assertEquals(CoreTraffic(0, 0), model.stats.value.totalTraffic)
             assertEquals(0L, model.uptimeMillis.value)
         } finally {
             model.viewModelScope.cancel()
@@ -164,6 +166,7 @@ class MainViewModelTelemetryTest {
 // 作者 long：只隔离核心 I/O 与时钟，保留正式 Manager 和 ViewModel 的协程与会话切换逻辑。
 private class TelemetryBridge : CoreRuntimeBridge {
     var readTraffic: suspend () -> CoreTraffic = { CoreTraffic(1, 2) }
+    var totalTraffic = CoreTraffic(10, 20)
     override val events = emptyFlow<CoreEvent>()
     override val eventFlowStats = MutableStateFlow(CoreEventFlowStats())
     override suspend fun initialize(homeDir: String, sdkVersion: Int) = Unit
@@ -176,7 +179,8 @@ private class TelemetryBridge : CoreRuntimeBridge {
     override suspend fun testDelay(proxyName: String, testUrl: String, timeoutMs: Long): ProxyDelay? = null
     override suspend fun probe(url: String, proxyName: String, timeoutMs: Long): CoreProbeResult? = null
     override suspend fun getTraffic() = readTraffic()
-    override suspend fun getTotalTraffic() = CoreTraffic(10, 20)
+    override suspend fun getTotalTraffic() = totalTraffic
+    override suspend fun resetTraffic() { totalTraffic = CoreTraffic(0, 0) }
     override suspend fun getConnectionCount() = 0
     override suspend fun getConnections() = emptyList<CoreConnection>()
     override suspend fun clearDnsCache() = true

@@ -309,6 +309,7 @@ class CoreRuntimeManager(
     private val listenerStarted = AtomicBoolean(false)
     private val eventListenerStarted = AtomicBoolean(false)
     private val logListenerStarted = AtomicBoolean(false)
+    private var trafficResetPending = false
     private val mutableState = MutableStateFlow(CoreRuntimeStatus.STOPPED)
     private val mutableRunningSince = MutableStateFlow<Long?>(null)
     private val mutableIpRouteRevision = MutableStateFlow(0L)
@@ -695,6 +696,11 @@ class CoreRuntimeManager(
             // 作者 long：先记录恢复意图，再进行配置和服务启动，进程若在启动中断开也能由 Application 重试。
             runtimeResumeStore.setShouldResume(true)
             ensureConfigLoaded(force = true)
+            if (trafficResetPending) {
+                // 作者 long：上次停止已关闭服务但清零未获内核确认；新会话开监听前先补清，避免旧累计混入本轮。
+                bridge.resetTraffic()
+                trafficResetPending = false
+            }
             if (eventListenerStarted.compareAndSet(false, true)) {
                 bridge.startEventListener()
             }
@@ -775,6 +781,8 @@ class CoreRuntimeManager(
             }
             mutableState.value = CoreRuntimeStatus.STOPPING
             serviceController.stopAndAwait()
+            // 作者 long：服务已收起，接下来的监听关闭/内核复位失败都要阻止新会话复用旧累计。
+            trafficResetPending = true
             if (listenerStarted.get()) {
                 bridge.stopListener()
                 listenerStarted.set(false)
@@ -787,6 +795,8 @@ class CoreRuntimeManager(
                 bridge.stopLog()
                 logListenerStarted.set(false)
             }
+            bridge.resetTraffic()
+            trafficResetPending = false
             mutableState.value = CoreRuntimeStatus.STOPPED
             RuntimeDiagnosticHistory.recordAndFlush(RuntimeDiagnosticKind.CORE_STOPPED, "核心已停止")
         }.onFailure { error ->

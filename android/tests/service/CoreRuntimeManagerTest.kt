@@ -2179,6 +2179,52 @@ class CoreRuntimeManagerTest {
         assertTrue(manager.getConnections().isSuccess)
     }
 
+    @Test fun stopClearsCoreTotalsBeforeNextSessionButSuspensionAndApplyKeepThem() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge()
+        val services = FakeServiceController()
+        val runtime = manager(ActiveProfile(12, "流量会话", source.path), temporaryFolder.newFolder(), bridge, services)
+        runtime.startProxy().getOrThrow()
+        val total = runtime.getStats().getOrThrow().totalTraffic
+        runtime.setOnDemandExcluded(true).getOrThrow()
+        runtime.setOnDemandExcluded(false).getOrThrow()
+        source.appendText("# reload\n")
+        runtime.applyCurrentProfile(12)
+        assertEquals(total, runtime.getStats().getOrThrow().totalTraffic)
+        assertEquals(0, bridge.trafficResets)
+        bridge.beforeTrafficReset = { assertFalse(services.started); assertFalse(bridge.listenerStarted) }
+        runtime.stop().getOrThrow()
+        assertEquals(CoreTraffic(0, 0), bridge.getTotalTraffic())
+        assertEquals(CoreTraffic(0, 0), bridge.getTraffic())
+        runtime.startProxy().getOrThrow()
+        assertEquals(CoreTraffic(0, 0), runtime.getStats().getOrThrow().totalTraffic)
+        bridge.totalTraffic = CoreTraffic(8, 16)
+        runtime.setOnDemandExcluded(true).getOrThrow()
+        runtime.stop().getOrThrow()
+        assertEquals(CoreTraffic(0, 0), bridge.getTotalTraffic())
+        runtime.stop().getOrThrow()
+        assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
+    }
+
+    @Test fun trafficResetFailureCannotPublishStoppedOrReuseTotalsOnRestart() = runTest {
+        val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
+        val bridge = FakeBridge()
+        val services = FakeServiceController()
+        val runtime = manager(ActiveProfile(12, "重置失败", source.path), temporaryFolder.newFolder(), bridge, services)
+        runtime.startProxy().getOrThrow()
+        bridge.beforeTrafficReset = { error("reset unavailable") }
+        assertTrue(runtime.stop().isFailure)
+        assertEquals(CoreRuntimeStatus.FAILED, runtime.state.value)
+        assertFalse(services.started)
+        assertFalse(bridge.listenerStarted)
+        assertTrue(runtime.startProxy().isFailure)
+        assertFalse(services.started)
+        bridge.beforeTrafficReset = {}
+        runtime.startProxy().getOrThrow()
+        assertEquals(CoreTraffic(0, 0), runtime.getStats().getOrThrow().totalTraffic)
+        runtime.stop().getOrThrow()
+    }
+
     @Test
     fun `uptime belongs to a successful core session and restarts from zero`() = runTest {
         val source = temporaryFolder.newFile("uptime.yaml").apply { writeText("mixed-port: 7890\n") }
@@ -2867,10 +2913,20 @@ class CoreRuntimeManagerTest {
 
         override suspend fun getTraffic(): CoreTraffic {
             trafficError?.let { throw it }
-            return CoreTraffic(up = 12, down = 34)
+            return traffic
         }
 
-        override suspend fun getTotalTraffic(): CoreTraffic = CoreTraffic(up = 120, down = 340)
+        var traffic = CoreTraffic(up = 12, down = 34)
+        var totalTraffic = CoreTraffic(up = 120, down = 340)
+        var trafficResets = 0
+        var beforeTrafficReset: suspend () -> Unit = {}
+        override suspend fun getTotalTraffic(): CoreTraffic = totalTraffic
+        override suspend fun resetTraffic() {
+            beforeTrafficReset()
+            trafficResets++
+            traffic = CoreTraffic(0, 0)
+            totalTraffic = CoreTraffic(0, 0)
+        }
 
         override suspend fun getConnectionCount(): Int = 2
 
