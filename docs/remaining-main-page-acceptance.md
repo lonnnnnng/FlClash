@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **非空Flutter对照与菜单线程时间线（2026-11-10，KUI-033）**：已核对非空CUSTOM/资源、接入成员下沿搜索、录制DNS深浅自然过渡并取得菜单线程/Popup分窗数据；首开慢帧和原生函数归因未闭环。证据[验收JSON](acceptance/nonempty-motion-redmi-20261110.json)，余项与范围见[执行记录](nonempty-reference-menu-timeline.md)。
+
 > **下沿搜索与共享子页转场（2026-11-10，KUI-032）**：资源/Provider/图标与Sniffer添加候选的下沿搜索、共享编辑器与工具栏转场已完成本组17项Redmi验收；869项JVM、签名Release和双Lint零错误，手机保留`475e5a74…d7edcf2`候选。完整Flutter安全包已跑通部分真实页面，非空CUSTOM/资源矩阵、其余全页动效和菜单原生慢帧仍PARTIAL。证据[验收JSON](acceptance/docked-search-redmi-20261110.json)，实现与边界见[对齐记录](docked-search-alignment.md)。
 
 > **新内核仓库重新构建与真机运行（2026-11-10）**：App `300efb31`／新fork核心 `464552e4` 全新递归检出、独立Go编译缓存、关闭Gradle构建缓存并强制重编，165任务执行；签名Release与Lint零错误通过，AAR→独立符号剥离→APK原生库逐字节吻合。同提交CI 42738505695全检查成功。Redmi覆盖安装回拉SHA `afd2a28c…100af068`；核心/VPN启动、90项Provider页面、停止释放端口已验。HTTPS首轮3成功，显式重启紧接前台服务出现的首请求TLS失败，后续同会话3成功，总6/7保留失败；未直接等待核心READY，因果未定，不记网络恢复闭环。配置21字段／偏好／正文SHA-size-mtime保持，测速238键保持但值／时间更新；WAL/SHM等变化单列。探针和10个手机文件已清，服务停止，手机保留新签名包，公开Release未替换。证据[构建与Redmi验收](acceptance/mihomo-refork-build-redmi-20261110.json)，见[迁移记录](mihomo-fork-migration.md)。
@@ -131,8 +133,8 @@ KREL-001与KUI-020已修，公开APK在Redmi验证：真实SAF/首次VPN及运�
 
 **菜单性能调查（2026-11-09，KUI-021）**：完成透明正文图层、硬件阴影、缓存软件阴影、源按钮图层复用四种候选核验。三个签名R8候选深浅各三轮24/24终态均通过，854JVM/双Lint通过，但首开/关闭无充分收益；硬件阴影未过外观门禁，全部撤回，产品源码与公开0.1.0保持一致。缓存软件阴影10对固定帧像素完全一致仍不足以证明性能。新增关闭窗口存活期诊断回收4/9/18条帧，早段UI区间最大75.928ms、渲染最大27.901ms，仅经过时间不作CPU归因。下一步采样首开/关闭前100ms的主线程工作，保留关闭前帧表。公开APK已恢复到Redmi，测试包清理、night=yes、服务停止；原配置/1.yaml保持。证据 `docs/acceptance/menu-performance-investigation-redmi-20261109.json`，溯源 `docs/menu-content-compositing-defect.md`。
 
-## KUI-032后续顺序
+## KUI-033后续顺序
 
-1. 菜单关闭Popup帧已补齐；继续可用原生采样的调用栈归因。当前ROM正确PID仍被拒绝，保留首开/关闭/RenderThread慢帧为未完成，不能由留窗诊断称性能通过。
-2. KUI-032完成资源/Provider/图标与Sniffer添加面板下沿搜索、共享编辑器/观测/按应用代理转场，共17项具名真机方法通过。下一步补非空CUSTOM/Provider/图库的完整Flutter运行对照，以及尚未逐页录制的工具栏和子页连续过渡；已有组件通过不能替代全页像素等价或性能验收。
-3. 长窗先保留首次TLS失败并关联DNS/节点拨号/远端关闭，再补更长及重复恢复。加入写入来源/时刻诊断后继续追查历史元数据/mtime/偏好异常；本轮未复现不关闭历史记录。
+1. 菜单计数首次覆盖触点输入并分离深浅首开/复开/关闭：主线程和RenderThread累计CPU高，Popup关闭窗可见；先设计单因素绘制候选和无采样基线，再以现成ART采样核对热点。若ROM继续拒绝原生栈，保持“线程成本定位、函数因果未定”，不重复同一失败的Perfetto/Simpleperf入口。
+2. 安全Flutter副本非空CUSTOM已读取34组、91规则、90资源以及NTP/Sniffer；下一步补非空Provider运行条件和图标/图库，沿Toolbar、编辑/选择/预览逐页录制。Kotlin成员搜索已下沉至真实IME上沿Dock，DNS自然深浅转场已录制；剩余子页按导航/返回/快速反向分组，区分fixture宿主和真实页面。
+3. 保留启动后238条测速value/updatedAtMillis变化、运行投影mtime变化和自动更新审计文件变化；按Profile/代理四字段复合键关联写入者及来源时刻，再做长窗重复启停。现有启动后复查已稳定但不解释首次变化，未复现不关闭历史记录。

@@ -29,6 +29,10 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkMenuFirstOpenAndCloseFrameTimeline() = runMenuBoundaryDiagnostic(true)
     @Test fun lightDockedSearchKeepsSheetAcrossImeAndCancel() = runDockedSearch(false)
     @Test fun darkDockedSearchKeepsSheetAcrossImeAndCancel() = runDockedSearch(true)
+    @Test fun lightDnsToolbarSearchAndReturnUseNaturalWindowMotion() = runDnsToolbar(false)
+    @Test fun darkDnsToolbarSearchAndReturnUseNaturalWindowMotion() = runDnsToolbar(true)
+    @Test fun lightMenuDispatchThreadTimeline() = runMenuDispatchTimeline(false)
+    @Test fun darkMenuDispatchThreadTimeline() = runMenuDispatchTimeline(true)
 
     private fun runDockedSearch(dark: Boolean) {
         assertPortraitDefaultFontConfiguration()
@@ -79,6 +83,78 @@ class VisualMotionNaturalInstrumentedTest {
                 saveFrames("visual-motion-$run-$suffix.gfx")
             }
         }
+    }
+
+    private fun runDnsToolbar(dark: Boolean) {
+        assertPortraitDefaultFontConfiguration()
+        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))
+        suffix = if (dark) "dark" else "light"
+        ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+            scenario.onActivity { it.dark = dark; it.destination = MainDestination.TOOLS }
+            click("tools_dns_open"); await("DNS 查询"); settle(); capture("dns-list")
+            // 作者 long：Dialog不继承宿主资源ID；按钮以实际标题/输入同行的原生触点定位，避免为测试修改产品语义。
+            fun buttons(y: Int) = checkNotNull(root()).let { nodes(it).filter { n ->
+                val r = bounds(n)
+                n.isClickable && !n.isEditable && r.width() in 60..250 && r.height() in 60..250 && kotlin.math.abs(r.centerY() - y) < 60
+            }.map(::bounds).distinct().sortedBy { it.right }.toList() }
+            event("dns-search-open"); tap(buttons(bounds(checkNotNull(find("DNS 查询"))).centerY()).last()); settle()
+            val query = checkNotNull(root()?.let { nodes(it).firstOrNull { n -> n.isEditable } })
+            assertTrue(query.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
+                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "dns.example")
+            }))
+            await("dns.example · A"); settle(); capture("dns-filtered")
+            val queryY = bounds(query).centerY()
+            tap(buttons(queryY).dropLast(1).last()); settle()
+            event("dns-search-close"); tap(buttons(queryY).last()); settle()
+            await("DNS 查询"); assertNull(root()?.let { nodes(it).firstOrNull { n -> n.isEditable } })
+            tap(buttons(bounds(checkNotNull(find("DNS 查询"))).centerY()).first()); settle(); await("tools_dns_open")
+            capture("dns-tools-returned")
+            scenario.onActivity { assertFalse(it.showDnsPage) }
+            event("dns-return-completed")
+        }
+    }
+
+    // 作者 long：use 的返回值不能泄漏到 @Test 方法，JUnit4 只接受 void，否则精确筛选的其他方法也无法运行。
+    private fun runMenuDispatchTimeline(dark: Boolean): Unit = kotlinx.coroutines.runBlocking {
+        assertPortraitDefaultFontConfiguration()
+        val args = InstrumentationRegistry.getArguments()
+        assertEquals("true", args.getString("kclashMotionThreadCpu"))
+        assertEquals("true", args.getString("kclashCloseWindowCapture"))
+        assertEquals("true", args.getString("kclashMotionInlineFrames"))
+        assertNotEquals("true", args.getString("kclashCapturePng"))
+        val run = checkNotNull(args.getString("kclashMotionRun"))
+        require(run.matches(Regex("[a-z0-9-]+")))
+        val context = ins.targetContext
+        val old = ProxyPageOptionsStore.load(context)
+        suffix = if (dark) "dark" else "light"
+        try {
+            ProxyPageOptionsStore.save(context, ProxyPageOptions(displayMode = ProxyDisplayMode.TAB))
+            ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+                scenario.onActivity { it.dark = dark }
+                click("nav_proxy"); await("proxy_tools"); settle()
+                val source = bounds(checkNotNull(find("proxy_tools")))
+                val probe = MenuThreadCpuProbe()
+                // 作者 long：空闲计数与同一窗口首次/复开并列保存，采样扰动不当成优化收益；动画中不查树或抓帧。
+                probe.sample("$run-$suffix-idle") { }
+                repeat(3) { pass ->
+                    shell("dumpsys gfxinfo ${context.packageName} reset")
+                    probe.sample("$run-$suffix-$pass-open") { tap(source) }
+                    saveFrames("visual-motion-$run-$suffix-$pass-open.gfx")
+                    await("样式：标签"); settle()
+                    shell("dumpsys gfxinfo ${context.packageName} reset")
+                    val gate = MenuCloseCaptureProbe.arm()
+                    try {
+                        probe.sample("$run-$suffix-$pass-close") { back() }
+                        val completed = kotlinx.coroutines.withTimeout(5_000) { gate.completed.await() }
+                        saveFrames("visual-motion-$run-$suffix-$pass-close.gfx")
+                        ins.sendStatus(2, Bundle().apply { putString("kclash_close_capture", JSONObject()
+                            .put("pass", pass).put("animationCompletedNs", completed).put("capturedBeforeRemoval", true).toString()) })
+                    } finally { gate.release() }
+                    awaitGone("样式：标签"); settle()
+                }
+                scenario.onActivity { assertEquals(0, it.nodeSelections) }
+            }
+        } finally { MenuCloseCaptureProbe.reset(); ProxyPageOptionsStore.save(context, old) }
     }
 
     @Test fun moreSelectionEntriesUseNaturalContinuousExit() {

@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,9 @@ class VisualMotionTestActivity : ComponentActivity() {
     var showMoreEditor by mutableStateOf(false)
     var moreSection by mutableStateOf("ntp")
     var moreSaveRequests = 0
+    var showDnsPage by mutableStateOf(false)
+    private var dnsQuery by mutableStateOf("")
+    private var dnsSearchExpanded by mutableStateOf(false)
     private var moreState by mutableStateOf(ProfileMoreEditorUiState(Profile.custom(903, "动效参考")))
     private var showAdd by mutableStateOf(false)
     private var toolbarAction by mutableStateOf<ProfilesToolbarAction?>(null)
@@ -77,6 +81,10 @@ class VisualMotionTestActivity : ComponentActivity() {
                                     onPickFile = {}, onPickQrCode = {}, onAddRemote = { _, _ -> }, onAddCustom = {},
                                     onSelect = { selectedProfile = it; profileSelections++ }, onEdit = {}, onUpdate = { syncRequests++ },
                                     onCloseEditor = {}, onSaveEditor = {}, onDelete = {})
+                            } else if (page == MainDestination.TOOLS) Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+                                androidx.compose.material3.TextButton(onClick = { showDnsPage = true }, modifier = Modifier.testTag("tools_dns_open")) {
+                                    androidx.compose.material3.Text("DNS 查询")
+                                }
                             } else Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 DashboardProfileCard(profile = profiles.firstOrNull { it.id == selectedProfile }, profiles = profiles,
@@ -88,6 +96,13 @@ class VisualMotionTestActivity : ComponentActivity() {
                             }
                         }
                     }
+                    if (showDnsPage) ObservationListPage(
+                        title = "DNS 查询", searchLabel = "搜索 DNS", searchQuery = dnsQuery,
+                        searchExpanded = dnsSearchExpanded, keywords = listOf("A", "AAAA"),
+                        onDismiss = { showDnsPage = false; dnsQuery = ""; dnsSearchExpanded = false },
+                        onSearchQueryChange = { dnsQuery = it }, onSearchExpandedChange = { dnsSearchExpanded = it },
+                        onRemoveKeyword = {}, content = { androidx.compose.material3.Text("${dnsQuery.ifBlank { "resolver.example.test" }} · A") },
+                    )
                 }
             }
         }

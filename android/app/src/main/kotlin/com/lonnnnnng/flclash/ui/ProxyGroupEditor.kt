@@ -580,9 +580,10 @@ private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroup
             }
         })
     if (picker) ProfileEditorPage(onDismissRequest = { picker = false }, backTag = "group_member_picker_back", title = { Text("添加节点") },
+        // 作者 long：成员候选也属于推入选择页，查询固定在本窗口下沿；取消仅结束搜索，不能改成员草稿或退出选择层。
+        bottomBar = { DockedProfileSearch(query, { query = it }, "group_member_search") },
         confirmButton = { TextButton(onClick = { picker = false }, Modifier.testTag("group_member_picker_done")) { Text("完成") } }, text = {
             Column {
-                OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().testTag("group_member_search"), label = { Text("搜索") }, singleLine = true)
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     val choices = (ProxyGroupDrafts.builtins + ProxyGroupDrafts.proxyNames(source) + groups.filter { it.key != group.key }.map { it.name }).distinct().filter { it != group.name }.map { ProxyGroupMember(it) } +
                         ProxyGroupDrafts.providerNames(source).map { ProxyGroupMember(it, true) }

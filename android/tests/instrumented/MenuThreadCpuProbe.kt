@@ -6,6 +6,9 @@ import android.system.Os
 import android.system.OsConstants
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -21,24 +24,49 @@ internal class MenuThreadCpuProbe {
 
     fun sample(name: String, action: () -> Unit) {
         val snapshots = JSONArray()
-        val start = System.nanoTime()
-        snapshots.put(snapshot(start))
+        val ready = CountDownLatch(1)
+        val collectorFailure = AtomicReference<Throwable?>()
+        var start = 0L
+        val period = 50_000_000L
+        // 作者 long：同步触点注入会阻塞测试线程，独立采集线程须先取得基线，才能覆盖菜单首开最早的50/100ms。
+        val collector = Thread({
+            try {
+                start = System.nanoTime()
+                snapshots.put(snapshot(start))
+                ready.countDown()
+                var target = 1L
+                while (target <= 16L) {
+                    val remaining = start + target * period - System.nanoTime()
+                    if (remaining > 0) SystemClock.sleep((remaining + 999_999L) / 1_000_000L)
+                    val sample = snapshot(start).put("scheduledNs", target * period)
+                    snapshots.put(sample)
+                    // 作者 long：调度落后时跳过错过的时隙，不能密集补采制造虚假的50ms覆盖；实际边界和缺口供报告核对。
+                    target = maxOf(target + 1L, (System.nanoTime() - start) / period + 1L)
+                }
+            } catch (failure: Throwable) {
+                collectorFailure.set(failure)
+                ready.countDown()
+            }
+        }, "menu-counter-sampler")
+        collector.start()
+        check(ready.await(2, TimeUnit.SECONDS)) { "线程采集基线超时" }
+        collectorFailure.get()?.let { throw it }
         val dispatch = System.nanoTime()
-        action()
+        val actionResult = runCatching(action)
         val dispatched = System.nanoTime()
-        // 作者 long：计划每100ms只读预先发现的主线程/同名渲染线程；注入可能阻塞，实际时刻和读耗时必须原样保留。
-        for (target in 1..8) {
-            val remaining = start + target * 100_000_000L - System.nanoTime()
-            if (remaining > 0) SystemClock.sleep((remaining + 999_999L) / 1_000_000L)
-            snapshots.put(snapshot(start))
-        }
+        collector.join(2_000)
+        check(!collector.isAlive) { "线程采集未按预算结束" }
+        collectorFailure.get()?.let { throw it }
         val report = JSONObject().put("name", name).put("pid", pid).put("ticksPerSecond", ticksPerSecond)
+            .put("version", 2).put("sampleStartUptimeNs", start).put("samplingPeriodNs", period)
+            .put("samplingMode", "independent-thread").put("actionSucceeded", actionResult.isSuccess)
             .put("dispatchStartNs", dispatch - start).put("dispatchEndNs", dispatched - start)
             .put("renderThreadFound", threads.any { it.second == "RenderThread" }).put("snapshots", snapshots)
-            .put("scope", "Own-process cumulative thread CPU and scheduler counters; 100ms buckets, no native stacks, no Popup-only attribution or actual presentation timestamps.")
+            .put("scope", "Own-process cumulative counters sampled independently of input dispatch; actual read boundaries, no native stacks, Popup-only attribution or presentation timestamps.")
         InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
             putString("kclash_thread_cpu", report.toString())
         })
+        actionResult.getOrThrow()
     }
 
     private fun snapshot(start: Long): JSONObject {

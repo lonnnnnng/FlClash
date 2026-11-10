@@ -29,6 +29,36 @@ class MenuThreadReportTest(unittest.TestCase):
         self.assertIsNone(report["threads"][0]["cpuMs"])
         self.assertEqual(1, report["threads"][0]["rejectedIntervals"])
 
+    def test_thread_missing_before_baseline_remains_visible_as_failure(self):
+        report = summarize({"name": "closed", "pid": 1, "actionSucceeded": True,
+            "dispatchStartNs": 0, "dispatchEndNs": 1,
+            "snapshots": [{"readStartNs": 0, "readEndNs": 1, "threads": [
+                {"tid": 9, "name": "RenderThread", "statError": "FileNotFoundException",
+                 "schedstatError": "FileNotFoundException"}]}]})
+        self.assertEqual([], report["threads"])
+        self.assertEqual(9, report["readFailures"][0]["tid"])
+        self.assertEqual("FileNotFoundException", report["readFailures"][0]["statError"])
+        self.assertTrue(report["actionSucceeded"])
+
+    def test_independent_samples_cover_input_dispatch_and_report_gaps(self):
+        sample = {"name": "open", "pid": 1, "dispatchStartNs": 100_000_000,
+                  "dispatchEndNs": 235_000_000, "samplingPeriodNs": 50_000_000,
+                  "snapshots": [
+                      {"readStartNs": 0, "readEndNs": 1, "threads": []},
+                      {"readStartNs": 45_000_000, "readEndNs": 45_100_000, "scheduledNs": 50_000_000, "threads": []},
+                      {"readStartNs": 100_000_000, "readEndNs": 100_100_000, "scheduledNs": 100_000_000, "threads": []},
+                      {"readStartNs": 225_000_000, "readEndNs": 225_100_000, "scheduledNs": 150_000_000, "threads": []},
+                      {"readStartNs": 275_000_000, "readEndNs": 275_100_000, "scheduledNs": 275_000_000, "threads": []},
+                  ]}
+        report = summarize(sample)
+        self.assertEqual(45, report["firstObservationMs"])
+        self.assertEqual(1, report["observationsBeforeDispatch"])
+        self.assertEqual(2, report["observationsDuringDispatch"])
+        self.assertEqual(1, report["observationsFirst100ms"])
+        self.assertEqual(124.9, report["gaps"][1]["gapMs"])
+        self.assertEqual(1, report["gaps"][1]["missedPeriods"])
+        self.assertTrue(report["threads"] == [])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -17,6 +17,43 @@ class ProxyGroupEditorInstrumentedTest {
     @get:Rule val compose = createComposeRule()
     private val source = "proxies:\n  - {name: Local, type: direct}\nproxy-providers:\n  cloud: {type: file, path: cloud.yaml}\nproxy-groups:\n  - {name: Main, type: select, proxies: [DIRECT], future: keep}\n  - {name: Other, type: fallback, proxies: [Main]}\nrules: ['MATCH,Main']\n"
 
+    @Test fun memberDockCancelPreservesDraftAndStaysAboveRealIme() {
+        assertPortraitDefaultFontConfiguration()
+        var writes = 0
+        compose.setContent { KClashTheme {
+            ProfileProxyGroupsEditorDialog(Profile.custom(214, "成员搜索"), ProfileProxyGroupsEditor.extractGroups(source), false,
+                {}, {}, sourceContent = source, initialGroupIndex = 0, onSaveDraft = { writes++ })
+        } }
+        compose.onNodeWithTag("proxy_group_members").performClick()
+        compose.onNodeWithTag("group_members_add").performClick()
+        compose.onNodeWithTag("group_member_search").performClick().performTextReplacement("Local")
+        fun imeTop(): Int? {
+            var result: Int? = null
+            InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                val view = android.view.inspector.WindowInspector.getGlobalWindowViews().lastOrNull { it.hasWindowFocus() }
+                val insets = view?.let(androidx.core.view.ViewCompat::getRootWindowInsets)
+                if (view != null && insets?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == true)
+                    result = view.height - insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.ime()).bottom
+            }
+            return result
+        }
+        compose.waitUntil(5_000) { imeTop() != null }
+        val dock = compose.onNodeWithTag("group_member_search_dock").fetchSemanticsNode().boundsInWindow
+        assertTrue(dock.bottom <= checkNotNull(imeTop()) + 1)
+        assertTrue(compose.onNodeWithTag("group_member_choice_false_Local").fetchSemanticsNode().boundsInWindow.bottom <= dock.top)
+        capture("member_dock_ime")
+        compose.onNodeWithTag("group_member_search_cancel").performClick()
+        compose.waitUntil(5_000) { imeTop() == null }
+        compose.onNodeWithTag("group_member_picker_done").assertIsDisplayed()
+        assertEquals("", compose.onNodeWithTag("group_member_search").fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text)
+        compose.onNodeWithTag("group_member_picker_done").performClick()
+        compose.onNodeWithTag("group_member_label_0").assertTextEquals("DIRECT")
+        compose.onAllNodesWithTag("group_member_label_1").assertCountEquals(0)
+        assertEquals(0, writes)
+        capture("member_dock_returned")
+    }
+
     @Test fun overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave() {
         assertPortraitDefaultFontConfiguration()
         var writes = 0

@@ -43,7 +43,7 @@ gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --e
 
 当前重置后的Redmi连Debug包也拒绝`run-as`的SELinux上下文，Debug自然视觉同样启用内联帧表。中断采集只执行`removeExactOwnInterruptedFrameArtifacts`，显式`kclashMotionCleanup=true`、原run及JSON `kclashMotionCleanupManifest`（name/bytes/sha256）；先核对清单全部文件再精确删除，空清单只断言采集缓存为空。2026-11-08重置窗口曾为0份；后续已恢复授权本地配置，当前数量必须按当轮正式环境核对，不能沿用旧两份或零份门禁，也不能静默导入补齐测试前提。
 
-独立线程计数诊断选择`VisualMotionNaturalInstrumentedTest#darkMenuOpenAndCloseThreadCpuSamples`，显式`kclashMotionThreadCpu=true`、安全名称`kclashMotionRun`，禁用PNG/方法采样。用`python3 tool/android_menu_thread_report.py instrument.log --output report.json`解析；按TID/startTicks分开同名RenderThread，读取失败/线程死亡保留缺口，计划100ms不等于实际采样间隔。该入口仅测试源码，不等于正式R8包性能或原生调用栈；见`docs/menu-cpu-geometry-investigation.md`。
+独立线程计数旧入口为`VisualMotionNaturalInstrumentedTest#darkMenuOpenAndCloseThreadCpuSamples`。当前输入并发采样选择`#lightMenuDispatchThreadTimeline`或`#darkMenuDispatchThreadTimeline`，显式`kclashMotionThreadCpu=true`、`kclashCloseWindowCapture=true`、`kclashMotionInlineFrames=true`及安全唯一`kclashMotionRun`，禁用PNG/录屏/方法采样。独立线程先取基线再触点注入，计划50ms、约0.8秒，不代表实际采样间隔。用`python3 tool/android_menu_thread_report.py instrument.log --output report.json`解析；按TID/startTicks分开同名RenderThread，读取失败/线程死亡单列readFailures，后创建线程不在采集范围。报告器测试用`python3 -m unittest discover -s tool -p test_android_menu_thread_report.py -v`。仅用于诊断，不等于正式R8包性能或原生调用栈；当前证据见`docs/nonempty-reference-menu-timeline.md`，历史见`docs/menu-cpu-geometry-investigation.md`。
 
 ## 关闭留窗、条目动效与长窗诊断
 

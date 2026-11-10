@@ -1,0 +1,275 @@
+{
+  "defect": "KUI-033",
+  "date": "2026-11-10",
+  "repositoryHead": "e664005604d03b287e9967858ef195767d1da09e",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "serial": "wsvwypiz7xwslvl7",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "userYamlBytes": 35165,
+    "userYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+  },
+  "flutterReference": {
+    "package": "com.lonnnnnng.kclash.reference.full.dev",
+    "upstreamPackageTouched": false,
+    "upstreamPackageInstalled": false,
+    "flutterCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "prismCommit": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "safeMode": true,
+    "observed": [
+      "34 profile group count on nonempty CUSTOM profile",
+      "91 custom rules",
+      "90 external resources",
+      "nonempty proxy group and Fallback entry",
+      "Geo resources and scrolling rule catalog",
+      "CUSTOM more page, NTP empty state, nonempty Sniffer options",
+      "group member selection bottom search, IME, filtered results, cancel"
+    ],
+    "limits": [
+      "No reference VPN/core start or network success claim",
+      "Rule resource timestamps were unknown in safe mode",
+      "Nonempty icon/gallery reference and full page pixel parity remain open"
+    ],
+    "authorizedInputBytesMatch": true,
+    "inputVerificationScope": "Original local input copy matches 1.yaml; transformed CUSTOM runtime body was not byte-compared."
+  },
+  "kotlinChange": {
+    "file": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt",
+    "behavior": "Move proxy group member search from the list header to the shared bottom dock; cancel clears query and IME without changing the member draft or leaving the picker.",
+    "tests": [
+      "ProxyGroupEditorInstrumentedTest#memberDockCancelPreservesDraftAndStaysAboveRealIme",
+      "ProxyGroupEditorInstrumentedTest#groupFormMembersOptionsAndQuickYamlWorkAcrossThemes"
+    ],
+    "passed": 2,
+    "pngCount": 14,
+    "visualReview": true
+  },
+  "dnsMotion": {
+    "tests": [
+      "VisualMotionNaturalInstrumentedTest#lightDnsToolbarSearchAndReturnUseNaturalWindowMotion",
+      "VisualMotionNaturalInstrumentedTest#darkDnsToolbarSearchAndReturnUseNaturalWindowMotion"
+    ],
+    "passed": 2,
+    "naturalVideo": {
+      "light": {
+        "path": "../acceptance-artifacts/nonempty-motion-20261110/dns-continuous-final4-light/dns-toolbar.mp4",
+        "frames": 291,
+        "sha256": "7482f110693ba178bd1cd2151e543f796552ce383162698ecd956cbb9291f442",
+        "strictPts": true,
+        "sampledFrames": 24
+      },
+      "dark": {
+        "path": "../acceptance-artifacts/nonempty-motion-20261110/dns-continuous-final4-dark/dns-toolbar.mp4",
+        "frames": 279,
+        "sha256": "71fdda1141427eed3b42abbc1866318428948e07b3895dbeee2c3263245e671d",
+        "strictPts": true,
+        "sampledFrames": 24
+      }
+    },
+    "limits": [
+      "Uses the production ObservationListPage in a fixed debug acceptance host",
+      "Not a real DNS network request or full page visual parity result",
+      "Startup theme handoff is not treated as production page motion"
+    ]
+  },
+  "menuThreadTimeline": {
+    "testMethod": "VisualMotionNaturalInstrumentedTest#lightMenuDispatchThreadTimeline,darkMenuDispatchThreadTimeline",
+    "passedMethods": 2,
+    "samples": 14,
+    "idleSamples": 2,
+    "openCloseActions": 12,
+    "gfxWindows": 12,
+    "closeAnimationsCapturedBeforeRemoval": 6,
+    "periodMs": 50,
+    "captureWindowMs": 800,
+    "pngOrRecording": false,
+    "methodTracing": false,
+    "findings": {
+      "lightMainOpenCpuMs": [
+        274.032,
+        438.622
+      ],
+      "lightPrimaryRenderThreadOpenCpuMs": [
+        427.434,
+        463.706
+      ],
+      "lightMainCloseCpuMs": [
+        262.628,
+        340.673
+      ],
+      "lightPrimaryRenderThreadCloseCpuMs": [
+        207.498,
+        250.558
+      ],
+      "darkMainOpenCpuMs": [
+        393.898,
+        498.786
+      ],
+      "darkPrimaryRenderThreadOpenCpuMs": [
+        437.903,
+        485.096
+      ],
+      "darkMainCloseCpuMs": [
+        261.805,
+        320.389
+      ],
+      "darkPrimaryRenderThreadCloseCpuMs": [
+        198.911,
+        218.723
+      ],
+      "readErrors": "Light snapshots include early-terminated RenderThread FileNotFoundException records; the updated report lists readFailures and never substitutes zero.",
+      "popupOpenJankFrames": {
+        "light": [
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            16
+          ],
+          [
+            6,
+            8
+          ]
+        ],
+        "dark": [
+          [
+            8,
+            9
+          ],
+          [
+            6,
+            20
+          ],
+          [
+            5,
+            18
+          ]
+        ]
+      },
+      "popupCloseJankFrames": {
+        "light": [
+          [
+            3,
+            23
+          ],
+          [
+            2,
+            26
+          ],
+          [
+            2,
+            27
+          ]
+        ],
+        "dark": [
+          [
+            3,
+            26
+          ],
+          [
+            2,
+            26
+          ],
+          [
+            2,
+            28
+          ]
+        ]
+      }
+    },
+    "interpretationLimits": [
+      "Cumulative thread CPU is not native callstack attribution, popup-only CPU, GPU time, or presented-frame time.",
+      "First timed read is about 50ms after injected touch; one close window has only one read in its first 100ms.",
+      "Probe read overhead is measurable; light has maximum 16.954ms and dark 4.907ms.",
+      "Thread list is captured before actions; threads created later are excluded.",
+      "No product performance fix or before/after gain is claimed."
+    ],
+    "reporterTests": 4
+  },
+  "build": {
+    "unitTests": {
+      "app": 587,
+      "service": 213,
+      "core": 38,
+      "common": 31,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debugLint": {
+      "errors": 0,
+      "warnings": 71,
+      "hints": 14
+    },
+    "releaseLint": {
+      "errors": 0,
+      "warnings": 68,
+      "hints": 13
+    },
+    "releaseDexRegistrarGate": {
+      "passed": 3,
+      "failed": 0
+    },
+    "releaseApk": {
+      "sha256": "ef0d5c05327de7ca666c2d1be45664bcf40c20889a754108f56039736c30c2a7",
+      "versionName": "0.1.1",
+      "versionCode": 1001,
+      "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+      "publishedReleaseModified": false,
+      "installedBytesMatch": true
+    },
+    "motionApkSha256": "0cfcd44a4eff02d9ab9c3497d6dcabb37d90dad21bd7ed544a53f7167acf5150",
+    "motionAndroidTestApkSha256": "367eb6c1cf93b32fd5de9bf8140139da47e5286865a5297e3ee7688940df32cc"
+  },
+  "formalSmoke": {
+    "launched": true,
+    "homeStatus": "stopped",
+    "stimulusNote": "The resolved MainActivity launched successfully. A concurrent exploratory tap at (560,1370), intended for the Flutter NTP page, landed on the KClash home traffic card because both calls used the same Redmi; uiautomator reports that card non-clickable. It did not change the four-field delay cache keys or profile body, but the trigger for changed cache values/time is not attributed to launch versus startup work.",
+    "vpnOrProxyServicesRunning": false,
+    "uidPreserved": true,
+    "roomSchemaBeforeAfter": 6,
+    "profilesBeforeAfter": 1,
+    "preferencesBeforeAfter": 2,
+    "scriptsBeforeAfter": 0,
+    "delayRowsBeforeAfter": 238,
+    "businessTablesSameAtInstallBoundary": true,
+    "profileBodyShaSizeMtimePreserved": true,
+    "afterLaunchDelayCompositeKeysSame": true,
+    "afterLaunchDelayRowsWithUpdatedValueAndTime": 238,
+    "runtimeProjectionShaPreservedButMtimeAdvanced": true,
+    "sqliteWorkWalAndShmOrProfileInstallerFilesChanged": true,
+    "rootCauseForStartupCacheUpdates": null,
+    "allDeviceFilesByteIdentical": false,
+    "probeAfterForceStopTablesStable": true
+  },
+  "retainedFailures": [
+    "Initial JUnit class initialization failed because runBlocking returned a value from @Test; method now explicitly returns Unit and targeted natural tests pass.",
+    "Initial instrumentation output parser rejected hyphenated PNG names; fixed filename validation and reconstructed screenshots from the already successful raw log.",
+    "Initial direct Python unittest module path failed collection; repository discover command ran the four tests successfully.",
+    "Incremental package install was unavailable; streamed adb install succeeded.",
+    "One first smoke launch used the wrong activity component and returned Error type 3; package resolver identified com.lonnnnnng.flclash/.MainActivity and launch succeeded.",
+    "The startup change to delay samples and runtime projection metadata remains unattributed and is not restored or hidden."
+  ],
+  "deviceCleanup": {
+    "motionTestPackages": "Uninstalled com.lonnnnnng.flclash.motion, com.lonnnnnng.flclash.motion.test, and com.lonnnnnng.flclash.upgradeprobe after APK/log hash verification.",
+    "originalFlutterPackage": "Not installed or modified.",
+    "safeFlutterReferencePackage": "Retained for the remaining authorized visual comparison.",
+    "deviceXmlAndSnapshotFiles": "64 exact paths were SHA/length checked against their local evidence copies, then removed and verified absent.",
+    "recordingCopies": "Both device screenrecord files were removed after local SHA verification.",
+    "originalYamlAndSystemSettings": "Preserved; font scale, rotation, and animation settings read back unchanged.",
+    "formalDataCleared": false,
+    "coreServicesRunningAtEnd": false
+  },
+  "artifactDirectory": "../acceptance-artifacts/nonempty-motion-20261110/",
+  "scopeStatus": "SCOPED_VERIFIED",
+  "overallFlutterAndMenuPerformanceStatus": "PARTIAL",
+  "artifactManifest": {
+    "path": "artifact-manifest-final.json",
+    "sha256": "9ad7d54059e558686861180a3445f8eb241f6ab06aaa16d13d92062ddb5aea24",
+    "entries": 236
+  }
+}
