@@ -1,0 +1,1124 @@
+{
+  "schema": 1,
+  "date": "2026-11-10",
+  "release": {
+    "tag": "kclash-v0.1.2",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "bodyMatchesSource": true,
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.2",
+    "publishedAt": "2026-11-10T10:55:48Z",
+    "assets": {
+      "KClash-0.1.2-android-arm64-v8a.apk": {
+        "bytes": 48354860,
+        "sha256": "96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538",
+        "githubDigestMatches": true,
+        "downloadUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.2/KClash-0.1.2-android-arm64-v8a.apk"
+      },
+      "SHA256SUMS": {
+        "bytes": 101,
+        "sha256": "6f2d90d6cba53e12bebe38a8fecdc144d90154d58397872e25318b217dbd93f4",
+        "githubDigestMatches": true,
+        "downloadUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.2/SHA256SUMS"
+      }
+    },
+    "tagAndBranchCiSuccess": true
+  },
+  "source": {
+    "repository": "lonnnnnng/FlClash",
+    "branch": "kotlin",
+    "commit": "a0a7f1ae8d32a57b7a09e94388ad213c8b0b0702",
+    "tag": "kclash-v0.1.2",
+    "previousRelease": "kclash-v0.1.1",
+    "versionName": "0.1.2",
+    "versionCode": 1002,
+    "coreGitlink": "464552e44ddf92affe5c41ee5a5d653a0e1e8daf",
+    "coreGitlinkChangedFromPrevious": false
+  },
+  "changeSummary": [
+    "Complete core stop clears accumulated upload/download and speed; reset failure blocks success and is retried before listener start.",
+    "Suspension, resume and profile apply preserve current session totals.",
+    "Resource selection, proxy toolbar and docked-search transitions included in this source tag."
+  ],
+  "ci": {
+    "branchRun": {
+      "conclusion": "success",
+      "event": "push",
+      "headSha": "a0a7f1ae8d32a57b7a09e94388ad213c8b0b0702",
+      "jobs": [
+        {
+          "completedAt": "2026-11-10T10:52:52Z",
+          "conclusion": "success",
+          "databaseId": 129779318079,
+          "name": "Verify KClash Android arm64",
+          "startedAt": "2026-11-10T10:41:57Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-10T10:42:00Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-10T10:41:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:04Z",
+              "conclusion": "success",
+              "name": "Checkout",
+              "number": 2,
+              "startedAt": "2026-11-10T10:42:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:04Z",
+              "conclusion": "success",
+              "name": "Set up Java",
+              "number": 3,
+              "startedAt": "2026-11-10T10:42:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:26Z",
+              "conclusion": "success",
+              "name": "Set up Go",
+              "number": 4,
+              "startedAt": "2026-11-10T10:42:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:30Z",
+              "conclusion": "success",
+              "name": "Set up Android SDK",
+              "number": 5,
+              "startedAt": "2026-11-10T10:42:26Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:46Z",
+              "conclusion": "success",
+              "name": "Install Android build tools",
+              "number": 6,
+              "startedAt": "2026-11-10T10:42:30Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:56Z",
+              "conclusion": "success",
+              "name": "Set up Gradle",
+              "number": 7,
+              "startedAt": "2026-11-10T10:42:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:56Z",
+              "conclusion": "success",
+              "name": "Resolve build version",
+              "number": 8,
+              "startedAt": "2026-11-10T10:42:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:56Z",
+              "conclusion": "skipped",
+              "name": "Configure KClash release signing",
+              "number": 9,
+              "startedAt": "2026-11-10T10:42:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:43:27Z",
+              "conclusion": "success",
+              "name": "Verify Go core, controllers and Geo recovery with race detector",
+              "number": 10,
+              "startedAt": "2026-11-10T10:42:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:27Z",
+              "conclusion": "success",
+              "name": "Verify tests, R8 and arm64 Release package",
+              "number": 11,
+              "startedAt": "2026-11-10T10:43:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:33Z",
+              "conclusion": "success",
+              "name": "Verify Release artifact",
+              "number": 12,
+              "startedAt": "2026-11-10T10:52:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:36Z",
+              "conclusion": "success",
+              "name": "Upload Release artifact",
+              "number": 13,
+              "startedAt": "2026-11-10T10:52:33Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:36Z",
+              "conclusion": "skipped",
+              "name": "Remove runner signing material",
+              "number": 14,
+              "startedAt": "2026-11-10T10:52:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:49Z",
+              "conclusion": "success",
+              "name": "Post Set up Gradle",
+              "number": 25,
+              "startedAt": "2026-11-10T10:52:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:49Z",
+              "conclusion": "success",
+              "name": "Post Set up Go",
+              "number": 26,
+              "startedAt": "2026-11-10T10:52:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:49Z",
+              "conclusion": "success",
+              "name": "Post Set up Java",
+              "number": 27,
+              "startedAt": "2026-11-10T10:52:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:49Z",
+              "conclusion": "success",
+              "name": "Post Checkout",
+              "number": 28,
+              "startedAt": "2026-11-10T10:52:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:52:49Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-11-10T10:52:49Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42801333292/job/129779318079"
+        },
+        {
+          "completedAt": "2026-11-10T10:52:52Z",
+          "conclusion": "skipped",
+          "databaseId": 129784475215,
+          "name": "Publish signed KClash release",
+          "startedAt": "2026-11-10T10:52:52Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42801333292/job/129784475215"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42801333292"
+    },
+    "tagRun": {
+      "conclusion": "success",
+      "event": "push",
+      "headSha": "a0a7f1ae8d32a57b7a09e94388ad213c8b0b0702",
+      "jobs": [
+        {
+          "completedAt": "2026-11-10T10:55:35Z",
+          "conclusion": "success",
+          "databaseId": 129779341729,
+          "name": "Verify KClash Android arm64",
+          "startedAt": "2026-11-10T10:42:00Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-10T10:42:03Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-10T10:42:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:08Z",
+              "conclusion": "success",
+              "name": "Checkout",
+              "number": 2,
+              "startedAt": "2026-11-10T10:42:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:08Z",
+              "conclusion": "success",
+              "name": "Set up Java",
+              "number": 3,
+              "startedAt": "2026-11-10T10:42:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:30Z",
+              "conclusion": "success",
+              "name": "Set up Go",
+              "number": 4,
+              "startedAt": "2026-11-10T10:42:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:35Z",
+              "conclusion": "success",
+              "name": "Set up Android SDK",
+              "number": 5,
+              "startedAt": "2026-11-10T10:42:30Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:42:51Z",
+              "conclusion": "success",
+              "name": "Install Android build tools",
+              "number": 6,
+              "startedAt": "2026-11-10T10:42:35Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:43:03Z",
+              "conclusion": "success",
+              "name": "Set up Gradle",
+              "number": 7,
+              "startedAt": "2026-11-10T10:42:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:43:03Z",
+              "conclusion": "success",
+              "name": "Resolve build version",
+              "number": 8,
+              "startedAt": "2026-11-10T10:43:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:43:03Z",
+              "conclusion": "success",
+              "name": "Configure KClash release signing",
+              "number": 9,
+              "startedAt": "2026-11-10T10:43:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:43:35Z",
+              "conclusion": "success",
+              "name": "Verify Go core, controllers and Geo recovery with race detector",
+              "number": 10,
+              "startedAt": "2026-11-10T10:43:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:20Z",
+              "conclusion": "success",
+              "name": "Verify tests, R8 and arm64 Release package",
+              "number": 11,
+              "startedAt": "2026-11-10T10:43:35Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:28Z",
+              "conclusion": "success",
+              "name": "Verify Release artifact",
+              "number": 12,
+              "startedAt": "2026-11-10T10:55:20Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:31Z",
+              "conclusion": "success",
+              "name": "Upload Release artifact",
+              "number": 13,
+              "startedAt": "2026-11-10T10:55:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:31Z",
+              "conclusion": "success",
+              "name": "Remove runner signing material",
+              "number": 14,
+              "startedAt": "2026-11-10T10:55:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:31Z",
+              "conclusion": "success",
+              "name": "Post Set up Gradle",
+              "number": 25,
+              "startedAt": "2026-11-10T10:55:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:31Z",
+              "conclusion": "success",
+              "name": "Post Set up Go",
+              "number": 26,
+              "startedAt": "2026-11-10T10:55:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:31Z",
+              "conclusion": "success",
+              "name": "Post Set up Java",
+              "number": 27,
+              "startedAt": "2026-11-10T10:55:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:32Z",
+              "conclusion": "success",
+              "name": "Post Checkout",
+              "number": 28,
+              "startedAt": "2026-11-10T10:55:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:32Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-11-10T10:55:32Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42801338969/job/129779341729"
+        },
+        {
+          "completedAt": "2026-11-10T10:55:51Z",
+          "conclusion": "success",
+          "databaseId": 129785734978,
+          "name": "Publish signed KClash release",
+          "startedAt": "2026-11-10T10:55:38Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-10T10:55:40Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-10T10:55:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:42Z",
+              "conclusion": "success",
+              "name": "Checkout release notes",
+              "number": 2,
+              "startedAt": "2026-11-10T10:55:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:43Z",
+              "conclusion": "success",
+              "name": "Download signed APK",
+              "number": 3,
+              "startedAt": "2026-11-10T10:55:42Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:49Z",
+              "conclusion": "success",
+              "name": "Publish GitHub Release",
+              "number": 4,
+              "startedAt": "2026-11-10T10:55:43Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:49Z",
+              "conclusion": "success",
+              "name": "Post Checkout release notes",
+              "number": 8,
+              "startedAt": "2026-11-10T10:55:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-10T10:55:49Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 9,
+              "startedAt": "2026-11-10T10:55:49Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42801338969/job/129785734978"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/42801338969"
+    },
+    "goRace": true,
+    "jvm": {
+      "modules": {
+        "app": {
+          "tests": 587,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "service": {
+          "tests": 215,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "core": {
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "common": {
+          "tests": 31,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "lint": {
+        "debug": {
+          "Warning": 71,
+          "Hint": 14
+        },
+        "release": {
+          "Warning": 68,
+          "Hint": 13
+        }
+      },
+      "total": 871
+    },
+    "signedReleaseR8": true,
+    "debugLint": {
+      "Warning": 71,
+      "Hint": 14
+    },
+    "releaseLint": {
+      "Warning": 68,
+      "Hint": 13
+    },
+    "releaseDexMlkitRegistrars": {
+      "passed": 3,
+      "total": 3
+    }
+  },
+  "publishedAsset": {
+    "url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.2/KClash-0.1.2-android-arm64-v8a.apk",
+    "sha256": "96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538",
+    "bytes": 48354860,
+    "githubDigestMatches": true,
+    "sha256sumsUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.2/SHA256SUMS",
+    "sha256sumsSha256": "6f2d90d6cba53e12bebe38a8fecdc144d90154d58397872e25318b217dbd93f4",
+    "downloadHttpStatus": 200,
+    "manifest": {
+      "application-id": "com.lonnnnnng.flclash",
+      "version-name": "0.1.2",
+      "version-code": "1002",
+      "debuggable": "false",
+      "min-sdk": "24"
+    },
+    "abis": [
+      "arm64-v8a"
+    ],
+    "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49"
+  },
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "serial": "wsvwypiz7xwslvl7",
+    "api": 36,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "upgradeFrom": "0.1.1",
+    "publicAssetInstalledHash": {
+      "package": "com.lonnnnnng.flclash",
+      "sha256": "96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538",
+      "matches": true
+    },
+    "formalSmoke": {
+      "passed": true,
+      "cycles": 2,
+      "samePid": true,
+      "records": [
+        {
+          "stage": "initial",
+          "pid": "20848",
+          "running": false,
+          "stopped": true,
+          "totals": [
+            "累计 0B",
+            "累计 0B"
+          ],
+          "xmlSha256": "0a6ae4135e97d064cfaaae9a51da22ce460744bc43fa6289cd0eac102a249733"
+        },
+        {
+          "stage": "run1-1",
+          "pid": "20848",
+          "running": true,
+          "stopped": false,
+          "totals": [
+            "累计 1.8KB",
+            "累计 4.7KB"
+          ],
+          "xmlSha256": "b6c25457f7bd23b16bfd7c98fcd4e440e11ba1e73612ef42ce9198f3756b7af4"
+        },
+        {
+          "stage": "stop1-1",
+          "pid": "20848",
+          "running": false,
+          "stopped": true,
+          "totals": [
+            "累计 0B",
+            "累计 0B"
+          ],
+          "xmlSha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4"
+        },
+        {
+          "stage": "run2-1",
+          "pid": "20848",
+          "running": true,
+          "stopped": false,
+          "totals": [
+            "累计 9.1KB",
+            "累计 4.7KB"
+          ],
+          "xmlSha256": "301f1ad6331bcf853d96f062c1dc8e7a4bf153c1484c514b827bf66ae744e1aa"
+        },
+        {
+          "stage": "stop2-1",
+          "pid": "20848",
+          "running": false,
+          "stopped": true,
+          "totals": [
+            "累计 0B",
+            "累计 0B"
+          ],
+          "xmlSha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4"
+        }
+      ],
+      "servicesStopped": true,
+      "deviceFiles": [
+        {
+          "path": "/sdcard/Download/kclash-published-initial.xml",
+          "sha256": "0a6ae4135e97d064cfaaae9a51da22ce460744bc43fa6289cd0eac102a249733",
+          "bytes": 22823
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-run1-1.xml",
+          "sha256": "b6c25457f7bd23b16bfd7c98fcd4e440e11ba1e73612ef42ce9198f3756b7af4",
+          "bytes": 22836
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-stop1-1.xml",
+          "sha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4",
+          "bytes": 23225
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-run2-1.xml",
+          "sha256": "301f1ad6331bcf853d96f062c1dc8e7a4bf153c1484c514b827bf66ae744e1aa",
+          "bytes": 22836
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-stop2-1.xml",
+          "sha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4",
+          "bytes": 23225
+        }
+      ]
+    },
+    "postSmokeTables": {
+      "profiles": {
+        "keysSame": true,
+        "before": 1,
+        "after": 1,
+        "same": true,
+        "changedFields": {}
+      },
+      "app_preferences": {
+        "keysSame": true,
+        "before": 2,
+        "after": 2,
+        "same": true,
+        "changedFields": {}
+      },
+      "scripts": {
+        "keysSame": true,
+        "before": 0,
+        "after": 0,
+        "same": true,
+        "changedFields": {}
+      },
+      "proxy_delay_results": {
+        "keysSame": true,
+        "before": 238,
+        "after": 238,
+        "same": false,
+        "changedFields": {
+          "value": 238,
+          "updatedAtMillis": 238
+        }
+      }
+    },
+    "cleanup": {
+      "removedProbePackage": "com.lonnnnnng.flclash.upgradeprobe",
+      "removedVerifiedDeviceFiles": 16,
+      "files": [
+        {
+          "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release012-before.json",
+          "sha256": "980ed944d6db1b9f1d786d08d67431fdfb553e0cd524204e8f1de4dea498e826"
+        },
+        {
+          "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release012-after-install.json",
+          "sha256": "7c7ece72b5907017681415fdc5e1680f0473cf32f184ef6bc89357c11bdf5e73"
+        },
+        {
+          "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release012-after-local-smoke.json",
+          "sha256": "de39dd659aba849efc1b565fe9d77282b7a65c7b63f2f85acd2fcaf8f0fea17b"
+        },
+        {
+          "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release012-before-public.json",
+          "sha256": "fd5dc9d7f4867605dd93b7915f90860a95c986c4b8073acf8dae7b72ef13e109"
+        },
+        {
+          "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release012-after-public-install.json",
+          "sha256": "9a15ac8c2017c8151a2d82feae3dda075c91682626dd8962d2408059436c91c2"
+        },
+        {
+          "path": "/sdcard/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release012-after-public-smoke.json",
+          "sha256": "7a96f1188763aa2f3110baae70f78348c2ea2aa818230703d86b6b5bc48b04c6"
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-initial.xml",
+          "sha256": "0a6ae4135e97d064cfaaae9a51da22ce460744bc43fa6289cd0eac102a249733"
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-run1-1.xml",
+          "sha256": "6e47894e3bd457f751895f844691260d057075f9fadd6d2276b1ccb57a99b0f4"
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-stop1-1.xml",
+          "sha256": "819776f7c639e08b48b5075441ff713ce8c58e5d02a2f5fae0c5ead0b58ac4ec"
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-run2-1.xml",
+          "sha256": "8882382503bbfbdf31d1ccb1c9a6dd2ecd380abf5858acb179cc8feefa9c89f9"
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-stop2-1.xml",
+          "sha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4"
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-initial.xml",
+          "sha256": "0a6ae4135e97d064cfaaae9a51da22ce460744bc43fa6289cd0eac102a249733"
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-run1-1.xml",
+          "sha256": "b6c25457f7bd23b16bfd7c98fcd4e440e11ba1e73612ef42ce9198f3756b7af4"
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-stop1-1.xml",
+          "sha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4"
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-run2-1.xml",
+          "sha256": "301f1ad6331bcf853d96f062c1dc8e7a4bf153c1484c514b827bf66ae744e1aa"
+        },
+        {
+          "path": "/sdcard/Download/kclash-published-stop2-1.xml",
+          "sha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4"
+        }
+      ],
+      "formalPackageRetained": true,
+      "flutterReferenceRetained": true,
+      "publicApkStillInstalledAndMatches": "96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538",
+      "formalServicesStopped": true
+    },
+    "upgradeToLocalComparison": {
+      "versionBefore": "0.1.1",
+      "versionAfter": "0.1.2",
+      "codeBefore": 1001,
+      "codeAfter": 1002,
+      "uidPreserved": true,
+      "schemaBefore": 6,
+      "schemaAfter": 6,
+      "tablesSame": true,
+      "tableCountsBefore": {
+        "profiles": 1,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 238
+      },
+      "tableCountsAfter": {
+        "profiles": 1,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 238
+      },
+      "profileFilesSame": true,
+      "fileChanges": {
+        "databases/kclash.db-wal": {
+          "before": {
+            "bytes": 494432,
+            "mtime": 1794304105421,
+            "sha256": "ce5671c700b082bed8e32c4c1090c2d2f4d01371f09b5da642d306b3b145f6c5"
+          },
+          "after": {
+            "bytes": 494432,
+            "mtime": 1794307198401,
+            "sha256": "13161f5f93c380929ec7dedc2fcd316cc2d26b88b522f1f8f16b82eac7c474aa"
+          }
+        },
+        "databases/kclash.db-shm": {
+          "before": {
+            "bytes": 32768,
+            "mtime": 1794306932629,
+            "sha256": "7c9ac8a852273295453bf6d5344b4e930d6e408c3bfd402fb48e9f4fdf296caa"
+          },
+          "after": {
+            "bytes": 32768,
+            "mtime": 1794307200513,
+            "sha256": "8afd26196a2b3f087abbd04c4c634b6c94a4593cf3f2010bf5548da621cd20fc"
+          }
+        },
+        "no_backup/androidx.work.workdb-shm": {
+          "before": {
+            "bytes": 32768,
+            "mtime": 1794306932629,
+            "sha256": "9dcf31152a949e55bd81e1247094a2d190011b564fd9550072f246182334ce20"
+          },
+          "after": {
+            "bytes": 32768,
+            "mtime": 1794307200509,
+            "sha256": "8726966302d8e661dd58842c88482535d2e752e7ae20f1aa16759c556ecbb68d"
+          }
+        },
+        "no_backup/androidx.work.workdb-wal": {
+          "before": {
+            "bytes": 424392,
+            "mtime": 1794306932669,
+            "sha256": "c4a29c334044367933d04d242f58a0d3056b49743f29d2ae9d02ae23793a2857"
+          },
+          "after": {
+            "bytes": 424392,
+            "mtime": 1794307200549,
+            "sha256": "3e3de7a369255cbae645dd889e29a0a1f14df2d2c5281cddcadbed6812e8c69e"
+          }
+        }
+      }
+    },
+    "publicReinstallComparison": {
+      "versionBefore": "0.1.2",
+      "versionAfter": "0.1.2",
+      "codeBefore": 1002,
+      "codeAfter": 1002,
+      "uidPreserved": true,
+      "schemaBefore": 6,
+      "schemaAfter": 6,
+      "tablesSame": true,
+      "tableCountsBefore": {
+        "profiles": 1,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 238
+      },
+      "tableCountsAfter": {
+        "profiles": 1,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 238
+      },
+      "profileFilesSame": true,
+      "fileChanges": {
+        "databases/kclash.db-shm": {
+          "before": {
+            "bytes": 32768,
+            "mtime": 1794308247253,
+            "sha256": "164d5347d008383a4cab3caeb543e838dc860b723b4d3a45ad742de71cfc52dc"
+          },
+          "after": {
+            "bytes": 32768,
+            "mtime": 1794308322285,
+            "sha256": "a4dfd704e42bdcbe48eccf8ad7695089ba1f698ce4b0cbd56fcea12c5af53645"
+          }
+        },
+        "no_backup/androidx.work.workdb-shm": {
+          "before": {
+            "bytes": 32768,
+            "mtime": 1794308247249,
+            "sha256": "3640992829f0c4332efa83642ae4137196acff883a69979967e47384d2940ad1"
+          },
+          "after": {
+            "bytes": 32768,
+            "mtime": 1794308322285,
+            "sha256": "0f34188c3c6416a802ec1d78b7962fffd6c6fc04df3407fe94e03fd4ae79baf2"
+          }
+        },
+        "no_backup/androidx.work.workdb-wal": {
+          "before": {
+            "bytes": 424392,
+            "mtime": 1794308247297,
+            "sha256": "0ab67fce94241bb8f197725d8724ed8955fc2e6b093af6792592c430626085ac"
+          },
+          "after": {
+            "bytes": 424392,
+            "mtime": 1794308322321,
+            "sha256": "f3b1cd942146a7ee4e8db5578e6207f256ea345e35a71d95006983fcfe8341af"
+          }
+        },
+        "no_backup/androidx.work.workdb": {
+          "before": {
+            "bytes": 106496,
+            "mtime": 1794305305289,
+            "sha256": "42745564674ce3cc2e1da54b50403c4739b138666f623cd7f70e6801057ebe54"
+          },
+          "after": {
+            "bytes": 106496,
+            "mtime": 1794308322305,
+            "sha256": "6781af8874be4acc9d8d781be99e552d3b7fb604cd013e9df7830f44949189cd"
+          }
+        },
+        "databases/kclash.db-wal": {
+          "before": {
+            "bytes": 494432,
+            "mtime": 1794307714613,
+            "sha256": "719970e1d798a5d338600771632848733ec33038fcdb1df7327ce024b02c185e"
+          },
+          "after": {
+            "bytes": 494432,
+            "mtime": 1794308320173,
+            "sha256": "0fe24954f59be27dd186ac6fb0e86624b1d85b143045771a75c7b82a0f0df4a2"
+          }
+        }
+      }
+    }
+  },
+  "scopeLimits": [
+    "Real core two-round SOCKS red/green is recorded by KUI-034 pre-release; this release turn verifies official R8 package UI start/stop for two same-process cycles.",
+    "Config profile and preferences remained unchanged. Proxy-delay values/timestamps refreshed during home-page smoke; this existing behavior remains un-attributed.",
+    "Full Flutter visual parity, menu native-frame attribution, low API, cellular and other OEM coverage remain partial.",
+    "No public release asset is omitted: tag is latest, non-draft and non-prerelease; release body matches source.",
+    "The observed upgrade chain was 0.1.1 -> signed local 0.1.2 -> public CI 0.1.2, not a separate direct 0.1.1-to-public-asset experiment."
+  ],
+  "preparation": {
+    "localChecksAndArtifact": {
+      "path": "/Users/long/Documents/CodexProjects/clash-kotlin/FlClash/android/app/build/outputs/apk/release/app-release.apk",
+      "sha256": "d05d1ced430fcb3a1efcd4b9361e793886e7550efc4a1016f7f37870a5e33f1f",
+      "bytes": 48363860,
+      "manifest": {
+        "application-id": "com.lonnnnnng.flclash",
+        "version-name": "0.1.2",
+        "version-code": "1002",
+        "debuggable": "false",
+        "min-sdk": "24"
+      },
+      "abis": [
+        "arm64-v8a"
+      ],
+      "signerSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49"
+    },
+    "localSmoke": {
+      "passed": true,
+      "cycles": 2,
+      "samePid": true,
+      "records": [
+        {
+          "stage": "initial",
+          "pid": "20005",
+          "running": false,
+          "stopped": true,
+          "totals": [
+            "累计 0B",
+            "累计 0B"
+          ],
+          "xmlSha256": "0a6ae4135e97d064cfaaae9a51da22ce460744bc43fa6289cd0eac102a249733"
+        },
+        {
+          "stage": "run1-1",
+          "pid": "20005",
+          "running": true,
+          "stopped": false,
+          "totals": [
+            "累计 0B",
+            "累计 0B"
+          ],
+          "xmlSha256": "6e47894e3bd457f751895f844691260d057075f9fadd6d2276b1ccb57a99b0f4"
+        },
+        {
+          "stage": "stop1-1",
+          "pid": "20005",
+          "running": false,
+          "stopped": true,
+          "totals": [
+            "累计 0B",
+            "累计 0B"
+          ],
+          "xmlSha256": "819776f7c639e08b48b5075441ff713ce8c58e5d02a2f5fae0c5ead0b58ac4ec"
+        },
+        {
+          "stage": "run2-1",
+          "pid": "20005",
+          "running": true,
+          "stopped": false,
+          "totals": [
+            "累计 56.5KB",
+            "累计 14.1KB"
+          ],
+          "xmlSha256": "8882382503bbfbdf31d1ccb1c9a6dd2ecd380abf5858acb179cc8feefa9c89f9"
+        },
+        {
+          "stage": "stop2-1",
+          "pid": "20005",
+          "running": false,
+          "stopped": true,
+          "totals": [
+            "累计 0B",
+            "累计 0B"
+          ],
+          "xmlSha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4"
+        }
+      ],
+      "servicesStopped": true,
+      "deviceFiles": [
+        {
+          "path": "/sdcard/Download/kclash-formal-initial.xml",
+          "sha256": "0a6ae4135e97d064cfaaae9a51da22ce460744bc43fa6289cd0eac102a249733",
+          "bytes": 22823
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-run1-1.xml",
+          "sha256": "6e47894e3bd457f751895f844691260d057075f9fadd6d2276b1ccb57a99b0f4",
+          "bytes": 22830
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-stop1-1.xml",
+          "sha256": "819776f7c639e08b48b5075441ff713ce8c58e5d02a2f5fae0c5ead0b58ac4ec",
+          "bytes": 22825
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-run2-1.xml",
+          "sha256": "8882382503bbfbdf31d1ccb1c9a6dd2ecd380abf5858acb179cc8feefa9c89f9",
+          "bytes": 22842
+        },
+        {
+          "path": "/sdcard/Download/kclash-formal-stop2-1.xml",
+          "sha256": "6e1d4c09f9b0d8bb6cff4168557e8798b039950ffd62d805909ffd8865216ef4",
+          "bytes": 23225
+        }
+      ]
+    },
+    "previousDriverFailures": [
+      {
+        "stage": "local upgrade comparison",
+        "reason": "Baseline JSON was saved as before.json while comparison expected release012-before.json; command corrected and original snapshot reused."
+      },
+      {
+        "stage": "local upgrade comparison retry",
+        "reason": "Python helper module not on import path from repository cwd; corrected by direct script invocation. No product/data mutation from either failure."
+      },
+      {
+        "stage": "device cleanup",
+        "reason": "First cleanup manifest used the same wrong baseline filename; stopped before any file deletion. Corrected map and both smoke manifests verified all 16 files before deleting."
+      }
+    ]
+  },
+  "artifactDirectory": "../acceptance-artifacts/release-0.1.2-20261110",
+  "artifactSha256": {
+    "build.log": {
+      "bytes": 25855,
+      "sha256": "382a902556d4709c3bcfa1f3c80d952cbd66b66fa9470c613a8220cbe390b5ab"
+    },
+    "ci-tag.json": {
+      "bytes": 4751,
+      "sha256": "d8426a07b5e1908b9570894b2c9cd2b542a8678966a6237101dedb74948d821d"
+    },
+    "ci-branch.json": {
+      "bytes": 3806,
+      "sha256": "10a3b191ae6474ade6c31bec07ebde4e29773da4d8cfcb74afa753e60cd21e84"
+    },
+    "ci-tag-watch.log": {
+      "bytes": 35891,
+      "sha256": "b6ad3cdaa57bc1a0a7a68f7c7b1af07d7260517be41a45f2171002fc2703142f"
+    },
+    "ci-tag.log": {
+      "bytes": 246974,
+      "sha256": "b51a57018787c10900f8a8bd4499439855194a45224ed51b94a4ae8b0cb22393"
+    },
+    "github-release.json": {
+      "bytes": 7899,
+      "sha256": "6e29b52b38f20688404d793afa4f7e4a7664f3aa390bc7eaf3f1d142fee05fba"
+    },
+    "github-latest.json": {
+      "bytes": 7899,
+      "sha256": "6e29b52b38f20688404d793afa4f7e4a7664f3aa390bc7eaf3f1d142fee05fba"
+    },
+    "local-apk.json": {
+      "bytes": 519,
+      "sha256": "8e202556f5b09344eab5f7439cfcda28120d021dc000c9640c00a1f5c2e66c07"
+    },
+    "local-mlkit.json": {
+      "bytes": 579,
+      "sha256": "e5d1d94fc90d3876046236af504e54f8731fff21a5eb2436d5577f403587391b"
+    },
+    "published-apk.json": {
+      "bytes": 546,
+      "sha256": "6d7610e37d278002d8a5a847c21bbc42ef5ba1d4ea7bde2a55da548d69cd4cd3"
+    },
+    "published-apk-signature.txt": {
+      "bytes": 974,
+      "sha256": "3fd9715bfedff52f1b2d6f2dd58a69f748509aca366a345e92db1b68d4497798"
+    },
+    "published-mlkit.json": {
+      "bytes": 617,
+      "sha256": "44bc2983feda9046b38f15056561c15e0408ef08018034165d509c72a04ff72f"
+    },
+    "before.json": {
+      "bytes": 154064,
+      "sha256": "980ed944d6db1b9f1d786d08d67431fdfb553e0cd524204e8f1de4dea498e826"
+    },
+    "release012-after-public-install.json": {
+      "bytes": 154064,
+      "sha256": "9a15ac8c2017c8151a2d82feae3dda075c91682626dd8962d2408059436c91c2"
+    },
+    "release012-before-public.json": {
+      "bytes": 154064,
+      "sha256": "fd5dc9d7f4867605dd93b7915f90860a95c986c4b8073acf8dae7b72ef13e109"
+    },
+    "release012-after-public-smoke.json": {
+      "bytes": 154064,
+      "sha256": "7a96f1188763aa2f3110baae70f78348c2ea2aa818230703d86b6b5bc48b04c6"
+    },
+    "upgrade-published.json": {
+      "bytes": 2391,
+      "sha256": "c27290a265b017a95287aa0422c8f1e92605c9d3df7550a1b2f624c290a8842c"
+    },
+    "post-public-smoke.json": {
+      "bytes": 3525,
+      "sha256": "3c8b221db949669aea2474559a1a3405282b4ca27880a0d5dc2b4094ba035806"
+    },
+    "table-changes-after-public-smoke.json": {
+      "bytes": 551,
+      "sha256": "25043836e0391f23a9907af2de66e3faf69b2e05b93a2f532da88b07ed4dd0e6"
+    },
+    "published-smoke.json": {
+      "bytes": 2347,
+      "sha256": "faf292c367d86801255d46468b17047c08d67ce47dc44ab6e0764edb9c98a4cd"
+    },
+    "installed-published.json": {
+      "bytes": 140,
+      "sha256": "7b66553f15a48bbc356b8e8e8f723629a4b2040e75279987ecf9757dbcb5fec1"
+    },
+    "cleanup.json": {
+      "bytes": 3198,
+      "sha256": "50dc3fd6e3a7a614d35ca207ab1e2c50341dcd58191fe8140e2187dead5d771d"
+    },
+    "release-readback.json": {
+      "bytes": 876,
+      "sha256": "16071972878c4f268f097a464fd9e02265a62b62be6b1c68013f49c811156720"
+    }
+  }
+}

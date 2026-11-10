@@ -22,3 +22,11 @@ https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android16
 - 本次只覆盖设备既有单FILE配置和既有选择，不推广URL/CUSTOM混合库、未提交草稿、VPN运行中升级、OEM自然回收或所有类型文件。未调用备份恢复冒充升级。
 
 本机原始工具、归档、APK、快照、失败及对比位于`../../acceptance-artifacts/post-release-20261110/`。摘要见对应验收JSON；原始备份包含用户数据，仅保留本机。
+
+## 0.1.2 发布升级补验（2026-11-10）
+
+实际顺序为既有签名0.1.1/code1001→本地0.1.2/code1002候选→GitHub公开0.1.2/code1002资产，各安装边界均由同签名只读探针比较UID、schema6、配置1/偏好2/脚本0/测速238行的全部字段，以及源YAML的SHA/大小/mtime，均保持。没有卸载正式应用或清数据；这不等于另做一次0.1.1直接到公开资产、0.1.0到0.1.2或数据库schema迁移。
+
+公开APK SHA `96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538`，与GitHub digest、SHA256SUMS和设备回拉一致。公开包PID20848两轮首页启动分别观察到累计1.8KB/4.7KB、9.1KB/4.7KB，停止均0B/0B且服务退出。烟测后配置/偏好/脚本不变，测速238复合键不变而值/时间刷新；运行投影mtime及框架数据库文件变化单列，未据此关闭历史异常。
+
+标签`kclash-v0.1.2`指向`a0a7f1ae`，标签/分支CI通过；完整Flutter/菜单性能、低API/蜂窝/OEM边界保持。证据见[0.1.2验收JSON](acceptance/release-0.1.2-redmi-20261110.json)，本机附件`../../acceptance-artifacts/release-0.1.2-20261110/`。探针及16个SHA核对设备文件已清理，保留公开包、原配置与隔离Flutter副本，正式服务停止。
