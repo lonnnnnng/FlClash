@@ -50,8 +50,10 @@ private val groupIdentityOptions = listOf(
 )
 
 private val groupDraftSaver = listSaver<List<ProxyGroupDraft>, String>(
-    save = { groups -> groups.flatMap { listOf(it.key, it.originalName.orEmpty(), it.json) } },
-    restore = { values -> values.chunked(3).map { ProxyGroupDraft(it[0], it[1].ifEmpty { null }, it[2]) } },
+    save = { groups -> listOf("member-layout-v1") + groups.flatMap { listOf(it.key, it.originalName.orEmpty(), it.json, it.memberLayout.orEmpty().joinToString(",")) } },
+    restore = { values -> if (values.firstOrNull() == "member-layout-v1") values.drop(1).chunked(4).map {
+        ProxyGroupDraft(it[0], it[1].ifEmpty { null }, it[2], it[3].split(',').filter(String::isNotBlank).takeIf { layout -> layout.isNotEmpty() })
+    } else values.chunked(3).map { ProxyGroupDraft(it[0], it[1].ifEmpty { null }, it[2]) } },
 )
 
 /** 作者 long：列表、单组和成员共用一份草稿；子页确认只更新草稿，顶栏保存才原子写入配置。 */
@@ -90,9 +92,10 @@ internal fun VisualProxyGroupsEditor(
         }.getOrDefault(source)
     }
     fun saveDraft(values: List<ProxyGroupDraft>) = ProxyGroupsSave(values, resourceCandidates.associate { it.alias to it.profile.id })
-    val parsed = remember(source) { runCatching { ProxyGroupDrafts.read(source) } }
+    // 作者 long：编辑期间无关覆盖项刷新不能改变脏草稿的比较基准，正文或配置更换后再重新读取。
+    val parsed = remember(profile.id, source) { runCatching { ProxyGroupMembers.restoreLayouts(ProxyGroupDrafts.read(source), profile.overridesJson) } }
     var groups by rememberSaveable(profile.id, source, stateSaver = groupDraftSaver) { mutableStateOf(parsed.getOrDefault(emptyList())) }
-    val initial = remember(source) { parsed.getOrDefault(emptyList()) }
+    val initial = rememberSaveable(profile.id, source, saver = groupDraftSaver) { parsed.getOrDefault(emptyList()) }
     var selectedKey by rememberSaveable(profile.id) { mutableStateOf<String?>(null) }
     var creating by rememberSaveable(profile.id) { mutableStateOf(false) }
     var initialized by rememberSaveable(profile.id) { mutableStateOf(false) }
@@ -103,7 +106,7 @@ internal fun VisualProxyGroupsEditor(
     var selected by rememberSaveable(profile.id) { mutableStateOf(emptyList<String>()) }
     var selecting by rememberSaveable(profile.id) { mutableStateOf(false) }
     var error by remember { mutableStateOf(parsed.exceptionOrNull()?.message) }
-    val dirty = groups.map { it.json } != initial.map { it.json }
+    val dirty = groups.map { it.json to it.memberLayout } != initial.map { it.json to it.memberLayout }
     fun exit() { if (!saving) {
         when { selecting -> { selecting = false; selected = emptyList() }; sorting -> sorting = false
             dirty -> discard = true; else -> onDismiss() }
@@ -189,7 +192,7 @@ internal fun VisualProxyGroupsEditor(
                                 ProfileGroupIcon(group.text("icon"), group.name, Modifier.padding(end = 12.dp).size(32.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(group.name.ifBlank { "未命名策略组" }, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    Text(group.text("type") + " · " + ProxyGroupDrafts.members(group).size + " 个成员",
+                                    Text(group.text("type") + " · " + ProxyGroupMembers.read(group).size + " 个成员",
                                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
@@ -292,7 +295,8 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     onReadIcon: suspend (String) -> String,
     onDismiss: () -> Unit, onConfirm: (ProxyGroupDraft) -> Unit, onDelete: () -> Unit) {
     var json by rememberSaveable(initial.key) { mutableStateOf(initial.json) }
-    val group = initial.copy(json = json)
+    var memberLayout by rememberSaveable(initial.key) { mutableStateOf(initial.memberLayout.orEmpty()) }
+    val group = initial.copy(json = json, memberLayout = memberLayout.takeIf { it.isNotEmpty() })
     var iconPicker by rememberSaveable(initial.key) { mutableStateOf(false) }
     var confirming by remember { mutableStateOf(false) }
     var filterErrors by remember { mutableStateOf(emptyList<String>()) }
@@ -319,7 +323,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     var error by remember { mutableStateOf<String?>(null) }
     val clearFocus = remember { arrayOf<(() -> Unit)?>(null) }
     fun change(action: (com.google.gson.JsonObject) -> Unit) { json = group.edit(action).json; error = null }
-    fun exit() { clearFocus[0]?.invoke(); if (json != initial.json) discard = true else onDismiss() }
+    fun exit() { clearFocus[0]?.invoke(); if (json != initial.json || memberLayout != initial.memberLayout.orEmpty()) discard = true else onDismiss() }
     fun confirm() {
         if (confirming) return
         clearFocus[0]?.invoke()
@@ -328,14 +332,15 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
             try {
                 // 作者 long：核心异步校验期间表单仍可编辑；只提交最后一次确认的同一份快照，迟到结果不能写入新草稿。
                 val frozen = json
-                val candidate = initial.copy(json = frozen)
+                val frozenLayout = memberLayout
+                val candidate = initial.copy(json = frozen, memberLayout = frozenLayout.takeIf { it.isNotEmpty() })
                 val candidates = groups.map { if (it.key == candidate.key) candidate else it }
                 val blocking = ProxyGroupIssues.inspect(candidate, candidates, source).filter { it.blocking }
                 require(blocking.isEmpty()) { blocking.joinToString("\n") { it.message } }
                 val values = listOf(candidate.text("filter"), candidate.text("exclude-filter"))
                 val errors = if (values.all(String::isBlank)) emptyList() else validateFilters(values).filter(String::isNotEmpty)
                 require(errors.isEmpty()) { "过滤表达式无效：" + errors.joinToString("\n") }
-                if (json != frozen) { error = "表单已更新，请再次确认"; return@launch }
+                if (json != frozen || memberLayout != frozenLayout) { error = "表单已更新，请再次确认"; return@launch }
                 onConfirm(candidate)
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (failure: Exception) { error = failure.message ?: "无法校验策略组，请重试" }
@@ -371,7 +376,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                 }
                 GroupSectionHeading("节点")
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                    GroupFieldRow("成员", ProxyGroupDrafts.members(group).size.toString() + " 个", "proxy_group_members") { members = true }
+                    GroupFieldRow("成员", ProxyGroupMembers.read(group).size.toString() + " 个", "proxy_group_members") { members = true }
                     listOf("include-all-proxies" to "包含全部代理", "include-all-providers" to "包含全部资源").forEach { (key, label) ->
                         ProfileFormRow(label) {
                             Switch(group.flag(key), { value -> change { if (value) it.addProperty(key, true) else it.remove(key) } }, Modifier.testTag("proxy_group_$key"))
@@ -398,7 +403,9 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
         })
     if (iconPicker) ProfileGroupIconPicker(group.text("icon"), group.name, recentIcons, onRecordIcon, onReadIcon,
         onDismiss = { iconPicker = false }, onSelect = { value -> change { if (value.isEmpty()) it.remove("icon") else it.addProperty("icon", value) }; iconPicker = false })
-    if (members) GroupMembersEditor(group, groups, source, onDismiss = { members = false }, onConfirm = { json = it.json; members = false; error = null })
+    if (members) GroupMembersEditor(group, groups, source, onDismiss = { members = false }, onConfirm = {
+        json = it.json; memberLayout = it.memberLayout.orEmpty(); members = false; error = null
+    })
     if (addOption) ProfileEditorPage(onDismissRequest = { addOption = false }, title = { Text("添加设置项") },
         backTag = "proxy_group_add_option_back", contentPadding = PaddingValues(0.dp), text = {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
@@ -452,7 +459,7 @@ private fun GroupsQuickYaml(original: String, groups: List<ProxyGroupDraft>,
     onDismiss: () -> Unit, onApply: (List<ProxyGroupDraft>) -> Unit) {
     GroupYamlPage(original, "策略组 YAML", "proxy_groups_yaml", onDismiss,
         parse = { value -> ProxyGroupDrafts.readEditorYaml(value).map { next ->
-            groups.firstOrNull { it.name == next.name }?.let { next.copy(key = it.key, originalName = it.originalName) }
+            groups.firstOrNull { it.name == next.name }?.let { next.copy(key = it.key, originalName = it.originalName, memberLayout = it.memberLayout) }
                 ?: next.copy(originalName = null)
         } }, locate = ProxyGroupDrafts::editorErrorLocation, onApply = onApply)
 }
@@ -550,14 +557,18 @@ private fun GroupValueDialog(option: GroupOption, initial: String, choices: List
 @Composable
 private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroupDraft>, source: String, onDismiss: () -> Unit, onConfirm: (ProxyGroupDraft) -> Unit) {
     var encoded by rememberSaveable(initial.key) { mutableStateOf(initial.json) }
-    val group = initial.copy(json = encoded)
-    val members = ProxyGroupDrafts.members(group)
+    var memberLayout by rememberSaveable(initial.key) { mutableStateOf(initial.memberLayout.orEmpty()) }
+    val group = initial.copy(json = encoded, memberLayout = memberLayout.takeIf { it.isNotEmpty() })
+    val members = ProxyGroupMembers.read(group)
     var picker by rememberSaveable { mutableStateOf(false) }
-    var query by rememberSaveable { mutableStateOf("") }
     var sorting by rememberSaveable { mutableStateOf(false) }
     var discard by remember { mutableStateOf(false) }
-    fun change(values: List<ProxyGroupMember>) { encoded = ProxyGroupDrafts.withMembers(group, values).json }
-    ProfileEditorPage(onDismissRequest = { if (encoded != initial.json) discard = true else onDismiss() }, backTag = "proxy_group_members_back", title = { Text("节点成员") },
+    fun change(values: List<GroupMemberEntry>) {
+        val changed = ProxyGroupMembers.replace(group, values)
+        encoded = changed.json
+        memberLayout = changed.memberLayout.orEmpty()
+    }
+    ProfileEditorPage(onDismissRequest = { if (encoded != initial.json || memberLayout != initial.memberLayout.orEmpty()) discard = true else onDismiss() }, backTag = "proxy_group_members_back", title = { Text("节点成员") },
         confirmButton = { TextButton(onClick = { onConfirm(group) }, Modifier.testTag("proxy_group_members_confirm")) { Text("确认") } }, text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -565,13 +576,13 @@ private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroup
                     IconButton(onClick = { sorting = !sorting }, Modifier.testTag("group_members_sort")) { Icon(Icons.AutoMirrored.Outlined.Sort, null) }
                     IconButton(onClick = { picker = true }, Modifier.testTag("group_members_add")) { Icon(Icons.Outlined.Add, null) }
                 }
-                if (sorting) Text("长按拖动调整代理与资源顺序", style = MaterialTheme.typography.bodySmall)
-                members.forEachIndexed { index, member -> key(member) {
+                if (sorting) Text("长按拖动调整成员顺序", style = MaterialTheme.typography.bodySmall)
+                members.forEachIndexed { index, member -> key(index, member) {
                     GroupOrderRow(index, members.size, member.toString(), sorting, true,
                         onMove = { to -> change(members.toMutableList().apply { add(to, removeAt(index)) }) }) {
                         Column(Modifier.weight(1f).heightIn(min = 72.dp).padding(vertical = 12.dp)) {
-                            Text(member.name, Modifier.testTag("group_member_label_$index"), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text(if (member.provider) "资源" else "代理 / 策略组", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(ProxyGroupMembers.title(member, LocalFilterPresets.current), Modifier.testTag("group_member_label_$index"), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(ProxyGroupMembers.subtitle(member), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         if (!sorting) IconButton(onClick = { change(members.filterIndexed { i, _ -> i != index }) }, Modifier.testTag("group_member_remove_$index")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                     }
@@ -579,23 +590,10 @@ private fun GroupMembersEditor(initial: ProxyGroupDraft, groups: List<ProxyGroup
                 if (members.isEmpty()) Text("添加代理节点、其他策略组或资源", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         })
-    if (picker) ProfileEditorPage(onDismissRequest = { picker = false }, backTag = "group_member_picker_back", title = { Text("添加节点") },
-        // 作者 long：成员候选也属于推入选择页，查询固定在本窗口下沿；取消仅结束搜索，不能改成员草稿或退出选择层。
-        bottomBar = { DockedProfileSearch(query, { query = it }, "group_member_search") },
-        confirmButton = { TextButton(onClick = { picker = false }, Modifier.testTag("group_member_picker_done")) { Text("完成") } }, text = {
-            Column {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    val choices = (ProxyGroupDrafts.builtins + ProxyGroupDrafts.proxyNames(source) + groups.filter { it.key != group.key }.map { it.name }).distinct().filter { it != group.name }.map { ProxyGroupMember(it) } +
-                        ProxyGroupDrafts.providerNames(source).map { ProxyGroupMember(it, true) }
-                    choices.filter { it.name.contains(query, ignoreCase = true) }.forEach { member ->
-                        Row(Modifier.fillMaxWidth().testTag("group_member_choice_${member.provider}_${member.name}").clickable { change(if (member in members) members - member else members + member) }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(member in members, { checked -> change(if (checked) (members + member).distinct() else members - member) })
-                            Column(Modifier.weight(1f)) { Text(member.name); if (member.provider) Text("资源", style = MaterialTheme.typography.bodySmall) }
-                        }
-                    }
-                }
-            }
-        })
+    if (picker) ProxyGroupMemberPicker(group, groups, source, onDismiss = { picker = false }) { updated ->
+        encoded = updated.json
+        memberLayout = updated.memberLayout.orEmpty()
+    }
     if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃成员修改？") }, confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } },
         dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }

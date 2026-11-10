@@ -67,8 +67,8 @@ object ProxyGroupIssues {
                 if (group.key in keys) {
                     var name = group.name + " 副本"; var suffix = 2
                     while (!taken.add(name)) { name = group.name + " 副本 " + suffix; suffix++ }
-                    // 作者 long：副本必须有新标识且不携带原名称映射，否则保存会把原组的引用误改到副本。
-                    add(ProxyGroupDraft(json = group.json).edit { it.addProperty("name", name) })
+                    // 作者 long：副本使用新标识且保留成员显示顺序；原名称映射不复制，避免保存时把原组引用误改到副本。
+                    add(ProxyGroupDraft(json = group.json, memberLayout = group.memberLayout).edit { it.addProperty("name", name) })
                 }
             }
         }

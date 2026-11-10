@@ -33,6 +33,8 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkDnsToolbarSearchAndReturnUseNaturalWindowMotion() = runDnsToolbar(true)
     @Test fun lightMenuDispatchThreadTimeline() = runMenuDispatchTimeline(false)
     @Test fun darkMenuDispatchThreadTimeline() = runMenuDispatchTimeline(true)
+    @Test fun lightMenuWindowFramesWithoutThreadSampling() = runMenuDispatchTimeline(false, sampleCpu = false)
+    @Test fun darkMenuWindowFramesWithoutThreadSampling() = runMenuDispatchTimeline(true, sampleCpu = false)
 
     private fun runDockedSearch(dark: Boolean) {
         assertPortraitDefaultFontConfiguration()
@@ -115,10 +117,14 @@ class VisualMotionNaturalInstrumentedTest {
     }
 
     // 作者 long：use 的返回值不能泄漏到 @Test 方法，JUnit4 只接受 void，否则精确筛选的其他方法也无法运行。
-    private fun runMenuDispatchTimeline(dark: Boolean): Unit = kotlinx.coroutines.runBlocking {
+    private fun runMenuDispatchTimeline(dark: Boolean, sampleCpu: Boolean = true): Unit = kotlinx.coroutines.runBlocking {
         assertPortraitDefaultFontConfiguration()
         val args = InstrumentationRegistry.getArguments()
-        assertEquals("true", args.getString("kclashMotionThreadCpu"))
+        if (sampleCpu) assertEquals("true", args.getString("kclashMotionThreadCpu"))
+        else {
+            assertEquals("true", args.getString("kclashMenuWindowFrames"))
+            assertNotEquals("true", args.getString("kclashMotionThreadCpu"))
+        }
         assertEquals("true", args.getString("kclashCloseWindowCapture"))
         assertEquals("true", args.getString("kclashMotionInlineFrames"))
         assertNotEquals("true", args.getString("kclashCapturePng"))
@@ -133,18 +139,27 @@ class VisualMotionNaturalInstrumentedTest {
                 scenario.onActivity { it.dark = dark }
                 click("nav_proxy"); await("proxy_tools"); settle()
                 val source = bounds(checkNotNull(find("proxy_tools")))
-                val probe = MenuThreadCpuProbe()
+                val probe = if (sampleCpu) MenuThreadCpuProbe() else null
+                fun sample(name: String, action: () -> Unit) {
+                    if (probe != null) probe.sample(name, action) else {
+                        // 作者 long：无探针对照使用相同的输入起点和800ms取帧边界，不能多等一个动画周期改变窗口分母。
+                        val started = SystemClock.uptimeMillis()
+                        action()
+                        val remaining = 800L - (SystemClock.uptimeMillis() - started)
+                        if (remaining > 0) SystemClock.sleep(remaining)
+                    }
+                }
                 // 作者 long：空闲计数与同一窗口首次/复开并列保存，采样扰动不当成优化收益；动画中不查树或抓帧。
-                probe.sample("$run-$suffix-idle") { }
+                sample("$run-$suffix-idle") { }
                 repeat(3) { pass ->
                     shell("dumpsys gfxinfo ${context.packageName} reset")
-                    probe.sample("$run-$suffix-$pass-open") { tap(source) }
+                    sample("$run-$suffix-$pass-open") { tap(source) }
                     saveFrames("visual-motion-$run-$suffix-$pass-open.gfx")
                     await("样式：标签"); settle()
                     shell("dumpsys gfxinfo ${context.packageName} reset")
                     val gate = MenuCloseCaptureProbe.arm()
                     try {
-                        probe.sample("$run-$suffix-$pass-close") { back() }
+                        sample("$run-$suffix-$pass-close") { back() }
                         val completed = kotlinx.coroutines.withTimeout(5_000) { gate.completed.await() }
                         saveFrames("visual-motion-$run-$suffix-$pass-close.gfx")
                         ins.sendStatus(2, Bundle().apply { putString("kclash_close_capture", JSONObject()

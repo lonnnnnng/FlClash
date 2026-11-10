@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.geometry.Offset
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.data.*
@@ -16,6 +17,43 @@ import org.junit.Test
 class ProxyGroupEditorInstrumentedTest {
     @get:Rule val compose = createComposeRule()
     private val source = "proxies:\n  - {name: Local, type: direct}\nproxy-providers:\n  cloud: {type: file, path: cloud.yaml}\nproxy-groups:\n  - {name: Main, type: select, proxies: [DIRECT], future: keep}\n  - {name: Other, type: fallback, proxies: [Main]}\nrules: ['MATCH,Main']\n"
+
+    @Test fun categorizedMemberPicksRestoreAndUndoWholeOriginalDraft() {
+        assertPortraitDefaultFontConfiguration()
+        val original = ProxyGroupDrafts.read(source).first().edit { it.addProperty("filter", "HK") }
+            .copy(memberLayout = listOf("filter"))
+        var current by mutableStateOf(original)
+        val restore = StateRestorationTester(compose)
+        restore.setContent { KClashTheme {
+            CompositionLocalProvider(LocalFilterPresets provides listOf(FilterPreset("区域", "HK`JP"))) {
+                ProxyGroupMemberPicker(current, ProxyGroupDrafts.read(source), source, {}, { current = it })
+            }
+        } }
+        compose.onNodeWithTag("group_member_choice_false_Local").assertDoesNotExist()
+        compose.onNodeWithTag("group_member_category_local").performClick()
+        compose.onNodeWithTag("group_member_choice_false_Local").performClick()
+        compose.onNodeWithTag("group_member_category_auto").performClick()
+        compose.onNodeWithTag("group_member_choice_ALL_PROXIES_*").performClick()
+        compose.onNodeWithTag("group_member_search").performTextReplacement("区域")
+        compose.onNodeWithTag("group_member_choice_FILTER_HK`JP").performClick()
+        compose.runOnIdle {
+            assertEquals(listOf("DIRECT", "Local"), current.strings("proxies"))
+            assertTrue(current.flag("include-all-proxies"))
+            assertEquals("HK`JP", current.text("filter"))
+            assertEquals(original.memberLayout, current.memberLayout)
+        }
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("group_member_search").assertTextContains("区域")
+        capture("member_categories_restored")
+        compose.onNodeWithTag("group_member_choice_FILTER_HK`JP").performClick()
+        compose.onNodeWithTag("group_member_search").performTextReplacement("zzzz-no-results")
+        compose.onNodeWithTag("group_member_empty").assertTextEquals("无搜索结果")
+        compose.onNodeWithTag("group_member_search_cancel").performClick()
+        compose.onNodeWithTag("group_member_choice_false_Local").performClick()
+        compose.onNodeWithTag("group_member_choice_ALL_PROXIES_*").performClick()
+        compose.runOnIdle { assertEquals(original, current) }
+        capture("member_categories_undone")
+    }
 
     @Test fun memberDockCancelPreservesDraftAndStaysAboveRealIme() {
         assertPortraitDefaultFontConfiguration()
@@ -119,7 +157,9 @@ class ProxyGroupEditorInstrumentedTest {
             compose.onNodeWithTag("group_value_confirm").performClick()
             compose.onNodeWithTag("proxy_group_members").performClick()
             compose.onNodeWithTag("group_members_add").performClick()
+            compose.onNodeWithTag("group_member_category_local").performClick()
             compose.onNodeWithText("Local").performClick()
+            compose.onNodeWithTag("group_member_category_providers").performScrollTo().performClick()
             compose.onNodeWithText("cloud").performScrollTo().performClick()
             capture("groups_member_picker_$theme")
             compose.onNodeWithTag("group_member_picker_done").performClick()

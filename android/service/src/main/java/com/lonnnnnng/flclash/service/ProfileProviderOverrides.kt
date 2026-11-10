@@ -149,6 +149,7 @@ data class ProfileProviderOverrides(
     val ntp: ProfileNtpOverrides = ProfileNtpOverrides(),
     val sniffer: ProfileSnifferOverrides = ProfileSnifferOverrides(),
     val extension: ProfileExtensionOverrides = ProfileExtensionOverrides(),
+    val groupMemberLayouts: Map<String, List<String>> = emptyMap(),
 ) {
     fun toJsonString(): String = JsonObject().apply {
         add("proxy-providers", JsonObject().apply {
@@ -160,6 +161,10 @@ data class ProfileProviderOverrides(
         if (!dns.isEmpty) add("dns", dns.toJson())
         if (!ntp.isEmpty) add("ntp", ntp.toJson())
         if (!sniffer.isEmpty) add("sniffer", sniffer.toJson())
+        // 作者 long：策略组显示顺序随配置元数据保存；编辑其他覆盖时也要原样带回，但暂存核心配置不读取它。
+        if (groupMemberLayouts.isNotEmpty()) add("groupMemberLayouts", JsonObject().apply {
+            groupMemberLayouts.forEach { (name, layout) -> add(name, com.google.gson.JsonArray().apply { layout.forEach(::add) }) }
+        })
         dialers?.let { values ->
             add("dialers", JsonObject().apply {
                 values.forEach { (proxy, target) ->
@@ -189,7 +194,12 @@ data class ProfileProviderOverrides(
                 ProfileProviderOverrides(values, dns, root.optStringMapOrNull("dialers"),
                     root.getAsJsonObject("ntp")?.let(ProfileNtpOverrides::fromJson) ?: ProfileNtpOverrides(),
                     root.getAsJsonObject("sniffer")?.let(ProfileSnifferOverrides::fromJson) ?: ProfileSnifferOverrides(),
-                    root.getAsJsonObject("extension")?.let(ProfileExtensionOverrides::fromJson) ?: ProfileExtensionOverrides())
+                    root.getAsJsonObject("extension")?.let(ProfileExtensionOverrides::fromJson) ?: ProfileExtensionOverrides(),
+                    root.get("groupMemberLayouts")?.takeIf { it.isJsonObject }?.asJsonObject?.entrySet().orEmpty()
+                        .filter { it.value.isJsonArray }.associate { (name, list) -> name to list.asJsonArray.take(4096).mapNotNull {
+                            it.takeIf { value -> value.isJsonPrimitive && value.asJsonPrimitive.isString }?.asString
+                                ?.takeIf { value -> value in setOf("proxy", "allProxies", "allProviders", "filter", "excludeFilter") }
+                        } })
             }.getOrDefault(ProfileProviderOverrides())
         }
     }

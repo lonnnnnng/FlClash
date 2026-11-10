@@ -177,6 +177,15 @@ class ProfileProviderOverridesTest {
         assertEquals(source, ProfileProviderOverrideApplier.apply(source, ProfileProviderOverrides(proxyProviders = mapOf("订阅:香港" to ProxyProviderOverride(memberLayout = listOf("filter"))))))
     }
 
+    @Test fun `group member layouts survive unrelated override edits without entering yaml`() {
+        val source = "proxy-groups: [{name: Group, type: select, proxies: [DIRECT]}]\nrules: [MATCH,Group]\n"
+        val original = ProfileProviderOverrides(groupMemberLayouts = mapOf("Group" to listOf("filter", "proxy")))
+        val decoded = ProfileProviderOverrides.fromJsonString(original.toJsonString())
+        assertEquals(original, decoded)
+        assertEquals(original.groupMemberLayouts, ProfileProviderOverrides.fromJsonString(decoded.copy(dns = ProfileDnsOverrides(ipv6 = false)).toJsonString()).groupMemberLayouts)
+        assertEquals(source, ProfileProviderOverrideApplier.apply(source, decoded))
+    }
+
     @Test fun `health checks get default url for unicode quoted flow and canonical providers`() {
         for (source in listOf(
             "proxy-providers:\n  cloud:\n    type: file\n    health-check: {url: https://old.example, custom: keep}\n",

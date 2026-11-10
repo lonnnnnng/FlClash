@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **成员分类与菜单反序复测（2026-11-10，KUI-035）**：成员选择补齐分类折叠、同行计数、自动包含/筛选、原位撤回与布局保存；修复新增代理重排Provider、复制丢布局和恢复基准遗漏。879项JVM零失败，Debug/未签名Release-R8/motion及双Lint零错误；Redmi最终编辑7/7、几何1/1（20帧与原实现逐像素一致），17张成员截图已核验。菜单固定离屏范围无探针A-B-A：打开33/126→29/135→30/136，关闭15/164→15/165→17/164，收益不稳定，候选撤回；原生函数归因仍PARTIAL。完整Flutter Sheet/原位成员、协议徽标、非空图库及自然连续对照仍待。见[记录](member-picker-alignment-menu-investigation.md)与[证据](acceptance/member-picker-menu-redmi-20261110.json)。
+
 > **0.1.2 正式发布完成（2026-11-10）**：标签`kclash-v0.1.2`固定`a0a7f1ae`，versionCode1002；流量停止清零与资源/搜索交互改进已发布为Latest。标签CI[42801338969](https://github.com/lonnnnnng/FlClash/actions/runs/42801338969)及分支CI[42801333292](https://github.com/lonnnnnng/FlClash/actions/runs/42801333292)通过，包含Go race、JVM、签名R8、双Lint和扫码DEX门禁。871项本地JVM零失败/错误/跳过。公开APK SHA `96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538`与GitHub digest、SHA256SUMS和Redmi安装回拉一致；原签名延续。0.1.1→本地0.1.2→公开0.1.2安装边界四业务表/UID/正文保持；公开包PID20848两轮真实首页启停均有双向累计并停止回0、双服务退出。烟测后配置/偏好/脚本保持，测速238值/时间刷新仍未归因。探针和16个核验设备文件已清，保留公开包/原配置及隔离Flutter副本，服务停止。见[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.2)和[验收证据](acceptance/release-0.1.2-redmi-20261110.json)。
 
 > **停止后的累计流量清零（2026-11-10，KUI-034）**：Kotlin补接内核已有resetTraffic回执，完整停止后清全部/代理累计与速度，按需暂停和运行中应用配置保留本次统计；清零失败阻止旧累计进入新会话。871项JVM、Debug/Test/签名Release-R8/motion及双Lint零错误通过。Redmi同一最终测试APK：旧包STOPPED仍有304598/134166 B，修复包同PID两轮真实SOCKS回环1/1通过，普通/暂停中/重复停止均0。正式签名候选`0ab4cb72…879974f`覆盖安装回拉一致，首页启停/归零通过；安装边界业务表与正文保持，启动后偏好/测速缓存及投影mtime变化单列，历史异常未闭环。见[溯源](traffic-session-reset-defect.md)和[验收JSON](acceptance/traffic-session-reset-redmi-20261110.json)。
@@ -781,16 +783,16 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步chen08209/Clash.Meta:FlClash；本组本地修复464552e4，不从MetaCubeX/mihomo同步提交/PR，Flutter代码不合并。 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用与观测；KUI-034完整停止等待resetTraffic成功再发布STOPPED，失败后重试，按需暂停/运行中应用配置不清本次统计。 |
-| 单元测试 | 871项JVM（App587、Service215、Core38、Common31）零失败/错误/跳过；本地发布App重跑、其余284复用，标签CI四模块均执行。Debug/Test、签名Release-R8与双Lint零错误；公开包扫码DEX门禁3/3，Go父模块及Mihomo route/http/updater race通过。 |
-| 最新真机 | 公开0.1.2签名R8包PID20848两轮首页启停均观察到双向累计、停止回0B，VpnService/ProxyService退出；0.1.1→本地0.1.2→公开0.1.2覆盖安装与回拉校验通过。KUI-034同PID实核SOCKS红绿沿用前组具名证据。 |
-| 当前设备数据 | 两个安装边界UID/schema6、配置1/偏好2/脚本0/测速238行和四表值一致，源正文SHA-size-mtime保持。公开烟测后配置/偏好/脚本保持，测速复合键保持、238值/时间更新，运行投影mtime更新仍未归因。探针包和16个已核验设备文件已清，正式公开0.1.2/原配置/隔离Flutter副本及原1.yaml保留，服务停止。 |
+| 单元测试 | 本组879项JVM（App594、Service216、Core38、Common31）零失败/错误/跳过，含Gradle复用；最终成员定向7/7另列。Debug、未签名Release-R8、motion/Test和双Lint零错误，DEX3/3；本轮不重跑Go或签名发布。 |
+| 最新真机 | KUI-035独立motion最终成员7/7、几何1/1，17PNG/20固定帧已核验；原菜单20/20像素一致，双APK回读SHA匹配。A-B-A无探针菜单与独立线程诊断不等于正式R8性能，详见本组JSON。 |
+| 当前设备数据 | 本组基线及接续检查中正式com.lonnnnnng.flclash缺席；未补导入或宣称正式数据保护通过。使用独立motion夹具与已有Flutter安全副本，结束无motion服务；原1.yaml未修改，测试双包在哈希核验和验收后精确卸载，14个临时XML核验后删除。前组公开0.1.2升级/单FILE保持属于历史具名证据，不能替代当前设备状态。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | 本组Debug/Test/签名Release-R8构建通过；Debug Lint0错误/71警告/14提示，Release0错误/68警告/13提示。motion实核红绿沿用KUI-034；本轮未重跑独立视觉矩阵。 |
+| Debug / Test | 本组Debug、未签名Release-R8、motion/Test构建通过；Debug Lint0错误/71警告/14提示，Release0错误/68警告/13提示。安装motion SHA4c411106…7fccac8、Test e74abcb9…5165e3；本轮没有覆盖正式签名包。 |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
 | Release | 公开`kclash-v0.1.2`/签名arm64/R8 APK `96107b78…4eef538`已发布并下载/签名/版本/ABI/正文/校验和及Redmi安装回验。0.1.1→本地0.1.2→公开0.1.2单FILE数据保持，同schema6；不推广混合库、未提交草稿、运行VPN或低API升级。 |
-| 最新证据 | `acceptance/release-0.1.2-redmi-20261110.json`：签名CI、公开资产/发行说明、Redmi升级保留与两轮启停；KUI-034实核红绿见`acceptance/traffic-session-reset-redmi-20261110.json`。完整Flutter/菜单性能、历史长窗、低API/蜂窝/OEM仍PARTIAL。 |
+| 最新证据 | `acceptance/member-picker-menu-redmi-20261110.json`与`member-picker-alignment-menu-investigation.md`：成员分类、草稿布局及无探针A-B-A负结果；公开0.1.2发布保留原证据。完整Flutter、菜单原生归因、正式Room布局冷恢复、历史长窗与低API/蜂窝/OEM仍PARTIAL。 |
 
 ## 4. 目标架构图
 
@@ -1234,6 +1236,10 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 ### 7.6 UI/UX 完整对齐
 
+**成员分类与菜单反序复测（2026-11-10，KUI-035）**：成员选择补齐分类折叠、同行计数、自动包含/筛选、原位撤回与布局保存；修复新增代理重排Provider、复制丢布局和恢复基准遗漏。879项JVM零失败，Debug/未签名Release-R8/motion及双Lint零错误；Redmi最终编辑7/7、几何1/1（20帧与原实现逐像素一致），17张成员截图已核验。菜单固定离屏范围无探针A-B-A：打开33/126→29/135→30/136，关闭15/164→15/165→17/164，收益不稳定，候选撤回；原生函数归因仍PARTIAL。完整Flutter Sheet/原位成员、协议徽标、非空图库及自然连续对照仍待。见[记录](member-picker-alignment-menu-investigation.md)与[证据](acceptance/member-picker-menu-redmi-20261110.json)。
+
+以下为历史切片，当前范围以上述KUI-035及第3节为准。
+
 KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复用、宽度延迟布局及移除重复裁剪。Redmi API36独立非debuggable包、无PNG/录屏，前后各两轮深浅，菜单合计jank331/1429（23.16%）→261/1555（16.78%），顶卡收回38.61%→14.07%；首开26.42%→23.16%改善有限，关闭6.91%→9.94%退化保留，首次打开UI区间中位也未改善。完整自然流程各深浅一轮非启动窗口15.10%→13.39%，不冒充正式R8运行。final-build3共849项JVM零失败/错误/跳过（App568在build1执行、其余281复用，最终四模块UP-TO-DATE）；Debug/Test/未签名Release-R8/双Lint通过，Debug0错误68警告14提示、Release0错误66警告13提示。同套最终包回归19/19、自然整页2/2、三轮菜单2/2；92PNG/32拼图及8组原PTS抽样已核对，593源码与安装回拉匹配。用户确认重置，当前正式0份配置，排除依赖非空库的两条导航回归；Flutter参考包保持缺席、不安装。44份正式快照及最终独立检查一致，原1.yaml/设备设置保持；独立.motion双包与独占文件精确回收，结束无服务/tun0。旧包/候选12图逐字节一致后刷新环境基线，14/19、旧包0/5与run-as拒绝回拉失败均保留。整体性能和完整Flutter视觉仍PARTIAL；下一步优先首开、关闭退化及RenderThread慢帧，再补CUSTOM组数、首页无流量统计、内存图形与其余子页。玻璃默认关闭，既有边界保持。证据`docs/acceptance/menu-rendering-redmi-20261108.json`，溯源`docs/menu-rendering-performance-defect.md`，附件`../acceptance-artifacts/menu-rendering-20261108/`。
 
 本组补充（11-06，代理组状态转场）：代理组 loading/error/empty/content 使用 300ms 入场与 150ms 退场，内容退场保留最后快照并隔离触摸；错误、空态、Dashboard 摘要和恢复路径在 Redmi 上精确5/5通过，证据`proxy-groups-transition-redmi-20261106.json`。本轮继续完成 List 组头 sticky/raised 对齐：`ProxyGroupsPage.kt` 在滚动时以180ms动画提升组头阴影/色调层级，长列表吸顶与远端 Tab 连续转场在 Redmi 精确4/4通过，静止/吸顶截图及哈希见`proxy-list-header-redmi-20261106.json`与`../acceptance-artifacts/proxy-list-header-20261106/`。随后补齐当前节点徽标语义验收：Tab/List 各卡片尺寸与深浅主题均通过，List 从香港节点切换到日本节点后徽标唯一迁移，精确1/1结果和三张截图见`proxy-current-marker-redmi-20261106.json`，独立哈希基线见`docs/visual-baselines/proxy-current-marker-redmi-api36.sha256`。本轮再补 List 组头—节点行连续展开/收回：组头底部圆角240ms连续过渡，节点行按可见顺序错峰淡入/纵向收敛并使用`animateItem`处理插入、退场和布局移动；展开中间帧与稳定帧不同，收起后节点语义节点消失，精确4/4结果、26张截图和源码/包哈希见`proxy-list-animation-redmi-20261106.json`与`../acceptance-artifacts/proxy-list-animation-20261106/`。新增空态三套900ms固定入场编排：Profiles 使用 SPIN、搜索空态使用 MORPH、代理组空态使用 ORBIT，JVM 终帧/中间几何单测通过，Redmi 三组既有空态与代理组回归共16/16；38张截图、原始通过日志和重跑诊断边界见`empty-state-motion-redmi-20261106.json`与`../acceptance-artifacts/empty-state-motion-20261106/`。这些证据只覆盖目标组头、转场、当前徽标、List 展开动效和空态入场切片，不扩大为完整 Flutter 逐像素视觉；剩余子页排版、统一截图基线、全应用动效与性能仍为`PARTIAL`。Fallback真实核心与冷进程证据沿用本节前述记录，自然无效`now`仍按合法解析契约记为不可自然构造边界。
@@ -1321,6 +1327,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 - 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
+
+当前本地验收为KUI-035：879项JVM、Debug/未签名Release-R8/motion/Test与双Lint通过，Redmi最终7项编辑及1项几何测试通过；本轮未发版，公开0.1.2证据沿用下述历史记录。详见第3节及[本组证据](acceptance/member-picker-menu-redmi-20261110.json)。
 
 **0.1.2 正式发布完成（2026-11-10）**：标签`kclash-v0.1.2`固定`a0a7f1ae`，versionCode1002；流量停止清零与资源/搜索交互改进已发布为Latest。标签CI[42801338969](https://github.com/lonnnnnng/FlClash/actions/runs/42801338969)及分支CI[42801333292](https://github.com/lonnnnnng/FlClash/actions/runs/42801333292)通过，包含Go race、JVM、签名R8、双Lint和扫码DEX门禁。871项本地JVM零失败/错误/跳过。公开APK SHA `96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538`与GitHub digest、SHA256SUMS和Redmi安装回拉一致；原签名延续。0.1.1→本地0.1.2→公开0.1.2安装边界四业务表/UID/正文保持；公开包PID20848两轮真实首页启停均有双向累计并停止回0、双服务退出。烟测后配置/偏好/脚本保持，测速238值/时间刷新仍未归因。探针和16个核验设备文件已清，保留公开包/原配置及隔离Flutter副本，服务停止。见[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.2)和[验收证据](acceptance/release-0.1.2-redmi-20261110.json)。
 
@@ -1450,7 +1458,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 | 6 | IP/质量全部来源、持久缓存和失效恢复；服务全部目标 | 缓存闭环与全部目标尝试已验：757单测、final3 5/5、cold2/cold5各双阶段、回归10/10；远端部分受限，原长窗口配置保护after 0/1/原因未定，新短窗口通过不替代失败。见`ip-quality-cache-redmi-20261105.json` |
 | 7 | Fallback 无有效 now 实核行为和冷恢复 | 冷进程收尾已验：更新后的唯一授权源为34组、1个非空Fallback/7成员；Redmi真实Mihomo停止态/运行态各4阶段，共8/8有效`now`，固定/清除固定/非法成员拒绝通过；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`，见`fallback-real-core-redmi-20261105.json`与`fallback-cold-process-redmi-20261106.json`。自然无效`now`经源码核对在合法非空组、断网或全不健康成员下不可自然产生，保留为核心语义边界，不记伪造注入为通过。 |
 | 8 | 纯代理冷恢复、首次安装 VPN 授权、蜂窝切换、Tasker/MacroDroid、Always-on OEM | 部分已验：本组build2/767 JVM、Go全量race265/265/压力40/40/route10；控制器KCORE-002/003已修，Redmi6轮及回归共4/4，Always-on-final1零延迟首请求两次200、纯代理恢复/保护通过。旧TLS EOF因果/长期稳定性未闭环；蜂窝延期，其余系统边界待验。见`controller-lifecycle-redmi-20261105.json` |
-| 9 | 完整Flutter视觉与常用交互 | KUI-034停止清零已完成独立实核红绿及正式启停烟测，按需暂停保留统计；KUI-033已补非空CUSTOM/规则/外部资源与NTP/Sniffer运行参考、成员下沿搜索、DNS深浅自然转场；仍未覆盖非空图标/图库、全子页视觉/连续动效和逐页Flutter对照，维持PARTIAL。菜单现已有主线程/RenderThread自身计数及Popup分窗帧表，仍无原生函数调用栈或性能优化结论；测速缓存和审计偏好变化原因未定。 |
+| 9 | 完整Flutter视觉与常用交互 | KUI-035成员分类/筛选/自动包含/撤回和显示布局已实现，Redmi组件恢复/IME/编辑7/7、菜单几何20帧一致。无探针A-B-A固定范围候选无稳定收益已撤回，原生归因未闭环。下一组优先Flutter组编辑可展开Sheet与原位成员、协议徽标/拖拽、非空图标图库，再补全程自然动效及真实Room布局冷恢复；历史异常仍PARTIAL。 |
 | 10 | 实时背景/触点光效、玻璃采样品质、8MiB正文及连续动效性能 | 后排待做，玻璃默认关闭；已完成六种材质/折射/多层菜单不重复列缺项 |
 | 11 | API24/25/31/32及低API核心/VPN/实网、端到端回归、CI/签名/Release/更新资产 | 0.1.2签名Release已发布，标签/分支CI及公开资产Redmi回验通过；单FILE的0.1.1→本地0.1.2→公开0.1.2覆盖链数据保持。低API真机、端到端兼容矩阵及OEM/蜂窝边界仍待验 |
 

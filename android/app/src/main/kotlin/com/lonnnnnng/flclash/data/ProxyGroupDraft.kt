@@ -11,6 +11,7 @@ data class ProxyGroupDraft(
     val key: String = UUID.randomUUID().toString(),
     val originalName: String? = null,
     val json: String = "{\"name\":\"\",\"type\":\"select\"}",
+    val memberLayout: List<String>? = null,
 ) {
     val fields: JsonObject get() = JsonParser.parseString(json).asJsonObject
     val name: String get() = text("name")
@@ -118,6 +119,7 @@ object ProxyGroupDrafts {
         overrides.get("ntp")?.takeIf { it.isJsonObject }?.asJsonObject?.let { ntp ->
             ntp.get("dialer-proxy")?.asString?.let { renames[it]?.let { name -> ntp.addProperty("dialer-proxy", name) } }
         }
+        ProxyGroupMembers.saveLayouts(overrides, save.groups)
         return profile.copy(selectedMapJson = encodeSelectedMap(selected),
             currentGroupName = (renames[profile.currentGroupName] ?: profile.currentGroupName)?.takeIf { it in names },
             unfoldSetJson = encodeUnfoldSet(profile.unfoldSet.map { renames[it] ?: it }.filter { it in names }.toSet()),

@@ -1,0 +1,446 @@
+{
+  "defect": "KUI-035",
+  "date": "2026-11-10",
+  "repositoryBase": "a3565af9e0ad878550be09ce6071c793f1dbacd3",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "size": "1080x2340",
+    "density": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "emulatorUsed": false
+  },
+  "flutterReference": {
+    "package": "com.lonnnnnng.kclash.reference.full.dev",
+    "commit": "be84736605527034689c95bf27828ff27d912c5e",
+    "prismCommit": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "safeMode": true,
+    "upstreamPackageTouched": false,
+    "observed": [
+      "CUSTOM 34 groups, 91 rules, 90 external resources",
+      "nonempty group editor and member picker",
+      "collapsed categories and expanded 31-group candidate list"
+    ],
+    "coreStarted": false,
+    "groupChangesSaved": false
+  },
+  "memberValidation": {
+    "tests": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+        "test": "emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+        "test": "listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+        "test": "groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+        "test": "addingAllOptionsReturnsToDraftWithoutSavingParent",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+        "test": "memberDockCancelPreservesDraftAndStaysAboveRealIme",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+        "test": "categorizedMemberPicksRestoreAndUndoWholeOriginalDraft",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+        "test": "overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+        "code": 0
+      }
+    ],
+    "passed": 7,
+    "png": 17,
+    "visualReviewed": true,
+    "transitionFrameExcludedFromStableParity": [
+      "member_dock_returned"
+    ],
+    "restoration": "Compose SavedInstanceState restoration, not process death or formal Room E2E",
+    "redTests": {
+      "total": 5,
+      "failed": 2,
+      "log": "member-red.log"
+    },
+    "finalMemberUnitTests": 7
+  },
+  "geometryValidation": {
+    "passed": true,
+    "tests": 1,
+    "images": 20,
+    "identicalToOriginal": 20,
+    "candidateMaxChannelDelta": 5,
+    "rejectedCandidateIdenticalFrames": 11
+  },
+  "performance": {
+    "candidate": "fixed content filter bounds",
+    "retained": false,
+    "decision": "No stable benefit against reverse baseline; product change reverted",
+    "withoutThreadSampling": [
+      {
+        "variant": "baseline",
+        "open": {
+          "frames": 126,
+          "janky": 33,
+          "jankPercent": 26.19
+        },
+        "close": {
+          "frames": 164,
+          "janky": 15,
+          "jankPercent": 9.146
+        }
+      },
+      {
+        "variant": "candidate",
+        "open": {
+          "frames": 135,
+          "janky": 29,
+          "jankPercent": 21.481
+        },
+        "close": {
+          "frames": 165,
+          "janky": 15,
+          "jankPercent": 9.091
+        }
+      },
+      {
+        "variant": "reverse-baseline",
+        "open": {
+          "frames": 136,
+          "janky": 30,
+          "jankPercent": 22.059
+        },
+        "close": {
+          "frames": 164,
+          "janky": 17,
+          "jankPercent": 10.366
+        }
+      }
+    ],
+    "frameTables": 36,
+    "closeCaptures": 18,
+    "independentCandidateThreadSample": {
+      "theme": "dark",
+      "samples": 7,
+      "frames": 6,
+      "readFailures": 0,
+      "readOverheadMaxMs": 5.374,
+      "openMainCpuMs": [
+        506.957,
+        549.395
+      ],
+      "openRenderThreadCpuMs": [
+        485.915,
+        501.549
+      ],
+      "closeMainCpuMs": [
+        252.363,
+        294.339
+      ],
+      "closeRenderThreadCpuMs": [
+        205.768,
+        213.804
+      ]
+    },
+    "nativeFunctionAttribution": "unresolved",
+    "perfettoFtraceRetried": false
+  },
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 594,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 216,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 879,
+    "fullLogs": [
+      "build-final1.log",
+      "build-final2.log"
+    ],
+    "motionFinal": "build-motion-final2.log",
+    "debug": "passed",
+    "release": "unsigned R8 passed; not installed as formal app",
+    "lintDebug": {
+      "errors": 0,
+      "warnings": 71,
+      "hints": 14
+    },
+    "lintRelease": {
+      "errors": 0,
+      "warnings": 68,
+      "hints": 13
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "reporterTests": {
+      "frames": 5,
+      "threads": 4
+    },
+    "gradleReuse": true
+  },
+  "installation": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "4c4111066ed0fbc47bd33b7d4e08cbb51728a12c8fc86d24e52f6dea07fccac8",
+      "bytes": 65985049,
+      "deviceReadbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "e74abcb9edea4c7ade9a00dc7a869cd63cf9665267a1116e794ad0ae085165e3",
+      "bytes": 2807874,
+      "deviceReadbackMatches": true
+    }
+  ],
+  "dataBoundary": {
+    "formalPackageAbsentAtSessionStart": true,
+    "formalDataProtectionTested": false,
+    "fixtureOnly": true,
+    "originalYamlSha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+    "motionServicesAtEnd": "none",
+    "motionPackagesRetainedForReview": false,
+    "referencePackageRetained": true,
+    "ownedXmlCleanup": [
+      {
+        "path": "/data/local/tmp/kclash-align-final-reference-back.xml",
+        "bytes": 21188,
+        "sha256": "d9baf39350fa28f2775402d0886f4160e72fe29caa7e42147c36491796da6a0c"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-final-reference-parent.xml",
+        "bytes": 20893,
+        "sha256": "afb8d4b884f56388410e9c58a8d0b94cb0f3055d0daef8f1d3f9867e7bf3b61e"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-current.xml",
+        "bytes": 13828,
+        "sha256": "7b51c00c839b76efddcadb4aff2486f4ad1fecb83f2be652b80dfe8663ade471"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-custom.xml",
+        "bytes": 11628,
+        "sha256": "7426c7abd734da4beaf2d5d3b2e5a46f6ba9728d2b024ff602fc4e2c4b338e8c"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-group-bottom.xml",
+        "bytes": 21188,
+        "sha256": "d9baf39350fa28f2775402d0886f4160e72fe29caa7e42147c36491796da6a0c"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-group-scrolled.xml",
+        "bytes": 25415,
+        "sha256": "0b12cc2525b6fc447e59ce2ee53d7ee3fe8f523f3093a879059c480926e51a0e"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-group.xml",
+        "bytes": 14825,
+        "sha256": "1788b06f80894e4931141fd8d6786a72c9f94a180b0a47cc7feb7eef2baab0c9"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-member-groups.xml",
+        "bytes": 14142,
+        "sha256": "f892a32bad553bd621412a6ddb151aa6bdfb794bc4266e384ba6d983be3df779"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-member-picker.xml",
+        "bytes": 7965,
+        "sha256": "ec79ede44951a3801ce6c4cd868b825e60510fefea10a8e728fb50bdb58ab3d9"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-now.xml",
+        "bytes": 11628,
+        "sha256": "7426c7abd734da4beaf2d5d3b2e5a46f6ba9728d2b024ff602fc4e2c4b338e8c"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-profile-editor.xml",
+        "bytes": 20893,
+        "sha256": "afb8d4b884f56388410e9c58a8d0b94cb0f3055d0daef8f1d3f9867e7bf3b61e"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-profile-menu.xml",
+        "bytes": 4952,
+        "sha256": "5db0d24700d8169c7ab22e0f51419d8200c411604b9187aebc0d57110fc482d2"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-profile-open.xml",
+        "bytes": 11628,
+        "sha256": "7426c7abd734da4beaf2d5d3b2e5a46f6ba9728d2b024ff602fc4e2c4b338e8c"
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-flutter-profiles.xml",
+        "bytes": 11628,
+        "sha256": "7426c7abd734da4beaf2d5d3b2e5a46f6ba9728d2b024ff602fc4e2c4b338e8c"
+      }
+    ],
+    "referenceReturnedWithoutSave": true,
+    "motionPackagesRemovedAfterIdentityVerification": true
+  },
+  "remaining": [
+    "Flutter expandable group Sheet and inline members versus Kotlin full page",
+    "Protocol badges and inline drag controls",
+    "Nonempty icon/gallery and all remaining subpages",
+    "Natural full flow motion parity",
+    "Layout persistence through real Room and process death",
+    "Native RenderThread attribution and stable performance gain"
+  ],
+  "localArtifactsRoot": "../acceptance-artifacts/flutter-menu-alignment-20261110",
+  "toolingFailuresPreserved": [
+    "initial motion unit task missing enabling property; no source failure",
+    "initial DEX check used signed APK filename; unsigned APK check passed",
+    "local path/glob and diagnostic import mistakes; corrected without changing device evidence"
+  ],
+  "verificationNotes": [
+    "build-final2 full JVM and dual Lint passed; later change only Chinese code comment and extra assertion, member-unit-final 7/7 passed",
+    "final motion APK built after all source changes; final 7 UI tests and 20 geometry frames use installed hash in installation",
+    "member_dock_returned contains exit overlay and is excluded from stable visual parity",
+    "No new production signature, Release publication, core-network run or formal Room protection claim"
+  ],
+  "changedKotlinSourceHashes": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProxyGroupDraft.kt": "4d5c3d95aa32644a15081d31712e9b065fbd816ec95c03b57f776ecbef58a510",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProxyGroupIssues.kt": "c96f75417d65fd663641ca66de9e8e3703c91fd3a7f5c9731047b706a421f9e6",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt": "9b7155bdd10092007d8ac2343a7319e46a6237139c3c4b1816daf862d2e9d3e0",
+    "android/service/src/main/java/com/lonnnnnng/flclash/service/ProfileProviderOverrides.kt": "d6d6e38f3e1648ef735066fa2214e18a52baf37adf19dc22371a7df7ce95d554",
+    "android/tests/instrumented/ProxyGroupEditorInstrumentedTest.kt": "e9d2b7cfb1447bbc8879c3edf00e101957cbddaa8ebdb0a0e7c63f233cbee29e",
+    "android/tests/instrumented/VisualMotionNaturalInstrumentedTest.kt": "8d6776acb42bbad73865603ea0b63c45e1a52c810d2004328e42361e6fdaee5a",
+    "android/tests/service/ProfileProviderOverridesTest.kt": "d285a6516594e56715321b101b8b08922419686b874a9f99b5edb4fd70465068",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProxyGroupMembers.kt": "a4cab9791cf0ace93ab7f806a7feae176ad8264742ff15fc99a833860fcb40b7",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupMemberPicker.kt": "184e106ad74f6617b794bcdf4a7b77bbe08569cc664ec340b8655662345d3a92",
+    "android/tests/app/ProxyGroupMembersTest.kt": "d5468bdc4dab02ae6cadd3da026920e625467667475a57074e1b22bee2265e95"
+  },
+  "artifactIndex": {
+    "build-final1.log": {
+      "bytes": 22509,
+      "sha256": "13372de55b881080295a6120d42646a09dd67727f3f2d9174b46c7974a9c5fc6"
+    },
+    "build-final2.log": {
+      "bytes": 21074,
+      "sha256": "4b2b6fcdbb0c0d00a99ea27e3e9186e6561b4164f147205af41c36bc48ce8de1"
+    },
+    "build-motion-final2.log": {
+      "bytes": 12742,
+      "sha256": "9fadfd9a439254d8df2def8c16c43a7ce741bf3cc6a0422b9f6cbb0e50395658"
+    },
+    "unit-final1.json": {
+      "bytes": 357,
+      "sha256": "434c8936f9760eea1a70b65dc3fdf3d1a04eec339993cbb28b634c6ee220114d"
+    },
+    "member-unit-final.log": {
+      "bytes": 5290,
+      "sha256": "6266ffc93834e6c16e60d91c4a1018c5596336c8d1ece8388306110faae3edca"
+    },
+    "final-members/result.json": {
+      "bytes": 4064,
+      "sha256": "8f0d0a5d2dd575cbaa6c71a00343bb9acf8abdc1d638818fe21c1ed072feeda0"
+    },
+    "final-geometry/result.json": {
+      "bytes": 3487,
+      "sha256": "39eb4283f8d17dab9fe4b0592ff74f7cdb0a45c9b3c046c3c3fb8598d445d636"
+    },
+    "final-geometry-comparison.json": {
+      "bytes": 1495,
+      "sha256": "327a877e8bd6da67d5e3b2d3d8edbd27a04d3e6cffa7466385bcdf6a6d18c1ff"
+    },
+    "baseline-window-light/result.json": {
+      "bytes": 2714,
+      "sha256": "95b2f6a4a17c9e5e3e0e70ab4a13bb935884569983b075677d7d33516b3a532c"
+    },
+    "baseline-window-dark/result.json": {
+      "bytes": 2700,
+      "sha256": "a8c9136521cf7df32d6e5bd371e5732e2318a075d044cfa7ba2f08ad6e8c2b0b"
+    },
+    "candidate-window-light/result.json": {
+      "bytes": 2721,
+      "sha256": "cbedfbb4a3739db30ea8ef566a50fedc220be47bd079adb9ca14d1d7aa3a791b"
+    },
+    "candidate-window-dark/result.json": {
+      "bytes": 2707,
+      "sha256": "4e8f6d74af21bbf69432018f5643dd0e55a92f3040186f3bd4a0f29dc22c572b"
+    },
+    "reverse-baseline-light/result.json": {
+      "bytes": 2721,
+      "sha256": "417e41619cf437ea38cf3e6d6800d91eeab9553c70121405fedfdf7025b4d27f"
+    },
+    "reverse-baseline-dark/result.json": {
+      "bytes": 2707,
+      "sha256": "53bad1d10d6fb114264fad62e281c95d6e15f3d49bf5d637cd775c6bfd97a9f0"
+    },
+    "candidate-thread-dark/report.json": {
+      "bytes": 96315,
+      "sha256": "62c4512ccc01ffa9930dad6731e1adf9a71f4283e7a0273d0dc0ae68e06f5238"
+    },
+    "final-install.json": {
+      "bytes": 397,
+      "sha256": "a6cc706033298a5cc633d6a19696478d5369a53594307f06199a96be72b92da8"
+    },
+    "mlkit-final2.json": {
+      "bytes": 588,
+      "sha256": "6371512ad3aa342f5732145fd0e4d1000e475a2fbf388580a2379478b034dee0"
+    },
+    "owned-xml-cleanup.json": {
+      "bytes": 2484,
+      "sha256": "0f03584943829cd0b1b8a60ae4a6aed84e81949f28331fc2e0a7c5e746e29447"
+    },
+    "flutter-member-picker.png": {
+      "bytes": 112399,
+      "sha256": "6bb2021e2204a730596346729ec15f229141d14a2d6dac69ee28a5debbd356c2"
+    },
+    "flutter-member-groups.png": {
+      "bytes": 172463,
+      "sha256": "8dc58faa0e45f8954cdb1be4bac66741a17a1c29241dc8ab24cb09403c5bb39b"
+    }
+  }
+}
