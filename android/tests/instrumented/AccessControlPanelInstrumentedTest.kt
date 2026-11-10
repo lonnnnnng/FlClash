@@ -34,6 +34,30 @@ import java.security.MessageDigest
  */
 @RunWith(AndroidJUnit4::class)
 class AccessControlPanelInstrumentedTest {
+    @Test fun permissionRetryPreservesSelectionAndAllTransitionStatesLockEdits() {
+        val settings = com.lonnnnnng.flclash.service.models.AccessControlProps(enable = true,
+            mode = AccessControlMode.REJECT_SELECTED, rejectList = listOf("com.example.mail"))
+        var state by mutableStateOf(AccessControlUiState(settings = settings, isLoading = false,
+            apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")), appsPermissionRequired = true))
+        var runtime by mutableStateOf(CoreRuntimeStatus.STOPPED)
+        var retries = 0; var settingsOpens = 0
+        composeRule.setContent { KClashTheme {
+            AccessControlCard(state, runtime, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+                onRetryApps = { retries++; state = state.copy(appsPermissionRequired = false) },
+                onOpenAppSettings = { settingsOpens++ })
+        } }
+        composeRule.onNodeWithTag("access_control_apps_settings").performClick()
+        composeRule.onNodeWithTag("access_control_apps_retry").performClick()
+        assertEquals(1, retries); assertEquals(1, settingsOpens); assertEquals(settings, state.settings)
+        composeRule.onNodeWithTag("access_control_enabled").assertIsEnabled()
+        for (status in listOf(CoreRuntimeStatus.STARTING, CoreRuntimeStatus.RUNNING, CoreRuntimeStatus.STOPPING)) {
+            composeRule.runOnIdle { runtime = status }
+            composeRule.onNodeWithTag("access_control_enabled").assertIsNotEnabled()
+            composeRule.onNodeWithTag("access_control_topbar_actions").assertIsNotEnabled()
+        }
+        composeRule.runOnIdle { runtime = CoreRuntimeStatus.STOPPED }
+        composeRule.onNodeWithTag("access_control_enabled").assertIsEnabled()
+    }
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -106,7 +130,7 @@ class AccessControlPanelInstrumentedTest {
                 acceptList = emptyList(),
                 rejectList = emptyList(),
             ),
-            apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")),
+            apps = listOf(InstalledAppInfo("com.example.mail", "示例邮件")), isLoading = false,
         )
         composeRule.setContent {
             KClashTheme {
@@ -132,7 +156,8 @@ class AccessControlPanelInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("access_control_enabled").assertIsDisplayed()
-        composeRule.onNodeWithText("核心运行中，按应用代理设置已锁定；停止核心后才能修改。").assertIsDisplayed()
+        composeRule.onNodeWithText("核心运行或启停期间，按应用代理设置已锁定；停止核心后才能修改。").assertIsDisplayed()
+        composeRule.onNodeWithTag("access_control_enabled").assertIsNotEnabled()
     }
 
     @Test

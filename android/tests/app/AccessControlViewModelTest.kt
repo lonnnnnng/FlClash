@@ -32,7 +32,7 @@ class AccessControlViewModelTest {
     }
 
     @Test
-    fun `smart selection separates domestic and other launcher packages`() {
+    fun `smart selection separates domestic and other installed packages`() {
         val apps = listOf(
             InstalledAppInfo("com.tencent.mm", "微信"),
             InstalledAppInfo("com.google.android.gms", "Google Play 服务"),
@@ -79,9 +79,9 @@ class AccessControlViewModelTest {
         )
 
         val imported = parseAccessClipboardList("com.example.a\n\ncom.example.a\ncom.example.b")
-        assertEquals(listOf("com.example.a", "", "com.example.b"), imported)
+        assertEquals(listOf("com.example.a", "com.example.b"), imported)
         assertEquals(
-            settings.copy(rejectList = listOf("com.example.a", "", "com.example.b")),
+            settings.copy(rejectList = listOf("com.example.a", "com.example.b")),
             settings.withImportedCurrentPackageList(imported),
         )
     }

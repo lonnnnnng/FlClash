@@ -36,6 +36,8 @@
 
 ## 按应用代理：应优先参考的行为差异
 
+2026-11-11更新：以下历史差异中的智能选择范围保护、剪贴板校验、完整安装包计数/枚举和返回刷新已由KUI-038实现，889JVM、Redmi13/13通过，见[溯源与边界](access-control-protection-defect.md)。OEM专用权限拒绝/授权的跨厂商真机验证仍待补；原表保留审查时证据。
+
 | 行为 | 当前状态与证据 |
 | --- | --- |
 | 保存时保留被筛选隐藏的名单 | **已有**。[`AccessControlViewModel.kt:save`](../android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AccessControlViewModel.kt#L319)仅去空、去重、排序；存储层也不按可见集合裁剪。 |
@@ -57,8 +59,10 @@
 
 ## 应用更新与MITM
 
+2026-11-11更新：Kotlin独立签名与0.1.2公开Release资产已建立；应用内更新仍待实现，见[六项目标](functional-closure.md)，不再受下述历史“缺发布源”前置条件阻塞。
+
 - **APK更新未实现**：上游Android使用DownloadManager进度/取消、SHA256SUMS精确资产名校验、PackageInstaller确认；状态在内存，重启时清理，不是任务恢复。未知来源授权往返和APK签名预解析未见完整显式流程，不能直接宣称上游覆盖所有安装边界。
-- Kotlin当前只有独立包名`com.lonnnnnng.flclash`、arm64构建、版本参数和可选Release签名配置；CI产出未签名APK/校验文件，不是可安装的签名Release更新源。应先完成Kotlin自己的发布身份/版本/资产契约，再实现更新，不能安装Flutter的`com.follow.clash` APK作为升级。
+- 历史审查时Kotlin只有独立包名`com.lonnnnnng.flclash`、arm64构建、版本参数和可选Release签名配置；CI产出未签名APK/校验文件，不是可安装的签名Release更新源。应先完成Kotlin自己的发布身份/版本/资产契约，再实现更新，不能安装Flutter的`com.follow.clash` APK作为升级。
 - **MITM为关闭预埋**：固定新参考`lib/common/constant.dart:35-37`的`FEATURE_MITM`默认false；8个`mitm.*`方法缺handler，`core/lib.go:SetMitmPressure`为空。模块、正文交换、CA管理/root系统安装、压力降级等应用侧存在但公开随包核心未实现，当前不列Kotlin必须追齐的公开能力。现有普通请求证书校验/forceGC不等于MITM能力。
 
 ## 建议推进顺序及未验证边界

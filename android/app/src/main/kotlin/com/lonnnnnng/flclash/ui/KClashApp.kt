@@ -1296,6 +1296,15 @@ fun KClashApp(
                                 }
                             }
                             ToolsSubpage.ACCESS_CONTROL -> item {
+                                val accessOwner = LocalLifecycleOwner.current
+                                DisposableEffect(accessOwner, accessControlViewModel) {
+                                    val observer = LifecycleEventObserver { _, event ->
+                                        if (event == Lifecycle.Event.ON_RESUME) accessControlViewModel.refreshApps()
+                                    }
+                                    accessOwner.lifecycle.addObserver(observer)
+                                    accessControlViewModel.refreshApps()
+                                    onDispose { accessOwner.lifecycle.removeObserver(observer) }
+                                }
                                 Box(Modifier.fillMaxWidth().testTag("page_access_control")) {
                                     AccessControlCard(
                                         state = accessControlState,
@@ -1314,6 +1323,12 @@ fun KClashApp(
                                         onExportToClipboard = accessControlViewModel::exportToClipboard,
                                         onImportFromClipboard = accessControlViewModel::importFromClipboard,
                                         onSave = { accessControlViewModel.save() },
+                                        onRetryApps = accessControlViewModel::retryLoad,
+                                        onOpenAppSettings = {
+                                            runCatching { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                                android.net.Uri.parse("package:${context.packageName}"))) }
+                                                .onFailure { accessControlViewModel.reportAppsSettingsUnavailable() }
+                                        },
                                     )
                                 }
                             }
@@ -2593,8 +2608,10 @@ internal fun AccessControlCard(
     onExportToClipboard: () -> Unit,
     onImportFromClipboard: () -> Unit,
     onSave: () -> Unit,
+    onRetryApps: () -> Unit = {},
+    onOpenAppSettings: () -> Unit = {},
 ) {
-    val canEdit = !runtimeState.isRunning && !state.isLoading && !state.isSaving
+    val canEdit = runtimeState in listOf(CoreRuntimeStatus.STOPPED, CoreRuntimeStatus.FAILED) && state.settingsReady && !state.isLoading && !state.isSaving && !state.isSmartSelecting
     val contentCanEdit = canEdit && state.settings.enable && !state.isSmartSelecting
     val visibleApps = state.visibleApps
     val hasVisibleApps = visibleApps.isNotEmpty()
@@ -2860,7 +2877,7 @@ internal fun AccessControlCard(
                                     accessMenuLayer = AccessMenuLayer.NONE
                                     onSmartSelect()
                                 },
-                                enabled = contentCanEdit && state.apps.isNotEmpty(),
+                                enabled = contentCanEdit && state.apps.isNotEmpty() && !state.appsPermissionRequired && state.appsError == null,
                                 modifier = Modifier.testTag("access_control_menu_smart_select"),
                             )
                             DropdownMenuItem(
@@ -2934,7 +2951,19 @@ internal fun AccessControlCard(
                 }
             }
             if (state.error != null) {
-                Text(state.error, color = MaterialTheme.colorScheme.error)
+                Text(state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("access_control_error"))
+            }
+            if (state.appsError != null || state.appsPermissionRequired) {
+                Text(state.appsError ?: "未获准读取应用列表，原列表和选择已保留。请在系统应用设置中授权后返回。",
+                    color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("access_control_apps_error"))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onRetryApps, enabled = !state.isLoading && !state.isSaving,
+                        modifier = Modifier.testTag("access_control_apps_retry")) { Text("重新读取") }
+                    if (state.appsPermissionRequired) TextButton(onOpenAppSettings,
+                        modifier = Modifier.testTag("access_control_apps_settings")) { Text("应用设置") }
+                }
+            } else if (state.error != null && !state.isLoading) {
+                TextButton(onRetryApps, modifier = Modifier.testTag("access_control_apps_retry")) { Text("重新读取") }
             }
             if (state.isLoading) {
                 Text("正在读取已安装应用…")
@@ -3017,7 +3046,7 @@ internal fun AccessControlCard(
                     ) {
                         TextButton(
                             onClick = onSmartSelect,
-                            enabled = contentCanEdit && state.apps.isNotEmpty(),
+                            enabled = contentCanEdit && state.apps.isNotEmpty() && !state.appsPermissionRequired && state.appsError == null,
                             modifier = Modifier.testTag("access_control_smart_select"),
                         ) {
                             if (state.isSmartSelecting) {
@@ -3048,8 +3077,7 @@ internal fun AccessControlCard(
                         ) { Text("清除当前结果") }
                     }
                     if (state.apps.isEmpty()) {
-                        // 作者 long：空清单表示设备当前没有可识别的启动器应用，必须给出明确原因，
-                        // 避免用户把一个空 LazyColumn 误认为加载失败或权限没有生效。
+                        // 作者 long：查询失败/授权不足另有原位重试；成功但为空时不引导用户只安装Launcher应用。
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -3058,10 +3086,11 @@ internal fun AccessControlCard(
                         ) {
                             Text("没有可用于按应用代理的已安装应用")
                             Text(
-                                "请先安装一个可启动的应用，再返回此页面重新读取。",
+                                "可重新读取应用列表；若系统限制读取，请先在应用设置中允许。",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            TextButton(onRetryApps, modifier = Modifier.testTag("access_control_empty_retry")) { Text("重新读取") }
                         }
                     } else if (!hasVisibleApps) {
                         Text(
@@ -3115,9 +3144,9 @@ internal fun AccessControlCard(
                     }
                 }
             }
-            if (runtimeState.isRunning) {
+            if (runtimeState !in listOf(CoreRuntimeStatus.STOPPED, CoreRuntimeStatus.FAILED)) {
                 Text(
-                    "核心运行中，按应用代理设置已锁定；停止核心后才能修改。",
+                    "核心运行或启停期间，按应用代理设置已锁定；停止核心后才能修改。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )

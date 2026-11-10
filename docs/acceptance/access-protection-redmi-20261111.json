@@ -1,0 +1,374 @@
+{
+  "defect": "KUI-038",
+  "date": "2026-11-11",
+  "repositoryBase": "2153854b0f48399a1b1662dc38d5a7156fec1692",
+  "scope": "Per-app VPN lists, package visibility, clipboard validation, asynchronous state protection and stopped-state persistence",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "emulatorUsed": false
+  },
+  "reference": {
+    "flutter": "be84736605527034689c95bf27828ff27d912c5e",
+    "paths": [
+      "lib/views/access.dart",
+      "android/app/src/main/kotlin/com/follow/clash/packages/PackageResolver.kt"
+    ],
+    "packageVisibilityDocs": "https://developer.android.com/training/package-visibility/declaring",
+    "fetched": "2026-11-11",
+    "runtimeReferenceOperated": false
+  },
+  "behavior": {
+    "smartSelectionScope": "System and Internet filters only; search ignored; hidden and uninstalled selections retained in both lists",
+    "clipboard": "Trim, validate each package name and deduplicate; zero valid input rejects before mutation",
+    "count": "Selected installed apps from full catalog; excludes uninstalled entries",
+    "catalog": "All installed packages with requested permissions, excluding self/android; no Launcher requirement",
+    "refresh": "Entry/resume refreshes apps and OEM permission without overwriting unsaved settings; failures retain last full list",
+    "concurrency": "Synchronous save/scan claim; scan checks editor revision and existing core ipRouteRevision; saves use runtime transition lock",
+    "corruption": "No stored row uses defaults; malformed JSON, lists, booleans and enums fail without writing defaults"
+  },
+  "deviceTests": {
+    "batch": "final1",
+    "passed": true,
+    "methods": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.AccessProtectionInstrumentedTest",
+        "test": "nonLauncherAppCanBeSavedAndReadAfterActivityRecreation",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.AccessProtectionInstrumentedTest",
+        "test": "invalidSystemClipboardKeepsSelectionAndRefreshKeepsUnsavedDraft",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.AccessProtectionInstrumentedTest",
+        "test": "realSmartSelectionKeepsHiddenPackagesAndIgnoresSearch",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.data.AccessControlSettingsStoreInstrumentedTest",
+        "test": "corruptedSettingsAreNotSilentlyReplacedByEmptyDefaults",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.data.AccessControlSettingsStoreInstrumentedTest",
+        "test": "savesAndRestoresSanitizedPackageSelection",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.data.AccessControlSettingsStoreInstrumentedTest",
+        "test": "oldFourFieldJsonReceivesNewFilterDefaults",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest",
+        "test": "permissionRetryPreservesSelectionAndAllTransitionStatesLockEdits",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest",
+        "test": "topBarToggleSelectsAndClearsVisibleApps",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest",
+        "test": "runningCoreLocksAccessControlEdits",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest",
+        "test": "clipboardActionsInvokeCallbacks",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest",
+        "test": "emptyInstalledAppListShowsActionableStatusAndDisablesBatchSelection",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+        "test": "mainActivityTogglesOnlyVisibleAccessResultsAndDiscardsChanges",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+        "test": "mainActivityPersistsDirectAccessSelectionAcrossRecreation",
+        "code": 0
+      }
+    ],
+    "png": {
+      "access_nonlauncher_selected": {
+        "count": 5,
+        "bytes": 171885,
+        "sha256": "fa602de1d0ec5e5ea39775c351c01be9818341745272c6755cbfb7ab36f9b221"
+      },
+      "access_saved_recreated": {
+        "count": 5,
+        "bytes": 171142,
+        "sha256": "f93082cecf25c053cddc506c4e1c323ee3082430f9e6ac0a47f8e97bfcb2afc9"
+      },
+      "access_invalid_clipboard_preserved": {
+        "count": 3,
+        "bytes": 76552,
+        "sha256": "19b3bf910cfb6fda25aa3152a092c4e2609b90a547bf283c54aa26a422b07d54"
+      },
+      "access_smart_hidden_preserved": {
+        "count": 7,
+        "bytes": 228048,
+        "sha256": "4b718d8d042b4cc3478dfcd2364f0fead13573e29c7d5631abc66b834aa989a6"
+      }
+    },
+    "nonLauncherCandidate": "com.google.android.projection.gearhead",
+    "sameSourceProduct": true,
+    "activityRecreationNotColdProcess": true,
+    "visualReview": {
+      "stable": [
+        "access_nonlauncher_selected",
+        "access_saved_recreated"
+      ],
+      "processOnly": [
+        "access_invalid_clipboard_preserved",
+        "access_smart_hidden_preserved"
+      ],
+      "reason": "System clipboard overlay or resume transition; excluded from stable visual parity"
+    }
+  },
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 604,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 216,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 889,
+    "gradleReuse": true,
+    "production": "build4.log",
+    "motion": "motion1.log",
+    "tests": "test2.log",
+    "lint": {
+      "debug": {
+        "Warning": 73,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 69,
+        "Hint": 13
+      }
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "debug": {
+      "bytes": 83109415,
+      "sha256": "fbf32b8da16dc781247a0c0b256daeff547457e23895301e6214b513ba013f86"
+    },
+    "unsignedReleaseR8": {
+      "bytes": 48377492,
+      "sha256": "a015364e1557844aa11a7e4ec7a44596b358bff582d96db3f61ca554c11c1b09"
+    },
+    "postDeviceSourceChange": "Manifest tools:ignore QueryAllPackagesPermission with explanatory comment only; no runtime code or permission change",
+    "releasePublished": false,
+    "signedReleaseRuntimeTested": false
+  },
+  "installation": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "7d1cd3f58d3ce11ba6fdf7e514779a434b6695c1c03b3df35bb3adfabca5b858",
+      "bytes": 66027913,
+      "deviceReadbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "975b3c092d93707c21e98dfd8a7fc37f2f94bafb250887cdde636388ea6e10f7",
+      "bytes": 2863606,
+      "deviceReadbackMatches": true
+    }
+  ],
+  "dataBoundary": {
+    "snapshot": {
+      "count": 0,
+      "files": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "preferencesSha256": "e6ee51bfbc30b87ff9a2ef99f7eee3e23223882a079677cb7e6914e2ad084a79",
+      "preferenceDigests": {
+        "42ca62c9dabfa9885cdd049d3abb282556aad48e474c92f05236eab9b0535cb4": "7b85ff39b0054b13d1fc04c20e573c4cc3277513d03dcf9d188753435dc3e80f"
+      },
+      "selected": null,
+      "runtime": "STOPPED"
+    },
+    "preferencesNote": "Legacy store regression restores default settings by save, leaving one isolated vpn_access_control row; whole owned package removed after checks.",
+    "packagesRemoved": [
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "975b3c092d93707c21e98dfd8a7fc37f2f94bafb250887cdde636388ea6e10f7",
+        "bytes": 2863606,
+        "deviceReadbackMatches": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "7d1cd3f58d3ce11ba6fdf7e514779a434b6695c1c03b3df35bb3adfabca5b858",
+        "bytes": 66027913,
+        "deviceReadbackMatches": true
+      }
+    ],
+    "formalDataProtectionClaimed": false,
+    "formalAbsent": true,
+    "originalFlutterAbsent": true,
+    "referenceRetained": true,
+    "originalYamlUnchanged": true,
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+    "tun0Absent": true
+  },
+  "sourceSnapshot": {
+    "files": 630,
+    "bytes": 87536,
+    "sha256": "43503c962e7a546e1d5dec54fe90ecf97d397bedc033a2de0116d86064066db7"
+  },
+  "changedSourceHashes": {
+    "android/app/src/main/AndroidManifest.xml": "13b8aeef28c3747d2abe40892c2cd3dcf524d4aa6b4467eadc0a311dbdc4e56a",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/RoomAccessControlSettingsStore.kt": "3c91a753323b21a74f7d6466cd8b5e267a60945078bd8f4e6ab717b41b9284e0",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AccessControlViewModel.kt": "1b6e38a0e8df1cc5ada9ef5a207a2ccd103e919e9089d068ab78833b6630ff89",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "da49b004ddcee73ba46d996527441b83cdd558de9d7fdb10c18f73137952a804",
+    "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt": "be8d7e024f05c87ced4fa466e20c270b88e44d21f1a76a683a7e4bfa6e4fa2db",
+    "android/tests/app/AccessControlSafetyTest.kt": "b5ad85361b5418b770088fcbf26ece08fbad58407a38089cad859c3d7d5114d3",
+    "android/tests/app/AccessControlViewModelTest.kt": "b37b7903fbceac619a36eecfe23c34a28ad0bccf4344c5da534142ffc7f45426",
+    "android/tests/instrumented/AccessControlPanelInstrumentedTest.kt": "8ebb9c56c07409b9beb798e21b88311e706fdf9c61d2dd71cf7735b931a2b6f6",
+    "android/tests/instrumented/AccessControlSettingsStoreInstrumentedTest.kt": "f615df66ccc9075efef83c7d0d3708cf8cce99bab9e9001d08d9a1247bb1fa0f",
+    "android/tests/instrumented/AccessProtectionInstrumentedTest.kt": "5af161ec4b851692f663cf5734f107bc524ca3892dc7baadf7f97c359ee53aad",
+    "android/tests/instrumented/MainActivityInstrumentedTest.kt": "62880096d348c59a9f386dc808a47852064ae1855d64b2173d514cc23522415b"
+  },
+  "failuresPreserved": [
+    "access-compile-20261111.log: legacy clipboard empty-line expectation failed 1/6; corrected contract passed",
+    "lint1.log: QUERY_ALL_PACKAGES review gate; scoped manifest suppression for VPN app selection; lint2 checked independently"
+  ],
+  "remainingWithinCompatibility": [
+    "OEM GET_INSTALLED_APPS denied/granted hardware flow beyond this Redmi",
+    "New whole-app enumeration not rerun as real TUN per-package traffic matrix; existing black/white TUN acceptance retained",
+    "Signed production runtime and low API checks not performed in this group"
+  ],
+  "goalRemaining": [
+    "First HTTPS after start/recovery",
+    "Long-window Profile/preferences/delay attribution",
+    "Provider runtime restore timeout diagnosis",
+    "Core semantic preflight without runtime/disk mutation",
+    "In-app APK update"
+  ],
+  "localArtifactsRoot": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/access-protection-20261111",
+  "artifactIndex": {
+    "build4.log": {
+      "bytes": 17606,
+      "sha256": "f36d6ada788fc155adc75dd6e238b0805990d17578cffbb7cb63c56e78efe684"
+    },
+    "motion1.log": {
+      "bytes": 14432,
+      "sha256": "41efc5b94b585dfd0b0812605fc0578a1c7f1ddfdf3396fed1d6f2a565e5bf3f"
+    },
+    "test2.log": {
+      "bytes": 8945,
+      "sha256": "91049d15417fd764661c1bab1c6ecd287b04e60763e5fb92376f0519f156247b"
+    },
+    "lint1.log": {
+      "bytes": 12426,
+      "sha256": "d88a2febe079f63591b2083ce36b0fd6a2df1140e698005585241b661b4e0764"
+    },
+    "lint2.log": {
+      "bytes": 14673,
+      "sha256": "a489eb29633fbd4c1a0add98869d9e9b87c294e0776e04ca726c34b6acb7ea16"
+    },
+    "jvm.json": {
+      "bytes": 357,
+      "sha256": "bc78ff3a2d9851f08b6b953d0df70b8ca433b3fbd99d500eb8e6fc89287610d0"
+    },
+    "mlkit-final.json": {
+      "bytes": 588,
+      "sha256": "6371512ad3aa342f5732145fd0e4d1000e475a2fbf388580a2379478b034dee0"
+    },
+    "installation1.json": {
+      "bytes": 397,
+      "sha256": "f2369892df42858d9df7f3c09019e0687c893c6307417392493fc00f09f98466"
+    },
+    "baseline.json": {
+      "bytes": 499,
+      "sha256": "61de6659dfa2b611299178bcb01a4f209595cee01335e6ba9dba0313c03f2ab0"
+    },
+    "cleanup.json": {
+      "bytes": 1561,
+      "sha256": "65981277466e385b3e74cff8e7b27b5b04d686bd7c35b2ce4a920e641bf5ed3b"
+    },
+    "source1.json": {
+      "bytes": 87536,
+      "sha256": "43503c962e7a546e1d5dec54fe90ecf97d397bedc033a2de0116d86064066db7"
+    },
+    "final1/result.json": {
+      "bytes": 3040,
+      "sha256": "a5f3ebb94e8a90c76701c44878f130078b1d262a9b00e1dbea60e29cbf997d5a"
+    },
+    "final1/instrument.log": {
+      "bytes": 880974,
+      "sha256": "a4f10939f6c3f5ef8a1718c6d7d538d1faf8b78bda7107fdb6e7bf126c92ea69"
+    },
+    "snapshot-after.log": {
+      "bytes": 1307,
+      "sha256": "06173c5d5d8eddafc3162272391f6c41d20391cef7793057c3d66d5bdf92bc8a"
+    },
+    "snapshot-after.json": {
+      "bytes": 420,
+      "sha256": "26979d2612181d63869d715d36e07ca4d1276fa97839b73f47b0c435abff4c8c"
+    },
+    "selectors.txt": {
+      "bytes": 1458,
+      "sha256": "ddd228ae19f0c901386d019c3dd7e0e731d1b635303d66b14d8dbdfe922dc1c0"
+    }
+  }
+}

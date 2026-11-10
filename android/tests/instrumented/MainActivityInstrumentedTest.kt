@@ -726,13 +726,10 @@ class MainActivityInstrumentedTest {
             ?.toString())
 
         clipboard.setPrimaryClip(ClipData.newPlainText("Access E2E restore", originalText))
-        composeRule.onNodeWithTag("access_control_actions").performClick()
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag("access_control_clipboard_import").performClick()
-        if (!wasEnabled) {
-            enabledSwitch.performClick()
+        // 作者 long：空剪贴板现在明确拒绝清空名单；测试收尾恢复原草稿，不借用户导入入口清除临时选择。
+        composeRule.runOnIdle {
+            ViewModelProvider(composeRule.activity)[AccessControlViewModel::class.java].discardUnsavedChanges()
         }
-        composeRule.onNodeWithTag("access_control_save").performClick()
         composeRule.waitForIdle()
     }
 

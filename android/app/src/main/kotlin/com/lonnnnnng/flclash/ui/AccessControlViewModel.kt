@@ -1,7 +1,6 @@
 package com.lonnnnnng.flclash.ui
 
 import android.content.Context
-import android.content.Intent
 import android.Manifest
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -12,19 +11,23 @@ import com.lonnnnnng.flclash.common.AccessSortType
 import com.lonnnnnng.flclash.data.ClipboardGateway
 import com.lonnnnnng.flclash.service.AccessControlSettingsProvider
 import com.lonnnnnng.flclash.service.CoreRuntimeStatusProvider
+import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.models.AccessControlProps
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.currentCoroutineContext
 
 data class InstalledAppInfo(
     val packageName: String,
@@ -43,6 +46,9 @@ data class AccessControlUiState(
     val isSaving: Boolean = false,
     val isSmartSelecting: Boolean = false,
     val error: String? = null,
+    val appsError: String? = null,
+    val appsPermissionRequired: Boolean = false,
+    val settingsReady: Boolean = true,
 ) {
     val visibleApps: List<InstalledAppInfo>
         get() {
@@ -61,7 +67,8 @@ data class AccessControlUiState(
     val selectedCount: Int
         get() {
             val selected = currentPackageList(settings).toSet()
-            return visibleApps.count { it.packageName in selected }
+            // 作者 long：状态数代表全部已安装且已选应用，搜索与来源过滤只改变视图，不能使总数跳变。
+            return apps.count { it.packageName in selected }
         }
 
     // 作者 long：顶栏全选图标必须只反映当前搜索、排序和来源过滤后的可见集合，避免把隐藏应用误判为已全选。
@@ -121,11 +128,11 @@ fun normalizeAccessControlSettings(settings: AccessControlProps): AccessControlP
     rejectList = settings.rejectList.orEmpty().filter(String::isNotBlank).distinct().sorted(),
 )
 
-/**
- * 作者 long：剪贴板导入要保持 Flutter 的原始文本语义，不能复用页面勾选时的排序和空值清洗，
- * 否则用户从其他客户端复制的换行列表会在导入瞬间被改写；保存时再进入现有设置清洗边界。
- */
-fun parseAccessClipboardList(text: String): List<String> = text.split('\n').distinct()
+private val accessPackageName = Regex("[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)+")
+
+// 作者 long：剪贴板可能混入说明、空行或CRLF；只采纳合法包名，零有效项交由入口拒绝，不能清空已有名单。
+fun parseAccessClipboardList(text: String): List<String> = text.lineSequence().map(String::trim)
+    .filter { accessPackageName.matches(it) }.distinct().toList()
 
 fun serializeAccessClipboardList(settings: AccessControlProps): String =
     currentPackageList(settings).joinToString("\n")
@@ -146,53 +153,104 @@ data class SmartSelectionResult(
 fun buildSmartSelection(
     apps: List<InstalledAppInfo>,
     chinaPackages: Set<String>,
+    settings: AccessControlProps = AccessControlDefaults.value,
 ): SmartSelectionResult {
-    val packageNames = apps.map { it.packageName }.toSet()
+    // 作者 long：智能选择沿Flutter只处理系统/联网过滤范围，搜索不参与；隐藏和暂未安装的既有选择须保留。
+    val packageNames = apps.filter {
+        (!settings.isFilterSystemApp || !it.isSystem) && (!settings.isFilterNonInternetApp || it.hasInternetPermission)
+    }.map { it.packageName }.toSet()
     return SmartSelectionResult(
-        acceptList = (packageNames - chinaPackages).sorted(),
-        rejectList = (packageNames intersect chinaPackages).sorted(),
+        acceptList = (settings.acceptList.toSet() - packageNames + (packageNames - chinaPackages)).sorted(),
+        rejectList = (settings.rejectList.toSet() - packageNames + (packageNames intersect chinaPackages)).sorted(),
     )
 }
 
+internal data class InstalledAppsSnapshot(val apps: List<InstalledAppInfo>, val permissionRequired: Boolean = false)
+
 @HiltViewModel
-class AccessControlViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+class AccessControlViewModel internal constructor(
     private val settingsProvider: AccessControlSettingsProvider,
     private val runtimeManager: CoreRuntimeStatusProvider,
     private val clipboardGateway: ClipboardGateway,
+    private val appsLoader: suspend () -> InstalledAppsSnapshot,
+    private val chinaMatcher: suspend (List<InstalledAppInfo>) -> Set<String>,
 ) : ViewModel() {
-    private val mutableState = MutableStateFlow(AccessControlUiState())
-    private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    @Inject constructor(@ApplicationContext context: Context, settingsProvider: AccessControlSettingsProvider,
+        runtimeManager: CoreRuntimeStatusProvider, clipboardGateway: ClipboardGateway) : this(
+        settingsProvider, runtimeManager, clipboardGateway,
+        { withContext(Dispatchers.IO) { loadInstalledApps(context) } },
+        { apps -> withContext(Dispatchers.Default) { apps.map { it.packageName }.filter(ChinaPackageMatcher::isChinaPackage).toSet() } },
+    )
 
-    val state: StateFlow<AccessControlUiState> = mutableState
-        .stateIn(viewModelScope, SharingStarted.Eagerly, AccessControlUiState())
+    private val mutableState = MutableStateFlow(AccessControlUiState(settingsReady = false))
+    private val mutableErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private var loadJob: Job? = null
+    private var smartJob: Job? = null
+    private var revision = 0L
+    private var settingsLoaded = false
+
+    val state: StateFlow<AccessControlUiState> = mutableState.asStateFlow()
     val errors = mutableErrors.asSharedFlow()
 
     init {
+        viewModelScope.launch {
+            // 作者 long：即使启停在扫描期间又回到STOPPED，也不能采纳跨过该运行窗口的旧扫描结果。
+            runtimeManager.state.collect { status ->
+                if (status !in listOf(CoreRuntimeStatus.STOPPED, CoreRuntimeStatus.FAILED)) cancelSmartSelection()
+            }
+        }
         reload()
     }
 
     fun reload() {
-        viewModelScope.launch {
-            mutableState.value = mutableState.value.copy(isLoading = true, error = null)
-            runCatching {
-                settingsProvider.current() to loadInstalledApps(context)
-            }.onSuccess { (settings, apps) ->
+        if (mutableState.value.isSaving) return
+        cancelSmartSelection()
+        loadJob?.cancel()
+        settingsLoaded = false
+        mutableState.value = mutableState.value.copy(isLoading = true, settingsReady = false, error = null)
+        loadJob = viewModelScope.launch {
+            try {
+                val settings = settingsProvider.current()
+                currentCoroutineContext().ensureActive()
                 val persisted = normalizeAccessControlSettings(settings)
+                settingsLoaded = true
                 mutableState.value = mutableState.value.copy(
-                    settings = persisted,
-                    persistedSettings = persisted,
-                    apps = apps,
-                    isLoading = false,
-                    error = null,
+                    settings = persisted, persistedSettings = persisted, settingsReady = true,
                 )
-            }.onFailure { error ->
-                mutableState.value = mutableState.value.copy(
-                    isLoading = false,
-                    error = error.message ?: "读取按应用代理设置失败",
-                )
-                mutableErrors.emit(error.message ?: "读取按应用代理设置失败")
+                readApps()
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) {
+                mutableState.value = mutableState.value.copy(isLoading = false, error = "读取按应用代理设置失败，请重试")
+                mutableErrors.emit("读取按应用代理设置失败，请重试")
             }
+        }
+    }
+
+    fun refreshApps() {
+        // 作者 long：设置页往返只重查安装信息和OEM授权，不能用磁盘旧值覆盖未保存的名单草稿。
+        if (!settingsLoaded || mutableState.value.isLoading || mutableState.value.isSaving) return
+        cancelSmartSelection()
+        mutableState.value = mutableState.value.copy(isLoading = true)
+        loadJob = viewModelScope.launch { readApps() }
+    }
+
+    fun retryLoad() { if (settingsLoaded) refreshApps() else reload() }
+
+    fun reportAppsSettingsUnavailable() {
+        mutableState.value = mutableState.value.copy(appsError = "无法打开应用设置，请在系统设置中找到KClash并允许读取应用列表")
+    }
+
+    private suspend fun readApps() {
+        try {
+            val result = appsLoader()
+            currentCoroutineContext().ensureActive()
+            mutableState.value = mutableState.value.copy(isLoading = false, appsError = null,
+                apps = if (result.permissionRequired) mutableState.value.apps else result.apps,
+                appsPermissionRequired = result.permissionRequired)
+        } catch (cancelled: CancellationException) { throw cancelled }
+        catch (_: Exception) {
+            // 作者 long：包查询失败不代表应用被卸载，保留上次完整清单及已保存/未保存选择，等待显式重试。
+            mutableState.value = mutableState.value.copy(isLoading = false, appsError = "读取应用列表失败，已保留原列表和选择，请重试")
         }
     }
 
@@ -256,36 +314,25 @@ class AccessControlViewModel @Inject constructor(
     }
 
     fun smartSelectApps() {
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再修改按应用代理")
-            return
-        }
-        if (mutableState.value.isSmartSelecting) return
-        viewModelScope.launch {
-            val apps = mutableState.value.apps
-            mutableState.value = mutableState.value.copy(isSmartSelecting = true, error = null)
-            runCatching {
-                withContext(Dispatchers.Default) {
-                    val chinaPackages = apps.asSequence()
-                        .map { it.packageName }
-                        .filter(ChinaPackageMatcher::isChinaPackage)
-                        .toSet()
-                    buildSmartSelection(apps, chinaPackages)
+        if (!canEditClipboard() || mutableState.value.apps.isEmpty() || mutableState.value.appsPermissionRequired || mutableState.value.appsError != null) return
+        val start = mutableState.value
+        val expectedRevision = ++revision
+        val expectedRuntimeRevision = runtimeManager.editRevision
+        mutableState.value = start.copy(isSmartSelecting = true, error = null)
+        smartJob = viewModelScope.launch {
+            try {
+                val selection = buildSmartSelection(start.apps, chinaMatcher(start.apps), start.settings)
+                if (expectedRevision != revision) return@launch
+                check(runtimeEditable() && runtimeManager.editRevision == expectedRuntimeRevision) { "核心状态已变化，请停止核心后重试智能选择" }
+                mutableState.value = mutableState.value.copy(
+                    settings = start.settings.copy(acceptList = selection.acceptList, rejectList = selection.rejectList),
+                    isSmartSelecting = false,
+                )
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) {
+                if (expectedRevision == revision) {
+                    mutableState.value = mutableState.value.copy(isSmartSelecting = false, error = "智能选择未完成，原名单已保留，请在核心停止后重试")
                 }
-            }.onSuccess { selection ->
-                mutableState.value = mutableState.value.copy(
-                    settings = mutableState.value.settings.copy(
-                        acceptList = selection.acceptList,
-                        rejectList = selection.rejectList,
-                    ),
-                    isSmartSelecting = false,
-                )
-            }.onFailure { error ->
-                mutableState.value = mutableState.value.copy(
-                    isSmartSelecting = false,
-                    error = error.message ?: "智能选择应用失败",
-                )
-                mutableErrors.emit(error.message ?: "智能选择应用失败")
             }
         }
     }
@@ -301,49 +348,47 @@ class AccessControlViewModel @Inject constructor(
 
     fun importFromClipboard() {
         if (!canEditClipboard()) return
-        runCatching { clipboardGateway.readText() }
-            .onSuccess { text ->
-                if (text == null) return@onSuccess
-                mutableState.value = mutableState.value.copy(
-                    settings = mutableState.value.settings.withImportedCurrentPackageList(
-                        parseAccessClipboardList(text),
-                    ),
-                    error = null,
-                )
+        runCatching {
+            clipboardGateway.readText()?.let { text ->
+                parseAccessClipboardList(text).also {
+                    require(it.isNotEmpty()) { "剪贴板中没有有效包名，请每行填写一个包名" }
+                }
             }
-            .onFailure { error ->
-                reportClipboardError("从剪贴板导入失败", error)
-            }
+        }.onSuccess { packages ->
+            if (packages == null) return@onSuccess
+            revision++
+            mutableState.value = mutableState.value.copy(
+                settings = mutableState.value.settings.withImportedCurrentPackageList(packages), error = null,
+            )
+        }.onFailure { error -> reportClipboardError("从剪贴板导入失败", error) }
     }
 
     fun save(onSuccess: () -> Unit = {}) {
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再修改按应用代理")
-            return
-        }
+        if (!canEditClipboard()) return
+        val normalized = normalizeAccessControlSettings(mutableState.value.settings)
+        mutableState.value = mutableState.value.copy(isSaving = true, error = null)
         viewModelScope.launch {
-            mutableState.value = mutableState.value.copy(isSaving = true, error = null)
-            val normalized = normalizeAccessControlSettings(mutableState.value.settings)
-            runCatching { settingsProvider.save(normalized) }
-                .onSuccess {
-                    mutableState.value = mutableState.value.copy(
-                        settings = normalized,
-                        persistedSettings = normalized,
-                        isSaving = false,
-                    )
-                    onSuccess()
+            try {
+                runtimeManager.withProfileWrite {
+                    // 作者 long：保存与启停共用核心串行锁；等待锁期间若已启动，不写入只对下次TUN生效的旧名单。
+                    check(runtimeEditable()) { "核心状态已变化，请停止核心后保存" }
+                    settingsProvider.save(normalized)
                 }
-                .onFailure { error ->
-                    mutableState.value = mutableState.value.copy(
-                        isSaving = false,
-                        error = error.message ?: "保存按应用代理设置失败",
-                    )
-                    mutableErrors.emit(error.message ?: "保存按应用代理设置失败")
-                }
+                mutableState.value = mutableState.value.copy(
+                    settings = normalized, persistedSettings = normalized, isSaving = false,
+                )
+                onSuccess()
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (error: Exception) {
+                mutableState.value = mutableState.value.copy(isSaving = false, error = error.message ?: "保存按应用代理设置失败")
+                mutableErrors.emit(error.message ?: "保存按应用代理设置失败")
+            } finally { mutableState.value = mutableState.value.copy(isSaving = false) }
         }
     }
 
     fun discardUnsavedChanges() {
+        if (mutableState.value.isSaving) return
+        cancelSmartSelection()
         mutableState.value = mutableState.value.copy(
             settings = mutableState.value.persistedSettings,
             error = null,
@@ -351,21 +396,27 @@ class AccessControlViewModel @Inject constructor(
     }
 
     private fun updateSettings(update: AccessControlProps.() -> AccessControlProps) {
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再修改按应用代理")
-            return
-        }
-        mutableState.value = mutableState.value.copy(settings = mutableState.value.settings.update())
+        if (!canEditClipboard()) return
+        revision++
+        mutableState.value = mutableState.value.copy(settings = mutableState.value.settings.update(), error = null)
     }
 
     private fun canEditClipboard(): Boolean {
-        if (runtimeManager.state.value.isRunning) {
-            mutableErrors.tryEmit("核心运行中，请先停止核心后再修改按应用代理")
+        if (!runtimeEditable()) {
+            mutableErrors.tryEmit("核心正在运行或启停，请先停止核心后再修改按应用代理")
             return false
         }
-        return !mutableState.value.isLoading &&
+        return settingsLoaded && !mutableState.value.isLoading &&
             !mutableState.value.isSaving &&
             !mutableState.value.isSmartSelecting
+    }
+
+    private fun runtimeEditable() = runtimeManager.state.value in listOf(CoreRuntimeStatus.STOPPED, CoreRuntimeStatus.FAILED)
+
+    private fun cancelSmartSelection() {
+        revision++
+        smartJob?.cancel()
+        mutableState.value = mutableState.value.copy(isSmartSelecting = false)
     }
 
     private fun reportClipboardError(prefix: String, error: Throwable) {
@@ -376,32 +427,38 @@ class AccessControlViewModel @Inject constructor(
 
 }
 
-private fun loadInstalledApps(context: Context): List<InstalledAppInfo> {
-    val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-    return context.packageManager
-        .queryIntentActivities(launcherIntent, PackageManager.MATCH_ALL)
+private fun loadInstalledApps(context: Context): InstalledAppsSnapshot {
+    val manager = context.packageManager
+    val oemPermission = "com.android.permission.GET_INSTALLED_APPS"
+    val permissionExists = try { manager.getPermissionInfo(oemPermission, 0); true }
+        catch (_: PackageManager.NameNotFoundException) { false }
+    if (permissionExists && manager.checkPermission(oemPermission, context.packageName) != PackageManager.PERMISSION_GRANTED)
+        return InstalledAppsSnapshot(emptyList(), permissionRequired = true)
+    // 作者 long：VPN包过滤同样作用于后台服务包；仅查Launcher会让用户无法选择无桌面入口的已安装应用。
+    val packages = if (android.os.Build.VERSION.SDK_INT >= 33)
+        manager.getInstalledPackages(PackageManager.PackageInfoFlags.of(PackageManager.GET_PERMISSIONS.toLong()))
+    else {
+        @Suppress("DEPRECATION")
+        manager.getInstalledPackages(PackageManager.GET_PERMISSIONS)
+    }
+    return InstalledAppsSnapshot(packages
         .asSequence()
         .mapNotNull { resolveInfo ->
-            val packageName = resolveInfo.activityInfo?.packageName ?: return@mapNotNull null
-            if (packageName == context.packageName) return@mapNotNull null
+            val packageName = resolveInfo.packageName
+            if (packageName == context.packageName || packageName == "android") return@mapNotNull null
             InstalledAppInfo(
                 packageName = packageName,
-                label = resolveInfo.loadLabel(context.packageManager).toString()
+                label = runCatching { resolveInfo.applicationInfo?.loadLabel(manager)?.toString() }.getOrNull().orEmpty()
                     .trim()
                     .ifEmpty { packageName },
-                isSystem = resolveInfo.activityInfo.applicationInfo?.let {
+                isSystem = resolveInfo.applicationInfo?.let {
                     it.flags and ApplicationInfo.FLAG_SYSTEM != 0
                 } == true,
-                hasInternetPermission = context.packageManager.checkPermission(
-                    Manifest.permission.INTERNET,
-                    packageName,
-                ) == PackageManager.PERMISSION_GRANTED,
-                lastUpdateTime = runCatching {
-                    context.packageManager.getPackageInfo(packageName, 0).lastUpdateTime
-                }.getOrDefault(0L),
+                hasInternetPermission = Manifest.permission.INTERNET in resolveInfo.requestedPermissions.orEmpty(),
+                lastUpdateTime = resolveInfo.lastUpdateTime,
             )
         }
         .distinctBy { it.packageName }
         .sortedWith(compareBy<InstalledAppInfo> { it.label.lowercase() }.thenBy { it.packageName })
-        .toList()
+        .toList())
 }

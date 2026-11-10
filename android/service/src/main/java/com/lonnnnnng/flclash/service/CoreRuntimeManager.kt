@@ -53,6 +53,7 @@ class ProfileApplyAfterSaveException(val profileId: Long? = null) : IllegalState
 
 interface CoreRuntimeStatusProvider {
     val state: StateFlow<CoreRuntimeStatus>
+    val editRevision: Long get() = 0L
     suspend fun selectProfile(id: Long, select: suspend (Long?) -> Unit) { select(id) }
     suspend fun profileInputsApplied(id: Long): Boolean = false
     suspend fun applyCurrentProfile(id: Long) { error("此运行环境不支持配置应用") }
@@ -318,6 +319,8 @@ class CoreRuntimeManager(
     override val profileStatisticsRevision = serviceCacheRevision
     override val proxyGroupsRevision = serviceCacheRevision
     override val ipRouteRevision = mutableIpRouteRevision.asStateFlow()
+    // 作者 long：启停/路由变化共用单调版本，异步编辑可识别被StateFlow合并掉的中间运行窗口。
+    override val editRevision: Long get() = mutableIpRouteRevision.value
     override val lanRevision = ipRouteRevision
     private val mutableLanSharing = MutableStateFlow(LanSharingState(
         config = com.lonnnnnng.flclash.core.CoreLanConfig(lanSharingStore.read() ?: false, 0),

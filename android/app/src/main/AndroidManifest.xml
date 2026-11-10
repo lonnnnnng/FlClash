@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- 作者 long：无摄像头的设备仍可通过相册和文件导入，扫码不应限制应用安装。 -->
@@ -17,14 +17,10 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
-    <!-- 作者 long：按应用代理只需要展示用户可从启动器打开的应用，声明这个查询范围即可，
-         不申请 QUERY_ALL_PACKAGES，避免把无关安装信息暴露给应用。 -->
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent>
-    </queries>
+    <!-- 作者 long：VPN名单需要选择无Launcher的后台应用；全包查询只用于本机名单，不上传安装信息。
+         此权限是该功能的必要输入，在声明处定点豁免Lint审查提示，其他权限检查保持启用。 -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="com.android.permission.GET_INSTALLED_APPS" />
 
     <application
         android:name=".KClashApplication"

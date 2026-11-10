@@ -55,6 +55,18 @@ class AccessControlSettingsStoreInstrumentedTest {
     }
 
     @Test
+    fun corruptedSettingsAreNotSilentlyReplacedByEmptyDefaults() = runBlocking {
+        val valid = """{"enable":true,"mode":"rejectSelected","acceptList":[],"rejectList":["com.example.keep"]}"""
+        for (raw in listOf("{broken", valid.replace("[\"com.example.keep\"]", "null"),
+            valid.replace("\"rejectSelected\"", "null"), valid.replace("\"rejectSelected\"", "\"unknown\""), valid.replace("true", "\"true\""))) {
+            database.appPreferences().put(AppPreferenceEntity("vpn_access_control", raw, 1L))
+            val error = runCatching { RoomAccessControlSettingsStore(database.appPreferences()).current() }.exceptionOrNull()
+            org.junit.Assert.assertNotNull(error)
+            assertEquals(raw, database.appPreferences().get("vpn_access_control"))
+        }
+    }
+
+    @Test
     fun oldFourFieldJsonReceivesNewFilterDefaults() = runBlocking {
         database.appPreferences().put(
             AppPreferenceEntity(

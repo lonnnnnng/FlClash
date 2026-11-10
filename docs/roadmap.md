@@ -1,5 +1,9 @@
 # KClash Kotlin 重写路线图
 
+> **按应用代理名单保护（2026-11-11，KUI-038）**：智能选择保留系统/联网筛选范围外及未安装项，搜索不参与；无效剪贴板不覆盖，计数使用完整已安装集合，无Launcher包可选。返回刷新保留草稿，损坏设置拒绝空默认回写，扫描/保存补启停版本和串行守卫。889JVM零失败、Debug/未签名Release-R8及双Lint零错误、DEX3/3；Redmi同套motion/Test精确13/13。2张稳定页图及2张过程图已核对；双包回拉一致后清理，原文件/参考包/设置保持。OEM授权真机、正式R8及新全包TUN流量不在本组结论；剩余五项功能目标继续。见[溯源](access-control-protection-defect.md)、[证据](acceptance/access-protection-redmi-20261111.json)及[六项清单](functional-closure.md)。
+
+> **功能性收尾进行中（2026-11-11）**：按用户新优先级推进名单保护、首次联网、长期状态稳定性、Provider运行态恢复、核心语义预检和应用内更新；KUI-038名单保护已完成真机13/13，其他五项未完成，不能由视觉验收替代。见[六项清单](functional-closure.md)。
+
 > **组编辑闭环（2026-11-11，KUI-037）**：混排保存→终止存活进程→新进程磁盘Room回读、提交前/后死亡窗口3场景通过；修复仅布局变化被YAML相等误判提交。补浮动8dp缩放、横拖取消/完成/后台保护、短内容及单图图库适配，保留短页前的展开意图并修复Lazy测高反馈循环。881项JVM零失败，Debug/未签名Release-R8/motion/Test及双Lint零错误、DEX3/3；最终定向11/11、深浅自然2/2，8+16PNG与648/660帧录像已核验。前序21/22失败保留，与最终批次去重覆盖22项，不称单批22/22。隔离库0配置/核心STOPPED，双包与本轮设备文件已精确清理，原1.yaml保持。组编辑本组范围已验；逐帧弹簧/IME几何、其他子页完整对照、菜单原生归因及历史长窗仍PARTIAL。见[记录](group-editor-closure.md)与[证据](acceptance/group-sheet-closure-redmi-20261110.json)。
 
 > **历史切片：组编辑Sheet与原位成员（2026-11-10，KUI-036）**：可展开Sheet、同窗成员/图库/选项/YAML子页、协议徽标、长按拖拽/边缘滚动已实现；补齐加密草稿恢复、重复成员独立删除和放弃后拒绝迟到保存。879JVM零失败，Debug/未签名Release-R8/motion/Test及双Lint零错误、扫码DEX3/3。Redmi最终16项回归、单独真实页面保存1项、成员/拖拽两条冷恢复、深浅自然流程2项通过；组件22PNG、冷恢复4PNG、自然12PNG及503/510帧录像已核验。固定Flutter安全副本三图非空图库/选择回退已对照并清理。tests9同批真实页旧驱动失败保留，修正后main-final通过，不称单批17/17。完整浮动缩放/交互式拖回/其余子页、提交后混排Room冷读及菜单原生归因仍PARTIAL。见[记录](group-editor-sheet-alignment.md)与[证据](acceptance/group-sheet-redmi-20261110.json)。
@@ -787,16 +791,16 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步chen08209/Clash.Meta:FlClash；本组本地修复464552e4，不从MetaCubeX/mihomo同步提交/PR，Flutter代码不合并。 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用与观测；KUI-034完整停止等待resetTraffic成功再发布STOPPED，失败后重试，按需暂停/运行中应用配置不清本次统计。 |
-| 单元测试 | KUI-037共881项JVM（App596、Service216、Core38、Common31）零失败/错误/跳过，含Gradle复用。build5 Debug/未签名Release-R8、motion6/Test7及独立lint5通过，DEX3/3；本轮未重跑Go或签名发布。 |
-| 最新真机 | KUI-037最终定向11/11，另三条真实死亡后的磁盘Room回读与深浅自然2/2通过；8+16PNG、648/660帧录像已核验。前序regression-final2为21/22，失败已在最终包复验，两批去重覆盖22项，非单批22/22。 |
-| 当前设备数据 | 正式com.lonnnnnng.flclash及原版com.follow.clash缺席，未声称正式库保护。隔离motion收尾0配置、空偏好、核心STOPPED，双包回拉SHA核验后卸载；2份自有XML与新上传授权文件副本按哈希删除。原1.yaml字节/mtime保持，Flutter安全参考包保留且本组未操作，结束无服务/tun0及reverse。 |
+| 单元测试 | KUI-038共889项JVM（App604/Service216/Core38/Common31）零失败/错误/跳过，含Gradle复用；最终build4 Debug/未签名Release-R8、motion1/Test2、独立lint2与DEX3/3通过。 |
+| 最新真机 | KUI-038单批13/13：真实主宿主名单保护3项、SQLite3项、组件5项及旧主页面2项；无Launcher候选Android Auto实测保存/Room回读及重建保持。4PNG中2张稳定、2张含系统浮层/转场仅作过程记录。KUI-037组编辑冷读/动效结果保留。 |
+| 当前设备数据 | 正式包及原版Flutter本组缺席。独立motion最后0配置、核心STOPPED；旧存储回归恢复默认设置留下1条自有vpn_access_control记录，双包按SHA回读后卸载。原1.yaml字节/mtime与系统设置保持，Flutter安全参考包保留，结束无服务/tun0。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | KUI-037 build5 Debug、未签名Release-R8及motion6/Test7通过；Debug Lint0错误/72警告/14提示，Release0错误/68警告/13提示。motion SHA e41b62e5…36e068a、最终Test187c741c…79f156回拉匹配；冷恢复使用相同产品motion6与配套测试包。本轮未覆盖正式签名包。 |
+| Debug / Test | KUI-038最终Debug/未签名Release-R8构建与双Lint通过；motion7d1cd3f5…ca5b858、Test975b3c09…a6e10f7回拉一致。设备验收后的唯一产品源变动为权限声明tools:ignore及用途注释，无运行逻辑变化；详情见JSON。 |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
 | Release | 公开`kclash-v0.1.2`/签名arm64/R8 APK `96107b78…4eef538`已发布并下载/签名/版本/ABI/正文/校验和及Redmi安装回验。0.1.1→本地0.1.2→公开0.1.2单FILE数据保持，同schema6；不推广混合库、未提交草稿、运行VPN或低API升级。 |
-| 最新证据 | `acceptance/group-sheet-closure-redmi-20261110.json`与`group-editor-closure.md`：组混排Room冷读、提交中断防重放、浮动/横拖/短内容。KUI-036固定Flutter运行对照、KUI-035菜单A-B-A负结果及公开0.1.2证据保留。完整Flutter、菜单原生归因、历史长窗与低API/蜂窝/OEM仍PARTIAL。 |
+| 最新证据 | `acceptance/access-protection-redmi-20261111.json`与`access-control-protection-defect.md`；六项功能目标见`functional-closure.md`，名单保护本组已验，其余五项待完成。完整视觉/菜单性能和历史稳定性不能因本组通过而关闭。 |
 
 ## 4. 目标架构图
 
@@ -1340,6 +1344,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ### 7.7 测试、发布和运维
 
+当前功能验收为KUI-038：889JVM、Redmi13/13、最终构建/双Lint/DEX通过。本轮未发版；公开0.1.2仍为既有发布。见[证据](acceptance/access-protection-redmi-20261111.json)。以下KUI-037为前组视觉交互验收。
+
 当前本地验收为KUI-037：881项JVM、Debug/未签名Release-R8/motion/Test与双Lint零错误；Redmi最终定向11/11、真实Room冷读3场景及深浅自然2/2通过。前序21/22与最终去重覆盖22项，批次/APK边界见JSON。本轮未发版，公开0.1.2仍为历史发布。详见第3节及[本组证据](acceptance/group-sheet-closure-redmi-20261110.json)。
 
 **0.1.2 正式发布完成（2026-11-10）**：标签`kclash-v0.1.2`固定`a0a7f1ae`，versionCode1002；流量停止清零与资源/搜索交互改进已发布为Latest。标签CI[42801338969](https://github.com/lonnnnnng/FlClash/actions/runs/42801338969)及分支CI[42801333292](https://github.com/lonnnnnng/FlClash/actions/runs/42801333292)通过，包含Go race、JVM、签名R8、双Lint和扫码DEX门禁。871项本地JVM零失败/错误/跳过。公开APK SHA `96107b78305a45335a2ab9da209f5d6952e9a59cc6a2fb6a767892eaa4eef538`与GitHub digest、SHA256SUMS和Redmi安装回拉一致；原签名延续。0.1.1→本地0.1.2→公开0.1.2安装边界四业务表/UID/正文保持；公开包PID20848两轮真实首页启停均有双向累计并停止回0、双服务退出。烟测后配置/偏好/脚本保持，测速238值/时间刷新仍未归因。探针和16个核验设备文件已清，保留公开包/原配置及隔离Flutter副本，服务停止。见[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.2)和[验收证据](acceptance/release-0.1.2-redmi-20261110.json)。
@@ -1455,6 +1461,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 
 ## 8. 推荐推进顺序
+
+2026-11-11用户将六项功能收尾置于视觉优化之前：名单保护本组已验，下一组首先联查启动首请求、Provider恢复与长期状态写入来源，再补核心语义预检和应用内更新。完整要求及证据状态见[功能清单](functional-closure.md)；下表保留历史分类索引。
 
 ### todo.md 收尾清单（2026-11-10，当前执行入口）
 
