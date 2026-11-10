@@ -32,6 +32,9 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.KClash">
+        <!-- 作者 long：完整语义解析只能在无主库权限的独立UID执行，不承接核心恢复。 -->
+        <service android:name=".validation.ConfigValidationService" android:process=":config_validation"
+            android:isolatedProcess="true" android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

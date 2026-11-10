@@ -8,7 +8,14 @@ import com.lonnnnnng.flclash.service.YamlConfigCodec
  */
 fun interface ProfileConfigValidator {
     suspend fun validate(bytes: ByteArray)
+    // 作者 long：默认实现保持仓库测试/片段校验契约，生产隔离实现单独覆盖整份配置语义检查。
+    suspend fun validateFull(bytes: ByteArray): ProfileValidationSummary {
+        validate(bytes)
+        return ProfileValidationSummary()
+    }
 }
+
+data class ProfileValidationSummary(val deferredExternalResources: Int = 0)
 
 class YamlProfileConfigValidator : ProfileConfigValidator {
     override suspend fun validate(bytes: ByteArray) {

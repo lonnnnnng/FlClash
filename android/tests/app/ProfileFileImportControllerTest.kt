@@ -11,6 +11,25 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileFileImportControllerTest {
+    @Test fun semanticFailureIsVisibleAndNeverReachesImportStore() = runTest {
+        val store = ImportStore()
+        val validator = object : ProfileConfigValidator {
+            override suspend fun validate(bytes: ByteArray) = Unit
+            override suspend fun validateFull(bytes: ByteArray): ProfileValidationSummary {
+                throw com.lonnnnnng.flclash.validation.ConfigSemanticException("invalid_config", "proxy-groups", 0)
+            }
+        }
+        val model = ProfileFileImportController(store, object : CoreRuntimeStatusProvider {
+            override val state = MutableStateFlow(CoreRuntimeStatus.STOPPED)
+        }, ProfileFileDocumentReader { ProfileFileDocument("candidate.yaml", "rules: []".toByteArray()) },
+            validator, this, StandardTestDispatcher(testScheduler))
+        model.acceptFile(model.beginPick(), "content://fixture"); advanceUntilIdle()
+        assertFalse(model.state.value.validYaml)
+        assertTrue(model.state.value.error.orEmpty().contains("策略组第 1 项"))
+        assertEquals("candidate.yaml", model.state.value.fileName)
+        model.confirm(); advanceUntilIdle(); assertTrue(store.saved.isEmpty())
+    }
+
     @Test fun previewFreezesBytesAndDoesNotWriteUntilConfirmed() = runTest {
         val source = "rules: []".toByteArray()
         val store = ImportStore()

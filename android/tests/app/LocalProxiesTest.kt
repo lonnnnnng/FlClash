@@ -40,6 +40,15 @@ class LocalProxiesTest {
         val empty = LocalProxies.withValue(LocalProxies.withValue(edited, "ws-opts.headers.Host", null), "ws-opts.headers.X-Test", null)
         assertFalse(empty.fields.has("ws-opts"))
     }
+    @Test fun importKeepsRuleOnlyTargetsAndDialerDependenciesInRuntimeProjection() {
+        val a = node("A"); val b = node("B", "other"); val unused = node("unused")
+        val source = "proxies: [${a.json},${b.json}]\nrules: ['MATCH,A']\n"
+        val plan = planLocalProxyImport(source, emptyList(), emptySet())
+        val projected = ProxyGroupDrafts.root(LocalProxies.project(plan.source, plan.after + unused, mapOf("A" to "B")))
+        assertEquals(setOf("A", "B"), projected.getAsJsonArray("proxies").map { it.asJsonObject["name"].asString }.toSet())
+        assertEquals("MATCH,A", projected.getAsJsonArray("rules").single().asString)
+        assertFalse(ProxyGroupDrafts.root(plan.source).has("proxies"))
+    }
     @Test fun protocolChangesPruneUnavailableOptionsAndTransportChildren() {
         val row = node("A").copy(json = """{"name":"A","type":"vless","uuid":"id","network":"ws","ws-opts":{"path":"/path"},"future":9}""")
         val network = LocalProxies.catalog.first { it.id == "network" }

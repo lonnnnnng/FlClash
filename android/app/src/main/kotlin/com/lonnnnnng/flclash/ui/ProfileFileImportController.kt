@@ -16,6 +16,7 @@ internal data class ProfileFileImportUiState(
     val encrypted: Boolean = false,
     val needsKey: Boolean = false,
     val error: String? = null,
+    val validationNote: String? = null,
 )
 
 /** 作者 long：新增文件导入冻结本次选择的字节，预检、补钥及重试共用同一快照，确认前不写 Profile。 */
@@ -55,14 +56,21 @@ internal class ProfileFileImportController(
                 val frozen = document.bytes.copyOf()
                 require(frozen.isNotEmpty() && frozen.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
                 val encrypted = isAgeEncryptedProfile(frozen)
+                var validationError: String? = null
+                var validationNote: String? = null
                 val valid = if (encrypted) false else withContext(dispatcher) {
-                    try { validator.validate(frozen); true }
+                    try {
+                        val summary = validator.validateFull(frozen)
+                        if (summary.deferredExternalResources > 0) validationNote = "${summary.deferredExternalResources} 个远程资源或网络依赖将在核心加载时检查"
+                        true
+                    }
                     catch (failure: CancellationException) { throw failure }
+                    catch (failure: com.lonnnnnng.flclash.validation.ConfigSemanticException) { validationError = failure.message; false }
                     catch (_: Exception) { false }
                 }
                 if (active == generation) {
                     bytes = frozen
-                    mutableState.value = ProfileFileImportUiState(fileName = document.name, size = frozen.size, validYaml = valid, encrypted = encrypted)
+                    mutableState.value = ProfileFileImportUiState(fileName = document.name, size = frozen.size, validYaml = valid, encrypted = encrypted, error = validationError, validationNote = validationNote)
                 }
             } catch (failure: CancellationException) { throw failure }
             catch (_: Exception) {
@@ -97,6 +105,9 @@ internal class ProfileFileImportController(
                     mutableState.value = ProfileFileImportUiState()
                 }
             } catch (failure: CancellationException) { throw failure }
+            catch (failure: com.lonnnnnng.flclash.validation.ConfigSemanticException) {
+                if (active == generation) mutableState.value = current.copy(saving = false, error = failure.message)
+            }
             catch (_: Exception) {
                 if (active == generation) mutableState.value = current.copy(saving = false,
                     error = if (current.encrypted) "age 解密失败，请检查密钥与配置文件" else "导入配置失败，原配置未修改，请重试")

@@ -17,6 +17,16 @@ class ProfileScriptTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
+    @Test fun semanticLocationUsesOriginalSequenceNodesAndUtf16Offsets() {
+        val source = "name: 😀\r\n'proxies': [{name: first}, {name: second}]\r\ndns: {enable: true}\r\n"
+        val node = requireNotNull(YamlConfigCodec.semanticErrorLocation(source, "proxies", 1))
+        assertEquals(2, node.line)
+        assertEquals(source.indexOf("{name: second}"), node.offset)
+        assertEquals(source.indexOf("dns:"), requireNotNull(YamlConfigCodec.semanticErrorLocation(source, "dns", -1)).offset)
+        assertEquals(null, YamlConfigCodec.semanticErrorLocation(source, "absent", 0))
+        assertFalse(node.toString().contains("second"))
+    }
+
     @Test fun yamlErrorLocationUsesUtf16OffsetForEmojiAndCrLfWithoutExposingSource() {
         for (newline in listOf("\n", "\r\n", "\r")) {
             val source = "name: \"😀中文\"${newline}rules: [ok, }"

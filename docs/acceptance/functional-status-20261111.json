@@ -1,7 +1,7 @@
 {
   "date": "2026-11-11",
   "kind": "interim-functional-status",
-  "committedBase": "48fa766116ab21e6fad8128d5984f88d4c449ecb",
+  "committedBase": "125309b85d7d1a68b5bfd71c9267369a0dc4225f",
   "device": {
     "serial": "wsvwypiz7xwslvl7",
     "model": "Redmi Note 8 Pro"
@@ -108,8 +108,8 @@
     "启动/恢复首请求历史失败归因",
     "配置/偏好长期状态与逐键审计分析",
     "Provider运行态历史恢复超时归因",
-    "导入前完整核心语义预检",
-    "应用内更新实际升级/恢复/数据保留验收"
+    "核心语义预检扩展协议和隔离/资源边界",
+    "应用内更新下载/安装中断及特殊数据场景"
   ],
   "rawEvidence": [
     {
@@ -190,5 +190,20 @@
     ],
     "finalDebugReleaseLintPassed": true,
     "releaseDiagnosticIsolationPassed": true
+  },
+  "coreSemanticPreflight": {
+    "implemented": true,
+    "complete": false,
+    "coreCommit": "5fd3564fc10e3dea681b5928ac4b7b690d4d8a45",
+    "redmiTestsPassed": 8,
+    "jvmTests": 906,
+    "runningCoreAndTwoRealHttpsHeld": true,
+    "externalDependenciesDeferred": 90,
+    "evidence": "core-semantic-preflight-redmi-20261111.json",
+    "remaining": [
+      "other inbound lower and post-bind QUIC/MKCP",
+      "controlled resource-version race",
+      "low API physical-device and signed R8 runtime"
+    ]
   }
 }

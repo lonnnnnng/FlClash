@@ -164,9 +164,29 @@ object LocalProxies {
         "socks5", "http", "ssh", "shadowquic", "trusttunnel", "gost-relay", "openvpn" -> listOf("username", "password")
         else -> emptyList()
     }
-    fun referenced(source: String): Set<String> = ProxyGroupDrafts.read(source).flatMap { it.strings("proxies") }.toSet()
-    fun project(source: String, rows: List<LocalProxy>): String {
-        val named = referenced(source)
+    fun referenced(source: String): Set<String> {
+        val root = ProxyGroupDrafts.root(source)
+        val names = ProxyGroupDrafts.read(source).flatMap { it.strings("proxies") + listOf(it.text("default-selected"), it.text("empty-fallback")) }.toMutableSet()
+        fun rules(value: JsonElement?) {
+            if (value?.isJsonArray == true) value.asJsonArray.forEach { rule ->
+                if (rule.isJsonPrimitive && rule.asJsonPrimitive.isString && !rule.asString.startsWith("SUB-RULE,"))
+                    runCatching { CustomRules.fields(rule.asString).target }.getOrNull()?.let(names::add)
+            }
+        }
+        rules(root.get("rules"))
+        root.get("sub-rules")?.takeIf { it.isJsonObject }?.asJsonObject?.entrySet()?.forEach { rules(it.value) }
+        fun dialers(value: JsonElement?) {
+            if (value?.isJsonObject == true) value.asJsonObject.entrySet().forEach { (key, child) ->
+                if (key == "dialer-proxy" && child.isJsonPrimitive && child.asJsonPrimitive.isString) names += child.asString
+                else dialers(child)
+            } else if (value?.isJsonArray == true) value.asJsonArray.forEach(::dialers)
+        }
+        dialers(root)
+        return names
+    }
+    fun project(source: String, rows: List<LocalProxy>, dialers: Map<String, String>? = null): String {
+        // 作者 long：规则目标和Dialer同样能引用全局节点，仅看组成员会使合法导入在实际应用时丢掉出站。
+        val named = referenced(source) + dialers.orEmpty().keys + dialers.orEmpty().values
         val selected = rows.filter { it.name in named }
         if (selected.isEmpty()) return source
         val root = ProxyGroupDrafts.root(source)

@@ -14,6 +14,8 @@
 | KCORE-004 | 宿主测速超时未传入自动健康检查，手动/后台期限可能分叉 | FlClash Go 适配层与 Mihomo Provider | 已修，核心提交 `852d3ad1`、`7038231e` 与 Kotlin setup 适配；完整 Redmi 实网复验待完成 |
 | KCORE-005 | Android下载器强制Connection:close触发当前代理链响应尾段截断，取消限制后还需回收私有连接池 | Mihomo `component/http` | 已修，核心提交 `20bc0fc4`；旧网络根因未确认，后续恢复能力见KCORE-006 |
 | KCORE-006 | Geo单次下载将TLS/网关/截断等瞬断直接结束为最终失败，缺少有界恢复 | Mihomo `component/updater` | 已修，核心提交 `464552e4`；恢复能力、Redmi当前网络多出口和正式更新闭环，旧网络因果与长期稳定性单列 |
+| KCORE-007 | CA文件可读但无有效PEM时返回空信任池与nil错误 | Mihomo `component/ca` | 已修，核心`5fd3564f`；原始overlay红灯、Go正反例/race及Redmi同源有效/坏PEM通过 |
+| KUI-039 | CUSTOM投影仅看组成员，遗漏规则目标/Dialer节点 | Kotlin配置投影 | 已修并新增JVM回归；Redmi稳定引用导入通过，规则目标真实流量仍待扩展；见[溯源](custom-rule-target-projection-defect.md) |
 | KREL-002 | ML Kit注册器无参构造器被R8删除，正式包打开扫码页崩溃 | Kotlin Release打包／依赖consumer rules | 已修并在Redmi签名R8包验证；见[溯源](release-mlkit-registrar-defect.md)，非Mihomo缺陷 |
 
 ## KCORE-001：TUN 启动保护缺口
@@ -69,6 +71,15 @@
 - 验证：旧源码公开入口红测为一次504即失败，修复后恢复且保护旧文件；Go父模块及route/http/updater race通过，含真实TLS握手超时后成功。865项JVM、Debug/签名Release-R8/motion及双Lint通过；Redmi故障5场景、独立motion原GitHub四轮16/16完整正文（自动80→固定80→固定8880→自动2086）及正式包三轮12项更新通过。实网均首次成功，正式三轮为缓存校验路径，不与独立完整正文混称。
 - 收尾：正式包`033d6c10…`同签名安装回读一致，正式配置/URL/选择保持，VPN运行；本轮独立包和手机输入副本清理。失败批次保留；旧网络具体层级、长期切网/蜂窝/OEM及其他历史异常不追认为已修。
 - 同步复查：仅比较chen08209/Clash.Meta:FlClash后续等价恢复；撤销前复验白名单、共享预算、重定向重新取址、Retry-After/取消、唯一终态/旧文件保护与安全日志。详见[缺陷专页](geo-download-recovery-defect.md)、[验收JSON](acceptance/geo-download-recovery-redmi-20261110.json)。
+
+## KCORE-007：CA文件读取成功掩盖内容无效
+
+- 来源：当前核心464552e4的`component/ca/keypair.go:LoadCertificates`；该分支`ReadFile`成功时err=nil，随后`AppendCertsFromPEM=false`仍把nil赋给loadErr，最终返回空池与nil。
+- 影响：文件路径指向普通文本或损坏PEM时，运行TLS配置/新增只读语义预检都可能误认为信任证书有效。不是已知TLS EOF、Provider恢复超时或旧配置变化的已证实原因。
+- 复现：`TestLoadCertificatesRejectsReadableInvalidPEMFile`在自有临时home写普通文本，再调用原helper。原始git源码overlay的`invalid-ca-red2.log`明确失败“readable invalid certificate was accepted”；首轮测试未设置safe home只测到路径拒绝，已单列、不算红灯。
+- 修正：文件读取成功且PEM未能加入任何证书时返回静态格式错误，读取失败保持原错误；新增有效PEM文件正例避免误伤。预检只返回安全分类，不输出该helper含候选原值的错误正文。
+- 证据：本机`acceptance-artifacts/semantic-preflight-20261111/`保留red2及go-race3/4结果；Go普通和race包含正反例。固定修复提交`5fd3564fc10e3dea681b5928ac4b7b690d4d8a45`；最终906 JVM/双Lint/Release-R8及Redmi同源8/8（含有效CA文件/坏PEM）通过，产物/回拉SHA见[证据](acceptance/core-semantic-preflight-redmi-20261111.json)。尚未向上游发消息或PR。
+- 同步复查：只跟随chen08209/Clash.Meta:FlClash，检查LoadCertificates是否已拒绝可读无效PEM，保留正反例；若上游等价修正，再按实际diff移除本地同义分支。
 
 ## 未定因果调查：Always-on 首请求 TLS EOF
 

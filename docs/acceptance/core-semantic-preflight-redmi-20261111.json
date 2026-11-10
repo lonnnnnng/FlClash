@@ -1,0 +1,215 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "125309b85d7d1a68b5bfd71c9267369a0dc4225f",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "overallFunctionalGoalComplete": false,
+  "sourceSnapshot": "source7.json",
+  "sourceFilesUnchangedAfterAcceptance": true,
+  "jvm": {
+    "app": {
+      "tests": 616,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 218,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "common": {
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "androidDebugReleaseR8BothLintPassed": true,
+  "mlKitDexRegistrarsPassed": 3,
+  "deviceTests": {
+    "tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "seconds": 23.75847816467285
+  },
+  "events": {
+    "kclash_semantic_rejection": [
+      {
+        "case": "proxies",
+        "reportedSection": "proxies",
+        "code": "invalid_config",
+        "noWrite": true
+      },
+      {
+        "case": "proxy-groups",
+        "reportedSection": "proxy-groups",
+        "code": "invalid_config",
+        "noWrite": true
+      },
+      {
+        "case": "rules",
+        "reportedSection": "rules",
+        "code": "invalid_config",
+        "noWrite": true
+      },
+      {
+        "case": "dns",
+        "reportedSection": "dns",
+        "code": "invalid_config",
+        "noWrite": true
+      },
+      {
+        "case": "tls",
+        "reportedSection": "tls",
+        "code": "resource_unavailable",
+        "noWrite": true
+      }
+    ],
+    "kclash_semantic_running": [
+      {
+        "passed": true,
+        "epochHeld": true,
+        "runningSinceHeld": true,
+        "profileRowsHeld": true,
+        "sourceAndGeoFilesHeld": true,
+        "realHttpsRequests": 2,
+        "sameSocketAttribution": true
+      }
+    ],
+    "kclash_semantic_original": [
+      {
+        "passed": true,
+        "bytes": 35165,
+        "deferredResources": 90,
+        "filesHeld": true
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "a40bcbfe0756a57d1fe9e0c9105765b9cc5fd67382850e48b772e410d917437d",
+      "bytes": 66182525,
+      "readbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "26a05f5ebe5a3d33ca91809ca16ed26a7cc9a1c63a32a07603a77a52f5357280",
+      "bytes": 2903274,
+      "readbackMatches": true
+    }
+  ],
+  "formalBoundary": {
+    "before": "semantic-before7",
+    "after": "semantic-after7",
+    "uidPreserved": true,
+    "schemaPreserved": true,
+    "tablesSame": {
+      "profiles": true,
+      "app_preferences": true,
+      "scripts": true,
+      "proxy_delay_results": true
+    },
+    "allProfileFileBytesHashMtimePreserved": true,
+    "beforeCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "afterCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "versionBefore": "0.1.2",
+    "versionAfter": "0.1.2",
+    "passed": true
+  },
+  "originalAndCleanup": {
+    "bothApplicationsStopped": true,
+    "validationProcessAbsent": true,
+    "originalInput": {
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973
+    },
+    "motionPackagesRetainedForNextBoundaries": true,
+    "formalPackageUnmodified": true
+  },
+  "limitations": [
+    "HTTP Provider bodies and reachability deferred, original reports 90",
+    "lower checks cover Tun/AnyTLS/VLESS/VMess/Trojan/Shadowsocks/TUIC/Hysteria2 only; other inbound and post-bind QUIC/MKCP semantics remain",
+    "No low API physical-device or signed R8 preflight runtime acceptance",
+    "CUSTOM metadata concurrency checks added; controlled resource-version race not yet device-injected",
+    "KUI-039 rule-only target fix verified by JVM, no old release runtime reproduction",
+    "History TLS EOF/metadata/preferences/Provider timeout root causes remain",
+    "Updater download/install interruption boundaries remain"
+  ],
+  "rawEvidence": {
+    "android-build7.log": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/android-build7.log",
+      "sha256": "f08366bfa6d4608726f356e3ed8cf8d2f50160711347cf8b93fee66742241456",
+      "bytes": 21445
+    },
+    "motion-build6.log": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/motion-build6.log",
+      "sha256": "06c308ebdd57225e848c9425cb1befcfba2c43f99cc6c1ae353fc55022b5d27d",
+      "bytes": 13363
+    },
+    "go-final7.log": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/go-final7.log",
+      "sha256": "bf57a6862cbbc57b6fe017a148384f9fa1fa63e1ea11ee16428230cc5ff2986b",
+      "bytes": 340
+    },
+    "go-nested7.log": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/go-nested7.log",
+      "sha256": "03bd8122728fb69cb5644f6fba72b0c362d2ffcf2e6fda0c35e79a981dad85fa",
+      "bytes": 164
+    },
+    "invalid-ca-red2.log": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/invalid-ca-red2.log",
+      "sha256": "caa5f45ad8939780b985035c4b2990c9463c25f9f59b24121d9ff258392f0ddf",
+      "bytes": 208
+    },
+    "semantic-tests7.log": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/semantic-tests7.log",
+      "sha256": "e012d65a04d68884c83efa2617706a363bc404abea085e7d238df60cafcd6f71",
+      "bytes": 7208
+    },
+    "installation7.json": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/installation7.json",
+      "sha256": "daa564ac001b464f90325a72b171b2797fe80f0ee17a264885bccca1ef4e3dff",
+      "bytes": 497
+    },
+    "cleanup7.json": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/cleanup7.json",
+      "sha256": "3d1e0fcf0067f4dead775e64036376a989a945dd53797675687736c7ada0f23e",
+      "bytes": 321
+    },
+    "source7.json": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/source7.json",
+      "sha256": "4d5d8de304edd59b1b228e63e3650871af62089b35e20e38519fe02f8d06708f",
+      "bytes": 219432
+    },
+    "formal-delay-boundary.json": {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/formal-delay-boundary.json",
+      "sha256": "c0d20226cb1b3bf545225c480d26371f8ef3463dd7bfbfbb9215d863b33289ec",
+      "bytes": 343
+    }
+  },
+  "coreCommit": "5fd3564fc10e3dea681b5928ac4b7b690d4d8a45",
+  "coreRemote": "lonnnnnng/Clash.Meta:kclash-fixes"
+}

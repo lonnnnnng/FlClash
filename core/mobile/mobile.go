@@ -109,3 +109,8 @@ func GetTraffic(onlyStatisticsProxy bool) string {
 func GetTotalTraffic(onlyStatisticsProxy bool) string {
 	return core.GetTotalTraffic(onlyStatisticsProxy)
 }
+
+// 作者 long：候选字节与只读资源FD只交给独立UID一次性校验，返回内容不含原始核心异常。
+func ValidateConfigurationIsolated(content []byte, resources string) string {
+	return core.ValidateConfigurationIsolated(content, resources)
+}

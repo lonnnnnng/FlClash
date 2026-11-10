@@ -341,7 +341,7 @@ class ProfileRepository(
         val id = newId()
         val downloaded = subscriptionClient.download(normalizedUrl)
         val plaintext = contentDecoder.decode(downloaded.bytes, ageSecretKey)
-        configValidator.validate(plaintext)
+        configValidator.validateFull(plaintext)
         val profile = Profile.remote(
             id = id,
             url = normalizedUrl,
@@ -369,7 +369,7 @@ class ProfileRepository(
         require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
         val plaintext = contentDecoder.decode(bytes, ageSecretKey)
         require(plaintext.isNotEmpty() && plaintext.size <= MAX_PROFILE_FILE_BYTES) { "解密后的配置为空或超过 8 MiB" }
-        configValidator.validate(plaintext)
+        configValidator.validateFull(plaintext)
         kotlinx.coroutines.currentCoroutineContext().ensureActive()
         fileMutationMutex.withLock {
             check(canWrite()) { "导入已取消或核心状态已变化" }
@@ -445,8 +445,9 @@ class ProfileRepository(
             require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
             val decoded = contentDecoder.decode(bytes, key)
             profileDocumentText(decoded)
-            try { configValidator.validate(decoded) }
+            try { configValidator.validateFull(decoded) }
             catch (cancelled: CancellationException) { throw cancelled }
+            catch (failure: com.lonnnnnng.flclash.validation.ConfigSemanticException) { throw failure }
             catch (_: Exception) { throw IllegalArgumentException("配置不是有效的 YAML，请检查文件内容") }
             decoded
         }
@@ -634,6 +635,9 @@ class ProfileRepository(
             .flatMap { ProxyGroupDrafts.read(profileFile(it.id).readText()).map { group -> group.name } }.toSet() + ProxyGroupDrafts.read(content).map { it.name }
         val localImport = planLocalProxyImport(content, localBefore, groupNames)
         LocalProxies.validate(localImport.after, groupNames)
+        // 作者 long：先检查完整候选和已有稳定引用，再下载/暂存新资源；不能把缺少全局节点的CUSTOM存储片段直接交给核心。
+        val ruleSnapshot = resources?.all()
+        val validation = validateCustomImport(content, localBefore, ruleRows = ruleSnapshot).toMutableMap()
         val proxyImport = prepareProxyImport(localImport.source)
         val createdFiles = mutableListOf<File>()
         // 作者 long：下载和核心编译不能持有配置文件锁，否则核心读取配置时会与编译初始化形成反向等待。
@@ -642,6 +646,10 @@ class ProfileRepository(
                 val file = profileFile(id)
                 val original = snapshotLocalProfileFile(file)
                 require(original.bytes?.toString(Charsets.UTF_8) == expectedContent) { "配置正文已变化或缺失，请重新导入" }
+                validation.forEach { (dependency, snapshot) ->
+                    require(dependency.isFile && dependency.lastModified() == snapshot.modified &&
+                        dependency.readBytes().contentEquals(snapshot.bytes)) { "校验期间引用资源已变化，请重新确认导入" }
+                }
                 // 作者 long：导入下载期间其他配置可能改了策略组名称，提交前复核所有名称空间，避免新全局节点遮蔽策略组。
                 val currentGroups = profileDao.getAll().filter { it.type == ProfileType.CUSTOM && it.id != id }
                     .flatMap { ProxyGroupDrafts.read(profileFile(it.id).readText()).map { group -> group.name } } + ProxyGroupDrafts.read(mappedContent).map { it.name }
@@ -679,7 +687,12 @@ class ProfileRepository(
         }
         var committed = false
         try {
-            (resources?.importResources(proxyImport.content, commit) ?: commit(proxyImport.content) {}).also { committed = true }
+            val validateMapped: suspend (String, List<RuleResource>?) -> Unit = { mapped, rules ->
+                validation.putAll(validateCustomImport(mapped, localImport.after, localImport.dialers,
+                    proxyImport.added.associate { (profile, bytes) -> profile.id to bytes }, rules))
+            }
+            (resources?.importResources(proxyImport.content, ruleSnapshot, { mapped, rules -> validateMapped(mapped, rules) }, commit)
+                ?: run { validateMapped(proxyImport.content, null); commit(proxyImport.content) {} }).also { committed = true }
         } finally {
             // 作者 long：Room 回滚后只回收本次新分配的代理文件，已有订阅和当前配置始终保留。
             if (!committed) createdFiles.forEach { file -> com.lonnnnnng.flclash.common.StateWriteAudit.fileMutation(file, "profile.import.rollback") { file.delete() } }
@@ -687,6 +700,50 @@ class ProfileRepository(
     }
 
     private data class ProxyImportPlan(val content: String, val before: List<ProfileEntity>, val added: List<Pair<Profile, ByteArray>>)
+
+    private suspend fun validateCustomImport(content: String, local: List<LocalProxy>, dialers: Map<String, String>? = null,
+        added: Map<Long, ByteArray> = emptyMap(), ruleRows: List<RuleResource>? = null): Map<File, LocalProfileFileSnapshot> {
+        val snapshots = linkedMapOf<File, LocalProfileFileSnapshot>()
+        val projected = resources?.resolve(content, ruleRows) ?: content
+        val root = ProxyGroupDrafts.root(LocalProxies.project(projected, local, dialers))
+        val used = ProfileProxyResources.referenced(root)
+        // 作者 long：稳定ID只存在于应用存储；既有代理正文以内存payload传入，避免预检写运行时投影缓存。
+        val providers = root.get("proxy-providers")?.takeIf { it.isJsonObject }?.asJsonObject
+        providers?.entrySet()?.toList()?.forEach { (alias, definition) ->
+            ProfileProxyResources.idOf(definition)?.let { resourceId ->
+                if (alias !in used) { providers.remove(alias); return@forEach }
+                val bytes = added[resourceId] ?: run {
+                    val entity = requireNotNull(profileDao.getById(resourceId)) { "代理资源缺失，请重新选择资源" }
+                    require(entity.type != ProfileType.CUSTOM) { "自定义配置不能作为代理资源" }
+                    val file = profileFile(resourceId)
+                    val snapshot = snapshotLocalProfileFile(file)
+                    snapshots[file] = snapshot
+                    requireNotNull(snapshot.bytes) { "代理资源缓存缺失，请同步后重试" }
+                }
+                val payload = ProxyGroupDrafts.root(bytes.toString(Charsets.UTF_8)).get("proxies")
+                require(payload?.isJsonArray == true) { "代理资源缺少节点正文" }
+                definition.asJsonObject.apply {
+                    addProperty("type", "inline"); add("payload", payload.deepCopy())
+                    remove("path"); remove("url"); remove("age-secret-key")
+                }
+            }
+        }
+        root.get("rule-providers")?.takeIf { it.isJsonObject }?.asJsonObject?.entrySet()?.forEach { (_, definition) ->
+            val fields = definition.takeIf { it.isJsonObject }?.asJsonObject
+            if (fields?.get("type")?.asString == "file") {
+                val file = File(fields.get("path").asString)
+                val coreRoot = File(appContext.filesDir, "mihomo").canonicalPath + File.separator
+                if (file.isAbsolute && file.canonicalPath.startsWith(coreRoot) && file.isFile) {
+                    require(file.length() <= 64L * 1024 * 1024) { "规则资源超过校验上限" }
+                    require(snapshots.size < 64 && snapshots.values.sumOf { it.bytes?.size?.toLong() ?: 0L } + file.length() <= 128L * 1024 * 1024) { "配置依赖资源超过校验上限" }
+                    snapshots[file] = LocalProfileFileSnapshot(file.readBytes(), file.lastModified())
+                }
+            }
+        }
+        val yaml = com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(root.toString())
+        configValidator.validateFull(com.lonnnnnng.flclash.service.ProfileDialerOverrideApplier.apply(yaml, dialers).toByteArray(Charsets.UTF_8))
+        return snapshots
+    }
 
     private suspend fun prepareProxyImport(content: String): ProxyImportPlan {
         val before = profileDao.getAll()
@@ -717,7 +774,7 @@ class ProfileRepository(
                     }.toString()).toByteArray()
                 }
                 require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "代理资源为空或超过 8 MiB" }
-                configValidator.validate(bytes)
+                configValidator.validateFull(bytes)
                 val resourceId = generateSequence { newId() }.first { candidate -> candidate > 0 && profiles.none { it.id == candidate } && !profileFile(candidate).exists() }
                 val profile = Profile.remote(resourceId, url, label).copy(
                     type = if (url.isEmpty()) ProfileType.FILE else ProfileType.URL,
@@ -763,9 +820,10 @@ class ProfileRepository(
                 require(bytes.isNotEmpty() && bytes.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
                 contentDecoder.decode(bytes, key).also { decoded ->
                     require(decoded.isNotEmpty() && decoded.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
-                    try { configValidator.validate(decoded) }
+                    try { configValidator.validateFull(decoded) }
                     catch (error: CancellationException) { throw error }
-                    catch (_: Exception) { throw IllegalArgumentException("配置不是有效的 YAML，请检查文件内容") }
+                    catch (failure: com.lonnnnnng.flclash.validation.ConfigSemanticException) { throw failure }
+            catch (_: Exception) { throw IllegalArgumentException("配置不是有效的 YAML，请检查文件内容") }
                 }
             }
             kotlinx.coroutines.currentCoroutineContext().ensureActive()
@@ -1087,7 +1145,7 @@ class ProfileRepository(
             val downloaded = subscriptionClient.download(current.url)
             val plaintext = contentDecoder.decode(downloaded.bytes, current.ageSecretKey)
             require(plaintext.isNotEmpty() && plaintext.size <= MAX_PROFILE_FILE_BYTES) { "配置文件为空或超过 8 MiB" }
-            configValidator.validate(plaintext)
+            configValidator.validateFull(plaintext)
             val commit: suspend () -> Profile = { fileMutationMutex.withLock {
                 withContext(kotlinx.coroutines.NonCancellable) {
                     replaceLocalProfileFile(profileFile(id), plaintext, persist = { commit ->
@@ -1269,7 +1327,8 @@ class ProfileRepository(
         val sourcePath = if (profile.type == ProfileType.CUSTOM) {
             fileMutationMutex.withLock {
                 val source = profileFile(profile.id).readText()
-                val resolved = LocalProxies.project(resolveProxyResources(resources?.resolve(source) ?: source), localProxies())
+                val resolved = LocalProxies.project(resolveProxyResources(resources?.resolve(source) ?: source), localProxies(),
+                    ProfileProviderOverrides.fromJsonString(profile.overridesJson).dialers)
                 if (resolved == source) profileFile(profile.id).path else {
                     // 作者 long：投影按内容变动才替换，后台刷新不能因每次读取重写 mtime 而重复加载核心。
                     val digest = java.security.MessageDigest.getInstance("SHA-256").digest(resolved.toByteArray()).joinToString("") { "%02x".format(it) }

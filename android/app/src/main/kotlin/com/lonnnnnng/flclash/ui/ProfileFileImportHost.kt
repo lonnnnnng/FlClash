@@ -28,7 +28,7 @@ internal fun rememberProfileFilePicker(controller: ProfileFileImportController):
             text = { CircularProgressIndicator() }, confirmButton = {}, dismissButton = { TextButton(onClick = controller::dismiss) { Text("取消") } })
         state.needsKey -> AgeSecretKeyDialog(controller::confirm, controller::dismiss, busy = state.saving, error = state.error)
         state.fileName != null -> ProfileFileImportPreviewDialog(state.fileName!!, state.size, state.validYaml, state.saving,
-            { controller.confirm() }, controller::dismiss, isEncrypted = state.encrypted, error = state.error)
+            { controller.confirm() }, controller::dismiss, isEncrypted = state.encrypted, error = state.error, validationNote = state.validationNote)
         state.error != null -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text("导入配置") },
             text = { Text(state.error!!) }, confirmButton = { TextButton(onClick = controller::dismiss) { Text("关闭") } })
     }

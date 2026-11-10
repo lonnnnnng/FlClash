@@ -10,6 +10,10 @@ import java.net.URI
 object Core {
     fun forceGC() = Mobile.forceGC()
 
+    // 作者 long：独立服务使用同版本完整解析，原始配置和资源地址不进入方法日志。
+    fun validateConfigurationIsolated(content: ByteArray, resources: String): String =
+        Mobile.validateConfigurationIsolated(content, resources)
+
     fun updateDNS(
         dns: String,
     ) = Mobile.updateDns(dns)

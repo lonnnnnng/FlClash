@@ -693,6 +693,34 @@ class ProfilesViewModelTest {
         assertTrue(store.remoteUpdateCalls.isEmpty())
     }
 
+    @Test fun remoteReplacementSemanticFailureKeepsCandidateForCorrection() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val profile = Profile.remote(803, "https://example.test/source", "source")
+        val store = FakeProfileStore(profile).apply { content = "rules: []" }
+        val candidate = "rules:\n  - MATCH,missing\n"
+        val validator = object : com.lonnnnnng.flclash.data.ProfileConfigValidator {
+            override suspend fun validate(bytes: ByteArray) = Unit
+            override suspend fun validateFull(bytes: ByteArray): com.lonnnnnng.flclash.data.ProfileValidationSummary =
+                throw com.lonnnnnng.flclash.validation.ConfigSemanticException("invalid_config", "rules", 0)
+        }
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), configValidator = validator,
+            fileReader = com.lonnnnnng.flclash.data.ProfileFileDocumentReader {
+                com.lonnnnnng.flclash.data.ProfileFileDocument("candidate.yaml", candidate.toByteArray())
+            }, overviewDispatcher = mainDispatcher)
+        model.openEditor(profile); advanceUntilIdle()
+        model.acceptRemoteFilePick(checkNotNull(model.beginRemoteFilePick()), "content://candidate"); advanceUntilIdle()
+        assertEquals(candidate, model.remoteEditorState.value.draftContent)
+        assertEquals(false, model.remoteEditorState.value.replacement?.isValidYaml)
+        assertTrue(model.remoteEditorState.value.error.orEmpty().contains("规则第 1 项"))
+        assertEquals("rules: []", store.content)
+        assertEquals(0, store.documentSaves)
+        model.openProfileDocument(true)
+        assertEquals(candidate, model.documentEditorState.value.content)
+        model.acceptProfileDocument(); advanceUntilIdle()
+        assertEquals(2, model.documentEditorState.value.errorLocation?.line)
+        assertEquals(candidate, model.documentEditorState.value.content)
+    }
+
     @Test fun batchSyncLimitsConcurrencyRejectsDuplicateOperationsAndRetriesOnlyFailures() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val rows = (1L..6L).map { Profile.remote(it, "https://example.test/$it", "订阅$it") }

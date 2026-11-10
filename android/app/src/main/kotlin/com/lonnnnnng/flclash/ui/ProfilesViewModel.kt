@@ -1,5 +1,7 @@
 package com.lonnnnnng.flclash.ui
 
+import com.lonnnnnng.flclash.validation.location
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lonnnnnng.flclash.data.ProfileConfigValidator
@@ -700,7 +702,7 @@ class ProfilesViewModel internal constructor(
     // 作者 long：预检只向确认弹窗返回安全状态，不把包含敏感配置片段的解析器错误直接展示给用户。
     suspend fun validateFileImport(bytes: ByteArray): Boolean = withContext(Dispatchers.IO) {
         try {
-            configValidator.validate(bytes)
+            configValidator.validateFull(bytes)
             true
         } catch (error: CancellationException) {
             throw error
@@ -836,7 +838,7 @@ class ProfilesViewModel internal constructor(
             try {
                 withContext(overviewDispatcher) {
                     com.lonnnnnng.flclash.data.profileDocumentText(state.content.toByteArray())
-                    configValidator.validate(state.content.toByteArray())
+                    configValidator.validateFull(state.content.toByteArray())
                 }
                 if (generation != localEditorGeneration || mutableDocumentEditor.value.session != state.session) return@launch
                 if (state.remote) {
@@ -847,8 +849,9 @@ class ProfilesViewModel internal constructor(
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (error: Exception) {
                 if (generation == localEditorGeneration && mutableDocumentEditor.value.session == state.session) {
-                    val location = com.lonnnnnng.flclash.service.YamlConfigCodec.errorLocation(state.content, error)
-                    val message = if (location == null) "正文校验失败，输入已保留，请检查格式与文件大小后重试"
+                    val semantic = error as? com.lonnnnnng.flclash.validation.ConfigSemanticException
+                    val location = semantic?.location(state.content) ?: com.lonnnnnng.flclash.service.YamlConfigCodec.errorLocation(state.content, error)
+                    val message = if (semantic != null) semantic.message ?: "核心语义校验未通过，输入已保留" else if (location == null) "正文校验失败，输入已保留，请检查格式与文件大小后重试"
                         else "YAML 语法错误：第 ${location.line} 行，第 ${location.column} 列；输入已保留，请修改后重试"
                     mutableDocumentEditor.value = state.copy(error = message, errorLocation = location)
                 }
@@ -881,16 +884,24 @@ class ProfilesViewModel internal constructor(
                 val encrypted = com.lonnnnnng.flclash.data.isAgeEncryptedProfile(document.bytes)
                 require(document.bytes.isNotEmpty() && document.bytes.size <= com.lonnnnnng.flclash.data.MAX_PROFILE_FILE_BYTES)
                 val text = if (!encrypted) withContext(overviewDispatcher) {
-                    com.lonnnnnng.flclash.data.profileDocumentText(document.bytes).also { configValidator.validate(document.bytes) }
+                    com.lonnnnnng.flclash.data.profileDocumentText(document.bytes)
                 } else null
                 if (request.second == localEditorGeneration) {
+                    // 作者 long：读取成功即保留候选，核心语义失败仍允许打开正文修正；未经校验不能标记为可用。
                     remoteReplacementBytes = document.bytes.copyOf()
-                    mutableRemoteEditor.update { it.copy(isReadingFile = false, draftContent = text,
-                        replacement = ProfileFileReplacementPreview(document.name, document.bytes.size, encrypted, !encrypted)) }
+                    mutableRemoteEditor.update { it.copy(isReadingFile = !encrypted, draftContent = text,
+                        replacement = ProfileFileReplacementPreview(document.name, document.bytes.size, encrypted, false)) }
+                    if (!encrypted) {
+                        withContext(overviewDispatcher) { configValidator.validateFull(document.bytes) }
+                        if (request.second == localEditorGeneration) mutableRemoteEditor.update { it.copy(isReadingFile = false,
+                            replacement = it.replacement?.copy(isValidYaml = true)) }
+                    }
                 }
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) {
-                if (request.second == localEditorGeneration) mutableRemoteEditor.update { it.copy(isReadingFile = false, error = "读取或校验文件失败，原草稿已保留") }
+            catch (failure: Exception) {
+                if (request.second == localEditorGeneration) mutableRemoteEditor.update { it.copy(isReadingFile = false,
+                    error = (failure as? com.lonnnnnng.flclash.validation.ConfigSemanticException)?.message
+                        ?: "读取或校验文件失败，已读取的候选正文和原配置保持，可打开正文检查") }
             }
         }
     }
@@ -1046,8 +1057,10 @@ class ProfilesViewModel internal constructor(
                 }
             } catch (error: CancellationException) {
                 throw error
-            } catch (_: Exception) {
-                if (generation == localEditorGeneration) mutableErrors.emit("替换失败，原配置已保留；请检查运行状态或重新导入")
+            } catch (failure: Exception) {
+                if (generation == localEditorGeneration) mutableErrors.emit(
+                    (failure as? com.lonnnnnng.flclash.validation.ConfigSemanticException)?.message
+                        ?: "替换失败，原配置已保留；请检查运行状态或重新导入")
             } finally {
                 if (generation == localEditorGeneration) mutableEditor.value = mutableEditor.value.copy(isSaving = false)
             }
@@ -1085,10 +1098,15 @@ class ProfilesViewModel internal constructor(
                 val bytes = document.bytes.copyOf()
                 require(bytes.isNotEmpty() && bytes.size <= com.lonnnnnng.flclash.data.MAX_PROFILE_FILE_BYTES)
                 val encrypted = com.lonnnnnng.flclash.data.isAgeEncryptedProfile(bytes)
-                val valid = !encrypted && validateFileImport(bytes)
+                var semanticMessage: String? = null
+                val valid = if (encrypted) false else try {
+                    withContext(overviewDispatcher) { configValidator.validateFull(bytes) }; true
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (failure: com.lonnnnnng.flclash.validation.ConfigSemanticException) { semanticMessage = failure.message; false }
+                catch (_: Exception) { false }
                 if (generation == localEditorGeneration) {
                     replacementBytes = bytes
-                    mutableEditor.value = mutableEditor.value.copy(isReadingFile = false,
+                    mutableEditor.value = mutableEditor.value.copy(isReadingFile = false, error = semanticMessage,
                         replacement = ProfileFileReplacementPreview(document.name, bytes.size, encrypted, valid))
                 }
             } catch (error: CancellationException) {
@@ -1154,7 +1172,7 @@ class ProfilesViewModel internal constructor(
                 throw error
             } catch (error: Exception) {
                 if (generation == localEditorGeneration) {
-                    mutableEditor.value = mutableEditor.value.copy(isSaving = false, error = "保存失败，输入已保留；请检查配置或重新打开")
+                    mutableEditor.value = mutableEditor.value.copy(isSaving = false, error = (error as? com.lonnnnnng.flclash.validation.ConfigSemanticException)?.message ?: "保存失败，输入已保留；请检查配置或重新打开")
                     mutableErrors.emit(error.message ?: "保存本地配置失败")
                 }
             } finally {

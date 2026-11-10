@@ -68,6 +68,16 @@ object YamlConfigCodec {
         },
     )
 
+    // 作者 long：核心返回候选分区/序号，按原文节点定位，不使用可能包含凭据的原始异常文本。
+    fun semanticErrorLocation(yaml: String, section: String, index: Int): YamlErrorLocation? = runCatching {
+        val root = loader().compose(StringReader(yaml)) as? org.yaml.snakeyaml.nodes.MappingNode ?: return@runCatching null
+        val tuple = root.value.firstOrNull { (it.keyNode as? org.yaml.snakeyaml.nodes.ScalarNode)?.value == section } ?: return@runCatching null
+        val target = if (index >= 0) (tuple.valueNode as? org.yaml.snakeyaml.nodes.SequenceNode)?.value?.getOrNull(index) ?: tuple.keyNode else tuple.keyNode
+        val mark = target.startMark ?: return@runCatching null
+        val offset = yaml.offsetByCodePoints(0, mark.index.coerceIn(0, yaml.codePointCount(0, yaml.length)))
+        YamlErrorLocation(mark.line + 1, mark.column + 1, offset)
+    }.getOrNull()
+
     fun errorLocation(yaml: String, error: Throwable): YamlErrorLocation? {
         val marked = generateSequence(error) { it.cause }.take(8).filterIsInstance<MarkedYAMLException>().firstOrNull()
             ?: return null

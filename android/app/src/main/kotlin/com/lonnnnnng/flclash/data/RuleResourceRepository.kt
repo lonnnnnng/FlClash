@@ -186,10 +186,20 @@ class RuleResourceRepository @Inject constructor(
         }.map { it.realLabel }
     }
 
-    suspend fun <T> importResources(content: String, commit: suspend (String, suspend () -> Unit) -> T): T = withContext(Dispatchers.IO) {
+    suspend fun <T> importResources(content: String, commit: suspend (String, suspend () -> Unit) -> T): T =
+        importResources(content, null, { _, _ -> }, commit)
+
+    suspend fun <T> importResources(content: String, expected: List<RuleResource>?,
+        validate: suspend (String, List<RuleResource>) -> Unit, commit: suspend (String, suspend () -> Unit) -> T): T = withContext(Dispatchers.IO) {
         val document = RuleResources.document(content)
-        val definitions = document.getAsJsonObject("rule-providers") ?: return@withContext commit(content) {}
+        val definitions = document.getAsJsonObject("rule-providers") ?: return@withContext lock.withLock {
+            val current = all()
+            require(expected == null || expected == current) { "预检期间规则资源已变化，请重新确认导入" }
+            validate(content, current)
+            commit(content) {}
+        }
         val before = all()
+        require(expected == null || expected == before) { "预检期间规则资源已变化，请重新确认导入" }
         val planned = before.toMutableList()
         val staged = mutableListOf<RuleResource>()
         val names = linkedMapOf<String, String>()
@@ -218,6 +228,8 @@ class RuleResourceRepository @Inject constructor(
             val mappedContent = YamlConfigCodec.toYaml(document.toString())
             lock.withLock {
                 require(all() == before) { "全局资源已变化，请重新确认导入" }
+                // 作者 long：最终稳定引用必须校验同一版本的暂存/既有资源，锁内验证后才允许登记和配置提交。
+                validate(mappedContent, planned)
                 // 作者 long：资源登记与配置替换共享外层 Room 事务；失败不能留下已登记但未被导入的资源。
                 withContext(NonCancellable) {
                     commit(mappedContent) {
@@ -229,10 +241,10 @@ class RuleResourceRepository @Inject constructor(
     }
 
     /** 作者 long：引用只在加载输入中变为当前资源文件，正文保存稳定 ID，资源改名或同步不会改写用户配置。 */
-    suspend fun resolve(content: String): String = withContext(Dispatchers.IO) {
+    suspend fun resolve(content: String, available: List<RuleResource>? = null): String = withContext(Dispatchers.IO) {
         if (!content.contains(RESOURCE_PATH_PREFIX)) return@withContext content
         val document = RuleResources.document(content)
-        val rows = all().associateBy { it.id }
+        val rows = (available ?: all()).associateBy { it.id }
         document.getAsJsonObject("rule-providers")?.entrySet()?.forEach { (name, definition) ->
             RuleResources.idOf(definition)?.let { id ->
                 val resource = rows[id] ?: error("规则资源缺失：$name，请重新选择资源")

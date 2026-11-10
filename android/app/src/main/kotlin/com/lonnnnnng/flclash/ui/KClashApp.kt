@@ -5030,6 +5030,7 @@ internal fun ProfileFileImportPreviewDialog(
     onDismiss: () -> Unit,
     isEncrypted: Boolean = false,
     error: String? = null,
+    validationNote: String? = null,
 ) {
     AlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
@@ -5038,10 +5039,11 @@ internal fun ProfileFileImportPreviewDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(fileName, maxLines = 2)
                 Text("文件大小：$fileSizeBytes 字节")
+                validationNote?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_file_import_error")) }
                 Text(
                     if (isEncrypted) "age 加密配置，导入时输入密钥并校验"
-                    else if (isValidYaml) "YAML 格式校验通过" else "无法读取 YAML 配置，文件未导入",
+                    else if (isValidYaml) "配置格式与核心语义校验通过" else "配置校验未通过，文件未导入",
                     color = if (isValidYaml || isEncrypted) MaterialTheme.colorScheme.onSurfaceVariant
                     else MaterialTheme.colorScheme.error,
                 )

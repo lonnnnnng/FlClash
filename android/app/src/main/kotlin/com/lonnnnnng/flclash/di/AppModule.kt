@@ -121,7 +121,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideProfileConfigValidator(): ProfileConfigValidator = YamlProfileConfigValidator()
+    fun provideProfileConfigValidator(validator: com.lonnnnnng.flclash.validation.IsolatedConfigValidator): ProfileConfigValidator = validator
 
     @Provides
     fun provideProxyGroupFilterValidator(validator: com.lonnnnnng.flclash.data.NativeProxyGroupFilterValidator):
