@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -138,12 +139,45 @@ class ProxyGroupsActivityInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
+        awaitExpandedSearch()
         composeRule.onNodeWithTag("proxy_group_search").performTextInput("node-b")
         composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsDisplayed()
         assertTrue(composeRule.onAllNodesWithTag("proxy_node_Auto_node-a").fetchSemanticsNodes().isEmpty())
 
         composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
         composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertIsDisplayed()
+    }
+
+    @Test
+    fun expandedSearchRestoresAfterActivityRecreationWithoutSelectingFilteredNode() {
+        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertProxyInUse(composeRule)
+        val original = composeRule.activity.profileStore.selectedMap()
+        composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
+        awaitExpandedSearch()
+        composeRule.onNodeWithTag("proxy_group_search").performTextInput("node-b")
+        composeRule.activityRule.scenario.recreate()
+        assertEquals("node-b", composeRule.onNodeWithTag("proxy_group_search").fetchSemanticsNode()
+            .config[SemanticsProperties.EditableText].text)
+        composeRule.onNodeWithTag("proxy_node_Auto_node-b").assertIsDisplayed()
+        assertEquals(original, composeRule.activity.profileStore.selectedMap())
+        assertEquals(null, composeRule.activity.runtime.lastTarget)
+        composeRule.onNodeWithTag("proxy_group_search_toggle").performClick()
+        composeRule.onNodeWithTag("proxy_node_Auto_node-a").assertProxyInUse(composeRule)
+    }
+
+    private fun awaitExpandedSearch() {
+        try {
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithTag("proxy_group_search").fetchSemanticsNodes().isNotEmpty()
+            }
+        } catch (failure: Throwable) {
+            val bitmap = checkNotNull(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+            recordVisualPng("search_activity_missing", ByteArrayOutputStream().also { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }.toByteArray())
+            androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
+                putString("search_activity_state", "profile=${composeRule.activity.profileStore.currentProfileId.value}, groups=${composeRule.activity.viewModel.state.value.groups.size}")
+            })
+            throw failure
+        }
     }
 
     @Test

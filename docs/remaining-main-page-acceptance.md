@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **代理搜索连续过渡与实体扫码（2026-11-10，KUI-031）**：代理根页搜索接固定Flutter分段弹簧/透明度、组合入口和单入口液滴回收；快速反向保留位置/速度，搜索中只有一个测速按钮，取消清空并收IME。修复开发中异步组加载导致搜索/测速重叠及材质退场顺序。869项JVM（App587执行、其余282复用）、Debug/签名Release-R8/motion及双Lint零错误通过；Redmi深色8/8、浅色4/4、自然深浅2/2、动画关闭1/1，共10个不重复方法15次执行通过，56PNG/12拼图及两套原PTS视频已检查。签名本地候选`5f00dc54…5098d250`安装回拉一致；实际代理搜索/Back通过，配置21字段/选择、2偏好及正文SHA-size-mtime保持，测速缓存更新仍未逐条归因。用户实体摄像识别测试QR，确认表单精确匹配且相机释放，未导入；此证据属于当前候选，公开0.1.1未替换。测试包/手机诊断文件已清理，服务停止。接续资源/添加Sheet下沿搜索、剩余完整Flutter及菜单/RenderThread性能；历史异常/低API/蜂窝/OEM仍PARTIAL。证据`docs/acceptance/proxy-search-motion-redmi-20261110.json`，溯源`docs/proxy-search-motion-defect.md`。
+
 > **搜索动效接续参考（2026-11-10）**：固定Flutter原Scaffold已在Redmi独立包验证根页顶栏搜索、推入子页下沿搜索及真实IME取消；原始录屏777帧、32个采样位置已检查。仅浅色组件参考，Kotlin连续过渡尚未适配。下一切片优先代理根页搜索展开/收回，再补资源/添加Sheet的下沿搜索，见`docs/search-motion-reference.md`。独立参考包已清理，原Flutter包未操作。
 
 > **发布后边界与资源长目录（2026-11-10，KUI-030）**：原始正式0.1.0→0.1.1覆盖升级已验，UID、单FILE配置21字段/选择、2条偏好、238条测速记录及正文SHA-size-mtime在安装边界保持；启动后配置保持但测速value/时间更新，未确定事件归因。Perfetto在KClash无进程时，process_stats成功而最小sched ftrace使traced_probes进入D并flush失败，原生慢帧仍未归因。代理/规则64项目录补首次显现当前选择，Redmi深浅两例各2/2、相邻回归2/2，4个不重复方法共6次执行全过、23PNG已核验；真实IME清空/末项选择、一次回调/别名与重开取消已验。865项JVM（App583执行，其余282复用）、Debug/签名Release-R8/独立测试包及双Lint零错误通过。最终本地候选SHA `9b7fad97…88fcaa7`已安装回拉匹配，公开0.1.1资产和标签未替换；正式配置保留，3个自有测试包与12个手机诊断文件已精确清理，服务停止。实体QR、完整Flutter视觉/动效、低API和历史异常因果继续待验。证据`docs/acceptance/post-release-boundaries-redmi-20261110.json`；溯源`docs/resource-picker-long-list-defect.md`、`docs/release-upgrade-acceptance.md`。
@@ -126,5 +128,5 @@ KREL-001与KUI-020已修，公开APK在Redmi验证：真实SAF/首次VPN及运�
 ## KUI-029后续顺序
 
 1. 菜单关闭Popup帧已补齐；继续可用原生采样的调用栈归因。当前ROM正确PID仍被拒绝，保留首开/关闭/RenderThread慢帧为未完成，不能由留窗诊断称性能通过。
-2. NTP/Sniffer添加候选及标题连续退场本组已验；代理/规则64项目录定位和真实IME已由KUI-030具名验收；完整工具栏搜索展开/收回、其余页面连续过渡及更广长目录场景继续推进。Prism组件运行对照已建立，完整Flutter页面仍未等价验收。
+2. NTP/Sniffer添加候选及标题连续退场本组已验；代理/规则64项目录定位和真实IME已由KUI-030具名验收；代理根页工具栏搜索由KUI-031具名验收，资源/添加Sheet下沿搜索、其他工具栏与页面连续过渡、更广长目录场景继续推进。Prism组件运行对照已建立，完整Flutter页面仍未等价验收。
 3. 长窗先保留首次TLS失败并关联DNS/节点拨号/远端关闭，再补更长及重复恢复。加入写入来源/时刻诊断后继续追查历史元数据/mtime/偏好异常；本轮未复现不关闭历史记录。

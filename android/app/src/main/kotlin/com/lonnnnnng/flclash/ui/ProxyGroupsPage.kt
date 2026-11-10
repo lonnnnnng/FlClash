@@ -103,11 +103,16 @@ private fun ProxyPageToolbar(
     query: String,
     searchExpanded: Boolean,
     picker: Boolean,
+    hasPrimary: Boolean,
     onQueryChange: (String) -> Unit,
     onSearchExpandedChange: (Boolean) -> Unit,
     primaryAction: @Composable RowScope.() -> Unit,
     secondaryActions: @Composable RowScope.() -> Unit,
 ) {
+    if (!picker) {
+        ProxySearchToolbar(query, searchExpanded, hasPrimary, onQueryChange, onSearchExpandedChange, primaryAction, secondaryActions)
+        return
+    }
     val focus = remember { FocusRequester() }
     // 作者 long：选择器开场不抢键盘，完整页主动展开搜索才请求焦点，避免遮住当前节点。
     LaunchedEffect(searchExpanded, picker) {
@@ -346,6 +351,7 @@ internal fun ProxyGroupsCard(
             query = proxyQuery,
             searchExpanded = searchExpanded,
             picker = picker,
+            hasPrimary = pageOptions.displayMode == ProxyDisplayMode.TAB && selectedGroup != null,
             onQueryChange = { proxyQuery = it },
             onSearchExpandedChange = { expanded ->
                 searchExpanded = expanded

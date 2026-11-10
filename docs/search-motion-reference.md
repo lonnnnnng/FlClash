@@ -23,8 +23,8 @@ Redmi API36、竖屏、默认字号：根页搜索打开→输入23→系统Back
 
 安装回拉APK哈希一致；录屏按SHA核对后从手机定点删除，独立参考包已卸载，正式Kotlin包和原配置未操作。摘要见 `acceptance/search-motion-reference-redmi-20261110.json`；本机附件 `../../acceptance-artifacts/flutter-search-host-20261110/`。
 
-## 下一实现切片
+## 后续切片与已完成范围
 
-1. `ProxyGroupsPage.kt` 的 `ProxyPageToolbar` 仍直接分支替换标题与输入框；先补代理根页按钮组到搜索框的连续过渡，保持搜索中批量测速、取消清空、返回层级和现有选择。
+1. 代理根页已由KUI-031补齐按钮组到搜索框的连续过渡与单按钮液滴回收，深浅/真实IME/快速反向/Activity重建/自然整页及正式候选已验；见 `proxy-search-motion-defect.md`。其他根页工具栏仍需逐项核对。
 2. 以固定 `_SearchMove` 的开/关时序、当前位置/速度反转作为依据，覆盖快速开关、真实IME、清除与取消区别、切页/重建。先验证普通材质；玻璃默认关闭，不能把背景采样优化混入常用交互。
 3. 资源选择和添加Sheet随后按真实容器补下沿搜索；KUI-030的首次显现、末项/键盘、别名与一次提交回归必须保留。紧凑Sheet和完整页面尚未有本轮运行对照，继续记PARTIAL。
