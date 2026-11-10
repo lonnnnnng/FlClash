@@ -29,4 +29,6 @@ Geo 恢复已完成 5 类故障场景；独立核心自动／固定出口四轮�
 
 证书 SHA-256：`3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49`。
 
-源码标签：`kclash-v0.1.1`；Mihomo 固定在 [`464552e44ddf92affe5c41ee5a5d653a0e1e8daf`](https://github.com/lonnnnnng/mihomo/tree/464552e44ddf92affe5c41ee5a5d653a0e1e8daf)，仅从 `chen08209/Clash.Meta:FlClash` 同步。进度见 [roadmap](https://github.com/lonnnnnng/FlClash/blob/kclash-v0.1.1/docs/roadmap.md)，扫码溯源见 [KREL-002](https://github.com/lonnnnnng/FlClash/blob/kclash-v0.1.1/docs/release-mlkit-registrar-defect.md)。
+源码标签：`kclash-v0.1.1`；Mihomo 固定在 [`464552e44ddf92affe5c41ee5a5d653a0e1e8daf`](https://github.com/lonnnnnng/Clash.Meta/tree/464552e44ddf92affe5c41ee5a5d653a0e1e8daf)，仅从 `chen08209/Clash.Meta:FlClash` 同步。进度见 [roadmap](https://github.com/lonnnnnng/FlClash/blob/kclash-v0.1.1/docs/roadmap.md)，扫码溯源见 [KREL-002](https://github.com/lonnnnnng/FlClash/blob/kclash-v0.1.1/docs/release-mlkit-registrar-defect.md)。
+
+2026-11-10 内核 fork 更名迁移，原发布标签保持不变；从旧标签构建时，先按[迁移说明](https://github.com/lonnnnnng/FlClash/blob/kotlin/docs/mihomo-fork-migration.md#historical-checkout)覆盖子模块 URL，再拉取原固定提交。

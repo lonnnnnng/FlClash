@@ -77,6 +77,8 @@ cd FlClash
 ./gradlew :app:assembleDebug
 ```
 
+内核 fork 于 2026-11-10 迁至 `lonnnnnng/Clash.Meta`。已有检出更新到 Kotlin 主线后，先执行 `git submodule sync --recursive` 再更新子模块；检出旧标签 `kclash-v0.1.0`、`kclash-v0.1.1` 时请按[旧版本检出说明](docs/mihomo-fork-migration.md#historical-checkout)设置新地址，原固定核心提交仍保留。
+
 Debug APK 输出到 `android/app/build/outputs/apk/debug/app-debug.apk`。运行 JVM 测试和检查：
 
 ```bash
@@ -98,7 +100,7 @@ Debug APK 输出到 `android/app/build/outputs/apk/debug/app-debug.apk`。运行
 
 - Kotlin Android 应用在 `kotlin` 分支开发。
 - Flutter [FlClash 仓库](https://github.com/chen08209/FlClash)只作功能行为与视觉交互参考，不将其应用提交合入 Kotlin 主线。
-- Mihomo 改动仅通过 `chen08209/Clash.Meta` 的 FlClash 分支及配置的 `lonnnnnng/mihomo` fork / `kclash-fixes` 分支同步。
+- Mihomo 改动仅通过 `chen08209/Clash.Meta` 的 FlClash 分支及配置的 `lonnnnnng/Clash.Meta` fork / `kclash-fixes` 分支同步。
 
 ## 许可证与反馈
 

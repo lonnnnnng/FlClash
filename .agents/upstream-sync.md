@@ -25,13 +25,15 @@
 
 ### 唯一代码同步来源（2026-11-05 用户确认）
 
-- Mihomo 的唯一代码同步上游为 `chen08209/Clash.Meta` 的 `FlClash` 分支，自己的 `lonnnnnng/mihomo:kclash-fixes` 继续保存产品内核与必要的本地修复。
+- Mihomo 的唯一代码同步上游为 `chen08209/Clash.Meta` 的 `FlClash` 分支，自己的 `lonnnnnng/Clash.Meta:kclash-fixes` 继续保存产品内核与必要的本地修复。
 - 不直接同步 `MetaCubeX/mihomo` 的任何分支、tag、提交或 PR；不通过 merge、cherry-pick、手工复制补丁或直接跟随官方版本绕过此约束。官方 PR 盘点仅为历史研究，不是待直接合入清单。
 - FlClash 作者已吸收的官方改动，可以随 `chen08209/Clash.Meta:FlClash` 一起同步；同步时仍以该分支的固定 SHA 为来源，记录实际差异和验证结果。
 - 自行确认的本地缺陷仍可修复，先参考 FlClash 对应实现并登记缺陷台账；本地补丁不因同步而自动丢弃。需要改变唯一同步来源时，须由用户明确修改本条约定。
 
 已确认的上游源码缺陷统一记录在 [`docs/upstream-source-defects.md`](../docs/upstream-source-defects.md)。发现时先分配编号，记录原始仓库/固定 SHA/符号、失败证据、影响、修复提交、回归和撤销条件；尚未确定因果的现场只列调查，不因有限绿测标成已修。
 
-Mihomo 修复保存到 `lonnnnnng/mihomo` 的 `kclash-fixes`，主仓库 gitlink 固定可拉取的修复 SHA；原始来源为 `chen08209/Clash.Meta` 的 `FlClash`。提交父仓库前先确认核心修复已推送且可取回，不能交付仅存在本机的子模块提交。同步时逐项比较本地补丁与新上游的行为，只有等价修复和对应回归通过才撤掉补丁，并在台账保留原失败和替代提交。
+Mihomo 修复保存到 `lonnnnnng/Clash.Meta` 的 `kclash-fixes`，主仓库 gitlink 固定可拉取的修复 SHA；原始来源为 `chen08209/Clash.Meta` 的 `FlClash`。提交父仓库前先确认核心修复已推送且可取回，不能交付仅存在本机的子模块提交。同步时逐项比较本地补丁与新上游的行为，只有等价修复和对应回归通过才撤掉补丁，并在台账保留原失败和替代提交。
+
+2026-11-10 用户重新从 `chen08209/Clash.Meta` Fork，旧 `lonnnnnng/mihomo` 的修复历史原样迁入新仓库，产品 gitlink 不变。GitHub 的直接 parent 为 `chen08209/Clash.Meta`，root source 为 `MetaCubeX/mihomo`，后者不代表允许直接同步官方代码。旧验收 JSON 保留当时仓库地址；迁移证据和旧标签检出方式见 [迁移记录](../docs/mihomo-fork-migration.md)。
 
 核心控制器修复必须运行父模块全量 Go 竞态及 `github.com/metacubex/mihomo/hub/route` 的缺陷回归；前者不会递归执行嵌套 module 的测试。Android 构建和 Redmi 运行证据另记，不能由 Go/macOS 测试推广 Windows Pipe、低 API 或全部 OEM。

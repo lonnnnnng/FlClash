@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **内核 fork 迁移（2026-11-10）**：已迁至 `lonnnnnng/Clash.Meta:kclash-fixes`，GitHub 直接 parent 为 `chen08209/Clash.Meta`；唯一同步上游仍为其 `FlClash` 分支。五项修复／合并提交及产品 gitlink `464552e4` 原样保留，独立核心克隆完整性、当前子模块初始化及旧版0.1.0/0.1.1固定提交检出均通过；新 fork 原分支／标签保持。主线引用、README和溯源链接已更新；未新增功能验收计数。见[迁移记录](mihomo-fork-migration.md)及[证据](acceptance/mihomo-fork-migration-20261110.json)。
+
 > **代理搜索连续过渡与实体扫码（2026-11-10，KUI-031）**：代理根页搜索接固定Flutter分段弹簧/透明度、组合入口和单入口液滴回收；快速反向保留位置/速度，搜索中只有一个测速按钮，取消清空并收IME。修复开发中异步组加载导致搜索/测速重叠及材质退场顺序。869项JVM（App587执行、其余282复用）、Debug/签名Release-R8/motion及双Lint零错误通过；Redmi深色8/8、浅色4/4、自然深浅2/2、动画关闭1/1，共10个不重复方法15次执行通过，56PNG/12拼图及两套原PTS视频已检查。签名本地候选`5f00dc54…5098d250`安装回拉一致；实际代理搜索/Back通过，配置21字段/选择、2偏好及正文SHA-size-mtime保持，测速缓存更新仍未逐条归因。用户实体摄像识别测试QR，确认表单精确匹配且相机释放，未导入；此证据属于当前候选，公开0.1.1未替换。测试包/手机诊断文件已清理，服务停止。接续资源/添加Sheet下沿搜索、剩余完整Flutter及菜单/RenderThread性能；历史异常/低API/蜂窝/OEM仍PARTIAL。证据`docs/acceptance/proxy-search-motion-redmi-20261110.json`，溯源`docs/proxy-search-motion-defect.md`。
 
 > **搜索动效接续参考（2026-11-10）**：固定Flutter原Scaffold已在Redmi独立包验证根页顶栏搜索、推入子页下沿搜索及真实IME取消；原始录屏777帧、32个采样位置已检查。仅浅色组件参考，Kotlin连续过渡尚未适配。下一切片优先代理根页搜索展开/收回，再补资源/添加Sheet的下沿搜索，见`docs/search-motion-reference.md`。独立参考包已清理，原Flutter包未操作。
@@ -765,7 +767,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | Gradle 工程 | 根目录Wrapper + `app` / `core` / `service` / `common` |
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
-| 核心修复基线 | 当前gitlink `464552e44ddf92affe5c41ee5a5d653a0e1e8daf`；在20bc0fc4连接生命周期修复上补Geo有界恢复，先前控制器/健康检查补丁保留。核心提交已推自己的kclash-fixes。 |
+| 核心修复基线 | 当前gitlink `464552e44ddf92affe5c41ee5a5d653a0e1e8daf`，保存于 `lonnnnnng/Clash.Meta:kclash-fixes`；在20bc0fc4连接生命周期修复上补Geo有界恢复，先前控制器/健康检查补丁保留。2026-11-10迁移后已验证新远端可完整拉取。 |
 | 核心同步来源 | 仅同步chen08209/Clash.Meta:FlClash；本组本地修复464552e4，不从MetaCubeX/mihomo同步提交/PR，Flutter代码不合并。 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用、代理组/测速、Provider更新及观测失效；UI不直接调用gomobile |

@@ -1,0 +1,48 @@
+{
+  "verifiedAt": "2026-11-10T09:47:06.149556+08:00",
+  "oldRepository": "lonnnnnng/mihomo",
+  "newRepository": "lonnnnnng/Clash.Meta",
+  "newRepositoryId": 1452078795,
+  "immediateParent": "chen08209/Clash.Meta",
+  "rootSource": "MetaCubeX/mihomo",
+  "soleCodeSyncUpstream": "chen08209/Clash.Meta:FlClash",
+  "productBranch": "kclash-fixes",
+  "productCommitBefore": "464552e44ddf92affe5c41ee5a5d653a0e1e8daf",
+  "productCommitAfter": "464552e44ddf92affe5c41ee5a5d653a0e1e8daf",
+  "upstreamCommit": "024245dc72bc92f48237f865119afe0cd53ac9e6",
+  "preservedCommits": [
+    "464552e44ddf92affe5c41ee5a5d653a0e1e8daf 修复 Geo 下载瞬断恢复并限制重试预算",
+    "20bc0fc467cac942bf55009017f87474114fe90c 修复安卓资源下载强制关闭连接导致的截断并回收请求连接池",
+    "7038231e026b710088b9c369899b3a8b7f281739 暴露Provider测速超时给宿主",
+    "852d3ad11626e220ad5ef4eb358b6749152080ba 合入上游健康检查与自动选组修复",
+    "f83e9b1032ed02831457d4da5a414e063e932694 修复控制器重建竞态与TLS失败端口泄漏"
+  ],
+  "existingBranchesAndTagsUnchanged": true,
+  "independentCoreCloneFsckPassed": true,
+  "productTreeUnchanged": true,
+  "historicalTagCheckout": {
+    "kclash-v0.1.0": {
+      "coreCommit": "7038231e026b710088b9c369899b3a8b7f281739",
+      "passed": true
+    },
+    "kclash-v0.1.1": {
+      "coreCommit": "464552e44ddf92affe5c41ee5a5d653a0e1e8daf",
+      "passed": true
+    }
+  },
+  "appGitlinkChanged": false,
+  "appRuntimeChanged": false,
+  "supportRequestSubmitted": false,
+  "currentSubmoduleCheckout": {
+    "parentCommit": "cbf5a4a4095abe104941c324d590397a1113c2d1",
+    "coreCommit": "464552e44ddf92affe5c41ee5a5d653a0e1e8daf",
+    "passed": true
+  },
+  "completedAt": "2026-11-10T09:48:56.834981+08:00",
+  "backupSha256": {
+    "remote-all.bundle": "1426df961c6c8ef86fe83af1b14bc40c6fcd1807508e1846dd219b67ce84985a",
+    "local-all.bundle": "d496f44915b74e714c6b82467af20bb4b7e3fe19f83e88be67b3c9094af05e40"
+  },
+  "validationScope": "Repository identity, complete Git history and submodule checkout; no new runtime test claims.",
+  "artifactDirectory": "../acceptance-artifacts/mihomo-refork-migration-20261110/"
+}

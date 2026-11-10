@@ -10,7 +10,7 @@ KCORE-005 已修正 Android 强制 Connection:close 与本现场代理链正文�
 
 ## 修正与不变量
 
-核心修复 [464552e4](https://github.com/lonnnnnng/mihomo/commit/464552e44ddf92affe5c41ee5a5d653a0e1e8daf) 已推自己的 `kclash-fixes`；只参考 `chen08209/Clash.Meta:FlClash`，未合官方 Mihomo 或 Flutter 提交。
+核心修复 [464552e4](https://github.com/lonnnnnng/Clash.Meta/commit/464552e44ddf92affe5c41ee5a5d653a0e1e8daf) 已推自己的 `kclash-fixes`；只参考 `chen08209/Clash.Meta:FlClash`，未合官方 Mihomo 或 Flutter 提交。2026-11-10 仓库迁移保留该提交和完整祖先历史，见[迁移记录](mihomo-fork-migration.md)。
 
 - 四类 Geo 统一经 `readGeoResource` 下载，最多3次，基础退避1秒/2秒，尊重 Retry-After。单次仍90秒，下载及等待共享165秒预算，低于 Kotlin 180秒等待；不为每次尝试另开完整总预算。
 - 仅重试网络/TLS超时、EOF/截断、连接重置/拒绝/断开和 HTTP408/429/500/502/503/504；403/404、证书错误、无效数据库不重复下载。取消停止后续尝试。

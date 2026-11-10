@@ -40,4 +40,6 @@
 
 证书 SHA-256：`3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49`。
 
-应用源码固定在 `kclash-v0.1.0` 标签；Mihomo 子模块固定在 [`7038231e026b710088b9c369899b3a8b7f281739`](https://github.com/lonnnnnng/mihomo/tree/7038231e026b710088b9c369899b3a8b7f281739)。核心后续仅从 `chen08209/Clash.Meta:FlClash` 同步，保留本地缺陷修复。遵循 GPL-3.0。
+应用源码固定在 `kclash-v0.1.0` 标签；Mihomo 子模块固定在 [`7038231e026b710088b9c369899b3a8b7f281739`](https://github.com/lonnnnnng/Clash.Meta/tree/7038231e026b710088b9c369899b3a8b7f281739)。核心后续仅从 `chen08209/Clash.Meta:FlClash` 同步，保留本地缺陷修复。遵循 GPL-3.0。
+
+2026-11-10 内核 fork 更名迁移，原发布标签保持不变；从旧标签构建时，先按[迁移说明](https://github.com/lonnnnnng/FlClash/blob/kotlin/docs/mihomo-fork-migration.md#historical-checkout)覆盖子模块 URL，再拉取原固定提交。

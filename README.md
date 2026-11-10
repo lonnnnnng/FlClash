@@ -77,6 +77,8 @@ cd FlClash
 ./gradlew :app:assembleDebug
 ```
 
+The core fork moved to `lonnnnnng/Clash.Meta` on 2026-11-10. Existing checkouts of the updated Kotlin branch should run `git submodule sync --recursive` before updating submodules. For the older `kclash-v0.1.0` and `kclash-v0.1.1` tags, follow the [historical checkout instructions](docs/mihomo-fork-migration.md#historical-checkout); their recorded core commit IDs remain available.
+
 The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Run JVM tests and checks with:
 
 ```bash
@@ -98,7 +100,7 @@ The unsigned APK is written to `android/app/build/outputs/apk/release/app-releas
 
 - The Kotlin Android application is developed on the `kotlin` branch.
 - The Flutter [FlClash repository](https://github.com/chen08209/FlClash) is used only as a functional and visual reference; its application commits are not merged into the Kotlin mainline.
-- Mihomo changes follow the `chen08209/Clash.Meta` FlClash branch through the configured `lonnnnnng/mihomo` fork and its `kclash-fixes` branch.
+- Mihomo changes follow the `chen08209/Clash.Meta` FlClash branch through the configured `lonnnnnng/Clash.Meta` fork and its `kclash-fixes` branch.
 
 ## License and support
 

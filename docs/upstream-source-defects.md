@@ -2,7 +2,9 @@
 
 本台账记录已确认的源码缺陷、固定来源、修复提交和验证证据。路线图记录进度，本台账用于以后同步 Flutter/Mihomo 时逐项判断补丁是否仍需保留；历史失败不随修复删除。尚未确定因果的现场单列调查，不标成已修源码缺陷。
 
-当前来源：Flutter `chen08209/FlClash` 的 `7fd417fb9a9a277c6a9339a8ac87f907df7c25f7`；Mihomo `chen08209/Clash.Meta` 的 `c5062921054902b25215a6a933e72ccd714c9bfa`（`FlClash` 分支固定基线）。修复版核心由 `lonnnnnng/mihomo` 的 `kclash-fixes` 分支保存，主仓库以 gitlink 固定实际修复提交，不随远端分支头自动漂移。
+初始缺陷对照来源：Flutter `chen08209/FlClash` 的 `7fd417fb9a9a277c6a9339a8ac87f907df7c25f7`；Mihomo `chen08209/Clash.Meta` 的 `c5062921054902b25215a6a933e72ccd714c9bfa`（`FlClash` 分支固定基线）。当前修复版核心由 `lonnnnnng/Clash.Meta` 的 `kclash-fixes` 分支保存，主仓库以 gitlink 固定实际修复提交，不随远端分支头自动漂移。
+
+2026-11-10 已将旧 `lonnnnnng/mihomo` 的修复历史原样迁入新 fork，当前产品提交仍为 `464552e44ddf92affe5c41ee5a5d653a0e1e8daf`，包含上游 `FlClash` 的 `024245dc`。历史验收记录中的旧仓库地址保留，提交链接更新为新地址；见[迁移记录](mihomo-fork-migration.md)。
 
 | 编号 | 缺陷 | 层级 | 状态 |
 | --- | --- | --- | --- |
@@ -29,7 +31,7 @@
 - 影响：数据竞态；旧请求可能在新请求之后执行，关闭新服务或恢复旧地址/secret。最后一次空配置关闭也可能被迟到启动覆盖。不能通过给测试加 Sleep 或只给异步函数加锁来保证最新请求生效。
 - 原始证据：[上一组失败 JSON](acceptance/system-vpn-protection-redmi-20261105.json) 的 `go.fullRace` 和 `go.baselineOverlayRace`；当前与旧源码 overlay 均为同一 `httpServer` race。overlay 保留了新纯 Go helper/tests，不是干净旧基线全量。
 - 修复不变量：在公开重建入口串行交接，返回前完成旧监听关闭和新监听准备；Serve 循环在锁外异步运行。显式保存 listener，关闭不能依赖 Serve 已登记它；空配置返回后不得由旧任务重开。保留 TCP/TLS secret 和 Unix/Pipe 空 secret 的既有区别。
-- 修复提交：[核心 f83e9b10](https://github.com/lonnnnnng/mihomo/commit/f83e9b1032ed02831457d4da5a414e063e932694)，仅修改 `hub/route/server.go`、新增 `server_test.go`；父仓库 gitlink 固定此完整 SHA。实现决策见 [ADR0021](adr/0021-controller-lifecycle-and-source-defect-tracking.md)。
+- 修复提交：[核心 f83e9b10](https://github.com/lonnnnnng/Clash.Meta/commit/f83e9b1032ed02831457d4da5a414e063e932694)，仅修改 `hub/route/server.go`、新增 `server_test.go`；本组当时的父仓库 gitlink 固定此完整 SHA。实现决策见 [ADR0021](adr/0021-controller-lifecycle-and-source-defect-tracking.md)。
 - Go 验证：本轮修改前一次父模块全量 race 为265/265通过，但相同两项控制器用例各重复20次共38通过/2失败，证明单次绿测会漏掉竞态。修复后父模块全量 race 265/265、相同压力40/40及嵌套 route 10/10通过；route 含同址HTTP40轮/TLS12轮/Unix12轮、64并发启闭、最终关闭、Serve未登记窗口、输入快照和嵌入/非嵌入路由。Windows Pipe 仅源码核验，未运行。
 - Android 验证：[本轮验收 JSON](acceptance/controller-lifecycle-redmi-20261105.json)。build2/767项JVM、Debug/Test、未签名Release/R8及双Lint通过；Redmi final2精确4/4，其中控制器在同一运行会话完成6轮认证/密钥轮换、关闭后立即释放和嵌入配置写入拒绝，正式配置保持；另3项为模式/组件/旧菜单回归。独立Always-on默认冷启动/SIGKILL首请求两次HTTP200、纯代理恢复和前后保护通过，不推广历史TLS EOF因果、长期稳定性或其他系统。原始附件仅存本机 `../acceptance-artifacts/controller-race-20261105/`（工作区外层）；提交JSON含哈希索引。
 - 同步复查：对比公开入口的完成边界、同址快速重绑、最终关闭、配置输入快照、四种 transport 和 listener 所有权；上游若只改指针锁，仍需验证旧请求覆盖与 Serve 未登记窗口。
