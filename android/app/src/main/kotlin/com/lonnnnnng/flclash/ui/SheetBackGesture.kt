@@ -26,7 +26,7 @@ private fun threePointEasing(ax: Float, ay: Float, bx: Float, by: Float, mx: Flo
 internal val SheetPageEasing = threePointEasing(.05f, 0f, .133333f, .06f, .166666f, .4f, .208333f, .82f, .25f, 1f)
 private val SheetBackSettleEasing = threePointEasing(.056f, .024f, .108f, .3085f, .198f, .541f, .3655f, 1f, .5465f, .989f)
 
-internal class SheetBackGesture(private val scope: CoroutineScope) {
+internal class SheetBackGesture(private val scope: CoroutineScope, private val projectedFormBack: Boolean = false) {
     var progress by mutableFloatStateOf(0f)
         private set
     var active by mutableStateOf(false)
@@ -40,10 +40,11 @@ internal class SheetBackGesture(private val scope: CoroutineScope) {
     fun move(delta: Float) { progress = (progress + delta).coerceIn(0f, .999999f) }
     fun release(pageKey: String, parentKey: String, velocity: Float, cancelled: Boolean, back: () -> Unit) {
         if (!active || settling) return
-        val commit = !cancelled && if (abs(velocity) >= 1f) velocity > 0 else progress >= .5f
+        val commit = !cancelled && if (projectedFormBack) progress + velocity * .35f >= .4665f
+            else if (abs(velocity) >= 1f) velocity > 0 else progress >= .5f
         settling = true
         job = scope.launch {
-            animate(progress, if (commit) 1f else 0f, animationSpec = tween(350, easing = SheetBackSettleEasing)) { value, _ -> progress = value }
+            animate(progress, if (commit) 1f else 0f, animationSpec = tween(if (projectedFormBack) 300 else 350, easing = SheetBackSettleEasing)) { value, _ -> progress = value }
             if (commit) { committedTransition = pageKey to parentKey; back() }
             else { active = false; settling = false }
         }
@@ -53,7 +54,7 @@ internal class SheetBackGesture(private val scope: CoroutineScope) {
 }
 
 internal fun Modifier.sheetBackGesture(pageKey: String, parentKey: String?, direction: Int, state: SheetBackGesture,
-    enabled: () -> Boolean, back: () -> Unit): Modifier = pointerInput(pageKey, direction) {
+    enabled: () -> Boolean, back: () -> Unit, thresholdPx: Float? = null): Modifier = pointerInput(pageKey, direction, thresholdPx) {
     try {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
@@ -74,9 +75,10 @@ internal fun Modifier.sheetBackGesture(pageKey: String, parentKey: String?, dire
                     if (change.isConsumed) break
                     val distance = change.position - down.position
                     if (abs(distance.y) > viewConfiguration.touchSlop || distance.x * direction < -viewConfiguration.touchSlop) break
-                    if (distance.x * direction > viewConfiguration.touchSlop) {
+                    val slop = thresholdPx ?: viewConfiguration.touchSlop
+                    if (distance.x * direction > slop) {
                         state.start(); claimed = true
-                        state.move((distance.x * direction - viewConfiguration.touchSlop) / size.width)
+                        state.move((distance.x * direction - slop) / size.width)
                     }
                 } else state.move((change.position.x - previous.x) * direction / size.width)
                 if (claimed) change.consume()

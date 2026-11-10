@@ -63,12 +63,32 @@ class VisualMotionNaturalInstrumentedTest {
             val y = label.top - (28 * density).toInt()
             tap(Rect(label.centerX() - 8, y - 8, label.centerX() + 8, y + 8)); settle(); await("编辑策略组")
             click("添加设置项"); await("健康检查"); settle(); capture("group-sheet-options")
-            back(); settle(); await("编辑策略组")
+            fun dragBack(fraction: Float) {
+                val headerBounds = bounds(checkNotNull(find("添加设置项")))
+                val screen = ins.targetContext.resources.displayMetrics
+                val y = headerBounds.bottom + 90 * density
+                val start = SystemClock.uptimeMillis()
+                fun inject(action: Int, x: Float) {
+                    val event = MotionEvent.obtain(start, SystemClock.uptimeMillis(), action, x, y, 0)
+                    event.source = InputDevice.SOURCE_TOUCHSCREEN
+                    try { assertTrue(ins.uiAutomation.injectInputEvent(event, true)) } finally { event.recycle() }
+                }
+                inject(MotionEvent.ACTION_DOWN, screen.widthPixels * .08f)
+                for (step in 1..24) { SystemClock.sleep(25); inject(MotionEvent.ACTION_MOVE, screen.widthPixels * (.08f + (fraction - .08f) * step / 24f)) }
+                SystemClock.sleep(220); inject(MotionEvent.ACTION_UP, screen.widthPixels * fraction)
+            }
+            event("group-back-cancel"); dragBack(.28f); settle(); await("添加设置项"); capture("group-sheet-drag-cancel")
+            event("group-back-commit"); dragBack(.88f); settle(); await("编辑策略组"); capture("group-sheet-drag-return")
             val title = bounds(checkNotNull(find("编辑策略组")))
-            val save = checkNotNull(root()?.let { nodes(it).filter { node ->
+            val save = root()?.let { nodes(it).filter { node ->
                 val r = bounds(node); node.isClickable && r.left > title.right && kotlin.math.abs(r.centerY() - title.centerY()) < 30
-            }.maxByOrNull { node -> bounds(node).right } })
-            event("group-save-close"); tap(bounds(save)); settle(); awaitGone("编辑策略组")
+            }.maxByOrNull { node -> bounds(node).right } }
+            // 作者 long：系统节点树在横拖退场后可能尚未恢复无文案按钮；按已显示标题与44dp工具栏触点确认，保存次数仍由宿主验真。
+            val saveBounds = save?.let(::bounds) ?: run {
+                val x = ins.targetContext.resources.displayMetrics.widthPixels - (38 * density).toInt()
+                Rect(x - 8, title.centerY() - 8, x + 8, title.centerY() + 8)
+            }
+            event("group-save-close"); tap(saveBounds); settle(); awaitGone("编辑策略组")
             scenario.onActivity {
                 assertEquals(1, it.groupSaveRequests)
                 assertTrue(checkNotNull(it.savedGroup).strings("proxies").contains("REJECT-DROP"))

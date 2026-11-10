@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -433,7 +434,8 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     }
     "options" -> ProfileEditorPage(onDismissRequest = { addOption = false }, title = { Text("添加设置项") },
         backTag = "proxy_group_add_option_back", contentPadding = PaddingValues(0.dp), text = {
-        Column(Modifier.fillMaxWidth().verticalScroll(optionScroll)) {
+        val report = LocalEmbeddedProfilePage.current?.reportBodyHeight
+        Column(Modifier.fillMaxWidth().verticalScroll(optionScroll).then(Modifier.onSizeChanged { report?.invoke(it.height) })) {
             val healthKeys = setOf("url", "interval", "timeout", "max-failed-times", "lazy", "expected-status", "tolerance")
             listOf("健康检查" to true, "其他" to false).forEach { (heading, health) ->
                 val options = applicable.filterNot { group.fields.has(it.key) }.filter { (it.key in healthKeys) == health }

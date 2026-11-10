@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
@@ -178,13 +179,29 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
     val labels = remember(sets) { sets.flatMap { it.icons }.associate { it.url to IconRecommendations.label(it) } }
     fun label(icon: String): String = labels[icon] ?: IconRecommendations.label(IconRecommendations.record(icon))
     val shown = source?.icons.orEmpty().filter { query.isBlank() || IconRecommendations.label(it).contains(query, true) }
+    var bodyHeight by remember { mutableIntStateOf(0) }
+    var gridHeight by remember { mutableIntStateOf(0) }
+    val report = LocalEmbeddedProfilePage.current?.reportBodyHeight
+    val naturalHeight by remember(loadedSources, shown.size, bodyHeight, gridHeight, gridState) { derivedStateOf {
+        // 作者 long：来源计算和Grid布局不同帧完成，加载空档不能被认成短内容而抹掉用户的展开档位。
+        val info = gridState.layoutInfo
+        val measured = loadedSources != null && bodyHeight > 0 && (shown.isEmpty() ||
+            (info.totalItemsCount == shown.size && info.visibleItemsInfo.size == shown.size && gridHeight > 0))
+        // 作者 long：LazyGrid仍会占满获配视口；只有全表可见时扣掉视口空白，实际行高才是短图库的正文高度。
+        val itemsHeight = info.visibleItemsInfo.let { items ->
+            if (items.isEmpty()) 0 else items.maxOf { it.offset.y + it.size.height } - items.minOf { it.offset.y }
+        }
+        val natural = bodyHeight - if (shown.isEmpty()) 0 else (gridHeight - itemsHeight).coerceAtLeast(0)
+        if (measured && (shown.isEmpty() || (!gridState.canScrollForward && !gridState.canScrollBackward))) natural else null
+    } }
+    SideEffect { report?.invoke(naturalHeight) }
     ProfileEditorPage(onDismissRequest = dismiss, title = { Text("图标") }, backTag = "group_icon_back",
         bottomBar = { DockedProfileSearch(query, { query = it }, "group_icon_search", "搜索图标", enabled = !imageBusy) },
         confirmButton = {
             IconButton(onClick = ::launchImage, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_local")) { Icon(Icons.Outlined.Image, null) }
             IconButton(onClick = { link = true }, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_link")) { Icon(Icons.Outlined.Link, null) }
         }, text = {
-            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.fillMaxWidth().onSizeChanged { bodyHeight = it.height }, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 (error ?: pickerState?.error)?.takeUnless { link }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
                 if (pickerState?.recoveryFailed == true) TextButton({ durable?.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text("重试恢复") }
                 if (imageBusy || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -213,7 +230,8 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
                 if (shown.isEmpty() && loadedSources != null) Text(if (query.isBlank()) "暂无图标，可添加图标地址或选择本地图片" else "没有匹配的图标",
                     Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 else {
-                    LazyVerticalGrid(GridCells.Adaptive(72.dp), state = gridState, modifier = Modifier.weight(1f).testTag("group_icon_grid"),
+                    LazyVerticalGrid(GridCells.Adaptive(72.dp), state = gridState, modifier = Modifier.weight(1f, fill = false)
+                        .onSizeChanged { gridHeight = it.height }.testTag("group_icon_grid"),
                         verticalArrangement = Arrangement.spacedBy(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(shown, key = { it.url }) { icon ->
                             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {

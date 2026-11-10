@@ -1,0 +1,786 @@
+{
+  "defect": "KUI-037",
+  "date": "2026-11-11",
+  "started": "2026-11-10",
+  "repositoryBase": "3664513bb8903029635d09366874d2edd88042b9",
+  "verifiedScope": "Group mixed-layout persistence, metadata-only interrupted saves, floating sheet, horizontal back and short content",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "size": "1080x2340",
+    "density": 440,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "emulatorUsed": false
+  },
+  "reference": {
+    "flutter": "be84736605527034689c95bf27828ff27d912c5e",
+    "prism": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "package": "com.lonnnnnng.kclash.reference.full.dev",
+    "runtimeEvidenceReusedFrom": "group-sheet-redmi-20261110.json",
+    "referenceNotOperatedThisGroup": true,
+    "flutterCommitsMerged": false,
+    "pixelPerfectParityClaimed": false
+  },
+  "coldProcess": [
+    {
+      "batch": "cold-saved-motion6",
+      "ready": {
+        "case": "saved",
+        "id": 543908130481848832,
+        "resource": 7055333244562000123,
+        "preparedPid": 19313,
+        "beforeLayout": "c6997826be442b7516c53dcc02a672ee22a29cab70cc16205b3088dc32791bfc",
+        "body": "ea269645d5efdc835ed40b059df086932bd350b6789ebbf12f07be6571860a6e",
+        "row": "db4d0ff126a7726f2ed7af8281b3b9189feabcdc6625f868ad21e4c893222d4d",
+        "mtime": 1794327186285,
+        "order": "3283b26f916b5ad2b1518a87a80a1e189c2cda22fa32dde40dd3fa8c30d195b5",
+        "resourceSha": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+      },
+      "terminatedPid": 19313,
+      "oldProcAbsent": true,
+      "samples": [
+        0,
+        1
+      ],
+      "verification": {
+        "case": "saved",
+        "pid": 19500,
+        "databaseReadback": true,
+        "noReplay": true
+      },
+      "passed": true
+    },
+    {
+      "batch": "cold-intent-motion6",
+      "ready": {
+        "case": "intent",
+        "id": 4541008548472700996,
+        "resource": 592201649786340028,
+        "preparedPid": 19653,
+        "beforeLayout": "c6997826be442b7516c53dcc02a672ee22a29cab70cc16205b3088dc32791bfc",
+        "body": "8c42155dfbf81d2aa3361d7387b64abe0ed9e30df2739368058dbb113e907fbf",
+        "row": "ea8cf4f064e50a1dc9aa595aeb61783f103fe90d5528722d36733ddf806f65e3",
+        "mtime": 1794327246305,
+        "order": "f33b2a09bf55ed2b9033dc61cfa5e9f21f65b44331973c1b8903fee95b1cac85",
+        "resourceSha": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+      },
+      "terminatedPid": 19653,
+      "oldProcAbsent": true,
+      "samples": [
+        0,
+        1
+      ],
+      "verification": {
+        "case": "intent",
+        "pid": 19834,
+        "databaseReadback": true,
+        "noReplay": true
+      },
+      "passed": true
+    },
+    {
+      "batch": "cold-committed-motion6",
+      "ready": {
+        "case": "committed",
+        "id": 5350257031276939362,
+        "resource": 1690891473485188203,
+        "preparedPid": 19961,
+        "beforeLayout": "c6997826be442b7516c53dcc02a672ee22a29cab70cc16205b3088dc32791bfc",
+        "body": "79262617387560b234d884e47673d104546c1fa73ee969ca0b53fa7d5ef9382e",
+        "row": "e70ad322b4950d942a368f2288ab75764219d87a05bc9cd3c2d5e12a1bb11e05",
+        "mtime": 1794327307137,
+        "order": "c0bfa4fb0766abf4a8c327764b830b108d24ab07484b6a079a617bcfc7a2b5ea",
+        "resourceSha": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e"
+      },
+      "terminatedPid": 19961,
+      "oldProcAbsent": true,
+      "samples": [
+        0,
+        1
+      ],
+      "verification": {
+        "case": "committed",
+        "pid": 20137,
+        "databaseReadback": true,
+        "noReplay": true
+      },
+      "passed": true
+    }
+  ],
+  "regression": {
+    "finalBatch": "regression-final7",
+    "finalPassed": true,
+    "finalTests": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.GroupSheetMotionInstrumentedTest",
+        "test": "floatingShortFormGrowsAndShrinksWithinFlutterDetents",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GroupSheetMotionInstrumentedTest",
+        "test": "backgroundInterruptsDragWithoutLateNavigation",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GroupSheetMotionInstrumentedTest",
+        "test": "horizontalBackCancelsOrCompletesOnceAndYamlRemainsGuarded",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupSheetInstrumentedTest",
+        "test": "encryptedRegistryRestoresSheetAndMemberDraftAfterSubtreeRecreation",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupSheetInstrumentedTest",
+        "test": "sheetDetentsInlineBadgesAndSystemBackKeepSelectedDraftAcrossRestoration",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupSheetInstrumentedTest",
+        "test": "galleryAndYamlMiddleScrollDoNotCollapseExpandedSheet",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupSheetInstrumentedTest",
+        "test": "inlineDragAutoScrollCancelAndDropPreserveDraftUntilExplicitSave",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupSheetInstrumentedTest",
+        "test": "nonemptyGalleryDecodesImageAndReturnsToSameSheetDraft",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupSheetInstrumentedTest",
+        "test": "discardDuringValidationRejectsLateSuccessBeforeExitAnimationEnds",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupSheetInstrumentedTest",
+        "test": "repeatedMembersHaveIndependentRowsAndDeleteOnlyOneOccurrence",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+        "test": "addingAllOptionsReturnsToDraftWithoutSavingParent",
+        "code": 0
+      }
+    ],
+    "finalPng": {
+      "form_floating_short": {
+        "count": 2,
+        "bytes": 38761,
+        "sha256": "607c8769f0bfd78c90df521082c06bf7e22d5288c26454baea0e981fd3b789c0"
+      },
+      "form_expanded_long": {
+        "count": 3,
+        "bytes": 77325,
+        "sha256": "aaf629a7768c6ac8d6859713f2a98dfabc6645de7a11f39d38a3e8d218e24120"
+      },
+      "form_shrunk_short": {
+        "count": 2,
+        "bytes": 38761,
+        "sha256": "607c8769f0bfd78c90df521082c06bf7e22d5288c26454baea0e981fd3b789c0"
+      },
+      "group_sheet_partial": {
+        "count": 4,
+        "bytes": 122212,
+        "sha256": "6e2d63c71562372eb830b63cb548682188d48212881bbc1515aa5bb1aae6b9b9"
+      },
+      "group_sheet_expanded_badges": {
+        "count": 4,
+        "bytes": 122835,
+        "sha256": "29a6b615ff6168823b3f7032470829d8fa4a985742356e08ec4957083c1f4c82"
+      },
+      "group_sheet_reordered": {
+        "count": 4,
+        "bytes": 123964,
+        "sha256": "bb708c32974c95e0e9a258b0fa556a9de0c4557921552195dffc7effd45024f1"
+      },
+      "group_sheet_nonempty_gallery": {
+        "count": 3,
+        "bytes": 89990,
+        "sha256": "e3462d475f35c84c91a949107c858fb695911517ab18ccb25d980d041b49728d"
+      },
+      "groups_all_options_returned_to_draft": {
+        "count": 4,
+        "bytes": 137359,
+        "sha256": "b40abac4a054bbc5752d313fd84cccbb64bd17c5fa102790d25ad0260b13a5e4"
+      }
+    },
+    "uniqueCoveredMethodsAcrossBatches": 22,
+    "earlierBatch": "regression-final2",
+    "earlierPassed": 21,
+    "earlierTotal": 22,
+    "earlierBatchOverallPassed": false,
+    "notSingleBatch22of22": true,
+    "finalBatchOnProductMotion6WithTest7": true,
+    "sourceBoundary": "Final 11 methods cover all group Sheet/gesture changes. Other 11 methods passed on motion3; later changes are floatingForm-only expanded intent and icon natural-height calculation."
+  },
+  "naturalMotion": [
+    {
+      "batch": "natural-dark-final7",
+      "passed": true,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest",
+          "test": "darkGroupSheetMembersGalleryAndReturnUseNaturalMotion",
+          "code": 0
+        }
+      ],
+      "png": {
+        "natural_dark_group-sheet-partial": {
+          "count": 4,
+          "bytes": 125893,
+          "sha256": "1f99599e7b5626ec6efb37ddea71dfabae94d48c0d27310401746510e5734237"
+        },
+        "natural_dark_group-sheet-expanded": {
+          "count": 4,
+          "bytes": 136400,
+          "sha256": "b036147bd5d0365de1b59a7666d7c28e99c34e492f25685b831cd97e80d0515f"
+        },
+        "natural_dark_group-sheet-member-selected": {
+          "count": 5,
+          "bytes": 162368,
+          "sha256": "78dd221e15bac47a4378307576137a0550c83c5980c9df019e26dda1b8983c46"
+        },
+        "natural_dark_group-sheet-gallery": {
+          "count": 3,
+          "bytes": 93688,
+          "sha256": "a597ac77070a7fe534bbad20019e93b5cecdf549582df907bd4c7263c11fe6f2"
+        },
+        "natural_dark_group-sheet-options": {
+          "count": 4,
+          "bytes": 128651,
+          "sha256": "11c1816bd506b79c01a3310cac07d16ce713224eb12d6126c462d4d9aaa29d6c"
+        },
+        "natural_dark_group-sheet-drag-cancel": {
+          "count": 4,
+          "bytes": 128651,
+          "sha256": "11c1816bd506b79c01a3310cac07d16ce713224eb12d6126c462d4d9aaa29d6c"
+        },
+        "natural_dark_group-sheet-drag-return": {
+          "count": 4,
+          "bytes": 130497,
+          "sha256": "3170d91b80cd8dc1e85990e47ab23347501237ba2237b1faac36d63e7b427155"
+        },
+        "natural_dark_group-sheet-closed": {
+          "count": 3,
+          "bytes": 101975,
+          "sha256": "87a95da0bd9819f49df2e22110162ebfe0e48312b2dd454704a9555d2662b37a"
+        }
+      },
+      "videoSha256": "4de110c204ad0eb00b4469ff475a3a4d6ad9ed5a1dab2c10bf469cace2f7c591",
+      "frameCount": 648,
+      "durationSeconds": 24.713944,
+      "originalPtsMonotonic": true,
+      "reviewedFrameIndices": [
+        0,
+        21,
+        42,
+        63,
+        83,
+        104,
+        125,
+        146,
+        167,
+        188,
+        209,
+        230,
+        250,
+        271,
+        292,
+        313,
+        334,
+        355,
+        376,
+        397,
+        417,
+        438,
+        459,
+        480,
+        501,
+        522,
+        543,
+        564,
+        584,
+        605,
+        626,
+        647
+      ]
+    },
+    {
+      "batch": "natural-light-final7",
+      "passed": true,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest",
+          "test": "lightGroupSheetMembersGalleryAndReturnUseNaturalMotion",
+          "code": 0
+        }
+      ],
+      "png": {
+        "natural_light_group-sheet-partial": {
+          "count": 4,
+          "bytes": 125834,
+          "sha256": "ba48861d93493b14ddb13639f1dfd40efa5ebea1b6cf6b5e5768efce5c0a2130"
+        },
+        "natural_light_group-sheet-expanded": {
+          "count": 4,
+          "bytes": 129519,
+          "sha256": "2fff07f6feb677194f2ab000eb359c6047f49dbfc36954af7e05b50d6ef6973e"
+        },
+        "natural_light_group-sheet-member-selected": {
+          "count": 5,
+          "bytes": 161100,
+          "sha256": "08761938fdc61e0ba63a42e8d09e16923897d818e39e83e369a9dde82fd8d31f"
+        },
+        "natural_light_group-sheet-gallery": {
+          "count": 3,
+          "bytes": 93475,
+          "sha256": "921826a169eabe7e3bf260357179e8b07022740b2d6e7dec5f886b6803a3558f"
+        },
+        "natural_light_group-sheet-options": {
+          "count": 4,
+          "bytes": 128051,
+          "sha256": "ffc64fadbfa8b7a3dee9bed0ec252e20a6bcbd10f8d37f2928366f84f4e4aea4"
+        },
+        "natural_light_group-sheet-drag-cancel": {
+          "count": 4,
+          "bytes": 128051,
+          "sha256": "ffc64fadbfa8b7a3dee9bed0ec252e20a6bcbd10f8d37f2928366f84f4e4aea4"
+        },
+        "natural_light_group-sheet-drag-return": {
+          "count": 4,
+          "bytes": 130499,
+          "sha256": "5fa6e4c67ca427c7ebb9f3d7771363353485ebb8377b1a21877682b66dd4f7c0"
+        },
+        "natural_light_group-sheet-closed": {
+          "count": 4,
+          "bytes": 112188,
+          "sha256": "a7999528596ad6595846054a6a6aeed3b1c6171e90492dc7c3dfea92eba83b21"
+        }
+      },
+      "videoSha256": "7b7f1203413aba6e6ca0784f4616625c39b24d72a22e67355ab187d7668717f5",
+      "frameCount": 660,
+      "durationSeconds": 24.861222,
+      "originalPtsMonotonic": true,
+      "reviewedFrameIndices": [
+        0,
+        21,
+        43,
+        64,
+        85,
+        106,
+        128,
+        149,
+        170,
+        191,
+        213,
+        234,
+        255,
+        276,
+        298,
+        319,
+        340,
+        361,
+        383,
+        404,
+        425,
+        446,
+        468,
+        489,
+        510,
+        531,
+        553,
+        574,
+        595,
+        616,
+        638,
+        659
+      ]
+    }
+  ],
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 596,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 216,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 881,
+    "gradleReuse": true,
+    "buildLog": "build5.log",
+    "lintLog": "lint5.log",
+    "motionLog": "motion6.log",
+    "testLog": "test7.log",
+    "lint": {
+      "debug": {
+        "Warning": 72,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 68,
+        "Hint": 13
+      }
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "debug": {
+      "bytes": 83099997,
+      "sha256": "2feac9918800ef32a26e55d5fe1de20e73111fbb2e994ce2637c4afba07d47ed"
+    },
+    "unsignedReleaseR8": {
+      "bytes": 48374320,
+      "sha256": "4081a09e4d5be9f9d3218ad533d38e5aa7028985e9234d50fd13d66797f88d2f"
+    },
+    "productionSignedRuntimeTested": false,
+    "releasePublished": false
+  },
+  "installation": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "e41b62e5edee6918721c00eaad3a1a59615248b99694f5c8cec158b5636e068a",
+      "bytes": 66019813,
+      "deviceReadbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "187c741c25c46505629e8c88bd7ca5645745200ad631f94ec349d06cd979f156",
+      "bytes": 2852282,
+      "deviceReadbackMatches": true
+    }
+  ],
+  "coldInstallation": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "e41b62e5edee6918721c00eaad3a1a59615248b99694f5c8cec158b5636e068a",
+      "bytes": 66019813,
+      "deviceReadbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "4d2cec5b948af8a5ddeb67ffe06c8554039b33e548380360c7673b4246dbb082",
+      "bytes": 2851658,
+      "deviceReadbackMatches": true
+    }
+  ],
+  "dataBoundary": {
+    "fixtureFinalSnapshot": {
+      "count": 0,
+      "files": [],
+      "rowsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "preferencesSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "preferenceDigests": {},
+      "selected": null,
+      "runtime": "STOPPED"
+    },
+    "formalDataProtectionClaimed": false,
+    "ownedFilesRemoved": [
+      {
+        "path": "/sdcard/Download/1.yaml",
+        "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+        "bytes": 35165
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-cold-saved2-inspect.xml",
+        "sha256": "6e7f5780c8d8500199843eca494ca2b2b13ffc96d540c005a9e6db52f14ac345",
+        "bytes": 452
+      },
+      {
+        "path": "/data/local/tmp/kclash-align-natural-final-failed.xml",
+        "sha256": "b794dc88bf07ac30e8d5c0283eb0df29f411f205a01fc3c1270f2adb4df78ab8",
+        "bytes": 10382
+      }
+    ],
+    "packagesRemoved": [
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "187c741c25c46505629e8c88bd7ca5645745200ad631f94ec349d06cd979f156",
+        "bytes": 2852282,
+        "deviceReadbackMatches": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "e41b62e5edee6918721c00eaad3a1a59615248b99694f5c8cec158b5636e068a",
+        "bytes": 66019813,
+        "deviceReadbackMatches": true
+      }
+    ],
+    "localYamlUnchanged": true,
+    "authorizedOriginal": {
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973,
+      "createdDeviceCopy": true
+    },
+    "formalPackageAbsent": true,
+    "originalFlutterAbsent": true,
+    "referenceRetained": true,
+    "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)",
+    "settings": {
+      "font_scale": "1.0",
+      "user_rotation": "0",
+      "accelerometer_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    },
+    "reverseMappings": "",
+    "tun0Absent": true
+  },
+  "localDefects": [
+    "metadata-only YAML equality falsely treated uncommitted layout as saved",
+    "Lazy row recycling cleared natural height and caused layout feedback loop",
+    "Short child erased expanded intent",
+    "Single-icon grid counted blank viewport as content"
+  ],
+  "failuresPreserved": [
+    "compile1 missing coroutine import",
+    "build1 lint generated Hilt source unavailable",
+    "motion-tests1 old APK installed before build finished",
+    "cold-saved1 notification permission",
+    "cold-saved2 merged semantics",
+    "cold-intent1 Compose gate wait",
+    "regression-final interrupted height loop",
+    "regression-final2 21/22: IME-moving tap missed; focused semantics return passed",
+    "natural-dark1: short child lost expanded intent",
+    "motion-final: install/test overlap process termination",
+    "natural-dark2/light2 passed intermediate flows but blank gallery height found in visual review",
+    "natural-dark-final: no clickable save node after drag; final driver uses toolbar geometry and still checks one save",
+    "fixture-final-inspection: wrong test package; corrected read-only inspection2 passed",
+    "cleanup driver treated expected pm path exit 1 after uninstall as error; resumed exact-package cleanup after absence check"
+  ],
+  "remaining": [
+    "Flutter engine exact spring/device corners/IME and page-height interpolation parity",
+    "Other product subpages and full continuous visual comparison",
+    "Menu first-open/close native RenderThread attribution",
+    "Historical long-window stability anomalies",
+    "Signed production runtime/network/core load/low API/cellular/OEM matrix"
+  ],
+  "deferred": [
+    "backup/system restore",
+    "secondary observation polish",
+    "language/theme settings"
+  ],
+  "cancelled": [
+    "TalkBack work"
+  ],
+  "glassDefaultEnabled": false,
+  "localArtifactsRoot": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/group-sheet-closure-20261110",
+  "sourceSnapshot": {
+    "count": 628,
+    "bytes": 87282,
+    "sha256": "f2ae12a1711e7f249ca7b269a0b09a3c88e6f57e6fd96ab577b0a8e052c72d8e"
+  },
+  "changedKotlinSourceHashes": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/data/ProxyGroupMembers.kt": "afc99dfd40b230125db95f05bbbbf38d9ffc189d260572237f8db9736be3a474",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ConnectionModalSheet.kt": "cec0237c68e7a814984c15a2309188f058bc3f537ad9e15e4ef2424bde5fe1ad",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEditorSheet.kt": "6c7ea11ed3617ada4c6a1777eeba4c18068948d201e95eb392d9e17589865f7f",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt": "8c137140de1f9f6edd17ec2886b413646c40c7ba68551bca3b55b8597531fc11",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt": "1697a5ced37f3da086c996dc4a841b051940667ddb4162a5b6240a48784aa45b",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupInlineMembers.kt": "9850f1e12c8c199bc7840aab9a412928978cce4ac9c5abff5b686890390129f2",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupMemberPicker.kt": "da8e05c7cbfe5b05cbefc511a903d72942e4ad0eb86f14ab5abbd75f201e941e",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupVisuals.kt": "0e9b44c25ed038aae83f2f56834869380d8cc2721d2b0711f3971dbeecd8ea48",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/SheetBackGesture.kt": "f21c35699e1a07284251754fb71ac2e64e96c7e6436d40050670c43c91aba596",
+    "android/tests/app/ConnectionSheetGeometryTest.kt": "bbbf73d183c4810e2c24bf3bf2b9eb17915506ff3e3df69f408eba2c9312eb55",
+    "android/tests/app/ProfilesViewModelTest.kt": "7e055da76deeeed52e44e9f4a59b25f64ef47c4d1b1a0510a110e386ee2e3364",
+    "android/tests/instrumented/GroupLayoutColdInstrumentedTest.kt": "533ce5d08448f9e4eb0331ffaf49533c23dd1a48a3f84a8b5637ef8cd055cb27",
+    "android/tests/instrumented/GroupSheetMotionInstrumentedTest.kt": "c00922605d8d4da77f684f083e5c330287d1d23793aea968fdc6a9a902f3e32a",
+    "android/tests/instrumented/ProxyGroupSheetInstrumentedTest.kt": "96fbc9568267b41376d6cbabeb2fbb07cb1833723aa2caf0d44a7df192ca4172",
+    "android/tests/instrumented/VisualMotionNaturalInstrumentedTest.kt": "929ff58b2c2a9d8f479bdce77abe63d7a457659b6b886fb23adbb1547e496f18"
+  },
+  "artifactIndex": {
+    "build5.log": {
+      "bytes": 18355,
+      "sha256": "53d9629baea0ff28de91ffb1af031a1e0bf8c6cddb554f8e17f9685b827238f5"
+    },
+    "lint5.log": {
+      "bytes": 14684,
+      "sha256": "6c8ae8ff4822f358affe98078e911ee4b9b664d04dd33960ba0e2b5a2979e931"
+    },
+    "motion6.log": {
+      "bytes": 13431,
+      "sha256": "f4ee9d94e2288aa9354100a1b3ee4ddc4dd09f522c8213b66473766e85420b29"
+    },
+    "test7.log": {
+      "bytes": 8945,
+      "sha256": "f13aa64631409ba77c5780ff62cbc9f55f14c3fde46f2fa2d7284eb8985a0ed4"
+    },
+    "jvm-build5.json": {
+      "bytes": 357,
+      "sha256": "954b4f7132cc249416a56c7cdaea5e386257d7eecd66257e08b8a9635dd1001e"
+    },
+    "lint-build5.json": {
+      "bytes": 109,
+      "sha256": "80e0047f904b5e95023d9afb0a1fd08de8c66a417865ce25cfa8cb98003d9b40"
+    },
+    "mlkit-build5.log": {
+      "bytes": 588,
+      "sha256": "6371512ad3aa342f5732145fd0e4d1000e475a2fbf388580a2379478b034dee0"
+    },
+    "installation-final7.json": {
+      "bytes": 397,
+      "sha256": "111b037c9986cf140497b20abe75ed033ff2ddb8567ed8b9285f72ea4750ba54"
+    },
+    "installation-motion6.json": {
+      "bytes": 397,
+      "sha256": "7065786fdce86e1cc6dadc257e6d4efc80108c1c216e834c9a63524c1a1dca9e"
+    },
+    "cleanup-final.json": {
+      "bytes": 2048,
+      "sha256": "ea21ef9724a9fb008469439703c0f445618f87e77f9f0ffa007455a0e40f29d2"
+    },
+    "source-final7.json": {
+      "bytes": 87282,
+      "sha256": "f2ae12a1711e7f249ca7b269a0b09a3c88e6f57e6fd96ab577b0a8e052c72d8e"
+    },
+    "fixture-final-inspection2.log": {
+      "bytes": 1174,
+      "sha256": "5232d8efb82b01892d6745d21fdebbf0c45f6c2e9f9873051bce9a2f64111580"
+    },
+    "run-cold.py": {
+      "bytes": 2779,
+      "sha256": "9bddfaa3de869bfd8c121cb650ed426d9b3138a0f456d6fe9dacc299ebc16ddd"
+    },
+    "run-tests.py": {
+      "bytes": 3556,
+      "sha256": "555e90cfa382d44b6a699f224887454a05bb66543de1f79249373270cfd5a723"
+    },
+    "run-natural.py": {
+      "bytes": 3432,
+      "sha256": "65162fa836fc485149601f468734496b970f04d453475a93c35db9e18d7bb608"
+    },
+    "record.py": {
+      "bytes": 2290,
+      "sha256": "593f8daccd6e8d1942dac915411d1093bf04ee2cff8639103f9cecf8fbede6d9"
+    },
+    "review-images.py": {
+      "bytes": 1963,
+      "sha256": "7cf5faa5c4a3e20707071d7ac7e1533d8387db59ba6a005f6fbe9160334ce424"
+    },
+    "regression-final7/result.json": {
+      "bytes": 3362,
+      "sha256": "84fe760cfa3e32fb3cc8c6134f1347f5e0c5d727f7aaf98f8f879620674481be"
+    },
+    "regression-final7/instrument.log": {
+      "bytes": 1019529,
+      "sha256": "fec57b395336c65739509a3c409f201fc2419e36df8bcd6a1ef977676beb9139"
+    },
+    "regression-final2/result.json": {
+      "bytes": 9098,
+      "sha256": "8d792f4e318f9d244006896d06f494bab74f1d2050d7b29b83ff038e9f432829"
+    },
+    "cold-saved-motion6/result.json": {
+      "bytes": 793,
+      "sha256": "f1bef13c904469404628981070ad56ac41d2cbb8afff7c1ce8b4a922a5b24cf3"
+    },
+    "cold-saved-motion6/prepare.log": {
+      "bytes": 1058,
+      "sha256": "bd568e7deffa88bd3131f3a7cfb4efb0f9cbc63521160065a7d98a5a537f2ba1"
+    },
+    "cold-saved-motion6/verify.log": {
+      "bytes": 1012,
+      "sha256": "523e5806e917e2c18198ee3094302f3e569c08c70d8dd7dff42f4bda8a14d1b6"
+    },
+    "cold-intent-motion6/result.json": {
+      "bytes": 795,
+      "sha256": "a34601213e04f7f840a5ef83bb385c71089d6c6cc7fd4e2ea0f0a005eef1b207"
+    },
+    "cold-intent-motion6/prepare.log": {
+      "bytes": 1059,
+      "sha256": "a0ad79fef9fd53fe7188a987a6a3f607edd20099c4ecb2d27c0fccea1a9a9a38"
+    },
+    "cold-intent-motion6/verify.log": {
+      "bytes": 1013,
+      "sha256": "5c2159d46b43076eead6586a89ac63aa22eda098432f71de855c68d5e14f2b1f"
+    },
+    "cold-committed-motion6/result.json": {
+      "bytes": 802,
+      "sha256": "402558505f24d5ae6b2385693f33ee7c9e8c6717e5b7b241477a2fc0f971dcc3"
+    },
+    "cold-committed-motion6/prepare.log": {
+      "bytes": 1063,
+      "sha256": "f183ded64318ac43c640fca48a91680e92e80d06da7141f0bced8abb2b8659fb"
+    },
+    "cold-committed-motion6/verify.log": {
+      "bytes": 1016,
+      "sha256": "3ed24da52702f1eb7670d54988e7033ff39792712f810fd3fb14f087afe0a744"
+    },
+    "natural-dark-final7/result.json": {
+      "bytes": 1653,
+      "sha256": "d027ac1d97749bb8ca75cd27707aab2118c3ac1d9b70ae679b94c9bc2843c30a"
+    },
+    "natural-dark-final7/instrument.log": {
+      "bytes": 1357987,
+      "sha256": "6bac03f0f449372938941c7be3557224a082b9bf2068e0267f8ec84b6a956588"
+    },
+    "natural-dark-final7/group-sheet.mp4": {
+      "bytes": 18500083,
+      "sha256": "4de110c204ad0eb00b4469ff475a3a4d6ad9ed5a1dab2c10bf469cace2f7c591"
+    },
+    "natural-dark-final7/group-sheet-review.json": {
+      "bytes": 10097,
+      "sha256": "7cfdbe95c0f2ef5b462f1f6c7b3a6669e40b329ff160ca5c0f05225c6a28970c"
+    },
+    "natural-light-final7/result.json": {
+      "bytes": 1662,
+      "sha256": "c62cab56e1e94d3b51f7ccc5c125370bb49554d36505b892e971d1643b178944"
+    },
+    "natural-light-final7/instrument.log": {
+      "bytes": 1359200,
+      "sha256": "09bf60c07b51da90f7e010c9ba3df431bf58bdbdfc38740d9603815895e3c931"
+    },
+    "natural-light-final7/group-sheet.mp4": {
+      "bytes": 19043282,
+      "sha256": "7b7f1203413aba6e6ca0784f4616625c39b24d72a22e67355ab187d7668717f5"
+    },
+    "natural-light-final7/group-sheet-review.json": {
+      "bytes": 10301,
+      "sha256": "5dfeba68458e0da26dab35d31f6502efae7a826a5733fcfdc2d3c80e99aa1e48"
+    }
+  }
+}

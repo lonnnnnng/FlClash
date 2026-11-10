@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,7 +56,8 @@ internal fun ProxyGroupMemberPicker(initial: ProxyGroupDraft, groups: List<Proxy
         bottomBar = { DockedProfileSearch(query, { query = it }, "group_member_search") },
         confirmButton = { if (LocalEmbeddedProfilePage.current == null) TextButton(onDismiss, Modifier.testTag("group_member_picker_done")) { Text("完成") } }, text = {
             val scroll = LocalEmbeddedProfilePage.current?.scroll ?: rememberScrollState()
-            Column(Modifier.fillMaxWidth().verticalScroll(scroll).testTag("group_member_categories")) {
+            val report = LocalEmbeddedProfilePage.current?.reportBodyHeight
+            Column(Modifier.fillMaxWidth().verticalScroll(scroll).onSizeChanged { report?.invoke(it.height) }.testTag("group_member_categories")) {
                 if (matching.isEmpty()) Text(if (searching) "无搜索结果" else "暂无可添加的节点", Modifier.padding(24.dp).testTag("group_member_empty"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 matching.forEach { section -> key(section.id) {

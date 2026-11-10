@@ -146,6 +146,7 @@ data class ProfileProxyGroupsEditorUiState(
     val session: Long = 0,
     val uiDraft: EditorSaveableState? = null,
     val pendingContent: String? = null,
+    val pendingLayouts: String? = null,
 ) { override fun toString() = "ProfileProxyGroupsEditorUiState(id=${profile?.id}, saving=$isSaving)" }
 
 data class ProfileProvidersEditorUiState(
@@ -496,16 +497,20 @@ class ProfilesViewModel internal constructor(
             val generation = proxyGroupsGeneration
             draft.uiDraft?.restoredValues()
             val current = repository.readLocalProfileContent(ownerId)
-            val committed = draft.pendingContent != null && current == draft.pendingContent
             val profile = repository.extensionProfile(ownerId)
+            // 作者 long：跨类别拖动可能只改Room布局而不改YAML；正文相同不能证明布局事务已经提交。
+            val committed = draft.pendingContent != null && current == draft.pendingContent &&
+                (draft.pendingLayouts == null || profile?.let {
+                    com.lonnnnnng.flclash.data.ProxyGroupMembers.matchesLayouts(it.overridesJson, draft.pendingLayouts)
+                } == true)
             if (!canRestore() || generation != proxyGroupsGeneration || groupsClosing) return
             if (committed) {
-                // 作者 long：正文完全匹配才认定上次提交完成；不重新提交，也不把磁盘成功冒充运行态应用成功。
+                // 作者 long：正文与本次布局均匹配才认定提交完成；不重放保存，也不把落盘成功冒充运行态应用成功。
                 reflectStructuredSave(ownerId, current, profile)
                 mutableErrors.tryEmit("已确认上次策略组保存，请检查当前配置的运行状态")
             } else {
                 mutableProxyGroupsEditor.value = draft.copy(session = ++proxyGroupsGeneration, isLoading = false, isSaving = false,
-                    pendingContent = null, error = when {
+                    pendingContent = null, pendingLayouts = null, error = when {
                         current != draft.sourceContent -> "配置正文已变化，请保留草稿并重新打开策略组"
                         draft.isSaving || draft.pendingContent != null -> "上次保存已中断，草稿已恢复，请检查后重试"
                         else -> draft.error
@@ -1591,7 +1596,8 @@ class ProfilesViewModel internal constructor(
                 require(validateGroupFilters(filters).all(String::isEmpty)) { "过滤表达式无效，请打开对应策略组修复" }
                 val updatedContent = withContext(overviewDispatcher) { ProxyGroupDrafts.apply(state.sourceContent, save, repository.localProxies().map { it.name }) }
                 check(generation == proxyGroupsGeneration) { "编辑会话已变化" }
-                mutableProxyGroupsEditor.update { it.copy(pendingContent = updatedContent) }
+                mutableProxyGroupsEditor.update { it.copy(pendingContent = updatedContent,
+                    pendingLayouts = com.lonnnnnng.flclash.data.ProxyGroupMembers.layoutsJson(save.groups)) }
                 persistCurrentEditorDraft()
                 EditorCommitProbe.checkpoint(EditorCommitWindow.GROUPS_INTENT)
                 val updated = profileWrite { repository.saveCustomProxyGroups(profile.id, save, state.sourceContent) {
@@ -1605,7 +1611,7 @@ class ProfilesViewModel internal constructor(
                 if (error is CancellationException) throw error
                 if (generation == proxyGroupsGeneration) {
                     mutableProxyGroupsEditor.value = state.copy(isSaving = false, error = error.message ?: "保存代理组失败",
-                        uiDraft = mutableProxyGroupsEditor.value.uiDraft, pendingContent = null)
+                        uiDraft = mutableProxyGroupsEditor.value.uiDraft, pendingContent = null, pendingLayouts = null)
                     mutableErrors.emit(error.message ?: "保存代理组失败")
                 }
             }

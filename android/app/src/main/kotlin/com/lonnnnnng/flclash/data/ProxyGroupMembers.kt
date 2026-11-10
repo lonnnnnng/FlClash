@@ -76,6 +76,15 @@ object ProxyGroupMembers {
         if (layouts.size() == 0) overrides.remove("groupMemberLayouts") else overrides.add("groupMemberLayouts", layouts)
     }
 
+    fun layoutsJson(groups: List<ProxyGroupDraft>): String = com.google.gson.JsonObject().also { saveLayouts(it, groups) }
+        .getAsJsonObject("groupMemberLayouts")?.toString() ?: "{}"
+
+    fun matchesLayouts(overridesJson: String, expected: String): Boolean = runCatching {
+        val actual = com.google.gson.JsonParser.parseString(overridesJson).asJsonObject.getAsJsonObject("groupMemberLayouts")
+            ?: com.google.gson.JsonObject()
+        actual == com.google.gson.JsonParser.parseString(expected)
+    }.getOrDefault(false)
+
     fun title(entry: GroupMemberEntry, presets: List<FilterPreset>): String = when (entry.kind) {
         GroupMemberKind.ALL_PROXIES -> "全部引用的代理"
         GroupMemberKind.ALL_PROVIDERS -> "全部引用的代理集合"

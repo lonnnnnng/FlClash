@@ -150,13 +150,13 @@ internal data class ConnectionSheetSuperellipseShape(val radius: Dp = Connection
     }
 }
 
-internal class ConnectionSheetGeometry(val availableHeight: Float, naturalContentHeight: Float? = null) {
+internal class ConnectionSheetGeometry(val availableHeight: Float, naturalContentHeight: Float? = null, minimumPartial: Boolean = false) {
     init {
         require(availableHeight > 0f && availableHeight.isFinite())
         require(naturalContentHeight == null || naturalContentHeight > 0f && naturalContentHeight.isFinite())
     }
 
-    private val contentHeight = naturalContentHeight ?: availableHeight
+    private val contentHeight = (naturalContentHeight ?: availableHeight).coerceAtLeast(if (minimumPartial) availableHeight * 9f / 16f else 0f)
     val hasExpandedDetent = min(contentHeight, availableHeight * 0.9f) - min(contentHeight, availableHeight * 9f / 16f) > 0.5f
     // 作者 long：短内容的两档高度重合时只登记一档，避免拖动归档到同坐标的另一个状态后不断跳动。
     val detents = if (hasExpandedDetent) ConnectionSheetDetent.entries.toList()
@@ -190,6 +190,7 @@ internal fun ConnectionModalSheet(
     closeRequested: Boolean = false,
     handleHeight: Dp = 48.dp,
     handleWidth: Dp = 32.dp,
+    floatingForm: Boolean = false,
     content: @Composable ColumnScope.(onDismissRequest: () -> Unit) -> Unit,
 ) {
     // 作者 long：编辑器的加密注册表只接受明确值类型，停靠档位保存名称，避免枚举对象阻断正式草稿恢复。
@@ -248,9 +249,10 @@ internal fun ConnectionModalSheet(
                     naturalContentHeight?.toFloat() ?: constraints.maxHeight.toFloat(),
                     animationSpec = settleSpec, label = "sheetContentHeight",
                 )
-                val geometry = remember(constraints.maxHeight, fitHeight, naturalContentHeight == null) {
-                    ConnectionSheetGeometry(constraints.maxHeight.toFloat(), if (naturalContentHeight == null) null else fitHeight)
+                val geometry = remember(constraints.maxHeight, fitHeight, naturalContentHeight == null, floatingForm) {
+                    ConnectionSheetGeometry(constraints.maxHeight.toFloat(), if (naturalContentHeight == null) null else fitHeight, floatingForm)
                 }
+                val latestGeometry by rememberUpdatedState(geometry)
                 val sidePanel = maxWidth > 600.dp
                 // 作者 long：进出场只由弹层生命周期驱动；窗口高度变化不能重新入场并取消正在执行的退出。
                 LaunchedEffect(dismissalStarted) {
@@ -315,7 +317,9 @@ internal fun ConnectionModalSheet(
                                     } else state.animateTo(savedDetent, settleSpec)
                                 }
                             } else {
-                                savedDetent = detent
+                                // 作者 long：短子页两档重合不代表用户收起；返回长页应恢复原展开意图。
+                                if (!floatingForm || latestGeometry.hasExpandedDetent || savedDetent != ConnectionSheetDetent.EXPANDED || detent == ConnectionSheetDetent.EXPANDED)
+                                    savedDetent = detent
                             }
                         }
                     }
@@ -366,11 +370,19 @@ internal fun ConnectionModalSheet(
                         }
                     }
                     val offset = state.offset.takeIf { it.isFinite() } ?: geometry.offset(savedDetent)
-                    val visibleHeight = with(density) { (geometry.availableHeight - offset).coerceAtLeast(1f).toDp() }
+                    val height = (geometry.availableHeight - offset).coerceAtLeast(1f)
+                    // 作者 long：半停靠的表单浮起8dp，展开/键盘时归零；布局补偿缩放后的底部，避免把搜索栏挤出可见区域。
+                    val reach = ((height / geometry.availableHeight - 9f / 16f) / (.9f - 9f / 16f)).coerceIn(0f, 1f)
+                    val floating = if (floatingForm) (1f - reach) * (1f - WindowInsets.ime.getBottom(density) / with(density) { 120.dp.toPx() }).coerceIn(0f, 1f) *
+                        (if (hasEntered) 1f else presentation.value.coerceIn(0f, 1f)) else 0f
+                    val inset = with(density) { 8.dp.toPx() } * floating
+                    val scale = (1f - 2f * inset / constraints.maxWidth).coerceAtLeast(.1f)
+                    val visibleHeight = with(density) { ((height - inset) / scale).coerceAtLeast(1f).toDp() }
                     val presentationOffset = offset + (geometry.availableHeight - offset) * (1f - presentation.value)
                     Surface(
                         modifier = Modifier.fillMaxWidth().height(visibleHeight)
                             .offset { IntOffset(0, presentationOffset.roundToInt()) }
+                            .graphicsLayer { scaleX = scale; scaleY = scale; transformOrigin = androidx.compose.ui.graphics.TransformOrigin(.5f, 0f) }
                             .pointerInput(contentScrollState) {
                                 // 作者 long：从列表中部开始下滑只滚回顶部，同一手势不能继续关闭面板，避免长详情误退出。
                                 awaitEachGesture {
@@ -388,7 +400,8 @@ internal fun ConnectionModalSheet(
                                 flingBehavior = fling,
                             )
                             .testTag(sheetTag),
-                        shape = sheetShape,
+                        shape = if (floatingForm) AppSuperellipseShape(topStart = 28.dp, topEnd = 28.dp,
+                            bottomStart = 28.dp * floating, bottomEnd = 28.dp * floating) else sheetShape,
                         color = MaterialTheme.colorScheme.surfaceContainer,
                     ) {
                         Column(Modifier.fillMaxSize().blockSheetInput(dismissalStarted).windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {

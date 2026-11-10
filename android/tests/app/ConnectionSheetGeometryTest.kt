@@ -6,6 +6,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ConnectionSheetGeometryTest {
+    @Test fun `floating form keeps minimum detent but caps expansion at measured content`() {
+        val short = ConnectionSheetGeometry(1000f, 280f, minimumPartial = true)
+        assertEquals(437.5f, short.offset(ConnectionSheetDetent.PARTIAL), .001f)
+        assertEquals(short.offset(ConnectionSheetDetent.PARTIAL), short.offset(ConnectionSheetDetent.EXPANDED), .001f)
+        val medium = ConnectionSheetGeometry(1000f, 700f, minimumPartial = true)
+        assertEquals(300f, medium.offset(ConnectionSheetDetent.EXPANDED), .001f)
+    }
     @Test fun `short content has one visible anchor and can still be flung closed`() {
         val geometry = ConnectionSheetGeometry(1000f, 280f)
         assertEquals(720f, geometry.offset(ConnectionSheetDetent.PARTIAL), 0.001f)

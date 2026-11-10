@@ -50,6 +50,19 @@ internal fun ProxyGroupInlineMembers(group: ProxyGroupDraft, groups: List<ProxyG
     val change by rememberUpdatedState(onChange)
     val density = LocalDensity.current.density
     val owner = LocalLifecycleOwner.current
+    val reportHeight by rememberUpdatedState(LocalEmbeddedProfilePage.current?.reportBodyHeight)
+    LaunchedEffect(list, group.json) {
+        var measured: Int? = null
+        snapshotFlow {
+            val info = list.layoutInfo
+            if (info.totalItemsCount > 0 && info.visibleItemsInfo.size == info.totalItemsCount)
+                info.visibleItemsInfo.sumOf { it.size } + info.beforeContentPadding + info.afterContentPadding else null
+        }.collect { height ->
+            // 作者 long：已测全表后滚动会回收离屏行，不能据此清掉自然高度并触发展开/收回反馈循环。
+            if (height != null) measured = height
+            reportHeight?.invoke(measured)
+        }
+    }
     var preview by remember { mutableStateOf(rows.map { it.key }) }
     var dragged by remember { mutableStateOf<String?>(null) }
     var top by remember { mutableFloatStateOf(0f) }

@@ -34,6 +34,40 @@ import org.junit.Test
 class ProfilesViewModelTest {
     private val mainDispatcher = UnconfinedTestDispatcher()
 
+    @Test fun metadataOnlyGroupRecoveryRequiresCommittedLayoutsAndNeverReplays() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        for (committed in listOf(false, true)) {
+            val profile = Profile.custom(830, "layout-only")
+            val initial = com.lonnnnnng.flclash.data.ProxyGroupDraft(json = """{"name":"Main","type":"select","proxies":["DIRECT"],"filter":"HK"}""")
+            val save = com.lonnnnnng.flclash.data.ProxyGroupsSave(listOf(initial.copy(memberLayout = listOf("filter"))))
+            val body = com.lonnnnnng.flclash.data.ProxyGroupDrafts.apply("", save)
+            val expected = com.lonnnnnng.flclash.data.ProxyGroupDrafts.updateProfileReferences(profile, save)
+            val store = FakeProfileStore(profile).apply { content = body }
+            var writes = 0
+            val wrapper = object : ProfileStore by store {
+                override suspend fun extensionProfile(id: Long): Profile = if (committed) expected else profile
+                override suspend fun saveCustomProxyGroups(id: Long, save: com.lonnnnnng.flclash.data.ProxyGroupsSave,
+                    expectedContent: String, canWrite: () -> Boolean): Profile { writes++; return expected }
+            }
+            val drafts = PickerMemoryStore()
+            val owner = androidx.lifecycle.ViewModelStore()
+            val first = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            owner.put("draft", first); first.openEditor(profile); advanceUntilIdle()
+            val snapshot = com.google.gson.Gson().fromJson(drafts.bytes!!.toString(Charsets.UTF_8), ProfileEditorDraftSnapshot::class.java)
+            owner.clear()
+            drafts.bytes = com.google.gson.Gson().toJson(snapshot.copy(groups = ProfileProxyGroupsEditorUiState(profile = profile,
+                sourceContent = body, isSaving = true, pendingContent = body,
+                pendingLayouts = com.lonnnnnng.flclash.data.ProxyGroupMembers.layoutsJson(save.groups)))).toByteArray()
+            val second = ProfilesViewModel(wrapper, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher, draftStore = drafts)
+            val owner2 = androidx.lifecycle.ViewModelStore().apply { put("draft", second) }
+            advanceUntilIdle()
+            if (committed) assertNull(second.proxyGroupsEditorState.value.profile)
+            else { assertNotNull(second.proxyGroupsEditorState.value.profile); assertTrue(second.proxyGroupsEditorState.value.error.orEmpty().contains("保存已中断")) }
+            assertEquals(0, writes)
+            second.closeEditor(); advanceUntilIdle(); owner2.clear()
+        }
+    }
+
     @Test fun profileSnapshotDistinguishesInitialReadFromLoadedEmptyAndDeletion() = runTest {
         Dispatchers.setMain(mainDispatcher)
         val profile = Profile.custom(829, "loading-boundary")
