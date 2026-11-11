@@ -62,6 +62,21 @@ func TestLookupDiagnosticUsesStructuredPortAndNeverKeepsEndpointOrRawError(t *te
 	}
 }
 
+func TestNodeDialDiagnosticHashesExactEndpointAndDoesNotClaimWireTraffic(t *testing.T) {
+	var capture dialDiagnosticCapture
+	capture.begin(43210)
+	capture.recordLookup(dialer.LookupDiagnostic{Kind: "node-dial", SourcePort: 43210, Network: "tcp",
+		DialEndpoint: "192.0.2.1:443", DialFamily: "ipv4", Duration: 3 * time.Millisecond})
+	got := capture.snapshot(43210, true)
+	if len(got) != 1 || got[0].Kind != "node-dial" || got[0].DialEndpointHash == "" || got[0].DurationMillis != 3 || got[0].Failed {
+		t.Fatal("node dial summary missing")
+	}
+	data, _ := json.Marshal(got)
+	if strings.Contains(string(data), "192.0.2.1") || strings.Contains(string(data), ":443") {
+		t.Fatal("node endpoint leaked")
+	}
+}
+
 func TestDialDiagnosticIsBoundedAndNewRequestReplacesOldCapture(t *testing.T) {
 	var capture dialDiagnosticCapture
 	capture.begin(43210)
@@ -74,6 +89,35 @@ func TestDialDiagnosticIsBoundedAndNewRequestReplacesOldCapture(t *testing.T) {
 	capture.begin(43211)
 	if len(capture.snapshot(43210, false)) != 0 || len(capture.snapshot(43211, false)) != 0 {
 		t.Fatal("old diagnostics leaked into new request")
+	}
+}
+
+// 作者 long：多地址并发时先到的connect成功未必被选中；缓存满后也必须留下最终端点并公开省略数量。
+func TestDialDiagnosticRetainsWinnerAfterCandidateAndRecordLimits(t *testing.T) {
+	var capture dialDiagnosticCapture
+	capture.begin(43210)
+	for range 25 {
+		capture.recordLookup(dialer.LookupDiagnostic{Kind: "node-dial", SourcePort: 43210, DialEndpoint: "192.0.2.1:443", Network: "tcp4", DialFamily: "ipv4"})
+	}
+	for range 10 {
+		capture.record("[TCP] 198.18.0.1:43210 --> target:443 match DIRECT")
+	}
+	capture.recordLookup(dialer.LookupDiagnostic{Kind: "node-selected", SourcePort: 43210, DialEndpoint: "192.0.2.2:443", Network: "tcp4", DialFamily: "ipv4"})
+	got := capture.snapshot(43210, true)
+	if len(got) != 16 || got[15].Kind != "node-selected" || got[15].OmittedDialAttempts != 17 || got[15].DroppedRecords != 3 {
+		t.Fatalf("winner or accounting missing: %+v", got)
+	}
+	if got[15].DialEndpointHash == got[0].DialEndpointHash {
+		t.Fatal("candidate substituted for selected endpoint")
+	}
+	capture.recordLookup(dialer.LookupDiagnostic{Kind: "node-selected", SourcePort: 43210})
+	if len(capture.snapshot(43210, false)) != 16 {
+		t.Fatal("finished capture changed")
+	}
+	capture.begin(43211)
+	capture.recordLookup(dialer.LookupDiagnostic{Kind: "node-selected", SourcePort: 43210})
+	if len(capture.snapshot(43211, false)) != 0 {
+		t.Fatal("previous port leaked")
 	}
 }
 

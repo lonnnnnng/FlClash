@@ -8,6 +8,8 @@
 
 后续基线`ce1c423d`新增源端口context关联的结构化lookup，安全错误类别/地址族计数与生效DNS开关；发现并修正独立KCORE-009空地址nil错误，核心`42e93516`已推。907 JVM/Go竞态/构建通过、Redmi六启动+458秒恢复窗口共14笔HTTPS成功、最终语义12/12也通过；但Provider before在恢复后、after在准备阶段两笔TLS握手20秒超时，lookup均成功33 IPv4、核心拨号成功。此为与node-dns不同的失败阶段，原数据恢复/备份清空，整体网络继续未闭环。不可把初始14/14或KCORE-009修正推成全部问题解决。见[本组证据](acceptance/dns-lookup-redmi-20261111.json)与[源码缺陷和边界](dns-lookup-empty-success-defect.md)。
 
+最新TLS单向流量调查已补最终拨号端点：最终Provider两场准备HTTPS均超时，254B上传/0B应用层下载、不同最终端点，未进入保存/死亡窗口；独立FILE同会话3笔HTTP200端点不同，不能冲抵失败。source1 before为恢复TLS超时，source1 after则是准备保存错误/提交等待超时，并非TLS。907 JVM/构建/竞态与诊断2/2通过，数据保护保持；整体网络仍未闭环，应用内更新暂缓。见[TLS调查](tls-one-way-flow-investigation.md)及[新证据](acceptance/tls-flow-redmi-20261111.json)。
+
 ## 本轮诊断改动
 
 - Debug共享`CoreRequestAcceptance`在connect前固定源端口，开启已有Go安全dial采集；采集阶段分别记录begin/end/fail、预算、Android单调时刻、异常类型。请求只执行一次，不改节点/URL，不重试。

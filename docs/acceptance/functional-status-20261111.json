@@ -1,7 +1,7 @@
 {
   "date": "2026-11-11",
   "kind": "interim-functional-status",
-  "committedBase": "ce1c423d2daa92d288be5d63c1db17a0da27d251",
+  "committedBase": "074db3d4987176a6aaf1738089cae12a9482d3a5",
   "device": {
     "serial": "wsvwypiz7xwslvl7",
     "model": "Redmi Note 8 Pro"
@@ -172,7 +172,7 @@
     "failed": 0,
     "isolationNativeProbePassed": true
   },
-  "evidenceSnapshot": "随DNS结构化取证与KCORE-009提交保存；真实TLS失败保留，总目标未完成，更新用户暂缓",
+  "evidenceSnapshot": "随TLS单向流量与最终端点诊断提交；两场真实网络失败及独立控制成功分别保留，总目标未完成，应用内更新用户暂缓",
   "finalAuditRegression": {
     "tests": 7,
     "passed": 7,
@@ -257,5 +257,23 @@
     "kcore009Fixed": true,
     "historicalCauseEstablished": false,
     "overallNetworkPassed": false
+  },
+  "latestTlsDiagnostics": {
+    "evidence": "tls-flow-redmi-20261111.json",
+    "coreCommit": "9fb797d1a0072e228c7b2dcec69d632ea7e4ad02",
+    "jvmTests": 907,
+    "traceTestsPassed": 2,
+    "finalProviderCasesPassed": 0,
+    "finalProviderCasesFailed": 2,
+    "finalProviderFailuresBeforeEditingOrDeath": true,
+    "failedRequestUploadBytes": 254,
+    "failedRequestDownloadBytes": 0,
+    "differentSelectedEndpointsAcrossFailures": true,
+    "separateControlHttpsPassed": 3,
+    "sameSelectedEndpointSuccessAndFailureObserved": false,
+    "source1AfterFailure": "prepare-commit-window timeout with documentError=true, not TLS",
+    "formalDataPreserved": true,
+    "overallNetworkPassed": false,
+    "rootCauseEstablished": false
   }
 }

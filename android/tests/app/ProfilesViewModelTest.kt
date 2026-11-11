@@ -94,6 +94,10 @@ class ProfilesViewModelTest {
         val model = newModel(pending, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
         val owner = androidx.lifecycle.ViewModelStore().apply { put("profiles", model) }
         val collection = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { model.state.collect {} }
+        // 作者 long：组数流含真实IO合流，runCurrent只排空虚拟队列；等待完整快照，避免把中间选择当成删除终态。
+        suspend fun settled(predicate: (ProfilesUiState) -> Boolean) = kotlinx.coroutines.withContext(Dispatchers.Default) {
+            kotlinx.coroutines.withTimeout(5_000) { model.state.first(predicate) }
+        }
         try {
             runCurrent(); assertFalse(model.state.value.profilesLoaded)
             // 作者 long：首读未就绪时即使配置流先到，也不能把尚未校正的选择暴露给恢复中的详情页。
@@ -101,10 +105,13 @@ class ProfilesViewModelTest {
             assertFalse(model.state.value.profilesLoaded); assertTrue(model.state.value.profiles.isEmpty())
             store.profiles.value = emptyList(); runCurrent()
             loaded.value = true; runCurrent()
+            settled { it.profilesLoaded && it.profiles.isEmpty() && it.currentProfileId == null }
             assertTrue(model.state.value.profilesLoaded); assertTrue(model.state.value.profiles.isEmpty())
             store.profiles.value = listOf(profile); store.currentProfileId.value = profile.id; runCurrent()
+            settled { it.profiles == listOf(profile) && it.currentProfileId == profile.id }
             assertEquals(profile.id, model.state.value.currentProfileId)
             store.profiles.value = emptyList(); store.currentProfileId.value = null; runCurrent()
+            settled { it.profilesLoaded && it.profiles.isEmpty() && it.currentProfileId == null }
             // 作者 long：删除最后一项是已加载的空仓库，页面应关闭旧详情，不能再次退回首次读取保护。
             assertTrue(model.state.value.profilesLoaded); assertTrue(model.state.value.profiles.isEmpty())
             assertNull(model.state.value.currentProfileId)

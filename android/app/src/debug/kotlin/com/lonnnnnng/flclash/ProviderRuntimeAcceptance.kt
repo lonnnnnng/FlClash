@@ -117,6 +117,20 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
                     .put("documentPresent", document != null).put("documentBound", document?.document != null)
                     .put("documentLoading", document?.loading).put("documentSaving", document?.saving)
                     .put("documentError", document?.error != null).put("recoveryBlocked", document?.recoveryBlocked)
+                    // 作者 long：正文错误可能经过核心映射；只发固定分类和摘要，不能为诊断把远端正文或节点文本写进日志。
+                    .put("documentErrorHash", document?.error?.let { providerSha(it.toByteArray()) })
+                    .put("documentErrorCategory", when (document?.error) {
+                        null -> "none"
+                        "已有 Provider 正在更新，请稍后重试", "Provider 正在更新，请稍后重试" -> "provider-updating"
+                        "内容无法被此 Provider 读取，请检查格式后重试" -> "provider-content-error"
+                        "配置或文件已变化，请重新打开后再保存" -> "provider-stale"
+                        "编辑会话已失效，请重新打开" -> "provider-session-invalid"
+                        "Provider 已提交，但配置已变化，请重新读取确认" -> "provider-committed-stale"
+                        "Provider 已提交，但回读确认失败，请重新读取确认" -> "provider-committed-readback"
+                        "Provider 保存未完成，请检查内容并重试" -> "provider-save-failed"
+                        "保存失败，请检查内容后重试" -> "provider-unmapped-failure"
+                        else -> "other"
+                    })
                     .put("intent", EditorCommitProbe.visits(EditorCommitWindow.PROVIDER_INTENT))
                     .put("committed", EditorCommitProbe.visits(EditorCommitWindow.PROVIDER_COMMITTED))
                     .put("at", failure.stackTrace.firstOrNull { it.className.startsWith("com.lonnnnnng.") }?.let { "${it.fileName}:${it.lineNumber}" }))

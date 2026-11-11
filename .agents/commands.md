@@ -59,6 +59,8 @@ Provider恢复诊断使用`python3 tool/android_provider_runtime_acceptance.py -
 
 复用Stability输入token时，collector必须只读取当前command及其子阶段，传输副本名称带正文SHA，不能让旧已删除回执或同名报告参与本轮SHA核对。修正后的本机示例为`../acceptance-artifacts/dns-startup-20261111/recovery2/probe.py`，原失败留在recovery-window。DNS诊断区分`kind=lookup`（源端口context关联、实际network/地址数/父context类别）与旧日志分类记录；DNS事件仍只是候选，不能凭同域名/时间窗称socket归属。KCORE-009及最新两种失败阶段见`docs/dns-lookup-empty-success-defect.md`。
 
+TLS失败取证现保留`connectionTrace`的零/单向业务流量与`node-selected`最终端点；前8个`node-dial`只是候选，最多16条并公开omitted/dropped，不能取第一成功候选冒充winner。Tracker不是TCP线上字节，DNS仍无socket归属。Provider失败另看documentErrorCategory/hash；未到ready/kill不能计恢复通过。最终Provider两准备请求失败及独立FILE三成功分别保留，见`docs/tls-one-way-flow-investigation.md`。
+
 ## 菜单无线程采样对照（KUI-035）
 
 精确选择 `VisualMotionNaturalInstrumentedTest#lightMenuWindowFramesWithoutThreadSampling` 或 `#darkMenuWindowFramesWithoutThreadSampling`，显式设置 `kclashMenuWindowFrames=true`、`kclashCloseWindowCapture=true`、`kclashMotionInlineFrames=true`、`kclashCapturePng=false` 和唯一安全 `kclashMotionRun`；不得启用线程/方法采样或录屏。每方法三轮开关，预期6份内联帧表、3次关闭留窗、0份线程计数。与线程诊断分开报告，A-B-A按窗口原始计数比较，关闭留窗不是正式R8场景。固定范围候选无稳定收益已撤回，见 `docs/member-picker-alignment-menu-investigation.md`。

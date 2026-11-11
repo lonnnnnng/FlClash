@@ -90,7 +90,9 @@ internal suspend fun acceptedProxyRequest(entry: ConnectionAcceptanceEntryPoint,
                     }
                 }
             }
-            var observation: Deferred<com.lonnnnnng.flclash.core.CoreConnection>? = null
+            var observation: Job? = null
+            val attributed = CompletableDeferred<com.lonnnnnng.flclash.core.CoreConnection>()
+            val connectionTrace = AcceptanceConnectionTrace()
             try {
                 phase("socks-connect", 22_000) { socket.connect(InetSocketAddress.createUnresolved(target.host, 443), 20_000) }
                 socket.soTimeout = 20_000
@@ -104,18 +106,21 @@ internal suspend fun acceptedProxyRequest(entry: ConnectionAcceptanceEntryPoint,
                     result.put("faultApplied", socket.isClosed)
                 }
                 val sourceIp = socket.localAddress.hostAddress
-                observation = async {
-                    withTimeout(60_000) {
-                        while (true) {
-                            withTimeout(3_000) { bridge.getConnections() }.firstOrNull {
+                observation = launch {
+                    while (isActive) {
+                        val connections = try { withTimeout(3_000) { bridge.getConnections() } }
+                        catch (failure: TimeoutCancellationException) { connectionTrace.readFailed(); delay(100); continue }
+                        catch (failure: CancellationException) { throw failure }
+                        catch (_: Exception) { connectionTrace.readFailed(); delay(100); continue }
+                        connections.filter {
                                 it.id !in oldConnections && it.metadata.network.equals("tcp", true) &&
                                     it.metadata.sourceIp == sourceIp && it.metadata.sourcePort == sourcePort.toString() &&
-                                    it.metadata.destinationPort == "443" && it.metadata.host.equals(target.host, true) &&
-                                    it.upload > 0 && it.download > 0
-                            }?.let { return@withTimeout it }
-                            delay(100)
+                                    it.metadata.destinationPort == "443" && it.metadata.host.equals(target.host, true)
+                        }.forEach {
+                            connectionTrace.record(it, SystemClock.elapsedRealtime())
+                            if (it.upload > 0 && it.download > 0) attributed.complete(it)
                         }
-                        @Suppress("UNREACHABLE_CODE") error("connection missing")
+                        delay(100)
                     }
                 }
                 phase("tls-create", 3_000) {
@@ -139,7 +144,7 @@ internal suspend fun acceptedProxyRequest(entry: ConnectionAcceptanceEntryPoint,
                         result.put("http", code); check(code == 200) { "HTTP status rejected" }; code
                     }
                     phase("http-headers", 22_000) { while (line().isNotEmpty()) Unit }
-                    val connection = phase("connection-attribution", 20_000) { checkNotNull(observation).await() }
+                    val connection = phase("connection-attribution", 20_000) { attributed.await() }
                     result.put("passed", true).put("attributedSocket", true).put("positiveTraffic", true)
                         .put("hasNonDirectChain", connection.chains.any { it != "DIRECT" })
                         .put("chainHashes", JSONArray(connection.chains.map(::requestHash)))
@@ -152,6 +157,7 @@ internal suspend fun acceptedProxyRequest(entry: ConnectionAcceptanceEntryPoint,
                 withContext(NonCancellable) {
                     observation?.cancelAndJoin(); collector.cancelAndJoin()
                     result.put("dialDiagnostic", JSONArray(Core.dialDiagnosticSnapshot(sourcePort, true)))
+                        .put("connectionTrace", connectionTrace.snapshot())
                         .put("networkAfter", networkSnapshot())
                 }
             }

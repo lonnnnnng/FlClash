@@ -19,28 +19,35 @@ import (
 )
 
 type dialDiagnostic struct {
-	Kind              string     `json:"kind,omitempty"`
-	AtMillis          int64      `json:"atMillis"`
-	Failed            bool       `json:"failed"`
-	Categories        []string   `json:"categories"`
-	ErrorChain        [][]string `json:"errorChain"`
-	EndpointHashes    []string   `json:"endpointHashes"`
-	LookupHostHash    string     `json:"lookupHostHash,omitempty"`
-	LookupNetwork     string     `json:"lookupNetwork,omitempty"`
-	ResolverRole      string     `json:"resolverRole,omitempty"`
-	IPv6Disabled      bool       `json:"ipv6Disabled"`
-	Addresses         int        `json:"addresses"`
-	IPv4Addresses     int        `json:"ipv4Addresses"`
-	IPv6Addresses     int        `json:"ipv6Addresses"`
-	DurationMillis    int64      `json:"durationMillis,omitempty"`
-	ContextCategories []string   `json:"contextCategories,omitempty"`
+	Kind                string     `json:"kind,omitempty"`
+	AtMillis            int64      `json:"atMillis"`
+	Failed              bool       `json:"failed"`
+	Categories          []string   `json:"categories"`
+	ErrorChain          [][]string `json:"errorChain"`
+	EndpointHashes      []string   `json:"endpointHashes"`
+	LookupHostHash      string     `json:"lookupHostHash,omitempty"`
+	LookupNetwork       string     `json:"lookupNetwork,omitempty"`
+	ResolverRole        string     `json:"resolverRole,omitempty"`
+	IPv6Disabled        bool       `json:"ipv6Disabled"`
+	Addresses           int        `json:"addresses"`
+	IPv4Addresses       int        `json:"ipv4Addresses"`
+	IPv6Addresses       int        `json:"ipv6Addresses"`
+	DurationMillis      int64      `json:"durationMillis,omitempty"`
+	ContextCategories   []string   `json:"contextCategories,omitempty"`
+	DialEndpointHash    string     `json:"dialEndpointHash,omitempty"`
+	DialFamily          string     `json:"dialFamily,omitempty"`
+	OmittedDialAttempts int        `json:"omittedDialAttempts,omitempty"`
+	DroppedRecords      int        `json:"droppedRecords,omitempty"`
 }
 
 type dialDiagnosticCapture struct {
-	port       atomic.Int64
-	mu         sync.Mutex
-	sourcePort int
-	records    []dialDiagnostic
+	port                atomic.Int64
+	mu                  sync.Mutex
+	sourcePort          int
+	records             []dialDiagnostic
+	dialAttempts        int
+	omittedDialAttempts int
+	droppedRecords      int
 }
 
 var activeDialDiagnostic dialDiagnosticCapture
@@ -106,7 +113,38 @@ func (capture *dialDiagnosticCapture) recordLookup(value dialer.LookupDiagnostic
 	}
 	capture.mu.Lock()
 	defer capture.mu.Unlock()
-	if capture.sourcePort != value.SourcePort || capture.port.Load() != int64(value.SourcePort) || len(capture.records) >= 16 {
+	if capture.sourcePort != value.SourcePort || capture.port.Load() != int64(value.SourcePort) {
+		return
+	}
+	if value.Kind == "node-dial" {
+		capture.dialAttempts++
+		if capture.dialAttempts > 8 {
+			capture.omittedDialAttempts++
+			return
+		}
+	}
+	if len(capture.records) >= 16 {
+		capture.droppedRecords++
+		if value.Kind != "node-selected" {
+			return
+		}
+		// 作者 long：并行候选与旧日志先到时仍保留最后一次实际返回端点；省略数必须随快照交付，不能伪称完整拨号列表。
+		capture.records = capture.records[:15]
+	}
+	if value.Kind == "node-dial" || value.Kind == "node-selected" {
+		sum := sha256.Sum256([]byte(value.DialEndpoint))
+		family := value.DialFamily
+		if family != "ipv4" && family != "ipv6" {
+			family = "unknown"
+		}
+		network := value.Network
+		if network != "tcp" && network != "tcp4" && network != "tcp6" && network != "udp" && network != "udp4" && network != "udp6" {
+			network = "unknown"
+		}
+		capture.records = append(capture.records, dialDiagnostic{Kind: value.Kind, AtMillis: bootstrapMillis(), Failed: value.Err != nil,
+			Categories: diagnosticErrorCategories(value.Err), ErrorChain: [][]string{}, EndpointHashes: []string{},
+			LookupNetwork: network, DurationMillis: value.Duration.Milliseconds(), DialEndpointHash: hex.EncodeToString(sum[:]), DialFamily: family,
+			ContextCategories: diagnosticErrorCategories(value.ContextErr)})
 		return
 	}
 	sum := sha256.Sum256([]byte(strings.TrimSuffix(strings.ToLower(value.Host), ".")))
@@ -134,6 +172,7 @@ func (capture *dialDiagnosticCapture) begin(port int) {
 	capture.mu.Lock()
 	defer capture.mu.Unlock()
 	capture.sourcePort, capture.records = port, nil
+	capture.dialAttempts, capture.omittedDialAttempts, capture.droppedRecords = 0, 0, 0
 	capture.port.Store(int64(port))
 }
 
@@ -148,7 +187,11 @@ func (capture *dialDiagnosticCapture) record(payload string) {
 	}
 	capture.mu.Lock()
 	defer capture.mu.Unlock()
-	if capture.sourcePort != int(port) || capture.port.Load() != port || len(capture.records) >= 16 {
+	if capture.sourcePort != int(port) || capture.port.Load() != port {
+		return
+	}
+	if len(capture.records) >= 16 {
+		capture.droppedRecords++
 		return
 	}
 	// 作者 long：在核心事件进入可丢弃队列之前，只保留指定源端口的类别和哈希；原始URL、节点名及嵌套错误文本绝不进入缓存。
@@ -186,7 +229,12 @@ func (capture *dialDiagnosticCapture) snapshot(port int, finish bool) []dialDiag
 	if finish {
 		capture.port.Store(0)
 	}
-	return append([]dialDiagnostic{}, capture.records...)
+	result := append([]dialDiagnostic{}, capture.records...)
+	if len(result) > 0 {
+		result[len(result)-1].OmittedDialAttempts = capture.omittedDialAttempts
+		result[len(result)-1].DroppedRecords = capture.droppedRecords
+	}
+	return result
 }
 
 func BeginDialDiagnostic(sourcePort int) {

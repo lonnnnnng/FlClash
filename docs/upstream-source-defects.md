@@ -99,6 +99,8 @@
 
 已保留旧包冷启动失败、随后同会话物理/TUN HTTPS 成功及修改版有限轮次通过证据。KCORE-001 修复静态可证明的保护缺口，KCORE-002/003 修复控制器生命周期；目前不能把这些修复直接认定为此前 TLS EOF 的确定根因。长期稳定性、蜂窝和其他 OEM 场景仍按 roadmap 单独验收。
 
+新增[TLS单向流量调查](tls-one-way-flow-investigation.md)记录lookup/connect成功后254B上传、0B业务下载及不同最终端点的真实失败。内核`9fb797d1`只加受控观察点，未修改选路/超时/读写，不分配新产品缺陷编号；Provider保存错误与TLS失败分开保留，不能把KCORE-009或本组绿测写成它们的根因修复。
+
 ## 后续同步操作
 
 1. Mihomo 只从 `chen08209/Clash.Meta` 的 `FlClash` 分支同步，不直接合并、cherry-pick 或移植 `MetaCubeX/mihomo` 的提交/PR；作者已吸收的官方改动可随其分支同步，完整规则见 [唯一代码同步来源](../.agents/upstream-sync.md#唯一代码同步来源2026-11-05-用户确认)。记录新 Flutter/Mihomo 固定 SHA，先逐项阅读上游对应实现与本台账；核心 fork 保留上游原始提交，不直接改写来源历史。
