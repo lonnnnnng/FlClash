@@ -1,6 +1,22 @@
 # 导入前核心语义预检
 
-2026-11-11，生产依赖注入与整份 FILE/URL/CUSTOM 导入、正文替换和订阅更新入口已接入独立 UID 的同版本 `config.ParseRawConfig`，不再只用 RawConfig/YAML 解码判断核心语义。本次扩展核心提交`a2136a6d34ac7c6144ffb75f0e13c0b8735dfca2`覆盖当前20种入站分支、共享传输参数校验和数字名称，资源竞态4例已验。906 JVM、Debug/Release-R8/motion/Test、双Lint与扫码DEX3/3通过；同源Redmi12/12及正式签名R8真实SAF导入通过，见[最新证据](acceptance/core-semantic-extended-redmi-20261111.json)。前组8/8独立保留，不能与本批累计；整个功能收尾目标尚未完成。
+## 提交边界与外部正文补验（2026-11-11，当前）
+
+本轮只新增验收代码，未修改生产运行逻辑或内核。基线`7db5aec6`、内核`d43bbd75`；最终motion/Test构建与Redmi安装回拉一致，final3精确18/18通过。908项JVM（App617/Service218/Core39/Common34）零失败、错误和跳过，含Gradle复用；最终Debug Lint零错误（75警告、14提示）。本轮未重跑Release/R8、Release Lint或Go，不借用前组结果称为本轮通过。证据见[本轮JSON](acceptance/core-semantic-boundaries-redmi-20261111.json)，原始日志在`../acceptance-artifacts/semantic-commit-20261111/`。
+
+- **混合配置与草稿**：独占Room/目录中同时保留FILE、URL、CUSTOM，复用真实隔离校验器；错误候选拒绝、合法候选导入均不改既有正文、选择和未提交加密草稿。URL分支的内存下载替身与后面的真实授权URL导入分开统计。草稿验证到正式序列化快照/AES密文、字节、mtime和重新创建Store回读，不推广为本轮重新完成真实编辑页冷进程恢复。
+- **运行中守卫**：真实纯代理和VPN分别验证预览后启动、确认拒绝、Repository二次守卫、epoch/运行起点/源正文/草稿保持，停止后同一预览只新增一次。VPN另外核对真实服务CONNECTED及网络/接口/LinkProperties摘要保持；两笔HTTPS明确走本地SOCKS，不能称TUN流量。此前两次VPN绑定socket均被系统以`EPERM`拒绝，原因未定；真实TUN请求边界未通过，原日志保留。
+- **托管应用失败**：语义错误在committer前拒绝；Repository提交后故障替身验证回执重试。另用真实`CoreRuntimeManager.withProfileSourceWrite`、Room/文件及脚本引擎，让本例脚本在应用时抛错：已保存新正文和待应用标记保留，旧运行会话回滚可用；解绑错误脚本后仅重试应用，不重复下载、不改已保存正文mtime、不重放。不是原生listener绑定/TUN建立失败注入。上述运行场景及原运行态回归共8笔HTTPS200，均通过既有同socket归因门禁。
+- **真实URL与90份外部正文**：授权URL经生产Repository和隔离校验器导入本例副本；原FILE/选择保持，结束只删除副本。资源沿原URL显式通过当前核心真实HTTP入站下载，未增加加速源、未自动重试。full批次首轮89/90下载且89份正文解析通过，唯一超时资源在final3定向1/1通过；两轮授权源正文SHA同为`110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c`，按名称摘要联接为90个唯一资源全部覆盖。不能记成单轮90/90：先分30/30/29，再补1份授予只读FD；每批其余HTTP定义仍延期。未证明90份正文同一原子快照、一次加载，或核心Provider自动刷新/全部规则实际命中。
+
+首批15/17、后续两批各16/18均独立保留：系统VPN确认需要Activity带结果启动，application直接启动不能完成确认；正式包UID误差来自包名前缀匹配纳入了独立测试包，已改成精确包名核对。资源普通应用下载两批分别86/90、1/90，后者耗时369.5秒；这些失败不被后续核心入站89/90与定向1/1覆盖，不据此判定网络、内核或ROM的根因。
+
+本地输入为用户更新后的34220字节原`1.yaml`，SHA`7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7`，无Provider。旧35165字节/90个HTTP定义的历史证据继续保留，不能混作当前本地输入。原文件SHA/大小/mtime保持，未上传公网；正式包本轮只核对APK/UID/无服务，未重新审计正式四表；Flutter参考包未操作。低API真机、其他OEM、其他协议/参数实流、在线age密钥输入和本轮TUN绑定仍单列，不宣称整个语义预检目标已全覆盖。
+
+
+## 前组完整解析与正式R8基线（历史）
+
+2026-11-11，生产依赖注入与整份 FILE/URL/CUSTOM 导入、正文替换和订阅更新入口已接入独立 UID 的同版本 `config.ParseRawConfig`，不再只用 RawConfig/YAML 解码判断核心语义。当时扩展核心提交`a2136a6d34ac7c6144ffb75f0e13c0b8735dfca2`覆盖20种入站分支、共享传输参数校验和数字名称，资源竞态4例已验。906 JVM、Debug/Release-R8/motion/Test、双Lint与扫码DEX3/3通过；同源Redmi12/12及正式签名R8真实SAF导入通过，见[该批证据](acceptance/core-semantic-extended-redmi-20261111.json)。前组8/8独立保留，不能与本批累计；整个功能收尾目标尚未完成。
 
 ## 解析与隔离
 
@@ -46,4 +62,4 @@ Redmi API36独立motion/Test回拉SHA匹配，1748份源码快照在构建/验�
 - 更早候选首次打开首页前后的偏好差异，键摘要明确匹配`ip_quality_cache_v1`，源码成功查询确有缓存写入入口；Release没有该次写事件审计，不能断言唯一写者或追认旧未知偏好变化。最终R8导入前后四表完全一致。Download本批副本按SHA删除，工作区原1.yaml SHA/大小/mtime保持，结束无代理服务/校验进程；独立包暂留。
 - Go父模块与mkcp/mekya/config/ca/route/http/updater race通过；Sudoku、VMess MKCP/Mekya、SS HTTP obfs定向`-parallel 1` race通过。额外全入站测试分别出现VLESS Wss2/mTLS+ECH、SS HTTP obfs本机回环正文超时；失败日志保留，定向复测不能代替全套通过，也不认定为本次修改导致。低API真机、外部资源可达性和所有协议实流仍不在本组结论内。
 
-下一组按[功能性清单](functional-closure.md)继续首次联网、长期状态和Provider旧超时调查；应用内更新按用户最新指示暂缓、最后处理。
+后续按[功能性清单](functional-closure.md)与用户当前指令继续语义边界；配置/偏好长期稳定性和Provider历史异常已按用户接受现状收口，不再主动追旧因。应用内更新暂缓、最后处理。

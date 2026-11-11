@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-11",
+  "scope": "local-authorized-1.yaml-sequential-endpoint-first-request",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "serial": "wsvwypiz7xwslvl7",
+    "api": 36,
+    "abi": "arm64-v8a"
+  },
+  "input": {
+    "source": "workspace-root-1.yaml",
+    "bytes": 34220,
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "uploadedToPublicNetwork": false,
+    "proxyCount": 6,
+    "protocolCounts": {
+      "vless": 5,
+      "vmess": 1
+    },
+    "proxyProviders": 0
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "jvmTests": {
+      "tests": 907,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "motionApk": {
+      "package": "com.lonnnnnng.flclash.motion",
+      "bytes": 66230249,
+      "sha256": "af7c97c17b8c5ed7da98afaf1b83a4aadc53152ab3cf3af2fdcb91a5be1d2e46",
+      "readbackMatches": true
+    },
+    "motionTestApk": {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "bytes": 2928154,
+      "sha256": "bc3632a07d4529e35270271dfe019aa4c4c4051a90219153dd3d3490b8a0cc79",
+      "readbackMatches": true
+    },
+    "lintMotionBenchmark": {
+      "passed": true,
+      "errors": 0
+    }
+  },
+  "requests": {
+    "nodes": 6,
+    "attemptsPerNode": 3,
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "endpointPinned": "6/6 nodes, all 18 requests",
+    "leafPinned": "6/6 nodes, all 18 requests",
+    "lookupCandidates": "1 IPv4 candidate per request",
+    "protocolEvidence": "successful requests include completed vless-response begin/end where emitted"
+  },
+  "restoration": {
+    "temporaryProfileDeleted": true,
+    "originalProfileRowsRestored": true,
+    "originalProfileFilesRestored": true,
+    "roomPreferencesRestored": true,
+    "sharedPreferencesRestored": true,
+    "selectionRestored": true,
+    "runtimeStopped": true,
+    "servicesAndTunAbsent": true,
+    "deviceReportFilesRemoved": true
+  },
+  "artifacts": "../acceptance-artifacts/endpoint-batch-20261111-r4",
+  "boundary": "This batch validates the updated local nodes on Redmi over the current network. It does not erase earlier same-session TLS failures; those remain separate protocol evidence and require same-endpoint failure reproduction before causal closure.",
+  "collectorRepair": "Earlier exploratory batches were stopped after same-name endpoint-apply reports collided in logcat; the final batch uses node-qualified commands and retains those exploratory directories separately."
+}

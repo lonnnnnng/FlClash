@@ -380,6 +380,10 @@ ScriptRepository通过延迟Provider取得唯一管理器，下载锁外、提�
 - `IconSetRepository` 使用 Room `app_preferences.global_icon_sets` 保存有界图库 JSON 与稳定 ID，HTTP 使用既有有界客户端；下载后复核 URL/版本，允许并发改名。图库和推荐现通过`LocalResourceIconSets`提供完整来源，详见上方最新节；配置仍保存实际图标 URL。
 - `ResourceAutoUpdateWorker` 与订阅任务独立；到期扫描不含 Geo、不启动 VPN，Geo 由核心 updater 执行。脚本下载提交在文件锁内复核版本，正文与 Room 同事务写入并在异常时恢复旧文件；脚本更新按顶部当前运行态规则处理当前绑定的应用。图标集/Geo 偏好已在后续 v5 备份接通，范围与补偿边界见上方最新节。
 
+## 应用版本检查（2026-11-11，当前）
+
+AppUpdateRepository只在内存保存检查状态；通过当前已应用核心HTTP入站查询本仓库GitHub发布列表，停止时直连。ReleaseCatalog过滤Flutter/草稿/预发布并按VERSION_CODE比较Kotlin稳定版，AppUpdateActivity在有新版时用ACTION_VIEW打开固定的GitHub发布页。用户已取消应用内下载/安装范围；不恢复WorkManager下载、PackageInstaller、签名校验、安装权限或旧更新磁盘协议。
+
 ## Target modules
 
 - `app`：唯一 Android application，包含 Compose UI、Navigation、ViewModel、Hilt 入口和 Android Manifest。
@@ -435,7 +439,7 @@ Compose 使用 Material 3 作为基础，并由独立 Design System 保存 Flutt
 ## 新增文件导入
 
 - `ProfilesViewModel.fileImport` 持有独立 controller，Host 只负责 OpenDocument、生命周期和预览/密钥弹窗。8 MiB 有界读取后冻结源字节；界面 StateFlow 只包含文件元数据和操作状态，错钥保留源快照原位重试，取消/后台通过 generation 和 Job 作废迟到结果。系统选择器自身遮挡保留令牌；其他后台清理导入会话和密钥输入。
-- `ProfileRepository.importFileProfile` 在解密/YAML 校验之后再进入文件 mutex，NonCancellable 包住原子文件替换与 Room 事务，插入前及文件提交后复核会话/运行守卫，异常回滚新文件与新增行。成功保留已有当前选择；密钥复用既有 Room 字段，不新增 schema。完整 Mihomo 语义预检仍未接入。
+- `ProfileRepository.importFileProfile` 在解密及独立 UID 的完整 Mihomo 语义预检之后再进入文件 mutex，NonCancellable 包住原子文件替换与 Room 事务，插入前及文件提交后复核会话/运行守卫，异常回滚新文件与新增行。成功保留已有当前选择；密钥复用既有 Room 字段，不新增 schema。HTTP 外部资源定义可检查，远端正文和网络可用性另行验收；CUSTOM 分区草稿仍允许不完整编辑，不能按整份配置校验。
 
 ## 策略组问题、过滤与图标
 

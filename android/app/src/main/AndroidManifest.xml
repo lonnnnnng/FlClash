@@ -7,8 +7,6 @@
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- 作者 long：排除SSID按需暂停只读取当前连接名称；Android将SSID视为位置敏感信息，后台匹配需单独授权。 -->
@@ -66,9 +64,6 @@
             android:exported="false"
             android:theme="@style/Theme.KClash.QuickAction" />
         <activity android:name=".update.AppUpdateActivity" android:exported="false" android:launchMode="singleTop" />
-        <receiver android:name=".update.AppUpdateInstallReceiver" android:exported="false" />
-        <service android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync" tools:node="merge" />
         <activity
             android:name=".ExternalActionActivity"
             android:excludeFromRecents="true"

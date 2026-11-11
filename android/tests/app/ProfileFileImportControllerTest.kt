@@ -112,6 +112,42 @@ class ProfileFileImportControllerTest {
         model.confirm(); advanceUntilIdle(); assertEquals(1, store.saved.size)
     }
 
+    @Test fun runningCoreBlocksFileCandidateBeforeReadAndAllowsSamePreviewAfterStop() = runTest {
+        val runtime = object : CoreRuntimeStatusProvider { override val state = MutableStateFlow(CoreRuntimeStatus.RUNNING) }
+        val store = ImportStore()
+        var reads = 0
+        val source = "rules: []".toByteArray()
+        val model = controller(store, runtime, ProfileFileDocumentReader {
+            reads++
+            ProfileFileDocument("authorized.yaml", source)
+        })
+
+        // 作者 long：运行中的配置可能正被核心读取，先挡住文件选择，避免用户误以为候选已经进入可提交会话。
+        assertNull(model.beginPick())
+        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, model.state.value.error)
+        assertEquals(0, reads)
+        assertTrue(store.saved.isEmpty())
+
+        runtime.state.value = CoreRuntimeStatus.STOPPED
+        model.acceptFile(model.beginPick(), "content://authorized")
+        advanceUntilIdle()
+        assertTrue(model.state.value.validYaml)
+        assertEquals(1, reads)
+
+        // 作者 long：系统选择器返回后核心仍可能被快捷入口启动，确认时再次检查可避免陈旧预览覆盖运行输入。
+        runtime.state.value = CoreRuntimeStatus.RUNNING
+        model.confirm()
+        advanceUntilIdle()
+        assertEquals(PROFILE_MUTATION_BLOCKED_MESSAGE, model.state.value.error)
+        assertTrue(store.saved.isEmpty())
+
+        runtime.state.value = CoreRuntimeStatus.STOPPED
+        model.confirm()
+        advanceUntilIdle()
+        assertEquals(1, store.saved.size)
+        assertTrue(source.contentEquals(store.saved.single()))
+    }
+
     private fun TestScope.controller(store: ImportStore, runtime: CoreRuntimeStatusProvider = object : CoreRuntimeStatusProvider {
         override val state = MutableStateFlow(CoreRuntimeStatus.STOPPED)
     }, reader: ProfileFileDocumentReader) = ProfileFileImportController(store, runtime, reader, YamlProfileConfigValidator(), this, StandardTestDispatcher(testScheduler))

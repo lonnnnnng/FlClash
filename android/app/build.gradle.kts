@@ -29,8 +29,8 @@ val hasReleaseSigning = releaseStoreFile.exists() &&
     releaseKeyAlias != null &&
     releaseKeyPassword != null
 
-val defaultVersionCode = 1002
-val defaultVersionName = "0.1.2"
+val defaultVersionCode = 1003
+val defaultVersionName = "0.1.3"
 // 作者 long：性能诊断显式启用独立包名的非Debug运行时；默认构建/正式Release不携带验收宿主。
 val motionBenchmarkEnabled = providers.gradleProperty("kclashMotionBenchmark").orNull == "true"
 val requestedVersionCode = providers.gradleProperty("kclashVersionCode")

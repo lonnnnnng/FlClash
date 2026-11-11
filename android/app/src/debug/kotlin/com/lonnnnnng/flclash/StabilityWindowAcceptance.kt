@@ -66,6 +66,11 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 check(input.getString("token") == token)
                 val repo = entry.profileRepository(); val runtime = entry.runtimeManager()
                 timed("profile-load", 10_000) { repo.profilesLoaded.first { it } }
+                if (command.startsWith("endpoint-")) {
+                    report.put("endpointControl", timed("endpoint-control", 60_000) {
+                        endpointControl(this@StabilityWindowAcceptanceActivity, entry, input, command)
+                    })
+                }
                 if (command in setOf("configure-auto", "restore-auto", "manual-sync", "automatic-scan")) {
                     val remote = entry.database().profiles().getAll().single { it.type == ProfileType.URL && it.url == input.getString("authorizedUrl") }
                     when (command) {
@@ -91,20 +96,27 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 if (command == "start" || command.startsWith("start-")) {
                     check(runtime.state.value == CoreRuntimeStatus.STOPPED)
                     val rows = entry.database().profiles().getAll()
-                    val local = rows.single { it.type == ProfileType.FILE && stabilitySha(repo.profileFile(it.id).readBytes()) == input.getString("localSha256") }
+                    val local = rows.single { it.type == ProfileType.FILE && if (input.has("localProfileId")) it.id == input.getLong("localProfileId")
+                        else stabilitySha(repo.profileFile(it.id).readBytes()) == input.getString("localSha256") }
                     // 作者 long：诊断组复用原FILE和唯一获准URL；新增第二份获准基线不能放宽到任意用户配置。
-                    check(rows.size in 1..2 && rows.all { it.id == local.id || it.type == ProfileType.URL && it.url == input.getString("authorizedUrl") })
+                    if (input.has("baselineProfileIds")) {
+                        val expected = input.getJSONArray("baselineProfileIds").let { ids -> (0 until ids.length()).map { ids.getLong(it) }.toSet() } + local.id
+                        check(rows.map { it.id }.toSet() == expected)
+                    } else check(rows.size in 1..2 && rows.all { it.id == local.id || it.type == ProfileType.URL && it.url == input.getString("authorizedUrl") })
                     timed("pure-proxy-settings", 10_000) { runtime.setVpnEnabled(false).getOrThrow() }
                     timed("select-local", 30_000) { runtime.selectProfile(local.id, repo::selectProfile) }
                     timed("core-start", 60_000) { runtime.startProxy().getOrThrow() }
                 }
                 if (command == "stop" || command.startsWith("stop-")) timed("core-stop", 30_000) { runtime.stop().getOrThrow() }
-                if (command != "stop" && !command.startsWith("stop-") && !command.startsWith("snapshot-") &&
+                if (command != "stop" && !command.startsWith("stop-") && !command.startsWith("snapshot-") && !command.startsWith("endpoint-") &&
                     command !in setOf("configure-auto", "restore-auto", "manual-sync", "automatic-scan")) {
                     timed("runtime-ready", 40_000) { runtime.state.first { it == CoreRuntimeStatus.RUNNING || it == CoreRuntimeStatus.FAILED } }
                     check(runtime.state.value == CoreRuntimeStatus.RUNNING && !ServiceConfig.vpnAlive.value)
                     report.put("directRunningObservedElapsedMs", SystemClock.elapsedRealtime())
                         .put("runningSinceElapsedMs", runtime.runningSinceElapsedMillis.value)
+                    if (input.has("endpointControl")) report.put("endpointLeaf", timed("endpoint-leaf-lock", 10_000) {
+                        endpointControl(this@StabilityWindowAcceptanceActivity, entry, input, "endpoint-lock")
+                    })
                     val network = timed("network-total", 90_000) {
                         acceptedProxyRequest(entry, URI(input.getString("authorizedUrl"))) { phase, detail ->
                             stabilityReport(this@StabilityWindowAcceptanceActivity, token, "$command-$phase", detail)

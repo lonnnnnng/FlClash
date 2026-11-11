@@ -1,5 +1,11 @@
 # KClash Kotlin 重写路线图
 
+> **应用更新按用户决定简化（2026-11-11，当前）**：只读取当前版本、查询KClash最新稳定版，有新版时打开GitHub发布页。删除应用内APK下载/续传、WorkManager更新任务、签名校验、安装会话/回执/通知及安装权限；原复杂升级边界不再属于待办。903项JVM、Debug/签名Release-R8/motion-Test及双Lint零错误、扫码DEX3/3；Redmi真实查询和0.1.2→0.1.3本地签名候选覆盖数据保持已验。公开0.1.3发布进行中。见[说明](app-update-implementation.md)。
+
+> **核心语义预检边界补验（2026-11-11，当前）**：908项JVM、最终motion/Test、Debug Lint零错误和Redmi final3精确18/18通过。混合FILE/URL/CUSTOM与未提交密文草稿保护、运行纯代理/VPN守卫、停机同候选重试、真实管理器托管apply失败与防重复下载、真实授权URL导入已验。90份外部正文首轮89/90、唯一超时项定向1/1，两轮授权源摘要相同，按资源合计90/90真实下载并分批解析；不是单轮全绿或90份一次加载。VPN服务/接口保持已验，HTTPS走本地SOCKS；TUN绑定EPERM仍未通过。原1.yaml SHA-size-mtime保持、未上传公网；正式包未重装，未重跑Release/Go或发布。低API/OEM和其他协议实流仍保留，详见[证据](acceptance/core-semantic-boundaries-redmi-20261111.json)与[记录](core-semantic-preflight-investigation.md)。
+
+> **新节点逐节点实网复验（2026-11-11）**：重新读取工作区根目录 `1.yaml`，仅在专用 Redmi Note 8 Pro 的独立 `.motion` 验收包中使用；正文未上传公网。配置含 6 个代理（VLESS 5、VMess 1），无 Provider。六个节点各独立停止/启动核心并锁定叶节点，每个节点首请求加两次复请求，共 18/18 HTTPS 成功；每次只解析到 1 个 IPv4 候选，拨号端点和叶节点摘要均与目标一致。批次结束后临时 Profile、原两份 Profile/正文 SHA-size-mtime、Room/SharedPreferences、当前选择均恢复，核心停止、服务/TUN 和设备回执清理。907 项 JVM、motion/Test 构建、motion Lint 零错误通过。该批次说明当前新节点和当前网络下首连链路可用，但不抹除先前同会话 TLS 失败；旧失败仍需同端点复现后才能关闭整体首次联网目标。见[验收证据](acceptance/endpoint-batch-redmi-20261111.json)和本机附件 `../acceptance-artifacts/endpoint-batch-20261111-r4/`。
+
 > **历史异常按用户决定收口、网络协议定位继续（2026-11-11，当前）**：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。
 
 > **历史切片：TLS单向流量与最终端点取证（2026-11-11）**：907项JVM、Go父模块与dns/dialer/route/http/updater race、Debug/Release-R8/双Lint/motion-Test和DEX通过；最终Redmi诊断2/2。Provider两场均在准备网络时TLS约20秒超时，最终端点不同，均254B上传/0B应用层下载，未进入保存/死亡窗口；另FILE同会话3笔HTTPS200独立保留，不能替代失败。source1 after另有保存错误/提交等待超时，原因未定。正式四表/两配置正文/UID保持、无服务，原1.yaml保持。网络仍未闭环，应用内更新暂缓，未新发版。见[证据](acceptance/tls-flow-redmi-20261111.json)。
@@ -811,16 +817,16 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步chen08209/Clash.Meta:FlClash；本轮为自有fork诊断扩展，不从MetaCubeX/mihomo同步，不合并Flutter提交。 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用与观测；KUI-034完整停止等待resetTraffic成功再发布STOPPED，失败后重试，按需暂停/运行中应用配置不清本次统计。 |
-| 单元测试 | 907项JVM（App616/Service218/Core39/Common34）零失败/错误/跳过，含Gradle复用；Debug/Release-R8/双Lint/motion-Test/DEX通过，Go父模块与dns/dialer/vless/route/http/updater race通过。 |
-| 最新真机 | 最终协议包诊断4/4；Provider after真实系统恢复/3HTTPS通过，before准备TLS失败未进入死亡。独立FILE同会话2/4，合计网络5/8；失败停在VLESS响应头未完成。状态/Provider历史按用户接受收口，网络继续。 |
-| 当前设备数据 | 正式本地R8候选保持2配置/2偏好/0脚本/0测速；四表/正文SHA-size-mtime/UID/schema保持。motion/Test及授权加密输入暂留，无服务/tun0；本轮2份只读报告已按SHA删除，原1.yaml保持，Flutter未操作。 |
+| 单元测试 | 简化更新后903项JVM（App612/Service218/Core39/Common34）零失败/错误/跳过，含Gradle复用；删除旧下载5项测试。Debug/签名Release-R8/motion-Test、双Lint零错误、扫码DEX3/3通过。Go本地未重跑，发布CI另验。 |
+| 最新真机 | 语义边界final3 18/18（含外部资源定向1/1），前轮外部89/90合并为90个唯一正文真实下载/分批解析；本轮8笔SOCKS HTTPS200，VPN服务/接口保持，TUN绑定EPERM单列。前组新6节点18/18及旧TLS失败分别保留；状态/Provider历史按用户接受收口。 |
+| 当前设备数据 | 正式包APK/UID及无服务状态本轮核对保持；2配置等四表数量沿用前组记录，本轮未重新审计。motion/Test仅用于本组独立库；原1.yaml SHA-size-mtime保持，Flutter未操作。收尾包与TUN状态见本轮cleanup证据。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | 最终android1/motion1通过；motion`313e94a1…b394a81`、Test`336964e0…e17919`回拉一致，1760份源码哈希保持。正式本地R8候选未重装。 |
+| Debug / Test | 本轮最终motion/Test构建、安装回拉匹配，736份Android/Bridge源码哈希保持；独立设备输入仅经USB，详见本轮JSON。正式本地R8候选未重装。 |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
 | Release | 公开`kclash-v0.1.2`/签名arm64/R8 APK `96107b78…4eef538`已发布并下载/签名/版本/ABI/正文/校验和及Redmi安装回验。0.1.1→本地0.1.2→公开0.1.2单FILE数据保持，同schema6；不推广混合库、未提交草稿、运行VPN或低API升级。 |
-| 最新证据 | `acceptance/dns-lookup-redmi-20261111.json`与KCORE-009专页；前组node-dns和本次成功拨号后TLS超时均保留，未闭环。更新暂缓，其他旧异常不倒推。 |
+| 最新证据 | [新节点实网复验](acceptance/endpoint-batch-redmi-20261111.json)：当前6节点18/18通过；[协议阶段调查](acceptance/protocol-stage-redmi-20261111.json)仍保留此前5/8及响应头等待失败，未闭环整体旧失败因果。更新暂缓，其他旧异常不倒推。 |
 
 ## 4. 目标架构图
 
@@ -1088,7 +1094,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 - Deep Link 导入复用 `ProfilesViewModel.addRemote`，不在 Activity 中重复下载或写入 Profile。
 - 无效 Scheme、Host、目标协议或缺失参数会通过现有 Snackbar 错误流提示，不能创建半成品 Profile。
 - 二维码图片选择、QR 格式识别和配置链接解析已接入添加 Profile 对话框；直接 HTTP(S) 链接和四种 KClash Deep Link 统一复用同一解析器及远程订阅写入链路。
-- 本地文件选择后先异步校验 YAML 语法并展示文件名、大小与结果；有效文件需用户确认才提交，无效/空文件不可导入且取消不写入。`ProfileRepository.addFileProfile` 在生成 ID、写文件和 Room 插入前再次复核；该预检只证明 YAML 可解析，不等同于 Mihomo 核心语义校验。
+- 本地文件选择后异步检查YAML及独立UID的完整Mihomo语义，展示文件名、大小、错误定位和延期外部资源数量；有效文件需确认才提交，无效/空文件及取消不写入。`ProfileRepository.importFileProfile`在生成ID/写文件/Room插入前再次完整校验，并复核运行与会话守卫；外部正文、权限和网络可用性另行验收。
 - FILE 本地配置编辑提供可选掩码 age 密钥和系统文件替换，原始 YAML 默认折叠；只改密钥保留正文与更新时间。替换按原字节暂存，确认后解密/语法校验，再在同一保存流程更新文件与 Room；异常恢复旧正文/mtime，保存与删除串行，确认前取消零写入。真实 DocumentsUI 已完成授权 `1.yaml` 明文新增与替换，以及同一原字节生成的真实 age 密文新增与替换；错钥原位重试、持久密钥复用、Activity 重建和失败回滚通过，CUSTOM 保持原分区编辑器。
 - 稳定RUNNING已开放首页/配置单项和批量同步、排序、重命名、远程/FILE/CUSTOM正文与结构化保存、脚本绑定及删除；STARTING/STOPPING暂禁。提交与应用共持CoreRuntimeManager锁，保存成功但应用失败提供独立重试。删除当前项先切替代项、最后项先停核心，失败保留旧源并尝试恢复；FILE/CUSTOM Rules、授权两目标实下载及本组脚本/全局DNS/规则/Provider覆盖/更多设置/侧载与两HTTP资源实更新已验；外部脚本源生产VM/真实下载/实核运行态集成已由本组补验，完整点击导航及其余字段仍有独立边界。
 - 父表单/正文子页和原始并发基线、文件替换及picker令牌保存在noBackup加密草稿；后台am kill后恢复及放弃清除已验。FILE/远程本地副本、脚本和Provider的真实DocumentsUI前台回收进程后返回/取消均已验；FILE/远程外层保存才提交，脚本同名不覆盖，Provider重建绑定并严格复核原输入/缓存摘要后侧载、核心回读。
@@ -1364,7 +1370,9 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ### 7.7 测试、发布和运维
 
-当前最新功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
+本轮最新为语义边界补验：908 JVM、motion/Test和Debug Lint零错误，Redmi final3 18/18；外部正文前轮89/90+定向1/1，90个唯一资源分批解析。VPN状态/接口保持已验，TUN绑定EPERM未通过。本轮不重跑Release/R8/Go或发版；[证据](acceptance/core-semantic-boundaries-redmi-20261111.json)。以下协议和发布记录为前组证据。
+
+前组功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 
 历史本地验收KUI-037：881项JVM、Debug/未签名Release-R8/motion/Test与双Lint零错误；Redmi最终定向11/11、真实Room冷读3场景及深浅自然2/2通过。前序21/22与最终去重覆盖22项，批次/APK边界见JSON。该批未发版，公开0.1.2为独立发布证据。详见[本组证据](acceptance/group-sheet-closure-redmi-20261110.json)。
 
@@ -1482,7 +1490,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ## 8. 推荐推进顺序
 
-2026-11-11当前优先级：名单保护本组已验，核心语义预检及本组扩展已验；接续首次联网、Provider旧超时及长期状态逐键来源调查。应用内更新基础升级已验，剩余边界按用户最新指示暂缓并排到最后。完整要求及证据见[功能清单](functional-closure.md)；下表保留历史分类索引。
+2026-11-11当前优先级：名单保护及本组语义提交边界已验，90份外部正文实网/分批解析已补；低API、OEM、其他协议及TUN流量边界单列。首次联网保留新节点成功与旧失败；配置/偏好长期稳定性、Provider旧异常按用户接受现状收口，不再主动追旧因。应用更新按用户最新决定简化为版本检查与GitHub跳转；下载/安装相关边界取消。完整要求及证据见[功能清单](functional-closure.md)；下表保留历史分类索引。
 
 ### todo.md 收尾清单（2026-11-10，当前执行入口）
 

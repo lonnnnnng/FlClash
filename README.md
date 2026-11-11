@@ -41,7 +41,9 @@ The Kotlin app is under active development. Core profile, proxy, VPN and diagnos
 
 ## Download and install
 
-Download the signed `KClash-0.1.2-android-arm64-v8a.apk` from [GitHub Releases](https://github.com/lonnnnnng/FlClash/releases/latest). The release supports ARM64 Android devices. Android may ask you to allow installation from the browser or file manager used to open the APK.
+Download the signed `KClash-0.1.3-android-arm64-v8a.apk` from [GitHub Releases](https://github.com/lonnnnnng/FlClash/releases/latest). The release supports ARM64 Android devices. Android may ask you to allow installation from the browser or file manager used to open the APK.
+
+Use Tools → App update to check the latest KClash release. When a newer version is available, open its GitHub release page to download it in your browser.
 
 KClash has its own Android application ID and signing identity. It installs separately from the upstream Flutter app and does not migrate Flutter/Drift application data. Keep the release signing identity stable when upgrading KClash so Android can verify the update.
 

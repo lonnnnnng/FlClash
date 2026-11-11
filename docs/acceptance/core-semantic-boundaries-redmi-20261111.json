@@ -1,0 +1,1120 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "7db5aec692925d29f48c6a2932b1e52927eaf62e",
+  "coreCommit": "d43bbd751fe5eb95a599a6211423f645269ba57d",
+  "coreWorkingTreeClean": true,
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "scope": "本轮只新增测试与证据；保留此前未提交改动，未修改生产运行逻辑或内核",
+  "overallFunctionalGoalComplete": false,
+  "jvm": {
+    "total": 908,
+    "modules": {
+      "app": {
+        "tests": 617,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 218,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "includesGradleReuse": true
+  },
+  "build": {
+    "motionAndAndroidTest": true,
+    "debugLint": {
+      "errors": 0,
+      "warnings": 75,
+      "hints": 14
+    },
+    "releaseR8GoReleaseLintRerun": false
+  },
+  "installation": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "98fd1ce3a4bf613c58cf2d4b931117748015341e46f4029e6d5444e8cd278127",
+      "bytes": 66230209,
+      "readbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "3713bacd8a9a5c7c8f455642f6f7f2eb135c4ae3b646f5a319d54e20737a5eb5",
+      "bytes": 2973910,
+      "readbackMatches": true
+    }
+  ],
+  "deviceTests": {
+    "finalBatch": {
+      "tests": 18,
+      "passed": 18,
+      "formalIdentityAndServicesHeld": true,
+      "localSourceHeld": true,
+      "prepared": true
+    },
+    "methods": [
+      {
+        "name": "01-runningVpnKeepsTunnelAndDraftAcrossRejectedImportAndStoppedRetry",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest#runningVpnKeepsTunnelAndDraftAcrossRejectedImportAndStoppedRetry",
+        "passed": true,
+        "seconds": 12.129,
+        "exitCode": 0
+      },
+      {
+        "name": "02-realRuntimeManagedApplyFailureKeepsSavedBodyAndRetriesWithoutDownloading",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest#realRuntimeManagedApplyFailureKeepsSavedBodyAndRetriesWithoutDownloading",
+        "passed": true,
+        "seconds": 15.771,
+        "exitCode": 0
+      },
+      {
+        "name": "03-mixedProfilesAndEncryptedPendingDraftSurviveSemanticRejectionAndValidImport",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest#mixedProfilesAndEncryptedPendingDraftSurviveSemanticRejectionAndValidImport",
+        "passed": true,
+        "seconds": 12.315,
+        "exitCode": 0
+      },
+      {
+        "name": "04-managedSemanticRejectionPrecedesCommitAndApplyFailureRetriesWithoutDownload",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest#managedSemanticRejectionPrecedesCommitAndApplyFailureRetriesWithoutDownload",
+        "passed": true,
+        "seconds": 5.126,
+        "exitCode": 0
+      },
+      {
+        "name": "05-runningProxyRejectsImportAndPreservesDraftUntilSamePreviewRetriesAfterStop",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest#runningProxyRejectsImportAndPreservesDraftUntilSamePreviewRetriesAfterStop",
+        "passed": true,
+        "seconds": 12.712,
+        "exitCode": 0
+      },
+      {
+        "name": "06-authorizedExternalRulesDownloadAndValidateGrantedBodiesWithoutChangingSources",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest#authorizedExternalRulesDownloadAndValidateGrantedBodiesWithoutChangingSources",
+        "passed": true,
+        "seconds": 15.75,
+        "exitCode": 0
+      },
+      {
+        "name": "07-authorizedOriginalUsesFullParserAndLeavesSourceResourcesAndDatabaseUntouched",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticPreflightInstrumentedTest#authorizedOriginalUsesFullParserAndLeavesSourceResourcesAndDatabaseUntouched",
+        "passed": true,
+        "seconds": 1.967,
+        "exitCode": 0
+      },
+      {
+        "name": "08-semanticNodeGroupRuleDnsErrorsRejectBeforeAnyProfileOrFileWrite",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticPreflightInstrumentedTest#semanticNodeGroupRuleDnsErrorsRejectBeforeAnyProfileOrFileWrite",
+        "passed": true,
+        "seconds": 4.898,
+        "exitCode": 0
+      },
+      {
+        "name": "09-fileCustomTrustCertificateIsGrantedAndInvalidPemIsRejected",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticPreflightInstrumentedTest#fileCustomTrustCertificateIsGrantedAndInvalidPemIsRejected",
+        "passed": true,
+        "seconds": 2.809,
+        "exitCode": 0
+      },
+      {
+        "name": "10-blockedPipeWriteCancelsWithoutWaitingForRemoteReader",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticPreflightInstrumentedTest#blockedPipeWriteCancelsWithoutWaitingForRemoteReader",
+        "passed": true,
+        "seconds": 0.986,
+        "exitCode": 0
+      },
+      {
+        "name": "11-canceledValidationReleasesProcessAndFollowingOriginalStillPasses",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticPreflightInstrumentedTest#canceledValidationReleasesProcessAndFollowingOriginalStillPasses",
+        "passed": true,
+        "seconds": 2.702,
+        "exitCode": 0
+      },
+      {
+        "name": "12-runningCoreKeepsEpochSelectionSourceAndRealNetworkAcrossValidation",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticPreflightInstrumentedTest#runningCoreKeepsEpochSelectionSourceAndRealNetworkAcrossValidation",
+        "passed": true,
+        "seconds": 8.539,
+        "exitCode": 0
+      },
+      {
+        "name": "13-customImportRejectsInvalidCandidateBeforeAnyResourceStaging",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticPreflightInstrumentedTest#customImportRejectsInvalidCandidateBeforeAnyResourceStaging",
+        "passed": true,
+        "seconds": 2.397,
+        "exitCode": 0
+      },
+      {
+        "name": "14-customImportResolvesExistingAuthorizedProfileWithoutCreatingRuntimeProjection",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticPreflightInstrumentedTest#customImportResolvesExistingAuthorizedProfileWithoutCreatingRuntimeProjection",
+        "passed": true,
+        "seconds": 3.931,
+        "exitCode": 0
+      },
+      {
+        "name": "15-ruleDirectoryVersionChangedAfterInitialPreflightRejectsCommit",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticResourceRaceInstrumentedTest#ruleDirectoryVersionChangedAfterInitialPreflightRejectsCommit",
+        "passed": true,
+        "seconds": 2.625,
+        "exitCode": 0
+      },
+      {
+        "name": "16-proxyFileChangedAfterFinalPreflightRejectsCommit",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticResourceRaceInstrumentedTest#proxyFileChangedAfterFinalPreflightRejectsCommit",
+        "passed": true,
+        "seconds": 5.738,
+        "exitCode": 0
+      },
+      {
+        "name": "17-reusedHttpResourceWithInvalidCachedNodeRejectsBeforeCustomCommit",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticResourceRaceInstrumentedTest#reusedHttpResourceWithInvalidCachedNodeRejectsBeforeCustomCommit",
+        "passed": true,
+        "seconds": 4.88,
+        "exitCode": 0
+      },
+      {
+        "name": "18-unusedMissingStableProviderDoesNotBlockValidCustomImport",
+        "class": "com.lonnnnnng.flclash.ConfigSemanticResourceRaceInstrumentedTest#unusedMissingStableProviderDoesNotBlockValidCustomImport",
+        "passed": true,
+        "seconds": 4.047,
+        "exitCode": 0
+      }
+    ],
+    "reports": [
+      {
+        "case": "managed-apply-boundary",
+        "passed": true,
+        "semanticRejectBeforeCommit": true,
+        "applyFaultInjected": true,
+        "retryDownloads": 0,
+        "retryFileAndMtimeHeld": true,
+        "noReplay": true
+      },
+      {
+        "case": "real-runtime-managed-apply",
+        "passed": true,
+        "actualRuntimeManager": true,
+        "scriptApplyFault": true,
+        "runningSessionRecovered": true,
+        "savedBodyAndMtimeHeldOnRetry": true,
+        "retryDownloads": 0,
+        "realHttpsRequests": 2,
+        "noReplay": true
+      },
+      {
+        "case": "mixed-and-draft",
+        "passed": true,
+        "profileTypes": 3,
+        "draftCiphertextAndMtimeHeld": true,
+        "existingFilesHeld": true
+      },
+      {
+        "case": "running-proxy",
+        "passed": true,
+        "realHttpsRequests": 2,
+        "epochAndRunningSinceHeld": true,
+        "draftCiphertextAndMtimeHeld": true,
+        "samePreviewImportedAfterStop": true,
+        "tunnelBoundRequests": false,
+        "trafficRoute": "explicit-local-SOCKS",
+        "vpnInterfaceAndNetworkHeld": false
+      },
+      {
+        "case": "running-vpn",
+        "passed": true,
+        "realHttpsRequests": 2,
+        "epochAndRunningSinceHeld": true,
+        "draftCiphertextAndMtimeHeld": true,
+        "samePreviewImportedAfterStop": true,
+        "tunnelBoundRequests": false,
+        "trafficRoute": "explicit-local-SOCKS",
+        "vpnInterfaceAndNetworkHeld": true
+      },
+      {
+        "case": "external-rule-bodies",
+        "passed": true,
+        "resources": 1,
+        "networkAttempts": 1,
+        "fullBodySemanticParse": true,
+        "validationBatches": 1,
+        "singlePassAllBodies": false,
+        "realUrlRepositoryImport": true,
+        "scope": "targeted",
+        "explicitCoreHttpRoute": true,
+        "sourceSha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c"
+      },
+      {
+        "passed": true,
+        "epochHeld": true,
+        "runningSinceHeld": true,
+        "profileRowsHeld": true,
+        "sourceAndGeoFilesHeld": true,
+        "realHttpsRequests": 2,
+        "sameSocketAttribution": true
+      }
+    ],
+    "realAttributedSocksHttpsRequests": 8
+  },
+  "externalResourceCoverage": {
+    "uniqueBodiesDownloadedAndParsed": 90,
+    "sourceSha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c",
+    "fullBatch": {
+      "attempted": 90,
+      "downloadedAndParsed": 89,
+      "passed": false,
+      "seconds": 101.867
+    },
+    "targetedSupplement": {
+      "attempted": 1,
+      "downloadedAndParsed": 1,
+      "passed": true,
+      "sourceSha256Held": true
+    },
+    "singleAllGreen90Batch": false,
+    "singlePassAllBodies": false,
+    "readOnlyValidationBatchSizes": [
+      30,
+      30,
+      29,
+      1
+    ],
+    "unchangedResourceUrls": true,
+    "explicitCurrentCoreHttpRoute": true,
+    "addedAccelerationUrl": false,
+    "automaticRetry": false,
+    "realUrlRepositoryImport": true,
+    "doesNotProve": [
+      "90个Provider的自动更新或全部规则命中",
+      "90份正文属于同一原子快照",
+      "普通SubscriptionClient自动选路已闭环"
+    ],
+    "bodies": [
+      {
+        "index": 0,
+        "nameSha256": "003f6529d7895b978d7c22792d40f34870be335b573411cdd3a3dab812451ebd",
+        "passed": true,
+        "bytes": 8247,
+        "bodySha256": "38424a7d19026feddb3277b6a6dce557f3add4648333516b3a76ba8674c81598",
+        "failureType": null
+      },
+      {
+        "index": 62,
+        "nameSha256": "042e9398f2cc89025595d077503121a4a5a41d153d6863caa4c7332c8f1029f6",
+        "passed": true,
+        "bytes": 138,
+        "bodySha256": "c64da8f97e853d0234c651a17df63cf52525476c09d2f35ecd6fcd3fb5fff63f",
+        "failureType": null
+      },
+      {
+        "index": 86,
+        "nameSha256": "0fb9765e58d296e5762b8a9d884224cf812f739f2815b12625bfc9c309486a4e",
+        "passed": true,
+        "bytes": 820,
+        "bodySha256": "7a3aa41df65a5d5ca5c2246edeea957853a1fc96a44ed59f7ddc197f6c1503a7",
+        "failureType": null
+      },
+      {
+        "index": 30,
+        "nameSha256": "13ed070478ef62c3a7baa36c8d042a9d1cdc0fcbb2af93a795f2ad20ad6e9cb5",
+        "passed": true,
+        "bytes": 295,
+        "bodySha256": "daecea060b67af1c82fe9624e7a164f59d16be6ee4d61257526e0be0e9a5b57c",
+        "failureType": null
+      },
+      {
+        "index": 27,
+        "nameSha256": "1c27324f013705cbf0c49f3d3bb103c7069ed5988889d426c10cfc25684f0a31",
+        "passed": true,
+        "bytes": 172,
+        "bodySha256": "0120640e1e37cf2cd5c4e49d19bdf7ec0b4707e4e487c30539b4252c849d10bf",
+        "failureType": null
+      },
+      {
+        "index": 7,
+        "nameSha256": "24e6654bfd1ab85bebb1f721a4be46e6fdb9ea8974d14442d3aaecd1f971fcbb",
+        "passed": true,
+        "bytes": 1366,
+        "bodySha256": "e212b2ce9f39b30f4e2ab57da9ed0937673606bc56bb46e5d55ad7dd9af00aef",
+        "failureType": null
+      },
+      {
+        "index": 29,
+        "nameSha256": "2795661f2c91364ccb388349b225bbcced3b16c7d945dfa019bbcd054837c3f4",
+        "passed": true,
+        "bytes": 53,
+        "bodySha256": "2b58b4a8875c0fffcf6d3e4c0ad0d750013fbdae575669a15c3c8a2fd02bcbe2",
+        "failureType": null
+      },
+      {
+        "index": 37,
+        "nameSha256": "2b78da3dc866654e6ea7cb2f654df44746b6f02876acbb2a05726ab3d915e47e",
+        "passed": true,
+        "bytes": 429,
+        "bodySha256": "a13485a346bf4add7f8d3859453b11c9a03f34e1bf047c991f13dbe57c2a7e3f",
+        "failureType": null
+      },
+      {
+        "index": 73,
+        "nameSha256": "2bed2032ed3d8300b7714ff77101e6c43637597977337c699191dd844c86a72d",
+        "passed": true,
+        "bytes": 175,
+        "bodySha256": "94c3397bb92fc8cee2fa8dd72bb8183db0bda62d215bce10e2dd86f08bd44048",
+        "failureType": null
+      },
+      {
+        "index": 79,
+        "nameSha256": "2c6a093063d428d7a214da66a501228296c037daed5d1f4e8b792c68cc0644f4",
+        "passed": true,
+        "bytes": 65,
+        "bodySha256": "d96238932da87465c8c25da3ed191f728e88d7ba37635cbb5152ef1f29c3e775",
+        "failureType": null
+      },
+      {
+        "index": 25,
+        "nameSha256": "2e183f2a7a70de1c10044f4e370a221a792736cb074835afcde6a9df457d413b",
+        "passed": true,
+        "bytes": 206,
+        "bodySha256": "3c7c686ade3088c4781d8bee262c61603618db5b2be4e3e63607b591db7b4ebc",
+        "failureType": null
+      },
+      {
+        "index": 84,
+        "nameSha256": "314658ac079605bbfa1723780e15c98cc7816c724eb2673baeb0b3cdbf1409a1",
+        "passed": true,
+        "bytes": 140,
+        "bodySha256": "2d59b4951b76f1cab62524eefdd52a28d10f54d5ef181968bae3e8c5b193a29d",
+        "failureType": null
+      },
+      {
+        "index": 71,
+        "nameSha256": "31f61ed3e6e210c5f3f729345968bdbcf267cf0fbfec31eac02ed9966ba1d067",
+        "passed": true,
+        "bytes": 142,
+        "bodySha256": "d4ffb5caffce5e352ad0826781c999b5832140afe75f8d5607d70165ad970d38",
+        "failureType": null
+      },
+      {
+        "index": 51,
+        "nameSha256": "3293a927d5ffe892ce96a0d00af30a8add6af1c8453bdf752d0d6f93c861d4c5",
+        "passed": true,
+        "bytes": 190,
+        "bodySha256": "250ca2ccd343b6551edc9fe1aeaf8d232e90d0ccbaf826dd3a74c96401ccbc13",
+        "failureType": null
+      },
+      {
+        "index": 81,
+        "nameSha256": "33fbe23f0dc9f7d06dbbc853c6ac54674e8ee25775dfc47e1afb9bc2986569f1",
+        "passed": true,
+        "bytes": 248,
+        "bodySha256": "96794269c8e7fd24c12d51245dd16d050de6b2e0225d74f6c16a51c17e92a6bd",
+        "failureType": null
+      },
+      {
+        "index": 32,
+        "nameSha256": "34a533dfd7273a9bb03656b32956a2b1d08dc62533b11c813b28d0ef23ec8e67",
+        "passed": true,
+        "bytes": 2508,
+        "bodySha256": "6c6da49c66ab6f8d0c84a969828315199e258cf5316b91aeb8c6bd9259898577",
+        "failureType": null
+      },
+      {
+        "index": 24,
+        "nameSha256": "38a9c1e721584da284b90ceea4ed7eb8db15ac4ea86c2c75ec925d5f8799fcf0",
+        "passed": true,
+        "bytes": 289,
+        "bodySha256": "cb553fec05e5d082ce502db4d518b594ea66eb481e0db31905ce395ebee640e4",
+        "failureType": null
+      },
+      {
+        "index": 12,
+        "nameSha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b",
+        "passed": true,
+        "bytes": 17819,
+        "bodySha256": "3c47497f1026d6f58906d5a05e6404356eedd15f4f2dcbb32bae39e1dcd3323b",
+        "failureType": null
+      },
+      {
+        "index": 18,
+        "nameSha256": "3d59f7548e1af2151b64135003ce63c0a484c26b9b8b166a7b1c1805ec34b00a",
+        "passed": true,
+        "bytes": 3544,
+        "bodySha256": "f7792eedd3bb0966acd2800be52f983ef0eec339b2d0cfa3c1490afbdda29973",
+        "failureType": null
+      },
+      {
+        "index": 46,
+        "nameSha256": "3f1f29444c093e2890d2163174cce5d5db40386b84168e015ec9da46cff1a6f9",
+        "passed": true,
+        "bytes": 889,
+        "bodySha256": "edfe30eb85f9e6b2b480b0a251bf4f72ace6a1b0d63aff584cb8f69698c7ee48",
+        "failureType": null
+      },
+      {
+        "index": 14,
+        "nameSha256": "3f40462915a3e6026a4d790127b95ded4d870f6ab18d9af2fcbc454168255237",
+        "passed": true,
+        "bytes": 274,
+        "bodySha256": "ffa4d1d3e8649965e529c1c570d8add75a0d6f70aa8503ece8add841ce48c0e7",
+        "failureType": null
+      },
+      {
+        "index": 35,
+        "nameSha256": "41887e792edfd3fe8985c23889250c5b7d65efc981de14492783baa0bbe9e74a",
+        "passed": true,
+        "bytes": 414,
+        "bodySha256": "5b0759f92293b658595302ce84a79269e3dd23b5baecb7e3b0e06230b72a0789",
+        "failureType": null
+      },
+      {
+        "index": 31,
+        "nameSha256": "4562f4750be3f2538acf4d1827bfc4509b325f5451a73b45fd7c880aecb7ccaa",
+        "passed": true,
+        "bytes": 364,
+        "bodySha256": "3fba174fdae1efe489d9b489126fa48e8a340f6d1f96b1478afad0c43781c14a",
+        "failureType": null
+      },
+      {
+        "index": 83,
+        "nameSha256": "4aa08612a8f6e9e429c9a46055665f59a034a792dcbbbfb850c69430439aa433",
+        "passed": true,
+        "bytes": 148,
+        "bodySha256": "8ca109f80590a820442bd123c77cde2daade01235a95963a285c1ad36c28bff2",
+        "failureType": null
+      },
+      {
+        "index": 53,
+        "nameSha256": "501d5acb4acc06d85d1fe1979a5d36b68f2becc069756164f763fc8bd275d0f0",
+        "passed": true,
+        "bytes": 144,
+        "bodySha256": "f8fe8b6a4cc5db5d97271bd30d7f771020ac88c7b9e8ce74e5cd262a09173833",
+        "failureType": null
+      },
+      {
+        "index": 11,
+        "nameSha256": "567781541aa1d043041ec08be14e1c519629784e3952d0d079ac87640242ba5e",
+        "passed": true,
+        "bytes": 288,
+        "bodySha256": "0ecdba8f4bfa5161df4d0923ddba160ce6e85fc0c8cfa0ac5b9bac27384ac8bc",
+        "failureType": null
+      },
+      {
+        "index": 78,
+        "nameSha256": "583e17796e6a79e518b3b699d5fac2e9b758fea3904fed4937af0753e2c26759",
+        "passed": true,
+        "bytes": 73,
+        "bodySha256": "b0f136d58c7e62b5713c4d5f9941f549f4a17c4ec9df5251dc94b7cbc70c8e76",
+        "failureType": null
+      },
+      {
+        "index": 64,
+        "nameSha256": "58465a6f6cb16f2719b55ba9e3a15b3864f2ec9d49c83fe6ec67579904cd798f",
+        "passed": true,
+        "bytes": 241,
+        "bodySha256": "5d4ca77fdec2cf5422d5371791649d098030544e76c7201670ddd6a84ab08af5",
+        "failureType": null
+      },
+      {
+        "index": 75,
+        "nameSha256": "59bba357145ca539dcd1ac957abc1ec5833319ddcae7f5e8b5da0c36624784b2",
+        "passed": true,
+        "bytes": 547,
+        "bodySha256": "920afb436c16184faf3ef90b5a02a36bd67178d1a77a855013e36ebbe30dcd26",
+        "failureType": null
+      },
+      {
+        "index": 80,
+        "nameSha256": "5be17720c3417a7097c2ef647794c91c3f8536d53290fc524edd67acd778d7be",
+        "passed": true,
+        "bytes": 77,
+        "bodySha256": "3933993be4d235f89dbed759718f65885b020cb2de7fae7813a2271746715dae",
+        "failureType": null
+      },
+      {
+        "index": 2,
+        "nameSha256": "5be3dc459f3a90b425d9f00f9f0e6afe023cd71bc550e99b704d1c87c53f2439",
+        "passed": true,
+        "bytes": 236,
+        "bodySha256": "65027bee3076ec49024935c0eb9e4b85a447687db384d4b8d2763b6c2566ec1f",
+        "failureType": null
+      },
+      {
+        "index": 23,
+        "nameSha256": "5beeafeac2e27eae5d4ba62590257718673461b2af52383ef7e3a53c7df14306",
+        "passed": true,
+        "bytes": 555,
+        "bodySha256": "00db2983b3cb4365e56ae8bcdc7f6085caa12d9c4358dbcbb0c75f00ecf4f7bd",
+        "failureType": null
+      },
+      {
+        "index": 19,
+        "nameSha256": "5ede56738376a8c53a7c99bf275b077a5c10df780a20cf3d8282fd59a2a9fb56",
+        "passed": true,
+        "bytes": 828,
+        "bodySha256": "561e6b0c2b760a3cf574d1e2c0b27da432b62eb9000e297b00dbc924614de73e",
+        "failureType": null
+      },
+      {
+        "index": 41,
+        "nameSha256": "6346a92eeaa7a74c9bb29cc75f8f10dff67a5187d8ad87364167b4cb0fb90380",
+        "passed": true,
+        "bytes": 249,
+        "bodySha256": "0aff4eea0f57500854c5312835dd90f10e971cc565058c69f80578616caf5a93",
+        "failureType": null
+      },
+      {
+        "index": 76,
+        "nameSha256": "636bae5e7bb30a3e29bb0e6ccb91f7ed7a26507b7d35125a2871f99604e5fbc8",
+        "passed": true,
+        "bytes": 4825,
+        "bodySha256": "e3e92cf8edf363032eb3a0ae06ce6c82539457acb884969c8205cfd75dc2ce01",
+        "failureType": null
+      },
+      {
+        "index": 58,
+        "nameSha256": "651b2c67d53613630734935b1b7ac642f500543630d5833c277383eb12e5f182",
+        "passed": true,
+        "bytes": 182,
+        "bodySha256": "6b3b565ae8c679cb4716bda7ecdf6fa701958d142dc0dd8b028da1d35483fe31",
+        "failureType": null
+      },
+      {
+        "index": 44,
+        "nameSha256": "6a1aa7b68573efdf49ef750a5c270e64aa467232d21d888c5acdf8693cca3855",
+        "passed": true,
+        "bytes": 158,
+        "bodySha256": "1a4f9007d194fd2acb0d887ccbac861424b788283d6d7f5f2b0ea7898ea6c916",
+        "failureType": null
+      },
+      {
+        "index": 39,
+        "nameSha256": "6bd69fcb51a61b5e0ec402a7d2484652a41284ffead804d69dd4da62c86c345f",
+        "passed": true,
+        "bytes": 139,
+        "bodySha256": "c5808f4976556970947dbd41ccd957de430c978fc2ad5a5bbee520c417075f22",
+        "failureType": null
+      },
+      {
+        "index": 68,
+        "nameSha256": "6c2949a5b9698d223e285bc41038564e8626724885349976073ced55302fa3df",
+        "passed": true,
+        "bytes": 317,
+        "bodySha256": "a0a47c697d7b2ff6b0d9d67425ff5a5280d039cafc539cf599d174e83107ec95",
+        "failureType": null
+      },
+      {
+        "index": 17,
+        "nameSha256": "6e58759ef0276a981cbacdbb55cffdf2e35c52e22b57bd4cfecf7fc8e15db94d",
+        "passed": true,
+        "bytes": 198,
+        "bodySha256": "16727d291489484dc0044f0b3b1e4195f82b9d529580b94d7ec1ed3354008bb4",
+        "failureType": null
+      },
+      {
+        "index": 40,
+        "nameSha256": "70e5a4e2d329e9812b7370bbbb9a044257f5f69f51b642c53f1097ca7d3fbd4b",
+        "passed": true,
+        "bytes": 136,
+        "bodySha256": "300c2587ab75671f43f5f165149ddf94aa420bb5e8ba92e643d61149a195cf8b",
+        "failureType": null
+      },
+      {
+        "index": 1,
+        "nameSha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+        "passed": true,
+        "bytes": 781,
+        "bodySha256": "df452ab1bfb572f366f00001fa4525f16f137dc670aed2c60af0100dc397d3ec",
+        "failureType": null
+      },
+      {
+        "index": 16,
+        "nameSha256": "7352f353c460e74c7ae226952d04f8aa307b12329c5512ec8cb6f1a0f8f9b2cb",
+        "passed": true,
+        "bytes": 324,
+        "bodySha256": "b287eac1d2a97da62e17cffddf55e0296665a289a41fba774fdba7397e6ea3f7",
+        "failureType": null
+      },
+      {
+        "index": 61,
+        "nameSha256": "738e22f0acab814cc0c6a9dfdd1c6a193ea278e48b07f070784d608243e68d8c",
+        "passed": true,
+        "bytes": 997,
+        "bodySha256": "38cbac3280497704d1d7069693a099b7ee64ae73f48ca24efee40cafb9134b64",
+        "failureType": null
+      },
+      {
+        "index": 88,
+        "nameSha256": "743598aceb5d73b958867c51d6387329c3dc447fcecfc2b5983e5616c733b8a0",
+        "passed": true,
+        "bytes": 3508,
+        "bodySha256": "4ba07d5d1a159f04770d7ad8e7d08a9854e3552f32f4fe963a178d723bf8743b",
+        "failureType": null
+      },
+      {
+        "index": 70,
+        "nameSha256": "75170593d559f227f37d422056e701a9748849b661f92f74a8ffee3c977c1bb9",
+        "passed": true,
+        "bytes": 378,
+        "bodySha256": "9eefb237a9a61cddef74629082ef6098bf7e5ef5672c0f0ae334df1e91183749",
+        "failureType": null
+      },
+      {
+        "index": 28,
+        "nameSha256": "75348dc2f26cf0867ed5a66d0f12f18cd0c851e79f948fdc8fd064d7ddc9cca3",
+        "passed": true,
+        "bytes": 596,
+        "bodySha256": "10eec315ff8c0ea34b8c2f2aedac160840d4b5721a37f0cdba1cf48c46e68803",
+        "failureType": null
+      },
+      {
+        "index": 82,
+        "nameSha256": "77e6f78af45f649c5f3b8ebe484a91a144eb203a34a89c8dc5b1c4ca87bc6f71",
+        "passed": true,
+        "bytes": 342,
+        "bodySha256": "6107267bade7607c8d0f24fee2b1804c2ad3e2e47aa1d61efaa1679538a298fc",
+        "failureType": null
+      },
+      {
+        "index": 6,
+        "nameSha256": "78cbd39abfd8d390a7f309948dd54df69f9ed6daaf4c2782a82ae0330fbd6b5c",
+        "passed": true,
+        "bytes": 2360,
+        "bodySha256": "252fc3e36adba99ccbe91b2c89eaf315a28e4872120239c665047d6057bf5775",
+        "failureType": null
+      },
+      {
+        "index": 50,
+        "nameSha256": "793da17aec26d53f08e3ddcff38c18e08032a6372468a4a6704a3ba86a4fc155",
+        "passed": true,
+        "bytes": 381,
+        "bodySha256": "63df443056944fdd56467166852f99cf4fea9bb98d8107abd2ce9ea9728a78b6",
+        "failureType": null
+      },
+      {
+        "index": 60,
+        "nameSha256": "79f43c3b9c23fbdf293bdba80dab38ba194fc1da79187091b3d3760dad840bf8",
+        "passed": true,
+        "bytes": 1748,
+        "bodySha256": "4e03a46f75e82c29cc1be4a63b28bd6f7b00bf84ba485d5436e969bddd463cfd",
+        "failureType": null
+      },
+      {
+        "index": 67,
+        "nameSha256": "7b8208d11b1b6f48e946e6361e527ab62af48b3090e7603a3bb5ede7045e5af7",
+        "passed": true,
+        "bytes": 92,
+        "bodySha256": "79904b29879095f3848e37d5f2b9f9354e879fbd52f1cd217fec3b5f395b59c9",
+        "failureType": null
+      },
+      {
+        "index": 43,
+        "nameSha256": "7c8b0411857960ccb90503ea6f4d062a8847b33c8f68ac9e06d582e1ac9e1e99",
+        "passed": true,
+        "bytes": 270,
+        "bodySha256": "43d8f399141e87c0af4c516b0494346316af766e98be363b645c75b76e6d6b41",
+        "failureType": null
+      },
+      {
+        "index": 59,
+        "nameSha256": "7d1507284a5757cac6b62708a4ef00bfc5d695256489cb704f12b4b9e6255df2",
+        "passed": true,
+        "bytes": 950,
+        "bodySha256": "f532bb7f96ba63ea2829984a658b0ff44dec1fcdfba3e554ae90edb1fb8cf0fe",
+        "failureType": null
+      },
+      {
+        "index": 48,
+        "nameSha256": "8405ae6de3ebde2abffb2531d437a163a31dc42a109c7369b66b93258c7e1d67",
+        "passed": true,
+        "bytes": 1889,
+        "bodySha256": "18df07e653692e88004107df9aaccaeba3e062193f2dd3dfb876d65d570460a3",
+        "failureType": null
+      },
+      {
+        "index": 26,
+        "nameSha256": "84308bea454057aa509a12fbd5212988973d7cd513bc555a24a06dd2cc72e39e",
+        "passed": true,
+        "bytes": 218,
+        "bodySha256": "52dd5fbf30eec116f731c917dd073de9e8f9e6081be9940d19fdf7d00780cbec",
+        "failureType": null
+      },
+      {
+        "index": 42,
+        "nameSha256": "933f1501b5d0043af98b8c47e86446f31bc9d0f7edb8ed2cb8b15ff4cb9182ff",
+        "passed": true,
+        "bytes": 148,
+        "bodySha256": "888d2ede181d5e662ee4312105db8f3e63505b7d5b38a9dd494ac93ecc4e2e89",
+        "failureType": null
+      },
+      {
+        "index": 33,
+        "nameSha256": "94a11a6c3ea446d5abd96421b557bc28b5c4b6124b5066e21479fabeaf22a715",
+        "passed": true,
+        "bytes": 691,
+        "bodySha256": "accfdd7d91b4bda6b3e98cc5f31187ef6dd66e09da41db4c0fedcc525bba43ed",
+        "failureType": null
+      },
+      {
+        "index": 63,
+        "nameSha256": "9d3508a8484ee2520ca5fe0e52eab835774efa3fe533267e914eb00ad78d2579",
+        "passed": true,
+        "bytes": 342,
+        "bodySha256": "7334594066fc5fca04718b5a1fed7156a7d1dcfe811993ccb18c5402aef245d3",
+        "failureType": null
+      },
+      {
+        "index": 57,
+        "nameSha256": "9d96d9d5b1addd7e7e6119a23b1e5b5f68545312bfecb21d1cdc6af22b8628b8",
+        "passed": true,
+        "bytes": 146,
+        "bodySha256": "4a5fc306dd8e1a97818feb6278d24319f89a57ba3270fb84cac3a663b37c19c6",
+        "failureType": null
+      },
+      {
+        "index": 10,
+        "nameSha256": "9fbf261b62c1d7c00db73afb81dd97fdf20b3442e36e338cb9359b856a03bdc8",
+        "passed": true,
+        "bytes": 8056,
+        "bodySha256": "fc2a5555e90fdf693ff01487fc11a8bce1cae8d17aa313a356d058f6f8d253fd",
+        "failureType": null
+      },
+      {
+        "index": 72,
+        "nameSha256": "afe4d16f403a383f07814bbe04a5e7c5a7dc62ba5ce4040fc85514c29e0e88ae",
+        "passed": true,
+        "bytes": 2660,
+        "bodySha256": "280ee39cc3a7ce846b01818d0f2d07d847c19d70af23459de4c04fb6c89bf908",
+        "failureType": null
+      },
+      {
+        "index": 77,
+        "nameSha256": "b48c9328a66ad7a5774fbb75e17fcb0c4b2eb20c57fa9262e315a7ba6350248d",
+        "passed": true,
+        "bytes": 135,
+        "bodySha256": "f2f304d33897c661a5283de6cbeec24775cc3dd4e966869c941d844189b703ab",
+        "failureType": null
+      },
+      {
+        "index": 9,
+        "nameSha256": "b7cdd1c2e182d80d36c56aef7822ab1cd0641fdad7d2a421281d3385886a286f",
+        "passed": true,
+        "bytes": 8220,
+        "bodySha256": "d50ffab57371453cbc229b1924bcf09004db1ca98968a205e2a59c5cfc26bbda",
+        "failureType": null
+      },
+      {
+        "index": 15,
+        "nameSha256": "bb7b445a6a0d6f004c26406a99524996e78f1fe8b9bf2ea22b3a7dda1ae927f7",
+        "passed": true,
+        "bytes": 145,
+        "bodySha256": "d121af95b9aeca3d8c29b2112d5e6685b2a6716383df8ae31b5fbb3408c527b3",
+        "failureType": null
+      },
+      {
+        "index": 8,
+        "nameSha256": "bbdefa2950f49882f295b1285d4fa9dec45fc4144bfb07ee6acc68762d12c2e3",
+        "passed": true,
+        "bytes": 8973,
+        "bodySha256": "ad92420fecc12694f11af2ed86ddc5d233ec1350b1ae15e8d24959fda23bc200",
+        "failureType": null
+      },
+      {
+        "index": 4,
+        "nameSha256": "c00c6c7a73d28d58a210b91843cf12ff31790b7eb955e0b0095aa3f1c78e0c0a",
+        "passed": true,
+        "bytes": 37470,
+        "bodySha256": "937a8a20e09657aae60296e0ac1bf9db03813d5d25826aff9f2102a2e78b0e05",
+        "failureType": null
+      },
+      {
+        "index": 55,
+        "nameSha256": "c0a4942143e872cd1ae29fc759e04526de2e909ac1732734d38550a29c2e2516",
+        "passed": true,
+        "bytes": 1544,
+        "bodySha256": "78cc64c14c73ec8ad06b0ad932bad620bf4d658dc136d6b7dd5f13069495efba",
+        "failureType": null
+      },
+      {
+        "index": 56,
+        "nameSha256": "c0b0109d9439de57fe3cf03abeccbc52f4c98170c732d3b69af5e6395ace574e",
+        "passed": true,
+        "bytes": 890,
+        "bodySha256": "a15bd2cdd84db2ebcdca1ae3041265f90172445ebd6c07a6eb3118e5929e5fac",
+        "failureType": null
+      },
+      {
+        "index": 74,
+        "nameSha256": "c88af1b79306369631c64c5a489e225cc11fcf5afe698ff54d57d718577c93d7",
+        "passed": true,
+        "bytes": 72,
+        "bodySha256": "384b48cf0c6615eca964b0d4ad80fa35d18b20e1cc41f450ba48d8c85d746c64",
+        "failureType": null
+      },
+      {
+        "index": 69,
+        "nameSha256": "c94ab54729f12b21751c0bfd36aba97630422a6ac0ecb79f93b3747231b45120",
+        "passed": true,
+        "bytes": 394,
+        "bodySha256": "020855bf7be100d6e6a2d092318a51aa9065eb3feea8b7b68316d984b0652ece",
+        "failureType": null
+      },
+      {
+        "index": 87,
+        "nameSha256": "cbc62794911ff31b2864ecd3dbbbee7ebcb7ea41c5a42e2cba377f3cfdb42811",
+        "passed": true,
+        "bytes": 2626,
+        "bodySha256": "ea159f7916ad9cebf18c88bc37a56d3871607027089af254bcb44985a748bd23",
+        "failureType": null
+      },
+      {
+        "index": 5,
+        "nameSha256": "cfc1c8fcd3b1162238bc2a10ac7bed5173e4e34707614eaae27ba6da150815a8",
+        "passed": true,
+        "bytes": 199110,
+        "bodySha256": "d935e430e3bf84d6eea51da7341f43eb90a2e3900b19d8a799c2dfa085383995",
+        "failureType": null
+      },
+      {
+        "index": 45,
+        "nameSha256": "d20b8344afb84254010ab09a29f471f5f7836c23f15545c7512ad3ea9fad8b64",
+        "passed": true,
+        "bytes": 112,
+        "bodySha256": "6a95b1961b9b35dc07b5b65ce08b7426173bb2f25e7f0fb52b25ef39d3ff30cd",
+        "failureType": null
+      },
+      {
+        "index": 47,
+        "nameSha256": "d39455d707d7fb58c43ed34f596eef9f034b59ab6c3df1b15df994af9baeba79",
+        "passed": true,
+        "bytes": 413,
+        "bodySha256": "87096a7c01ded9ac4cd8639dbd6871663c1df60b534c78cee34cace1e3b7bd3e",
+        "failureType": null
+      },
+      {
+        "index": 66,
+        "nameSha256": "d548c5b83fa61d8e3bd86ad42a7ffea9b7c86e3f9d8095c1577d3e1270bb9420",
+        "passed": true,
+        "bytes": 216,
+        "bodySha256": "39623c359a043ccb14262d40a392c4fda2cc0fd431b92e354a203b18abbdc17e",
+        "failureType": null
+      },
+      {
+        "index": 21,
+        "nameSha256": "de7679e0c7df02458679dbe36d874532401a5709cbcbc1210bc99f128b0c6ffa",
+        "passed": true,
+        "bytes": 540,
+        "bodySha256": "559b6e3c0f82272ba1b521098d643b6d45fa8671b7416c8eca0167edf8a342c8",
+        "failureType": null
+      },
+      {
+        "index": 85,
+        "nameSha256": "df6f99cb5f0b085d5c7257a76cb51d85600da78babfd81cdf8657c4e886c75ac",
+        "passed": true,
+        "bytes": 190,
+        "bodySha256": "dd0cb4c5a1bf1f41bc17e199bbbfcf215276230d807e540335daf13b42b6628a",
+        "failureType": null
+      },
+      {
+        "index": 13,
+        "nameSha256": "e0aa81dd500c530a70b5511fc95959ae1e19dc19a01034e223bfc5ed78e3bdef",
+        "passed": true,
+        "bytes": 572,
+        "bodySha256": "1ea426331a2113db305d8e626148a963bf07c3feb7a3d288fdf69f9e6d9cd401",
+        "failureType": null
+      },
+      {
+        "index": 22,
+        "nameSha256": "e1ba4807a15d8579f79cfd90a07fc015e6125565c9271eb94aded0b2ebf86163",
+        "passed": true,
+        "bytes": 448,
+        "bodySha256": "d7387b23e75ca9a93086ee7f9d398efb936c64bdbb85d97aa7dea99de2381891",
+        "failureType": null
+      },
+      {
+        "index": 65,
+        "nameSha256": "e2b0a70e3f3d58c9bb0a0f4e6abc2d00494f6f184c5ec24955affcd093da2b43",
+        "passed": true,
+        "bytes": 5228,
+        "bodySha256": "f9231cdef937b49f196286888c74502a2d1df857464e390ea8c5050959a68000",
+        "failureType": null
+      },
+      {
+        "index": 38,
+        "nameSha256": "e32ac33fa53a3db6ed281b9223ca365d3311390344f591a48a8af30798b129ee",
+        "passed": true,
+        "bytes": 468,
+        "bodySha256": "665312b3eea08e5b6d7807bed816b201f0d8c8ae06e2484ed32e9c1e3e14db88",
+        "failureType": null
+      },
+      {
+        "index": 34,
+        "nameSha256": "e48984d9d23c790586fc99eaa6727a3aa866edf690e254e18f8d5e5686087b5a",
+        "passed": true,
+        "bytes": 501,
+        "bodySha256": "d4c66c0524a125295da0d99eca728622bd9d649f07086b4dd9e84a75458fa58a",
+        "failureType": null
+      },
+      {
+        "index": 36,
+        "nameSha256": "ebecbb2ed0d16b0f0743541318d6b81567249dbb0b97b73726c699a3b4980e66",
+        "passed": true,
+        "bytes": 143,
+        "bodySha256": "8cc9cead8cdbc4eeaa37bdbdd64ae8b61a84e4025bd3c7213bae054574217e49",
+        "failureType": null
+      },
+      {
+        "index": 20,
+        "nameSha256": "ec8202b6f9fb16f9e26b66367afa4e037752f3c09a18cefab426165e06a424b1",
+        "passed": true,
+        "bytes": 203,
+        "bodySha256": "23aa473f2a4f9069d31090271d3193ef4d9ed12b5e93e16c5ce23da75b8625a6",
+        "failureType": null
+      },
+      {
+        "index": 54,
+        "nameSha256": "f711da60664c04c146d7a47b722c38a8d0bf46c3f52c2084c5c8d1cb78138e73",
+        "passed": true,
+        "bytes": 524,
+        "bodySha256": "1899ac10ed1d3751a01be95e06159ca2acf1a7e4486e1bb59e9f1f4abe1fb454",
+        "failureType": null
+      },
+      {
+        "index": 3,
+        "nameSha256": "f997da1d682ef0ca5117e79e2f781e98fdd73e339f9018246d445f67430bf4b2",
+        "passed": true,
+        "bytes": 34279,
+        "bodySha256": "436145d521c891f3dae61fdd575275ae41f288f6ccb34526fcd32ae282de4bff",
+        "failureType": null
+      },
+      {
+        "index": 52,
+        "nameSha256": "fccda8faefebb2ec17684836d4dd8793011ea79da7244e0e04d2460bef080e3c",
+        "passed": true,
+        "bytes": 668,
+        "bodySha256": "651f276f4f8f3580bcdc79748a5a979661d110e3080b4f38dc32539a05e6d4fc",
+        "failureType": null
+      },
+      {
+        "index": 49,
+        "nameSha256": "ff1a199925e407fa66d7b12bb36a68d12b990ad9b7f203f4690210027b938776",
+        "passed": true,
+        "bytes": 309,
+        "bodySha256": "cb79176931f8caa165a1d78cb477eecbb3f30233a00b8c5fdea59f3b2db143ce",
+        "failureType": null
+      },
+      {
+        "index": 89,
+        "nameSha256": "ff2082aa78aea80a27cb4fb91f0350153702c16dce790a77f0bb0bfbf6899977",
+        "passed": true,
+        "bytes": 532882,
+        "bodySha256": "0b8c7c4d9773471991dd65737fdb16f3bf1baf2512c8b764d4c235318f01b7c6",
+        "failureType": null
+      }
+    ]
+  },
+  "boundaries": {
+    "mixedFileUrlCustomAndEncryptedDraftHeld": true,
+    "draftProof": "序列化快照/Keystore密文与mtime/Store重建，非本轮真实编辑页冷进程",
+    "runningProxyAndVpnMutationGuard": true,
+    "vpnInterfaceNetworkAndSessionHeld": true,
+    "vpnTestTrafficRoute": "explicit-local-SOCKS",
+    "tunBoundTrafficPassed": false,
+    "tunBindingFailure": "SocketException: Binding socket to VPN network failed: EPERM (Operation not permitted)",
+    "tunFailureCauseEstablished": false,
+    "repositoryApplyFaultInjection": true,
+    "realRuntimeManagerScriptApplyFailureAndRetry": true,
+    "nativeListenerOrTunEstablishmentFailureInjected": false
+  },
+  "priorBatches": {
+    "first": {
+      "tests": 17,
+      "passed": 15,
+      "ordinaryClientResourceDownloads": 86
+    },
+    "final": {
+      "tests": 18,
+      "passed": 16,
+      "ordinaryClientResourceDownloads": 1,
+      "resourceSeconds": 369.5
+    },
+    "final2": {
+      "tests": 18,
+      "passed": 16,
+      "coreRouteResourceDownloads": 89
+    },
+    "failuresPreserved": true,
+    "harnessCorrections": [
+      "VPN确认必须由Activity带结果启动",
+      "包名精确匹配，避免测试包纳入正式UID回读",
+      "未安装包pm path退出1按缺席处理"
+    ]
+  },
+  "sourceProtection": {
+    "sourceCount": 736,
+    "sourceSha256": "dbc47f29e92135cffb1f842851fccf132c5ffc87ab16a2cb9bfe17cf5d5e42a1",
+    "changedSources": [],
+    "localSourceUnchanged": true
+  },
+  "localInput": {
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeNs": 1794392072317864361,
+    "authorizedUrlSha256": "0471389dac92c66fc42b66703eddc1eb36189002cba60d7f0b61f7648f5522b8"
+  },
+  "formalPackage": {
+    "before": {
+      "apkSha256": "992c48db3b4f7b43ab5123a1123b14631873253ff00889749ce8506a3b58a09f",
+      "uid": "package:com.lonnnnnng.flclash uid:10233",
+      "servicesStopped": true
+    },
+    "after": {
+      "apkSha256": "992c48db3b4f7b43ab5123a1123b14631873253ff00889749ce8506a3b58a09f",
+      "uid": "package:com.lonnnnnng.flclash uid:10233",
+      "servicesStopped": true
+    },
+    "businessTablesReauditedThisBatch": false
+  },
+  "remaining": [
+    "低API真机核心/VPN/实网",
+    "其他OEM",
+    "其余来源和协议/参数的实际流量",
+    "在线age真实密钥输入",
+    "本轮TUN绑定流量",
+    "原生listener绑定和TUN建立等其他失败分支"
+  ],
+  "noPushOrRelease": true,
+  "rawArtifacts": "../acceptance-artifacts/semantic-commit-20261111/",
+  "cleanup": {
+    "uninstalledExactPackages": [
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "formalApkAndUidHeldAfterCleanup": true,
+    "formalServicesStopped": true,
+    "vpnNetworkAbsentFromConnectivity": true,
+    "activeNetworkAgentCount": 1,
+    "vpnListenRequestNotTreatedAsActiveNetwork": true,
+    "netlinkInterfaceList": "ip -o link show denied by ROM; raw tun0 absence not established using ip",
+    "deviceTemporaryPlaintextRemovedDuringPreparation": true,
+    "localPrivateInputAbsent": true,
+    "expectedAbsentPmPathExitHandled": true
+  }
+}
