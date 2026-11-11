@@ -38,6 +38,11 @@ type dialDiagnostic struct {
 	DialFamily          string     `json:"dialFamily,omitempty"`
 	OmittedDialAttempts int        `json:"omittedDialAttempts,omitempty"`
 	DroppedRecords      int        `json:"droppedRecords,omitempty"`
+	ProtocolStage       string     `json:"protocolStage,omitempty"`
+	ProtocolState       string     `json:"protocolState,omitempty"`
+	PayloadBytes        int        `json:"payloadBytes,omitempty"`
+	StreamBytes         int        `json:"streamBytes,omitempty"`
+	ExpectedBytes       int        `json:"expectedBytes,omitempty"`
 }
 
 type dialDiagnosticCapture struct {
@@ -123,13 +128,28 @@ func (capture *dialDiagnosticCapture) recordLookup(value dialer.LookupDiagnostic
 			return
 		}
 	}
-	if len(capture.records) >= 16 {
+	if len(capture.records) >= 32 {
 		capture.droppedRecords++
 		if value.Kind != "node-selected" {
 			return
 		}
 		// 作者 long：并行候选与旧日志先到时仍保留最后一次实际返回端点；省略数必须随快照交付，不能伪称完整拨号列表。
-		capture.records = capture.records[:15]
+		capture.records = capture.records[:31]
+	}
+	if value.Kind == "protocol" {
+		switch value.ProtocolStage {
+		case "vless-ws-stream", "vless-request", "vless-response", "vless-response-addon":
+		default:
+			return
+		}
+		if value.ProtocolState != "begin" && value.ProtocolState != "end" {
+			return
+		}
+		capture.records = append(capture.records, dialDiagnostic{Kind: "protocol", AtMillis: bootstrapMillis(), Failed: value.Err != nil,
+			Categories: diagnosticErrorCategories(value.Err), ErrorChain: [][]string{}, EndpointHashes: []string{},
+			ProtocolStage: value.ProtocolStage, ProtocolState: value.ProtocolState, DurationMillis: value.Duration.Milliseconds(),
+			PayloadBytes: value.PayloadBytes, StreamBytes: value.StreamBytes, ExpectedBytes: value.ExpectedBytes})
+		return
 	}
 	if value.Kind == "node-dial" || value.Kind == "node-selected" {
 		sum := sha256.Sum256([]byte(value.DialEndpoint))
@@ -190,7 +210,7 @@ func (capture *dialDiagnosticCapture) record(payload string) {
 	if capture.sourcePort != int(port) || capture.port.Load() != port {
 		return
 	}
-	if len(capture.records) >= 16 {
+	if len(capture.records) >= 32 {
 		capture.droppedRecords++
 		return
 	}

@@ -50,3 +50,5 @@ Tracker统计位于WS/VLESS等协议适配之后。254B上传只代表核心业�
 接下来优先补同端点对照及WS/VLESS响应到业务TLS之间的协议阶段证据，再复测Provider保存错误分类和真实死亡窗口。首请求node-dns、历史配置mtime/未知偏好以及旧Provider超时仍不倒推解释；长期稳定性未闭环，应用内更新不推进。
 
 结构化证据：[tls-flow-redmi-20261111.json](acceptance/tls-flow-redmi-20261111.json)。本机原始目录：`../acceptance-artifacts/tls-flow-20261111/`。
+
+2026-11-11用户后续决定：配置/偏好与Provider恢复按近期通过结果收口，不再主动复现旧保存错误/超时，历史原因保留未归因；本页上面的旧追查计划据此停止。仍可复现的TLS继续，最新协议定位及KCORE-010边界见[后续调查](protocol-stage-investigation.md)。

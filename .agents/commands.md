@@ -59,7 +59,7 @@ Provider恢复诊断使用`python3 tool/android_provider_runtime_acceptance.py -
 
 复用Stability输入token时，collector必须只读取当前command及其子阶段，传输副本名称带正文SHA，不能让旧已删除回执或同名报告参与本轮SHA核对。修正后的本机示例为`../acceptance-artifacts/dns-startup-20261111/recovery2/probe.py`，原失败留在recovery-window。DNS诊断区分`kind=lookup`（源端口context关联、实际network/地址数/父context类别）与旧日志分类记录；DNS事件仍只是候选，不能凭同域名/时间窗称socket归属。KCORE-009及最新两种失败阶段见`docs/dns-lookup-empty-success-defect.md`。
 
-TLS失败取证现保留`connectionTrace`的零/单向业务流量与`node-selected`最终端点；前8个`node-dial`只是候选，最多16条并公开omitted/dropped，不能取第一成功候选冒充winner。Tracker不是TCP线上字节，DNS仍无socket归属。Provider失败另看documentErrorCategory/hash；未到ready/kill不能计恢复通过。最终Provider两准备请求失败及独立FILE三成功分别保留，见`docs/tls-one-way-flow-investigation.md`。
+TLS失败取证现保留`connectionTrace`的零/单向业务流量与`node-selected`最终端点；前8个`node-dial`只是候选，最多32条并公开omitted/dropped，不能取第一成功候选冒充winner。Tracker不是TCP线上字节，DNS仍无socket归属。Provider失败另看documentErrorCategory/hash；未到ready/kill不能计恢复通过。最终Provider两准备请求失败及独立FILE三成功分别保留，见`docs/tls-one-way-flow-investigation.md`。当前协议阶段见`docs/protocol-stage-investigation.md`：response begin无end只表示采集结束前未完成，需核对丢弃数；不能推断0个线包。Provider等待同时观察提交门闩与终态错误，避免把提前拒绝误记30秒超时。2026-11-11用户已接受状态/Provider历史异常并收口，不再主动追旧因；保留现有保护和记录，集中复现仍活跃的TLS问题。
 
 ## 菜单无线程采样对照（KUI-035）
 

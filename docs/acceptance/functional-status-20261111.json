@@ -1,7 +1,7 @@
 {
   "date": "2026-11-11",
   "kind": "interim-functional-status",
-  "committedBase": "074db3d4987176a6aaf1738089cae12a9482d3a5",
+  "committedBase": "65f5ba968286f496230b82f3efe1ef5ed288f0a4",
   "device": {
     "serial": "wsvwypiz7xwslvl7",
     "model": "Redmi Note 8 Pro"
@@ -109,9 +109,7 @@
     "matchesBaseline": true
   },
   "remainingFunctionalItems": [
-    "启动/恢复首请求历史失败归因",
-    "配置/偏好长期状态与逐键审计分析",
-    "Provider运行态历史恢复超时归因",
+    "可复现的启动/恢复及同会话TLS网络失败定位",
     "核心预检低API及外部运行环境边界"
   ],
   "rawEvidence": [
@@ -172,7 +170,7 @@
     "failed": 0,
     "isolationNativeProbePassed": true
   },
-  "evidenceSnapshot": "随TLS单向流量与最终端点诊断提交；两场真实网络失败及独立控制成功分别保留，总目标未完成，应用内更新用户暂缓",
+  "evidenceSnapshot": "用户接受当前状态/Provider恢复结果，两历史任务收口；协议包真实网络5/8仍失败，KCORE010独立修正，应用更新暂缓",
   "finalAuditRegression": {
     "tests": 7,
     "passed": 7,
@@ -275,5 +273,42 @@
     "formalDataPreserved": true,
     "overallNetworkPassed": false,
     "rootCauseEstablished": false
+  },
+  "taskClosureSummary": {
+    "closedCount": 3,
+    "totalCount": 6,
+    "verifiedComplete": [
+      "按应用代理名单保护"
+    ],
+    "closedByUserAcceptedHistoricalRisk": [
+      "配置与偏好长期稳定性",
+      "Provider运行态进程恢复"
+    ],
+    "active": [
+      "可复现的TLS网络失败",
+      "语义预检剩余环境边界"
+    ],
+    "deferred": [
+      "应用内更新"
+    ],
+    "historicalRootCausesClaimedSolved": false
+  },
+  "latestProtocolDiagnostics": {
+    "evidence": "protocol-stage-redmi-20261111.json",
+    "coreCommit": "d43bbd751fe5eb95a599a6211423f645269ba57d",
+    "jvmTests": 907,
+    "redmiDiagnosticTestsPassed": 4,
+    "finalNetworkPassed": 5,
+    "finalNetworkFailed": 3,
+    "sameSessionControlPassed": 2,
+    "sameSessionControlFailed": 2,
+    "failedStage": "after WS stream return and VLESS request write, before VLESS response header complete",
+    "protocolRecordDropsInFailedRequests": 0,
+    "kcore010Fixed": true,
+    "kdiag003Fixed": true,
+    "actualNetworkCauseEstablished": false,
+    "overallNetworkPassed": false,
+    "providerAfterRecoveryPassed": true,
+    "providerBeforeFailedInPreparationNetwork": true
   }
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -83,7 +84,7 @@ func TestDialDiagnosticIsBoundedAndNewRequestReplacesOldCapture(t *testing.T) {
 	for range 100 {
 		capture.record("[TCP] 198.18.0.1:43210 --> target:443 match DIRECT")
 	}
-	if len(capture.snapshot(43210, false)) != 16 {
+	if len(capture.snapshot(43210, false)) != 32 {
 		t.Fatal("unbounded diagnostics")
 	}
 	capture.begin(43211)
@@ -99,19 +100,19 @@ func TestDialDiagnosticRetainsWinnerAfterCandidateAndRecordLimits(t *testing.T) 
 	for range 25 {
 		capture.recordLookup(dialer.LookupDiagnostic{Kind: "node-dial", SourcePort: 43210, DialEndpoint: "192.0.2.1:443", Network: "tcp4", DialFamily: "ipv4"})
 	}
-	for range 10 {
+	for range 26 {
 		capture.record("[TCP] 198.18.0.1:43210 --> target:443 match DIRECT")
 	}
 	capture.recordLookup(dialer.LookupDiagnostic{Kind: "node-selected", SourcePort: 43210, DialEndpoint: "192.0.2.2:443", Network: "tcp4", DialFamily: "ipv4"})
 	got := capture.snapshot(43210, true)
-	if len(got) != 16 || got[15].Kind != "node-selected" || got[15].OmittedDialAttempts != 17 || got[15].DroppedRecords != 3 {
+	if len(got) != 32 || got[31].Kind != "node-selected" || got[31].OmittedDialAttempts != 17 || got[31].DroppedRecords != 3 {
 		t.Fatalf("winner or accounting missing: %+v", got)
 	}
-	if got[15].DialEndpointHash == got[0].DialEndpointHash {
+	if got[31].DialEndpointHash == got[0].DialEndpointHash {
 		t.Fatal("candidate substituted for selected endpoint")
 	}
 	capture.recordLookup(dialer.LookupDiagnostic{Kind: "node-selected", SourcePort: 43210})
-	if len(capture.snapshot(43210, false)) != 16 {
+	if len(capture.snapshot(43210, false)) != 32 {
 		t.Fatal("finished capture changed")
 	}
 	capture.begin(43211)
@@ -128,5 +129,29 @@ func TestDialDiagnosticBoundsWorkForOneHugeError(t *testing.T) {
 	got := capture.snapshot(43210, true)
 	if len(got) != 1 || len(got[0].ErrorChain) > 8 || len(got[0].EndpointHashes) > 8 {
 		t.Fatalf("unbounded entry: %+v", got)
+	}
+}
+
+// 作者 long：协议诊断只保留固定阶段、计数和错误分类，不让上游错误文本/任意阶段名进入宿主缓存。
+func TestProtocolDiagnosticKeepsPartialResponseCountsAndRejectsPrivateFields(t *testing.T) {
+	var capture dialDiagnosticCapture
+	capture.begin(43210)
+	value := dialer.LookupDiagnostic{Kind: "protocol", SourcePort: 43210, ProtocolStage: "private-stage", ProtocolState: "end"}
+	capture.recordLookup(value)
+	if len(capture.snapshot(43210, false)) != 0 {
+		t.Fatal("unlisted stage retained")
+	}
+	value.ProtocolStage = "vless-response"
+	value.StreamBytes = 3
+	value.ExpectedBytes = 6
+	value.Err = fmt.Errorf("private-node.example: %w", io.EOF)
+	capture.recordLookup(value)
+	got := capture.snapshot(43210, true)
+	if len(got) != 1 || !got[0].Failed || got[0].StreamBytes != 3 || got[0].ExpectedBytes != 6 {
+		t.Fatal("partial response missing")
+	}
+	data, _ := json.Marshal(got)
+	if strings.Contains(string(data), "private-") || !strings.Contains(string(data), "transport-eof") {
+		t.Fatal("unsafe or missing error category")
 	}
 }

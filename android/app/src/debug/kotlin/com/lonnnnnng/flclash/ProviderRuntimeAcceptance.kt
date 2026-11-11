@@ -210,7 +210,7 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
         val window = if (snapshot.case == "before") EditorCommitWindow.PROVIDER_INTENT else EditorCommitWindow.PROVIDER_COMMITTED
         val gate = EditorCommitProbe.arm(window)
         withContext(Dispatchers.Main) { model.changeProviderContent(intended); model.saveProvider() }
-        waitStep("prepare-commit-window", 30_000) { gate.awaitReached() }
+        waitStep("prepare-commit-window", 30_000) { awaitProviderCommitOrError({ gate.awaitReached() }, model.document) }
         val committed = snapshot.case == "after"
         check(EditorCommitProbe.visits(window) == 1)
         check(providerSha(cache(snapshot).readBytes()) == if (committed) snapshot.intendedSha else snapshot.originalSha)
@@ -419,6 +419,15 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
         backup.write(null)
         providerReport(token, "restored", JSONObject().put("formalPreserved", true).put("backupCleared", backup.read() == null))
     }
+}
+
+/** 作者 long：保存异常会由VM转成终态而不再抛出，探针必须同时等错误，不能把已失败的保存伪装成30秒未响应。 */
+internal suspend fun awaitProviderCommitOrError(reached: suspend () -> Unit, document: kotlinx.coroutines.flow.StateFlow<ProviderDocumentUiState?>) = coroutineScope {
+    val committed = async { reached(); true }
+    val rejected = async { document.first { it?.error != null && !it.saving }; false }
+    try {
+        check(kotlinx.coroutines.selects.select<Boolean> { committed.onAwait { it }; rejected.onAwait { it } }) { "Provider save rejected" }
+    } finally { committed.cancelAndJoin(); rejected.cancelAndJoin() }
 }
 
 /** 作者 long：只有持有DUMP权限的shell可杀死本轮已就绪PID，Release完全不包含这个接收器。 */

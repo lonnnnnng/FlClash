@@ -1,5 +1,7 @@
 # 功能性网络与恢复调查（进行中）
 
+2026-11-11最新范围调整：用户接受当前状态/Provider恢复验收，停止追查不可复现的旧元数据、偏好、恢复超时和保存错误原因；相关历史只留档，不继续阻塞目标。当前活跃调查仅剩仍可复现的网络TLS：同会话也会成功/失败交替，协议证据停在VLESS响应头未完成。KCORE-010独立吞错修正不追认其因果，见[最新调查](protocol-stage-investigation.md)及[验收](acceptance/protocol-stage-redmi-20261111.json)。下列为历史批次，旧“继续追根”计划被本次用户决定覆盖。
+
 2026-11-11，初始产品基线`99da6121`。这是六项功能收尾中的首请求、Provider恢复与长期稳定性调查，不代表三项已闭环。原45分钟8/10、迁移包6/7以及Provider final6-before超时保留。
 
 最新基线`9612ebcb`十分钟诊断再次抓到真实失败：8笔HTTPS为7成功/1失败，第三次启动在直接RUNNING后7ms开始，握手5003ms失败；指定源端口两笔核心拨号错误均node-dns，错误端点摘要匹配授权原配置第一个VLESS节点server。相同域名A约5024ms失败、AAAA约3711ms成功；DNS事件无socket ID，只能作为同域名/时窗旁证。DNS引导已应用、事件零丢弃/候选无溢出，后续同会话恢复；底层DNS原因仍待查。见[新证据](acceptance/state-key-network-redmi-20261111.json)与[逐键/诊断记录](state-audit-key-join.md)。

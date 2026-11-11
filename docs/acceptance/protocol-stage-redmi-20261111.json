@@ -1,0 +1,2681 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "65f5ba968286f496230b82f3efe1ef5ed288f0a4",
+  "coreCommit": "d43bbd751fe5eb95a599a6211423f645269ba57d",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "overallGoalComplete": false,
+  "overallNetworkPassed": false,
+  "updaterDeferredByUser": true,
+  "userScopeDecision": {
+    "acceptedHistoricalStateAndProviderAnomaliesWithoutFurtherRootCauseChase": true,
+    "stateLongTermStability": "closed-accepted-historical-risk",
+    "providerProcessRecovery": "closed-accepted-historical-risk",
+    "currentReproducibleNetworkFailuresRemainActive": true,
+    "reopenCondition": "new reproducible state/persistence/recovery failure; preserve historical records"
+  },
+  "build": {
+    "sourceFiles": 1760,
+    "sourceUnchanged": true,
+    "jvm": {
+      "app": {
+        "tests": 616,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 218,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lint": {
+      "debug": {
+        "Hint": 14,
+        "Warning": 75
+      },
+      "release": {
+        "Hint": 13,
+        "Warning": 71
+      }
+    },
+    "debugReleaseR8Passed": true,
+    "mlKit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "goParentRacePassed": true,
+    "goDnsDialerVlessRouteHttpUpdaterRacePassed": true
+  },
+  "motionTestBuilt": true,
+  "installedApks": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "313e94a1664634b533176280acef0071d88adb4f84c81af513acff56ab394a81",
+      "bytes": 66217045,
+      "readbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "336964e0d3347acbc15be8444a4c9ac511f2d564c6581de62397487c8ae17919",
+      "bytes": 2925262,
+      "readbackMatches": true
+    }
+  ],
+  "redmiDiagnosticTests": {
+    "passed": 4,
+    "failed": 0,
+    "connectionTraceTests": 2,
+    "providerCommitWaitTests": 2
+  },
+  "defects": {
+    "KCORE-010": {
+      "fixed": true,
+      "originalRed": "truncated addon accepted: <nil>",
+      "originalMatchesTrackedUpstream": true,
+      "upstreamCommit": "024245dc72bc92f48237f865119afe0cd53ac9e6",
+      "actualNetworkTimeoutCauseEstablished": false
+    },
+    "KDIAG-003": {
+      "fixed": true,
+      "saveErrorNowTerminatesCommitWait": true,
+      "actualHistoricalProviderSaveErrorCauseEstablished": false
+    }
+  },
+  "oldSourceSeparateBaseline": {
+    "case": "provider-after-baseline",
+    "passed": true,
+    "failure": null,
+    "installedAppSha256": "c11c792e1402c41db76896340fbf7408ef7cf3f02c3d19277f23589e2a1e7a89",
+    "systemObservedBeforeVerify": {
+      "pids": [
+        15481
+      ],
+      "pidsBefore": [
+        15481
+      ],
+      "stableSample": true,
+      "servicePid": 15481,
+      "hasProxyService": true,
+      "isForeground": true,
+      "hasVpnService": false,
+      "hasTun0": false,
+      "secondsAfterKill": 1.864
+    },
+    "ready": {
+      "case": "after",
+      "readyAt": 1794387918997,
+      "cacheAndCoreMatched": true,
+      "sessionPreserved": true,
+      "intent": 1,
+      "committed": 1,
+      "token": "51c31e87847842a082b155e92f7ac6b7",
+      "phase": "ready",
+      "pid": 15322,
+      "epochMs": 1794387919010,
+      "elapsedMs": 100230622
+    },
+    "verified": {
+      "passed": true,
+      "pid": 15481,
+      "http": 200,
+      "attributedSocket": true,
+      "positiveTraffic": true,
+      "hasNonDirectChain": true,
+      "chainHashes": [
+        "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+        "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+        "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+        "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+      ],
+      "connectionIdHash": "cb8c6cf193decc3176e977ddcad44031d0afdf1f4421027bb41626b5c4b27dca",
+      "case": "after",
+      "preparedPid": 15322,
+      "restartAt": 1794387923155,
+      "readyAt": 1794387918997,
+      "noAutomaticReplay": true,
+      "cacheAndCoreMatched": true,
+      "explicitRetryCommits": 0,
+      "sourcePreserved": true
+    },
+    "dataRestored": true,
+    "requests": [
+      {
+        "ownerStep": "prepare-network",
+        "passed": true,
+        "http": 200,
+        "failedStep": null,
+        "failureType": null,
+        "diagnosticLogRestored": true,
+        "connectionTrace": {
+          "matchedConnections": [
+            {
+              "connectionIdHash": "e3481d63ae93cc24df5d45dd070362acd8d685c44ae0e709cac9ed09973d1ae7",
+              "firstSeenElapsedMs": 100225536,
+              "lastSeenElapsedMs": 100226413,
+              "samples": 9,
+              "maxUpload": 593,
+              "maxDownload": 3691,
+              "positiveTraffic": true,
+              "chainHashes": [
+                "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+                "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+              ],
+              "hasNonDirectChain": true
+            }
+          ],
+          "overflow": 0,
+          "readFailures": 0,
+          "wireBytesClaimed": false
+        },
+        "phases": [
+          {
+            "name": "existing-connections",
+            "startElapsedMs": 100223801,
+            "durationMs": 3,
+            "passed": true
+          },
+          {
+            "name": "diagnostic-log-level",
+            "startElapsedMs": 100223805,
+            "durationMs": 3,
+            "passed": true
+          },
+          {
+            "name": "diagnostic-log-start",
+            "startElapsedMs": 100223809,
+            "durationMs": 2,
+            "passed": true
+          },
+          {
+            "name": "socks-connect",
+            "startElapsedMs": 100223925,
+            "durationMs": 2,
+            "passed": true
+          },
+          {
+            "name": "tls-create",
+            "startElapsedMs": 100223929,
+            "durationMs": 3,
+            "passed": true
+          },
+          {
+            "name": "tls-handshake",
+            "startElapsedMs": 100223934,
+            "durationMs": 2111,
+            "passed": true
+          },
+          {
+            "name": "http-write",
+            "startElapsedMs": 100226046,
+            "durationMs": 2,
+            "passed": true
+          },
+          {
+            "name": "http-status",
+            "startElapsedMs": 100226049,
+            "durationMs": 372,
+            "passed": true
+          },
+          {
+            "name": "http-headers",
+            "startElapsedMs": 100226422,
+            "durationMs": 3,
+            "passed": true
+          },
+          {
+            "name": "connection-attribution",
+            "startElapsedMs": 100226425,
+            "durationMs": 1,
+            "passed": true
+          }
+        ],
+        "dnsSocketAttributionClaimed": false,
+        "dialDiagnostic": [
+          {
+            "kind": "lookup",
+            "atMillis": 4248,
+            "failed": false,
+            "categories": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 712
+          },
+          {
+            "kind": "node-selected",
+            "atMillis": 4391,
+            "failed": false,
+            "categories": [],
+            "lookupNetwork": "tcp",
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 855,
+            "dialEndpointHash": "8204d63cf2847eab5474dbd41edfdb5d621e0fefae6bf6aaf7daaf2eb7a2bd74",
+            "dialFamily": "ipv4"
+          }
+        ],
+        "dialAccounting": {
+          "omittedDialAttempts": 25,
+          "droppedRecords": 0
+        },
+        "candidateRecordsKeptInRawEvidence": 8
+      },
+      {
+        "ownerStep": "verify-restored-network",
+        "passed": true,
+        "http": 200,
+        "failedStep": null,
+        "failureType": null,
+        "diagnosticLogRestored": true,
+        "connectionTrace": {
+          "matchedConnections": [
+            {
+              "connectionIdHash": "cb8c6cf193decc3176e977ddcad44031d0afdf1f4421027bb41626b5c4b27dca",
+              "firstSeenElapsedMs": 100235594,
+              "lastSeenElapsedMs": 100236478,
+              "samples": 9,
+              "maxUpload": 593,
+              "maxDownload": 5058,
+              "positiveTraffic": true,
+              "chainHashes": [
+                "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+                "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+              ],
+              "hasNonDirectChain": true
+            }
+          ],
+          "overflow": 0,
+          "readFailures": 0,
+          "wireBytesClaimed": false
+        },
+        "phases": [
+          {
+            "name": "existing-connections",
+            "startElapsedMs": 100234788,
+            "durationMs": 3,
+            "passed": true
+          },
+          {
+            "name": "diagnostic-log-level",
+            "startElapsedMs": 100234791,
+            "durationMs": 1,
+            "passed": true
+          },
+          {
+            "name": "diagnostic-log-start",
+            "startElapsedMs": 100234792,
+            "durationMs": 1,
+            "passed": true
+          },
+          {
+            "name": "socks-connect",
+            "startElapsedMs": 100234858,
+            "durationMs": 8,
+            "passed": true
+          },
+          {
+            "name": "tls-create",
+            "startElapsedMs": 100234866,
+            "durationMs": 2,
+            "passed": true
+          },
+          {
+            "name": "tls-handshake",
+            "startElapsedMs": 100234869,
+            "durationMs": 948,
+            "passed": true
+          },
+          {
+            "name": "http-write",
+            "startElapsedMs": 100235817,
+            "durationMs": 1,
+            "passed": true
+          },
+          {
+            "name": "http-status",
+            "startElapsedMs": 100235818,
+            "durationMs": 681,
+            "passed": true
+          },
+          {
+            "name": "http-headers",
+            "startElapsedMs": 100236500,
+            "durationMs": 1,
+            "passed": true
+          },
+          {
+            "name": "connection-attribution",
+            "startElapsedMs": 100236502,
+            "durationMs": 0,
+            "passed": true
+          }
+        ],
+        "dnsSocketAttributionClaimed": false,
+        "dialDiagnostic": [
+          {
+            "kind": "lookup",
+            "atMillis": 1723,
+            "failed": false,
+            "categories": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 28
+          },
+          {
+            "kind": "node-selected",
+            "atMillis": 1851,
+            "failed": false,
+            "categories": [],
+            "lookupNetwork": "tcp",
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 156,
+            "dialEndpointHash": "ecabb6469e853cc41cd6313f81198af169f2f00ba190f2d46c5b8b0266eb5d51",
+            "dialFamily": "ipv4"
+          }
+        ],
+        "dialAccounting": {
+          "omittedDialAttempts": 24,
+          "droppedRecords": 0
+        },
+        "candidateRecordsKeptInRawEvidence": 8
+      },
+      {
+        "ownerStep": "verify-post-save-network",
+        "passed": true,
+        "http": 200,
+        "failedStep": null,
+        "failureType": null,
+        "diagnosticLogRestored": true,
+        "connectionTrace": {
+          "matchedConnections": [
+            {
+              "connectionIdHash": "b2100b53d67de61893e60d99953eca857c80a2501368264e6dd74e53c872cee2",
+              "firstSeenElapsedMs": 100239594,
+              "lastSeenElapsedMs": 100240668,
+              "samples": 11,
+              "maxUpload": 856,
+              "maxDownload": 203,
+              "positiveTraffic": true,
+              "chainHashes": [
+                "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+                "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+              ],
+              "hasNonDirectChain": true
+            }
+          ],
+          "overflow": 0,
+          "readFailures": 0,
+          "wireBytesClaimed": false
+        },
+        "phases": [
+          {
+            "name": "existing-connections",
+            "startElapsedMs": 100238878,
+            "durationMs": 2,
+            "passed": true
+          },
+          {
+            "name": "diagnostic-log-level",
+            "startElapsedMs": 100238880,
+            "durationMs": 1,
+            "passed": true
+          },
+          {
+            "name": "diagnostic-log-start",
+            "startElapsedMs": 100238882,
+            "durationMs": 0,
+            "passed": true
+          },
+          {
+            "name": "socks-connect",
+            "startElapsedMs": 100238968,
+            "durationMs": 4,
+            "passed": true
+          },
+          {
+            "name": "tls-create",
+            "startElapsedMs": 100238973,
+            "durationMs": 0,
+            "passed": true
+          },
+          {
+            "name": "tls-handshake",
+            "startElapsedMs": 100238974,
+            "durationMs": 1502,
+            "passed": true
+          },
+          {
+            "name": "http-write",
+            "startElapsedMs": 100240476,
+            "durationMs": 1,
+            "passed": true
+          },
+          {
+            "name": "http-status",
+            "startElapsedMs": 100240477,
+            "durationMs": 290,
+            "passed": true
+          },
+          {
+            "name": "http-headers",
+            "startElapsedMs": 100240767,
+            "durationMs": 1,
+            "passed": true
+          },
+          {
+            "name": "connection-attribution",
+            "startElapsedMs": 100240768,
+            "durationMs": 0,
+            "passed": true
+          }
+        ],
+        "dnsSocketAttributionClaimed": false,
+        "dialDiagnostic": [
+          {
+            "kind": "lookup",
+            "atMillis": 5805,
+            "failed": false,
+            "categories": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0
+          },
+          {
+            "kind": "node-selected",
+            "atMillis": 5846,
+            "failed": false,
+            "categories": [],
+            "lookupNetwork": "tcp",
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 41,
+            "dialEndpointHash": "5546e98c5f05df5fbe500827079039cd101d4f514eaa92dfecafa9feaf307c15",
+            "dialFamily": "ipv4"
+          }
+        ],
+        "dialAccounting": {
+          "omittedDialAttempts": 25,
+          "droppedRecords": 0
+        },
+        "candidateRecordsKeptInRawEvidence": 8
+      }
+    ],
+    "failedStates": []
+  },
+  "finalSourceProviderCases": [
+    {
+      "case": "provider-after1",
+      "passed": true,
+      "failure": null,
+      "installedAppSha256": "313e94a1664634b533176280acef0071d88adb4f84c81af513acff56ab394a81",
+      "systemObservedBeforeVerify": {
+        "pids": [
+          16612
+        ],
+        "pidsBefore": [
+          16612
+        ],
+        "stableSample": true,
+        "servicePid": 16612,
+        "hasProxyService": true,
+        "isForeground": true,
+        "hasVpnService": false,
+        "hasTun0": false,
+        "secondsAfterKill": 1.906
+      },
+      "ready": {
+        "case": "after",
+        "readyAt": 1794388898625,
+        "cacheAndCoreMatched": true,
+        "sessionPreserved": true,
+        "intent": 1,
+        "committed": 1,
+        "token": "70fe58ae7207442384c140daa0d51120",
+        "phase": "ready",
+        "pid": 16452,
+        "epochMs": 1794388898640,
+        "elapsedMs": 101210251
+      },
+      "verified": {
+        "passed": true,
+        "pid": 16612,
+        "http": 200,
+        "attributedSocket": true,
+        "positiveTraffic": true,
+        "hasNonDirectChain": true,
+        "chainHashes": [
+          "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+          "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+          "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+          "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+        ],
+        "connectionIdHash": "40a59fc1fe54a28c62c0a632531af7204304493ebae23f19e3ed869c2ac4ec4d",
+        "case": "after",
+        "preparedPid": 16452,
+        "restartAt": 1794388903002,
+        "readyAt": 1794388898625,
+        "noAutomaticReplay": true,
+        "cacheAndCoreMatched": true,
+        "explicitRetryCommits": 0,
+        "sourcePreserved": true
+      },
+      "dataRestored": true,
+      "requests": [
+        {
+          "ownerStep": "prepare-network",
+          "passed": true,
+          "http": 200,
+          "failedStep": null,
+          "failureType": null,
+          "diagnosticLogRestored": true,
+          "connectionTrace": {
+            "matchedConnections": [
+              {
+                "connectionIdHash": "74bbed59c9e4ccbdd53385ba8bc117ec50899a113fa2e8d9aebec4a318a7f2d5",
+                "firstSeenElapsedMs": 101206233,
+                "lastSeenElapsedMs": 101206903,
+                "samples": 7,
+                "maxUpload": 593,
+                "maxDownload": 3690,
+                "positiveTraffic": true,
+                "chainHashes": [
+                  "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ],
+                "hasNonDirectChain": true
+              }
+            ],
+            "overflow": 0,
+            "readFailures": 0,
+            "wireBytesClaimed": false
+          },
+          "phases": [
+            {
+              "name": "existing-connections",
+              "startElapsedMs": 101205107,
+              "durationMs": 3,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-level",
+              "startElapsedMs": 101205110,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-start",
+              "startElapsedMs": 101205112,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "socks-connect",
+              "startElapsedMs": 101205191,
+              "durationMs": 3,
+              "passed": true
+            },
+            {
+              "name": "tls-create",
+              "startElapsedMs": 101205195,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "tls-handshake",
+              "startElapsedMs": 101205200,
+              "durationMs": 1357,
+              "passed": true
+            },
+            {
+              "name": "http-write",
+              "startElapsedMs": 101206557,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "http-status",
+              "startElapsedMs": 101206558,
+              "durationMs": 394,
+              "passed": true
+            },
+            {
+              "name": "http-headers",
+              "startElapsedMs": 101206952,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "connection-attribution",
+              "startElapsedMs": 101206954,
+              "durationMs": 1,
+              "passed": true
+            }
+          ],
+          "dnsSocketAttributionClaimed": false,
+          "dialDiagnostic": [
+            {
+              "kind": "lookup",
+              "atMillis": 4349,
+              "failed": false,
+              "categories": [],
+              "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+              "lookupNetwork": "tcp",
+              "resolverRole": "proxy",
+              "ipv6Disabled": false,
+              "addresses": 23,
+              "ipv4Addresses": 23,
+              "ipv6Addresses": 0,
+              "durationMillis": 320
+            },
+            {
+              "kind": "node-selected",
+              "atMillis": 4525,
+              "failed": false,
+              "categories": [],
+              "lookupNetwork": "tcp",
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 496,
+              "dialEndpointHash": "fff224462d0ce65207b12e1cbd447ccc0a5e718ba5efc210ee3047737f4b38e3",
+              "dialFamily": "ipv4"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 4525,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-ws-stream",
+              "protocolState": "begin"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5024,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 498,
+              "protocolStage": "vless-ws-stream",
+              "protocolState": "end"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5024,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-request",
+              "protocolState": "begin",
+              "payloadBytes": 254,
+              "expectedBytes": 289
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5024,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-request",
+              "protocolState": "end",
+              "payloadBytes": 254,
+              "streamBytes": 289,
+              "expectedBytes": 289
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5031,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-response",
+              "protocolState": "begin",
+              "expectedBytes": 2
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5349,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 319,
+              "omittedDialAttempts": 15,
+              "protocolStage": "vless-response",
+              "protocolState": "end",
+              "streamBytes": 2,
+              "expectedBytes": 2
+            }
+          ],
+          "dialAccounting": {
+            "omittedDialAttempts": 15,
+            "droppedRecords": 0
+          },
+          "candidateRecordsKeptInRawEvidence": 8
+        },
+        {
+          "ownerStep": "verify-restored-network",
+          "passed": true,
+          "http": 200,
+          "failedStep": null,
+          "failureType": null,
+          "diagnosticLogRestored": true,
+          "connectionTrace": {
+            "matchedConnections": [
+              {
+                "connectionIdHash": "40a59fc1fe54a28c62c0a632531af7204304493ebae23f19e3ed869c2ac4ec4d",
+                "firstSeenElapsedMs": 101215688,
+                "lastSeenElapsedMs": 101217227,
+                "samples": 15,
+                "maxUpload": 593,
+                "maxDownload": 3690,
+                "positiveTraffic": true,
+                "chainHashes": [
+                  "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ],
+                "hasNonDirectChain": true
+              }
+            ],
+            "overflow": 0,
+            "readFailures": 0,
+            "wireBytesClaimed": false
+          },
+          "phases": [
+            {
+              "name": "existing-connections",
+              "startElapsedMs": 101214635,
+              "durationMs": 4,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-level",
+              "startElapsedMs": 101214639,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-start",
+              "startElapsedMs": 101214642,
+              "durationMs": 5,
+              "passed": true
+            },
+            {
+              "name": "socks-connect",
+              "startElapsedMs": 101214733,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "tls-create",
+              "startElapsedMs": 101214737,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "tls-handshake",
+              "startElapsedMs": 101214741,
+              "durationMs": 2240,
+              "passed": true
+            },
+            {
+              "name": "http-write",
+              "startElapsedMs": 101216981,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "http-status",
+              "startElapsedMs": 101216982,
+              "durationMs": 289,
+              "passed": true
+            },
+            {
+              "name": "http-headers",
+              "startElapsedMs": 101217272,
+              "durationMs": 0,
+              "passed": true
+            },
+            {
+              "name": "connection-attribution",
+              "startElapsedMs": 101217273,
+              "durationMs": 0,
+              "passed": true
+            }
+          ],
+          "dnsSocketAttributionClaimed": false,
+          "dialDiagnostic": [
+            {
+              "kind": "lookup",
+              "atMillis": 2240,
+              "failed": false,
+              "categories": [],
+              "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+              "lookupNetwork": "tcp",
+              "resolverRole": "proxy",
+              "ipv6Disabled": false,
+              "addresses": 33,
+              "ipv4Addresses": 33,
+              "ipv6Addresses": 0,
+              "durationMillis": 210
+            },
+            {
+              "kind": "node-selected",
+              "atMillis": 2332,
+              "failed": false,
+              "categories": [],
+              "lookupNetwork": "tcp",
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 301,
+              "dialEndpointHash": "695274fe702c792c962898311ce5da62aa47f54cebec45f18d74dee2d65a074f",
+              "dialFamily": "ipv4"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 2332,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-ws-stream",
+              "protocolState": "begin"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 2950,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 618,
+              "protocolStage": "vless-ws-stream",
+              "protocolState": "end"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 2950,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-request",
+              "protocolState": "begin",
+              "payloadBytes": 254,
+              "expectedBytes": 289
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 2951,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-request",
+              "protocolState": "end",
+              "payloadBytes": 254,
+              "streamBytes": 289,
+              "expectedBytes": 289
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 2953,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-response",
+              "protocolState": "begin",
+              "expectedBytes": 2
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 4247,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 1293,
+              "omittedDialAttempts": 25,
+              "protocolStage": "vless-response",
+              "protocolState": "end",
+              "streamBytes": 2,
+              "expectedBytes": 2
+            }
+          ],
+          "dialAccounting": {
+            "omittedDialAttempts": 25,
+            "droppedRecords": 0
+          },
+          "candidateRecordsKeptInRawEvidence": 8
+        },
+        {
+          "ownerStep": "verify-post-save-network",
+          "passed": true,
+          "http": 200,
+          "failedStep": null,
+          "failureType": null,
+          "diagnosticLogRestored": true,
+          "connectionTrace": {
+            "matchedConnections": [
+              {
+                "connectionIdHash": "117fc2e3f71aad678b993690e385303851a6be88c767cd18596a73ec91df54aa",
+                "firstSeenElapsedMs": 101220227,
+                "lastSeenElapsedMs": 101221725,
+                "samples": 15,
+                "maxUpload": 856,
+                "maxDownload": 203,
+                "positiveTraffic": true,
+                "chainHashes": [
+                  "bf66fabb6aa97e3adb0b5d0aba2a1a168b30d0840be77f10e3f73beadfc41338",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ],
+                "hasNonDirectChain": true
+              }
+            ],
+            "overflow": 0,
+            "readFailures": 0,
+            "wireBytesClaimed": false
+          },
+          "phases": [
+            {
+              "name": "existing-connections",
+              "startElapsedMs": 101219506,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-level",
+              "startElapsedMs": 101219508,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-start",
+              "startElapsedMs": 101219510,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "socks-connect",
+              "startElapsedMs": 101219595,
+              "durationMs": 3,
+              "passed": true
+            },
+            {
+              "name": "tls-create",
+              "startElapsedMs": 101219598,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "tls-handshake",
+              "startElapsedMs": 101219599,
+              "durationMs": 1872,
+              "passed": true
+            },
+            {
+              "name": "http-write",
+              "startElapsedMs": 101221471,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "http-status",
+              "startElapsedMs": 101221472,
+              "durationMs": 277,
+              "passed": true
+            },
+            {
+              "name": "http-headers",
+              "startElapsedMs": 101221749,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "connection-attribution",
+              "startElapsedMs": 101221750,
+              "durationMs": 0,
+              "passed": true
+            }
+          ],
+          "dnsSocketAttributionClaimed": false,
+          "dialDiagnostic": [
+            {
+              "kind": "lookup",
+              "atMillis": 6893,
+              "failed": false,
+              "categories": [],
+              "lookupHostHash": "6a6984004879a6cf4ad61774efe4641b4dcf13a550cac3e231d0f72a3216d0d9",
+              "lookupNetwork": "tcp",
+              "resolverRole": "proxy",
+              "ipv6Disabled": false,
+              "addresses": 33,
+              "ipv4Addresses": 33,
+              "ipv6Addresses": 0
+            },
+            {
+              "kind": "node-selected",
+              "atMillis": 6936,
+              "failed": false,
+              "categories": [],
+              "lookupNetwork": "tcp",
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 43,
+              "dialEndpointHash": "447b5e6066fcbd7e9c2a1d047b35ced75283be20017ffd82a0fd8f93e7c2d420",
+              "dialFamily": "ipv4"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 6936,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-ws-stream",
+              "protocolState": "begin"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 7431,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 495,
+              "protocolStage": "vless-ws-stream",
+              "protocolState": "end"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 7431,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-request",
+              "protocolState": "begin",
+              "payloadBytes": 517,
+              "expectedBytes": 552
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 7432,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-request",
+              "protocolState": "end",
+              "payloadBytes": 517,
+              "streamBytes": 552,
+              "expectedBytes": 552
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 7433,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-response",
+              "protocolState": "begin",
+              "expectedBytes": 2
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 8761,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 1328,
+              "omittedDialAttempts": 25,
+              "protocolStage": "vless-response",
+              "protocolState": "end",
+              "streamBytes": 2,
+              "expectedBytes": 2
+            }
+          ],
+          "dialAccounting": {
+            "omittedDialAttempts": 25,
+            "droppedRecords": 0
+          },
+          "candidateRecordsKeptInRawEvidence": 8
+        }
+      ],
+      "failedStates": []
+    },
+    {
+      "case": "provider-before1",
+      "passed": false,
+      "failure": {
+        "stage": "prepare",
+        "type": "RuntimeError",
+        "message": "验收宿主报告失败，见脱敏events.json"
+      },
+      "installedAppSha256": "313e94a1664634b533176280acef0071d88adb4f84c81af513acff56ab394a81",
+      "systemObservedBeforeVerify": null,
+      "ready": null,
+      "verified": null,
+      "dataRestored": true,
+      "requests": [
+        {
+          "ownerStep": "prepare-network",
+          "passed": false,
+          "http": null,
+          "failedStep": "tls-handshake",
+          "failureType": "SocketTimeoutException",
+          "diagnosticLogRestored": true,
+          "connectionTrace": {
+            "matchedConnections": [
+              {
+                "connectionIdHash": "0f784cdf3d7f9ebcf48d270429c4f1bafbf6efc3ee1ac90ff9c06845aa84b620",
+                "firstSeenElapsedMs": 101231212,
+                "lastSeenElapsedMs": 101250054,
+                "samples": 174,
+                "maxUpload": 254,
+                "maxDownload": 0,
+                "positiveTraffic": false,
+                "chainHashes": [
+                  "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ],
+                "hasNonDirectChain": true
+              }
+            ],
+            "overflow": 0,
+            "readFailures": 0,
+            "wireBytesClaimed": false
+          },
+          "phases": [
+            {
+              "name": "existing-connections",
+              "startElapsedMs": 101229941,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-level",
+              "startElapsedMs": 101229943,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-start",
+              "startElapsedMs": 101229946,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "socks-connect",
+              "startElapsedMs": 101230049,
+              "durationMs": 3,
+              "passed": true
+            },
+            {
+              "name": "tls-create",
+              "startElapsedMs": 101230053,
+              "durationMs": 3,
+              "passed": true
+            },
+            {
+              "name": "tls-handshake",
+              "startElapsedMs": 101230058,
+              "durationMs": 20024,
+              "passed": false,
+              "type": "SocketTimeoutException"
+            }
+          ],
+          "dnsSocketAttributionClaimed": false,
+          "dialDiagnostic": [
+            {
+              "kind": "lookup",
+              "atMillis": 4588,
+              "failed": false,
+              "categories": [],
+              "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+              "lookupNetwork": "tcp",
+              "resolverRole": "proxy",
+              "ipv6Disabled": false,
+              "addresses": 33,
+              "ipv4Addresses": 33,
+              "ipv6Addresses": 0,
+              "durationMillis": 367
+            },
+            {
+              "kind": "node-selected",
+              "atMillis": 4741,
+              "failed": false,
+              "categories": [],
+              "lookupNetwork": "tcp",
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 520,
+              "dialEndpointHash": "1388321603db3ff62dd627c273233cc7bb201ac0a5469c372093d67c3e5270d7",
+              "dialFamily": "ipv4"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 4741,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-ws-stream",
+              "protocolState": "begin"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5364,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "durationMillis": 622,
+              "protocolStage": "vless-ws-stream",
+              "protocolState": "end"
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5364,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-request",
+              "protocolState": "begin",
+              "payloadBytes": 254,
+              "expectedBytes": 289
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5364,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-request",
+              "protocolState": "end",
+              "payloadBytes": 254,
+              "streamBytes": 289,
+              "expectedBytes": 289
+            },
+            {
+              "kind": "protocol",
+              "atMillis": 5366,
+              "failed": false,
+              "categories": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0,
+              "protocolStage": "vless-response",
+              "protocolState": "begin",
+              "expectedBytes": 2
+            }
+          ],
+          "dialAccounting": {
+            "omittedDialAttempts": 25,
+            "droppedRecords": 0
+          },
+          "candidateRecordsKeptInRawEvidence": 8
+        }
+      ],
+      "failedStates": [
+        {
+          "phase": "failed",
+          "step": "prepare-network-service-ready",
+          "type": "IllegalStateException",
+          "documentError": false,
+          "documentErrorCategory": "none",
+          "documentErrorHash": null,
+          "intent": 0,
+          "committed": 0
+        }
+      ]
+    }
+  ],
+  "finalSourceControlRequests": [
+    {
+      "command": "start-protocol-control1",
+      "passed": false,
+      "network": {
+        "passed": false,
+        "pid": 16831,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "runtimeAtEntry": "RUNNING",
+        "runningSinceElapsedMs": 101383801,
+        "requestEntryElapsedMs": 101383805,
+        "sourcePort": 32967,
+        "failedStep": "tls-handshake",
+        "failureType": "SocketTimeoutException",
+        "dialDiagnostic": [
+          {
+            "kind": "lookup",
+            "atMillis": 158182,
+            "failed": false,
+            "categories": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 146
+          },
+          {
+            "kind": "node-selected",
+            "atMillis": 158501,
+            "failed": false,
+            "categories": [],
+            "lookupNetwork": "tcp",
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 465,
+            "dialEndpointHash": "37532ba450bf601b4b15d15f011de78f4ca3c0e090b791d9675fbac8a1f5d1c7",
+            "dialFamily": "ipv4"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 158501,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-ws-stream",
+            "protocolState": "begin"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 158990,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 488,
+            "protocolStage": "vless-ws-stream",
+            "protocolState": "end"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 158990,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-request",
+            "protocolState": "begin",
+            "payloadBytes": 254,
+            "expectedBytes": 289
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 158990,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-request",
+            "protocolState": "end",
+            "payloadBytes": 254,
+            "streamBytes": 289,
+            "expectedBytes": 289
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 158990,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "omittedDialAttempts": 25,
+            "protocolStage": "vless-response",
+            "protocolState": "begin",
+            "expectedBytes": 2
+          }
+        ],
+        "connectionTrace": {
+          "matchedConnections": [
+            {
+              "connectionIdHash": "4de98be86a37c665cc64945225ceb92f33f633873e76a94665f2d860d15bba6b",
+              "firstSeenElapsedMs": 101384888,
+              "lastSeenElapsedMs": 101403826,
+              "samples": 177,
+              "maxUpload": 254,
+              "maxDownload": 0,
+              "positiveTraffic": false,
+              "chainHashes": [
+                "affe3fe47ad6861452a7cf32897e700c24af5d77b10f767e3cf9831b2cbbc18b",
+                "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+              ],
+              "hasNonDirectChain": true
+            }
+          ],
+          "overflow": 0,
+          "readFailures": 0,
+          "wireBytesClaimed": false
+        },
+        "diagnosticLogRestored": true,
+        "dnsSocketAttributionClaimed": false,
+        "phases": [
+          {
+            "name": "existing-connections",
+            "startElapsedMs": 101383805,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "start-protocol-control1-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101383806,
+            "epochMs": 1794389072194
+          },
+          {
+            "name": "diagnostic-log-level",
+            "startElapsedMs": 101383807,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "start-protocol-control1-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101383808,
+            "epochMs": 1794389072197
+          },
+          {
+            "name": "diagnostic-log-start",
+            "startElapsedMs": 101383809,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "start-protocol-control1-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101383810,
+            "epochMs": 1794389072198
+          },
+          {
+            "name": "socks-connect",
+            "startElapsedMs": 101383863,
+            "durationMs": 2,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "start-protocol-control1-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101383866,
+            "epochMs": 1794389072254
+          },
+          {
+            "name": "tls-create",
+            "startElapsedMs": 101383866,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "start-protocol-control1-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101383867,
+            "epochMs": 1794389072255
+          },
+          {
+            "name": "tls-handshake",
+            "startElapsedMs": 101383867,
+            "durationMs": 20023,
+            "passed": false,
+            "type": "SocketTimeoutException",
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "start-protocol-control1-wait-failed",
+            "pid": 16831,
+            "elapsedMs": 101403890,
+            "epochMs": 1794389092278
+          }
+        ],
+        "dialAccounting": {
+          "omittedDialAttempts": 25,
+          "droppedRecords": 0
+        },
+        "candidateRecordsKeptInRawEvidence": 8
+      }
+    },
+    {
+      "command": "checkpoint-protocol-control2",
+      "passed": true,
+      "network": {
+        "passed": true,
+        "pid": 16831,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "runtimeAtEntry": "RUNNING",
+        "runningSinceElapsedMs": 101383801,
+        "requestEntryElapsedMs": 101405151,
+        "sourcePort": 38283,
+        "http": 200,
+        "hasNonDirectChain": true,
+        "chainHashes": [
+          "bf66fabb6aa97e3adb0b5d0aba2a1a168b30d0840be77f10e3f73beadfc41338",
+          "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+          "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+          "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+        ],
+        "dialDiagnostic": [
+          {
+            "kind": "lookup",
+            "atMillis": 179407,
+            "failed": false,
+            "categories": [],
+            "lookupHostHash": "6a6984004879a6cf4ad61774efe4641b4dcf13a550cac3e231d0f72a3216d0d9",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 23,
+            "ipv4Addresses": 23,
+            "ipv6Addresses": 0
+          },
+          {
+            "kind": "node-selected",
+            "atMillis": 179450,
+            "failed": false,
+            "categories": [],
+            "lookupNetwork": "tcp",
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 43,
+            "dialEndpointHash": "71ef0d3314adcafe2c1e71048908e41bd72d1619bfee06816348ce68f31bb232",
+            "dialFamily": "ipv4"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 179450,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-ws-stream",
+            "protocolState": "begin"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 179946,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 496,
+            "protocolStage": "vless-ws-stream",
+            "protocolState": "end"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 179946,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-request",
+            "protocolState": "begin",
+            "payloadBytes": 254,
+            "expectedBytes": 289
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 179946,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-request",
+            "protocolState": "end",
+            "payloadBytes": 254,
+            "streamBytes": 289,
+            "expectedBytes": 289
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 179947,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-response",
+            "protocolState": "begin",
+            "expectedBytes": 2
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 183232,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 3285,
+            "omittedDialAttempts": 15,
+            "protocolStage": "vless-response",
+            "protocolState": "end",
+            "streamBytes": 2,
+            "expectedBytes": 2
+          }
+        ],
+        "connectionTrace": {
+          "matchedConnections": [
+            {
+              "connectionIdHash": "05dcfa40647aa13cef4f85fcc01d69456112df9d20780c33ec19e3f1890973fc",
+              "firstSeenElapsedMs": 101405854,
+              "lastSeenElapsedMs": 101409376,
+              "samples": 34,
+              "maxUpload": 593,
+              "maxDownload": 3690,
+              "positiveTraffic": true,
+              "chainHashes": [
+                "bf66fabb6aa97e3adb0b5d0aba2a1a168b30d0840be77f10e3f73beadfc41338",
+                "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+              ],
+              "hasNonDirectChain": true
+            }
+          ],
+          "overflow": 0,
+          "readFailures": 0,
+          "wireBytesClaimed": false
+        },
+        "diagnosticLogRestored": true,
+        "dnsSocketAttributionClaimed": false,
+        "phases": [
+          {
+            "name": "existing-connections",
+            "startElapsedMs": 101405151,
+            "durationMs": 3,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101405154,
+            "epochMs": 1794389093542
+          },
+          {
+            "name": "diagnostic-log-level",
+            "startElapsedMs": 101405154,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101405155,
+            "epochMs": 1794389093544
+          },
+          {
+            "name": "diagnostic-log-start",
+            "startElapsedMs": 101405156,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101405157,
+            "epochMs": 1794389093545
+          },
+          {
+            "name": "socks-connect",
+            "startElapsedMs": 101405235,
+            "durationMs": 2,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101405237,
+            "epochMs": 1794389093626
+          },
+          {
+            "name": "tls-create",
+            "startElapsedMs": 101405238,
+            "durationMs": 0,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101405238,
+            "epochMs": 1794389093627
+          },
+          {
+            "name": "tls-handshake",
+            "startElapsedMs": 101405239,
+            "durationMs": 3863,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101409102,
+            "epochMs": 1794389097490
+          },
+          {
+            "name": "http-write",
+            "startElapsedMs": 101409103,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101409104,
+            "epochMs": 1794389097492
+          },
+          {
+            "name": "http-status",
+            "startElapsedMs": 101409104,
+            "durationMs": 333,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101409437,
+            "epochMs": 1794389097826
+          },
+          {
+            "name": "http-headers",
+            "startElapsedMs": 101409438,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101409439,
+            "epochMs": 1794389097828
+          },
+          {
+            "name": "connection-attribution",
+            "startElapsedMs": 101409440,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control2-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101409441,
+            "epochMs": 1794389097829
+          }
+        ],
+        "dialAccounting": {
+          "omittedDialAttempts": 15,
+          "droppedRecords": 0
+        },
+        "candidateRecordsKeptInRawEvidence": 8
+      }
+    },
+    {
+      "command": "checkpoint-protocol-control3",
+      "passed": false,
+      "network": {
+        "passed": false,
+        "pid": 16831,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "runtimeAtEntry": "RUNNING",
+        "runningSinceElapsedMs": 101383801,
+        "requestEntryElapsedMs": 101410497,
+        "sourcePort": 56163,
+        "failedStep": "tls-handshake",
+        "failureType": "SocketTimeoutException",
+        "dialDiagnostic": [
+          {
+            "kind": "lookup",
+            "atMillis": 184747,
+            "failed": false,
+            "categories": [],
+            "lookupHostHash": "6a6984004879a6cf4ad61774efe4641b4dcf13a550cac3e231d0f72a3216d0d9",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 23,
+            "ipv4Addresses": 23,
+            "ipv6Addresses": 0,
+            "durationMillis": 1
+          },
+          {
+            "kind": "node-selected",
+            "atMillis": 184786,
+            "failed": false,
+            "categories": [],
+            "lookupNetwork": "tcp",
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 40,
+            "dialEndpointHash": "45f241560182aa98428b7e7ab7129f729bf8cde73638aea4fa71bd3b2484685e",
+            "dialFamily": "ipv4"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 184786,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-ws-stream",
+            "protocolState": "begin"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 185321,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 535,
+            "protocolStage": "vless-ws-stream",
+            "protocolState": "end"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 185321,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-request",
+            "protocolState": "begin",
+            "payloadBytes": 517,
+            "expectedBytes": 552
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 185322,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-request",
+            "protocolState": "end",
+            "payloadBytes": 517,
+            "streamBytes": 552,
+            "expectedBytes": 552
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 185322,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "omittedDialAttempts": 15,
+            "protocolStage": "vless-response",
+            "protocolState": "begin",
+            "expectedBytes": 2
+          }
+        ],
+        "connectionTrace": {
+          "matchedConnections": [
+            {
+              "connectionIdHash": "8c1fe401e8a8cefdee14409659fb6b2fe1df68a26981b768da42c2a7530ef687",
+              "firstSeenElapsedMs": 101411187,
+              "lastSeenElapsedMs": 101430551,
+              "samples": 181,
+              "maxUpload": 517,
+              "maxDownload": 0,
+              "positiveTraffic": false,
+              "chainHashes": [
+                "bf66fabb6aa97e3adb0b5d0aba2a1a168b30d0840be77f10e3f73beadfc41338",
+                "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+              ],
+              "hasNonDirectChain": true
+            }
+          ],
+          "overflow": 0,
+          "readFailures": 0,
+          "wireBytesClaimed": false
+        },
+        "diagnosticLogRestored": true,
+        "dnsSocketAttributionClaimed": false,
+        "phases": [
+          {
+            "name": "existing-connections",
+            "startElapsedMs": 101410497,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control3-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101410498,
+            "epochMs": 1794389098886
+          },
+          {
+            "name": "diagnostic-log-level",
+            "startElapsedMs": 101410498,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control3-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101410499,
+            "epochMs": 1794389098888
+          },
+          {
+            "name": "diagnostic-log-start",
+            "startElapsedMs": 101410499,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control3-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101410500,
+            "epochMs": 1794389098889
+          },
+          {
+            "name": "socks-connect",
+            "startElapsedMs": 101410570,
+            "durationMs": 3,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control3-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101410573,
+            "epochMs": 1794389098961
+          },
+          {
+            "name": "tls-create",
+            "startElapsedMs": 101410573,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control3-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101410574,
+            "epochMs": 1794389098963
+          },
+          {
+            "name": "tls-handshake",
+            "startElapsedMs": 101410575,
+            "durationMs": 20023,
+            "passed": false,
+            "type": "SocketTimeoutException",
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control3-wait-failed",
+            "pid": 16831,
+            "elapsedMs": 101430598,
+            "epochMs": 1794389118986
+          }
+        ],
+        "dialAccounting": {
+          "omittedDialAttempts": 15,
+          "droppedRecords": 0
+        },
+        "candidateRecordsKeptInRawEvidence": 8
+      }
+    },
+    {
+      "command": "checkpoint-protocol-control4",
+      "passed": true,
+      "network": {
+        "passed": true,
+        "pid": 16831,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "runtimeAtEntry": "RUNNING",
+        "runningSinceElapsedMs": 101383801,
+        "requestEntryElapsedMs": 101431620,
+        "sourcePort": 49767,
+        "http": 200,
+        "hasNonDirectChain": true,
+        "chainHashes": [
+          "62f5cb56ee4a17891b4a04e60af049db42cf5c36a4fbff6cc9853ed83586ae37",
+          "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+          "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+          "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+        ],
+        "dialDiagnostic": [
+          {
+            "kind": "lookup",
+            "atMillis": 205855,
+            "failed": false,
+            "categories": [],
+            "lookupHostHash": "1da8b1f3283a36bdd051ac42a733f046be53461fa187450f0c6b9d32d1aaa681",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 25,
+            "ipv4Addresses": 25,
+            "ipv6Addresses": 0
+          },
+          {
+            "kind": "node-selected",
+            "atMillis": 205899,
+            "failed": false,
+            "categories": [],
+            "lookupNetwork": "tcp",
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 44,
+            "dialEndpointHash": "5b914bfc5aab07fd042312f6968f7ebf93d5175988725f7e966eb11cb01a3e33",
+            "dialFamily": "ipv4"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 205899,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-ws-stream",
+            "protocolState": "begin"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 206476,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 577,
+            "protocolStage": "vless-ws-stream",
+            "protocolState": "end"
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 206477,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-request",
+            "protocolState": "begin",
+            "payloadBytes": 517,
+            "expectedBytes": 552
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 206477,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-request",
+            "protocolState": "end",
+            "payloadBytes": 517,
+            "streamBytes": 552,
+            "expectedBytes": 552
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 206477,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "protocolStage": "vless-response",
+            "protocolState": "begin",
+            "expectedBytes": 2
+          },
+          {
+            "kind": "protocol",
+            "atMillis": 206744,
+            "failed": false,
+            "categories": [],
+            "ipv6Disabled": false,
+            "addresses": 0,
+            "ipv4Addresses": 0,
+            "ipv6Addresses": 0,
+            "durationMillis": 267,
+            "omittedDialAttempts": 17,
+            "protocolStage": "vless-response",
+            "protocolState": "end",
+            "streamBytes": 2,
+            "expectedBytes": 2
+          }
+        ],
+        "connectionTrace": {
+          "matchedConnections": [
+            {
+              "connectionIdHash": "8d57ed9bd27b3cc299fbd6d81979c1fa0fc5c21695cc6755206f43d3fea9fafd",
+              "firstSeenElapsedMs": 101432402,
+              "lastSeenElapsedMs": 101433030,
+              "samples": 7,
+              "maxUpload": 856,
+              "maxDownload": 203,
+              "positiveTraffic": true,
+              "chainHashes": [
+                "62f5cb56ee4a17891b4a04e60af049db42cf5c36a4fbff6cc9853ed83586ae37",
+                "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+              ],
+              "hasNonDirectChain": true
+            }
+          ],
+          "overflow": 0,
+          "readFailures": 0,
+          "wireBytesClaimed": false
+        },
+        "diagnosticLogRestored": true,
+        "dnsSocketAttributionClaimed": false,
+        "phases": [
+          {
+            "name": "existing-connections",
+            "startElapsedMs": 101431620,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101431621,
+            "epochMs": 1794389120009
+          },
+          {
+            "name": "diagnostic-log-level",
+            "startElapsedMs": 101431621,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101431622,
+            "epochMs": 1794389120011
+          },
+          {
+            "name": "diagnostic-log-start",
+            "startElapsedMs": 101431623,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101431624,
+            "epochMs": 1794389120012
+          },
+          {
+            "name": "socks-connect",
+            "startElapsedMs": 101431683,
+            "durationMs": 2,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101431685,
+            "epochMs": 1794389120074
+          },
+          {
+            "name": "tls-create",
+            "startElapsedMs": 101431686,
+            "durationMs": 2,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101431688,
+            "epochMs": 1794389120076
+          },
+          {
+            "name": "tls-handshake",
+            "startElapsedMs": 101431688,
+            "durationMs": 891,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101432579,
+            "epochMs": 1794389120968
+          },
+          {
+            "name": "http-write",
+            "startElapsedMs": 101432580,
+            "durationMs": 1,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101432581,
+            "epochMs": 1794389120970
+          },
+          {
+            "name": "http-status",
+            "startElapsedMs": 101432582,
+            "durationMs": 546,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101433128,
+            "epochMs": 1794389121516
+          },
+          {
+            "name": "http-headers",
+            "startElapsedMs": 101433129,
+            "durationMs": 0,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101433129,
+            "epochMs": 1794389121518
+          },
+          {
+            "name": "connection-attribution",
+            "startElapsedMs": 101433130,
+            "durationMs": 0,
+            "passed": true,
+            "token": "8cf67e62b04340c5a8ba2dd6f23cfb20",
+            "command": "checkpoint-protocol-control4-wait-end",
+            "pid": 16831,
+            "elapsedMs": 101433130,
+            "epochMs": 1794389121519
+          }
+        ],
+        "dialAccounting": {
+          "omittedDialAttempts": 17,
+          "droppedRecords": 0
+        },
+        "candidateRecordsKeptInRawEvidence": 8
+      }
+    }
+  ],
+  "finalSourceNetworkSamples": {
+    "total": 8,
+    "passed": 5,
+    "failed": 3,
+    "sameSessionControlPassed": 2,
+    "sameSessionControlFailed": 2,
+    "failedBeforeVlessResponseComplete": 3,
+    "failedWithoutProtocolDropOrTraceReadFailure": 3,
+    "addonNonzeroSeenInRealRequests": false
+  },
+  "cleanup": {
+    "formalCompare": {
+      "before": "protocol-stage-before1",
+      "after": "protocol-stage-after1",
+      "uidPreserved": true,
+      "schemaPreserved": true,
+      "tablesSame": {
+        "profiles": true,
+        "app_preferences": true,
+        "scripts": true,
+        "proxy_delay_results": true
+      },
+      "allProfileFileBytesHashMtimePreserved": true,
+      "beforeCounts": {
+        "profiles": 2,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 0
+      },
+      "afterCounts": {
+        "profiles": 2,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 0
+      },
+      "versionBefore": "0.1.2",
+      "versionAfter": "0.1.2",
+      "passed": true
+    },
+    "formalSha256": "992c48db3b4f7b43ab5123a1123b14631873253ff00889749ce8506a3b58a09f",
+    "snapshotReportsCleaned": [
+      {
+        "label": "protocol-stage-before1",
+        "sha256": "e7cf40fcfbafa70d33ae4605f7ea96c265d7466d61c78799120b666d9e8549be",
+        "removedAfterVerifiedReadback": true
+      },
+      {
+        "label": "protocol-stage-after1",
+        "sha256": "07a227bcd970c1271154b9d76c5f44a3bda5d9b1a5567b7fb4abc904aaefb7b0",
+        "removedAfterVerifiedReadback": true
+      }
+    ],
+    "noServices": true,
+    "noTun0": true,
+    "sourceFiles": 1760,
+    "sourceUnchanged": true,
+    "originalYamlHeld": true,
+    "flutterReferenceNotOperated": true,
+    "motionAndAuthorizedInputRetained": true,
+    "updaterDeferred": true
+  },
+  "limitations": [
+    "response begin without end at snapshot does not distinguish 0 or 1 header byte and does not prove permanent block",
+    "Protocol stream write counts do not prove wire delivery or remote receipt",
+    "All real successful VLESS responses in this batch had 2-byte response with no addons; KCORE010 not proven cause",
+    "One final Provider after recovery passed; final before failed network before editing/death and cannot count as recovery pass",
+    "Separate old-source baseline3HTTPS and final5/8 must not be combined into a full pass",
+    "No same-selected-endpoint success/failure comparison or packet/server evidence; root cause remains unresolved",
+    "Historical state/provider anomalies accepted by user; no retroactive root cause claim",
+    "Only ordinary VLESS TCP connection observer; Vision/other protocols not covered; source-port capture lacks generation",
+    "No new release; formal app unchanged; updater remains deferred"
+  ],
+  "rawEvidence": [
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/source1.json",
+      "sha256": "22cc3a37a87c90cf459217c73539562a06651a28c952cb324613441068026258",
+      "bytes": 221029
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/vless-addon-source.json",
+      "sha256": "d6f8764b1ec7cbdbcac8bb4d103dea4c788e44a7b9ca02e9c411d6d61b0bb3a2",
+      "bytes": 380
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/vless-addon-red.log",
+      "sha256": "46a1e9832c18401c00da9f8fd155b528c4ca0838f77867d1522bd9959de11e3b",
+      "bytes": 194
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/vless-addon-green.log",
+      "sha256": "5e258077a8946a4fb6959eb807155e5f3308db2144c95a8e63a81281fd285d98",
+      "bytes": 56
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/go-host-targeted1.log",
+      "sha256": "982efc641fe9f57602ecdea35238523df04e49d2ebd2ea0d22dbf5a1114949e7",
+      "bytes": 17
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/go-protocol-targeted1.log",
+      "sha256": "3ea0f71ac23dc7a65053da6071086ae339a64f50e195a45ae30c111dc5748854",
+      "bytes": 113
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/go1-parent.log",
+      "sha256": "68c3c6e52abc37ad5ffc613ca4e7e82cbd37a8e9819647bc55ca1939cab3ae7b",
+      "bytes": 53
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/go1-nested.log",
+      "sha256": "9f03d1dc08e934c53537554b025ca09c6b4be010238ffe9d1b85367b20a64194",
+      "bytes": 325
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/android1.log",
+      "sha256": "2343dff8d14d1594245c87af86757b05e1f3875b9a9ff3bcc1f534ddd2b87d6a",
+      "bytes": 20684
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/motion1.log",
+      "sha256": "3022205b3000085c693b722fa9e1580867816bc778059149c89fd853e421ecc5",
+      "bytes": 12916
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/mlkit1.json",
+      "sha256": "6371512ad3aa342f5732145fd0e4d1000e475a2fbf388580a2379478b034dee0",
+      "bytes": 588
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/build-summary1.json",
+      "sha256": "27578a8dc994a46ae1cfaec4fa7c078b3d91a36692410c942275da3d76bf15f4",
+      "bytes": 1366
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/installation1.json",
+      "sha256": "54acb48e3faa8b206118212d5719b3c812000b05882f8b5e25335a51187741ed",
+      "bytes": 385
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/trace-tests1.log",
+      "sha256": "93bcf12cf032baa8089bf843f0e0216d40cf0aba5d33924bd1ba5d24748cc72d",
+      "bytes": 3010
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/control-summary1.json",
+      "sha256": "6f97dd494e963d19e42ca891d4cb9d39c75a26ff08be438e455030a1146f78c8",
+      "bytes": 119378
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/cleanup1.json",
+      "sha256": "e0bc8e5cd20011f644560617f3555e35766b10457eac2c67d4a68a43c84e7c91",
+      "bytes": 1396
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/validate1.py",
+      "sha256": "5745cb47c6dc853c22b46260c25eaf1a7911c9231bbbaad6b27934feb890330b",
+      "bytes": 3441
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/probe.py",
+      "sha256": "8abde7f2d9eeae8930476d27887a03d9e9bf9c5dac931805816057f561123eb4",
+      "bytes": 6097
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/provider-after-baseline/result.json",
+      "sha256": "b25fcd52b5873fca948a0ded7ade5f79af54189b980fe392c0568be8efba4a2d",
+      "bytes": 20220
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/provider-after-baseline/events.json",
+      "sha256": "3e5c61af8416bc82018783fb6bc7e468dadf25bc910f60550f701a81259e68d2",
+      "bytes": 143740
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/provider-after1/result.json",
+      "sha256": "f88616d7be8e6332f0dd838e1f6c53eb842c7b1aee07ce11b2d5f78c200d6692",
+      "bytes": 23889
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/provider-after1/events.json",
+      "sha256": "3bd2ff91aaef845fde6831ede60d0b30aaf276003616e83a91788aa11ab3e847",
+      "bytes": 164663
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/provider-before1/result.json",
+      "sha256": "cb2599fd66a05c86545a54d8807e3bb7476c9746121859627898a9e85a7ac4af",
+      "bytes": 1509
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/provider-before1/events.json",
+      "sha256": "968e30e82d2f088000696a9b7d3722e18bfe1d19b5ac22f04c06c6f2dba8012e",
+      "bytes": 34614
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/snapshot-protocol-control1.json",
+      "sha256": "d4ce2ce15368027f9cd99e777a40dd621dfffe8c4e139589f1584f6d2f2f7904",
+      "bytes": 70314
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/start-protocol-control1.json",
+      "sha256": "bdf1e14b6a571460667499c8151f9e7260afa9d25dc679bf8c1d251e4c2222bc",
+      "bytes": 121445
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/checkpoint-protocol-control2.json",
+      "sha256": "15e621e51a4ca34fd2392a1cf125daf2f48d69c880e129c5c9c97efd6ca8d843",
+      "bytes": 87053
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/checkpoint-protocol-control3.json",
+      "sha256": "2c2014a2e3e935932cdf7109b2f68af8cfb356bec738933097e500ca1704855c",
+      "bytes": 101152
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/checkpoint-protocol-control4.json",
+      "sha256": "8d84829f2798c860126e114d8167690533b0ed90adcbe24bfc6b6d03dbbe7995",
+      "bytes": 87048
+    },
+    {
+      "path": "acceptance-artifacts/protocol-stage-20261111/stop-protocol-control1.json",
+      "sha256": "950f516961b9936f4e924bfd9c8afd401b04413fd666a7865ea3fc5605245aa3",
+      "bytes": 70455
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/protocol-stage-before1.json",
+      "sha256": "e7cf40fcfbafa70d33ae4605f7ea96c265d7466d61c78799120b666d9e8549be",
+      "bytes": 25103
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/protocol-stage-after1.json",
+      "sha256": "07a227bcd970c1271154b9d76c5f44a3bda5d9b1a5567b7fb4abc904aaefb7b0",
+      "bytes": 25103
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/protocol-stage-formal-compare1.json",
+      "sha256": "6424a31c3ffbaef994fb92fa41a4ee5b08eaff899e1946e7acd4c7648187d791",
+      "bytes": 610
+    }
+  ]
+}

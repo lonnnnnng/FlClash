@@ -95,6 +95,13 @@
 - 固定修复：`42e9351626ff02b3161e95c96ed820a8e0227cf7`已推自有fork，同时增加显式源端口context的只读lookup观察点，宿主只留类别/摘要。不是旧TLS EOF或新node-dns现场的已证实原因。
 - 复查：只随chen08209/Clash.Meta:FlClash同步；等价修复须通过空地址错误/IPv6正例、诊断默认停采/端口隔离、无原文输出及Go竞态。原始来源/取证边界见[专页](dns-lookup-empty-success-defect.md)。
 
+## KCORE-010：VLESS 截断附加头吞掉读取错误
+
+- 固定来源：自己的`9fb797d1`与唯一上游`FlClash=024245dc`中`transport/vless/conn.go`逐字节相同；`recvResponse`忽略附加头`io.CopyN`返回错误。
+- 原红测声明4字节、只给0/2字节后EOF时错误返回nil；修正后原读取错误保留、握手读者不释放，完整头后的业务载荷仍保留。普通/缓冲读写和零载荷诊断回归通过。
+- 固定修复`d43bbd751fe5eb95a599a6211423f645269ba57d`已推自有fork；Go双层race/Android检查和Redmi最终包通过构建门禁，网络5/8明确未全绿。真实失败尚未完成响应头，不能把该独立缺陷当成TLS超时根因。
+- 只随chen08209/Clash.Meta:FlClash同步，等价返回错误且同一红绿回归通过后才撤销本地补丁，见[专页](vless-response-addon-defect.md)及[证据](acceptance/protocol-stage-redmi-20261111.json)。
+
 ## 未定因果调查：Always-on 首请求 TLS EOF
 
 已保留旧包冷启动失败、随后同会话物理/TUN HTTPS 成功及修改版有限轮次通过证据。KCORE-001 修复静态可证明的保护缺口，KCORE-002/003 修复控制器生命周期；目前不能把这些修复直接认定为此前 TLS EOF 的确定根因。长期稳定性、蜂窝和其他 OEM 场景仍按 roadmap 单独验收。

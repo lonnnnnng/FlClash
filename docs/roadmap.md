@@ -1,6 +1,8 @@
 # KClash Kotlin 重写路线图
 
-> **TLS单向流量与最终端点取证（2026-11-11，当前）**：907项JVM、Go父模块与dns/dialer/route/http/updater race、Debug/Release-R8/双Lint/motion-Test和DEX通过；最终Redmi诊断2/2。Provider两场均在准备网络时TLS约20秒超时，最终端点不同，均254B上传/0B应用层下载，未进入保存/死亡窗口；另FILE同会话3笔HTTPS200独立保留，不能替代失败。source1 after另有保存错误/提交等待超时，原因未定。正式四表/两配置正文/UID保持、无服务，原1.yaml保持。网络仍未闭环，应用内更新暂缓，未新发版。见[证据](acceptance/tls-flow-redmi-20261111.json)。
+> **历史异常按用户决定收口、网络协议定位继续（2026-11-11，当前）**：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。
+
+> **历史切片：TLS单向流量与最终端点取证（2026-11-11）**：907项JVM、Go父模块与dns/dialer/route/http/updater race、Debug/Release-R8/双Lint/motion-Test和DEX通过；最终Redmi诊断2/2。Provider两场均在准备网络时TLS约20秒超时，最终端点不同，均254B上传/0B应用层下载，未进入保存/死亡窗口；另FILE同会话3笔HTTPS200独立保留，不能替代失败。source1 after另有保存错误/提交等待超时，原因未定。正式四表/两配置正文/UID保持、无服务，原1.yaml保持。网络仍未闭环，应用内更新暂缓，未新发版。见[证据](acceptance/tls-flow-redmi-20261111.json)。
 
 > **历史切片：DNS结构化取证与KCORE-009（2026-11-11）**：独立空地址/nil错误已红绿复现修正，核心`42e93516`已推；907 JVM、Go父模块与dns/dialer/route/http/updater race、Debug/Release-R8/双Lint/motion-Test及DEX通过。Redmi六轮启动与458秒恢复窗口14笔HTTPS成功、语义最终12/12；Provider before恢复后和after准备阶段另两笔TLS20秒超时，lookup均成功33 IPv4/核心拨号成功，整体网络/Provider本批未通过。两场数据恢复/备份清空，正式四表/两正文SHA-size-mtime/UID/schema保持、原1.yaml保持，无服务；原node-dns/历史超时原因不追认。未新发版，应用内更新暂缓；下一步查成功拨号后的TLS停滞流量与远端证据。见[本组证据](acceptance/dns-lookup-redmi-20261111.json)。
 
@@ -805,16 +807,16 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | Gradle 工程 | 根目录Wrapper + `app` / `core` / `service` / `common` |
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
-| 核心修复基线 | 当前gitlink`9fb797d1a0072e228c7b2dcec69d632ea7e4ad02`已推`lonnnnnng/Clash.Meta:kclash-fixes`；保留KCORE-001～009，追加受控node-dial/node-selected诊断，不认定TLS根因已修。 |
+| 核心修复基线 | 当前gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`已推自有kclash-fixes；新增KCORE-010返回VLESS附加头读取错误、受控协议阶段诊断；不认定为真实TLS根因。 |
 | 核心同步来源 | 仅同步chen08209/Clash.Meta:FlClash；本轮为自有fork诊断扩展，不从MetaCubeX/mihomo同步，不合并Flutter提交。 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用与观测；KUI-034完整停止等待resetTraffic成功再发布STOPPED，失败后重试，按需暂停/运行中应用配置不清本次统计。 |
-| 单元测试 | 907项JVM（App616/Service218/Core39/Common34）零失败/错误/跳过，含Gradle复用；Debug/Release-R8/双Lint/motion-Test/DEX通过，Go父模块与dns/dialer/route/http/updater race通过。 |
-| 最新真机 | TLS最终包诊断2/2；Provider两场在准备阶段TLS超时（254B上传/0B应用层下载、不同最终端点），未进入保存/死亡；独立FILE控制会话3笔HTTPS200。同逻辑链但不同端点，网络未闭环。source1另有保存错误待复现。 |
-| 当前设备数据 | 正式本地R8候选保持2配置/2偏好/0脚本/0测速；四表/正文SHA-size-mtime/UID/schema保持。motion/Test和授权加密输入暂留；无服务/tun0。本轮3份只读报告已按SHA精确清理，原1.yaml保持，Flutter未操作。 |
+| 单元测试 | 907项JVM（App616/Service218/Core39/Common34）零失败/错误/跳过，含Gradle复用；Debug/Release-R8/双Lint/motion-Test/DEX通过，Go父模块与dns/dialer/vless/route/http/updater race通过。 |
+| 最新真机 | 最终协议包诊断4/4；Provider after真实系统恢复/3HTTPS通过，before准备TLS失败未进入死亡。独立FILE同会话2/4，合计网络5/8；失败停在VLESS响应头未完成。状态/Provider历史按用户接受收口，网络继续。 |
+| 当前设备数据 | 正式本地R8候选保持2配置/2偏好/0脚本/0测速；四表/正文SHA-size-mtime/UID/schema保持。motion/Test及授权加密输入暂留，无服务/tun0；本轮2份只读报告已按SHA删除，原1.yaml保持，Flutter未操作。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
-| Debug / Test | 最终android3/motion2通过；motion`c11c792e…a1e7a89`、Test`5b47bff8…66a0b2`回拉一致，1757份源码哈希保持。正式本地R8候选未重装。 |
+| Debug / Test | 最终android1/motion1通过；motion`313e94a1…b394a81`、Test`336964e0…e17919`回拉一致，1760份源码哈希保持。正式本地R8候选未重装。 |
 | Fallback验收 Debug APK | `android/app/build/outputs/apk/debug/app-debug.apk`；SHA-256 `32b3ad8f2c35b469131ab630540b44f9d778f4c01991de34632972ea2205b6bf`，Redmi回拉匹配，仅arm64-v8a；详见`fallback-real-core-redmi-20261105.json` |
 | Fallback验收 AndroidTest APK | SHA-256 `a919dcb176e1f49b1716ac67eae079d0b49d8124a57df23064730be7c858176a`，Redmi回拉匹配，无原生库；冷进程精确日志与清理回验见`fallback-cold-process-redmi-20261106.json` |
 | Release | 公开`kclash-v0.1.2`/签名arm64/R8 APK `96107b78…4eef538`已发布并下载/签名/版本/ABI/正文/校验和及Redmi安装回验。0.1.1→本地0.1.2→公开0.1.2单FILE数据保持，同schema6；不推广混合库、未提交草稿、运行VPN或低API升级。 |
@@ -1362,7 +1364,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ### 7.7 测试、发布和运维
 
-当前最新功能验收为TLS单向流量与最终端点取证：907项JVM、Go父模块与dns/dialer/route/http/updater race、Debug/Release-R8/双Lint/motion-Test和DEX通过；最终Redmi诊断2/2。Provider两场均在准备网络时TLS约20秒超时，最终端点不同，均254B上传/0B应用层下载，未进入保存/死亡窗口；另FILE同会话3笔HTTPS200独立保留，不能替代失败。source1 after另有保存错误/提交等待超时，原因未定。正式四表/两配置正文/UID保持、无服务，原1.yaml保持。网络仍未闭环，应用内更新暂缓，未新发版。见[证据](acceptance/tls-flow-redmi-20261111.json)。以下为历史分组证据。
+当前最新功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 
 历史本地验收KUI-037：881项JVM、Debug/未签名Release-R8/motion/Test与双Lint零错误；Redmi最终定向11/11、真实Room冷读3场景及深浅自然2/2通过。前序21/22与最终去重覆盖22项，批次/APK边界见JSON。该批未发版，公开0.1.2为独立发布证据。详见[本组证据](acceptance/group-sheet-closure-redmi-20261110.json)。
 
