@@ -24,6 +24,7 @@ import java.net.URI
 import java.security.MessageDigest
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.combine
 import org.json.JSONObject
 
 private const val PROVIDER_TAG = "KClashProviderRuntime"
@@ -111,6 +112,8 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
                 // 作者 long：协程超时可能没有业务栈；记录不含正文的阶段和状态，区分网络、重绑定与提交等待。
                 providerReport(token, "failed", JSONObject().put("command", command).put("type", failure.javaClass.simpleName)
                     .put("step", acceptanceStep).put("runtime", entry.runtimeManager().state.value.name)
+                    .put("proxyState", ServiceConfig.proxyState.value.name).put("proxyAlive", ServiceConfig.proxyAlive.value)
+                    .put("vpnAlive", ServiceConfig.vpnAlive.value).put("appliedVpn", entry.runtimeManager().vpnSettings.value.appliedEnabled)
                     .put("documentPresent", document != null).put("documentBound", document?.document != null)
                     .put("documentLoading", document?.loading).put("documentSaving", document?.saving)
                     .put("documentError", document?.error != null).put("recoveryBlocked", document?.recoveryBlocked)
@@ -303,6 +306,18 @@ class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
         val runtime = entry.runtimeManager()
         val ownerStep = acceptanceStep
         waitStep("$ownerStep-runtime-ready", 40_000) { runtime.state.first { it == CoreRuntimeStatus.RUNNING || it == CoreRuntimeStatus.FAILED } }
+        // 作者 long：核心RUNNING与服务/已应用VPN设置是分别发布的Flow，单次即时断言会把发布间隙误判为恢复失败。
+        // 核心首请求测试仍只等RUNNING；本用例验证完整Provider恢复，须明确等待实际服务状态而非添加固定延迟。
+        waitStep("$ownerStep-service-ready", 40_000) {
+            combine(runtime.state, ServiceConfig.proxyState, ServiceConfig.proxyAlive, ServiceConfig.vpnAlive, runtime.vpnSettings) {
+                    state, proxy, alive, vpn, settings ->
+                state == CoreRuntimeStatus.FAILED || state == CoreRuntimeStatus.RUNNING &&
+                    proxy == VpnRuntimeState.CONNECTED && alive && !vpn && settings.appliedEnabled == false
+            }.first { it }
+        }
+        providerReport(snapshot.token, "service-ready", JSONObject().put("step", ownerStep)
+            .put("runtime", runtime.state.value.name).put("proxyState", ServiceConfig.proxyState.value.name)
+            .put("appliedVpn", runtime.vpnSettings.value.appliedEnabled))
         check(runtime.state.value == CoreRuntimeStatus.RUNNING && ServiceConfig.proxyAlive.value && !ServiceConfig.vpnAlive.value)
         check(ServiceConfig.proxyState.value == VpnRuntimeState.CONNECTED && runtime.vpnSettings.value.appliedEnabled == false)
         check(entry.profileRepository().currentProfileId.value == selected && entry.database().appPreferences().get("runtime_should_resume") == "true")

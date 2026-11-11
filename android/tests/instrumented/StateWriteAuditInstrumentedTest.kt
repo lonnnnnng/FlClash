@@ -15,6 +15,105 @@ import java.util.UUID
 
 /** 作者 long：真实SQLite验证审计不会把内部DAO正常返回、外层回滚或apply受理误记为已持久提交。 */
 class StateWriteAuditInstrumentedTest {
+    @Test fun largeSnapshotTransportKeepsExactBytesOutsideLogcatChunks() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("com.lonnnnnng.flclash.motion", context.packageName)
+        val token = UUID.randomUUID().toString().replace("-", "")
+        val command = "snapshot-transport-test"
+        val result = org.json.JSONObject().put("padding", "x".repeat(70_000))
+        stabilityReport(context, token, command, result)
+        val bytes = result.toString().toByteArray()
+        val directory = java.io.File(checkNotNull(context.getExternalFilesDir(null)), "stability-reports")
+        val expected = java.io.File(directory, "$token-$command-${stabilitySha(bytes)}.json")
+        try {
+            assertTrue(expected.isFile)
+            assertArrayEquals(bytes, expected.readBytes())
+            assertEquals(token, org.json.JSONObject(expected.readText()).getString("token"))
+        } finally {
+            // 作者 long：只删除本用例以token和正文SHA标识的文件，失败窗口的其他证据必须保留。
+            if (expected.isFile) { assertEquals(stabilitySha(bytes), stabilitySha(expected.readBytes())); assertTrue(expected.delete()) }
+        }
+    }
+
+    @Test fun perKeySnapshotsMatchCommittedWritesAndKeepRollbackDistinct() = runBlocking(Dispatchers.IO) {
+        val ins = InstrumentationRegistry.getInstrumentation()
+        val context = ins.targetContext
+        assertEquals("com.lonnnnnng.flclash.motion", context.packageName)
+        val prior = StateWriteAudit.sink
+        val events = Collections.synchronizedList(mutableListOf<Map<String, Any?>>())
+        val secret = ByteArray(32).also { java.security.SecureRandom().nextBytes(it) }
+        StateWriteAudit.install(object : StateWriteAudit.Sink {
+            override fun digest(bytes: ByteArray): String = javax.crypto.Mac.getInstance("HmacSHA256").apply {
+                init(javax.crypto.spec.SecretKeySpec(secret, "HmacSHA256"))
+            }.doFinal(bytes).joinToString("") { "%02x".format(it) }
+            override fun append(record: Map<String, Any?>) { events += record }
+            override fun dropped() { error("本用例不允许丢审计记录") }
+        })
+        val db = Room.inMemoryDatabaseBuilder(context, KClashDatabase::class.java)
+            .openHelperFactory(StateAuditPlatform.factory()).build()
+        val store = "state-audit-key-test-${UUID.randomUUID()}"
+        val gson = Gson()
+        try {
+            val row = ProxyDelayEntity(1, "private-group", "private-node", "private-url", 23, 100)
+            val otherUrl = row.copy(testUrl = "private-url-2", value = 47)
+            StateWriteAudit.operation("test.delay.first") { db.proxyDelayResults().upsert(row) }
+            StateWriteAudit.operation("test.delay.second") { db.proxyDelayResults().upsert(otherUrl) }
+            val snapshot = StateAuditSnapshots.delays(db, listOf(1))
+            val profile = snapshot.getJSONObject("profiles").getJSONObject("1")
+            val fields = profile.getJSONObject("rows")
+            assertEquals(2, fields.length())
+            assertTrue(profile.getLong("finishedElapsedMs") >= profile.getLong("startedElapsedMs"))
+            for (value in listOf(row, otherUrl)) {
+                val key = checkNotNull(StateWriteAudit.digest(gson.toJson(listOf(value.profileId, value.groupName, value.proxyName, value.testUrl)).toByteArray()))
+                val entity = events.single { it["kind"] == "entity_write" &&
+                    gson.toJsonTree(it["fields"]) == com.google.gson.JsonParser.parseString(fields.getJSONObject(key).toString()) }
+                assertTrue(events.any { it["kind"] == "db_committed" && it["operation"] == entity["operation"] })
+            }
+            // 作者 long：回滚时受理过的值不能匹配到读回状态，更不能仅凭DAO受理把它归为有效写者。
+            StateWriteAudit.operation("test.delay.rollback") {
+                try { db.withTransaction { db.proxyDelayResults().upsert(row.copy(value = 999)); error("rollback") } }
+                catch (_: IllegalStateException) { }
+            }
+            val afterRollback = StateAuditSnapshots.delays(db, listOf(1)).getJSONObject("profiles").getJSONObject("1").getJSONObject("rows")
+            assertEquals(com.google.gson.JsonParser.parseString(fields.toString()), com.google.gson.JsonParser.parseString(afterRollback.toString()))
+            assertTrue(events.any { it["source"] == "test.delay.rollback" && it["kind"] == "db_rolled_back" })
+            assertFalse(events.any { it["source"] == "test.delay.rollback" && it["kind"] == "db_committed" })
+            StateWriteAudit.operation("test.delay.delete") { db.proxyDelayResults().delete(row.profileId, row.groupName, row.proxyName, row.testUrl) }
+            val afterDelete = StateAuditSnapshots.delays(db, listOf(1)).getJSONObject("profiles").getJSONObject("1").getJSONObject("rows")
+            assertEquals(1, afterDelete.length())
+            val deleted = events.single { it["source"] == "test.delay.delete" && it["kind"] == "entity_write" }
+            val expected = com.google.gson.JsonParser.parseString(StateAuditSnapshots.entityFields(row).toString()).asJsonObject
+                .apply { remove("value"); remove("updatedAtMillis") }
+            assertEquals(expected, gson.toJsonTree(deleted["fields"]))
+            assertTrue(events.any { it["source"] == "test.delay.delete" && it["kind"] == "db_committed" })
+
+            val preferences = auditedPreferences(context, store)
+            assertTrue(preferences.edit().putString("text", "private-value").putBoolean("flag", true)
+                .putLong("counter", 7L).putStringSet("set", linkedSetOf("private-b", "private-a")).commit())
+            val shared = StateAuditSnapshots.preferences(context, listOf(store)).getJSONObject("stores").getJSONObject(store)
+            val committed = events.single { it["kind"] == "preference_committed" }
+            assertEquals(gson.toJsonTree(committed["after"]), com.google.gson.JsonParser.parseString(shared.getJSONObject("values").toString()))
+            preferences.edit().putString("text", "private-next").apply()
+            val applied = events.single { it["kind"] == "preference_apply_accepted" }
+            val textKey = checkNotNull(StateWriteAudit.digest("text".toByteArray()))
+            val current = StateAuditSnapshots.preferences(context, listOf(store)).getJSONObject("stores").getJSONObject(store).getJSONObject("values")
+            assertEquals(gson.toJsonTree((applied["after"] as Map<*, *>)[textKey]), com.google.gson.JsonParser.parseString(current.getJSONObject(textKey).toString()))
+            assertEquals(1, events.count { it["kind"] == "preference_committed" })
+            assertTrue(preferences.edit().remove("text").commit())
+            assertFalse(StateAuditSnapshots.preferences(context, listOf(store)).getJSONObject("stores").getJSONObject(store).getJSONObject("values").has(textKey))
+            assertFalse(snapshot.toString().contains("private-"))
+            assertFalse(shared.toString().contains("private-value"))
+            ins.sendStatus(2, android.os.Bundle().apply { putString("kclash_audit_key_join", org.json.JSONObject()
+                .put("delayCompositeKeys", 2).put("committedValuesMatch", true).put("rollbackExcluded", true)
+                .put("deleteKeyMatched", true).put("sharedTypedValuesMatch", true).put("applyNotDiskCommit", true)
+                .put("readIntervalsRecorded", true).toString()) })
+        } finally {
+            db.close()
+            context.deleteSharedPreferences(store)
+            StateWriteAudit.install(prior)
+        }
+    }
+
     @Test fun compressedRecordsKeepCompleteMembersAndResolvableStackDictionary() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val token = UUID.randomUUID().toString().replace("-", "")

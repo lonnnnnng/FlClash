@@ -1,0 +1,807 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "9612ebcba18368b143b673d15f69afc451c08816",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "overallFunctionalGoalComplete": false,
+  "updaterDeferredByUser": true,
+  "productionBehaviorChanged": false,
+  "jvm": {
+    "app": {
+      "tests": 616,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 218,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "common": {
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "debugReleaseR8DualLintMotionTestPassed": true,
+  "mlKitDex": {
+    "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+    "registrars": [
+      {
+        "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      },
+      {
+        "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      },
+      {
+        "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      }
+    ],
+    "errors": [],
+    "passed": true
+  },
+  "releaseDiagnosticHostsAbsent": true,
+  "sourceBoundary": {
+    "changedFiles": [
+      "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ProviderRuntimeAcceptance.kt"
+    ],
+    "windowSource3Preserved": true,
+    "stabilityAndAuditSourceIdentical": true,
+    "providerSource4RequiresReacceptance": true
+  },
+  "windowSource3": {
+    "network": {
+      "seconds": 605.7307961669976,
+      "requests": [
+        {
+          "command": "checkpoint-key12-1",
+          "pid": 31911,
+          "passed": true,
+          "http": 200,
+          "step": null,
+          "failureType": null,
+          "sameSocket": true,
+          "nonDirect": true,
+          "entryAfterRunningMs": 56477,
+          "dnsOverflow": 0,
+          "dialCategories": [
+            []
+          ]
+        },
+        {
+          "command": "checkpoint-key12-10",
+          "pid": 32379,
+          "passed": true,
+          "http": 200,
+          "step": null,
+          "failureType": null,
+          "sameSocket": true,
+          "nonDirect": true,
+          "entryAfterRunningMs": 229226,
+          "dnsOverflow": 0,
+          "dialCategories": [
+            []
+          ]
+        },
+        {
+          "command": "checkpoint-key12-2",
+          "pid": 32379,
+          "passed": true,
+          "http": 200,
+          "step": null,
+          "failureType": null,
+          "sameSocket": true,
+          "nonDirect": true,
+          "entryAfterRunningMs": 76029,
+          "dnsOverflow": 0,
+          "dialCategories": [
+            []
+          ]
+        },
+        {
+          "command": "checkpoint-key12-5",
+          "pid": 32379,
+          "passed": true,
+          "http": 200,
+          "step": null,
+          "failureType": null,
+          "sameSocket": true,
+          "nonDirect": true,
+          "entryAfterRunningMs": 196043,
+          "dnsOverflow": 0,
+          "dialCategories": [
+            []
+          ]
+        },
+        {
+          "command": "recovered-key12-1",
+          "pid": 32379,
+          "passed": true,
+          "http": 200,
+          "step": null,
+          "failureType": null,
+          "sameSocket": true,
+          "nonDirect": true,
+          "entryAfterRunningMs": 6057,
+          "dnsOverflow": 0,
+          "dialCategories": [
+            []
+          ]
+        },
+        {
+          "command": "start-key12-1",
+          "pid": 31911,
+          "passed": true,
+          "http": 200,
+          "step": null,
+          "failureType": null,
+          "sameSocket": true,
+          "nonDirect": true,
+          "entryAfterRunningMs": 13,
+          "dnsOverflow": 0,
+          "dialCategories": [
+            []
+          ]
+        },
+        {
+          "command": "start-key12-2",
+          "pid": 31911,
+          "passed": true,
+          "http": 200,
+          "step": null,
+          "failureType": null,
+          "sameSocket": true,
+          "nonDirect": true,
+          "entryAfterRunningMs": 6,
+          "dnsOverflow": 0,
+          "dialCategories": [
+            []
+          ]
+        },
+        {
+          "command": "start-key12-3",
+          "pid": 32379,
+          "passed": false,
+          "http": null,
+          "step": "tls-handshake",
+          "failureType": "SSLHandshakeException",
+          "sameSocket": false,
+          "nonDirect": false,
+          "entryAfterRunningMs": 7,
+          "dnsOverflow": 0,
+          "dialCategories": [
+            [
+              "node-dns"
+            ],
+            [
+              "node-dns"
+            ]
+          ]
+        }
+      ],
+      "passed": 7,
+      "failed": 1,
+      "knownDnsErrorHashMatches": [],
+      "overallNetworkPassed": false,
+      "historicalCauseEstablished": false
+    },
+    "keyAttribution": {
+      "snapshots": 15,
+      "records": 66419,
+      "zeroDrops": true,
+      "contiguous": true,
+      "changes": 2190,
+      "unmatched": 0,
+      "stores": {
+        "proxy_delay_results": 2190
+      },
+      "sources": {
+        "delay.core_event": 2190
+      },
+      "ambiguousOperations": 0,
+      "uniqueWriterProven": false,
+      "historicalFailuresExplained": false
+    },
+    "configRoomReview": {
+      "changes": [
+        {
+          "before": "snapshot-key12-before",
+          "after": "start-key12-1",
+          "table": "app_preferences",
+          "row": "bd80c5190e56cbf7a2b4cc46f60c169b3895bf9615f05b870d67cea1e961f4a9",
+          "changedFields": [
+            "updatedAt"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "profile.select"
+          ],
+          "families": [
+            "current_profile_id"
+          ]
+        },
+        {
+          "before": "snapshot-key12-before",
+          "after": "start-key12-1",
+          "table": "app_preferences",
+          "row": "23ae3cc67b963ebd2c1dcd2514a09b7b2ebd6f4b44fa215aeba1eaf5aedad169",
+          "changedFields": [
+            "key",
+            "updatedAt",
+            "value"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "runtime.resume.persist"
+          ],
+          "families": [
+            "runtime_should_resume"
+          ]
+        },
+        {
+          "before": "start-key12-1",
+          "after": "snapshot-key12-main",
+          "table": "app_preferences",
+          "row": "cfac5d46e000fe77481afb8b95bd5149da2dde1a04cf941f94f820b111a5a74f",
+          "changedFields": [
+            "updatedAt",
+            "value"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "preference.dao.put"
+          ],
+          "families": [
+            "ip_quality_cache_v1"
+          ]
+        },
+        {
+          "before": "snapshot-key12-main",
+          "after": "checkpoint-key12-1",
+          "table": "app_preferences",
+          "row": "cfac5d46e000fe77481afb8b95bd5149da2dde1a04cf941f94f820b111a5a74f",
+          "changedFields": [
+            "updatedAt",
+            "value"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "preference.dao.put"
+          ],
+          "families": [
+            "ip_quality_cache_v1"
+          ]
+        },
+        {
+          "before": "stop-key12-1",
+          "after": "start-key12-2",
+          "table": "app_preferences",
+          "row": "cfac5d46e000fe77481afb8b95bd5149da2dde1a04cf941f94f820b111a5a74f",
+          "changedFields": [
+            "updatedAt",
+            "value"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "preference.dao.put"
+          ],
+          "families": [
+            "ip_quality_cache_v1"
+          ]
+        },
+        {
+          "before": "stop-key12-1",
+          "after": "start-key12-2",
+          "table": "app_preferences",
+          "row": "23ae3cc67b963ebd2c1dcd2514a09b7b2ebd6f4b44fa215aeba1eaf5aedad169",
+          "changedFields": [
+            "key",
+            "updatedAt",
+            "value"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "runtime.resume.persist"
+          ],
+          "families": [
+            "runtime_should_resume"
+          ]
+        },
+        {
+          "before": "start-key12-2",
+          "after": "recovered-key12-1",
+          "table": "app_preferences",
+          "row": "23ae3cc67b963ebd2c1dcd2514a09b7b2ebd6f4b44fa215aeba1eaf5aedad169",
+          "changedFields": [
+            "updatedAt"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "runtime.resume.persist"
+          ],
+          "families": [
+            "runtime_should_resume"
+          ]
+        },
+        {
+          "before": "recovered-key12-1",
+          "after": "manual-sync",
+          "table": "profiles",
+          "row": "2386311441735238529",
+          "changedFields": [
+            "lastUpdateAt"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "profile.sync.manual"
+          ]
+        },
+        {
+          "before": "recovered-key12-1",
+          "after": "manual-sync",
+          "fileId": 2386311441735238529,
+          "bodyHeld": true,
+          "fileCompletionMatched": true,
+          "sources": [
+            "profile.sync.manual"
+          ]
+        },
+        {
+          "before": "stop-key12-2",
+          "after": "start-key12-3",
+          "table": "app_preferences",
+          "row": "23ae3cc67b963ebd2c1dcd2514a09b7b2ebd6f4b44fa215aeba1eaf5aedad169",
+          "changedFields": [
+            "key",
+            "updatedAt",
+            "value"
+          ],
+          "wholeEntityMatched": true,
+          "sources": [
+            "runtime.resume.persist"
+          ],
+          "families": [
+            "runtime_should_resume"
+          ]
+        }
+      ],
+      "unmatched": [],
+      "snapshots": 15,
+      "historicalFailuresExplained": false,
+      "uniqueIntervalCauseProven": false,
+      "deletedPreferences": [
+        {
+          "before": "checkpoint-key12-1",
+          "after": "stop-key12-1",
+          "keyDigest": "23ae3cc67b963ebd2c1dcd2514a09b7b2ebd6f4b44fa215aeba1eaf5aedad169",
+          "matchedCommittedDelete": true,
+          "sources": [
+            "runtime.resume.persist"
+          ]
+        },
+        {
+          "before": "checkpoint-key12-5",
+          "after": "stop-key12-2",
+          "keyDigest": "23ae3cc67b963ebd2c1dcd2514a09b7b2ebd6f4b44fa215aeba1eaf5aedad169",
+          "matchedCommittedDelete": true,
+          "sources": [
+            "runtime.resume.persist"
+          ]
+        },
+        {
+          "before": "checkpoint-key12-10",
+          "after": "stop-key12-final",
+          "keyDigest": "23ae3cc67b963ebd2c1dcd2514a09b7b2ebd6f4b44fa215aeba1eaf5aedad169",
+          "matchedCommittedDelete": true,
+          "sources": [
+            "runtime.resume.persist"
+          ]
+        }
+      ],
+      "unmatchedDeletes": []
+    },
+    "sharedPreferencesChanged": false
+  },
+  "finalSource4": {
+    "auditTestsPassed": 5,
+    "reporterTestsPassed": 7,
+    "providerCases": [
+      {
+        "case": "before",
+        "passed": true,
+        "networkRequests": 3,
+        "allHttps200": true,
+        "serviceReadyWaits": [
+          {
+            "name": "prepare-network-service-ready",
+            "durationMs": 7
+          },
+          {
+            "name": "verify-restored-network-service-ready",
+            "durationMs": 5
+          },
+          {
+            "name": "verify-restored-network-service-ready-core-members",
+            "durationMs": 15
+          },
+          {
+            "name": "verify-post-save-network-service-ready",
+            "durationMs": 3
+          }
+        ],
+        "restored": {
+          "formalPreserved": true,
+          "backupCleared": true,
+          "token": "525cd4e86a114ad0a504e35d844129b9",
+          "phase": "restored",
+          "pid": 4016,
+          "epochMs": 1794377314844,
+          "elapsedMs": 89626456
+        },
+        "systemObservedBeforeVerify": {
+          "pids": [
+            4016
+          ],
+          "pidsBefore": [
+            4016
+          ],
+          "stableSample": true,
+          "servicePid": 4016,
+          "hasProxyService": true,
+          "isForeground": true,
+          "hasVpnService": false,
+          "hasTun0": false,
+          "secondsAfterKill": 1.869
+        }
+      },
+      {
+        "case": "after",
+        "passed": true,
+        "networkRequests": 3,
+        "allHttps200": true,
+        "serviceReadyWaits": [
+          {
+            "name": "prepare-network-service-ready",
+            "durationMs": 7
+          },
+          {
+            "name": "verify-restored-network-service-ready",
+            "durationMs": 4
+          },
+          {
+            "name": "verify-restored-network-service-ready-core-members",
+            "durationMs": 33
+          },
+          {
+            "name": "verify-post-save-network-service-ready",
+            "durationMs": 4
+          }
+        ],
+        "restored": {
+          "formalPreserved": true,
+          "backupCleared": true,
+          "token": "aed948a85b1940009da04355a1577e9f",
+          "phase": "restored",
+          "pid": 4432,
+          "epochMs": 1794377341816,
+          "elapsedMs": 89653428
+        },
+        "systemObservedBeforeVerify": {
+          "pids": [
+            4432
+          ],
+          "pidsBefore": [
+            4432
+          ],
+          "stableSample": true,
+          "servicePid": 4432,
+          "hasProxyService": true,
+          "isForeground": true,
+          "hasVpnService": false,
+          "hasTun0": false,
+          "secondsAfterKill": 1.901
+        }
+      }
+    ],
+    "realHttpsPassed": 6,
+    "artifacts": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "15cdba1f75ac774b4efb773a5a27bf933fe37d0ff96bde1728af5be0fc7d3403",
+        "bytes": 66195205,
+        "readbackMatches": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "a847f7c97ae859f5b10e1374f90ec9d8f36fd892caa52989c9f44dc2658a4126",
+        "bytes": 2921730,
+        "readbackMatches": true
+      }
+    ]
+  },
+  "defects": [
+    {
+      "id": "KDIAG-001",
+      "kind": "large snapshot transport",
+      "bytes": 247705,
+      "expectedLogcatParts": 133,
+      "observedParts": 126,
+      "verifiedFileTransportPassed": true
+    },
+    {
+      "id": "KDIAG-002",
+      "kind": "Provider harness immediate cross-flow assertion",
+      "failedLine": 307,
+      "runtimeWasRunning": true,
+      "originalOtherSubstatesNotRecorded": true,
+      "fix": "bounded combined service/settings flow; no fixed sleep",
+      "oldProviderTimeoutSameCauseProven": false
+    }
+  ],
+  "newNetworkFailure": {
+    "command": "start-key12-3",
+    "firstRequestAfterRunningMs": 7,
+    "tlsHandshakeMs": 5003,
+    "type": "SSLHandshakeException",
+    "sourcePortMatchedDialFailures": 2,
+    "dialCategories": [
+      "node-dns"
+    ],
+    "authorizedNodeIndex": 0,
+    "nodeProtocol": "vless",
+    "sameDomainAQueryFailedMs": 5024,
+    "sameDomainAaaaQuerySucceededMs": 3711,
+    "dnsEventsHaveSocketId": false,
+    "eventDropsOrTruncation": 0,
+    "dnsOverflow": 0,
+    "systemDnsApplied": true,
+    "lowerDnsRootEstablished": false,
+    "historicalSameCauseProven": false,
+    "productionFixMade": false
+  },
+  "formalBoundary": {
+    "before": "key-audit-before1",
+    "after": "key-audit-after4",
+    "uidPreserved": true,
+    "schemaPreserved": true,
+    "tablesSame": {
+      "profiles": true,
+      "app_preferences": true,
+      "scripts": true,
+      "proxy_delay_results": true
+    },
+    "allProfileFileBytesHashMtimePreserved": true,
+    "beforeCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "afterCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "versionBefore": "0.1.2",
+    "versionAfter": "0.1.2",
+    "passed": true
+  },
+  "cleanup": {
+    "sourceFiles": 1752,
+    "source4Unchanged": true,
+    "servicesAbsent": true,
+    "ownedExternalSnapshotDirectoryEmpty": true,
+    "original": {
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973
+    },
+    "formalCandidateNotReinstalled": true,
+    "motionPackagesRetainedForDnsInvestigation": true,
+    "published": false
+  },
+  "limitations": [
+    "Source3 ten-minute network is 7/8, not green; real node DNS failure retained",
+    "2190 exact delay value matches all core_event, not unique writers or exact core trigger",
+    "SharedPreferences typed mutations only isolated tests; no changed shared values in real window",
+    "Source4 changes only Provider harness, source3 window remains separate",
+    "Old metadata/preferences/TLS/Provider-timeout causes not retroactively explained",
+    "No low API/cellular/OEM completion; updater deferred; no release"
+  ],
+  "rawEvidence": [
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/source3.json",
+      "sha256": "20a1eaf22012ddad4cf7dd4b1f8cff4a94c57aafdd239ea48b2e0f2e8c838295",
+      "bytes": 219992
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/source4.json",
+      "sha256": "d1af9db9b0f0686dd377f78b324c99544979210dc97f983b9d389f4f5a9df8ab",
+      "bytes": 219992
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/source3-to4-boundary.json",
+      "sha256": "984d815ed0cb2d5c06b53052a066e300c602348b24b2b0027b2a692c354b8ab2",
+      "bytes": 239
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/build3.log",
+      "sha256": "919b88c822b01a5b459379325a0077f35599ac9316ead346a3ba2522c7e63f2f",
+      "bytes": 25634
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/build4.log",
+      "sha256": "b71b4733a024b76f8d82eedeb2f29696a94d96938e030d975eb1e0d4cf7b2b05",
+      "bytes": 25568
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/jvm3.log",
+      "sha256": "a3718589b680ee463f2b3d1513eb7933e0be4cd67b747eb1cd25cd35e6b01a76",
+      "bytes": 6693
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/jvm3-summary.json",
+      "sha256": "053aef77a4ccfd5d6700b18676eab7e2d8064dc187e15c8dc849424a9f61c3ed",
+      "bytes": 357
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/audit-tests4.log",
+      "sha256": "009d4488c96320c5182328980ed3da09cbad68dd8f2d6faab40a5ae0830622e6",
+      "bytes": 3915
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/report-tests4.log",
+      "sha256": "32a030209584936aad9f117c7ff1761f70e26d3be6e2b9ba33c71452bdfd7ce2",
+      "bytes": 1267
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/mlkit4.json",
+      "sha256": "6371512ad3aa342f5732145fd0e4d1000e475a2fbf388580a2379478b034dee0",
+      "bytes": 588
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/installation3.json",
+      "sha256": "9195079c4eef16bbb065328fc88c208ca6a205d647eb051210237bfbf59ff78a",
+      "bytes": 385
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/installation4.json",
+      "sha256": "e378748cb9d951023e5addbf59658c868646513f564e8bd240b7c028a12b4480",
+      "bytes": 385
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/snapshot-transport-diagnostic1.json",
+      "sha256": "56d916645947706e29f25cee9e9f53798444cbaa79d9f91e025dfb311b6bc4b5",
+      "bytes": 1489
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/transport-failed1/audit-files.json",
+      "sha256": "6865bc7ba05eaed4108ecaa6b8d50b057f52f78c6d2b5e5ad4c60d0acffd5d1a",
+      "bytes": 1097
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/transport-failed1/audit-disable.log",
+      "sha256": "c0bb7934f456ce0b72274f6a291eef91d5dd077257227ef35f463bd15e2dfc02",
+      "bytes": 787
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/terminal.json",
+      "sha256": "d9e24a7c46b626f320e3b9c2202e9a00af86bd5cb641fa9431e4d59c59b82b32",
+      "bytes": 71
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/timeline.json",
+      "sha256": "906b6272edca7d23ef2e0c986acb5acc1596049a95a94630770dc004374e01d6",
+      "bytes": 2791
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/network-summary.json",
+      "sha256": "d3f3e441b7cd04c247ba1a6b3c4fae158b3d76098faff3842b27bbba9a663f58",
+      "bytes": 2800
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/key-summary.json",
+      "sha256": "22a46ba28078d0970f579d8fc7e9e6b55135f8ddf24ac1c1c4da6532cbab3346",
+      "bytes": 321
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/key-report.json",
+      "sha256": "c6eabc452a1d36217ac9fdaccdd4aa2a41200f830e6cc79090d4f2676ca9f41b",
+      "bytes": 1381618
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/config-room-review2.json",
+      "sha256": "2a161a921b2b5814a44a53da047138400855c9e3e8b5e453ab8b5975681230bd",
+      "bytes": 4894
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/audit-files.json",
+      "sha256": "725e3f270c65defdeaa482ac988868463af5c3349e63d142cb626b4448e50a04",
+      "bytes": 1465
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/audit-disable.log",
+      "sha256": "ed488dcb5237d0179dc40c99d8a941ce720487c941c51b8cfc1fe028e24b2930",
+      "bytes": 787
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/start-key12-3.json",
+      "sha256": "8439e68da085516151f9077f1e54cceb92af2458a338f4a4ab5c8e235b6fe3d3",
+      "bytes": 421200
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/failed-start3-endpoint-review.json",
+      "sha256": "80e0b2e5d92f5efe029a494773c2dd04b36e0d1c9a030489c012add9dccb51a2",
+      "bytes": 1346
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/window3/failed-start3-authorized-dns-shape.json",
+      "sha256": "f4f02c445f5d450a770e23e729140bbde156f957a955fafc47b9c4baa341ae8d",
+      "bytes": 3699
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/provider-before3/result.json",
+      "sha256": "7c851623eda4db6e49ff8687fcf26175fa0d6711377564cc8981e456924db064",
+      "bytes": 2650
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/provider-before3/events.json",
+      "sha256": "7e71c6607a8fec373cf538a286b1ebc6cf57380bc4a538b70fd3d7a9fe6c3cf1",
+      "bytes": 48502
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/provider-before4/result.json",
+      "sha256": "56408870805e2a610f562103f8a5bb70cd9518c73d5f98ec21deaef1f373ea8a",
+      "bytes": 13810
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/provider-after4/result.json",
+      "sha256": "1ea95661223ad4a1ea0db498d8db7ac575987f504ced0a23c1655e0a7b05111b",
+      "bytes": 13836
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/provider-summary4.json",
+      "sha256": "eecba82c77797d810b57bd68e74016d348a397076e13af62f82cf2c5732e75d6",
+      "bytes": 2200
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/cleanup4.json",
+      "sha256": "a42fe3a03c1cfa957abea9b901ce2f24f65ed6bc8c693f97183f1497a4ea2e12",
+      "bytes": 401
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/legacy-metadata-review.json",
+      "sha256": "8524585bd7756d6921a2a5f857e620aaa6997e3f2ecc60b258d14b14638140a6",
+      "bytes": 790
+    },
+    {
+      "path": "acceptance-artifacts/functional-key-audit-20261111/legacy-refork-log-review.json",
+      "sha256": "18ffeb6fdd0386abb82ce379df92df891089dcd6c6d32cadf14545411f1a8c31",
+      "bytes": 243
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/key-audit-formal-held4.json",
+      "sha256": "9988919ea8c03c1076e14a1964b59d14eccfa9f7e47c3e16b8d793f5aa36cd72",
+      "bytes": 600
+    }
+  ]
+}

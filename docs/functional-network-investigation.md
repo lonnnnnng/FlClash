@@ -1,6 +1,10 @@
 # 功能性网络与恢复调查（进行中）
 
-2026-11-11，产品基线`99da6121`。这是六项功能收尾中的首请求、Provider恢复与长期稳定性调查，不代表三项已闭环。原45分钟8/10、迁移包6/7以及Provider final6-before超时保留。
+2026-11-11，初始产品基线`99da6121`。这是六项功能收尾中的首请求、Provider恢复与长期稳定性调查，不代表三项已闭环。原45分钟8/10、迁移包6/7以及Provider final6-before超时保留。
+
+最新基线`9612ebcb`十分钟诊断再次抓到真实失败：8笔HTTPS为7成功/1失败，第三次启动在直接RUNNING后7ms开始，握手5003ms失败；指定源端口两笔核心拨号错误均node-dns，错误端点摘要匹配授权原配置第一个VLESS节点server。相同域名A约5024ms失败、AAAA约3711ms成功；DNS事件无socket ID，只能作为同域名/时窗旁证。DNS引导已应用、事件零丢弃/候选无溢出，后续同会话恢复；底层DNS原因仍待查。见[新证据](acceptance/state-key-network-redmi-20261111.json)与[逐键/诊断记录](state-audit-key-join.md)。
+
+同组Provider source3在核心RUNNING后的服务/已应用VPN即时断言失败，尚未请求网络或恢复正文，数据恢复成功。源码存在分开发布的Flow；source4只将验收器改为完整服务状态的有界Flow等待，无固定延迟。最终保存前/后两死亡窗口及6笔HTTPS通过；独立首请求宿主不增加此等待，保留真实DNS失败。此断言问题单列KDIAG-002，不认定旧final6-before超时同因。
 
 ## 本轮诊断改动
 

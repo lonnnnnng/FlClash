@@ -24,11 +24,22 @@ import java.security.MessageDigest
 
 internal fun stabilityInput(context: Context) = EncryptedDraftFile(context, "stability-input.v1", "kclash.motion.stability-input")
 internal fun stabilitySha(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
-internal fun stabilityReport(token: String, command: String, result: JSONObject) {
+internal fun stabilityReport(context: Context, token: String, command: String, result: JSONObject) {
     val bytes = result.put("token", token).put("command", command).put("pid", Process.myPid())
         .put("elapsedMs", SystemClock.elapsedRealtime()).put("epochMs", System.currentTimeMillis()).toString().toByteArray()
-    val chunks = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP).chunked(2500)
     val sha = stabilitySha(bytes)
+    if (bytes.size > 24 * 1024) {
+        // 作者 long：逐键快照会超过logcat突发配额；仅把脱敏结果写入本包验收目录，外部按SHA完整读取后精确删除。
+        val directory = File(checkNotNull(context.getExternalFilesDir(null)), "stability-reports").apply { check(isDirectory || mkdirs()) }
+        require(token.matches(Regex("[a-f0-9]{32}")) && command.matches(Regex("[a-z0-9-]+")))
+        val file = File(directory, "$token-$command-$sha.json")
+        check(!file.exists())
+        file.writeBytes(bytes)
+        Log.i("KClashStability", JSONObject().put("token", token).put("command", command).put("sha256", sha)
+            .put("bytes", bytes.size).put("transport", "verified-file-v1").put("path", file.absolutePath).toString())
+        return
+    }
+    val chunks = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP).chunked(2500)
     chunks.forEachIndexed { index, chunk -> Log.i("KClashStability", JSONObject().put("token", token)
         .put("command", command).put("sha256", sha).put("bytes", bytes.size).put("index", index)
         .put("count", chunks.size).put("base64", chunk).toString()) }
@@ -96,7 +107,7 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                         .put("runningSinceElapsedMs", runtime.runningSinceElapsedMillis.value)
                     val network = timed("network-total", 90_000) {
                         acceptedProxyRequest(entry, URI(input.getString("authorizedUrl"))) { phase, detail ->
-                            stabilityReport(token, "$command-$phase", detail)
+                            stabilityReport(this@StabilityWindowAcceptanceActivity, token, "$command-$phase", detail)
                         }
                     }
                     report.put("network", network)
@@ -113,7 +124,7 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
             } finally {
                 runCatching { report.put("snapshot", snapshot()) }.onFailure { report.put("snapshotFailure", it.javaClass.simpleName) }
                 report.put("phases", phases)
-                stabilityReport(token, command, report)
+                stabilityReport(this@StabilityWindowAcceptanceActivity, token, command, report)
                 withContext(Dispatchers.Main) { finish() }
             }
         }
@@ -133,6 +144,7 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
     }
 
     private suspend fun snapshot(): JSONObject {
+        val started = SystemClock.elapsedRealtime()
         val gson = Gson(); val rows = entry.database().profiles().getAll().sortedBy { it.id }
         val fields = JSONObject(); val files = JSONArray()
         rows.forEach { row ->
@@ -154,12 +166,17 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 .put("updatedAtMillis", value.updatedAtMillis))
         }
         val shared = JSONObject()
-        File(applicationInfo.dataDir, "shared_prefs").listFiles().orEmpty().filter { it.extension == "xml" }.forEach { file ->
+        val sharedFiles = File(applicationInfo.dataDir, "shared_prefs").listFiles().orEmpty().filter { it.extension == "xml" }
+        sharedFiles.forEach { file ->
             val values = getSharedPreferences(file.nameWithoutExtension, Context.MODE_PRIVATE).all
             shared.put(stabilitySha(file.nameWithoutExtension.toByteArray()), JSONObject(values.mapKeys { stabilitySha(it.key.toByteArray()) }
                 .mapValues { stabilitySha(gson.toJson(it.value).toByteArray()) }))
         }
-        return JSONObject().put("rows", fields).put("files", files).put("roomPreferences", JSONObject(preferences))
+        val auditedDelays = StateAuditSnapshots.delays(entry.database(), rows.map { it.id })
+        val auditedPreferences = StateAuditSnapshots.preferences(this, sharedFiles.map { it.nameWithoutExtension })
+        return JSONObject().put("snapshotStartedElapsedMs", started).put("snapshotFinishedElapsedMs", SystemClock.elapsedRealtime())
+            .put("rows", fields).put("files", files).put("roomPreferences", JSONObject(preferences))
+            .put("auditDelaySnapshot", auditedDelays).put("auditSharedPreferenceSnapshot", auditedPreferences)
             .put("auditStatus", JSONObject(com.lonnnnnng.flclash.common.StateWriteAudit.sink?.status().orEmpty()))
             .put("auditProfileFields", JSONObject(rows.associate { row -> row.id.toString() to JSONObject(gson.toJsonTree(row).asJsonObject.entrySet()
                 .associate { it.key to com.lonnnnnng.flclash.common.StateWriteAudit.value(it.value.toString()) }) }))
@@ -184,9 +201,9 @@ class StabilityWindowKillReceiver : BroadcastReceiver() {
                 val input = JSONObject(checkNotNull(stabilityInput(context).read()).decodeToString())
                 check(input.getString("token") == token && token.matches(Regex("[a-f0-9]{32}")))
                 check(intent.getIntExtra("expectedPid", -1) == Process.myPid() && ServiceConfig.proxyAlive.value)
-                stabilityReport(token, "kill-accepted", JSONObject().put("passed", true))
+                stabilityReport(context, token, "kill-accepted", JSONObject().put("passed", true))
                 Process.killProcess(Process.myPid())
-            } catch (failure: Exception) { stabilityReport(token, "kill-rejected", JSONObject().put("passed", false).put("type", failure.javaClass.simpleName)) }
+            } catch (failure: Exception) { stabilityReport(context, token, "kill-rejected", JSONObject().put("passed", false).put("type", failure.javaClass.simpleName)) }
             finally { pending.finish() }
         }
     }

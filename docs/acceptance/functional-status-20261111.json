@@ -1,7 +1,7 @@
 {
   "date": "2026-11-11",
   "kind": "interim-functional-status",
-  "committedBase": "71c44f657bc73aef0b610c06e2a5aedbcdd223f6",
+  "committedBase": "9612ebcba18368b143b673d15f69afc451c08816",
   "device": {
     "serial": "wsvwypiz7xwslvl7",
     "model": "Redmi Note 8 Pro"
@@ -172,7 +172,7 @@
     "failed": 0,
     "isolationNativeProbePassed": true
   },
-  "evidenceSnapshot": "随本组语义扩展提交保存；总目标未完成，应用内更新剩余边界用户暂缓",
+  "evidenceSnapshot": "随逐键审计与首请求定位提交保存；保留真实node-dns失败，总目标未完成，更新用户暂缓",
   "finalAuditRegression": {
     "tests": 7,
     "passed": 7,
@@ -221,5 +221,27 @@
     "sha256": "992c48db3b4f7b43ab5123a1123b14631873253ff00889749ce8506a3b58a09f",
     "publicReleaseBytes": false,
     "newReleasePublished": false
+  },
+  "latestDiagnostics": {
+    "evidence": "state-key-network-redmi-20261111.json",
+    "windowSeconds": 605.7307961669976,
+    "networkPassed": 7,
+    "networkFailed": 1,
+    "newFailureCategory": "node-dns",
+    "lowerDnsCauseEstablished": false,
+    "auditRecords": 66419,
+    "auditZeroDrops": true,
+    "snapshots": 15,
+    "delayChangesMatched": 2190,
+    "configRoomChangesMatched": 10,
+    "preferenceDeletesMatched": 3,
+    "sharedValuesChangedInWindow": false,
+    "redmiAuditTestsPassed": 5,
+    "providerDeathCasesPassed": 2,
+    "providerHttpsPassed": 6,
+    "diagnosticDefectsFixed": [
+      "KDIAG-001",
+      "KDIAG-002"
+    ]
   }
 }
