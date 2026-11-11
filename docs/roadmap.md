@@ -1,6 +1,6 @@
 # KClash Kotlin 重写路线图
 
-> **应用更新按用户决定简化（2026-11-11，当前）**：只读取当前版本、查询KClash最新稳定版，有新版时打开GitHub发布页。删除应用内APK下载/续传、WorkManager更新任务、签名校验、安装会话/回执/通知及安装权限；原复杂升级边界不再属于待办。903项JVM、Debug/签名Release-R8/motion-Test及双Lint零错误、扫码DEX3/3；Redmi真实查询和0.1.2→0.1.3本地签名候选覆盖数据保持已验。公开0.1.3发布进行中。见[说明](app-update-implementation.md)。
+> **应用更新按用户决定简化（2026-11-11，当前）**：只读取当前版本、查询KClash最新稳定版，有新版时打开GitHub发布页。删除应用内APK下载/续传、WorkManager更新任务、签名校验、安装会话/回执/通知及安装权限；原复杂升级边界不再属于待办。903项JVM、Debug/签名Release-R8/motion-Test及双Lint零错误、扫码DEX3/3；Redmi真实查询和0.1.2→0.1.3本地签名候选覆盖数据保持已验。公开0.1.3已发布为Latest，标签/分支CI通过；公开APK SHA`2e1ccec2…373963`与GitHub摘要/校验文件/Redmi回拉一致。旧版真实发现新版并跳转浏览器发布页、公开版检查最新通过，三个验收/探针包及5个精确文件已清理，正式服务停止。见[说明](app-update-implementation.md)。
 
 > **核心语义预检边界补验（2026-11-11，当前）**：908项JVM、最终motion/Test、Debug Lint零错误和Redmi final3精确18/18通过。混合FILE/URL/CUSTOM与未提交密文草稿保护、运行纯代理/VPN守卫、停机同候选重试、真实管理器托管apply失败与防重复下载、真实授权URL导入已验。90份外部正文首轮89/90、唯一超时项定向1/1，两轮授权源摘要相同，按资源合计90/90真实下载并分批解析；不是单轮全绿或90份一次加载。VPN服务/接口保持已验，HTTPS走本地SOCKS；TUN绑定EPERM仍未通过。原1.yaml SHA-size-mtime保持、未上传公网；正式包未重装，未重跑Release/Go或发布。低API/OEM和其他协议实流仍保留，详见[证据](acceptance/core-semantic-boundaries-redmi-20261111.json)与[记录](core-semantic-preflight-investigation.md)。
 
@@ -809,7 +809,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，追踪`origin/kotlin`；本组按验收结果提交推送，远端关系以Git核对为准 |
-| 当前版本 | 公开正式0.1.2/code1002、标签`kclash-v0.1.2`指向`a0a7f1ae`，公开APK SHA`96107b78…4eef538`。Redmi当前安装本地签名R8候选`992c48db…8a09f`，版本号相同但字节不同；未新发版。 |
+| 当前版本 | 正式0.1.3/code1003，标签`kclash-v0.1.3`固定`7a73705e`；公开APK SHA`2e1ccec2…373963`，Redmi已覆盖安装并回拉一致，沿用原正式证书。 |
 | Gradle 工程 | 根目录Wrapper + `app` / `core` / `service` / `common` |
 | UI / 状态 | Jetpack Compose + Material 3；ViewModel + StateFlow + 单向事件流 |
 | 数据 / 注入 | Room新schema + 应用独立文件目录；Hilt |
@@ -817,9 +817,9 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 核心同步来源 | 仅同步chen08209/Clash.Meta:FlClash；本轮为自有fork诊断扩展，不从MetaCubeX/mihomo同步，不合并Flutter提交。 |
 | Flutter增量审查 | 2026-11-05只读核对`7fd417fb`→`be847366`（v0.9.3）9项提交；功能映射见[审查表](upstream-flutter-v0.9.3-review.md)，不等于全部适配。Flutter提交禁止merge/cherry-pick入Kotlin；内核4项增量已集成并进入当前APK，Provider多类型和全部自动选组实网覆盖仍按各自证据保持PARTIAL |
 | 核心生命周期 | `CoreRuntimeManager`统一核心、VPN/纯代理、配置应用与观测；KUI-034完整停止等待resetTraffic成功再发布STOPPED，失败后重试，按需暂停/运行中应用配置不清本次统计。 |
-| 单元测试 | 简化更新后903项JVM（App612/Service218/Core39/Common34）零失败/错误/跳过，含Gradle复用；删除旧下载5项测试。Debug/签名Release-R8/motion-Test、双Lint零错误、扫码DEX3/3通过。Go本地未重跑，发布CI另验。 |
+| 单元测试 | 简化更新后903项JVM（App612/Service218/Core39/Common34）零失败/错误/跳过，含Gradle复用；删除旧下载5项测试。Debug/签名Release-R8/motion-Test、双Lint零错误、扫码DEX3/3通过。Go本地未重跑，标签和分支CI均已完成Go race及全部Android发布门禁。 |
 | 最新真机 | 语义边界final3 18/18（含外部资源定向1/1），前轮外部89/90合并为90个唯一正文真实下载/分批解析；本轮8笔SOCKS HTTPS200，VPN服务/接口保持，TUN绑定EPERM单列。前组新6节点18/18及旧TLS失败分别保留；状态/Provider历史按用户接受收口。 |
-| 当前设备数据 | 正式包APK/UID及无服务状态本轮核对保持；2配置等四表数量沿用前组记录，本轮未重新审计。motion/Test仅用于本组独立库；原1.yaml SHA-size-mtime保持，Flutter未操作。收尾包与TUN状态见本轮cleanup证据。 |
+| 当前设备数据 | 本轮0.1.2→本地0.1.3候选→公开0.1.3两次安装边界四表/2配置正文SHA-size-mtime/UID/schema6保持，偏好2/脚本0/测速0；正常页面运行的缓存写入不与安装边界混算。motion/Test/upgradeprobe及5个精确文件已清，正式无服务；原1.yaml保持，Flutter未操作。 |
 | Fallback最近实核（历史，本轮未重跑） | Redmi API36、arm64-v8a、竖屏默认字号；更新授权源含34组/1个非空Fallback/7个成员。真实Mihomo停止态与运行态各完成自动选择、固定、非法成员拒绝、清除固定4阶段，8/8样本`valid-now=true`；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`已通过，见`docs/acceptance/fallback-real-core-redmi-20261105.json`、`docs/acceptance/fallback-cold-process-redmi-20261106.json`。自然无效`now`仍作为合法解析契约下不可自然构造的语义边界 |
 | 低API历史证据 | 前组API27手机AVD final6 10/10，仅离线材质/Window捕获/菜单/子页；不是本组新包验证，也不含核心/VPN/实网；当时设置记录null，不能据此确认恢复 |
 | Debug / Test | 本轮最终motion/Test构建、安装回拉匹配，736份Android/Bridge源码哈希保持；独立设备输入仅经USB，详见本轮JSON。正式本地R8候选未重装。 |
@@ -1369,6 +1369,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 - 本轮只使用固定代理页宿主和内存 Room；未访问在线白名单、未读取或修改 `1.yaml`、未启动 VPN/Mihomo，也未运行横屏/大字号用例。代理组主流程首片已验证，工具菜单、自动定位、递归组和滚动恢复仍待补齐；下一步回到 Profiles 添加、选择、编辑和同步主路径。整体 UI/UX 仍为 `PARTIAL`。
 
 ### 7.7 测试、发布和运维
+
+最新公开版0.1.3，标签`7a73705e`、[标签CI](https://github.com/lonnnnnng/FlClash/actions/runs/43048427085)/[分支CI](https://github.com/lonnnnnng/FlClash/actions/runs/43048429057)均通过。903 JVM、本地双Lint/签名R8/DEX、公开资产SHA/证书/回拉、Redmi安装边界数据与简单更新页/浏览器跳转已验；见[发布证据](acceptance/release-0.1.3-redmi-20261111.json)。应用内下载/安装原剩余清单已按用户决定取消。
 
 本轮最新为语义边界补验：908 JVM、motion/Test和Debug Lint零错误，Redmi final3 18/18；外部正文前轮89/90+定向1/1，90个唯一资源分批解析。VPN状态/接口保持已验，TUN绑定EPERM未通过。本轮不重跑Release/R8/Go或发版；[证据](acceptance/core-semantic-boundaries-redmi-20261111.json)。以下协议和发布记录为前组证据。
 

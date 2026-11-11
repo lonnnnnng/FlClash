@@ -20,4 +20,4 @@
 
 发布筛选及新/相等/旧版本比较由4项单测覆盖。构建、Lint、Redmi真实查询结果与安装身份记录见[简化版验收](acceptance/app-update-simple-redmi-20261111.json)。
 
-903项JVM零失败/错误/跳过（删除旧下载5项测试），Debug、签名Release/R8、motion/Test及双Lint零错误；扫码最终DEX 3/3。Redmi独立页真实检查0.1.2成功；签名0.1.3覆盖0.1.2后，UID/schema6/四业务表和两正文SHA-size-mtime保持，正式页面显示当前0.1.3与无新版状态。首轮Lint生成源码解析异常保留，先构建再单独Lint复验通过。公开发布和浏览器跳转以最终发布证据补充。
+903项JVM零失败/错误/跳过（删除旧下载5项测试），Debug、签名Release/R8、motion/Test及双Lint零错误；扫码最终DEX 3/3。Redmi独立页真实检查0.1.2成功；签名0.1.3覆盖0.1.2后，UID/schema6/四业务表和两正文SHA-size-mtime保持，正式页面显示当前0.1.3与无新版状态。首轮Lint生成源码解析异常保留，先构建再单独Lint复验通过。公开0.1.3已发布为Latest：标签/分支CI通过（含Go race、全部JVM、R8、双Lint/DEX及签名核验）。公开APK SHA`2e1ccec265fca81cbd660564c5c8ba5a5110839eabfd7a117a447acb22373963`与GitHub digest/SHA256SUMS及Redmi回拉一致。候选到公开包安装边界四表/正文/UID/schema保持；0.1.2独立验收包实际发现0.1.3，点击按钮打开Via浏览器并读到对应GitHub发布标题。公开0.1.3页面重新检查显示最新；完整网页正文渲染与APK下载由浏览器负责。本例三个测试/探针包及五个SHA匹配文件已清，正式服务停止，原1.yaml保持。见[发布证据](acceptance/release-0.1.3-redmi-20261111.json)。

@@ -1,0 +1,221 @@
+{
+  "date": "2026-11-11",
+  "release": {
+    "tag": "kclash-v0.1.3",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.3",
+    "latest": true,
+    "sourceCommit": "7a73705e00a97b0eaab847f4d1ee727ce14df1a7",
+    "publishedAt": "2026-11-11T15:46:50Z",
+    "identity": {
+      "application-id": "com.lonnnnnng.flclash",
+      "version-name": "0.1.3",
+      "version-code": "1003",
+      "min-sdk": "24",
+      "debuggable": "false",
+      "sha256": "2e1ccec265fca81cbd660564c5c8ba5a5110839eabfd7a117a447acb22373963",
+      "bytes": 48448124,
+      "abis": [
+        "arm64-v8a"
+      ],
+      "matchesGitHubDigestAndSums": true,
+      "certificateHeld": true,
+      "installPermissionAndReceiverRemoved": true
+    },
+    "tagCi": {
+      "id": 43048427085,
+      "url": "https://github.com/lonnnnnng/FlClash/actions/runs/43048427085",
+      "conclusion": "success"
+    },
+    "branchCi": {
+      "id": 43048429057,
+      "conclusion": "success"
+    }
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "localChecks": {
+    "debugBuild": true,
+    "signedReleaseR8": true,
+    "motionAndTest": true,
+    "lint": {
+      "debug": {
+        "Warning": 74,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 70,
+        "Hint": 13
+      }
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    }
+  },
+  "jvm": {
+    "total": 903,
+    "modules": {
+      "app": {
+        "tests": 612,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 218,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "includesGradleReuse": true,
+    "removedOldDownloadTests": 5
+  },
+  "installSequence": [
+    "0.1.2 local signed R8",
+    "0.1.3 local signed R8 candidate",
+    "0.1.3 public CI APK"
+  ],
+  "candidateUpgrade": {
+    "before": "release013-before",
+    "after": "release013-candidate-after",
+    "uidPreserved": true,
+    "schemaPreserved": true,
+    "tablesSame": {
+      "profiles": true,
+      "app_preferences": true,
+      "scripts": true,
+      "proxy_delay_results": true
+    },
+    "allProfileFileBytesHashMtimePreserved": true,
+    "beforeCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "afterCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "versionBefore": "0.1.2",
+    "versionAfter": "0.1.3",
+    "passed": true
+  },
+  "publicInstallBoundary": {
+    "before": "release013-public-before",
+    "after": "release013-public-after",
+    "uidPreserved": true,
+    "schemaPreserved": true,
+    "tablesSame": {
+      "profiles": true,
+      "app_preferences": true,
+      "scripts": true,
+      "proxy_delay_results": true
+    },
+    "allProfileFileBytesHashMtimePreserved": true,
+    "beforeCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "afterCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "versionBefore": "0.1.3",
+    "versionAfter": "0.1.3",
+    "passed": true
+  },
+  "sameSourceVersionCheckAvailableAndBrowserJump": {
+    "oldCheckerVersion": "0.1.2-motion",
+    "latestDetected": "0.1.3",
+    "availableState": true,
+    "actualButtonTapped": true,
+    "browserPackage": "mark.via",
+    "releaseTitleVerified": true,
+    "title": "Release KClash 0.1.3 · lonnnnnng/FlClash · GitHub",
+    "apkAssetNotClicked": true,
+    "wholeBrowserPageRenderingNotRequiredForHandoff": true
+  },
+  "publicUi": {
+    "currentVersion": "0.1.3",
+    "phase": "LATEST",
+    "latestRelease": "0.1.3",
+    "screenshot": "public-update.png"
+  },
+  "cleanup": {
+    "removedExactTestPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.upgradeprobe"
+    ],
+    "verifiedFilesRemoved": [
+      {
+        "path": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release013-before.json",
+        "sha256": "8afa2e8bb77fa396bbcb6a1e251d7b727a8a82f88c14f2fb7d657c7b89f4177d"
+      },
+      {
+        "path": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release013-candidate-after.json",
+        "sha256": "945560de41e11700bfca434c545c4a9476ff2a73674738ace7e5454c12b31cd5"
+      },
+      {
+        "path": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release013-public-before.json",
+        "sha256": "c74b776dc9e9495d75cfa6832ed1de364d366972f768d0487b3f29ef0eab0921"
+      },
+      {
+        "path": "/storage/emulated/0/Android/data/com.lonnnnnng.flclash/files/upgrade-probe-20261110/release013-public-after.json",
+        "sha256": "16d15d9ed310957ba9a79484f3ca88929c53c7f6e7b4d1a3f58a3aee8e6c8045"
+      },
+      {
+        "path": "/sdcard/kclash-simple-update-current.xml",
+        "sha256": "1e57f4cfd76087064a26c380f505ffc465ee7a0f3b619523fd4bfdce026d2224"
+      }
+    ],
+    "formalServicesStopped": true,
+    "formalPublicApkReadbackMatches": true,
+    "originalLocalYamlHeld": true,
+    "flutterReferenceUntouched": true,
+    "publicUiCurrentVersion": "0.1.3",
+    "publicUiResult": "LATEST"
+  },
+  "rawEvidence": "../acceptance-artifacts/app-update-boundaries-20261111/"
+}
