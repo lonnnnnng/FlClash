@@ -81,6 +81,13 @@
 - 证据：本机`acceptance-artifacts/semantic-preflight-20261111/`保留red2及go-race3/4结果；Go普通和race包含正反例。固定修复提交`5fd3564fc10e3dea681b5928ac4b7b690d4d8a45`；最终906 JVM/双Lint/Release-R8及Redmi同源8/8（含有效CA文件/坏PEM）通过，产物/回拉SHA见[证据](acceptance/core-semantic-preflight-redmi-20261111.json)。尚未向上游发消息或PR。
 - 同步复查：只跟随chen08209/Clash.Meta:FlClash，检查LoadCertificates是否已拒绝可读无效PEM，保留正反例；若上游等价修正，再按实际diff移除本地同义分支。
 
+## KCORE-008：MKCP/Mekya危险参数未在入口拒绝
+
+- 固定来源：核心`5fd3564fc10e3dea681b5928ac4b7b690d4d8a45`。MKCP飞行窗口使用`1000/TTI`作为除数，`TTI>1000`可能除零；Mekya负`PacketWritingBuffer`会在首次创建会话时分配负容量channel。不是旧TLS EOF、Provider超时或元数据变化的已证实原因。
+- 复现边界：四个原入口overlay均未正确拒绝危险输入；仅证明缺失入口保护，不声称已在Redmi复现真实网络panic栈。
+- 修复提交：`a2136a6d34ac7c6144ffb75f0e13c0b8735dfca2`。共享Validate在监听/拨号/客户端及VMess构造前执行，保留默认值和合法边界；同一约束用于只读预检。
+- 验证与撤销条件：Go正反例/父模块与相关包race、VMess MKCP/Mekya定向端到端race通过；额外上游全入站测试存在回环超时，不称全套通过。仅随chen08209/Clash.Meta:FlClash同步，等上游等价修复并通过这些入口回归后撤销。见[缺陷专页](transport-config-validation-defect.md)、[本组证据](acceptance/core-semantic-extended-redmi-20261111.json)。
+
 ## 未定因果调查：Always-on 首请求 TLS EOF
 
 已保留旧包冷启动失败、随后同会话物理/TUN HTTPS 成功及修改版有限轮次通过证据。KCORE-001 修复静态可证明的保护缺口，KCORE-002/003 修复控制器生命周期；目前不能把这些修复直接认定为此前 TLS EOF 的确定根因。长期稳定性、蜂窝和其他 OEM 场景仍按 roadmap 单独验收。

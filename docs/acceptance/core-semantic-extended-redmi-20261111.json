@@ -1,0 +1,419 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "71c44f657bc73aef0b610c06e2a5aedbcdd223f6",
+  "coreCommit": "a2136a6d34ac7c6144ffb75f0e13c0b8735dfca2",
+  "coreRemote": "lonnnnnng/Clash.Meta:kclash-fixes",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "overallFunctionalGoalComplete": false,
+  "sourceFiles": 1751,
+  "sourceFilesUnchangedAfterAcceptance": true,
+  "jvm": {
+    "tests": 906,
+    "app": 616,
+    "service": 218,
+    "core": 38,
+    "common": 34,
+    "failures": 0,
+    "includesGradleReuse": true
+  },
+  "androidDebugReleaseR8BothLintMotionTestPassed": true,
+  "mlKitDex": {
+    "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+    "registrars": [
+      {
+        "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      },
+      {
+        "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      },
+      {
+        "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      }
+    ],
+    "errors": [],
+    "passed": true
+  },
+  "deviceTests": {
+    "tests": 12,
+    "passed": 12,
+    "failed": 0,
+    "seconds": 50.92742896080017,
+    "methods": [
+      "semanticNodeGroupRuleDnsErrorsRejectBeforeAnyProfileOrFileWrite",
+      "fileCustomTrustCertificateIsGrantedAndInvalidPemIsRejected",
+      "runningCoreKeepsEpochSelectionSourceAndRealNetworkAcrossValidation",
+      "customImportRejectsInvalidCandidateBeforeAnyResourceStaging",
+      "customImportResolvesExistingAuthorizedProfileWithoutCreatingRuntimeProjection",
+      "authorizedOriginalUsesFullParserAndLeavesSourceResourcesAndDatabaseUntouched",
+      "blockedPipeWriteCancelsWithoutWaitingForRemoteReader",
+      "canceledValidationReleasesProcessAndFollowingOriginalStillPasses",
+      "proxyFileChangedAfterFinalPreflightRejectsCommit",
+      "reusedHttpResourceWithInvalidCachedNodeRejectsBeforeCustomCommit",
+      "unusedMissingStableProviderDoesNotBlockValidCustomImport",
+      "ruleDirectoryVersionChangedAfterInitialPreflightRejectsCommit"
+    ],
+    "events": {
+      "kclash_semantic_rejection": [
+        {
+          "case": "proxies",
+          "reportedSection": "proxies",
+          "code": "invalid_config",
+          "noWrite": true
+        },
+        {
+          "case": "proxy-groups",
+          "reportedSection": "proxy-groups",
+          "code": "invalid_config",
+          "noWrite": true
+        },
+        {
+          "case": "rules",
+          "reportedSection": "rules",
+          "code": "invalid_config",
+          "noWrite": true
+        },
+        {
+          "case": "dns",
+          "reportedSection": "dns",
+          "code": "invalid_config",
+          "noWrite": true
+        },
+        {
+          "case": "tls",
+          "reportedSection": "tls",
+          "code": "resource_unavailable",
+          "noWrite": true
+        }
+      ],
+      "kclash_semantic_running": [
+        {
+          "passed": true,
+          "epochHeld": true,
+          "runningSinceHeld": true,
+          "profileRowsHeld": true,
+          "sourceAndGeoFilesHeld": true,
+          "realHttpsRequests": 2,
+          "sameSocketAttribution": true
+        }
+      ],
+      "kclash_semantic_original": [
+        {
+          "passed": true,
+          "bytes": 35165,
+          "deferredResources": 90,
+          "filesHeld": true
+        }
+      ],
+      "kclash_semantic_resource_race": [
+        {
+          "case": "proxy-file-version",
+          "passed": true
+        },
+        {
+          "case": "reused-http-cache-rejected",
+          "passed": true
+        },
+        {
+          "case": "unused-missing-reference",
+          "passed": true
+        },
+        {
+          "case": "rule-directory-version",
+          "passed": true
+        }
+      ]
+    }
+  },
+  "inboundPreflight": {
+    "currentParseListenerTypes": 20,
+    "allTypesHaveExplicitBranch": true,
+    "numericNameDecodedObjectChecked": true,
+    "sudokuPreparationSharedBeforeBind": true,
+    "allParametersAndProtocolsLiveTrafficVerified": false
+  },
+  "resourceRaceCases": [
+    "rule-directory-version",
+    "proxy-file-version",
+    "reused-http-cache-rejected",
+    "unused-missing-reference"
+  ],
+  "defects": [
+    "KCORE-008: MKCP excessive TTI and Mekya negative queue rejected before constructing listener/session"
+  ],
+  "go": {
+    "parentAndTargetedRacePassed": true,
+    "vmessMkcpMekyaSudokuAndSsHttpObfsSerialRacePassed": true,
+    "fullUpstreamInboundSuitePassed": false,
+    "retainedFailures": [
+      "VLESS Wss2/mTLS+ECH loopback body timeout",
+      "parallel SS HTTP obfs loopback body timeout"
+    ],
+    "serialRetestDoesNotProveFullSuiteRootCause": true
+  },
+  "artifacts": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "cad4d31f964aa65d6e0033c46b8cea7d6b10786e8d7df26828aa6d7e8b8f06c4",
+      "bytes": 66190793,
+      "readbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "20e232b7da841970dd84d2ee9310aaa046e8ef138aa5bf1449872005bd0dede3",
+      "bytes": 2915482,
+      "readbackMatches": true
+    }
+  ],
+  "signedR8": {
+    "sha256": "992c48db3b4f7b43ab5123a1123b14631873253ff00889749ce8506a3b58a09f",
+    "bytes": 48471023,
+    "readbackMatches": true,
+    "versionName": "0.1.2",
+    "versionCode": 1002,
+    "published": false
+  },
+  "signedR8FileImport": {
+    "realDocumentsUi": true,
+    "originalInputBytes": 35165,
+    "deferredRemoteResources": 90,
+    "previewSemanticPass": true,
+    "confirmedImportCounts": [
+      2,
+      3
+    ],
+    "addedBodyMatchesOriginal": true,
+    "newDuplicateDeletedViaUi": true,
+    "finalCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "installationBoundary": {
+      "before": "semantic-r8-before3",
+      "after": "semantic-r8-after3",
+      "uidPreserved": true,
+      "schemaPreserved": true,
+      "tablesSame": {
+        "profiles": true,
+        "app_preferences": true,
+        "scripts": true,
+        "proxy_delay_results": true
+      },
+      "allProfileFileBytesHashMtimePreserved": true,
+      "beforeCounts": {
+        "profiles": 2,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 0
+      },
+      "afterCounts": {
+        "profiles": 2,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 0
+      },
+      "versionBefore": "0.1.2",
+      "versionAfter": "0.1.2",
+      "passed": true
+    },
+    "importCleanupBoundary": {
+      "before": "semantic-r8-after3",
+      "after": "semantic-r8-clean3",
+      "uidPreserved": true,
+      "schemaPreserved": true,
+      "tablesSame": {
+        "profiles": true,
+        "app_preferences": true,
+        "scripts": true,
+        "proxy_delay_results": true
+      },
+      "allProfileFileBytesHashMtimePreserved": true,
+      "counts": {
+        "profiles": 2,
+        "app_preferences": 2,
+        "scripts": 0,
+        "proxy_delay_results": 0
+      },
+      "passed": true
+    },
+    "formalNowContainsLocalCandidateNotPublicBytes": true
+  },
+  "cleanup": {
+    "sourceFiles": 1751,
+    "sourceUnchanged": true,
+    "originalInput": {
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973
+    },
+    "ownedSafInputVerifiedAndRemoved": true,
+    "formalAndMotionServices": [],
+    "validationProcesses": [],
+    "motionPackagesRetained": true,
+    "formalPackage": "signed local R8 candidate, not public bytes",
+    "published": false
+  },
+  "preferenceObservation": {
+    "earlierLaunchChangedKeyMatched": "ip_quality_cache_v1",
+    "cacheWriterCode": "data/IpQualityCache.kt and data/IpInformationRepository.kt",
+    "releaseExactWriteEventAudited": false,
+    "historicalUnknownChangeExplained": false,
+    "finalR8ImportBoundaryAllTablesHeld": true
+  },
+  "limitations": [
+    "HTTP resource bodies/reachability deferred; original reports 90",
+    "No low API physical-device preflight acceptance",
+    "Signed R8 verifies original FILE import, not every invalid/cancellation/resource-race or running-core scenario",
+    "No full upstream inbound suite green; loopback timeout failures retained",
+    "No historical TLS EOF/metadata/preferences/Provider timeout cause established",
+    "Updater interruption/session/auth/paused-route/special-data boundaries deferred by user; no new release"
+  ],
+  "rawEvidence": [
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-source3.json",
+      "sha256": "e6faca99fa65dbd0c3825a703722a037591e634e46150ca963656dc78b9f7955",
+      "bytes": 219839
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-go-all3.log",
+      "sha256": "cec426799e6fb4466904e9a9dd727b279a7a3c0e5e15e2b5edbc59202b0b44ce",
+      "bytes": 437
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-go-final3.log",
+      "sha256": "e18ba7fa4516ffc9e51fa94eb5cfaca1fb0c241dc4fd6755b6c73b5c68651316",
+      "bytes": 18
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-inbound-target2.log",
+      "sha256": "1f4fceab34d90de63452484c29a0106c357a8602f648fe0bcf26f3e21f9e62e3",
+      "bytes": 58
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-transport-red1.log",
+      "sha256": "c8e1650201d25f8750f34d1d5df123a2589bbd7c137c8cf619358fb89c188c43",
+      "bytes": 875
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-transport-overlay.json",
+      "sha256": "bf48aa85ad1fb34d2d2b5b0d4c82db0dfe68f7fc54013ae6fe5e84bc402d04f9",
+      "bytes": 1001
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-compile1.log",
+      "sha256": "e729d3b623c24f766ec0116cd77c2d3e5230642d887ff24fcf237f3e625bd7de",
+      "bytes": 69593
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-compile2.log",
+      "sha256": "355269df39f4cd4fae02ee1d98ccbdb2555a66834af1cb64f7fbfb2e6e53eb4f",
+      "bytes": 138396
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-android3.log",
+      "sha256": "bcded3a17d6e10643fb83f1056b002396827967877012aa15d9d5b0118ca696e",
+      "bytes": 20934
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-motion3.log",
+      "sha256": "6bebe138feffdea51d0baf3475b90f9f9ac21dfd47f92ee857126e7cf507bc95",
+      "bytes": 13154
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-mlkit3.json",
+      "sha256": "6371512ad3aa342f5732145fd0e4d1000e475a2fbf388580a2379478b034dee0",
+      "bytes": 588
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-tests3.log",
+      "sha256": "14eaf838d28f8f580ae7d8ab25da70f0c6287306d94ceab0871007db9e8af47b",
+      "bytes": 10725
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-tests3-summary.json",
+      "sha256": "a5daa5a697e108e153351a0901932a9e92abe998355f85feaf49cfb596a4230b",
+      "bytes": 80
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-install3.json",
+      "sha256": "15279a85e4f96e7810d765fc6119bdf55e8c6a1df3d354d756fbc4707fbc5f59",
+      "bytes": 384
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-signed3-verification.txt",
+      "sha256": "5fcfa48c3f6f6f8d347e9668fe36cfa0b1ffaf3109e68c451e65db6dc3608c0c",
+      "bytes": 973
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-signed3-install.json",
+      "sha256": "8b8384e3525b622b5716b9f86ccc8ce2edf33b5efd21c1edd525815f291424a0",
+      "bytes": 201
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-cleanup3.json",
+      "sha256": "58ba60505528a78409aee1ac9db16566adb2b3a2251c9ef907fbcf678457aa1f",
+      "bytes": 443
+    },
+    {
+      "path": "acceptance-artifacts/semantic-preflight-20261111/extended-r8-imported.png",
+      "sha256": "18e116973275b2dfa976f2b357ca0ff797d16aeb9c1c131456949bca1f23eb1a",
+      "bytes": 83545
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/semantic-r8-before3.json",
+      "sha256": "c0dc5924bdd7929ad98368f12a4575f32a104c131e7eb47c2c9740182b71fa32",
+      "bytes": 25104
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/semantic-r8-after3.json",
+      "sha256": "2de9c9787d507531778ee5e02cb38d898e5937390d93f2a04c21a6ed5c662a5e",
+      "bytes": 25104
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/semantic-r8-install-held3.json",
+      "sha256": "5ff4bc95b0666ec55afb6cade27bbefa0f0317fd59577e7c30132d15a8e19d82",
+      "bytes": 604
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/semantic-r8-imported3.json",
+      "sha256": "4951ac6696f3950449d2e25bf7bc8a59ad6190a64ca4b3a3b2f0ba840223c1df",
+      "bytes": 27224
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/semantic-r8-clean3.json",
+      "sha256": "8c9cd1e30a1a8b57cbab78f1e3a765dd2f8293ee0d26e1ac521f22d46580ad5c",
+      "bytes": 25103
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/semantic-r8-import-held3.json",
+      "sha256": "1359580815ec86ce6917fc6b0e750173142282e9b45127267b0dce4f612238ac",
+      "bytes": 426
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/ui-semantic-r8-file.xml",
+      "sha256": "952e7290558ea39b55aa9e7f3671a38d6b516e62d3df66d338c2054ec90c8f0b",
+      "bytes": 6996
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/ui-semantic-r8-imported.xml",
+      "sha256": "d493d03420b8a8886034dbb23991e187631d5164d546e2233c9b0b3834c9edaf",
+      "bytes": 16721
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/ui-semantic-r8-removed.xml",
+      "sha256": "abe372621e6dc91f94a526cea86746035e7b52da2fff5a00ebdda8f6fcc03702",
+      "bytes": 14951
+    }
+  ]
+}

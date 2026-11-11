@@ -5,17 +5,56 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"testing"
 
+	"github.com/metacubex/mihomo/component/ca"
 	"github.com/metacubex/mihomo/config"
 )
+
+var extendedPreflightListeners = map[string]string{
+	"bad-numeric-name-anytls":  "{name: 123, type: anytls}",
+	"valid-numeric-name-http":  "{name: 123, type: http}",
+	"bad-snell-key":            "{name: inbound, type: snell, psk: ''}",
+	"valid-snell":              "{name: inbound, type: snell, psk: test}",
+	"bad-shadowquic-upstream":  "{name: inbound, type: shadowquic}",
+	"bad-shadowquic-version":   "{name: inbound, type: shadowquic, jls-upstream: {addr: '127.0.0.1:443'}, quic-versions: [invalid]}",
+	"valid-shadowquic":         "{name: inbound, type: shadowquic, jls-upstream: {addr: '127.0.0.1:443'}}",
+	"bad-trusttunnel-security": "{name: inbound, type: trusttunnel, certificate: '', private-key: ''}",
+	"bad-realm-pattern":        "{name: inbound, type: hysteria2-realm, token: test, realm-name-pattern: '['}",
+	"valid-realm":              "{name: inbound, type: hysteria2-realm, token: test}",
+	"bad-sudoku-table":         "{name: inbound, type: sudoku, key: test, table-type: invalid}",
+	"bad-sudoku-aead":          "{name: inbound, type: sudoku, key: test, aead-method: invalid}",
+	"valid-sudoku":             "{name: inbound, type: sudoku, key: test}",
+	"bad-http-reality":         "{name: inbound, type: http, reality-config: {private-key: invalid}}",
+	"bad-socks-reality":        "{name: inbound, type: socks, reality-config: {private-key: invalid}}",
+	"bad-mixed-reality":        "{name: inbound, type: mixed, reality-config: {private-key: invalid}}",
+	"valid-http":               "{name: inbound, type: http}",
+	"valid-socks":              "{name: inbound, type: socks}",
+	"valid-mixed":              "{name: inbound, type: mixed}",
+	"bad-tunnel-target":        "{name: inbound, type: tunnel, network: [tcp, udp], target: invalid}",
+	"valid-tunnel":             "{name: inbound, type: tunnel, network: [tcp, udp], target: 'example.test:443'}",
+	"valid-redir":              "{name: inbound, type: redir}",
+	"valid-tproxy":             "{name: inbound, type: tproxy}",
+	"bad-mieru-transport":      "{name: inbound, type: mieru, port: 10301, transport: invalid, users: {user: pass}}",
+	"valid-mieru":              "{name: inbound, type: mieru, port: 10301, transport: TCP, users: {user: pass}}",
+	"bad-vmess-mkcp-tti":       "{name: inbound, type: vmess, users: [], mkcp-config: {enable: true, tti: 1001}}",
+	"valid-vmess-mkcp":         "{name: inbound, type: vmess, users: [], mkcp-config: {enable: true, tti: 50}}",
+	"bad-vmess-mekya-queue":    "{name: inbound, type: vmess, users: [], mekya-config: {enable: true, packet-writing-buffer: -1}}",
+	"valid-vmess-mekya":        "{name: inbound, type: vmess, users: [], mekya-config: {enable: true}}",
+}
 
 // 作者 long：预检全局故意不复用，每个case启动一次性子进程，与Android隔离服务的生命周期一致。
 func TestSemanticPreflightIsolatedCases(t *testing.T) {
 	cases := []string{"valid", "bad-node", "bad-group", "bad-rule", "bad-dns", "inline-rule", "missing-geo", "fakeip-memory", "bad-tls", "bad-tuic-port", "valid-tuic-addresses", "bad-geosite-data",
 		"bad-anytls-security", "valid-anytls", "bad-anytls-padding", "bad-vless-security", "valid-vless", "bad-vless-xhttp", "bad-vless-range",
 		"bad-ss-cipher", "valid-ss", "bad-ss-obfs", "bad-tun-dns", "bad-tun-range", "bad-tun-mac", "valid-tun", "bad-trojan-security", "valid-trojan"}
+	for name := range extendedPreflightListeners {
+		cases = append(cases, name)
+	}
+	cases = append(cases, "valid-trusttunnel")
+	sort.Strings(cases)
 	for _, name := range cases {
 		t.Run(name, func(t *testing.T) {
 			cmd := exec.Command(os.Args[0], "-test.run=^TestSemanticPreflightChild$")
@@ -107,6 +146,18 @@ func TestSemanticPreflightChild(t *testing.T) {
 		want = false
 	case "valid-trojan":
 		input += "listeners: [{name: inbound, type: trojan, users: [], allow-insecure: true}]\n"
+	case "valid-trusttunnel":
+		cert, key, _, err := ca.NewRandomTLSKeyPair(ca.KeyPairTypeP256)
+		if err != nil {
+			t.Fatal("test certificate generation failed")
+		}
+		listener, _ := json.Marshal(map[string]any{"name": "inbound", "type": "trusttunnel", "certificate": cert, "private-key": key})
+		input += "listeners: [" + string(listener) + "]\n"
+	default:
+		if listener, ok := extendedPreflightListeners[name]; ok {
+			input += "listeners: [" + listener + "]\n"
+			want = !strings.HasPrefix(name, "bad-")
+		}
 	}
 	result := config.ParseReadOnly([]byte(input), func(string) ([]byte, error) {
 		if name == "bad-geosite-data" {

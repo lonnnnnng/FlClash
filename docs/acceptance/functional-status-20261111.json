@@ -1,7 +1,7 @@
 {
   "date": "2026-11-11",
   "kind": "interim-functional-status",
-  "committedBase": "125309b85d7d1a68b5bfd71c9267369a0dc4225f",
+  "committedBase": "71c44f657bc73aef0b610c06e2a5aedbcdd223f6",
   "device": {
     "serial": "wsvwypiz7xwslvl7",
     "model": "Redmi Note 8 Pro"
@@ -85,7 +85,11 @@
     },
     "actualSelfUpgradePassed": true,
     "upgradeDataPreservationVerified": "本批四表/两配置/238测速/UID保持；scripts空，不推广全部边界",
-    "finalSourceValidationComplete": true
+    "finalSourceValidationComplete": true,
+    "deferredByUser": true,
+    "priority": "last",
+    "deferredScope": "download/install interruption, authentication, paused route, signature/downgrade/session and special data boundaries",
+    "candidateInstallationIsHistorical": true
   },
   "probeBatch2": {
     "tests": 3,
@@ -108,8 +112,7 @@
     "启动/恢复首请求历史失败归因",
     "配置/偏好长期状态与逐键审计分析",
     "Provider运行态历史恢复超时归因",
-    "核心语义预检扩展协议和隔离/资源边界",
-    "应用内更新下载/安装中断及特殊数据场景"
+    "核心预检低API及外部运行环境边界"
   ],
   "rawEvidence": [
     {
@@ -169,7 +172,7 @@
     "failed": 0,
     "isolationNativeProbePassed": true
   },
-  "evidenceSnapshot": "随本组提交保存，整体目标未完成、未新发版",
+  "evidenceSnapshot": "随本组语义扩展提交保存；总目标未完成，应用内更新剩余边界用户暂缓",
   "finalAuditRegression": {
     "tests": 7,
     "passed": 7,
@@ -194,16 +197,29 @@
   "coreSemanticPreflight": {
     "implemented": true,
     "complete": false,
-    "coreCommit": "5fd3564fc10e3dea681b5928ac4b7b690d4d8a45",
-    "redmiTestsPassed": 8,
+    "coreCommit": "a2136a6d34ac7c6144ffb75f0e13c0b8735dfca2",
+    "redmiTestsPassed": 12,
     "jvmTests": 906,
     "runningCoreAndTwoRealHttpsHeld": true,
     "externalDependenciesDeferred": 90,
-    "evidence": "core-semantic-preflight-redmi-20261111.json",
+    "evidence": "core-semantic-extended-redmi-20261111.json",
     "remaining": [
-      "other inbound lower and post-bind QUIC/MKCP",
-      "controlled resource-version race",
-      "low API physical-device and signed R8 runtime"
-    ]
+      "low API physical-device acceptance",
+      "external resources and runtime environment availability; 90 remote bodies deferred",
+      "all protocols/parameters live traffic not verified"
+    ],
+    "currentInboundTypesCovered": 20,
+    "resourceRaceCasesPassed": 4,
+    "signedR8OriginalFileImportPassed": true
+  },
+  "deferredFunctionalItems": [
+    "应用内更新剩余异常边界：用户要求暂缓并排到最后"
+  ],
+  "currentFormalInstallation": {
+    "versionName": "0.1.2",
+    "versionCode": 1002,
+    "sha256": "992c48db3b4f7b43ab5123a1123b14631873253ff00889749ce8506a3b58a09f",
+    "publicReleaseBytes": false,
+    "newReleasePublished": false
   }
 }
