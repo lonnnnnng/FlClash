@@ -6,6 +6,8 @@
 
 同组Provider source3在核心RUNNING后的服务/已应用VPN即时断言失败，尚未请求网络或恢复正文，数据恢复成功。源码存在分开发布的Flow；source4只将验收器改为完整服务状态的有界Flow等待，无固定延迟。最终保存前/后两死亡窗口及6笔HTTPS通过；独立首请求宿主不增加此等待，保留真实DNS失败。此断言问题单列KDIAG-002，不认定旧final6-before超时同因。
 
+后续基线`ce1c423d`新增源端口context关联的结构化lookup，安全错误类别/地址族计数与生效DNS开关；发现并修正独立KCORE-009空地址nil错误，核心`42e93516`已推。907 JVM/Go竞态/构建通过、Redmi六启动+458秒恢复窗口共14笔HTTPS成功、最终语义12/12也通过；但Provider before在恢复后、after在准备阶段两笔TLS握手20秒超时，lookup均成功33 IPv4、核心拨号成功。此为与node-dns不同的失败阶段，原数据恢复/备份清空，整体网络继续未闭环。不可把初始14/14或KCORE-009修正推成全部问题解决。见[本组证据](acceptance/dns-lookup-redmi-20261111.json)与[源码缺陷和边界](dns-lookup-empty-success-defect.md)。
+
 ## 本轮诊断改动
 
 - Debug共享`CoreRequestAcceptance`在connect前固定源端口，开启已有Go安全dial采集；采集阶段分别记录begin/end/fail、预算、Android单调时刻、异常类型。请求只执行一次，不改节点/URL，不重试。

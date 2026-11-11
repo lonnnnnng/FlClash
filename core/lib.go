@@ -237,6 +237,7 @@ func NetworkBootstrapSnapshot() string {
 		"atMillis": bootstrapMillis(), "dnsRequestedSequence": dnsUpdateSeq.Load(),
 		"dnsApplyingSequence": dnsApplyingSeq.Load(), "dnsAppliedSequence": dnsAppliedSeq.Load(),
 		"dnsAppliedAtMillis": dnsAppliedAt.Load(),
+		"dnsRuntime":         dnsDiagnosticState(),
 	}
 	if gate := lastTunProtection.Load(); gate != nil {
 		state["protection"] = gate.snapshot()

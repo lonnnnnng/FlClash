@@ -1,9 +1,14 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/metacubex/mihomo/component/dialer"
 )
 
 func TestDialDiagnosticPreservesOnlyRequestedPortAndSafeErrorChain(t *testing.T) {
@@ -24,6 +29,36 @@ func TestDialDiagnosticPreservesOnlyRequestedPortAndSafeErrorChain(t *testing.T)
 	capture.record("[TCP] dial 198.18.0.1:43210 --> target:443 error: connection refused")
 	if len(capture.snapshot(43210, false)) != 1 {
 		t.Fatal("capture continued after finish")
+	}
+}
+
+func TestLookupDiagnosticUsesStructuredPortAndNeverKeepsEndpointOrRawError(t *testing.T) {
+	var capture dialDiagnosticCapture
+	capture.begin(43210)
+	value := dialer.LookupDiagnostic{SourcePort: 43211, Host: "secret-node.example", Network: "tcp4", ResolverRole: "proxy",
+		IPv6Disabled: true, Duration: 5 * time.Second, Err: fmt.Errorf("all DNS requests failed at secret-upstream.example: %w", context.DeadlineExceeded), ContextErr: context.DeadlineExceeded}
+	capture.recordLookup(value)
+	if len(capture.snapshot(43210, false)) != 0 {
+		t.Fatal("wrong source port retained")
+	}
+	value.SourcePort = 43210
+	capture.recordLookup(value)
+	got := capture.snapshot(43210, true)
+	if len(got) != 1 || got[0].Kind != "lookup" || got[0].LookupNetwork != "tcp4" || !got[0].IPv6Disabled || got[0].DurationMillis != 5000 {
+		t.Fatal("structured lookup missing")
+	}
+	encoded, _ := json.Marshal(got)
+	for _, secret := range []string{"secret-node", "secret-upstream", "43210", "all DNS requests failed"} {
+		if strings.Contains(string(encoded), secret) {
+			t.Fatal("raw lookup data leaked")
+		}
+	}
+	if !strings.Contains(string(encoded), "dns-all-failed") || !strings.Contains(string(encoded), "deadline") {
+		t.Fatal("safe error categories lost")
+	}
+	capture.recordLookup(value)
+	if len(capture.snapshot(43210, false)) != 1 {
+		t.Fatal("finished lookup still captured")
 	}
 }
 

@@ -83,6 +83,8 @@ internal suspend fun acceptedProxyRequest(entry: ConnectionAcceptanceEntryPoint,
                         dns += JSONObject().put("domainHash", requestHash(q.domain.lowercase())).put("type", q.type)
                             .put("initiator", q.initiator).put("cached", q.cached).put("rcode", q.rcode)
                             .put("failed", q.error.isNotEmpty()).put("errorHash", if (q.error.isEmpty()) JSONObject.NULL else requestHash(q.error))
+                            .put("errorCategories", JSONArray(q.errorCategories)).put("addressAnswers", q.addressAnswers)
+                            .put("upstreamKnown", q.upstream.isNotBlank())
                             .put("upstreamHash", requestHash(q.upstream)).put("answers", q.answers.size)
                             .put("delayMs", q.delay).put("coreTime", q.time).put("receivedElapsedMs", SystemClock.elapsedRealtime())
                     }

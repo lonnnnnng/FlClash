@@ -1,22 +1,39 @@
 package core
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"io"
+	"net"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"github.com/metacubex/mihomo/component/dialer"
+	"github.com/metacubex/mihomo/component/resolver"
 )
 
 type dialDiagnostic struct {
-	AtMillis       int64      `json:"atMillis"`
-	Failed         bool       `json:"failed"`
-	Categories     []string   `json:"categories"`
-	ErrorChain     [][]string `json:"errorChain"`
-	EndpointHashes []string   `json:"endpointHashes"`
+	Kind              string     `json:"kind,omitempty"`
+	AtMillis          int64      `json:"atMillis"`
+	Failed            bool       `json:"failed"`
+	Categories        []string   `json:"categories"`
+	ErrorChain        [][]string `json:"errorChain"`
+	EndpointHashes    []string   `json:"endpointHashes"`
+	LookupHostHash    string     `json:"lookupHostHash,omitempty"`
+	LookupNetwork     string     `json:"lookupNetwork,omitempty"`
+	ResolverRole      string     `json:"resolverRole,omitempty"`
+	IPv6Disabled      bool       `json:"ipv6Disabled"`
+	Addresses         int        `json:"addresses"`
+	IPv4Addresses     int        `json:"ipv4Addresses"`
+	IPv6Addresses     int        `json:"ipv6Addresses"`
+	DurationMillis    int64      `json:"durationMillis,omitempty"`
+	ContextCategories []string   `json:"contextCategories,omitempty"`
 }
 
 type dialDiagnosticCapture struct {
@@ -34,6 +51,8 @@ func diagnosticCategories(text string) []string {
 	result := []string{}
 	for _, item := range []struct{ word, category string }{
 		{"dns resolve failed", "node-dns"}, {"no such host", "no-host"},
+		{"all dns requests failed", "dns-all-failed"}, {"couldn't find ip", "ip-not-found"},
+		{"no ip address", "no-ip"}, {"ipv6 disabled", "ipv6-disabled"}, {"ip version error", "ip-version"},
 		{"context deadline exceeded", "deadline"}, {"i/o timeout", "io-timeout"},
 		{"read udp", "read-udp"}, {"read tcp", "read-tcp"},
 		{"dial udp", "dial-udp"}, {"dial tcp", "dial-tcp"},
@@ -46,6 +65,69 @@ func diagnosticCategories(text string) []string {
 		}
 	}
 	return result
+}
+
+func diagnosticErrorCategories(err error) []string {
+	if err == nil {
+		return []string{}
+	}
+	result := diagnosticCategories(err.Error())
+	for _, item := range []struct {
+		target   error
+		category string
+	}{
+		{context.DeadlineExceeded, "deadline"}, {context.Canceled, "canceled"},
+		{io.EOF, "transport-eof"}, {io.ErrUnexpectedEOF, "transport-unexpected-eof"},
+		{resolver.ErrIPNotFound, "ip-not-found"}, {resolver.ErrIPv6Disabled, "ipv6-disabled"}, {resolver.ErrIPVersion, "ip-version"},
+	} {
+		if errors.Is(err, item.target) {
+			present := false
+			for _, existing := range result {
+				present = present || existing == item.category
+			}
+			if !present {
+				result = append(result, item.category)
+			}
+		}
+	}
+	var timeout net.Error
+	if errors.As(err, &timeout) && timeout.Timeout() {
+		result = append(result, "timeout")
+	}
+	if len(result) == 0 {
+		result = append(result, "unclassified")
+	}
+	return result
+}
+
+func (capture *dialDiagnosticCapture) recordLookup(value dialer.LookupDiagnostic) {
+	if value.SourcePort <= 0 || capture.port.Load() != int64(value.SourcePort) {
+		return
+	}
+	capture.mu.Lock()
+	defer capture.mu.Unlock()
+	if capture.sourcePort != value.SourcePort || capture.port.Load() != int64(value.SourcePort) || len(capture.records) >= 16 {
+		return
+	}
+	sum := sha256.Sum256([]byte(strings.TrimSuffix(strings.ToLower(value.Host), ".")))
+	network := value.Network
+	if network != "tcp" && network != "tcp4" && network != "tcp6" && network != "udp" && network != "udp4" && network != "udp6" {
+		network = "unknown"
+	}
+	role := value.ResolverRole
+	if role != "proxy" && role != "custom" {
+		role = "unknown"
+	}
+	// 作者 long：结构化hook和源端口context绑定后才能认定为本次lookup；不从日志中的任意域名猜叶节点。
+	capture.records = append(capture.records, dialDiagnostic{Kind: "lookup", AtMillis: bootstrapMillis(), Failed: value.Err != nil,
+		Categories: diagnosticErrorCategories(value.Err), ErrorChain: [][]string{}, EndpointHashes: []string{},
+		LookupHostHash: hex.EncodeToString(sum[:]), LookupNetwork: network, ResolverRole: role, IPv6Disabled: value.IPv6Disabled,
+		Addresses: value.Addresses, IPv4Addresses: value.IPv4Addresses, IPv6Addresses: value.IPv6Addresses,
+		DurationMillis: value.Duration.Milliseconds(), ContextCategories: diagnosticErrorCategories(value.ContextErr)})
+}
+
+func init() {
+	dialer.SetLookupDiagnosticObserver(func(port int) bool { return port > 0 && activeDialDiagnostic.port.Load() == int64(port) }, activeDialDiagnostic.recordLookup)
 }
 
 func (capture *dialDiagnosticCapture) begin(port int) {

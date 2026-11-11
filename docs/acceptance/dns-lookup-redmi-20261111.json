@@ -1,0 +1,1059 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "ce1c423d2daa92d288be5d63c1db17a0da27d251",
+  "coreCommit": "42e9351626ff02b3161e95c96ed820a8e0227cf7",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36
+  },
+  "overallFunctionalGoalComplete": false,
+  "overallNetworkPassed": false,
+  "updaterDeferredByUser": true,
+  "sourceFiles": 1755,
+  "sourceFilesUnchanged": true,
+  "jvm": {
+    "app": {
+      "tests": 616,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 218,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core": {
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "common": {
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "androidDebugReleaseR8DualLintMotionTestPassed": true,
+  "mlKit": {
+    "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+    "registrars": [
+      {
+        "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      },
+      {
+        "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      },
+      {
+        "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+        "publicNoArgConstructor": true,
+        "concrete": true
+      }
+    ],
+    "errors": [],
+    "passed": true
+  },
+  "go": {
+    "parentRacePassed": true,
+    "dnsDialerRouteHttpUpdaterRacePassed": true,
+    "lookupOriginalExpectedRed": true,
+    "lookupFixedPositiveNegativePassed": true,
+    "initialNewDeadlineAssertionFailed": true,
+    "assertionFixedForNetErrorTimeoutCategory": true
+  },
+  "defect": {
+    "id": "KCORE-009",
+    "fixed": true,
+    "originalEmptyAddressesWithoutErrorReproduced": true,
+    "actualOldFirstRequestCauseProven": false,
+    "sourceMatchesLocalUpstream": true
+  },
+  "newDiagnostics": {
+    "sourcePortContextAssociatedLookup": true,
+    "actualNetworkAndResolverRole": true,
+    "runtimeDnsSwitches": true,
+    "lookupAddressFamilyCounts": true,
+    "typedSafeErrorCategories": true,
+    "dnsAddressRecordCount": true,
+    "perDnsQuerySocketAttributionClaimed": false,
+    "rawEndpointOrErrorAddedToDiagnostic": false
+  },
+  "initialRealNetwork": {
+    "requests": [
+      {
+        "group": "dns-startup-20261111",
+        "command": "start-dns-6",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 3,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 56392,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 437
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "dns-startup-20261111",
+        "command": "start-dns-1",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 7,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 23334,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 1160
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": [
+          {
+            "type": "A",
+            "categories": [
+              "dns-all-failed"
+            ],
+            "addressAnswers": 0,
+            "upstreamKnown": false
+          },
+          {
+            "type": "AAAA",
+            "categories": [
+              "dns-all-failed"
+            ],
+            "addressAnswers": 0,
+            "upstreamKnown": false
+          },
+          {
+            "type": "AAAA",
+            "categories": [
+              "dns-all-failed"
+            ],
+            "addressAnswers": 0,
+            "upstreamKnown": false
+          }
+        ]
+      },
+      {
+        "group": "dns-startup-20261111",
+        "command": "start-dns-4",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 4,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 46394,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 1359
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "dns-startup-20261111",
+        "command": "start-dns-3",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 5,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 40303,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 1313
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "dns-startup-20261111",
+        "command": "start-dns-2",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 7,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 35272,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 320
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "dns-startup-20261111",
+        "command": "start-dns-5",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 4,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 51351,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 23,
+            "ipv4Addresses": 23,
+            "ipv6Addresses": 0,
+            "durationMillis": 787
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "recovery2",
+        "command": "start-dns14-3",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 5,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 270680,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 391
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "recovery2",
+        "command": "recovered-dns14-1",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 6944,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 9685,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "b2af131368b833149d8254d518fe38c32f184a327c5ead8290b6acdf99358720",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "recovery2",
+        "command": "checkpoint-dns14-1",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 58951,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 695491,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 23,
+            "ipv4Addresses": 23,
+            "ipv6Addresses": 0
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "recovery2",
+        "command": "checkpoint-dns14-2",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 76902,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 79633,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "f27ebfe40042ee3924871fea8bb0d48bcb5c4989fae024ab2d80904246660a90",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 23,
+            "ipv4Addresses": 23,
+            "ipv6Addresses": 0,
+            "durationMillis": 1
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "recovery2",
+        "command": "start-dns14-2",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 5,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 717698,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0,
+            "durationMillis": 1411
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "recovery2",
+        "command": "start-dns14-1",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 12,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 637573,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 23,
+            "ipv4Addresses": 23,
+            "ipv6Addresses": 0,
+            "durationMillis": 1001
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "recovery2",
+        "command": "checkpoint-dns14-final",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 79375,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 349640,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "f27ebfe40042ee3924871fea8bb0d48bcb5c4989fae024ab2d80904246660a90",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 33,
+            "ipv4Addresses": 33,
+            "ipv6Addresses": 0
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      },
+      {
+        "group": "recovery2",
+        "command": "checkpoint-dns14-5",
+        "passed": true,
+        "http": 200,
+        "sameSocket": true,
+        "nonDirect": true,
+        "afterRunningMs": 196937,
+        "lookups": [
+          {
+            "kind": "lookup",
+            "atMillis": 199675,
+            "failed": false,
+            "categories": [],
+            "errorChain": [],
+            "endpointHashes": [],
+            "lookupHostHash": "f27ebfe40042ee3924871fea8bb0d48bcb5c4989fae024ab2d80904246660a90",
+            "lookupNetwork": "tcp",
+            "resolverRole": "proxy",
+            "ipv6Disabled": false,
+            "addresses": 23,
+            "ipv4Addresses": 23,
+            "ipv6Addresses": 0
+          }
+        ],
+        "dnsOverflow": 0,
+        "dnsFailedCandidates": []
+      }
+    ],
+    "passed": 14,
+    "failed": 0,
+    "historicFailureReproduced": false,
+    "rootCauseClosed": false,
+    "priorSevenOfEightPreserved": true
+  },
+  "semanticRegression": {
+    "firstBatch": {
+      "tests": 12,
+      "passed": 11,
+      "failed": 1,
+      "cause": "driver missing required kclashAcceptanceUrl1 before starting core"
+    },
+    "finalSameSource": {
+      "tests": 12,
+      "passed": 12,
+      "failed": 0,
+      "runningHttpsRequests": 2
+    },
+    "countsNotAddedAcrossBatches": true
+  },
+  "providerRegression": [
+    {
+      "case": "before",
+      "passed": false,
+      "failedDriverStage": "verify-and-restore",
+      "requests": [
+        {
+          "ownerStep": "prepare-network",
+          "passed": true,
+          "http": 200,
+          "dialDiagnostic": [
+            {
+              "kind": "lookup",
+              "atMillis": 4751,
+              "failed": false,
+              "categories": [],
+              "errorChain": [],
+              "endpointHashes": [],
+              "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+              "lookupNetwork": "tcp",
+              "resolverRole": "proxy",
+              "ipv6Disabled": false,
+              "addresses": 33,
+              "ipv4Addresses": 33,
+              "ipv6Addresses": 0,
+              "durationMillis": 550
+            },
+            {
+              "atMillis": 5742,
+              "failed": false,
+              "categories": [],
+              "errorChain": [],
+              "endpointHashes": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0
+            }
+          ],
+          "phases": [
+            {
+              "name": "existing-connections",
+              "startElapsedMs": 94626026,
+              "durationMs": 4,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-level",
+              "startElapsedMs": 94626030,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-start",
+              "startElapsedMs": 94626032,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "socks-connect",
+              "startElapsedMs": 94626130,
+              "durationMs": 3,
+              "passed": true
+            },
+            {
+              "name": "tls-create",
+              "startElapsedMs": 94626135,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "tls-handshake",
+              "startElapsedMs": 94626141,
+              "durationMs": 2862,
+              "passed": true
+            },
+            {
+              "name": "http-write",
+              "startElapsedMs": 94629003,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "http-status",
+              "startElapsedMs": 94629005,
+              "durationMs": 314,
+              "passed": true
+            },
+            {
+              "name": "http-headers",
+              "startElapsedMs": 94629320,
+              "durationMs": 0,
+              "passed": true
+            },
+            {
+              "name": "connection-attribution",
+              "startElapsedMs": 94629321,
+              "durationMs": 0,
+              "passed": true
+            }
+          ],
+          "diagnosticLogRestored": true,
+          "dnsOverflow": 0,
+          "eventStatsBefore": {
+            "droppedEvents": 0,
+            "emittedEvents": 12,
+            "lastEventAtMillis": 1794382314406,
+            "parsedBatches": 5,
+            "parsedEvents": 12,
+            "truncatedEvents": 0
+          },
+          "eventStatsAfter": {
+            "droppedEvents": 0,
+            "emittedEvents": 88,
+            "lastEventAtMillis": 1794382317626,
+            "parsedBatches": 19,
+            "parsedEvents": 88,
+            "truncatedEvents": 0
+          }
+        },
+        {
+          "ownerStep": "verify-restored-network",
+          "passed": false,
+          "failedStep": "tls-handshake",
+          "failureType": "SocketTimeoutException",
+          "dialDiagnostic": [
+            {
+              "kind": "lookup",
+              "atMillis": 2105,
+              "failed": false,
+              "categories": [],
+              "errorChain": [],
+              "endpointHashes": [],
+              "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+              "lookupNetwork": "tcp",
+              "resolverRole": "proxy",
+              "ipv6Disabled": false,
+              "addresses": 33,
+              "ipv4Addresses": 33,
+              "ipv6Addresses": 0,
+              "durationMillis": 181
+            },
+            {
+              "atMillis": 3456,
+              "failed": false,
+              "categories": [],
+              "errorChain": [],
+              "endpointHashes": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0
+            }
+          ],
+          "phases": [
+            {
+              "name": "existing-connections",
+              "startElapsedMs": 94636410,
+              "durationMs": 3,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-level",
+              "startElapsedMs": 94636413,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-start",
+              "startElapsedMs": 94636415,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "socks-connect",
+              "startElapsedMs": 94636500,
+              "durationMs": 4,
+              "passed": true
+            },
+            {
+              "name": "tls-create",
+              "startElapsedMs": 94636510,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "tls-handshake",
+              "startElapsedMs": 94636517,
+              "durationMs": 20012,
+              "passed": false,
+              "type": "SocketTimeoutException"
+            }
+          ],
+          "diagnosticLogRestored": true,
+          "dnsOverflow": 0,
+          "eventStatsBefore": {
+            "droppedEvents": 0,
+            "emittedEvents": 10,
+            "lastEventAtMillis": 1794382324754,
+            "parsedBatches": 4,
+            "parsedEvents": 10,
+            "truncatedEvents": 0
+          },
+          "eventStatsAfter": {
+            "droppedEvents": 0,
+            "emittedEvents": 127,
+            "lastEventAtMillis": 1794382344595,
+            "parsedBatches": 23,
+            "parsedEvents": 127,
+            "truncatedEvents": 0
+          }
+        }
+      ],
+      "dataRestored": true,
+      "backupCleared": true,
+      "kcore009CauseEstablished": false
+    },
+    {
+      "case": "after",
+      "passed": false,
+      "failedDriverStage": "prepare",
+      "requests": [
+        {
+          "ownerStep": "prepare-network",
+          "passed": false,
+          "failedStep": "tls-handshake",
+          "failureType": "SocketTimeoutException",
+          "dialDiagnostic": [
+            {
+              "kind": "lookup",
+              "atMillis": 4393,
+              "failed": false,
+              "categories": [],
+              "errorChain": [],
+              "endpointHashes": [],
+              "lookupHostHash": "a780c0d58ac0f327ded9de41056736544468ac6b4b709e5841c70b07bfca2a75",
+              "lookupNetwork": "tcp",
+              "resolverRole": "proxy",
+              "ipv6Disabled": false,
+              "addresses": 33,
+              "ipv4Addresses": 33,
+              "ipv6Addresses": 0,
+              "durationMillis": 772
+            },
+            {
+              "atMillis": 5796,
+              "failed": false,
+              "categories": [],
+              "errorChain": [],
+              "endpointHashes": [],
+              "ipv6Disabled": false,
+              "addresses": 0,
+              "ipv4Addresses": 0,
+              "ipv6Addresses": 0
+            }
+          ],
+          "phases": [
+            {
+              "name": "existing-connections",
+              "startElapsedMs": 95395230,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-level",
+              "startElapsedMs": 95395232,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "diagnostic-log-start",
+              "startElapsedMs": 95395234,
+              "durationMs": 1,
+              "passed": true
+            },
+            {
+              "name": "socks-connect",
+              "startElapsedMs": 95395331,
+              "durationMs": 3,
+              "passed": true
+            },
+            {
+              "name": "tls-create",
+              "startElapsedMs": 95395335,
+              "durationMs": 2,
+              "passed": true
+            },
+            {
+              "name": "tls-handshake",
+              "startElapsedMs": 95395339,
+              "durationMs": 20024,
+              "passed": false,
+              "type": "SocketTimeoutException"
+            }
+          ],
+          "diagnosticLogRestored": true,
+          "dnsOverflow": 0,
+          "eventStatsBefore": {
+            "droppedEvents": 0,
+            "emittedEvents": 0,
+            "lastEventAtMillis": 0,
+            "parsedBatches": 2,
+            "parsedEvents": 0,
+            "truncatedEvents": 0
+          },
+          "eventStatsAfter": {
+            "droppedEvents": 0,
+            "emittedEvents": 196,
+            "lastEventAtMillis": 1794383103445,
+            "parsedBatches": 22,
+            "parsedEvents": 196,
+            "truncatedEvents": 0
+          }
+        }
+      ],
+      "dataRestored": true,
+      "backupCleared": true,
+      "kcore009CauseEstablished": false
+    }
+  ],
+  "transportHarnessFailure": {
+    "oldCommandsReusedToken": true,
+    "shaGateRejected": true,
+    "failedBeforeNetwork": true,
+    "exactReportsRecoveredAndRemoved": 2,
+    "fixedCollectorFiltersCurrentCommandAndUsesShaFilename": true
+  },
+  "formalBoundary": {
+    "before": "dns-before1",
+    "after": "dns-after2",
+    "uidPreserved": true,
+    "schemaPreserved": true,
+    "tablesSame": {
+      "profiles": true,
+      "app_preferences": true,
+      "scripts": true,
+      "proxy_delay_results": true
+    },
+    "allProfileFileBytesHashMtimePreserved": true,
+    "beforeCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "afterCounts": {
+      "profiles": 2,
+      "app_preferences": 2,
+      "scripts": 0,
+      "proxy_delay_results": 0
+    },
+    "versionBefore": "0.1.2",
+    "versionAfter": "0.1.2",
+    "passed": true
+  },
+  "cleanup": {
+    "sourceFiles": 1755,
+    "sourceUnchanged": true,
+    "noAppServices": true,
+    "externalSnapshotDirectoryEmpty": true,
+    "original": {
+      "sha256": "353e45e66a5932f2939ca1ea68219a359c9047faac121b2c9fc17ef30444c37e",
+      "bytes": 35165,
+      "mtimeNs": 1793892313800697973
+    },
+    "formalNotReinstalled": true,
+    "motionRetainedForInvestigation": true,
+    "published": false
+  },
+  "limitations": [
+    "Initial six starts plus recovery window 14/14 is limited green scope; Provider before/after both failed real TLS and overall network remains failed",
+    "Provider before has one successful preparation then a post-recovery TLS 20s timeout; after fails preparation TLS before any death",
+    "Failed TLS cases have successful node lookup 33 IPv4 and core dial, so cannot call them DNS failure",
+    "No proof KCORE-009 caused old node-dns/TLS or Provider historical timeout",
+    "No server/packet trace proving why tunneled TLS stalls; no node/URL/retry delay changes",
+    "Low API/cellular/OEM and other historical metadata/preferences remain; updater deferred; no release"
+  ],
+  "rawEvidence": [
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/source1.json",
+      "sha256": "ec5cc87a213fc45a3670d87d94430c13afcf3577dbe95c8cdd68858cdf9402fb",
+      "bytes": 220365
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/source-provenance.json",
+      "sha256": "9d146d5c9b011ee550349b3ffcb5af68ae83b5016733c2985feb9e8e1a7bfc89",
+      "bytes": 381
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/source-validation1.json",
+      "sha256": "74a495efc496c36d80bdf2df216db11dbca910e8e9054cd3dad05aeb26f129b0",
+      "bytes": 253
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/lookup-red1.log",
+      "sha256": "980e8a7abb6115539263616c3c15dcd940cf8e8d94957bb598addd3e36a5c101",
+      "bytes": 214
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/lookup-green1.log",
+      "sha256": "0d964b68677477988c1f1a4c9359b9b93b3d9d482a1036373feaa934f3046bab",
+      "bytes": 101
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/go1.log",
+      "sha256": "12f5c4e664788cb4334f8e4a5765c9a8d6c6a7eecd1ebb2fa2a826e219c42a2a",
+      "bytes": 5900
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/go2.log",
+      "sha256": "0be8dc9d1d8536d67755c812602ebd0774a38cef80c09132f5fb8801c6a63da7",
+      "bytes": 320
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/android1.log",
+      "sha256": "1fa7e4f3b337ffcac4c3dc23b7e7c27a59279b5e06d6daad7359240d4ac22132",
+      "bytes": 22762
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/motion1.log",
+      "sha256": "0e591861263b8b736f98f918710d39b321cd2c5e4ff2da01a38ba31f411eae3a",
+      "bytes": 13649
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/mlkit1.json",
+      "sha256": "6371512ad3aa342f5732145fd0e4d1000e475a2fbf388580a2379478b034dee0",
+      "bytes": 588
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/jvm1-summary.json",
+      "sha256": "8b3b08f4230e7c6feac6b3aca4f5fd9d575df76a76befe1944bf9bdcf0bd6929",
+      "bytes": 357
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/installation1.json",
+      "sha256": "5c375605aec3b3e36e992f79da7363cbe07941fd38f2b6096dad604443c818b5",
+      "bytes": 385
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/starts-terminal.json",
+      "sha256": "5e14afed0fbd9fdf572795a9114490d72449e768cfa24d56e9f09522908f94a5",
+      "bytes": 71
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/starts-timeline.json",
+      "sha256": "8824d9db7a736d636d93df53e941fd7d966157587cba50a500a3cd98699ebbc5",
+      "bytes": 5205
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/network-summary1.json",
+      "sha256": "4fba4f3865d3e17529d9612b314f18daa8d7b184a9c9f842cc6a1d18f6f7022d",
+      "bytes": 11709
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/recovery-window/collector-failure-cleanup.json",
+      "sha256": "6dd3495af6ad5c4324d0536e8453decb097053fe38b18ed9b653acb34252e195",
+      "bytes": 444
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/recovery2/terminal.json",
+      "sha256": "9378d037bafc7a5748a9e494858507c3a2f9e5a9c9cc6cab2735d7be2f47e2ee",
+      "bytes": 72
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/recovery2/timeline.json",
+      "sha256": "5bb5490178ecf4ffb8413f23e6b2bccccd001b60d0e2c9df357b0bf899a98f42",
+      "bytes": 2762
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/recovery2/recovery.json",
+      "sha256": "a77473903ab1919fd1bc9e12c833ed8f2c286519f43a96531114968da1afacef",
+      "bytes": 96
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/semantic-regression1.log",
+      "sha256": "500a3b25bca0a3f64f84061b9214731514fbca89b46d03c8839c8cc70793ad8c",
+      "bytes": 13639
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/semantic-regression2.log",
+      "sha256": "b1949262681a32b4df3de3a6c836113f3455b57bdf64365173b4e2e121fdb0b5",
+      "bytes": 10725
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/provider-before/result.json",
+      "sha256": "9d22a4f209d61fb04429d59e45e6e3affba2b6ae2b55d2712df6c2c1d44e461e",
+      "bytes": 2621
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/provider-before/events.json",
+      "sha256": "117cb798ad814fd4e2044fbc8a96c4570b1c76e6cda3f31d37c361ba64d82be0",
+      "bytes": 63450
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/provider-after/result.json",
+      "sha256": "5fa3a2427a5990ecf21ef6bcd0019d899f2dbf6a00af3580b8e0ed536bca8b0b",
+      "bytes": 1507
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/provider-after/events.json",
+      "sha256": "0d797aaf799bd6f7e2fb8997bb771d0053cc2c32d62f03d8fe044cde5146cfa3",
+      "bytes": 35471
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/provider-summary2.json",
+      "sha256": "1238e6adef30d5c41e734f1fbf524cde8cb8583b7844c25b7a122988f5305a0f",
+      "bytes": 8867
+    },
+    {
+      "path": "acceptance-artifacts/dns-startup-20261111/cleanup1.json",
+      "sha256": "6298f87cf9ae6427c3badf1c41e50942717c53add567256f6d317b149930296a",
+      "bytes": 374
+    },
+    {
+      "path": "acceptance-artifacts/app-update-20261111/dns-formal-held2.json",
+      "sha256": "a0fd19c442fd522c606ebe78c4e650d548082369a645a1329044cd4f56dd607e",
+      "bytes": 588
+    }
+  ]
+}

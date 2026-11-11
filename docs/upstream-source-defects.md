@@ -88,6 +88,13 @@
 - 修复提交：`a2136a6d34ac7c6144ffb75f0e13c0b8735dfca2`。共享Validate在监听/拨号/客户端及VMess构造前执行，保留默认值和合法边界；同一约束用于只读预检。
 - 验证与撤销条件：Go正反例/父模块与相关包race、VMess MKCP/Mekya定向端到端race通过；额外上游全入站测试存在回环超时，不称全套通过。仅随chen08209/Clash.Meta:FlClash同步，等上游等价修复并通过这些入口回归后撤销。见[缺陷专页](transport-config-validation-defect.md)、[本组证据](acceptance/core-semantic-extended-redmi-20261111.json)。
 
+## KCORE-009：双栈等待结束误报空地址成功
+
+- 固定来源：`a2136a6d`与本地`origin/FlClash=024245dc`的dns/resolver.go逐字节相同；A失败且AAAA未在追加窗口内完成时，LookupIP错误返回空地址/nil，原DNS失败丢失。
+- 红绿证据：内存dnsClient以通道控制AAAA，原实现明确`count=0 errorPresent=false`；修复后返回原错误，正例仍保留已完成IPv6地址。不增加超时/请求/重试，不额外包装成不可重试错误。
+- 固定修复：`42e9351626ff02b3161e95c96ed820a8e0227cf7`已推自有fork，同时增加显式源端口context的只读lookup观察点，宿主只留类别/摘要。不是旧TLS EOF或新node-dns现场的已证实原因。
+- 复查：只随chen08209/Clash.Meta:FlClash同步；等价修复须通过空地址错误/IPv6正例、诊断默认停采/端口隔离、无原文输出及Go竞态。原始来源/取证边界见[专页](dns-lookup-empty-success-defect.md)。
+
 ## 未定因果调查：Always-on 首请求 TLS EOF
 
 已保留旧包冷启动失败、随后同会话物理/TUN HTTPS 成功及修改版有限轮次通过证据。KCORE-001 修复静态可证明的保护缺口，KCORE-002/003 修复控制器生命周期；目前不能把这些修复直接认定为此前 TLS EOF 的确定根因。长期稳定性、蜂窝和其他 OEM 场景仍按 roadmap 单独验收。

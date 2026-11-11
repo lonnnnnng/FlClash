@@ -1,8 +1,10 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 	"reflect"
 	"testing"
@@ -104,5 +106,20 @@ func TestNewDnsQueryNamesUnknownTypes(t *testing.T) {
 
 	if query.Type != "TYPE65280" || query.Rcode != "NXDOMAIN" {
 		t.Fatalf("type = %q, rcode = %q", query.Type, query.Rcode)
+	}
+}
+
+// 作者 long：成功Exchange的CNAME不是可拨地址，失败类别须保留结构化deadline而不靠原文摘要猜错误。
+func TestDnsQueryCountsAddressRecordsAndClassifiesWrappedDeadline(t *testing.T) {
+	query := newDnsQuery(dns.QueryRecord{Question: dnsQuestion("private.example", D.TypeA), Start: time.Now(),
+		Err: fmt.Errorf("all DNS requests failed: %w", context.DeadlineExceeded)})
+	if !reflect.DeepEqual(query.ErrorCategories, []string{"dns-all-failed", "deadline", "timeout"}) {
+		t.Fatal("deadline classification lost")
+	}
+	resp := new(D.Msg)
+	resp.Answer = []D.RR{&D.CNAME{Hdr: D.RR_Header{Name: "private.example.", Rrtype: D.TypeCNAME}, Target: "edge.example."}}
+	query = newDnsQuery(dns.QueryRecord{Question: dnsQuestion("private.example", D.TypeAAAA), Msg: resp, Start: time.Now()})
+	if len(query.Answers) != 1 || query.AddressAnswers != 0 || len(query.ErrorCategories) != 0 {
+		t.Fatal("CNAME incorrectly counted as usable address")
 	}
 }

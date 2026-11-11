@@ -57,6 +57,8 @@ Provider恢复诊断使用`python3 tool/android_provider_runtime_acceptance.py -
 
 逐键状态报告使用`python3 tool/android_state_key_report.py <本轮窗口目录> --output <报告.json>`；输入需新格式的auditDelaySnapshot/auditSharedPreferenceSnapshot、相同sessionDigest及完整audit/*.jsonl.gz，不能分析旧SHA快照或混合审计会话。测试`python3 -m unittest discover -s tool -p test_android_state_key_report.py -v`。大于24KiB的Stability回执为verified-file-v1，收集器须限制独立motion包stability-reports路径、精确token-command-SHA名称与大小，读回校验后只删除该文件；旧logcat分片收集器不可直接复用。当前完整采集驱动和失败批次在`../acceptance-artifacts/functional-key-audit-20261111/`；协议/证据边界见`docs/state-audit-key-join.md`。Provider验收须分别观察runtime-ready/service-ready，不能在RUNNING第一笔Flow后即时假设其他状态同时发布；独立首请求仍只等RUNNING，不添加固定延迟。
 
+复用Stability输入token时，collector必须只读取当前command及其子阶段，传输副本名称带正文SHA，不能让旧已删除回执或同名报告参与本轮SHA核对。修正后的本机示例为`../acceptance-artifacts/dns-startup-20261111/recovery2/probe.py`，原失败留在recovery-window。DNS诊断区分`kind=lookup`（源端口context关联、实际network/地址数/父context类别）与旧日志分类记录；DNS事件仍只是候选，不能凭同域名/时间窗称socket归属。KCORE-009及最新两种失败阶段见`docs/dns-lookup-empty-success-defect.md`。
+
 ## 菜单无线程采样对照（KUI-035）
 
 精确选择 `VisualMotionNaturalInstrumentedTest#lightMenuWindowFramesWithoutThreadSampling` 或 `#darkMenuWindowFramesWithoutThreadSampling`，显式设置 `kclashMenuWindowFrames=true`、`kclashCloseWindowCapture=true`、`kclashMotionInlineFrames=true`、`kclashCapturePng=false` 和唯一安全 `kclashMotionRun`；不得启用线程/方法采样或录屏。每方法三轮开关，预期6份内联帧表、3次关闭留窗、0份线程计数。与线程诊断分开报告，A-B-A按窗口原始计数比较，关闭留窗不是正式R8场景。固定范围候选无稳定收益已撤回，见 `docs/member-picker-alignment-menu-investigation.md`。

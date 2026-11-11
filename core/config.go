@@ -89,6 +89,20 @@ func handleGetLanConfig(_ any) (*LanConfig, error) {
 	return &LanConfig{AllowLan: currentConfig.General.AllowLan, MixedPort: currentConfig.General.MixedPort}, nil
 }
 
+// 作者 long：诊断读取已应用配置及实际解析开关，磁盘候选值不能代替热更新后的状态；只投影布尔值，不暴露DNS地址。
+func dnsDiagnosticState() map[string]any {
+	configMu.Lock()
+	defer configMu.Unlock()
+	state := map[string]any{"configured": currentConfig != nil, "ipv6Disabled": resolver.DisableIPv6,
+		"proxyResolverPresent": resolver.ProxyServerHostResolver != nil}
+	if currentConfig != nil && currentConfig.General != nil && currentConfig.DNS != nil {
+		state["generalIpv6"] = currentConfig.General.IPv6
+		state["dnsIpv6"] = currentConfig.DNS.IPv6
+		state["dnsEnabled"] = currentConfig.DNS.Enable
+	}
+	return state
+}
+
 func handleGetProxyDefinition(name string) (map[string]any, error) {
 	raw, err := handleGetConfig(runningConfigPath())
 	if err != nil {

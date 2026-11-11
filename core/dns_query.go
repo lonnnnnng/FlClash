@@ -9,16 +9,18 @@ import (
 )
 
 type DnsQuery struct {
-	Domain    string    `json:"domain"`
-	Type      string    `json:"type"`
-	Initiator string    `json:"initiator"`
-	Upstream  string    `json:"upstream,omitempty"`
-	Cached    bool      `json:"cached,omitempty"`
-	Answers   []string  `json:"answers"`
-	Rcode     string    `json:"rcode,omitempty"`
-	Error     string    `json:"error,omitempty"`
-	Delay     int64     `json:"delay"`
-	Time      time.Time `json:"time"`
+	Domain          string    `json:"domain"`
+	Type            string    `json:"type"`
+	Initiator       string    `json:"initiator"`
+	Upstream        string    `json:"upstream,omitempty"`
+	Cached          bool      `json:"cached,omitempty"`
+	Answers         []string  `json:"answers"`
+	Rcode           string    `json:"rcode,omitempty"`
+	Error           string    `json:"error,omitempty"`
+	ErrorCategories []string  `json:"errorCategories,omitempty"`
+	AddressAnswers  int       `json:"addressAnswers"`
+	Delay           int64     `json:"delay"`
+	Time            time.Time `json:"time"`
 }
 
 func newDnsQuery(record dns.QueryRecord) DnsQuery {
@@ -34,6 +36,7 @@ func newDnsQuery(record dns.QueryRecord) DnsQuery {
 	}
 	if record.Err != nil {
 		query.Error = record.Err.Error()
+		query.ErrorCategories = diagnosticErrorCategories(record.Err)
 	}
 	if record.Msg == nil {
 		return query
@@ -41,6 +44,10 @@ func newDnsQuery(record dns.QueryRecord) DnsQuery {
 	query.Rcode = D.RcodeToString[record.Msg.Rcode]
 	for _, rr := range record.Msg.Answer {
 		query.Answers = append(query.Answers, dnsAnswerValue(rr))
+		switch rr.(type) {
+		case *D.A, *D.AAAA:
+			query.AddressAnswers++
+		}
 	}
 	return query
 }

@@ -924,6 +924,8 @@ class CoreBridge {
                             error = data.string("error"),
                             delay = data.long("delay").coerceAtLeast(0L),
                             time = data.string("time"),
+                            errorCategories = data.array("errorCategories").stringList().filter { it in DNS_DIAGNOSTIC_CATEGORIES }.distinct().take(24),
+                            addressAnswers = data.long("addressAnswers").coerceIn(0L, Int.MAX_VALUE.toLong()).toInt(),
                         ),
                     )
                 }
@@ -1046,6 +1048,11 @@ data class CoreTrafficUpdate(
     val download: Long,
 )
 
+private val DNS_DIAGNOSTIC_CATEGORIES = setOf("node-dns", "no-host", "dns-all-failed", "ip-not-found", "no-ip",
+    "ipv6-disabled", "ip-version", "deadline", "io-timeout", "read-udp", "read-tcp", "dial-udp", "dial-tcp",
+    "canceled", "refused", "unreachable", "protect-rejected", "protect-unavailable", "loop", "transport-eof",
+    "transport-unexpected-eof", "timeout", "unclassified")
+
 data class CoreDnsQuery(
     val domain: String,
     val type: String,
@@ -1057,6 +1064,8 @@ data class CoreDnsQuery(
     val error: String,
     val delay: Long,
     val time: String,
+    val errorCategories: List<String> = emptyList(),
+    val addressAnswers: Int = 0,
 )
 
 data class ProxyGroupsSnapshot(

@@ -14,6 +14,14 @@ import kotlinx.coroutines.yield
 import com.google.gson.JsonParser
 
 class CoreBridgeParsingTest {
+    @Test fun dnsDiagnosticCategoriesKeepOnlyAllowlistedValuesAndCountAddressesSeparately() {
+        val raw = """{"method":"message","arguments":[{"type":"dns","data":{"domain":"fixture.test","type":"A","answers":["alias.test"],"errorCategories":["deadline","private-secret","dns-all-failed","deadline"],"addressAnswers":-1}}]}"""
+        val event = CoreBridge().parseEvents(raw.toByteArray()).single() as CoreEvent.Dns
+        assertEquals(listOf("deadline", "dns-all-failed"), event.query.errorCategories)
+        assertEquals(0, event.query.addressAnswers)
+        assertEquals(listOf("alias.test"), event.query.answers)
+        assertFalse(event.query.errorCategories.toString().contains("private-secret"))
+    }
     @Test fun providerMembershipOnlyKeepsValidNonemptyStringMetadata() {
         val nodes = JsonParser.parseString("""{"a":{"provider-name":"fixture"},"inline":{"type":"Vless"},"blank":{"provider-name":" "},"number":{"provider-name":4},"object":{"provider-name":{}},"null":null}""").asJsonObject
         assertEquals(setOf("a"), CoreBridge().parseProviderProxies(nodes))
