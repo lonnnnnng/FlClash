@@ -13,6 +13,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.service.YamlErrorLocation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 
 data class ProfileDocumentEditorState(val ownerId: Long? = null, val session: Long = 0, val remote: Boolean = false,
     val title: String = "配置正文", val original: String = "", val content: String = "", val saving: Boolean = false,
@@ -31,8 +34,23 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
     var query by remember { mutableStateOf("") }
     var replacement by remember { mutableStateOf("") }
     var exiting by remember { mutableStateOf(false) }
-    val undo = remember(state.session) { mutableStateListOf<String>() }
-    val redo = remember(state.session) { mutableStateListOf<String>() }
+    val edits = remember(state.session) { ProfileDocumentHistory() }
+    val documentText = value.text
+    // 作者 long：长正文匹配计数不能阻塞输入；正文或查询变化会取消旧任务，旧结果不能覆盖新查询。
+    val matches by produceState<Int?>(null, query, documentText) {
+        this.value = null
+        this.value = withContext(Dispatchers.Default) {
+            var count = 0
+            var offset = 0
+            if (query.isNotEmpty()) while (offset <= documentText.length - query.length) {
+                ensureActive()
+                val found = documentText.indexOf(query, offset, ignoreCase = true)
+                if (found < 0) break
+                count++; offset = found + query.length
+            }
+            count
+        }
+    }
     val keyboard = LocalSoftwareKeyboardController.current
     fun locateError() {
         val location = state.errorLocation ?: return
@@ -45,10 +63,7 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
     fun change(next: TextFieldValue) {
         val textChanged = next.text != value.text
         if (textChanged) {
-            undo.add(value.text)
-            // 作者 long：配置可达8MiB，历史有总字符预算，不能把每次按键的整份副本无限保留。
-            while (undo.size > 20 || undo.sumOf { it.length.toLong() } > 2_000_000) undo.removeAt(0)
-            redo.clear()
+            edits.record(value.text, next.text)
         }
         value = next
         // 作者 long：选择文字、移动光标和复制只改变选区；清错误与写加密草稿只由正文编辑触发。
@@ -78,7 +93,7 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
                 Row(Modifier.padding(horizontal = 16.dp)) {
                     TextButton({ find(false) }, enabled = query.isNotEmpty()) { Text("上一处") }
                     TextButton({ find(true) }, enabled = query.isNotEmpty(), modifier = Modifier.testTag("profile_document_next")) { Text("下一处") }
-                    Text(if (query.isEmpty()) "" else "${Regex(Regex.escape(query), RegexOption.IGNORE_CASE).findAll(value.text).count()} 处匹配", style = MaterialTheme.typography.bodySmall)
+                    Text(if (query.isEmpty()) "" else matches?.let { "$it 处匹配" } ?: "正在查找…", style = MaterialTheme.typography.bodySmall)
                 }
                 Row(Modifier.padding(horizontal = 16.dp)) {
                     OutlinedTextField(replacement, { replacement = it }, Modifier.weight(1f).testTag("profile_document_replacement"), label = { Text("替换为") }, singleLine = true)
@@ -101,11 +116,11 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
             }
             AppDropdownMenu(history, { history = false }, source = historySource) {
                 AppDropdownMenuItem({ Text("撤销") }, {
-                    history = false; redo.add(value.text); value = TextFieldValue(undo.removeAt(undo.lastIndex)); onChange(value.text)
-                }, enabled = !state.saving && undo.isNotEmpty(), modifier = Modifier.testTag("profile_document_undo"))
+                    history = false; value = TextFieldValue(edits.undo(value.text)); onChange(value.text)
+                }, enabled = !state.saving && edits.canUndo, modifier = Modifier.testTag("profile_document_undo"))
                 AppDropdownMenuItem({ Text("重做") }, {
-                    history = false; undo.add(value.text); value = TextFieldValue(redo.removeAt(redo.lastIndex)); onChange(value.text)
-                }, enabled = !state.saving && redo.isNotEmpty(), modifier = Modifier.testTag("profile_document_redo"))
+                    history = false; value = TextFieldValue(edits.redo(value.text)); onChange(value.text)
+                }, enabled = !state.saving && edits.canRedo, modifier = Modifier.testTag("profile_document_redo"))
             }
         }
         IconButton({ search = !search }, enabled = !state.saving, modifier = Modifier.testTag("profile_document_find")) { Icon(Icons.Outlined.Search, null) }

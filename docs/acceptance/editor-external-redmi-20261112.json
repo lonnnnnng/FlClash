@@ -1,0 +1,1045 @@
+{
+  "id": "KUI-040",
+  "date": "2026-11-12",
+  "baselineCommit": "1ed65de9",
+  "scope": "8MiB document functional limit and real MacroDroid Activity entry; whole performance remains partial",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "orientation": "portrait",
+    "fontScale": 1,
+    "emulatorUsed": false
+  },
+  "sourceProtection": {
+    "localFile": "../1.yaml",
+    "bytes": 34220,
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "uploaded": false,
+    "fixture": "authorized source plus comment padding only in memory; saved only to owned isolated app repository for acceptance"
+  },
+  "productionSources": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileCodeField.kt",
+      "sha256": "e15eb9f1c8e54a869b20e3b36a6c808ba137179a396409d03fc1345f96c47d4a"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileCodeWindow.kt",
+      "sha256": "0b312e48aa826ee1bd6df1c582a3ab542b7ec384217f541afa141c74f1f58ba4"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDocumentHistory.kt",
+      "sha256": "c46f2bb6b8703fcf4cdef0b41ed9ca8a90a5373faafdaf01c3db0eb49df1b1e2"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileDocumentEditor.kt",
+      "sha256": "252cd90b9cada5a11c21a82659b9c02956ffe5f0b27593381c8dd6569c31668e"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilesViewModel.kt",
+      "sha256": "d5424236185aab4214e9eaee915ebdf98b76cc99171e72c10c3b8ffe1e9ec84a"
+    }
+  ],
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 617,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 219,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "uniqueJvmTests": 909,
+    "includesGradleReuse": true,
+    "debug": "PASS",
+    "releaseR8": "PASS_UNSIGNED_NOT_INSTALLED",
+    "motionNonDebug": "PASS",
+    "testApk": "PASS",
+    "lint": {
+      "debug": {
+        "Warning": 74,
+        "Hint": 14,
+        "errors": 0
+      },
+      "release": {
+        "Warning": 70,
+        "Hint": 13,
+        "errors": 0
+      }
+    },
+    "commands": [
+      "./gradlew test :app:assembleDebug :app:assembleRelease --no-daemon --max-workers=2 -Ptarget-platform=android-arm64",
+      "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon --max-workers=2 -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+      "./gradlew :app:lintDebug :app:lintRelease --no-daemon --max-workers=2 -Ptarget-platform=android-arm64"
+    ],
+    "artifacts": [
+      {
+        "file": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "bytes": 83469329,
+        "sha256": "0678315b4e46ce53c5d06a3cfeb7189d029d864cbf588f8b0628d33a108914bb"
+      },
+      {
+        "file": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+        "bytes": 48445992,
+        "sha256": "01f86f7bde5d6372e66c9c8024b3f5a92e57852a952519db29ceee306b95354e"
+      },
+      {
+        "file": "android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+        "bytes": 66200057,
+        "sha256": "909733719a2ca8089c8ff2292f5ae7abb25341ecbfbe6a3022cd4e1cd5332e9b"
+      },
+      {
+        "file": "android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+        "bytes": 2989710,
+        "sha256": "b362f82a2a731cd890ee5c1cc282dfa6c31a9f8dec2fe6f2645df14564872925"
+      }
+    ]
+  },
+  "document": {
+    "utf8Bytes": 8388608,
+    "uiMethodsPassed": 6,
+    "existingRegressionMethods": 4,
+    "limitMethods": 2,
+    "uiCheckpoints": [
+      {
+        "step": "load",
+        "elapsedMillis": 269,
+        "javaUsedBytesCheckpoint": 40751696
+      },
+      {
+        "step": "find_tail",
+        "elapsedMillis": 1216,
+        "javaUsedBytesCheckpoint": 54301664
+      },
+      {
+        "step": "edit",
+        "elapsedMillis": 856,
+        "javaUsedBytesCheckpoint": 131892512
+      },
+      {
+        "step": "undo",
+        "elapsedMillis": 708,
+        "javaUsedBytesCheckpoint": 57950704
+      }
+    ],
+    "checkpointsArePeakMemoryOrFrameBenchmarks": false,
+    "screenshots": [
+      {
+        "name": "profile_document_light_failed_search",
+        "bytes": 159280,
+        "sha256": "95c22b42154ce2a01b9172bc9b17713e132cf829226e777301a593136c622115",
+        "width": 1080,
+        "height": 2340
+      },
+      {
+        "name": "profile_document_dark_exit",
+        "bytes": 121696,
+        "sha256": "09846f9a5fe6d5db752ddb120d79ea0a068ac3f001c2fdf1c95d555cf829ba39",
+        "width": 1080,
+        "height": 2340
+      },
+      {
+        "name": "remote_document_light_auto_warning",
+        "bytes": 162699,
+        "sha256": "7a47fbfe4be6fc63dd6fcf3c759a43a0f7e971a964ef1c1ce9f650b2a18df6bf",
+        "width": 1080,
+        "height": 2340
+      },
+      {
+        "name": "remote_document_dark_failed_parent",
+        "bytes": 132477,
+        "sha256": "28c8c301f16c623bcd1be88666efe4b1411b324128a169fc03189d6cc658ed14",
+        "width": 1080,
+        "height": 2340
+      },
+      {
+        "name": "profile_document_error_location",
+        "bytes": 354410,
+        "sha256": "6c31866d48ebaa7023c9bbfe6d41ffc3dffb90c5f65a8b18eaab395c8ff1ac78",
+        "width": 1080,
+        "height": 2340
+      },
+      {
+        "name": "profile_document_long_match",
+        "bytes": 206156,
+        "sha256": "57fa217a0eec014779784bf8cd80f0d47b03a30eef04fa62d10a79e56b704d43",
+        "width": 1080,
+        "height": 2340
+      },
+      {
+        "name": "profile_limit_tail",
+        "bytes": 114042,
+        "sha256": "33ab39f3dcc41dd8c1187ab4c9d76bf2eb63fef961c72e0bfbb1daa0e17a07c0",
+        "width": 1080,
+        "height": 2340
+      }
+    ],
+    "screenshotVisualReview": "7 PNG decoded/hash matched and contact sheet reviewed; authorized body not captured",
+    "crossProcess": [
+      {
+        "phase": "prepare",
+        "pid": 26062,
+        "elapsedMillis": 44081,
+        "javaUsedBytesCheckpoint": 195100784,
+        "passed": true,
+        "artifact": "draft-prepare2.log"
+      },
+      {
+        "phase": "verify",
+        "pid": 26139,
+        "elapsedMillis": 69277,
+        "javaUsedBytesCheckpoint": 167564496,
+        "passed": true,
+        "artifact": "draft-verify2.log"
+      }
+    ],
+    "previousPidAlreadyExitedBeforeForceStop": true,
+    "saveWindowLiveKillClaimed": false,
+    "validated": [
+      "UTF8 exact limit accepted and limit+1 rejected",
+      "YAML exact limit parse",
+      "window navigation preserves full document",
+      "tail find/edit/undo/redo/exit guard",
+      "ordinary and long reversed selection replacement",
+      "IME composition offset JVM",
+      "actual Keystore encrypted draft restored in new PID",
+      "actual ViewModel child semantic preflight with IsolatedConfigValidator",
+      "parent save only then full body Room/repository readback",
+      "owned isolated directory cleanup"
+    ]
+  },
+  "externalActions": {
+    "caller": "com.arlosoft.macrodroid",
+    "callerUid": 10244,
+    "version": "6.1.5",
+    "source": "official Play via https://www.macrodroid.com/",
+    "target": {
+      "package": "com.lonnnnnng.flclash",
+      "version": "0.1.3",
+      "sha256": "2e1ccec265fca81cbd660564c5c8ba5a5110839eabfd7a117a447acb22373963",
+      "matchesPublicRelease": true
+    },
+    "targetKind": "Activity",
+    "component": "com.lonnnnnng.flclash.ExternalActionActivity",
+    "dataMimeExtras": "empty",
+    "category": "None",
+    "flags": 0,
+    "mode": "real MacroDroid foreground editor Test Actions; not shell business Intent",
+    "actions": [
+      {
+        "action": "start",
+        "expected": "RUNNING",
+        "serviceRecords": [
+          "98aa1f1 u0 com.lonnnnnng.flclash/.service.VpnService c:com.lonnnnnng.flclash",
+          "567aaac u0 com.lonnnnnng.flclash/.service.ProxyService c:com.lonnnnnng.flclash"
+        ],
+        "passed": true,
+        "artifact": "macrodroid-start-result.xml"
+      },
+      {
+        "action": "repeat",
+        "expected": "RUNNING",
+        "serviceRecords": [
+          "98aa1f1 u0 com.lonnnnnng.flclash/.service.VpnService c:com.lonnnnnng.flclash",
+          "567aaac u0 com.lonnnnnng.flclash/.service.ProxyService c:com.lonnnnnng.flclash"
+        ],
+        "passed": true,
+        "artifact": "macrodroid-repeat-result.xml"
+      },
+      {
+        "action": "stop",
+        "expected": "STOPPED",
+        "serviceRecords": [],
+        "passed": true,
+        "artifact": "macrodroid-stop-result.xml"
+      },
+      {
+        "action": "toggle1",
+        "expected": "RUNNING",
+        "serviceRecords": [
+          "6f43002 u0 com.lonnnnnng.flclash/.service.VpnService c:com.lonnnnnng.flclash",
+          "5a2d111 u0 com.lonnnnnng.flclash/.service.ProxyService c:com.lonnnnnng.flclash"
+        ],
+        "passed": true,
+        "artifact": "macrodroid-toggle1-result.xml"
+      },
+      {
+        "action": "toggle2",
+        "expected": "STOPPED",
+        "serviceRecords": [],
+        "passed": true,
+        "artifact": "macrodroid-toggle2-result.xml"
+      }
+    ],
+    "taskerTested": false,
+    "backgroundScheduledTriggerTested": false
+  },
+  "failuresRetained": [
+    {
+      "artifact": "baseline-build.log",
+      "type": "test compilation missing import, corrected"
+    },
+    {
+      "artifact": "baseline-redmi.log",
+      "type": "product load failure Constraints height 14420429"
+    },
+    {
+      "artifact": "fix-build.log",
+      "type": "produceState receiver shadowing compilation error, corrected"
+    },
+    {
+      "artifact": "editor-final1.log",
+      "type": "4/5 passed; redo assertion before UI idle corrected in test"
+    },
+    {
+      "artifact": "editor-final3.log",
+      "type": "5/6 passed; reverse selection InsertTextAtCursor test action failed before product callback, final input-method path passed"
+    }
+  ],
+  "limits": [
+    "8MiB full draft preparation and restore/parse/commit stages remain slow (44/69 seconds); performance not closed",
+    "Windowed editor is not Flutter Rope continuous scrolling or visual parity",
+    "No final candidate signed R8 runtime installation; public 0.1.3 external protocol verified separately",
+    "No full formal database before/after snapshot in this group; no claim of four-table equality",
+    "No Tasker, background timer/boot trigger, other OEM or low API acceptance",
+    "No menu native RenderThread attribution or new network/TUN/mihomo validation"
+  ],
+  "localArtifactsDirectory": "../acceptance-artifacts/editor-external-20261112/",
+  "localArtifacts": [
+    {
+      "file": "baseline-build.log",
+      "bytes": 14657,
+      "sha256": "9ed53dc8d3b80401147e25ec5d1b70c93f1bf8bca9a2ef1dfddcf868386f3e56",
+      "localOnly": true
+    },
+    {
+      "file": "baseline-build2.log",
+      "bytes": 13067,
+      "sha256": "753013535392fa5d329b8127057135d73d8f0d63d6fb2c2d74a6cf74a9132b2c",
+      "localOnly": true
+    },
+    {
+      "file": "baseline-redmi.log",
+      "bytes": 78046,
+      "sha256": "5734903babde3e288cee6a95c72a07e40d97c735d66094430fdf179699967d6d",
+      "localOnly": true
+    },
+    {
+      "file": "before-draft-force-stop.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "localOnly": true
+    },
+    {
+      "file": "cleanup.json",
+      "bytes": 810,
+      "sha256": "8ea7d3c7876b64d6828a42681ef6ec5832953b037921236a547ae6385c019909",
+      "localOnly": true
+    },
+    {
+      "file": "com.arlosoft.macrodroid-final-services.txt",
+      "bytes": 66,
+      "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0",
+      "localOnly": true
+    },
+    {
+      "file": "com.lonnnnnng.flclash-final-services.txt",
+      "bytes": 66,
+      "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0",
+      "localOnly": true
+    },
+    {
+      "file": "com.lonnnnnng.flclash.motion-final-services.txt",
+      "bytes": 66,
+      "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0",
+      "localOnly": true
+    },
+    {
+      "file": "connectivity-private.txt",
+      "bytes": 87513,
+      "sha256": "73fc2c573c221c2f97de33154cb18d8f7cb7771bfb846ce88081ee725de29c81",
+      "localOnly": true
+    },
+    {
+      "file": "device_ui.py",
+      "bytes": 688,
+      "sha256": "81e75745b4c6f2f845a7a6bd592f331267a800e336658b6c330a7e6f593ed49d",
+      "localOnly": true
+    },
+    {
+      "file": "draft-prepare1-logcat-private.txt",
+      "bytes": 9699,
+      "sha256": "4226657d1c8338cdd56ebef723e24611651b6b8f6f728523b75889cb4236daef",
+      "localOnly": true
+    },
+    {
+      "file": "draft-prepare1-memory.txt",
+      "bytes": 51,
+      "sha256": "6467a93fb4e302c2349c5e74d833c534eb24c2304f678bb35fba15041a810491",
+      "localOnly": true
+    },
+    {
+      "file": "draft-prepare1.log",
+      "bytes": 1105,
+      "sha256": "7372fd261f4a07a18baa9259fe320460ee9bccf35e5cb79162fa637e9acb45bb",
+      "localOnly": true
+    },
+    {
+      "file": "draft-prepare2.log",
+      "bytes": 1106,
+      "sha256": "a258045c13880a6ec87d74a5f6bd311743171abe41e8826e79d2f55ddb581dac",
+      "localOnly": true
+    },
+    {
+      "file": "draft-verify1.log",
+      "bytes": 1105,
+      "sha256": "024a859697d3ae496507b73b92729e5127300e032907ee0a6a3cf1c5b3d06698",
+      "localOnly": true
+    },
+    {
+      "file": "draft-verify2.log",
+      "bytes": 1105,
+      "sha256": "d903b620f55e3630a81d8670272aeddbbac5ff6fad71997c2c871b8ee4a143ec",
+      "localOnly": true
+    },
+    {
+      "file": "editor-final1.log",
+      "bytes": 5827,
+      "sha256": "ad5852d0cfd1003084e61f934ef5cbe23b1f1729c35b981b3005f759edb20879",
+      "localOnly": true
+    },
+    {
+      "file": "editor-final2.log",
+      "bytes": 4513,
+      "sha256": "4002651f28472a5086b71574323a145ef05c07fc8dfb47ca3323d1988f894fd4",
+      "localOnly": true
+    },
+    {
+      "file": "editor-final3.log",
+      "bytes": 1715169,
+      "sha256": "7df2393029a8c4b169dba2b90ac8c23f84af7a96aa3febc5ef68368f444cbcda",
+      "localOnly": true
+    },
+    {
+      "file": "editor-final4.log",
+      "bytes": 1687593,
+      "sha256": "d6be24df95c4ff7abda7033c38be281bcd14b1536529ee68ab533dc6fdb3a290",
+      "localOnly": true
+    },
+    {
+      "file": "final-before-force-stop.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "localOnly": true
+    },
+    {
+      "file": "final-build3.log",
+      "bytes": 17452,
+      "sha256": "1b24c0fc141ef4c0ce7207c4ce66500a28bbfbd7300f0b01a7402e3c14025057",
+      "localOnly": true
+    },
+    {
+      "file": "final-formal-services.txt",
+      "bytes": 66,
+      "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0",
+      "localOnly": true
+    },
+    {
+      "file": "final-lint.log",
+      "bytes": 14662,
+      "sha256": "d9c628980adc5e2bb1ac38074123d16cc0f52b395ccdf35e8c7e58d26bcdc376",
+      "localOnly": true
+    },
+    {
+      "file": "final-lint3.log",
+      "bytes": 14684,
+      "sha256": "2baaf995c00662b2954893a360e9c24011b64cb34721e8348592745414edc93d",
+      "localOnly": true
+    },
+    {
+      "file": "final-motion3-build.log",
+      "bytes": 12979,
+      "sha256": "b31e68d3e655df1b4a7a0aebfab2e8b74c3729b0204b796ce3e3fd489b126f50",
+      "localOnly": true
+    },
+    {
+      "file": "final-test4-build.log",
+      "bytes": 8945,
+      "sha256": "f60e1a83d7997297a4f99f58ad684ae14b132686616d9a4576a1b981b54bc6bc",
+      "localOnly": true
+    },
+    {
+      "file": "final-tests.log",
+      "bytes": 6802,
+      "sha256": "4faeb98f040afa289fbb02482c8b24925fd7910fbf9a42554297cb099b9d1827",
+      "localOnly": true
+    },
+    {
+      "file": "final_draft_run.py",
+      "bytes": 1165,
+      "sha256": "83d25d62aab7157279ed5697732fb38f9869305da8b4f3cf0e6240b825d92221",
+      "localOnly": true
+    },
+    {
+      "file": "fix-build.log",
+      "bytes": 16799,
+      "sha256": "03daea1de5ecd8d638da2d73246582e31262a419f9b86b626ecfd13648840c18",
+      "localOnly": true
+    },
+    {
+      "file": "fix-build2.log",
+      "bytes": 17353,
+      "sha256": "7ed5a68b5d9dbfb859095f12752c10228749766ec61b3e64e931e6889e2bc943",
+      "localOnly": true
+    },
+    {
+      "file": "formal-apk.json",
+      "bytes": 175,
+      "sha256": "fc7bc60aafd5ce1e8c81ba410c25748b75e756e1290a0c5f82ae080c18b9086b",
+      "localOnly": true
+    },
+    {
+      "file": "formal-home.xml",
+      "bytes": 23235,
+      "sha256": "b2e17c2e756cf3dfef84faa1d85a72528ab10c0194af77ccbc93224d5d380b78",
+      "localOnly": true
+    },
+    {
+      "file": "installation-final.json",
+      "bytes": 708,
+      "sha256": "7ae56bb96d1b3971c49408f8c3d7a691a17c661089312a049e34257812e979dd",
+      "localOnly": true
+    },
+    {
+      "file": "installation.json",
+      "bytes": 708,
+      "sha256": "998b0bfcabdfa9dd40df12091b2b8d982a7b51f7e813d232daa9e6cafa8e17e6",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-action-added.xml",
+      "bytes": 24606,
+      "sha256": "8d1b57125efad6e5bcb4d5c5a2a31947e5f0bbc75d3901ae68b90bf442d27731",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-action-category.xml",
+      "bytes": 28554,
+      "sha256": "8bf97c8191f1027a23d778c2ad4eb0d447028346ddc9b1abf9395e085143b046",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-action-context.xml",
+      "bytes": 24606,
+      "sha256": "8d1b57125efad6e5bcb4d5c5a2a31947e5f0bbc75d3901ae68b90bf442d27731",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-action-list.xml",
+      "bytes": 6827,
+      "sha256": "13b274148f23ae2005a918c253390e559e000f8edc8d837221e0d21ac140f5e6",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-action-list2.xml",
+      "bytes": 22866,
+      "sha256": "71e973364e664bb6cb733ad14c0b9efc3cfc1ef88b185fe99650f22301b21eee",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-action-menu.xml",
+      "bytes": 18167,
+      "sha256": "a2d6fe5610c46a4831d2a4c8a902a98ae1081ce3dc4c0f8c993cdd80f2d03920",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-action-picker.xml",
+      "bytes": 6827,
+      "sha256": "13b274148f23ae2005a918c253390e559e000f8edc8d837221e0d21ac140f5e6",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-add.xml",
+      "bytes": 22866,
+      "sha256": "71e973364e664bb6cb733ad14c0b9efc3cfc1ef88b185fe99650f22301b21eee",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-cleanup-return.xml",
+      "bytes": 24606,
+      "sha256": "011dc0d232174b2698e001dfbb259b2a6a14bf5c3429b26a087285a1e716a8dd",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-config-stop.xml",
+      "bytes": 18167,
+      "sha256": "a2d6fe5610c46a4831d2a4c8a902a98ae1081ce3dc4c0f8c993cdd80f2d03920",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-context2.xml",
+      "bytes": 22032,
+      "sha256": "21104a6e4079492a2ad9c74f45ca11f1ff45727c96ae6260c159df50a9b39bc6",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-discard-dialog.xml",
+      "bytes": 7053,
+      "sha256": "199a3c6e873d07cf2245077f5d10f63cfca096fe2b77914d8fcbf5ceb3b8380f",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-discarded.xml",
+      "bytes": 45207,
+      "sha256": "e9e585ef0fae101fb5c8f639860ec9af567dfbaf883c249e1027c29432fdd5e1",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-edit-action-field.xml",
+      "bytes": 18164,
+      "sha256": "5bca4cd8cbd1b23bb0e720b25617ccf245edd62c163574632dc375fc34c18198",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-fetch.log",
+      "bytes": 2600,
+      "sha256": "8817dd5013c94773059d694e77383ac93003795d788dec0bfcf6e84f17b99ed6",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-final-logcat-entry.txt",
+      "bytes": 1169,
+      "sha256": "7d3fed469d593cc06280389e948a3d0b3aa3605b4b5d0d2d546643bac8c38388",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-final-logcat-private.txt",
+      "bytes": 466949,
+      "sha256": "91fd5f18cd84c432378c3504aad7c1b3427034ed9f15e9c450b8f62ce13f1fd8",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-free-home.xml",
+      "bytes": 45207,
+      "sha256": "e9e585ef0fae101fb5c8f639860ec9af567dfbaf883c249e1027c29432fdd5e1",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intent-form.xml",
+      "bytes": 18123,
+      "sha256": "0329ee44ee13ce513b0ffabb6b037eb8c5b42fcf51200db949533d318387586b",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intent-search.xml",
+      "bytes": 11444,
+      "sha256": "dd4db006d846fd7c0295c33624dadb830423927ffe91cc651bcf681930547cc6",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intro-explicit.xml",
+      "bytes": 7171,
+      "sha256": "93d0879eabbbbf5fa57b789deabd101e5fc62d5cf537f326fd24073ccf736608",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intro-resume.xml",
+      "bytes": 23235,
+      "sha256": "b2e17c2e756cf3dfef84faa1d85a72528ab10c0194af77ccbc93224d5d380b78",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intro2.xml",
+      "bytes": 7172,
+      "sha256": "f42562d0b8f4fcb93db78e5d3afff46a6d81020b157c3194c22cec8731cba700",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intro3.xml",
+      "bytes": 7171,
+      "sha256": "93d0879eabbbbf5fa57b789deabd101e5fc62d5cf537f326fd24073ccf736608",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intro4.xml",
+      "bytes": 7147,
+      "sha256": "5fc6e0e452d7732c1b07e21aadbec3814316d015cc3e251764f41640a0f09110",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intro5.xml",
+      "bytes": 6759,
+      "sha256": "c3481477d768673a2609cc4aa8eb0de2753e97d4d9cef25fdc20682efbf84a3c",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-intro6.xml",
+      "bytes": 5348,
+      "sha256": "662745ea717dd54732c4aa57e52acb86eab316b8692e306c1acc78759c64bb34",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-no-macros.xml",
+      "bytes": 30339,
+      "sha256": "0c6e9a0da4b61dbce1809e4e793fd1692b518a97826f8ddeda72c2f5c457877c",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-official.md",
+      "bytes": 2600,
+      "sha256": "8817dd5013c94773059d694e77383ac93003795d788dec0bfcf6e84f17b99ed6",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-onboard-choice.xml",
+      "bytes": 26007,
+      "sha256": "54d49a996065101435986e6fa1c8c57d6df39872d8af02ef390e4b652c6365dc",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-open.xml",
+      "bytes": 6371,
+      "sha256": "dafeaa2783efa9cd5b5c8cc9054956cccd2ddfadd89ac83be58d1bed6ec2d073",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-overflow.xml",
+      "bytes": 24606,
+      "sha256": "8d1b57125efad6e5bcb4d5c5a2a31947e5f0bbc75d3901ae68b90bf442d27731",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-overflow2.xml",
+      "bytes": 23030,
+      "sha256": "2045269da90df78098cdf2e2fa63678fa5c9dbe943b380cde7078b8f3ebee0bf",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-package.txt",
+      "bytes": 153364,
+      "sha256": "23c4b9c0874da62adfdb39a5769775011beee4d17071257880bd79ffe08328c1",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-repeat-menu.xml",
+      "bytes": 23030,
+      "sha256": "2045269da90df78098cdf2e2fa63678fa5c9dbe943b380cde7078b8f3ebee0bf",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-repeat-result.xml",
+      "bytes": 23225,
+      "sha256": "7fae508571bfc28501834f650b12d9db5fa5ffdc958d85580d36d040a9b0b81b",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-repeat-services.txt",
+      "bytes": 5379,
+      "sha256": "2eb42a4089c1e10cfef0ba23a70f51bfd402ec6cf6a1a1563952cdc8dbc1de4e",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-return-start.xml",
+      "bytes": 24606,
+      "sha256": "8d1b57125efad6e5bcb4d5c5a2a31947e5f0bbc75d3901ae68b90bf442d27731",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-search.json",
+      "bytes": 15783,
+      "sha256": "65845d70163d167f0cb39484350a3a1bc32c1ebaa7f2bfbea5ef178a4ed3a0e1",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-start-config.xml",
+      "bytes": 18166,
+      "sha256": "9b9f199766f1e3a51ead198747ee792b703fa2a8d29e712b4bc32901a8c7762a",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-start-logcat-entry.txt",
+      "bytes": 582,
+      "sha256": "5d32f97c7d00657d92c4f03eb4a284c3d19a7e6cb95f72d9b97bc18a66a52384",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-start-logcat-private.txt",
+      "bytes": 154467,
+      "sha256": "e43a411b411d1e717d9e0a2d544e0c7184723fef269817ad0b54160b96d70417",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-start-result.xml",
+      "bytes": 22840,
+      "sha256": "98f8b89c4217e4e540f984b2e4dd95b73d7bf19d657502b6e721defaca9381cf",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-start-services.txt",
+      "bytes": 5373,
+      "sha256": "c1541d1089eb7ab78f6fee3ea0ec0ec5801f9a17ff1966acc1dff1cbf88dbc41",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-start.xml",
+      "bytes": 26724,
+      "sha256": "e81869b9ef1732716f3659081bc26f58cab82695aa758a11ab0dc3f6aa1fbf47",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-stop-action-edit.xml",
+      "bytes": 29863,
+      "sha256": "d3a0d00029f00f239e40ba881014a0a6bced0c2aef46bb2d3a015c0a79996fd0",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-stop-added.xml",
+      "bytes": 24604,
+      "sha256": "35fd747e2cb3b9124a9a685013f71c95526f343810090fa233fd12551b317202",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-stop-config.xml",
+      "bytes": 18165,
+      "sha256": "29fe4b0a5d5485472ce3d69e22631b7a0560cc7455d02c3e78159dca1032e166",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-stop-form.xml",
+      "bytes": 24606,
+      "sha256": "8d1b57125efad6e5bcb4d5c5a2a31947e5f0bbc75d3901ae68b90bf442d27731",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-stop-form2.xml",
+      "bytes": 22033,
+      "sha256": "785d3b7e804fc6204f7c16ef5832de2abe140edbebb034a860b7fa1ca471809a",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-stop-menu.xml",
+      "bytes": 23030,
+      "sha256": "2045269da90df78098cdf2e2fa63678fa5c9dbe943b380cde7078b8f3ebee0bf",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-stop-result.xml",
+      "bytes": 23235,
+      "sha256": "b2e17c2e756cf3dfef84faa1d85a72528ab10c0194af77ccbc93224d5d380b78",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-stop-services.txt",
+      "bytes": 66,
+      "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle-added.xml",
+      "bytes": 24606,
+      "sha256": "011dc0d232174b2698e001dfbb259b2a6a14bf5c3429b26a087285a1e716a8dd",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle-config.xml",
+      "bytes": 18167,
+      "sha256": "052f74d5d4836db05b202062204fe563433b2e3317a7d3fcbe1054309d884ad3",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle-context.xml",
+      "bytes": 22033,
+      "sha256": "785d3b7e804fc6204f7c16ef5832de2abe140edbebb034a860b7fa1ca471809a",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle-form.xml",
+      "bytes": 18166,
+      "sha256": "60e8924420006479ef00f2e4b128ec4a825af5245343eb25a9a18703f81d95ed",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle-return.xml",
+      "bytes": 24604,
+      "sha256": "35fd747e2cb3b9124a9a685013f71c95526f343810090fa233fd12551b317202",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle1-menu.xml",
+      "bytes": 23030,
+      "sha256": "2045269da90df78098cdf2e2fa63678fa5c9dbe943b380cde7078b8f3ebee0bf",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle1-result.xml",
+      "bytes": 22830,
+      "sha256": "bd7625a3dd8ea119022d0095b0d864e15386110e927e10bc934a1a13d4d1b0be",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle1-services.txt",
+      "bytes": 5373,
+      "sha256": "5b0070bbcd644916960d8945d9895f47e1699a5a962a31f342649cd03e80313c",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle2-menu.xml",
+      "bytes": 23030,
+      "sha256": "2045269da90df78098cdf2e2fa63678fa5c9dbe943b380cde7078b8f3ebee0bf",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle2-result.xml",
+      "bytes": 22825,
+      "sha256": "e9426d6e85c17b77d339a06d41b2dd353d46d448d12f7f3a5442b4df2b1d5c73",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle2-return.xml",
+      "bytes": 24606,
+      "sha256": "011dc0d232174b2698e001dfbb259b2a6a14bf5c3429b26a087285a1e716a8dd",
+      "localOnly": true
+    },
+    {
+      "file": "macrodroid-toggle2-services.txt",
+      "bytes": 66,
+      "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0",
+      "localOnly": true
+    },
+    {
+      "file": "motion-build.log",
+      "bytes": 12916,
+      "sha256": "f21218eea3cf81f9b50c8260e2067bc323f384eaa7dd73eac376caf92513d01b",
+      "localOnly": true
+    },
+    {
+      "file": "motion-test2-build.log",
+      "bytes": 8945,
+      "sha256": "de5e6b4dd5fdd3b52d80a2d8174f9af99cb2a4aaf0f4143ddeb289460fff0f3a",
+      "localOnly": true
+    },
+    {
+      "file": "play-home.xml",
+      "bytes": 18440,
+      "sha256": "98453bf336f28eaa1ac99423f325794214dc0e0c4d14826c617d54c51a290115",
+      "localOnly": true
+    },
+    {
+      "file": "play-install.xml",
+      "bytes": 26724,
+      "sha256": "e81869b9ef1732716f3659081bc26f58cab82695aa758a11ab0dc3f6aa1fbf47",
+      "localOnly": true
+    },
+    {
+      "file": "play.xml",
+      "bytes": 21089,
+      "sha256": "4f78cbd570a9b09520383b2546ee79917f1f02628bb6f87536bd9b2b500df488",
+      "localOnly": true
+    },
+    {
+      "file": "play2.xml",
+      "bytes": 21089,
+      "sha256": "4f78cbd570a9b09520383b2546ee79917f1f02628bb6f87536bd9b2b500df488",
+      "localOnly": true
+    },
+    {
+      "file": "play3.xml",
+      "bytes": 21089,
+      "sha256": "4f78cbd570a9b09520383b2546ee79917f1f02628bb6f87536bd9b2b500df488",
+      "localOnly": true
+    },
+    {
+      "file": "play4.xml",
+      "bytes": 23595,
+      "sha256": "3e9ee6dfcbc6fb9b6c394031c7c516a36f5e73048e8ac5dc15e8e64262c907ce",
+      "localOnly": true
+    },
+    {
+      "file": "production-source.json",
+      "bytes": 906,
+      "sha256": "38cce6fe888222f18929cb159db7498845fbd71e1f7e97d6ec29efb660efe948",
+      "localOnly": true
+    },
+    {
+      "file": "screenshots-final4.json",
+      "bytes": 1371,
+      "sha256": "fe5b3eafe2a1ab3c6311f9305f4e57713a681d1d500d4f0ebcfc610674609c5d",
+      "localOnly": true
+    },
+    {
+      "file": "screenshots.json",
+      "bytes": 1098,
+      "sha256": "5b1ea196fe8f44aea825d4eb59c2a9bfc1f3fe3cc0b138b9b11193398242f09c",
+      "localOnly": true
+    },
+    {
+      "file": "yaml-limit-red.log",
+      "bytes": 3267,
+      "sha256": "44523770f9b33bf5fd21745dded30415e6c38a7fb158cbdddecbe94217014a84",
+      "localOnly": true
+    }
+  ],
+  "installation": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "localApk": "android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+      "sha256": "909733719a2ca8089c8ff2292f5ae7abb25341ecbfbe6a3022cd4e1cd5332e9b",
+      "installedSha256": "909733719a2ca8089c8ff2292f5ae7abb25341ecbfbe6a3022cd4e1cd5332e9b",
+      "matches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "localApk": "android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+      "sha256": "b362f82a2a731cd890ee5c1cc282dfa6c31a9f8dec2fe6f2645df14564872925",
+      "installedSha256": "b362f82a2a731cd890ee5c1cc282dfa6c31a9f8dec2fe6f2645df14564872925",
+      "matches": true
+    }
+  ],
+  "cleanup": {
+    "files": [
+      {
+        "path": "/sdcard/Download/1.yaml",
+        "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+        "verifiedBeforeDeletion": true
+      },
+      {
+        "path": "/sdcard/kclash-macrodroid.xml",
+        "sha256": "0c6e9a0da4b61dbce1809e4e793fd1692b518a97826f8ddeda72c2f5c457877c",
+        "verifiedBeforeDeletion": true
+      },
+      {
+        "path": "/sdcard/kclash-play.png",
+        "sha256": "53eaa937d0d5dc72f09f19e9253e94bb796006db758f805672e3fbdd0f4730d9",
+        "verifiedBeforeDeletion": true
+      }
+    ],
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion"
+    ],
+    "formalPackageRetained": true,
+    "formalServicesEmpty": true,
+    "macroDroidRetained": true,
+    "macroDroidServicesEmpty": true,
+    "macroListEmpty": true
+  }
+}

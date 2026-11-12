@@ -6,6 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +46,11 @@ internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) 
     contentTag: String = "profile_editor_content",
     highlightYaml: Boolean = true,
     scrollState: androidx.compose.foundation.ScrollState = rememberScrollState()) {
+    val windowed = remember(value.text) { value.text.length > 65_536 || value.text.count { it == '\n' || it == '\r' } > 1500 }
+    if (windowed) {
+        WindowedProfileCodeField(value, onChange, enabled, modifier, contentTag)
+        return
+    }
     val style = profileCodeStyle().copy(color = MaterialTheme.colorScheme.onSurface)
     val colors = MaterialTheme.colorScheme
     val transformation = remember(colors.primary, colors.onSurfaceVariant, colors.tertiary, highlightYaml) {
@@ -89,6 +96,45 @@ internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) 
             BasicTextField(value, onChange, Modifier.weight(1f).padding(end = 16.dp).testTag(contentTag), enabled = enabled,
                 textStyle = style, cursorBrush = SolidColor(colors.primary), visualTransformation = transformation,
                 onTextLayout = { layout = it })
+        }
+    }
+}
+
+@Composable
+private fun WindowedProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) -> Unit, enabled: Boolean,
+    modifier: Modifier, contentTag: String) {
+    var start by remember { mutableIntStateOf(0) }
+    val safeStart = start.coerceAtMost(value.text.length)
+    val end = remember(value.text, safeStart) { profileCodeWindowEnd(value.text, safeStart) }
+    // 作者 long：查找/错误定位传入全文偏移，只有排版窗口变化；不能把窗口内容误写成整份配置。
+    LaunchedEffect(value.selection, safeStart, end) {
+        val target = value.selection.min
+        if (target < safeStart || target >= end && end < value.text.length || value.selection.max > end && target > safeStart) {
+            start = if (target < value.text.length) target else profileCodeWindowBefore(value.text, target)
+        }
+    }
+    fun move(target: Int) {
+        start = target
+        onChange(value.copy(selection = TextRange(target), composition = null))
+    }
+    Column(modifier.testTag("profile_code_window")) {
+        Text("大正文分段编辑 · 字符 ${safeStart + 1}–$end / ${value.text.length}（段内行号）",
+            Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            TextButton({ move(0) }, enabled = enabled && safeStart > 0, modifier = Modifier.testTag("profile_code_first")) { Text("开头") }
+            TextButton({ move(profileCodeWindowBefore(value.text, safeStart)) }, enabled = enabled && safeStart > 0, modifier = Modifier.testTag("profile_code_previous")) { Text("上一段") }
+            TextButton({ move(end) }, enabled = enabled && end < value.text.length, modifier = Modifier.testTag("profile_code_next")) { Text("下一段") }
+            TextButton({ move(profileCodeWindowBefore(value.text, value.text.length)) }, enabled = enabled && end < value.text.length, modifier = Modifier.testTag("profile_code_last")) { Text("末尾") }
+        }
+        val local = TextFieldValue(value.text.substring(safeStart, end), TextRange(
+            (value.selection.start - safeStart).coerceIn(0, end - safeStart),
+            (value.selection.end - safeStart).coerceIn(0, end - safeStart)), value.composition?.let {
+                TextRange((it.start - safeStart).coerceIn(0, end - safeStart), (it.end - safeStart).coerceIn(0, end - safeStart))
+            })
+        key(safeStart) {
+            ProfileCodeField(local, { next ->
+                onChange(replaceProfileCodeWindow(value, safeStart, end, next))
+            }, enabled, Modifier.fillMaxWidth().weight(1f), contentTag = contentTag, highlightYaml = false)
         }
     }
 }

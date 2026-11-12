@@ -837,8 +837,10 @@ class ProfilesViewModel internal constructor(
         viewModelScope.launch {
             try {
                 withContext(overviewDispatcher) {
-                    com.lonnnnnng.flclash.data.profileDocumentText(state.content.toByteArray())
-                    configValidator.validateFull(state.content.toByteArray())
+                    // 作者 long：上限正文的UTF-8编码同时供大小检查和核心预检，避免重复分配整份8MiB缓冲。
+                    val bytes = state.content.toByteArray()
+                    com.lonnnnnng.flclash.data.profileDocumentText(bytes)
+                    configValidator.validateFull(bytes)
                 }
                 if (generation != localEditorGeneration || mutableDocumentEditor.value.session != state.session) return@launch
                 if (state.remote) {
