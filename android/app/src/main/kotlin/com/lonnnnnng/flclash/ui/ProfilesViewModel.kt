@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
@@ -64,6 +65,15 @@ data class ProfilesUiState(
     val orderError: String? = null,
     val profilesLoaded: Boolean = true,
     val proxyGroupCounts: Map<Long, Int?> = emptyMap(),
+)
+
+internal enum class ProfileAddPhase { IDLE, RUNNING, NEEDS_AGE_KEY, SUCCEEDED, FAILED, COMPLETED }
+
+internal data class ProfileAddFeedback(
+    val requestId: Long = 0,
+    val phase: ProfileAddPhase = ProfileAddPhase.IDLE,
+    val message: String? = null,
+    val isError: Boolean = false,
 )
 
 data class ProfileEditorUiState(
@@ -276,7 +286,10 @@ class ProfilesViewModel internal constructor(
     private var customImportToken = 0L
     private val mutableAgeKeyRequired = MutableStateFlow(false)
     private var retryAgeImport: (suspend (String) -> Unit)? = null
+    private var retryAgeFeedbackRequestId: Long? = null
     private var ageImportGeneration = 0L
+    private var nextProfileAddRequestId = 0L
+    private val mutableProfileAddFeedback = MutableStateFlow(ProfileAddFeedback())
     private var localEditorGeneration = 0L
     private var proxyGroupsGeneration = 0L
     private var rulesGeneration = 0L
@@ -293,6 +306,7 @@ class ProfilesViewModel internal constructor(
     private var replacementReadJob: kotlinx.coroutines.Job? = null
     private var overviewJob: kotlinx.coroutines.Job? = null
     val ageKeyRequired: StateFlow<Boolean> = mutableAgeKeyRequired
+    internal val profileAddFeedback: StateFlow<ProfileAddFeedback> = mutableProfileAddFeedback.asStateFlow()
 
     private val proxyGroupCounts: StateFlow<Map<Long, Int?>> = repository.profiles
         .map { profiles ->
@@ -608,17 +622,24 @@ class ProfilesViewModel internal constructor(
         launchAction { runtimeManager.selectProfile(id, repository::selectProfile) }
     }
 
-    fun addRemote(url: String, label: String, ageSecretKey: String = "") = importWithAgeKey(ageSecretKey) { key ->
-        repository.addRemoteProfile(url, label, key)
+    fun addRemote(url: String, label: String, ageSecretKey: String = "") {
+        val requestId = beginProfileAdd(batch = false)
+        importWithAgeKey(ageSecretKey, feedbackRequestId = requestId) { key ->
+            repository.addRemoteProfile(url, label, key)
+        }
     }
 
     fun addRemoteBatch(urls: List<String>) {
+        val requestId = beginProfileAdd(batch = true)
         if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            updateProfileAddFeedback(requestId, ProfileAddPhase.FAILED, PROFILE_MUTATION_BLOCKED_MESSAGE, isError = true)
             return
         }
         val distinctUrls = urls.map(String::trim).filter(String::isNotEmpty).distinct()
-        if (distinctUrls.isEmpty()) return
+        if (distinctUrls.isEmpty()) {
+            updateProfileAddFeedback(requestId, ProfileAddPhase.COMPLETED, "没有可导入的订阅链接")
+            return
+        }
 
         val existingUrls = repository.profiles.value
             .asSequence()
@@ -627,14 +648,23 @@ class ProfilesViewModel internal constructor(
             .toSet()
         val importUrls = distinctUrls.filterNot(existingUrls::contains)
         val skippedExisting = distinctUrls.size - importUrls.size
+        if (importUrls.isEmpty()) {
+            updateProfileAddFeedback(requestId, ProfileAddPhase.COMPLETED, "链接均已添加，跳过重复 ${skippedExisting} 个")
+            return
+        }
 
-        if (!busy.compareAndSet(false, true)) return
+        if (!busy.compareAndSet(false, true)) {
+            updateProfileAddFeedback(requestId, ProfileAddPhase.FAILED, "另一个配置操作正在进行，请稍后重试", isError = true)
+            return
+        }
         viewModelScope.launch {
             var imported = 0
             var failed = 0
             try {
                 // 作者 long：逐条导入并隔离订阅失败，避免一个失效链接中断同批其他配置；错误只报告数量以免泄露带凭据的 URL。
-                importUrls.forEach { url ->
+                importUrls.forEachIndexed { index, url ->
+                    updateProfileAddFeedback(requestId, ProfileAddPhase.RUNNING,
+                        "正在导入第 ${index + 1} / ${importUrls.size} 个订阅")
                     try {
                         repository.addRemoteProfile(url, "")
                         imported++
@@ -644,13 +674,14 @@ class ProfilesViewModel internal constructor(
                         failed++
                     }
                 }
+            } catch (cancelled: CancellationException) {
+                updateProfileAddFeedback(requestId, ProfileAddPhase.FAILED, "批量导入已取消", isError = true)
+                throw cancelled
             } finally {
                 busy.value = false
             }
-
-            mutableErrors.emit(
-                "批量导入完成：新增 $imported 个，跳过重复 $skippedExisting 个，失败 $failed 个",
-            )
+            updateProfileAddFeedback(requestId, ProfileAddPhase.COMPLETED,
+                "批量导入完成：新增 $imported 个，跳过重复 $skippedExisting 个，失败 $failed 个", isError = failed > 0)
         }
     }
 
@@ -661,38 +692,94 @@ class ProfilesViewModel internal constructor(
     fun cancelAgeImport() {
         ageImportGeneration++
         retryAgeImport = null
+        retryAgeFeedbackRequestId?.let { requestId ->
+            updateProfileAddFeedback(requestId, ProfileAddPhase.FAILED, "已取消 age 密钥输入", isError = true)
+        }
+        retryAgeFeedbackRequestId = null
         mutableAgeKeyRequired.value = false
     }
 
     fun submitAgeKey(key: String) {
         val action = retryAgeImport ?: return
         if (key.isBlank()) return
+        val feedbackRequestId = retryAgeFeedbackRequestId
         cancelAgeImport()
         // 作者 long：只为首次缺钥提供一次补输；错误密钥直接报错，自动更新不进入交互重试。
-        importWithAgeKey(key.trim(), allowPrompt = false, action)
+        importWithAgeKey(key.trim(), allowPrompt = false, feedbackRequestId = feedbackRequestId, action = action)
     }
 
-    private fun importWithAgeKey(key: String, allowPrompt: Boolean = true, action: suspend (String) -> Unit) {
-        if (busy.value) return
+    fun clearProfileAddFeedback() {
+        if (!busy.value) mutableProfileAddFeedback.value = ProfileAddFeedback()
+    }
+
+    // 作者 long：异步订阅可能晚于表单重开才返回，按请求编号隔离反馈，避免旧结果覆盖新操作。
+    private fun beginProfileAdd(batch: Boolean): Long {
+        val requestId = ++nextProfileAddRequestId
+        mutableProfileAddFeedback.value = ProfileAddFeedback(
+            requestId = requestId,
+            phase = ProfileAddPhase.RUNNING,
+            message = if (batch) "正在准备订阅导入…" else "正在下载、解密并校验订阅…",
+        )
+        return requestId
+    }
+
+    private fun updateProfileAddFeedback(
+        requestId: Long,
+        phase: ProfileAddPhase,
+        message: String,
+        isError: Boolean = false,
+    ) {
+        if (mutableProfileAddFeedback.value.requestId != requestId) return
+        mutableProfileAddFeedback.value = ProfileAddFeedback(requestId, phase, message, isError)
+    }
+
+    private fun importWithAgeKey(
+        key: String,
+        allowPrompt: Boolean = true,
+        feedbackRequestId: Long? = null,
+        action: suspend (String) -> Unit,
+    ) {
+        if (busy.value) {
+            feedbackRequestId?.let { updateProfileAddFeedback(it, ProfileAddPhase.FAILED, "另一个配置操作正在进行，请稍后重试", isError = true) }
+            return
+        }
         if (isProfileMutationBlocked(runtimeManager.state.value)) {
-            mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
+            if (feedbackRequestId != null) updateProfileAddFeedback(feedbackRequestId, ProfileAddPhase.FAILED, PROFILE_MUTATION_BLOCKED_MESSAGE, isError = true)
+            else mutableErrors.tryEmit(PROFILE_MUTATION_BLOCKED_MESSAGE)
             return
         }
         cancelAgeImport()
         val generation = ageImportGeneration
         busy.value = true
+        feedbackRequestId?.let {
+            updateProfileAddFeedback(it, ProfileAddPhase.RUNNING, "正在下载、解密并校验订阅…")
+        }
         viewModelScope.launch {
             try {
                 action(key.trim())
+                feedbackRequestId?.let { updateProfileAddFeedback(it, ProfileAddPhase.SUCCEEDED, "订阅已添加") }
             } catch (error: CancellationException) {
+                feedbackRequestId?.let { updateProfileAddFeedback(it, ProfileAddPhase.FAILED, "订阅导入已取消", isError = true) }
                 throw error
             } catch (error: com.lonnnnnng.flclash.data.AgeSecretKeyRequiredException) {
                 if (allowPrompt && generation == ageImportGeneration) {
                     retryAgeImport = action
+                    retryAgeFeedbackRequestId = feedbackRequestId
                     mutableAgeKeyRequired.value = true
-                } else if (!allowPrompt) mutableErrors.emit(error.message ?: "请输入 age 解密密钥")
+                    feedbackRequestId?.let { updateProfileAddFeedback(it, ProfileAddPhase.NEEDS_AGE_KEY, "订阅已下载，等待输入 age 解密密钥") }
+                } else if (!allowPrompt) {
+                    feedbackRequestId?.let { updateProfileAddFeedback(it, ProfileAddPhase.FAILED, "age 解密失败，请检查密钥与配置文件", isError = true) }
+                    if (feedbackRequestId == null) mutableErrors.emit(error.message ?: "请输入 age 解密密钥")
+                } else {
+                    feedbackRequestId?.let { updateProfileAddFeedback(it, ProfileAddPhase.FAILED, "订阅导入已取消", isError = true) }
+                }
             } catch (error: Exception) {
-                mutableErrors.emit(error.message ?: "导入配置失败")
+                feedbackRequestId?.let {
+                    updateProfileAddFeedback(it, ProfileAddPhase.FAILED,
+                        error.message?.takeIf { message -> message in setOf("该订阅已经添加", PROFILE_MUTATION_BLOCKED_MESSAGE) }
+                            ?: "导入失败，请检查链接、网络或解密密钥后重试", isError = true)
+                }
+                if (feedbackRequestId == null) mutableErrors.emit(error.message ?: "导入配置失败")
             } finally {
                 busy.value = false
             }

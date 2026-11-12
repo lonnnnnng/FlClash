@@ -94,6 +94,27 @@ class ProfileUiInstrumentedTest {
         assertTrue(dismissed)
     }
 
+    @Test fun fileImportSaveShowsProgressAndPreventsRepeatedConfirmation() {
+        var confirmed = 0
+        composeRule.setContent {
+            KClashTheme {
+                ProfileFileImportPreviewDialog(
+                    fileName = "home.yaml",
+                    fileSizeBytes = 512,
+                    isValidYaml = true,
+                    busy = true,
+                    onConfirm = { confirmed++ },
+                    onDismiss = {},
+                )
+            }
+        }
+        composeRule.onNodeWithTag("profile_file_import_progress").assertIsDisplayed()
+        composeRule.onNodeWithText("正在保存并应用配置…").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_file_import_confirm").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_file_import_cancel").assertIsNotEnabled()
+        assertEquals(0, confirmed)
+    }
+
     @Test
     fun addProfileDialogSwitchesToCustomAndInvokesCallback() {
         var added = false
@@ -165,6 +186,33 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithText("导入").performClick()
 
         assertEquals(listOf("我的订阅", "https://example.invalid/sub"), added)
+    }
+
+    @Test fun profileMutationShowsPageProgressWhileRepositoryWorkIsPending() {
+        composeRule.setContent {
+            KClashTheme {
+                ProfilesPanel(
+                    state = ProfilesUiState(isBusy = true),
+                    editorState = ProfileEditorUiState(),
+                    runtimeState = com.lonnnnnng.flclash.service.CoreRuntimeStatus.STOPPED,
+                    showAddDialog = false,
+                    onShowAddDialog = {},
+                    onDismissAddDialog = {},
+                    onPickFile = {},
+                    onPickQrCode = {},
+                    onAddRemote = { _, _ -> },
+                    onAddCustom = {},
+                    onSelect = {},
+                    onEdit = {},
+                    onUpdate = {},
+                    onCloseEditor = {},
+                    onSaveEditor = {},
+                    onDelete = {},
+                )
+            }
+        }
+        composeRule.onNodeWithTag("profiles_operation_progress").assertIsDisplayed()
+        composeRule.onNodeWithText("正在处理配置…").assertIsDisplayed()
     }
 
     @Test

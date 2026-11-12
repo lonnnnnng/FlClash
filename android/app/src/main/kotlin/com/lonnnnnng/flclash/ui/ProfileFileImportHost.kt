@@ -2,6 +2,10 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,7 +29,13 @@ internal fun rememberProfileFilePicker(controller: ProfileFileImportController):
     }
     when {
         state.reading -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text("读取配置") },
-            text = { CircularProgressIndicator() }, confirmButton = {}, dismissButton = { TextButton(onClick = controller::dismiss) { Text("取消") } })
+            text = { Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                CircularProgressIndicator()
+                Text("正在读取并校验配置…")
+            } }, confirmButton = {}, dismissButton = { TextButton(onClick = controller::dismiss) { Text("取消") } })
+        state.completed -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text("导入完成") },
+            text = { Text("${state.fileName.orEmpty()} 已添加到配置列表。") },
+            confirmButton = { TextButton(onClick = controller::dismiss, modifier = Modifier.testTag("profile_file_import_done")) { Text("完成") } })
         state.needsKey -> AgeSecretKeyDialog(controller::confirm, controller::dismiss, busy = state.saving, error = state.error)
         state.fileName != null -> ProfileFileImportPreviewDialog(state.fileName!!, state.size, state.validYaml, state.saving,
             { controller.confirm() }, controller::dismiss, isEncrypted = state.encrypted, error = state.error, validationNote = state.validationNote)

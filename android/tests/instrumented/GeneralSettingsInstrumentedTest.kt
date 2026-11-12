@@ -18,6 +18,22 @@ import org.junit.Test
 class GeneralSettingsInstrumentedTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun settingsAndLanSavesExposeBusyFeedback() {
+        var settings by mutableStateOf(GeneralSettings())
+        var saving by mutableStateOf(false)
+        var lanBusy by mutableStateOf(false)
+        compose.setContent { KClashTheme { ProfileEditorPage({}, { Text("常规") }, {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                GeneralSettingsPanel({}, settings, lanBusy = lanBusy, saving = saving,
+                    onSave = { next, done -> saving = true; settings = next; done(true); saving = false })
+            }
+        }) } }
+        compose.runOnIdle { saving = true }
+        compose.onNodeWithTag("general_settings_saving").assertIsDisplayed()
+        compose.runOnIdle { saving = false; lanBusy = true }
+        compose.onNodeWithTag("general_settings_saving").assertIsDisplayed()
+    }
+
     @Test fun generalSectionsCredentialsConnectionsHostsAndThemesSaveTogether() {
         assertPortraitDefaultFontConfiguration()
         var value by mutableStateOf(GeneralSettings())

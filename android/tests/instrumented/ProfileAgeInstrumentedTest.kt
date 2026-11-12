@@ -60,12 +60,24 @@ class ProfileAgeInstrumentedTest {
     @Test fun singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey() {
         assertPortraitDefaultFontConfiguration()
         var savedKey: String? = null
+        var feedback by mutableStateOf(ProfileAddFeedback())
         var session by mutableIntStateOf(0)
         compose.setContent {
             KClashTheme {
                 key(session) {
-                    AddProfileDialog(false, {}, {}, {}, { _, _ -> error("必须传递密钥") },
-                        onAddRemoteWithAgeKey = { _, _, key -> savedKey = key }, onAddCustom = {})
+                    AddProfileDialog(
+                        busy = false,
+                        feedback = feedback,
+                        onDismiss = {},
+                        onPickFile = {},
+                        onPickQrCode = {},
+                        onAddRemote = { _, _ -> error("必须传递密钥") },
+                        onAddRemoteWithAgeKey = { _, _, key ->
+                            savedKey = key
+                            feedback = feedback.copy(phase = ProfileAddPhase.RUNNING, message = "正在下载、解密并校验订阅…")
+                        },
+                        onAddCustom = {},
+                    )
                 }
             }
         }
@@ -74,8 +86,10 @@ class ProfileAgeInstrumentedTest {
         compose.onNodeWithTag("profile_add_remote_age_key").performScrollTo().performTextInput(" fixture-identity ")
         compose.onNodeWithTag("profile_add_submit").performClick()
         assertTrue(savedKey == "fixture-identity")
-        // 作者 long：提交后的生产窗口已关闭；批量模式必须在新的导入会话核验，不能继续操作已消费的表单。
-        compose.runOnIdle { session++ }
+        compose.onNodeWithTag("profile_add_progress").assertIsDisplayed()
+        compose.runOnIdle { feedback = feedback.copy(phase = ProfileAddPhase.SUCCEEDED, message = "订阅已添加") }
+        compose.onNodeWithTag("profile_add_result").assertIsDisplayed()
+        compose.runOnIdle { feedback = ProfileAddFeedback(); session++ }
         compose.onNodeWithTag("profile_add_source_remote").performClick()
         compose.onNodeWithTag("profile_add_mode_batch").performClick()
         compose.onNodeWithTag("profile_add_remote_age_key").assertDoesNotExist()

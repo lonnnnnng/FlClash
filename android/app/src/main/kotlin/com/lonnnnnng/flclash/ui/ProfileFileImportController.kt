@@ -15,6 +15,7 @@ internal data class ProfileFileImportUiState(
     val validYaml: Boolean = false,
     val encrypted: Boolean = false,
     val needsKey: Boolean = false,
+    val completed: Boolean = false,
     val error: String? = null,
     val validationNote: String? = null,
 )
@@ -102,7 +103,8 @@ internal class ProfileFileImportController(
                 }
                 if (active == generation) {
                     generation++; bytes = null
-                    mutableState.value = ProfileFileImportUiState()
+                    // 作者 long：保留本次文件名并等待用户确认完成，避免后台保存后配置列表突然变化却没有回执。
+                    mutableState.value = ProfileFileImportUiState(fileName = current.fileName, completed = true)
                 }
             } catch (failure: CancellationException) { throw failure }
             catch (failure: com.lonnnnnng.flclash.validation.ConfigSemanticException) {

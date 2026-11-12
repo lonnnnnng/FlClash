@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **等待操作反馈统一补齐（2026-11-12，KUI-042）**：补齐配置订阅单条/批量导入阶段、age 缺钥、失败重试/成功确认，文件导入解密保存与完成确认，DNS/常规/LAN 设置保存，以及配置页异步操作忙态；其余资源、规则资源、Provider、同步、核心和编辑器路径已具备局部进度或结果反馈。全模块911 JVM、Debug/AndroidTest/未签名Release-R8、双Lint零错误通过；Redmi API36新增反馈5/5。最终竖屏相关UI类38项有6个既有组件/文案/标签断言失败，1个需显式授权参数的`1.yaml`用例跳过，失败均保留且不记整类全绿。正式包及运行态保持，两个临时motion包已清，原`1.yaml` SHA/大小/mtime不变。见[审计与溯源](async-operation-feedback.md)和[验收证据](acceptance/async-feedback-redmi-20261112.json)。
+
 > **断网与 Wi-Fi／蜂窝切换恢复（2026-11-12，KUI-041）**：Redmi Note 8 Pro / API36 上发现默认允许绕过 VPN 时，普通未绑定应用的DNS/TCP请求没有进入TUN；同一蜂窝网络 `true→false→true` 红绿对照后，将新安装及无存储设置的默认改为关闭，保留用户显式值。普通独立UID最终矩阵9/10：六次Wi-Fi↔蜂窝/全断网恢复均有UDP DNS、HTTPS200和非DIRECT核心归因，切换中核心会话不重启；另有Wi-Fi稳态首TLS握手失败，完整矩阵不能记全绿。恢复后的Wi-Fi稳态补验HTTP200/806ms；网络页回归2/2。910 JVM、Debug/未签名Release-R8/motion-Test及三变体Lint零错误。Redmi仍保留公开0.1.3，本轮未安装修正版正式包/未发布；原`1.yaml`哈希和mtime不变，测试包/设备临时文件已清。其他OEM/低API及TLS失败根因仍待；见[KUI-041](vpn-default-bypass-defect.md)与[验收证据](acceptance/network-switch-redmi-20261112.json)。
 
 > **8MiB正文及第三方入口（2026-11-12，当前）**：修复KUI-040全文排版越界、超预算撤销失效及分段选区替换边界。正文采用明确区间导航、全文查找与差异历史；Redmi最终UI6/6、7图校验/目视、真实Room/Keystore/ViewModel/核心预检与外层保存的跨PID两阶段通过。909项JVM（含复用）、Debug/未签名Release-R8/motion-Test及双Lint零错误；两验收APK回拉一致。官方MacroDroid6.1.5在公开0.1.3上真实发送START/重复START/STOP/两次TOGGLE，5次动作页面与服务一致；未测Tasker或后台定时触发。原1.yaml内容保持，独立双包及3个设备临时文件已清，正式服务停止；本轮未发布新版。**8MiB上限功能已验、整链路性能仍PARTIAL并按用户优先级暂缓**：准备/恢复提交约44/69秒，不列为当前功能阻塞。见[缺陷溯源](profile-document-limit-defect.md)、[第三方入口](external-action-acceptance.md)及[验收证据](acceptance/editor-external-redmi-20261112.json)。

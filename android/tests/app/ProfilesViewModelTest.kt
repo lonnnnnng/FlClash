@@ -1214,11 +1214,29 @@ class ProfilesViewModelTest {
         model.addRemote("https://example.test/encrypted", "import")
         advanceUntilIdle()
         assertTrue(model.ageKeyRequired.value)
+        assertEquals(ProfileAddPhase.NEEDS_AGE_KEY, model.profileAddFeedback.value.phase)
         model.submitAgeKey(" fixture-identity \n")
         advanceUntilIdle()
         assertTrue(!model.ageKeyRequired.value)
+        assertEquals(ProfileAddPhase.SUCCEEDED, model.profileAddFeedback.value.phase)
         assertEquals(2, store.remoteAddCalls.size)
         assertEquals("fixture-identity", store.profiles.value.last().ageSecretKey)
+    }
+
+    @Test fun `single import exposes running state until repository finishes`() = runTest {
+        Dispatchers.setMain(mainDispatcher)
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val store = FakeProfileStore(Profile.custom(1, "existing")).apply { beforeRemoteAdd = { gate.await() } }
+        val model = newModel(store, FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED), overviewDispatcher = mainDispatcher)
+
+        model.addRemote("https://example.test/slow", "import")
+        runCurrent()
+        assertEquals(ProfileAddPhase.RUNNING, model.profileAddFeedback.value.phase)
+        assertTrue(model.profileAddFeedback.value.message!!.contains("下载、解密并校验"))
+
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertEquals(ProfileAddPhase.SUCCEEDED, model.profileAddFeedback.value.phase)
     }
 
     @Test fun `cancelling missing key discards retry and running state blocks retry writes`() = runTest {
@@ -1265,10 +1283,10 @@ class ProfilesViewModelTest {
         model.addRemote(url, "import")
         advanceUntilIdle()
         assertTrue(model.ageKeyRequired.value)
-        val error = async(start = CoroutineStart.UNDISPATCHED) { model.errors.first() }
         model.submitAgeKey("wrong-fixture")
         advanceUntilIdle()
-        assertEquals("subscription import failed", error.await())
+        assertEquals(ProfileAddPhase.FAILED, model.profileAddFeedback.value.phase)
+        assertEquals("导入失败，请检查链接、网络或解密密钥后重试", model.profileAddFeedback.value.message)
         assertTrue(!model.ageKeyRequired.value)
         assertEquals(1, store.profiles.value.size)
     }
@@ -1604,13 +1622,13 @@ class ProfilesViewModelTest {
         val store = FakeProfileStore(Profile.custom(36L, "自定义"), listOf(existing)).apply {
             remoteAddFailures += "https://failed.invalid/sub"
         }
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        store.beforeRemoteAdd = { gate.await() }
         val viewModel = newModel(
             repository = store,
             runtimeManager = FakeRuntimeStatusProvider(CoreRuntimeStatus.STOPPED),
             overviewDispatcher = mainDispatcher,
         )
-        val error = async(start = CoroutineStart.UNDISPATCHED) { viewModel.errors.first() }
-
         viewModel.addRemoteBatch(
             listOf(
                 existing.url,
@@ -1619,6 +1637,10 @@ class ProfilesViewModelTest {
                 "https://last.invalid/sub",
             ),
         )
+        runCurrent()
+        assertEquals(ProfileAddPhase.RUNNING, viewModel.profileAddFeedback.value.phase)
+        assertTrue(viewModel.profileAddFeedback.value.message!!.contains("第 1 / 3 个"))
+        gate.complete(Unit)
         advanceUntilIdle()
 
         assertEquals(
@@ -1629,10 +1651,9 @@ class ProfilesViewModelTest {
             ),
             store.remoteAddCalls,
         )
-        assertEquals(
-            "批量导入完成：新增 2 个，跳过重复 1 个，失败 1 个",
-            error.await(),
-        )
+        assertEquals(ProfileAddPhase.COMPLETED, viewModel.profileAddFeedback.value.phase)
+        assertEquals("批量导入完成：新增 2 个，跳过重复 1 个，失败 1 个", viewModel.profileAddFeedback.value.message)
+        assertTrue(viewModel.profileAddFeedback.value.isError)
         assertEquals(
             listOf("https://existing.invalid/sub", "https://first.invalid/sub", "https://last.invalid/sub"),
             store.profiles.value.filter { it.type == com.lonnnnnng.flclash.data.ProfileType.URL }.map(Profile::url),

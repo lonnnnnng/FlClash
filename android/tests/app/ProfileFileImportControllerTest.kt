@@ -39,10 +39,12 @@ class ProfileFileImportControllerTest {
         assertTrue(model.state.value.validYaml); assertEquals(0, store.saved.size)
         source.fill(0)
         model.confirm(); model.confirm()
+        assertTrue(model.state.value.saving)
         advanceUntilIdle()
         assertEquals(1, store.saved.size)
         assertTrue(store.saved.single().contentEquals("rules: []".toByteArray()))
-        assertNull(model.state.value.fileName)
+        assertTrue(model.state.value.completed)
+        assertEquals("source.yaml", model.state.value.fileName)
     }
 
     @Test fun cancelledOrOlderPickerAndLateReaderCannotRestorePreview() = runTest {
@@ -86,7 +88,8 @@ class ProfileFileImportControllerTest {
         assertTrue(model.state.value.needsKey); assertNotNull(model.state.value.error); assertTrue(store.saved.isEmpty())
         model.confirm(" correct "); advanceUntilIdle()
         assertEquals(1, reads); assertEquals(listOf("correct"), store.keys)
-        assertNull(model.state.value.fileName)
+        assertTrue(model.state.value.completed)
+        assertEquals("source.age", model.state.value.fileName)
     }
 
     @Test fun backgroundRetainsOnlySystemPickerAndClearsKeyOrReadingSessions() = runTest {
@@ -109,7 +112,7 @@ class ProfileFileImportControllerTest {
         runtime.state.value = CoreRuntimeStatus.STARTING; gate.complete(Unit); advanceUntilIdle()
         assertTrue(store.saved.isEmpty()); assertNotNull(model.state.value.error)
         runtime.state.value = CoreRuntimeStatus.STOPPED
-        model.confirm(); advanceUntilIdle(); assertEquals(1, store.saved.size)
+        model.confirm(); advanceUntilIdle(); assertEquals(1, store.saved.size); assertTrue(model.state.value.completed)
     }
 
     @Test fun runningCoreBlocksFileCandidateBeforeReadAndAllowsSamePreviewAfterStop() = runTest {

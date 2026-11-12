@@ -24,6 +24,7 @@ import com.lonnnnnng.flclash.service.GeneralSettings
 @Composable
 internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralSettings = GeneralSettings(), busy: Boolean = false,
     allowLan: Boolean = false, lanBusy: Boolean = false, onAllowLan: (Boolean) -> Unit = {}, onShowLogs: () -> Unit = {},
+    saving: Boolean = false,
     onSave: (GeneralSettings, (Boolean) -> Unit) -> Unit = { _, done -> done(false) }) {
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
@@ -31,6 +32,7 @@ internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralS
     var hosts by rememberSaveable { mutableStateOf(false) }
     fun save(value: GeneralSettings) { onSave(value) { if (!it) error = "设置未能应用，请检查当前状态后重试" else error = null } }
     Column(Modifier.fillMaxWidth().testTag("page_general"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        if (saving || lanBusy) GeneralSaveProgress(if (lanBusy) "正在更新局域网设置…" else "正在保存并应用常规设置…")
         error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_error")) }
         GeneralSection("启动和后台") {
             GeneralToggle("自动运行", settings.autoRun, busy, "general_auto_run") { save(settings.copy(autoRun = it)) }
@@ -74,20 +76,29 @@ internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralS
             GeneralOpenRow("查看日志", null, "general_show_logs", busy, onShowLogs)
         }
     }
-    if (ua) GeneralUserAgentsPage(settings, busy, { ua = false }, onSave)
-    if (hosts) GeneralHostsPage(settings, busy, { hosts = false }, onSave)
+    if (ua) GeneralUserAgentsPage(settings, busy, saving, { ua = false }, onSave)
+    if (hosts) GeneralHostsPage(settings, busy, saving, { hosts = false }, onSave)
     editing?.let { field ->
-        if (field == "ports") GeneralPortsEditor(settings, busy, { editing = null }, onSave)
+        if (field == "ports") GeneralPortsEditor(settings, busy, saving, { editing = null }, onSave)
         else if (field == "timeout" || field == "logLevel") {
             val options = if (field == "timeout") listOf("500", "1000", "2000", "5000", "8000") else listOf("debug", "info", "warning", "error", "silent")
             GeneralOptionsEditor(if (field == "timeout") "测速超时" else "日志等级", options,
-                if (field == "timeout") settings.delayTestTimeout.toString() else settings.logLevel, busy, { editing = null }) { value, done ->
+                if (field == "timeout") settings.delayTestTimeout.toString() else settings.logLevel, busy, saving, { editing = null }) { value, done ->
                 onSave(if (field == "timeout") settings.copy(delayTestTimeout = value.toInt()) else settings.copy(logLevel = value), done)
             }
         } else GeneralTextEditor(field, when (field) { "secret" -> settings.controllerSecret; "username" -> settings.username; else -> settings.password }, busy,
-            onDismiss = { editing = null }) { value, done -> onSave(when (field) {
+            saving, onDismiss = { editing = null }) { value, done -> onSave(when (field) {
                 "secret" -> settings.copy(controllerSecret = value); "username" -> settings.copy(username = value); else -> settings.copy(password = value)
             }, done) }
+    }
+}
+
+@Composable
+private fun GeneralSaveProgress(message: String) {
+    Row(Modifier.fillMaxWidth().testTag("general_settings_saving"), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+        Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -116,11 +127,12 @@ private fun GeneralOpenRow(title: String, subtitle: String?, tag: String, busy: 
 }
 
 @Composable
-private fun GeneralOptionsEditor(title: String, options: List<String>, selected: String, busy: Boolean, onDismiss: () -> Unit,
+private fun GeneralOptionsEditor(title: String, options: List<String>, selected: String, busy: Boolean, saving: Boolean, onDismiss: () -> Unit,
     onSave: (String, (Boolean) -> Unit) -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(title) }, text = {
-        Column { options.forEach { option -> Row(Modifier.fillMaxWidth().clickable(enabled = !busy) {
+        Column { if (saving) GeneralSaveProgress("正在保存并应用常规设置…")
+            options.forEach { option -> Row(Modifier.fillMaxWidth().clickable(enabled = !busy) {
             onSave(option) { if (it) onDismiss() else error = "保存失败，请重试" }
         }.testTag("general_option_$option").padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             RadioButton(selected == option, null, enabled = !busy); Text(option, Modifier.padding(start = 12.dp))
@@ -129,7 +141,7 @@ private fun GeneralOptionsEditor(title: String, options: List<String>, selected:
 }
 
 @Composable
-private fun GeneralPortsEditor(settings: GeneralSettings, busy: Boolean, onDismiss: () -> Unit, onSave: (GeneralSettings, (Boolean) -> Unit) -> Unit) {
+private fun GeneralPortsEditor(settings: GeneralSettings, busy: Boolean, saving: Boolean, onDismiss: () -> Unit, onSave: (GeneralSettings, (Boolean) -> Unit) -> Unit) {
     var values by rememberSaveable { mutableStateOf(listOf(settings.mixedPort, settings.port, settings.socksPort, settings.redirPort, settings.tproxyPort).map(Int::toString)) }
     var error by remember { mutableStateOf<String?>(null) }
     var resetting by rememberSaveable { mutableStateOf(false) }
@@ -141,6 +153,7 @@ private fun GeneralPortsEditor(settings: GeneralSettings, busy: Boolean, onDismi
     // 作者 long：上游端口使用整页表单；保存固定在顶栏，数字键盘弹出时只压缩字段滚动区。
     ProfileEditorPage({ if (!busy) onDismiss() }, { Text("入站端口") }, {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("general_ports_editor"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (saving) GeneralSaveProgress("正在保存并应用常规设置…")
             Text("1024–49151；除 Mixed 外可填 0 关闭", style = MaterialTheme.typography.bodySmall)
             error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_editor_error")) }
             listOf("Mixed", "HTTP", "SOCKS", "Redir", "TProxy").forEachIndexed { index, title ->
@@ -162,14 +175,15 @@ private fun GeneralPortsEditor(settings: GeneralSettings, busy: Boolean, onDismi
 }
 
 @Composable
-private fun GeneralTextEditor(field: String, initial: String, busy: Boolean, onDismiss: () -> Unit,
+private fun GeneralTextEditor(field: String, initial: String, busy: Boolean, saving: Boolean, onDismiss: () -> Unit,
     onSave: (String, (Boolean) -> Unit) -> Unit) {
     val label = when (field) { "secret" -> "控制器密钥"; "username" -> "账号"; "password" -> "密码"; else -> "User-Agent" }
     var value by rememberSaveable(field) { mutableStateOf(initial) }
     var revealed by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(label) }, text = {
-        Column { OutlinedTextField(value, { if (it.length <= 1024 && it.none(Char::isISOControl)) value = it }, enabled = !busy, singleLine = true,
+        Column { if (saving) GeneralSaveProgress("正在保存并应用常规设置…")
+            OutlinedTextField(value, { if (it.length <= 1024 && it.none(Char::isISOControl)) value = it }, enabled = !busy, singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = if (field in listOf("secret", "password")) KeyboardType.Password else KeyboardType.Text),
             visualTransformation = if (field in listOf("secret", "password") && !revealed) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = { if (field in listOf("secret", "password")) IconButton({ revealed = !revealed }) { Icon(Icons.Outlined.Visibility, null) } },
@@ -183,7 +197,7 @@ private fun GeneralTextEditor(field: String, initial: String, busy: Boolean, onD
 }
 
 @Composable
-private fun GeneralUserAgentsPage(settings: GeneralSettings, busy: Boolean, onDismiss: () -> Unit, onSave: (GeneralSettings, (Boolean) -> Unit) -> Unit) {
+private fun GeneralUserAgentsPage(settings: GeneralSettings, busy: Boolean, saving: Boolean, onDismiss: () -> Unit, onSave: (GeneralSettings, (Boolean) -> Unit) -> Unit) {
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
     var sorting by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -191,6 +205,7 @@ private fun GeneralUserAgentsPage(settings: GeneralSettings, busy: Boolean, onDi
     fun save(next: GeneralSettings, done: (Boolean) -> Unit = {}) { onSave(next) { if (!it) error = "保存失败，请重试"; done(it) } }
     ProfileEditorPage({ if (!busy) { if (sorting) sorting = false else onDismiss() } }, { Text("User-Agent") }, {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (saving) GeneralSaveProgress("正在保存并应用 User-Agent…")
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             Row {
                 TextButton({ editing = "" }, enabled = !busy, modifier = Modifier.testTag("general_ua_add")) { Text("添加") }
@@ -211,7 +226,7 @@ private fun GeneralUserAgentsPage(settings: GeneralSettings, busy: Boolean, onDi
             }
         }
     }, backTag = "general_ua_back")
-    editing?.let { original -> GeneralTextEditor("ua", original, busy, { editing = null }) { value, done ->
+    editing?.let { original -> GeneralTextEditor("ua", original, busy, saving, { editing = null }) { value, done ->
         if (value != original && value in entries) { error = "User-Agent 已存在"; done(false) }
         else save(settings.copy(userAgents = if (original.isEmpty()) entries + value else entries.map { if (it == original) value else it },
             userAgent = if (settings.userAgent == original) value else settings.userAgent)) { done(it); if (it) editing = null }
@@ -219,12 +234,13 @@ private fun GeneralUserAgentsPage(settings: GeneralSettings, busy: Boolean, onDi
 }
 
 @Composable
-private fun GeneralHostsPage(settings: GeneralSettings, busy: Boolean, onDismiss: () -> Unit, onSave: (GeneralSettings, (Boolean) -> Unit) -> Unit) {
+private fun GeneralHostsPage(settings: GeneralSettings, busy: Boolean, saving: Boolean, onDismiss: () -> Unit, onSave: (GeneralSettings, (Boolean) -> Unit) -> Unit) {
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
     var query by rememberSaveable { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     ProfileEditorPage({ if (!busy) onDismiss() }, { Text("Hosts") }, {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (saving) GeneralSaveProgress("正在保存并应用 Hosts…")
             OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索域名或地址") }, modifier = Modifier.fillMaxWidth())
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             TextButton({ editing = "" }, enabled = !busy, modifier = Modifier.testTag("general_host_add")) { Text("添加") }
@@ -244,6 +260,7 @@ private fun GeneralHostsPage(settings: GeneralSettings, busy: Boolean, onDismiss
         var formError by remember { mutableStateOf<String?>(null) }
         AlertDialog(onDismissRequest = { if (!busy) editing = null }, title = { Text(if (original.isEmpty()) "添加 Hosts" else "编辑 Hosts") }, text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (saving) GeneralSaveProgress("正在保存并应用 Hosts…")
                 OutlinedTextField(name, { if (it.length <= 253) name = it }, label = { Text("域名") }, singleLine = true, enabled = !busy, modifier = Modifier.testTag("general_host_name"))
                 OutlinedTextField(value, { if (it.length <= 4096) value = it }, label = { Text("地址，多个地址以空格分隔") }, enabled = !busy, modifier = Modifier.testTag("general_host_value"))
                 formError?.let { Text(it, color = MaterialTheme.colorScheme.error) }

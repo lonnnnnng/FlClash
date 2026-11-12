@@ -47,6 +47,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -375,6 +376,7 @@ fun KClashApp(
     val diagnosticState by runtimeViewModel.diagnosticState.collectAsState()
     val diagnosticHistory by runtimeViewModel.diagnosticHistory.collectAsState()
     val profilesState by profilesViewModel.state.collectAsState()
+    val profileAddFeedback by profilesViewModel.profileAddFeedback.collectAsState()
     val managementState by profilesViewModel.management.state.collectAsState()
     val extensionSession by profilesViewModel.extension.state.collectAsState()
     val editorState by profilesViewModel.editorState.collectAsState()
@@ -628,6 +630,7 @@ fun KClashApp(
         ProfileQrScannerPage(
             onClose = { showQrScanner = false },
             onImport = { result ->
+            profilesViewModel.clearProfileAddFeedback()
                 showQrScanner = false
                 scannedProfileUrl = result.url
                 scannedProfileLabel = result.label
@@ -910,6 +913,7 @@ fun KClashApp(
                     ProfilesPanel(
                         modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp).testTag("page_profiles"),
                         state = profilesState,
+                        addFeedback = profileAddFeedback,
                         management = profilesViewModel.management,
                         editorState = editorState,
                         remoteEditorState = remoteEditorState,
@@ -932,8 +936,11 @@ fun KClashApp(
                         toolbarAction = pendingProfilesToolbarAction,
                         onToolbarActionHandled = { pendingProfilesToolbarAction = null },
                         showInlineToolbar = false,
-                        onShowAddDialog = { showAddDialog = true },
-                        onDismissAddDialog = { showAddDialog = false; scannedProfileUrl = null; scannedProfileLabel = null },
+                        onShowAddDialog = { profilesViewModel.clearProfileAddFeedback(); showAddDialog = true },
+                        onDismissAddDialog = {
+                            showAddDialog = false; scannedProfileUrl = null; scannedProfileLabel = null
+                            profilesViewModel.clearProfileAddFeedback()
+                        },
                         onPickFile = {
                             showAddDialog = false
                             scannedProfileUrl = null
@@ -947,21 +954,12 @@ fun KClashApp(
                             showQrScanner = true
                         },
                         onAddRemote = { label, url ->
-                            showAddDialog = false
-                            scannedProfileUrl = null
-                            scannedProfileLabel = null
                             profilesViewModel.addRemote(url, label)
                         },
                         onAddRemoteWithAgeKey = { label, url, key ->
-                            showAddDialog = false
-                            scannedProfileUrl = null
-                            scannedProfileLabel = null
                             profilesViewModel.addRemote(url, label, key)
                         },
                         onAddRemoteBatch = { urls ->
-                            showAddDialog = false
-                            scannedProfileUrl = null
-                            scannedProfileLabel = null
                             profilesViewModel.addRemoteBatch(urls)
                         },
                         onAddCustom = { label ->
@@ -1336,6 +1334,7 @@ fun KClashApp(
                                 GeneralSettingsPanel(onOpenOnDemand = { toolsSubpage = ToolsSubpage.ON_DEMAND }, settings = generalSettings,
                                     busy = generalSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
                                     allowLan = generalLan.config.allowLan, lanBusy = lanSaving, onAllowLan = runtimeViewModel::saveGeneralLan,
+                                    saving = generalSaving || lanSaving,
                                     onShowLogs = { showLogs = true }, onSave = runtimeViewModel::saveGeneralSettings)
                             }
                             ToolsSubpage.ADVANCED -> item {
@@ -1349,8 +1348,12 @@ fun KClashApp(
                                     runtimeViewModel::setVpnEnabled, onRestartVpn, runtimeViewModel::saveNetworkSettings)
                             }
                             ToolsSubpage.GLOBAL_DNS -> item {
-                                GlobalDnsSettingsPanel(globalDns, dnsSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
-                                    runtimeViewModel::saveGlobalDns)
+                                GlobalDnsSettingsPanel(
+                                    globalDns,
+                                    dnsSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
+                                    saving = dnsSaving,
+                                    onSave = runtimeViewModel::saveGlobalDns,
+                                )
                             }
                             ToolsSubpage.ON_DEMAND -> item {
                                 OnDemandSettingsPanel(
@@ -1675,6 +1678,7 @@ internal fun ObservationPage(
 internal fun ProfilesPanel(
     modifier: Modifier = Modifier,
     state: ProfilesUiState,
+    addFeedback: ProfileAddFeedback = ProfileAddFeedback(),
     management: ProfileManagementController? = null,
     editorState: ProfileEditorUiState,
     remoteEditorState: RemoteProfileEditorUiState = RemoteProfileEditorUiState(),
@@ -1863,6 +1867,12 @@ internal fun ProfilesPanel(
                 )
             }
         }
+        // 作者 long：选中/删除等配置操作不一定打开独立弹窗，页面级状态让控件禁用期间仍有可见回执。
+        if (state.isBusy) Row(Modifier.fillMaxWidth().testTag("profiles_operation_progress"), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+            Text("正在处理配置…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         if (state.profiles.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxWidth().weight(1f),
@@ -1956,6 +1966,7 @@ internal fun ProfilesPanel(
     if (showAddDialog) {
         AddProfileDialog(
             busy = state.isBusy,
+            feedback = addFeedback,
             onDismiss = onDismissAddDialog,
             onPickFile = onPickFile,
             onPickQrCode = onPickQrCode,
@@ -5040,6 +5051,12 @@ internal fun ProfileFileImportPreviewDialog(
                 Text(fileName, maxLines = 2)
                 Text("文件大小：$fileSizeBytes 字节")
                 validationNote?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                if (busy) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.testTag("profile_file_import_progress")) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Text(if (isEncrypted) "正在解密、校验并添加配置…" else "正在保存并应用配置…",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_file_import_error")) }
                 Text(
                     if (isEncrypted) "age 加密配置，导入时输入密钥并校验"
@@ -5081,6 +5098,7 @@ internal fun AddProfileDialog(
     menuSource: AppMenuSource? = null,
     initialRemoteUrl: String? = null,
     initialRemoteLabel: String? = null,
+    feedback: ProfileAddFeedback = ProfileAddFeedback(),
 ) {
     var label by rememberSaveable { mutableStateOf(initialRemoteLabel.orEmpty()) }
     var url by rememberSaveable { mutableStateOf(initialRemoteUrl.orEmpty()) }
@@ -5091,13 +5109,21 @@ internal fun AddProfileDialog(
     var batchInput by rememberSaveable { mutableStateOf("") }
     var attempted by rememberSaveable { mutableStateOf(false) }
     var submitted by remember { mutableStateOf(false) }
-    val locked = busy || submitted
+    val terminal = feedback.phase == ProfileAddPhase.SUCCEEDED || feedback.phase == ProfileAddPhase.COMPLETED
+    val locked = busy || submitted || feedback.phase == ProfileAddPhase.RUNNING || feedback.phase == ProfileAddPhase.NEEDS_AGE_KEY
     val urlFocus = remember { FocusRequester() }
     val keyFocus = remember { FocusRequester() }
     val batchFocus = remember { FocusRequester() }
     val preview = remember(batchInput, existingUrls) { parseProfileUrlImport(batchInput, existingUrls) }
     val urlError = if (attempted && !batchMode) profileUrlInputError(url) else null
     val keyboard = LocalSoftwareKeyboardController.current
+    LaunchedEffect(feedback.requestId, feedback.phase) {
+        when (feedback.phase) {
+            ProfileAddPhase.FAILED -> { submitted = false; keyboard?.hide() }
+            ProfileAddPhase.SUCCEEDED, ProfileAddPhase.COMPLETED -> { submitted = true; keyboard?.hide() }
+            else -> Unit
+        }
+    }
     fun submit() {
         if (busy || submitted) return
         attempted = true
@@ -5208,21 +5234,36 @@ internal fun AddProfileDialog(
                         keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { submit() }))
                 }
+                when (feedback.phase) {
+                    ProfileAddPhase.RUNNING -> Column(Modifier.fillMaxWidth().testTag("profile_add_progress"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                        Text(feedback.message ?: "正在处理订阅…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    ProfileAddPhase.NEEDS_AGE_KEY -> Text(feedback.message ?: "等待输入 age 解密密钥", color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.testTag("profile_add_waiting_key"))
+                    ProfileAddPhase.SUCCEEDED, ProfileAddPhase.COMPLETED -> Text(feedback.message.orEmpty(),
+                        color = if (feedback.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.testTag("profile_add_result"))
+                    ProfileAddPhase.FAILED -> Text(feedback.message ?: "导入失败，请重试", color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("profile_add_failure"))
+                    ProfileAddPhase.IDLE -> Unit
+                }
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = ::submit,
-                enabled = !locked && if (batchMode) {
-                    preview.urls.isNotEmpty() && preview.invalidCount == 0
-                } else {
-                    url.isNotBlank()
-                },
-                modifier = Modifier.testTag("profile_add_submit"),
-            ) { Text(if (batchMode) "导入 ${preview.urls.size} 条" else "导入") }
+            if (terminal) TextButton(onClick = onDismiss, modifier = Modifier.testTag("profile_add_done")) { Text("完成") }
+            else TextButton(
+                    onClick = ::submit,
+                    enabled = !locked && if (batchMode) {
+                        preview.urls.isNotEmpty() && preview.invalidCount == 0
+                    } else {
+                        url.isNotBlank()
+                    },
+                    modifier = Modifier.testTag("profile_add_submit"),
+                ) { Text(if (feedback.phase == ProfileAddPhase.FAILED) "重试导入" else if (batchMode) "导入 ${preview.urls.size} 条" else "导入") }
         },
         dismissButton = {
-            TextButton(onClick = { ageKey = ""; keyboard?.hide(); step = AddProfileStep.SOURCE }, enabled = !locked,
+            TextButton(onClick = { if (terminal) onDismiss() else { ageKey = ""; keyboard?.hide(); step = AddProfileStep.SOURCE } }, enabled = terminal || !locked,
                 modifier = Modifier.testTag("profile_add_back")) { Text("返回") }
         },
     )

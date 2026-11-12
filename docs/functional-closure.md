@@ -13,6 +13,8 @@
 | 导入前核心语义预检 | 候选配置节点/组/规则/DNS等语义检查，错误不落盘；运行核心和原文件/资源不受扰；外部资源可用性边界明确 | 本轮边界补验通过：908 JVM、最终Redmi18/18；混合FILE/URL/CUSTOM与密文草稿保护、运行纯代理/VPN守卫、真实管理器托管应用失败/仅重试应用、真实授权URL导入已验。外部正文首轮89/90+定向1/1，90个唯一资源真实下载并分批解析；不是单轮90/90或一次加载。既有20类入站/资源竞态/R8 SAF证据保留；低API/OEM/其他协议实流仍待验，本轮TUN绑定EPERM未通过。见[记录](core-semantic-preflight-investigation.md)与[证据](acceptance/core-semantic-boundaries-redmi-20261111.json) |
 | 应用更新（简化范围） | 读取当前版本、筛选Kotlin稳定发布、比较最新版、失败重试、有新版跳转GitHub发布页 | 按用户最新决定移除应用内下载/安装，原复杂流程待验项取消。**已完成当前范围**：903 JVM、Debug/签名R8/motion-Test/双Lint、Redmi真实查询和浏览器跳转通过；0.1.3公开发布及签名/SHA/安装边界数据保持回验通过。当前仅检查版本并打开GitHub，见[实现和验收](app-update-implementation.md)。 |
 
+2026-11-12 KUI-042 对等待反馈作了跨页面审计：配置添加、文件导入、DNS/常规/LAN 保存及配置页异步操作的可见忙态已补齐；资源/规则资源/Provider/同步/核心/编辑器等原有等待反馈保持。911 JVM、Debug/AndroidTest/未签名Release-R8及双Lint通过，Redmi 新增反馈用例5/5。最终竖屏相关UI类38项有6个旧断言失败和1个授权参数跳过，失败已留档；不改变上述六项功能目标统计。详见[异步操作反馈审计](async-operation-feedback.md)与[验收](acceptance/async-feedback-redmi-20261112.json)。
+
 统一按“一组功能→构建→专用Redmi集中验收→roadmap/todo/证据→中文提交推送”推进。Flutter只参考；内核仅跟随chen08209/Clash.Meta:FlClash。本轮功能优先，视觉精度与菜单慢帧后排；不恢复TalkBack，备份/系统恢复、语言主题及观测次要打磨仍暂缓。
 
 ## 缺口、异常和未验边界分开统计

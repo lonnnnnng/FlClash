@@ -19,6 +19,32 @@ import org.junit.Test
 class GlobalSettingsInstrumentedTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun dnsSaveShowsProgressUntilCompletionCallback() {
+        var saving by mutableStateOf(false)
+        var settings by mutableStateOf(ProfileDnsOverrides(nameserver = listOf("1.1.1.1")))
+        var completion: ((Boolean) -> Unit)? = null
+        compose.setContent { KClashTheme {
+            ProfileEditorPage({}, { Text("DNS") }, {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    GlobalDnsSettingsPanel(settings, saving, saving = saving) { value, done ->
+                        settings = value
+                        saving = true
+                        completion = done
+                    }
+                }
+            })
+        } }
+        compose.onNodeWithTag("global_dns_nameserver").performClick()
+        compose.onNodeWithTag("global_dns_input").performTextReplacement("9.9.9.9")
+        compose.onNodeWithTag("global_dns_save").performClick()
+        compose.onNodeWithTag("global_dns_editor_saving").assertIsDisplayed()
+        compose.onNodeWithTag("global_dns_editor").assertExists()
+        compose.runOnIdle { completion!!.invoke(true); saving = false }
+        compose.waitUntil { compose.onAllNodesWithTag("global_dns_editor").fetchSemanticsNodes().isEmpty() }
+        compose.onNodeWithTag("global_dns_saving").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(listOf("9.9.9.9"), settings.nameserver) }
+    }
+
     @Test fun dnsExplicitEmptyFailureRetryRemovalAndBothThemes() {
         assertPortraitDefaultFontConfiguration()
         var settings by mutableStateOf(ProfileDnsOverrides(nameserver = listOf("1.1.1.1"), ipv6 = false))

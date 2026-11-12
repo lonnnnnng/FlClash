@@ -37,7 +37,7 @@ private fun ProfileDnsOverrides.changed(key: String, value: JsonElement?): Profi
 
 /** 作者 long：未添加字段继续继承配置；添加后的空列表是明确清空，删除字段才撤销覆盖。 */
 @Composable
-internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean,
+internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean, saving: Boolean = false,
     onSave: (ProfileDnsOverrides, (Boolean) -> Unit) -> Unit) {
     var adding by rememberSaveable { mutableStateOf(false) }
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
@@ -47,6 +47,11 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
     Column(Modifier.fillMaxWidth().testTag("page_global_dns"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("为普通配置设置 DNS 覆盖，未添加的字段沿用配置；自定义配置使用自己的 DNS。",
             color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+        if (saving) Row(Modifier.fillMaxWidth().testTag("global_dns_saving"), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+            Text("正在保存并应用 DNS 设置…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         listOf("选项" to listOf("listen", "ipv6", "enhanced-mode"), "Fake-IP" to listOf("fake-ip-filter", "fake-ip-filter-mode"),
             "Nameserver" to GlobalDnsSettings.keys.filter { it in GlobalDnsSettings.listKeys && it != "fake-ip-filter" }).forEach { (section, keys) ->
@@ -81,14 +86,15 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
         } }
     }, confirmButton = { TextButton({ adding = false }, enabled = !busy) { Text("取消") } })
     editing?.let { key ->
-        GlobalDnsFieldEditor(key, fields.get(key)?.dnsText() ?: dnsDefault(key), busy, onDismiss = { editing = null }) { value, done ->
+        GlobalDnsFieldEditor(key, fields.get(key)?.dnsText() ?: dnsDefault(key), busy, saving,
+            onDismiss = { editing = null }) { value, done ->
             onSave(settings.changed(key, value), done)
         }
     }
 }
 
 @Composable
-private fun GlobalDnsFieldEditor(key: String, initial: String, busy: Boolean, onDismiss: () -> Unit,
+private fun GlobalDnsFieldEditor(key: String, initial: String, busy: Boolean, saving: Boolean, onDismiss: () -> Unit,
     onSave: (JsonElement, (Boolean) -> Unit) -> Unit) {
     var text by rememberSaveable(key) { mutableStateOf(initial) }
     var error by rememberSaveable(key) { mutableStateOf<String?>(null) }
@@ -117,6 +123,11 @@ private fun GlobalDnsFieldEditor(key: String, initial: String, busy: Boolean, on
                     Text(if (key in GlobalDnsSettings.listKeys) "每行一项；留空保存为空列表，移除字段恢复继承" else "例如 127.0.0.1:1053，留空关闭监听")
                 })
             error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_dns_error")) }
+            if (saving) Row(Modifier.fillMaxWidth().testTag("global_dns_editor_saving"), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                Text("正在保存并应用…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }, confirmButton = { if (options.isEmpty()) TextButton({ save(text) }, enabled = !busy, modifier = Modifier.testTag("global_dns_save")) { Text("保存") } },
         dismissButton = { TextButton(onDismiss, enabled = !busy) { Text("取消") } })

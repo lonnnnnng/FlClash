@@ -1,0 +1,67 @@
+{
+  "task": "KUI-042",
+  "date": "2026-11-12",
+  "scope": "等待较久的用户可见异步操作反馈",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "serial": "wsvwypiz7xwslvl7"
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "status": "passed",
+    "jvm": {
+      "tests": 911,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "artifacts": {
+      "debugApkSha256": "f97ebb3a492bbb01bf6c113f0eb08cf6e603a4ca83014cb94922321fd66bd063",
+      "unsignedReleaseR8ApkSha256": "12de015d590085f17a58e3bb2ab63698cd83378599679214f456b7497b4858e2",
+      "motionApkSha256": "5869b580396bcab76a0427c49ad8912205c342f726a8a914596050a1d608af2f",
+      "motionTestApkSha256": "623408c0bc4d6d8314ca1fcb58e5e60aa1c565435adb0c1fda546c2d49956d91"
+    },
+    "lint": {
+      "debugErrors": 0,
+      "releaseErrors": 0
+    }
+  },
+  "redmi": {
+    "target": "com.lonnnnnng.flclash.motion",
+    "focusedFeedbackTests": {
+      "tests": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "relatedClassRegression": {
+      "tests": 38,
+      "passed": 31,
+      "failed": 6,
+      "assumptionSkipped": 1,
+      "orientation": "portrait"
+    },
+    "existingFailures": [
+      "ProfileAge repository acceptance was skipped because its explicit 1.yaml authorization argument was not supplied.",
+      "ProfileUi.profileMutationButtonsDisableWhileCoreIsRunning expects the unchanged ProfileCard preview action to invoke its test callback.",
+      "Two ProfileUi file-preview assertions expect older text; current production strings are unchanged and differ from those expectations.",
+      "Two ProfileUi source-menu assertions expect the unchanged file/custom callbacks to fire in the fixed Compose test host.",
+      "GlobalSettings sorting assertion expects a test tag absent from unchanged GlobalRulesPage."
+    ],
+    "temporaryPackagesRemoved": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion"
+    ],
+    "formalPackagePreserved": true,
+    "formalProcessStillRunningAfterCleanup": true
+  },
+  "localAuthorizedConfig": {
+    "path": "../1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeUnix": 1794392072,
+    "unchanged": true,
+    "uploaded": false
+  },
+  "releasePublished": false
+}
