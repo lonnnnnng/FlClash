@@ -41,7 +41,7 @@ Kotlin 版本仍在持续开发。配置、代理、VPN 和观测主流程已有
 
 ## 下载与安装
 
-从 [GitHub Releases](https://github.com/lonnnnnng/FlClash/releases/latest) 下载签名安装包 `KClash-0.1.3-android-arm64-v8a.apk`。当前版本适用于 ARM64 Android 设备。Android 可能要求允许当前浏览器或文件管理器安装应用。
+从 [GitHub Releases](https://github.com/lonnnnnng/FlClash/releases/latest) 下载签名安装包 `KClash-0.1.5-android-arm64-v8a.apk`。当前版本适用于 ARM64 Android 设备。Android 可能要求允许当前浏览器或文件管理器安装应用。
 
 在工具→应用更新中检查最新版本；发现新版后，点击跳转 GitHub 发布页，由浏览器下载。
 
