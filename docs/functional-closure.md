@@ -11,9 +11,11 @@
 | 配置/偏好长期稳定性 | 保留写入审计、逐键分析和长窗口/文件保护；按用户接受当前验收结果，旧异常只留档 | **已收口（用户接受历史未归因）**：近期窗口变化有来源、正式四表/两正文SHA-size-mtime/UID保持，未发现新配置丢失/损坏。旧元数据/mtime/未知偏好不再主动复现或追根，有新可复现异常再打开。见[审计](state-audit-key-join.md) |
 | Provider运行态恢复 | 保存前/后真实死亡、恢复防重放及数据保持已分组验收；按用户接受现状，保留旧失败 | **已收口（用户接受历史未归因）**：前组两死亡窗口/6HTTPS通过；本组旧包after及最终包after各完成真实系统恢复/3HTTPS，缓存/正文/防重放与清理通过。旧保存错误未复现，保留KDIAG-003提前报错诊断；TLS失败单列网络任务，未进入死亡窗口的场景不记恢复通过。不再单独追旧超时/保存原因。 |
 | 导入前核心语义预检 | 候选配置节点/组/规则/DNS等语义检查，错误不落盘；运行核心和原文件/资源不受扰；外部资源可用性边界明确 | 本轮边界补验通过：908 JVM、最终Redmi18/18；混合FILE/URL/CUSTOM与密文草稿保护、运行纯代理/VPN守卫、真实管理器托管应用失败/仅重试应用、真实授权URL导入已验。外部正文首轮89/90+定向1/1，90个唯一资源真实下载并分批解析；不是单轮90/90或一次加载。既有20类入站/资源竞态/R8 SAF证据保留；低API/OEM/其他协议实流仍待验，本轮TUN绑定EPERM未通过。见[记录](core-semantic-preflight-investigation.md)与[证据](acceptance/core-semantic-boundaries-redmi-20261111.json) |
-| 应用更新（简化范围） | 读取当前版本、筛选Kotlin稳定发布、比较最新版、失败重试、有新版跳转GitHub发布页 | 按用户最新决定移除应用内下载/安装，原复杂流程待验项取消。**已完成当前范围**：903 JVM、Debug/签名R8/motion-Test/双Lint、Redmi真实查询和浏览器跳转通过；0.1.3公开发布及签名/SHA/安装边界数据保持回验通过。当前仅检查版本并打开GitHub，见[实现和验收](app-update-implementation.md)。 |
+| 应用更新（简化范围） | 读取当前版本、筛选Kotlin稳定发布、比较最新版、失败重试、有新版跳转GitHub发布页 | 按用户最新决定移除应用内下载/安装，原复杂流程待验项取消。**已完成当前范围**：903 JVM、Debug/签名R8/motion-Test/双Lint、Redmi真实查询和浏览器跳转通过；0.1.4已发布为Latest，标签/分支CI、公开APK签名/SHA及Redmi从0.1.3原位覆盖到0.1.4/code1004回验通过。当前仅检查版本并打开GitHub，见[实现和验收](app-update-implementation.md)及[发布证据](acceptance/release-0.1.4-redmi-20261112.json)。 |
 
 2026-11-12 KUI-042 对等待反馈作了跨页面审计：配置添加、文件导入、DNS/常规/LAN 保存及配置页异步操作的可见忙态已补齐；资源/规则资源/Provider/同步/核心/编辑器等原有等待反馈保持。911 JVM、Debug/AndroidTest/未签名Release-R8及双Lint通过，Redmi 新增反馈用例5/5。最终竖屏相关UI类38项有6个旧断言失败和1个授权参数跳过，失败已留档；不改变上述六项功能目标统计。详见[异步操作反馈审计](async-operation-feedback.md)与[验收](acceptance/async-feedback-redmi-20261112.json)。
+
+2026-11-12 随KUI-042发布KClash 0.1.4：GitHub Latest、标签/分支CI、正式APK摘要/签名及Redmi覆盖安装和启动均已核验。当前设备快照没有活动VPN transport，因此不把安装验收写成VPN运行态通过。发布细节见[0.1.4验收记录](acceptance/release-0.1.4-redmi-20261112.json)。
 
 统一按“一组功能→构建→专用Redmi集中验收→roadmap/todo/证据→中文提交推送”推进。Flutter只参考；内核仅跟随chen08209/Clash.Meta:FlClash。本轮功能优先，视觉精度与菜单慢帧后排；不恢复TalkBack，备份/系统恢复、语言主题及观测次要打磨仍暂缓。
 

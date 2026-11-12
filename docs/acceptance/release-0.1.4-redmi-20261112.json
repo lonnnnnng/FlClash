@@ -1,0 +1,93 @@
+{
+  "date": "2026-11-12",
+  "release": {
+    "tag": "kclash-v0.1.4",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.4",
+    "latest": true,
+    "sourceCommit": "88c513f67354b8db8c3bedbc81b4c0a9e3bd4b0a",
+    "publishedAt": "2026-11-12T09:39:43Z",
+    "ci": {
+      "tag": {
+        "id": 43190461214,
+        "url": "https://github.com/lonnnnnng/FlClash/actions/runs/43190461214",
+        "conclusion": "success"
+      },
+      "branch": {
+        "id": 43190387519,
+        "url": "https://github.com/lonnnnnng/FlClash/actions/runs/43190387519",
+        "conclusion": "success"
+      }
+    },
+    "artifact": {
+      "name": "KClash-0.1.4-android-arm64-v8a.apk",
+      "bytes": 48455952,
+      "sha256": "9a7d1f5804f82db5393d0cf23d35b8acec28f7a7aa506aaceaba4cdb6b5c53c4",
+      "matchesGitHubAssetDigestAndSums": true,
+      "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+      "minSdk": 24,
+      "abis": [
+        "arm64-v8a"
+      ]
+    }
+  },
+  "validation": {
+    "jvm": {
+      "tests": 911,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "builds": {
+      "debug": true,
+      "androidTest": true,
+      "releaseR8": true,
+      "lintDebugErrors": 0,
+      "lintReleaseErrors": 0
+    },
+    "redmiFocusedFeedback": {
+      "tests": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "relatedUiClassRegression": {
+      "tests": 38,
+      "passed": 31,
+      "failed": 6,
+      "authorizedSkip": 1,
+      "fullClassGreen": false,
+      "details": "See async-feedback-redmi-20261112.json; six pre-existing assertions remain recorded."
+    }
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "package": "com.lonnnnnng.flclash",
+    "upgrade": {
+      "fromVersion": "0.1.3",
+      "toVersion": "0.1.4",
+      "versionCode": 1004,
+      "inPlace": true,
+      "firstInstallTimePreserved": true,
+      "firstInstallTime": "2026-11-11 04:10:29",
+      "lastUpdateTime": "2026-11-12 17:42:18",
+      "mainActivityLaunchPassed": true
+    },
+    "currentReadback": {
+      "appProcessPresent": true,
+      "appProcessPid": 27375,
+      "wifi": "OBEI-Mobile",
+      "wifiValidated": true,
+      "vpnTransportPresent": false,
+      "motionPackagesPresent": false
+    }
+  },
+  "localAuthorizedConfig": {
+    "path": "../1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeUnix": 1794392072,
+    "unchanged": true,
+    "uploaded": false
+  }
+}
