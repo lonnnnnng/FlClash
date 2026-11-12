@@ -8,7 +8,7 @@
 
 安装包：`KClash-0.1.5-android-arm64-v8a.apk`，Android 7.0（API24）及以上，仅 ARM64。包名 `com.lonnnnnng.flclash`，versionCode `1005`，沿用原正式签名，可覆盖此前 KClash 正式版。
 
-按用户本次要求直接构建签名 Release 并发布，未重新运行单测、Lint 或真机验收。此前各批次的测试结果仅代表对应历史验收，不作为本次新包复测结果。
+按用户本次要求直接构建签名 Release 并发布，未重新运行单测、完整 Lint 或真机验收；Release 构建自带的 lintVital 随构建执行。此前各批次的测试结果仅代表对应历史验收，不作为本次新包复测结果。
 
 随附 `SHA256SUMS`。签名证书 SHA-256：`3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49`。
 

@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-12",
+  "release": {
+    "tag": "kclash-v0.1.5",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.5",
+    "sourceCommit": "54fb218d6871906741df3412eafae2f389aef695",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-12T15:28:27Z",
+    "assets": [
+      {
+        "name": "KClash-0.1.5-android-arm64-v8a.apk",
+        "size": 48465816,
+        "digest": "sha256:f1cd1660e9ab4d0f8576ae69606863e54ca3c3a8e9daf75382413d9b399921e3",
+        "state": "uploaded",
+        "url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.5/KClash-0.1.5-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 101,
+        "digest": "sha256:c6bf212e187f3f0fa740c7bed73767cfd7dc2de9bf949c03497e379e79f6504f",
+        "state": "uploaded",
+        "url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.5/SHA256SUMS"
+      }
+    ]
+  },
+  "package": {
+    "versionName": "0.1.5",
+    "versionCode": 1005,
+    "command": [
+      "./gradlew",
+      ":app:assembleRelease",
+      "--no-daemon",
+      "-Ptarget-platform=android-arm64",
+      "-PkclashVersionName=0.1.5",
+      "-PkclashVersionCode=1005"
+    ],
+    "sha256": "f1cd1660e9ab4d0f8576ae69606863e54ca3c3a8e9daf75382413d9b399921e3",
+    "bytes": 48465816,
+    "testsRerun": false,
+    "deviceAcceptanceRerun": false,
+    "package": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "abis": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "debuggable": false,
+    "metadataAndSignatureChecked": true,
+    "standaloneLintRerun": false,
+    "assembleReleaseIncludedLintVital": true
+  },
+  "build": {
+    "result": "BUILD SUCCESSFUL",
+    "elapsed": "2m 55s",
+    "tasks": {
+      "total": 165,
+      "executed": 54,
+      "upToDate": 111
+    },
+    "logSha256": "86df0409331663d778c4e435988e6db90a9d4650ba08ee047272bea0f0dfbcd0",
+    "sourceManifestSha256": "7f6f88b60695a707ef786771b8ea5480d56cce834230426e921c8c019647b0a8",
+    "sourceFiles": 338
+  },
+  "validationPolicy": {
+    "userRequestedDirectReleaseWithoutRetesting": true,
+    "unitTestsRerun": false,
+    "fullLintRerun": false,
+    "buildIntegratedLintVital": true,
+    "deviceAcceptanceRerun": false,
+    "goTestsRerun": false,
+    "installedOnDevice": false,
+    "metadataSignatureAndRemoteDigestsChecked": true,
+    "ciSkipMarkerUsed": true
+  },
+  "scope": {
+    "newTunFailureCompensationVerified": false,
+    "remainingTunWorkPausedForRelease": true,
+    "productionChangesSince014": "version metadata only; other increments are acceptance code, tools, and documentation"
+  },
+  "protectedInput": {
+    "path": "workspace-root/1.yaml",
+    "includedInRelease": false,
+    "uploaded": false,
+    "unchanged": true
+  },
+  "flutterReferenceOperated": false,
+  "artifactDirectory": "../acceptance-artifacts/release-0.1.5-20261112"
+}
