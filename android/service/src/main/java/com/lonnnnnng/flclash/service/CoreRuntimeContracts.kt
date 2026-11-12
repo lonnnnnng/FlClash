@@ -155,7 +155,8 @@ class DefaultVpnOptionsProvider(
             ipv6 = network?.ipv6 ?: false,
             dnsHijacking = network?.dnsHijacking ?: false,
             accessControlProps = accessControlSettingsProvider.current().sanitized(),
-            allowBypass = network?.allowBypass ?: true,
+            // 作者 long：没有网络设置存储的宿主也沿用完整接管，不能悄悄恢复允许绕过的旧默认。
+            allowBypass = network?.allowBypass ?: false,
             // 作者 long：与 Flutter 一样广播本地代理，让浏览器把域名交给核心解析；
             // Android 的代理广播不能携带认证信息，有认证的端口必须继续走 TUN。
             systemProxy = network?.systemProxy != false && port > 0 && profileOptions?.authenticated != true,

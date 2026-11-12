@@ -1,0 +1,152 @@
+{
+  "date": "2026-11-12",
+  "scope": "Wi-Fi disconnect/reconnect, Wi-Fi/cellular transitions, total offline and recovery while the same VPN core session remains running",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "androidApi": 36,
+    "serial": "wsvwypiz7xwslvl7"
+  },
+  "input": {
+    "path": "workspace-root/1.yaml",
+    "bytes": 34220,
+    "mtimeNs": 1794392072317864361,
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "uploaded": false
+  },
+  "source": {
+    "branch": "kotlin",
+    "parentHeadBeforeChanges": "4f65f60f",
+    "mihomoGitlink": "d43bbd75",
+    "defect": "KUI-041",
+    "productionFiles": {
+      "android/service/src/main/java/com/lonnnnnng/flclash/service/NetworkSettings.kt": "5b8d1298c6a04d6e7b02ae07c0f14f622b927274df4976be97409a8f2cb227e7",
+      "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeContracts.kt": "8309239c0c27126d9147deb67262acd5c7ae4793fda2f353f52f084e0a99edef",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/NetworkSettingsPage.kt": "b9119e410273842150fb2dcda493a110bb863ba1959645a523822d53b2b63a9e",
+      "android/tests/service/NetworkSettingsTest.kt": "e547945815c1b91b7b01fc9fa8b4a709cbfe3c3530cc126ac340b6a17725d57d"
+    }
+  },
+  "fix": {
+    "newInstallAllowBypassDefault": false,
+    "noStoreVpnOptionsFallback": false,
+    "existingExplicitPreferenceMigrated": false,
+    "allowBypassControlPreserved": true,
+    "descriptionAdded": true,
+    "mechanismAttribution": "The reproduced failure tracks the allowBypass setting on this Redmi/API36. The underlying Android fwmark/netd mechanism is not proven; this is not generalized to all Android devices."
+  },
+  "abComparison": {
+    "sequence": [
+      { "allowBypass": true, "transport": "cellular", "ordinaryUnboundDns": "timeout", "ordinaryUnboundTcp": "timeout", "coreConnectionObserved": false },
+      { "allowBypass": false, "transport": "cellular", "ordinaryUnboundDns": "passed", "ordinaryUnboundHttps": "HTTP 200", "nonDirectCoreAttribution": true },
+      { "allowBypass": true, "transport": "cellular", "ordinaryUnboundDns": "timeout", "ordinaryUnboundTcp": "timeout", "coreConnectionObserved": false }
+    ],
+    "notes": "The final matrix then used a fresh motion install with the corrected default; earlier permission/runner setup failures are retained separately and excluded from product results."
+  },
+  "finalMatrix": {
+    "client": "com.lonnnnnng.flclash.networkprobe",
+    "clientUid": 10190,
+    "instrumentationIdentity": false,
+    "processBoundNetwork": false,
+    "explicitVpnSocketBinding": false,
+    "httpOrSocksProxyConfigured": false,
+    "allowBypass": false,
+    "sameCorePid": 17086,
+    "sameCoreRunningSinceElapsedMs": 4427281,
+    "cases": 10,
+    "matrixPassed": 9,
+    "positiveNetworkRequests": 8,
+    "positiveNetworkHttpsPassed": 7,
+    "expectedOfflineRequests": 2,
+    "expectedOfflineResults": 2,
+    "transitionsPassed": 6,
+    "transitions": [
+      "Wi-Fi to cellular, round 1",
+      "cellular to Wi-Fi, round 1",
+      "offline to Wi-Fi, round 1",
+      "Wi-Fi to cellular, round 2",
+      "offline to cellular, round 2",
+      "cellular to Wi-Fi, round 2"
+    ],
+    "wifiOnlyHttps": "HTTP 200",
+    "dnsQueriesPassed": 10,
+    "dnsCaveat": "During total offline the VPN DNS can answer locally with a fake IP; this does not mean the public network is reachable.",
+    "preservedFirstFailure": {
+      "case": "wifi-steady",
+      "failedStep": "TLS handshake",
+      "failureType": "SSLHandshakeException",
+      "elapsedMillis": 5024,
+      "overwrittenByLaterSuccess": false
+    },
+    "postMatrixWifiSteady": {
+      "dnsPassed": true,
+      "http": 200,
+      "nonDirectCoreAttribution": true,
+      "elapsedMillis": 806
+    },
+    "transitionCoreRestarted": false,
+    "dnsClearedManually": false,
+    "proxyNodeChanged": false,
+    "existingTcpSessionSurvivalTested": false,
+    "recoveryTimingClaimed": false
+  },
+  "verification": {
+    "jvmTests": { "passed": 910, "failed": 0, "errors": 0, "skipped": 0, "includesReusedResults": true },
+    "networkSettingsInstrumentedTests": { "passed": 2, "failed": 0 },
+    "debugBuild": "passed",
+    "motionAndTestBuild": "passed",
+    "unsignedReleaseR8Build": "passed",
+    "debugLint": { "errors": 0, "warnings": 74, "hints": 14 },
+    "releaseLint": { "errors": 0, "warnings": 70, "hints": 13 },
+    "motionLint": { "errors": 0, "warnings": 74, "hints": 14 },
+    "releaseAcceptanceComponentsAbsent": true
+  },
+  "installation": {
+    "publicVersion": "0.1.3",
+    "publicApkSha256": "2e1ccec265fca81cbd660564c5c8ba5a5110839eabfd7a117a447acb22373963",
+    "publicApkInstalledAndUnchanged": true,
+    "motionApkSha256": "0df80409665188d261eecf79d09eb1cf217d94b7e4ebcdd5897b54863c1e982e",
+    "independentProbeApkSha256": "e9ad262129f10eff638f24d6362583a934ef6b1907cd97c7af53c33e82227b0",
+    "redmiHasCorrectedBuildInstalled": false,
+    "releasePublishedByThisTask": false
+  },
+  "cleanup": {
+    "runtime": "STOPPED",
+    "vpnAlive": false,
+    "removedAcceptancePackages": [
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.networkprobe"
+    ],
+    "verifiedInputFilesRemovedByPackageUninstall": [
+      {
+        "sha256": "92228cc9eeac8a6cbe1a3f487490f96fb2454582565c0fd305bce5884414e14f",
+        "bytes": 236
+      },
+      {
+        "sha256": "a78bfdfc1b3b9eb6130fa7e898a5a90ed91cad78476dcb85090e3c7c5b7488f8",
+        "bytes": 236
+      }
+    ],
+    "removedExactDeviceFile": {
+      "path": "/sdcard/kclash-switch-ui.xml",
+      "sha256BeforeRemoval": "c43b093eac2c195f656fc724a666bd7ed39b901356ddb72a346d4814015f9c63",
+      "removed": true
+    },
+    "deviceSettingsRestored": {
+      "wifiOn": "1",
+      "mobileDataGlobal": "0",
+      "sim1MobileData": "1",
+      "airplaneMode": "0",
+      "alwaysOnVpnApp": null,
+      "alwaysOnVpnLockdown": null
+    },
+    "publicAppRemainsInstalled": true,
+    "flutterReferencePackageModified": false
+  },
+  "remainingBoundaries": [
+    "The initial Wi-Fi TLS handshake failure remains unexplained despite a successful post-matrix Wi-Fi request.",
+    "Coverage is Redmi Note 8 Pro / Android API36 only; low API and other OEM behavior are not inferred.",
+    "This verifies new-install/default-without-setting behavior. Existing stored true preferences are intentionally preserved.",
+    "The fixed remote/input is authorized only for this device acceptance; the raw URL and response were not added to repository evidence."
+  ],
+  "privateRawArtifacts": "../acceptance-artifacts/network-switch-final-20261112/"
+}

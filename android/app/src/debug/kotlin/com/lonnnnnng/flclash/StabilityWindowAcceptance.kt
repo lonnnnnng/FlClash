@@ -66,6 +66,12 @@ class StabilityWindowAcceptanceActivity : ComponentActivity() {
                 check(input.getString("token") == token)
                 val repo = entry.profileRepository(); val runtime = entry.runtimeManager()
                 timed("profile-load", 10_000) { repo.profilesLoaded.first { it } }
+                if (command.startsWith("switch-")) {
+                    report.put("networkSwitch", timed("network-switch", 60_000) {
+                        networkSwitchAcceptance(this@StabilityWindowAcceptanceActivity, entry, input, command, intent.getIntExtra("sourcePort", 0))
+                    }).put("passed", true)
+                    return@launch
+                }
                 if (command.startsWith("endpoint-")) {
                     report.put("endpointControl", timed("endpoint-control", 60_000) {
                         endpointControl(this@StabilityWindowAcceptanceActivity, entry, input, command)

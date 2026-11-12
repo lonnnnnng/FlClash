@@ -6,6 +6,17 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class NetworkSettingsTest {
+    @Test fun defaultVpnCapturesAppsButExplicitBypassChoiceIsPreserved() = runTest {
+        assertFalse(NetworkSettings().allowBypass)
+        assertFalse(DefaultVpnOptionsProvider().current().allowBypass)
+        val store = Store(NetworkSettings())
+        val provider = DefaultVpnOptionsProvider(networkSettingsStore = store)
+        assertFalse(provider.current().allowBypass)
+        store.settings = store.settings.copy(allowBypass = true)
+        assertTrue(provider.current().allowBypass)
+        assertTrue(store.read().allowBypass)
+    }
+
     private class Store(var settings: NetworkSettings) : NetworkSettingsStore {
         override fun read() = settings
         override fun write(value: NetworkSettings) { settings = value }

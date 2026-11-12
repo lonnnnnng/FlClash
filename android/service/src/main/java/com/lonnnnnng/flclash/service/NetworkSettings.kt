@@ -10,7 +10,8 @@ import java.net.InetAddress
 data class NetworkSettings(
     val systemProxy: Boolean = true,
     val bypassDomain: List<String> = DEFAULT_BYPASS_DOMAINS,
-    val allowBypass: Boolean = true,
+    // 作者 long：默认完整接管普通应用；允许绕过在Redmi实测会令未绑定socket落到VPN之外，需用户明确开启。
+    val allowBypass: Boolean = false,
     val ipv6: Boolean = false,
     val dnsHijacking: Boolean = false,
     val stack: String = "mips",

@@ -48,7 +48,7 @@ internal fun NetworkSettingsPanel(
         NetworkSection("VPN") {
             NetworkToggle("系统代理", "向支持系统代理的应用提供本地 HTTP 代理", "network_system_proxy", settings.systemProxy, busy) { save(settings.copy(systemProxy = it)) }
             NetworkOpenRow("绕过域名", "${settings.bypassDomain.size} 项", "network_domains", busy) { editing = NetworkField.DOMAINS }
-            NetworkToggle("允许绕过 VPN", null, "network_allow_bypass", settings.allowBypass, busy) { save(settings.copy(allowBypass = it)) }
+            NetworkToggle("允许绕过 VPN", "允许应用选择其他网络绕过代理，通常保持关闭", "network_allow_bypass", settings.allowBypass, busy) { save(settings.copy(allowBypass = it)) }
             NetworkToggle("IPv6", null, "network_ipv6", settings.ipv6, busy) { save(settings.copy(ipv6 = it)) }
             NetworkToggle("DNS 劫持", null, "network_dns_hijacking", settings.dnsHijacking, busy) { save(settings.copy(dnsHijacking = it)) }
         }
