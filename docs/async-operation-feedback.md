@@ -28,3 +28,25 @@
 全模块 911 项 JVM 测试通过，Debug、AndroidTest、未签名 Release-R8 和双 Lint 构建通过。Redmi Note 8 Pro / API 36 新增忙态用例 5/5 通过。最终竖屏相关 UI 类回归共 38 项，其中 6 项失败、1 项按 `1.yaml` 授权参数跳过；失败分别是两项文件预览旧文案、两项来源菜单测试回调、ProfileCard 预览回调，以及 GlobalRules 排序标签。涉及的旧组件/断言均未由本组修改；失败已保留，完整类回归不记全绿。
 
 证据见 [`acceptance/async-feedback-redmi-20261112.json`](acceptance/async-feedback-redmi-20261112.json)。本轮未覆盖 TalkBack、备份/系统恢复、语言主题、历史TLS根因或菜单视觉性能；这些范围仍按既有路线图处理。
+
+### 回归余项收口（2026-11-12，POCO）
+
+在用户更换的 POCO F2 Pro（`31936bb6`，Android 16/API 36，竖屏、默认字号）上，先使用未修正的测试包补齐本地配置授权参数，同四类完整基线为 **38 项：31 通过、7 失败、0 跳过**。原 Redmi 的六个失败全部复现；原跳过的 age 仓库用例执行后，另暴露一处旧错误文案断言。原 Redmi 证据保持原样，不用新结果覆盖旧失败。
+
+本组仅修正三个测试文件，产品源码和内核未改。各项原因与修正如下，后续同步产品行为时据此复核测试合同：
+
+| 测试位置/用例 | 失败原因 | 修正与保留的检查 |
+| --- | --- | --- |
+| `ProfileUiInstrumentedTest` 两项文件预览 | 仍断言旧的 YAML 格式文案 | 对齐现行完整核心语义预检文案；保留确认导入和无效文件禁止导入检查 |
+| 同类的 CUSTOM/QR/FILE 来源菜单 | 点击后立即断言回调，且在同一个关闭中的菜单连续选择 QR 和 FILE | 宿主消费关闭状态，等待并计数一次回调；选 FILE 前真实重新打开菜单 |
+| 同类的运行态 ProfileCard | 点击只读预览后立即断言 | 等待一次预览交付；编辑、重命名、删除禁用检查保持 |
+| `GlobalSettingsInstrumentedTest` 全局规则排序 | 仍操作已移除的上下移按钮，固定宿主未返回保存成功版本 | 使用真实长按拖拽往返，模拟成功回执并检查两次版本推进；取消选择使用现行标签 |
+| `ProfileAgeInstrumentedTest` 仓库失败保护 | 仍期望原始解密错误，实际已持久化统一脱敏文案 | 对齐脱敏错误，增加成功重试清除错误检查；保留失败时正文、mtime、lastUpdateAt 不变及密钥接线检查；结束自有观察协程后再关闭内存 Room |
+
+最终重新构建后，同一批运行以下四类，**38/38 通过、0 失败、0 跳过**：`ProfileUiInstrumentedTest` 26 项、`ProfileAgeInstrumentedTest` 6 项、`GlobalSettingsInstrumentedTest` 3 项、`GeneralSettingsInstrumentedTest` 3 项。KUI-042 五个忙态用例包含在这 38 项中，不另行累计。
+
+统一检查命令为 JDK 17 下的 `./gradlew test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true`。构建成功，911 项 JVM 结果零失败/错误/跳过，含 Gradle 复用；Motion Lint 0 错误、74 警告、14 提示。本轮没有重跑 Release-R8 或 Go。两 APK 安装回拉摘要一致，13 张 PNG 的分片、SHA、图片完整性与目视检查已完成。
+
+本轮是固定 Compose 宿主的组件回归，不新增正式 MainActivity/SAF 全链路覆盖。age 仓库用例使用内存 Room、隔离缓存、注入下载/解码器和真实核心明文透传，**不代表在线 age 加密订阅下载、解密、应用 E2E 已验**。菜单用例验证最终一次交付，没有逐帧证明交付恰在动画结束后发生。
+
+USB 临时配置副本按 SHA 核对后删除，两个自有验收包已卸载，结束无 KClash 服务；Flutter 参考包未操作，原始 `1.yaml` 的 SHA/大小/mtime 保持且未上传。本组不发版。证据见 [`acceptance/kui042-regression-poco-20261112.json`](acceptance/kui042-regression-poco-20261112.json)，原始日志与图片保留在仓库外 `../acceptance-artifacts/kui042-regression-poco-20261112/`。

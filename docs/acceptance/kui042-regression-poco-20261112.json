@@ -1,0 +1,497 @@
+{
+  "task": "KUI-042 regression closure",
+  "date": "2026-11-12",
+  "sourceHeadBeforeChanges": "54a989ae",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "package": "com.lonnnnnng.flclash.motion"
+  },
+  "historicalRedmi": {
+    "tests": 38,
+    "passed": 31,
+    "failed": 6,
+    "assumptionSkipped": 1,
+    "evidence": "async-feedback-redmi-20261112.json",
+    "originalEvidenceRetained": true
+  },
+  "pocoBaseline": {
+    "tests": 38,
+    "passed": 31,
+    "failed": 7,
+    "skipped": 0,
+    "ageParametersSupplied": true,
+    "logSha256": "4e55df7dd0048a823e15d49df2b014d3b6c4be019af0400a04dc0c336c2f4d43",
+    "failures": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "method": "profileMutationButtonsDisableWhileCoreIsRunning",
+        "exceptionSummary": "java.lang.AssertionError"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "method": "localFileImportPreviewShowsMetadataAndConfirmsOnlyAfterReview",
+        "exceptionSummary": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'YAML 格式校验通过' (ignoreCase: false) is not displayed!"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "method": "addProfileSourceMenuRoutesQrAndFileImportActions",
+        "exceptionSummary": "java.lang.AssertionError"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "method": "invalidLocalFilePreviewBlocksImportAndCanBeCancelled",
+        "exceptionSummary": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '无法读取 YAML 配置，文件未导入' (ignoreCase: false) is not displayed!"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "method": "addProfileDialogSwitchesToCustomAndInvokesCallback",
+        "exceptionSummary": "java.lang.AssertionError"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "method": "repositoryUsesPersistedKeyForUpdatesAndKeepsOldCacheAfterFailure",
+        "exceptionSummary": "org.junit.ComparisonFailure: expected:<[age 解密失败，请检查密钥与配置文件]> but was:<[订阅更新失败，请检查网络、订阅地址或解密密钥]>"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+        "method": "globalRulesSearchPresetSortSelectDeleteAndBothThemes",
+        "exceptionSummary": "java.lang.AssertionError: Failed to inject touch input."
+      }
+    ]
+  },
+  "pocoFinal": {
+    "tests": 38,
+    "passed": 38,
+    "failed": 0,
+    "skipped": 0,
+    "sameFourClasses": true,
+    "singleBatch": true,
+    "logSha256": "59cf65769675d3a43d8815c97099bb5dbbd8aef4a4263c4e3af7154c4fecdd13",
+    "allSevenBaselineFailuresPassed": true,
+    "waitingFeedbackCasesPassed": [
+      "ProfileUiInstrumentedTest#fileImportSaveShowsProgressAndPreventsRepeatedConfirmation",
+      "ProfileUiInstrumentedTest#profileMutationShowsPageProgressWhileRepositoryWorkIsPending",
+      "ProfileAgeInstrumentedTest#singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey",
+      "GlobalSettingsInstrumentedTest#dnsSaveShowsProgressUntilCompletionCallback",
+      "GeneralSettingsInstrumentedTest#settingsAndLanSavesExposeBusyFeedback"
+    ],
+    "cases": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "profileEditorSavesInitialYamlAndShowsProfileLabel",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "invalidSingleSubscriptionStaysInFormWithoutSubmitting",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "profileMutationButtonsDisableWhileCoreIsRunning",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "remoteProfileEditorDisablesIntervalWhenAutoUpdateIsOff",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "profileMutationShowsPageProgressWhileRepositoryWorkIsPending",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "profileScriptBindingShowsOptionsAndForwardsSelection",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "localFileImportPreviewShowsMetadataAndConfirmsOnlyAfterReview",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "fileImportSaveShowsProgressAndPreventsRepeatedConfirmation",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "providersEditorShowsBothProviderMapsAndForwardsSave",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "addProfileSourceMenuRoutesQrAndFileImportActions",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "unsavedYamlRequiresConfirmationBeforeOpeningStructuredSection",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "proxiesEditorShowsCustomProfileProxiesAndForwardsSave",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "savedNewProfileOffersRenameWhenLeavingEditor",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "batchProfileImportBlocksInvalidEntriesWithoutShowingTheirContents",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "invalidLocalFilePreviewBlocksImportAndCanBeCancelled",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "rulesEditorShowsCustomProfileRulesAndForwardsSave",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "addProfileSourceMenuOpensDedicatedRemoteSubscriptionForm",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "computedProxyGroupShowsAutomaticSelectionAction",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "savedNewProfileCanKeepDefaultNameWhenLeavingEditor",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "proxyGroupsEditorShowsCustomProfileGroupsAndForwardsSave",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "dnsOverrideDialogForwardsTypedFields",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "addProfileDialogSwitchesToCustomAndInvokesCallback",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "providerOverrideDialogEditsTypedFieldsBeforeParentSave",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "remoteProfileMenuOpensEditorAndEditorForwardsSubscriptionSettings",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "validSingleImportTrimsFieldsAndRepeatedTapSubmitsOnlyOnce",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "batchProfileImportShowsDuplicateCountAndSubmitsOnlyNewUrls",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "backgroundPreservesExistingEditorAndClearsHiddenNewImportKey",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "remoteEditorMasksAndTrimsAgeKeyInBothThemes",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "missingKeyDialogDisablesEmptySubmitAndClearsWhenBackgrounded",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "encryptedFilePreviewRequiresKeyInsteadOfReportingInvalidYaml",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "repositoryUsesPersistedKeyForUpdatesAndKeepsOldCacheAfterFailure",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+        "test": "dnsExplicitEmptyFailureRetryRemovalAndBothThemes",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+        "test": "globalRulesSearchPresetSortSelectDeleteAndBothThemes",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+        "test": "dnsSaveShowsProgressUntilCompletionCallback",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GeneralSettingsInstrumentedTest",
+        "test": "settingsAndLanSavesExposeBusyFeedback",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GeneralSettingsInstrumentedTest",
+        "test": "portValidationAndSaveFailureKeepDraftAndUserAgentUsesIndependentPage",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GeneralSettingsInstrumentedTest",
+        "test": "generalSectionsCredentialsConnectionsHostsAndThemesSaveTogether",
+        "status": 0
+      }
+    ]
+  },
+  "changes": {
+    "productionCodeChanged": false,
+    "testSourceSha256": {
+      "android/tests/instrumented/ProfileUiInstrumentedTest.kt": "5bebdd75c85cfd6681f6e76d3b135460f85642aa9164bf003e1c2b28378e35d9",
+      "android/tests/instrumented/GlobalSettingsInstrumentedTest.kt": "3640c613de8421f3c4a2d5a1b3a5e7467e804333c4f2413c4161023d82ec9dde",
+      "android/tests/instrumented/ProfileAgeInstrumentedTest.kt": "2fb47eebe9b68b6174dd0fb441ea1d5e373f13399c411ecaa23279221e2cbcf1"
+    },
+    "corrections": [
+      "Two preview text assertions now reflect full semantic-check wording.",
+      "Source and preview callbacks wait for completion with exact counts; file selection reopens a dismissed source menu.",
+      "Global rules use actual long-press drag twice, mock successful save acknowledgements, and target the current cancel-selection tag.",
+      "The authorized age repository test expects the sanitized persisted error, verifies successful retry clears it, and cancels its owned observer before closing the in-memory database."
+    ]
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "passed",
+    "gradleSeconds": 64,
+    "jvm": {
+      "jvmTests": 911,
+      "modules": {
+        "app": {
+          "tests": 618,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "service": {
+          "tests": 220,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "core": {
+          "tests": 39,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "common": {
+          "tests": 34,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "lint": {
+        "Warning": 74,
+        "Hint": 14
+      }
+    },
+    "includesGradleReuse": true,
+    "baselineApks": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "d1f1c317a89469e15f7851b5e16c87255b3a4bdde2770c8b9b14074eace09600",
+        "bytes": 66218497,
+        "readbackMatches": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "492330bfd6cfab3c3322a7ac928c8a5b6673df8b065a5440436ededc10251e1f",
+        "bytes": 3001586,
+        "readbackMatches": true
+      }
+    ],
+    "finalApks": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "e5ba4f25ecff7eddcad38ec45075bca73bb775cf090e51ff0150f4b4b18c5dd2",
+        "bytes": 66218493,
+        "readbackMatches": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "414f34727f8f72df4980baa1647127ae4f91e608b79c6152b7a42f3da1478a0b",
+        "bytes": 3004974,
+        "readbackMatches": true
+      }
+    ],
+    "releaseR8OrGoRerun": false
+  },
+  "authorizedInput": {
+    "source": "workspace-root/1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeUnix": 1794392072,
+    "instrumentationParameters": {
+      "kclashAgeLocal": "true",
+      "kclashAgeSha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7"
+    },
+    "uploadedToPublicNetwork": false,
+    "originalUnchanged": true
+  },
+  "screenshots": {
+    "count": 13,
+    "allChunksSizeAndShaVerified": true,
+    "allDecoded": true,
+    "contactSheetsVisuallyReviewed": 3,
+    "files": [
+      {
+        "name": "profile_age_editor_light",
+        "bytes": 110714,
+        "sha256": "de9422bcf308e0aca7f44ab7df5e6fd4edcc44c94504a82a94bf8b4ae3fd4787",
+        "width": 1000,
+        "height": 1642
+      },
+      {
+        "name": "profile_age_editor_dark",
+        "bytes": 112489,
+        "sha256": "303b4bfdaf300f11e8a82d6ace093611f0fc705352aa268b9b0421d28a5b5d73",
+        "width": 1000,
+        "height": 1642
+      },
+      {
+        "name": "global_dns_light",
+        "bytes": 85440,
+        "sha256": "29e6948b5500d2d2ede87453da495d12df98a6410f8233de6cfab2c50bddc4ec",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "global_dns_dark",
+        "bytes": 105900,
+        "sha256": "d86376365f62c32f079d870740d247f4b9de42b6f438a0ac3b6faa27dd8f71a1",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "global_rules_light",
+        "bytes": 63148,
+        "sha256": "b86c0c6f42d9af2ad31012d551f402274fc42e1b42452ec7d9280761c0fbb22d",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "global_rules_sort",
+        "bytes": 66085,
+        "sha256": "98c529b4f092427fb1d4efae4e9c057c50770a88fcc18d3ee97f019fcac7d02c",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "global_rules_dark",
+        "bytes": 56034,
+        "sha256": "856189d0bf8dcb36eada2a8c8d0d34270f38601aa791feeaf76f1f9902ce583c",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "general_ports_failure",
+        "bytes": 118789,
+        "sha256": "a3984ad63d4cb4b7d3a26de416756d24757047dc79c20e5e9bedea93492752b7",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "general_user_agents_light",
+        "bytes": 73287,
+        "sha256": "e2caec71b2729aeaef6caf91b93fea64ca66dd7096f1b319c3e4bb272ee57f99",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "general_light_startup",
+        "bytes": 201389,
+        "sha256": "fd5493c8c240b006ae71e48f24b1092924e1ad9847bee8cef58a494f589cd43f",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "general_dark_inbound",
+        "bytes": 186261,
+        "sha256": "098a8845f97c55a1bfed62ce3a0ee9533803a9ff680eb10fd5f03a51d03eeb10",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "general_dark_core_logs",
+        "bytes": 154748,
+        "sha256": "a94e0a6b928f1949f4aa1acaabd112e006cb97197b91a196bc45ba1cf367e4c4",
+        "width": 1080,
+        "height": 2400
+      },
+      {
+        "name": "general_hosts_dark",
+        "bytes": 49169,
+        "sha256": "053419a61909f2e4239a1815376064a0277bd075195159341db27e2df235b95c",
+        "width": 1080,
+        "height": 2400
+      }
+    ]
+  },
+  "scope": {
+    "uiHosts": "fixed Compose hosts using production UI components",
+    "repository": "in-memory Room plus isolated cache, real plaintext core pass-through, injected download and decoder",
+    "liveNetworkRequests": false,
+    "onlineAgeEncryptedSubscriptionE2E": false,
+    "frameAccurateMenuOrderingVerified": false,
+    "formalMainActivityOrSAFFlowNewCoverage": false
+  },
+  "cleanup": {
+    "removedExactInput": "/data/local/tmp/kclash-profile-preview-1.yaml",
+    "inputSha256BeforeRemoval": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "inputAbsent": true,
+    "removedExactPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion"
+    ],
+    "referencePackageRemainsInstalled": true,
+    "noKClashService": true,
+    "originalConfigUnchanged": true,
+    "originalConfigUploaded": false
+  },
+  "artifactDirectory": "../acceptance-artifacts/kui042-regression-poco-20261112",
+  "releasePublished": false,
+  "artifactManifest": {
+    "path": "../acceptance-artifacts/kui042-regression-poco-20261112/artifact-manifest.json",
+    "sha256": "96af92bc9c74a0c8f05cba9773e0baed65052326b97b06433d0f5bf1cea76211",
+    "files": 25,
+    "rawArtifactsCommitted": false
+  }
+}

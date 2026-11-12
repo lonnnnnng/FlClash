@@ -19,6 +19,10 @@ import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.security.MessageDigest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Assume.assumeTrue
@@ -178,6 +182,7 @@ class ProfileAgeInstrumentedTest {
             override fun getFilesDir(): File = directory
         }
         val database = Room.inMemoryDatabaseBuilder(context, KClashDatabase::class.java).build()
+        val observationJob = SupervisorJob()
         var fail = false
         val keys = mutableListOf<String>()
         val repository = ProfileRepository(isolated, database, object : SubscriptionClient {
@@ -186,7 +191,7 @@ class ProfileAgeInstrumentedTest {
             keys += key
             if (fail) throw IllegalArgumentException("age 解密失败，请检查密钥与配置文件")
             content
-        })
+        }, observationScope = CoroutineScope(observationJob + Dispatchers.IO))
         try {
             runBlocking {
                 // 作者 long：真机配置正文只使用 1.yaml 原字节；Go 方法的明文透传与仓库密钥接线分开核验，不假称密文 E2E。
@@ -209,9 +214,11 @@ class ProfileAgeInstrumentedTest {
                 assertTrue(bytes.contentEquals(cache.readBytes()))
                 assertEquals(modified, cache.lastModified())
                 assertEquals(lastUpdate, database.profiles().getById(profile.id)!!.lastUpdateAt)
-                assertEquals("age 解密失败，请检查密钥与配置文件", database.profiles().getById(profile.id)!!.lastUpdateError)
+                // 作者 long：仓库只持久化统一脱敏错误，原始下载/解密异常不能借回归测试重新泄漏到配置记录。
+                assertEquals("订阅更新失败，请检查网络、订阅地址或解密密钥", database.profiles().getById(profile.id)!!.lastUpdateError)
                 fail = false
                 repository.updateDueProfiles(Long.MAX_VALUE).also { assertEquals(1, it.succeeded) }
+                assertNull(database.profiles().getById(profile.id)!!.lastUpdateError)
                 val fileProfile = repository.addFileProfile("本地 age 接线", bytes, " fixture-identity ")
                 assertTrue(bytes.contentEquals(repository.profileFile(fileProfile.id).readBytes()))
                 assertTrue(database.profiles().getById(fileProfile.id)!!.ageSecretKey == "fixture-identity")
@@ -219,6 +226,8 @@ class ProfileAgeInstrumentedTest {
                 assertEquals(2, database.profiles().getAll().size)
             }
         } finally {
+            // 作者 long：先结束仓库持有的Room观察，再关闭临时数据库，避免迟到读取干扰同批后续用例。
+            runBlocking { observationJob.cancelAndJoin() }
             database.close()
             check(directory.parentFile == context.cacheDir && directory.name.startsWith("profile-age-"))
             directory.deleteRecursively()

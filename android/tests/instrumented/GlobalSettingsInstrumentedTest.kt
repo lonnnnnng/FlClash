@@ -83,16 +83,21 @@ class GlobalSettingsInstrumentedTest {
         var state by mutableStateOf(GlobalRulesUiState(rules = listOf(ExtensionRule("one", "DOMAIN,one.test,DIRECT"),
             ExtensionRule("two", "DOMAIN,two.test,MATCH")), loaded = true))
         var dark by mutableStateOf(false)
-        compose.setContent { KClashTheme(darkTheme = dark) { GlobalRulesPage(state, {}, { state = state.copy(rules = it) }, {}, {}) } }
+        compose.setContent { KClashTheme(darkTheme = dark) { GlobalRulesPage(state, {}, {
+            // 作者 long：真实保存会返回成功版本；固定宿主也须推进回执，后续拖拽才基于最新排序快照。
+            state = state.copy(rules = it, saveResultVersion = state.saveResultVersion + 1)
+        }, {}, {}) } }
         capture("global_rules_light")
         compose.onNodeWithTag("global_rules_search").performTextReplacement("one.test")
         compose.onNodeWithTag("global_rule_two").assertDoesNotExist()
         compose.onNodeWithTag("global_rules_sort").assertIsNotEnabled()
         compose.onNodeWithTag("global_rules_search").performTextReplacement("")
         compose.onNodeWithTag("global_rules_sort").performClick()
-        compose.onNodeWithTag("global_rules_down_one").performClick()
+        dragRule("one", "two")
         compose.runOnIdle { assertEquals("two", state.rules.first().id) }
         capture("global_rules_sort")
+        dragRule("two", "one")
+        compose.runOnIdle { assertEquals(listOf("one", "two"), state.rules.map { it.id }); assertEquals(2L, state.saveResultVersion) }
         compose.onNodeWithText("完成").performClick()
         compose.onNodeWithTag("global_rules_add").performClick()
         compose.onNodeWithTag("extension_rule_content").performTextInput("added.test")
@@ -103,12 +108,28 @@ class GlobalSettingsInstrumentedTest {
         compose.onNodeWithTag("global_rules_delete").performClick()
         compose.onNodeWithTag("global_rules_delete_confirm").performClick()
         compose.runOnIdle { assertTrue(state.rules.isEmpty()) }
-        compose.onActionMarker("取消选择").performClick()
+        compose.onNodeWithTag("global_rules_cancel_selection").performClick()
         compose.onNodeWithTag("global_rules_presets").performClick()
         compose.onNodeWithText("阻止 QUIC").performClick()
         compose.onNodeWithTag("extension_preset_confirm").performClick()
         compose.runOnIdle { assertEquals(1, state.rules.size); dark = true }
         capture("global_rules_dark")
+    }
+
+    private fun dragRule(from: String, to: String) {
+        val list = compose.onNodeWithTag("global_rules_order_list")
+        val source = compose.onNodeWithTag("global_rules_order_$from").fetchSemanticsNode().boundsInRoot
+        val target = compose.onNodeWithTag("global_rules_order_$to").fetchSemanticsNode().boundsInRoot
+        val bounds = list.fetchSemanticsNode().boundsInRoot
+        // 作者 long：排序入口已是列表长按拖拽，测试使用真实触点和当前行几何，不恢复已移除的上下移按钮。
+        list.performTouchInput {
+            down(androidx.compose.ui.geometry.Offset(source.center.x - bounds.left, source.center.y - bounds.top))
+            advanceEventTime(650)
+            moveTo(androidx.compose.ui.geometry.Offset(target.center.x - bounds.left, target.center.y - bounds.top), 300)
+            advanceEventTime(200)
+            up()
+        }
+        compose.waitForIdle()
     }
 
     private fun capture(name: String) {

@@ -62,7 +62,7 @@ class ProfileUiInstrumentedTest {
 
         composeRule.onNodeWithText("家庭网络.yaml").assertIsDisplayed()
         composeRule.onNodeWithText("文件大小：1024 字节").assertIsDisplayed()
-        composeRule.onNodeWithText("YAML 格式校验通过").assertIsDisplayed()
+        composeRule.onNodeWithText("配置格式与核心语义校验通过").assertIsDisplayed()
         composeRule.onNodeWithTag("profile_file_import_confirm").performClick()
 
         assertTrue(confirmed)
@@ -86,7 +86,7 @@ class ProfileUiInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("无法读取 YAML 配置，文件未导入").assertIsDisplayed()
+        composeRule.onNodeWithText("配置校验未通过，文件未导入").assertIsDisplayed()
         composeRule.onNodeWithTag("profile_file_import_confirm").assertIsNotEnabled()
         composeRule.onNodeWithTag("profile_file_import_cancel").performClick()
 
@@ -117,39 +117,42 @@ class ProfileUiInstrumentedTest {
 
     @Test
     fun addProfileDialogSwitchesToCustomAndInvokesCallback() {
-        var added = false
+        var added by mutableStateOf(0)
+        var showing by mutableStateOf(true)
         var customLabel: String? = null
         composeRule.setContent {
             KClashTheme {
-                AddProfileDialog(
+                if (showing) AddProfileDialog(
                     busy = false,
-                    onDismiss = {},
+                    onDismiss = { showing = false },
                     onPickFile = {},
                     onPickQrCode = {},
                     onAddRemote = { _, _ -> },
-                    onAddCustom = { added = true; customLabel = it },
+                    onAddCustom = { added++; customLabel = it; showing = false },
                 )
             }
         }
 
         composeRule.onNodeWithTag("profile_add_source_custom").performClick()
 
-        assertTrue(added)
-        assertEquals("", customLabel)
+        // 作者 long：来源菜单收回后才执行选项，宿主须消费关闭状态，不能用点击当帧的变量判断异步回调。
+        composeRule.waitUntil(5_000) { added == 1 }
+        composeRule.runOnIdle { assertEquals(1, added); assertEquals("", customLabel) }
         composeRule.onNodeWithTag("profile_add_custom_label").assertDoesNotExist()
     }
 
     @Test
     fun addProfileSourceMenuRoutesQrAndFileImportActions() {
-        var pickedQr = false
-        var pickedFile = false
+        var pickedQr by mutableStateOf(0)
+        var pickedFile by mutableStateOf(0)
+        var showing by mutableStateOf(true)
         composeRule.setContent {
             KClashTheme {
-                AddProfileDialog(
+                if (showing) AddProfileDialog(
                     busy = false,
-                    onDismiss = {},
-                    onPickFile = { pickedFile = true },
-                    onPickQrCode = { pickedQr = true },
+                    onDismiss = { showing = false },
+                    onPickFile = { pickedFile++; showing = false },
+                    onPickQrCode = { pickedQr++; showing = false },
                     onAddRemote = { _, _ -> },
                     onAddCustom = {},
                 )
@@ -157,10 +160,15 @@ class ProfileUiInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("profile_add_source_qr").assertIsDisplayed().performClick()
+        composeRule.waitUntil(5_000) { pickedQr == 1 }
+        composeRule.onNodeWithTag("profile_add_source_qr").assertDoesNotExist()
+        // 作者 long：每次来源选择都会关闭菜单；文件导入须按真实入口重新打开，不能在收回中的旧菜单再点第二项。
+        composeRule.runOnIdle { assertEquals(0, pickedFile); showing = true }
         composeRule.onNodeWithTag("profile_add_source_file").assertIsDisplayed().performClick()
 
-        assertTrue(pickedQr)
-        assertTrue(pickedFile)
+        composeRule.waitUntil(5_000) { pickedFile == 1 }
+        composeRule.runOnIdle { assertEquals(1, pickedQr); assertEquals(1, pickedFile) }
+        composeRule.onNodeWithTag("profile_add_source_file").assertDoesNotExist()
     }
 
     @Test
@@ -719,7 +727,7 @@ class ProfileUiInstrumentedTest {
 
     @Test
     fun profileMutationButtonsDisableWhileCoreIsRunning() {
-        var previewed = false
+        var previewed by mutableStateOf(0)
         composeRule.setContent {
             KClashTheme {
                 ProfileCard(
@@ -730,7 +738,7 @@ class ProfileUiInstrumentedTest {
                     onEdit = {},
                     onUpdate = {},
                     onDelete = {},
-                    onPreview = { previewed = true },
+                    onPreview = { previewed++ },
                 )
             }
         }
@@ -740,6 +748,8 @@ class ProfileUiInstrumentedTest {
             composeRule.onNodeWithText(action).assertIsNotEnabled()
         }
         composeRule.onNodeWithTag("profile_preview_10").performClick()
-        assertTrue(previewed)
+        // 作者 long：运行态仍允许只读预览；必须等回源动画交付一次动作，不能要求点击时立即进入目标页。
+        composeRule.waitUntil(5_000) { previewed == 1 }
+        composeRule.runOnIdle { assertEquals(1, previewed) }
     }
 }
