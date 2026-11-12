@@ -1,5 +1,9 @@
 # 导入前核心语义预检
 
+## 原生建立TUN的系统拒绝补偿（2026-11-12，当前）
+
+POCO API36在新装未获VPN授权的独立motion包中，经真实Runtime/Service三次执行establish返回null：两次立即重试及生产ViewModel一次，最终错误均明确传回，FAILED、无会话/恢复标志、无VPN网络或残留服务；正常授权后同配置真实独立UID默认TUN的DNS/TLS/HTTP200与非DIRECT双向流量通过。最终单场景1/1、零跳过，三次拒绝不是三项测试；首轮授权后Network发布等待不足的失败单列保留。911JVM含复用、motion构建/Lint零错误，只有验收代码修改；清理/原1.yaml保护通过。此处覆盖系统未授权拒绝和显式恢复，不推广内核ioctl故障或热切候选建TUN失败自动回滚。见[溯源](native-tun-establish-failure-acceptance.md)与[证据](acceptance/native-tun-failure-poco-20261112.json)。
+
 ## VPN绑定条件与真实默认路由补验（2026-11-12，当前）
 
 POCO API36最终同批六项6/6、零跳过，新增独立普通UID在拒绝导入前后真实默认VPN的UDP DNS/TLS/HTTP200及同源端口非DIRECT双向流量；原行/正文/草稿/epoch/运行起点/VPN接口保持，停止后同预览成功。提供者在VPN Network可见但默认仍Wi-Fi时显式绑定三次EPERM，830ms后相同UID/PID/Network三次成功；支持启动发布窗口条件，不能追认旧Redmi系统内部根因或称TUN建立失败。仅修改验收，另修旧fileName清空等待为completed回执；911JVM含复用、motion构建/Lint零错误。前一批6/6及首轮超时分开保留。未验原生establish失败注入、低API/OEM、其他协议/来源和在线age；完整目标仍PARTIAL。见[本组溯源](semantic-vpn-binding-boundary.md)与[证据](acceptance/semantic-vpn-poco-20261112.json)。

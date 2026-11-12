@@ -13,7 +13,7 @@
 最终六项同批 **6/6 通过、0 失败、0 跳过**。其中新增用例 `ConfigSemanticCommitBoundaryInstrumentedTest#runningVpnProtectsImportAndDraftWithIndependentUidTraffic` 在同一 VPN 会话中完成：
 
 1. 对提供者进程和独立普通应用分别采集 UID/PID、默认网络、进程绑定网络和 VPN Network handle；分别尝试 `socketFactory.createSocket()`、TCP `bindSocket`、UDP `bindSocket`。只保存异常类型链和 errno，不输出原始异常消息。
-2. 在拒绝导入前后，由独立 `com.lonnnnnng.flclash.networkprobe` 各执行一次真实 UDP DNS、带主机名验证的 TLS 和 HTTP200。两次均不指定 SOCKS、不绑定物理网络、不显式绑定 VPN socket；默认网络为 VPN，进程无绑定网络。核心观察到同源端口、同目标、新连接、非 DIRECT 链和双向正流量。
+2. 在拒绝导入前后，由独立 `com.lonnnnnng.flclash.networkprobe` 各执行一次真实 UDP DNS、带主机名验证的 TLS 和 HTTP200。两次均不指定 SOCKS、不绑定物理网络、不显式绑定 VPN socket；默认网络为 VPN，进程无绑定网络。核心观察到同源端口、同目标连接记录的非 DIRECT 链和双向正流量。
 3. 运行中确认导入得到 `PROFILE_MUTATION_BLOCKED_MESSAGE`，Repository 二次守卫拒绝；行、选择、原正文 SHA/大小/mtime、未提交草稿密文和回读、epoch、运行起点、VPN 网络/接口摘要保持。停止后同一预览成功新增一份，随后只删除本例副本。
 
 最终绑定采样如下；两次提供者采样之间没有重启核心、改变 UID、权限、VPN 配置或 Network handle：
@@ -45,5 +45,7 @@ JDK17 根 Wrapper 的 `test`、motion应用/测试APK构建、motion Lint通过�
 两份motion APK及独立探针安装回拉SHA一致。根目录原始 `1.yaml`（34220字节，SHA `7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7`，mtime `1794392072`）仅经USB用于独立验收包，没有上传公网。结束停止服务，精确清理两个探针输入和三个自有验收包；Flutter参考包未操作，原文件保持。
 
 本组覆盖固定Activity/控制器及真实Repository/核心运行链路，不新增正式文件选择器或完整页面点击E2E。原生 `establish()` 拒绝/失败的实机注入、低API、其他OEM、其他授权协议/来源实流、在线age加密订阅仍未验。已有托管脚本apply失败恢复通过，不替代原生建TUN失败回滚；现有JVM服务启动失败补偿检查也不能当作实机原生失败证据。当前六项功能总目标的统计不因此改变。
+
+后续同日已补系统未授权时真实 `establish()` 返回null的三次拒绝、失败清理及正常授权后的显式恢复，最终单场景1/1；原始本组结论和JSON不改写。内核ioctl异常及热切原生失败自动回滚仍未验，见[后续记录](native-tun-establish-failure-acceptance.md)。
 
 脱敏证据见 [semantic-vpn-poco-20261112.json](acceptance/semantic-vpn-poco-20261112.json)。原始日志、首轮失败、前一批与最终回执、构建和安装记录保留在仓库外 `../acceptance-artifacts/semantic-vpn-poco-20261112/`，不提交原始附件。
