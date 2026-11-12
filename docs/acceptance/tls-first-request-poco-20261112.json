@@ -1,0 +1,236 @@
+{
+  "date": "2026-11-12",
+  "scope": "Changed-device Wi-Fi first-request TLS reproduction",
+  "status": "not-reproduced-in-current-environment",
+  "rootCauseEstablished": false,
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "androidRelease": "16",
+    "api": 36,
+    "userExplicitlyChangedTestDevice": true
+  },
+  "source": {
+    "headBeforeChanges": "620e644a",
+    "mihomoGitlink": "d43bbd751fe5eb95a599a6211423f645269ba57d",
+    "appVersion": "0.1.4-motion",
+    "productionBehaviorChanged": false
+  },
+  "requestPath": {
+    "clientPackage": "com.lonnnnnng.flclash.networkprobe",
+    "ordinarySeparateUid": true,
+    "instrumentationIdentity": false,
+    "systemDefaultVpn": true,
+    "explicitVpnSocketBinding": false,
+    "processBoundNetwork": false,
+    "httpOrSocksProxyConfigured": false,
+    "allowBypass": false,
+    "target": "existing authorized HTTPS target, hash only",
+    "transport": "validated Wi-Fi",
+    "networkChangedFromHistoricalFailure": true,
+    "targetUnchanged": true,
+    "sameFinalEndpointAsHistoricalWifiFailure": true,
+    "endpointManuallyPinned": false
+  },
+  "finalColdProcessBatch": {
+    "requests": 5,
+    "passed": 5,
+    "failed": 0,
+    "uniqueAppPids": 5,
+    "requestReadyGapMillis": {
+      "min": 1285,
+      "max": 1391
+    },
+    "cases": [
+      {
+        "case": "immediate-first-1",
+        "pid": 28796,
+        "sourcePort": 45201,
+        "requestSinceCoreReadyMillis": 1391,
+        "requestElapsedMillis": 5862,
+        "tlsMillis": 4947,
+        "wireDnsPassed": true,
+        "http": 200,
+        "nonDirectAttribution": true,
+        "sameEndpointAsHistoricalFailure": true,
+        "vlessResponseCompleted": true,
+        "maxUpload": 254,
+        "maxDownload": 2366,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "dialEndpointHash": "90190bcdbec01ac88cdfa833284546a42c20f22b82dce7da37ebff29034c11d5"
+      },
+      {
+        "case": "immediate-first-2",
+        "pid": 28982,
+        "sourcePort": 45202,
+        "requestSinceCoreReadyMillis": 1338,
+        "requestElapsedMillis": 1517,
+        "tlsMillis": 1139,
+        "wireDnsPassed": true,
+        "http": 200,
+        "nonDirectAttribution": true,
+        "sameEndpointAsHistoricalFailure": true,
+        "vlessResponseCompleted": true,
+        "maxUpload": 593,
+        "maxDownload": 3691,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "dialEndpointHash": "90190bcdbec01ac88cdfa833284546a42c20f22b82dce7da37ebff29034c11d5"
+      },
+      {
+        "case": "immediate-first-3",
+        "pid": 29141,
+        "sourcePort": 45203,
+        "requestSinceCoreReadyMillis": 1285,
+        "requestElapsedMillis": 1701,
+        "tlsMillis": 1336,
+        "wireDnsPassed": true,
+        "http": 200,
+        "nonDirectAttribution": true,
+        "sameEndpointAsHistoricalFailure": true,
+        "vlessResponseCompleted": true,
+        "maxUpload": 593,
+        "maxDownload": 3689,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "dialEndpointHash": "90190bcdbec01ac88cdfa833284546a42c20f22b82dce7da37ebff29034c11d5"
+      },
+      {
+        "case": "immediate-first-4",
+        "pid": 29308,
+        "sourcePort": 45204,
+        "requestSinceCoreReadyMillis": 1372,
+        "requestElapsedMillis": 3304,
+        "tlsMillis": 2485,
+        "wireDnsPassed": true,
+        "http": 200,
+        "nonDirectAttribution": true,
+        "sameEndpointAsHistoricalFailure": true,
+        "vlessResponseCompleted": true,
+        "maxUpload": 254,
+        "maxDownload": 2366,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "dialEndpointHash": "90190bcdbec01ac88cdfa833284546a42c20f22b82dce7da37ebff29034c11d5"
+      },
+      {
+        "case": "immediate-first-5",
+        "pid": 29485,
+        "sourcePort": 45205,
+        "requestSinceCoreReadyMillis": 1334,
+        "requestElapsedMillis": 1778,
+        "tlsMillis": 1098,
+        "wireDnsPassed": true,
+        "http": 200,
+        "nonDirectAttribution": true,
+        "sameEndpointAsHistoricalFailure": true,
+        "vlessResponseCompleted": true,
+        "maxUpload": 593,
+        "maxDownload": 3691,
+        "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+        "dialEndpointHash": "90190bcdbec01ac88cdfa833284546a42c20f22b82dce7da37ebff29034c11d5"
+      }
+    ]
+  },
+  "preliminary": {
+    "observedHttpsRequests": 4,
+    "observedHttpsSuccesses": 4,
+    "authoritativeForImmediateStartup": false,
+    "notes": [
+      "Three requests were in one running session, then one after a core-only restart.",
+      "The core-restart probe started about 30 seconds after READY and cannot stand in for immediate first-request acceptance.",
+      "The first raw HTTP200 log was observed live before logcat rotation; its SHA-verified core report remains archived, but its raw client receipt was not separately archived.",
+      "The first collector polling assertion was a harness failure, not an HTTP failure."
+    ]
+  },
+  "historicalComparison": {
+    "device": "Redmi Note 8 Pro",
+    "clientFailureType": "SSLHandshakeException",
+    "elapsedMillis": 5024,
+    "dnsLookupFailureInCapturedDiagnostic": false,
+    "websocketSetupReadTcpErrorsObserved": true,
+    "causality": "Same final node endpoint, different phone and physical Wi-Fi. No single-variable phone or network attribution. Earlier VLESS-response stalls are a separate retained failure pattern.",
+    "diagnosticDroppedRecords": 9
+  },
+  "validation": {
+    "jvmTotal": 911,
+    "jvmModules": {
+      "app": {
+        "tests": 618,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "motionAppAndAndroidTestBuild": "passed",
+    "finalAndroidTestTimingSourceCompile": "passed",
+    "motionLint": {
+      "errors": 0,
+      "warnings": 74,
+      "hints": 14
+    },
+    "pythonReceiptRegression": {
+      "tests": 4,
+      "passed": 4,
+      "originalCollectorRedReproduced": true
+    },
+    "apkReadbacks": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "d1f1c317a89469e15f7851b5e16c87255b3a4bdde2770c8b9b14074eace09600",
+        "readbackMatches": true,
+        "bytes": 66218497
+      },
+      {
+        "package": "com.lonnnnnng.flclash.networkprobe",
+        "sha256": "8a515c027de08c5a0276faf4acd6cd40f098bc58bb9b34a6ce7266a45d6ad3e6",
+        "readbackMatches": true,
+        "bytes": 20883
+      }
+    ],
+    "installedInstrumentationWasPreTimingVersion": true,
+    "timedClientBuiltFromFinalJavaSource": true,
+    "releaseR8OrGoTestsRerun": false
+  },
+  "cleanup": {
+    "runtime": "STOPPED",
+    "vpnAlive": false,
+    "removedExactOwnedPackages": [
+      "com.lonnnnnng.flclash.networkprobe",
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion"
+    ],
+    "referencePackageRemainsInstalled": true,
+    "referencePackageOperated": false,
+    "deviceWifiRemainsValidated": true,
+    "temporaryUsbInputFilesAbsent": true
+  },
+  "input": {
+    "source": "workspace-root/1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeUnix": 1794392072,
+    "uploadedToPublicNetwork": false,
+    "unchanged": true
+  },
+  "artifacts": [
+    "../acceptance-artifacts/tls-first-repro-poco-20261112",
+    "../acceptance-artifacts/tls-first-repro-poco-20261112-immediate"
+  ],
+  "decision": "Bounded changed-device reproduction completed. Keep historical TLS failures as observation; reopen when a fresh reproducible failure appears. This is not a root-cause fix or a claim of zero failure probability."
+}

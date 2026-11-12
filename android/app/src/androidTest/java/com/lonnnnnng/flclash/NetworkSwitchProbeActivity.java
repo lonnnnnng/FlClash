@@ -65,6 +65,8 @@ public class NetworkSwitchProbeActivity extends Activity {
         String step = "input";
         long started = SystemClock.elapsedRealtime();
         try {
+            // 作者 long：首请求必须量出相对核心READY的真实间隔，不能把人工操作后的热身请求算作立即联网。
+            report.put("requestStartedElapsedMs", started);
             byte[] inputBytes;
             try (java.io.FileInputStream stream = new java.io.FileInputStream(new File(directory, "switch-" + token + ".json"))) {
                 ByteArrayOutputStream content = new ByteArrayOutputStream(); byte[] chunk = new byte[1024]; int count;
@@ -103,10 +105,14 @@ public class NetworkSwitchProbeActivity extends Activity {
                 raw.bind(new InetSocketAddress(InetAddress.getByAddress(new byte[] {0, 0, 0, 0}), port)); raw.setSoTimeout(12000);
                 if (bindVpn) active.bindSocket(raw);
                 raw.connect(new InetSocketAddress(address, 443), 12000);
+                report.put("tcpConnectedElapsedMs", SystemClock.elapsedRealtime());
                 step = "tls";
                 try (SSLSocket tls = (SSLSocket) ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(raw, target.getHost(), 443, true)) {
                     javax.net.ssl.SSLParameters parameters = tls.getSSLParameters(); parameters.setEndpointIdentificationAlgorithm("HTTPS"); tls.setSSLParameters(parameters);
-                    tls.setSoTimeout(16000); tls.startHandshake();
+                    tls.setSoTimeout(16000);
+                    report.put("tlsStartedElapsedMs", SystemClock.elapsedRealtime());
+                    tls.startHandshake();
+                    report.put("tlsCompletedElapsedMs", SystemClock.elapsedRealtime());
                     step = "http";
                     String path = target.getRawPath().isEmpty() ? "/" : target.getRawPath();
                     if (target.getRawQuery() != null) path += "?" + target.getRawQuery();
@@ -125,7 +131,12 @@ public class NetworkSwitchProbeActivity extends Activity {
                 }
             }
         } catch (Exception error) {
-            try { report.put("passed", false).put("failedStep", step).put("failureType", error.getClass().getSimpleName()); } catch (Exception ignored) { }
+            try {
+                // 作者 long：只保存异常类型链，区分EOF、超时和证书错误，不把可能包含订阅URL的message写进报告。
+                JSONArray causes = new JSONArray(); Throwable cause = error;
+                for (int i = 0; cause != null && i < 8; i++, cause = cause.getCause()) causes.put(cause.getClass().getSimpleName());
+                report.put("passed", false).put("failedStep", step).put("failureType", error.getClass().getSimpleName()).put("failureChain", causes);
+            } catch (Exception ignored) { }
             emit(token, command, report, started);
         } finally { runOnUiThread(this::finish); }
     }

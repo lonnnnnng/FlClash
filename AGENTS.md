@@ -24,6 +24,7 @@
 - 不提交密码、Token、API key、签名私钥或真实订阅链接；日志和报告统一使用 `[REDACTED_SECRET]`。
 - Android 设备操作必须显式指定 `adb -s <serial>`，执行前核对设备型号和当前包名。
 - 2026-11-09 用户确认：后续验收只用专用 Redmi Note 8 Pro（`wsvwypiz7xwslvl7`），不用模拟器。正式签名验收可卸载 KClash 测试包并清除其残留应用数据；不触碰 Flutter 参考包 `com.follow.clash`、其他应用及工作区原始 `1.yaml`。
+- 2026-11-12 用户明确更换手机做TLS首连复验，本轮目标改为POCO F2 Pro（`31936bb6`、API36），该指令覆盖本轮旧Redmi限制。更换设备先核对serial/型号，驱动须同时显式传入二者；不自动接管其他项目设备，不操作Flutter参考包，仍禁止模拟器。后续以用户最新指定和当轮设备核对为准。
 - Git 提交说明使用中文，不添加 `Co-authored-by`；保留与当前任务无关的改动。
 - 不执行 `git reset --hard`、`git clean`、批量删除或其他破坏性命令，除非任务明确要求且目标已核对。
 

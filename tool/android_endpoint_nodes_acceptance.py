@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Redmi-only sequential first-request check for the six locally authorized proxy nodes."""
+"""Sequential first-request checks for the locally authorized proxy nodes."""
 
 from __future__ import annotations
 
@@ -16,15 +16,28 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE = ROOT.parent
 DEFAULT_ARTIFACTS = WORKSPACE / "acceptance-artifacts" / "endpoint-batch-20261111"
-SERIAL = "wsvwypiz7xwslvl7"
+DEFAULT_SERIAL = "wsvwypiz7xwslvl7"
+DEFAULT_MODEL = "Redmi Note 8 Pro"
+SERIAL = DEFAULT_SERIAL
+EXPECTED_MODEL = DEFAULT_MODEL
 PACKAGE = "com.lonnnnnng.flclash.motion"
 TEST_PACKAGE = f"{PACKAGE}.test"
 TEST_RUNNER = f"{TEST_PACKAGE}/androidx.test.runner.AndroidJUnitRunner"
 PREPARATION_TEST = "com.lonnnnnng.flclash.StabilityWindowPreparationTest#loadsUpdatedAuthorizedLocalWithoutReplacingExistingProfiles"
+FRESH_PREPARATION_TEST = "com.lonnnnnng.flclash.StabilityWindowPreparationTest#importsOnlyAuthorizedLocalIntoEmptyMotionDatabase"
 
 
 def adb(*parts: str, timeout: int = 30) -> bytes:
     return subprocess.check_output(["adb", "-s", SERIAL, *parts], timeout=timeout)
+
+
+def configure_target(serial: str, model: str | None) -> None:
+    global SERIAL, EXPECTED_MODEL
+    # 作者 long：更换真机时必须同时给serial和预期型号，避免自动挑中其他项目正在使用的设备。
+    if serial != DEFAULT_SERIAL and not model:
+        raise ValueError("non-default device serial requires an explicit expected model")
+    SERIAL = serial
+    EXPECTED_MODEL = model or DEFAULT_MODEL
 
 
 def sha256(raw: bytes) -> str:
@@ -32,8 +45,10 @@ def sha256(raw: bytes) -> str:
 
 
 def assert_target() -> None:
+    actual_serial = adb("get-serialno").decode().strip()
     model = adb("shell", "getprop", "ro.product.model").decode().strip()
-    assert model == "Redmi Note 8 Pro", f"unexpected device model: {model}"
+    assert actual_serial == SERIAL, f"unexpected device serial: {actual_serial}"
+    assert model == EXPECTED_MODEL, f"unexpected device model: {model}; expected {EXPECTED_MODEL}"
 
 
 def assert_services_stopped() -> None:
@@ -52,7 +67,7 @@ def install_and_verify(artifacts: Path) -> None:
     results = []
     for package, apk in apks:
         raw = apk.read_bytes()
-        result = subprocess.run(["adb", "-s", SERIAL, "install", "-r", str(apk)], capture_output=True, text=True, timeout=90)
+        result = subprocess.run(["adb", "-s", SERIAL, "install", "--no-incremental", "-r", str(apk)], capture_output=True, text=True, timeout=90)
         assert result.returncode == 0 and "Success" in result.stdout, f"install failed for {package}"
         remote = adb("shell", "pm", "path", package).decode().strip().removeprefix("package:")
         assert sha256(adb("exec-out", "cat", remote)) == sha256(raw), f"APK readback mismatch for {package}"
@@ -89,18 +104,23 @@ def report_items(artifacts: Path, token: str, command_prefix: str) -> list[dict]
             expected = f"/sdcard/Android/data/{PACKAGE}/files/stability-reports/{token}-{meta['command']}-{meta['sha256']}.json"
             assert meta["path"] in (expected, expected.replace("/sdcard/", "/storage/emulated/0/", 1))
             remote = meta["path"]
-            # 作者 long：外部存储的回执刚写完就可能短暂读到旧长度；只对本轮 token 的精确文件做有限重读，避免把传输竞态误记成业务失败。
-            data = b""
-            for _ in range(20):
-                data = adb("exec-out", "cat", remote, timeout=45)
-                if len(data) == meta["bytes"] and sha256(data) == meta["sha256"]:
-                    break
-                time.sleep(0.5)
-            assert len(data) == meta["bytes"] and sha256(data) == meta["sha256"]
             local = artifacts / f"{meta['command']}-{meta['sha256']}-transport.json"
-            local.write_bytes(data)
-            assert sha256(adb("exec-out", "cat", remote, timeout=45)) == meta["sha256"]
-            adb("shell", "rm", "--", remote)
+            if local.is_file():
+                # 作者 long：轮询同一回执时设备端文件已按设计删除，复用本地已校验副本，避免把收集器重复读取误报成业务失败。
+                data = local.read_bytes()
+            else:
+                # 作者 long：外部存储的回执刚写完可能短暂读到旧长度；只对本轮token的精确文件有限重读。
+                data = b""
+                for _ in range(20):
+                    data = adb("exec-out", "cat", remote, timeout=45)
+                    if len(data) == meta["bytes"] and sha256(data) == meta["sha256"]:
+                        break
+                    time.sleep(0.5)
+            assert len(data) == meta["bytes"] and sha256(data) == meta["sha256"]
+            if not local.is_file():
+                local.write_bytes(data)
+                assert sha256(adb("exec-out", "cat", remote, timeout=45)) == meta["sha256"]
+                adb("shell", "rm", "--", remote)
             result.append(json.loads(data))
             continue
         parts = group["parts"]
@@ -142,30 +162,37 @@ def run_command(artifacts: Path, token: str, name: str) -> dict:
     raise TimeoutError(f"no complete acceptance report for {name}")
 
 
-def prepare(artifacts: Path, previous_run: Path) -> None:
+def prepare(artifacts: Path, previous_run: Path | None) -> None:
     assert_target()
-    # 作者 long：授权正文只从工作区传到专用 Redmi 的临时输入，测试不通过公网发送配置内容。
+    # 作者 long：授权正文只通过USB传到显式指定设备的临时输入，不经公网传送配置内容。
     current = (WORKSPACE / "1.yaml").read_bytes()
-    previous = json.loads(previous_run.read_text())
     root_agents = (WORKSPACE / "AGENTS.md").read_text()
     urls = [value.rstrip(")]") for value in re.findall(r"https://[^\s`<>]+", root_agents)]
     assert len(urls) == 1, "expected exactly one user-authorized live HTTPS target"
     config_hash = sha256(current)
-    previous_hash = previous.get("localSha256")
-    assert previous_hash and previous_hash != config_hash, "the updated local source must differ from the previous acceptance source"
+    previous_hash = None
+    preparation_test = FRESH_PREPARATION_TEST
+    if previous_run is not None:
+        previous = json.loads(previous_run.read_text())
+        previous_hash = previous.get("localSha256")
+        assert previous_hash and previous_hash != config_hash, "the updated local source must differ from the previous acceptance source"
+        preparation_test = PREPARATION_TEST
     token = uuid.uuid4().hex
     source = {
         "token": token,
         "localSha256": config_hash,
-        "previousLocalSha256": previous_hash,
         "configBase64": base64.b64encode(current).decode(),
         "authorizedUrl": urls[0],
     }
+    if previous_hash:
+        source["previousLocalSha256"] = previous_hash
     remote = f"/data/local/tmp/kclash-stability-{token}.json"
     local = artifacts / f"input-{token}.json"
     local.write_text(json.dumps(source, separators=(",", ":")))
     run = {
         "token": token,
+        "device": {"serial": SERIAL, "model": EXPECTED_MODEL},
+        "baselineMode": "existing-profiles" if previous_hash else "empty-motion-database",
         "localSha256": config_hash,
         "localBytes": len(current),
         "previousLocalSha256": previous_hash,
@@ -180,13 +207,13 @@ def prepare(artifacts: Path, previous_run: Path) -> None:
         assert remote_hash == sha256(local.read_bytes())
         test = subprocess.run([
             "adb", "-s", SERIAL, "shell", "am", "instrument", "-w", "-r",
-            "-e", "class", PREPARATION_TEST, "-e", "kclashStabilityInput", remote, TEST_RUNNER,
+            "-e", "class", preparation_test, "-e", "kclashStabilityInput", remote, TEST_RUNNER,
         ], capture_output=True, text=True, timeout=120)
         (artifacts / "prepare.log").write_text(test.stdout + test.stderr)
         assert test.returncode == 0 and "OK (1 test)" in test.stdout, "authorized local import test failed"
         assert adb("shell", "sha256sum", remote).decode().split()[0] == remote_hash
-        print(json.dumps({"prepared": True, "localBytes": len(current), "localSha256": config_hash,
-                          "previousSourcePreserved": True}, ensure_ascii=False), flush=True)
+        print(json.dumps({"prepared": True, "baselineMode": run["baselineMode"], "localBytes": len(current),
+                          "localSha256": config_hash, "previousSourcePreserved": bool(previous_hash)}, ensure_ascii=False), flush=True)
     finally:
         if local.exists():
             local.unlink()
@@ -339,12 +366,18 @@ def main() -> None:
     parser.add_argument("--artifacts", type=Path, default=DEFAULT_ARTIFACTS)
     parser.add_argument("--previous-run", type=Path,
                         default=WORKSPACE / "acceptance-artifacts" / "endpoint-control-20261111" / "run.json")
+    parser.add_argument("--device-serial", default=DEFAULT_SERIAL)
+    parser.add_argument("--device-model")
+    parser.add_argument("--fresh-database", action="store_true",
+                        help="导入授权1.yaml到空motion数据库，不要求已有KClash配置")
     args = parser.parse_args()
+    configure_target(args.device_serial, args.device_model)
+    assert_target()
     args.artifacts.mkdir(parents=True, exist_ok=True)
     if args.mode == "install":
         install_and_verify(args.artifacts)
     elif args.mode == "prepare":
-        prepare(args.artifacts, args.previous_run)
+        prepare(args.artifacts, None if args.fresh_database else args.previous_run)
     elif args.mode == "run":
         run_batch(args.artifacts)
     else:

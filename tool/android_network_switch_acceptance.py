@@ -1,14 +1,17 @@
-"""作者 long：专用Redmi网络切换：独立应用真实DNS/HTTPS与核心同源端口归因，回执只包含摘要。"""
+"""作者 long：独立应用真实DNS/HTTPS与核心同源端口归因，回执只包含摘要。"""
 import argparse,base64,hashlib,importlib.util,json,re,subprocess,time
 from pathlib import Path
 REPO=Path(__file__).resolve().parents[1]
 bootstrap=argparse.ArgumentParser(add_help=False)
 bootstrap.add_argument('--artifacts',type=Path,required=True)
 bootstrap.add_argument('--client-package',choices=['com.lonnnnnng.flclash.motion.test','com.lonnnnnng.flclash.networkprobe'],default='com.lonnnnnng.flclash.networkprobe')
+bootstrap.add_argument('--device-serial',default='wsvwypiz7xwslvl7')
+bootstrap.add_argument('--device-model')
 settings,remaining=bootstrap.parse_known_args()
 ART=settings.artifacts.resolve()
 spec=importlib.util.spec_from_file_location('endpoint',REPO/'tool/android_endpoint_nodes_acceptance.py'); helpers=importlib.util.module_from_spec(spec);spec.loader.exec_module(helpers)
 helpers.TEST_PACKAGE=settings.client_package
+helpers.configure_target(settings.device_serial,settings.device_model)
 adb=helpers.adb
 state=json.loads((ART/'run.json').read_text()); TOKEN=state['token']
 assert re.fullmatch('[a-f0-9]{32}',TOKEN)
@@ -50,6 +53,11 @@ def probe(name,port):
  details=observed.get('networkSwitch',{})
  attributed=any(x.get('nonDirect') and x.get('upload',0)>0 and x.get('download',0)>0 for x in details.get('connections',[]))
  summary={'case':name,'dnsPassed':result.get('dnsPassed',False),'httpsPassed':result.get('passed',False),'http':result.get('http'),'failureType':result.get('failureType'),'failedStep':result.get('failedStep'),'attributedNonDirect':attributed,'sourcePort':port,'elapsedMillis':result.get('elapsedMillis'),'observer':details.get('observer'),'transports':[{'handle':x.get('handle'),'wifi':x.get('wifi'),'cellular':x.get('cellular'),'vpn':x.get('vpn'),'validated':x.get('validated'),'internet':x.get('internet')} for x in details.get('networks',[])],'runningSinceElapsedMs':details.get('runningSinceElapsedMs')}
+ if result.get('requestStartedElapsedMs') is not None and details.get('runningSinceElapsedMs') is not None:
+  summary['requestSinceCoreReadyMillis']=result['requestStartedElapsedMs']-details['runningSinceElapsedMs']
+ if result.get('tlsCompletedElapsedMs') is not None:
+  summary['tlsMillis']=result['tlsCompletedElapsedMs']-result['tlsStartedElapsedMs']
+ if result.get('failureChain'):summary['failureChain']=result['failureChain']
  (ART/('summary-'+name+'.json')).write_text(json.dumps(summary,indent=2)+'\n')
  print(json.dumps(summary),flush=True)
  return summary

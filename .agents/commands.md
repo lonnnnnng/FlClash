@@ -86,6 +86,8 @@ gomobile AAR 构建需要服从 `core/go.mod`、Android SDK、NDK 和 Gradle 配
 
 ## Android devices
 
+用户显式更换设备的TLS复验使用`tool/android_endpoint_nodes_acceptance.py`或`tool/android_network_switch_acceptance.py`的`--device-serial <serial> --device-model <exact-model>`；非默认serial未指定型号即拒绝，默认仍是旧Redmi，不自动选择唯一在线设备。空motion库准备用`prepare --fresh-database`，保留原1.yaml和唯一授权目标门禁。当前POCO复验5轮新PID首请求、时间戳和KDIAG-004回执缓存修复见`docs/tls-first-request-poco-recheck.md`；回归使用`python3 -m unittest discover -s tool -p test_android_endpoint_nodes_acceptance.py -v`。同回执重复轮询使用SHA核验过的本地副本，不能重读已回收设备文件。
+
 ```zsh
 command -v adb
 adb devices -l
