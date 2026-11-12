@@ -33,7 +33,7 @@ public class NetworkSwitchProbeActivity extends Activity {
         for (byte value : digest) result.append(String.format(java.util.Locale.ROOT, "%02x", value & 255));
         return result.toString();
     }
-    private JSONObject networkSnapshot(ConnectivityManager manager, Network network) throws Exception {
+    private static JSONObject networkSnapshot(ConnectivityManager manager, Network network) throws Exception {
         JSONObject result = new JSONObject();
         if (network == null) return result.put("present", false);
         NetworkCapabilities caps = manager.getNetworkCapabilities(network);
@@ -46,6 +46,44 @@ public class NetworkSwitchProbeActivity extends Activity {
             .put("cellular", caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
             .put("validated", caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED))
             .put("dnsHashes", dns);
+    }
+    /** 作者 long：同一绑定代码分别在VPN提供者和普通应用UID执行，不能凭测试包名推定socket的真实身份。 */
+    public static JSONObject bindingSnapshot(android.content.Context context) throws Exception {
+        ConnectivityManager manager = context.getSystemService(ConnectivityManager.class);
+        Network vpn = null; int count = 0;
+        for (Network network : manager.getAllNetworks()) {
+            NetworkCapabilities caps = manager.getNetworkCapabilities(network);
+            if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) { vpn = network; count++; }
+        }
+        JSONObject result = new JSONObject().put("uid", Process.myUid()).put("pid", Process.myPid())
+            .put("startedElapsedMs", SystemClock.elapsedRealtime())
+            .put("vpnNetworkCount", count).put("vpnNetwork", networkSnapshot(manager, vpn))
+            .put("defaultNetwork", networkSnapshot(manager, manager.getActiveNetwork()))
+            .put("boundProcessNetwork", networkSnapshot(manager, manager.getBoundNetworkForProcess()));
+        if (count != 1) return result;
+        JSONObject attempts = new JSONObject();
+        for (String method : new String[] {"socket-factory", "tcp-bind", "udp-bind"}) {
+            JSONObject attempt = new JSONObject().put("startedElapsedMs", SystemClock.elapsedRealtime());
+            try {
+                if (method.equals("socket-factory")) {
+                    try (Socket socket = vpn.getSocketFactory().createSocket()) { attempt.put("bound", true); }
+                } else if (method.equals("tcp-bind")) {
+                    try (Socket socket = new Socket()) { vpn.bindSocket(socket); attempt.put("bound", true); }
+                } else {
+                    try (DatagramSocket socket = new DatagramSocket(null)) { vpn.bindSocket(socket); attempt.put("bound", true); }
+                }
+            } catch (Exception failure) {
+                // 作者 long：只记录系统errno和类型链，保留权限拒绝证据而不输出可能含地址的异常message。
+                JSONArray types = new JSONArray(); JSONArray errnos = new JSONArray(); Throwable cause = failure;
+                for (int i = 0; cause != null && i < 8; i++, cause = cause.getCause()) {
+                    types.put(cause.getClass().getSimpleName());
+                    if (cause instanceof android.system.ErrnoException) errnos.put(((android.system.ErrnoException) cause).errno);
+                }
+                attempt.put("bound", false).put("failureTypes", types).put("errnos", errnos);
+            }
+            attempts.put(method, attempt.put("finishedElapsedMs", SystemClock.elapsedRealtime()));
+        }
+        return result.put("attempts", attempts).put("finishedElapsedMs", SystemClock.elapsedRealtime());
     }
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -77,6 +115,12 @@ public class NetworkSwitchProbeActivity extends Activity {
             if (!token.equals(input.getString("token"))) throw new IllegalStateException("wrong input token");
             URI target = URI.create(input.getString("authorizedUrl"));
             if (!"https".equals(target.getScheme()) || target.getHost() == null || target.getRawUserInfo() != null) throw new IllegalStateException("HTTPS target required");
+            if (getIntent().getBooleanExtra("bindingOnly", false)) {
+                // 作者 long：诊断完成与绑定成功分开记录；这里只复现系统绑定条件，不把它计成DNS/TLS/HTTP通过。
+                report.put("diagnosticOnly", true).put("binding", bindingSnapshot(this)).put("passed", true);
+                emit(token, command, report, started);
+                return;
+            }
             ConnectivityManager connectivity = getSystemService(ConnectivityManager.class);
             Network active = connectivity.getActiveNetwork();
             report.put("networkBefore", networkSnapshot(connectivity, active)).put("uid", Process.myUid()).put("pid", Process.myPid())

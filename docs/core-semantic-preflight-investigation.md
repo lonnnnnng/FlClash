@@ -1,5 +1,9 @@
 # 导入前核心语义预检
 
+## VPN绑定条件与真实默认路由补验（2026-11-12，当前）
+
+POCO API36最终同批六项6/6、零跳过，新增独立普通UID在拒绝导入前后真实默认VPN的UDP DNS/TLS/HTTP200及同源端口非DIRECT双向流量；原行/正文/草稿/epoch/运行起点/VPN接口保持，停止后同预览成功。提供者在VPN Network可见但默认仍Wi-Fi时显式绑定三次EPERM，830ms后相同UID/PID/Network三次成功；支持启动发布窗口条件，不能追认旧Redmi系统内部根因或称TUN建立失败。仅修改验收，另修旧fileName清空等待为completed回执；911JVM含复用、motion构建/Lint零错误。前一批6/6及首轮超时分开保留。未验原生establish失败注入、低API/OEM、其他协议/来源和在线age；完整目标仍PARTIAL。见[本组溯源](semantic-vpn-binding-boundary.md)与[证据](acceptance/semantic-vpn-poco-20261112.json)。
+
 ## 提交边界与外部正文补验（2026-11-11，当前）
 
 本轮只新增验收代码，未修改生产运行逻辑或内核。基线`7db5aec6`、内核`d43bbd75`；最终motion/Test构建与Redmi安装回拉一致，final3精确18/18通过。908项JVM（App617/Service218/Core39/Common34）零失败、错误和跳过，含Gradle复用；最终Debug Lint零错误（75警告、14提示）。本轮未重跑Release/R8、Release Lint或Go，不借用前组结果称为本轮通过。证据见[本轮JSON](acceptance/core-semantic-boundaries-redmi-20261111.json)，原始日志在`../acceptance-artifacts/semantic-commit-20261111/`。

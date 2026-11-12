@@ -1,0 +1,912 @@
+{
+  "task": "Core semantic preflight VPN binding condition boundary",
+  "date": "2026-11-12",
+  "sourceHeadBeforeChanges": "a99b40ed",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "android": 16,
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "productionCodeChanged": false,
+  "coreChanged": false,
+  "testSourceSha256": {
+    "android/app/src/androidTest/java/com/lonnnnnng/flclash/NetworkSwitchProbeActivity.java": "027d066f3c7121019969745bfe23cec6cca0cb2a0a2d1dc6109785586f9b1a9a",
+    "android/tests/instrumented/ConfigSemanticCommitBoundaryInstrumentedTest.kt": "57c884452e4c8dd68f6a3fc8ae5dd6fd9cb91f2ed9535c0d3138428b86c3a5a7",
+    "android/tests/instrumented/SemanticVpnTrafficAcceptance.kt": "2e8465bca2448861c243945bde1edd12536914874d3a9ebff880f19f7bc91fb9"
+  },
+  "final": {
+    "passed": true,
+    "tests": 6,
+    "failures": 0,
+    "skipped": 0,
+    "cases": [
+      {
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest",
+        "method": "managedSemanticRejectionPrecedesCommitAndApplyFailureRetriesWithoutDownload",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest",
+        "method": "runningProxyRejectsImportAndPreservesDraftUntilSamePreviewRetriesAfterStop",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest",
+        "method": "runningVpnKeepsTunnelAndDraftAcrossRejectedImportAndStoppedRetry",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest",
+        "method": "realRuntimeManagedApplyFailureKeepsSavedBodyAndRetriesWithoutDownloading",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest",
+        "method": "mixedProfilesAndEncryptedPendingDraftSurviveSemanticRejectionAndValidImport",
+        "status": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ConfigSemanticCommitBoundaryInstrumentedTest",
+        "method": "runningVpnProtectsImportAndDraftWithIndependentUidTraffic",
+        "status": 0
+      }
+    ],
+    "bindingReports": [
+      {
+        "phase": "before",
+        "provider": {
+          "uid": 10232,
+          "pid": 6152,
+          "startedElapsedMs": 79839467,
+          "vpnNetworkCount": 1,
+          "vpnNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": false,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "defaultNetwork": {
+            "present": true,
+            "handle": 450082295821,
+            "vpn": false,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "2e18105ec947918e5eb62aeccadbf7260192871150429bb8c7cb82fbf0a5e8fb",
+              "08b514036dab8dc7d31b126fe476788d3d228d26762f0aa15433a12ae0a0ce6b"
+            ]
+          },
+          "boundProcessNetwork": {
+            "present": false
+          },
+          "attempts": {
+            "socket-factory": {
+              "startedElapsedMs": 79839471,
+              "bound": false,
+              "failureTypes": [
+                "SocketException",
+                "ErrnoException"
+              ],
+              "errnos": [
+                1
+              ],
+              "finishedElapsedMs": 79839472
+            },
+            "tcp-bind": {
+              "startedElapsedMs": 79839472,
+              "bound": false,
+              "failureTypes": [
+                "SocketException",
+                "ErrnoException"
+              ],
+              "errnos": [
+                1
+              ],
+              "finishedElapsedMs": 79839472
+            },
+            "udp-bind": {
+              "startedElapsedMs": 79839472,
+              "bound": false,
+              "failureTypes": [
+                "SocketException",
+                "ErrnoException"
+              ],
+              "errnos": [
+                1
+              ],
+              "finishedElapsedMs": 79839472
+            }
+          },
+          "finishedElapsedMs": 79839472
+        },
+        "independent": {
+          "uid": 10231,
+          "pid": 6883,
+          "startedElapsedMs": 79839675,
+          "vpnNetworkCount": 1,
+          "vpnNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "defaultNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "boundProcessNetwork": {
+            "present": false
+          },
+          "attempts": {
+            "socket-factory": {
+              "startedElapsedMs": 79839680,
+              "bound": true,
+              "finishedElapsedMs": 79839681
+            },
+            "tcp-bind": {
+              "startedElapsedMs": 79839681,
+              "bound": true,
+              "finishedElapsedMs": 79839681
+            },
+            "udp-bind": {
+              "startedElapsedMs": 79839681,
+              "bound": true,
+              "finishedElapsedMs": 79839682
+            }
+          },
+          "finishedElapsedMs": 79839682
+        },
+        "providerAfterIndependent": {
+          "uid": 10232,
+          "pid": 6152,
+          "startedElapsedMs": 79840297,
+          "vpnNetworkCount": 1,
+          "vpnNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "defaultNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "boundProcessNetwork": {
+            "present": false
+          },
+          "attempts": {
+            "socket-factory": {
+              "startedElapsedMs": 79840303,
+              "bound": true,
+              "finishedElapsedMs": 79840305
+            },
+            "tcp-bind": {
+              "startedElapsedMs": 79840305,
+              "bound": true,
+              "finishedElapsedMs": 79840305
+            },
+            "udp-bind": {
+              "startedElapsedMs": 79840305,
+              "bound": true,
+              "finishedElapsedMs": 79840305
+            }
+          },
+          "finishedElapsedMs": 79840305
+        }
+      },
+      {
+        "phase": "after",
+        "provider": {
+          "uid": 10232,
+          "pid": 6152,
+          "startedElapsedMs": 79844196,
+          "vpnNetworkCount": 1,
+          "vpnNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "defaultNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "boundProcessNetwork": {
+            "present": false
+          },
+          "attempts": {
+            "socket-factory": {
+              "startedElapsedMs": 79844204,
+              "bound": true,
+              "finishedElapsedMs": 79844205
+            },
+            "tcp-bind": {
+              "startedElapsedMs": 79844205,
+              "bound": true,
+              "finishedElapsedMs": 79844205
+            },
+            "udp-bind": {
+              "startedElapsedMs": 79844205,
+              "bound": true,
+              "finishedElapsedMs": 79844206
+            }
+          },
+          "finishedElapsedMs": 79844206
+        },
+        "independent": {
+          "uid": 10231,
+          "pid": 7007,
+          "startedElapsedMs": 79844418,
+          "vpnNetworkCount": 1,
+          "vpnNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "defaultNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "boundProcessNetwork": {
+            "present": false
+          },
+          "attempts": {
+            "socket-factory": {
+              "startedElapsedMs": 79844422,
+              "bound": true,
+              "finishedElapsedMs": 79844423
+            },
+            "tcp-bind": {
+              "startedElapsedMs": 79844423,
+              "bound": true,
+              "finishedElapsedMs": 79844423
+            },
+            "udp-bind": {
+              "startedElapsedMs": 79844423,
+              "bound": true,
+              "finishedElapsedMs": 79844424
+            }
+          },
+          "finishedElapsedMs": 79844424
+        },
+        "providerAfterIndependent": {
+          "uid": 10232,
+          "pid": 6152,
+          "startedElapsedMs": 79845011,
+          "vpnNetworkCount": 1,
+          "vpnNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "defaultNetwork": {
+            "present": true,
+            "handle": 505916870669,
+            "vpn": true,
+            "wifi": true,
+            "cellular": false,
+            "validated": true,
+            "dnsHashes": [
+              "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+            ]
+          },
+          "boundProcessNetwork": {
+            "present": false
+          },
+          "attempts": {
+            "socket-factory": {
+              "startedElapsedMs": 79845016,
+              "bound": true,
+              "finishedElapsedMs": 79845017
+            },
+            "tcp-bind": {
+              "startedElapsedMs": 79845017,
+              "bound": true,
+              "finishedElapsedMs": 79845017
+            },
+            "udp-bind": {
+              "startedElapsedMs": 79845017,
+              "bound": true,
+              "finishedElapsedMs": 79845018
+            }
+          },
+          "finishedElapsedMs": 79845018
+        }
+      }
+    ],
+    "trafficReports": [
+      {
+        "phase": "before",
+        "result": {
+          "client": {
+            "requestStartedElapsedMs": 79840460,
+            "networkBefore": {
+              "present": true,
+              "handle": 505916870669,
+              "vpn": true,
+              "wifi": true,
+              "cellular": false,
+              "validated": true,
+              "dnsHashes": [
+                "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+              ]
+            },
+            "uid": 10231,
+            "pid": 6921,
+            "sourcePort": 47800,
+            "boundProcessNetwork": {
+              "present": false
+            },
+            "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+            "explicitVpnSocketBinding": false,
+            "dnsMethod": "vpn-dns-wire",
+            "wireDnsPassed": true,
+            "dnsPassed": true,
+            "dnsMillis": 5,
+            "dnsServerHash": "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76",
+            "answerHash": "72e2df5eb43137dc11d2a164eaf5fff35e6af69ebf26b606be41b5fbe18e13ca",
+            "tcpConnectedElapsedMs": 79840469,
+            "tlsStartedElapsedMs": 79840471,
+            "tlsCompletedElapsedMs": 79842760,
+            "http": 200,
+            "passed": true,
+            "networkAfter": {
+              "present": true,
+              "handle": 505916870669,
+              "vpn": true,
+              "wifi": true,
+              "cellular": false,
+              "validated": true,
+              "dnsHashes": [
+                "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+              ]
+            },
+            "token": "8a5d103f26c24bcf90b4315a6005655c",
+            "command": "semantic-traffic-before",
+            "elapsedMillis": 2551
+          },
+          "observed": {
+            "sourcePort": 47800,
+            "connections": [
+              {
+                "idHash": "a67cc0efb605bfa53af47eb60ebe6039fe40fdc80b3ea2952b7287b1f8bd3da2",
+                "sourcePort": 47800,
+                "upload": 254,
+                "download": 0,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "66baa58dcd80e8a7d4954c7fd6dbfa08ef389ee14fcd062be29f6aaceb65f512",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              },
+              {
+                "idHash": "a67cc0efb605bfa53af47eb60ebe6039fe40fdc80b3ea2952b7287b1f8bd3da2",
+                "sourcePort": 47800,
+                "upload": 254,
+                "download": 0,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "66baa58dcd80e8a7d4954c7fd6dbfa08ef389ee14fcd062be29f6aaceb65f512",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              },
+              {
+                "idHash": "a67cc0efb605bfa53af47eb60ebe6039fe40fdc80b3ea2952b7287b1f8bd3da2",
+                "sourcePort": 47800,
+                "upload": 254,
+                "download": 0,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "66baa58dcd80e8a7d4954c7fd6dbfa08ef389ee14fcd062be29f6aaceb65f512",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              },
+              {
+                "idHash": "a67cc0efb605bfa53af47eb60ebe6039fe40fdc80b3ea2952b7287b1f8bd3da2",
+                "sourcePort": 47800,
+                "upload": 254,
+                "download": 0,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "66baa58dcd80e8a7d4954c7fd6dbfa08ef389ee14fcd062be29f6aaceb65f512",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              },
+              {
+                "idHash": "a67cc0efb605bfa53af47eb60ebe6039fe40fdc80b3ea2952b7287b1f8bd3da2",
+                "sourcePort": 47800,
+                "upload": 254,
+                "download": 0,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "66baa58dcd80e8a7d4954c7fd6dbfa08ef389ee14fcd062be29f6aaceb65f512",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              },
+              {
+                "idHash": "a67cc0efb605bfa53af47eb60ebe6039fe40fdc80b3ea2952b7287b1f8bd3da2",
+                "sourcePort": 47800,
+                "upload": 593,
+                "download": 3689,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "66baa58dcd80e8a7d4954c7fd6dbfa08ef389ee14fcd062be29f6aaceb65f512",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              }
+            ],
+            "watchMillis": 2528,
+            "runtime": "RUNNING",
+            "vpnAlive": true,
+            "allowBypass": false,
+            "runningSinceElapsedMs": 79839455,
+            "networks": [
+              {
+                "handle": 450082295821,
+                "wifi": true,
+                "cellular": false,
+                "vpn": false,
+                "internet": true,
+                "validated": true,
+                "dnsHashes": [
+                  "2e18105ec947918e5eb62aeccadbf7260192871150429bb8c7cb82fbf0a5e8fb",
+                  "08b514036dab8dc7d31b126fe476788d3d228d26762f0aa15433a12ae0a0ce6b"
+                ]
+              },
+              {
+                "handle": 505916870669,
+                "wifi": true,
+                "cellular": false,
+                "vpn": true,
+                "internet": true,
+                "validated": true,
+                "dnsHashes": [
+                  "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "phase": "after",
+        "result": {
+          "client": {
+            "requestStartedElapsedMs": 79845173,
+            "networkBefore": {
+              "present": true,
+              "handle": 505916870669,
+              "vpn": true,
+              "wifi": true,
+              "cellular": false,
+              "validated": true,
+              "dnsHashes": [
+                "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+              ]
+            },
+            "uid": 10231,
+            "pid": 7046,
+            "sourcePort": 47801,
+            "boundProcessNetwork": {
+              "present": false
+            },
+            "targetHostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+            "explicitVpnSocketBinding": false,
+            "dnsMethod": "vpn-dns-wire",
+            "wireDnsPassed": true,
+            "dnsPassed": true,
+            "dnsMillis": 3,
+            "dnsServerHash": "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76",
+            "answerHash": "72e2df5eb43137dc11d2a164eaf5fff35e6af69ebf26b606be41b5fbe18e13ca",
+            "tcpConnectedElapsedMs": 79845180,
+            "tlsStartedElapsedMs": 79845182,
+            "tlsCompletedElapsedMs": 79846471,
+            "http": 200,
+            "passed": true,
+            "networkAfter": {
+              "present": true,
+              "handle": 505916870669,
+              "vpn": true,
+              "wifi": true,
+              "cellular": false,
+              "validated": true,
+              "dnsHashes": [
+                "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+              ]
+            },
+            "token": "8a5d103f26c24bcf90b4315a6005655c",
+            "command": "semantic-traffic-after",
+            "elapsedMillis": 2082
+          },
+          "observed": {
+            "sourcePort": 47801,
+            "connections": [
+              {
+                "idHash": "d7e18e3b8f89a9d706a12724727cd3dda7de26c21da2c519261d6d47f6c27434",
+                "sourcePort": 47801,
+                "upload": 254,
+                "download": 0,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              },
+              {
+                "idHash": "d7e18e3b8f89a9d706a12724727cd3dda7de26c21da2c519261d6d47f6c27434",
+                "sourcePort": 47801,
+                "upload": 254,
+                "download": 0,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              },
+              {
+                "idHash": "d7e18e3b8f89a9d706a12724727cd3dda7de26c21da2c519261d6d47f6c27434",
+                "sourcePort": 47801,
+                "upload": 254,
+                "download": 0,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              },
+              {
+                "idHash": "d7e18e3b8f89a9d706a12724727cd3dda7de26c21da2c519261d6d47f6c27434",
+                "sourcePort": 47801,
+                "upload": 593,
+                "download": 3690,
+                "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+                "targetHostMatches": true,
+                "nonDirect": true,
+                "chainHashes": [
+                  "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+                  "ea0440a13bce8af483c84e0ff27ff3eec0c642ea64652631f5ad78e3c1bad0bc",
+                  "773c0767d002ccc69bdec82a5cb17de493cd44b3b4c6b002dbc083eec7f8864a",
+                  "9bebef9d8176a95b71686e9c6b4c0ca01318d2c2da27504fc8fbbac8bb878522"
+                ]
+              }
+            ],
+            "watchMillis": 1466,
+            "runtime": "RUNNING",
+            "vpnAlive": true,
+            "allowBypass": false,
+            "runningSinceElapsedMs": 79839455,
+            "networks": [
+              {
+                "handle": 450082295821,
+                "wifi": true,
+                "cellular": false,
+                "vpn": false,
+                "internet": true,
+                "validated": true,
+                "dnsHashes": [
+                  "2e18105ec947918e5eb62aeccadbf7260192871150429bb8c7cb82fbf0a5e8fb",
+                  "08b514036dab8dc7d31b126fe476788d3d228d26762f0aa15433a12ae0a0ce6b"
+                ]
+              },
+              {
+                "handle": 505916870669,
+                "wifi": true,
+                "cellular": false,
+                "vpn": true,
+                "internet": true,
+                "validated": true,
+                "dnsHashes": [
+                  "cc040e5ebf964d6920a22a203672933d879b878387cec1daff77ab72f0fcce76"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "boundaryReports": [
+      {
+        "case": "managed-apply-boundary",
+        "passed": true,
+        "semanticRejectBeforeCommit": true,
+        "applyFaultInjected": true,
+        "retryDownloads": 0,
+        "retryFileAndMtimeHeld": true,
+        "noReplay": true
+      },
+      {
+        "case": "running-proxy",
+        "passed": true,
+        "realHttpsRequests": 2,
+        "epochAndRunningSinceHeld": true,
+        "draftCiphertextAndMtimeHeld": true,
+        "samePreviewImportedAfterStop": true,
+        "tunnelBoundRequests": false,
+        "trafficRoute": "explicit-local-SOCKS",
+        "defaultVpnTrafficPassed": false,
+        "vpnInterfaceAndNetworkHeld": false
+      },
+      {
+        "case": "running-vpn",
+        "passed": true,
+        "realHttpsRequests": 2,
+        "epochAndRunningSinceHeld": true,
+        "draftCiphertextAndMtimeHeld": true,
+        "samePreviewImportedAfterStop": true,
+        "tunnelBoundRequests": false,
+        "trafficRoute": "explicit-local-SOCKS",
+        "defaultVpnTrafficPassed": false,
+        "vpnInterfaceAndNetworkHeld": true
+      },
+      {
+        "case": "real-runtime-managed-apply",
+        "passed": true,
+        "actualRuntimeManager": true,
+        "scriptApplyFault": true,
+        "runningSessionRecovered": true,
+        "savedBodyAndMtimeHeldOnRetry": true,
+        "retryDownloads": 0,
+        "realHttpsRequests": 2,
+        "noReplay": true
+      },
+      {
+        "case": "mixed-and-draft",
+        "passed": true,
+        "profileTypes": 3,
+        "draftCiphertextAndMtimeHeld": true,
+        "existingFilesHeld": true
+      },
+      {
+        "case": "running-vpn-independent-uid",
+        "passed": true,
+        "realHttpsRequests": 2,
+        "epochAndRunningSinceHeld": true,
+        "draftCiphertextAndMtimeHeld": true,
+        "samePreviewImportedAfterStop": true,
+        "tunnelBoundRequests": false,
+        "trafficRoute": "independent-uid-default-VPN",
+        "defaultVpnTrafficPassed": true,
+        "vpnInterfaceAndNetworkHeld": true
+      }
+    ],
+    "sameProviderUidAndPid": true,
+    "sameVpnNetworkHandle": true,
+    "providerBindingRecheckMillis": 830,
+    "logSha256": "56aca4802a7800e36d731acf56b8a71753e327bd5721915fd91e6df1d72014f0",
+    "rawSummarySha256": "110d325c0df6bd3897e5627eda4394aeea95ed29b22c71e882efa9b03c92425b",
+    "rawSummaryPath": "../acceptance-artifacts/semantic-vpn-poco-20261112/final/batch-six-final-summary.json"
+  },
+  "previousBatch": {
+    "tests": 6,
+    "passed": true,
+    "logSha256": "29804660bc7b450047c2fda3432be8a894c9e24ac24b3afdb9d3f89869b72e3a",
+    "includedInFinalCount": false
+  },
+  "initialFailure": {
+    "tests": 1,
+    "failed": 1,
+    "twoDefaultVpnRequestsPassed": true,
+    "failure": "35s timeout awaiting legacy fileName==null after completed import",
+    "rawLogSha256": "12bd0ce0397282cfef9657fe0e094d12629402a849007ce03d02ffa313d5a9a9",
+    "fixtureCleanup": "Exact owned motion/test packages uninstalled before re-preparing original local input"
+  },
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 618,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 911,
+    "lint": {
+      "Warning": 74,
+      "Hint": 14
+    },
+    "includesGradleReuse": true,
+    "gradleTasks": {
+      "total": 242,
+      "executed": 9,
+      "upToDate": 233
+    },
+    "releaseR8OrGoRerun": false
+  },
+  "gradleCommand": "JAVA_HOME=<JDK17> ./gradlew test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+  "gradleLogSha256": "616b19d26b0aa5c413aaa35949ba8b097a0167e9222b095e96da93133c9f3efe",
+  "installedMotionApks": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "fe6d09d3725cc00d62a4f5f5b1112f3fb8b59bdcbef850f1fd73404f74000976",
+      "bytes": 66218493,
+      "readbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "660f13be627bedbfbc3e31ed3183e2c94fad5d963fb5f0b8e825ba74c0ac281c",
+      "bytes": 3014986,
+      "readbackMatches": true
+    }
+  ],
+  "installedProbeApk": {
+    "package": "com.lonnnnnng.flclash.networkprobe",
+    "sha256": "97149e01dc86e44c945b0b3edebe8312b6807f62f28f2191f770034aa68674e9",
+    "bytes": 24979,
+    "readbackMatches": true
+  },
+  "authorizedInput": {
+    "source": "workspace-root/1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeUnix": 1794392072,
+    "publicUpload": false,
+    "delivery": "USB temporary copies only"
+  },
+  "cleanup": {
+    "noKClashServices": true,
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.networkprobe"
+    ],
+    "removedExactProbeInputs": [
+      {
+        "path": "/sdcard/Android/data/com.lonnnnnng.flclash.networkprobe/files/switch-9ddb71f647ae4a9294713c7a8ebc4ce4.json",
+        "sha256": "2bc20d35cc66b21b921a529b2c7f57aa7a4189db8c767bb5a47c49d29ca62266",
+        "absent": true
+      },
+      {
+        "path": "/sdcard/Android/data/com.lonnnnnng.flclash.networkprobe/files/switch-8a5d103f26c24bcf90b4315a6005655c.json",
+        "sha256": "8cc471b878bc6c26d19d42e35731c9b5bcc90ad46f76fd48e86b1a0b9c2318dc",
+        "absent": true
+      }
+    ],
+    "flutterReferenceInstalledAndNotOperated": true,
+    "originalConfigSha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "originalConfigBytes": 34220,
+    "originalConfigMtimeUnix": 1794392072,
+    "originalConfigUploaded": false
+  },
+  "scope": {
+    "defaultVpnTrafficVerified": true,
+    "defaultVpnRequests": 2,
+    "explicitBindingDeniedDuringStartupObserved": true,
+    "sameProviderUidPidAndVpnLaterSucceeded": true,
+    "observedRecheckMillis": 830,
+    "oldRedmiInternalCauseProved": false,
+    "nativeVpnEstablishFailureInjected": false,
+    "nativeTunFailureRollbackVerified": false,
+    "realManagedScriptApplyRecoveryVerified": true,
+    "formalSafOrFullMainActivityUiE2E": false,
+    "onlineAgeEncryptedE2E": false,
+    "otherAuthorizedProtocolSourceCoverageExtended": false,
+    "lowApiOtherOemVerified": false,
+    "newScreenshots": 0
+  },
+  "artifactDirectory": "../acceptance-artifacts/semantic-vpn-poco-20261112",
+  "artifactManifest": {
+    "path": "../acceptance-artifacts/semantic-vpn-poco-20261112/artifact-manifest.json",
+    "sha256": "e914daca187674317dba33d71acd2a6e8f41dc372ad7dab9b1971418f592076d",
+    "files": 44,
+    "rawArtifactsCommitted": false
+  },
+  "releasePublished": false
+}

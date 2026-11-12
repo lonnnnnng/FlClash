@@ -165,6 +165,8 @@ class ConfigSemanticCommitBoundaryInstrumentedTest {
     @Test fun runningProxyRejectsImportAndPreservesDraftUntilSamePreviewRetriesAfterStop() = running(false)
     @Test fun runningVpnKeepsTunnelAndDraftAcrossRejectedImportAndStoppedRetry() = running(true)
 
+    @Test fun runningVpnProtectsImportAndDraftWithIndependentUidTraffic() = running(true, independentTraffic = true)
+
     @Test fun realRuntimeManagedApplyFailureKeepsSavedBodyAndRetriesWithoutDownloading(): Unit = runBlocking(Dispatchers.IO) {
         val bytes = original(); val repo = entry.profileRepository(); val db = entry.database(); val runtime = entry.runtimeManager()
         (context.applicationContext as KClashApplication).awaitRuntimeInitialization()
@@ -325,7 +327,7 @@ class ConfigSemanticCommitBoundaryInstrumentedTest {
 
     private fun repoFileStamp(id: Long) = entry.profileRepository().profileFile(id).let { Triple(it.length(), it.lastModified(), sha(it.readBytes())) }
 
-    private fun running(vpn: Boolean): Unit = runBlocking(Dispatchers.IO) {
+    private fun running(vpn: Boolean, independentTraffic: Boolean = false): Unit = runBlocking(Dispatchers.IO) {
         val bytes = original(); val repo = entry.profileRepository(); val runtime = entry.runtimeManager()
         (context.applicationContext as KClashApplication).awaitRuntimeInitialization()
         assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
@@ -363,8 +365,9 @@ class ConfigSemanticCommitBoundaryInstrumentedTest {
                 runtime.setVpnEnabled(vpn).getOrThrow(); runtime.startProxy().getOrThrow()
                 withTimeout(45_000) { runtime.state.first { it == CoreRuntimeStatus.RUNNING } }
                 val tunnel = if (vpn) tunnelStamp() else null
-                // 作者 long：此例验证运行中VPN的提交保护，业务连通性明确走本地SOCKS；不能将它记成TUN流量通过。
-                request()
+                // 作者 long：原用例的SOCKS证据保留；新增分支要求独立普通UID走系统VPN，不用本地入站代替TUN流量。
+                val beforeTraffic = if (independentTraffic) semanticVpnTrafficAcceptance(entry, "before") else null
+                if (!independentTraffic) request()
                 val epoch = entry.coreBridge().ipRouteStamp().epoch; val since = runtime.runningSinceElapsedMillis.value
                 val rows = entry.database().profiles().getAll(); val selected = repo.currentProfileId.value
                 val sourceFiles = rows.associate { row -> row.id to repo.profileFile(row.id).let { f -> Triple(f.length(), f.lastModified(), sha(f.readBytes())) } }
@@ -378,23 +381,40 @@ class ConfigSemanticCommitBoundaryInstrumentedTest {
                 assertEquals(encrypted, files(context.noBackupFilesDir)); assertArrayEquals(pending, draftStore.read())
                 assertEquals(epoch, entry.coreBridge().ipRouteStamp().epoch); assertEquals(since, runtime.runningSinceElapsedMillis.value)
                 if (vpn) assertEquals(tunnel, tunnelStamp())
-                request()
+                val afterTraffic = if (independentTraffic) semanticVpnTrafficAcceptance(entry, "after") else null
+                if (!independentTraffic) request()
+                if (independentTraffic) {
+                    assertEquals(rows, entry.database().profiles().getAll())
+                    sourceFiles.forEach { (id, stamp) -> assertEquals(stamp, repo.profileFile(id).let { f -> Triple(f.length(), f.lastModified(), sha(f.readBytes())) }) }
+                    assertEquals(encrypted, files(context.noBackupFilesDir)); assertArrayEquals(pending, draftStore.read())
+                    assertEquals(epoch, entry.coreBridge().ipRouteStamp().epoch); assertEquals(since, runtime.runningSinceElapsedMillis.value)
+                    assertEquals(tunnel, tunnelStamp())
+                }
                 runtime.stop().getOrThrow()
                 controller.confirm()
-                withTimeout(35_000) { controller.state.first { !it.saving && it.fileName == null } }
+                // 作者 long：保存成功保留文件名供用户确认，测试等待完成回执，不能继续等待旧版自动清空表单。
+                withTimeout(35_000) { controller.state.first { !it.saving && it.completed } }
                 val added = entry.database().profiles().getAll().filter { row -> initialRows.none { it.id == row.id } }.single()
                 imported = added.id
                 assertArrayEquals(bytes, repo.profileFile(added.id).readBytes())
                 assertEquals(selected, repo.currentProfileId.value); assertEquals(encrypted, files(context.noBackupFilesDir))
-                report(if (vpn) "running-vpn" else "running-proxy", "realHttpsRequests" to 2,
+                report(if (independentTraffic) "running-vpn-independent-uid" else if (vpn) "running-vpn" else "running-proxy", "realHttpsRequests" to 2,
                     "epochAndRunningSinceHeld" to true, "draftCiphertextAndMtimeHeld" to true,
                     "samePreviewImportedAfterStop" to true, "tunnelBoundRequests" to false,
-                    "trafficRoute" to "explicit-local-SOCKS", "vpnInterfaceAndNetworkHeld" to vpn)
+                    "trafficRoute" to if (independentTraffic) "independent-uid-default-VPN" else "explicit-local-SOCKS",
+                    "defaultVpnTrafficPassed" to independentTraffic, "vpnInterfaceAndNetworkHeld" to vpn,
+                    "beforeTraffic" to (beforeTraffic ?: JSONObject.NULL), "afterTraffic" to (afterTraffic ?: JSONObject.NULL))
             } finally {
                 withContext(NonCancellable) {
                     controller.dismiss(); scope.coroutineContext[Job]?.cancelAndJoin()
                     runtime.stop().getOrThrow(); runtime.setVpnEnabled(oldVpn).getOrThrow()
-                    imported?.let { repo.deleteProfile(it) }
+                    // 作者 long：断言或等待失败也要识别本例已提交的副本，只删除原快照之外且标签、类型、正文都匹配的新增行。
+                    val owned = entry.database().profiles().getAll().filter { row -> initialRows.none { it.id == row.id } }
+                    owned.forEach { row ->
+                        check(row.type == ProfileType.FILE && row.label == "authorized" && sha(repo.profileFile(row.id).readBytes()) == sha(bytes))
+                        repo.deleteProfile(row.id)
+                    }
+                    imported?.let { assertTrue(owned.any { row -> row.id == it }) }
                     // 作者 long：仅删除本例写入的草稿；不把意外变化的未知会话当作测试残留清除。
                     if (draftStore.read()?.contentEquals(pending) == true) draftStore.write(null)
                 }
