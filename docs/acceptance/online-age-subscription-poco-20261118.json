@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-18",
+  "scope": "authorized online age subscription download, decrypt, UI import, and live Core apply",
+  "status": "VERIFIED",
+  "source": {
+    "repository": "lonnnnnng/config01",
+    "branch": "main",
+    "rotationCommit": "b74718ca960dc85e6fd0d2a25a79ed7ceb49c817",
+    "updatedMirroredFiles": 2,
+    "remoteGitBlobSha": "6b532c3d8f4cb443d894c83543fbcb07c261a4c5",
+    "cipherBytes": 47961,
+    "cipherSha256": "d5cdb441abd149b7ad77591b06c3ed87b1f581e3827edb72cbd4d67233acc6e1",
+    "authorizedUrlSha256": "0471389dac92c66fc42b66703eddc1eb36189002cba60d7f0b61f7648f5522b8",
+    "previousPlainCommit": "e44ebc8f6f01b1fc0275aac235e6ab506e4885c0",
+    "plainBytes": 35166,
+    "plainSha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c",
+    "localAgeRoundTripMatches": true,
+    "identityStoredOutsideGit": true,
+    "identityFileMode": "0600"
+  },
+  "build": {
+    "command": "./gradlew test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark :app:lintRelease --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "log": "../../acceptance-artifacts/online-age-20261117/build3.log",
+    "jvm": {
+      "app": {"tests": 618, "failures": 0, "errors": 0, "skipped": 0},
+      "service": {"tests": 220, "failures": 0, "errors": 0, "skipped": 0},
+      "core": {"tests": 39, "failures": 0, "errors": 0, "skipped": 0},
+      "common": {"tests": 34, "failures": 0, "errors": 0, "skipped": 0},
+      "includesGradleReuse": true
+    },
+    "lint": {
+      "motionBenchmark": {"errors": 0, "warnings": 74, "hints": 14},
+      "release": {"errors": 0, "warnings": 70, "hints": 13}
+    },
+    "motionApkSha256": "4c2b7010fc16e40f7bc8e61eaf096dddf9bba232336ee7c54676b3df51bb4e42",
+    "motionTestApkSha256": "ee9b5b3debea053051d9e5e9cc0783beff1703d669cf14dbceba2a444823ec97",
+    "deviceReadbackMatches": true
+  },
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "packageVariant": "com.lonnnnnng.flclash.motion",
+    "tests": 1,
+    "failures": 0,
+    "skipped": 0
+  },
+  "phases": [
+    {"name": "download-preflight", "ageArmor": true, "bytes": 47961, "cipherSha256": "d5cdb441abd149b7ad77591b06c3ed87b1f581e3827edb72cbd4d67233acc6e1"},
+    {"name": "missing-key-prompt", "passed": true, "profilesUnchanged": true},
+    {"name": "wrong-key-rejection", "passed": true, "profilesUnchanged": true},
+    {"name": "correct-key-import", "passed": true, "plainBytes": 35166, "plainSha256": "110aeeb468105331d733e70fe0571df80c7e1a3f869940d439480d99e8b9472c", "keyPersistedWithProfile": true, "currentProfileSelected": true},
+    {"name": "core-apply", "passed": true, "runtime": "RUNNING", "groups": 35, "configEpoch": 3, "vpnEnabled": false},
+    {"name": "core-routed-authorized-request", "passed": true, "http": 200, "positiveTraffic": true, "nonDirectChain": true}
+  ],
+  "cleanup": {
+    "remoteInputRemovedAfterShaCheck": true,
+    "motionPackageUninstalled": true,
+    "motionTestPackageUninstalled": true,
+    "servicesStopped": true,
+    "tunInterfaceAbsent": true,
+    "originalProfileRowsAndFilesRestored": true,
+    "root1YamlUploaded": false,
+    "root1YamlSha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "root1YamlBytes": 34220,
+    "root1YamlMtimeUnix": 1794392072,
+    "flutterReferencePackageOperated": false
+  },
+  "limitations": [
+    "Verified on POCO F2 Pro API36 in proxy-only mode; it does not cover VPN/TUN age startup, another ROM, or scheduled Worker timing.",
+    "The temporary identity was generated for this rotated config01 source and is kept locally with mode 0600; it is not present in Git history, logs, test receipts, or the device after cleanup.",
+    "Public config01 history still contains its previous plaintext commit; this task replaced the current mirrored files but did not rewrite repository history."
+  ],
+  "localArtifacts": "../../acceptance-artifacts/online-age-20261117/"
+}
