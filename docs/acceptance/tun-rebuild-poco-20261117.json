@@ -1,0 +1,1034 @@
+{
+  "date": "2026-11-17",
+  "baseCommit": "053bfab3",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36
+  },
+  "result": "TUN_CONTROLLED_NATIVE_COMPENSATION_VERIFIED",
+  "coreGitlink": "d43bbd751fe5eb95a599a6211423f645269ba57d",
+  "coreSourceModified": false,
+  "productionCompensationLogicModified": false,
+  "releasePublished": false,
+  "finalSuite": {
+    "tests": 5,
+    "failures": 0,
+    "skipped": 0,
+    "https": 10,
+    "allNonDirect": true,
+    "nodeIndex": 2,
+    "mode": "GLOBAL",
+    "nodeAddressFixedByTemporaryHosts": true,
+    "postRecoveryManualNodeChange": false,
+    "cases": [
+      {
+        "observed": {
+          "visits": 2,
+          "planned": 1,
+          "attempts": [
+            {
+              "attempt": 1,
+              "fault": "ESTABLISH_MTU",
+              "at": 114303910,
+              "mtu": 1400,
+              "stack": "mips",
+              "beforeEstablishFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              },
+              "establishCalled": true,
+              "establishException": "IllegalStateException",
+              "establishExceptionFrames": [
+                "android.os.Parcel.createExceptionOrNull",
+                "android.os.Parcel.createException",
+                "android.os.Parcel.readException",
+                "android.os.Parcel.readException",
+                "android.net.IVpnManager$Stub$Proxy.establishVpn",
+                "android.net.VpnService$Builder.establish",
+                "com.lonnnnnng.flclash.service.TunStartBoundary$Attempt.establish",
+                "com.lonnnnnng.flclash.service.VpnService.handleStart",
+                "com.lonnnnnng.flclash.service.VpnService.start",
+                "com.lonnnnnng.flclash.service.VpnService.onStartCommand",
+                "android.app.ActivityThread.handleServiceArgs",
+                "android.app.ActivityThread.-$$Nest$mhandleServiceArgs"
+              ],
+              "afterEstablishFailureFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              }
+            },
+            {
+              "attempt": 2,
+              "fault": "NONE",
+              "at": 114304066,
+              "mtu": 9000,
+              "stack": "mips",
+              "beforeEstablishFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              },
+              "establishCalled": true,
+              "establishReturnedFd": true,
+              "establishedFdKind": "TUN",
+              "coreFdKindBefore": "TUN",
+              "beforeCoreFds": {
+                "tunCount": 1,
+                "unreadableCount": 0
+              },
+              "coreCalled": true,
+              "coreAccepted": true,
+              "coreFdKindAfter": "OTHER",
+              "afterCoreFds": {
+                "tunCount": 1,
+                "unreadableCount": 0
+              }
+            }
+          ]
+        },
+        "elapsedMillis": 757,
+        "failureType": "IllegalStateException",
+        "restoredMessage": true,
+        "stoppedMessage": false,
+        "runtime": "RUNNING",
+        "phase": "establish_mtu-single-outcome"
+      },
+      {
+        "passed": true,
+        "fault": "ESTABLISH_MTU",
+        "doubleFailure": false,
+        "oldHandle": 544571576333,
+        "newHandle": 548866543629,
+        "epochBefore": 3,
+        "epochAfter": 6,
+        "sourceDraftAndSelectionHeld": true,
+        "settingsAndAppliedBytesRestored": true,
+        "realNetworkVerified": true,
+        "fixedNodeIndex": 2,
+        "fixedNodeHash": "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+        "phase": "establish_mtu-single-verified"
+      },
+      {
+        "passed": true,
+        "noTunFds": true,
+        "noServicesOrVpnNetwork": true,
+        "phase": "establish_mtu-single-cleaned"
+      },
+      {
+        "observed": {
+          "visits": 2,
+          "planned": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "fault": "ESTABLISH_MTU",
+              "at": 114313174,
+              "mtu": 1400,
+              "stack": "mips",
+              "beforeEstablishFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              },
+              "establishCalled": true,
+              "establishException": "IllegalStateException",
+              "establishExceptionFrames": [
+                "android.os.Parcel.createExceptionOrNull",
+                "android.os.Parcel.createException",
+                "android.os.Parcel.readException",
+                "android.os.Parcel.readException",
+                "android.net.IVpnManager$Stub$Proxy.establishVpn",
+                "android.net.VpnService$Builder.establish",
+                "com.lonnnnnng.flclash.service.TunStartBoundary$Attempt.establish",
+                "com.lonnnnnng.flclash.service.VpnService.handleStart",
+                "com.lonnnnnng.flclash.service.VpnService.start",
+                "com.lonnnnnng.flclash.service.VpnService.onStartCommand",
+                "android.app.ActivityThread.handleServiceArgs",
+                "android.app.ActivityThread.-$$Nest$mhandleServiceArgs"
+              ],
+              "afterEstablishFailureFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              }
+            },
+            {
+              "attempt": 2,
+              "fault": "ESTABLISH_MTU",
+              "at": 114313356,
+              "mtu": 9000,
+              "stack": "mips",
+              "beforeEstablishFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              },
+              "establishCalled": true,
+              "establishException": "IllegalStateException",
+              "establishExceptionFrames": [
+                "android.os.Parcel.createExceptionOrNull",
+                "android.os.Parcel.createException",
+                "android.os.Parcel.readException",
+                "android.os.Parcel.readException",
+                "android.net.IVpnManager$Stub$Proxy.establishVpn",
+                "android.net.VpnService$Builder.establish",
+                "com.lonnnnnng.flclash.service.TunStartBoundary$Attempt.establish",
+                "com.lonnnnnng.flclash.service.VpnService.handleStart",
+                "com.lonnnnnng.flclash.service.VpnService.start",
+                "com.lonnnnnng.flclash.service.VpnService.onStartCommand",
+                "android.app.ActivityThread.handleServiceArgs",
+                "android.app.ActivityThread.-$$Nest$mhandleServiceArgs"
+              ],
+              "afterEstablishFailureFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              }
+            }
+          ]
+        },
+        "elapsedMillis": 763,
+        "failureType": "IllegalStateException",
+        "restoredMessage": false,
+        "stoppedMessage": true,
+        "runtime": "FAILED",
+        "phase": "establish_mtu-double-outcome"
+      },
+      {
+        "passed": true,
+        "fault": "ESTABLISH_MTU",
+        "doubleFailure": true,
+        "oldHandle": 553161510925,
+        "newHandle": 557456478221,
+        "epochBefore": 8,
+        "epochAfter": 12,
+        "sourceDraftAndSelectionHeld": true,
+        "settingsAndAppliedBytesRestored": true,
+        "realNetworkVerified": true,
+        "fixedNodeIndex": 2,
+        "fixedNodeHash": "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+        "phase": "establish_mtu-double-verified"
+      },
+      {
+        "passed": true,
+        "noTunFds": true,
+        "noServicesOrVpnNetwork": true,
+        "phase": "establish_mtu-double-cleaned"
+      },
+      {
+        "observed": {
+          "visits": 0,
+          "planned": 1,
+          "attempts": []
+        },
+        "elapsedMillis": 864,
+        "failureType": "none",
+        "restoredMessage": false,
+        "stoppedMessage": false,
+        "runtime": "RUNNING",
+        "phase": "profile-switch-outcome"
+      },
+      {
+        "passed": true,
+        "fault": "NONE",
+        "doubleFailure": false,
+        "oldHandle": 561751445517,
+        "newHandle": 561751445517,
+        "epochBefore": 14,
+        "epochAfter": 16,
+        "sourceDraftAndSelectionHeld": true,
+        "settingsAndAppliedBytesRestored": true,
+        "realNetworkVerified": true,
+        "fixedNodeIndex": 2,
+        "fixedNodeHash": "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+        "phase": "profile-switch-verified"
+      },
+      {
+        "passed": true,
+        "noTunFds": true,
+        "noServicesOrVpnNetwork": true,
+        "phase": "profile-switch-cleaned"
+      },
+      {
+        "observed": {
+          "visits": 2,
+          "planned": 1,
+          "attempts": [
+            {
+              "attempt": 1,
+              "fault": "CORE_CONGESTION",
+              "at": 114331966,
+              "mtu": 1400,
+              "stack": "mips",
+              "beforeEstablishFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              },
+              "establishCalled": true,
+              "establishReturnedFd": true,
+              "establishedFdKind": "TUN",
+              "coreFdKindBefore": "TUN",
+              "beforeCoreFds": {
+                "tunCount": 1,
+                "unreadableCount": 0
+              },
+              "coreCalled": true,
+              "coreAccepted": false,
+              "coreFdKindAfter": "ABSENT",
+              "afterCoreFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              }
+            },
+            {
+              "attempt": 2,
+              "fault": "NONE",
+              "at": 114332172,
+              "mtu": 9000,
+              "stack": "mips",
+              "beforeEstablishFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              },
+              "establishCalled": true,
+              "establishReturnedFd": true,
+              "establishedFdKind": "TUN",
+              "coreFdKindBefore": "TUN",
+              "beforeCoreFds": {
+                "tunCount": 1,
+                "unreadableCount": 0
+              },
+              "coreCalled": true,
+              "coreAccepted": true,
+              "coreFdKindAfter": "OTHER",
+              "afterCoreFds": {
+                "tunCount": 1,
+                "unreadableCount": 0
+              }
+            }
+          ]
+        },
+        "elapsedMillis": 779,
+        "failureType": "IllegalStateException",
+        "restoredMessage": true,
+        "stoppedMessage": false,
+        "runtime": "RUNNING",
+        "phase": "core_congestion-single-outcome"
+      },
+      {
+        "passed": true,
+        "fault": "CORE_CONGESTION",
+        "doubleFailure": false,
+        "oldHandle": 566046412813,
+        "newHandle": 574636347405,
+        "epochBefore": 18,
+        "epochAfter": 21,
+        "sourceDraftAndSelectionHeld": true,
+        "settingsAndAppliedBytesRestored": true,
+        "realNetworkVerified": true,
+        "fixedNodeIndex": 2,
+        "fixedNodeHash": "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+        "phase": "core_congestion-single-verified"
+      },
+      {
+        "passed": true,
+        "noTunFds": true,
+        "noServicesOrVpnNetwork": true,
+        "phase": "core_congestion-single-cleaned"
+      },
+      {
+        "observed": {
+          "visits": 2,
+          "planned": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "fault": "CORE_CONGESTION",
+              "at": 114341777,
+              "mtu": 1400,
+              "stack": "mips",
+              "beforeEstablishFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              },
+              "establishCalled": true,
+              "establishReturnedFd": true,
+              "establishedFdKind": "TUN",
+              "coreFdKindBefore": "TUN",
+              "beforeCoreFds": {
+                "tunCount": 1,
+                "unreadableCount": 0
+              },
+              "coreCalled": true,
+              "coreAccepted": false,
+              "coreFdKindAfter": "ABSENT",
+              "afterCoreFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              }
+            },
+            {
+              "attempt": 2,
+              "fault": "CORE_CONGESTION",
+              "at": 114341923,
+              "mtu": 9000,
+              "stack": "mips",
+              "beforeEstablishFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              },
+              "establishCalled": true,
+              "establishReturnedFd": true,
+              "establishedFdKind": "TUN",
+              "coreFdKindBefore": "TUN",
+              "beforeCoreFds": {
+                "tunCount": 1,
+                "unreadableCount": 0
+              },
+              "coreCalled": true,
+              "coreAccepted": false,
+              "coreFdKindAfter": "ABSENT",
+              "afterCoreFds": {
+                "tunCount": 0,
+                "unreadableCount": 0
+              }
+            }
+          ]
+        },
+        "elapsedMillis": 767,
+        "failureType": "IllegalStateException",
+        "restoredMessage": false,
+        "stoppedMessage": true,
+        "runtime": "FAILED",
+        "phase": "core_congestion-double-outcome"
+      },
+      {
+        "passed": true,
+        "fault": "CORE_CONGESTION",
+        "doubleFailure": true,
+        "oldHandle": 578931314701,
+        "newHandle": 591816216589,
+        "epochBefore": 23,
+        "epochAfter": 27,
+        "sourceDraftAndSelectionHeld": true,
+        "settingsAndAppliedBytesRestored": true,
+        "realNetworkVerified": true,
+        "fixedNodeIndex": 2,
+        "fixedNodeHash": "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+        "phase": "core_congestion-double-verified"
+      },
+      {
+        "passed": true,
+        "noTunFds": true,
+        "noServicesOrVpnNetwork": true,
+        "phase": "core_congestion-double-cleaned"
+      }
+    ],
+    "traffic": [
+      {
+        "phase": "before",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48200,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 4813,
+        "tlsMillis": 3969,
+        "connection": {
+          "idHash": "bc36344deb393a6bff588c11748ff78c98e4cbca58a569855645bac855ac4719",
+          "sourcePort": 48200,
+          "upload": 593,
+          "download": 3690,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "after",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48201,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 1495,
+        "tlsMillis": 920,
+        "connection": {
+          "idHash": "a1c581064c2a17a8fb52b4edb13a72a78268b6cabc22bf48f20ada9e8b94c7f0",
+          "sourcePort": 48201,
+          "upload": 593,
+          "download": 3689,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "before",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48220,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 2898,
+        "tlsMillis": 2338,
+        "connection": {
+          "idHash": "d91306195077dae15e3d3e1d1e8848cf801dfa1a98ed03a1778e8384b464ec9b",
+          "sourcePort": 48220,
+          "upload": 254,
+          "download": 3690,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "after",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48221,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 1877,
+        "tlsMillis": 1004,
+        "connection": {
+          "idHash": "549a2d8675064cd47328b660f28cd90f5750e899b341df4e07a84e69ab3f7c98",
+          "sourcePort": 48221,
+          "upload": 593,
+          "download": 3689,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "before",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48240,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 3072,
+        "tlsMillis": 2500,
+        "connection": {
+          "idHash": "67d61e5599aa670cffa0976fdb27b1b1c132a49159a2fb5bd244ba788bfdfbae",
+          "sourcePort": 48240,
+          "upload": 593,
+          "download": 3689,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "after",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48241,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 1256,
+        "tlsMillis": 940,
+        "connection": {
+          "idHash": "8f0d616cd53e95cb9227066b94ac7cfb2c52afeadfcca6cc5d52c8a64fb87049",
+          "sourcePort": 48241,
+          "upload": 593,
+          "download": 3691,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "before",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48210,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 2029,
+        "tlsMillis": 1386,
+        "connection": {
+          "idHash": "f6bbee3c5cc501ba8cf689838ae713c53e47681eeb902b8ade81cde91ceaa660",
+          "sourcePort": 48210,
+          "upload": 254,
+          "download": 3689,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "after",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48211,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 1461,
+        "tlsMillis": 1135,
+        "connection": {
+          "idHash": "d990d290314eb7f32024468561d1fdd9e31219764f392eea8fc9dd7e16a71b90",
+          "sourcePort": 48211,
+          "upload": 593,
+          "download": 3690,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "before",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48230,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 3287,
+        "tlsMillis": 2367,
+        "connection": {
+          "idHash": "6235da31ca31cc338937f4aa84614d0f0c6db3badd7c7c1b647e4b5d9c9bc447",
+          "sourcePort": 48230,
+          "upload": 593,
+          "download": 3689,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      },
+      {
+        "phase": "after",
+        "clientUid": 10255,
+        "providerUid": 10253,
+        "sourcePort": 48231,
+        "http": 200,
+        "wireDnsPassed": true,
+        "vpnDefault": true,
+        "explicitVpnSocketBinding": false,
+        "elapsedMillis": 1511,
+        "tlsMillis": 954,
+        "connection": {
+          "idHash": "8ae12cc54550d76ec09cef5b14335e62653efba20501a35828c13880de962712",
+          "sourcePort": 48231,
+          "upload": 593,
+          "download": 3691,
+          "hostHash": "5930d060e7df545ec78643739f8f9c758ffa1a19d93a30637e1eec57d0ca6235",
+          "targetHostMatches": true,
+          "nonDirect": true,
+          "chainHashes": [
+            "0122ae14e168b715f06b20baf3cbda281ffd243c9b893b5dd2b430bad512be6e",
+            "e7440dd384f12056f4865f279e2c40932ae3c7aceca1a798a0145ebd499b9072"
+          ]
+        }
+      }
+    ]
+  },
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 618,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lint": {
+      "motionBenchmark": {
+        "Warning": 74,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 70,
+        "Hint": 13
+      }
+    },
+    "includesGradleReuse": true,
+    "build": "build4.log"
+  },
+  "installation": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "89c37ea5fbdfb9ecc6df173e5204b1a2491b15fc9548b8dbc77f1c2e468dce30",
+      "bytes": 66219909,
+      "readbackMatches": true
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "a88d05fd65676dd88198bd666ebe95f228cb07028b0fac3a3ebc3b258058d77a",
+      "bytes": 3067774,
+      "readbackMatches": true
+    }
+  ],
+  "releaseIsolation": {
+    "releaseApkSha256": "fe91cffe38ab842995d91ef75fb426158b38c0ae0e307910f50f4fc6fc411e5f",
+    "checkedAllDex": 1,
+    "debugFaultMarkersAbsent": true,
+    "releaseInstalled": false
+  },
+  "batches": [
+    {
+      "name": "five",
+      "sha256": "f84166f47755b0c39470f117df7df7e2ad62a65bf21534e73ac759d97c79df00",
+      "tests": 5,
+      "passed": 0,
+      "failed": 5,
+      "traffic": [
+        {
+          "phase": "before",
+          "http": null,
+          "passed": false,
+          "failureType": "SSLHandshakeException",
+          "failedStep": "tls"
+        },
+        {
+          "phase": "before",
+          "http": null,
+          "passed": false,
+          "failureType": "SSLHandshakeException",
+          "failedStep": "tls"
+        },
+        {
+          "phase": "before",
+          "http": null,
+          "passed": false,
+          "failureType": "SSLHandshakeException",
+          "failedStep": "tls"
+        },
+        {
+          "phase": "before",
+          "http": null,
+          "passed": false,
+          "failureType": "SSLHandshakeException",
+          "failedStep": "tls"
+        },
+        {
+          "phase": "before",
+          "http": null,
+          "passed": false,
+          "failureType": "SSLHandshakeException",
+          "failedStep": "tls"
+        }
+      ]
+    },
+    {
+      "name": "native-only",
+      "sha256": "3613d687ad7fc86a5a0a3c92958a6789563c6805252bc17d01e4e8bb9fc36183",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "traffic": []
+    },
+    {
+      "name": "live-node2",
+      "sha256": "f35f56e8cb1f64307221ab63a5ae8be44b8d06b716259c8d1eb96679fb33a875",
+      "tests": 5,
+      "passed": 0,
+      "failed": 5,
+      "traffic": [
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        }
+      ]
+    },
+    {
+      "name": "live-persisted-node2",
+      "sha256": "0461ffe820824126fe3c6626ce1a425b4bb6bcdd54c6ac237727b35b08ce2151",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "traffic": [
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "after",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "after",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "after",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "after",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "before",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        },
+        {
+          "phase": "after",
+          "http": 200,
+          "passed": true,
+          "failureType": null,
+          "failedStep": null
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Controlled MTU rejection from Android Binder/system_server and controlled congestion rejection from real Go; not spontaneous device/core failure reproduction.",
+    "Candidate network MTU is changed through production updateNetworkSettings/applyProfileLocked; ordinary Profile fields are overridden by global settings and separately verified not to rebuild TUN.",
+    "Only POCO API36, Wi-Fi, authorized target, one fixed VLESS node; final motion build is not a signed R8 installed release.",
+    "Initial RULE requests failed TLS before fault injection; two other nodes also failed SOCKS HTTPS. Success on node index2 does not establish the root cause or all-node network stability."
+  ],
+  "localArtifacts": "../acceptance-artifacts/tun-rebuild-poco-20261117/",
+  "cleanup": {
+    "endpointRestoration": {
+      "settingsRestored": true,
+      "selectionRestored": true,
+      "configRestored": true,
+      "temporaryProfileDeleted": false,
+      "backupCleared": true
+    },
+    "profileRowsRestored": true,
+    "profileFilesRestored": true,
+    "selectionRestored": true,
+    "runtimeStopped": true,
+    "probeInputHashCheckedAndRemoved": true,
+    "probeInputAbsent": true,
+    "preparationInputAbsent": true,
+    "noOwnServices": true,
+    "noTunInterface": true,
+    "uninstalledPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.networkprobe"
+    ],
+    "originalFile": {
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "bytes": 34220,
+      "mtimeUnix": 1794392072
+    },
+    "flutterPackageOperated": false,
+    "releaseInstalled": false,
+    "cleanupHarnessCorrection": "pm path returns 1 when package is absent; first uninstall succeeded before script correction"
+  },
+  "nodeScan": [
+    {
+      "index": 0,
+      "passed": false,
+      "networkPassed": false,
+      "failureType": "SSLHandshakeException",
+      "http": null
+    },
+    {
+      "index": 1,
+      "passed": false,
+      "networkPassed": false,
+      "failureType": "SSLHandshakeException",
+      "http": null
+    },
+    {
+      "index": 2,
+      "passed": true,
+      "networkPassed": true,
+      "failureType": null,
+      "http": 200
+    }
+  ],
+  "sourceManifestSha256": "f77f8ec8c7d87f3c9eaf47854a535aa76345caed06168bce7d56028fbbc9e556",
+  "artifactHashes": {
+    "build1.log": "6a0473851f31c63ff6844e2e29b4402d03cbc0799dd5e4177b3f389b2af06f40",
+    "build2.log": "9cbf028c53ac6f18b9657950245b436d9c3a632a5ac0bd7c116c9fb5faef6971",
+    "build3.log": "a73ece371dce33af1ee6765ef8f3dd0d96097f3f874e9b90a39f05aa1e912042",
+    "build4.log": "749d0027882502c4de2614bc89e3fdbabd0b0f12326f3f4ffc170faea2a3844e",
+    "checks-final.json": "febcd54ed5c53a2318935b9ccf421a185676f5be72248744b28799fe22759840",
+    "checks-summary.json": "d6f30eaed38324e1af3ac19328b37444d00a1fd1978c4ddc48dac76712ebd2b0",
+    "cleanup-final.json": "367c54179319be9004a9df065def1bec6415a3c813e5889d5faef29dfa9e2c69",
+    "install2/installation.json": "d83541fa549101fb8dad66d8899456929ca0d85811e6c3e71855f8657f7d8a26",
+    "install3/installation.json": "215f91c98950a0e195479573fc3e4f9152aa02de81aec236dbc94949f720ca1a",
+    "install4/installation.json": "ad99f371acabf6d0cb3748d7fbd0ef1429fda9438dcb11bae06a631d67a4100e",
+    "lint2.log": "d47f87872c997b22a84c2d18a1ca6cbf36c0f8a6352cb1f299d4ad508884de6f",
+    "lint3.log": "63fe680522163d19a53da1bf02e9a99832cd277ea4f6e2775268ac976128673e",
+    "probe-build.log": "8a79f756bab2aa91eca1bc3c257b6a792e996d4453db49f1d4e4e8699a406323",
+    "probe-install.json": "6f4ab4091d014a792d4ec6ddb52e45f6d31a002ea28115bf9c5fcfbbe7654057",
+    "release-isolation-final.json": "3e533dd195fc91767c8218e8650a1ac792cc5afe51dbfaca71a0102f1f386bec",
+    "release-isolation.json": "7ee26947a8fdc94b589251ec21b21279f51d12603a6bceaab305a0cfeded8bc6",
+    "run-five.py": "ab04e4e1de098d07e96f1c9f82b816f5acdad585a3f38f7c2736c81ec5848a5b",
+    "run1/endpoint-apply-node-0-0-events.json": "e68eeaeecbd3e45aab7ad988e283a500882cdeaf7e4605a1f3916a12c1c6536a",
+    "run1/endpoint-apply-node-0-0.json": "4ef4d755bcb1c9c37ed4199d17a4798183b80a740046a2e5d78bb91bfc4760cf",
+    "run1/endpoint-apply-node-1-0-events.json": "7100e9bbec5735851d6e6c242ccc061b565b5ffd791505f500c8600677216f54",
+    "run1/endpoint-apply-node-1-0.json": "7549de40bf1fc0174aa3f834bca5b0571a63b455af84f1c8353e51fc5c25ca3c",
+    "run1/endpoint-apply-node-2-0-events.json": "c428e0c43c7d12f5499849e8f4f526893a401994880cb3229b1e4ee3eca7f674",
+    "run1/endpoint-apply-node-2-0.json": "8b521c7569ddc4fc5b471919aed30ecb18f6296d64a9ce850c778969e3e8974c",
+    "run1/endpoint-prepare-0-events.json": "d17a413d98791b4860a0299928fb3197a255853d6fa78047511d2b5583a684f7",
+    "run1/endpoint-prepare-0.json": "9fa2d8b62d10aae83a11a8f3ba23031e47b15d66d5657ad930770afaf25482f3",
+    "run1/endpoint-restore-events.json": "50527c59e9c74f4c51b0d351baf0dd8791bd17a741e83f2bee17aa671e024d16",
+    "run1/endpoint-restore.json": "db76fe91358864c91452bc9e13376b33d9581de6f47bf4c1cb75777a11248568",
+    "run1/endpoint-select-1-events.json": "a19d4dfd30ffdf323768130a2cd049010fd45057ba73f23dead8c7b252aa5f84",
+    "run1/endpoint-select-1.json": "52f5f50270d986187a57474f778d26d87186399514285541854c6e9ba6d600a2",
+    "run1/endpoint-select-2-events.json": "394c710de31fc5b509d4780f5ded6ec1392b63ab56311578b0148a0a4ed11c10",
+    "run1/endpoint-select-2.json": "f915f3225b2117f616314e7f2755dcbe4fcd64f51522d6f979f48af492250602",
+    "run1/five.log": "f84166f47755b0c39470f117df7df7e2ad62a65bf21534e73ac759d97c79df00",
+    "run1/interrupted-restoration.json": "29892394a6f87dfd36114cee213687831020707d56a11d3a7fc050cbbf13e78b",
+    "run1/live-node2.log": "f35f56e8cb1f64307221ab63a5ae8be44b8d06b716259c8d1eb96679fb33a875",
+    "run1/live-persisted-node2.log": "0461ffe820824126fe3c6626ce1a425b4bb6bcdd54c6ac237727b35b08ce2151",
+    "run1/native-only.log": "3613d687ad7fc86a5a0a3c92958a6789563c6805252bc17d01e4e8bb9fc36183",
+    "run1/node-scan.json": "470612fa78f65333b94a70c1f055071ad2dabb58240d80f5a612a7bcba5272b2",
+    "run1/prepare.log": "954133d23cf4d6f0ed379f676cb8a4d881d2edd54cf963f9962144c73f96db07",
+    "run1/probe-input-manifest.json": "30ba6df4ce399daea582a175b60ec28e0a6c21f2ec6c2773c474d3a0608b27c9",
+    "run1/run.json": "63ef94e3c958e1922902ac868bcb5161ac9070773c3dc22754b492016eaf8f71",
+    "run1/start-tun-node-0-events.json": "0bd4724828770f699162cb3ae98f99cee40f9798be935861e05968885e0d45dd",
+    "run1/start-tun-node-0.json": "49b29ebaf4b994844d1a03add85f1039aa3abacdd0e3fa0b825da85b360b4768",
+    "run1/start-tun-node-1-events.json": "0e5dc6b9508656e4d31ad227dc3ad36f7276df4d4c383dff1346d446ae3482ec",
+    "run1/start-tun-node-1.json": "cfbc960022d57f3492c40569cf801c76a0e577b42148adfbf9ee11e8ab656b85",
+    "run1/start-tun-node-2-events.json": "4afa9165788f204c9a7fb6f46906306fa54e4a822a753a5aae066378c1ce5032",
+    "run1/start-tun-node-2.json": "6a8b4b5424f270e7570b075eb88f28ac699e53bc1b894386582db42bfbb24710",
+    "run1/stop-endpoint-recovery-events.json": "ede488e42ac8352aab9dbd944670d46bd74f95dd61738be95f214491c1e015b0",
+    "run1/stop-endpoint-recovery.json": "a9ef7c3e51bd215e449918f4f9a52c502865406aa233ed07c592cf707d59ebaf",
+    "run1/stop-tun-node-0-events.json": "fb2e1209e92b129b6b1c746ccc05de7096d76a21793e3d18f6819b651aca1523",
+    "run1/stop-tun-node-0.json": "97e5e4c0c3c7a3c993e35e2d673a4b67e6a544a1ad8c588c433ba78a268937ed",
+    "run1/stop-tun-node-1-events.json": "1cab4dd8cd987c00689e9cfef612d5b11abb2b7ae8939e83d5d41fcbea2b8314",
+    "run1/stop-tun-node-1.json": "a35db50644f6d9cc09219834e73bf17b4c1b8aa413aed5a2683f8ddf4d5c6d2b",
+    "run1/stop-tun-node-2-events.json": "5f53dbebd9fcb0917ea31e01b91eac2385698711438107de56814b79b6a68f78",
+    "run1/stop-tun-node-2.json": "76cd18a7a87f869b31595e29ed4ea0c7386514b34973ad4ede25669330bf394b",
+    "run1/stop-tun-node-scan-end-events.json": "42eb12a57ad6cf4d6a3db5b8df3921fd5497d4775c81f384199c4e229f65e608",
+    "run1/stop-tun-node-scan-end.json": "99d833c7edb88245894edcec89f9757a3a7709530f9465f311d20af6d470cedd",
+    "source-final.json": "f77f8ec8c7d87f3c9eaf47854a535aa76345caed06168bce7d56028fbbc9e556"
+  }
+}

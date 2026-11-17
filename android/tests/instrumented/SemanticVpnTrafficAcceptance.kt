@@ -10,12 +10,12 @@ import org.json.JSONObject
 import org.junit.Assert.*
 
 /** 作者 long：语义拒绝前后使用独立应用UID发真实请求，同时将显式VPN绑定权限诊断与流量验收分开。 */
-internal suspend fun semanticVpnTrafficAcceptance(entry: ConnectionAcceptanceEntryPoint, phase: String): JSONObject = coroutineScope {
+internal suspend fun semanticVpnTrafficAcceptance(entry: ConnectionAcceptanceEntryPoint, phase: String, basePortOverride: Int? = null): JSONObject = coroutineScope {
     require(phase in listOf("before", "after"))
     val ins = InstrumentationRegistry.getInstrumentation()
     val token = InstrumentationRegistry.getArguments().getString("kclashSemanticProbeToken").orEmpty()
     require(token.matches(Regex("[a-f0-9]{32}")))
-    val basePort = InstrumentationRegistry.getArguments().getString("kclashSemanticProbePort")?.toInt() ?: 47610
+    val basePort = basePortOverride ?: InstrumentationRegistry.getArguments().getString("kclashSemanticProbePort")?.toInt() ?: 47610
     require(basePort in 30000..59998)
     val sourcePort = basePort + if (phase == "before") 0 else 1
     val binding = NetworkSwitchProbeActivity.bindingSnapshot(ins.targetContext)

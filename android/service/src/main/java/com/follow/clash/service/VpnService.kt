@@ -157,6 +157,8 @@ class VpnService : SystemVpnService(), ManagedService {
     }
 
     private fun handleStart(options: VpnOptions) {
+        // 作者 long：仅验收构建能认领一次原生故障；正式构建透传系统和核心调用，不改变FD所有权。
+        val attempt = TunStartBoundary.begin(packageName, options)
         val fd = with(Builder()) {
             addAddressAndRoutes(options)
             addDnsServers(options)
@@ -180,7 +182,7 @@ class VpnService : SystemVpnService(), ManagedService {
                     ),
                 )
             }
-            establish()?.detachFd()
+            attempt.establish(this)?.detachFd()
                 ?: error("VPN establishment was rejected by the system")
         }
         synchronized(tunLock) {
@@ -192,16 +194,16 @@ class VpnService : SystemVpnService(), ManagedService {
                 // then hangs until it times out. Tear the VPN down instead of
                 // reporting a start that only looks successful.
                 check(
-                    Core.startTun(
+                    attempt.startCore(fd, options.stack, options.tunOptions) { stack, nativeOptions -> Core.startTun(
                         fd = fd,
                         protect = { socket -> socketProtection.protect { protect(socket) } },
                         resolveUid = this::resolveUid,
                         resolvePackage = this::resolvePackage,
-                        stack = options.stack,
+                        stack = stack,
                         address = options.tunAddress,
                         dns = options.tunDns,
-                        options = options.tunOptions,
-                    ),
+                        options = nativeOptions,
+                    ) },
                 ) { "Core rejected the tun file descriptor" }
             } catch (error: Exception) {
                 stopTunLocked()

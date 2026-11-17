@@ -1,5 +1,9 @@
 # 导入前核心语义预检
 
+## TUN重建原生异常补偿（2026-11-17，当前）
+
+POCO API36最终同批5/5、故障前后独立UID默认VPN实网10/10；系统建接口异常和真实Go拒绝TUN FD的单次自动恢复、双次安全停止/显式重试，以及全局设置覆盖下普通Profile不误重建均已补验。受控MTU/拥塞参数触发真实原生错误，不推广为任意自然ioctl故障。911 JVM含复用、motion/Test/未签名Release-R8及双Lint通过，Release不含故障实现；配置/草稿/选择保护和自有三包清理通过，未发版。原RULE路径本轮另出现TLS失败，固定index2/GLOBAL成功不覆盖该网络问题。后续日期切片保留当时未验边界，当前范围见[溯源](tun-rebuild-compensation-acceptance.md)、[证据](acceptance/tun-rebuild-poco-20261117.json)与[功能清单](functional-closure.md)。
+
 ## 原生建立TUN的系统拒绝补偿（2026-11-12，当前）
 
 POCO API36在新装未获VPN授权的独立motion包中，经真实Runtime/Service三次执行establish返回null：两次立即重试及生产ViewModel一次，最终错误均明确传回，FAILED、无会话/恢复标志、无VPN网络或残留服务；正常授权后同配置真实独立UID默认TUN的DNS/TLS/HTTP200与非DIRECT双向流量通过。最终单场景1/1、零跳过，三次拒绝不是三项测试；首轮授权后Network发布等待不足的失败单列保留。911JVM含复用、motion构建/Lint零错误，只有验收代码修改；清理/原1.yaml保护通过。此处覆盖系统未授权拒绝和显式恢复，不推广内核ioctl故障或热切候选建TUN失败自动回滚。见[溯源](native-tun-establish-failure-acceptance.md)与[证据](acceptance/native-tun-failure-poco-20261112.json)。
