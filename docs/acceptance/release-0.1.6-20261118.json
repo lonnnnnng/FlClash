@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-18",
+  "release": {
+    "tag": "kclash-v0.1.6",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.6",
+    "sourceCommit": "2370177eb3059b6c8720953193a64266c95c4b7d",
+    "workflowRunId": 44135937231,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44135937231",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-17T17:38:13Z",
+    "publishedAtAsiaShanghai": "2026-11-18T01:38:13+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.6-android-arm64-v8a.apk",
+        "size": 48456232,
+        "digest": "sha256:2d2163a2c869bc941b02357102986f3c489fceaa1c9851c5016b04b74c7b4e8f",
+        "state": "uploaded",
+        "url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.6/KClash-0.1.6-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 101,
+        "digest": "sha256:4834e10932cec607659a8f59898c1bb6646ba72e18c6b2c1d583e28712424059",
+        "state": "uploaded",
+        "url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.6/SHA256SUMS"
+      }
+    ]
+  },
+  "package": {
+    "versionName": "0.1.6",
+    "versionCode": 1006,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "abis": ["arm64-v8a"],
+    "minSdk": 24,
+    "debuggable": false,
+    "remoteSha256Verified": true,
+    "sha256SumsVerified": true,
+    "signatureVerified": true,
+    "localPreflight": {
+      "result": "BUILD SUCCESSFUL",
+      "sha256": "527bd4c732177af6b9528b129c2b3dc72b204f29caba6f22f7dc0f7089b9e134",
+      "bytes": 48466016,
+      "sameBytesAsRemote": false
+    }
+  },
+  "ci": {
+    "result": "success",
+    "goRace": true,
+    "jvmTests": true,
+    "releaseR8": true,
+    "lintDebug": true,
+    "lintRelease": true,
+    "releaseArtifactChecks": true
+  },
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "onlineAgeFlowSeparateMotionPackage": true,
+    "flutterReferenceOperated": false
+  },
+  "protectedInput": {
+    "path": "workspace-root/1.yaml",
+    "includedInRelease": false,
+    "uploaded": false,
+    "unchanged": true,
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeUnix": 1794392072
+  }
+}

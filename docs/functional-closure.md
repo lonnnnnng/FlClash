@@ -2,7 +2,9 @@
 
 2026-11-18增补：在线 age 订阅完整链路已在POCO API36真实UI验收1/1；授权源轮换到新identity，测试覆盖缺钥、错钥无写入、正确密钥解密导入、Mihomo运行加载和非直连HTTP200。见[验收说明](online-age-subscription-acceptance.md)与[脱敏JSON](acceptance/online-age-subscription-poco-20261118.json)。较早记录中的“明文/无密钥”只反映当时状态。
 
-2026-11-17核对：当前正式版本为0.1.5/code1005，按用户要求仅本机签名构建并发布GitHub Latest，未重跑单测、完整Lint或真机；签名/版本/ABI及上传资产摘要已核对。0.1.4后的增量主要为验收工具、测试和文档，不改变下列功能收口统计；2026-11-17 TUN受控原生异常补偿最终5/5、前后10笔实网通过；原RULE路径新增TLS失败另列，不提前关闭其他条件边界。见[发布记录](acceptance/release-0.1.5-20261112.json)。
+2026-11-18发布收尾：KClash 0.1.6/code1006 已发布为 GitHub Latest。标签CI的 Go race、JVM、R8、Debug/Release Lint、正式证书和ABI检查均通过；远端APK、SHA256SUMS、签名与元数据已回验。本次没有把Release APK安装到手机；age真机验收使用独立motion测试包。见[发布证据](acceptance/release-0.1.6-20261118.json)。
+
+2026-11-17历史快照：当时正式版本为0.1.5/code1005，按用户要求直接本机签名构建发布，未重跑单测、完整Lint、Go或真机；TUN受控原生异常补偿最终5/5、前后10笔实网通过，原RULE路径新增TLS失败另列。见[0.1.5发布记录](acceptance/release-0.1.5-20261112.json)。
 
 2026-11-11开始，基线`2153854b`。本清单完整保留用户授权的六项目标；分组验收通过不代表总目标完成。2026-11-11用户最初将应用内更新暂缓；最新明确将范围简化为检查当前/最新版本，有新版时跳转GitHub发布页。原应用内下载和安装的剩余边界取消，不再推进。
 
