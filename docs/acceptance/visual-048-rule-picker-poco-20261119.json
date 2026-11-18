@@ -1,0 +1,187 @@
+{
+  "id": "KUI-VIS-048",
+  "date": "2026-11-19",
+  "reference": {
+    "flutterCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "prismCommit": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "sourceFiles": [
+      "lib/views/profiles/custom/rules.dart",
+      "lib/features/form/selection_sheet.dart",
+      "plugins/prism_ui/lib/list_selected.dart",
+      "plugins/prism_ui/lib/page_transition.dart"
+    ],
+    "comparison": "Source and Kotlin device renders. Same-state Flutter runtime comparison remains open."
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1,
+    "variant": "motionBenchmark",
+    "glassEnabled": false
+  },
+  "visual": {
+    "artifactDirectory": "../acceptance-artifacts/menu-performance-poco-20261118/vis048-ordered-oe8mlzla",
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "54553f64c0566f18e79198f058fc43cc8598167a541518e4f8d4c529294e25e7",
+      "com.lonnnnnng.flclash.motion.test": "7cd78aa4187849861ab6fdc0f08bb1ecf239e77d4b9cc62d2f77d3c520dcbee8"
+    },
+    "passed": 6,
+    "failed": 0,
+    "screenshotsVerified": 17,
+    "methods": [
+      "formSelectsTypesTargetsProvidersAndKeepsSourceIpNoResolveConsistent",
+      "yamlRejectsInvalidPayloadAndKeepsMissingReferencesVisibleForRepair",
+      "entireRulesPageRendersListsFormsPickersYamlAndBatchAcrossThemes",
+      "rulePickerRowsCollapseAndReturnContinuouslyAroundSearch",
+      "customRuleProviderSearchEmptyStateCanClearAndRestoreCandidates",
+      "nestedDialogDraftRestoresFromEncryptedTreeWithoutActivityRestoration"
+    ],
+    "coldProcess": {
+      "scenario": "rules-type-open",
+      "passed": true,
+      "preparedPid": 11289,
+      "verifiedPid": 11406,
+      "confirmedAbsentBetween": true
+    }
+  },
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 618,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "tasks": [
+      "test",
+      ":app:assembleMotionBenchmark",
+      ":app:assembleMotionBenchmarkAndroidTest",
+      ":app:lintMotionBenchmark"
+    ],
+    "lintErrors": 0,
+    "lintWarnings": 74,
+    "lintHints": 14,
+    "log": "../acceptance-artifacts/menu-performance-poco-20261118/vis048-ordered-build.log"
+  },
+  "perfetto": {
+    "artifactDirectory": "../acceptance-artifacts/menu-performance-poco-20261118/vis048-perfetto-clean-z97gep21",
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "acad63b6fe39b472da7f4b1615740859113c14d6ccec9989853066e68aa002a7",
+      "com.lonnnnnng.flclash.motion.test": "08785cd1534646dc6d75fa87632585dbdfc350bd72471e2b2bd70e77a3c21a79"
+    },
+    "passed": 2,
+    "openAndClosePairsPerTheme": 10,
+    "capture": "sched_switch/waking, gfx/view, app sections, FrameTimeline. No screenshots, screen recording or gfxinfo in the marked loops.",
+    "themes": {
+      "dark": {
+        "sha256": "8176c4f20ffa22fea354c87f3b79f155d2562149923b28cd7f930fae1e828da4",
+        "finalFlushSucceeded": true,
+        "discardedChunks": 6,
+        "popupFrames": {
+          "open": {
+            "frames": 125,
+            "appDeadlineMissed": 29,
+            "bufferStuffing": 87,
+            "dropped": 13,
+            "maxMs": 110.12
+          },
+          "close": {
+            "frames": 324,
+            "appDeadlineMissed": 18,
+            "bufferStuffing": 232,
+            "dropped": 16,
+            "maxMs": 43.21
+          }
+        },
+        "firstOpenMatchedFrame": {
+          "token": 6008325,
+          "uiElapsedMs": 109.777,
+          "uiCpuMs": 84.277,
+          "renderDrawElapsedMs": [
+            0.207,
+            1.226
+          ],
+          "renderDrawCpuMs": [
+            0.207,
+            1.226
+          ]
+        }
+      },
+      "light": {
+        "sha256": "70ac98f4ce39b9d4ceec96d088e7665c7d8e2e13dd50d268f95d5216e2f57e8c",
+        "finalFlushSucceeded": true,
+        "discardedChunks": 7,
+        "popupFrames": {
+          "open": {
+            "frames": 130,
+            "appDeadlineMissed": 31,
+            "bufferStuffing": 61,
+            "dropped": 27,
+            "maxMs": 93.17
+          },
+          "close": {
+            "frames": 326,
+            "appDeadlineMissed": 18,
+            "bufferStuffing": 235,
+            "dropped": 18,
+            "maxMs": 43.75
+          }
+        },
+        "firstOpenMatchedFrame": {
+          "token": 6022636,
+          "uiElapsedMs": 92.695,
+          "uiCpuMs": 77.874,
+          "renderDrawElapsedMs": [
+            6.615,
+            1.054
+          ],
+          "renderDrawCpuMs": [
+            5.697,
+            1.054
+          ]
+        }
+      }
+    },
+    "methodSampling": {
+      "independentRun": true,
+      "artifactDirectory": "../acceptance-artifacts/menu-performance-poco-20261118/vis048-verified-xt57szg7",
+      "apkSha256": {
+        "com.lonnnnnng.flclash.motion": "acad63b6fe39b472da7f4b1615740859113c14d6ccec9989853066e68aa002a7",
+        "com.lonnnnnng.flclash.motion.test": "08785cd1534646dc6d75fa87632585dbdfc350bd72471e2b2bd70e77a3c21a79"
+      },
+      "verifiedTraces": 6
+    },
+    "limits": [
+      "The trace APK pair precedes the final rule-picker ordering adjustment. Menu production code is identical in both pairs.",
+      "Some chunks were discarded. Counts cover observed popup frames only and categories can overlap.",
+      "Slow first-open frames are dominated by app UI-thread work. Close frames include both app deadline misses and dropped/buffer-stuffed frames.",
+      "ART wall-time samples point to path drawing. Samples are neither exact call counts nor a Release performance comparison."
+    ]
+  },
+  "cleanup": {
+    "sourceYamlRetained": true,
+    "deviceFixtureCopyRemovedAfterHashCheck": true,
+    "flutterReferencePackageModified": false,
+    "releasePackageInstalled": false
+  }
+}

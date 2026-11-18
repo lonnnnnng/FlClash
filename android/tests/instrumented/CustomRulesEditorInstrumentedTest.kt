@@ -19,7 +19,7 @@ class CustomRulesEditorInstrumentedTest {
     private var failure by mutableStateOf<String?>(null)
     private var failSave = false
     private var saves = 0
-    private val catalog = CustomRuleCatalog(listOf("Main"), listOf("Node"), listOf("Local"))
+    private var catalog = CustomRuleCatalog(listOf("Main"), listOf("Node"), listOf("Local"))
 
     @Test fun addingDuplicatingSearchingAndBatchDeletingSaveImmediately() {
         render(); addDomain("beta.test")
@@ -51,19 +51,69 @@ class CustomRulesEditorInstrumentedTest {
     }
 
     @Test fun customRuleProviderSearchEmptyStateCanClearAndRestoreCandidates() {
+        catalog = catalog.copy(providers = listOf("Local") + (1..9).map { "Remote Set $it" })
         content = ""; render()
         compose.onNodeWithTag("custom_rules_add").performClick()
         pick("type", "RULE-SET")
         compose.onNodeWithTag("custom_rule_provider").performClick()
-        compose.onNodeWithTag("custom_rule_picker_search").performTextInput("no-such-provider")
-        compose.onNodeWithTag("custom_rule_picker_empty").assertTextEquals("无搜索结果")
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        compose.onNodeWithTag("profile_top_search_input").performTextInput("set 9")
+        compose.onNodeWithTag("custom_rule_pick_Remote Set 9").assertIsDisplayed()
+        compose.onNodeWithTag("custom_rule_pick_Local").assertDoesNotExist()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("no-such-provider")
+        compose.onNodeWithText("无搜索结果").assertIsDisplayed()
         capture("vis047_rule_search_empty")
-        compose.onNodeWithTag("custom_rule_picker_clear_search").performScrollTo().performClick()
+        compose.onNodeWithTag("custom_rule_picker_clear_search").performClick()
         compose.onNodeWithTag("custom_rule_picker_empty").assertDoesNotExist()
         capture("vis047_rule_search_cleared")
         compose.onNodeWithTag("custom_rule_pick_Local").assertIsDisplayed().performClick()
         confirmForm()
         assertEquals("RULE-SET,Local,DIRECT", values().single())
+        compose.onNodeWithTag("custom_rule_edit_0").performClick()
+        compose.onNodeWithTag("custom_rule_provider").performClick()
+        compose.onNodeWithTag("custom_rule_pick_Local").assertIsSelected()
+        capture("vis048_rule_resource_selected")
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        compose.onNodeWithTag("custom_rule_picker_back").performClick()
+        compose.onNodeWithTag("profile_top_search_open").assertExists()
+        compose.onNodeWithTag("custom_rule_picker_back").performClick()
+        compose.onNodeWithTag("custom_rule_provider").assertTextContains("Local")
+        assertEquals(1, saves)
+    }
+
+    @Test fun rulePickerRowsCollapseAndReturnContinuouslyAroundSearch() {
+        catalog = catalog.copy(providers = listOf("Local") + (1..9).map { "Remote Set $it" })
+        content = ""; render()
+        compose.onNodeWithTag("custom_rules_add").performClick()
+        pick("type", "RULE-SET")
+        compose.onNodeWithTag("custom_rule_provider").performClick()
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        val local = compose.onNodeWithTag("custom_rule_pick_Local")
+        val settled = local.fetchSemanticsNode().boundsInRoot.height
+        compose.mainClock.autoAdvance = false
+        try {
+            compose.onNodeWithTag("profile_top_search_input").performTextInput("Remote Set 9")
+            compose.mainClock.advanceTimeByFrame()
+            compose.mainClock.advanceTimeBy(100)
+            local.assertIsNotEnabled()
+            val shrinking = local.fetchSemanticsNode().boundsInRoot.height
+            assertTrue("筛掉的行仍保留部分高度", shrinking > 0f && shrinking < settled)
+            compose.mainClock.advanceTimeBy(300)
+            local.assertDoesNotExist()
+            compose.onNodeWithTag("custom_rule_pick_Remote Set 9").assertExists()
+
+            compose.onNodeWithTag("profile_top_search_input").performTextReplacement("no-match")
+            compose.mainClock.advanceTimeBy(300)
+            compose.onNodeWithTag("custom_rule_picker_clear_search").performClick()
+            compose.mainClock.advanceTimeByFrame()
+            compose.mainClock.advanceTimeBy(80)
+            compose.onNodeWithTag("custom_rule_picker_clear_search").assertIsNotEnabled()
+            compose.mainClock.advanceTimeBy(400)
+            compose.onNodeWithTag("custom_rule_picker_clear_search").assertDoesNotExist()
+            local.assertIsDisplayed().assertIsEnabled()
+        } finally {
+            compose.mainClock.autoAdvance = true
+        }
     }
 
     @Test fun yamlRejectsInvalidPayloadAndKeepsMissingReferencesVisibleForRepair() {
@@ -136,6 +186,11 @@ class CustomRulesEditorInstrumentedTest {
             capture("custom_rules_list_$theme")
             compose.onNodeWithTag("custom_rule_edit_0").performClick(); capture("custom_rules_form_$theme")
             compose.onNodeWithTag("custom_rule_type").performClick(); capture("custom_rules_types_$theme")
+            compose.onNodeWithTag("custom_rule_picker_back").performClick()
+            compose.onNodeWithTag("custom_rule_target").performClick()
+            compose.onNodeWithTag("profile_top_search_open").assertDoesNotExist()
+            compose.onNodeWithTag("custom_rule_pick_DIRECT").assertIsSelected()
+            capture("vis048_rule_target_$theme")
             compose.onNodeWithTag("custom_rule_picker_back").performClick(); compose.onNodeWithTag("custom_rule_form_back").performClick()
             menu("yaml"); capture("custom_rules_yaml_$theme"); compose.onNodeWithTag("custom_rules_yaml_back").performClick()
             menu("select"); compose.onNodeWithTag("custom_rules_select_all").performClick(); capture("custom_rules_batch_$theme")

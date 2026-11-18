@@ -1,5 +1,9 @@
 # KClash Kotlin 重写路线图
 
+> **当前范围（2026-11-19）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
+
+> **KUI-VIS-048 已在 POCO F2 Pro / API36 验收**。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回阶段已有帧分类，分类可重叠且 trace 有丢弃；优化收益与正式 R8 表现待验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
+
 > **KClash 0.1.7 正式发布（2026-11-18）**：标签 `kclash-v0.1.7` 指向 `2e13ed52efcd0c2ce94bd181ad09c78b9e84546d`，versionCode 1007，GitHub Latest。标签 CI 的 Go race、JVM/R8、Debug/Release Lint、正式签名、APK 元数据及 ABI 检查均通过；远端 ARM64 APK 48,468,320 字节，SHA-256 `2a3f6b21ec714ab4f12d636ffe1788d255f1cee8bc27c782a6e8b1cb4b46433e`，证书沿用既有正式身份。Release APK 已下载核验，未安装到手机。本批 043～047 与语义预检、协议实流由独立 motion 包验收。详见[发布记录](acceptance/release-0.1.7-20261118.json)和[发布说明](releases/kclash-v0.1.7.md)。
 
 11月18日 POCO F2 Pro / API36 从本轮授权订阅实际导入 32 个节点。Trojan（16）、Hysteria2（12）、VLESS（4）各抽取两个不同端点，纯代理 GLOBAL 下 6/6 返回 HTTP 200，并在对应连接上核对叶节点及双向流量。[脱敏回执](acceptance/subscription-protocol-traffic-poco-20261118.json)
@@ -842,20 +846,20 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 
 | 维度 | 当前状态 |
 | --- | --- |
-| 当前分支 | `kotlin`，跟踪`origin/kotlin`；当前 `2e13ed52` |
+| 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
 | 当前公开版本 | **0.1.7/code1007**，标签`kclash-v0.1.7`指向`2e13ed52`；公开APK SHA`2a3f6b21…4b46433e`，沿用既有正式证书 |
 | 发布范围 | 0.1.7标签CI的Go race、JVM/R8、双Lint、证书/版本/ABI检查通过；Release Latest及远端digest、签名和SHA256SUMS均回验。Release APK已下载核验，未安装到手机。详见[发布证据](acceptance/release-0.1.7-20261118.json) |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
-| 六项功能收尾 | **5收口、1部分完成**：名单保护、配置/偏好稳定性、Provider恢复、简单版本检查收口；首次联网TLS按用户决定作为网络问题归档；语义预检主流程完成、条件边界继续 |
+| 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
 | 最新自动化记录 | 0.1.7标签CI的Go race、JVM测试、Release/R8、Debug/Release Lint与签名资产检查全部通过；语义预检、协议实流及043～047视觉均由POCO独立motion包验收，不与Release设备安装混算 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | 在线age测试输入按SHA核对后删除；motion/test包已卸载、服务和TUN退出。原1.yaml未上传且SHA/大小/mtime保持，Flutter参考包未操作。新age identity仅保存在仓库外0600文件 |
-| 正在推进 | 在线age下载/解密/导入/应用已验；当前推进剩余原生故障、协议/来源及低API/OEM条件边界 |
-| 后排及暂缓 | Flutter剩余子页/面板/连续动效、菜单原生归因及8MiB性能后排；玻璃默认关闭。备份/系统恢复、观测次要打磨、语言主题暂缓；TalkBack/自定义无障碍等取消项不回列 |
-| 最新证据 | [0.1.7发布](acceptance/release-0.1.7-20261118.json)、[CUSTOM大规则目录预检](acceptance/custom-saf-preflight-poco-20261118.json)、[协议实流](acceptance/subscription-protocol-traffic-poco-20261118.json)、[043～047验收](acceptance/visual-043-047-poco-20261118.json) |
+| 正在推进 | Flutter 剩余子页与面板、同状态运行对照、连续转场及菜单性能。048 规则选择器已验，首开慢帧的主线程占用已在匹配样本中确认；绘制归因和优化收益未确认。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json) |
+| 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB 正文性能、备份与系统恢复、观测次要打磨、语言主题继续暂缓。玻璃默认关闭。 |
+| 最新证据 | [验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)（048 规则选择器及菜单 Perfetto）、[043～047 验收](acceptance/visual-043-047-poco-20261118.json)、[0.1.7 发布](acceptance/release-0.1.7-20261118.json) |
 
 ## 4. 目标架构图
 
@@ -1523,7 +1527,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ## 8. 推荐推进顺序
 
-2026-11-18当前执行顺序与外层`todo.md`一致：在线age下载/解密/导入/核心应用已真机1/1收口；P2其余自然原生故障、其他协议/来源、低API/OEM仍有边界。P0首连TLS归档，先推进P2语义预检，再推进P3系统覆盖，最后P4视觉性能。六功能仍按5收口/1部分完成统计；配置/偏好与Provider历史已接受异常不重新主动追根，应用内下载/安装已取消。
+2026-11-19，与外层 `todo.md` 同步。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。 按同状态逐页补齐 Flutter 运行对照与自然转场，再以相同真机流程对照优化前后的菜单首开和收回。低 API、其他 OEM、Tasker、后台启动、其他协议与原生异常保留原验证边界。
 
 ### 原11项收尾清单（历史分类与后续覆盖索引）
 
@@ -1539,8 +1543,8 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 | 6 | IP/质量全部来源、持久缓存和失效恢复；服务全部目标 | 缓存闭环与全部目标尝试已验：757单测、final3 5/5、cold2/cold5各双阶段、回归10/10；远端部分受限，原长窗口配置保护after 0/1/原因未定，新短窗口通过不替代失败。见`ip-quality-cache-redmi-20261105.json` |
 | 7 | Fallback 无有效 now 实核行为和冷恢复 | 冷进程收尾已验：更新后的唯一授权源为34组、1个非空Fallback/7成员；Redmi真实Mihomo停止态/运行态各4阶段，共8/8有效`now`，固定/清除固定/非法成员拒绝通过；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`，见`fallback-real-core-redmi-20261105.json`与`fallback-cold-process-redmi-20261106.json`。自然无效`now`经源码核对在合法非空组、断网或全不健康成员下不可自然产生，保留为核心语义边界，不记伪造注入为通过。 |
 | 8 | 纯代理冷恢复、首次安装VPN授权、蜂窝、第三方、Always-on OEM | 既有纯代理/Always-on/首次安装VPN证据保留；本组官方MacroDroid6.1.5在公开0.1.3上前台Activity启停5次通过，重复START保持同一服务。Tasker/后台定时/开机/其他OEM未验，Redmi蜂窝恢复已验，生产Always-on状态仍UNKNOWN。 |
-| 9 | 完整Flutter视觉与常用交互 | KUI-037 与 043～047 的具名交互已验。043～047 在 POCO 最终 8/8，14 张截图已核对。其余同数据 Flutter/Kotlin 子页面板、完整自然转场及液滴搜索形变继续推进。 |
-| 10 | 实时背景/触点光效、玻璃品质、8MiB正文及连续动效性能 | KUI-040上限加载/编辑/查找/历史、跨段选区和密文跨PID保存已验；整链路准备/恢复提交约44/69秒，性能仍PARTIAL。其余效果/菜单原生归因后排，玻璃默认关闭。 |
+| 9 | 完整Flutter视觉与常用交互 | 043～047 的 8/8 与 048 的 6/6、冷恢复 1/1 均有 POCO 证据。继续同数据 Flutter/Kotlin 非空子页与面板、完整自然转场和搜索形变。 |
+| 10 | 实时背景/触点光效、玻璃品质、8MiB正文及连续动效性能 | POCO 已捕获菜单首开和收回的线程轨迹。首开样本以主线程工作为主，收回包括应用超时和缓冲积压，需继续定位并对照优化效果。8 MiB 正文性能继续暂缓，玻璃默认关闭。 |
 | 11 | API24/25/31/32及低API核心/VPN/实网、端到端回归、CI/签名/Release/更新资产 | 0.1.7标签CI、正式证书/SHA及Release Latest已回验；Release APK已下载核对，未安装到真机。版本检查和GitHub跳转已完成，不再推进应用内下载/安装。低API真机、其余升级矩阵及其他OEM边界单列。 |
 
 本轮原始附件存于工作区外层 `acceptance-artifacts/visual-motion-20261107/`；SAF前组沿用`acceptance-artifacts/resource-picker-20261107/`；全局规则前组沿用`acceptance-artifacts/global-rules-20261107/`；Provider运行态前组沿用 `acceptance-artifacts/provider-runtime-20261107/`；扩展前组沿用`acceptance-artifacts/extension-cold-20261107/`；管理前组沿用`acceptance-artifacts/management-cold-20261107/`；Provider前组沿用`acceptance-artifacts/provider-document-cold-20261107/`；前组正式本地代理沿用 `acceptance-artifacts/formal-local-proxy-redmi-20261107/`；控制器历史附件沿用`acceptance-artifacts/controller-race-20261105/`，前组TUN保护沿用`acceptance-artifacts/tun-protect-20261105/`，网络观察、Always-on及纯代理附件沿用 `acceptance-artifacts/always-on-dns-20261105/`、`acceptance-artifacts/always-on-20261105/` 和 `acceptance-artifacts/proxy-system-recovery-20261105/`，第1至6项附件沿用各自证据索引。旧 `/tmp` 附件曾有不可读取记录，不以历史口述代替当前验收。备份/系统恢复、观测次要打磨、语言/主题暂缓；TalkBack/自定义无障碍、早期Room兼容、横屏/大字号扩展及其他ABI不列待办。

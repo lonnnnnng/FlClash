@@ -45,7 +45,8 @@ class EncryptedEditorStateInstrumentedTest {
         compose.onNodeWithTag("custom_rule_payload").assertTextContains("private-composition-marker")
         phase("form-restored")
         compose.onNodeWithTag("custom_rule_type").performClick()
-        compose.onNodeWithTag("custom_rule_picker_search").performTextReplacement("IP-CIDR")
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("IP-CIDR")
         compose.waitUntil(10_000) { Gson().toJson(saved).contains("IP-CIDR") }
         compose.runOnIdle { assertEquals(0, failures) }
         phase("picker-captured")
@@ -54,7 +55,8 @@ class EncryptedEditorStateInstrumentedTest {
         phase("picker-disposed")
         compose.runOnIdle { generation++; shown = true }
         phase("picker-recreated")
-        compose.onNodeWithTag("custom_rule_picker_search").assertTextContains("IP-CIDR")
+        compose.onNodeWithTag("profile_top_search_input").assertTextContains("IP-CIDR")
+        compose.onNodeWithTag("custom_rule_picker_back").performClick()
         compose.onNodeWithTag("custom_rule_picker_back").performClick()
         compose.onNodeWithTag("custom_rule_payload").assertTextContains("private-composition-marker")
         compose.runOnIdle { assertEquals(0, failures) }

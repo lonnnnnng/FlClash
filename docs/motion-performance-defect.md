@@ -1,5 +1,20 @@
 # KUI-018：菜单阴影缓存失效与动效测量污染
 
+## POCO 首开与收回的线程归因（2026-11-18）
+
+POCO F2 Pro / API36 的非混淆 `.motion` 宿主在深浅主题各采 10 次打开与收回。采集包含调度、gfx/view、FrameTimeline 和菜单阶段标记，循环内没有截图、录屏或 gfxinfo。两次 flush 均完成，深浅轨迹分别报告 6、7 个 chunk 丢弃。
+
+| 主题 | 首开 Popup 慢帧 | UI 线程回调 / CPU | 同帧 RenderThread 绘制片段 |
+| --- | ---: | ---: | ---: |
+| 深色，帧 6008325 | 110.12 ms | 109.78 / 84.28 ms | 0.21 + 1.23 ms |
+| 浅色，帧 6022636 | 93.17 ms | 92.70 / 77.87 ms | 6.62 + 1.05 ms |
+
+深色首开回调中，Compose 动画重组约 20 ms，遍历阶段约 90 ms。遍历内可见首次 Popup 的重组、测量、窗口 relayout、布局和绘制。独立 ART 采样中，三次打开的 `BaseCanvas.nDrawPath` 片段累计墙钟分别为 135.35、128.64、138.71 ms。绘制只是候选热点；方法样本含探针开销，不能逐帧配到 Perfetto，也不能据此量化该方法对慢帧的贡献。
+
+按已匹配 Popup 帧统计，深色/浅色打开为 125/130 帧，App Deadline Missed 29/31、Buffer Stuffing 87/61、Dropped 13/27，最长帧 110.12/93.17 ms；收回为 324/326 帧，三类分别为 18/18、232/235、16/18，最长帧 43.21/43.75 ms。收回的应用超时样本主线程回调约 20–22 ms、RenderThread 绘制约 6 ms，掉帧样本两段均较短。FrameTimeline 分类可以重叠，不能相加为总掉帧；深浅 trace 分别有 6/7 个 chunk 丢弃，统计仅覆盖可匹配帧。按帧统计与线程样本见[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)。
+
+首轮未传必需的帧表参数，Instrumentation 在菜单操作前失败。补参数后的深浅流程成功，随后将 gfxinfo 移出诊断循环再采。扩大缓冲区的复测仍有丢弃计数，保留各批原始轨迹。当前结论覆盖已匹配的帧，菜单优化前后的收益和正式 R8 包表现仍待验证。
+
 ## 2026-11-09：首开/关闭线程归因诊断 — UNRESOLVED_DEVICE_TRACE
 
 作者 long。本轮保留未提交诊断测试 `VisualMotionNaturalInstrumentedTest#lightMenuFirstOpenAndCloseFrameTimeline` / `#darkMenuFirstOpenAndCloseFrameTimeline`，将 `android.os.Trace` 区间覆盖到菜单打开或收回的可见终态；深色 Redmi 批次 `menu-diag-dark3` 的 1/1 用例通过，正式库快照、`1.yaml`、设备设置和服务状态保持。源改动指纹为 `29b28369dcc9901c6bc817255a2efe7fc5c14d424fc01ba91447b1eb9b9f7aa8`。

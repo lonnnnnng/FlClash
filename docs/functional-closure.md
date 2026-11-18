@@ -2,7 +2,7 @@
 
 11月18日 POCO F2 Pro / API36 从本轮授权订阅实际导入 32 个节点。Trojan（16）、Hysteria2（12）、VLESS（4）各抽取两个不同端点，纯代理 GLOBAL 下 6/6 返回 HTTP 200，并在对应连接上核对叶节点及双向流量。[脱敏回执](acceptance/subscription-protocol-traffic-poco-20261118.json)
 
-2026-11-18，首次联网 TLS 按用户决定作为网络环境问题归档。六项功能目标中五项收口，语义预检继续补条件边界。POCO 的 CUSTOM 系统选档替换、92 份缓存 MRS 一次完整解析、128/129 个描述符边界与 VMess 真实请求已通过。本组依赖资源在主机下载，导入阶段复用手机缓存。[验收记录](acceptance/custom-saf-preflight-poco-20261118.json)
+2026-11-18，首次联网 TLS 按用户决定作为网络环境问题归档。语义预检已覆盖 POCO 的 CUSTOM 系统选档替换、92 份缓存 MRS 一次解析、128/129 个文件边界和 VMess 实流。[验收记录](acceptance/custom-saf-preflight-poco-20261118.json)
 
 
 2026-11-18增补：在线 age 订阅完整链路已在POCO API36真实UI验收1/1；授权源轮换到新identity，测试覆盖缺钥、错钥无写入、正确密钥解密导入、Mihomo运行加载和非直连HTTP200。见[验收说明](online-age-subscription-acceptance.md)与[脱敏JSON](acceptance/online-age-subscription-poco-20261118.json)。较早记录中的“明文/无密钥”只反映当时状态。
@@ -28,7 +28,7 @@
 
 2026-11-12 随KUI-042发布KClash 0.1.4：GitHub Latest、标签/分支CI、正式APK摘要/签名及Redmi覆盖安装和启动均已核验。当前设备快照没有活动VPN transport，因此不把安装验收写成VPN运行态通过。发布细节见[0.1.4验收记录](acceptance/release-0.1.4-redmi-20261112.json)。
 
-统一按“一组功能→构建→用户指定真机集中验收→roadmap/todo/证据→中文提交推送”推进。本轮按用户更换设备使用POCO F2 Pro，原Redmi记录保留。Flutter只参考；内核仅跟随chen08209/Clash.Meta:FlClash。本轮功能优先，视觉精度与菜单慢帧后排；不恢复TalkBack，备份/系统恢复、语言主题及观测次要打磨仍暂缓。
+统一按“一组功能→构建→用户指定真机集中验收→roadmap/todo/证据→中文提交推送”推进。本轮按用户更换设备使用POCO F2 Pro，原Redmi记录保留。Flutter只参考；内核仅跟随chen08209/Clash.Meta:FlClash。当前优先剩余页面视觉、连续转场与菜单慢帧；不恢复TalkBack，备份/系统恢复、语言主题及观测次要打磨仍暂缓。
 
 ## 缺口、异常和未验边界分开统计
 
@@ -48,12 +48,8 @@
 
 ## 当前推进顺序
 
-以下清单为2026-11-18调整后的当前执行顺序，后续较早日期的Roadmap切片只作历史证据，不覆盖此状态。
+2026-11-19，按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
-11月12日TLS有界复现完成且未复现；11月17日新失败已出现，现按用户决定归档。KUI-042回归余项也已收口：POCO最终同批38/38、零跳过，仅测试修正；在线age完整链路已于2026-11-18另组完成；逐帧动效边界仍未关闭。以下从下一项接续：
-
-1. **语义预检边界（部分补齐）**：POCO6/6已补显式VPN绑定启动窗口诊断及真实默认TUN请求前后保护；后续系统未授权时establish返回null的三次拒绝、失败清理、生产ViewModel反馈与授权后真实TUN恢复最终单场景1/1，见[记录](native-tun-establish-failure-acceptance.md)。本轮受控系统建接口异常、核心拒绝FD、热切单次自动恢复/双次停止重试已验5/5、10笔实网，见[补偿记录](tun-rebuild-compensation-acceptance.md)；剩余其他自然原生异常及有授权的其他协议/来源实流。在线age真实armor下载、缺钥/错钥无写入、正确重试解密导入及Core非直连请求已于2026-11-18通过。低API/OEM并入下一类真机条件覆盖。
-2. **系统与设备覆盖**：补Tasker、后台定时/开机触发及生产入口的Always-on状态/恢复证据。现有MacroDroid前台Activity 5次通过不外推到后台；生产`AlwaysOnVpn.state()`为`UNKNOWN`，先核实产品预期，再决定实现或明确记录限制。低API与其他OEM只在可用真机验证，没有目标环境时标注未验，不用模拟器替代。
-3. **Flutter视觉与性能（后排）**：完成剩余子页/面板和连续转场对照；在可用Perfetto环境重做菜单首开/关闭及RenderThread归因；正文准备/恢复提交约44/69秒，按用户优先级暂缓优化，玻璃默认关闭。
+KUI-VIS-048 已在 POCO F2 Pro / API36 验收。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；匹配的首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回分类存在重叠，trace 丢弃限制仍保留；优化收益未验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
 
 2026-11-12随KUI-042发布KClash 0.1.4；GitHub Latest、标签/分支CI、APK摘要/签名和Redmi覆盖安装/启动均已核验，当前设备快照未发现活动VPN transport。详见[发布验收](acceptance/release-0.1.4-redmi-20261112.json)。KUI-040正文与第三方入口的原始证据见[本组记录](acceptance/editor-external-redmi-20261112.json)：当组完成时尚未发版，之后的发布状态以0.1.4记录为准。

@@ -93,11 +93,15 @@ class StructuredEditorColdProcessInstrumentedTest {
             } else {
                 compose.onNodeWithTag("custom_rule_edit_1").performClick()
                 compose.onNodeWithTag("custom_rule_type").performClick()
+                // 作者 long：选择器优先显示当前类型，测试要先把目标类型滚到可见区域。
+                compose.onNodeWithTag("custom_rule_picker_list").performScrollToNode(hasTestTag("custom_rule_pick_DOMAIN"))
                 compose.onNodeWithTag("custom_rule_pick_DOMAIN").performClick()
                 compose.onNodeWithTag("custom_rule_payload").performTextReplacement(DRAFT_MARKER)
                 if (case == "rules-type-open") {
                     compose.onNodeWithTag("custom_rule_type").performClick()
-                    compose.onNodeWithTag("custom_rule_picker_search").performTextReplacement("DOMAIN")
+                    compose.onNodeWithTag("profile_top_search_open").performClick()
+                    compose.onNodeWithTag("profile_top_search_input").performTextReplacement("DOMAIN")
+                    compose.onNodeWithTag("custom_rule_picker_list").performScrollToNode(hasTestTag("custom_rule_pick_DOMAIN"))
                 }
             }
         } else {
@@ -249,10 +253,11 @@ class StructuredEditorColdProcessInstrumentedTest {
                     compose.onNodeWithTag("custom_rules_back").performClick()
                 }
                 "rules-type-open" -> {
-                    compose.onNodeWithTag("custom_rule_picker_search").assertTextContains("DOMAIN")
+                    compose.onNodeWithTag("profile_top_search_input").assertTextContains("DOMAIN")
                     compose.onNodeWithTag("custom_rule_pick_DOMAIN").assertExists()
                     compose.onNodeWithTag("custom_rule_pick_MATCH").assertDoesNotExist()
                     capture("${case}_restored")
+                    compose.onNodeWithTag("custom_rule_picker_back").performClick()
                     compose.onNodeWithTag("custom_rule_picker_back").performClick()
                     compose.onNodeWithTag("custom_rule_payload").assertTextContains(DRAFT_MARKER)
                     compose.onNodeWithTag("custom_rule_confirm").assertIsEnabled()

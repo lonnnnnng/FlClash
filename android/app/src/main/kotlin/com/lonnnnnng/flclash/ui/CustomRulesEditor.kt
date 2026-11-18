@@ -1,12 +1,20 @@
 package com.lonnnnnng.flclash.ui
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Rule
@@ -22,6 +30,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +39,7 @@ import com.lonnnnnng.flclash.data.*
 import java.util.UUID
 import java.security.MessageDigest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
@@ -262,45 +272,166 @@ private fun CustomRuleForm(initial: CustomRuleDraft?, catalog: CustomRuleCatalog
         }
     })
     picker?.let { mode ->
-        val sections = when (mode) {
-            "type" -> listOf("规则类型" to CustomRules.types)
-            "provider" -> listOf("规则资源" to catalog.providers)
+        val sections: List<Pair<String?, List<String>>> = when (mode) {
+            "type" -> listOf(null to CustomRules.types)
+            "provider" -> listOf(null to catalog.providers)
             else -> listOf("基础策略" to catalog.basic, "策略组" to catalog.groups, "本地代理" to catalog.proxies)
         }
-        CustomRulePicker(mode, sections, { picker = null }) { value -> when (mode) { "type" -> type = value; "provider" -> payload = value; else -> target = value }; error = null; picker = null }
+        val selection = when (mode) {
+            "type" -> type
+            "provider" -> payload
+            else -> target
+        }
+        CustomRulePicker(mode, sections, selection, { picker = null }) { value ->
+            when (mode) {
+                "type" -> type = value
+                "provider" -> payload = value
+                else -> target = value
+            }
+            error = null
+            picker = null
+        }
     }
     if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃未保存的规则？") },
         confirmButton = { TextButton(onClick = onDismiss) { Text("放弃") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }
 
 @Composable
-private fun CustomRulePicker(mode: String, sections: List<Pair<String, List<String>>>, onDismiss: () -> Unit, onSelect: (String) -> Unit) {
-    var query by rememberSaveable { mutableStateOf("") }
-    ProfileEditorPage(onDismiss, title = { Text(when (mode) { "type" -> "选择规则类型"; "provider" -> "选择规则资源"; else -> "选择分流策略" }) }, backTag = "custom_rule_picker_back", text = {
-        Column {
-            OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索") }, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).testTag("custom_rule_picker_search"))
-            LazyColumn(Modifier.fillMaxSize().testTag("custom_rule_picker_list")) {
-                sections.forEach { (label, options) ->
-                    val filtered = options.filter { it.contains(query, true) }
-                    if (filtered.isNotEmpty()) {
-                        item { Text(label, Modifier.padding(vertical = 12.dp), style = MaterialTheme.typography.titleSmall) }
-                        itemsIndexed(filtered) { _, option -> Text(option, Modifier.fillMaxWidth().clickable { onSelect(option) }.padding(vertical = 20.dp).testTag("custom_rule_pick_$option")) }
+private fun CustomRulePicker(
+    mode: String,
+    sections: List<Pair<String?, List<String>>>,
+    selection: String,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit,
+) {
+    var query by rememberSaveable(mode) { mutableStateOf("") }
+    var searchExpanded by rememberSaveable(mode) { mutableStateOf(false) }
+    var revealed by rememberSaveable(mode) { mutableStateOf(false) }
+    var shownSections by remember(mode) { mutableStateOf(sections) }
+    val listState = rememberLazyListState()
+    val terms = remember(query) { query.split(Regex("\\s+")).filter(String::isNotBlank) }
+    val matches = remember(sections, terms) {
+        sections.mapNotNull { (label, options) ->
+            options.distinct().filter { option -> terms.all { option.contains(it, ignoreCase = true) } }
+                .takeIf { it.isNotEmpty() }?.let { label to it }
+        }
+    }
+    val searchable = searchExpanded || sections.sumOf { it.second.size } >= 10
+    val hasCandidates = sections.any { it.second.isNotEmpty() }
+    LaunchedEffect(matches) {
+        // 作者 long：筛选中的离场行保留一个短过渡周期；再次匹配会复用同一项，避免列表瞬间跳动。
+        shownSections = sections.mapNotNull { (label, options) ->
+            val retained = shownSections.firstOrNull { it.first == label }?.second.orEmpty().toSet()
+            val matching = matches.firstOrNull { it.first == label }?.second.orEmpty().toSet()
+            val shown = options.distinct().filter { it in retained || it in matching }
+            shown.takeIf { it.isNotEmpty() }?.let { label to it }
+        }
+        kotlinx.coroutines.delay(300)
+        shownSections = matches
+    }
+    val title = when (mode) {
+        "type" -> "选择规则类型"
+        "provider" -> "选择规则资源"
+        else -> "选择分流策略"
+    }
+    fun updateQuery(value: String) {
+        query = value
+        // 作者 long：清空筛选后从完整目录首行恢复，不能继承匹配结果在原目录中的位置。
+        listState.requestScrollToItem(0)
+    }
+    fun back() {
+        if (searchExpanded) {
+            updateQuery("")
+            searchExpanded = false
+        } else onDismiss()
+    }
+    LaunchedEffect(matches, terms, selection) {
+        if (matches.isEmpty()) return@LaunchedEffect
+        if (terms.isEmpty() && !revealed) {
+            // 作者 long：按实际列表索引定位已选项，再用当前视口尺寸居中，避免长目录把现有选择藏在屏外。
+            val selectedIndex = matches.flatMap { (label, values) ->
+                if (label == null) values else listOf(null) + values
+            }.indexOf(selection)
+            if (selectedIndex >= 0) {
+                listState.scrollToItem(selectedIndex)
+                val item = snapshotFlow { listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == selectedIndex } }
+                    .first { it != null } ?: return@LaunchedEffect
+                val layout = listState.layoutInfo
+                val center = (layout.viewportStartOffset + layout.viewportEndOffset) / 2f
+                listState.scrollBy(item.offset + item.size / 2f - center)
+            }
+            revealed = true
+        }
+    }
+    ProfileEditorPage(
+        ::back,
+        title = { Text(title) },
+        backTag = "custom_rule_picker_back",
+        topBarSearch = if (searchable) ProfileEditorSearchState(
+            searchExpanded, query, "搜索", ::updateQuery, { searchExpanded = it },
+        ) else null,
+        text = {
+            // 作者 long：切换时保留上一屏候选到淡出结束，退场行只绘制，避免搜索期间选到已被过滤的资源。
+            AnimatedContent(
+                targetState = matches,
+                modifier = Modifier.fillMaxSize(),
+                contentKey = { it.isEmpty() },
+                transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
+                label = "customRulePickerContent",
+            ) { visibleSections ->
+                val active = visibleSections.isEmpty() == matches.isEmpty()
+                if (visibleSections.isEmpty()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        ProxyPageEmptyState(
+                            if (hasCandidates) "无搜索结果" else "暂无可选项",
+                            null, "custom_rule_picker_empty",
+                            searching = hasCandidates,
+                            actionLabel = "清除搜索".takeIf { hasCandidates },
+                            actionEnabled = active,
+                            actionTag = "custom_rule_picker_clear_search",
+                            onAction = { updateQuery("") },
+                        )
                     }
-                }
-                if (sections.all { it.second.none { option -> option.contains(query, true) } }) item {
-                    if (query.isNotEmpty()) {
-                        // 作者 long：目录有候选但搜索无匹配时提供恢复入口；真实空目录仍保留原提示。
-                        Column(Modifier.fillMaxWidth().padding(vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("无搜索结果", Modifier.testTag("custom_rule_picker_empty"))
-                            TextButton(onClick = { query = "" }, modifier = Modifier.testTag("custom_rule_picker_clear_search")) {
-                                Icon(Icons.Outlined.Close, null); Text("清除搜索")
+                } else LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize().testTag("custom_rule_picker_list"),
+                    contentPadding = PaddingValues(top = 12.dp, bottom = 20.dp),
+                ) {
+                    shownSections.forEach { (label, options) ->
+                        val matchingSection = visibleSections.firstOrNull { it.first == label }
+                        if (label != null) item(key = "section:$label") {
+                            SelectionEntryTransition(matchingSection != null, Modifier.padding(horizontal = 16.dp)) {
+                                Text(label, Modifier.padding(top = 16.dp, bottom = 8.dp),
+                                    style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
-                    } else Text("暂无可选项", Modifier.padding(vertical = 32.dp).testTag("custom_rule_picker_empty"))
+                        itemsIndexed(options, key = { _, option -> "item:$label:$option" }) { index, option ->
+                            val currentSection = matchingSection?.second.orEmpty()
+                            val visible = option in currentSection
+                            val selected = option == selection
+                            SelectionEntryTransition(visible, Modifier.padding(horizontal = 16.dp)) {
+                                val top = if (index == 0) 24.dp else 0.dp
+                                val bottom = if (index == options.lastIndex) 24.dp else 0.dp
+                                val shape = RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom)
+                                Surface(shape = shape, color = if (selected) MaterialTheme.colorScheme.secondaryContainer else dashboardCardColor()) {
+                                    Row(
+                                        Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                                            .selectable(selected, enabled = active && visible, role = Role.RadioButton, onClick = { onSelect(option) })
+                                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                                            .testTag("custom_rule_pick_$option"),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Text(option, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        if (selected) Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        }
-    })
+        },
+    )
 }
 
 @Composable

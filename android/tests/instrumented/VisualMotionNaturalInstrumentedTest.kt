@@ -446,7 +446,6 @@ class VisualMotionNaturalInstrumentedTest {
     private fun runMenuBoundaryDiagnostic(dark: Boolean) {
         assertPortraitDefaultFontConfiguration()
         assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))
-        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashMotionProfile"))
         suffix = if (dark) "dark" else "light"
         val context=ins.targetContext
         val old=ProxyPageOptionsStore.load(context)
@@ -455,24 +454,25 @@ class VisualMotionNaturalInstrumentedTest {
             ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
                 scenario.onActivity { it.dark=dark }
                 await("nav_proxy");click("nav_proxy");await("proxy_tools");settle()
-                event("diagnostic-ready")
+                // 作者 long：Perfetto 只标记实际交互，避免相邻的 dumpsys 帧表清零和回传扰动菜单时序。
+                event("diagnostic-ready", sample = false)
                 // 作者 long：只测首次打开与根菜单收回，十次独立窗口扩充样本，不把submenu交互或录像开销混进trace。
                 repeat(10) { pass ->
-                    event("diagnostic-$pass-open-start")
+                    event("diagnostic-$pass-open-start", sample = false)
                     traceSection("kclash_menu_open_$pass") {
                         click("proxy_tools");await("样式：标签")
                     }
-                    event("diagnostic-$pass-open-visible")
+                    event("diagnostic-$pass-open-visible", sample = false)
                     SystemClock.sleep(550)
-                    event("diagnostic-$pass-close-start")
+                    event("diagnostic-$pass-close-start", sample = false)
                     traceSection("kclash_menu_close_$pass") {
                         back();awaitGone("样式：标签")
                     }
-                    event("diagnostic-$pass-close-visible")
+                    event("diagnostic-$pass-close-visible", sample = false)
                     SystemClock.sleep(250)
                 }
                 scenario.onActivity { assertEquals("常用节点",it.selectedGroup);assertEquals(0,it.nodeSelections) }
-                event("diagnostic-completed")
+                event("diagnostic-completed", sample = false)
             }
         } finally { ProxyPageOptionsStore.save(context,old) }
     }
@@ -585,9 +585,9 @@ class VisualMotionNaturalInstrumentedTest {
     }
     private fun back(){ins.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)}
     private fun settle(){SystemClock.sleep(1000)}
-    private fun event(name:String){
+    private fun event(name:String, sample: Boolean = profileFrames){
         if (name == "quality-loading") stopMethodTrace()
-        if (profileFrames) sampleFrames("before-$name")
+        if (sample) sampleFrames("before-$name")
         if (name == "proxy-menu-nested" && InstrumentationRegistry.getArguments().getString("kclashMotionMethodTrace") == "true") {
             val run=checkNotNull(InstrumentationRegistry.getArguments().getString("kclashMotionRun"))
             require(run.matches(Regex("[a-z0-9-]+")))
