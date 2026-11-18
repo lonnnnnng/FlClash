@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-18",
+  "release": {
+    "tag": "kclash-v0.1.7",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.7",
+    "sourceCommit": "2e13ed52efcd0c2ce94bd181ad09c78b9e84546d",
+    "workflowRunId": 44309911280,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44309911280",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-18T13:22:03Z",
+    "publishedAtAsiaShanghai": "2026-11-18T21:22:03+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.7-android-arm64-v8a.apk",
+        "size": 48468320,
+        "digest": "sha256:2a3f6b21ec714ab4f12d636ffe1788d255f1cee8bc27c782a6e8b1cb4b46433e",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.7/KClash-0.1.7-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 101,
+        "digest": "sha256:7eea57a41031e795882bea916f56c5f816d7530e8f0b8a6b5bb303d008a4c932",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.7/SHA256SUMS"
+      }
+    ]
+  },
+  "package": {
+    "versionName": "0.1.7",
+    "versionCode": 1007,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "abis": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "debuggable": false,
+    "remoteSha256Verified": true,
+    "sha256SumsVerified": true,
+    "signatureVerified": true
+  },
+  "ci": {
+    "result": "success",
+    "jobs": [
+      {
+        "name": "Verify KClash Android arm64",
+        "conclusion": "success",
+        "url": "https://github.com/lonnnnnng/FlClash/actions/runs/44309911280/job/134821052045"
+      },
+      {
+        "name": "Publish signed KClash release",
+        "conclusion": "success",
+        "url": "https://github.com/lonnnnnng/FlClash/actions/runs/44309911280/job/134831476253"
+      }
+    ]
+  },
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "relatedMotionResults": [
+      "visual-043-047-poco-20261118.json",
+      "custom-saf-preflight-poco-20261118.json",
+      "subscription-protocol-traffic-poco-20261118.json"
+    ]
+  }
+}
