@@ -200,6 +200,47 @@ class MainProviderOptionsStateInstrumentedTest {
         }
     }
 
+    @Test fun nonEmptyProviderPickerFiltersAndReturnsWithMultipleCandidates() = runBlocking {
+        fixture { s ->
+            val repository = s.entry.profileRepository()
+            val alternateLabel = "备用文件-${UUID.randomUUID().toString().take(6)}"
+            // 作者 long：候选差异只来自隔离库中的名称和记录，不改写授权配置正文或构造随机 YAML。
+            val alternate = repository.addFileProfile(alternateLabel, repository.profileFile(s.original.id).readBytes())
+            try {
+                compose.onNodeWithTag("profile_provider_bind_proxy_$alias").performScrollTo().performClick()
+                val originalChoice = "provider_binding_proxy_${s.original.id}"
+                val alternateChoice = "provider_binding_proxy_${alternate.id}"
+                compose.onNodeWithTag(originalChoice).assertIsDisplayed()
+                compose.onNodeWithTag(alternateChoice).assertIsDisplayed()
+                capture("main_provider_multi_candidate_picker")
+
+                compose.onNodeWithTag("provider_binding_search").performTextReplacement(alternate.realLabel)
+                closeSoftKeyboard()
+                compose.onNodeWithTag(alternateChoice).assertIsDisplayed()
+                compose.onNodeWithTag(originalChoice).assertDoesNotExist()
+                capture("main_provider_multi_candidate_filtered")
+
+                compose.onNodeWithTag("provider_binding_search_cancel").performClick()
+                assertEquals("", editable("provider_binding_search"))
+                compose.onNodeWithTag(originalChoice).assertIsDisplayed()
+                compose.onNodeWithTag(alternateChoice).assertIsDisplayed()
+                capture("main_provider_multi_candidate_restored")
+
+                compose.onNodeWithTag(alternateChoice).performClick()
+                compose.waitUntil(20_000) { exists("profile_provider_edit_$alias") && !exists("provider_binding_back") }
+                val savedSection = ProfileProvidersEditor.extract(repository.readLocalProfileContent(s.profile.id)).proxyProviders
+                assertEquals(alternate.id, ProfileProxyResources.idOf(ProfileProxyResources.definitions(savedSection)[alias]))
+                compose.onNodeWithTag("profile_provider_edit_$alias").assertIsDisplayed()
+                capture("main_provider_multi_candidate_selected")
+            } finally {
+                entryProfileCleanup(s, alternate)
+            }
+            InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
+                putString("kclash_provider_candidate_picker", "candidates=2;filtered=1;cleared=2;selected=alternate;cleanup=verified")
+            })
+        }
+    }
+
     @Test fun localValidationCancelledByRecreationKeepsDraftUntilExplicitRetry() = runBlocking {
         fixture { s ->
             options(); addOption("INTERVAL")
@@ -338,10 +379,10 @@ class MainProviderOptionsStateInstrumentedTest {
                     .joinToString("") { "%02x".format(it) }
                 require(sourceSha == expectedSha) { "本地授权源 SHA 不匹配" }
                 // 作者 long：motion 包是隔离数据库；仅用根目录授权原文建立本例FILE基线，禁止随机造配置补验收前提。
-                repository.addFileProfile("授权本地源-${UUID.randomUUID()}", sourceBytes).also { seededSource = it }
+                repository.addFileProfile("授权文件-${UUID.randomUUID().toString().take(6)}", sourceBytes).also { seededSource = it }
             }
             val bytes = repository.profileFile(original.id).readBytes()
-            val label = "资源恢复-${UUID.randomUUID()}"
+            val label = "资源验收-${UUID.randomUUID().toString().take(6)}"
             customLabel = label
             val custom = repository.addCustomProfile(label)
             created = custom
@@ -411,6 +452,14 @@ class MainProviderOptionsStateInstrumentedTest {
     private suspend fun unchanged(s: Session) {
         assertTrue("子页草稿尚未写正式副本", s.row == s.entry.database().profiles().getById(s.profile.id))
         assertEquals(s.signature, signature(s.entry.profileRepository().profileFile(s.profile.id)))
+    }
+    private suspend fun entryProfileCleanup(s: Session, owned: Profile) {
+        val repository = s.entry.profileRepository()
+        s.entry.database().profiles().getById(owned.id)?.let { row ->
+            check(row.type == ProfileType.FILE && row.label == owned.label)
+            repository.deleteProfile(owned.id)
+        }
+        assertFalse("本例第二候选正文必须确实移除", repository.profileFile(owned.id).exists())
     }
     private suspend fun persisted(s: Session) = ProfileProviderOverrides.fromJsonString(
         requireNotNull(s.entry.database().profiles().getById(s.profile.id)).overridesJson).proxyProviders[alias]

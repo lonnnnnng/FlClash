@@ -4,9 +4,11 @@
 
 > **KUI-VIS-050 已在 POCO F2 Pro / API36 验收**。非空 Provider 资源页进入真实代理资源选择器，绑定隔离 FILE 源后打开选项页，新增并保存 `TIMEOUT=5000`，重开后从 Room 读回；精确用例 1/1，7 张截图校验并目视。motion 双包安装回拉与构建产物一致，临时数据及授权源 staging 文件已清理。此证据只覆盖 Kotlin 连续流程，不代表 Flutter 同状态运行对照或全页视觉等价。[验收证据](acceptance/provider-options-nonempty-poco-20261119.json)
 
+> **KUI-VIS-051 已在 POCO F2 Pro / API36 验收**。Provider 代理资源选择器从 2 个候选筛到 1 个，清空后恢复 2 个，选择备用候选并回到父页，读取已保存的资源 ID；精确用例 1/1，4 张 1080×2400 截图校验并目视。隔离候选使用授权正文副本，正式库、偏好、选择与运行态保持，motion 双包和暂存文件已清理。此证据只覆盖 Kotlin 选择流程，不代表 Flutter 同状态运行对照。[验收证据](acceptance/provider-multi-candidate-poco-20261119.json)
+
 > **KUI-VIS-049 已在 POCO F2 Pro / API36 验收**。图标集预览搜索移至顶栏；非空 40 项图库筛选、Back 收起和原网格位置恢复通过，空态使用图块 glyph 并提供清除搜索。资源页类 3/3、19 张截图 SHA/尺寸核验。实现按固定 Flutter 源码对齐；同状态 Flutter 运行截图仍待补。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
 
-> **KUI-VIS-048 菜单性能记录**。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回阶段已有帧分类，分类可重叠且 trace 有丢弃；优化收益与正式 R8 表现待验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
+> **KUI-VIS-048 菜单性能记录**。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回阶段有超时、丢帧和缓冲积压分类，但类别可重叠，trace 有丢弃，尚未按帧关联 UI/RenderThread 调度与等待，不能归因 RenderThread 根因；优化收益与正式 R8 表现待验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
 
 > **KClash 0.1.7 正式发布（2026-11-18）**：标签 `kclash-v0.1.7` 指向 `2e13ed52efcd0c2ce94bd181ad09c78b9e84546d`，versionCode 1007，GitHub Latest。标签 CI 的 Go race、JVM/R8、Debug/Release Lint、正式签名、APK 元数据及 ABI 检查均通过；远端 ARM64 APK 48,468,320 字节，SHA-256 `2a3f6b21ec714ab4f12d636ffe1788d255f1cee8bc27c782a6e8b1cb4b46433e`，证书沿用既有正式身份。Release APK 已下载核验，未安装到手机。本批 043～047 与语义预检、协议实流由独立 motion 包验收。详见[发布记录](acceptance/release-0.1.7-20261118.json)和[发布说明](releases/kclash-v0.1.7.md)。
 

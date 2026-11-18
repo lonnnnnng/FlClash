@@ -1,0 +1,113 @@
+{
+  "id": "KUI-VIS-051",
+  "date": "2026-11-19",
+  "reference": {
+    "package": "com.follow.clash",
+    "installedUnmodified": true,
+    "sameStateFlutterRuntimeComparison": "not performed in this slice"
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1,
+    "variant": "motionBenchmark",
+    "theme": "dark",
+    "glassEnabled": false
+  },
+  "scope": {
+    "surface": "Non-empty Provider proxy-resource picker with multiple candidates",
+    "checks": [
+      "Open the real Provider resource page and show two selectable FILE candidates.",
+      "Filter from two candidates to the alternate candidate only.",
+      "Clear the query and restore both candidates.",
+      "Select the alternate candidate, return to the parent page and read back the stored resource ID."
+    ],
+    "productUiChanged": false
+  },
+  "authorizedInput": {
+    "source": "workspace ../1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "stagedToDeviceOverUsb": true,
+    "networkUpload": false,
+    "formalProfileImported": false,
+    "stagingFileRemoved": true
+  },
+  "build": {
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "BUILD SUCCESSFUL",
+    "finalBuildTasks": {
+      "executed": 9,
+      "upToDate": 218,
+      "jvmTestTask": "UP-TO-DATE"
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 74,
+      "hints": 14
+    },
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "f375232066f04bc3607adf38324a576f290c9ab4bf815ac7a651fb848f2bbf3d",
+      "com.lonnnnnng.flclash.motion.test": "f1be7f3aa93dadca4ca4b04648f3d5785dc1aa84fc4cad982f50614d89533e82"
+    },
+    "installedApkBytesMatchLocalBuild": true
+  },
+  "instrumentation": {
+    "class": "MainProviderOptionsStateInstrumentedTest",
+    "method": "nonEmptyProviderPickerFiltersAndReturnsWithMultipleCandidates",
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedSeconds": 10.522,
+    "result": "OK (1 test)",
+    "status": "candidates=2;filtered=1;cleared=2;selected=alternate;cleanup=verified",
+    "preservationStatus": "formal-count=0;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+    "finalLog": "../acceptance-artifacts/provider-multi-candidate-poco-20261119/instrument-final.log",
+    "finalLogSha256": "c4d7c34d7a9732c2863c2555c386ed71f762565b72df47694109fd66a0987bb4",
+    "nonFinalAttempts": [
+      {
+        "log": "../acceptance-artifacts/provider-multi-candidate-poco-20261119/instrument.log",
+        "result": "Stopped before Compose UI was available by the Android notification permission dialog on first launch.",
+        "preservationStatus": "formal-count=0;own-row-and-file-removed=true;runtime=STOPPED"
+      },
+      {
+        "log": "../acceptance-artifacts/provider-multi-candidate-poco-20261119/instrument-retry.log",
+        "result": "Passed; screenshots superseded after shortening generated fixture labels for a representative list layout."
+      }
+    ]
+  },
+  "screenshots": {
+    "count": 4,
+    "dimensions": "1080x2400",
+    "allChunkIndicesSizesHashesAndPngSignaturesVerified": true,
+    "visuallyReviewed": true,
+    "manifest": "../acceptance-artifacts/provider-multi-candidate-poco-20261119/screenshots-final.json",
+    "manifestSha256": "f7ced239021d8a251856857919829fe32dab2ca97e8fb3d6b21c51730e3756b5",
+    "sha256": {
+      "main_provider_multi_candidate_picker": "7ab39e5e6dc227c2199ebee0099b835e18a9c54498764b166ec57d1032d93d31",
+      "main_provider_multi_candidate_filtered": "d574976e00e31d2d607d48443d7e5d95e4225624e48d29e8cb8e4b16263eadad",
+      "main_provider_multi_candidate_restored": "c6929b1428dbd5d7878e8726816fa50c773a0b4931c2a9f285c95fc53d09eda1",
+      "main_provider_multi_candidate_selected": "dc86ebd077c5c1fd3ae850f2b8748aaeb9b8b734ed7c0cf670acf7d61a48672c"
+    }
+  },
+  "cleanup": {
+    "motionAppAndTestPackagesUninstalled": true,
+    "deviceStagingFileAbsent": true,
+    "comFollowClashInstalledAndUnmodified": true,
+    "runtime": "STOPPED",
+    "formalProfileCountBefore": 0,
+    "formalProfileCountAfter": 0,
+    "formalRowsBodiesScriptsPreferencesAndSelectionPreserved": true,
+    "rootYamlSha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "rootYamlBytes": 34220,
+    "rootYamlModifiedAt": "2026-11-11 18:14:32",
+    "rootYamlUnchangedAndNotUploaded": true
+  },
+  "limits": [
+    "This verifies the Kotlin provider picker and persisted resource ID; it does not establish same-state Flutter visual equivalence or other Provider types and pages.",
+    "Remaining Flutter runtime comparisons, complete page and panel transitions, close-stage Perfetto thread attribution and formal R8 performance remain open."
+  ]
+}
