@@ -1,0 +1,89 @@
+{
+  "id": "KUI-VIS-049",
+  "date": "2026-11-19",
+  "reference": {
+    "flutterCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "sourceFiles": [
+      "lib/views/config/icon_sets.dart",
+      "lib/views/profiles/custom/icon.dart",
+      "lib/ui/null_status_illustration.dart",
+      "lib/ui/icons/app_glyphs.dart"
+    ],
+    "comparison": "Flutter source comparison completed. Same-state Flutter runtime screenshot comparison remains open."
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1,
+    "variant": "motionBenchmark",
+    "glassEnabled": false
+  },
+  "scope": {
+    "surface": "Icon set non-empty preview",
+    "changes": [
+      "Move icon search from the bottom dock to the existing top-bar search transition.",
+      "Use the Flutter icon-tile glyph for both empty and no-results states, with an explicit clear-search recovery action.",
+      "Match the 56dp icon plate, 88dp maximum grid extent, 8dp grid gaps and 6dp label gap.",
+      "Preserve the grid anchor when search is cleared or collapsed through Back."
+    ],
+    "stateMatrix": [
+      "40-item gallery scrolled to icon 20",
+      "Top-bar search filtered to icon 37",
+      "Back collapses search and restores the original grid position",
+      "Search no-results and clear recovery in light and dark themes",
+      "Existing icon set and group icon picker flows in light and dark themes"
+    ]
+  },
+  "build": {
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "BUILD SUCCESSFUL",
+    "lintErrors": 0,
+    "lintWarnings": 74,
+    "lintHints": 14,
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "7260dfc604890d07df19818d7d4ab877872cb18963a95e1810a2b6acd0a5ca9c",
+      "com.lonnnnnng.flclash.motion.test": "7d8506e9b86af80d7d4618ee2c513e45d03778115cc41a90d450a91f2ea179ce"
+    }
+  },
+  "instrumentation": {
+    "class": "ResourcesPageInstrumentedTest",
+    "tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "methods": [
+      "overviewSettingsMenusAndFailureSummaryWorkInBothThemes",
+      "iconSetPreviewAndGroupPickerUseGalleryNamesAndSelection",
+      "iconSetTopSearchBackRestoresNonEmptyGridPosition"
+    ]
+  },
+  "screenshots": {
+    "count": 19,
+    "dimensions": "1080x2400",
+    "allHashesByteCountsAndDimensionsVerified": true,
+    "manifest": "../acceptance-artifacts/icon-set-preview-poco-20261119/final1/screenshots.json",
+    "manifestSha256": "34a924832a8ee3bac95da3ff8cd0f9dc65d8538c0003bb12697aeeaf489c936b",
+    "instrumentationLog": "../acceptance-artifacts/icon-set-preview-poco-20261119/final1/instrument.log",
+    "instrumentationLogSha256": "844eaf78e8a7adee5cff749552766f217dc6b80de6c963648102139804471717",
+    "visuallyReviewed": [
+      "icon_set_preview_scrolled.png",
+      "icon_set_preview_top_search.png",
+      "icon_set_preview_position_restored.png",
+      "icon_set_preview_no_results_false.png",
+      "icon_set_preview_no_results_true.png"
+    ]
+  },
+  "flutterReferencePackage": {
+    "package": "com.follow.clash",
+    "versionName": "0.9.3",
+    "versionCode": 2026112401,
+    "firstInstallTime": "2026-11-07 02:44:08",
+    "lastUpdateTime": "2026-11-07 02:44:08",
+    "modified": false
+  },
+  "limits": [
+    "The empty-state glyph, app-bar search, grid sizing and spacing were compared to the fixed Flutter source; no same-state Flutter runtime capture was made.",
+    "The populated grid uses deterministic fixture URLs and verifies layout, filtering, Back behavior and scroll restoration, not remote image delivery."
+  ]
+}

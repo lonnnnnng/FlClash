@@ -2,7 +2,9 @@
 
 > **当前范围（2026-11-19）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
-> **KUI-VIS-048 已在 POCO F2 Pro / API36 验收**。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回阶段已有帧分类，分类可重叠且 trace 有丢弃；优化收益与正式 R8 表现待验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
+> **KUI-VIS-049 已在 POCO F2 Pro / API36 验收**。图标集预览搜索移至顶栏；非空 40 项图库筛选、Back 收起和原网格位置恢复通过，空态使用图块 glyph 并提供清除搜索。资源页类 3/3、19 张截图 SHA/尺寸核验。实现按固定 Flutter 源码对齐；同状态 Flutter 运行截图仍待补。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
+
+> **KUI-VIS-048 菜单性能记录**。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回阶段已有帧分类，分类可重叠且 trace 有丢弃；优化收益与正式 R8 表现待验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
 
 > **KClash 0.1.7 正式发布（2026-11-18）**：标签 `kclash-v0.1.7` 指向 `2e13ed52efcd0c2ce94bd181ad09c78b9e84546d`，versionCode 1007，GitHub Latest。标签 CI 的 Go race、JVM/R8、Debug/Release Lint、正式签名、APK 元数据及 ABI 检查均通过；远端 ARM64 APK 48,468,320 字节，SHA-256 `2a3f6b21ec714ab4f12d636ffe1788d255f1cee8bc27c782a6e8b1cb4b46433e`，证书沿用既有正式身份。Release APK 已下载核验，未安装到手机。本批 043～047 与语义预检、协议实流由独立 motion 包验收。详见[发布记录](acceptance/release-0.1.7-20261118.json)和[发布说明](releases/kclash-v0.1.7.md)。
 
@@ -857,9 +859,9 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | 在线age测试输入按SHA核对后删除；motion/test包已卸载、服务和TUN退出。原1.yaml未上传且SHA/大小/mtime保持，Flutter参考包未操作。新age identity仅保存在仓库外0600文件 |
-| 正在推进 | Flutter 剩余子页与面板、同状态运行对照、连续转场及菜单性能。048 规则选择器已验，首开慢帧的主线程占用已在匹配样本中确认；绘制归因和优化收益未确认。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json) |
+| 正在推进 | Flutter 剩余子页与面板的同状态对照、连续转场及菜单性能。049 图标集预览已完成 Kotlin 真机验收和 Flutter 源码对照；同状态 Flutter 运行截图仍待补。048 菜单首开慢帧的主线程占用已在匹配样本中确认；绘制归因和优化收益未确认。[049 验收证据](acceptance/icon-set-preview-poco-20261119.json) |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB 正文性能、备份与系统恢复、观测次要打磨、语言主题继续暂缓。玻璃默认关闭。 |
-| 最新证据 | [验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)（048 规则选择器及菜单 Perfetto）、[043～047 验收](acceptance/visual-043-047-poco-20261118.json)、[0.1.7 发布](acceptance/release-0.1.7-20261118.json) |
+| 最新证据 | [验收证据](acceptance/icon-set-preview-poco-20261119.json)（049 图标预览）、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json)、[0.1.7 发布](acceptance/release-0.1.7-20261118.json) |
 
 ## 4. 目标架构图
 

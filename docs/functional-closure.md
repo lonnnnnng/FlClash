@@ -50,6 +50,8 @@
 
 2026-11-19，按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
+KUI-VIS-049 已在 POCO F2 Pro / API36 完成图标集预览 Kotlin 真机验收：顶栏搜索、专属图块空态、无结果恢复和长网格滚动位置恢复；资源页类 3/3、19 张截图核验。对照固定 Flutter `be847366` 源码的 AppBarSearchState、NullStatusIllustration.icons、`iconTile` glyph 及 88dp 网格参数；没有运行同状态 Flutter 截图。[验收记录](acceptance/icon-set-preview-poco-20261119.json)
+
 KUI-VIS-048 已在 POCO F2 Pro / API36 验收。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；匹配的首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回分类存在重叠，trace 丢弃限制仍保留；优化收益未验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
 
 2026-11-12随KUI-042发布KClash 0.1.4；GitHub Latest、标签/分支CI、APK摘要/签名和Redmi覆盖安装/启动均已核验，当前设备快照未发现活动VPN transport。详见[发布验收](acceptance/release-0.1.4-redmi-20261112.json)。KUI-040正文与第三方入口的原始证据见[本组记录](acceptance/editor-external-redmi-20261112.json)：当组完成时尚未发版，之后的发布状态以0.1.4记录为准。

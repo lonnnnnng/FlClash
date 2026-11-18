@@ -15,6 +15,16 @@ internal object AppGlyphs {
     GlyphBox(13.5f, 12.5f, 20.5f, 20.5f, 2f),
   )) }
 
+    // 作者 long：Flutter 图库空态用带山景与太阳的图块符号，普通图片图标会丢失该页面的识别语义。
+    val iconTile by lazy { AppGlyph(listOf(
+        GlyphBox(3f, 3f, 21f, 21f, 5f),
+        GlyphPolyline(listOf(
+            GlyphVertex(5.6f, 16.8f), GlyphVertex(9.6f, 12.8f, .8f),
+            GlyphVertex(12.8f, 16f, .8f), GlyphVertex(14.6f, 14.2f, .8f), GlyphVertex(18.4f, 18f),
+        ), role = GlyphRole.detail),
+        GlyphCircle(15.2f, 8.8f, 1.5f, role = GlyphRole.detail, solid = true),
+    )) }
+
     val proxies by lazy { AppGlyph(listOf(
     GlyphCircle(12f, 12f, 8.8f),
     GlyphOval(8.2f, 3.2f, 15.8f, 20.8f, role = GlyphRole.detail),

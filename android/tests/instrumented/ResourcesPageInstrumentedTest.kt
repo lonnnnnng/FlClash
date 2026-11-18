@@ -83,10 +83,14 @@ class ResourcesPageInstrumentedTest {
         compose.onNodeWithTag("icon_set_gallery").performClick()
         compose.onNodeWithText("图库节点图标").assertIsDisplayed()
         capture("icon_set_preview_$theme")
-        compose.onNodeWithTag("icon_set_search").performTextInput("没有")
-        compose.onNodeWithText("没有匹配的图标").assertIsDisplayed()
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        compose.onNodeWithTag("profile_top_search_input").performTextInput("没有")
+        compose.onNodeWithTag("icon_set_preview_empty").assertTextEquals("没有匹配的图标")
+        capture("icon_set_preview_no_results_$theme")
         compose.onNodeWithTag("icon_set_search_clear").performClick()
         compose.onNodeWithText("图库节点图标").assertIsDisplayed()
+        compose.onNodeWithTag("icon_set_preview_back").performClick()
+        compose.onNodeWithTag("profile_top_search_open").assertExists()
         compose.onNodeWithTag("icon_set_preview_back").performClick()
         compose.runOnIdle { showPicker = true }
         compose.onNodeWithTag("group_icon_search").performTextInput("图库节点")
@@ -94,7 +98,36 @@ class ResourcesPageInstrumentedTest {
         capture("icon_set_group_picker_$theme")
         compose.onNodeWithTag("group_icon_choice_0").performClick()
         compose.runOnIdle { assertEquals(icon.url, selected) }
+        compose.onNodeWithTag("group_icon_search").performImeAction()
         }
+    }
+
+    @Test fun iconSetTopSearchBackRestoresNonEmptyGridPosition() {
+        assertPortraitDefaultFontConfiguration()
+        val icons = (0..39).map { ResourceIcon("图标 $it", "") }
+        val set = ResourceIconSet("gallery", "本地图标集", icons = icons, updatedAt = 1)
+        compose.setContent { KClashTheme {
+            IconSetsPage(listOf(set), false, null, 0, {}, { _, _ -> }, {}, { _, _, _ -> }, {}, {}, { _, _ -> })
+        } }
+        compose.onNodeWithTag("icon_set_gallery").performClick()
+        compose.onNodeWithTag("icon_set_grid").performScrollToNode(hasTestTag("icon_set_icon_图标 20"))
+        compose.waitForIdle()
+        compose.onNodeWithTag("icon_set_icon_图标 20").assertIsDisplayed()
+        capture("icon_set_preview_scrolled")
+
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        compose.onNodeWithTag("profile_top_search_input").performTextInput("图标 37")
+        compose.onNodeWithTag("icon_set_icon_图标 37").assertIsDisplayed()
+        compose.onNodeWithTag("icon_set_icon_图标 20").assertDoesNotExist()
+        capture("icon_set_preview_top_search")
+
+        compose.onNodeWithTag("icon_set_preview_back").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("profile_top_search_open").assertExists()
+        compose.onNodeWithTag("icon_set_icon_图标 20").assertIsDisplayed()
+        capture("icon_set_preview_position_restored")
+        compose.onNodeWithTag("icon_set_preview_back").performClick()
+        compose.onNodeWithTag("icon_set_gallery").assertIsDisplayed()
     }
     private fun capture(name: String) {
         compose.waitForIdle()

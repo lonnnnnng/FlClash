@@ -10,6 +10,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -22,6 +25,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.*
+import kotlinx.coroutines.flow.first
 
 val LocalResourceIcons = staticCompositionLocalOf<List<ResourceIcon>> { emptyList() }
 val LocalResourceIconSets = staticCompositionLocalOf<List<ResourceIconSet>> { emptyList() }
@@ -95,23 +99,95 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
         dismissButton = { TextButton(onClick = { deleting = null }) { Text("取消") } }) }
     previewId?.let { id ->
         val item = sets.firstOrNull { it.id == id }
-        val shown = item?.icons.orEmpty().filter { it.name.contains(query, true) }
+        val icons = item?.icons.orEmpty()
+        val shown = remember(icons, query) { icons.filter { it.name.contains(query, true) } }
         val context = LocalContext.current
-        ProfileEditorPage(onDismissRequest = { previewId = null }, title = { Text(item?.name ?: "图标集") }, backTag = "icon_set_preview_back", bottomBar = { DockedProfileSearch(query, { query = it }, "icon_set_search", "搜索图标") }, text = {
-            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (shown.isEmpty()) Text("没有匹配的图标", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                LazyVerticalGrid(GridCells.Adaptive(80.dp), modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    items(shown, key = { it.url }) { icon ->
-                        Column(Modifier.combinedClickable(onClick = {
-                            (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText(icon.name, icon.url))
-                        }), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            ProfileGroupIcon(icon.url, icon.name, Modifier.size(40.dp))
-                            Text(icon.name, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        val gridState = rememberLazyGridState()
+        var searchExpanded by rememberSaveable(id) { mutableStateOf(false) }
+        var restorePosition by remember(id) { mutableStateOf<Pair<Int, Int>?>(null) }
+        LaunchedEffect(query, icons.size) {
+            if (query.isNotEmpty()) {
+                gridState.scrollToItem(0)
+            } else {
+                val anchor = restorePosition ?: return@LaunchedEffect
+                if (icons.isEmpty()) {
+                    restorePosition = null
+                    return@LaunchedEffect
+                }
+                // 作者 long：恢复查询前的网格行；等待完整目录重新布局，避免短结果把原浏览位置夹到首项。
+                snapshotFlow { gridState.layoutInfo.totalItemsCount }.first { it == icons.size }
+                gridState.scrollToItem(anchor.first.coerceIn(0, icons.lastIndex), anchor.second)
+                restorePosition = null
+            }
+        }
+        fun changeQuery(value: String) {
+            if (query.isEmpty() && value.isNotEmpty() && restorePosition == null) {
+                restorePosition = gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset
+            }
+            query = value
+        }
+        fun changeSearchExpanded(expanded: Boolean) {
+            if (!expanded && searchExpanded && query.isNotEmpty()) changeQuery("")
+            searchExpanded = expanded
+        }
+        fun backPreview() {
+            if (searchExpanded) changeSearchExpanded(false) else previewId = null
+        }
+        ProfileEditorPage(onDismissRequest = ::backPreview, title = { Text(item?.name ?: "图标集") },
+            backTag = "icon_set_preview_back", topBarSearch = ProfileEditorSearchState(
+                searchExpanded, query, "搜索图标", ::changeQuery, ::changeSearchExpanded,
+            ), text = {
+            Box(Modifier.fillMaxSize()) {
+                if (shown.isEmpty()) {
+                    IconSetPreviewEmpty(query, onClearQuery = { changeQuery("") })
+                } else {
+                    LazyVerticalGrid(GridCells.Adaptive(88.dp),
+                        state = gridState,
+                        modifier = Modifier.fillMaxSize().testTag("icon_set_grid"),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    ) {
+                        items(shown, key = { it.url.ifBlank { it.name } }) { icon ->
+                            Column(Modifier.widthIn(max = 88.dp).testTag("icon_set_icon_${icon.name}"),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Surface(Modifier.size(56.dp), shape = AppSuperellipseShape(16.dp),
+                                    color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                                    Box(Modifier.fillMaxSize().combinedClickable(onClick = {
+                                        (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText(icon.name, icon.url))
+                                    }), contentAlignment = Alignment.Center) {
+                                        ProfileGroupIcon(icon.url, icon.name, Modifier.size(40.dp))
+                                    }
+                                }
+                                Text(icon.name, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
                         }
                     }
                 }
             }
         })
+    }
+}
+
+@Composable
+private fun IconSetPreviewEmpty(query: String, onClearQuery: () -> Unit) {
+    val searching = query.isNotEmpty()
+    BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        val illustrationSize = (maxHeight - 184.dp).coerceIn(64.dp, 112.dp)
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
+            .padding(horizontal = 32.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            ProfileEmptyIllustration(AppGlyphs.iconTile, ProfileIllustrationPaths.cookie7, illustrationSize)
+            Spacer(Modifier.height(16.dp))
+            Text(if (searching) "没有匹配的图标" else "暂无图标", color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("icon_set_preview_empty"))
+            if (searching) {
+                Spacer(Modifier.height(16.dp))
+                TextButton(onClick = onClearQuery, modifier = Modifier.testTag("icon_set_search_clear")) { Text("清除搜索") }
+            }
+        }
     }
 }
 
