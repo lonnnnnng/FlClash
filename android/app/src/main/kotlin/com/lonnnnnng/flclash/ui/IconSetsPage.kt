@@ -66,10 +66,20 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
                     ResourceOrderItem(it.id, it.name, "${it.icons.size} 个图标", it.icons.firstOrNull()?.url.orEmpty())
                 }, busy, "icon_sets", onReorder, Modifier.fillMaxWidth().weight(1f))
                 else {
-                if (sets.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("暂无图标集", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                LazyColumn(Modifier.weight(1f)) {
+                if (sets.isEmpty()) {
+                    BoxWithConstraints(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                        Column(Modifier.offset(y = -(maxHeight * .14f)).widthIn(max = 320.dp).fillMaxWidth().verticalScroll(rememberScrollState())
+                            .padding(horizontal = 32.dp, vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            // 作者 long：Flutter 空态把图形与标题作为一个偏上内容组，避免空目录页只剩一行字。
+                            Box(Modifier.size(160.dp).testTag("icon_sets_empty_illustration"), contentAlignment = Alignment.Center) {
+                                ProfileEmptyIllustration(AppGlyphs.iconTile, ProfileIllustrationPaths.cookie7, 160.dp, flutterPalette = true)
+                            }
+                            Spacer(Modifier.height(16.dp))
+                            Text("暂无图标集", color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("icon_sets_empty_label"))
+                        }
+                    }
+                } else LazyColumn(Modifier.weight(1f)) {
                     itemsIndexed(sets, key = { _, item -> item.id }) { index, item ->
                         Box {
                             ListItem(headlineContent = { Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },

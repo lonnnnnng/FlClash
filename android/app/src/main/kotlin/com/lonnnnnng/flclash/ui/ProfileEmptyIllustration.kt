@@ -12,7 +12,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -141,7 +143,7 @@ internal fun defaultEmptyIllustrationEntrance(glyph: AppGlyph): EmptyIllustratio
 
 @Composable
 internal fun ProfileEmptyIllustration(glyph: AppGlyph = AppGlyphs.profiles, outline: Path = ProfileIllustrationPaths.cookie7,
-    extent: Dp = 160.dp, entrance: EmptyIllustrationEntrance? = null) {
+    extent: Dp = 160.dp, entrance: EmptyIllustrationEntrance? = null, flutterPalette: Boolean = false) {
     val progress = remember { Animatable(0f) }
     val selectedEntrance = entrance ?: remember(glyph) { defaultEmptyIllustrationEntrance(glyph) }
     LaunchedEffect(glyph, outline, selectedEntrance) {
@@ -150,6 +152,7 @@ internal fun ProfileEmptyIllustration(glyph: AppGlyph = AppGlyphs.profiles, outl
     }
     val pose = emptyIllustrationPose(selectedEntrance, progress.value)
     val circle = remember { Path().apply { addOval(Rect(0f, 0f, 1f, 1f)) } }
+    val tile = remember { Path().apply { addRoundRect(RoundRect(Rect(0f, 0f, 1f, 1f), CornerRadius(.3f, .3f))) } }
     val colors = MaterialTheme.colorScheme
     Box(Modifier.size(extent), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
@@ -163,25 +166,40 @@ internal fun ProfileEmptyIllustration(glyph: AppGlyph = AppGlyphs.profiles, outl
                 if (morph < 1f) shape(circle, center, size.minDimension * scale, rotation, color.copy(alpha = color.alpha * (1f - morph)))
                 if (morph > 0f) shape(outline, center, size.minDimension * scale, rotation, color.copy(alpha = color.alpha * morph))
             }
-            morphedShape(.84f * pose.haloScale, pose.haloRotation, pose.bodyMorph, colors.primary.copy(alpha = .14f * pose.haloAlpha))
-            morphedShape(.72f * pose.bodyScale, pose.bodyRotation, pose.bodyMorph, colors.primaryContainer)
+            if (flutterPalette) {
+                // 作者 long：Prism 空态只绘制一层 72% 主色外形，避免 Compose 默认容器色把图形压得过亮。
+                shape(outline, center, size.minDimension * .72f * pose.bodyScale, pose.bodyRotation,
+                    colors.primary.copy(alpha = .15f * pose.bodyMorph))
+            } else {
+                morphedShape(.84f * pose.haloScale, pose.haloRotation, pose.bodyMorph, colors.primary.copy(alpha = .14f * pose.haloAlpha))
+                morphedShape(.72f * pose.bodyScale, pose.bodyRotation, pose.bodyMorph, colors.primaryContainer)
+            }
             val offsets = listOf(Offset(-.32f, .3f), Offset(-.4f, -.18f), Offset(.42f, .15f))
             val extents = listOf(.14f, .05f, .075f)
+            val flutterOffsets = listOf(Offset(-.42f, -.2f), Offset(.43f, .12f), Offset(-.33f, .35f))
+            val flutterExtents = listOf(.05f, .075f, .12f)
             repeat(3) { index ->
                 val enter = pose.accentScale[index]
-                val angle = atan2(offsets[index].y, offsets[index].x) + pose.accentOrbit[index] * PI.toFloat() / 180f
-                val radius = hypot(offsets[index].x, offsets[index].y) * size.minDimension * pose.accentDrift[index]
+                val offset = if (flutterPalette) flutterOffsets[index] else offsets[index]
+                val extent = if (flutterPalette) flutterExtents[index] else extents[index]
+                val angle = atan2(offset.y, offset.x) + pose.accentOrbit[index] * PI.toFloat() / 180f
+                val radius = hypot(offset.x, offset.y) * size.minDimension * pose.accentDrift[index]
                 val at = center + Offset(cos(angle) * radius, sin(angle) * radius)
-                val diameter = size.minDimension * extents[index] * enter
+                val diameter = size.minDimension * extent * enter
                 if (diameter > 0f) when (index) {
-                    0 -> shape(ProfileIllustrationPaths.cookie4, at, diameter, 15f + pose.accentRotation[index], colors.tertiaryContainer)
-                    1 -> drawCircle(colors.tertiary, diameter / 2f, at)
-                    else -> drawCircle(colors.primary, diameter * .36f, at, style = Stroke(diameter * .28f))
+                    0 -> if (flutterPalette) drawCircle(colors.primary, diameter / 2f, at)
+                        else shape(ProfileIllustrationPaths.cookie4, at, diameter, 15f + pose.accentRotation[index], colors.tertiaryContainer)
+                    1 -> if (flutterPalette) drawCircle(colors.primary, diameter * .36f, at, style = Stroke(diameter * .28f))
+                        else drawCircle(colors.tertiary, diameter / 2f, at)
+                    else -> if (flutterPalette) {
+                        // 作者 long：Prism 图标空态的左下方块在稳定布局中倾斜约15度。
+                        shape(tile, at, diameter, 15f + pose.accentRotation[index], colors.primary.copy(alpha = .4f))
+                    } else drawCircle(colors.primary, diameter * .36f, at, style = Stroke(diameter * .28f))
                 }
             }
         }
         AppGlyphIcon(glyph, Modifier.size(64.dp).offset(y = (-64f * pose.glyphRise).dp).graphicsLayer {
             scaleX = pose.glyphScale; scaleY = pose.glyphScale; alpha = pose.glyphAlpha
-        }, colors.onPrimaryContainer, fillProgress = pose.glyphFill)
+        }, if (flutterPalette) colors.primary else colors.onPrimaryContainer, fillProgress = pose.glyphFill)
     }
 }

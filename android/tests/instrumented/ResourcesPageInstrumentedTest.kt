@@ -129,6 +129,19 @@ class ResourcesPageInstrumentedTest {
         compose.onNodeWithTag("icon_set_preview_back").performClick()
         compose.onNodeWithTag("icon_set_gallery").assertIsDisplayed()
     }
+
+    @Test fun emptyIconSetPageUsesFlutterIllustrationAndCenteredLabel() {
+        assertPortraitDefaultFontConfiguration()
+        compose.setContent { KClashTheme(darkTheme = true) {
+            IconSetsPage(emptyList(), false, null, 0, {}, { _, _ -> }, {}, { _, _, _ -> }, {}, {}, { _, _ -> })
+        } }
+        compose.onNodeWithTag("icon_sets_empty_illustration").assertIsDisplayed()
+        compose.onNodeWithTag("icon_sets_empty_label").assertTextEquals("暂无图标集")
+        compose.waitForIdle()
+        android.os.SystemClock.sleep(1_050)
+        capture("icon_sets_empty_dark_flutter_reference")
+    }
+
     private fun capture(name: String) {
         compose.waitForIdle()
         val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()

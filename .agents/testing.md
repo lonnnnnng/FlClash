@@ -44,6 +44,8 @@ KUI-015已红绿复现并修复：Provider选项本地错误/放弃确认与快�
 
 `MainProviderOptionsStateInstrumentedTest`当前有10个方法，必须按对应验收JSON的方法列表精确筛选，禁止整类运行；需要`kclashProviderOptionsStateAcceptance=true`与原`1.yaml`的`kclashLocalYamlSha256`。motion隔离库为空时，只能从`kclashLocalYamlPath`读取授权原文并先核对SHA，再创建本例FILE基线和CUSTOM副本；finally移除自有行/正文并保护原行、正文签名、脚本行、偏好和选择。KUI-015原7方法与36张截图仍以其历史JSON验收；KUI-VIS-050精确运行`nonEmptyProviderBindingAndOptionsFlowStaysContinuous`，KUI-VIS-051精确运行`nonEmptyProviderPickerFiltersAndReturnsWithMultipleCandidates`，不得整类运行。两组截图均按SHA/尺寸/PNG签名核验。保存等待持有真实Room事务而不写入；入场Back冻结Compose时钟64ms并核对焦点/横向位移后经真实Window投递。
 
+KUI-VIS-052使用`ResourcesPageInstrumentedTest#emptyIconSetPageUsesFlutterIllustrationAndCenteredLabel`，只在隔离Compose宿主渲染生产`IconSetsPage`空态；不进入MainActivity配置、不读写用户数据。截图等待900ms空态入场完成后，按SHA/尺寸/PNG签名核验；这只比较空图标集组件，不替代非空Flutter图库或整页导航验收。
+
 ## Provider选项IME与子面板交互（2026-11-07，历史）
 
 KUI-014已红绿复现并修复：选项页重复同一错误按提交次数回顶，选项/快捷YAML从实际Dialog取得焦点与IME控制器，保存后收键盘。Redmi final2精确9/9（6新增+3相邻回归）、21张PNG完整校验及7拼图目视；覆盖长过滤与YAML、逐层返回/放弃重开、校验/保存防重复、代理/规则各40项绑定失败取消重试及别名保持。build4 App549执行、Service212/Core38/Common31复用，共830项JVM零失败/错误/跳过；389任务22执行/367复用，Debug/Test/未签名Release-R8及双Lint通过，Debug0错误68警告13提示、Release0错误66警告12提示。安装回拉与577份源码匹配；正式两配置/正文SHA-size-mtime/偏好/选择、原1.yaml/Flutter包/设备设置保持，收尾无服务。red1 0/2、final1 6/9和build3既有Picker单测清理等待失败保留；单测改等实际关闭终态后build4全量通过。此组为正式Compose页面的固定组件宿主/受控回调，非新增MainActivity/Room/核心/实网或冷进程验收；返回先等Window入场，静态终帧不等于连续动效。本组选项/绑定Activity重建与入场中Back、独立全局规则页/资源选择器冷恢复、上一组正文保存终帧继续待补，再统一Flutter排版/连续动效。第6项原保护异常、未知偏好变化、网络稳定性和前组final6超时仍待查；玻璃默认关闭，既有暂缓/取消范围保持。证据`docs/acceptance/provider-options-interactions-redmi-20261107.json`；溯源`docs/provider-options-validation-defect.md`；附件`../acceptance-artifacts/provider-options-interactions-20261107/`。

@@ -115,11 +115,12 @@ CUSTOM 配置卡组数芯片已完成固定 fixture 真机视觉验收：`Profil
 
 2026-11-19，按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
-1. KUI-VIS-051 已在 POCO F2 Pro / API36 验证非空 Provider 选择器的双候选列表、搜索收敛、清空恢复、选择和父页回读，精确用例1/1、4张截图通过；临时 FILE 候选、motion 双包与正文副本均已清理。该证据不代表 Flutter 同状态运行对照。[验收证据](acceptance/provider-multi-candidate-poco-20261119.json)
-2. KUI-VIS-050 已在 POCO F2 Pro / API36 完成非空 Provider 连续流程验收：资源页→真实代理资源选择器→绑定隔离资源→Provider 选项添加/保存→重开 Room 回读 `TIMEOUT=5000`，精确用例1/1、7张截图通过。正式库起始为空，测试从授权 `1.yaml` 建临时 FILE/CUSTOM 基线并完整回收。仅 Kotlin 流程证据，未做 Flutter 同状态运行对照。[验收证据](acceptance/provider-options-nonempty-poco-20261119.json)
-3. KUI-VIS-049 图标集预览的顶栏搜索、专属图块空态、无结果恢复、40项网格筛选和 Back 后位置恢复已验，3/3、19张截图；固定 Flutter 源码对照完成，同状态 Flutter 运行画面对照仍待。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
-4. 沿固定 Flutter 参考继续补非空资源页、NTP/Sniffer 等子页和面板的同状态运行对照，逐页记录键盘、返回、快速反向及连续转场；当前视觉切片不代表像素或动态全等。
-5. 继续菜单首开/关闭归因：现有收回阶段能看到 deadline miss、dropped 和 buffer-stuffed，但类别可重叠且 trace 丢块，尚未按帧关联 UI/RenderThread 调度与等待。补齐后再比较正式 R8 与 motion 宿主。
+1. KUI-VIS-052 已在 POCO F2 Pro / API36 完成原版 Flutter 与 Kotlin 图标集空态的同状态暗色对照，生产页面组件精确用例1/1、1张截图通过。Flutter 参考包未修改；插图形状/装饰仍受 Flutter 随机选择影响，非逐像素一致。[验收证据](acceptance/icon-set-empty-flutter-poco-20261119.json)
+2. KUI-VIS-051 已在 POCO F2 Pro / API36 验证非空 Provider 选择器的双候选列表、搜索收敛、清空恢复、选择和父页回读，精确用例1/1、4张截图通过；临时 FILE 候选、motion 双包与正文副本均已清理。该证据不代表 Flutter 同状态运行对照。[验收证据](acceptance/provider-multi-candidate-poco-20261119.json)
+3. KUI-VIS-050 已在 POCO F2 Pro / API36 完成非空 Provider 连续流程验收：资源页→真实代理资源选择器→绑定隔离资源→Provider 选项添加/保存→重开 Room 回读 `TIMEOUT=5000`，精确用例1/1、7张截图通过。正式库起始为空，测试从授权 `1.yaml` 建临时 FILE/CUSTOM 基线并完整回收。仅 Kotlin 流程证据，未做 Flutter 同状态运行对照。[验收证据](acceptance/provider-options-nonempty-poco-20261119.json)
+4. KUI-VIS-049 图标集预览的顶栏搜索、专属图块空态、无结果恢复、40项网格筛选和 Back 后位置恢复已验，原资源页类3/3、19张截图；052只补空列表同态对照，非空Flutter图标集/预览运行对照仍待。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
+5. 沿固定 Flutter 参考继续补非空资源页、NTP/Sniffer 等子页和面板的同状态运行对照，逐页记录键盘、返回、快速反向及连续转场；当前视觉切片不代表像素或动态全等。
+6. 继续菜单首开/关闭归因：现有收回阶段能看到 deadline miss、dropped 和 buffer-stuffed，但类别可重叠且 trace 丢块，尚未按帧关联 UI/RenderThread 调度与等待。补齐后再比较正式 R8 与 motion 宿主。
 
 ## 0.1.0正式发布与首页反馈收尾
 

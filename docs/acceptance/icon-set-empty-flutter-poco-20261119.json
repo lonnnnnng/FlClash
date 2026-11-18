@@ -1,0 +1,110 @@
+{
+  "id": "KUI-VIS-052",
+  "date": "2026-11-19",
+  "reference": {
+    "package": "com.follow.clash",
+    "versionName": "0.9.3",
+    "versionCode": 2026112401,
+    "firstInstallTime": "2026-11-07 02:44:08",
+    "lastUpdateTime": "2026-11-07 02:44:08",
+    "installedUnmodified": true,
+    "sourceCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "sourceFiles": [
+      "lib/views/config/icon_sets.dart",
+      "lib/ui/null_status_illustration.dart",
+      "plugins/prism_ui/lib/null_status.dart"
+    ]
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "screen": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1,
+    "theme": "dark",
+    "glassEnabled": false
+  },
+  "scope": {
+    "surface": "Empty icon-set page",
+    "referenceState": "The original Flutter app's icon-set page reported no icon sets; no source data was added or changed.",
+    "kotlinState": "IconSetsPage rendered with an empty list in an isolated Compose test host.",
+    "changes": [
+      "Show the Flutter icon-tile illustration and empty-state label as one vertically centered, slightly raised group.",
+      "Use Prism's single primary-color shape and primary-color glyph treatment for this empty state.",
+      "Keep the 900 ms illustration entrance and constrain the content to a 320 dp maximum width."
+    ],
+    "productNavigationHost": "isolated Compose test Activity; the MainActivity route was not changed or used for this capture"
+  },
+  "build": {
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "BUILD SUCCESSFUL",
+    "executedTasks": 22,
+    "upToDateTasks": 205,
+    "lint": {
+      "errors": 0,
+      "warnings": 74,
+      "hints": 14
+    },
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "2e90ccb79ca6ec91ad80561a7913c997b6dc01251d47f4a540f5ba745c723c68",
+      "com.lonnnnnng.flclash.motion.test": "c17a136820cd1ff72a1e52a51325cceeef266f38a50e98f18156211fac7163df"
+    },
+    "installedApkBytesMatchLocalBuild": true
+  },
+  "instrumentation": {
+    "class": "ResourcesPageInstrumentedTest",
+    "method": "emptyIconSetPageUsesFlutterIllustrationAndCenteredLabel",
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedSeconds": 2.808,
+    "result": "OK (1 test)",
+    "log": "../acceptance-artifacts/icon-set-empty-poco-20261119/instrument-final3.log",
+    "logSha256": "e98db12e7b2a33ec37bf1b68893eb10ad942437152f8bc2cf6850b84ba9defcf"
+  },
+  "comparison": {
+    "flutterScreenshot": {
+      "file": "../acceptance-artifacts/flutter-icon-set-poco-20261119/icon-sets.png",
+      "bytes": 56170,
+      "sha256": "23c956af80b71abc89974438714c509d0da7321ba84553823002f1cb4f9547c0",
+      "dimensions": "1080x2400"
+    },
+    "kotlinScreenshot": {
+      "file": "../acceptance-artifacts/icon-set-empty-poco-20261119/screenshots-final3/icon_sets_empty_dark_flutter_reference.png",
+      "bytes": 47829,
+      "sha256": "4b068baf7a64b5e37366a028378112f95acaec1abd4bd3966ed6de4a681ed861",
+      "dimensions": "1080x2400"
+    },
+    "screenshotManifest": "../acceptance-artifacts/icon-set-empty-poco-20261119/screenshots-final3.json",
+    "screenshotManifestSha256": "af301bc209d93cf07c599183969362b843d0354ca6a359824d1e770ade0e7146",
+    "visuallyReviewed": true,
+    "result": "The primary-color icon tile, empty label, dark background, primary-color silhouette and accent positions were reviewed side by side and are visually close.",
+    "supportingFlutterNavigationCaptures": [
+      {
+        "file": "../acceptance-artifacts/flutter-icon-set-poco-20261119/tools.png",
+        "sha256": "c5bd04487015afebc217a07eadec8d85dfcbc53434a52bd5da3381cee5b3f4f9"
+      },
+      {
+        "file": "../acceptance-artifacts/flutter-icon-set-poco-20261119/advanced.png",
+        "sha256": "3e7ecff0619e738025511ec627fb157bbff456ed85546a1d7df9de17a71d9ac7"
+      }
+    ]
+  },
+  "cleanup": {
+    "motionAppAndTestPackagesUninstalled": true,
+    "motionExternalDataDirectoryAbsent": true,
+    "flutterReferencePackageInstalledAndUnmodified": true,
+    "flutterReferenceReturnedToLauncher": true,
+    "runtimeServices": "none observed",
+    "rootYamlSha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "rootYamlBytes": 34220,
+    "rootYamlModifiedAt": "2026-11-11 18:14:32",
+    "rootYamlUnchangedAndNotUploaded": true
+  },
+  "limits": [
+    "Flutter chooses illustration shape and accent arrangement randomly; Kotlin uses a deterministic cookie7 outline and one fixed accent arrangement, so this is a same-state layout and color comparison rather than pixel equality.",
+    "Only the empty icon-set state was compared at runtime. The populated Flutter gallery and preview/search flow remain unverified at runtime."
+  ]
+}
