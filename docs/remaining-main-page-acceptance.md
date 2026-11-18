@@ -115,9 +115,10 @@ CUSTOM 配置卡组数芯片已完成固定 fixture 真机视觉验收：`Profil
 
 2026-11-19，按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
-1. KUI-VIS-049 已在 POCO F2 Pro / API36 完成图标集预览 Kotlin 真机验收。顶栏搜索、专属图块空态、无结果恢复、40 项网格筛选和 Back 后位置恢复均覆盖，资源页类 3/3、19 张截图核验。源代码已对照固定 Flutter `be847366`，同状态 Flutter 运行画面对照仍待补。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
-2. 沿固定 Flutter 源码继续补非空 Provider、NTP/Sniffer 等子页和面板的同状态运行对照，逐页记录键盘、返回、快速反向及连续转场。图标集运行态对照未完成，不能将本组称为像素或动态全等。
-3. 用同一 POCO 菜单流程验证首开布局候选的收益，单列收回阶段的应用超时、掉帧和缓冲积压，并保留正式 R8 与 motion 宿主的边界。
+1. KUI-VIS-050 已在 POCO F2 Pro / API36 完成非空 Provider 连续流程验收：资源页→真实代理资源选择器→绑定同一隔离资源→Provider 选项添加/保存→重开 Room 回读 `TIMEOUT=5000`，精确用例1/1、7张截图通过。正式库起始为空，测试从授权 `1.yaml` 建临时 FILE/CUSTOM 基线并完整回收。仅 Kotlin 流程证据，未做 Flutter 同状态运行对照。[验收证据](acceptance/provider-options-nonempty-poco-20261119.json)
+2. KUI-VIS-049 图标集预览的顶栏搜索、专属图块空态、无结果恢复、40项网格筛选和 Back 后位置恢复已验，3/3、19张截图；固定 Flutter 源码对照完成，同状态 Flutter 运行画面对照仍待。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
+3. 沿固定 Flutter 源码继续补非空 Provider、NTP/Sniffer 等子页和面板的同状态运行对照，逐页记录键盘、返回、快速反向及连续转场。当前视觉切片不代表像素或动态全等。
+4. 用同一 POCO 菜单流程验证首开布局候选的收益，单列收回阶段的应用超时、掉帧和缓冲积压，并保留正式 R8 与 motion 宿主的边界。
 
 ## 0.1.0正式发布与首页反馈收尾
 

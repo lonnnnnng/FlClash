@@ -157,6 +157,49 @@ class MainProviderOptionsStateInstrumentedTest {
         }
     }
 
+    @Test fun nonEmptyProviderBindingAndOptionsFlowStaysContinuous() = runBlocking {
+        fixture { s ->
+            val bindTag = "profile_provider_bind_proxy_$alias"
+            val choiceTag = "provider_binding_proxy_${s.original.id}"
+            compose.onNodeWithTag("profile_provider_edit_$alias").assertIsDisplayed()
+            unchanged(s)
+            capture("main_provider_nonempty_resources")
+
+            compose.onNodeWithTag(bindTag).performScrollTo().performClick()
+            compose.onNodeWithText("选择代理资源").assertIsDisplayed()
+            compose.onNodeWithTag(choiceTag).assertIsDisplayed()
+            capture("main_provider_nonempty_binding")
+            // 作者 long：先绑定隔离副本已有的同一资源，检查真实列表确认回执和返回上下文，不替换正式Profile来源。
+            compose.onNodeWithTag(choiceTag).performClick()
+            compose.waitUntil(20_000) { exists("profile_provider_edit_$alias") && !exists("provider_binding_back") }
+            compose.onNodeWithTag("profile_provider_proxy_$alias").assertIsDisplayed()
+            capture("main_provider_nonempty_bound")
+
+            options()
+            compose.onNodeWithTag("provider_option_add").assertIsDisplayed()
+            capture("main_provider_nonempty_options")
+            compose.onNodeWithTag("provider_option_add").performScrollTo().performClick()
+            compose.onNodeWithTag("provider_option_pick_TIMEOUT").assertIsDisplayed()
+            capture("main_provider_nonempty_option_picker")
+            compose.onNodeWithTag("provider_option_pick_TIMEOUT").performClick()
+            compose.onNodeWithTag("provider_option_picker_back").performClick()
+            compose.onNodeWithTag("provider_option_TIMEOUT").assertTextContains("5000")
+            compose.onNodeWithTag("provider_options_save").performClick()
+            compose.waitUntil(20_000) { !exists("provider_options_save") }
+            assertEquals(5000, persisted(s)?.timeout)
+            compose.onNodeWithTag("profile_provider_edit_$alias").assertIsDisplayed()
+            capture("main_provider_nonempty_timeout_saved")
+
+            options()
+            compose.onNodeWithTag("provider_option_TIMEOUT").performScrollTo().assertTextContains("5000")
+            capture("main_provider_nonempty_timeout_reopened")
+            assertEquals(5000, persisted(s)?.timeout)
+            InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
+                putString("kclash_provider_nonempty_flow", "binding-selection=existing-isolated-source;timeout=5000;room-readback=true")
+            })
+        }
+    }
+
     @Test fun localValidationCancelledByRecreationKeepsDraftUntilExplicitRetry() = runBlocking {
         fixture { s ->
             options(); addOption("INTERVAL")
@@ -275,33 +318,51 @@ class MainProviderOptionsStateInstrumentedTest {
         repository.profilesLoaded.first { it }
         assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
         val rows = entry.database().profiles().getAll()
-        val selected = requireNotNull(repository.currentProfileId.value)
+        val selected = repository.currentProfileId.value
         val files = rows.associate { it.id to signature(repository.profileFile(it.id)) }
         val preferences = entry.database().appPreferences().getByPrefix("").associate { it.key to it.value }
         val scripts = entry.database().scripts().getAll()
-        val original = rows.single { it.type == ProfileType.FILE && files.getValue(it.id).third == expectedSha }.toDomain()
-        val bytes = repository.profileFile(original.id).readBytes()
-        val label = "资源恢复-${UUID.randomUUID()}"
-        val created = repository.addCustomProfile(label)
+        val matchingSources = rows.filter { it.type == ProfileType.FILE && files.getValue(it.id).third == expectedSha }
+        require(matchingSources.size <= 1) { "授权本地源在验收库中重复" }
+        var seededSource: Profile? = null
+        var created: Profile? = null
+        var customLabel: String? = null
         var failure: Throwable? = null
         try {
-            repository.updateLocalProfileContent(created.id, bytes.decodeToString())
+            val original = matchingSources.singleOrNull()?.toDomain() ?: run {
+                val sourcePath = requireNotNull(args.getString("kclashLocalYamlPath")) {
+                    "空验收库须提供本地授权 YAML 路径"
+                }
+                val sourceBytes = File(sourcePath).readBytes()
+                val sourceSha = MessageDigest.getInstance("SHA-256").digest(sourceBytes)
+                    .joinToString("") { "%02x".format(it) }
+                require(sourceSha == expectedSha) { "本地授权源 SHA 不匹配" }
+                // 作者 long：motion 包是隔离数据库；仅用根目录授权原文建立本例FILE基线，禁止随机造配置补验收前提。
+                repository.addFileProfile("授权本地源-${UUID.randomUUID()}", sourceBytes).also { seededSource = it }
+            }
+            val bytes = repository.profileFile(original.id).readBytes()
+            val label = "资源恢复-${UUID.randomUUID()}"
+            customLabel = label
+            val custom = repository.addCustomProfile(label)
+            created = custom
+            repository.updateLocalProfileContent(custom.id, bytes.decodeToString())
             val groups = ProxyGroupDrafts.read(bytes.decodeToString()).mapIndexed { index, group ->
                 if (index == 0) ProxyGroupDrafts.withMembers(group, ProxyGroupDrafts.members(group) + ProxyGroupMember(alias, true)) else group
             }
-            repository.saveCustomProxyGroups(created.id, ProxyGroupsSave(groups, mapOf(alias to original.id)), bytes.decodeToString()) { true }
-            val row = requireNotNull(entry.database().profiles().getById(created.id))
-            val s = Session(entry, label, row.toDomain(), original, repository.readLocalProfileContent(created.id), row,
-                signature(repository.profileFile(created.id)))
+            repository.saveCustomProxyGroups(custom.id, ProxyGroupsSave(groups, mapOf(alias to original.id)), bytes.decodeToString()) { true }
+            val row = requireNotNull(entry.database().profiles().getById(custom.id))
+            val s = Session(entry, label, row.toDomain(), original, repository.readLocalProfileContent(custom.id), row,
+                signature(repository.profileFile(custom.id)))
             compose.onNodeWithTag("nav_profiles").performClick()
-            compose.waitUntil(15_000) { model().state.value.profiles.any { it.id == created.id } }
+            compose.waitUntil(15_000) { model().state.value.profiles.any { it.id == custom.id } }
             // 作者 long：正式列表会首次定位当前配置；自有副本可能在LazyColumn屏外，先按真实列表滚到目标再打开。
             val list = hasScrollToNodeAction() and hasAnyAncestor(hasTestTag("profiles_grid"))
             // 作者 long：VM发出列表早于页面完成收集和挂载，必须等实际可滚动列表出现，不能只把内存就绪当成UI就绪。
             compose.waitUntil(15_000) { compose.onAllNodes(list).fetchSemanticsNodes().isNotEmpty() }
-            compose.onNode(list).performScrollToNode(hasTestTag("profile_card_${created.id}"))
-            compose.onNodeWithTag("profile_card_${created.id}").performScrollTo().performTouchInput { longClick() }
-            compose.onNodeWithText("编辑").performClick()
+            compose.onNode(list).performScrollToNode(hasTestTag("profile_card_${custom.id}"))
+            compose.onNodeWithTag("profile_card_${custom.id}").performScrollTo().performTouchInput { longClick() }
+            compose.waitUntil(10_000) { exists("profile_edit_${custom.id}") }
+            compose.onNodeWithTag("profile_edit_${custom.id}").performClick()
             compose.onNodeWithTag("custom_profile_resources").performScrollTo().performClick()
             compose.waitUntil(15_000) { exists("profile_provider_edit_$alias") }
             block(s)
@@ -314,12 +375,22 @@ class MainProviderOptionsStateInstrumentedTest {
             } catch (error: Throwable) { closeFailure = error }
             try {
                 // 作者 long：只回收本例的CUSTOM副本，正式行/正文元数据/脚本/偏好逐项保护，失败也保留原错误。
-                entry.database().profiles().getById(created.id)?.let { row ->
-                    check(row.type == ProfileType.CUSTOM && row.label == label)
-                    repository.deleteProfile(created.id)
+                created?.let { own ->
+                    entry.database().profiles().getById(own.id)?.let { row ->
+                        check(row.type == ProfileType.CUSTOM && row.label == customLabel)
+                        repository.deleteProfile(own.id)
+                    }
+                    assertFalse("本例CUSTOM正文文件必须确实移除", repository.profileFile(own.id).exists())
                 }
-                // 作者 long：Room行消失不能证明正文文件已删除；即使窗口关闭报错也必须继续回收并检查本例磁盘文件。
-                assertFalse("临时正文文件必须确实移除", repository.profileFile(created.id).exists())
+                // 作者 long：空motion包的FILE基线也只清理本例导入行，最后恢复原始当前选择。
+                seededSource?.let { own ->
+                    entry.database().profiles().getById(own.id)?.let { row ->
+                        check(row.type == ProfileType.FILE && row.label == own.label)
+                        repository.deleteProfile(own.id)
+                    }
+                    assertFalse("本例FILE正文文件必须确实移除", repository.profileFile(own.id).exists())
+                }
+                if (repository.currentProfileId.value != selected) repository.selectProfile(selected)
                 assertTrue("正式配置行保持", rows == entry.database().profiles().getAll())
                 assertEquals(files, rows.associate { it.id to signature(repository.profileFile(it.id)) })
                 assertEquals(selected, repository.currentProfileId.value)

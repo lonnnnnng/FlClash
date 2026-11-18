@@ -1,0 +1,91 @@
+{
+  "id": "KUI-VIS-050",
+  "date": "2026-11-19",
+  "reference": {
+    "comparison": "Kotlin real-activity flow only. Same-state Flutter runtime comparison and Flutter source comparison were not performed in this slice."
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1,
+    "variant": "motionBenchmark",
+    "theme": "dark",
+    "glassEnabled": false
+  },
+  "scope": {
+    "surface": "Non-empty Provider resources, proxy-resource selector and Provider options",
+    "flow": [
+      "Open the real Profile Providers page with an isolated CUSTOM copy backed by the authorized local configuration.",
+      "Open the proxy-resource selector and bind the same existing isolated FILE resource.",
+      "Open Provider options, add TIMEOUT, save 5000 ms, reopen the page and read the persisted value."
+    ],
+    "formalRuntime": "STOPPED"
+  },
+  "fixture": {
+    "authorizedLocalYamlSha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "deviceStagingShaMatched": true,
+    "formalProfileCountBefore": 0,
+    "temporaryFileBaselineCreatedFromAuthorizedBytes": true,
+    "temporaryCustomCopyCreated": true,
+    "roomReadback": {
+      "timeoutMs": 5000,
+      "verifiedAfterSave": true,
+      "verifiedAfterReopen": true
+    },
+    "cleanup": {
+      "temporaryFileAndCustomRowsRemoved": true,
+      "temporaryProfileBodiesRemoved": true,
+      "formalRowsBodiesScriptsPreferencesAndSelectionPreserved": true,
+      "runtimeStopped": true,
+      "stagingFileRemovedAndAbsenceVerified": true,
+      "rootYamlUnchangedAndNotUploaded": true
+    }
+  },
+  "build": {
+    "command": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -PkclashMotionBenchmark=true -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL",
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "a4bf2a688370f2e7e65f91bc294dda4eaa4efa2d63366e85adbf44e438b4f520",
+      "com.lonnnnnng.flclash.motion.test": "f5ca528103f693cefaa45e63039882c56bf606ba7c79b55669457a40cc79d2bb"
+    },
+    "installedApkBytesMatchLocalBuild": true,
+    "lintVitalMotionBenchmark": "passed"
+  },
+  "instrumentation": {
+    "class": "MainProviderOptionsStateInstrumentedTest",
+    "method": "nonEmptyProviderBindingAndOptionsFlowStaysContinuous",
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "result": "OK (1 test)",
+    "status": "kclash_provider_nonempty_flow=binding-selection=existing-isolated-source;timeout=5000;room-readback=true",
+    "preservationStatus": "formal-count=0;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+    "finalLog": "../acceptance-artifacts/provider-visual-poco-20261119/final2/instrument-final.log",
+    "finalLogSha256": "f664dbd194b64ceead42250e3ac765ead98e7a9db04d305724758109c3f8cee2",
+    "earlierFailedAttempts": [
+      "../acceptance-artifacts/provider-visual-poco-20261119/final2/instrument.log",
+      "../acceptance-artifacts/provider-visual-poco-20261119/final2/instrument-retry.log"
+    ]
+  },
+  "screenshots": {
+    "count": 7,
+    "dimensions": "1080x2400",
+    "allHashesByteCountsDimensionsAndPngSignaturesVerified": true,
+    "visuallyReviewed": true,
+    "manifest": "../acceptance-artifacts/provider-visual-poco-20261119/final2/screenshots.json",
+    "manifestSha256": "8311b3c21e51044b1080641d8580e7d0daff43e1d6d4db944aa8817cc4cceb80"
+  },
+  "deviceCleanup": {
+    "motionAppAndTestPackagesUninstalled": true,
+    "comFollowClashStillInstalledAndUnmodified": true,
+    "notificationPermissionGrantedOnlyToTemporaryMotionPackage": true,
+    "temporaryPackageRemovalAlsoRemovedPermissionState": true
+  },
+  "limits": [
+    "This verifies the Kotlin Activity, provider-resource binding and Room save/readback path; it does not establish Flutter visual equivalence.",
+    "Only the dark theme and this Provider flow were captured; other Provider types, pages and panels remain for later slices.",
+    "The authorization source had one selectable proxy resource in this fixture."
+  ]
+}

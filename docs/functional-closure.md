@@ -50,6 +50,8 @@
 
 2026-11-19，按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
+KUI-VIS-050 已在 POCO F2 Pro / API36 完成非空 Provider Kotlin 连续流程验收：真实资源选择器绑定隔离资源、添加并保存 TIMEOUT=5000、重开后 Room 回读；精确用例1/1、7张截图核验。未做 Flutter 同状态运行对照。[验收记录](acceptance/provider-options-nonempty-poco-20261119.json)
+
 KUI-VIS-049 已在 POCO F2 Pro / API36 完成图标集预览 Kotlin 真机验收：顶栏搜索、专属图块空态、无结果恢复和长网格滚动位置恢复；资源页类 3/3、19 张截图核验。对照固定 Flutter `be847366` 源码的 AppBarSearchState、NullStatusIllustration.icons、`iconTile` glyph 及 88dp 网格参数；没有运行同状态 Flutter 截图。[验收记录](acceptance/icon-set-preview-poco-20261119.json)
 
 KUI-VIS-048 已在 POCO F2 Pro / API36 验收。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；匹配的首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回分类存在重叠，trace 丢弃限制仍保留；优化收益未验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
