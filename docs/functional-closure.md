@@ -1,5 +1,7 @@
 # 功能性剩余项收尾
 
+11月18日 POCO F2 Pro / API36 从本轮授权订阅实际导入 32 个节点。Trojan（16）、Hysteria2（12）、VLESS（4）各抽取两个不同端点，纯代理 GLOBAL 下 6/6 返回 HTTP 200，并在对应连接上核对叶节点及双向流量。[脱敏回执](acceptance/subscription-protocol-traffic-poco-20261118.json)
+
 2026-11-18，首次联网 TLS 按用户决定作为网络环境问题归档。六项功能目标中五项收口，语义预检继续补条件边界。POCO 的 CUSTOM 系统选档替换、92 份缓存 MRS 一次完整解析、128/129 个描述符边界与 VMess 真实请求已通过。本组依赖资源在主机下载，导入阶段复用手机缓存。[验收记录](acceptance/custom-saf-preflight-poco-20261118.json)
 
 

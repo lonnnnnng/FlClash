@@ -1,0 +1,102 @@
+{
+  "device": "POCO F2 Pro",
+  "api": 36,
+  "artifacts": {
+    "com.lonnnnnng.flclash.motion": "aba5c620fff9393375c39e38f1f131eac2c14d0854d2651c424d2a7f621d4327",
+    "com.lonnnnnng.flclash.motion.test": "6bc3f4b82fb37195e514320c5de97ad4725aa0102ded890206c19b9aa7a37d62"
+  },
+  "stages": [
+    {
+      "stage": "import",
+      "profiles": 1,
+      "sourceBytes": 55777,
+      "nodeCount": 32,
+      "counts": {
+        "trojan": 16,
+        "hysteria2": 12,
+        "vless": 4
+      }
+    },
+    {
+      "stage": "probe",
+      "protocol": "trojan",
+      "endpointOrdinal": 1,
+      "passed": true,
+      "http": 200,
+      "leafMatched": true,
+      "sameSocket": true,
+      "positiveTraffic": true,
+      "failedStep": ""
+    },
+    {
+      "stage": "probe",
+      "protocol": "trojan",
+      "endpointOrdinal": 2,
+      "passed": true,
+      "http": 200,
+      "leafMatched": true,
+      "sameSocket": true,
+      "positiveTraffic": true,
+      "failedStep": ""
+    },
+    {
+      "stage": "probe",
+      "protocol": "hysteria2",
+      "endpointOrdinal": 1,
+      "passed": true,
+      "http": 200,
+      "leafMatched": true,
+      "sameSocket": true,
+      "positiveTraffic": true,
+      "failedStep": ""
+    },
+    {
+      "stage": "probe",
+      "protocol": "hysteria2",
+      "endpointOrdinal": 2,
+      "passed": true,
+      "http": 200,
+      "leafMatched": true,
+      "sameSocket": true,
+      "positiveTraffic": true,
+      "failedStep": ""
+    },
+    {
+      "stage": "probe",
+      "protocol": "vless",
+      "endpointOrdinal": 1,
+      "passed": true,
+      "http": 200,
+      "leafMatched": true,
+      "sameSocket": true,
+      "positiveTraffic": true,
+      "failedStep": ""
+    },
+    {
+      "stage": "probe",
+      "protocol": "vless",
+      "endpointOrdinal": 2,
+      "passed": true,
+      "http": 200,
+      "leafMatched": true,
+      "sameSocket": true,
+      "positiveTraffic": true,
+      "failedStep": ""
+    },
+    {
+      "stage": "cleanup",
+      "empty": true,
+      "stopped": true
+    }
+  ],
+  "passed": true,
+  "privateDeviceInputRemoved": true,
+  "acceptancePackagesRemoved": true,
+  "date": "2026-11-18",
+  "case": "SubscriptionProtocolTrafficInstrumentedTest#importedSubscriptionRoutesThroughEachRequestedProtocol",
+  "variant": "motionBenchmark",
+  "source": "User-authorized online subscription fetched on device by production addRemoteProfile with full preflight before database insert.",
+  "sample": "Two distinct server and port combinations per source protocol in subscription order.",
+  "traffic": "HTTPS via the actual core SOCKS port in proxy mode with GLOBAL pinned to each leaf. Verified hostname, HTTP 200, fresh socket source port, actual selected leaf and positive bidirectional traffic.",
+  "build": "assembleMotionBenchmark, assembleMotionBenchmarkAndroidTest and lintMotionBenchmark passed"
+}

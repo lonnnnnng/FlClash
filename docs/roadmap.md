@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+11月18日 POCO F2 Pro / API36 从本轮授权订阅实际导入 32 个节点。Trojan（16）、Hysteria2（12）、VLESS（4）各抽取两个不同端点，纯代理 GLOBAL 下 6/6 返回 HTTP 200，并在对应连接上核对叶节点及双向流量。[脱敏回执](acceptance/subscription-protocol-traffic-poco-20261118.json)
+
 > **2026-11-18　语义预检覆盖边界**　修复 CUSTOM 文件替换被 64 个文件描述符上限拦住的问题。POCO API36 经系统选档取消、再次确认、92 份已缓存规则一次解析、VMess 实际 HTTP 200 均通过。含 Geo 的 128/129 个文件边界及拒绝后恢复已验。首次联网 TLS 按用户决定归档。[验收记录](acceptance/custom-saf-preflight-poco-20261118.json)
 
 
