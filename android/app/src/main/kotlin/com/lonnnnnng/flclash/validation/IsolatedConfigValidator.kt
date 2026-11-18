@@ -4,6 +4,8 @@ import android.content.*
 import android.os.*
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
+import com.lonnnnnng.flclash.data.MAX_VALIDATION_RESOURCE_FILES
+import com.lonnnnnng.flclash.data.MAX_VALIDATION_TOTAL_BYTES
 import com.lonnnnnng.flclash.data.ProfileConfigValidator
 import com.lonnnnnng.flclash.data.YamlProfileConfigValidator
 import com.lonnnnnng.flclash.service.YamlConfigCodec
@@ -113,9 +115,14 @@ class IsolatedConfigValidator @Inject constructor(@ApplicationContext private va
                 val file=(if(File(path).isAbsolute)File(path)else File(root,path)).canonicalFile
                 // 作者 long：Android上游IsSafePath默认放行，主进程不能沿候选任意路径开放私有文件，只授权核心目录内已有普通资源。
                 if(!file.path.startsWith(root.path+File.separator)||!file.isFile||file.length() !in 1..64L*1024*1024)continue
-                if(resources.none {it.name==path})resources+=Resource(path,ParcelFileDescriptor.open(file,ParcelFileDescriptor.MODE_READ_ONLY),file.length())
+                if (resources.none { it.name == path }) {
+                    // 作者 long：先检查预算再打开下一个文件，超限时只需回收已经登记的只读句柄。
+                    require(resources.size < MAX_VALIDATION_RESOURCE_FILES &&
+                        resources.sumOf { it.bytes } + file.length() <= MAX_VALIDATION_TOTAL_BYTES) { "配置依赖资源超过校验上限" }
+                    resources += Resource(path, ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY), file.length())
+                }
             }
-            require(resources.size<=64&&resources.sumOf {it.bytes}<=128L*1024*1024){"配置依赖资源超过校验上限"}
+            require(resources.sumOf { it.bytes } <= MAX_VALIDATION_TOTAL_BYTES){"配置依赖资源超过校验上限"}
             return resources
         }catch(failure:Throwable){resources.forEach {runCatching{it.fd.close()}};throw failure}
     }

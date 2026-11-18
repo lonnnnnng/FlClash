@@ -735,7 +735,8 @@ class ProfileRepository(
                 val coreRoot = File(appContext.filesDir, "mihomo").canonicalPath + File.separator
                 if (file.isAbsolute && file.canonicalPath.startsWith(coreRoot) && file.isFile) {
                     require(file.length() <= 64L * 1024 * 1024) { "规则资源超过校验上限" }
-                    require(snapshots.size < 64 && snapshots.values.sumOf { it.bytes?.size?.toLong() ?: 0L } + file.length() <= 128L * 1024 * 1024) { "配置依赖资源超过校验上限" }
+                    if (file in snapshots) return@forEach
+                    require(snapshots.size < MAX_VALIDATION_RESOURCE_FILES && snapshots.values.sumOf { it.bytes?.size?.toLong() ?: 0L } + file.length() <= MAX_VALIDATION_TOTAL_BYTES) { "配置依赖资源超过校验上限" }
                     snapshots[file] = LocalProfileFileSnapshot(file.readBytes(), file.lastModified())
                 }
             }

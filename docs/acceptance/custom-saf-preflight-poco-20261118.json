@@ -1,0 +1,97 @@
+{
+  "mode": "final",
+  "targetModel": "POCO F2 Pro",
+  "api": 36,
+  "inputBytes": 34220,
+  "sourceHash": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+  "archiveHash": "ee0a4ec0ce7c82ca2903ec0c98c4b427ae359383a64a9774ed52a185aa5637a3",
+  "installed": {
+    "com.lonnnnnng.flclash.motion": "d29bb4996954e2f32a93b09ad3a5af038069c1611d683a4bf89005dd579f153d",
+    "com.lonnnnnng.flclash.motion.test": "52a5b973d641dce5cf08d5b091b31ec060b0bf6b6dde9aef02df261f103547d3"
+  },
+  "stages": [
+    {
+      "stage": "cancel",
+      "unchanged": true,
+      "cachedProviders": 92
+    },
+    {
+      "stage": "commit",
+      "grantedRuleFiles": 92,
+      "deferred": 0,
+      "nodes": 6,
+      "groups": 34,
+      "rules": 93
+    },
+    {
+      "stage": "descriptor-limit",
+      "allowed": 128,
+      "rejected": 129,
+      "followingRequestPassed": true
+    },
+    {
+      "stage": "traffic",
+      "http": 200,
+      "sameSocket": true,
+      "positiveTraffic": true,
+      "expectedLeaf": true,
+      "protocol": "vmess"
+    },
+    {
+      "stage": "cleanup",
+      "empty": true,
+      "stopped": true
+    }
+  ],
+  "passed": true,
+  "cleanup": {
+    "ownedPackagesAbsent": true,
+    "ownedInputsAbsent": true,
+    "originalHeld": true
+  },
+  "date": "2026-11-18",
+  "case": "ProfileFileImportSafInstrumentedTest#customSafReplacementKeepsCanceledDraftAndAppliesCachedRuleDirectory",
+  "source": "Workspace-authorized original through system DocumentsUI. Host fetched the original 92 URLs, archived each real MRS under its URL digest. Production rule store compiled these cached files before the UI test.",
+  "baseline": {
+    "appSha256": "e3037ef71498c42fea5c865c877d0e70f24f72daad7b84e15bbf65022dfe411f",
+    "stages": [
+      {
+        "stage": "cancel",
+        "unchanged": true,
+        "cachedProviders": 92
+      },
+      {
+        "stage": "cleanup",
+        "empty": true,
+        "stopped": true
+      }
+    ],
+    "outcome": "Preview canceled without writes. Replacement dialog did not complete within 60s with old 64-file checks."
+  },
+  "earlierAttempts": [
+    "red: fixture assumed unselected card tag; stopped before opening editor",
+    "green: replacement and real traffic passed prior to adding the 128/129 check"
+  ],
+  "build": {
+    "jvm": {
+      "app": 618,
+      "core": 39,
+      "service": 220,
+      "common": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "includesGradleReuse": true
+    },
+    "release": "unsigned arm64 R8 built; release lint passed",
+    "motionLint": "passed",
+    "goRace": "go test -race -run ^TestSemanticPreflightIsolatedCases$ ."
+  },
+  "scope": "One POCO API36 CUSTOM import from SAF with cached MRS, runtime in proxy mode, one SOCKS request via a VMess leaf. Resource files fetched on host, not a cold network download on phone.",
+  "remaining": [
+    "Other authorized source/transport combinations",
+    "Low API and additional OEM physical phones",
+    "Naturally occurring native interface failures"
+  ],
+  "localRun": "../acceptance-artifacts/custom-saf-bk_c8ny9"
+}

@@ -157,6 +157,156 @@ class ProfileFileImportSafInstrumentedTest {
         }
     }
 
+    @Test(timeout = 300_000)
+    fun customSafReplacementKeepsCanceledDraftAndAppliesCachedRuleDirectory() {
+        assumeTrue(args.getString("kclashCustomSafBoundary") == "true")
+        check(compose.activity.packageName == "com.lonnnnnng.flclash.motion")
+        val filename = checkNotNull(args.getString("kclashSafName"))
+        require(filename.matches(Regex("kclash-custom-[a-f0-9]{12}\\.yaml")))
+        val prefix = filename.removeSuffix(".yaml")
+        val bytes = shell("cat /sdcard/Download/$filename")
+        check(hash(bytes) == args.getString("kclashLocalFileSha256"))
+        val archive = shell("cat /data/local/tmp/$prefix.zip")
+        check(hash(archive) == args.getString("kclashRuleArchiveSha256"))
+        val input = JSONObject(shell("cat /data/local/tmp/$prefix.json").decodeToString())
+        val target = java.net.URI(input.getString("url"))
+        check(hash(target.toString().toByteArray()) == args.getString("kclashTargetSha256"))
+        fun report(stage: String, vararg fields: Pair<String, Any>) {
+            val json = JSONObject().put("stage", stage)
+            fields.forEach { (key, value) -> json.put(key, value) }
+            instrumentation.sendStatus(2, android.os.Bundle().apply { putString("kclash_custom_saf", json.toString()) })
+        }
+        val runtime = entry.runtimeManager()
+        runBlocking { (compose.activity.application as KClashApplication).awaitRuntimeInitialization() }
+        check(runtime.state.value == CoreRuntimeStatus.STOPPED && rows().isEmpty())
+        val root = ProxyGroupDrafts.root(bytes.decodeToString())
+        val definitions = root.getAsJsonObject("rule-providers")
+        val sourceNodes = root.getAsJsonArray("proxies")
+        val oldVpn = runtime.vpnSettings.value.enabled
+        val oldMode = runtime.outboundMode.value
+        val ruleStore = entry.rules()
+        val custom = runBlocking(Dispatchers.IO) {
+            check(repository.localProxies().isEmpty() && ruleStore.all().isEmpty())
+            // 作者 long：缓存由原配置 URL 对应的真实正文填充，隔离网络波动，文件选择和提交仍由生产界面完成。
+            val byKey = definitions.entrySet().associateBy { hash(it.value.asJsonObject["url"].asString.toByteArray()) }
+            require(byKey.size == definitions.size() && byKey.size > 64)
+            java.util.zip.ZipInputStream(archive.inputStream()).use { zip ->
+                val seen = mutableSetOf<String>()
+                while (true) {
+                    val item = zip.nextEntry ?: break
+                    val (name, definition) = byKey.getValue(item.name)
+                    check(seen.add(item.name))
+                    val saved = ruleStore.save(name, definition.asJsonObject["url"].asString, readProfileFileBytes(zip))
+                    check(saved.format == "mrs" && saved.behavior == definition.asJsonObject["behavior"].asString)
+                }
+                check(seen == byKey.keys)
+            }
+            repository.addCustomProfile("语义验收-$prefix")
+        }
+        val cache = runBlocking { ruleStore.all() }
+        fun cacheStamps() = cache.map { row ->
+            ruleStore.file(row).let { file -> Triple(file.length(), file.lastModified(), hash(file.readBytes())) }
+        }
+        val stamps = cacheStamps()
+        val originalRows = rows()
+        val file = repository.profileFile(custom.id)
+        val originalBody = hash(file.readBytes()) to file.lastModified()
+        fun pickSource() {
+            compose.onNodeWithTag("custom_profile_import").performClick()
+            compose.onNodeWithText("从文件导入").performClick()
+            choose(filename, "custom_import_replace_confirm")
+        }
+        try {
+            compose.onNodeWithTag("nav_profiles").performClick()
+            compose.waitUntil(15_000) { compose.onAllNodesWithTag("profile_card_${custom.id}").fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithTag("profile_card_${custom.id}").performTouchInput { longClick() }
+            compose.onNodeWithTag("profile_edit_${custom.id}").performClick()
+            pickSource()
+            compose.onNodeWithText("取消").performClick()
+            check(rows() == originalRows && repository.currentProfileId.value == custom.id)
+            check((hash(file.readBytes()) to file.lastModified()) == originalBody)
+            check(runBlocking { repository.localProxies().isEmpty() && ruleStore.all() == cache } && cacheStamps() == stamps)
+            report("cancel", "unchanged" to true, "cachedProviders" to cache.size)
+            pickSource()
+            compose.onNodeWithTag("custom_import_replace_confirm").performClick()
+            compose.waitUntil(60_000) { compose.onAllNodesWithTag("custom_import_replace_confirm").fetchSemanticsNodes().isEmpty() }
+            runBlocking(Dispatchers.IO) {
+                val stored = ProxyGroupDrafts.root(file.readText())
+                val refs = stored.getAsJsonObject("rule-providers")
+                check(refs.size() == definitions.size() && cache.all { RuleResources.idOf(refs[it.label]) == it.id })
+                check(ruleStore.all() == cache && cacheStamps() == stamps)
+                check(rows().single().id == custom.id && repository.currentProfileId.value == custom.id)
+                check(repository.localProxies().map { it.name }.toSet() == sourceNodes.map { it.asJsonObject["name"].asString }.toSet())
+                val effective = File(repository.activeProfile().filePath).readBytes()
+                val projected = ProxyGroupDrafts.root(effective.decodeToString())
+                check(projected["proxy-groups"] == root["proxy-groups"] && projected["rules"] == root["rules"])
+                val expectedNodes = sourceNodes.associateBy { it.asJsonObject["name"].asString }
+                check(projected.getAsJsonArray("proxies").associateBy { it.asJsonObject["name"].asString } == expectedNodes)
+                val parsed = com.lonnnnnng.flclash.validation.IsolatedConfigValidator(compose.activity.applicationContext).checkFull(effective)
+                check(parsed.passed && parsed.deferredResources == 0)
+                report("commit", "grantedRuleFiles" to cache.size, "deferred" to parsed.deferredResources,
+                    "nodes" to sourceNodes.size(), "groups" to projected.getAsJsonArray("proxy-groups").size(),
+                    "rules" to projected.getAsJsonArray("rules").size())
+                checkRuleDescriptorLimit(projected, cache)
+                report("descriptor-limit", "allowed" to 128, "rejected" to 129, "followingRequestPassed" to true)
+                runtime.setVpnEnabled(false).getOrThrow()
+                runtime.startProxy().getOrThrow()
+                val leaf = repository.localProxies().single { it.type == "vmess" }
+                runtime.setOutboundMode(com.lonnnnnng.flclash.core.CoreOutboundMode.GLOBAL).getOrThrow()
+                runtime.changeProxy("GLOBAL", leaf.name).getOrThrow()
+                val request = acceptedProxyRequest(entry, target) { _, _ -> }
+                val chain = request.optJSONArray("chainHashes")
+                val matched = chain != null && (0 until chain.length()).any { chain.getString(it) == hash(leaf.name.toByteArray()) }
+                report("traffic", "http" to request.optInt("http"), "sameSocket" to request.optBoolean("attributedSocket"),
+                    "positiveTraffic" to request.optBoolean("positiveTraffic"), "expectedLeaf" to matched, "protocol" to leaf.type)
+                check(request.optBoolean("passed") && request.optInt("http") == 200 && matched && request.optBoolean("positiveTraffic"))
+            }
+        } finally {
+            runBlocking(Dispatchers.IO) {
+                runtime.stop().getOrThrow()
+                runtime.setOutboundMode(oldMode).getOrThrow()
+                runtime.setVpnEnabled(oldVpn).getOrThrow()
+                check(rows().single().id == custom.id)
+                repository.deleteProfile(custom.id)
+                cache.forEach { ruleStore.delete(it) }
+                entry.database().appPreferences().delete(LocalProxies.KEY)
+                check(rows().isEmpty() && repository.localProxies().isEmpty() && ruleStore.all().isEmpty())
+                check(runtime.state.value == CoreRuntimeStatus.STOPPED)
+                report("cleanup", "empty" to true, "stopped" to true)
+            }
+        }
+    }
+
+    private suspend fun checkRuleDescriptorLimit(projected: com.google.gson.JsonObject, cache: List<RuleResource>) {
+        val validator = com.lonnnnnng.flclash.validation.IsolatedConfigValidator(compose.activity.applicationContext)
+        val candidate = projected.deepCopy()
+        val providers = candidate.getAsJsonObject("rule-providers")
+        val exemplar = cache.minBy { entry.rules().file(it).length() }
+        val template = providers.getAsJsonObject(exemplar.label)
+        val created = mutableListOf<File>()
+        // 作者 long：沿用原件的真实 MRS，只复制最小资源到独占路径，避免同路径去重掩盖 128/129 个句柄分界。
+        fun addDependency() {
+            val file = File.createTempFile("semantic-limit-", ".mrs", entry.rules().file(exemplar).parentFile)
+            created += file
+            entry.rules().file(exemplar).copyTo(file, overwrite = true)
+            providers.add(file.nameWithoutExtension, template.deepCopy().apply { addProperty("path", file.path) })
+        }
+        fun bytes() = com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(candidate.toString()).toByteArray()
+        try {
+            // 作者 long：四个内置 Geo 文件也占用授权额度，124 个独立规则文件正好触及总上限。
+            check(providers.size() in 1..124)
+            repeat(124 - providers.size()) { addDependency() }
+            check(validator.checkFull(bytes()).let { it.passed && it.deferredResources == 0 })
+            addDependency()
+            val rejected = runCatching { validator.checkFull(bytes()) }.exceptionOrNull()
+            check(rejected is IllegalArgumentException && rejected.message == "配置依赖资源超过校验上限")
+            providers.remove(created.last().nameWithoutExtension)
+            check(validator.checkFull(bytes()).passed)
+        } finally {
+            created.forEach { check(it.delete()) }
+        }
+    }
+
     private fun authorizedSource(): ByteArray {
         assumeTrue(args.getString("kclashFileImportSaf") == "true")
         assertPortraitDefaultFontConfiguration()

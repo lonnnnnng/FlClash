@@ -29,7 +29,9 @@ func ValidateConfigurationIsolated(content []byte, resourceJSON string) string {
 		FD    int    `json:"fd"`
 		Bytes int64  `json:"bytes"`
 	}
-	if json.Unmarshal([]byte(resourceJSON), &inputs) != nil || len(inputs) > 64 {
+	// 作者 long：与 Android 发送端的 MAX_VALIDATION_RESOURCE_FILES 保持一致，独立进程仍复核每个只读 FD 和总大小。
+	const maxValidationResourceFiles = 128
+	if json.Unmarshal([]byte(resourceJSON), &inputs) != nil || len(inputs) > maxValidationResourceFiles {
 		return failure
 	}
 	files := map[string]*os.File{}

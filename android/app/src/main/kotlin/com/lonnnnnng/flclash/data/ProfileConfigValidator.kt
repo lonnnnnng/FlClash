@@ -15,6 +15,10 @@ fun interface ProfileConfigValidator {
     }
 }
 
+// 作者 long：CUSTOM 导入会把整份规则目录映射为本地文件，给常见百项规则集留余量，同时限制单次 Binder 授权数（含 Geo）。
+internal const val MAX_VALIDATION_RESOURCE_FILES = 128
+internal const val MAX_VALIDATION_TOTAL_BYTES = 128L * 1024 * 1024
+
 data class ProfileValidationSummary(val deferredExternalResources: Int = 0)
 
 class YamlProfileConfigValidator : ProfileConfigValidator {

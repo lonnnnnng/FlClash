@@ -1,9 +1,11 @@
 # KClash Kotlin 重写路线图
 
-> **2026-11-17 TUN异常补偿收口**：当前快照已统一；POCO API36最终同批5/5、前后独立UID默认VPN的DNS/TLS/HTTP200及非DIRECT双向流量10/10。系统establish异常、真实Go拒绝FD、单次自动恢复、双次安全停止/显式重试及普通Profile不误重建已验；911 JVM含复用、motion/Test/未签名Release-R8和双Lint通过，Release故障代码隔离，自有三包与临时输入已清。固定原index2节点/GLOBAL是本轮边界；原RULE路径另再次TLS失败，当前网络项重新待查，不用固定节点成功覆盖。未发版、内核未改；详见[记录](tun-rebuild-compensation-acceptance.md)和[证据](acceptance/tun-rebuild-poco-20261117.json)。
+> **2026-11-18　语义预检覆盖边界**　修复 CUSTOM 文件替换被 64 个文件描述符上限拦住的问题。POCO API36 经系统选档取消、再次确认、92 份已缓存规则一次解析、VMess 实际 HTTP 200 均通过。含 Geo 的 128/129 个文件边界及拒绝后恢复已验。首次联网 TLS 按用户决定归档。[验收记录](acceptance/custom-saf-preflight-poco-20261118.json)
+
+
+> **2026-11-17 TUN异常补偿收口**：当前快照已统一；POCO API36最终同批5/5、前后独立UID默认VPN的DNS/TLS/HTTP200及非DIRECT双向流量10/10。系统establish异常、真实Go拒绝FD、单次自动恢复、双次安全停止/显式重试及普通Profile不误重建已验；911 JVM含复用、motion/Test/未签名Release-R8和双Lint通过，Release故障代码隔离，自有三包与临时输入已清。固定原index2节点/GLOBAL是本轮边界；原RULE路径另再次TLS失败，11月18日按用户决定将首连TLS作为网络问题归档，不用固定节点成功覆盖。未发版、内核未改；详见[记录](tun-rebuild-compensation-acceptance.md)和[证据](acceptance/tun-rebuild-poco-20261117.json)。
 
 > **KClash 0.1.6正式发布（2026-11-18）**：标签`kclash-v0.1.6`指向`2370177eb3059b6c8720953193a64266c95c4b7d`，versionCode1006，已成为GitHub Latest。标签CI全通过：Go race、JVM/R8、双Lint、正式签名及Release资产检查。远端arm64 APK 48,456,232字节，SHA-256 `2d2163a2c869bc941b02357102986f3c489fceaa1c9851c5016b04b74c7b4e8f`，证书SHA-256 `3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49`；版本、包名、API24+与ABI已回验。本次未安装Release包到手机；age真实UI验收由单独motion包完成。详见[发布记录](acceptance/release-0.1.6-20261118.json)与[说明](releases/kclash-v0.1.6.md)。
-
 
 > **KClash 0.1.5直接发布（2026-11-12历史记录）**：按用户要求暂停后续TUN故障验收，直接本机正式签名构建发布`kclash-v0.1.5`，GitHub Latest、非草稿/非预发布。源码固定`54fb218d6871906741df3412eafae2f389aef695`，versionCode1005；APK `KClash-0.1.5-android-arm64-v8a.apk`，48,465,816字节，SHA`f1cd1660e9ab4d0f8576ae69606863e54ca3c3a8e9daf75382413d9b399921e3`与GitHub资产digest一致，沿用既有正式证书。仅assembleRelease成功（含构建内置lintVital），未重跑单测/完整Lint/真机/Go，未安装设备。原1.yaml未加入构建/上传，Flutter参考包未操作。见[发布说明](releases/kclash-v0.1.5.md)与[发布记录](acceptance/release-0.1.5-20261112.json)。
 
@@ -838,13 +840,13 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 发布范围 | 0.1.6标签CI的Go race、JVM/R8、双Lint、证书/版本/ABI检查全部通过，Release Latest及远端digest已回验；本次未安装Release APK到手机。详见[发布证据](acceptance/release-0.1.6-20261118.json) |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
-| 六项功能收尾 | **4收口、1重新待查、1部分完成**：名单保护、配置/偏好稳定性、Provider恢复、简单版本检查收口；首次联网TLS本轮有新失败重新待查；语义预检主流程完成、条件边界继续 |
+| 六项功能收尾 | **5收口、1部分完成**：名单保护、配置/偏好稳定性、Provider恢复、简单版本检查收口；首次联网TLS按用户决定作为网络问题归档；语义预检主流程完成、条件边界继续 |
 | 最新自动化记录 | 0.1.6标签CI的Go race、JVM测试、Release/R8、Debug/Release Lint与签名资产检查全部通过；POCO在线age完整链路的911 JVM和motion/Test另有具名记录，均不与Release设备验收混算 |
-| 最近真机具名结果 | POCO在线age正式表单完整链路1/1；另有KUI-042 38/38、语义运行保护6/6、系统未授权establish-null补偿1/1、TUN重建补偿5/5及10笔实网；各批分开，不合并统计 |
-| 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，TLS根因仍待查。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
+| 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
+| 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | 在线age测试输入按SHA核对后删除；motion/test包已卸载、服务和TUN退出。原1.yaml未上传且SHA/大小/mtime保持，Flutter参考包未操作。新age identity仅保存在仓库外0600文件 |
-| 正在推进 | 在线age下载/解密/导入/应用已验；下一项优先对新增TLS失败做同节点/同网络有界对照，再推进剩余原生故障、协议/来源及低API/OEM条件边界 |
+| 正在推进 | 在线age下载/解密/导入/应用已验；当前推进剩余原生故障、协议/来源及低API/OEM条件边界 |
 | 后排及暂缓 | Flutter剩余子页/面板/连续动效、菜单原生归因及8MiB性能后排；玻璃默认关闭。备份/系统恢复、观测次要打磨、语言主题暂缓；TalkBack/自定义无障碍等取消项不回列 |
 | 最新证据 | [0.1.6发布](acceptance/release-0.1.6-20261118.json)、[在线age完整链路](acceptance/online-age-subscription-poco-20261118.json)、[TUN重建补偿](acceptance/tun-rebuild-poco-20261117.json)、[KUI-042](acceptance/kui042-regression-poco-20261112.json) |
 
@@ -1394,7 +1396,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 当前公开版为**0.1.6/code1006**，标签`2370177e`，正式证书、CI及远端资产摘要已核对；Release包未安装到手机，见[发布证据](acceptance/release-0.1.6-20261118.json)。0.1.5与0.1.4签名/CI/真机记录是独立历史证据。
 
-最新具名验收为911 JVM（含复用）、POCO在线age完整链路1/1、TUN重建补偿5/5与10笔实网。在线age已覆盖真实armor下载、缺钥/错钥保护、正确解密导入、Mihomo运行加载和授权目标非直连HTTP200。其他自然原生故障/来源/协议及设备条件仍见[功能清单](functional-closure.md)。11月12日TLS未复现是历史结果，本轮原RULE路径再次失败、固定节点通过，网络根因重新待查。以下日期段落为历史，不覆盖第3节当前快照。
+最新具名验收为911 JVM（含复用）、POCO在线age完整链路1/1、TUN重建补偿5/5与10笔实网。在线age已覆盖真实armor下载、缺钥/错钥保护、正确解密导入、Mihomo运行加载和授权目标非直连HTTP200。其他自然原生故障/来源/协议及设备条件仍见[功能清单](functional-closure.md)。11月12日TLS未复现是历史结果，本轮原RULE路径再次失败、固定节点通过，该项已按用户决定归档。以下日期段落为历史，不覆盖第3节当前快照。
 
 历史前组功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 
@@ -1514,7 +1516,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ## 8. 推荐推进顺序
 
-2026-11-18当前执行顺序与外层`todo.md`一致：在线age下载/解密/导入/核心应用已真机1/1收口；P2其余自然原生故障、其他协议/来源、低API/OEM仍有边界。P0因11月17日新TLS失败重新待查，优先同节点/同网络有界对照，再推进P3系统覆盖，最后P4视觉性能。六功能仍按4收口/1重新待查/1部分完成统计；配置/偏好与Provider历史已接受异常不重新主动追根，应用内下载/安装已取消。
+2026-11-18当前执行顺序与外层`todo.md`一致：在线age下载/解密/导入/核心应用已真机1/1收口；P2其余自然原生故障、其他协议/来源、低API/OEM仍有边界。P0首连TLS归档，先推进P2语义预检，再推进P3系统覆盖，最后P4视觉性能。六功能仍按5收口/1部分完成统计；配置/偏好与Provider历史已接受异常不重新主动追根，应用内下载/安装已取消。
 
 ### 原11项收尾清单（历史分类与后续覆盖索引）
 

@@ -19,7 +19,7 @@
     "allNonDirect": true,
     "nodeIndex": 2,
     "mode": "GLOBAL",
-    "nodeAddressFixedByTemporaryHosts": true,
+    "nodeAddressFixedByTemporaryHosts": false,
     "postRecoveryManualNodeChange": false,
     "cases": [
       {
@@ -913,7 +913,7 @@
   "limits": [
     "Controlled MTU rejection from Android Binder/system_server and controlled congestion rejection from real Go; not spontaneous device/core failure reproduction.",
     "Candidate network MTU is changed through production updateNetworkSettings/applyProfileLocked; ordinary Profile fields are overridden by global settings and separately verified not to rebuild TUN.",
-    "Only POCO API36, Wi-Fi, authorized target, one fixed VLESS node; final motion build is not a signed R8 installed release.",
+    "Only POCO API36, Wi-Fi, authorized target, one fixed VMess/WS node with a literal IP (endpoint-select-2 and endpoint-apply-node-2-0 receipts); final motion build is not a signed R8 installed release.",
     "Initial RULE requests failed TLS before fault injection; two other nodes also failed SOCKS HTTPS. Success on node index2 does not establish the root cause or all-node network stability."
   ],
   "localArtifacts": "../acceptance-artifacts/tun-rebuild-poco-20261117/",
