@@ -1,0 +1,59 @@
+{
+  "id": "KUI-VIS-043",
+  "date": "2026-11-18",
+  "status": "POCO_DEVICE_ACCEPTANCE_PASSED",
+  "reference": {
+    "flutterCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "prismCommit": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "files": [
+      "plugins/prism_ui/lib/null_status.dart",
+      "lib/views/config/ntp.dart",
+      "lib/views/config/sniffer.dart"
+    ]
+  },
+  "implementation": {
+    "file": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt",
+    "transition": "NTP/Sniffer empty state and configured field list use 300ms fade/scale-in from 0.92 and 150ms fade/scale-out to 0.92.",
+    "inputBoundary": "Outgoing content is disabled until its AnimatedContent transition settles.",
+    "compactSpacing": "Empty-state title uses 12dp top spacing below 560dp viewport height and 16dp otherwise; add action uses 24dp spacing after description."
+  },
+  "tests": {
+    "jvmTask": ":app:testDebugUnitTest",
+    "jvmTests": 618,
+    "jvmFailures": 0,
+    "jvmErrors": 0,
+    "jvmSkipped": 0,
+    "androidTestMethod": "ProfileMoreEditorInstrumentedTest#emptyStateAndConfiguredRowsCrossfadeWithoutLeavingOutgoingActionsEnabled",
+    "androidTestStatus": "passed_on_poco",
+    "naturalClockMethod": "VisualMotionNaturalInstrumentedTest#ntpFieldsReturnToEmptyWithSystemClock"
+  },
+  "deviceAcceptance": {
+    "status": "passed",
+    "target": "POCO F2 Pro / API36",
+    "finalBatch": "visual-043-047-poco-20261118.json"
+  },
+  "remaining": [
+    "Same-state fixed Flutter/Kotlin nonempty subpage matrix",
+    "Add panel, protocol-target and resource-search visual alignment",
+    "Dock live background and glass-only touch glow reference alignment",
+    "Menu first-open/close RenderThread attribution"
+  ],
+  "notes": [
+    "Device evidence covers the named Kotlin UI interactions. Fixed Flutter runtime comparisons of the full page matrix remain open."
+  ],
+  "sourceStageBuild": {
+    "tasks": [
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":app:lintDebug"
+    ],
+    "result": "success",
+    "debugApkSha256": "2ae6b69095fb305483777436532655f103464cb2231cd1a040ff9e7fbaf11bbf",
+    "androidTestApkSha256": "f92ee6ebb0b3428b9c9acdf589e9697e7babf3bf5732eaf71b7b8df037054d0c",
+    "buildLog": "../../../acceptance-artifacts/config-subpages-parity-20261118/ntp-sniffer-transition-final-check.log"
+  },
+  "build": {
+    "finalBatch": "visual-043-047-poco-20261118.json",
+    "variant": "motionBenchmark"
+  }
+}

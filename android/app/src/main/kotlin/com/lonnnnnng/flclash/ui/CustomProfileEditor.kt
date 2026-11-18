@@ -141,7 +141,6 @@ internal fun ProfileEditorDialog(
                         onMore = { openSection { showMore = true } },
                         onGroups = { openSection { onOpenProxyGroupsEditor(profile) } },
                         onGroup = onOpenSingleProxyGroupEditor?.let { open -> { index -> openSection { open(profile, index) } } },
-                        onProxies = { openSection { onOpenDialersEditor(profile) } },
                     )
                     TextButton(onClick = { showYaml = !showYaml }, modifier = Modifier.testTag("custom_profile_toggle_yaml")) {
                         Text(if (showYaml) "收起原始 YAML" else "编辑原始 YAML")

@@ -402,6 +402,40 @@ class ProfileMoreEditorInstrumentedTest {
         }
     }
 
+    @Test fun emptyStateAndConfiguredRowsCrossfadeWithoutLeavingOutgoingActionsEnabled() {
+        section = "sniffer"
+        state = ProfileMoreEditorUiState(
+            Profile.custom(923, "更多设置"),
+            sniffer = ProfileSnifferOverrides(enable = false),
+        )
+        render()
+        try {
+            compose.mainClock.autoAdvance = false
+            compose.onNodeWithTag("more_remove_enable").performClick()
+            compose.mainClock.advanceTimeBy(80)
+            compose.onNodeWithTag("more_field_enable").assertExists()
+            compose.onNodeWithTag("profile_more_empty").assertExists()
+            compose.onNodeWithTag("more_remove_enable").assertIsNotEnabled()
+            compose.onNodeWithTag("profile_more_reset").assertIsNotEnabled()
+            capture("vis043_sniffer_exit_80ms")
+            compose.mainClock.advanceTimeBy(400)
+            compose.onNodeWithTag("profile_more_empty").assertIsDisplayed()
+            compose.onNodeWithTag("more_field_enable").assertDoesNotExist()
+            capture("vis043_sniffer_empty")
+
+            compose.runOnIdle { state = state.copy(sniffer = ProfileSnifferOverrides(enable = false)) }
+            compose.mainClock.advanceTimeBy(80)
+            compose.onNodeWithTag("profile_more_empty").assertExists()
+            compose.onNodeWithTag("more_field_enable").assertExists()
+            compose.onNodeWithTag("profile_more_empty_add").assertIsNotEnabled()
+            compose.mainClock.advanceTimeBy(400)
+            compose.onNodeWithTag("profile_more_empty").assertDoesNotExist()
+            compose.onNodeWithTag("more_field_enable").assertIsDisplayed()
+        } finally {
+            compose.mainClock.autoAdvance = true
+        }
+    }
+
     private fun render() {
         assertPortraitDefaultFontConfiguration()
         compose.setContent { KClashTheme(darkTheme = dark) {

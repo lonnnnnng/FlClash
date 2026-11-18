@@ -1,0 +1,66 @@
+{
+  "id": "KUI-VIS-044",
+  "date": "2026-11-18",
+  "status": "POCO_DEVICE_ACCEPTANCE_PASSED",
+  "reference": {
+    "flutterCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "file": "lib/views/profiles/custom/custom.dart",
+    "symbols": [
+      "_Overview",
+      "_StatusText",
+      "_MoreSectionsView"
+    ]
+  },
+  "implementation": {
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/CustomProfileOverview.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/CustomProfileEditor.kt"
+    ],
+    "changes": [
+      "Removed the extra overview proxy row that opened the same Dialers editor already available under More.",
+      "Active DNS and More statuses use the Flutter tertiary color; defaults remain onSurfaceVariant and missing resources remain error colored."
+    ],
+    "preservedEntry": "More -> Dialers editor"
+  },
+  "tests": {
+    "jvmTask": "./gradlew test",
+    "jvmTests": 911,
+    "jvmFailures": 0,
+    "jvmErrors": 0,
+    "jvmSkipped": 0,
+    "instrumentedMethod": "ProfilesPageParityInstrumentedTest#customOverviewTitleMenuAndMoreRenderBothThemes",
+    "instrumentedChanges": [
+      "Added an assertion that the duplicate overview proxy row is absent.",
+      "Existing light/dark captures and More-to-Dialers interaction remain in the test."
+    ],
+    "instrumentedStatus": "passed_on_poco"
+  },
+  "deviceAcceptance": {
+    "status": "passed",
+    "target": "POCO F2 Pro / API36",
+    "finalBatch": "visual-043-047-poco-20261118.json"
+  },
+  "remaining": [
+    "Same-state Flutter/Kotlin nonempty subpage matrix",
+    "Remaining panels and full-page continuous transitions",
+    "Menu first-open/close RenderThread attribution"
+  ],
+  "notes": [
+    "Device evidence covers the named Kotlin UI interactions. Fixed Flutter runtime comparisons of the full page matrix remain open."
+  ],
+  "sourceStageBuild": {
+    "tasks": [
+      "./gradlew test",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":app:lintDebug"
+    ],
+    "result": "success",
+    "debugApkSha256": "b34622477bf76d4653c122b62c2a1a6a9caf5119efaab8c40c5db69bacf46b32",
+    "androidTestApkSha256": "58b33dfda02c0b6e9ad87e77b5b9b3f88fdad3a4ffbd89397fc84212c78504bd"
+  },
+  "build": {
+    "finalBatch": "visual-043-047-poco-20261118.json",
+    "variant": "motionBenchmark"
+  }
+}

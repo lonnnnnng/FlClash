@@ -1,0 +1,86 @@
+{
+  "id": "KUI-VIS-045",
+  "date": "2026-11-18",
+  "status": "POCO_DEVICE_ACCEPTANCE_PASSED",
+  "reference": {
+    "flutterCommit": "be84736605527034689c95bf27828ff27d912c5e",
+    "prismUiCommit": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "files": [
+      "lib/views/profiles/custom/groups.dart",
+      "lib/features/form/selection_sheet.dart",
+      "prism_ui/lib/search_field.dart",
+      "lib/ui/scaffold/scaffold_search.dart"
+    ],
+    "behavior": [
+      "Empty Fallback targets are split into basic strategies and proxies.",
+      "Default-selected targets are split into the default option and current group members.",
+      "The active selection is marked and the selection sheet returns the chosen draft value immediately.",
+      "Search appears at 10 total candidates; terms are whitespace-separated and all must match the label.",
+      "The search expands from the page top bar and backs out before leaving the selector.",
+      "The selected row is revealed around the viewport center when scroll bounds allow it."
+    ],
+    "sourceUrls": [
+      "https://github.com/chen08209/prism_ui/blob/63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185/lib/search_field.dart",
+      "https://github.com/chen08209/FlClash/blob/be84736605527034689c95bf27828ff27d912c5e/lib/ui/scaffold/scaffold_search.dart"
+    ]
+  },
+  "implementation": {
+    "file": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt",
+    "changes": [
+      "Replaced target-value dialogs with a nested full-page editor selector.",
+      "Grouped Empty Fallback candidates into basic strategies and proxies.",
+      "Grouped default-selected candidates into the blank default and current group members.",
+      "Marked the current candidate and kept selection changes in the group draft until top-level confirmation.",
+      "Added the 10-candidate search threshold, case-insensitive all-term matching, and a clearable no-results state.",
+      "Moved search from the page bottom dock to the page top bar, with focus, clear, collapse, and Back handling.",
+      "Centers the current candidate in the available viewport when content bounds allow it."
+    ]
+  },
+  "tests": {
+    "jvmTask": "./gradlew test",
+    "jvmTests": 911,
+    "jvmFailures": 0,
+    "jvmErrors": 0,
+    "jvmSkipped": 0,
+    "instrumentedMethods": [
+      "ProxyGroupEditorInstrumentedTest#fallbackTargetPickerGroupsSourcesAndMarksCurrentChoice",
+      "ProxyGroupEditorInstrumentedTest#defaultSelectedPickerSeparatesDefaultAndGroupMembers"
+    ],
+    "instrumentedCoverage": [
+      "Long Fallback candidates reveal the active item and expose search at the upstream threshold.",
+      "Search filters by all terms, shows a recoverable empty state, and can be cleared.",
+      "The top-bar field opens, clears, collapses, and returns to collapsed state before leaving the selector.",
+      "The selected row center remains within 32dp of the viewport center when the scroll range permits.",
+      "Short default-selected lists keep search hidden."
+    ],
+    "instrumentedStatus": "passed_on_poco"
+  },
+  "deviceAcceptance": {
+    "status": "passed",
+    "target": "POCO F2 Pro / API36",
+    "finalBatch": "visual-043-047-poco-20261118.json"
+  },
+  "remaining": [
+    "The exact Flutter liquid/glass search morph is not reproduced.",
+    "Same-state Flutter/Kotlin nonempty page matrix and remaining continuous transitions",
+    "Menu first-open/close RenderThread attribution"
+  ],
+  "notes": [
+    "Device evidence covers the named Kotlin UI interactions. Fixed Flutter runtime comparisons of the full page matrix remain open."
+  ],
+  "sourceStageBuild": {
+    "tasks": [
+      "./gradlew test",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":app:lintDebug"
+    ],
+    "result": "success",
+    "debugApkSha256": "faebda26dec924b00fa09b843de5701f20ebfe88a85b29c57850b98302c392c3",
+    "androidTestApkSha256": "5d444c4f66b88fa19beae3eccbd35b249d04fddd598179b56daf89c9357db85b"
+  },
+  "build": {
+    "finalBatch": "visual-043-047-poco-20261118.json",
+    "variant": "motionBenchmark"
+  }
+}

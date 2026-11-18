@@ -1,0 +1,134 @@
+{
+  "date": "2026-11-18",
+  "scope": "KUI-VIS-043 through KUI-VIS-047",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "screenPixels": [
+      1080,
+      2400
+    ],
+    "densityDpi": 396,
+    "fontScale": 1,
+    "orientation": "portrait"
+  },
+  "variant": "motionBenchmark",
+  "final": {
+    "methods": [
+      "emptyStateAndConfiguredRowsCrossfadeWithoutLeavingOutgoingActionsEnabled",
+      "customOverviewTitleMenuAndMoreRenderBothThemes",
+      "fallbackTargetPickerGroupsSourcesAndMarksCurrentChoice",
+      "addingAllOptionsReturnsToDraftWithoutSavingParent",
+      "addSettingSearchUsesTenItemThresholdAndFiltersAllTerms",
+      "defaultSelectedPickerSeparatesDefaultAndGroupMembers",
+      "customRuleProviderSearchEmptyStateCanClearAndRestoreCandidates",
+      "ntpFieldsReturnToEmptyWithSystemClock"
+    ],
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedSeconds": 35.814,
+    "screenshots": {
+      "vis043_sniffer_exit_80ms": {
+        "sha256": "d17ef73b6497ab372b670030c9cbbd3f25c538d0183a3a7f706c319b7210f60e",
+        "bytes": 146063
+      },
+      "vis043_sniffer_empty": {
+        "sha256": "de9379849032bfe85672a5c4a4d1de0a00da6ce68672c2014f6a1add7ff86766",
+        "bytes": 74073
+      },
+      "profiles_custom_overview_light": {
+        "sha256": "a4b2ffc14e714928856e3c2006960659bd59873e09e7e1c0546bdfe99419aa96",
+        "bytes": 96644
+      },
+      "profiles_custom_more_light": {
+        "sha256": "402350534d343da4d9e3d5b6d61f390ac5ade012863053cd53bb286479ee0550",
+        "bytes": 59380
+      },
+      "profiles_custom_overview_dark": {
+        "sha256": "4ec0b24cf5fbf2d11746aab584190d5292a0cad7b0ed8cbf7a6ce52ce4fc3452",
+        "bytes": 94700
+      },
+      "profiles_custom_more_dark": {
+        "sha256": "157f918391190280527f54c97fcf4b44ecc13689924254b0f65a38650e1a78f3",
+        "bytes": 61683
+      },
+      "vis045_fallback_centered": {
+        "sha256": "e8eb2b3516179b1fc264dd95608b1162076fb21d57b5c78462777e3fc1f298c5",
+        "bytes": 113857
+      },
+      "groups_all_options_returned_to_draft": {
+        "sha256": "27feab92d910c9169b40201526555a801cd8ec3068476c0d6e99d60978956fe7",
+        "bytes": 135411
+      },
+      "vis046_no_results": {
+        "sha256": "af07f486267effcba66d1600625ab1d158da8d698e7b244554a1146b13ac1190",
+        "bytes": 182112
+      },
+      "vis045_default_targets": {
+        "sha256": "31c61af578585e08f9798bc0d5cd70cdcae054032f6b85f789579c457b9ee5ad",
+        "bytes": 97297
+      },
+      "vis047_rule_search_empty": {
+        "sha256": "477c0b978d3cc02df159ed2c387537ca0fcb76672b4ddd819a744575928c6a30",
+        "bytes": 123373
+      },
+      "vis047_rule_search_cleared": {
+        "sha256": "1254669a94afcf577c3485ab2ce0750947b60d5145198f31ea67f96eed75e2b0",
+        "bytes": 102210
+      },
+      "natural__vis043_ntp_fields": {
+        "sha256": "ef88c76ee193be03abda9833ff7f48aa06153f1282720ff7b7b33bcb19d61225",
+        "bytes": 80196
+      },
+      "natural__vis043_ntp_empty": {
+        "sha256": "e0de499244a9d48736334e25d0380f9801d2256f1d858d657f523d4d885bc798",
+        "bytes": 74230
+      }
+    },
+    "captureVerified": "PNG chunk count, digest, byte length, decodability and dimensions verified; contact sheet visually reviewed",
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "102682958e0a840392ecafd3ca2729f39a760a8eb4953b562161b94090d2f217",
+      "com.lonnnnnng.flclash.motion.test": "be1123f224a9266e1f718fab716d5cbd9257978dbcb53542082a127b339bc626"
+    }
+  },
+  "earlierRuns": [
+    {
+      "run": "baseline",
+      "passed": 3,
+      "failed": 4
+    },
+    {
+      "run": "fix1",
+      "passed": 6,
+      "failed": 1
+    }
+  ],
+  "localArtifacts": "../acceptance-artifacts/visual-043-047-poco-20261118-XfDmTFz7",
+  "instrumentLogSha256": {
+    "baseline": "904553e6cfc9305ac94c7fa53d973931f008cbdcb6bdeef4158f5139a76b614c",
+    "fix1": "4558d874a48b644f68adfa3de1f80a7a706257daed839a711407f845faccd8f8",
+    "final1": "92160d1a0dbe76f01d0f15ac8993756556c8452b35a1f7518f07d2b2c97f8cdc"
+  },
+  "build": {
+    "jvm": {
+      "app": 618,
+      "service": 220,
+      "core": 39,
+      "common": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "includesGradleReuse": true
+    },
+    "checks": [
+      "assembleDebug",
+      "lintDebug",
+      "assembleMotionBenchmark",
+      "assembleMotionBenchmarkAndroidTest",
+      "lintMotionBenchmark"
+    ]
+  },
+  "cleanup": "Verified hashes before uninstall, both acceptance packages absent. Tests used isolated UI fixtures."
+}

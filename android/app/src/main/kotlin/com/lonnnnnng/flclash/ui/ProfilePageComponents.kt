@@ -2,19 +2,32 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -38,9 +51,10 @@ internal fun ProfileEditorPage(
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     backTag: String = "profile_editor_back",
     bottomBar: (@Composable () -> Unit)? = null,
+    topBarSearch: ProfileEditorSearchState? = null,
 ) {
     LocalEmbeddedProfilePage.current?.let { page ->
-        EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar)
+        EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar, topBarSearch)
         return
     }
     val draftRegistry = rememberEditorWindowRegistry()
@@ -49,6 +63,12 @@ internal fun ProfileEditorPage(
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
       ProvideEditorWindowRegistry(draftRegistry) {
+        val searchFocus = remember { FocusRequester() }
+        ProfileEditorSearchFocus(topBarSearch, searchFocus)
+        androidx.activity.compose.BackHandler(enabled = topBarSearch?.expanded == true) {
+            topBarSearch?.onQueryChange?.invoke("")
+            topBarSearch?.onExpandedChange?.invoke(false)
+        }
         val view = LocalView.current
         val window = (view.parent as? DialogWindowProvider)?.window
         val entrance = remember { Animatable(0f) }
@@ -78,11 +98,24 @@ internal fun ProfileEditorPage(
             contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 TopAppBar(
-                    title = { Box(Modifier.testTag("profile_page_title")) { title() } },
+                    title = {
+                        if (topBarSearch != null) {
+                            AnimatedContent(topBarSearch.expanded, transitionSpec = {
+                                fadeIn(tween(180)) togetherWith fadeOut(tween(80))
+                            }, label = "profileEditorSearchTitle") { searching ->
+                                if (searching) ProfileEditorSearchInput(topBarSearch, searchFocus,
+                                    Modifier.fillMaxWidth().height(44.dp).testTag("profile_top_search"))
+                                else Box(Modifier.testTag("profile_page_title")) { title() }
+                            }
+                        } else Box(Modifier.testTag("profile_page_title")) { title() }
+                    },
                     navigationIcon = { IconButton(onClick = onDismissRequest, modifier = Modifier.testTag(backTag)) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, modifier = Modifier.testTag("action:返回"))
                     } },
-                    actions = { confirmButton() },
+                    actions = {
+                        confirmButton()
+                        topBarSearch?.let { ProfileEditorSearchToggle(it) }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = dashboardPageColor()),
                 )
             },
@@ -96,6 +129,57 @@ internal fun ProfileEditorPage(
             }
         }
       }
+    }
+}
+
+@Composable
+internal fun ProfileEditorSearchFocus(state: ProfileEditorSearchState?, requester: FocusRequester) {
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    if (state != null) LaunchedEffect(state.expanded) {
+        if (state.expanded) requester.requestFocus()
+        else {
+            focus.clearFocus(force = true)
+            keyboard?.hide()
+        }
+    }
+}
+
+@Composable
+internal fun ProfileEditorSearchInput(state: ProfileEditorSearchState, requester: FocusRequester, modifier: Modifier = Modifier) {
+    val keyboard = LocalSoftwareKeyboardController.current
+    Surface(modifier, shape = AppSuperellipseShape(22.dp), color = dashboardCardColor()) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).padding(start = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Outlined.Search, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(8.dp))
+            BasicTextField(state.query, { state.onQueryChange(it.take(256)) }, Modifier.weight(1f).fillMaxHeight()
+                .focusRequester(requester).testTag("profile_top_search_input"), singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
+                decorationBox = { inner -> Box(contentAlignment = Alignment.CenterStart) {
+                    if (state.query.isEmpty()) Text(state.placeholder, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    inner()
+                } })
+            if (state.query.isNotEmpty()) IconButton(onClick = { state.onQueryChange("") },
+                modifier = Modifier.size(40.dp).testTag("profile_top_search_clear")) {
+                Icon(Icons.Outlined.Close, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+internal fun ProfileEditorSearchToggle(state: ProfileEditorSearchState) {
+    IconButton(onClick = {
+        if (state.expanded) {
+            state.onQueryChange("")
+            state.onExpandedChange(false)
+        } else state.onExpandedChange(true)
+    }, modifier = Modifier.testTag(if (state.expanded) "profile_top_search_close" else "profile_top_search_open")) {
+        Icon(if (state.expanded) Icons.Outlined.Close else Icons.Outlined.Search, null)
     }
 }
 

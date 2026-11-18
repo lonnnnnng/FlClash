@@ -287,7 +287,17 @@ private fun CustomRulePicker(mode: String, sections: List<Pair<String, List<Stri
                         itemsIndexed(filtered) { _, option -> Text(option, Modifier.fillMaxWidth().clickable { onSelect(option) }.padding(vertical = 20.dp).testTag("custom_rule_pick_$option")) }
                     }
                 }
-                if (sections.all { it.second.none { option -> option.contains(query, true) } }) item { Text("暂无可选项", Modifier.padding(vertical = 32.dp)) }
+                if (sections.all { it.second.none { option -> option.contains(query, true) } }) item {
+                    if (query.isNotEmpty()) {
+                        // 作者 long：目录有候选但搜索无匹配时提供恢复入口；真实空目录仍保留原提示。
+                        Column(Modifier.fillMaxWidth().padding(vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("无搜索结果", Modifier.testTag("custom_rule_picker_empty"))
+                            TextButton(onClick = { query = "" }, modifier = Modifier.testTag("custom_rule_picker_clear_search")) {
+                                Icon(Icons.Outlined.Close, null); Text("清除搜索")
+                            }
+                        }
+                    } else Text("暂无可选项", Modifier.padding(vertical = 32.dp).testTag("custom_rule_picker_empty"))
+                }
             }
         }
     })

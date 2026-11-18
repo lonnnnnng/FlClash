@@ -25,7 +25,6 @@ internal fun CustomProfileOverview(
     onDns: () -> Unit,
     onMore: () -> Unit,
     onGroups: () -> Unit,
-    onProxies: () -> Unit,
     onGroup: ((Int) -> Unit)? = null,
 ) {
     val readable = summary?.takeUnless { it.unreadable }
@@ -42,9 +41,9 @@ internal fun CustomProfileOverview(
             CustomOverviewRow("资源", resources, Icons.Outlined.Cloud, enabled, "custom_profile_resources",
                 error = (readable?.missingProviders ?: 0) > 0, onClick = onResources)
             CustomOverviewRow("DNS", readable?.let { if (it.dnsEnabled) "已启用" else "未启用" } ?: "—",
-                Icons.Outlined.Dns, enabled, "custom_profile_dns", onClick = onDns)
+                Icons.Outlined.Dns, enabled, "custom_profile_dns", active = readable?.dnsEnabled == true, onClick = onDns)
             CustomOverviewRow("更多", readable?.let { if (it.moreInEffect > 0) "${it.moreInEffect} 项生效" else "默认" } ?: "—",
-                Icons.Outlined.Tune, enabled, "custom_profile_more", onClick = onMore)
+                Icons.Outlined.Tune, enabled, "custom_profile_more", active = (readable?.moreInEffect ?: 0) > 0, onClick = onMore)
         }
     }
     Row(Modifier.fillMaxWidth().padding(top = 18.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -68,20 +67,23 @@ internal fun CustomProfileOverview(
             }
         }
     }
-    ProfileSectionRow("代理", readable?.let { "${it.proxies} 个本地代理" }, Icons.Outlined.Link, enabled,
-        Modifier.testTag("custom_profile_proxies"), onProxies)
 }
 
 @Composable
 private fun CustomOverviewRow(title: String, status: String, icon: ImageVector, enabled: Boolean,
-    tag: String, error: Boolean = false, onClick: () -> Unit) {
+    tag: String, error: Boolean = false, active: Boolean = false, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().testTag(tag).clickable(enabled = enabled, onClick = onClick)
         .heightIn(min = 60.dp).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(title, Modifier.weight(1f))
         Text(status, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            color = if (error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+            color = when {
+                error -> MaterialTheme.colorScheme.error
+                // 作者 long：只有已生效配置使用强调色，默认和未读取状态继续弱化，保持概览状态层级与 Flutter 一致。
+                active -> MaterialTheme.colorScheme.tertiary
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            })
         Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

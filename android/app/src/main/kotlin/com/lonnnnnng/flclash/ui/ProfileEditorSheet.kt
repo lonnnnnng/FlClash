@@ -30,6 +30,13 @@ import kotlinx.coroutines.launch
 internal data class EmbeddedProfilePage(val root: Boolean, val scroll: ScrollState,
     val registerBack: (() -> Unit) -> Unit, val reportBodyHeight: (Int?) -> Unit)
 internal val LocalEmbeddedProfilePage = staticCompositionLocalOf<EmbeddedProfilePage?> { null }
+internal data class ProfileEditorSearchState(
+    val expanded: Boolean,
+    val query: String,
+    val placeholder: String,
+    val onQueryChange: (String) -> Unit,
+    val onExpandedChange: (Boolean) -> Unit,
+)
 
 /** 作者 long：组表单及子页共享停靠与加密树，拖回预览不注册返回动作、不写草稿或参与正文测量。 */
 @Composable
@@ -109,18 +116,43 @@ internal fun ProfileEditorSheet(page: String, scroll: ScrollState, closing: Bool
 @Composable
 internal fun EmbeddedProfileEditorPage(page: EmbeddedProfilePage, onDismiss: () -> Unit,
     title: @Composable () -> Unit, text: @Composable () -> Unit, actions: @Composable () -> Unit,
-    backTag: String, contentPadding: PaddingValues, bottomBar: (@Composable () -> Unit)?) {
-    SideEffect { page.registerBack(onDismiss) }
+    backTag: String, contentPadding: PaddingValues, bottomBar: (@Composable () -> Unit)?,
+    topBarSearch: ProfileEditorSearchState? = null) {
+    val searchFocus = remember { androidx.compose.ui.focus.FocusRequester() }
+    ProfileEditorSearchFocus(topBarSearch, searchFocus)
+    val registeredBack = {
+        if (topBarSearch?.expanded == true) {
+            topBarSearch.onQueryChange("")
+            topBarSearch.onExpandedChange(false)
+        } else onDismiss()
+    }
+    SideEffect { page.registerBack(registeredBack) }
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 16.dp)) {
             IconButton(onDismiss, Modifier.align(Alignment.CenterStart).size(44.dp)
                 .background(dashboardCardColor(), AppSuperellipseShape(44.dp)).testTag(backTag)) {
                 Icon(if (page.root) Icons.Outlined.Close else Icons.AutoMirrored.Outlined.ArrowBack, null)
             }
-            Box(Modifier.align(Alignment.Center).padding(horizontal = 88.dp)) {
-                ProvideTextStyle(MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp, fontWeight = FontWeight.SemiBold), title)
+            if (topBarSearch != null) {
+                AnimatedContent(topBarSearch.expanded, modifier = Modifier.align(Alignment.CenterStart).fillMaxWidth()
+                    .padding(start = 56.dp, end = 52.dp).height(40.dp),
+                    transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(80)) },
+                    label = "embeddedProfileSearch") { searching ->
+                    if (searching) ProfileEditorSearchInput(topBarSearch, searchFocus, Modifier.fillMaxSize()
+                        .testTag("profile_top_search"))
+                    else Box(Modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
+                        ProvideTextStyle(MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp, fontWeight = FontWeight.SemiBold), title)
+                    }
+                }
+            } else {
+                Box(Modifier.align(Alignment.Center).padding(horizontal = 88.dp)) {
+                    ProvideTextStyle(MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp, fontWeight = FontWeight.SemiBold), title)
+                }
             }
-            Row(Modifier.align(Alignment.CenterEnd).background(dashboardCardColor(), AppSuperellipseShape(44.dp)), verticalAlignment = Alignment.CenterVertically) { actions() }
+            Row(Modifier.align(Alignment.CenterEnd).background(dashboardCardColor(), AppSuperellipseShape(44.dp)), verticalAlignment = Alignment.CenterVertically) {
+                actions()
+                topBarSearch?.let { ProfileEditorSearchToggle(it) }
+            }
         }
         Column(Modifier.fillMaxWidth().weight(1f).padding(contentPadding)) {
             Box(Modifier.fillMaxWidth().weight(1f)) { text() }

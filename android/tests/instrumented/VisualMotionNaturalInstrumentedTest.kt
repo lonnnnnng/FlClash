@@ -234,6 +234,20 @@ class VisualMotionNaturalInstrumentedTest {
         } finally { MenuCloseCaptureProbe.reset(); ProxyPageOptionsStore.save(context, old) }
     }
 
+    @Test fun ntpFieldsReturnToEmptyWithSystemClock() {
+        assertPortraitDefaultFontConfiguration()
+        ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
+            scenario.onActivity { it.showMoreEditor = true }
+            await("暂无设置项")
+            click("添加设置项"); click("服务器"); awaitGone("服务器"); click("完成")
+            await("清除本分区覆盖"); settle()
+            capture("vis043_ntp_fields")
+            click("清除本分区覆盖"); click("清除"); await("暂无设置项"); settle()
+            capture("vis043_ntp_empty")
+            scenario.onActivity { assertEquals(2, it.moreSaveRequests) }
+        }
+    }
+
     @Test fun moreSelectionEntriesUseNaturalContinuousExit() {
         assertPortraitDefaultFontConfiguration()
         assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashNaturalMotion"))

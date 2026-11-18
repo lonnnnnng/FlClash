@@ -50,6 +50,22 @@ class CustomRulesEditorInstrumentedTest {
         assertEquals("RULE-SET,Local,DIRECT", values().last())
     }
 
+    @Test fun customRuleProviderSearchEmptyStateCanClearAndRestoreCandidates() {
+        content = ""; render()
+        compose.onNodeWithTag("custom_rules_add").performClick()
+        pick("type", "RULE-SET")
+        compose.onNodeWithTag("custom_rule_provider").performClick()
+        compose.onNodeWithTag("custom_rule_picker_search").performTextInput("no-such-provider")
+        compose.onNodeWithTag("custom_rule_picker_empty").assertTextEquals("无搜索结果")
+        capture("vis047_rule_search_empty")
+        compose.onNodeWithTag("custom_rule_picker_clear_search").performScrollTo().performClick()
+        compose.onNodeWithTag("custom_rule_picker_empty").assertDoesNotExist()
+        capture("vis047_rule_search_cleared")
+        compose.onNodeWithTag("custom_rule_pick_Local").assertIsDisplayed().performClick()
+        confirmForm()
+        assertEquals("RULE-SET,Local,DIRECT", values().single())
+    }
+
     @Test fun yamlRejectsInvalidPayloadAndKeepsMissingReferencesVisibleForRepair() {
         render(); menu("yaml")
         compose.onNodeWithTag("profile_rules_yaml").performTextReplacement("- NETWORK,any,DIRECT")

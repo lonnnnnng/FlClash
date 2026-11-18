@@ -90,6 +90,7 @@ class ProfilesPageParityInstrumentedTest {
             compose.onNodeWithTag("custom_profile_rules").assertIsDisplayed()
             compose.onNodeWithTag("custom_profile_resources").assertTextContains("3 · 缺失 1")
             compose.onNodeWithTag("custom_profile_group_0").assertIsDisplayed()
+            compose.onNodeWithTag("custom_profile_proxies").assertDoesNotExist()
             capture("profiles_custom_overview_$theme")
             compose.onNodeWithTag("custom_profile_title_menu").performClick()
             compose.onNodeWithTag("custom_profile_preview").performClick()

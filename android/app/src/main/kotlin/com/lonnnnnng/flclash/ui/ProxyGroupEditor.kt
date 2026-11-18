@@ -14,9 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -28,9 +31,14 @@ import com.lonnnnnng.flclash.data.*
 import kotlin.math.abs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 private data class GroupOption(val key: String, val label: String, val default: String, val kind: String = "text")
+private data class GroupTargetSection(val key: String, val title: String?, val choices: List<String>)
+// 作者 long：Flutter SelectionSheet 在十项起显示搜索，短列表保持一眼可扫。
+private const val GROUP_SELECTION_SEARCH_MIN_ITEM_COUNT = 10
 private val groupOptions = listOf(
     GroupOption("empty-fallback", "空组回退", "COMPATIBLE", "target"),
     GroupOption("url", "测速地址", "https://www.gstatic.com/generate_204"),
@@ -308,6 +316,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     val formList = rememberLazyListState()
     val iconGrid = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
     val pickerScroll = rememberScrollState()
+    val targetScroll = rememberScrollState()
     val optionScroll = rememberScrollState()
     val rootScroll = rememberScrollState()
     var filterErrors by remember { mutableStateOf(emptyList<String>()) }
@@ -327,6 +336,12 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     // 作者 long：只保存选项身份，重建时从同一字段目录恢复子页，避免父草稿还在而未确认的值窗口已丢失。
     var editingKey by rememberSaveable(initial.key) { mutableStateOf<String?>(null) }
     val editing = (groupIdentityOptions + groupOptions).firstOrNull { it.key == editingKey }
+    var targetQuery by rememberSaveable(initial.key) { mutableStateOf("") }
+    var targetSearchExpanded by rememberSaveable(initial.key) { mutableStateOf(false) }
+    var optionQuery by rememberSaveable(initial.key) { mutableStateOf("") }
+    var optionSearchExpanded by rememberSaveable(initial.key) { mutableStateOf(false) }
+    val optionFocusManager = LocalFocusManager.current
+    val optionKeyboard = LocalSoftwareKeyboardController.current
     var addOption by rememberSaveable(initial.key) { mutableStateOf(false) }
     var members by rememberSaveable(initial.key) { mutableStateOf(false) }
     var yaml by rememberSaveable(initial.key) { mutableStateOf(false) }
@@ -372,11 +387,31 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
         "hash-key" -> group.text("type") == "load-balance" && group.text("strategy") != "round-robin"
         else -> true
     } }
-    val page = when { members -> "members"; iconPicker -> "icons"; addOption -> "options"; yaml -> "yaml"; else -> "root" }
-    val pageScroll = when (page) { "members" -> pickerScroll; "options" -> optionScroll; else -> rootScroll }
-    fun backPage() { members = false; iconPicker = false; addOption = false; yaml = false }
+    val remainingOptions = applicable.filterNot { group.fields.has(it.key) }
+    val optionTerms = optionQuery.trim().lowercase().split(Regex("\\s+")).filter(String::isNotEmpty)
+    val matchingOptions = remainingOptions.filter { option -> optionTerms.all(option.label.lowercase()::contains) }
+    val optionSearchable = optionSearchExpanded || optionQuery.isNotEmpty() ||
+        remainingOptions.size >= GROUP_SELECTION_SEARCH_MIN_ITEM_COUNT
+    fun collapseOptionSearch() {
+        optionQuery = ""; optionSearchExpanded = false
+        optionFocusManager.clearFocus(force = true); optionKeyboard?.hide()
+    }
+    LaunchedEffect(optionQuery, remainingOptions) {
+        // 作者 long：筛选后从列表开头展示匹配项，避免旧滚动偏移把短结果留在视口之外。
+        if (optionScroll.value > 0) optionScroll.scrollTo(0)
+    }
+    val targetSections = remember(editing?.key, group.json, source) {
+        editing?.takeIf { it.kind == "target" }?.let { groupTargetSections(it, group, source) }.orEmpty()
+    }
+    val page = when { members -> "members"; iconPicker -> "icons"; addOption -> "options"; yaml -> "yaml"; editing?.kind == "target" -> "target"; else -> "root" }
+    val pageScroll = when (page) { "members" -> pickerScroll; "target" -> targetScroll; "options" -> optionScroll; else -> rootScroll }
+    fun backPage() {
+        if (addOption) collapseOptionSearch()
+        members = false; iconPicker = false; addOption = false; yaml = false
+        if (editing?.kind == "target") { editingKey = null; targetQuery = ""; targetSearchExpanded = false }
+    }
     ProfileEditorSheet(page, pageScroll, closing, onExit = ::exit, onBack = ::backPage,
-        scrollForPage = { when (it) { "members" -> pickerScroll; "options" -> optionScroll; else -> rootScroll } },
+        scrollForPage = { when (it) { "members" -> pickerScroll; "target" -> targetScroll; "options" -> optionScroll; else -> rootScroll } },
         // 作者 long：用当前子页的真实滚动位置判定手势起点，中部回滚到顶不能顺势拖走整张编辑表单。
         isContentAtTop = { when (page) {
             "root" -> formList.firstVisibleItemIndex == 0 && formList.firstVisibleItemScrollOffset == 0
@@ -418,10 +453,13 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                             IconButton(onClick = { change { it.remove(option.key) } }, modifier = Modifier.testTag("group_remove_" + option.key)) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                             if (option.kind == "boolean") {
                                 Text(option.label, Modifier.weight(1f).padding(start = 16.dp)); Switch(group.flag(option.key), { value -> change { it.addProperty(option.key, value) } }, modifier = Modifier.padding(end = 16.dp))
-                            } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { "默认" }, "group_option_" + option.key) { editingKey = option.key } }
+                    } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { "默认" }, "group_option_" + option.key) {
+                        if (option.kind == "target") { targetQuery = ""; targetSearchExpanded = false }
+                        editingKey = option.key
+                    } }
                         }
                     }
-                    TextButton(onClick = { addOption = true }, modifier = Modifier.testTag("proxy_group_add_option")) { Icon(Icons.Outlined.Add, null); Text("添加设置项") }
+                    TextButton(onClick = { optionQuery = ""; optionSearchExpanded = false; addOption = true }, modifier = Modifier.testTag("proxy_group_add_option")) { Icon(Icons.Outlined.Add, null); Text("添加设置项") }
                 }
                 if (!creating) TextButton(onClick = onDelete, modifier = Modifier.testTag("proxy_group_delete")) { Text("删除策略组", color = MaterialTheme.colorScheme.error) }
                 Spacer(Modifier.height(16.dp))
@@ -432,25 +470,97 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     "members" -> ProxyGroupMemberPicker(group, groups, source, onDismiss = { members = false }) {
         json = it.json; memberLayout = it.memberLayout.orEmpty(); error = null
     }
-    "options" -> ProfileEditorPage(onDismissRequest = { addOption = false }, title = { Text("添加设置项") },
-        backTag = "proxy_group_add_option_back", contentPadding = PaddingValues(0.dp), text = {
+    "target" -> editing?.takeIf { it.kind == "target" }?.let { option ->
+        val terms = targetQuery.lowercase().trim().split(Regex("\\s+")).filter(String::isNotEmpty)
+        val matchingSections = targetSections.map { section -> section.copy(choices = section.choices.filter { choice ->
+            val label = choice.ifBlank { "默认" }.lowercase()
+            terms.all(label::contains)
+        }) }.filter { it.choices.isNotEmpty() }
+        val searchable = targetQuery.isNotEmpty() || targetSections.sumOf { it.choices.size } >= GROUP_SELECTION_SEARCH_MIN_ITEM_COUNT
+        var contentCoordinates by remember(option.key) { mutableStateOf<LayoutCoordinates?>(null) }
+        var selectedCoordinates by remember(option.key) { mutableStateOf<LayoutCoordinates?>(null) }
+        var viewportHeight by remember(option.key) { mutableIntStateOf(0) }
+        LaunchedEffect(option.key, targetSections) {
+            // 作者 long：在滚动内容自身的坐标系定位，避免浮层缩放和视口裁切改变屏外选中行的位置。
+            val offset = snapshotFlow {
+                val content = contentCoordinates
+                val row = selectedCoordinates
+                if (content?.isAttached == true && row?.isAttached == true && viewportHeight > 0 &&
+                    targetScroll.maxValue != Int.MAX_VALUE) {
+                    val center = content.localPositionOf(row, Offset.Zero).y + row.size.height / 2f
+                    (center - viewportHeight / 2f).roundToInt().coerceIn(0, targetScroll.maxValue)
+                } else null
+            }.first { it != null }
+            targetScroll.scrollTo(checkNotNull(offset))
+        }
+        ProfileEditorPage(onDismissRequest = { editingKey = null; targetQuery = ""; targetSearchExpanded = false }, title = { Text(option.label) },
+            backTag = "group_target_back",
+            topBarSearch = if (searchable) ProfileEditorSearchState(targetSearchExpanded, targetQuery, "搜索目标",
+                onQueryChange = { targetQuery = it }, onExpandedChange = { targetSearchExpanded = it }) else null,
+            text = {
+                if (matchingSections.isEmpty() && terms.isNotEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    ProxyPageEmptyState("无搜索结果", "试试其他关键词，或清除搜索查看全部目标。", "group_target_empty",
+                        searching = true, actionLabel = "清除搜索", actionTag = "group_target_clear_search", onAction = { targetQuery = "" })
+                } else Box(Modifier.fillMaxSize().onSizeChanged { viewportHeight = it.height }.testTag("group_target_viewport")) {
+                    Column(Modifier.fillMaxWidth().verticalScroll(targetScroll).onGloballyPositioned { contentCoordinates = it }) {
+                    matchingSections.forEach { section ->
+                        if (section.title == null) Spacer(Modifier.height(12.dp))
+                        else GroupSectionHeading(section.title, Modifier.testTag("group_target_section_${option.key}_${section.key}"))
+                        ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
+                            section.choices.distinct().forEach { choice ->
+                                val tagValue = choice.ifBlank { "default" }
+                                val selectedChoice = choice == group.text(option.key)
+                                Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(enabled = !confirming && !closing) {
+                                    change { it.addProperty(option.key, choice) }
+                                    editingKey = null; targetQuery = ""; targetSearchExpanded = false
+                                }.padding(horizontal = 16.dp, vertical = 12.dp).testTag(
+                                    if (selectedChoice) "group_target_selected_${option.key}_$tagValue"
+                                    else "group_target_choice_${option.key}_$tagValue").onGloballyPositioned {
+                                    if (selectedChoice) selectedCoordinates = it
+                                },
+                                    verticalAlignment = Alignment.CenterVertically) {
+                                    Text(choice.ifBlank { "默认" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge,
+                                        maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    if (selectedChoice) Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
+                    }
+                }
+            })
+    }
+    "options" -> ProfileEditorPage(onDismissRequest = {
+        collapseOptionSearch(); addOption = false
+    }, title = { Text("添加设置项") },
+        backTag = "proxy_group_add_option_back", contentPadding = PaddingValues(0.dp),
+        topBarSearch = if (optionSearchable) ProfileEditorSearchState(optionSearchExpanded, optionQuery, "搜索设置项",
+            onQueryChange = { optionQuery = it }, onExpandedChange = { expanded ->
+                optionSearchExpanded = expanded
+                if (!expanded) collapseOptionSearch()
+            }) else null,
+        text = {
         val report = LocalEmbeddedProfilePage.current?.reportBodyHeight
-        Column(Modifier.fillMaxWidth().verticalScroll(optionScroll).then(Modifier.onSizeChanged { report?.invoke(it.height) })) {
+        if (matchingOptions.isEmpty() && optionTerms.isNotEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            ProxyPageEmptyState("无搜索结果", "试试其他关键词，或清除搜索查看全部设置项。", "group_option_empty",
+                searching = true, actionLabel = "清除搜索", actionTag = "group_option_clear_search", onAction = { optionQuery = "" })
+        } else Column(Modifier.fillMaxWidth().verticalScroll(optionScroll).then(Modifier.onSizeChanged { report?.invoke(it.height) })) {
             val healthKeys = setOf("url", "interval", "timeout", "max-failed-times", "lazy", "expected-status", "tolerance")
             listOf("健康检查" to true, "其他" to false).forEach { (heading, health) ->
-                val options = applicable.filterNot { group.fields.has(it.key) }.filter { (it.key in healthKeys) == health }
+                val options = matchingOptions.filter { (it.key in healthKeys) == health }
                 if (options.isNotEmpty()) {
                     GroupSectionHeading(heading)
                     options.forEach { option ->
                         // 作者 long：添加只更新本组草稿并移除候选；剩余候选可继续添加，最后一项自动返回，始终不触发父表单保存。
                         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("group_add_" + option.key).clickable {
-                            val last = applicable.count { !group.fields.has(it.key) } == 1
+                            // 作者 long：末项按完整候选目录判断，搜索隐藏其他项时不能提前关闭添加面板。
+                            val last = remainingOptions.size == 1
                             change { when (option.kind) {
                                 "boolean" -> it.addProperty(option.key, option.default.toBoolean())
                                 "number" -> it.addProperty(option.key, option.default.toLong())
                                 else -> it.addProperty(option.key, option.default)
                             } }
-                            if (last) addOption = false
+                            if (last) { collapseOptionSearch(); addOption = false }
                         }.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(option.label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                             Icon(Icons.Outlined.Add, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
@@ -465,13 +575,11 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     "yaml" -> GroupQuickYaml(group, onDismiss = { yaml = false }, onApply = { next -> json = next.json; yaml = false; error = null })
     }
     }
-    editing?.let { option ->
+    editing?.takeUnless { it.kind == "target" }?.let { option ->
         val choices = when (option.kind) {
             "type" -> ProxyGroupDrafts.types
             "strategy" -> listOf("consistent-hashing", "round-robin", "sticky-sessions")
             "hash" -> listOf("", "in-user")
-            "target" -> if (option.key == "empty-fallback") ProxyGroupDrafts.builtins + ProxyGroupDrafts.proxyNames(source)
-                else listOf("") + ProxyGroupDrafts.members(group).filterNot { it.provider }.map { it.name }
             else -> emptyList()
         }
         GroupValueDialog(option, group.text(option.key), choices, onDismiss = { editingKey = null }, onSave = { value ->
@@ -550,9 +658,24 @@ private fun <T> GroupYamlPage(original: String, title: String, tag: String, onDi
         dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
 }
 
+// 作者 long：Fallback 的内置目标与普通代理来自不同命名域，分组呈现可避免用户把回退策略看成代理节点。
+private fun groupTargetSections(option: GroupOption, group: ProxyGroupDraft, source: String): List<GroupTargetSection> =
+    if (option.key == "empty-fallback") {
+        val basic = ProxyGroupDrafts.builtins.toList()
+        listOf(
+            GroupTargetSection("basic", "基础策略", basic),
+            GroupTargetSection("proxies", "代理", ProxyGroupDrafts.proxyNames(source).filterNot { it in basic }),
+        )
+    } else {
+        listOf(
+            GroupTargetSection("default", null, listOf("")),
+            GroupTargetSection("proxies", "代理", ProxyGroupDrafts.members(group).filterNot { it.provider }.map { it.name }),
+        )
+    }
+
 @Composable
-private fun GroupSectionHeading(title: String) {
-    Text(title, Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+private fun GroupSectionHeading(title: String, modifier: Modifier = Modifier) {
+    Text(title, modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
         style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 

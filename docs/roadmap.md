@@ -9,6 +9,9 @@
 
 > **KClash 0.1.6正式发布（2026-11-18）**：标签`kclash-v0.1.6`指向`2370177eb3059b6c8720953193a64266c95c4b7d`，versionCode1006，已成为GitHub Latest。标签CI全通过：Go race、JVM/R8、双Lint、正式签名及Release资产检查。远端arm64 APK 48,456,232字节，SHA-256 `2d2163a2c869bc941b02357102986f3c489fceaa1c9851c5016b04b74c7b4e8f`，证书SHA-256 `3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49`；版本、包名、API24+与ABI已回验。本次未安装Release包到手机；age真实UI验收由单独motion包完成。详见[发布记录](acceptance/release-0.1.6-20261118.json)与[说明](releases/kclash-v0.1.6.md)。
 
+> **043～047 已在 POCO F2 Pro 验收**。NTP 与 Sniffer 空态转场、CUSTOM 概览、代理组目标选择与添加设置项、规则资源搜索恢复共 8 项通过。修复了最后一个字段提前消失和屏外选中行居中偏差。已核对 14 张截图及键盘上方按钮的位置。[验收证据](acceptance/visual-043-047-poco-20261118.json)
+
+
 > **KClash 0.1.5直接发布（2026-11-12历史记录）**：按用户要求暂停后续TUN故障验收，直接本机正式签名构建发布`kclash-v0.1.5`，GitHub Latest、非草稿/非预发布。源码固定`54fb218d6871906741df3412eafae2f389aef695`，versionCode1005；APK `KClash-0.1.5-android-arm64-v8a.apk`，48,465,816字节，SHA`f1cd1660e9ab4d0f8576ae69606863e54ca3c3a8e9daf75382413d9b399921e3`与GitHub资产digest一致，沿用既有正式证书。仅assembleRelease成功（含构建内置lintVital），未重跑单测/完整Lint/真机/Go，未安装设备。原1.yaml未加入构建/上传，Flutter参考包未操作。见[发布说明](releases/kclash-v0.1.5.md)与[发布记录](acceptance/release-0.1.5-20261112.json)。
 
 > **系统拒绝建TUN补偿（2026-11-12，当前）**：POCO F2 Pro/API36最终单场景1/1、零失败/跳过，内部三次真实establish null拒绝（直接两次立即重试、生产ViewModel一次）及正常授权后一次恢复；拒绝原因明确传递，约1224/437/435ms返回，FAILED、无会话/恢复标志/残留服务/VPN网络，原配置/选择/正文/草稿保持。恢复后独立普通UID默认VPN真实DNS/TLS/HTTP200与核心同端口非DIRECT双向流量通过。首轮Network发布等待不足的恢复检查失败保留；只新增验收、加条件等待和清理/时间线保护，未改产品/内核。911JVM含Gradle复用、motion应用/测试构建/Lint零错误；安装回拉匹配，三个自有包/临时输入已清，外部服务及tun接口为空，Flutter/原1.yaml保持未上传。无新发版；只覆盖系统未授权拒绝和显式恢复，内核ioctl异常、热切原生失败自动回滚及其他既有条件边界仍未验。见[溯源](native-tun-establish-failure-acceptance.md)与[证据](acceptance/native-tun-failure-poco-20261112.json)。
@@ -1534,7 +1537,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 | 6 | IP/质量全部来源、持久缓存和失效恢复；服务全部目标 | 缓存闭环与全部目标尝试已验：757单测、final3 5/5、cold2/cold5各双阶段、回归10/10；远端部分受限，原长窗口配置保护after 0/1/原因未定，新短窗口通过不替代失败。见`ip-quality-cache-redmi-20261105.json` |
 | 7 | Fallback 无有效 now 实核行为和冷恢复 | 冷进程收尾已验：更新后的唯一授权源为34组、1个非空Fallback/7成员；Redmi真实Mihomo停止态/运行态各4阶段，共8/8有效`now`，固定/清除固定/非法成员拒绝通过；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`，见`fallback-real-core-redmi-20261105.json`与`fallback-cold-process-redmi-20261106.json`。自然无效`now`经源码核对在合法非空组、断网或全不健康成员下不可自然产生，保留为核心语义边界，不记伪造注入为通过。 |
 | 8 | 纯代理冷恢复、首次安装VPN授权、蜂窝、第三方、Always-on OEM | 既有纯代理/Always-on/首次安装VPN证据保留；本组官方MacroDroid6.1.5在公开0.1.3上前台Activity启停5次通过，重复START保持同一服务。Tasker/后台定时/开机/其他OEM未验，Redmi蜂窝恢复已验，生产Always-on状态仍UNKNOWN。 |
-| 9 | 完整Flutter视觉与常用交互 | KUI-037已完成本组混排保存/进程终止/Room冷读、浮动缩放、横向拖回和短内容适配；最终11项、3条冷恢复、深浅2项通过。下一组补其余子页固定Flutter运行对照和连续过渡，再处理菜单首开/关闭原生归因；精确弹簧、设备角/IME及换页尺寸插值仍保留。 |
+| 9 | 完整Flutter视觉与常用交互 | KUI-037 与 043～047 的具名交互已验。043～047 在 POCO 最终 8/8，14 张截图已核对。其余同数据 Flutter/Kotlin 子页面板、完整自然转场及液滴搜索形变继续推进。 |
 | 10 | 实时背景/触点光效、玻璃品质、8MiB正文及连续动效性能 | KUI-040上限加载/编辑/查找/历史、跨段选区和密文跨PID保存已验；整链路准备/恢复提交约44/69秒，性能仍PARTIAL。其余效果/菜单原生归因后排，玻璃默认关闭。 |
 | 11 | API24/25/31/32及低API核心/VPN/实网、端到端回归、CI/签名/Release/更新资产 | 0.1.6标签CI、正式证书/SHA及Release Latest已回验；Release APK未安装到真机。此前0.1.2→0.1.3安装数据保持证据继续有效。版本检查和GitHub跳转已完成，不再推进应用内下载/安装。低API真机、其余升级矩阵及其他OEM边界单列。 |
 

@@ -1,5 +1,14 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -81,41 +90,61 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
         Column(Modifier.fillMaxSize().testTag("profile_more_editor_scroll")) {
             if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("profile_more_saving"))
             (error ?: state.error)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_more_editor_error")) }
-            if (listed.isEmpty()) {
-                // 作者 long：空态按剩余视口偏上居中，沿用Flutter的-0.2对齐；固定80dp会让高屏留下整片空白。
-                Box(Modifier.fillMaxSize(), contentAlignment = BiasAlignment(0f, -.2f)) {
-                Column(Modifier.widthIn(max = 320.dp).verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 24.dp).testTag("profile_more_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
-                    ProfileEmptyIllustration(if (ntp) AppGlyphs.clock else AppGlyphs.eye,
-                        extent = if (with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() < 560.dp }) 120.dp else 160.dp)
-                    Text("暂无设置项", Modifier.padding(top = 20.dp), style = MaterialTheme.typography.titleMedium)
-                    Text("未添加的字段沿用原配置。添加设置项后可单独调整。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    FilledTonalButton(onClick = { adding = true }, enabled = !state.isSaving, modifier = Modifier.padding(top = 20.dp).testTag("profile_more_empty_add")) { Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(8.dp)); Text("添加设置项") }
-                }
-                }
-            } else {
-                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                listOf(false, true).forEach { protocols ->
-                    val entries = listed.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
-                    if (entries.isNotEmpty()) {
-                        Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(start = 16.dp, top = 12.dp),
-                            style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
-                            Column {
-                                entries.forEachIndexed { index, field ->
-                                    if (index > 0) HorizontalDivider(Modifier.padding(start = 56.dp, end = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
-                                    MoreSettingRow(field, checkNotNull(moreFieldValue(root, field)), !state.isSaving,
-                                        onRemove = { change(field, null) }, onEdit = { editing = field.key }, onToggle = { change(field, Gson().toJsonTree(it)) })
-                                }
+            AnimatedContent(
+                targetState = root,
+                contentKey = { snapshot -> fields.none { moreFieldValue(snapshot, it) != null } },
+                modifier = Modifier.weight(1f).fillMaxWidth().testTag("profile_more_content_transition"),
+                transitionSpec = {
+                    (fadeIn(tween(300, easing = CubicBezierEasing(.05f, .7f, .1f, 1f))) +
+                        scaleIn(tween(300, easing = CubicBezierEasing(.05f, .7f, .1f, 1f)), initialScale = .92f)) togetherWith
+                        (fadeOut(tween(150, easing = FastOutLinearInEasing)) +
+                            scaleOut(tween(150, easing = FastOutLinearInEasing), targetScale = .92f))
+                },
+                label = "profileMoreEmptyContent",
+            ) { snapshot ->
+                // 作者 long：退场期间绘制旧字段和值，只允许当前页面处理操作，以免重复提交。
+                val visibleFields = fields.filter { moreFieldValue(snapshot, it) != null }
+                val currentContent = visibleFields.isEmpty() == listed.isEmpty()
+                if (visibleFields.isEmpty()) {
+                    // 作者 long：Flutter空态在窄屏收紧标题间距，并让添加按钮与说明文字保持独立呼吸距离。
+                    val compact = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() < 560.dp }
+                    Box(Modifier.fillMaxSize(), contentAlignment = BiasAlignment(0f, -.2f)) {
+                        Column(Modifier.widthIn(max = 320.dp).verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 24.dp).testTag("profile_more_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
+                            ProfileEmptyIllustration(if (ntp) AppGlyphs.clock else AppGlyphs.eye,
+                                extent = if (compact) 120.dp else 160.dp)
+                            Text("暂无设置项", Modifier.padding(top = if (compact) 12.dp else 16.dp), style = MaterialTheme.typography.titleMedium)
+                            Text("未添加的字段沿用原配置。添加设置项后可单独调整。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            FilledTonalButton(onClick = { adding = true }, enabled = !state.isSaving && currentContent,
+                                modifier = Modifier.padding(top = 24.dp).testTag("profile_more_empty_add")) {
+                                Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(8.dp)); Text("添加设置项")
                             }
                         }
                     }
-                }
-                val dialer = if (ntp) root.get("dialer-proxy")?.asString.orEmpty() else ""
-                if (dialer.isNotBlank() && targets.isNotEmpty() && dialer !in targets) Text("出站代理已不在配置中，请检查节点或策略组名称", color = MaterialTheme.colorScheme.error)
-                Text("修改会自动保存。未添加的字段沿用原配置；移除或清空设置项可恢复继承。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                TextButton(onClick = { clear = true }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_reset")) { Text("清除本分区覆盖") }
-                Spacer(Modifier.height(16.dp))
+                } else {
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        listOf(false, true).forEach { protocols ->
+                            val entries = visibleFields.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
+                            if (entries.isNotEmpty()) {
+                                Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(start = 16.dp, top = 12.dp),
+                                    style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
+                                    Column {
+                                        entries.forEachIndexed { index, field ->
+                                            if (index > 0) HorizontalDivider(Modifier.padding(start = 56.dp, end = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+                                            MoreSettingRow(field, checkNotNull(moreFieldValue(snapshot, field)), !state.isSaving && currentContent,
+                                                onRemove = { change(field, null) }, onEdit = { editing = field.key }, onToggle = { change(field, Gson().toJsonTree(it)) })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        val dialer = if (ntp) snapshot.get("dialer-proxy")?.asString.orEmpty() else ""
+                        if (dialer.isNotBlank() && targets.isNotEmpty() && dialer !in targets) Text("出站代理已不在配置中，请检查节点或策略组名称", color = MaterialTheme.colorScheme.error)
+                        Text("修改会自动保存。未添加的字段沿用原配置；移除或清空设置项可恢复继承。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        TextButton(onClick = { clear = true }, enabled = !state.isSaving && currentContent, modifier = Modifier.testTag("profile_more_reset")) { Text("清除本分区覆盖") }
+                        Spacer(Modifier.height(16.dp))
+                    }
                 }
             }
         }

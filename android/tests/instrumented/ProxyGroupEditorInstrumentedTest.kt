@@ -68,16 +68,6 @@ class ProxyGroupEditorInstrumentedTest {
 
         compose.onNodeWithTag("group_members_add").performScrollTo().performClick()
         compose.onNodeWithTag("group_member_search").performClick().performTextReplacement("Local")
-        fun imeTop(): Int? {
-            var result: Int? = null
-            InstrumentationRegistry.getInstrumentation().runOnMainSync {
-                val view = android.view.inspector.WindowInspector.getGlobalWindowViews().lastOrNull { it.hasWindowFocus() }
-                val insets = view?.let(androidx.core.view.ViewCompat::getRootWindowInsets)
-                if (view != null && insets?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == true)
-                    result = view.height - insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.ime()).bottom
-            }
-            return result
-        }
         compose.waitUntil(5_000) { imeTop() != null }
         val dock = compose.onNodeWithTag("group_member_search_dock").fetchSemanticsNode().boundsInWindow
         assertTrue(dock.bottom <= checkNotNull(imeTop()) + 1)
@@ -113,6 +103,63 @@ class ProxyGroupEditorInstrumentedTest {
             assertEquals(listOf("New", "Other"), checkNotNull(saved).groups.map { it.name })
             assertEquals(listOf("New"), checkNotNull(saved).groups.last().strings("proxies"))
         }
+    }
+
+    @Test fun fallbackTargetPickerGroupsSourcesAndMarksCurrentChoice() {
+        assertPortraitDefaultFontConfiguration()
+        val nodes = (1..20).joinToString("\n") { "  - {name: Node $it, type: direct}" }
+        val withNodes = source.replace("proxies:\n  - {name: Local, type: direct}",
+            "proxies:\n  - {name: Local, type: direct}\n$nodes")
+        val data = withNodes.replace("name: Other, type: fallback, proxies: [Main]",
+            "name: Other, type: fallback, proxies: [Main], empty-fallback: Node 8")
+        var writes = 0
+        compose.setContent { KClashTheme {
+            ProfileProxyGroupsEditorDialog(Profile.custom(215, "Fallback目标"), ProfileProxyGroupsEditor.extractGroups(data), false,
+                {}, {}, sourceContent = data, initialGroupIndex = 1, onSaveDraft = { writes++ })
+        } }
+        compose.onNodeWithTag("group_option_empty-fallback").performScrollTo().performClick()
+        compose.onNodeWithTag("group_sheet_page_target").assertIsDisplayed()
+        compose.onNodeWithTag("group_target_section_empty-fallback_basic").assertExists()
+        compose.onNodeWithTag("group_target_section_empty-fallback_proxies").assertExists()
+        compose.waitForIdle()
+        val viewport = compose.onNodeWithTag("group_target_viewport").fetchSemanticsNode().boundsInRoot
+        val selected = compose.onNodeWithTag("group_target_selected_empty-fallback_Node 8").fetchSemanticsNode().boundsInRoot
+        val density = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+        assertTrue("viewport=$viewport selected=$selected", selected.height > 0 && kotlin.math.abs(viewport.center.y - selected.center.y) <= 32f * density)
+        capture("vis045_fallback_centered")
+        compose.onNodeWithTag("profile_top_search_open").assertIsDisplayed().performClick()
+        compose.onNodeWithTag("profile_top_search_input").assertIsDisplayed()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("Node 2")
+        compose.onNodeWithTag("group_target_choice_empty-fallback_Node 2").assertIsDisplayed()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("no-match")
+        compose.onNode(hasText("无搜索结果") and hasAnyAncestor(hasTestTag("group_target_empty"))).assertIsDisplayed()
+        compose.onNodeWithTag("group_target_clear_search").performClick()
+        compose.onNodeWithTag("profile_top_search_close").performClick()
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        compose.onNodeWithTag("group_target_selected_empty-fallback_Node 8").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("group_target_choice_empty-fallback_COMPATIBLE").performScrollTo().performClick()
+        compose.onNodeWithTag("group_option_empty-fallback").assertTextContains("COMPATIBLE")
+        compose.runOnIdle { assertEquals(0, writes) }
+    }
+
+    @Test fun defaultSelectedPickerSeparatesDefaultAndGroupMembers() {
+        assertPortraitDefaultFontConfiguration()
+        val data = source.replace("proxies: [DIRECT], future: keep",
+            "proxies: [DIRECT, Local], default-selected: DIRECT, future: keep")
+        compose.setContent { KClashTheme {
+            ProfileProxyGroupsEditorDialog(Profile.custom(216, "默认选中"), ProfileProxyGroupsEditor.extractGroups(data), false,
+                {}, {}, sourceContent = data, initialGroupIndex = 0, onSaveDraft = {})
+        } }
+        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_option_default-selected"))
+        compose.onNodeWithTag("group_option_default-selected").performClick()
+        compose.onNodeWithTag("profile_top_search_open").assertDoesNotExist()
+        compose.onNodeWithTag("group_target_choice_default-selected_default").assertIsDisplayed()
+        compose.onNodeWithTag("group_target_selected_default-selected_DIRECT").assertIsDisplayed()
+        compose.onNodeWithTag("group_target_section_default-selected_proxies").assertIsDisplayed()
+        capture("vis045_default_targets")
+        compose.onNodeWithTag("group_target_choice_default-selected_default").performClick()
+        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_option_default-selected"))
+        compose.onNodeWithTag("group_option_default-selected").assertTextContains("默认")
     }
 
     @Test fun listCopyDeleteAndLongPressReorderKeepIndependentIdentity() {
@@ -235,6 +282,55 @@ class ProxyGroupEditorInstrumentedTest {
         compose.runOnIdle { assertEquals(0, writes) }
     }
 
+    @Test fun addSettingSearchUsesTenItemThresholdAndFiltersAllTerms() {
+        assertPortraitDefaultFontConfiguration()
+        var writes = 0
+        compose.setContent { KClashTheme {
+            ProfileProxyGroupsEditorDialog(Profile.custom(217, "设置项搜索"), ProfileProxyGroupsEditor.extractGroups(source), false,
+                {}, { writes++ }, sourceContent = source, onSaveDraft = { writes++ })
+        } }
+
+        compose.onNodeWithTag("proxy_group_row_1").performClick()
+        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("proxy_group_add_option"))
+        compose.onNodeWithTag("proxy_group_add_option").performClick()
+        compose.onNodeWithTag("profile_top_search_open").assertDoesNotExist()
+        compose.onNodeWithTag("proxy_group_add_option_back").performClick()
+        compose.onNodeWithTag("proxy_group_form_back").performClick()
+
+        compose.onNodeWithTag("proxy_group_row_0").performClick()
+        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("proxy_group_add_option"))
+        compose.onNodeWithTag("proxy_group_add_option").performClick()
+        compose.onNodeWithTag("profile_top_search_open").assertIsDisplayed().performClick()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("秒 测速")
+        compose.onNodeWithTag("group_add_interval").assertIsDisplayed()
+        compose.onNodeWithTag("group_add_timeout").assertDoesNotExist()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("测速 no-match")
+        compose.onNode(hasText("无搜索结果") and hasAnyAncestor(hasTestTag("group_option_empty"))).assertIsDisplayed()
+        compose.waitUntil(5_000) { imeTop() != null }
+        val clearButton = compose.onNodeWithTag("group_option_clear_search")
+        clearButton.performScrollTo().assertIsDisplayed()
+        assertTrue(clearButton.fetchSemanticsNode().boundsInWindow.bottom <= checkNotNull(imeTop()) + 1)
+        capture("vis046_no_results")
+        compose.onNodeWithTag("group_option_clear_search").performClick()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("默认")
+        compose.onNodeWithTag("group_add_default-selected").assertIsDisplayed()
+        compose.onNodeWithTag("group_add_interval").assertDoesNotExist()
+
+        compose.onNodeWithTag("profile_top_search_close").performClick()
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        assertEquals("", compose.onNodeWithTag("profile_top_search_input").fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text)
+        compose.onNodeWithTag("group_add_interval").performScrollTo().performClick()
+        compose.onNodeWithTag("group_add_interval").assertDoesNotExist()
+        compose.onNodeWithTag("profile_top_search_close").performClick()
+        compose.onNodeWithTag("profile_top_search_open").assertDoesNotExist()
+        compose.waitUntil(5_000) { imeTop() == null }
+        compose.onNodeWithTag("proxy_group_add_option_back").performClick()
+        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_option_interval"))
+        compose.onNodeWithTag("group_option_interval").assertTextContains("300")
+        compose.runOnIdle { assertEquals(0, writes) }
+    }
+
     @Test fun emptyGroupBlocksConfirmAndCancelDoesNotWrite() {
         assertPortraitDefaultFontConfiguration()
         var dismissed = false
@@ -255,6 +351,17 @@ class ProxyGroupEditorInstrumentedTest {
         compose.onNodeWithTag("proxy_group_list_back").performClick()
         assertTrue(dismissed)
         assertEquals(0, writes)
+    }
+
+    private fun imeTop(): Int? {
+        var result: Int? = null
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val view = android.view.inspector.WindowInspector.getGlobalWindowViews().lastOrNull { it.hasWindowFocus() }
+            val insets = view?.let(androidx.core.view.ViewCompat::getRootWindowInsets)
+            if (view != null && insets?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == true)
+                result = view.height - insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.ime()).bottom
+        }
+        return result
     }
 
     private fun capture(name: String) {
