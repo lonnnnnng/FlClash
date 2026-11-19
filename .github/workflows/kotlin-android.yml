@@ -85,8 +85,8 @@ jobs:
               version_code=$((major * 1000000 + minor * 1000 + patch))
             fi
           fi
-          version_name="${version_name:-0.1.8}"
-          version_code="${version_code:-1008}"
+          version_name="${version_name:-0.1.9}"
+          version_code="${version_code:-1009}"
           if [[ ! "$version_code" =~ ^[1-9][0-9]*$ ]]; then
             echo "version_code must be a positive integer" >&2
             exit 1
