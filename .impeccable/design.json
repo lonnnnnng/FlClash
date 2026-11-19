@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T23:11:26+08:00",
+  "title": "Design System: KClash 折流 K",
+  "extensions": {},
+  "components": [],
+  "narrative": {
+    "northStar": "折流 K",
+    "overview": "用户选择方案 A。圆润主干和折返路径组成独立 K 标志；本规范只约束 Android 手机启动图标。",
+    "keyCharacteristics": [
+      "纯色矢量与单次折面",
+      "遮罩共用几何",
+      "单一 SVG 派生所有手机资源"
+    ],
+    "rules": [],
+    "dos": [
+      "修改 SVG 后统一重新生成",
+      "让系统决定自适应图标遮罩"
+    ],
+    "donts": [
+      "不将图标配色推广到应用内主题或其他平台",
+      "不把中央 66×66 安全方区写成安全圆"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 作者 long：由 tool/generate_kclash_launcher.cjs 从品牌SVG生成，请修改源稿后重新生成。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFF" android:pathData="M37.5 28 C33.9 28 31 30.9 31 34.5 L31 73.5 C31 77.1 33.9 80 37.5 80 C41.1 80 44 77.1 44 73.5 L44 34.5 C44 30.9 41.1 28 37.5 28 Z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M68.6 29.6 C71.2 27.1 75.3 27.2 77.8 29.8 C80.3 32.4 80.2 36.5 77.6 39 L61.7 54 L77.6 69 C80.2 71.5 80.3 75.6 77.8 78.2 C75.3 80.8 71.2 80.9 68.6 78.4 L48.6 59.5 C45.4 56.5 45.4 51.5 48.6 48.5 Z"/>
+</vector>

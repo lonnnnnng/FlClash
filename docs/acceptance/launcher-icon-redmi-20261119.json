@@ -1,0 +1,70 @@
+{
+  "id": "KCLASH-LAUNCHER-FOLD-K",
+  "date": "2026-11-19",
+  "selectedDesign": "A / 折流 K",
+  "scope": "Android phone launcher assets only",
+  "source": {
+    "file": "assets/branding/kclash-icon.svg",
+    "sha256": "f6da16c11b03db7f57f54969f232ebf930f0c457b618e64652f2cfab46b6bad1"
+  },
+  "build": {
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:assembleMotionBenchmark :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "BUILD SUCCESSFUL",
+    "duration": "1m 48s",
+    "actionableTasks": 185,
+    "executedTasks": 15,
+    "upToDateTasks": 170,
+    "lint": {
+      "Error": 0,
+      "Warning": 73,
+      "Information": 0
+    },
+    "apkSha256": "d670f6ab934fa237cbfaa97c4089f706b6536f33df450f5587b3b45798847774",
+    "jvmTests": "not_run (asset/manifest change; tag release CI separately runs full tests)"
+  },
+  "assetChecks": {
+    "densityAssets": 10,
+    "sizesPx": [
+      48,
+      72,
+      96,
+      144,
+      192
+    ],
+    "squareAndCircle": true,
+    "dimensionsCornerAlphaAndEmbeddedOriginVerified": true,
+    "adaptiveManifestAndLayerReferencesVerified": true,
+    "monochromeMatchesFullStemAndChevron": true,
+    "geometryWithinCentral66Square": true,
+    "squareRoundRoundedAndThemePreview": "docs/branding/kclash-icon-masks.png"
+  },
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "package": "com.lonnnnnng.flclash.motion",
+    "nativeSurface": "Android Settings / App info",
+    "circleIconVisuallyVerified": true,
+    "screenshotSha256": "dba45adf7fc3b356b310b38abeac2286e1907188999544a5451dbffeaf35e2f2",
+    "installedApkPulledAndHashMatched": true,
+    "temporaryPackageUninstalled": true,
+    "formalAppVersionPreserved": "0.1.4 / 1004 at icon acceptance"
+  },
+  "review": {
+    "visualAssets": "no material visual findings",
+    "documentationFix": "resolved",
+    "finalDisposition": "ship at documentation-fix scope"
+  },
+  "limits": [
+    "No low-API or other OEM runtime acceptance.",
+    "Themed icon colors were rendered from the monochrome source; no real launcher theme toggle was tested.",
+    "Native screenshot belongs to the motion package, not the formal release APK.",
+    "This is the local icon-acceptance record; publication and signed release verification are recorded separately."
+  ],
+  "preservation": {
+    "rootYaml": "not accessed or uploaded",
+    "flutterReference": "not changed; package absent on this device",
+    "nonPhoneIcons": "not changed"
+  },
+  "rawArtifacts": "../acceptance-artifacts/kclash-icon-redmi-20261119/"
+}

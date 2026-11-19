@@ -2,6 +2,8 @@
 
 > **当前范围（2026-11-19）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
+> **独立应用图标（2026-11-19）**：用户选择 A「折流 K」，已接入普通/圆形、自适应及独立单色层，五档旧版位图从同一 SVG 生成。Redmi Note 8 Pro/API36 独立 motion 包的系统应用信息圆形图标已目视，安装回拉 SHA 匹配；构建/Lint 零错误，十张密度位图尺寸/边角透明度/来源哈希核对通过。静态深浅主题与遮罩预览不推广为低 API、其他 OEM 或 Launcher 主题开关实测。临时包已清理，正式包与原配置保持；用户已要求完成后发布 0.1.10，实际公开状态以发布证据为准。[图标证据](acceptance/launcher-icon-redmi-20261119.json)与[设计规范](../DESIGN.md)
+
 > **KClash 0.1.9 正式发布（2026-11-19）**：标签 `kclash-v0.1.9` 指向 `4d9e65dacee2051a4718fdd62008f5024e60dd0e`，versionCode 1009，GitHub Latest。标签 CI `44478548831` 的 Go race、JVM/R8、Debug/Release Lint、正式签名和 APK 元数据/ABI/DEX 门禁均通过；远端 ARM64 APK 48,407,516 字节，SHA-256 `8e5765d946fde68129e5b8c876e460bf8221be7e5f0bfa003a2b13b1e204b963`，既有发布证书指纹回验一致。Release APK 已回拉核验，未安装到手机。[发布证据](acceptance/release-0.1.9-20261119.json)与[发布说明](releases/kclash-v0.1.9.md)
 
 > **KClash 0.1.8 正式发布（2026-11-19，历史）**：标签 `kclash-v0.1.8` 指向 `fa1c749dbd30a6ca758050249508788db89d7c42`，versionCode 1008，曾为 GitHub Latest。标签 CI 的 Go race、JVM/R8、Debug/Release Lint、正式签名和 APK 元数据/ABI/DEX 门禁均通过；远端 ARM64 APK 48,477,788 字节，SHA-256 `a74ad5ebb618cb4a6eac147b0e84e3571d0e59716a5432eddd0384fa7a7aa929`，既有发布证书指纹回验一致。Release APK 已回拉核验，未安装到手机。[发布证据](acceptance/release-0.1.8-20261119.json)与[发布说明](releases/kclash-v0.1.8.md)

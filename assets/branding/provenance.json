@@ -1,0 +1,14 @@
+{
+  "name": "KClash 折流 K",
+  "selectedByUser": "2026-11-19",
+  "source": "assets/branding/kclash-icon.svg",
+  "sourceSha256": "f6da16c11b03db7f57f54969f232ebf930f0c457b618e64652f2cfab46b6bad1",
+  "generator": "tool/generate_kclash_launcher.cjs",
+  "rasterizer": "sharp 0.35.5",
+  "colors": {
+    "background": "#087F75",
+    "foreground": "#F4FFF9",
+    "fold": "#9CEAD1"
+  },
+  "scope": "Android phone launcher only; adaptive, legacy square/round, monochrome and store export"
+}
