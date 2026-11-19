@@ -82,9 +82,9 @@ class MainSnifferNaturalInstrumentedTest {
                 tap(Rect((24 * density).toInt(), heading.top, (60 * density).toInt(), heading.bottom))
                 await("域名嗅探"); click("HTTP"); await("端口"); settle(); capture("protocol")
                 click("端口"); await("暂无数据"); settle(); capture("ports_empty")
-                toolbar("端口", 0); click("快速编辑"); await("快速编辑 · 端口")
+                toolbar("端口", 0); click("快速编辑"); settle()
                 setText("8080\n8000-9000"); awaitIme(true); capture("ports_ime")
-                toolbar("快速编辑 · 端口", 0); await("8000-9000"); awaitIme(false); settle(); capture("ports_draft")
+                back(); awaitIme(false); back(); await("8000-9000"); awaitIme(false); settle(); capture("ports_draft")
                 toolbar("端口", 1); await("覆盖目标地址"); settle()
                 click("覆盖目标地址"); click("已关闭")
                 val receiptDeadline = SystemClock.uptimeMillis() + 15_000

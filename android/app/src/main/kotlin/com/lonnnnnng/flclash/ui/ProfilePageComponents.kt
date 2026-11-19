@@ -55,6 +55,7 @@ internal fun ProfileEditorPage(
     bottomBar: (@Composable () -> Unit)? = null,
     topBarSearch: ProfileEditorSearchState? = null,
     navigationButtonSurface: Boolean = false,
+    searchActionFirst: Boolean = false,
 ) {
     LocalEmbeddedProfilePage.current?.let { page ->
         EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar, topBarSearch)
@@ -122,8 +123,9 @@ internal fun ProfileEditorPage(
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, modifier = Modifier.testTag("action:返回"))
                     } },
                     actions = {
+                        if (searchActionFirst) topBarSearch?.let { ProfileEditorSearchToggle(it, surface = true) }
                         confirmButton()
-                        topBarSearch?.let { ProfileEditorSearchToggle(it) }
+                        if (!searchActionFirst) topBarSearch?.let { ProfileEditorSearchToggle(it) }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = dashboardPageColor()),
                 )
@@ -181,13 +183,13 @@ internal fun ProfileEditorSearchInput(state: ProfileEditorSearchState, requester
 }
 
 @Composable
-internal fun ProfileEditorSearchToggle(state: ProfileEditorSearchState) {
+internal fun ProfileEditorSearchToggle(state: ProfileEditorSearchState, surface: Boolean = false) {
     IconButton(onClick = {
         if (state.expanded) {
             state.onQueryChange("")
             state.onExpandedChange(false)
         } else state.onExpandedChange(true)
-    }, modifier = Modifier.testTag(if (state.expanded) "profile_top_search_close" else "profile_top_search_open")) {
+    }, modifier = (if (surface) Modifier.padding(end = 8.dp).size(44.dp).background(dashboardCardColor(), CircleShape) else Modifier).testTag(if (state.expanded) "profile_top_search_close" else "profile_top_search_open")) {
         Icon(if (state.expanded) Icons.Outlined.Close else Icons.Outlined.Search, null)
     }
 }

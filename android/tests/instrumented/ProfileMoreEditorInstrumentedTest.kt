@@ -71,9 +71,13 @@ class ProfileMoreEditorInstrumentedTest {
         val headerHeight = compose.onNodeWithTag("more_add_header_true").fetchSemanticsNode().boundsInRoot.height
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag("more_add_sniff.HTTP").performClick()
+        compose.runOnIdle { assertEquals(1, saveCalls); assertNotNull(savedSniffer?.sniff?.get("HTTP")) }
+        // 作者 long：先让保存回执触发重组和动画首帧，再测80ms；不能把异步排程尚未开始误判为标题不收起。
+        compose.mainClock.advanceTimeByFrame()
+        compose.waitForIdle()
         compose.mainClock.advanceTimeBy(80)
         val leavingHeaderHeight = compose.onNodeWithTag("more_add_header_true").fetchSemanticsNode().boundsInRoot.height
-        assertTrue("分组标题须随最后条目连续收起", leavingHeaderHeight > 0f && leavingHeaderHeight < headerHeight)
+        assertTrue("分组标题须随最后条目连续收起：$headerHeight → $leavingHeaderHeight", leavingHeaderHeight > 0f && leavingHeaderHeight < headerHeight)
         compose.onNodeWithTag("profile_more_add_search").performTextReplacement("TLS")
         compose.mainClock.advanceTimeBy(32)
         compose.onNodeWithTag("more_add_sniff.TLS").assertIsDisplayed()
@@ -162,8 +166,11 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("profile_more_add_search").assertTextContains("HTTP")
         compose.onNodeWithTag("profile_more_add_search_clear").performClick()
         compose.onNodeWithTag("profile_more_add_done").performClick()
+        // 作者 long：测试宿主直接切分区前等旧Sheet完成关闭，避免其迟到onDismiss关闭新NTP面板。
+        waitGone("profile_more_add_done")
         compose.runOnIdle { section = "ntp" }
         compose.onNodeWithTag("profile_more_empty_add").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("more_add_enable").fetchSemanticsNodes().isNotEmpty() }
         ntpFields.dropLast(1).forEach { compose.onNodeWithTag("more_add_${it.key}").performScrollTo().performClick() }
         compose.runOnIdle { reject = true }
         compose.onNodeWithTag("more_add_write-to-system").performScrollTo().performClick()
@@ -456,7 +463,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_protocol_ports").performClick()
         openQuickPorts()
         compose.onNodeWithTag("sniff_HTTP_ports").performTextReplacement("8080\n8000-9000")
-        compose.onNodeWithTag("more_list_quick_confirm").performClick()
+        compose.onNodeWithTag("more_list_quick_back").performClick()
         compose.onNodeWithTag("more_value_confirm").performClick()
         waitGone("more_value_confirm")
         compose.onNodeWithTag("more_protocol_destination").assertTextContains("已关闭", substring = true)
@@ -464,7 +471,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_protocol_ports").performClick()
         openQuickPorts()
         compose.onNodeWithTag("sniff_HTTP_ports").performTextClearance()
-        compose.onNodeWithTag("more_list_quick_confirm").performClick()
+        compose.onNodeWithTag("more_list_quick_back").performClick()
         compose.onNodeWithTag("more_value_confirm").performClick()
         waitGone("more_value_confirm")
         compose.onNodeWithTag("more_protocol_ports").assertTextContains("默认", substring = true)
@@ -595,7 +602,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("sniff_HTTP_ports").performClick().performTextReplacement("8080\n8000-9000")
         awaitVisibleIme()
         capture("vis056_ports_quick_ime")
-        compose.onNodeWithTag("more_list_quick_confirm").performClick()
+        compose.onNodeWithTag("more_list_quick_back").performClick()
         compose.runOnIdle { holdSave = true }
         compose.onNodeWithTag("more_value_confirm").performClick()
         compose.onNodeWithTag("more_value_confirm").assertIsNotEnabled()
@@ -626,7 +633,7 @@ class ProfileMoreEditorInstrumentedTest {
         } }
         openQuickPorts()
         compose.onNodeWithTag("sniff_HTTP_ports").performTextReplacement("8080")
-        compose.onNodeWithTag("more_list_quick_confirm").performClick()
+        compose.onNodeWithTag("more_list_quick_back").performClick()
         compose.onNodeWithTag("more_value_confirm").performClick()
         restore.emulateSavedInstanceStateRestore()
         compose.onNodeWithTag("more_list_saving").assertIsDisplayed()
@@ -646,9 +653,6 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_list_quick").performClick()
         compose.onNodeWithTag("more_force-domain_value").performTextReplacement("example.test")
         compose.onNodeWithTag("more_list_quick_back").performClick()
-        compose.onNodeWithText("放弃快速编辑？").assertIsDisplayed()
-        compose.onNodeWithText("继续编辑").performClick()
-        compose.onNodeWithTag("more_list_quick_confirm").performClick()
         compose.runOnIdle { assertEquals(emptyList<String>(), savedSniffer?.forceDomain) }
         compose.onNodeWithTag("more_value_confirm").performClick()
         waitGone("more_value_confirm")
@@ -680,6 +684,111 @@ class ProfileMoreEditorInstrumentedTest {
         waitGone("more_protocol_destination_false")
         compose.onNodeWithTag("more_protocol_destination").assertTextContains("已关闭", substring = true)
         compose.runOnIdle { assertEquals(1, saveCalls) }
+    }
+
+    @Test fun vis057EntryToolbarAndQuickEditorAcrossThemes() {
+        section = "sniffer"; render()
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark"; state = ProfileMoreEditorUiState(Profile.custom(957, "列表编辑")) }
+            add("sniff.HTTP")
+            compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
+            compose.onNodeWithTag("more_protocol_ports").performClick()
+            compose.onNodeWithTag("more_list_add_menu").performClick()
+            capture("vis057_add_menu_$theme")
+            compose.onNodeWithTag("more_list_add").performClick()
+            capture("vis057_entry_$theme")
+            compose.onNodeWithTag("more_list_entry_confirm").performClick()
+            compose.onNodeWithTag("more_list_input_error").assertTextEquals("值不能为空")
+            compose.onNodeWithTag("more_list_entry_input").performClick().performTextReplacement("8080\n9000")
+            compose.onNodeWithTag("more_list_input_error").assertTextEquals("值只能是一项")
+            compose.onNodeWithTag("more_list_entry_input").performTextReplacement("8080")
+            awaitVisibleIme(); capture("vis057_entry_ime_$theme")
+            compose.onNodeWithTag("more_list_entry_confirm").performClick()
+            compose.onNodeWithTag("more_list_add_menu").performClick()
+            compose.onNodeWithTag("more_list_add").performClick()
+            compose.onNodeWithTag("more_list_entry_input").performTextReplacement("8080")
+            compose.onNodeWithTag("more_list_entry_confirm").performClick()
+            compose.onNodeWithTag("more_list_input_error").assertTextEquals("值当前已存在")
+            compose.onNodeWithTag("more_list_entry_input").performTextReplacement("8000-9000")
+            compose.onNodeWithTag("more_list_entry_confirm").performClick()
+            capture("vis057_list_$theme")
+            compose.onNodeWithTag("more_list_select_8080").performClick()
+            capture("vis057_selection_$theme")
+            compose.onNodeWithTag("more_value_back").performClick()
+            openQuickPorts()
+            capture("vis057_quick_$theme")
+            compose.onNodeWithTag("sniff_HTTP_ports").performTextReplacement("443\n8443")
+            compose.onNodeWithTag("more_list_quick_menu").performClick()
+            capture("vis057_quick_menu_$theme")
+            compose.onNodeWithTag("more_list_quick_undo").performClick()
+            compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("8080\n8000-9000")
+            compose.onNodeWithTag("more_list_quick_menu").performClick()
+            compose.onNodeWithTag("more_list_quick_redo").performClick()
+            compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("443\n8443")
+            compose.onNodeWithTag("more_list_quick_menu").performClick()
+            compose.onNodeWithTag("more_list_quick_size_24").performClick()
+            compose.onNodeWithTag("more_list_quick_menu").performClick()
+            compose.onNodeWithTag("more_list_quick_wrap").performClick()
+            compose.onNodeWithTag("profile_top_search_open").performClick()
+            compose.onNodeWithTag("profile_top_search_input").performTextReplacement("8443")
+            compose.onNodeWithTag("sniff_HTTP_ports").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.TextSelectionRange, androidx.compose.ui.text.TextRange(4, 8)))
+            capture("vis057_quick_search_$theme")
+            compose.onNodeWithTag("profile_top_search_input").performTextReplacement("not-found")
+            compose.onNodeWithTag("more_list_quick_no_match").assertIsDisplayed()
+            compose.onNodeWithTag("profile_top_search_close").performClick()
+            compose.onNodeWithTag("sniff_HTTP_ports").performTextReplacement("0")
+            compose.onNodeWithTag("more_list_quick_back").performClick()
+            compose.onNodeWithText("放弃修改？").assertIsDisplayed()
+            compose.onNodeWithText("继续编辑").performClick()
+            compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("0")
+            compose.onNodeWithTag("sniff_HTTP_ports").performTextReplacement("443\n8443")
+            compose.onNodeWithTag("more_list_quick_back").performClick()
+            compose.runOnIdle { assertEquals(emptyList<String>(), savedSniffer?.sniff?.get("HTTP")?.ports.orEmpty()) }
+            compose.onNodeWithTag("more_value_confirm").performClick()
+            waitGone("more_value_confirm")
+            compose.runOnIdle { assertEquals(listOf("443", "8443"), savedSniffer?.sniff?.get("HTTP")?.ports) }
+            compose.onNodeWithTag("more_protocol_back").performClick()
+        }
+    }
+
+    @Test fun vis057QuickDraftHistoryAndQuerySurviveRestoration() {
+        val restore = StateRestorationTester(compose)
+        var text by androidx.compose.runtime.mutableStateOf("8080")
+        var applied = ""
+        restore.setContent { KClashTheme {
+            MoreListQuickEditor("端口", text, "quick_text", { text = it }, {}, { applied = it })
+        } }
+        compose.onNodeWithTag("quick_text").performTextReplacement("443\n8443")
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("8443")
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("profile_top_search_input").assertTextContains("8443")
+        compose.onNodeWithTag("quick_text").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.TextSelectionRange, androidx.compose.ui.text.TextRange(4, 8)))
+        compose.onNodeWithTag("profile_top_search_close").performClick()
+        compose.onNodeWithTag("more_list_quick_menu").performClick()
+        compose.onNodeWithTag("more_list_quick_undo").performClick()
+        compose.onNodeWithTag("quick_text").assertTextContains("8080")
+        compose.onNodeWithTag("more_list_quick_back").performClick()
+        compose.runOnIdle { assertEquals("", applied) }
+    }
+
+    @Test fun vis057LongUnwrappedSearchScrollsToMatchAndBackAppliesDraft() {
+        var text by mutableStateOf("8080")
+        var applied = ""
+        compose.setContent { KClashTheme { MoreListQuickEditor("列表", text, "quick_long", { text = it }, {}, { applied = it }) } }
+        compose.onNodeWithTag("quick_long").performTextReplacement("prefix-".repeat(70) + "needle")
+        compose.onNodeWithTag("more_list_quick_menu").performClick()
+        compose.onNodeWithTag("more_list_quick_wrap").performClick()
+        compose.onNodeWithTag("profile_top_search_open").performClick()
+        compose.onNodeWithTag("profile_top_search_input").performTextReplacement("needle")
+        compose.waitForIdle()
+        val range = compose.onNodeWithTag("quick_long").fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsProperties.HorizontalScrollAxisRange]
+        assertTrue("末尾查找结果应滚入横向视口", range.value() > 0f)
+        capture("vis057_long_search")
+        compose.onNodeWithTag("profile_top_search_close").performClick()
+        compose.onNodeWithTag("more_list_quick_back").performClick()
+        compose.runOnIdle { assertEquals(text, applied) }
     }
 
     private fun render() {

@@ -2,8 +2,6 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -33,7 +31,6 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
     var input by rememberSaveable(field.key) { mutableStateOf("") }
     var quick by rememberSaveable(field.key) { mutableStateOf(false) }
     var quickText by rememberSaveable(field.key) { mutableStateOf("") }
-    var quickDiscard by rememberSaveable { mutableStateOf(false) }
     var addMenu by remember { mutableStateOf(false) }
     var discard by rememberSaveable { mutableStateOf(false) }
     var delete by rememberSaveable { mutableStateOf(false) }
@@ -71,29 +68,35 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
             else -> onDismiss()
         }
     }
-    ProfileEditorPage(::exit, title = { Text(if (selected.isEmpty()) title else "已选择 ${selected.size} 项") },
+    ProfileEditorPage(::exit, title = { Text(title) },
         navigationButtonSurface = true, backTag = "more_value_back", confirmButton = {
             val focus = LocalFocusManager.current
             val keyboard = LocalSoftwareKeyboardController.current
-            if (selected.isNotEmpty()) {
-                IconButton({ delete = true }, enabled = !saving, modifier = Modifier.testTag("more_list_delete")) { AppGlyphIcon(AppGlyphs.delete) }
-                IconButton({ selected = if (selected.size == items.size) emptyList() else items.indices.map(Int::toString) }, enabled = !saving,
-                    modifier = Modifier.testTag("more_list_select_all")) { Icon(Icons.Outlined.SelectAll, null) }
-            } else {
-                if (dirty) {
-                    IconButton({ reset = true }, enabled = !saving, modifier = Modifier.testTag("more_list_reset")) { AppGlyphIcon(AppGlyphs.refresh) }
-                    IconButton({ focus.clearFocus(force = true); keyboard?.hide(); save() }, enabled = !saving,
-                        modifier = Modifier.testTag("more_value_confirm")) { AppGlyphIcon(AppGlyphs.check) }
-                }
-                Box {
-                    IconButton({ addMenu = true }, enabled = !saving, modifier = Modifier.testTag("more_list_add_menu")) { AppGlyphIcon(AppGlyphs.addCircle) }
-                    DropdownMenu(addMenu, { addMenu = false }) {
-                        DropdownMenuItem(text = { Text("添加") }, modifier = Modifier.testTag("more_list_add"), onClick = {
-                            addMenu = false; input = ""; inputError = null; entry = ""
-                        })
-                        DropdownMenuItem(text = { Text("快速编辑") }, modifier = Modifier.testTag("more_list_quick"), onClick = {
-                            addMenu = false; quickText = items.joinToString("\n"); inputError = null; quick = true
-                        })
+            Row(Modifier.padding(end = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (selected.isNotEmpty()) MoreListActionPill {
+                    IconButton({ delete = true }, enabled = !saving, modifier = Modifier.size(44.dp).testTag("more_list_delete")) { AppGlyphIcon(AppGlyphs.delete) }
+                    IconButton({ selected = if (selected.size == items.size) emptyList() else items.indices.map(Int::toString) }, enabled = !saving,
+                        modifier = Modifier.size(44.dp).testTag("more_list_select_all")) { Icon(Icons.Outlined.SelectAll, null) }
+                } else {
+                    if (dirty) MoreListActionPill {
+                        IconButton({ reset = true }, enabled = !saving, modifier = Modifier.size(44.dp).testTag("more_list_reset")) { AppGlyphIcon(AppGlyphs.refresh) }
+                        IconButton({ focus.clearFocus(force = true); keyboard?.hide(); save() }, enabled = !saving,
+                            modifier = Modifier.size(44.dp).testTag("more_value_confirm")) { AppGlyphIcon(AppGlyphs.check) }
+                    }
+                    Box {
+                        MoreListActionPill {
+                            IconButton({ addMenu = true }, enabled = !saving, modifier = Modifier.size(44.dp).testTag("more_list_add_menu")) { AppGlyphIcon(AppGlyphs.addCircle) }
+                        }
+                        DropdownMenu(addMenu, { addMenu = false }) {
+                            DropdownMenuItem(text = { Text("添加") }, leadingIcon = { Icon(Icons.Outlined.Add, null) },
+                                modifier = Modifier.testTag("more_list_add"), onClick = {
+                                    addMenu = false; input = ""; inputError = null; entry = ""
+                                })
+                            DropdownMenuItem(text = { Text("快速编辑") }, leadingIcon = { AppGlyphIcon(AppGlyphs.compose) },
+                                modifier = Modifier.testTag("more_list_quick"), onClick = {
+                                    addMenu = false; quickText = items.joinToString("\n"); inputError = null; quick = true
+                                })
+                        }
                     }
                 }
             }
@@ -125,45 +128,33 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         })
-    if (entry != null) AlertDialog(onDismissRequest = { entry = null }, title = { Text(if (entry.isNullOrEmpty()) "添加$title" else "编辑$title") },
-        text = { Column {
-            OutlinedTextField(input, { input = it; inputError = null }, singleLine = true,
-                modifier = Modifier.testTag("more_list_entry_input"), label = { Text(if (protocol) "端口或范围" else field.label) })
-            inputError?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("more_list_input_error")) }
-        } }, confirmButton = {
-            val focus = LocalFocusManager.current
-            val keyboard = LocalSoftwareKeyboardController.current
-            TextButton(onClick = {
-                runCatching {
-                    val next = input.trim(); require(next.isNotEmpty()) { "请输入$title" }
-                    require(items.getOrNull(entry?.toIntOrNull() ?: -1) == next || next !in items) { "该项已存在" }
-                    val values = if (entry.isNullOrEmpty()) items + next else items.mapIndexed { index, value -> if (index.toString() == entry) next else value }
-                    validate(values); items = values; error = null
-                    focus.clearFocus(force = true); keyboard?.hide(); entry = null
-                }.onFailure { inputError = it.message ?: "内容无效" }
-            }, modifier = Modifier.testTag("more_list_entry_confirm")) { Text("确认") }
-        }, dismissButton = { TextButton({ entry = null }) { Text("取消") } })
-    if (quick) ProfileEditorPage({ if (quickText != items.joinToString("\n")) quickDiscard = true else quick = false }, title = { Text("快速编辑 · $title") }, backTag = "more_list_quick_back",
-        navigationButtonSurface = true, confirmButton = {
-            val focus = LocalFocusManager.current
-            val keyboard = LocalSoftwareKeyboardController.current
-            IconButton(onClick = {
-                runCatching {
-                    val values = splitMoreList(quickText); validate(values); items = values; selected = emptyList(); error = null
-                    focus.clearFocus(force = true); keyboard?.hide(); quick = false
-                }.onFailure { inputError = it.message ?: "列表无效" }
-            }, modifier = Modifier.testTag("more_list_quick_confirm")) { AppGlyphIcon(AppGlyphs.check) }
-        }, text = {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                inputError?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("more_list_input_error")) }
-                OutlinedTextField(quickText, { quickText = it; inputError = null }, minLines = 6,
-                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp).testTag(if (protocol) "sniff_${field.protocol}_ports" else "more_${field.key}_value"),
-                    label = { Text("每行一项") }, supportingText = { Text(if (protocol) "留空使用协议默认端口" else "留空恢复继承原配置") })
-            }
+    fun entryValues(): List<String> {
+        val parsed = input.lines().map(String::trim).filter(String::isNotEmpty)
+        require(parsed.isNotEmpty()) { "值不能为空" }
+        require(parsed.size == 1) { "值只能是一项" }
+        val next = parsed.single()
+        require(items.getOrNull(entry?.toIntOrNull() ?: -1) == next || next !in items) { "值当前已存在" }
+        return (if (entry.isNullOrEmpty()) items + next else items.mapIndexed { index, value ->
+            if (index.toString() == entry) next else value
+        }).also(::validate)
+    }
+    if (entry != null) MoreListEntryDialog(
+        title = if (entry.isNullOrEmpty()) "添加" else "编辑", input = input, error = inputError,
+        onInput = {
+            input = it
+            // 作者 long：首个错误出现后随输入重新校验，用户修正空值、重复或端口错误时不必反复试按确定。
+            if (inputError != null) inputError = runCatching { entryValues() }.exceptionOrNull()?.message
+        }, onDismiss = { entry = null }, onConfirm = {
+            runCatching { items = entryValues(); error = null; entry = null }
+                .onFailure { inputError = it.message ?: "内容无效" }
         })
-    if (quickDiscard) AlertDialog(onDismissRequest = { quickDiscard = false }, title = { Text("放弃快速编辑？") },
-        confirmButton = { TextButton({ quickDiscard = false; quick = false }) { Text("放弃") } },
-        dismissButton = { TextButton({ quickDiscard = false }) { Text("继续编辑") } })
+    if (quick) MoreListQuickEditor(title, quickText,
+        contentTag = if (protocol) "sniff_${field.protocol}_ports" else "more_${field.key}_value",
+        onTextChange = { quickText = it }, onDismiss = { quick = false }, onApply = { text ->
+            // 作者 long：快速编辑返回只合并列表草稿；父配置仍等待列表页明确保存和持久化回执。
+            val values = splitMoreList(text); validate(values)
+            items = values; selected = emptyList(); error = null
+        })
     if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("保存修改？") },
         confirmButton = { TextButton({ discard = false; save() }) { Text("保存") } },
         dismissButton = { Row {

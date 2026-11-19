@@ -1,0 +1,1322 @@
+{
+  "id": "KUI-VIS-057",
+  "date": "2026-11-20",
+  "status": "DONE-VERIFIED for named list editor slice; full Flutter parity and performance remain PARTIAL",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "screen": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "glassEnabled": false
+  },
+  "changes": [
+    "Centered filled entry form and grouped list toolbar",
+    "Line-numbered quick editor with find/next, undo/redo, font size and wrapping",
+    "Unchanged quick text exits without validation; valid edits apply only to local list draft; invalid edits remain",
+    "Saved list receipt and protocol target receipt retained; no core/database changes"
+  ],
+  "reference": {
+    "sourcePath": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "host": "../acceptance-artifacts/flutter-list-editor-host-20261120",
+    "gitMetadata": false,
+    "hostSourceSha256": "6fec28b5b46577b0fbf211a735dc321328bea270788b0193846c5c0d03571eb6",
+    "hostPubspecSha256": "3543466d2b52dad6877468e4ea3e15bf2a4dadde2ce699af964524a69e6adf94",
+    "apkSha256": "ee6aea1b010758d65df871265d32fdf1f7e4231e80c22ab87639c72feefebd6c",
+    "rustInitialized": true,
+    "sdk": "3.50.0",
+    "upstreamCiSdk": "3.47.6",
+    "sourceHashes": {
+      "lib/features/form/list_edit_view.dart": "49c91d90d1ec13b24126a3b27df350675662c523edefe36a109e14979dbdb6a5",
+      "lib/features/form/list_editor_page.dart": "c33bfce5f3a7a682b503837c6b5921ad072e03f1b9bcfec4c5c6e0816546994b",
+      "lib/features/form/quick_edit.dart": "f7fc7c04342d4ddb7516255fbc1e5cc1873a6714d3301371ba6e143b7dff0978",
+      "lib/pages/editor.dart": "1744796d0716c40d3de7f9324e547fdebe7b897d6583fafcea158cd725fcbcd5",
+      "lib/widgets/input.dart": "d5781bac283efc472a1c47872a100595c405e1c295b19755b295dd6b02bf1f9d",
+      "plugins/prism_ui/lib/dialog.dart": "7ca6ad78189d6a97a450523d43cfba7dfe365fa1c0871a8f52f0eee072de9bef"
+    },
+    "screenshots": {
+      "light-entry.png": "b1eeeb12c441bf20dfac5b4343a14a3de75fe96c61964ac57812d25266e5ca58",
+      "light-quick.png": "4b902d41852a6431c12c137e02a1ac84642b320ff7938e22aa9a5f21685ee55b",
+      "home.png": "5fd86016c3dc22a28bb60f9a56be34a0d693febecb2dcb2fbdc81bca50006e2a",
+      "dark-add-menu.png": "fc9092bcbcbc1264e07e13a6c65c47d5a5ea7d01dca4102ece142e671661b655",
+      "light-list.png": "308e052d4f7138a013fbb5d5ca5d6ea059fffad4fe169c0432db56e9c916e38f",
+      "dark-quick-menu.png": "84da0dab2d1b6413d0f9680df5f42db73faf261de915e234127e12707cce8edd",
+      "dark-list.png": "d3e67667c5b42e7421065e3c71fb4849c03ff91de49d90f20632655cdd5cf720",
+      "dark-quick.png": "ff13e74f8e87fcc8846325894d1fe76eb03fc22df8c66090d49fb384630f97e1",
+      "dark-entry-correct.png": "1354543299af20b2d2814c681fb22c7d002c113035e1c87c72f56b19322dd7d1",
+      "dark-entry.png": "fc9092bcbcbc1264e07e13a6c65c47d5a5ea7d01dca4102ece142e671661b655"
+    },
+    "excluded": [
+      "dark-entry.png is unchanged menu from incorrect coordinate, not entry dialog",
+      "home.png is launcher fixture"
+    ],
+    "rustNativeAssets": [
+      "lib/arm64-v8a/librust_api.so"
+    ]
+  },
+  "build": {
+    "jvmAppMotion": {
+      "tests": 618,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "motionLog": "build5.log",
+    "releaseLog": "release5.log",
+    "motionLint": {
+      "Warning": 73,
+      "Hint": 14
+    },
+    "releaseLint": {
+      "Warning": 69,
+      "Hint": 13
+    },
+    "releaseApk": {
+      "bytes": 48442173,
+      "sha256": "7260b8910c2a41501cd8f3f2f6bbf885b66023228f2676f52702bb357b08853a",
+      "installed": false,
+      "signed": false
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "sourceHashes": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MoreListEditor.kt": "1a233d2e9bcb94bc198a74d172c19b26f2cfaa2a293c83586fccc260f6df8a2e",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileCodeField.kt": "5943d06e6ae9cac70c941faa37ff6a5ad89a3fad8b983455a93cce983bf9194a",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": "29808413b2decfcc44df2462fe3fffc3572e486c1d2f4b8c83d134b078ee09b3",
+      "android/tests/instrumented/MainSnifferNaturalInstrumentedTest.kt": "32b05431750430b010d255dbe2c1a2c08ff5f1f6a606bb4a39657827ece1dc85",
+      "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt": "ced701ff2b330c6d52b9ec5df29de2447b158d7a0e084461fcda20b4629de62e",
+      "android/tests/instrumented/ProfilesPageParityInstrumentedTest.kt": "6aa512b9593ca7e0cac581f5d9f87d6fa7bc40b3788276d389c1ed6567f6cce0",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MoreListEditorChrome.kt": "08a7bb78f9736cf95f56777fa04c63fcc4c138c358908e13dde0b82afd1556fe"
+    },
+    "app": {
+      "sha256": "6e72a488d4bc48ab0ffc2ea5bc1eeee9ec8751aee395ea352ced0b7d32c9110f",
+      "bytes": 66308529,
+      "installedMatched": true
+    },
+    "test5": {
+      "sha256": "e81425fe1c02a0b2696b0d55016b1baab7b2f48f9fb209d8ee683422a025044f",
+      "bytes": 3143434,
+      "installedMatched": true
+    },
+    "test7": {
+      "sha256": "902d3d70ee6ce08f655bf2610696769cc659dfe31708da85dacb23b4090320b6",
+      "installedMatched": true
+    },
+    "identityNote": "Main5 used retained app5/test5; final6 used identical app5/test6 (28/29); final7 targeted recovery used app5/test7 (5/5). Test6/7 only synchronize existing test lifecycle; product unchanged. APKs retained before replacement.",
+    "testBuild": "testbuild7.log"
+  },
+  "acceptance": {
+    "component": {
+      "batch": "final6",
+      "passed": 28,
+      "total": 29,
+      "seconds": 210.696,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056DomainListDraftCancelAndClearRestoreInheritance",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "ntpAddsDefaultsValidatesEditsAndSavesOnlySelectedFields",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "snifferYamlValidationProtocolInheritanceAndExplicitEmptyStayDistinct",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis054SnifferAddPanelGroupsSearchAndSelectsProtocol",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "addDockCancelKeepsSheetAndDraftWithoutSaving",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057LongUnwrappedSearchScrollsToMatchAndBackAppliesDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis055NtpShortAddPanelLight",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057EntryToolbarAndQuickEditorAcrossThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "changingSearchDuringExitDoesNotRetainAnEmptyProtocolGroup",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056SnifferListDraftValidationReorderAndReceipt",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056ListReceiptAfterStateRestorationClosesSavedDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056DestinationReceiptAfterStateRestorationClosesMenu",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "addSearchKeepsQueryAndLastSuccessfulChoiceClosesOnlyAfterSave",
+          "code": -2
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "emptyStateAndConfiguredRowsCrossfadeWithoutLeavingOutgoingActionsEnabled",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057QuickDraftHistoryAndQuerySurviveRestoration",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "pendingDestinationIgnoresBackAndOutsideThenKeepsFailedChoiceForRetry",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "lastAdditionWaitsForAsyncReceiptAndFailedSaveCanRetry",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis055NtpShortAddPanelDark",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "successfulAdditionsCollapseIndependentlyAndFailureKeepsCandidate",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.EditorErrorRecoveryInstrumentedTest",
+          "test": "scriptSelectionAndLongSearchPreserveFailureUntilTextChanges",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.EditorErrorRecoveryInstrumentedTest",
+          "test": "providerSelectionKeepsFailureAndCommittedStateOnlyAllowsReadback",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest",
+          "test": "bothResourcePagesSortInBothThemesAndRetainOrderOnSaveFailure",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest",
+          "test": "viewportDragScrollsWithoutNewMovesCancelsAndCommitsOnlyOnDrop",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfilesPageParityInstrumentedTest",
+          "test": "customMoreFieldsAndImportMenuWorkAcrossThemes",
+          "code": 0
+        }
+      ],
+      "images": {
+        "vis054_sniffer_empty": {
+          "count": 3,
+          "bytes": 77399,
+          "sha256": "40797abe61274dabf21baee8a6aa6cee5a1b154351c357905da6368358505529",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_add_all": {
+          "count": 4,
+          "bytes": 140354,
+          "sha256": "adc8a69f1f86b30825ff5205f042bfa794988977170527cdd25823f74fc00a11",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_add_protocols": {
+          "count": 5,
+          "bytes": 159431,
+          "sha256": "eabbd9b3a4982b063b7e4da12fce252eb8337e1ac992a702329df7b5cc56d585",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_http": {
+          "count": 4,
+          "bytes": 118196,
+          "sha256": "5f6269a2361dcd39754bd18421e9e6e2243ee4137df044e48fdcbce3a5b680a9",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_cleared_ime": {
+          "count": 6,
+          "bytes": 188779,
+          "sha256": "129bb3730961ebca7fd94e9e1c01a2994304cf30ac65d1141db6335c8e83b69e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_cleared_ime_hidden": {
+          "count": 5,
+          "bytes": 161633,
+          "sha256": "56ad0f5b0c2d17ce9c72d35136273aad2ecb66d52303dabd30a699368370c7d2",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_cleared_options": {
+          "count": 3,
+          "bytes": 101037,
+          "sha256": "f023807f29ac26efb96689d88ddb4f4a26fc9ae45f791ebbcd39c6a8db73cf1a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_cleared_protocols": {
+          "count": 5,
+          "bytes": 161024,
+          "sha256": "b8890f981dd514e4e4a8bc1fee1baf6998ca21bfdff6db2fcea48fab17251eb9",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_http_added": {
+          "count": 5,
+          "bytes": 168642,
+          "sha256": "0abe7c3e81e20d228b6c4c0cb0ed010275ed717f6125e0685ffc604c58e93ce4",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_http_page": {
+          "count": 2,
+          "bytes": 43472,
+          "sha256": "278d50d814d4baf71adf184323c227ab0538b74481d51e23a5928f25c69f89e4",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_dock_query": {
+          "count": 4,
+          "bytes": 116519,
+          "sha256": "05715a599d2e42aab9c106a01ec4111acfe51b9ee44df0feefac8f8309b1b227",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_dock_cancel": {
+          "count": 5,
+          "bytes": 158521,
+          "sha256": "f58537ab6fecc67f697eec638adf8a39e446594799469a6176d4ba875adf4b16",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_long_search": {
+          "count": 3,
+          "bytes": 101809,
+          "sha256": "4707caef9368d833ca15089bf00fd50dce831361584f20511fc5f44d8ae1e80a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_six": {
+          "count": 3,
+          "bytes": 103709,
+          "sha256": "265077035f2f20e5282725a57155b15bb5790b1ca19a1af4fd41990c9c08bf72",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_expanded": {
+          "count": 3,
+          "bytes": 92860,
+          "sha256": "4fa26416680558067c2c0bda38ba14e4766ab394e42f7711097d5a081794f311",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_short": {
+          "count": 3,
+          "bytes": 82799,
+          "sha256": "2953d088758277fb04abb74ca6be43cec94cbdd46ee401a8752706880186ebac",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_last": {
+          "count": 4,
+          "bytes": 121187,
+          "sha256": "23e030bd99c2c762583f1e303cee3adc575f723d60efa9a1b084b5e8634f8630",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_complete": {
+          "count": 4,
+          "bytes": 131738,
+          "sha256": "3e17c28b8a038039ccc623c33dd05a934acb7d2fca42568d6a202e5ba64b9898",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_add_menu_light": {
+          "count": 2,
+          "bytes": 55293,
+          "sha256": "e817afab86ab7d964f8a76789231f47cf073fbeb6f882b7429563ec1242df466",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_light": {
+          "count": 2,
+          "bytes": 49306,
+          "sha256": "191b0788fe035d00185e925eec347d91a5414c13e82b6471925f4cee0544b3ea",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_ime_light": {
+          "count": 3,
+          "bytes": 104340,
+          "sha256": "2cf4db70b4796bdfbb0cd4469c0a00c36b75efa614c729db5dc54af0f335fa58",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_list_light": {
+          "count": 2,
+          "bytes": 43257,
+          "sha256": "0f79039cf7d05399c81a038b670d5b51cdfb6561b18f24bb60be487261280ac9",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_selection_light": {
+          "count": 2,
+          "bytes": 43740,
+          "sha256": "9da80fbb0e235f1311c64112a9f09b130e715957aa8c6526cbf1bf92d1498039",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_light": {
+          "count": 1,
+          "bytes": 36047,
+          "sha256": "cf8a7fdcf7d70252208e440e9f20324175ed17361a5bd3be15eeb5372c1af9fd",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_menu_light": {
+          "count": 2,
+          "bytes": 62183,
+          "sha256": "72630f87ce0c751598e57eeeee7e4ddf8d60d98a3516f7929540c60b15c32d5b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_search_light": {
+          "count": 3,
+          "bytes": 99904,
+          "sha256": "c232a445bb3584de43911fa1b240ecd532926390c85c9c419b18b16c0fa6f98c",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_add_menu_dark": {
+          "count": 2,
+          "bytes": 56130,
+          "sha256": "ac3243c6fb0233269c759bba4c2600945fcbaf428cc1630be28ba2a106eb2c0e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_dark": {
+          "count": 2,
+          "bytes": 48756,
+          "sha256": "bb14398b7a82e60deff35138d2b9796f7ead911fe81b5093d5e997a73bc98514",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_ime_dark": {
+          "count": 3,
+          "bytes": 103787,
+          "sha256": "c420d7425d1f5a9ea6526e45c1c4bbde92d627720b9eb925908c73d42b7592ff",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_list_dark": {
+          "count": 2,
+          "bytes": 44043,
+          "sha256": "6b9b5b8011fade418fbd7504eff80f1be4c708e07532436813aae030058d73fc",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_selection_dark": {
+          "count": 2,
+          "bytes": 44528,
+          "sha256": "3265eb6f7fd34ab8cd390067598f42176585f5b9421a36fee9116252308a8ce1",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_dark": {
+          "count": 1,
+          "bytes": 36125,
+          "sha256": "ef9f36c311addafe578b193cb848e5fac4fe8f7e8a7f06110745712a78e35475",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_menu_dark": {
+          "count": 2,
+          "bytes": 62141,
+          "sha256": "acc4a1c71645272fce46efe633c4a05ad6ab23a9e071bcf5ea8d03447d6131a7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_search_dark": {
+          "count": 3,
+          "bytes": 100393,
+          "sha256": "54eaec0a2afd59ded714ca0468f409ac9c1a9be8135a3b78a99f9537c7c5a1a3",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_ntp_empty_light": {
+          "count": 2,
+          "bytes": 70370,
+          "sha256": "28e0b82104e48e6df3a502523efa354fdd1c6cf1e69e9c0c6648f0eb6346e0d3",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_ntp_add_light": {
+          "count": 3,
+          "bytes": 101483,
+          "sha256": "4f1ae8c6eb555c022db09f5bf2d2877312e43f9eb78e6d4aeb335391decaf075",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_ntp_fields_light": {
+          "count": 3,
+          "bytes": 83902,
+          "sha256": "7dbb2459947abf5812f0ec655fccaae39af5c5fe29759fbb465ad86d5a84fe8d",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_ntp_error_light": {
+          "count": 2,
+          "bytes": 41885,
+          "sha256": "a31617a023f226210f38e2e01e2c9dc153f028b879c3680d88ce1c3e2cff501f",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_empty_light": {
+          "count": 3,
+          "bytes": 74858,
+          "sha256": "a999c0e531374ad670e0d04d36bef7b97c336b0bfbd1c2f9f620fdf6ca903b05",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_add_light": {
+          "count": 4,
+          "bytes": 138760,
+          "sha256": "0a4b5e1a4f099b5f835450f23d173ca15e64f9fe67859fc83f656e83b18f7d86",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_protocol_light": {
+          "count": 2,
+          "bytes": 45206,
+          "sha256": "e2bb8796b29aec56b9a46a152ec8431708775f5534d0df265f0d574a215057d0",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_destination_light": {
+          "count": 2,
+          "bytes": 58110,
+          "sha256": "dfbbfbac9a3fc917e40c3f340cd0f49c21ad0145c1d2726bedc6f905a0f8edc3",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_ports_light": {
+          "count": 2,
+          "bytes": 44004,
+          "sha256": "18d9420ecadcc4cbbaf5ff4e913d29f7c6fcae7e81d0e6766fa8e1d7d2ff25f0",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_yaml_light": {
+          "count": 3,
+          "bytes": 93468,
+          "sha256": "1a11749dd805f528e94b68a62a8683ec27fc8f529a8272dae118233c72e7d284",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_ntp_empty_dark": {
+          "count": 2,
+          "bytes": 69176,
+          "sha256": "fdd0e6620bd8e133cfd42f195b1f3a59ce01b5e6a9593b19547f34167eb292fe",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_ntp_add_dark": {
+          "count": 3,
+          "bytes": 103199,
+          "sha256": "a6883aff971bda2611b003a796fa01283da1cc106481b1b60d7d286d15ec91b9",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_ntp_fields_dark": {
+          "count": 3,
+          "bytes": 85584,
+          "sha256": "28cb5892a50d2c0dd7652882e666b8d0cd749fa33c506a7b0aa30580a916fbe7",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_ntp_error_dark": {
+          "count": 2,
+          "bytes": 42435,
+          "sha256": "392c178681f912c7721ef027e29970acdd286b127e65ba79021918fde1855084",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_empty_dark": {
+          "count": 3,
+          "bytes": 76713,
+          "sha256": "b62d828f8cf67533066f2612120fc1e8a5c2b4a555ba544948aec43db0961be3",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_add_dark": {
+          "count": 4,
+          "bytes": 139950,
+          "sha256": "89eb2b26eca2e574412e15a0d8de30c02b6dea9eca45971eb4fa45ab8ae8be9b",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_protocol_dark": {
+          "count": 2,
+          "bytes": 44053,
+          "sha256": "32ff0a7d585ef4886b353b058e9029134dcfdaca74759203a832df3dc2540dd1",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_destination_dark": {
+          "count": 2,
+          "bytes": 54359,
+          "sha256": "15bca63dc37d4f7bc065301b19c63176e139fe95af1c325cd998113c7913397f",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_ports_dark": {
+          "count": 2,
+          "bytes": 45817,
+          "sha256": "53fdeb12f13f4c15406144d08b51bf06dc177372ae75d37a99da35dc160d9c2f",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_yaml_dark": {
+          "count": 3,
+          "bytes": 94552,
+          "sha256": "4da607fb27432a7ae85b5bdae9814bfc2c1666193619e51f83d3ea2c0bb3be0d",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_add_query_after_exit": {
+          "count": 1,
+          "bytes": 10741,
+          "sha256": "5ce1c2d16884ea718ecc4b1c93ec8094fc5c2042601b0aebb005a7d9e2bb087c",
+          "width": 328,
+          "height": 959
+        },
+        "vis056_ports_empty": {
+          "count": 2,
+          "bytes": 45817,
+          "sha256": "53fdeb12f13f4c15406144d08b51bf06dc177372ae75d37a99da35dc160d9c2f",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_ports_draft": {
+          "count": 2,
+          "bytes": 44513,
+          "sha256": "9c9c8eed037519a524a33c6de74e9887b1aa3e0065e40e0b35f7a528b02672b2",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_ports_quick_ime": {
+          "count": 3,
+          "bytes": 93890,
+          "sha256": "012a05bf2793011165a6fec0eea70a0e5c536ee8fbe31dfb1a37a81f9a3c2749",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_ports_save_error": {
+          "count": 2,
+          "bytes": 56151,
+          "sha256": "4a8b386e4a53a0357c75053090caeeedb1729ed1fa5d8552a44efe6e05e74d4a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_ports_saved": {
+          "count": 2,
+          "bytes": 43080,
+          "sha256": "ed8b657ff398eae90ea346468c38bf6962ac681a6602686308c5110b7dbef73b",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_search_empty": {
+          "count": 4,
+          "bytes": 123959,
+          "sha256": "cefbf5d95d51f67a3f46f1cf115ad19f0df805b632bee7fb524ad487945eb2fc",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis043_sniffer_exit_80ms": {
+          "count": 4,
+          "bytes": 128381,
+          "sha256": "b65cbf3fed47777890287867e5ccd98ad26aef696e7b0fc343d7e72393b46835",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis043_sniffer_empty": {
+          "count": 2,
+          "bytes": 73657,
+          "sha256": "44f4a7280115f349f859527530e971efb45a3faaa158e0ae703aea982b2077f0",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_field_save_failure": {
+          "count": 2,
+          "bytes": 41216,
+          "sha256": "1f899886e6759dd49a983253ebdf6e03c1dded5eaef276bfd935f0d845ad0619",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_value_error_ime_hidden": {
+          "count": 2,
+          "bytes": 42403,
+          "sha256": "394d95efb29b8e6b22ad56edddd38b66dbd844699a85046b3bf026b8132bab5a",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_yaml_error_ime_hidden": {
+          "count": 3,
+          "bytes": 91958,
+          "sha256": "2f73ee501d06b180fe035a22b2e73ccacb5933d720263906d5007cb1596d195b",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_pending_destination_before": {
+          "count": 1,
+          "bytes": 13095,
+          "sha256": "2e40dc5d2da828244f7aadae44d11ad7c225ef3fa69de0b405d88cc7845fecbc",
+          "width": 396,
+          "height": 397
+        },
+        "more_pending_destination_during": {
+          "count": 1,
+          "bytes": 18428,
+          "sha256": "d904c62f21f3e8df73f1f275ea81fecf72e821a750ff9fb4476e48c8faeea9a0",
+          "width": 396,
+          "height": 397
+        },
+        "vis055_ntp_true_six": {
+          "count": 3,
+          "bytes": 103796,
+          "sha256": "f649d46d32b2b0460d9d8a0957bd5cf840ae8ad883297d2241e58fa252ccb4c4",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_true_expanded": {
+          "count": 3,
+          "bytes": 92816,
+          "sha256": "d63a437c0dbf4d8a98a93475a9c5ab7d9f6dfa7f7f342053eb9236433323f38d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_true_short": {
+          "count": 3,
+          "bytes": 84113,
+          "sha256": "0b60e9f9edbcf7f46e2bafb8f65d4f31f8890b082281e45350d652d9612bfcc6",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_true_last": {
+          "count": 4,
+          "bytes": 121909,
+          "sha256": "d25f8c7c28b1db11a98f23ff4c1d5b90abd0b12e02d72633efbbfe5433e59161",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_true_complete": {
+          "count": 4,
+          "bytes": 134816,
+          "sha256": "b783fd9f5d646bccb45c4f49966d55180f78e61586e9ee7063fb09a54061c4d7",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_add_two_leaving": {
+          "count": 3,
+          "bytes": 75715,
+          "sha256": "1268dcef5f4e7398937b8a3b07b216776308bd61620a054b22fb01bfb774d0a4",
+          "width": 964,
+          "height": 1109
+        },
+        "script_long_match_error": {
+          "count": 5,
+          "bytes": 182819,
+          "sha256": "f2b268ed2e447c19f72bc0a2b1fc729d2f45eb745e4ee5f007931b59d946e0aa",
+          "width": 1080,
+          "height": 2400
+        },
+        "provider_committed_readback": {
+          "count": 2,
+          "bytes": 57531,
+          "sha256": "301f6236bd468c316d3fe569c9c08242e042190418bbdc5db9a6f9fd00785fa3",
+          "width": 1080,
+          "height": 2400
+        },
+        "rule_resources_sort_false": {
+          "count": 2,
+          "bytes": 55887,
+          "sha256": "c5c18f62e000b9598ab58236d40b33de599d4ac5b07dfa3b10cd4b5ab367f9d4",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_sets_sort_false": {
+          "count": 2,
+          "bytes": 54698,
+          "sha256": "0f7d55ec13feffff607229a104d00d1a58399ef08ebdcbbdbfd1ef55f2b68123",
+          "width": 1080,
+          "height": 2400
+        },
+        "rule_resources_sort_true": {
+          "count": 2,
+          "bytes": 58579,
+          "sha256": "08ebbb7f8e42490f14c3ad4eb0b9a7ab2dd56eccb5482512732871cafae28373",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_sets_sort_true": {
+          "count": 2,
+          "bytes": 57340,
+          "sha256": "70cfcd01bcb7bc61cdd617084561a91610827b8eb52c9de7feadb7a4d4443474",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_order_drag_saved": {
+          "count": 4,
+          "bytes": 112163,
+          "sha256": "75de86d4809e1c80da8e914e7e80bd892c689d81345b1768d65abc1f65130de2",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_ntp_light": {
+          "count": 2,
+          "bytes": 70745,
+          "sha256": "6d170c578c71be3cece579635706a7444f6320763fe8229494cfcc47dd741292",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_sniffer_light": {
+          "count": 3,
+          "bytes": 82377,
+          "sha256": "8900b38ea82e29bac55f7acf7fadf09f1ab7ed92323756d77c67b8d9f89b3e94",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_import_light": {
+          "count": 5,
+          "bytes": 169133,
+          "sha256": "e7d75382dcd8e943d82916ed18f9f94eff1cad3deec6672185c891b5bfcf521f",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_import_confirm_light": {
+          "count": 4,
+          "bytes": 129441,
+          "sha256": "2ded8123d6c18ddbaf4f216e53df5a59dbd4cfc9b0c693fa859c6d089c413d10",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_ntp_dark": {
+          "count": 3,
+          "bytes": 74586,
+          "sha256": "96417a02aaff52e83941eb98802201cb6a1f212feec44e89c9acbc55bafffcc5",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_sniffer_dark": {
+          "count": 3,
+          "bytes": 83876,
+          "sha256": "22f2c4b2dabcc516ac27d4bfe41ace4e05517f7a75259f8590b69ee39c3ec943",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_import_dark": {
+          "count": 5,
+          "bytes": 170322,
+          "sha256": "cd2fda386e384b0d75d41f891709525d7d72ee1bed292af311235b5a6e0addfc",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_import_confirm_dark": {
+          "count": 4,
+          "bytes": 129940,
+          "sha256": "27a5102269889c8c3ab354aecfd6d95c6d8f8cb9430ceaa27781133e89470a6b",
+          "width": 1080,
+          "height": 2400
+        }
+      }
+    },
+    "targetedFinal": {
+      "batch": "final7",
+      "passed": 5,
+      "total": 5,
+      "seconds": 44.335,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057LongUnwrappedSearchScrollsToMatchAndBackAppliesDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057EntryToolbarAndQuickEditorAcrossThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "changingSearchDuringExitDoesNotRetainAnEmptyProtocolGroup",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "addSearchKeepsQueryAndLastSuccessfulChoiceClosesOnlyAfterSave",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057QuickDraftHistoryAndQuerySurviveRestoration",
+          "code": 0
+        }
+      ],
+      "images": {
+        "vis057_long_search": {
+          "count": 3,
+          "bytes": 102789,
+          "sha256": "37f1b1b9de6a24c0039d7340c5e2f3214721b2185dd180d6a5ca15b5058bde35",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_add_menu_light": {
+          "count": 2,
+          "bytes": 54669,
+          "sha256": "dbb8ab670699867e455042a55a308f35d5b018fc581173cd72b9734eedcbfdf6",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_light": {
+          "count": 2,
+          "bytes": 48698,
+          "sha256": "5167e73b5503be8201f323c1b7cd0f8b4f18c9ecf88efb0b7dbd6ddd6bb04140",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_ime_light": {
+          "count": 3,
+          "bytes": 103731,
+          "sha256": "ada95b8bcd54df029315e1f065da26ce77e629bede335fd1143fe3b29463f41c",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_list_light": {
+          "count": 2,
+          "bytes": 42593,
+          "sha256": "c8873c6ba81901260049d9ce7669bb3f7ebf0995a9ec533592b526a990caca47",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_selection_light": {
+          "count": 2,
+          "bytes": 43066,
+          "sha256": "a6755d02dc211139e0a6a64ff633125d09edbe22838de4b9411e9b1c4c6478b8",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_light": {
+          "count": 1,
+          "bytes": 35355,
+          "sha256": "4c8010ef3f1b174eb0abeaefafee9af56906c774279412623c6330f995daa116",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_menu_light": {
+          "count": 2,
+          "bytes": 61612,
+          "sha256": "023a5120e405a8f82442bce05b585340bbdaba67ce7a57991914640ba461a1a7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_search_light": {
+          "count": 3,
+          "bytes": 98913,
+          "sha256": "a1672dfd0ab98d2c38fc908a48dec965551ed9afb7eb210f2e9d545f0757f915",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_add_menu_dark": {
+          "count": 2,
+          "bytes": 55526,
+          "sha256": "526129ee6466158c6f791452fdc94859c54f914dc0238fc63eb79393a6927a05",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_dark": {
+          "count": 2,
+          "bytes": 48254,
+          "sha256": "c9f70ac79dfb1ce8e9b2437143ce75a702f74cbaa2de71f4e9a31f6c791ac9dc",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_ime_dark": {
+          "count": 3,
+          "bytes": 103288,
+          "sha256": "81c01dae94f75c27f1fbe68dec0b494659b3b7c9bd32425a31e311208956e0f5",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_list_dark": {
+          "count": 2,
+          "bytes": 43463,
+          "sha256": "d7e0391c3df6aa4f27799e818872471f465c5ab87b0381f92ab3a14fc751502b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_selection_dark": {
+          "count": 2,
+          "bytes": 44087,
+          "sha256": "52aa0b9a43179da86b8b8a932ae59633d5947f85b695443faf1484cc095e3360",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_dark": {
+          "count": 1,
+          "bytes": 35516,
+          "sha256": "5e5214313f36150634bdc2372e1a332aebe40eaec19ba064a48581015a91e0ef",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_menu_dark": {
+          "count": 2,
+          "bytes": 61646,
+          "sha256": "76236aedddfd021dbea8a1cb0b1f34a01851c08082d625913fce6701263236e8",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_search_dark": {
+          "count": 3,
+          "bytes": 99532,
+          "sha256": "1c2459b279197dc05d50fef66ffb37cc9dc8177bd7e40bd9e16de9d23a6dc2ab",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_add_query_after_exit": {
+          "count": 1,
+          "bytes": 10741,
+          "sha256": "5ce1c2d16884ea718ecc4b1c93ec8094fc5c2042601b0aebb005a7d9e2bb087c",
+          "width": 328,
+          "height": 959
+        },
+        "more_sniffer_search_empty": {
+          "count": 4,
+          "bytes": 124951,
+          "sha256": "b48c1cb93dfc6d27f7711d74771997d3f4439339ccabdf0d168572ae88a17987",
+          "width": 1080,
+          "height": 2400
+        }
+      }
+    },
+    "naturalMain": {
+      "batch": "main5",
+      "passed": 1,
+      "total": 1,
+      "seconds": 47.374,
+      "scope": "Real MainActivity navigation, rapid Back, visible IME, quick edit return, list save, reopen, Activity recreation, Room readback, source and existing records preserved",
+      "images": {
+        "vis056_main_empty": {
+          "count": 3,
+          "bytes": 79569,
+          "sha256": "bbff2eef140eed53c1007b822d2a232f5efc031aeed767a43e1a0c2ca818d095",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_add": {
+          "count": 4,
+          "bytes": 140113,
+          "sha256": "671ed8cc4d02669af35f4fb1ea05848aabd3a38b99eacbd838bce724371fe79e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_search_ime": {
+          "count": 5,
+          "bytes": 154630,
+          "sha256": "0877848c5b39048470f2c734cf6998642526f85ce1bf01360ba029ae8d48f8bf",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_protocol": {
+          "count": 2,
+          "bytes": 46386,
+          "sha256": "754e7c2cf5c8a400fc9c96dd71f5785b86cc424f09eb49ed8bac41a17272b43d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_ports_empty": {
+          "count": 2,
+          "bytes": 47875,
+          "sha256": "3c8cefb862559ab13b29da5ebfe1bed260c9f9cfbf170b1dbaacdf7455e8f065",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_ports_ime": {
+          "count": 3,
+          "bytes": 90270,
+          "sha256": "c4f8a760845587e3f416a6a489b7fd8759a2cc7eee753a0ea521f0a381cf450e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_ports_draft": {
+          "count": 2,
+          "bytes": 46836,
+          "sha256": "dc1bbe71293b05298d1769724063e91419ac6836946dfc292a90394e11f50fb6",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_destination": {
+          "count": 2,
+          "bytes": 45012,
+          "sha256": "5310e9a6ac9d99acdec5ed5cce3c5fa8d0f3513b006ee3334faf0458aa0fc9a5",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_reopened": {
+          "count": 2,
+          "bytes": 42999,
+          "sha256": "75010a80aa5cdee3192a0e616a19cfea0b0a30b60d7189a12bfe135ba699d36b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_recreated": {
+          "count": 2,
+          "bytes": 45402,
+          "sha256": "e16d1ab57efb60dbf13ebb41846b6d3ae3e947f5d53ae741e782f72dcf9f1c71",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "video": {
+        "passed": true,
+        "videoSha256": "fddea63218b6530969e17df5fe7f7643e6392365dbc6f0e493f53f03ff387213",
+        "bytes": 20126985,
+        "deviceCopyRemoved": true,
+        "hasScreenshots": true,
+        "performanceEvidence": false,
+        "durationSeconds": 48.987289,
+        "sourcePtsFrameCount": 1404,
+        "reviewedEvenlySpacedSamples": 12,
+        "fullFrameReview": false
+      }
+    },
+    "comparison": {
+      "pairs": [
+        {
+          "theme": "light",
+          "name": "entry",
+          "reference": "flutter/light-entry.png",
+          "kotlin": "final5/vis057_entry_light.png",
+          "scope": "form only; underlying list differs empty vs two items",
+          "sha256": [
+            "b1eeeb12c441bf20dfac5b4343a14a3de75fe96c61964ac57812d25266e5ca58",
+            "563799e0954538f20a29f71e784cc07278f461787eb1c4d2a01fe1383adfd5b4"
+          ]
+        },
+        {
+          "theme": "light",
+          "name": "list",
+          "reference": "flutter/light-list.png",
+          "kotlin": "final5/vis057_list_light.png",
+          "scope": "same two items; Kotlin unsaved vs Flutter initial (save pill expected difference)",
+          "sha256": [
+            "308e052d4f7138a013fbb5d5ca5d6ea059fffad4fe169c0432db56e9c916e38f",
+            "bda4a984802c5ad549c300ffeb8e52b8d6e18204e7407238094b096d372b1bd6"
+          ]
+        },
+        {
+          "theme": "light",
+          "name": "quick",
+          "reference": "flutter/light-quick.png",
+          "kotlin": "final5/vis057_quick_light.png",
+          "scope": "same two items and standard size; font/background differ",
+          "sha256": [
+            "4b902d41852a6431c12c137e02a1ac84642b320ff7938e22aa9a5f21685ee55b",
+            "c4538f5ae2a24ea8a670cc4f07d067075b55c5f833ca8ab68ba4e1c8eacb2c3f"
+          ]
+        },
+        {
+          "theme": "dark",
+          "name": "entry",
+          "reference": "flutter/dark-entry-correct.png",
+          "kotlin": "final5/vis057_entry_dark.png",
+          "scope": "form only; underlying list differs empty vs two items",
+          "sha256": [
+            "1354543299af20b2d2814c681fb22c7d002c113035e1c87c72f56b19322dd7d1",
+            "e0538b8ab72ebf6acde660256aff94043e146205797e59747eaa4079a31a3052"
+          ]
+        },
+        {
+          "theme": "dark",
+          "name": "list",
+          "reference": "flutter/dark-list.png",
+          "kotlin": "final5/vis057_list_dark.png",
+          "scope": "same two items; Kotlin unsaved vs Flutter initial (save pill expected difference)",
+          "sha256": [
+            "d3e67667c5b42e7421065e3c71fb4849c03ff91de49d90f20632655cdd5cf720",
+            "da806f6ab9fefa0fe410481109e003bac5e5062739ddd84859b8a1f8e92b76e1"
+          ]
+        },
+        {
+          "theme": "dark",
+          "name": "quick",
+          "reference": "flutter/dark-quick.png",
+          "kotlin": "final5/vis057_quick_dark.png",
+          "scope": "same two items and standard size; font/background differ",
+          "sha256": [
+            "ff13e74f8e87fcc8846325894d1fe76eb03fc22df8c66090d49fb384630f97e1",
+            "0e2805eefe45232ad028969c9c07be0f0bc2247ce4d26258d5212c84e86d4848"
+          ]
+        }
+      ],
+      "pixelIdentical": false,
+      "captureBatch": "final5, same app5; one unrelated animation test failed in that batch"
+    },
+    "visualReview": {
+      "reviewed": "Final5 88 PNGs, final7 19 PNGs, main5 10 PNGs via contact sheets; six scoped Flutter pairs; 12 video time samples",
+      "mainScreenshotLimit": "vis056_main_ports_ime captured before typed text appeared; confirms editor/IME only, not stable text visual. Subsequent draft, reopened, recreated screenshots and Room readback show both ports.",
+      "notFullPixelEquivalence": true
+    }
+  },
+  "failuresPreserved": [
+    {
+      "batch": "build1",
+      "reason": "Test compilation: assertTextSelectionEquals unavailable; use SemanticsProperties.TextSelectionRange"
+    },
+    {
+      "batch": "candidate-static-review",
+      "reason": "Nested BoxWithConstraints under IntrinsicSize layout removed before installation; static crash risk, not device-reproduced defect"
+    },
+    {
+      "batch": "final3",
+      "passed": 28,
+      "total": 29,
+      "reason": "Horizontal test tag overrode content tag; removed duplicate tag"
+    },
+    {
+      "batch": "release3",
+      "reason": "Lint internal AsyncExecutionService null crash; fixed-source release5 passed with no rules disabled"
+    },
+    {
+      "batch": "final5",
+      "passed": 28,
+      "total": 29,
+      "reason": "Existing header transition 80ms assertion intermittent; test6 waits for receipt and first frame; product animation unchanged"
+    }
+  ],
+  "testHarnessFollowup": {
+    "batch": "final6",
+    "passed": 28,
+    "total": 29,
+    "failure": "Direct test-host section change raced closing sheet; test7 waits for old window to disappear; no production navigation change"
+  },
+  "intermediateBatches": {
+    "initial2": "2/2 prior candidate",
+    "final4": "29/29 prior candidate; unchanged-text return added afterward"
+  },
+  "protection": {
+    "inputCopyRemoved": true,
+    "packages": {
+      "com.lonnnnnng.flclash.motion.test": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.flclash.motion": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.kclash.reference.flutter_sniffer_full_reference": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      }
+    },
+    "sourceAndSettingsPreserved": true,
+    "originalFlutterIdentityPreserved": true,
+    "originalFlutterIdentity": [
+      "versionCode=2026112401 minSdk=24 targetSdk=37",
+      "versionName=0.9.3",
+      "lastUpdateTime=2026-11-07 02:44:08",
+      "firstInstallTime=2026-11-07 02:44:08"
+    ]
+  },
+  "limits": [
+    "Original com.follow.clash untouched; reference is independent raw ListEditView host with Rust initialized, not full Flutter app navigation",
+    "Flutter source has no Git metadata; SDK3.50.0 vs upstream CI3.47.6",
+    "Entry background differs empty vs nonempty; list dirty state differs; only quick text content matches fully",
+    "Font family, spacing, dialog scrim, menu shape and nested font-size menu, search empty illustration remain",
+    "Screenshots and recording do not establish performance improvement; complete Flutter continuous comparison and lossless Perfetto/RenderThread attribution still pending",
+    "No formal Release device install or new release; local 1.yaml copied only via USB and removed; no online publication"
+  ],
+  "artifactRoot": "../acceptance-artifacts/list-editor-parity-poco-20261120/"
+}

@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,18 +46,21 @@ internal fun profileYamlText(text: String, key: Color, comment: Color, literal: 
 internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) -> Unit, enabled: Boolean, modifier: Modifier = Modifier,
     contentTag: String = "profile_editor_content",
     highlightYaml: Boolean = true,
-    scrollState: androidx.compose.foundation.ScrollState = rememberScrollState()) {
+    scrollState: androidx.compose.foundation.ScrollState = rememberScrollState(),
+    fontSize: androidx.compose.ui.unit.TextUnit = 14.sp,
+    softWrap: Boolean = true) {
     val windowed = remember(value.text) { value.text.length > 65_536 || value.text.count { it == '\n' || it == '\r' } > 1500 }
     if (windowed) {
-        WindowedProfileCodeField(value, onChange, enabled, modifier, contentTag)
+        WindowedProfileCodeField(value, onChange, enabled, modifier, contentTag, fontSize, softWrap)
         return
     }
-    val style = profileCodeStyle().copy(color = MaterialTheme.colorScheme.onSurface)
+    val style = profileCodeStyle().copy(color = MaterialTheme.colorScheme.onSurface, fontSize = fontSize, lineHeight = (fontSize.value + 6).sp)
     val colors = MaterialTheme.colorScheme
     val transformation = remember(colors.primary, colors.onSurfaceVariant, colors.tertiary, highlightYaml) {
         VisualTransformation { TransformedText(if (highlightYaml) profileYamlText(it.text, colors.primary, colors.onSurfaceVariant, colors.tertiary) else it, OffsetMapping.Identity) }
     }
     val scroll = scrollState
+    val horizontal = rememberScrollState()
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val starts = remember(value.text) { buildList {
         add(0)
@@ -69,6 +73,10 @@ internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) 
     LaunchedEffect(value.selection, layout) {
         val result = layout ?: return@LaunchedEffect
         val cursor = result.getCursorRect(value.selection.min.coerceIn(0, value.text.length))
+        if (!softWrap && horizontal.viewportSize > 0 &&
+            (cursor.left < horizontal.value || cursor.right > horizontal.value + horizontal.viewportSize)) {
+            horizontal.animateScrollTo((cursor.left.toInt() - horizontal.viewportSize / 3).coerceAtLeast(0))
+        }
         val viewport = scroll.viewportSize
         if (viewport > 0 && (cursor.top < scroll.value || cursor.bottom > scroll.value + viewport)) {
             scroll.animateScrollTo((cursor.top.toInt() - viewport / 3).coerceAtLeast(0))
@@ -77,6 +85,7 @@ internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) 
     val gutterColor = colors.onSurfaceVariant
     BoxWithConstraints(modifier.testTag("profile_code_viewport")) {
         val viewportHeight = constraints.maxHeight.toFloat()
+        val bodyWidth = (maxWidth - 48.dp).coerceAtLeast(0.dp)
         Row(Modifier.fillMaxSize().verticalScroll(scroll).heightIn(min = maxHeight).height(IntrinsicSize.Min).padding(top = 12.dp, bottom = 24.dp)) {
             Canvas(Modifier.width(48.dp).fillMaxHeight()) {
                 val result = layout ?: return@Canvas
@@ -93,16 +102,21 @@ internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) 
                     drawContext.canvas.nativeCanvas.drawText((line + 1).toString(), size.width - 12.dp.toPx(), result.getLineBaseline(visual), paint)
                 }
             }
-            BasicTextField(value, onChange, Modifier.weight(1f).padding(end = 16.dp).testTag(contentTag), enabled = enabled,
-                textStyle = style, cursorBrush = SolidColor(colors.primary), visualTransformation = transformation,
-                onTextLayout = { layout = it })
+            // 作者 long：关闭换行时只让正文横向滚动，行号仍固定；默认路径保留已有配置编辑器布局。
+            Box(Modifier.weight(1f)) {
+                val textModifier = if (softWrap) Modifier.fillMaxWidth() else Modifier
+                    .horizontalScroll(horizontal).width(IntrinsicSize.Max).widthIn(min = bodyWidth)
+                BasicTextField(value, onChange, textModifier.padding(end = 16.dp).testTag(contentTag), enabled = enabled,
+                    textStyle = style, cursorBrush = SolidColor(colors.primary), visualTransformation = transformation,
+                    onTextLayout = { layout = it })
+            }
         }
     }
 }
 
 @Composable
 private fun WindowedProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) -> Unit, enabled: Boolean,
-    modifier: Modifier, contentTag: String) {
+    modifier: Modifier, contentTag: String, fontSize: androidx.compose.ui.unit.TextUnit, softWrap: Boolean) {
     var start by remember { mutableIntStateOf(0) }
     val safeStart = start.coerceAtMost(value.text.length)
     val end = remember(value.text, safeStart) { profileCodeWindowEnd(value.text, safeStart) }
@@ -134,7 +148,7 @@ private fun WindowedProfileCodeField(value: TextFieldValue, onChange: (TextField
         key(safeStart) {
             ProfileCodeField(local, { next ->
                 onChange(replaceProfileCodeWindow(value, safeStart, end, next))
-            }, enabled, Modifier.fillMaxWidth().weight(1f), contentTag = contentTag, highlightYaml = false)
+            }, enabled, Modifier.fillMaxWidth().weight(1f), contentTag = contentTag, highlightYaml = false, fontSize = fontSize, softWrap = softWrap)
         }
     }
 }

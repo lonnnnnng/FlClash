@@ -44,3 +44,7 @@
 下一组优先收尾这些剩余子页/面板精确差异，再集中菜单首开/关闭的无损 Perfetto、RenderThread 归因及正式 R8 性能对照。语义预检和系统兼容维持现状，其他暂缓项不恢复。
 
 [验收 JSON](acceptance/sniffer-full-parity-poco-20261120.json)，本机原始附件 `../acceptance-artifacts/sniffer-full-parity-poco-20261120/`。
+
+## 057接续（2026-11-20）
+
+单项输入、列表胶囊和纯文本快速编辑已由[057](list-editor-flutter-alignment.md)接续；新隔离宿主启用Rust资产并初始化，正常运行上游快速编辑。056的未初始化记录仍保留为当时限制，不再代表当前阻塞。精确菜单/遮罩/字形及完整连续对照继续待办。

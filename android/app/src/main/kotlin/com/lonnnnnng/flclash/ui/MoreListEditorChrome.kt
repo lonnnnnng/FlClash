@@ -1,0 +1,171 @@
+package com.lonnnnnng.flclash.ui
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.SolidColor
+import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Undo
+import androidx.compose.material.icons.automirrored.outlined.Redo
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+
+@Composable
+internal fun MoreListActionPill(content: @Composable RowScope.() -> Unit) {
+    Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
+        Row(verticalAlignment = Alignment.CenterVertically, content = content)
+    }
+}
+
+/** 作者 long：单项输入在键盘上方保持完整表单；确认只改草稿，不伪装成父配置已保存。 */
+@Composable
+internal fun MoreListEntryDialog(title: String, input: String, error: String?, onInput: (String) -> Unit,
+    onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+        val dark = LocalKClashDarkTheme.current
+        val panelColor = if (dark) MaterialTheme.colorScheme.surfaceContainerHigh else dashboardCardColor()
+        val inputColor = if (dark) MaterialTheme.colorScheme.surfaceContainerHighest else dashboardPageColor()
+        Box(Modifier.fillMaxSize().pointerInput(onDismiss) { detectTapGestures { onDismiss() } }.safeDrawingPadding().imePadding().padding(horizontal = 40.dp, vertical = 24.dp),
+            contentAlignment = Alignment.Center) {
+            Surface(Modifier.widthIn(max = 348.dp).fillMaxWidth().testTag("more_list_entry_dialog"),
+                shape = AppSuperellipseShape(34.dp), color = panelColor) {
+                Column(Modifier.pointerInput(Unit) { detectTapGestures { } }.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(title, Modifier.padding(start = 30.dp, top = 21.dp, end = 30.dp), style = MaterialTheme.typography.bodyLarge)
+                    Column(Modifier.fillMaxWidth().padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 20.dp)) {
+                        Surface(shape = AppSuperellipseShape(24.dp), color = inputColor) {
+                            BasicTextField(input, onInput, Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .padding(horizontal = 14.dp, vertical = 12.dp).testTag("more_list_entry_input"),
+                                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary), minLines = 1, maxLines = 5,
+                                decorationBox = { inner -> Box {
+                                    if (input.isEmpty()) Text("值", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    inner()
+                                } })
+                        }
+                        error?.let { Text(it, Modifier.padding(top = 8.dp).testTag("more_list_input_error"),
+                            color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+                    }
+                    Button(onClick = onConfirm, shape = AppSuperellipseShape(24.dp),
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp).fillMaxWidth().height(48.dp)
+                            .testTag("more_list_entry_confirm")) { Text("确定") }
+                }
+            }
+        }
+    }
+}
+
+/** 作者 long：仅保留有界文本历史；选区/查找不生成撤销项，系统重建交给父级已有加密草稿注册表。 */
+private fun appendQuickHistory(history: List<String>, text: String): List<String> {
+    var next = (history + text).takeLast(64)
+    while (next.size > 1 && next.sumOf(String::length) > 262_144) next = next.drop(1)
+    return next
+}
+
+@Composable
+internal fun MoreListQuickEditor(title: String, text: String, contentTag: String,
+    onTextChange: (String) -> Unit, onDismiss: () -> Unit, onApply: (String) -> Unit) {
+    val initialText by rememberSaveable { mutableStateOf(text) }
+    var selectionStart by rememberSaveable { mutableIntStateOf(0) }
+    var selectionEnd by rememberSaveable { mutableIntStateOf(0) }
+    var composition by remember { mutableStateOf<TextRange?>(null) }
+    var undo by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var redo by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var fontSize by rememberSaveable { mutableIntStateOf(16) }
+    var wrap by rememberSaveable { mutableStateOf(true) }
+    var menu by remember { mutableStateOf(false) }
+    var failure by rememberSaveable { mutableStateOf<String?>(null) }
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    fun dismiss() { focus.clearFocus(force = true); keyboard?.hide(); onDismiss() }
+    fun exit() {
+        if (searching) { searching = false; query = ""; return }
+        // 作者 long：原文未改时直接退出；已有配置可能含待修复项，查看或撤销到原文不能被重新校验拦住。
+        if (text == initialText) { dismiss(); return }
+        runCatching { onApply(text); dismiss() }.onFailure { failure = it.message ?: "列表无效" }
+    }
+    fun replace(next: String) {
+        onTextChange(next); selectionStart = next.length; selectionEnd = next.length; composition = null
+    }
+    fun findNext(from: Int) {
+        if (query.isEmpty()) return
+        val index = text.indexOf(query, from.coerceIn(0, text.length), ignoreCase = true)
+            .takeIf { it >= 0 } ?: text.indexOf(query, ignoreCase = true)
+        if (index >= 0) { selectionStart = index; selectionEnd = index + query.length; composition = null }
+    }
+    ProfileEditorPage(::exit, title = { Text(title) }, backTag = "more_list_quick_back", navigationButtonSurface = true,
+        contentPadding = PaddingValues(0.dp), searchActionFirst = true,
+        topBarSearch = ProfileEditorSearchState(searching, query, "查找", {
+            query = it; findNext(0)
+        }, { searching = it }), confirmButton = {
+            Row(Modifier.padding(end = 8.dp)) {
+                if (searching) IconButton({ findNext(selectionEnd) }, enabled = query.isNotEmpty(),
+                    modifier = Modifier.testTag("more_list_quick_next")) { Icon(Icons.Outlined.KeyboardArrowDown, null) }
+                Box {
+                    MoreListActionPill {
+                        IconButton({ menu = true }, Modifier.size(44.dp).testTag("more_list_quick_menu")) { AppGlyphIcon(AppGlyphs.more) }
+                    }
+                    DropdownMenu(menu, { menu = false }) {
+                        DropdownMenuItem(text = { Text("撤销") }, enabled = undo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_undo"),
+                            leadingIcon = { Icon(Icons.AutoMirrored.Outlined.Undo, null) }, onClick = {
+                                val previous = undo.last(); undo = undo.dropLast(1); redo = appendQuickHistory(redo, text)
+                                replace(previous); menu = false
+                            })
+                        DropdownMenuItem(text = { Text("重做") }, enabled = redo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_redo"),
+                            leadingIcon = { Icon(Icons.AutoMirrored.Outlined.Redo, null) }, onClick = {
+                                val next = redo.last(); redo = redo.dropLast(1); undo = appendQuickHistory(undo, text)
+                                replace(next); menu = false
+                            })
+                        HorizontalDivider()
+                        listOf(16 to "标准", 20 to "大", 24 to "超大").forEach { (size, label) ->
+                            DropdownMenuItem(text = { Text("大小 · $label") },
+                                trailingIcon = if (fontSize == size) {{ AppGlyphIcon(AppGlyphs.check) }} else null,
+                                modifier = Modifier.testTag("more_list_quick_size_$size"), onClick = { fontSize = size; menu = false })
+                        }
+                        DropdownMenuItem(text = { Text("自动换行") },
+                            trailingIcon = { Switch(wrap, null) }, modifier = Modifier.testTag("more_list_quick_wrap"),
+                            onClick = { wrap = !wrap; menu = false })
+                    }
+                }
+            }
+        }, text = {
+            Column(Modifier.fillMaxSize()) {
+                if (searching && query.isNotEmpty() && !text.contains(query, ignoreCase = true)) {
+                    Text("无匹配结果", Modifier.padding(horizontal = 16.dp, vertical = 8.dp).testTag("more_list_quick_no_match"),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                ProfileCodeField(TextFieldValue(text, TextRange(selectionStart.coerceIn(0, text.length), selectionEnd.coerceIn(0, text.length)), composition),
+                    { next ->
+                        if (next.text != text) { undo = appendQuickHistory(undo, text); redo = emptyList(); onTextChange(next.text) }
+                        selectionStart = next.selection.start; selectionEnd = next.selection.end; composition = next.composition
+                    }, true, Modifier.fillMaxWidth().weight(1f), contentTag, highlightYaml = false,
+                    fontSize = fontSize.sp, softWrap = wrap)
+            }
+        })
+    failure?.let { message ->
+        AlertDialog(onDismissRequest = { failure = null }, title = { Text("放弃修改？") },
+            text = { Text(message, Modifier.testTag("more_list_input_error")) },
+            confirmButton = { TextButton({ failure = null; dismiss() }) { Text("放弃") } },
+            dismissButton = { TextButton({ failure = null }) { Text("继续编辑") } })
+    }
+}
