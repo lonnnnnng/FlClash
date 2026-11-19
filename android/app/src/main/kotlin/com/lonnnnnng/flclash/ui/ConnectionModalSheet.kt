@@ -191,6 +191,7 @@ internal fun ConnectionModalSheet(
     closeRequested: Boolean = false,
     handleHeight: Dp = 48.dp,
     handleWidth: Dp = 32.dp,
+    handleVerticalOffset: Dp = 0.dp,
     floatingForm: Boolean = false,
     content: @Composable ColumnScope.(onDismissRequest: () -> Unit) -> Unit,
 ) {
@@ -427,7 +428,9 @@ internal fun ConnectionModalSheet(
                                     },
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Box(Modifier.size(handleWidth, 4.dp).background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(2.dp)))
+                                // 作者 long：紧凑表单的拖动条需保留顶部6dp，但不能为线条定位额外推低标题。
+                                Box(Modifier.offset(y = handleVerticalOffset).size(handleWidth, 4.dp)
+                                    .background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(2.dp)))
                             }
                             content(requestDismiss)
                         }

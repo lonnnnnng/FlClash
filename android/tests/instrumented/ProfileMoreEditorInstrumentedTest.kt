@@ -190,6 +190,50 @@ class ProfileMoreEditorInstrumentedTest {
         capture("more_dock_cancel")
     }
 
+    @Test fun vis055NtpShortAddPanelLight() = ntpShortAddPanel(false)
+    @Test fun vis055NtpShortAddPanelDark() = ntpShortAddPanel(true)
+
+    private fun ntpShortAddPanel(darkTheme: Boolean) {
+        dark = darkTheme
+        section = "ntp"
+        render()
+        compose.onNodeWithTag("profile_more_empty_add").performClick()
+        compose.onNodeWithTag("profile_more_add_search").assertDoesNotExist()
+        compose.onNodeWithTag("more_add_header_true").assertDoesNotExist()
+        ntpFields.forEach { compose.onNodeWithTag("more_add_${it.key}").assertExists() }
+        capture("vis055_ntp_${darkTheme}_six")
+        fun sheetHeight() = compose.onNodeWithTag("profile_more_add_sheet").fetchSemanticsNode().boundsInWindow.height
+        val viewportHeight = compose.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInWindow.height
+        compose.onNodeWithTag("connection_detail_handle").performClick()
+        compose.waitForIdle()
+        assertEquals("真实Flutter NTP列表上滑仍展开至90%", viewportHeight * .9f, sheetHeight(), 4f)
+        capture("vis055_ntp_${darkTheme}_expanded")
+        listOf("server", "port", "enable").forEach {
+            compose.onNodeWithTag("more_add_$it").performScrollTo().performClick()
+            compose.onNodeWithTag("more_add_$it").assertDoesNotExist()
+        }
+        val shortHeight = sheetHeight()
+        assertEquals("添加条目后保持原展开意图", viewportHeight * .9f, shortHeight, 4f)
+        compose.onNodeWithTag("connection_detail_handle").performTouchInput {
+            swipe(center, center.copy(y = center.y - 500f), durationMillis = 300)
+        }
+        compose.waitForIdle()
+        assertEquals("展开后的剩余候选不改变停靠", shortHeight, sheetHeight(), 4f)
+        capture("vis055_ntp_${darkTheme}_short")
+        compose.onNodeWithTag("profile_more_add_done").performClick()
+        compose.onNodeWithTag("profile_more_add_sheet").assertDoesNotExist()
+        compose.runOnIdle { assertEquals("time.apple.com", savedNtp?.server); assertEquals(3, saveCalls); assertEquals(0, exits) }
+        compose.onNodeWithTag("profile_more_add").performClick()
+        listOf("interval", "dialer-proxy").forEach { compose.onNodeWithTag("more_add_$it").performScrollTo().performClick() }
+        compose.onNodeWithTag("more_add_write-to-system").assertIsDisplayed()
+        capture("vis055_ntp_${darkTheme}_last")
+        compose.onNodeWithTag("more_add_write-to-system").performClick()
+        compose.onNodeWithTag("profile_more_add_sheet").assertDoesNotExist()
+        compose.onNodeWithTag("profile_more_add").assertIsNotEnabled()
+        compose.runOnIdle { assertEquals(6, saveCalls); assertEquals(0, exits) }
+        capture("vis055_ntp_${darkTheme}_complete")
+    }
+
     @Test fun vis054SnifferAddPanelGroupsSearchAndSelectsProtocol() {
         section = "sniffer"
         dark = true

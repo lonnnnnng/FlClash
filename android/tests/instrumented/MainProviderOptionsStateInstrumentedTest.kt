@@ -232,6 +232,10 @@ class MainProviderOptionsStateInstrumentedTest {
                 assertEquals(alternate.id, ProfileProxyResources.idOf(ProfileProxyResources.definitions(savedSection)[alias]))
                 compose.onNodeWithTag("profile_provider_edit_$alias").assertIsDisplayed()
                 capture("main_provider_multi_candidate_selected")
+                compose.onNodeWithTag("profile_provider_bind_proxy_$alias").performClick()
+                compose.onNodeWithTag("${alternateChoice}_selected", useUnmergedTree = true).assertIsDisplayed()
+                compose.onNodeWithTag("${originalChoice}_selected", useUnmergedTree = true).assertDoesNotExist()
+                capture("main_provider_multi_candidate_reopened")
             } finally {
                 entryProfileCleanup(s, alternate)
             }

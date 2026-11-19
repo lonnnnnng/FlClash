@@ -1,6 +1,8 @@
 # KClash Kotlin 重写路线图
 
-> **当前范围（2026-11-19）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
+> **当前范围（2026-11-20）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
+
+> **KUI-VIS-055（2026-11-20）已在 POCO F2 Pro 验收**：NTP 添加面板深浅色、半屏/展开/短列表与最后提交退出，Provider 勾选、多词筛选和真实绑定保存重开已完成本组切片。最终单批11/11、42张PNG及16组Flutter组件状态对照，App motion JVM618项零失败/错误/跳过；motion与未签名Release/R8构建、双变体Lint及DEX门禁通过。原版Flutter与原1.yaml保持，自有三包/设备副本已清理。Provider上游参照为共用SelectionSheet，不是同名绑定页；父页外框/字形等差异和完整连续转场仍未收口。下一组Sniffer整页与真实MainActivity转场，然后菜单慢帧。[说明](ntp-provider-visual-alignment.md)与[证据](acceptance/ntp-provider-flutter-parity-poco-20261120.json)
 
 > **独立应用图标（2026-11-19）**：用户选择 A「折流 K」，已接入普通/圆形、自适应及独立单色层，五档旧版位图从同一 SVG 生成。Redmi Note 8 Pro/API36 独立 motion 包的系统应用信息圆形图标已目视，安装回拉 SHA 匹配；构建/Lint 零错误，十张密度位图尺寸/边角透明度/来源哈希核对通过。静态深浅主题与遮罩预览不推广为低 API、其他 OEM 或 Launcher 主题开关实测。临时包已清理，正式包与原配置保持；现已发布 0.1.10，正式包资产验收与独立真机记录分开。[图标证据](acceptance/launcher-icon-redmi-20261119.json)与[设计规范](../DESIGN.md)
 
@@ -858,7 +860,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 
 以上仅记录2026-11-05该批验收边界：当时规则重建使用保存状态模拟，未做冷进程，未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。后续编辑器、独立全局规则及资源选择器冷恢复已有具名证据；0.1.1正式签名、Go race、远端CI和Redmi发布资产回验已完成，当前状态以第3节和`acceptance/qr-camera-r8-redmi-20261110.json`为准。整体Flutter视觉、菜单性能和低API仍PARTIAL；玻璃默认关闭，Dock/按钮实时背景和触点光效后排，既定暂缓项保持。
 
-## 3. 当前快照（2026-11-18核对）
+## 3. 当前快照（2026-11-20核对）
 
 本节与[功能清单](functional-closure.md)、工作区根`todo.md`为当前状态；具名日期的验收切片保留原始范围和失败，不能将其中旧“下一步”当作现行待办。
 
@@ -870,14 +872,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 0.1.10标签CI的Go race、JVM测试、Release/R8、Debug/Release Lint与签名资产检查全部通过；KUI-VIS-054 Sniffer 添加面板/HTTP协议页切片在 POCO 独立 motion 包中 1/1、10张截图校验通过，未与 Release 设备安装混算 |
+| 最新自动化记录 | KUI-VIS-055 最终单批11/11，42张PNG；App motion JVM618项零失败/错误/跳过，motion/Test与未签名Release/R8、Lint和DEX门禁通过。0.1.10标签CI是历史发布证据，未混算为本轮真机Release验收。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
-| 数据保护 | 本组 motion/test 和隔离 Flutter Sniffer 参考宿主均已卸载；原版 `com.follow.clash` 的版本/安装时间保持，未修改。原1.yaml未访问；服务和TUN无活动 |
-| 正在推进 | KUI-VIS-054 已完成 Sniffer 空态/分组面板/HTTP搜索/选中/协议页这一切片；同一内容区域视觉接近，空态插图与两端路由外框仍不等同。下一项补 NTP 面板与 Provider 绑定选择器同状态对照，再做 MainActivity 整页连续转场。菜单首开绘制归因/优化收益仍未确认。[054 Sniffer 切片证据](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json) |
+| 数据保护 | 本组motion/test与隔离Flutter NTP/Provider宿主已卸载；授权1.yaml仅USB复制到独立包供绑定用例，结束核对SHA后删除。原文件SHA/大小/mtime、原版com.follow.clash版本/安装时间及手机设置保持，无KClash服务。 |
+| 正在推进 | KUI-VIS-055 NTP添加面板与Provider共用选择组件同态对照、Kotlin真实绑定保存重开已验。下一组Sniffer整页差异及真实MainActivity连续转场，再集中菜单首开/关闭与RenderThread归因；全页像素一致和性能收益仍未确认。[本组证据](acceptance/ntp-provider-flutter-parity-poco-20261120.json) |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB 正文性能、备份与系统恢复、观测次要打磨、语言主题继续暂缓。玻璃默认关闭。 |
-| 最新证据 | [054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
+| 最新证据 | [055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
 
 ## 4. 目标架构图
 
@@ -1561,7 +1563,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 | 6 | IP/质量全部来源、持久缓存和失效恢复；服务全部目标 | 缓存闭环与全部目标尝试已验：757单测、final3 5/5、cold2/cold5各双阶段、回归10/10；远端部分受限，原长窗口配置保护after 0/1/原因未定，新短窗口通过不替代失败。见`ip-quality-cache-redmi-20261105.json` |
 | 7 | Fallback 无有效 now 实核行为和冷恢复 | 冷进程收尾已验：更新后的唯一授权源为34组、1个非空Fallback/7成员；Redmi真实Mihomo停止态/运行态各4阶段，共8/8有效`now`，固定/清除固定/非法成员拒绝通过；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`，见`fallback-real-core-redmi-20261105.json`与`fallback-cold-process-redmi-20261106.json`。自然无效`now`经源码核对在合法非空组、断网或全不健康成员下不可自然产生，保留为核心语义边界，不记伪造注入为通过。 |
 | 8 | 纯代理冷恢复、首次安装VPN授权、蜂窝、第三方、Always-on OEM | 既有纯代理/Always-on/首次安装VPN证据保留；本组官方MacroDroid6.1.5在公开0.1.3上前台Activity启停5次通过，重复START保持同一服务。Tasker/后台定时/开机/其他OEM未验，Redmi蜂窝恢复已验，生产Always-on状态仍UNKNOWN。 |
-| 9 | 完整Flutter视觉与常用交互 | 043～047 的 8/8、048 的 6/6与冷恢复1/1、049图标集3/3、050/051 Provider各1/1、052空态对照1/1、053非空图标集对照5/5、054 Sniffer添加面板/HTTP协议页切片1/1均有POCO证据。050/051 Provider同态运行对照、NTP面板、其他子页以及MainActivity完整自然转场仍待；054空态与路由外框不记为全页像素一致。 |
+| 9 | 完整Flutter视觉与常用交互 | 043～054具名切片继续保留；055补NTP添加面板深浅色与Provider共用选择组件运行对照、真实绑定保存重开，单批11/11、42图。上游无独立重绑定页，不称050/051整页等价；Sniffer整页、其余子页、真实MainActivity自然转场和精确像素差异仍待。 |
 | 10 | 实时背景/触点光效、玻璃品质、8MiB正文及连续动效性能 | POCO 已捕获菜单首开和收回的线程轨迹。首开样本以主线程工作为主，收回包括应用超时和缓冲积压，需继续定位并对照优化效果。8 MiB 正文性能继续暂缓，玻璃默认关闭。 |
 | 11 | API24/25/31/32及低API核心/VPN/实网、端到端回归、CI/签名/Release/更新资产 | 0.1.10标签CI、正式证书/SHA及Release Latest已回验；Release APK已下载核对，未安装到真机。版本检查和GitHub跳转已完成，不再推进应用内下载/安装。低API真机、其余升级矩阵及其他OEM边界单列。 |
 

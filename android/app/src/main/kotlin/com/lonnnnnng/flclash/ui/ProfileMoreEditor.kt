@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.LocalDensity
+import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -160,8 +161,10 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
             restoreDetentAfterIme = true,
             dismissAllowed = { !state.isSaving },
             sheetTag = "profile_more_add_sheet",
-            handleHeight = 20.dp,
+            handleHeight = if (ntp) 10.dp else 20.dp,
             handleWidth = 28.dp,
+            handleVerticalOffset = if (ntp) 3.dp else 0.dp,
+            floatingForm = ntp,
         ) { requestDismiss ->
             // 作者 long：候选身份固定在本次面板，不因保存回执立即移除组合；先完成条目收起，后续条目才能连续上移。
             var shownChoices by remember(profile.id, section) { mutableStateOf(remaining) }
@@ -175,7 +178,16 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                 }
             }
             Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                if (ntp) Box(Modifier.fillMaxWidth().height(48.dp)) {
+                    // 作者 long：真实NTP添加页使用居中标题和左侧关闭；关闭只结束选项面板，不回滚已逐项保存的字段。
+                    Surface(Modifier.align(Alignment.CenterStart).size(44.dp), shape = AppSuperellipseShape(22.dp),
+                        color = if (LocalKClashDarkTheme.current) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceBright) {
+                        IconButton(onClick = requestDismiss, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_add_done")) {
+                            AppGlyphIcon(AppGlyphs.close, Modifier.size(22.dp))
+                        }
+                    }
+                    Text("添加设置项", Modifier.align(Alignment.Center), style = MaterialTheme.typography.titleMedium)
+                } else Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("添加设置项", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
                     TextButton(onClick = requestDismiss, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_add_done")) { Text("完成") }
                 }
@@ -191,25 +203,37 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                             if (entries.isNotEmpty()) {
                                 // 作者 long：分组最后一条开始退场时标题同步收起，不能等条目结束后突然跳掉整块标题高度。
                                 SelectionEntryTransition(entries.any { it.key in remainingKeys }, Modifier.testTag("more_add_header_$protocols")) {
-                                    Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
+                                    // 作者 long：NTP紧凑面板的标题和分组共享顶部留白，不能再次叠加整页分组的间距。
+                                    Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(start = 16.dp,
+                                        top = if (ntp) 10.dp else 16.dp, bottom = if (ntp) 13.dp else 8.dp),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (ntp) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
                                 }
-                                Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
+                                Surface(shape = AppSuperellipseShape(24.dp), color = if (ntp && LocalKClashDarkTheme.current)
+                                    MaterialTheme.colorScheme.surfaceContainerHigh else dashboardCardColor()) {
                                     Column {
                                         entries.forEachIndexed { index, field ->
                                             key(field.key) {
                                                 SelectionEntryTransition(field.key in remainingKeys, Modifier.testTag("more_add_transition_${field.key}"),
                                                     onHidden = { shownChoices = shownChoices.filterNot { it.key == field.key } }) {
-                                                    Column {
-                                                        if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
-                                                        Row(Modifier.fillMaxWidth().clickable(enabled = !state.isSaving && field.key in remainingKeys) {
-                                                            // 作者 long：只在最后一个候选实际提交成功并更新revision后退出，失败仍留层重试；筛选结果为空不代表全部已添加。
-                                                            change(field, field.defaultValue(), if (remaining.size == 1) "last-add" else null)
-                                                        }.heightIn(min = 64.dp).padding(horizontal = 16.dp).testTag("more_add_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
-                                                            Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
-                                                                Text(field.label)
-                                                                if (field.description.isNotEmpty()) Text(field.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                    Box {
+                                                        Column {
+                                                            if (!ntp && index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
+                                                            Row(Modifier.fillMaxWidth().clickable(enabled = !state.isSaving && field.key in remainingKeys) {
+                                                                // 作者 long：只在最后一个候选实际提交成功并更新revision后退出，失败仍留层重试；筛选结果为空不代表全部已添加。
+                                                                change(field, field.defaultValue(), if (remaining.size == 1) "last-add" else null)
+                                                            }.heightIn(min = if (ntp) 56.dp else 64.dp).padding(horizontal = 16.dp).testTag("more_add_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
+                                                                Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
+                                                                    Text(field.label)
+                                                                    if (field.description.isNotEmpty()) Text(field.description,
+                                                                        style = if (ntp) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall,
+                                                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                                }
                                                             }
                                                         }
+                                                        // 作者 long：Flutter分隔线覆盖绘制，不额外撑高候选行；长列表不能逐行累积间距。
+                                                        if (ntp && index > 0) HorizontalDivider(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp),
+                                                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
                                                     }
                                                 }
                                             }

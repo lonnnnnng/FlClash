@@ -4,7 +4,7 @@ import android.text.format.DateUtils
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -142,24 +142,58 @@ internal fun ProviderBindingPicker(proxy: Boolean, profiles: List<Profile>, rule
     selectedKey: String? = null,
     onProxy: (Profile) -> Unit, onRule: (RuleResource) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
+    val terms = remember(query) { query.trim().split(Regex("\\s+")).filter(String::isNotEmpty) }
+    fun matches(label: String, detail: String) = terms.all { term -> "$label $detail".contains(term, ignoreCase = true) }
+    fun proxyDetail(resource: Profile) = if (resource.type == ProfileType.URL) "订阅配置" else "文件配置"
     ProfileEditorPage(onDismissRequest = onDismiss, backTag = "provider_binding_back", title = { Text(if (proxy) "选择代理资源" else "选择规则资源") },
+        navigationButtonSurface = true,
         bottomBar = { DockedProfileSearch(query, { query = it }, "provider_binding_search", enabled = !busy) }, text = {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            val proxyChoices = profiles.filter { it.type != ProfileType.CUSTOM && it.realLabel.contains(query, true) }
-            val ruleChoices = rules.filter { it.label.contains(query, true) }
+            val proxyChoices = profiles.filter { it.type != ProfileType.CUSTOM && matches(it.realLabel, proxyDetail(it)) }
+            val ruleChoices = rules.filter { matches(it.label, it.behavior + " · " + it.format) }
             if (if (proxy) proxyChoices.isEmpty() else ruleChoices.isEmpty()) Text(if (query.isNotEmpty()) "没有匹配的资源" else "暂无可选资源，请先在资源管理中添加。", color = MaterialTheme.colorScheme.onSurfaceVariant)
             val listState = rememberResourcePickerListState(
                 if (proxy) proxyChoices.map { it.id.toString() } else ruleChoices.map { it.id }, selectedKey)
-            LazyColumn(Modifier.weight(1f), state = listState) {
-                if (proxy) items(proxyChoices, key = { it.id }) { resource -> ProfileSectionRow(resource.realLabel, if (resource.type == ProfileType.URL) "订阅配置" else "文件配置", Icons.Outlined.CloudQueue, !busy,
-                    Modifier.testTag("provider_binding_proxy_${resource.id}")) { onProxy(resource) } }
-                else items(ruleChoices, key = { it.id }) { resource -> ProfileSectionRow(resource.label, resource.behavior + " · " + resource.format, Icons.Outlined.Description, !busy,
-                    Modifier.testTag("provider_binding_rule_${resource.id}")) { onRule(resource) } }
+            LazyColumn(Modifier.weight(1f).testTag("provider_binding_list"), state = listState,
+                contentPadding = PaddingValues(top = 20.dp, bottom = 16.dp)) {
+                if (proxy) itemsIndexed(proxyChoices, key = { _, resource -> resource.id }) { index, resource ->
+                    ProviderBindingChoice(resource.realLabel, proxyDetail(resource), resource.id.toString() == selectedKey,
+                        !busy, index, proxyChoices.lastIndex, "provider_binding_proxy_${resource.id}") { onProxy(resource) }
+                } else itemsIndexed(ruleChoices, key = { _, resource -> resource.id }) { index, resource ->
+                    ProviderBindingChoice(resource.label, resource.behavior + " · " + resource.format, resource.id == selectedKey,
+                        !busy, index, ruleChoices.lastIndex, "provider_binding_rule_${resource.id}") { onRule(resource) }
+                }
             }
         }
     })
+}
+
+/** 作者 long：资源重绑定沿用Flutter单选列表的勾选；原选择项保持卡片底色，导航箭头不能表达正在使用的资源。 */
+@Composable
+private fun ProviderBindingChoice(label: String, detail: String, selected: Boolean, enabled: Boolean,
+    index: Int, lastIndex: Int, tag: String, onClick: () -> Unit) {
+    val top = if (index == 0) 24.dp else 0.dp
+    val bottom = if (index == lastIndex) 24.dp else 0.dp
+    Surface(shape = AppSuperellipseShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom),
+        color = dashboardCardColor()) {
+        Box {
+            Row(Modifier.fillMaxWidth().clickable(enabled = enabled, onClick = onClick).heightIn(min = 56.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp).testTag(tag), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else .38f))
+                    Text(detail, style = MaterialTheme.typography.bodyMedium, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (selected) Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 12.dp).testTag("${tag}_selected"))
+            }
+            if (index < lastIndex) HorizontalDivider(Modifier.align(Alignment.BottomCenter).padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
+        }
+    }
 }
 
 @Composable

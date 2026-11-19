@@ -1,0 +1,409 @@
+{
+  "id": "KUI-VIS-055",
+  "date": "2026-11-20",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "screen": "1080x2400",
+    "densityOverride": 396,
+    "orientation": "portrait",
+    "fontScale": 1,
+    "glassEnabled": false,
+    "themes": "NTP light/dark; proxy dark and rule light same-state fixtures; opposite-theme dock regressions"
+  },
+  "scope": {
+    "status": "DONE-VERIFIED for the named component/interaction slice; full Flutter parity remains PARTIAL",
+    "changes": [
+      "NTP floating partial panel, centered title and leading close, compact header, 56dp rows, upstream wording and description size, painted separators.",
+      "Provider grouped single-choice rows, visible current check, multi-term name/detail filtering, docked search and leading navigation surface."
+    ],
+    "excluded": [
+      "Full NTP/Sniffer page chrome and empty-state illustration equality",
+      "MainActivity full continuous transition and frame performance",
+      "Core/VPN/network behavior"
+    ]
+  },
+  "reference": {
+    "sourcePath": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "sourceGitMetadata": false,
+    "sourceHashes": {
+      "lib/views/config/ntp.dart": "d77597a82fb5083a92dde9e02e7f798267bc4c68ee0b4a765c2e2b123b6dddbf",
+      "lib/views/config/override.dart": "1b1f2d81cfb2e161e3176848d17f0d46da170ba822614b1aba80bb4b43102c38",
+      "lib/features/form/selection_sheet.dart": "88fe22ee87606c457b62b8d0c2fe8650c552a7b40482b3d92c20671a78091335",
+      "plugins/prism_ui/lib/sheet_header.dart": "b86eb3e100eca226010f2ce9ae1d7c949e01744f014737cc13ee2dea124eb4e7",
+      "plugins/prism_ui/lib/snap_sheet.dart": "9c9d52f942aa0a62d0336309ac8ae72f6b85d513e061c7101a299179dd701652",
+      "plugins/prism_ui/lib/list_selected.dart": "4a1c3e10bb2ef62949fe9fb16e1e0a79683c6389d5fc73e8f230d1c2ccb2d07c",
+      "plugins/prism_ui/lib/list_row.dart": "d0668749464cf24a59691de7b3a89b45468a137bce3a95aa80031f384ef548fa",
+      "plugins/prism_ui/lib/metrics.dart": "df5e8b4979415de530ac1ff1d80bc9ec48ae276ab4e7a4777305e57f143285f0",
+      "plugins/prism_ui/lib/typography.dart": "2eb0033e409ad60727b83e3dd94a63140060ee8985d58ef91e8eebb5dbf312ff"
+    },
+    "host": "../acceptance-artifacts/flutter-ntp-provider-reference-host-20261120",
+    "hostPackage": "com.lonnnnnng.kclash.reference.flutter_ntp_provider_reference",
+    "hostSourceSha256": "6e7a549d28db4fe876b01e641dd955bfef6de87a2e948dfed36eb057f68f234f",
+    "hostApkSha256": "ff276826fb851026ae23d8f2b881d762116c77930bd4ab00a428f295c106ff97",
+    "flutterSdk": "3.50.0",
+    "upstreamCiSdk": "3.47.6",
+    "ntp": "Unmodified upstream NtpView with in-memory Profile provider.",
+    "provider": "Shared upstream SelectionSheet with 12 synthetic metadata candidates, not a native upstream rebinding page.",
+    "originalComFollowClashUntouched": true
+  },
+  "build": {
+    "apks": {
+      "com.lonnnnnng.flclash.motion": {
+        "sha256": "241de3a25300e384ea50e95bb152d75268ae44a8f38202620a511cfae4d2fef9",
+        "bytes": 66256357,
+        "installedMatch": true
+      },
+      "com.lonnnnnng.flclash.motion.test": {
+        "sha256": "be3b6363275a9590d5ec8751312a7537f1fcac267fbed340563d019c349c3cbf",
+        "bytes": 3120846,
+        "installedMatch": true
+      }
+    },
+    "appMotionJvm": {
+      "tests": 618,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lintMotion": {
+      "Warning": 73,
+      "Hint": 14
+    },
+    "sourceHashes": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ConnectionModalSheet.kt": "c06fab2fb057fa5b6b7f0fc2384f0b5b1b917496f62db8109073400367478d10",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt": "bc697a49d15ac204f83cc8a024991f24ab84b4f80ce1230c40656193d8c29c4b",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreFields.kt": "a0ccefeb0e9ed9c6af50e0644d625c2d1a5b31405b4938521e5a5dc2371a16da",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileProvidersPage.kt": "dae97e98863b5eb8e2e9311146d3871fb45e0e714b15823c7b9fffeedecdf861",
+      "android/tests/instrumented/DockedSearchInstrumentedTest.kt": "c06c170af9f992d8fdf3345ea1f85e8878741b9203b95cacf3d88c29c3ae2df0",
+      "android/tests/instrumented/MainProviderOptionsStateInstrumentedTest.kt": "763cd5c6b91f44854901692084e41d9b9abfbcef14701307a233a6f09d1a4b7c",
+      "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt": "bc146533611d27c485aa0dea846876b1d89bb0f557d9a13766be331a4f4db89c"
+    },
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "motion": {
+      "result": "BUILD SUCCESSFUL",
+      "seconds": 165,
+      "executed": 27,
+      "upToDate": 200,
+      "log": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/build4.log",
+      "logSha256": "71c8713ab0c245f59a5c8e2f81e0791bae8face9a16cd08a273f5b7f6ef4a47a"
+    },
+    "release": {
+      "result": "BUILD SUCCESSFUL",
+      "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+      "seconds": 204,
+      "executed": 17,
+      "upToDate": 152,
+      "lint": {
+        "Warning": 69,
+        "Hint": 13
+      },
+      "sha256": "68112edf27cda2310b5472501ef9b136e58472ad6948fefd397a18b4afe6f981",
+      "signed": false,
+      "installed": false,
+      "mlkitRegistrarCheck": "passed; see local mlkit-release4.json",
+      "logSha256": "e92ad2655204ebaed943a7e77990ac551011005e68f4ce823a4e9ede9f573411"
+    }
+  },
+  "instrumentation": {
+    "tests": 11,
+    "passed": 11,
+    "failures": 0,
+    "skipped": 0,
+    "elapsedSeconds": 70.577,
+    "methods": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "vis054SnifferAddPanelGroupsSearchAndSelectsProtocol",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "vis055NtpShortAddPanelLight",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "lastAdditionWaitsForAsyncReceiptAndFailedSaveCanRetry",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "vis055NtpShortAddPanelDark",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+        "test": "successfulAdditionsCollapseIndependentlyAndFailureKeepsCandidate",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+        "test": "vis055ProxySelectionCheckAndMultiTermSearch",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+        "test": "vis055RuleSelectionCheckAndMultiTermSearch",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+        "test": "proxyBindingBottomSearchCancelKeepsLayerSelectionAndImeBoundary",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+        "test": "ruleBindingBottomSearchCancelKeepsLayerSelectionAndImeBoundary",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProviderPagesInstrumentedTest",
+        "test": "proxyAndRuleBindingLongListsKeepAliasOnFailureCancelAndRetry",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainProviderOptionsStateInstrumentedTest",
+        "test": "nonEmptyProviderPickerFiltersAndReturnsWithMultipleCandidates",
+        "code": 0
+      }
+    ],
+    "log": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/instrumentation.log",
+    "logSha256": "35ae6771939163070e387663c177b59f80ff71f2e0ee5f8503d19d0680d55334",
+    "preservationStatus": "formal-count=0;own-row-and-file-removed=true;rows-bodies-script-rows-preferences-selection-preserved=true;runtime=STOPPED",
+    "bindingReadback": "Repository rereads persisted CUSTOM YAML resource ID, then reopen checks the alternate and rejects the original check. Room rows/preferences/source files are separately preserved by fixture cleanup."
+  },
+  "screenshots": {
+    "count": 42,
+    "fullWindowCount": 41,
+    "animationNodeCrop": {
+      "bytes": 76833,
+      "sha256": "374202fb37d999ea21f633041871626eead6668f40a8c0c00bc62f8bc436fb48",
+      "width": 964,
+      "height": 1109,
+      "chunkCount": 3
+    },
+    "manifest": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/screenshots.json",
+    "manifestSha256": "cff8851facdb1cd1dedb08f83d836c1da1c3d154a26e61c9be0d99721901dd83",
+    "chunksBytesHashesPngDimensionsVerified": true,
+    "visuallyReviewed": true,
+    "comparisonPairs": [
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/ntp-light-six-final.png",
+          "sha256": "6eda5e89713678966f1362d02b1faea51bb8cab325780b372e324167449ebb8c"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_ntp_false_six.png",
+          "sha256": "74b1c6d14e6c28c219b8d8cd3fb346d85f39f14ad442562ab96598044ad7ff3e"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/ntp-light-expanded-final.png",
+          "sha256": "142e459c8462a1d7fd428364d4ae6107fbb4138a35a3579db9603351df643c5d"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_ntp_false_expanded.png",
+          "sha256": "f77cfa2df5f9b10be5f30d31d3c5c5b3436fe71eb5981cceb9f061afebbc9fef"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/ntp-light-three-final.png",
+          "sha256": "cef310a200edf00fe8a64f54cc03e76c094741578fc2d9da43550ed138f4500e"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_ntp_false_short.png",
+          "sha256": "e33eccf12fb89ee90597e1f265cfe245357053552b0b87c50a6ab80ee4d09de0"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/ntp-dark-six-verified.png",
+          "sha256": "834964ec656d0ac78f1da39ba5c7ef27b070b167b984374472a99f98d5847ccc"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_ntp_true_six.png",
+          "sha256": "77a01bd74f0def663cb3b8cbc690496272e6ecd25739aa0ddc533ee6c126c453"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/ntp-dark-expanded-verified.png",
+          "sha256": "60bee3e8bd99270c9a02f2274d3baff4deb5e1e4aa115e1d6113685f85e49ccf"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_ntp_true_expanded.png",
+          "sha256": "b5bb4a0f2051180f4a7937990ace916360b1f6c2c6c7f7e8ec080f58af98f2ea"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/ntp-dark-three-verified.png",
+          "sha256": "5139ac528c6aded92d6104bc7d1a37438821e3e7f93def88920894d2cd0b61d3"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_ntp_true_short.png",
+          "sha256": "e9bc97d6bf64b38ce3df351028210da769441a0328ac9700d6f9ae7fe74748c4"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/ntp-dark-last-verified.png",
+          "sha256": "fda371babd22e18170462832849e81a7cfcc9939ba4f7f3dc6b8abf0f8946b12"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_ntp_true_last.png",
+          "sha256": "f0e660d20677c9e0f3d247075fca6eb46e31b566fc506d3730b14ed05e04e15c"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/ntp-dark-complete-verified.png",
+          "sha256": "2d882053ccfc83662cb4ba7d6cfcb735ca79da7c48ad5537afc9bc37e4610c2b"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_ntp_true_complete.png",
+          "sha256": "6f536ef506253280f637214b32d595668d02bd700de44555e283e16025cdf48b"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/proxy-dark-selected.png",
+          "sha256": "9e0f7fd420de3fbf152d6ae0d16b8cb3cb1b5b2beb81f4a03aff3fb59ee84af0"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_provider_true_selected.png",
+          "sha256": "615513bc7556e332a4486a5033fa8fdf9f80241825f7463e85020f0883af370a"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/rule-light-selected.png",
+          "sha256": "42e16c3e3e50e59165a5e75ede4c4d1e832a92959f41ea5bc5301ecfad64d874"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_provider_false_selected.png",
+          "sha256": "a864bbcdc0e3471db6856342a947a9cb16123c450b3af92da64debd6f1b4800e"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/proxy-dark-search.png",
+          "sha256": "d26257cc7dd8904f7d2f163b8f50b979b8e2d2b07a7d124b6681516b7e25c508"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_provider_true_filtered.png",
+          "sha256": "cc7a84f65d06544a2b48b26927de3cedec65b1c5781283ccbbeda5428328d5ab"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/rule-light-search.png",
+          "sha256": "d802e19bd7396ad6f0cce03bc53b363f938a5a85d72287dc931846a8c9228835"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_provider_false_filtered.png",
+          "sha256": "9590325fcb6681ef5a1f8d35a98741e4e97bd9caaeea56594cde3c56d601b8bb"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/proxy-dark-cleared.png",
+          "sha256": "15ee0e8bda47f4e808112eea5956fabe4c0c75970f13f69c9b48aaa3b4974725"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_provider_true_cleared.png",
+          "sha256": "615513bc7556e332a4486a5033fa8fdf9f80241825f7463e85020f0883af370a"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/rule-light-cleared.png",
+          "sha256": "35a4b986b56bc26e3e59e599f9f12290f331415fcae4567b1e5ab31b1cff5b74"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_provider_false_cleared.png",
+          "sha256": "f029fe79178e56a5b0479ed2692efdd3889eee009e7816077af96932ba0f5966"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/proxy-dark-reopened.png",
+          "sha256": "75c70e4dc2acd522fc181119b32f9a87a62365f2784adb82861879a1cd806407"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_provider_true_reopened.png",
+          "sha256": "412a7f4ac602dc8bae8ba2769306ca5fa1d60d8127519437ae00245831eb7d9b"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/flutter/rule-light-reopened.png",
+          "sha256": "910bb92738243ed0b0593249b1d56597cf9109aaeb9acb10762d2175334de16d"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/ntp-provider-parity-poco-20261120/kotlin-final4/vis055_provider_false_reopened.png",
+          "sha256": "e827083b40cd3dff79b4e4777ebe4fd45ebf126baeb58de8a1fd768e7e61d060"
+        }
+      }
+    ],
+    "contactSheets": 7,
+    "comparisonSheets": 8,
+    "animationNodeCropIsOneImage": true
+  },
+  "authorizedInput": {
+    "source": "workspace ../1.yaml",
+    "networkUpload": false,
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeNs": 1794392072317864361
+  },
+  "cleanup": {
+    "stagingFileRemovedAfterHashCheck": true,
+    "packages": [
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "returncode": 0,
+        "result": "Success",
+        "absenceVerified": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "returncode": 0,
+        "result": "Success",
+        "absenceVerified": true
+      },
+      {
+        "package": "com.lonnnnnng.kclash.reference.flutter_ntp_provider_reference",
+        "returncode": 0,
+        "result": "Success",
+        "absenceVerified": true
+      }
+    ],
+    "beforeAfterSettingsAndOriginalFlutterMetadataMatch": true,
+    "rootYamlShaSizeMtimeMatch": true,
+    "kclashServicesAbsent": true,
+    "afterSnapshotSha256": "44e0eb04c929b79065cc5c0fa28c656f67b1ba485a30b9c5bf0282f35dca2fa2"
+  },
+  "nonFinalEvidence": [
+    "build1/kotlin1/regression1 used a natural-height cap candidate; removed after real Flutter NtpView could expand to 90% with short content.",
+    "build3 kotlin-final3 10/10 and main-final3 1/1 passed, superseded by header/typography refinements in build4.",
+    "Collector initially assumed a fixed node-crop size; recovered all verified PNG chunks from original logs without rerunning instrumentation.",
+    "Unverified Flutter taps/home captures and wrongly named last/complete frames are excluded from the 16 comparison pairs."
+  ],
+  "limits": [
+    "16 pairs are reviewed states, not pixel equality: platform font metrics/divider color/dark search fill and parent chrome/artwork still differ.",
+    "NTP parent close/reopen rows differ; this slice closes only the add panel task.",
+    "Proxy search same-result comparison uses 11 Resource on Flutter and 11 Resource 文件 on Kotlin to also prove subtitle matching.",
+    "Provider always-visible search for fewer than 10 candidates is a retained Kotlin behavior; Flutter shared component offers search at 10+.",
+    "No natural-clock full-route movie, native RenderThread attribution, or formal signed Release device run in this slice."
+  ],
+  "next": [
+    "Sniffer full-page differences and shared header/empty-state/toolbar polish.",
+    "Real MainActivity forward/back/IME/rapid reversal continuous transitions.",
+    "Lossless menu Perfetto capture, native RenderThread attribution and formal R8 comparison."
+  ]
+}

@@ -21,6 +21,45 @@ class DockedSearchInstrumentedTest {
     @Test fun proxyBindingBottomSearchCancelKeepsLayerSelectionAndImeBoundary() = binding(true, false)
     @Test fun ruleBindingBottomSearchCancelKeepsLayerSelectionAndImeBoundary() = binding(false, true)
 
+    @Test fun vis055ProxySelectionCheckAndMultiTermSearch() = selectionCheck(true, true)
+    @Test fun vis055RuleSelectionCheckAndMultiTermSearch() = selectionCheck(false, false)
+
+    private fun selectionCheck(proxy: Boolean, dark: Boolean) {
+        assertPortraitDefaultFontConfiguration()
+        val profiles = (0..11).map { Profile.remote(9000L + it, "", "Resource %02d".format(it)).copy(type = ProfileType.FILE) }
+        val rules = (0..11).map { RuleResource("rule-$it", "Resource %02d".format(it), "", "$it.rules", "domain", "yaml", 0) }
+        var selected by mutableStateOf(if (proxy) "9005" else "rule-5")
+        var visible by mutableStateOf(true)
+        var saves = 0
+        compose.setContent { KClashTheme(darkTheme = dark) {
+            if (visible) ProviderBindingPicker(proxy, profiles, rules, false, null, {}, selected,
+                onProxy = { selected = it.id.toString(); saves++; visible = false },
+                onRule = { selected = it.id; saves++; visible = false })
+        } }
+        fun tag(index: Int) = if (proxy) "provider_binding_proxy_${9000 + index}" else "provider_binding_rule_rule-$index"
+        compose.onNodeWithTag("${tag(5)}_selected", useUnmergedTree = true).assertIsDisplayed()
+        capture("vis055_provider_${proxy}_selected")
+        val search = compose.onNodeWithTag("provider_binding_search")
+        search.performClick().performTextReplacement(if (proxy) "11 Resource 文件" else "yaml 11 Resource")
+        compose.waitUntil(5_000) { imeTop() != null }
+        compose.onNodeWithTag(tag(11)).assertIsDisplayed()
+        compose.onNodeWithTag(tag(5)).assertDoesNotExist()
+        capture("vis055_provider_${proxy}_filtered")
+        search.performTextReplacement("no-match-resource")
+        compose.onNodeWithText("没有匹配的资源").assertIsDisplayed()
+        compose.onNodeWithTag("provider_binding_search_clear").performClick()
+        assertNotNull(imeTop())
+        compose.onNodeWithTag("provider_binding_search_cancel").performClick()
+        compose.waitUntil(5_000) { imeHidden() }
+        assertEquals(0, saves)
+        capture("vis055_provider_${proxy}_cleared")
+        search.performTextReplacement("Resource 11")
+        compose.onNodeWithTag(tag(11)).performClick()
+        compose.runOnIdle { assertEquals(1, saves); visible = true }
+        compose.onNodeWithTag("${tag(11)}_selected", useUnmergedTree = true).assertIsDisplayed()
+        capture("vis055_provider_${proxy}_reopened")
+    }
+
     private fun binding(proxy: Boolean, dark: Boolean) {
         assertPortraitDefaultFontConfiguration()
         val profiles = (0..63).map { Profile.remote(9000L + it, "", "Resource %02d".format(it)).copy(type = ProfileType.FILE) }

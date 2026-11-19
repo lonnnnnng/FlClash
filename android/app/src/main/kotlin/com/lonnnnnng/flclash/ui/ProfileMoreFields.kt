@@ -12,12 +12,12 @@ internal data class MoreField(val key: String, val label: String, val kind: More
 }
 
 internal val ntpFields = listOf(
-    MoreField("enable", "状态", MoreFieldKind.TOGGLE, "false", "通过 NTP 同步时间"),
+    MoreField("enable", "状态", MoreFieldKind.TOGGLE, "false"),
     MoreField("server", "服务器", MoreFieldKind.TEXT, "\"time.apple.com\""),
     MoreField("port", "端口", MoreFieldKind.PORT, "123"),
     MoreField("interval", "同步间隔（分钟）", MoreFieldKind.NUMBER, "30"),
-    MoreField("dialer-proxy", "出站代理", MoreFieldKind.TEXT, "\"\"", "用于连接时间服务器的节点或策略组"),
-    MoreField("write-to-system", "写入系统时间", MoreFieldKind.TOGGLE, "false", "Android 普通应用不能修改系统时钟"),
+    MoreField("dialer-proxy", "拨号代理", MoreFieldKind.TEXT, "\"\""),
+    MoreField("write-to-system", "写入系统", MoreFieldKind.TOGGLE, "false", "写入系统会同时设置系统时钟，Android 上不生效。"),
 )
 internal val snifferFields = listOf(
     MoreField("enable", "状态", MoreFieldKind.TOGGLE, "false", "从连接内容中识别域名"),
