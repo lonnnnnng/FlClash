@@ -2,6 +2,12 @@ package com.lonnnnnng.flclash.ui
 
 // 作者 long：坐标直接移植 main:lib/ui/icons/app_glyphs.dart，保持上游图形语义与24单位网格；渲染规则见AppGlyph。
 internal object AppGlyphs {
+    // 作者 long：三态目标选择沿Prism双向picker几何，避免单向箭头被误认作展开子页。
+    val picker by lazy { AppGlyph(listOf(
+        GlyphPolyline(listOf(GlyphVertex(7.5f, 9.5f), GlyphVertex(12f, 5f, .4f), GlyphVertex(16.5f, 9.5f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(7.5f, 14.5f), GlyphVertex(12f, 19f, .4f), GlyphVertex(16.5f, 14.5f)), role = GlyphRole.line),
+    )) }
+
     // 作者 long：列表编辑菜单复用固定Flutter的线条几何，与全应用自绘glyph采用相同尺寸和动效材质。
     val undo by lazy { AppGlyph(listOf(
         GlyphPolyline(listOf(GlyphVertex(5f, 9f), GlyphVertex(19f, 9f, 4.8f), GlyphVertex(19f, 18.6f, 4.8f), GlyphVertex(9f, 18.6f)), role = GlyphRole.line),

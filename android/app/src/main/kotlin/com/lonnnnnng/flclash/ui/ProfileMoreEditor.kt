@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.LocalDensity
 import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
@@ -267,7 +266,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
             MoreValueEditor(field, value, root, ntp, state.isSaving, state.error, { editing = null }) { change(field, it, "value") }
         }
     } }
-    if (yaml) MoreYamlEditor(if (ntp) "NTP" else "域名嗅探", root, ntp, state.isSaving, state.error, { yaml = false }) { submit(it, "yaml") }
+    if (yaml) MoreYamlEditor(if (ntp) "NTP" else "域名嗅探", root, ntp, state.isSaving, state.error, state.revision, { yaml = false }) { submit(it, "yaml") }
     if (clear) AlertDialog(onDismissRequest = { if (!state.isSaving) clear = false }, title = { Text("清除本分区覆盖？") }, text = { Text("清除后所有字段将恢复继承原配置。") },
         confirmButton = { TextButton(enabled = !state.isSaving, onClick = { submit(JsonObject()); clear = false }) { Text("清除") } },
         dismissButton = { TextButton(enabled = !state.isSaving, onClick = { clear = false }) { Text("取消") } })
@@ -298,20 +297,25 @@ private fun MoreProtocolEditor(field: MoreField, value: JsonObject, root: JsonOb
             saveError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
                 Column {
-                    MoreProtocolRow("端口", if (portCount == 0) "默认" else "$portCount 项",
-                        Modifier.testTag("more_protocol_ports"), enabled = !saving, onClick = { ports = true })
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                    Box {
+                        MoreProtocolRow("端口", if (portCount == 0) "默认" else "$portCount 项",
+                            Modifier.testTag("more_protocol_ports"), enabled = !saving, onClick = { ports = true })
+                        // 作者 long：分隔线覆盖行底，不额外增加整页高度；右端沿Flutter列表装饰留14dp。
+                        HorizontalDivider(Modifier.align(Alignment.BottomCenter).padding(start = 16.dp, end = 14.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
+                    }
                     Box {
                         AppMenuSourceContent(destinationSource) {
                             Row(Modifier.fillMaxWidth().clickable(enabled = !saving) { destination = true }
-                                .heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 10.dp).testTag("more_protocol_destination"), verticalAlignment = Alignment.CenterVertically) {
+                                .heightIn(min = 56.dp).padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp).testTag("more_protocol_destination"), verticalAlignment = Alignment.CenterVertically) {
                                 Text("覆盖目标地址", Modifier.weight(1f))
                                 Spacer(Modifier.width(12.dp))
                                 // 作者 long：源快照只接管行尾picker；菜单打开后标签仍是页面的稳定定位信息，不能把整行一并隐藏。
-                                Row(Modifier.appMenuSource(destinationSource, dashboardCardColor()).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Row(Modifier.appMenuSource(destinationSource, dashboardCardColor()).height(40.dp)
+                                    .padding(horizontal = 8.dp).testTag("more_protocol_destination_picker"), verticalAlignment = Alignment.CenterVertically) {
                                 Text(when (currentDestination) { true -> "已开启"; false -> "已关闭"; null -> "默认" },
-                                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                AppGlyphIcon(AppGlyphs.chevronDown, Modifier.padding(start = 8.dp).size(20.dp))
+                                    style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                AppGlyphIcon(AppGlyphs.picker, Modifier.padding(start = 4.dp).size(24.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
@@ -319,7 +323,7 @@ private fun MoreProtocolEditor(field: MoreField, value: JsonObject, root: JsonOb
                             saveError?.let { Text(it, color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(12.dp).testTag("more_protocol_error")) }
                             listOf(null to "默认", true to "已开启", false to "已关闭").forEach { (selected, label) ->
-                                AppDropdownMenuItem(text = { Text(label) }, enabled = !saving, dismissOnClick = false,
+                                AppDropdownMenuItem(text = { Text(label) }, enabled = !saving, dismissOnClick = false, compact = true,
                                     modifier = Modifier.testTag("more_protocol_destination_${selected ?: "default"}"),
                                     trailingIcon = if (selected == currentDestination) ({ AppGlyphIcon(AppGlyphs.check) }) else null,
                                     onClick = {
@@ -350,7 +354,7 @@ private fun MoreProtocolRow(title: String, detail: String, modifier: Modifier, e
             Text(title)
             Text(detail, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Icon(Icons.Outlined.ChevronRight, null)
+        AppGlyphIcon(AppGlyphs.chevronForward)
     }
 }
 
@@ -417,40 +421,44 @@ private fun MoreValueEditor(field: MoreField, initial: JsonElement, root: JsonOb
 }
 
 @Composable
-private fun MoreYamlEditor(title: String, initial: JsonObject, ntp: Boolean, saving: Boolean, saveError: String?, onDismiss: () -> Unit, onConfirm: (JsonObject) -> Unit) {
-    val original = remember { moreFieldsYaml(initial) }
+private fun MoreYamlEditor(title: String, initial: JsonObject, ntp: Boolean, saving: Boolean, saveError: String?, revision: Long,
+    onDismiss: () -> Unit, onConfirm: (JsonObject) -> Unit) {
+    val original by rememberSaveable { mutableStateOf(moreFieldsYaml(initial)) }
     var content by rememberSaveable { mutableStateOf(original) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
     var discard by rememberSaveable { mutableStateOf(false) }
     var checking by remember { mutableStateOf(false) }
+    var awaitingReceipt by rememberSaveable { mutableStateOf(false) }
+    var submittedRevision by rememberSaveable { mutableLongStateOf(revision) }
     val scope = rememberCoroutineScope()
-    fun submit(fromBack: Boolean) { if (checking || saving) return; scope.launch {
-            checking = true
+    LaunchedEffect(revision, saving, saveError, awaitingReceipt) {
+        // 作者 long：保存中重建不能丢失关闭意图；只接受本次提交之后的版本回执，失败仍留正文重试。
+        if (awaitingReceipt && revision > submittedRevision) { awaitingReceipt = false; onDismiss() }
+        else if (awaitingReceipt && !saving && saveError != null) awaitingReceipt = false
+    }
+    fun exit() {
+        if (checking || saving) return
+        if (content == original) { onDismiss(); return }
+        val draft = content
+        checking = true
+        scope.launch {
             try {
-                val next = withContext(Dispatchers.Default) {
-                    applyMoreFieldsYaml(initial, content, ntp)
+                val next = withContext(Dispatchers.Default) { applyMoreFieldsYaml(initial, draft, ntp) }
+                if (next == initial) onDismiss() else {
+                    submittedRevision = revision; awaitingReceipt = true; error = null; onConfirm(next)
                 }
-                onConfirm(next)
             } catch (failure: kotlinx.coroutines.CancellationException) { throw failure }
-            catch (failure: IllegalArgumentException) { error = failure.message ?: "YAML 字段无效"; if (fromBack) discard = true }
+            catch (failure: IllegalArgumentException) { error = failure.message ?: "YAML 字段无效"; discard = true; awaitingReceipt = false }
             finally { checking = false }
-        } }
-    fun exit() { if (!checking && !saving) { if (content == original) onDismiss() else submit(true) } }
-    ProfileEditorPage(::exit, title = { Text("$title · YAML") }, backTag = "more_yaml_back", confirmButton = {
-        val focus = LocalFocusManager.current
-        val keyboard = LocalSoftwareKeyboardController.current
-        TextButton(enabled = !checking && !saving, modifier = Modifier.testTag("more_yaml_confirm"), onClick = {
-            focus.clearFocus(force = true); keyboard?.hide(); submit(false)
-        }) {
-            if (checking || saving) CircularProgressIndicator(Modifier.size(20.dp)) else Text("确认")
         }
-    }, text = {
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("只填写本分区内部字段，不包含 ${if (ntp) "ntp" else "sniffer"}: 外层。删除字段或留空文本、列表及协议映射可恢复继承；false会保留。有效修改在返回时自动保存。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("more_yaml_error")) }
-            OutlinedTextField(content, { content = it; error = null }, enabled = !checking && !saving, modifier = Modifier.fillMaxWidth().weight(1f).testTag("more_yaml_content"), textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace), label = { Text("YAML") })
-        }
-    })
+    }
+    // 作者 long：未受理的保存可能不产生新状态；回执标记只控制关闭，禁用仅跟随实际校验/保存，编辑会作废旧关闭意图。
+    MoreCodeEditor(title, content, "more_yaml_content", { content = it; error = null; awaitingReceipt = false }, ::exit,
+        enabled = !checking && !saving, highlightYaml = true, backTag = "more_yaml_back", header = {
+            if (checking || saving) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("more_yaml_saving"))
+            (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).testTag("more_yaml_error")) }
+        })
     if (discard) MoreDiscardDialog("放弃 YAML 修改？", { discard = false }, onDismiss)
 }
 

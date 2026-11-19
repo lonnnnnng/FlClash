@@ -92,8 +92,8 @@ class ProfileMoreActivityInstrumentedTest {
     private fun applyYaml(value: String) {
         compose.onNodeWithTag("profile_more_yaml").performClick()
         compose.onNodeWithTag("more_yaml_content").performTextReplacement(value)
-        compose.onNodeWithTag("more_yaml_confirm").performClick()
-        compose.waitUntil(10_000) { compose.onAllNodesWithTag("more_yaml_confirm").fetchSemanticsNodes().isEmpty() }
+        compose.onNodeWithTag("more_yaml_back").performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithTag("more_yaml_back").fetchSemanticsNodes().isEmpty() }
     }
     private fun saveMore() {
         compose.onNodeWithTag("profile_more_editor_save").assertDoesNotExist()

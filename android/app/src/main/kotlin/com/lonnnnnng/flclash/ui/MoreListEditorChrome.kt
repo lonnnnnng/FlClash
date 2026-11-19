@@ -85,8 +85,29 @@ private fun appendQuickHistory(history: List<String>, text: String): List<String
 @Composable
 internal fun MoreListQuickEditor(title: String, text: String, contentTag: String,
     onTextChange: (String) -> Unit, onDismiss: () -> Unit, onApply: (String) -> Unit) {
+    val original by rememberSaveable { mutableStateOf(text) }
+    var failure by rememberSaveable { mutableStateOf<String?>(null) }
+    MoreCodeEditor(title, text, contentTag, onTextChange, onExit = {
+        // 作者 long：列表快捷编辑只提交父列表草稿，持久化仍由列表保存；原文未改时不重新校验已有配置。
+        if (text == original) onDismiss()
+        else runCatching { onApply(text); onDismiss() }.onFailure { failure = it.message ?: "列表无效" }
+    })
+    failure?.let { message ->
+        AlertDialog(onDismissRequest = { failure = null }, title = { Text("放弃修改？") },
+            text = { Text(message, Modifier.testTag("more_list_input_error")) },
+            confirmButton = { TextButton({ failure = null; onDismiss() }) { Text("放弃") } },
+            dismissButton = { TextButton({ failure = null }) { Text("继续编辑") } })
+    }
+}
+
+/** 作者 long：列表与分区YAML共享编辑交互，但离开/提交由调用者决定，异步保存不得在受理前关闭页面。 */
+@Composable
+internal fun MoreCodeEditor(title: String, text: String, contentTag: String,
+    onTextChange: (String) -> Unit, onExit: () -> Unit,
+    enabled: Boolean = true, highlightYaml: Boolean = false, backTag: String = "more_list_quick_back",
+    header: @Composable () -> Unit = {}) {
     val latestText by rememberUpdatedState(text)
-    val initialText by rememberSaveable { mutableStateOf(text) }
+    val latestEnabled by rememberUpdatedState(enabled)
     var selectionStart by rememberSaveable { mutableIntStateOf(0) }
     var selectionEnd by rememberSaveable { mutableIntStateOf(0) }
     var composition by remember { mutableStateOf<TextRange?>(null) }
@@ -99,15 +120,12 @@ internal fun MoreListQuickEditor(title: String, text: String, contentTag: String
     var menu by remember { mutableStateOf(false) }
     var sizeMenu by remember { mutableStateOf(false) }
     val menuSource = rememberAppMenuSource()
-    var failure by rememberSaveable { mutableStateOf<String?>(null) }
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    fun dismiss() { focus.clearFocus(force = true); keyboard?.hide(); onDismiss() }
     fun exit() {
+        if (!enabled) return
         if (searching) { searching = false; query = ""; return }
-        // 作者 long：原文未改时直接退出；已有配置可能含待修复项，查看或撤销到原文不能被重新校验拦住。
-        if (text == initialText) { dismiss(); return }
-        runCatching { onApply(text); dismiss() }.onFailure { failure = it.message ?: "列表无效" }
+        focus.clearFocus(force = true); keyboard?.hide(); onExit()
     }
     fun replace(next: String) {
         onTextChange(next); selectionStart = next.length; selectionEnd = next.length; composition = null
@@ -118,7 +136,7 @@ internal fun MoreListQuickEditor(title: String, text: String, contentTag: String
             .takeIf { it >= 0 } ?: text.indexOf(query, ignoreCase = true)
         if (index >= 0) { selectionStart = index; selectionEnd = index + query.length; composition = null }
     }
-    ProfileEditorPage(::exit, title = { Text(title) }, backTag = "more_list_quick_back", navigationButtonSurface = true,
+    ProfileEditorPage(::exit, title = { Text(title) }, backTag = backTag, navigationButtonSurface = true,
         contentPadding = PaddingValues(0.dp), searchActionFirst = true,
         containerColor = MaterialTheme.colorScheme.surface,
         topBarSearch = ProfileEditorSearchState(searching, query, "查找", {
@@ -146,19 +164,19 @@ internal fun MoreListQuickEditor(title: String, text: String, contentTag: String
                                     modifier = Modifier.testTag("more_list_quick_size_$size"), onClick = { fontSize = size; menu = false })
                             }
                         } else {
-                            AppDropdownMenuItem(text = { Text("撤销") }, enabled = undo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_undo"),
+                            AppDropdownMenuItem(text = { Text("撤销") }, enabled = enabled && undo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_undo"),
                                 leadingIcon = { AppGlyphIcon(AppGlyphs.undo) }, onClick = {
                                     // 作者 long：回源期间输入法仍可能交付迟到编辑；历史动作仅作用于点击时正文，不能覆盖新输入。
                                     val previous = undo.lastOrNull()
-                                    if (latestText == text && previous != null) {
+                                    if (latestEnabled && latestText == text && previous != null) {
                                         undo = undo.dropLast(1); redo = appendQuickHistory(redo, text); replace(previous)
                                     }
                                     menu = false
                                 })
-                            AppDropdownMenuItem(text = { Text("重做") }, enabled = redo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_redo"),
+                            AppDropdownMenuItem(text = { Text("重做") }, enabled = enabled && redo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_redo"),
                                 leadingIcon = { AppGlyphIcon(AppGlyphs.redo) }, onClick = {
                                     val next = redo.lastOrNull()
-                                    if (latestText == text && next != null) {
+                                    if (latestEnabled && latestText == text && next != null) {
                                         redo = redo.dropLast(1); undo = appendQuickHistory(undo, text); replace(next)
                                     }
                                     menu = false
@@ -175,6 +193,7 @@ internal fun MoreListQuickEditor(title: String, text: String, contentTag: String
             }
         }, text = {
             Column(Modifier.fillMaxSize()) {
+                header()
                 if (searching && query.isNotEmpty() && !text.contains(query, ignoreCase = true)) {
                     Text("无匹配结果", Modifier.padding(horizontal = 16.dp, vertical = 8.dp).testTag("more_list_quick_no_match"),
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -183,14 +202,8 @@ internal fun MoreListQuickEditor(title: String, text: String, contentTag: String
                     { next ->
                         if (next.text != text) { undo = appendQuickHistory(undo, text); redo = emptyList(); onTextChange(next.text) }
                         selectionStart = next.selection.start; selectionEnd = next.selection.end; composition = next.composition
-                    }, true, Modifier.fillMaxWidth().weight(1f), contentTag, highlightYaml = false,
+                    }, enabled, Modifier.fillMaxWidth().weight(1f), contentTag, highlightYaml = highlightYaml,
                     fontSize = fontSize.sp, softWrap = wrap, lineHeight = (fontSize * 1.2f).sp)
             }
         })
-    failure?.let { message ->
-        AlertDialog(onDismissRequest = { failure = null }, title = { Text("放弃修改？") },
-            text = { Text(message, Modifier.testTag("more_list_input_error")) },
-            confirmButton = { TextButton({ failure = null; dismiss() }) { Text("放弃") } },
-            dismissButton = { TextButton({ failure = null }) { Text("继续编辑") } })
-    }
 }

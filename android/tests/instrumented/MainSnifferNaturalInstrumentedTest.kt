@@ -86,27 +86,54 @@ class MainSnifferNaturalInstrumentedTest {
                 setText("8080\n8000-9000"); awaitIme(true); capture("ports_ime")
                 back(); awaitIme(false); back(); await("8000-9000"); awaitIme(false); settle(); capture("ports_draft")
                 toolbar("端口", 1); await("覆盖目标地址"); settle()
+                lateinit var viewModel: ProfilesViewModel
+                scenario.onActivity { viewModel = ViewModelProvider(it)[ProfilesViewModel::class.java] }
+                val beforeRevision = viewModel.moreEditorState.value.revision
                 click("覆盖目标地址"); click("已关闭")
                 val receiptDeadline = SystemClock.uptimeMillis() + 15_000
+                var stableParentSince = 0L
+                var destinationSettled = false
+                var unavailableRoots = 0
                 while (SystemClock.uptimeMillis() < receiptDeadline) {
                     val saved = ProfileProviderOverrides.fromJsonString(requireNotNull(entry.database().profiles().getById(own.id)).overridesJson)
-                    if (saved.sniffer.sniff?.get("HTTP")?.overrideDestination == false && find("已开启") == null) break
+                    val state = viewModel.moreEditorState.value
+                    val activeRoot = root()
+                    if (activeRoot == null) unavailableRoots++
+                    val labels = activeRoot?.let { nodes(it).mapNotNull { node -> node.text?.toString() }.toSet() }.orEmpty()
+                    // 作者 long：Room先提交，Popup随后回源；焦点交接的一次空树不等于退场，必须观察回执及持续可见的父页。
+                    val parentReady = activeRoot?.packageName?.toString() == ins.targetContext.packageName &&
+                        labels.containsAll(listOf("端口", "覆盖目标地址", "已关闭")) && "已开启" !in labels &&
+                        state.revision > beforeRevision && !state.isSaving && state.error == null &&
+                        saved.sniffer.sniff?.get("HTTP")?.overrideDestination == false
+                    if (parentReady) {
+                        if (stableParentSince == 0L) stableParentSince = SystemClock.uptimeMillis()
+                        if (SystemClock.uptimeMillis() - stableParentSince >= 600) { destinationSettled = true; break }
+                    } else stableParentSince = 0L
                     SystemClock.sleep(100)
                 }
-                assertEquals(false, ProfileProviderOverrides.fromJsonString(requireNotNull(entry.database().profiles().getById(own.id)).overridesJson)
-                    .sniffer.sniff?.get("HTTP")?.overrideDestination)
-                assertNull("菜单必须真实退场后再验父页返回", find("已开启"))
+                val receipt = viewModel.moreEditorState.value
+                ins.sendStatus(2, Bundle().apply { putString("kclash_destination_receipt",
+                    "settled=$destinationSettled;revisionBefore=$beforeRevision;revisionAfter=${receipt.revision};saving=${receipt.isSaving};hasError=${receipt.error != null};unavailableRoots=$unavailableRoots;stableParentMs=600") })
+                if (!destinationSettled) capture("destination_failure")
+                assertTrue("目标菜单必须在保存回执后持续退场，且协议父页可见", destinationSettled)
                 settle(); capture("destination")
-                back(); await("域名嗅探"); back(); await("Dialers")
+                back(); await("域名嗅探"); settle()
+                toolbar("域名嗅探", 0); settle()
+                val yaml = "enable: false\nsniff:\n  HTTP:\n    ports: [8080, 8000-9000]\n    override-destination: false"
+                setText(yaml); awaitIme(true); settle(); capture("yaml_ime")
+                back(); awaitIme(false); back()
+                await("状态"); settle(); capture("yaml_saved")
+                back(); await("Dialers")
                 click("域名嗅探"); click("HTTP"); click("端口"); await("8000-9000"); settle(); capture("reopened")
                 scenario.recreate(); await("8000-9000"); settle(); capture("recreated")
                 back(); await("覆盖目标地址"); assertNotNull(find("已关闭"))
                 val saved = ProfileProviderOverrides.fromJsonString(requireNotNull(entry.database().profiles().getById(own.id)).overridesJson)
                 assertEquals(listOf("8080", "8000-9000"), saved.sniffer.sniff?.get("HTTP")?.ports)
                 assertEquals(false, saved.sniffer.sniff?.get("HTTP")?.overrideDestination)
+                assertEquals(false, saved.sniffer.enable)
                 assertEquals(source, signature(repository.profileFile(own.id)))
                 assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
-                ins.sendStatus(2, Bundle().apply { putString("kclash_sniffer_natural", "real-navigation=true;rapid-back=true;ime=true;ports=2;destination=false;reopen=true;activity-recreation=true;room-readback=true;source-unchanged=true") })
+                ins.sendStatus(2, Bundle().apply { putString("kclash_sniffer_natural", "real-navigation=true;rapid-back=true;ime=true;ports=2;destination=false;yaml-return-saved=true;reopen=true;activity-recreation=true;room-readback=true;source-unchanged=true") })
             } catch (failure: Throwable) { primaryFailure = failure; throw failure }
             finally { try {
                 scenario.onActivity { ViewModelProvider(it)[ProfilesViewModel::class.java].closeMoreEditor() }

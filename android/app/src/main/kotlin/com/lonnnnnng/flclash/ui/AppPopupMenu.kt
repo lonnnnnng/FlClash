@@ -376,6 +376,7 @@ internal fun AppDropdownMenuItem(
     dismissOnClick: Boolean = true,
     opensSubmenu: Boolean = false,
     isBack: Boolean = false,
+    compact: Boolean = false,
 ) {
     val stack = LocalAppMenuStack.current
     val level = LocalAppMenuLevel.current
@@ -415,7 +416,10 @@ internal fun AppDropdownMenuItem(
     }.appFocusRing(shape).clip(shape)
         .background(if (registry?.hovered == identity) MaterialTheme.colorScheme.onSurface.copy(alpha = .08f) else Color.Transparent)
         .clickable(enabled = active, onClick = action)
-        .heightIn(min = 48.dp).padding(horizontal = 12.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        // 作者 long：三态picker是固定单行44dp，避免系统字体额外行盒撑高菜单、改变回源几何；通用菜单仍允许内容增高。
+        .then(if (compact) Modifier.height(44.dp) else Modifier.heightIn(min = 48.dp))
+        .padding(start = 12.dp, end = if (compact && trailingIcon != null) 8.dp else 12.dp, top = 12.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically) {
         CompositionLocalProvider(LocalContentColor provides color, LocalTextStyle provides TextStyle(fontSize = 15.sp, lineHeight = 20.sp)) {
             val lead = owner?.leading ?: leadingIcon
             if (lead != null) { Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) { lead() }; Spacer(Modifier.width(12.dp)) }

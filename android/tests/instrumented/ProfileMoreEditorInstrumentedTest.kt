@@ -321,7 +321,8 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("profile_more_yaml").performClick()
         compose.onNodeWithTag("more_yaml_content").performClick().performTextReplacement("port: 0")
         val yamlWindow = awaitVisibleIme()
-        compose.onNodeWithTag("more_yaml_confirm").performClick()
+        compose.onNodeWithTag("more_yaml_back").performClick()
+        compose.onNodeWithText("继续编辑").performClick()
         awaitHiddenIme(yamlWindow)
         compose.onNodeWithTag("more_yaml_error").assertIsDisplayed()
         compose.onNodeWithTag("more_yaml_content").assertTextContains("port: 0")
@@ -373,10 +374,11 @@ class ProfileMoreEditorInstrumentedTest {
     @Test fun snifferYamlValidationProtocolInheritanceAndExplicitEmptyStayDistinct() {
         section = "sniffer"; render()
         yaml("sniffer: {enable: true}")
+        compose.onNodeWithText("继续编辑").performClick()
         compose.onNodeWithTag("more_yaml_error").assertIsDisplayed()
         compose.onNodeWithTag("more_yaml_content").performTextReplacement("enable: false\nskip-domain: []\nskip-src-address: ['geoip:cn', 'rule-set:local']\nsniff:\n  http:\n    ports: [80, 8000-9000]\n    override-destination: false")
-        compose.onNodeWithTag("more_yaml_confirm").performClick()
-        waitGone("more_yaml_confirm")
+        compose.onNodeWithTag("more_yaml_back").performClick()
+        waitGone("more_yaml_back")
         compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
         compose.onNodeWithTag("more_protocol_ports").performClick()
         compose.onNodeWithText("8000-9000").assertIsDisplayed()
@@ -395,7 +397,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_remove_sniff.HTTP").performScrollTo().performClick()
         compose.runOnIdle { assertNull(savedSniffer?.sniff) }
         yaml("sniff: {}")
-        waitGone("more_yaml_confirm")
+        waitGone("more_yaml_back")
         compose.runOnIdle { assertNull(savedSniffer?.sniff) }
         compose.onNodeWithTag("profile_more_empty").assertIsDisplayed()
     }
@@ -413,7 +415,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("profile_more_yaml").performClick()
         compose.onNodeWithTag("more_yaml_content").performTextReplacement("port: 999")
         compose.onNodeWithTag("more_yaml_back").performClick()
-        waitGone("more_yaml_confirm")
+        waitGone("more_yaml_back")
         compose.onNodeWithTag("more_edit_port").assertTextContains("999", substring = true)
         compose.runOnIdle { assertEquals(999, savedNtp?.port) }
         compose.onNodeWithTag("profile_more_yaml").performClick()
@@ -912,6 +914,117 @@ class ProfileMoreEditorInstrumentedTest {
         }
     }
 
+    @Test fun vis059YamlToolbarErrorsReceiptAndRestore() {
+        val restore = StateRestorationTester(compose)
+        section = "sniffer"
+        state = ProfileMoreEditorUiState(Profile.custom(959, "YAML验收"), sniffer = ProfileSnifferOverrides(enable = true))
+        restore.setContent { KClashTheme(darkTheme = dark) {
+            ProfileMoreEditor(state, section, "", { exits++ }) { ntp, sniffer ->
+                pendingSave = ntp to sniffer; saveCalls++; state = state.copy(isSaving = true, error = null)
+            }
+        } }
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark" }
+            compose.onNodeWithTag("profile_more_yaml").performClick()
+            capture("vis059_yaml_$theme")
+            compose.onNodeWithTag("more_yaml_content").performTextReplacement("sniffer: {enable: true}")
+            compose.onNodeWithTag("more_yaml_back").performClick()
+            compose.onNodeWithText("放弃 YAML 修改？").assertIsDisplayed()
+            compose.onNodeWithText("继续编辑").performClick()
+            compose.onNodeWithTag("more_yaml_error").assertIsDisplayed()
+            compose.runOnIdle { assertEquals(if (theme == "light") 0 else 2, saveCalls) }
+            compose.onNodeWithTag("more_yaml_content").performTextReplacement("enable: false\nsniff:\n  HTTP:\n    ports: [8080, 8000-9000]\n    override-destination: false")
+            compose.onNodeWithTag("profile_top_search_open").performClick()
+            compose.onNodeWithTag("profile_top_search_input").performTextReplacement("8080")
+            capture("vis059_yaml_search_$theme")
+            compose.onNodeWithTag("profile_top_search_close").performClick()
+            compose.onNodeWithTag("more_list_quick_menu").performClick()
+            compose.onNodeWithTag("more_list_quick_undo").performClick()
+            waitGone("more_list_quick_undo")
+            compose.onNodeWithTag("more_yaml_content").assertTextContains("sniffer: {enable: true}")
+            compose.onNodeWithTag("more_list_quick_menu").performClick()
+            compose.onNodeWithTag("more_list_quick_redo").performClick()
+            waitGone("more_list_quick_redo")
+            compose.onNodeWithTag("more_yaml_back").performClick()
+            compose.waitUntil(5_000) { state.isSaving }
+            compose.onNodeWithTag("more_yaml_content").assertIsNotEnabled()
+            compose.onNodeWithTag("more_yaml_back").performClick()
+            compose.runOnIdle { assertEquals(if (theme == "light") 1 else 3, saveCalls) }
+            compose.runOnIdle { completeHeldSave(false) }
+            compose.onNodeWithTag("more_yaml_error").assertIsDisplayed()
+            compose.onNodeWithTag("more_yaml_content").assertIsEnabled()
+            capture("vis059_yaml_failure_$theme")
+            compose.onNodeWithTag("more_yaml_back").performClick()
+            compose.waitUntil(5_000) { state.isSaving }
+            restore.emulateSavedInstanceStateRestore()
+            compose.onNodeWithTag("more_yaml_saving").assertIsDisplayed()
+            compose.runOnIdle { completeHeldSave(true) }
+            waitGone("more_yaml_back")
+            compose.runOnIdle {
+                assertEquals(if (theme == "light") 2 else 4, saveCalls)
+                assertEquals(false, savedSniffer?.enable)
+                assertEquals(listOf("8080", "8000-9000"), savedSniffer?.sniff?.get("HTTP")?.ports)
+                // 作者 long：下一主题仍有真实变更，避免重复同值直接退出绕过保存失败与恢复检查。
+                if (theme == "light") state = state.copy(sniffer = ProfileSnifferOverrides(enable = true), revision = state.revision + 1)
+            }
+        }
+    }
+
+    @Test fun vis059ProtocolPickerGeometryAndNullableTargetAcrossThemes() {
+        section = "sniffer"; render()
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark"; state = ProfileMoreEditorUiState(Profile.custom(9591, "目标选择"),
+                sniffer = ProfileSnifferOverrides(sniff = mapOf("HTTP" to com.lonnnnnng.flclash.service.ProfileSniffProtocolOverrides(ports = listOf("8080"))))) }
+            compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
+            capture("vis059_protocol_$theme")
+            compose.onNodeWithTag("more_protocol_destination").performClick()
+            val a = compose.onNodeWithTag("more_protocol_destination_default").fetchSemanticsNode().boundsInWindow
+            val b = compose.onNodeWithTag("more_protocol_destination_true").fetchSemanticsNode().boundsInWindow
+            val density = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+            assertEquals(44f * density, a.height, 2f)
+            assertEquals(a.bottom, b.top, 2f)
+            capture("vis059_target_default_$theme")
+            compose.runOnIdle { holdSave = true }
+            compose.onNodeWithTag("more_protocol_destination_true").performClick()
+            compose.onNodeWithTag("more_protocol_destination_true").assertIsNotEnabled()
+            compose.runOnIdle { completeHeldSave(false) }
+            compose.onNodeWithTag("more_protocol_error").assertIsDisplayed()
+            compose.onNodeWithTag("more_protocol_destination_true").performClick()
+            compose.runOnIdle { completeHeldSave(true); holdSave = false }
+            waitGone("more_protocol_destination_true")
+            compose.onNodeWithTag("more_protocol_destination").assertTextContains("已开启", substring = true)
+            compose.onNodeWithTag("more_protocol_destination").performClick()
+            capture("vis059_target_enabled_$theme")
+            compose.onNodeWithTag("more_protocol_destination_default").performClick()
+            waitGone("more_protocol_destination_default")
+            compose.runOnIdle { assertNull(savedSniffer?.sniff?.get("HTTP")?.overrideDestination); assertEquals(listOf("8080"), savedSniffer?.sniff?.get("HTTP")?.ports) }
+            compose.onNodeWithTag("more_protocol_back").performClick()
+        }
+    }
+
+    @Test fun vis059YamlUnacceptedAndRepeatedRejectedSavesRemainEditable() {
+        section = "sniffer"
+        state = ProfileMoreEditorUiState(Profile.custom(9592, "YAML拒绝"), sniffer = ProfileSnifferOverrides(enable = true))
+        var calls = 0
+        compose.setContent { KClashTheme {
+            ProfileMoreEditor(state, section, "", {}) { _, _ ->
+                calls++
+                if (calls > 1) state = state.copy(error = "当前暂不可修改，请重试")
+            }
+        } }
+        compose.onNodeWithTag("profile_more_yaml").performClick()
+        compose.onNodeWithTag("more_yaml_content").performTextReplacement("enable: false")
+        repeat(3) { attempt ->
+            compose.onNodeWithTag("more_yaml_back").performClick()
+            compose.waitUntil(5_000) { calls == attempt + 1 && compose.onAllNodesWithTag("more_yaml_saving").fetchSemanticsNodes().isEmpty() }
+            compose.onNodeWithTag("more_yaml_content").assertIsEnabled()
+        }
+        compose.onNodeWithTag("more_yaml_content").performTextReplacement("enable: true\n")
+        compose.onNodeWithTag("more_yaml_back").performClick()
+        waitGone("more_yaml_back")
+        compose.runOnIdle { assertEquals(3, calls) }
+    }
+
     private fun render() {
         assertPortraitDefaultFontConfiguration()
         compose.setContent { KClashTheme(darkTheme = dark) {
@@ -932,7 +1045,7 @@ class ProfileMoreEditorInstrumentedTest {
     private fun yaml(content: String) {
         compose.onNodeWithTag("profile_more_yaml").performClick()
         compose.onNodeWithTag("more_yaml_content").performTextReplacement(content)
-        compose.onNodeWithTag("more_yaml_confirm").performClick()
+        compose.onNodeWithTag("more_yaml_back").performClick()
     }
     private fun waitGone(tag: String) = compose.waitUntil(10_000) { compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isEmpty() }
     private fun capture(name: String) {
