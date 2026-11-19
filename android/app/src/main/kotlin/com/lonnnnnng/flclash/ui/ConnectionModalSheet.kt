@@ -182,6 +182,7 @@ internal fun ConnectionModalSheet(
     contentScrollState: ScrollState,
     isContentAtTop: () -> Boolean = { contentScrollState.value == 0 },
     avoidIme: Boolean = false,
+    restoreDetentAfterIme: Boolean = false,
     naturalContentHeight: Int? = null,
     sheetTag: String = "connections_detail_sheet",
     sheetShape: Shape = ConnectionSheetSuperellipseShape(),
@@ -243,6 +244,7 @@ internal fun ConnectionModalSheet(
             ) {
                 val density = LocalDensity.current
                 val imeVisible = WindowInsets.ime.getBottom(density) > 0
+                var detentBeforeIme by remember { mutableStateOf<ConnectionSheetDetent?>(null) }
                 val settleSpec = remember { ConnectionSheetMotion.settleSpec() }
                 // 作者 long：数据到达、错误提示或子页改变内容高度时沿用面板弹簧重排，不能突然跳动或截断新增操作。
                 val fitHeight by animateFloatAsState(
@@ -293,10 +295,16 @@ internal fun ConnectionModalSheet(
                         DraggableAnchors { geometry.detents.forEach { it at geometry.offset(it) } }
                     }
                     SideEffect { state.updateAnchors(anchors, if (savedDetent in geometry.detents) savedDetent else ConnectionSheetDetent.PARTIAL) }
-                    LaunchedEffect(avoidIme, imeVisible, geometry, dismissalStarted) {
+                    LaunchedEffect(avoidIme, imeVisible, geometry, dismissalStarted, restoreDetentAfterIme) {
                         // 作者 long：键盘压缩可用高度后半展开只剩工具栏，搜索时展开到键盘上方，保留可操作的节点结果。
                         if (avoidIme && imeVisible && !dismissalStarted) {
+                            if (restoreDetentAfterIme && detentBeforeIme == null) detentBeforeIme = savedDetent
                             state.animateTo(ConnectionSheetDetent.EXPANDED, settleSpec)
+                        } else if (restoreDetentAfterIme && detentBeforeIme != null && !dismissalStarted) {
+                            // 作者 long：搜索键盘关闭后回到打开前的停靠位，避免短暂输入把整页面板长期留在全屏。
+                            val restore = detentBeforeIme ?: ConnectionSheetDetent.PARTIAL
+                            detentBeforeIme = null
+                            state.animateTo(restore, settleSpec)
                         }
                     }
                     LaunchedEffect(state, geometry) {

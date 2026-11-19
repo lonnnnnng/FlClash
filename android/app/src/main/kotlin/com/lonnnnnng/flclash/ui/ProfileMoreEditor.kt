@@ -149,52 +149,66 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
             }
         }
     })
-    if (adding) ModalBottomSheet(onDismissRequest = { if (!state.isSaving) { adding = false; addQuery = "" } }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        // 作者 long：候选身份固定在本次面板，不因保存回执立即移除组合；先完成条目收起，后续条目才能连续上移。
-        var shownChoices by remember(profile.id, section) { mutableStateOf(remaining) }
-        val offeredSearch = remember(profile.id, section) { remaining.size >= 10 }
-        val remainingKeys = remaining.map { it.key }.toSet()
-        fun matchesQuery(field: MoreField) = addQuery.isBlank() || field.label.contains(addQuery.trim(), true) || field.key.contains(addQuery.trim(), true)
-        LaunchedEffect(remainingKeys, addQuery) {
-            // 作者 long：搜索移出条目会取消其动画协程，已保存的隐藏候选须在父层释放，避免恢复查询时出现空分组。
-            shownChoices = fields.filter { candidate ->
-                candidate.key in remainingKeys || matchesQuery(candidate) && shownChoices.any { it.key == candidate.key }
+    if (adding) {
+        val addScrollState = rememberScrollState()
+        // 作者 long：上游添加面板可在半屏与展开态间拖动，键盘出现后也要把候选区抬到可视区域。
+        ConnectionModalSheet(
+            onDismiss = { if (!state.isSaving) { adding = false; addQuery = "" } },
+            contentScrollState = addScrollState,
+            isContentAtTop = { addScrollState.value == 0 },
+            avoidIme = true,
+            restoreDetentAfterIme = true,
+            dismissAllowed = { !state.isSaving },
+            sheetTag = "profile_more_add_sheet",
+            handleHeight = 20.dp,
+            handleWidth = 28.dp,
+        ) { requestDismiss ->
+            // 作者 long：候选身份固定在本次面板，不因保存回执立即移除组合；先完成条目收起，后续条目才能连续上移。
+            var shownChoices by remember(profile.id, section) { mutableStateOf(remaining) }
+            val offeredSearch = remember(profile.id, section) { remaining.size >= 10 }
+            val remainingKeys = remaining.map { it.key }.toSet()
+            fun matchesQuery(field: MoreField) = addQuery.isBlank() || field.label.contains(addQuery.trim(), true) || field.key.contains(addQuery.trim(), true)
+            LaunchedEffect(remainingKeys, addQuery) {
+                // 作者 long：搜索移出条目会取消其动画协程，已保存的隐藏候选须在父层释放，避免恢复查询时出现空分组。
+                shownChoices = fields.filter { candidate ->
+                    candidate.key in remainingKeys || matchesQuery(candidate) && shownChoices.any { it.key == candidate.key }
+                }
             }
-        }
-        Column(Modifier.fillMaxWidth().navigationBarsPadding().heightIn(max = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() * .9f }).padding(horizontal = 16.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("添加设置项", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
-                TextButton(onClick = { adding = false; addQuery = "" }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_add_done")) { Text("完成") }
-            }
-            if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
-            state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            Column(Modifier.weight(1f, fill = false).heightIn(max = 480.dp).verticalScroll(rememberScrollState()).testTag("profile_more_available_fields")) {
-                if (remaining.isEmpty()) Text("所有设置项均已添加", Modifier.padding(vertical = 24.dp))
-                val matching = shownChoices.filter(::matchesQuery)
-                if (matching.isEmpty() && remaining.isNotEmpty()) Text("无搜索结果", Modifier.padding(24.dp).testTag("profile_more_add_empty"))
-                listOf(false, true).forEach { protocols ->
-                    key(protocols) {
-                        val entries = matching.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
-                        if (entries.isNotEmpty()) {
-                            // 作者 long：分组最后一条开始退场时标题同步收起，不能等条目结束后突然跳掉整块标题高度。
-                            SelectionEntryTransition(entries.any { it.key in remainingKeys }, Modifier.testTag("more_add_header_$protocols")) {
-                                Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
-                            }
-                            Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
-                                Column {
-                                    entries.forEachIndexed { index, field ->
-                                        key(field.key) {
-                                            SelectionEntryTransition(field.key in remainingKeys, Modifier.testTag("more_add_transition_${field.key}"),
-                                                onHidden = { shownChoices = shownChoices.filterNot { it.key == field.key } }) {
-                                                Column {
-                                                    if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
-                                                    Row(Modifier.fillMaxWidth().clickable(enabled = !state.isSaving && field.key in remainingKeys) {
-                                                        // 作者 long：只在最后一个候选实际提交成功并更新revision后退出，失败仍留层重试；筛选结果为空不代表全部已添加。
-                                                        change(field, field.defaultValue(), if (remaining.size == 1) "last-add" else null)
-                                                    }.heightIn(min = 64.dp).padding(horizontal = 16.dp).testTag("more_add_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
-                                                        Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
-                                                            Text(field.label)
-                                                            if (field.description.isNotEmpty()) Text(field.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("添加设置项", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+                    TextButton(onClick = requestDismiss, enabled = !state.isSaving, modifier = Modifier.testTag("profile_more_add_done")) { Text("完成") }
+                }
+                if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
+                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                Column(Modifier.weight(1f).verticalScroll(addScrollState).testTag("profile_more_available_fields")) {
+                    if (remaining.isEmpty()) Text("所有设置项均已添加", Modifier.padding(vertical = 24.dp))
+                    val matching = shownChoices.filter(::matchesQuery)
+                    if (matching.isEmpty() && remaining.isNotEmpty()) Text("无搜索结果", Modifier.padding(24.dp).testTag("profile_more_add_empty"))
+                    listOf(false, true).forEach { protocols ->
+                        key(protocols) {
+                            val entries = matching.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
+                            if (entries.isNotEmpty()) {
+                                // 作者 long：分组最后一条开始退场时标题同步收起，不能等条目结束后突然跳掉整块标题高度。
+                                SelectionEntryTransition(entries.any { it.key in remainingKeys }, Modifier.testTag("more_add_header_$protocols")) {
+                                    Text(if (protocols) "嗅探协议" else "选项", Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium)
+                                }
+                                Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
+                                    Column {
+                                        entries.forEachIndexed { index, field ->
+                                            key(field.key) {
+                                                SelectionEntryTransition(field.key in remainingKeys, Modifier.testTag("more_add_transition_${field.key}"),
+                                                    onHidden = { shownChoices = shownChoices.filterNot { it.key == field.key } }) {
+                                                    Column {
+                                                        if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
+                                                        Row(Modifier.fillMaxWidth().clickable(enabled = !state.isSaving && field.key in remainingKeys) {
+                                                            // 作者 long：只在最后一个候选实际提交成功并更新revision后退出，失败仍留层重试；筛选结果为空不代表全部已添加。
+                                                            change(field, field.defaultValue(), if (remaining.size == 1) "last-add" else null)
+                                                        }.heightIn(min = 64.dp).padding(horizontal = 16.dp).testTag("more_add_${field.key}"), verticalAlignment = Alignment.CenterVertically) {
+                                                            Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
+                                                                Text(field.label)
+                                                                if (field.description.isNotEmpty()) Text(field.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -206,10 +220,10 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                         }
                     }
                 }
+                if (offeredSearch || addQuery.isNotEmpty()) DockedProfileSearch(addQuery, { addQuery = it },
+                    "profile_more_add_search", enabled = !state.isSaving, modifier = Modifier.padding(top = 12.dp))
+                Spacer(Modifier.height(16.dp))
             }
-            if (offeredSearch || addQuery.isNotEmpty()) DockedProfileSearch(addQuery, { addQuery = it },
-                "profile_more_add_search", enabled = !state.isSaving, modifier = Modifier.padding(top = 12.dp))
-            Spacer(Modifier.height(16.dp))
         }
     }
     fields.firstOrNull { it.key == editing }?.let { field -> moreFieldValue(root, field)?.let { value ->

@@ -1,0 +1,173 @@
+{
+  "id": "KUI-VIS-054-SNIFFER-ADD",
+  "date": "2026-11-19",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "screen": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "theme": "dark",
+    "glassEnabled": false
+  },
+  "reference": {
+    "installedApp": "com.follow.clash",
+    "versionName": "0.9.3",
+    "versionCode": 2026112401,
+    "firstInstallTime": "2026-11-07 02:44:08",
+    "lastUpdateTime": "2026-11-07 02:44:08",
+    "installedAppUnmodified": true,
+    "runtimeHostPackage": "com.lonnnnnng.kclash.reference.flutter_sniffer_reference",
+    "runtimeHostIsolatedFixture": true,
+    "sourcePath": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "sourceGitMetadata": false,
+    "sourceFiles": [
+      "lib/views/config/sniffer.dart",
+      "lib/views/config/override.dart",
+      "plugins/prism_ui/lib/sheet.dart",
+      "plugins/prism_ui/lib/snap_sheet.dart",
+      "lib/features/form/selection_sheet.dart"
+    ],
+    "flutterSdk": "3.50.0",
+    "projectCiFlutterSdk": "3.47.6"
+  },
+  "scope": {
+    "surface": "Sniffer empty state, grouped add panel, docked search, protocol selection and HTTP editor",
+    "fixture": "A custom Profile in an isolated Compose test Activity; no Room row, core, VPN, or formal configuration is used.",
+    "checks": [
+      "Render empty Sniffer settings and open the add panel.",
+      "Verify Options and Sniff Protocol groups, scroll to protocol candidates, and filter to HTTP.",
+      "Confirm the sheet expands above the IME, clearing restores candidates, and hiding the IME restores the prior partial detent.",
+      "Select HTTP, verify it leaves the candidate list, then open the HTTP ports and destination editor."
+    ],
+    "productChanges": [
+      "Use the shared detented sheet for the add panel so it can move between partial and expanded states.",
+      "Expand the panel above the keyboard and restore its previous detent after the keyboard closes."
+    ]
+  },
+  "build": {
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "BUILD SUCCESSFUL",
+    "actionableTasks": 227,
+    "executedTasks": 27,
+    "upToDateTasks": 200,
+    "jvmTests": {
+      "tests": 618,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 74,
+      "hints": 14
+    },
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "5ace51bee6c8df02f8ab923ef911865deca4c7f57df5f805b6238465bd45e2a7",
+      "com.lonnnnnng.flclash.motion.test": "e4a0d8ebaa361a8cf432599fa745c3bc5f74783ae7fff023d7fa61833b7bbaa7"
+    },
+    "fullBuildLog": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/full-build-final.log",
+    "fullBuildLogSha256": "e0e95cddae64ee94146dae28e0e14e8e5d3b2dce0c56481b7ddf0c74b83ec0c1"
+  },
+  "instrumentation": {
+    "class": "ProfileMoreEditorInstrumentedTest",
+    "method": "vis054SnifferAddPanelGroupsSearchAndSelectsProtocol",
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedSeconds": 10.245,
+    "result": "OK (1 test)",
+    "log": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/instrumentation.log",
+    "logSha256": "29140681cc6a2e84ea09c457192d56cfbc03cc21c4a2421a436b93dddd21a4f4",
+    "screenshots": {
+      "count": 10,
+      "dimensions": "1080x2400",
+      "allChunkIndicesSizesHashesAndPngSignaturesVerified": true,
+      "visuallyReviewed": true,
+      "manifest": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/screenshots.json",
+      "manifestSha256": "c15752459991aef2a9b23d3b50f5652f5c46486d7c02e1a4b74f7df5128d9b33"
+    }
+  },
+  "comparison": {
+    "states": [
+      {
+        "state": "empty",
+        "flutter": "../acceptance-artifacts/flutter-sniffer-reference-host-20261119/evidence/sniffer-20261119/flutter-empty.png",
+        "flutterSha256": "413008c8fb8510abbda7048afb786f71651c286939f70a8cf42e65dc01d84470",
+        "kotlin": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/vis054_sniffer_empty.png",
+        "kotlinSha256": "c41b82431d00dec589ba271dce12eb4caa42a7175a6589c5949a7276da076bfc"
+      },
+      {
+        "state": "add panel options",
+        "flutter": "../acceptance-artifacts/flutter-sniffer-reference-host-20261119/evidence/sniffer-20261119/flutter-add-all.png",
+        "flutterSha256": "54eedda1527c974d281182b0aa1a588c70bfa6bdedda6da7bdd162777a045a5d",
+        "kotlin": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/vis054_sniffer_add_all.png",
+        "kotlinSha256": "99b63b1c0bd32965ef1ca48e3b3d3cea6d30b7e8ecc1dd9cfeb37932a3d33b83"
+      },
+      {
+        "state": "protocol group after scrolling",
+        "flutter": "../acceptance-artifacts/flutter-sniffer-reference-host-20261119/evidence/sniffer-20261119/flutter-add-protocols.png",
+        "flutterSha256": "87510581610a62e421fd724ea2cfa225b10c9a3e2266fbb1743edb649450a221",
+        "kotlin": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/vis054_sniffer_add_protocols.png",
+        "kotlinSha256": "e57b68c0f8a70acfcb9edf629ff9ddef527a5e5769ddea626722aa8a585a713b"
+      },
+      {
+        "state": "HTTP search with IME",
+        "flutter": "../acceptance-artifacts/flutter-sniffer-reference-host-20261119/evidence/sniffer-20261119/flutter-search-http.png",
+        "flutterSha256": "916c422d95d05d45a04cededdafb4e05aaef68c234daefaaefbe698f1a38d06c",
+        "kotlin": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/vis054_sniffer_search_http.png",
+        "kotlinSha256": "c9d597b6e35e341e21e864db9951adb3f689f0fc257fbda2825740f69f65c496"
+      },
+      {
+        "state": "cleared search with IME",
+        "flutter": "../acceptance-artifacts/flutter-sniffer-reference-host-20261119/evidence/sniffer-20261119/flutter-search-cleared.png",
+        "flutterSha256": "87510455c4a39dd74d7bc9e31c4be8e804c3da5d3d93aaf25580926fdb451044",
+        "kotlin": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/vis054_sniffer_search_cleared_ime.png",
+        "kotlinSha256": "cb7389cca3f9f849a8f70019ac73cbc5f2666054b873bc70620e0b8c9f511e15"
+      },
+      {
+        "state": "cleared search with IME hidden",
+        "flutter": "../acceptance-artifacts/flutter-sniffer-reference-host-20261119/evidence/sniffer-20261119/flutter-search-cleared-ime-hidden.png",
+        "flutterSha256": "f6564c6fb34d2ea6e4dd0f973a49a2edddfae23dcef3507d5cb1976ebe7d6ff0",
+        "kotlin": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/vis054_sniffer_search_cleared_ime_hidden.png",
+        "kotlinSha256": "99a718a7b608b0ae5fcecbc5dac029cafd3bc57fcc76d50d41cf006641f76e04"
+      },
+      {
+        "state": "HTTP selected, remaining candidates retained",
+        "flutter": "../acceptance-artifacts/flutter-sniffer-reference-host-20261119/evidence/sniffer-20261119/flutter-http-added.png",
+        "flutterSha256": "26331a80e9e11b52b6f4c60be968321c099fe6c1cf3e88ace4308b740efacb6b",
+        "kotlin": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/vis054_sniffer_http_added.png",
+        "kotlinSha256": "b7a340005feb8922f72c252cae2eca4c628238bbcada672b9061c77d8b5f8a75"
+      },
+      {
+        "state": "HTTP protocol editor",
+        "flutter": "../acceptance-artifacts/flutter-sniffer-reference-host-20261119/evidence/sniffer-20261119/flutter-http-protocol.png",
+        "flutterSha256": "d1108b5e126b64a5f4d5a3aba14f390e27796b168c3bb70f7a8366c7ffa98e46",
+        "kotlin": "../acceptance-artifacts/sniffer-add-panel-parity-poco-20261119/kotlin-final7/vis054_sniffer_http_page.png",
+        "kotlinSha256": "31a44939391579006ee3ba3b73043a6e631e192095e4453dc8212ce412ff9085"
+      }
+    ],
+    "result": "The add sheet handle, initial partial detent, grouped candidates, bottom search, IME expansion/restoration, HTTP selection and protocol settings are visually close in their matching content regions.",
+    "limits": [
+      "Flutter was an isolated reference host and Kotlin used an isolated Compose test Activity; their page headers and route chrome are not equivalent.",
+      "The empty-state illustration placement, copy and toolbar chrome are not pixel-identical; this slice does not claim full-page parity.",
+      "Only the dark theme and these Sniffer states were compared; NTP, Provider pages and full MainActivity navigation/transitions remain open."
+    ]
+  },
+  "cleanup": {
+    "temporaryMotionAppAndTestPackagesUninstalled": true,
+    "isolatedFlutterReferenceHostUninstalled": true,
+    "remainingRelevantPackages": [
+      "com.follow.clash"
+    ],
+    "originalFlutterAppVersionAndInstallTimesUnchanged": true,
+    "runtimeServices": "none observed",
+    "rotationSettingsRestored": {
+      "accelerometer_rotation": 0,
+      "user_rotation": 0
+    },
+    "rootYaml": "not accessed"
+  }
+}

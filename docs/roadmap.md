@@ -864,14 +864,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 0.1.8标签CI的Go race、JVM测试、Release/R8、Debug/Release Lint与签名资产检查全部通过；KUI-VIS-053 在 POCO 独立 motion 包中 5/5，未与 Release 设备安装混算 |
+| 最新自动化记录 | 0.1.8标签CI的Go race、JVM测试、Release/R8、Debug/Release Lint与签名资产检查全部通过；KUI-VIS-054 Sniffer 添加面板/HTTP协议页切片在 POCO 独立 motion 包中 1/1、10张截图校验通过，未与 Release 设备安装混算 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
-| 数据保护 | 在线age测试输入按SHA核对后删除；motion/test包已卸载、服务和TUN退出。原1.yaml未上传且SHA/大小/mtime保持，Flutter参考包未操作。新age identity仅保存在仓库外0600文件 |
-| 正在推进 | Flutter 剩余子页与面板的同状态对照、连续转场及菜单性能。052 空态与 053 非空图标集/搜索对照已验；下一项补 NTP/Sniffer、Provider 等子页和面板转场。048 菜单首开慢帧的主线程占用已在匹配样本中确认；绘制归因和优化收益未确认。[053 验收证据](acceptance/icon-set-flutter-parity-poco-20261119.json) |
+| 数据保护 | 本组 motion/test 和隔离 Flutter Sniffer 参考宿主均已卸载；原版 `com.follow.clash` 的版本/安装时间保持，未修改。原1.yaml未访问；服务和TUN无活动 |
+| 正在推进 | KUI-VIS-054 已完成 Sniffer 空态/分组面板/HTTP搜索/选中/协议页这一切片；同一内容区域视觉接近，空态插图与两端路由外框仍不等同。下一项补 NTP 面板与 Provider 绑定选择器同状态对照，再做 MainActivity 整页连续转场。菜单首开绘制归因/优化收益仍未确认。[054 Sniffer 切片证据](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json) |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB 正文性能、备份与系统恢复、观测次要打磨、语言主题继续暂缓。玻璃默认关闭。 |
-| 最新证据 | [0.1.8 发布](acceptance/release-0.1.8-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
+| 最新证据 | [054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.8 发布](acceptance/release-0.1.8-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
 
 ## 4. 目标架构图
 
@@ -1555,7 +1555,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 | 6 | IP/质量全部来源、持久缓存和失效恢复；服务全部目标 | 缓存闭环与全部目标尝试已验：757单测、final3 5/5、cold2/cold5各双阶段、回归10/10；远端部分受限，原长窗口配置保护after 0/1/原因未定，新短窗口通过不替代失败。见`ip-quality-cache-redmi-20261105.json` |
 | 7 | Fallback 无有效 now 实核行为和冷恢复 | 冷进程收尾已验：更新后的唯一授权源为34组、1个非空Fallback/7成员；Redmi真实Mihomo停止态/运行态各4阶段，共8/8有效`now`，固定/清除固定/非法成员拒绝通过；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`，见`fallback-real-core-redmi-20261105.json`与`fallback-cold-process-redmi-20261106.json`。自然无效`now`经源码核对在合法非空组、断网或全不健康成员下不可自然产生，保留为核心语义边界，不记伪造注入为通过。 |
 | 8 | 纯代理冷恢复、首次安装VPN授权、蜂窝、第三方、Always-on OEM | 既有纯代理/Always-on/首次安装VPN证据保留；本组官方MacroDroid6.1.5在公开0.1.3上前台Activity启停5次通过，重复START保持同一服务。Tasker/后台定时/开机/其他OEM未验，Redmi蜂窝恢复已验，生产Always-on状态仍UNKNOWN。 |
-| 9 | 完整Flutter视觉与常用交互 | 043～047 的 8/8、048 的 6/6与冷恢复1/1、049图标集3/3、050/051 Provider各1/1、052空态Flutter对照1/1、053非空图标集/搜索同态对照5/5均有POCO证据。050/051 Provider同态运行对照、NTP/Sniffer等其他子页/面板及完整自然转场仍待。 |
+| 9 | 完整Flutter视觉与常用交互 | 043～047 的 8/8、048 的 6/6与冷恢复1/1、049图标集3/3、050/051 Provider各1/1、052空态对照1/1、053非空图标集对照5/5、054 Sniffer添加面板/HTTP协议页切片1/1均有POCO证据。050/051 Provider同态运行对照、NTP面板、其他子页以及MainActivity完整自然转场仍待；054空态与路由外框不记为全页像素一致。 |
 | 10 | 实时背景/触点光效、玻璃品质、8MiB正文及连续动效性能 | POCO 已捕获菜单首开和收回的线程轨迹。首开样本以主线程工作为主，收回包括应用超时和缓冲积压，需继续定位并对照优化效果。8 MiB 正文性能继续暂缓，玻璃默认关闭。 |
 | 11 | API24/25/31/32及低API核心/VPN/实网、端到端回归、CI/签名/Release/更新资产 | 0.1.8标签CI、正式证书/SHA及Release Latest已回验；Release APK已下载核对，未安装到真机。版本检查和GitHub跳转已完成，不再推进应用内下载/安装。低API真机、其余升级矩阵及其他OEM边界单列。 |
 

@@ -190,6 +190,66 @@ class ProfileMoreEditorInstrumentedTest {
         capture("more_dock_cancel")
     }
 
+    @Test fun vis054SnifferAddPanelGroupsSearchAndSelectsProtocol() {
+        section = "sniffer"
+        dark = true
+        state = ProfileMoreEditorUiState(Profile.custom(54054, "Sniffer 参考夹具"))
+        render()
+
+        compose.onNodeWithTag("profile_more_empty").assertExists()
+        capture("vis054_sniffer_empty")
+
+        compose.onNodeWithTag("profile_more_empty_add").performClick()
+        compose.onNodeWithTag("more_add_header_false").assertExists()
+        compose.onNodeWithTag("more_add_header_true").assertExists()
+        compose.onNodeWithTag("more_add_enable").assertIsDisplayed()
+        compose.onNodeWithTag("more_add_sniff.HTTP").assertExists()
+        compose.onNodeWithTag("more_add_sniff.TLS").assertExists()
+        capture("vis054_sniffer_add_all")
+        compose.onNodeWithTag("more_add_sniff.HTTP").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("more_add_sniff.TLS").performScrollTo().assertIsDisplayed()
+        capture("vis054_sniffer_add_protocols")
+        val partialSheetTop = compose.onNodeWithTag("profile_more_add_sheet").fetchSemanticsNode().boundsInWindow.top
+
+        compose.onNodeWithTag("profile_more_add_search").performClick()
+        compose.onNodeWithTag("profile_more_add_search").performTextReplacement("HTTP")
+        val imeWindow = awaitVisibleIme()
+        val imeSheetTop = compose.onNodeWithTag("profile_more_add_sheet").fetchSemanticsNode().boundsInWindow.top
+        assertTrue("键盘出现后添加面板应上移并露出候选", imeSheetTop < partialSheetTop)
+        compose.onNodeWithTag("more_add_header_false").assertDoesNotExist()
+        compose.onNodeWithTag("more_add_header_true").assertIsDisplayed()
+        compose.onNodeWithTag("more_add_sniff.HTTP").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("more_add_sniff.TLS").assertDoesNotExist()
+        compose.onNodeWithTag("more_add_sniff.QUIC").assertDoesNotExist()
+        capture("vis054_sniffer_search_http")
+
+        compose.onNodeWithTag("profile_more_add_search_clear").performClick()
+        capture("vis054_sniffer_search_cleared_ime")
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        awaitHiddenIme(imeWindow)
+        capture("vis054_sniffer_search_cleared_ime_hidden")
+        val restoredSheetTop = compose.onNodeWithTag("profile_more_add_sheet").fetchSemanticsNode().boundsInWindow.top
+        assertEquals("键盘收起后应返回原停靠位置", partialSheetTop, restoredSheetTop, 40f)
+        compose.onNodeWithTag("more_add_header_false").performScrollTo().assertIsDisplayed()
+        capture("vis054_sniffer_search_cleared_options")
+        compose.onNodeWithTag("more_add_header_true").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("more_add_sniff.TLS").performScrollTo().assertIsDisplayed()
+        capture("vis054_sniffer_search_cleared_protocols")
+
+        compose.onNodeWithTag("more_add_sniff.HTTP").performClick()
+        compose.onNodeWithTag("more_add_sniff.HTTP").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(1, saveCalls)
+            assertNotNull(savedSniffer?.sniff?.get("HTTP"))
+        }
+        capture("vis054_sniffer_http_added")
+        compose.onNodeWithTag("profile_more_add_done").performClick()
+        compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
+        compose.onNodeWithTag("more_protocol_ports").assertIsDisplayed()
+        compose.onNodeWithTag("more_protocol_destination").assertIsDisplayed()
+        capture("vis054_sniffer_http_page")
+    }
+
     @androidx.test.filters.SdkSuppress(minSdkVersion = 29)
     @Test fun fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft() {
         render(); add("port")
