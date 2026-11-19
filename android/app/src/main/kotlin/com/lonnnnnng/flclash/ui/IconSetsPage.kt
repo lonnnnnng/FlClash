@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.*
 import kotlinx.coroutines.flow.first
+import kotlin.math.ceil
 
 val LocalResourceIcons = staticCompositionLocalOf<List<ResourceIcon>> { emptyList() }
 val LocalResourceIconSets = staticCompositionLocalOf<List<ResourceIconSet>> { emptyList() }
@@ -113,7 +114,6 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
         val shown = remember(icons, query) { icons.filter { it.name.contains(query, true) } }
         val context = LocalContext.current
         val gridState = rememberLazyGridState()
-        var searchExpanded by rememberSaveable(id) { mutableStateOf(false) }
         var restorePosition by remember(id) { mutableStateOf<Pair<Int, Int>?>(null) }
         LaunchedEffect(query, icons.size) {
             if (query.isNotEmpty()) {
@@ -136,42 +136,50 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
             }
             query = value
         }
-        fun changeSearchExpanded(expanded: Boolean) {
-            if (!expanded && searchExpanded && query.isNotEmpty()) changeQuery("")
-            searchExpanded = expanded
-        }
         fun backPreview() {
-            if (searchExpanded) changeSearchExpanded(false) else previewId = null
+            if (query.isNotEmpty()) changeQuery("") else previewId = null
         }
         ProfileEditorPage(onDismissRequest = ::backPreview, title = { Text(item?.name ?: "图标集") },
-            backTag = "icon_set_preview_back", topBarSearch = ProfileEditorSearchState(
-                searchExpanded, query, "搜索图标", ::changeQuery, ::changeSearchExpanded,
-            ), text = {
+            backTag = "icon_set_preview_back", contentPadding = PaddingValues(0.dp), navigationButtonSurface = true,
+            bottomBar = {
+                DockedProfileSearch(query, ::changeQuery, "icon_set_preview_search",
+                    placeholder = "搜索图标", modifier = Modifier.padding(horizontal = 16.dp))
+            }, text = {
             Box(Modifier.fillMaxSize()) {
                 if (shown.isEmpty()) {
                     IconSetPreviewEmpty(query, onClearQuery = { changeQuery("") })
                 } else {
-                    LazyVerticalGrid(GridCells.Adaptive(88.dp),
-                        state = gridState,
-                        modifier = Modifier.fillMaxSize().testTag("icon_set_grid"),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                    ) {
-                        items(shown, key = { it.url.ifBlank { it.name } }) { icon ->
-                            Column(Modifier.widthIn(max = 88.dp).testTag("icon_set_icon_${icon.name}"),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Surface(Modifier.size(56.dp), shape = AppSuperellipseShape(16.dp),
-                                    color = MaterialTheme.colorScheme.surfaceContainerLow) {
-                                    Box(Modifier.fillMaxSize().combinedClickable(onClick = {
-                                        (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText(icon.name, icon.url))
-                                    }), contentAlignment = Alignment.Center) {
-                                        ProfileGroupIcon(icon.url, icon.name, Modifier.size(40.dp))
+                    BoxWithConstraints(Modifier.fillMaxSize()) {
+                        val availableWidth = (maxWidth - 32.dp).coerceAtLeast(0.dp)
+                        // 作者 long：Flutter 把 88dp 当作网格单元最大宽度；Compose Adaptive 参数是最小宽度，按上限反算列数才能保持同态密度。
+                        val columns = ceil((availableWidth.value + 8f) / 96f).toInt().coerceAtLeast(1)
+                        key(query.isNotEmpty()) {
+                            // 作者 long：进入或退出筛选时重建网格内容层，避免长列表旧可见项留在首帧画面。
+                            LazyVerticalGrid(GridCells.Fixed(columns),
+                                state = gridState,
+                                modifier = Modifier.fillMaxSize().testTag("icon_set_grid"),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 12.dp),
+                            ) {
+                                items(shown, key = { it.url.ifBlank { it.name } }) { icon ->
+                                    Column(Modifier.widthIn(max = 88.dp).testTag("icon_set_icon_${icon.name}"),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        Surface(Modifier.size(56.dp), shape = AppSuperellipseShape(16.dp),
+                                            color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                                            Box(Modifier.fillMaxSize().combinedClickable(onClick = {
+                                                (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText(icon.name, icon.url))
+                                            }), contentAlignment = Alignment.Center) {
+                                                if (icon.url.isBlank()) AppGlyphIcon(AppGlyphs.photos, Modifier.size(28.dp),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = .5f))
+                                                else ProfileGroupIcon(icon.url, icon.name, Modifier.size(40.dp))
+                                            }
+                                        }
+                                        Text(icon.name, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                 }
-                                Text(icon.name, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }

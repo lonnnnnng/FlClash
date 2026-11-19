@@ -118,9 +118,10 @@ CUSTOM 配置卡组数芯片已完成固定 fixture 真机视觉验收：`Profil
 1. KUI-VIS-052 已在 POCO F2 Pro / API36 完成原版 Flutter 与 Kotlin 图标集空态的同状态暗色对照，生产页面组件精确用例1/1、1张截图通过。Flutter 参考包未修改；插图形状/装饰仍受 Flutter 随机选择影响，非逐像素一致。[验收证据](acceptance/icon-set-empty-flutter-poco-20261119.json)
 2. KUI-VIS-051 已在 POCO F2 Pro / API36 验证非空 Provider 选择器的双候选列表、搜索收敛、清空恢复、选择和父页回读，精确用例1/1、4张截图通过；临时 FILE 候选、motion 双包与正文副本均已清理。该证据不代表 Flutter 同状态运行对照。[验收证据](acceptance/provider-multi-candidate-poco-20261119.json)
 3. KUI-VIS-050 已在 POCO F2 Pro / API36 完成非空 Provider 连续流程验收：资源页→真实代理资源选择器→绑定隔离资源→Provider 选项添加/保存→重开 Room 回读 `TIMEOUT=5000`，精确用例1/1、7张截图通过。正式库起始为空，测试从授权 `1.yaml` 建临时 FILE/CUSTOM 基线并完整回收。仅 Kotlin 流程证据，未做 Flutter 同状态运行对照。[验收证据](acceptance/provider-options-nonempty-poco-20261119.json)
-4. KUI-VIS-049 图标集预览的顶栏搜索、专属图块空态、无结果恢复、40项网格筛选和 Back 后位置恢复已验，原资源页类3/3、19张截图；052只补空列表同态对照，非空Flutter图标集/预览运行对照仍待。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
-5. 沿固定 Flutter 参考继续补非空资源页、NTP/Sniffer 等子页和面板的同状态运行对照，逐页记录键盘、返回、快速反向及连续转场；当前视觉切片不代表像素或动态全等。
-6. 继续菜单首开/关闭归因：现有收回阶段能看到 deadline miss、dropped 和 buffer-stuffed，但类别可重叠且 trace 丢块，尚未按帧关联 UI/RenderThread 调度与等待。补齐后再比较正式 R8 与 motion 宿主。
+4. KUI-VIS-049 图标集预览搜索、专属图块空态、无结果恢复、40项网格筛选和 Back 后位置恢复已验，原资源页类3/3、19张截图；052补空列表 Flutter 对照，非空 Flutter 对照由053补齐。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
+5. KUI-VIS-053 已在 POCO F2 Pro / API36 完成非空 40 项图库、暗色 Flutter 对照和 `37` 搜索同态；另用80项夹具滚到图标60，核对结果只保留图标37、首列位置、清除后锚点坐标恢复。修复筛选首帧残留旧网格像素。ResourcesPageInstrumentedTest 5/5、21张截图校验并目视；motion/Test 包已卸载，Flutter 参考包未改。隔离 Flutter 副本无 Git 元数据，SDK 3.50.0 与 CI 固定3.47.6不同；未覆盖 MainActivity 整页导航。[验收证据](acceptance/icon-set-flutter-parity-poco-20261119.json)
+6. 下一项 KUI-VIS-054：NTP/Sniffer、Provider 等剩余子页和面板的 Flutter 同状态对照、键盘/返回/快速反向及整页连续转场；性能方向继续做菜单无损重采、正式 R8 对照和 RenderThread 归因。视觉切片不代表整页像素或动态全等。
+7. KUI-VIS-048 已补全深浅 trace 的逐帧 token 关联。关闭阶段各有 18 个 App Deadline Missed；deadline 帧同时存在 UI/RenderThread 调度活动，dropped 帧 RenderThread 调度 CPU 中位数约 0.63–0.67ms，但 trace 丢弃 6/7 chunks、4/6 帧缺 token 匹配切片，且无 fence/GPU 轨道，仍不能判根因。下一步无损重采并补 fence/GPU 可观测性，再比较正式 R8 与 motion 宿主。[逐帧 SQL/CSV](../acceptance-artifacts/menu-performance-poco-20261118/vis048-perfetto-clean-z97gep21/frame-thread-attribution.sql)
 
 ## 0.1.0正式发布与首页反馈收尾
 

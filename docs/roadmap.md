@@ -4,13 +4,15 @@
 
 > **KUI-VIS-050 已在 POCO F2 Pro / API36 验收**。非空 Provider 资源页进入真实代理资源选择器，绑定隔离 FILE 源后打开选项页，新增并保存 `TIMEOUT=5000`，重开后从 Room 读回；精确用例 1/1，7 张截图校验并目视。motion 双包安装回拉与构建产物一致，临时数据及授权源 staging 文件已清理。此证据只覆盖 Kotlin 连续流程，不代表 Flutter 同状态运行对照或全页视觉等价。[验收证据](acceptance/provider-options-nonempty-poco-20261119.json)
 
-> **KUI-VIS-052 已在 POCO F2 Pro / API36 验收**。原版 Flutter 图标集空态与 Kotlin 生产 `IconSetsPage` 的空态组件在同设备、同暗色状态下逐屏目视；补入图块插图、主色调色和偏上内容组，精确用例1/1，1张截图哈希/尺寸校验。比较只覆盖空态组件，非空 Flutter 图库及完整 MainActivity 导航仍未对照；Flutter 参考包未修改。[验收证据](acceptance/icon-set-empty-flutter-poco-20261119.json)
+> **KUI-VIS-052 已在 POCO F2 Pro / API36 验收**。原版 Flutter 图标集空态与 Kotlin 生产 `IconSetsPage` 的空态组件在同设备、同暗色状态下逐屏目视；补入图块插图、主色调色和偏上内容组，精确用例1/1，1张截图哈希/尺寸校验。052 只覆盖空态；非空 Flutter 图库同态由 KUI-VIS-053 补齐，完整 MainActivity 导航仍未对照；Flutter 参考包未修改。[验收证据](acceptance/icon-set-empty-flutter-poco-20261119.json)
+
+> **KUI-VIS-053 已在 POCO F2 Pro / API36 验收**。暗色 40 项图标图库、`37` 单项筛选和下沿搜索与独立 Flutter 参考宿主同态目视接近；另以 80 项夹具滚到图标 60，验证筛选只显示图标 37、回到首列，清除后锚点坐标恢复在 1 px 内。发现并修复筛选首帧残留旧网格像素。ResourcesPageInstrumentedTest 5/5、911 JVM 报告 0 失败/错误/跳过，motion Lint 0 错误，21 张截图 SHA/尺寸校验。Flutter 副本无 Git 元数据，SDK 为 3.50.0，CI 固定 3.47.6；截图来自隔离 Compose/Flutter 宿主，不代表 MainActivity 整页导航。[验收证据](acceptance/icon-set-flutter-parity-poco-20261119.json)
 
 > **KUI-VIS-051 已在 POCO F2 Pro / API36 验收**。Provider 代理资源选择器从 2 个候选筛到 1 个，清空后恢复 2 个，选择备用候选并回到父页，读取已保存的资源 ID；精确用例 1/1，4 张 1080×2400 截图校验并目视。隔离候选使用授权正文副本，正式库、偏好、选择与运行态保持，motion 双包和暂存文件已清理。此证据只覆盖 Kotlin 选择流程，不代表 Flutter 同状态运行对照。[验收证据](acceptance/provider-multi-candidate-poco-20261119.json)
 
-> **KUI-VIS-049 已在 POCO F2 Pro / API36 验收**。图标集预览搜索移至顶栏；非空 40 项图库筛选、Back 收起和原网格位置恢复通过，空态使用图块 glyph 并提供清除搜索。资源页类原3/3、19张截图；KUI-VIS-052另补空图标集同状态 Flutter 运行对照1/1。非空 Flutter 图库预览运行截图仍待补。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
+> **KUI-VIS-049 已在 POCO F2 Pro / API36 验收**。图标集预览搜索、非空 40 项图库筛选、Back 收起和位置恢复通过，空态使用图块 glyph 并提供清除搜索。资源页类原3/3、19张截图；KUI-VIS-052补空态 Flutter 对照；KUI-VIS-053 随后完成了下沿搜索对齐和非空 Flutter 同态运行对照。[验收证据](acceptance/icon-set-preview-poco-20261119.json)
 
-> **KUI-VIS-048 菜单性能记录**。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回阶段有超时、丢帧和缓冲积压分类，但类别可重叠，trace 有丢弃，尚未按帧关联 UI/RenderThread 调度与等待，不能归因 RenderThread 根因；优化收益与正式 R8 表现待验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
+> **KUI-VIS-048 菜单性能记录**。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；首开慢帧集中在主线程。新增全量逐帧关联：深浅关闭阶段分别覆盖 324/326 帧；App Deadline Missed 各 18 帧，Dropped Frame 分别 16/18 帧；deadline 帧同时有明显 UI/RenderThread 调度活动，dropped 帧 RenderThread 调度 CPU 中位数约 0.63–0.67ms，不支持其为主要工作来源。Trace 丢弃 6/7 chunks，4/6 帧缺 token 匹配切片，未采到 fence/GPU 轨道，不能据此定因；正式 R8 对照和无损重采仍待。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
 
 > **KClash 0.1.7 正式发布（2026-11-18）**：标签 `kclash-v0.1.7` 指向 `2e13ed52efcd0c2ce94bd181ad09c78b9e84546d`，versionCode 1007，GitHub Latest。标签 CI 的 Go race、JVM/R8、Debug/Release Lint、正式签名、APK 元数据及 ABI 检查均通过；远端 ARM64 APK 48,468,320 字节，SHA-256 `2a3f6b21ec714ab4f12d636ffe1788d255f1cee8bc27c782a6e8b1cb4b46433e`，证书沿用既有正式身份。Release APK 已下载核验，未安装到手机。本批 043～047 与语义预检、协议实流由独立 motion 包验收。详见[发布记录](acceptance/release-0.1.7-20261118.json)和[发布说明](releases/kclash-v0.1.7.md)。
 
@@ -860,14 +862,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 0.1.7标签CI的Go race、JVM测试、Release/R8、Debug/Release Lint与签名资产检查全部通过；语义预检、协议实流及043～047视觉均由POCO独立motion包验收，不与Release设备安装混算 |
+| 最新自动化记录 | 0.1.7标签CI的Go race、JVM测试、Release/R8、Debug/Release Lint与签名资产检查全部通过；KUI-VIS-053 在 POCO 独立 motion 包中 5/5，未与 Release 设备安装混算 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | 在线age测试输入按SHA核对后删除；motion/test包已卸载、服务和TUN退出。原1.yaml未上传且SHA/大小/mtime保持，Flutter参考包未操作。新age identity仅保存在仓库外0600文件 |
-| 正在推进 | Flutter 剩余子页与面板的同状态对照、连续转场及菜单性能。052 已补图标集空态同状态运行对照；非空预览、其他子页/面板仍待补。048 菜单首开慢帧的主线程占用已在匹配样本中确认；绘制归因和优化收益未确认。[052 验收证据](acceptance/icon-set-empty-flutter-poco-20261119.json) |
+| 正在推进 | Flutter 剩余子页与面板的同状态对照、连续转场及菜单性能。052 空态与 053 非空图标集/搜索对照已验；下一项补 NTP/Sniffer、Provider 等子页和面板转场。048 菜单首开慢帧的主线程占用已在匹配样本中确认；绘制归因和优化收益未确认。[053 验收证据](acceptance/icon-set-flutter-parity-poco-20261119.json) |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB 正文性能、备份与系统恢复、观测次要打磨、语言主题继续暂缓。玻璃默认关闭。 |
-| 最新证据 | [验收证据](acceptance/icon-set-empty-flutter-poco-20261119.json)（052 Flutter 空态对照）、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json)、[0.1.7 发布](acceptance/release-0.1.7-20261118.json) |
+| 最新证据 | [053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json)、[0.1.7 发布](acceptance/release-0.1.7-20261118.json) |
 
 ## 4. 目标架构图
 
@@ -1551,7 +1553,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 | 6 | IP/质量全部来源、持久缓存和失效恢复；服务全部目标 | 缓存闭环与全部目标尝试已验：757单测、final3 5/5、cold2/cold5各双阶段、回归10/10；远端部分受限，原长窗口配置保护after 0/1/原因未定，新短窗口通过不替代失败。见`ip-quality-cache-redmi-20261105.json` |
 | 7 | Fallback 无有效 now 实核行为和冷恢复 | 冷进程收尾已验：更新后的唯一授权源为34组、1个非空Fallback/7成员；Redmi真实Mihomo停止态/运行态各4阶段，共8/8有效`now`，固定/清除固定/非法成员拒绝通过；固定选择跨真实force-stop冷进程恢复并在清除后回到有效自动`now`，见`fallback-real-core-redmi-20261105.json`与`fallback-cold-process-redmi-20261106.json`。自然无效`now`经源码核对在合法非空组、断网或全不健康成员下不可自然产生，保留为核心语义边界，不记伪造注入为通过。 |
 | 8 | 纯代理冷恢复、首次安装VPN授权、蜂窝、第三方、Always-on OEM | 既有纯代理/Always-on/首次安装VPN证据保留；本组官方MacroDroid6.1.5在公开0.1.3上前台Activity启停5次通过，重复START保持同一服务。Tasker/后台定时/开机/其他OEM未验，Redmi蜂窝恢复已验，生产Always-on状态仍UNKNOWN。 |
-| 9 | 完整Flutter视觉与常用交互 | 043～047 的 8/8、048 的 6/6与冷恢复1/1、049图标集3/3、050/051 Provider各1/1及052图标集空态Flutter同状态对照1/1均有POCO证据。非空Flutter图库、050/051 Provider同态运行对照、其他子页/面板及完整自然转场仍待。 |
+| 9 | 完整Flutter视觉与常用交互 | 043～047 的 8/8、048 的 6/6与冷恢复1/1、049图标集3/3、050/051 Provider各1/1、052空态Flutter对照1/1、053非空图标集/搜索同态对照5/5均有POCO证据。050/051 Provider同态运行对照、NTP/Sniffer等其他子页/面板及完整自然转场仍待。 |
 | 10 | 实时背景/触点光效、玻璃品质、8MiB正文及连续动效性能 | POCO 已捕获菜单首开和收回的线程轨迹。首开样本以主线程工作为主，收回包括应用超时和缓冲积压，需继续定位并对照优化效果。8 MiB 正文性能继续暂缓，玻璃默认关闭。 |
 | 11 | API24/25/31/32及低API核心/VPN/实网、端到端回归、CI/签名/Release/更新资产 | 0.1.7标签CI、正式证书/SHA及Release Latest已回验；Release APK已下载核对，未安装到真机。版本检查和GitHub跳转已完成，不再推进应用内下载/安装。低API真机、其余升级矩阵及其他OEM边界单列。 |
 

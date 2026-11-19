@@ -25,6 +25,19 @@ internal object AppGlyphs {
         GlyphCircle(15.2f, 8.8f, 1.5f, role = GlyphRole.detail, solid = true),
     )) }
 
+    // 作者 long：图库预览没有可读图片时沿用 Flutter 的相册占位，不能把图标名首字误作已载入的图像。
+    val photos by lazy { AppGlyph(listOf(
+        GlyphBox(3f, 6.4f, 17.6f, 21f, 2.6f),
+        GlyphPolyline(listOf(
+            GlyphVertex(6.4f, 3f), GlyphVertex(21f, 3f, 2.6f), GlyphVertex(21f, 17.6f),
+        ), role = GlyphRole.line),
+        GlyphPolyline(listOf(
+            GlyphVertex(3f, 17.2f), GlyphVertex(7.8f, 12.4f, .8f),
+            GlyphVertex(12.2f, 16.8f, .8f), GlyphVertex(14f, 15f, .8f), GlyphVertex(17.6f, 18.6f),
+        ), role = GlyphRole.detail),
+        GlyphCircle(13.4f, 10.6f, 1.4f, role = GlyphRole.detail, solid = true),
+    )) }
+
     val proxies by lazy { AppGlyph(listOf(
     GlyphCircle(12f, 12f, 8.8f),
     GlyphOval(8.2f, 3.2f, 15.8f, 20.8f, role = GlyphRole.detail),

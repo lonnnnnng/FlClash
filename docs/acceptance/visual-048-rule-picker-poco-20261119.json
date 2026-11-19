@@ -171,10 +171,66 @@
       },
       "verifiedTraces": 6
     },
+    "frameThreadAttribution": {
+      "sourceTraceDirectory": "../acceptance-artifacts/menu-performance-poco-20261118/vis048-perfetto-clean-z97gep21",
+      "query": {
+        "file": "../acceptance-artifacts/menu-performance-poco-20261118/vis048-perfetto-clean-z97gep21/frame-thread-attribution.sql",
+        "sha256": "c3817bd2532976b107ac5a187376f943efeb2151fe87cca490ee13bc886518d0",
+        "method": "Join all marked popup FrameTimeline rows to Choreographer#doFrame and RenderThread DrawFrames by surface_frame_token; intersect matching slices with sched and thread_state."
+      },
+      "outputs": {
+        "dark": {
+          "file": "../acceptance-artifacts/menu-performance-poco-20261118/vis048-perfetto-clean-z97gep21/dark-frame-thread-attribution.csv",
+          "rows": 449,
+          "sha256": "a0f73f6f250416280b33576ef682919595605da1c7d947e3624c5c4310be35da",
+          "openFrames": 125,
+          "closeFrames": 324,
+          "closeMatchedUiAndRenderThreadSlices": 320
+        },
+        "light": {
+          "file": "../acceptance-artifacts/menu-performance-poco-20261118/vis048-perfetto-clean-z97gep21/light-frame-thread-attribution.csv",
+          "rows": 456,
+          "sha256": "633b548a5af2a141ee7464e22d6fc30cfbc437cb01588cc312e6500017a4f07f",
+          "openFrames": 130,
+          "closeFrames": 326,
+          "closeMatchedUiAndRenderThreadSlices": 320
+        }
+      },
+      "closeFrameSummary": {
+        "dark": {
+          "appDeadlineMissed": 18,
+          "dropped": 16,
+          "bufferStuffing": 232,
+          "maxFrameMs": 43.208,
+          "deadlineUiSchedRunningMsP50P95Max": [11.727, 18.063, 21.367],
+          "deadlineRenderThreadSchedRunningMsP50P95Max": [5.364, 7.844, 8.282],
+          "droppedUiSchedRunningMsP50P95Max": [9.567, 11.213, 19.981],
+          "droppedRenderThreadSchedRunningMsP50P95Max": [0.674, 1.11, 1.118]
+        },
+        "light": {
+          "appDeadlineMissed": 18,
+          "dropped": 18,
+          "bufferStuffing": 235,
+          "maxFrameMs": 43.751,
+          "deadlineUiSchedRunningMsP50P95Max": [14.277, 19.178, 19.83],
+          "deadlineRenderThreadSchedRunningMsP50P95Max": [5.409, 7.499, 8.841],
+          "droppedUiSchedRunningMsP50P95Max": [8.065, 19.472, 19.582],
+          "droppedRenderThreadSchedRunningMsP50P95Max": [0.625, 1.035, 1.052]
+        },
+        "classificationCategoriesMayOverlap": true
+      },
+      "interpretation": "Observed App Deadline Missed close frames contain elevated UI and RenderThread scheduled CPU. Dropped frames have low RenderThread scheduled CPU in both themes, so the trace does not support RenderThread as the dominant cause of those dropped frames. This is partial per-frame attribution, not a complete root-cause finding.",
+      "limits": [
+        "The source traces discarded 6 dark and 7 light chunks despite successful final flush.",
+        "Four dark and six light close frames lack both token-matched thread slices.",
+        "FrameTimeline has no populated latched fence state and gpu_track has no captured GPU tracks; GPU/fence waiting cannot be ruled in or out.",
+        "Scheduled CPU overlap and thread states do not establish why a frame missed presentation; this motion-host trace is not a formal R8 comparison."
+      ]
+    },
     "limits": [
       "The trace APK pair precedes the final rule-picker ordering adjustment. Menu production code is identical in both pairs.",
       "Some chunks were discarded. Counts cover observed popup frames only and categories can overlap.",
-      "Slow first-open frames are dominated by app UI-thread work. Close frames include both app deadline misses and dropped/buffer-stuffed frames.",
+      "Slow first-open frames are dominated by app UI-thread work. The added full-frame close analysis only partially attributes thread activity and cannot establish GPU/fence or presentation root cause.",
       "ART wall-time samples point to path drawing. Samples are neither exact call counts nor a Release performance comparison."
     ]
   },

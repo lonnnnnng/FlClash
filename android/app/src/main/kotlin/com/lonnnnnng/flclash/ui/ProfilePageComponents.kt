@@ -1,7 +1,9 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -52,6 +54,7 @@ internal fun ProfileEditorPage(
     backTag: String = "profile_editor_back",
     bottomBar: (@Composable () -> Unit)? = null,
     topBarSearch: ProfileEditorSearchState? = null,
+    navigationButtonSurface: Boolean = false,
 ) {
     LocalEmbeddedProfilePage.current?.let { page ->
         EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar, topBarSearch)
@@ -107,9 +110,15 @@ internal fun ProfileEditorPage(
                                     Modifier.fillMaxWidth().height(44.dp).testTag("profile_top_search"))
                                 else Box(Modifier.testTag("profile_page_title")) { title() }
                             }
-                        } else Box(Modifier.testTag("profile_page_title")) { title() }
+                        } else Box(Modifier.padding(start = if (navigationButtonSurface) 8.dp else 0.dp)
+                            .testTag("profile_page_title")) { title() }
                     },
-                    navigationIcon = { IconButton(onClick = onDismissRequest, modifier = Modifier.testTag(backTag)) {
+                    navigationIcon = {
+                        val modifier = if (navigationButtonSurface) {
+                            Modifier.padding(start = 12.dp).size(44.dp)
+                                .background(dashboardCardColor(), CircleShape)
+                        } else Modifier
+                        IconButton(onClick = onDismissRequest, modifier = modifier.testTag(backTag)) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, modifier = Modifier.testTag("action:返回"))
                     } },
                     actions = {

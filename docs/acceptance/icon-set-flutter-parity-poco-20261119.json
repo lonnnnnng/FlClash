@@ -1,0 +1,139 @@
+{
+  "id": "KUI-VIS-053",
+  "date": "2026-11-19",
+  "reference": {
+    "package": "com.follow.clash",
+    "versionName": "0.9.3",
+    "versionCode": 2026112401,
+    "firstInstallTime": "2026-11-07 02:44:08",
+    "lastUpdateTime": "2026-11-07 02:44:08",
+    "installedUnmodified": true,
+    "runtimeHost": "../acceptance-artifacts/flutter-iconset-reference-host",
+    "sourcePath": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "sourceCheckoutHasGit": false,
+    "flutterSdk": "3.50.0",
+    "projectCiFlutterSdk": "3.47.6",
+    "referencePackageModified": false
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "screen": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "theme": "dark",
+    "glassEnabled": false,
+    "variant": "motionBenchmark"
+  },
+  "scope": {
+    "surface": "Non-empty icon-set preview, docked search and position restoration",
+    "flutterState": "A 40-item icon set in dark theme; searching for 37 shows only icon 37 and clearing search returns to the gallery.",
+    "kotlinVisualState": "A matching 40-item fixture for grid parity and search screenshots.",
+    "kotlinBehaviorFixture": "An 80-item fixture forces a real scroll to icon 60 before filtering, then checks the result column and restored item coordinates.",
+    "checks": [
+      "Compare the five-column gallery, title/back control, tile fallback glyph, labels and bottom search placement.",
+      "Filter the scrolled list to icon 37; the result is the only visible match, is in the first column and remains above the docked search bar.",
+      "Clear the query and verify icon 60 returns to its original vertical coordinate within 1 px while icon 0 stays off-screen.",
+      "Verify the non-empty gallery and group-picker names and selection in both themes."
+    ],
+    "productionNavigationHost": "Isolated Compose test Activity; the MainActivity route was not used for these captures.",
+    "productChanges": [
+      "Match the Flutter gallery density with a fixed column count derived from the available width.",
+      "Use the gallery-photo placeholder glyph when an icon has no URL.",
+      "Recreate the grid content layer when search enters or exits so filtered pixels do not retain the previous visible rows.",
+      "Keep the bottom search control and restore the pre-search LazyGrid anchor."
+    ]
+  },
+  "build": {
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:test :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "BUILD SUCCESSFUL",
+    "tasks": {
+      "actionable": 227,
+      "executed": 28,
+      "upToDate": 199
+    },
+    "jvmTests": {
+      "reported": 911,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cachedTasksIncluded": true
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 74
+    },
+    "apkSha256": {
+      "com.lonnnnnng.flclash.motion": "8ae8b057f488cb72fcee2ae5c5f7e66afb0d9f8a07b1d98f5ad6d14779408f06",
+      "com.lonnnnnng.flclash.motion.test": "ce054540a89c086166c9ea5762da0a4e347e78c0e35e3e67ea4ea1fc37426b24"
+    },
+    "installedFromLocalBuild": true
+  },
+  "instrumentation": {
+    "class": "ResourcesPageInstrumentedTest",
+    "tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedSeconds": 33.974,
+    "result": "OK (5 tests)",
+    "deviceXml": "android/app/build/outputs/androidTest-results/connected/motionBenchmark/TEST-POCO F2 Pro - 16.xml",
+    "gradleLog": "../acceptance-artifacts/icon-set-flutter-parity-poco-20261119/kotlin-final6/gradle-connected.log",
+    "runnerLog": "../acceptance-artifacts/icon-set-flutter-parity-poco-20261119/kotlin-final6/runner.log",
+    "runnerLogSha256": "7dc04d6c664e28b29201cf6bbaf593ecefd92acd451c91bcfd858ee6042d29e1"
+  },
+  "screenshots": {
+    "count": 21,
+    "dimensions": "1080x2400",
+    "allChunkIndicesSizesHashesAndPngSignaturesVerified": true,
+    "visuallyReviewed": true,
+    "manifest": "../acceptance-artifacts/icon-set-flutter-parity-poco-20261119/kotlin-final6/screenshots.json",
+    "manifestSha256": "e43bd53b17835e20eac15f3d8c8526bf41d176354867b0b96c2fb89b926f15cf",
+    "comparison": {
+      "flutterGallery": {
+        "file": "../acceptance-artifacts/flutter-iconset-reference-host/evidence/profile/icon-set-preview-dark.png",
+        "sha256": "2c17c571f27dd6a0f96c0d8ba7420252bcd246054763778787918f18636af027"
+      },
+      "kotlinGallery": {
+        "file": "../acceptance-artifacts/icon-set-flutter-parity-poco-20261119/kotlin-final6/icon_set_preview_nonempty_grid.png",
+        "sha256": "492c1196b24fb7a6d7d181760e14456f7d38c7ff498677d50a73024eb8faef32"
+      },
+      "flutterSearch37": {
+        "file": "../acceptance-artifacts/flutter-iconset-reference-host/evidence/profile/icon-set-search-37-dark.png",
+        "sha256": "76d4d9c47a80da9a73807a4d94cad3c1777e7b021a23208b8982f2d83ac1bd01"
+      },
+      "kotlinSearch37": {
+        "file": "../acceptance-artifacts/icon-set-flutter-parity-poco-20261119/kotlin-final6/icon_set_preview_docked_search.png",
+        "sha256": "e0b94c670020174d3da31776a7344867ea85eda3ce05dd02c89d54682ffa7bf6"
+      },
+      "flutterSearchBack": {
+        "file": "../acceptance-artifacts/flutter-iconset-reference-host/evidence/profile/icon-set-search-back-dark.png",
+        "sha256": "eaed3bdead023bc460ffec34173a90ecf844a7ba0e1656afb910c6e7dfd0bb26"
+      },
+      "kotlinPositionRestored": {
+        "file": "../acceptance-artifacts/icon-set-flutter-parity-poco-20261119/kotlin-final6/icon_set_preview_position_restored.png",
+        "sha256": "677926bb7857c02e56c9f5d90b3d349bb7ca24666b0bc27a3f2308b1d46f796b"
+      }
+    },
+    "result": "The dark 40-item grid, tile sizing, fallback art, title and bottom search placement closely match. The filtered state shows only icon 37 in the first column; the Kotlin 80-item test restores the prior scrolled position after clearing."
+  },
+  "cleanup": {
+    "motionAppAndTestPackagesUninstalled": true,
+    "relevantPackagesRemaining": [
+      "com.follow.clash"
+    ],
+    "referencePackageVersionAndInstallTimesUnchanged": true,
+    "runtimeServices": "none observed",
+    "rotationSettingsRestored": {
+      "accelerometer_rotation": 1,
+      "user_rotation": 0
+    },
+    "rootYaml": "not accessed"
+  },
+  "limits": [
+    "The Kotlin captures use an isolated Compose test Activity, not an end-to-end MainActivity route or Room-backed production icon source.",
+    "The Flutter comparison host uses a source copy without Git metadata, so its exact upstream commit cannot be independently verified; it ran Flutter 3.50.0 while the repository CI pins 3.47.6.",
+    "The visual comparison covers the dark 40-item fixture and query 37; it does not establish all themes, live remote icon loading, the full app navigation stack or complete page transitions."
+  ]
+}
