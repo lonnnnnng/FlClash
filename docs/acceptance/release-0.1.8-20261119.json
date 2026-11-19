@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-19",
+  "release": {
+    "tag": "kclash-v0.1.8",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.8",
+    "sourceCommit": "fa1c749dbd30a6ca758050249508788db89d7c42",
+    "workflowRunId": 44450143446,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44450143446",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-19T03:37:05Z",
+    "publishedAtAsiaShanghai": "2026-11-19T11:37:05+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.8-android-arm64-v8a.apk",
+        "size": 48477788,
+        "digest": "sha256:a74ad5ebb618cb4a6eac147b0e84e3571d0e59716a5432eddd0384fa7a7aa929",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.8/KClash-0.1.8-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 101,
+        "digest": "sha256:89ab0907a0b93e44a551543e6a7e406d40a9d794a360ca3664c55e9945087960",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.8/SHA256SUMS"
+      }
+    ]
+  },
+  "package": {
+    "versionName": "0.1.8",
+    "versionCode": 1008,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "abis": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "debuggable": false,
+    "remoteSha256Verified": true,
+    "sha256SumsVerified": true,
+    "signatureVerified": true
+  },
+  "ci": {
+    "result": "success",
+    "jobs": [
+      {
+        "name": "Verify KClash Android arm64",
+        "conclusion": "success"
+      },
+      {
+        "name": "Publish signed KClash release",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "localPreflight": {
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew test :app:assembleDebug :app:assembleRelease --no-daemon -Ptarget-platform=android-arm64 -PkclashVersionName=0.1.8 -PkclashVersionCode=1008",
+    "result": "BUILD SUCCESSFUL"
+  },
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "featureAcceptance": "KUI-VIS-053 was verified separately using the POCO motion package; release installation was not part of this request."
+  }
+}
