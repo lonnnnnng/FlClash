@@ -198,7 +198,7 @@ internal fun ProfileEditorDialog(
                             Icons.Outlined.Schedule, !saving, Modifier.testTag("custom_profile_ntp")) {
                             moreSection = "ntp"; onOpenMoreEditor(profile)
                         }
-                        ProfileSectionRow("Sniffer", overview?.let { if (it.snifferEnabled) "已启用" else "未启用" },
+                        ProfileSectionRow("域名嗅探", overview?.let { if (it.snifferEnabled) "已启用" else "未启用" },
                             Icons.Outlined.Radar, !saving, Modifier.testTag("custom_profile_sniffer")) {
                             moreSection = "sniffer"; onOpenMoreEditor(profile)
                         }

@@ -20,15 +20,15 @@ internal val ntpFields = listOf(
     MoreField("write-to-system", "写入系统", MoreFieldKind.TOGGLE, "false", "写入系统会同时设置系统时钟，Android 上不生效。"),
 )
 internal val snifferFields = listOf(
-    MoreField("enable", "状态", MoreFieldKind.TOGGLE, "false", "从连接内容中识别域名"),
-    MoreField("override-destination", "覆盖目标地址", MoreFieldKind.TOGGLE, "true", "使用嗅探出的域名作为连接目标"),
-    MoreField("force-dns-mapping", "强制 DNS 映射", MoreFieldKind.TOGGLE, "true"),
-    MoreField("parse-pure-ip", "嗅探纯 IP 连接", MoreFieldKind.TOGGLE, "true"),
-    MoreField("force-domain", "强制嗅探域名", MoreFieldKind.LIST, "[]"),
-    MoreField("skip-domain", "跳过嗅探域名", MoreFieldKind.LIST, "[]"),
-    MoreField("skip-src-address", "跳过源地址", MoreFieldKind.ADDRESSES, "[]"),
+    MoreField("enable", "状态", MoreFieldKind.TOGGLE, "false"),
+    MoreField("override-destination", "覆盖目标地址", MoreFieldKind.TOGGLE, "true"),
+    MoreField("force-dns-mapping", "强制DNS映射", MoreFieldKind.TOGGLE, "true", "强制 DNS 映射对通过 DNS 映射得到域名的连接也进行嗅探。"),
+    MoreField("parse-pure-ip", "解析纯IP", MoreFieldKind.TOGGLE, "true"),
+    MoreField("force-domain", "强制嗅探域名", MoreFieldKind.LIST, "[]", "强制嗅探域名中的域名同样会被嗅探，其余已有域名的连接不嗅探。"),
+    MoreField("skip-domain", "跳过域名", MoreFieldKind.LIST, "[]"),
+    MoreField("skip-src-address", "跳过来源地址", MoreFieldKind.ADDRESSES, "[]"),
     MoreField("skip-dst-address", "跳过目标地址", MoreFieldKind.ADDRESSES, "[]"),
-) + listOf("HTTP", "TLS", "QUIC").map { MoreField("sniff.$it", it, MoreFieldKind.PROTOCOL, "{}", "端口与独立目标设置") }
+) + listOf("HTTP", "TLS", "QUIC").map { MoreField("sniff.$it", it, MoreFieldKind.PROTOCOL, "{}") }
 
 internal fun moreFieldValue(root: JsonObject, field: MoreField): JsonElement? =
     if (field.kind == MoreFieldKind.PROTOCOL) root.getAsJsonObject("sniff")?.get(field.protocol) else root.get(field.key)

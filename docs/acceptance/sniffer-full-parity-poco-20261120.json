@@ -1,0 +1,516 @@
+{
+  "id": "KUI-VIS-056",
+  "date": "2026-11-20",
+  "status": "DONE-VERIFIED for named interaction and visual slices; exact full-page Flutter parity remains PARTIAL",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "screen": "1080x2400",
+    "fontScale": 1,
+    "orientation": "portrait",
+    "themes": "light/dark component; dark real MainActivity",
+    "glassEnabled": false
+  },
+  "changes": [
+    "Sniffer title/copy/group labels, eye empty-state material and position, toolbar actions and docked add panel.",
+    "Protocol summary and nullable target labels match the pinned Flutter source.",
+    "Port/domain/address list drafts with add/edit/validation/multi-select/delete/reorder/reset/quick edit/save/discard.",
+    "List and protocol-target save receipt survives saved-state restoration."
+  ],
+  "reference": {
+    "sourcePath": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "gitMetadata": false,
+    "sourceHashes": {
+      "lib/views/config/sniffer.dart": "fe4420b7a611e1dd9f6b68b83b37dad15896672d057eb8d9b3d439f4e95e7fa8",
+      "lib/views/config/override.dart": "1b1f2d81cfb2e161e3176848d17f0d46da170ba822614b1aba80bb4b43102c38",
+      "lib/features/form/list_edit_view.dart": "49c91d90d1ec13b24126a3b27df350675662c523edefe36a109e14979dbdb6a5",
+      "lib/features/form/selection_sheet.dart": "88fe22ee87606c457b62b8d0c2fe8650c552a7b40482b3d92c20671a78091335",
+      "lib/ui/icons/app_glyphs.dart": "4a2a252feea72f93a73538c1f874f6a477474b5483189ac429b47829c9efb029",
+      "plugins/prism_ui/lib/null_status.dart": "9529f18bfa85b2358ad43bb1ab6551053b02eb75f9f8f54ca2221382d80e784e",
+      "plugins/prism_ui/lib/sheet_header.dart": "b86eb3e100eca226010f2ce9ae1d7c949e01744f014737cc13ee2dea124eb4e7"
+    },
+    "host": "../acceptance-artifacts/flutter-sniffer-full-host-20261120",
+    "package": "com.lonnnnnng.kclash.reference.flutter_sniffer_full_reference",
+    "hostSourceSha256": "8c35ca48fcd1e4ca15673060271487d60f3b7aaf01d60c373f2a5c0d18a131fa",
+    "sdk": "3.50.0",
+    "upstreamCiSdk": "3.47.6",
+    "originalComFollowClashUntouched": true,
+    "quickEditorBlocked": "Isolated Flutter host: Bad state: RustLib is not initialized. Not counted as visual equivalence or upstream product defect."
+  },
+  "build": {
+    "sourceHashes": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppGlyphs.kt": "f16d4a385c68b8d0a556fa687ebe158272373292fbee5e985eaa10d429c00243",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/CustomProfileEditor.kt": "ef95981cbc92c8fda62a7f123e9888e1e49e8f3c60335e91a213d42fec45880b",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt": "bf1fd8002308f14e3af76a1105ff019f8db1ca0638ac0dde0cefdfd014f444e0",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreFields.kt": "714f17786bdc683d000de601e9f3452e9a516b0bfb9bde024ab14c16e49137b6",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileSearchField.kt": "1a3b749780fa03959626098a5a11f0441b9ed2cc316251fe218cf0674d3b1b9c",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ResourceOrderList.kt": "77235ccabcf80c78318bd4a7fde2d6de92c48bab108f4f2378e5d6d2ec8a6ab2",
+      "android/tests/instrumented/ProfileMoreActivityInstrumentedTest.kt": "9c338b3258cec1076a5b6601c79ffd30aaa59ccf1c67a987d1e7c68a68048dc7",
+      "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt": "fb9e49561e1930f9dc61e1f3c146a277a6d6f250f0849884d20374ac0877741f",
+      "android/tests/instrumented/ProfilesPageParityInstrumentedTest.kt": "c27bfc68e1c2e58b90f3f03b957cd79195b70df369964f07ca12ec2dc5c4aee3",
+      "android/tests/instrumented/VisualMotionNaturalInstrumentedTest.kt": "3127c34191fc13a5d70d44ca1a74002fdfe86ac517921fbf50f5e74f8781fef5",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MoreListEditor.kt": "b6c992ac080b1a1b20102eecfbb5334d1f4a912f1a8b20f9dee914607cc6c670",
+      "android/tests/instrumented/MainSnifferNaturalInstrumentedTest.kt": "100ffd9957eb98a5d4618a52670e7bb0151dfbcbc8b82109dceb26690a129812"
+    },
+    "jvmAppMotion": {
+      "tests": 618,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "installed": {
+      "com.lonnnnnng.flclash.motion": {
+        "sha256": "cb8124ce2721b389b53418df7464de560271cd149fc49bcdd07d291647c17a0b",
+        "bytes": 66287273,
+        "installedMatch": true
+      },
+      "com.lonnnnnng.flclash.motion.test": {
+        "sha256": "fe1a10b165ceb3090ad7f11a3513d44f96917c7fe12271478f11c876f23a2e03",
+        "bytes": 3140582,
+        "installedMatch": true
+      }
+    },
+    "release": {
+      "sha256": "1ba34da93de11ae90bf4d5e3be18c9494fa231ba315cfaadd644a987fe30b80e",
+      "signed": false,
+      "installed": false
+    },
+    "lint": {
+      "motionBenchmark": {
+        "Warning": 73,
+        "Hint": 14
+      },
+      "release": {
+        "Warning": 69,
+        "Hint": 13
+      }
+    },
+    "logs": {
+      "build9.log": "fa2e2c6054db3e51e6dd72b6bc545d45a439074066ca1e28e266359787a961fd",
+      "testbuild10.log": "fcc9c884231d02361d554f3cc942ce94c1de7856ba756b9fa78b05dcdb6abc26",
+      "release9.log": "a7d5e534394f66079333e8cb99da121fd633810ac8e707a75568d22275b4e86d"
+    }
+  },
+  "instrumentation": {
+    "final10": {
+      "tests": 28,
+      "passed": 28,
+      "failures": 0,
+      "skipped": 0,
+      "elapsedSeconds": 185.78,
+      "methods": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056DomainListDraftCancelAndClearRestoreInheritance",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "ntpAddsDefaultsValidatesEditsAndSavesOnlySelectedFields",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "snifferYamlValidationProtocolInheritanceAndExplicitEmptyStayDistinct",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis054SnifferAddPanelGroupsSearchAndSelectsProtocol",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "addDockCancelKeepsSheetAndDraftWithoutSaving",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis055NtpShortAddPanelLight",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "morePagesRenderEmptyAddFieldsProtocolYamlAndErrorsAcrossThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "changingSearchDuringExitDoesNotRetainAnEmptyProtocolGroup",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056SnifferListDraftValidationReorderAndReceipt",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056ListReceiptAfterStateRestorationClosesSavedDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056DestinationReceiptAfterStateRestorationClosesMenu",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "addSearchKeepsQueryAndLastSuccessfulChoiceClosesOnlyAfterSave",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "emptyStateAndConfiguredRowsCrossfadeWithoutLeavingOutgoingActionsEnabled",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "pendingDestinationIgnoresBackAndOutsideThenKeepsFailedChoiceForRetry",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "lastAdditionWaitsForAsyncReceiptAndFailedSaveCanRetry",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis055NtpShortAddPanelDark",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "successfulAdditionsCollapseIndependentlyAndFailureKeepsCandidate",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest",
+          "test": "bothResourcePagesSortInBothThemesAndRetainOrderOnSaveFailure",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOrderAndIconsInstrumentedTest",
+          "test": "viewportDragScrollsWithoutNewMovesCancelsAndCommitsOnlyOnDrop",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+          "test": "vis055ProxySelectionCheckAndMultiTermSearch",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+          "test": "vis055RuleSelectionCheckAndMultiTermSearch",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+          "test": "proxyBindingBottomSearchCancelKeepsLayerSelectionAndImeBoundary",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.DockedSearchInstrumentedTest",
+          "test": "ruleBindingBottomSearchCancelKeepsLayerSelectionAndImeBoundary",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfilesPageParityInstrumentedTest",
+          "test": "customMoreFieldsAndImportMenuWorkAcrossThemes",
+          "code": 0
+        }
+      ],
+      "log": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/instrumentation.log",
+      "logSha256": "c52896a2acfe322cab1547487204ac832519e493f14b0d5a5bec66081645e1c3",
+      "screenshotManifest": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/screenshots.json",
+      "manifestSha256": "be931f4502b3399f3de2b1a2a0f5bb1403bbcbdbf14ed0d766214854f590dd73",
+      "screenshotCount": 82,
+      "buildProvenance": {
+        "appBuild": "build9",
+        "testBuild": "testbuild10",
+        "installedApkSha256Recorded": true
+      }
+    },
+    "main-final9": {
+      "tests": 1,
+      "passed": 1,
+      "failures": 0,
+      "skipped": 0,
+      "elapsedSeconds": 47.291,
+      "methods": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.MainSnifferNaturalInstrumentedTest",
+          "test": "snifferPortsSaveReopenAndRapidBackUseRealNavigation",
+          "code": 0
+        }
+      ],
+      "log": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/main-final9/instrumentation.log",
+      "logSha256": "e9d03682061b495024fa5f668d90b81add322746b6ddb7b20badf40d2d5f6a76",
+      "screenshotManifest": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/main-final9/screenshots.json",
+      "manifestSha256": "8215bcb49875cf7ddb656e6bf5ed72c89f1ab8c2fee4645005246969bf653797",
+      "screenshotCount": 10,
+      "buildProvenance": {
+        "appBuild": "build9",
+        "testBuild": "build9",
+        "testApkSha256Recorded": false,
+        "limitation": "The test9 APK was replaced by test10 before a separate hash/source snapshot was saved. testbuild10 logs show production Kotlin tasks UP-TO-DATE and AndroidTest recompiled. The current natural test source is hashed; exact earlier test9 artifact identity is not independently established."
+      }
+    }
+  },
+  "realFlow": {
+    "status": "real-navigation=true;rapid-back=true;ime=true;ports=2;destination=false;reopen=true;activity-recreation=true;room-readback=true;source-unchanged=true",
+    "preservation": "rows-bodies-scripts-preferences-selection-preserved=true;own-row-and-file-removed=true;runtime=STOPPED",
+    "source": "authorized ../1.yaml copied over USB to isolated motion app, not uploaded online",
+    "runtime": "STOPPED",
+    "activityRecreation": "after persisted save and explicit reopen",
+    "inFlightSaveRestoration": "separate StateRestorationTester simulations; not real process death"
+  },
+  "screenshots": {
+    "total": 92,
+    "fullWindowCount": 88,
+    "nodeCrops": {
+      "more_add_query_after_exit": {
+        "width": 328,
+        "height": 959,
+        "sha256": "5ce1c2d16884ea718ecc4b1c93ec8094fc5c2042601b0aebb005a7d9e2bb087c"
+      },
+      "more_pending_destination_before": {
+        "width": 396,
+        "height": 397,
+        "sha256": "25bd908afe9f8652d92839168628ad8da88912102a5fa508b557fd88d386a675"
+      },
+      "more_pending_destination_during": {
+        "width": 396,
+        "height": 397,
+        "sha256": "67059a3682feab685770e26f59511e39d172b3588df3b3aaae5f23f3c587db07"
+      },
+      "more_add_two_leaving": {
+        "width": 964,
+        "height": 1109,
+        "sha256": "ab14c7daf41eaf8596aaab4ef14c1c5b338297ef4ff09aaed8c97e8dc730e61d"
+      }
+    },
+    "allPngChunksSizesHashesVerified": true,
+    "reviewedContactSheets": 12,
+    "sameThemeComparisons": 8,
+    "crossThemeListStructureComparisons": 1,
+    "comparisons": [
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/dark-empty.png",
+          "sha256": "e82e3b29749a7c5a303789645801a37a13398bf06e65f54022fcb8803ed75d10"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/vis054_sniffer_empty.png",
+          "sha256": "589d72126d7353bbe6cc3ec55f998116ef62aa875e5cda6ab616099fd5782161"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/light-empty.png",
+          "sha256": "8f375607bf6d114075f9fbef381c13b64b9a9dda862348e20e94fe52ca4eeb87"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/more_sniffer_empty_light.png",
+          "sha256": "fd65235d387ac760b004b51c56b6355201f985e7f35f6d418b19099ffa3fb663"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/dark-add.png",
+          "sha256": "065937e2aadf3c41ad25cf654edea16c452ce4470aa01eb3fb5465e9c9f48ded"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/vis054_sniffer_add_all.png",
+          "sha256": "845f0154edeb086508ff3719fc9151e307cbcb36fe84ade7b2333e479d4aa580"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/light-add.png",
+          "sha256": "6e8b3a0a7671857285bdae632d5f8225b0995b0c49a50d4363bf320c13bbcf3e"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/more_sniffer_add_light.png",
+          "sha256": "984f0d43c2ea39be519a860c4f71936b9e935911b4da14378b141417b634d1ab"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/dark-protocol2.png",
+          "sha256": "e7629a2c96431da23cc0ddaecccf92ff4d955d8a3201fb0674bf7b4dc5a7f05a"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/vis054_sniffer_http_page.png",
+          "sha256": "1b8f11c9f5080b9fed4f4c4b5d7dc202ae95ee803c18e4ce5c9a9e62fdd4df12"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/light-protocol.png",
+          "sha256": "b50227bbfefcefd87934430f65363cfa45f92898c7d5b6657d5a452d803ad7aa"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/more_sniffer_protocol_light.png",
+          "sha256": "7dd07dceb02e2ce637ec29789f0ee39db53eeebd695ca3fc32a5188f6564e1de"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/dark-ports-list-empty.png",
+          "sha256": "3dd01d82d390207a99f2cc5342adc374ba0bbdded92b18e63ef2037e8763e56b"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/vis056_ports_empty.png",
+          "sha256": "b2b19a0e127cc06e737c77cf5fd24f803ed176dc2aa3e5cbb54caff4ee0d1480"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/light-ports-empty.png",
+          "sha256": "c32b680f0b736abea856e9f2947e5589f6c9ed95be0a4370c84923b45b37fae2"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/final10/more_sniffer_ports_light.png",
+          "sha256": "0c6abbad29c0be8a904931ea7c14787e14e020b7c6e5e22e8ec50d22887b579a"
+        }
+      },
+      {
+        "flutter": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/flutter/light-two-ports.png",
+          "sha256": "555a3dddc1472cb44ef2fc454a3ea58b421cc90c72ac008e919a77af6978c294"
+        },
+        "kotlin": {
+          "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/main-final9/vis056_main_ports_draft.png",
+          "sha256": "b5b6db18ef1dd7a63f80bd3010e0495d9463606faebbb5c9edaf3d0536b0817e"
+        },
+        "scope": "Cross-theme non-empty list structure only, not same-theme visual equivalence"
+      }
+    ],
+    "limits": [
+      "Some natural-flow PNGs precede input display or settled IME detent; screenshots are not all stable terminal frames.",
+      "Final list and Room readback establish the saved values even where the ports_ime capture occurs before input text is drawn."
+    ]
+  },
+  "video": {
+    "passed": true,
+    "videoSha256": "2bb0d9a8f788f2c69d12941f051d895cca1985012593a2e92184ac6e1d12667c",
+    "bytes": 23431457,
+    "deviceCopyRemoved": true,
+    "hasScreenshots": true,
+    "performanceEvidence": false,
+    "path": "../acceptance-artifacts/sniffer-full-parity-poco-20261120/main-final9/natural-main.mp4",
+    "durationSeconds": 48.970944,
+    "originalPtsFrames": 1364,
+    "ptsManifestSha256": "779e3ce74af96a0aeb6c7ad91c9511f76d6a55d2e5911852619ee860ab1cee94",
+    "extractedWindows": {
+      "enter": {
+        "seconds": [
+          16,
+          19
+        ],
+        "retainedExtractedFrames": 39,
+        "sourcePtsCountInHalfOpenInterval": 77
+      },
+      "return": {
+        "seconds": [
+          40,
+          43
+        ],
+        "retainedExtractedFrames": 42,
+        "sourcePtsCountInHalfOpenInterval": 82
+      }
+    },
+    "reviewed": "Full-path contact sheet and 24 sampled retained frames; extracted folders contain 39/42 images, not all 77/82 source-PTS frames in the two windows. No synthetic frame interpolation was requested.",
+    "performanceClaim": false
+  },
+  "cleanup": {
+    "stagingFileRemovedAfterShaCheck": true,
+    "packages": [
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "returncode": 0,
+        "result": "Success",
+        "absent": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "returncode": 0,
+        "result": "Success",
+        "absent": true
+      },
+      {
+        "package": "com.lonnnnnng.kclash.reference.flutter_sniffer_full_reference",
+        "returncode": 0,
+        "result": "Success",
+        "absent": true
+      }
+    ],
+    "beforeAfterMatch": true,
+    "kclashServicesAbsent": true
+  },
+  "protectedRootYaml": {
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeNs": 1794392072317864361
+  },
+  "afterSnapshotSha256": "58d3c029d477d2a9ca4c701cdbe7cfd3eaa02ae456f4ea58fa956f2b58e681e7",
+  "nonFinalAttempts": [
+    {
+      "folder": "component1",
+      "result": "17/18; container matcher did not read descendant text; corrected to actual row order coordinates."
+    },
+    {
+      "folder": "main1",
+      "result": "Failed; first-start IP quality cache changed during snapshot and navigation entry was ambiguous; cleanup originally masked primary error. No production data restoration was forced."
+    },
+    {
+      "folder": "main3",
+      "result": "Same-name Dashboard config entry selected; narrowed to actual bottom navigation."
+    },
+    {
+      "folder": "main4",
+      "result": "Back before new page window took focus; await actual top title before rapid Back."
+    },
+    {
+      "folder": "main5/main7",
+      "result": "Fixed 900ms wait reached Back while target save/menu exit still active. Added Room receipt and popup absence conditions; no product Back change."
+    },
+    {
+      "folder": "component-final9",
+      "result": "27/29; domain candidate lookup corrected to real search, unrelated icon-gallery selected-semantics assertion preserved as existing harness mismatch."
+    },
+    {
+      "folder": "main8",
+      "result": "Natural flow and recording passed on earlier app before target pending restoration change; final app flow is main-final9."
+    }
+  ],
+  "knownRemaining": [
+    "Exact input dialog, quick editor and list toolbar visuals; empty-search artwork and parent clear-section extension.",
+    "Random Flutter illustration shapes/decorations, font metrics and pixel-level spacings.",
+    "Flutter reference quick-editor runtime initialization and matched natural-clock reference video.",
+    "Lossless menu Perfetto, RenderThread native attribution and formal signed R8 device performance."
+  ],
+  "releasePublished": false
+}

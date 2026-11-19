@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.service.ProfileNtpOverrides
@@ -367,7 +368,7 @@ class ProfileMoreEditorInstrumentedTest {
         waitGone("more_yaml_confirm")
         compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
         compose.onNodeWithTag("more_protocol_ports").performClick()
-        compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("8000-9000", substring = true)
+        compose.onNodeWithText("8000-9000").assertIsDisplayed()
         compose.onNodeWithTag("more_value_back").performClick()
         compose.onNodeWithTag("more_protocol_destination").performClick()
         compose.onNodeWithTag("more_protocol_destination_default").performClick()
@@ -444,7 +445,7 @@ class ProfileMoreEditorInstrumentedTest {
     @Test fun protocolPortsAndDestinationSaveIndependentlyAndEmptyPortsKeepProtocol() {
         section = "sniffer"; render(); add("sniff.HTTP")
         compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
-        compose.onNodeWithTag("more_protocol_ports").assertTextContains("默认端口", substring = true)
+        compose.onNodeWithTag("more_protocol_ports").assertTextContains("默认", substring = true)
         compose.onNodeWithTag("more_protocol_destination").performClick()
         compose.runOnIdle { reject = true }
         compose.onNodeWithTag("more_protocol_destination_false").performClick()
@@ -453,16 +454,20 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_protocol_destination_false").performClick()
         waitGone("more_protocol_destination_false")
         compose.onNodeWithTag("more_protocol_ports").performClick()
+        openQuickPorts()
         compose.onNodeWithTag("sniff_HTTP_ports").performTextReplacement("8080\n8000-9000")
+        compose.onNodeWithTag("more_list_quick_confirm").performClick()
         compose.onNodeWithTag("more_value_confirm").performClick()
         waitGone("more_value_confirm")
-        compose.onNodeWithTag("more_protocol_destination").assertTextContains("禁用", substring = true)
+        compose.onNodeWithTag("more_protocol_destination").assertTextContains("已关闭", substring = true)
         compose.runOnIdle { assertEquals(listOf("8080", "8000-9000"), savedSniffer?.sniff?.get("HTTP")?.ports) }
         compose.onNodeWithTag("more_protocol_ports").performClick()
+        openQuickPorts()
         compose.onNodeWithTag("sniff_HTTP_ports").performTextClearance()
+        compose.onNodeWithTag("more_list_quick_confirm").performClick()
         compose.onNodeWithTag("more_value_confirm").performClick()
         waitGone("more_value_confirm")
-        compose.onNodeWithTag("more_protocol_ports").assertTextContains("默认端口", substring = true)
+        compose.onNodeWithTag("more_protocol_ports").assertTextContains("默认", substring = true)
         compose.runOnIdle {
             assertEquals(emptyList<String>(), savedSniffer?.sniff?.get("HTTP")?.ports)
             assertEquals(false, savedSniffer?.sniff?.get("HTTP")?.overrideDestination)
@@ -538,6 +543,143 @@ class ProfileMoreEditorInstrumentedTest {
         } finally {
             compose.mainClock.autoAdvance = true
         }
+    }
+
+    private fun openQuickPorts() {
+        compose.onNodeWithTag("more_list_add_menu").performClick()
+        compose.onNodeWithTag("more_list_quick").performClick()
+    }
+
+    @Test fun vis056SnifferListDraftValidationReorderAndReceipt() {
+        section = "sniffer"; dark = true; render(); add("sniff.HTTP")
+        compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
+        compose.onNodeWithTag("more_protocol_ports").performClick()
+        compose.onNodeWithText("暂无数据").assertIsDisplayed()
+        capture("vis056_ports_empty")
+        fun addPort(value: String) {
+            compose.onNodeWithTag("more_list_add_menu").performClick()
+            compose.onNodeWithTag("more_list_add").performClick()
+            compose.onNodeWithTag("more_list_entry_input").performClick().performTextReplacement(value)
+            compose.onNodeWithTag("more_list_entry_confirm").performClick()
+        }
+        addPort("0")
+        compose.onNodeWithTag("more_list_input_error").assertIsDisplayed()
+        compose.onNodeWithTag("more_list_entry_input").performTextReplacement("8080")
+        compose.onNodeWithTag("more_list_entry_confirm").performClick()
+        addPort("8000-9000")
+        compose.runOnIdle { assertEquals(1, saveCalls) }
+        capture("vis056_ports_draft")
+        val first = compose.onNodeWithTag("more_list_order_0").fetchSemanticsNode().boundsInRoot
+        val second = compose.onNodeWithTag("more_list_order_1").fetchSemanticsNode().boundsInRoot
+        val listTop = compose.onNodeWithTag("more_list_order_list").fetchSemanticsNode().boundsInRoot.top
+        compose.onNodeWithTag("more_list_order_list").performTouchInput {
+            down(androidx.compose.ui.geometry.Offset(center.x, first.center.y - listTop))
+            advanceEventTime(700)
+            moveBy(androidx.compose.ui.geometry.Offset(0f, second.height * 1.2f), delayMillis = 300)
+            up()
+        }
+        assertTrue("拖动后第二项应排到第一项之前",
+            compose.onNodeWithText("8000-9000").fetchSemanticsNode().boundsInRoot.top <
+                compose.onNodeWithText("8080").fetchSemanticsNode().boundsInRoot.top)
+        compose.onNodeWithTag("more_value_back").performClick()
+        compose.onNodeWithText("保存修改？").assertIsDisplayed()
+        compose.onNodeWithText("继续编辑").performClick()
+        compose.onNodeWithTag("more_list_select_8080").performClick()
+        compose.onNodeWithTag("more_list_delete").performClick()
+        compose.onNodeWithTag("more_list_action_confirm").performClick()
+        compose.onNodeWithText("8080").assertDoesNotExist()
+        compose.onNodeWithTag("more_list_reset").performClick()
+        compose.onNodeWithTag("more_list_action_confirm").performClick()
+        compose.onNodeWithText("暂无数据").assertIsDisplayed()
+        openQuickPorts()
+        compose.onNodeWithTag("sniff_HTTP_ports").performClick().performTextReplacement("8080\n8000-9000")
+        awaitVisibleIme()
+        capture("vis056_ports_quick_ime")
+        compose.onNodeWithTag("more_list_quick_confirm").performClick()
+        compose.runOnIdle { holdSave = true }
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.onNodeWithTag("more_value_confirm").assertIsNotEnabled()
+        compose.onNodeWithTag("more_value_back").performClick()
+        compose.onNodeWithTag("more_list_saving").assertIsDisplayed()
+        compose.runOnIdle { completeHeldSave(false) }
+        compose.onNodeWithTag("more_value_error").assertIsDisplayed()
+        capture("vis056_ports_save_error")
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.runOnIdle { completeHeldSave(true) }
+        waitGone("more_value_confirm")
+        compose.onNodeWithTag("more_protocol_ports").assertTextContains("2 项", substring = true)
+        compose.runOnIdle { assertEquals(listOf("8080", "8000-9000"), savedSniffer?.sniff?.get("HTTP")?.ports) }
+        capture("vis056_ports_saved")
+    }
+
+    @Test fun vis056ListReceiptAfterStateRestorationClosesSavedDraft() {
+        val restore = StateRestorationTester(compose)
+        var initial by mutableStateOf(com.google.gson.JsonParser.parseString("{}").asJsonObject)
+        var saving by mutableStateOf(false)
+        var open by mutableStateOf(true)
+        var pending: com.google.gson.JsonObject? = null
+        var calls = 0
+        restore.setContent { KClashTheme {
+            if (open) MoreListEditor(snifferFields.first { it.key == "sniff.HTTP" }, initial,
+                com.google.gson.JsonParser.parseString("{\"sniff\":{\"HTTP\":{}}}").asJsonObject,
+                saving, null, { open = false }) { pending = it?.asJsonObject; calls++; saving = true }
+        } }
+        openQuickPorts()
+        compose.onNodeWithTag("sniff_HTTP_ports").performTextReplacement("8080")
+        compose.onNodeWithTag("more_list_quick_confirm").performClick()
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("more_list_saving").assertIsDisplayed()
+        compose.runOnIdle { initial = checkNotNull(pending); saving = false }
+        compose.waitUntil(5_000) { !open }
+        compose.runOnIdle { assertEquals(1, calls) }
+    }
+
+    @Test fun vis056DomainListDraftCancelAndClearRestoreInheritance() {
+        section = "sniffer"; render()
+        compose.onNodeWithTag("profile_more_empty_add").performClick()
+        compose.onNodeWithTag("profile_more_add_search").performTextReplacement("force-domain")
+        compose.onNodeWithTag("more_add_force-domain").performClick()
+        compose.onNodeWithTag("profile_more_add_done").performClick()
+        compose.onNodeWithTag("more_open_force-domain").performClick()
+        compose.onNodeWithTag("more_list_add_menu").performClick()
+        compose.onNodeWithTag("more_list_quick").performClick()
+        compose.onNodeWithTag("more_force-domain_value").performTextReplacement("example.test")
+        compose.onNodeWithTag("more_list_quick_back").performClick()
+        compose.onNodeWithText("放弃快速编辑？").assertIsDisplayed()
+        compose.onNodeWithText("继续编辑").performClick()
+        compose.onNodeWithTag("more_list_quick_confirm").performClick()
+        compose.runOnIdle { assertEquals(emptyList<String>(), savedSniffer?.forceDomain) }
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        waitGone("more_value_confirm")
+        compose.runOnIdle { assertEquals(listOf("example.test"), savedSniffer?.forceDomain) }
+        compose.onNodeWithTag("more_open_force-domain").performClick()
+        compose.onNodeWithTag("more_list_select_example.test").performClick()
+        compose.onNodeWithTag("more_list_delete").performClick()
+        compose.onNodeWithTag("more_list_action_confirm").performClick()
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.onNodeWithTag("profile_more_empty").assertIsDisplayed()
+        compose.runOnIdle { assertNull(savedSniffer?.forceDomain) }
+    }
+
+    @Test fun vis056DestinationReceiptAfterStateRestorationClosesMenu() {
+        val restore = StateRestorationTester(compose)
+        section = "sniffer"
+        state = state.copy(sniffer = ProfileSnifferOverrides(sniff = mapOf("HTTP" to com.lonnnnnng.flclash.service.ProfileSniffProtocolOverrides())))
+        restore.setContent { KClashTheme {
+            ProfileMoreEditor(state, "sniffer", "", {}, { ntp, sniffer ->
+                pendingSave = ntp to sniffer; state = state.copy(isSaving = true); saveCalls++
+            })
+        } }
+        compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
+        compose.onNodeWithTag("more_protocol_destination").performClick()
+        compose.onNodeWithTag("more_protocol_destination_false").performClick()
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("more_protocol_destination_false").assertIsNotEnabled()
+        compose.runOnIdle { completeHeldSave(true) }
+        waitGone("more_protocol_destination_false")
+        compose.onNodeWithTag("more_protocol_destination").assertTextContains("已关闭", substring = true)
+        compose.runOnIdle { assertEquals(1, saveCalls) }
     }
 
     private fun render() {

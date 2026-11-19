@@ -28,7 +28,8 @@ internal data class ResourceOrderItem(val id: String, val title: String, val sub
 
 /** 作者 long：规则资源和图库共用视口手势；整行被回收或换位后仍可拖动，只有松手才提交完整顺序。 */
 @Composable
-internal fun ResourceOrderList(rows: List<ResourceOrderItem>, saving: Boolean, tag: String, onReorder: (List<String>) -> Unit, modifier: Modifier = Modifier) {
+internal fun ResourceOrderList(rows: List<ResourceOrderItem>, saving: Boolean, tag: String, onReorder: (List<String>) -> Unit,
+    modifier: Modifier = Modifier, compactRows: Boolean = false, rowContent: (@Composable (ResourceOrderItem) -> Unit)? = null) {
     val list = rememberLazyListState()
     val density = LocalDensity.current.density
     val owner = LocalLifecycleOwner.current
@@ -96,8 +97,15 @@ internal fun ResourceOrderList(rows: List<ResourceOrderItem>, saving: Boolean, t
             Surface(Modifier.fillMaxWidth().zIndex(if (picked) 1f else 0f).graphicsLayer {
                 translationY = if (picked) top - (list.layoutInfo.visibleItemsInfo.firstOrNull { it.key == id }?.offset ?: top.toInt()) else 0f
             }.testTag("${tag}_order_$id"),
-                color = if (picked) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow) {
-                Row(Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                shape = if (compactRows) AppSuperellipseShape(
+                    topStart = if (index == 0) 24.dp else 0.dp, topEnd = if (index == 0) 24.dp else 0.dp,
+                    bottomStart = if (index == preview.lastIndex) 24.dp else 0.dp, bottomEnd = if (index == preview.lastIndex) 24.dp else 0.dp) else androidx.compose.ui.graphics.RectangleShape,
+                color = if (picked) MaterialTheme.colorScheme.surfaceContainerHigh else if (compactRows) dashboardCardColor() else MaterialTheme.colorScheme.surfaceContainerLow) {
+                if (rowContent != null) Box {
+                    rowContent(row)
+                    if (index < preview.lastIndex) HorizontalDivider(Modifier.align(Alignment.BottomCenter).padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
+                } else Row(Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                     row.icon?.let { ProfileGroupIcon(it, row.title, Modifier.padding(end = 12.dp).size(32.dp)) }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(row.title, maxLines = 1, overflow = TextOverflow.Ellipsis)

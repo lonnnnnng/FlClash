@@ -67,7 +67,7 @@ class ProfileMoreActivityInstrumentedTest {
             compose.onNodeWithTag("custom_profile_sniffer").performClick()
             compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
             compose.onNodeWithTag("more_protocol_ports").performClick()
-            compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("8000-9000", substring = true)
+            compose.onNodeWithText("8000-9000").assertIsDisplayed()
             compose.onNodeWithTag("more_value_back").performClick()
             compose.onNodeWithTag("more_protocol_back").performClick()
             compose.onNodeWithTag("profile_more_editor_back").performClick()

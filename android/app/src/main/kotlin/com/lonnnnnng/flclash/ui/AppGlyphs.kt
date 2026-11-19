@@ -2,6 +2,18 @@ package com.lonnnnnng.flclash.ui
 
 // 作者 long：坐标直接移植 main:lib/ui/icons/app_glyphs.dart，保持上游图形语义与24单位网格；渲染规则见AppGlyph。
 internal object AppGlyphs {
+    // 作者 long：列表空态与快捷编辑沿用固定Flutter资源盒和纸笔几何，避免用配置文件图标混淆页面语义。
+    val resources by lazy { AppGlyph(listOf(
+        GlyphBox(3f, 3.5f, 21f, 8.5f, 1.8f), GlyphBox(4.5f, 10.8f, 19.5f, 20.5f, 2.2f),
+        GlyphPolyline(listOf(GlyphVertex(10f, 14.2f), GlyphVertex(14f, 14.2f)), role = GlyphRole.detail),
+    )) }
+    val compose by lazy { AppGlyph(listOf(
+        GlyphPolyline(listOf(GlyphVertex(9.4f, 6.2f), GlyphVertex(4f, 6.2f, 2.5f),
+            GlyphVertex(4f, 20.2f, 2.5f), GlyphVertex(18f, 20.2f, 2.5f), GlyphVertex(18f, 14.8f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(9f, 15.2f, 1f), GlyphVertex(13.75f, 13.95f, 1f),
+            GlyphVertex(20.75f, 6.95f, 1.5f), GlyphVertex(17.25f, 3.45f, 1.5f), GlyphVertex(10.25f, 10.45f, 1f)), closed = true),
+        GlyphPolyline(listOf(GlyphVertex(13.75f, 6.95f), GlyphVertex(17.25f, 10.45f)), role = GlyphRole.detail),
+    )) }
     // 作者 long：NTP空态沿用固定Flutter be847366的clock/requests几何，不能用系统时钟图标替换复合插图。
     val clock by lazy { AppGlyph(listOf(
         GlyphCircle(12f, 12f, 8.8f),

@@ -30,9 +30,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun ProfileSearchField(value: String, onChange: (String) -> Unit, tag: String,
     placeholder: String = "搜索", enabled: Boolean = true, modifier: Modifier = Modifier,
-    height: Dp = 56.dp, onFocusChange: (Boolean) -> Unit = {}) {
+    height: Dp = 56.dp, onFocusChange: (Boolean) -> Unit = {},
+    containerColor: androidx.compose.ui.graphics.Color = dashboardCardColor()) {
     val keyboard = LocalSoftwareKeyboardController.current
-    Surface(modifier, shape = AppSuperellipseShape(height / 2), color = dashboardCardColor()) {
+    Surface(modifier, shape = AppSuperellipseShape(height / 2), color = containerColor) {
         Row(Modifier.fillMaxWidth().height(height), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.width(41.dp), contentAlignment = Alignment.Center) {
                 AppGlyphIcon(AppGlyphs.search, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -68,7 +69,8 @@ internal val DockedSearchEasing = Easing { fraction ->
 /** 作者 long：下沿搜索在本窗口持有焦点；清空保留输入，取消只结束搜索，不触发选择、保存或退出父页。 */
 @Composable
 internal fun DockedProfileSearch(value: String, onChange: (String) -> Unit, tag: String,
-    placeholder: String = "搜索", enabled: Boolean = true, modifier: Modifier = Modifier) {
+    placeholder: String = "搜索", enabled: Boolean = true, modifier: Modifier = Modifier,
+    containerColor: androidx.compose.ui.graphics.Color = dashboardCardColor()) {
     var focused by remember { mutableStateOf(false) }
     val active = focused || value.isNotEmpty()
     val progress by animateFloatAsState(if (active) 1f else 0f,
@@ -78,13 +80,13 @@ internal fun DockedProfileSearch(value: String, onChange: (String) -> Unit, tag:
     BoxWithConstraints(modifier.fillMaxWidth().height(48.dp).testTag("${tag}_dock")) {
         ProfileSearchField(value, onChange, tag, placeholder, enabled,
             Modifier.width((maxWidth - 60.dp * progress.coerceAtLeast(0f)).coerceAtLeast(0.dp)),
-            height = 48.dp, onFocusChange = { focused = it })
+            height = 48.dp, onFocusChange = { focused = it }, containerColor = containerColor)
         if (active || progress > .001f) {
             Surface(Modifier.align(Alignment.CenterEnd).size(48.dp).graphicsLayer {
                 translationX = 24.dp.toPx() * (1f - progress)
                 scaleX = progress.coerceAtLeast(0f); scaleY = scaleX
                 alpha = ((progress - .5f) / .4f).coerceIn(0f, 1f)
-            }, shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
+            }, shape = AppSuperellipseShape(24.dp), color = containerColor) {
                 IconButton(onClick = { onChange(""); focus.clearFocus(force = true); keyboard?.hide() },
                     enabled = enabled && active, modifier = Modifier.testTag("${tag}_cancel")) {
                     AppGlyphIcon(AppGlyphs.close, Modifier.size(24.dp))

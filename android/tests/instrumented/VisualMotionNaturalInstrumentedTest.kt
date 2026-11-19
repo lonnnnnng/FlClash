@@ -104,7 +104,7 @@ class VisualMotionNaturalInstrumentedTest {
         suffix = if (dark) "dark" else "light"
         ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
             scenario.onActivity { it.dark = dark; it.moreSection = "sniffer"; it.showMoreEditor = true }
-            click("添加设置项"); await("完成"); settle(); capture("dock_idle")
+            click("添加设置项"); await("添加设置项"); settle(); capture("dock_idle")
             fun field() = checkNotNull(root()?.let { nodes(it).firstOrNull { node -> node.isEditable } })
             fun text(value: String) {
                 assertTrue(field().performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
@@ -130,14 +130,14 @@ class VisualMotionNaturalInstrumentedTest {
                     ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == true
             }
             assertTrue("自然触点必须实际唤起IME", imeShown)
-            event("dock-cancel"); cancel(); settle(); await("完成")
+            event("dock-cancel"); cancel(); settle(); await("添加设置项")
             assertTrue(field().text.isNullOrEmpty())
             scenario.onActivity { assertEquals(0, it.moreSaveRequests); assertTrue(it.showMoreEditor) }
             capture("dock_cancel")
             event("dock-reopen-select"); tap(bounds(field())); text("HTTP"); await("HTTP"); settle()
             click("HTTP"); await("无搜索结果"); settle()
             scenario.onActivity { assertEquals(1, it.moreSaveRequests) }
-            cancel(); settle(); click("完成"); awaitGone("完成"); await("HTTP"); settle()
+            cancel(); settle(); closeMoreAdd(); awaitGone("添加设置项"); await("HTTP"); settle()
             capture("dock_parent")
             scenario.onActivity { assertEquals(1, it.moreSaveRequests) }
             event("dock-completed")
@@ -239,7 +239,7 @@ class VisualMotionNaturalInstrumentedTest {
         ActivityScenario.launch(VisualMotionTestActivity::class.java).use { scenario ->
             scenario.onActivity { it.showMoreEditor = true }
             await("暂无设置项")
-            click("添加设置项"); click("服务器"); awaitGone("服务器"); click("完成")
+            click("添加设置项"); click("服务器"); awaitGone("服务器"); closeMoreAdd()
             await("清除本分区覆盖"); settle()
             capture("vis043_ntp_fields")
             click("清除本分区覆盖"); click("清除"); await("暂无设置项"); settle()
@@ -259,7 +259,7 @@ class VisualMotionNaturalInstrumentedTest {
             click("服务器"); awaitGone("服务器"); settle()
             click("端口"); awaitGone("端口"); settle()
             assertNotNull(find("同步间隔（分钟）"))
-            click("完成"); awaitGone("完成")
+            closeMoreAdd(); awaitGone("添加设置项")
             await("服务器"); await("端口")
         }
     }
@@ -568,6 +568,12 @@ class VisualMotionNaturalInstrumentedTest {
         while(SystemClock.uptimeMillis()<deadline) { if(find(value)==null)return;SystemClock.sleep(50) }
         capture("failure")
         error("菜单退出后仍存在 $value")
+    }
+    private fun closeMoreAdd() {
+        await("添加设置项"); settle()
+        val title = bounds(checkNotNull(find("添加设置项")))
+        val density = ins.targetContext.resources.displayMetrics.density
+        tap(Rect((24 * density).toInt(), title.top, (60 * density).toInt(), title.bottom))
     }
     private fun click(value:String){await(value);tap(bounds(checkNotNull(find(value))))}
     private fun tap(rect:Rect){

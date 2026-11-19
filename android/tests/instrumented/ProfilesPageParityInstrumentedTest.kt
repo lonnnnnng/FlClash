@@ -167,7 +167,10 @@ class ProfilesPageParityInstrumentedTest {
                 compose.onNodeWithTag("profile_more_add_done").performClick()
                 compose.onNodeWithTag("more_open_sniff.HTTP").performScrollTo().performClick()
                 compose.onNodeWithTag("more_protocol_ports").performClick()
+                compose.onNodeWithTag("more_list_add_menu").performClick()
+                compose.onNodeWithTag("more_list_quick").performClick()
                 compose.onNodeWithTag("sniff_HTTP_ports").performTextInput("80\n8000-9000")
+                compose.onNodeWithTag("more_list_quick_confirm").performClick()
                 compose.onNodeWithTag("more_value_confirm").performClick()
                 compose.onNodeWithTag("more_protocol_back").performClick()
             }
