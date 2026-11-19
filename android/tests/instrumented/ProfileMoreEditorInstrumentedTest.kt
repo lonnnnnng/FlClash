@@ -68,6 +68,10 @@ class ProfileMoreEditorInstrumentedTest {
         section = "sniffer"; render()
         compose.onNodeWithTag("profile_more_empty_add").performClick()
         compose.onNodeWithTag("profile_more_add_search").performTextReplacement("HTTP")
+        awaitVisibleIme()
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        compose.waitForIdle()
+        android.os.SystemClock.sleep(500)
         val headerHeight = compose.onNodeWithTag("more_add_header_true").fetchSemanticsNode().boundsInRoot.height
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag("more_add_sniff.HTTP").performClick()
@@ -555,6 +559,7 @@ class ProfileMoreEditorInstrumentedTest {
     private fun openQuickPorts() {
         compose.onNodeWithTag("more_list_add_menu").performClick()
         compose.onNodeWithTag("more_list_quick").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("more_list_quick_back").fetchSemanticsNodes().isNotEmpty() }
     }
 
     @Test fun vis056SnifferListDraftValidationReorderAndReceipt() {
@@ -566,6 +571,7 @@ class ProfileMoreEditorInstrumentedTest {
         fun addPort(value: String) {
             compose.onNodeWithTag("more_list_add_menu").performClick()
             compose.onNodeWithTag("more_list_add").performClick()
+            compose.waitUntil(5_000) { compose.onAllNodesWithTag("more_list_entry_input").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("more_list_entry_input").performClick().performTextReplacement(value)
             compose.onNodeWithTag("more_list_entry_confirm").performClick()
         }
@@ -651,6 +657,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_open_force-domain").performClick()
         compose.onNodeWithTag("more_list_add_menu").performClick()
         compose.onNodeWithTag("more_list_quick").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("more_force-domain_value").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("more_force-domain_value").performTextReplacement("example.test")
         compose.onNodeWithTag("more_list_quick_back").performClick()
         compose.runOnIdle { assertEquals(emptyList<String>(), savedSniffer?.forceDomain) }
@@ -696,6 +703,7 @@ class ProfileMoreEditorInstrumentedTest {
             compose.onNodeWithTag("more_list_add_menu").performClick()
             capture("vis057_add_menu_$theme")
             compose.onNodeWithTag("more_list_add").performClick()
+            compose.waitUntil(5_000) { compose.onAllNodesWithTag("more_list_entry_input").fetchSemanticsNodes().isNotEmpty() }
             capture("vis057_entry_$theme")
             compose.onNodeWithTag("more_list_entry_confirm").performClick()
             compose.onNodeWithTag("more_list_input_error").assertTextEquals("值不能为空")
@@ -706,6 +714,7 @@ class ProfileMoreEditorInstrumentedTest {
             compose.onNodeWithTag("more_list_entry_confirm").performClick()
             compose.onNodeWithTag("more_list_add_menu").performClick()
             compose.onNodeWithTag("more_list_add").performClick()
+            compose.waitUntil(5_000) { compose.onAllNodesWithTag("more_list_entry_input").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("more_list_entry_input").performTextReplacement("8080")
             compose.onNodeWithTag("more_list_entry_confirm").performClick()
             compose.onNodeWithTag("more_list_input_error").assertTextEquals("值当前已存在")
@@ -721,14 +730,19 @@ class ProfileMoreEditorInstrumentedTest {
             compose.onNodeWithTag("more_list_quick_menu").performClick()
             capture("vis057_quick_menu_$theme")
             compose.onNodeWithTag("more_list_quick_undo").performClick()
+        waitGone("more_list_quick_undo")
             compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("8080\n8000-9000")
             compose.onNodeWithTag("more_list_quick_menu").performClick()
             compose.onNodeWithTag("more_list_quick_redo").performClick()
+        waitGone("more_list_quick_redo")
             compose.onNodeWithTag("sniff_HTTP_ports").assertTextContains("443\n8443")
             compose.onNodeWithTag("more_list_quick_menu").performClick()
-            compose.onNodeWithTag("more_list_quick_size_24").performClick()
+            compose.onNodeWithTag("more_list_quick_sizes").performClick()
+            compose.onNodeWithTag("more_list_quick_size_20").performClick()
+            waitGone("more_list_quick_size_20")
             compose.onNodeWithTag("more_list_quick_menu").performClick()
             compose.onNodeWithTag("more_list_quick_wrap").performClick()
+        waitGone("more_list_quick_wrap")
             compose.onNodeWithTag("profile_top_search_open").performClick()
             compose.onNodeWithTag("profile_top_search_input").performTextReplacement("8443")
             compose.onNodeWithTag("sniff_HTTP_ports").assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.TextSelectionRange, androidx.compose.ui.text.TextRange(4, 8)))
@@ -767,6 +781,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("profile_top_search_close").performClick()
         compose.onNodeWithTag("more_list_quick_menu").performClick()
         compose.onNodeWithTag("more_list_quick_undo").performClick()
+        waitGone("more_list_quick_undo")
         compose.onNodeWithTag("quick_text").assertTextContains("8080")
         compose.onNodeWithTag("more_list_quick_back").performClick()
         compose.runOnIdle { assertEquals("", applied) }
@@ -779,6 +794,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("quick_long").performTextReplacement("prefix-".repeat(70) + "needle")
         compose.onNodeWithTag("more_list_quick_menu").performClick()
         compose.onNodeWithTag("more_list_quick_wrap").performClick()
+        waitGone("more_list_quick_wrap")
         compose.onNodeWithTag("profile_top_search_open").performClick()
         compose.onNodeWithTag("profile_top_search_input").performTextReplacement("needle")
         compose.waitForIdle()
@@ -789,6 +805,111 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("profile_top_search_close").performClick()
         compose.onNodeWithTag("more_list_quick_back").performClick()
         compose.runOnIdle { assertEquals(text, applied) }
+    }
+
+    @Test fun vis058NestedQuickMenuBackOutsideAndDelayedAction() {
+        var content by mutableStateOf("8080\n8000-9000")
+        var changes = 0
+        compose.setContent { KClashTheme(darkTheme = dark) {
+            MoreListQuickEditor("端口", content, "vis058_content", { content = it; changes++ }, {}, {})
+        } }
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark" }
+            compose.onNodeWithTag("more_list_quick_menu").performClick()
+            compose.onNodeWithTag("more_list_quick_undo").assertIsNotEnabled()
+            capture("vis058_menu_root_$theme")
+            compose.onNodeWithTag("more_list_quick_sizes").performClick()
+            capture("vis058_menu_size_$theme")
+            compose.onNodeWithTag("more_list_quick_size_18").assertIsDisplayed()
+            InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+            waitGone("more_list_quick_size_18")
+            compose.onNodeWithTag("more_list_quick_sizes").assertIsDisplayed()
+            compose.onNodeWithTag("more_list_quick_sizes").performClick()
+            compose.onNodeWithTag("more_list_quick_size_back").performClick()
+            waitGone("more_list_quick_size_18")
+            compose.onNodeWithTag("more_list_quick_sizes").performClick()
+            compose.onNodeWithTag("more_list_quick_size_18").performClick()
+            waitGone("more_list_quick_size_18")
+            capture("vis058_editor_large_$theme")
+            compose.onNodeWithTag("more_list_quick_menu").performClick()
+            compose.onNodeWithTag("more_list_quick_sizes").assertIsDisplayed()
+            compose.onNodeWithTag("more_list_quick_sizes").performClick()
+            // 作者 long：外点从任意子层关闭全部，不应用当前字号候选，也不能把下层正文变成编辑动作。
+            val ins = InstrumentationRegistry.getInstrumentation()
+            val now = android.os.SystemClock.uptimeMillis()
+            for (action in listOf(android.view.MotionEvent.ACTION_DOWN, android.view.MotionEvent.ACTION_UP)) {
+                val event = android.view.MotionEvent.obtain(now, now + 60, action, 20f, 1200f, 0)
+                event.source = android.view.InputDevice.SOURCE_TOUCHSCREEN
+                try { assertTrue(ins.uiAutomation.injectInputEvent(event, true)) } finally { event.recycle() }
+            }
+            waitGone("more_list_quick_size_18")
+            compose.runOnIdle { assertEquals(0, changes) }
+        }
+        compose.onNodeWithTag("vis058_content").performTextReplacement("443")
+        compose.onNodeWithTag("more_list_quick_menu").performClick()
+        compose.onNodeWithTag("more_list_quick_undo").assertIsDisplayed()
+        compose.mainClock.autoAdvance = false
+        try {
+            compose.onNodeWithTag("more_list_quick_undo").performClick()
+            compose.mainClock.advanceTimeBy(64)
+            compose.runOnIdle { assertEquals("443", content); assertEquals(1, changes) }
+            compose.mainClock.advanceTimeBy(600)
+            compose.runOnIdle { assertEquals("8080\n8000-9000", content); assertEquals(2, changes) }
+        } finally { compose.mainClock.autoAdvance = true }
+        compose.onNodeWithTag("more_list_quick_menu").performClick()
+        compose.onNodeWithTag("more_list_quick_redo").assertIsEnabled()
+        compose.mainClock.autoAdvance = false
+        try {
+            compose.onNodeWithTag("more_list_quick_redo").performClick()
+            compose.mainClock.advanceTimeBy(64)
+            // 作者 long：受控模拟回源期间输入法迟到提交，旧重做不得覆盖新正文或读取已经清空的历史栈。
+            compose.runOnIdle { content = "8443" }
+            compose.mainClock.advanceTimeBy(600)
+            compose.runOnIdle { assertEquals("8443", content); assertEquals(2, changes) }
+        } finally { compose.mainClock.autoAdvance = true }
+    }
+
+    @Test fun vis058SearchEmptyAndEntryScrimAcrossThemes() {
+        section = "sniffer"; render()
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark"; state = ProfileMoreEditorUiState(Profile.custom(958, "搜索空态")) }
+            compose.onNodeWithTag("profile_more_empty_add").performClick()
+            capture("vis058_empty_before_$theme")
+            val sheetTop = compose.onNodeWithTag("profile_more_add_sheet").fetchSemanticsNode().boundsInWindow.top
+            compose.onNodeWithTag("profile_more_add_search").performTextReplacement("not-a-field")
+            val token = awaitVisibleIme(); capture("vis058_empty_ime_$theme")
+            InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+            awaitHiddenIme(token)
+            compose.waitForIdle()
+            android.os.SystemClock.sleep(900)
+            val restoredTop = compose.onNodeWithTag("profile_more_add_sheet").fetchSemanticsNode().boundsInWindow.top
+            capture("vis058_empty_$theme")
+            assertEquals("键盘隐藏后空态面板应恢复：$sheetTop → $restoredTop", sheetTop, restoredTop, 40f)
+            compose.onNodeWithTag("profile_more_add_empty").assertIsDisplayed()
+            compose.onNodeWithTag("profile_more_add_search_clear").performClick()
+            compose.onNodeWithTag("more_add_sniff.HTTP").performScrollTo().performClick()
+            compose.onNodeWithTag("profile_more_add_done").performClick()
+            waitGone("profile_more_add_done")
+            compose.onNodeWithTag("more_open_sniff.HTTP").performClick()
+            compose.onNodeWithTag("more_protocol_ports").performClick()
+            compose.onNodeWithTag("more_list_add_menu").performClick()
+            compose.onNodeWithTag("more_list_add").performClick()
+            compose.waitUntil(5_000) { compose.onAllNodesWithTag("more_list_entry_dialog").fetchSemanticsNodes().isNotEmpty() }
+            var amount = -1f
+            compose.waitUntil(5_000) {
+                InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                    val view = android.view.inspector.WindowInspector.getGlobalWindowViews().lastOrNull { it.hasWindowFocus() }
+                    amount = (view?.layoutParams as? android.view.WindowManager.LayoutParams)?.dimAmount ?: -1f
+                }
+                amount >= 0f
+            }
+            assertEquals(if (dark) .48f else .20f, amount, .001f)
+            capture("vis058_entry_$theme")
+            InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+            waitGone("more_list_entry_dialog")
+            compose.onNodeWithTag("more_value_back").performClick()
+            compose.onNodeWithTag("more_protocol_back").performClick()
+        }
     }
 
     private fun render() {

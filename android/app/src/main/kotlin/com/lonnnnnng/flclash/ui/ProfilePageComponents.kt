@@ -56,6 +56,7 @@ internal fun ProfileEditorPage(
     topBarSearch: ProfileEditorSearchState? = null,
     navigationButtonSurface: Boolean = false,
     searchActionFirst: Boolean = false,
+    containerColor: androidx.compose.ui.graphics.Color = dashboardPageColor(),
 ) {
     LocalEmbeddedProfilePage.current?.let { page ->
         EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar, topBarSearch)
@@ -98,7 +99,7 @@ internal fun ProfileEditorPage(
                 val fade = ((entrance.value - .15f) / .4f).coerceIn(0f, 1f)
                 alpha = 1f - (1f - fade) * (1f - fade) * (1f - fade)
             }.testTag("profile_editor_page"),
-            containerColor = dashboardPageColor(),
+            containerColor = containerColor,
             contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 TopAppBar(
@@ -127,7 +128,7 @@ internal fun ProfileEditorPage(
                         confirmButton()
                         if (!searchActionFirst) topBarSearch?.let { ProfileEditorSearchToggle(it) }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = dashboardPageColor()),
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = containerColor),
                 )
             },
         ) { padding ->

@@ -32,6 +32,7 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
     var quick by rememberSaveable(field.key) { mutableStateOf(false) }
     var quickText by rememberSaveable(field.key) { mutableStateOf("") }
     var addMenu by remember { mutableStateOf(false) }
+    val addSource = rememberAppMenuSource()
     var discard by rememberSaveable { mutableStateOf(false) }
     var delete by rememberSaveable { mutableStateOf(false) }
     var reset by rememberSaveable { mutableStateOf(false) }
@@ -84,15 +85,18 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
                             modifier = Modifier.size(44.dp).testTag("more_value_confirm")) { AppGlyphIcon(AppGlyphs.check) }
                     }
                     Box {
-                        MoreListActionPill {
-                            IconButton({ addMenu = true }, enabled = !saving, modifier = Modifier.size(44.dp).testTag("more_list_add_menu")) { AppGlyphIcon(AppGlyphs.addCircle) }
+                        AppMenuSourceContent(addSource) {
+                            MoreListActionPill {
+                                IconButton({ addMenu = true }, enabled = !saving, modifier = Modifier
+                                    .appMenuSource(addSource, dashboardCardColor()).size(44.dp).testTag("more_list_add_menu")) { AppGlyphIcon(AppGlyphs.addCircle) }
+                            }
                         }
-                        DropdownMenu(addMenu, { addMenu = false }) {
-                            DropdownMenuItem(text = { Text("添加") }, leadingIcon = { Icon(Icons.Outlined.Add, null) },
+                        AppDropdownMenu(addMenu, { addMenu = false }, source = addSource) {
+                            AppDropdownMenuItem(text = { Text("添加") }, leadingIcon = { Icon(Icons.Outlined.Add, null) },
                                 modifier = Modifier.testTag("more_list_add"), onClick = {
                                     addMenu = false; input = ""; inputError = null; entry = ""
                                 })
-                            DropdownMenuItem(text = { Text("快速编辑") }, leadingIcon = { AppGlyphIcon(AppGlyphs.compose) },
+                            AppDropdownMenuItem(text = { Text("快速编辑") }, leadingIcon = { AppGlyphIcon(AppGlyphs.compose) },
                                 modifier = Modifier.testTag("more_list_quick"), onClick = {
                                     addMenu = false; quickText = items.joinToString("\n"); inputError = null; quick = true
                                 })

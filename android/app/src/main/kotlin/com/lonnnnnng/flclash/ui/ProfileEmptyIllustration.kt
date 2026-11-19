@@ -198,7 +198,9 @@ internal fun ProfileEmptyIllustration(glyph: AppGlyph = AppGlyphs.profiles, outl
                 }
             }
         }
-        AppGlyphIcon(glyph, Modifier.size(64.dp).offset(y = (-64f * pose.glyphRise).dp).graphicsLayer {
+        // 作者 long：Prism紧凑插图按画布40%缩放图标；120dp时不能继续使用普通160dp画布的64dp图标。
+        val glyphExtent = if (flutterPalette) extent * .4f else 64.dp
+        AppGlyphIcon(glyph, Modifier.size(glyphExtent).offset(y = glyphExtent * -pose.glyphRise).graphicsLayer {
             scaleX = pose.glyphScale; scaleY = pose.glyphScale; alpha = pose.glyphAlpha
         }, if (flutterPalette) colors.primary else colors.onPrimaryContainer, fillProgress = pose.glyphFill)
     }

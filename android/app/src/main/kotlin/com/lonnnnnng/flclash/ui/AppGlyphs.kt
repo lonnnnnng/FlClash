@@ -2,6 +2,28 @@ package com.lonnnnnng.flclash.ui
 
 // 作者 long：坐标直接移植 main:lib/ui/icons/app_glyphs.dart，保持上游图形语义与24单位网格；渲染规则见AppGlyph。
 internal object AppGlyphs {
+    // 作者 long：列表编辑菜单复用固定Flutter的线条几何，与全应用自绘glyph采用相同尺寸和动效材质。
+    val undo by lazy { AppGlyph(listOf(
+        GlyphPolyline(listOf(GlyphVertex(5f, 9f), GlyphVertex(19f, 9f, 4.8f), GlyphVertex(19f, 18.6f, 4.8f), GlyphVertex(9f, 18.6f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(8.8f, 5.2f), GlyphVertex(5f, 9f, .4f), GlyphVertex(8.8f, 12.8f)), role = GlyphRole.line),
+    ), matchTextDirection = true) }
+    val redo by lazy { AppGlyph(listOf(
+        GlyphPolyline(listOf(GlyphVertex(19f, 9f), GlyphVertex(5f, 9f, 4.8f), GlyphVertex(5f, 18.6f, 4.8f), GlyphVertex(15f, 18.6f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(15.2f, 5.2f), GlyphVertex(19f, 9f, .4f), GlyphVertex(15.2f, 12.8f)), role = GlyphRole.line),
+    ), matchTextDirection = true) }
+    val textSize by lazy { AppGlyph(listOf(
+        GlyphPolyline(listOf(GlyphVertex(3.2f, 4.4f), GlyphVertex(14f, 4.4f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(8.6f, 4.4f), GlyphVertex(8.6f, 19.6f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(14.8f, 10.8f), GlyphVertex(21f, 10.8f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(17.9f, 10.8f), GlyphVertex(17.9f, 19.6f)), role = GlyphRole.line),
+    )) }
+    val wrap by lazy { AppGlyph(listOf(
+        GlyphPolyline(listOf(GlyphVertex(4f, 6f), GlyphVertex(20f, 6f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(4f, 12f), GlyphVertex(20f, 12f, 3f), GlyphVertex(20f, 18f, 3f), GlyphVertex(11f, 18f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(13.8f, 15.2f), GlyphVertex(11f, 18f, .4f), GlyphVertex(13.8f, 20.8f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(4f, 18f), GlyphVertex(6.5f, 18f)), role = GlyphRole.line),
+    ), matchTextDirection = true) }
+
     // 作者 long：列表空态与快捷编辑沿用固定Flutter资源盒和纸笔几何，避免用配置文件图标混淆页面语义。
     val resources by lazy { AppGlyph(listOf(
         GlyphBox(3f, 3.5f, 21f, 8.5f, 1.8f), GlyphBox(4.5f, 10.8f, 19.5f, 20.5f, 2.2f),

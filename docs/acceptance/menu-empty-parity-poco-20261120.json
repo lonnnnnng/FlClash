@@ -1,0 +1,1004 @@
+{
+  "id": "KUI-VIS-058",
+  "date": "2026-11-20",
+  "status": "DONE-VERIFIED for named menu, empty-state and IME recovery slices; full Flutter parity/performance remain PARTIAL",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "screen": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "glassEnabled": false
+  },
+  "changes": [
+    "Search empty illustration and Prism runtime copy in Sniffer add sheet",
+    "AppDropdownMenu for list add and quick editor; source return and nested font-size card",
+    "Font sizes16/18/20 with1.2 line-height; surface editor background and20/48 percent dialog dim",
+    "Delayed undo/redo ignores late changed text and absent history",
+    "IME original detent survives geometry cancellation; current nonhidden detent recorded while hidden dismissal uses settled value"
+  ],
+  "build": {
+    "jvmAppMotion": {
+      "tests": 618,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "motionLog": "build6.log",
+    "releaseLog": "release6.log",
+    "installedRelease": false,
+    "motionBenchmarkLint": {
+      "Warning": 73,
+      "Hint": 14
+    },
+    "releaseLint": {
+      "Warning": 69,
+      "Hint": 13
+    },
+    "releaseApk": {
+      "sha256": "835d497c42a0793521608629f1ca08d8833496ca9f593a631570a271ed41bae5",
+      "bytes": 48446965
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "sourceHashes": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppGlyphs.kt": "b8fd0e2b1b90d8e4e3a76158c3823762c15fc642a40190f62d7318cf9b52f9cd",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ConnectionModalSheet.kt": "3214dd71cc24b120f99ba274e827acda1b69cc80ce8f6089634601cc81418976",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MoreListEditor.kt": "86a3b041d2efa6f7e758c479d39a61943cdebb3120a479961a93ec28a4f2fbcf",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MoreListEditorChrome.kt": "54acfd9942c8bed965abace2c836fbc2c8f621229d470b1cf590b8051cc17c9f",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileCodeField.kt": "3f03803b1348c7bedf9e787adfaea991caace340dd20052f56e0e340c7c3b9be",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEmptyIllustration.kt": "cd55919264bfbf3663d20022448738d1bcccc616dbb3faf872f7e61b6abf208b",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt": "213c669ac2d0016df983575595deb1f7208e13fb88a8cf11a9426595a08ae2c4",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": "365c91fd93ff04157970fdf218c1117350c15b8233195050ce439c8ad82a4de1",
+      "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt": "3f8c75d1b0e29f28704323e8366d02dc44c7933c7fb552c2cd243f145985631a",
+      "android/tests/instrumented/ProfilesPageParityInstrumentedTest.kt": "5a78a01cae0af981dae769c7a5ca72f8d0b5b62c2abf9a5be32c3832518834ac"
+    },
+    "app": {
+      "sha256": "8f05f9a5e0cae1440d8096277d08cb816ea792c7c8fb40e1b80069d197c2bc5d",
+      "bytes": 66314389,
+      "installedMatched": true
+    },
+    "test": {
+      "sha256": "6881ccd487956de544b8020c38e55e1dbfccff6258b151f83cc86e2acbace13a",
+      "bytes": 3146970,
+      "installedMatched": true
+    },
+    "identityNote": "Final8 and Main9 use the same retained app6/test APKs; both installed bytes match local hashes"
+  },
+  "reference": {
+    "sourcePath": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "hostPath": "../acceptance-artifacts/flutter-menu-empty-host-20261120",
+    "gitMetadata": false,
+    "sdk": "3.50.0",
+    "upstreamCiSdk": "3.47.6",
+    "hostSourceSha256": "165cc119c2f391f823b74a8b5c722092cdcaf9cc23cebd9fa04d2c2d63955b7e",
+    "apkSha256": "a07375e89452b063944fb137720f75f89d5ae575cc3f3cb808979ebe716b064c",
+    "rustInitialized": true,
+    "sourceHashes": {
+      "lib/pages/editor.dart": "1744796d0716c40d3de7f9324e547fdebe7b897d6583fafcea158cd725fcbcd5",
+      "lib/features/form/selection_sheet.dart": "88fe22ee87606c457b62b8d0c2fe8650c552a7b40482b3d92c20671a78091335",
+      "lib/features/form/list_edit_view.dart": "49c91d90d1ec13b24126a3b27df350675662c523edefe36a109e14979dbdb6a5",
+      "plugins/prism_ui/lib/null_status.dart": "9529f18bfa85b2358ad43bb1ab6551053b02eb75f9f8f54ca2221382d80e784e",
+      "plugins/prism_ui/lib/color.dart": "8f292fcef4799d8109c3bb33632d2ac192aa6c7ebb99a279626992ee797f573a",
+      "plugins/prism_ui/lib/dialog.dart": "7ca6ad78189d6a97a450523d43cfba7dfe365fa1c0871a8f52f0eee072de9bef",
+      "lib/ui/icons/app_glyphs.dart": "4a2a252feea72f93a73538c1f874f6a477474b5483189ac429b47829c9efb029"
+    },
+    "validScreenshots": {
+      "dark-empty-ime.png": "bb613f62b0685262c5d7e6d8e300b0362ca5f566798d50236d0a63c3bff72e81",
+      "dark-empty.png": "3159f00d154a34d445e531afd0d9a40e7214a100239a66a1ba8d159233195d4d",
+      "dark-menu.png": "90c3ac6f489540adce10f62ec19298a3a698f52602aab0625c1530ca80ad7a33",
+      "light-empty-entry.png": "212fec97339f7f86a8d67577293ce64c1a9e4f8007175f2743474bf848414370",
+      "light-menu.png": "c9670bf7eec2039f88e1b89534e61ab3b925aa7e8474071cd4f19a747d7d6a52",
+      "light-sizes.png": "d3463954e31f311373cf9a26b524657ea6c643b15b2c966d309c622048147679",
+      "dark-editor.png": "c3d018502189ea162b172bb9ceddf1bfac06fd3a2a60b1c8233e526238cbd4ce",
+      "dark-add-correct.png": "6de6be75361cfa1aae64200645cc94aa86d407395933d61d3d69a852c634c456",
+      "light-editor.png": "8a813e08d0b6aff5bf5d09720a21fee5e03cef85affd535075277efd97fd1bc2",
+      "dark-sizes.png": "926ccfb4a343fc55f71534a68ec74145b1e90dfe84921135233474c5e835b6ea",
+      "light-empty.png": "f8b02a299a8c2fa5c04d6f1edc76846ea6e57f913d543bda35379ac6733ae50c"
+    },
+    "notes": [
+      "dark-add is unchanged empty page after wrong coordinate; excluded",
+      "light-empty-entry is visible-IME capture despite old filename",
+      "isolated raw ListEditView and SnifferView, not full app database or core"
+    ]
+  },
+  "acceptance": {
+    "component": {
+      "batch": "final8",
+      "passed": 17,
+      "total": 17,
+      "seconds": 124.288,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis058NestedQuickMenuBackOutsideAndDelayedAction",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis054SnifferAddPanelGroupsSearchAndSelectsProtocol",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057LongUnwrappedSearchScrollsToMatchAndBackAppliesDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis055NtpShortAddPanelLight",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057EntryToolbarAndQuickEditorAcrossThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "changingSearchDuringExitDoesNotRetainAnEmptyProtocolGroup",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056SnifferListDraftValidationReorderAndReceipt",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056ListReceiptAfterStateRestorationClosesSavedDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis056DestinationReceiptAfterStateRestorationClosesMenu",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis058SearchEmptyAndEntryScrimAcrossThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "addSearchKeepsQueryAndLastSuccessfulChoiceClosesOnlyAfterSave",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057QuickDraftHistoryAndQuerySurviveRestoration",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "pendingDestinationIgnoresBackAndOutsideThenKeepsFailedChoiceForRetry",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis055NtpShortAddPanelDark",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+          "test": "nestedSelectionReturnsOnlyTopCardBeforeRunningAction",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.EditorErrorRecoveryInstrumentedTest",
+          "test": "scriptSelectionAndLongSearchPreserveFailureUntilTextChanges",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfilesPageParityInstrumentedTest",
+          "test": "customMoreFieldsAndImportMenuWorkAcrossThemes",
+          "code": 0
+        }
+      ],
+      "images": {
+        "vis058_menu_root_light": {
+          "count": 2,
+          "bytes": 54353,
+          "sha256": "dfaac8007b4e7fb04c799cec0562c8f849e687cdc451fd2f79a04ee733d73eb5",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_menu_size_light": {
+          "count": 2,
+          "bytes": 61475,
+          "sha256": "8837f11753d59c5dbdaf9652a92f258ed6a6f73872ddc5e8f3fc44f297aa4219",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_editor_large_light": {
+          "count": 1,
+          "bytes": 35877,
+          "sha256": "473051b3135b19a7b48e73d6d212025432913499e610cc72cd08d567c3d7d4b3",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_menu_root_dark": {
+          "count": 2,
+          "bytes": 51528,
+          "sha256": "e2b7c8a3ca2004db3d831113900441a46b4097f053dcb35bf44834814ba46d3a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_menu_size_dark": {
+          "count": 2,
+          "bytes": 55855,
+          "sha256": "38435cfbd4e86144ac0ac3df70d8e581b92ecd7e031445707a9203a6bd6cb590",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_editor_large_dark": {
+          "count": 2,
+          "bytes": 37554,
+          "sha256": "8ebb1070927df83f583d6ae3ad310e749c69745d77f09e6681d7bd7abb3ff4a4",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_empty": {
+          "count": 3,
+          "bytes": 77319,
+          "sha256": "7db8704430cd63672c48828fecebce6567020795b815e8bf660ec91935987b9d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_add_all": {
+          "count": 4,
+          "bytes": 140348,
+          "sha256": "0873dfbe019c66c02302f72c30ef9c344cf1c5c9a2171cb7e7ce26667fef8589",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_add_protocols": {
+          "count": 5,
+          "bytes": 160107,
+          "sha256": "cfb8839375782fee24e063f769b8ee8d9b25562130702cac4636b0760df380e7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_http": {
+          "count": 4,
+          "bytes": 118864,
+          "sha256": "7482b4479c604d6b50cbb848cb723975936a7fd5d6e9d7d943c5c2d585937e21",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_cleared_ime": {
+          "count": 6,
+          "bytes": 189211,
+          "sha256": "3c79f51c7253869ba477a9acce94b585d7dd3256ffb7377c4538a13e95d313ee",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_cleared_ime_hidden": {
+          "count": 5,
+          "bytes": 161628,
+          "sha256": "c071e042579b6299c7615efd6e107f4738338c118cae1ea48aa14df464093cfd",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_cleared_options": {
+          "count": 5,
+          "bytes": 161628,
+          "sha256": "c071e042579b6299c7615efd6e107f4738338c118cae1ea48aa14df464093cfd",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_search_cleared_protocols": {
+          "count": 5,
+          "bytes": 161703,
+          "sha256": "7cd0268f72d325004bd814c66114439e635267b752a73aa82b88bbb35862b3c2",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_http_added": {
+          "count": 5,
+          "bytes": 169406,
+          "sha256": "763edd77cba51f2c9d5b59d5fb2bf1e2d5a104c0f684d9e071950a760530563e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis054_sniffer_http_page": {
+          "count": 2,
+          "bytes": 44055,
+          "sha256": "2ae1d6b99bb44aca9fa27ef6badd36cd7c260e2f00893c99c167b99ac32ce410",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_long_search": {
+          "count": 3,
+          "bytes": 104504,
+          "sha256": "08c28b636546b12ef538acdece3cf28abcc18e04a52cdd4b3cf831f3e8ef5adb",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_six": {
+          "count": 3,
+          "bytes": 102037,
+          "sha256": "1a3bd9e798b3e3d8922c039671b9e5aa1c6be3dc1840b56530407e6976dbc481",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_expanded": {
+          "count": 3,
+          "bytes": 90814,
+          "sha256": "f392ec98c3972b5ca216cb9201502635a6f200ee3d78110e6b9212fcf655812d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_short": {
+          "count": 3,
+          "bytes": 83274,
+          "sha256": "339061ebd4a808a28ef20611a6a2a65cc9d5b0869ccbf1de22e6e1370efc3da6",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_last": {
+          "count": 4,
+          "bytes": 121552,
+          "sha256": "4a09ff1b6afef45b199a8fb545a46e2adae730d4497a43fa70b6af213b678677",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_false_complete": {
+          "count": 4,
+          "bytes": 132419,
+          "sha256": "e6842e4933163777e6a377c9baf733d3686948a672324500eb289fae11b9c69b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_add_menu_light": {
+          "count": 2,
+          "bytes": 60552,
+          "sha256": "f62814017b25ebcd475e44a7ee54bd20b34be1bdd7e04138ba0ab27fb6a6a0d6",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_light": {
+          "count": 2,
+          "bytes": 49286,
+          "sha256": "b854a12dd852dd6818d3b4b49f7f75abcc08293d77fc0af52c545ff5817a3274",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_ime_light": {
+          "count": 3,
+          "bytes": 104014,
+          "sha256": "383f76d769b492f007e1374beba319738c4586af6bbef075bbc5bed2030d0fed",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_list_light": {
+          "count": 2,
+          "bytes": 43842,
+          "sha256": "bc3379c1092fa138ce10ce24852ca2090ffaa8e5c9259903e081fcbe44929b02",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_selection_light": {
+          "count": 2,
+          "bytes": 44357,
+          "sha256": "be296d0bb1ca1dd54e7004060fa441ae6e9708470465a2f3b147bc82b85e42d8",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_light": {
+          "count": 1,
+          "bytes": 34649,
+          "sha256": "65ff21a19294239126e3cf7a4f58d90e4831a7f48057cfced39d7c9d70d3d265",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_menu_light": {
+          "count": 2,
+          "bytes": 52892,
+          "sha256": "ac29351dfd0956f9a50e2dde272974ec97e1b6ea70ea34245856c014d73c2ce3",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_search_light": {
+          "count": 3,
+          "bytes": 97145,
+          "sha256": "7bab8d2a3495dc613a787ac217f4dc6f986667b56d8bd2e352c2bedf1ac509b1",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_add_menu_dark": {
+          "count": 2,
+          "bytes": 56020,
+          "sha256": "278cd84c0ad4ea6d726492219683bc615165bc2001fd909dc134fd8362b53106",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_dark": {
+          "count": 2,
+          "bytes": 49445,
+          "sha256": "ffca2c04c42b00b9a392bdf7c714737d6d5f12ce519b134a108a5d0acfbd172b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_ime_dark": {
+          "count": 3,
+          "bytes": 104244,
+          "sha256": "b341265662c153cc488c324b6a0541917d95d941ce1455e4eb4149f6dd2722e9",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_list_dark": {
+          "count": 2,
+          "bytes": 44175,
+          "sha256": "37084dc4d6c5f9725b32619507667b36828ce36f5b1e52f8cfb9cd6b8b4c5ea3",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_selection_dark": {
+          "count": 2,
+          "bytes": 44692,
+          "sha256": "378e498767e9668929997ef584cf09f51b8a1d4dee4f55d35fa7a20a93ff6ea8",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_dark": {
+          "count": 1,
+          "bytes": 36257,
+          "sha256": "3ec4f3815fa0c766c16cae1365ace1306987b5e5f37d062d81a354811584c915",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_menu_dark": {
+          "count": 2,
+          "bytes": 49371,
+          "sha256": "c47f41334869501deaf59887fcfd65be9bf16c952bcd856ad0beb45e4947c6ff",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_search_dark": {
+          "count": 3,
+          "bytes": 99488,
+          "sha256": "13e0520a6bb3a9c745a71a2cb8ac40a992668b9189f4552cddce5b13c8450181",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_add_query_after_exit": {
+          "count": 1,
+          "bytes": 15157,
+          "sha256": "83b43346a2d57428751d1a2ea3b6fa6beb505986f0fd11fc4b3c8d380c14555c",
+          "width": 964,
+          "height": 965
+        },
+        "vis056_ports_empty": {
+          "count": 2,
+          "bytes": 45411,
+          "sha256": "6a3cc3549639a60527752c196500c06030d281c79beaf1370788d2d94322d1bf",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_ports_draft": {
+          "count": 2,
+          "bytes": 44175,
+          "sha256": "37084dc4d6c5f9725b32619507667b36828ce36f5b1e52f8cfb9cd6b8b4c5ea3",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_ports_quick_ime": {
+          "count": 3,
+          "bytes": 93378,
+          "sha256": "a12d5d6af0371df11e7d0b2a92a425a17e88a05f7ca8e4ba76429ba3aa9f686a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_ports_save_error": {
+          "count": 2,
+          "bytes": 55701,
+          "sha256": "a79c37f39e9325165fbc7fda80f1e66ada1f7eb319db5bfe2b8062a30b6d5764",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_ports_saved": {
+          "count": 2,
+          "bytes": 42699,
+          "sha256": "1009685a0cffc59ea8731ef03f8bd999302841a4fb2a545378f3dbb424a0aa7d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_empty_before_light": {
+          "count": 4,
+          "bytes": 138895,
+          "sha256": "81c7cee239e028bcf53c132fb586dd9b4c46005eac4cdcc1bba160e1ade0f660",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_empty_ime_light": {
+          "count": 4,
+          "bytes": 136467,
+          "sha256": "0aa80052dcfddaf51faeb1b68d6c82e90613e4e5ed63c200b6e87ad81ae63a53",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_empty_light": {
+          "count": 3,
+          "bytes": 85219,
+          "sha256": "dd982006550600632539b43369dea9d76fad269a37b2dd3ece13309989f9b21a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_entry_light": {
+          "count": 2,
+          "bytes": 48940,
+          "sha256": "2a35d1fe31d191456eded0e31800ee1a96d9c135b7aa77f2b7512cdb0808ce57",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_empty_before_dark": {
+          "count": 4,
+          "bytes": 140031,
+          "sha256": "6529dff07e12dd2d37fdfd5c717db2741f6ab8405d3a8da0fa8d4e5396074d43",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_empty_ime_dark": {
+          "count": 4,
+          "bytes": 138399,
+          "sha256": "e0b284681aa88d0d3c2d8b389c3bf4b3560d48b52b33afe940af67caab2cc294",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_empty_dark": {
+          "count": 3,
+          "bytes": 87572,
+          "sha256": "337764fdbe31b4cda65b0a62f3752518e6857108fbe0756055edae9a07239340",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis058_entry_dark": {
+          "count": 2,
+          "bytes": 49445,
+          "sha256": "ffca2c04c42b00b9a392bdf7c714737d6d5f12ce519b134a108a5d0acfbd172b",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_sniffer_search_empty": {
+          "count": 4,
+          "bytes": 136512,
+          "sha256": "8eff1fbc37666182616ade42a89fb080ea5df31ede21f5d350d9dd5bbc515580",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_pending_destination_before": {
+          "count": 1,
+          "bytes": 12835,
+          "sha256": "f4ef5c37b054996498a9a1d4630120618c35782cbc47f232017c73f4935ccfe6",
+          "width": 396,
+          "height": 397
+        },
+        "more_pending_destination_during": {
+          "count": 1,
+          "bytes": 18481,
+          "sha256": "3273930a795d6728e8f7e09331bc6ce51910ad1644585332b82d521f87c4d61e",
+          "width": 396,
+          "height": 397
+        },
+        "vis055_ntp_true_six": {
+          "count": 3,
+          "bytes": 104017,
+          "sha256": "4fe6c9661e50b2ceda234c9149a862726e1dc4d14a50f73f120bb8bd1e927e1d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_true_expanded": {
+          "count": 3,
+          "bytes": 93096,
+          "sha256": "c40cf0d6d1aa9794e0cdcf697f26fe197907e2134a61bbe548043669d0c2a9e7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_true_short": {
+          "count": 3,
+          "bytes": 84277,
+          "sha256": "24512d6011b426c45f5610b1cb41337a6cfd93da87c1d100f6fe90cbea53c4a5",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_true_last": {
+          "count": 4,
+          "bytes": 122034,
+          "sha256": "76a1a32e89806c21540e40c6910498a437bc2a354a77293db43e2d101a824c14",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis055_ntp_true_complete": {
+          "count": 4,
+          "bytes": 135021,
+          "sha256": "525eb55448b70e3939f5e21451b5c13a9be9e1d3a7b347f32031a05792bf0bf2",
+          "width": 1080,
+          "height": 2400
+        },
+        "liquid_return_nested_top": {
+          "count": 2,
+          "bytes": 46901,
+          "sha256": "24bee0f1c9ec72cbbd3512fe650042798b1809cf85281cfde9b324c029dee7f4",
+          "width": 1080,
+          "height": 2400
+        },
+        "script_long_match_error": {
+          "count": 5,
+          "bytes": 183038,
+          "sha256": "3b85946ce066c8f7d2fc993ec5e41b102b0a8c9d182a69f9f6fd715ca9890680",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_ntp_light": {
+          "count": 2,
+          "bytes": 70824,
+          "sha256": "7bc476f704bbbe0e62e576eaf5eb87c2b7811c2d7002f76d70b045421b685bd6",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_sniffer_light": {
+          "count": 3,
+          "bytes": 82461,
+          "sha256": "278cda68bf21cf25f1b814aaa725960c75eadd9cd91c0881ba919e1194e532e6",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_import_light": {
+          "count": 5,
+          "bytes": 169229,
+          "sha256": "f78a20eb33f55ac72bd0de65b7196ec887bec9d2d80bb1e87951a0d47795cfca",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_import_confirm_light": {
+          "count": 4,
+          "bytes": 129541,
+          "sha256": "2b9cb47a3044c81b8036b66f20ab41a1ce79045ab58e315e60fdde7527032869",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_ntp_dark": {
+          "count": 3,
+          "bytes": 74652,
+          "sha256": "3a45a4e7b3536152b287af94f15249f7b1d55c8472ff166db21aa2a617c0eeb5",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_sniffer_dark": {
+          "count": 3,
+          "bytes": 83943,
+          "sha256": "a859879244ace12efbba31a9ac0fea7233f06465f10ce3f9f50cdce530f2ba91",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_import_dark": {
+          "count": 5,
+          "bytes": 170359,
+          "sha256": "0356728f75f12a5f94571f507f69781fdbe256f9ed62a9a32fff91745eb53666",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_import_confirm_dark": {
+          "count": 4,
+          "bytes": 129989,
+          "sha256": "11e9a20b215be1ad15854add82e27b622425d4d4d88141a8ce3a5d87f7e5c7eb",
+          "width": 1080,
+          "height": 2400
+        }
+      }
+    },
+    "naturalMain": {
+      "batch": "main9",
+      "passed": 1,
+      "total": 1,
+      "seconds": 47.253,
+      "scope": "Real MainActivity navigation, list add menu to quick editor, IME, save/reopen, Activity recreation and Room readback; rows/bodies/preferences/scripts/selection preserved",
+      "images": {
+        "vis056_main_empty": {
+          "count": 3,
+          "bytes": 77747,
+          "sha256": "3e48a6a6348e36b0d0c7cbfa56e817f130e640b91d4839f581fca0944dbff8cb",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_add": {
+          "count": 4,
+          "bytes": 140636,
+          "sha256": "740fdc6c907c5e1a86fca67276e241cfa73588a3daeae455ea435d9d4ce662af",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_search_ime": {
+          "count": 6,
+          "bytes": 189576,
+          "sha256": "d6a46edfcdc234211086469ba49a34816af0651894df4428344789abeba2bfd7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_protocol": {
+          "count": 2,
+          "bytes": 47375,
+          "sha256": "ed45221dd573646a95626753496279b337d331326be3ce6d7912699467698b27",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_ports_empty": {
+          "count": 2,
+          "bytes": 48973,
+          "sha256": "78ab4f87563444c53aae8b31ac944b14d0e2d0cc4806c0c3e5f63717f027d46c",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_ports_ime": {
+          "count": 3,
+          "bytes": 90829,
+          "sha256": "ce09b3ac66d8004f0ce664ca85b5131db9633b9e3230a67a1255c5984dfc7a6d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_ports_draft": {
+          "count": 2,
+          "bytes": 44819,
+          "sha256": "2211aedd5c7a3542ed1f4ce817cdb580c080772baa3579a6614b0047cbe3a8a1",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_destination": {
+          "count": 2,
+          "bytes": 45465,
+          "sha256": "656ffcdbb18e964842fd3b5ad8e0b32facc269225142c3d809161d94e0f8c5e8",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_reopened": {
+          "count": 2,
+          "bytes": 45527,
+          "sha256": "c00bb72dd1adf8d4e423d3db6502b8933ba80f9daec4db78abb17f164c99401f",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis056_main_recreated": {
+          "count": 2,
+          "bytes": 43095,
+          "sha256": "489ff6309d10b319e084c02afc6f94080d7da883249a4114ebb7307a9a501c9e",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "video": {
+        "passed": true,
+        "videoSha256": "2d396b06b1708db8283edb6b08f38e504061a5e38911ef49aba9e76ba47ca877",
+        "bytes": 20014373,
+        "deviceCopyRemoved": true,
+        "hasScreenshots": true,
+        "performanceEvidence": false,
+        "durationSeconds": 49.065789,
+        "sourcePtsFrameCount": 1406,
+        "reviewedTimeSamples": 12,
+        "fullFrameReview": false
+      }
+    },
+    "comparison": {
+      "pairs": [
+        {
+          "name": "menu",
+          "theme": "light",
+          "reference": "flutter/light-menu.png",
+          "kotlin": "final8/vis058_menu_root_light.png",
+          "sha256": [
+            "c9670bf7eec2039f88e1b89534e61ab3b925aa7e8474071cd4f19a747d7d6a52",
+            "dfaac8007b4e7fb04c799cec0562c8f849e687cdc451fd2f79a04ee733d73eb5"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "sizes",
+          "theme": "light",
+          "reference": "flutter/light-sizes.png",
+          "kotlin": "final8/vis058_menu_size_light.png",
+          "sha256": [
+            "d3463954e31f311373cf9a26b524657ea6c643b15b2c966d309c622048147679",
+            "8837f11753d59c5dbdaf9652a92f258ed6a6f73872ddc5e8f3fc44f297aa4219"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "empty",
+          "theme": "light",
+          "reference": "flutter/light-empty.png",
+          "kotlin": "final8/vis058_empty_light.png",
+          "sha256": [
+            "f8b02a299a8c2fa5c04d6f1edc76846ea6e57f913d543bda35379ac6733ae50c",
+            "dd982006550600632539b43369dea9d76fad269a37b2dd3ece13309989f9b21a"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "empty-ime",
+          "theme": "light",
+          "reference": "flutter/light-empty-entry.png",
+          "kotlin": "final8/vis058_empty_ime_light.png",
+          "sha256": [
+            "212fec97339f7f86a8d67577293ce64c1a9e4f8007175f2743474bf848414370",
+            "0aa80052dcfddaf51faeb1b68d6c82e90613e4e5ed63c200b6e87ad81ae63a53"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "editor",
+          "theme": "light",
+          "reference": "flutter/light-editor.png",
+          "kotlin": "final8/vis057_quick_light.png",
+          "sha256": [
+            "8a813e08d0b6aff5bf5d09720a21fee5e03cef85affd535075277efd97fd1bc2",
+            "65ff21a19294239126e3cf7a4f58d90e4831a7f48057cfced39d7c9d70d3d265"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "menu",
+          "theme": "dark",
+          "reference": "flutter/dark-menu.png",
+          "kotlin": "final8/vis058_menu_root_dark.png",
+          "sha256": [
+            "90c3ac6f489540adce10f62ec19298a3a698f52602aab0625c1530ca80ad7a33",
+            "e2b7c8a3ca2004db3d831113900441a46b4097f053dcb35bf44834814ba46d3a"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "sizes",
+          "theme": "dark",
+          "reference": "flutter/dark-sizes.png",
+          "kotlin": "final8/vis058_menu_size_dark.png",
+          "sha256": [
+            "926ccfb4a343fc55f71534a68ec74145b1e90dfe84921135233474c5e835b6ea",
+            "38435cfbd4e86144ac0ac3df70d8e581b92ecd7e031445707a9203a6bd6cb590"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "empty",
+          "theme": "dark",
+          "reference": "flutter/dark-empty.png",
+          "kotlin": "final8/vis058_empty_dark.png",
+          "sha256": [
+            "3159f00d154a34d445e531afd0d9a40e7214a100239a66a1ba8d159233195d4d",
+            "337764fdbe31b4cda65b0a62f3752518e6857108fbe0756055edae9a07239340"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "empty-ime",
+          "theme": "dark",
+          "reference": "flutter/dark-empty-ime.png",
+          "kotlin": "final8/vis058_empty_ime_dark.png",
+          "sha256": [
+            "bb613f62b0685262c5d7e6d8e300b0362ca5f566798d50236d0a63c3bff72e81",
+            "e0b284681aa88d0d3c2d8b389c3bf4b3560d48b52b33afe940af67caab2cc294"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        },
+        {
+          "name": "editor",
+          "theme": "dark",
+          "reference": "flutter/dark-editor.png",
+          "kotlin": "final8/vis057_quick_dark.png",
+          "sha256": [
+            "c3d018502189ea162b172bb9ceddf1bfac06fd3a2a60b1c8233e526238cbd4ce",
+            "3ec4f3815fa0c766c16cae1365ace1306987b5e5f37d062d81a354811584c915"
+          ],
+          "scope": "same theme/content; dark font submenu retains selected large from light round; random illustration geometry/fonts not identical"
+        }
+      ],
+      "pixelIdentical": false
+    },
+    "visualReview": {
+      "componentContactSheets": 7,
+      "mainContactSheets": 1,
+      "comparisonContactSheets": 2,
+      "videoSamples": 12,
+      "notes": [
+        "Main ports_ime snapshot precedes text paint; only IME/editor visibility; saved/reopened/recreated and Room prove values",
+        "Frozen animation snapshots are intermediate states, not stable empty illustration parity",
+        "Flutter wrap is unchecked while Kotlin wrap is checked in root-menu captures; compare structure/material only"
+      ]
+    }
+  },
+  "failuresPreserved": [
+    {
+      "batch": "final3",
+      "passed": 11,
+      "total": 14,
+      "reason": "Test froze clock before menu creation; candidate click during IME movement; dim queried before dialog focus"
+    },
+    {
+      "batch": "final6",
+      "passed": 13,
+      "total": 14,
+      "reason": "Real empty-search IME recovery remained expanded, initial timeout"
+    },
+    {
+      "batch": "final7",
+      "passed": 0,
+      "total": 1,
+      "reason": "Stable reproduction: top1094 before keyboard,339 after hidden; restoration marker cleared before geometry-cancelled animation"
+    },
+    {
+      "batch": "final5",
+      "passed": 16,
+      "total": 17,
+      "reason": "First fix restored partial but lost expanded state after synthetic scroll (311 to1094); record current nonhidden detent before IME"
+    }
+  ],
+  "mainPreparationFailure": {
+    "batch": "main8",
+    "passed": 0,
+    "total": 1,
+    "reason": "System notification permission dialog obscured first navigation; granted only independent motion permission and main9 passed; product/test unchanged"
+  },
+  "protection": {
+    "inputCopyRemoved": true,
+    "packages": {
+      "com.lonnnnnng.flclash.motion.test": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.flclash.motion": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.kclash.reference.flutter_sniffer_full_reference": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      }
+    },
+    "sourceAndSettingsPreserved": true,
+    "originalFlutterIdentityPreserved": true,
+    "originalFlutterIdentity": [
+      "versionCode=2026112401 minSdk=24 targetSdk=37",
+      "versionName=0.9.3",
+      "lastUpdateTime=2026-11-07 02:44:08",
+      "firstInstallTime=2026-11-07 02:44:08"
+    ]
+  },
+  "limits": [
+    "Independent Flutter host uses original ListEditView/SnifferView and Rust assets; original com.follow.clash untouched",
+    "Random Flutter illustration shape/accents, font family and precise menu geometry/motion are not pixel equivalent",
+    "Dark font submenu comparison retains large selection from prior light round while Flutter is standard",
+    "Complete Flutter continuous recording comparison, native menu/RenderThread attribution and formal R8 performance remain pending",
+    "No new release or formal Release device installation; no core change; local1.yaml only USB copied and removed",
+    "Manual drag during automatic restoration has cancellation protection by code; not a separately captured natural touch-overlap case",
+    "Top bar circular surface is low contrast on light editor surface; precise toolbar material remains a visual difference."
+  ],
+  "artifactRoot": "../acceptance-artifacts/menu-empty-parity-poco-20261120/"
+}

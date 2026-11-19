@@ -199,10 +199,11 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                 }
                 if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
                 state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                Column(Modifier.weight(1f).verticalScroll(addScrollState).testTag("profile_more_available_fields")) {
+                val matching = shownChoices.filter(::matchesQuery)
+                if (matching.isEmpty() && remaining.isNotEmpty()) {
+                    MoreSearchEmptyState(Modifier.weight(1f).fillMaxWidth().testTag("profile_more_available_fields"), addScrollState)
+                } else Column(Modifier.weight(1f).verticalScroll(addScrollState).testTag("profile_more_available_fields")) {
                     if (remaining.isEmpty()) Text("所有设置项均已添加", Modifier.padding(vertical = 24.dp))
-                    val matching = shownChoices.filter(::matchesQuery)
-                    if (matching.isEmpty() && remaining.isNotEmpty()) Text("无搜索结果", Modifier.padding(24.dp).testTag("profile_more_add_empty"))
                     listOf(false, true).forEach { protocols ->
                         key(protocols) {
                             val entries = matching.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
@@ -456,4 +457,20 @@ private fun MoreYamlEditor(title: String, initial: JsonObject, ntp: Boolean, sav
 @Composable
 private fun MoreDiscardDialog(title: String, onDismiss: () -> Unit, onDiscard: () -> Unit) {
     AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, confirmButton = { TextButton(onClick = onDiscard) { Text("放弃") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("继续编辑") } })
+}
+
+/** 作者 long：无结果占据候选视口，不挤走下沿搜索；键盘缩小高度时仍可滚动查看插图和说明。 */
+@Composable
+private fun MoreSearchEmptyState(modifier: Modifier, scroll: androidx.compose.foundation.ScrollState) {
+    val compact = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() < 560.dp }
+    BoxWithConstraints(modifier) {
+        Box(Modifier.fillMaxSize().verticalScroll(scroll).heightIn(min = maxHeight).padding(horizontal = 32.dp, vertical = 24.dp),
+            contentAlignment = BiasAlignment(0f, -.2f)) {
+            Column(Modifier.widthIn(max = 320.dp).testTag("profile_more_add_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
+                ProfileEmptyIllustration(AppGlyphs.search, extent = if (compact) 120.dp else 160.dp, flutterPalette = true)
+                Text("没有匹配的结果", Modifier.padding(top = if (compact) 12.dp else 16.dp),
+                    style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            }
+        }
+    }
 }

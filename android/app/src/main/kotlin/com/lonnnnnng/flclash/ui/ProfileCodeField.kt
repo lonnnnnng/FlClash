@@ -48,13 +48,14 @@ internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) 
     highlightYaml: Boolean = true,
     scrollState: androidx.compose.foundation.ScrollState = rememberScrollState(),
     fontSize: androidx.compose.ui.unit.TextUnit = 14.sp,
-    softWrap: Boolean = true) {
+    softWrap: Boolean = true,
+    lineHeight: androidx.compose.ui.unit.TextUnit = (fontSize.value + 6).sp) {
     val windowed = remember(value.text) { value.text.length > 65_536 || value.text.count { it == '\n' || it == '\r' } > 1500 }
     if (windowed) {
-        WindowedProfileCodeField(value, onChange, enabled, modifier, contentTag, fontSize, softWrap)
+        WindowedProfileCodeField(value, onChange, enabled, modifier, contentTag, fontSize, softWrap, lineHeight)
         return
     }
-    val style = profileCodeStyle().copy(color = MaterialTheme.colorScheme.onSurface, fontSize = fontSize, lineHeight = (fontSize.value + 6).sp)
+    val style = profileCodeStyle().copy(color = MaterialTheme.colorScheme.onSurface, fontSize = fontSize, lineHeight = lineHeight)
     val colors = MaterialTheme.colorScheme
     val transformation = remember(colors.primary, colors.onSurfaceVariant, colors.tertiary, highlightYaml) {
         VisualTransformation { TransformedText(if (highlightYaml) profileYamlText(it.text, colors.primary, colors.onSurfaceVariant, colors.tertiary) else it, OffsetMapping.Identity) }
@@ -116,7 +117,7 @@ internal fun ProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) 
 
 @Composable
 private fun WindowedProfileCodeField(value: TextFieldValue, onChange: (TextFieldValue) -> Unit, enabled: Boolean,
-    modifier: Modifier, contentTag: String, fontSize: androidx.compose.ui.unit.TextUnit, softWrap: Boolean) {
+    modifier: Modifier, contentTag: String, fontSize: androidx.compose.ui.unit.TextUnit, softWrap: Boolean, lineHeight: androidx.compose.ui.unit.TextUnit) {
     var start by remember { mutableIntStateOf(0) }
     val safeStart = start.coerceAtMost(value.text.length)
     val end = remember(value.text, safeStart) { profileCodeWindowEnd(value.text, safeStart) }
@@ -148,7 +149,7 @@ private fun WindowedProfileCodeField(value: TextFieldValue, onChange: (TextField
         key(safeStart) {
             ProfileCodeField(local, { next ->
                 onChange(replaceProfileCodeWindow(value, safeStart, end, next))
-            }, enabled, Modifier.fillMaxWidth().weight(1f), contentTag = contentTag, highlightYaml = false, fontSize = fontSize, softWrap = softWrap)
+            }, enabled, Modifier.fillMaxWidth().weight(1f), contentTag = contentTag, highlightYaml = false, fontSize = fontSize, softWrap = softWrap, lineHeight = lineHeight)
         }
     }
 }

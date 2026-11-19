@@ -245,6 +245,7 @@ internal fun ConnectionModalSheet(
             ) {
                 val density = LocalDensity.current
                 val imeVisible = WindowInsets.ime.getBottom(density) > 0
+                val latestImeVisible by rememberUpdatedState(imeVisible)
                 var detentBeforeIme by remember { mutableStateOf<ConnectionSheetDetent?>(null) }
                 val settleSpec = remember { ConnectionSheetMotion.settleSpec() }
                 // 作者 long：数据到达、错误提示或子页改变内容高度时沿用面板弹簧重排，不能突然跳动或截断新增操作。
@@ -295,7 +296,12 @@ internal fun ConnectionModalSheet(
                     val anchors = remember(geometry) {
                         DraggableAnchors { geometry.detents.forEach { it at geometry.offset(it) } }
                     }
-                    SideEffect { state.updateAnchors(anchors, if (savedDetent in geometry.detents) savedDetent else ConnectionSheetDetent.PARTIAL) }
+                    SideEffect {
+                        // 作者 long：输入法动画每帧重建锚点，沿当前自动展开/恢复目标更新，不能用临时展开值覆盖原停靠意图。
+                        val target = if (restoreDetentAfterIme && avoidIme && imeVisible) ConnectionSheetDetent.EXPANDED
+                            else detentBeforeIme ?: savedDetent
+                        state.updateAnchors(anchors, if (target in geometry.detents) target else ConnectionSheetDetent.PARTIAL)
+                    }
                     LaunchedEffect(avoidIme, imeVisible, geometry, dismissalStarted, restoreDetentAfterIme) {
                         // 作者 long：键盘压缩可用高度后半展开只剩工具栏，搜索时展开到键盘上方，保留可操作的节点结果。
                         if (avoidIme && imeVisible && !dismissalStarted) {
@@ -304,8 +310,10 @@ internal fun ConnectionModalSheet(
                         } else if (restoreDetentAfterIme && detentBeforeIme != null && !dismissalStarted) {
                             // 作者 long：搜索键盘关闭后回到打开前的停靠位，避免短暂输入把整页面板长期留在全屏。
                             val restore = detentBeforeIme ?: ConnectionSheetDetent.PARTIAL
-                            detentBeforeIme = null
                             state.animateTo(restore, settleSpec)
+                            // 作者 long：窗口高度变化会取消并重启此协程，只有真正到达原档位才消费恢复意图。
+                            savedDetent = restore
+                            detentBeforeIme = null
                         }
                     }
                     LaunchedEffect(state, geometry) {
@@ -317,7 +325,9 @@ internal fun ConnectionModalSheet(
                         }.collect { scrimFade = it }
                     }
                     LaunchedEffect(state) {
-                        snapshotFlow { state.settledValue }.collect { detent ->
+                        snapshotFlow { Triple(state.settledValue, state.currentValue,
+                            restoreDetentAfterIme && (latestImeVisible || detentBeforeIme != null)) }
+                            .collect { (detent, currentDetent, automaticImeMotion) ->
                             if (detent == ConnectionSheetDetent.HIDDEN) {
                                 if (!dismissalStarted) {
                                     if (canDismiss()) {
@@ -327,8 +337,11 @@ internal fun ConnectionModalSheet(
                                 }
                             } else {
                                 // 作者 long：短子页两档重合不代表用户收起；返回长页应恢复原展开意图。
-                                if (!floatingForm || latestGeometry.hasExpandedDetent || savedDetent != ConnectionSheetDetent.EXPANDED || detent == ConnectionSheetDetent.EXPANDED)
-                                    savedDetent = detent
+                                // 作者 long：列表语义滚动只有位移、没有fling，currentValue已展开而settledValue仍旧；键盘前须保存实际非隐藏档位。
+                                // HIDDEN仍只由上方settledValue判断，避免拖过半程就提前关闭。
+                                val chosen = if (restoreDetentAfterIme && currentDetent != ConnectionSheetDetent.HIDDEN) currentDetent else detent
+                                if (!automaticImeMotion && (!floatingForm || latestGeometry.hasExpandedDetent || savedDetent != ConnectionSheetDetent.EXPANDED || chosen == ConnectionSheetDetent.EXPANDED))
+                                    savedDetent = chosen
                             }
                         }
                     }
@@ -395,10 +408,14 @@ internal fun ConnectionModalSheet(
                             .pointerInput(contentScrollState) {
                                 // 作者 long：从列表中部开始下滑只滚回顶部，同一手势不能继续关闭面板，避免长详情误退出。
                                 awaitEachGesture {
-                                    awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                                     dragStartedAtTop = contentAtTop()
-                                    do { val event = awaitPointerEvent(PointerEventPass.Initial) }
-                                    while (event.changes.any { it.pressed })
+                                    do {
+                                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                                        // 作者 long：键盘恢复若被用户实际拖动接管，旧恢复意图立即失效；否则取消动画后会一直屏蔽新停靠选择。
+                                        if (!latestImeVisible && event.changes.any { it.id == down.id && abs(it.position.y - down.position.y) > viewConfiguration.touchSlop })
+                                            detentBeforeIme = null
+                                    } while (event.changes.any { it.pressed })
                                 }
                             }
                             .nestedScroll(nestedScroll)
@@ -419,6 +436,7 @@ internal fun ConnectionModalSheet(
                                     .clickable(
                                         enabled = geometry.hasExpandedDetent && hasEntered && !dismissalStarted,
                                     ) {
+                                        if (!latestImeVisible) detentBeforeIme = null
                                         scope.launch {
                                             state.animateTo(if (savedDetent == ConnectionSheetDetent.EXPANDED)
                                                 ConnectionSheetDetent.PARTIAL else ConnectionSheetDetent.EXPANDED,
