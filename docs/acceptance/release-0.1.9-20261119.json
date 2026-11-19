@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-19",
+  "release": {
+    "tag": "kclash-v0.1.9",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.9",
+    "sourceCommit": "4d9e65dacee2051a4718fdd62008f5024e60dd0e",
+    "workflowRunId": 44478548831,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44478548831",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-19T07:33:40Z",
+    "publishedAtAsiaShanghai": "2026-11-19T15:33:40+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.9-android-arm64-v8a.apk",
+        "size": 48407516,
+        "digest": "sha256:8e5765d946fde68129e5b8c876e460bf8221be7e5f0bfa003a2b13b1e204b963",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.9/KClash-0.1.9-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 101,
+        "digest": "sha256:480813fd43de2e3654d0599552db4cd8888e6c9c998be02957f223a556d5f86c",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.9/SHA256SUMS"
+      }
+    ]
+  },
+  "package": {
+    "versionName": "0.1.9",
+    "versionCode": 1009,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "abis": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "debuggable": false,
+    "remoteSha256Verified": true,
+    "sha256SumsVerified": true,
+    "signatureVerified": true
+  },
+  "ci": {
+    "result": "success",
+    "jobs": [
+      {
+        "name": "Verify KClash Android arm64",
+        "conclusion": "success"
+      },
+      {
+        "name": "Publish signed KClash release",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "localPreflight": {
+    "command": null,
+    "result": "not_run",
+    "note": "The tag workflow performed the Go race, JVM, Debug/Release R8, Lint, signing, ABI and APK gates."
+  },
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "featureAcceptance": "KUI-VIS-054 was separately verified on POCO F2 Pro using the isolated motion package (1/1, 10 screenshots); the release APK was not installed."
+  }
+}
